@@ -82,6 +82,24 @@ function updateDate(newDate: string) {
 }
 
 #[test]
+fn legacy_vue2_component_event_object_payloads_stay_permissive() {
+    let script = r#"type Manager = { id: string }
+declare const DataTable: { new (): { $props: { "onClick:Row"?: (item: Object) => unknown } } }
+function moveToDetail(item: Manager) {
+  void item
+}
+"#;
+    let template = r#"<DataTable @click:row="moveToDetail" />"#;
+
+    let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
+    assert!(
+        legacy.contains("__VizeVue2LooseEventArg<__DataTable_")
+            && legacy.contains("__VizeVue2LooseEmitArgs<__DataTable_"),
+        "legacy Vue 2 broad Object component event payloads should be loosened:\n{legacy}"
+    );
+}
+
+#[test]
 fn legacy_vue2_skips_external_component_prop_checks() {
     let script = "const width = 320\n";
     let template = r#"<VDatePicker :width="width" />"#;

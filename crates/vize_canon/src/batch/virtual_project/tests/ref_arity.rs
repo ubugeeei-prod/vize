@@ -177,7 +177,9 @@ export default {
         assert!(!content.contains("import('vue').ComponentPublicInstance"));
         assert!(!content.contains("import('vue').defineComponent"));
     }
-    assert!(options_content.contains("declare function __vizeDefineComponent<T>(options: T): T;"));
+    assert!(options_content.contains(
+        "declare function __vizeDefineComponent<T>(options: T & __VizeNuxt2PageOptions): T;",
+    ));
 
     project.materialize().unwrap();
     assert!(!project.virtual_root().join("__vize_helpers.d.ts").exists());

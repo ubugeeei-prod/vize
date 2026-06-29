@@ -113,15 +113,18 @@ pub(super) fn generate_component_event_types(
         );
     }
 
-    let fallback_event = if legacy_vue2 {
-        "any"
+    if legacy_vue2 {
+        append!(
+            *ts,
+            "{indent}type {event_type} = {args_type} extends [] ? any : unknown[] extends {args_type} ? any : __VizeVue2LooseEventArg<{args_type}[0]>;\n",
+        );
     } else {
-        get_dom_event_type(data.event_name.as_str())
-    };
-    append!(
-        *ts,
-        "{indent}type {event_type} = {args_type} extends [] ? any : unknown[] extends {args_type} ? {fallback_event} : {args_type}[0];\n",
-    );
+        let fallback_event = get_dom_event_type(data.event_name.as_str());
+        append!(
+            *ts,
+            "{indent}type {event_type} = {args_type} extends [] ? any : unknown[] extends {args_type} ? {fallback_event} : {args_type}[0];\n",
+        );
+    }
     Some(ComponentEventTypes {
         event_type,
         args_type,

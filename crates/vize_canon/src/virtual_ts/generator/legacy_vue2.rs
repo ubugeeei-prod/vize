@@ -24,6 +24,8 @@ type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` 
 type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
 type __VizeComponentProps<T> = T extends unknown ? T & Partial<__VizeKebabProps<T>> : never;
 type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
+type __VizeVue2LooseEventArg<T> = __VizeIsAny<T> extends true ? any : [T] extends [Object] ? ([Object] extends [T] ? any : T) : T;
+type __VizeVue2LooseEmitArgs<A extends readonly unknown[]> = { [K in keyof A]: __VizeVue2LooseEventArg<A[K]> };
 type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];"#;
 const LEGACY_REF_UNWRAP_HELPER: &str =
@@ -32,8 +34,28 @@ const MODERN_REF_UNWRAP_HELPER: &str = r#"    type __VizeIsUnion<T, __U = T> = T
     type __VizeWidenTemplateRef<T> = __VizeIsUnion<T> extends true ? T : T extends string ? string : T extends number ? number : T extends boolean ? boolean : T;
     type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;
 "#;
-const LEGACY_DEFINE_COMPONENT_HELPER: &str =
-    "declare function __vizeDefineComponent<T>(options: T): T;\n";
+const LEGACY_DEFINE_COMPONENT_HELPER: &str = r#"type __VizeNuxt2Context = {
+  app: any;
+  route: any;
+  params: Record<string, string>;
+  query: Record<string, string | string[] | undefined>;
+  store: any;
+  error: (...args: any[]) => any;
+  redirect: (...args: any[]) => any;
+  req?: any;
+  res?: any;
+  env?: Record<string, unknown>;
+  isDev?: boolean;
+  isHMR?: boolean;
+} & Record<string, any>;
+type __VizeNuxt2PageOptions = {
+  validate?: (context: __VizeNuxt2Context) => unknown;
+  asyncData?: (context: __VizeNuxt2Context) => any;
+  fetch?: (context: __VizeNuxt2Context) => any;
+  middleware?: any;
+};
+declare function __vizeDefineComponent<T>(options: T & __VizeNuxt2PageOptions): T;
+"#;
 pub(super) const LEGACY_COMPONENT_INSTANCE_HELPER: &str = r#"type __VizeVue2ComponentInstance = {
   $el: Element;
   $refs: Record<string, any>;
