@@ -75,6 +75,7 @@ impl Rule for PropNameCasing {
                 PropNode::Directive(dir) => {
                     if dir.name == "bind"
                         && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                        && arg.is_static
                     {
                         let name = arg.content.as_ref();
                         // Skip standard bindings
@@ -167,6 +168,13 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<MyComponent :myProp="value" />"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_dynamic_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<MyComponent :[myProp]="value" />"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
