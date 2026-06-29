@@ -193,7 +193,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let has_plain_script_scope = summary
         .scopes
         .iter()
-        .any(|scope| matches!(scope.kind, ScopeKind::NonScriptSetup));
+        .any(|scope| matches!(scope.kind, ScopeKind::NonScriptSetup))
+        || (script_content.is_some() && !has_script_setup);
     let named_value_exports = self::script_module::collect_normal_script_named_value_exports(
         script_content,
         has_script_setup,

@@ -286,6 +286,9 @@ impl VirtualProject {
         for (virtual_path, original_path) in registered.passthrough_files {
             self.passthrough_files.insert(virtual_path, original_path);
         }
+        for file in registered.extra_virtual_files {
+            self.virtual_files.insert(file.virtual_path.clone(), file);
+        }
         self.virtual_files
             .insert(registered.file.virtual_path.clone(), registered.file);
     }

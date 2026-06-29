@@ -19,6 +19,7 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
 use super::VirtualFile;
 use super::diagnostics::collect_sfc_block_ranges;
+use super::jsx_build::build_jsx_registered_file;
 use super::passthrough::collect_passthrough_modules;
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
 
@@ -26,6 +27,7 @@ use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtu
 /// independent of any `&mut VirtualProject` so it can be produced in parallel.
 pub(super) struct RegisteredFile {
     pub(super) file: VirtualFile,
+    pub(super) extra_virtual_files: Vec<VirtualFile>,
     /// Original source text as registered, retained for offset<->line/col
     /// mapping without a disk re-read. Stored on the project, not the public
     /// `VirtualFile`.
@@ -158,103 +160,34 @@ pub(super) fn build_vue_registered_file(
         path,
         use_tsx_virtual,
     )?;
-
-    Ok(RegisteredFile {
-        file: VirtualFile {
-            content: rewritten.code,
-            source_map,
-            original_path: path.to_path_buf(),
-            virtual_path,
-        },
-        original_content: content.to_compact_string(),
-        passthrough_files: collect_passthrough_modules(
-            path,
-            content,
+    let extra_virtual_files = if use_tsx_virtual {
+        vec![build_tsx_vue_import_shim(
             context.project_root,
             context.virtual_root,
-        ),
-        diagnostics,
-    })
-}
-
-/// Build a virtual file for a `.jsx`/`.tsx` Vize component (#1497, opt-in).
-///
-/// Parallels [`build_vue_registered_file`]: lower the JSX/TSX to plain virtual
-/// TypeScript (props from the typed first parameter + setup scope + JSX
-/// expressions), rewrite imports, and mirror the file to `<name>.ts` so Corsa
-/// type-checks it as plain TypeScript. Reached only when `jsx_typecheck` is on.
-pub(super) fn build_jsx_registered_file(
-    path: &Path,
-    content: &str,
-    context: VirtualBuildContext<'_>,
-) -> CorsaResult<RegisteredFile> {
-    let lang = jsx_lang_for_path(path);
-    let generated = profile!(
-        "canon.jsx.virtual_ts",
-        super::jsx_codegen::generate_jsx_virtual_ts(path, content, lang)
-    )?;
-    let super::jsx_codegen::GeneratedJsxFile {
-        code,
-        mappings,
-        diagnostics,
-    } = generated;
-
-    let rewritten = profile!(
-        "canon.import.rewrite.jsx",
-        context.rewriter.rewrite(&code, SourceType::ts())
-    );
-
-    // The whole `.jsx`/`.tsx` body is one Script block for block-type recovery.
-    let blocks = vec![crate::batch::source_map::SfcBlockRange {
-        start: 0,
-        end: content.len() as u32,
-        block_type: crate::batch::SfcBlockType::Script,
-    }];
-    let source_map =
-        CompositeSourceMap::new_vue(SfcSourceMap::new(mappings, blocks), rewritten.source_map);
-    let virtual_path = virtual_jsx_path(context.project_root, context.virtual_root, path)?;
-
-    Ok(RegisteredFile {
-        file: VirtualFile {
-            content: rewritten.code,
-            source_map,
-            original_path: path.to_path_buf(),
-            virtual_path,
-        },
-        original_content: content.to_compact_string(),
-        passthrough_files: collect_passthrough_modules(
             path,
-            content,
-            context.project_root,
-            context.virtual_root,
-        ),
-        diagnostics,
-    })
-}
-
-fn jsx_lang_for_path(path: &Path) -> vize_atelier_jsx::JsxLang {
-    let is_tsx = path
-        .file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".tsx"));
-    if is_tsx {
-        vize_atelier_jsx::JsxLang::Tsx
+            &virtual_path,
+        )?]
     } else {
-        vize_atelier_jsx::JsxLang::Jsx
-    }
-}
+        Vec::new()
+    };
 
-fn virtual_jsx_path(project_root: &Path, virtual_root: &Path, path: &Path) -> CorsaResult<PathBuf> {
-    let mut virtual_path = mirrored_virtual_path(project_root, virtual_root, path)?;
-    let file_name = virtual_path
-        .file_name()
-        .and_then(|name| name.to_str())
-        .map(|name| cstr!("{name}.ts"))
-        .ok_or_else(|| CorsaError::PathError {
-            path: path.to_path_buf(),
-        })?;
-    virtual_path.set_file_name(file_name.as_str());
-    Ok(virtual_path)
+    Ok(RegisteredFile {
+        file: VirtualFile {
+            content: rewritten.code,
+            source_map,
+            original_path: path.to_path_buf(),
+            virtual_path,
+        },
+        extra_virtual_files,
+        original_content: content.to_compact_string(),
+        passthrough_files: collect_passthrough_modules(
+            path,
+            content,
+            context.project_root,
+            context.virtual_root,
+        ),
+        diagnostics,
+    })
 }
 
 pub(super) fn build_script_registered_file(
@@ -277,6 +210,7 @@ pub(super) fn build_script_registered_file(
             original_path: path.to_path_buf(),
             virtual_path,
         },
+        extra_virtual_files: Vec::new(),
         original_content: content.to_compact_string(),
         passthrough_files: collect_passthrough_modules(path, content, roots.0, roots.1),
         diagnostics: Vec::new(),
@@ -325,6 +259,31 @@ pub(super) fn mirrored_virtual_path(
 ) -> CorsaResult<PathBuf> {
     let relative = path.strip_prefix(project_root)?;
     Ok(virtual_root.join(relative))
+}
+
+fn build_tsx_vue_import_shim(
+    project_root: &Path,
+    virtual_root: &Path,
+    path: &Path,
+    target_path: &Path,
+) -> CorsaResult<VirtualFile> {
+    let shim_path = virtual_vue_path(project_root, virtual_root, path, false)?;
+    let target_name = target_path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| CorsaError::PathError {
+            path: path.to_path_buf(),
+        })?;
+    let content = cstr!(
+        "export {{ default }} from \"./{target_name}\";\nexport * from \"./{target_name}\";\n"
+    );
+
+    Ok(VirtualFile {
+        content,
+        source_map: CompositeSourceMap::empty(),
+        original_path: shim_path.clone(),
+        virtual_path: shim_path,
+    })
 }
 
 fn virtual_vue_path(

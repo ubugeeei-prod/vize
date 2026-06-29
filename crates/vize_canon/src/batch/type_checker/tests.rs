@@ -17,6 +17,7 @@ mod no_unused;
 mod options_api_required_props;
 mod package_exports_types;
 mod scan;
+mod tsx_sfc;
 #[test]
 fn batch_type_checker_snapshots_vue_diagnostics() {
     if resolve_test_tsgo_binary().is_none() {
@@ -55,7 +56,6 @@ const count: string = 0;
     .virtual_ts
     .expect("virtual ts should be generated");
     let relevant = corsa_type_mismatch_snapshot(&virtual_ts, "count: string", "= 0");
-
     assert_eq!(
         relevant.len(),
         2,

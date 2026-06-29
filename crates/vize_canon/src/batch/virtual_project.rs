@@ -32,6 +32,7 @@ pub use document::{
     generate_vue_document_virtual_ts_with_options,
 };
 mod diagnostics;
+mod jsx_build;
 mod jsx_codegen;
 mod mapping;
 mod materialize;
