@@ -114,6 +114,14 @@ impl Rule for ValidVSlot {
             );
         }
 
+        if tag == "template" && !has_component_parent(ctx) {
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-slot.invalid_location"),
+                &directive.loc,
+                ctx.t("vue/valid-v-slot.help"),
+            );
+        }
+
         // Check for duplicate v-slot directives
         let (default_count, named_count) = Self::count_slot_directives(element);
 
@@ -236,6 +244,11 @@ fn has_directive(element: &ElementNode, name: &str) -> bool {
         .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name.as_str() == name))
 }
 
+fn has_component_parent(ctx: &LintContext) -> bool {
+    ctx.parent_element()
+        .is_some_and(|parent| ValidVSlot::is_custom_component(parent.tag.as_str()))
+}
+
 fn static_slot_name(directive: &DirectiveNode) -> Option<String> {
     match &directive.arg {
         None => Some("default".into()),
@@ -277,6 +290,16 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_slot_template_under_plain_element() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div><template #header>Header</template></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1);
     }
 
     #[test]
