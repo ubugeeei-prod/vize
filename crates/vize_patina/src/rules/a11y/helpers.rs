@@ -111,7 +111,7 @@ fn has_named_prop(element: &ElementNode, name: &str) -> bool {
         PropNode::Directive(dir) if dir.name == "bind" => {
             matches!(
                 dir.arg.as_ref(),
-                Some(ExpressionNode::Simple(arg)) if arg.content == name
+                Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content == name
             )
         }
         _ => false,

@@ -92,6 +92,16 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_aria_hidden_on_anchor_with_dynamic_href_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<a :[href]="url" aria-hidden="true">Home</a>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
     fn test_invalid_aria_hidden_on_button() {
         let linter = create_linter();
         let result =
