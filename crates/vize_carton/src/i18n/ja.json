@@ -29,6 +29,7 @@
   "vue/valid-v-else.help": "v-elseはv-ifまたはv-else-if要素の直後に配置してください",
   "vue/valid-v-bind.description": "有効なv-bindディレクティブを強制する",
   "vue/valid-v-bind.missing_expression": "v-bindには式が必要です",
+  "vue/valid-v-bind.unsupported_modifier": "v-bindではこの修飾子を使用できません",
   "vue/valid-v-bind.help": "v-bindディレクティブに式を追加してください",
   "vue/valid-v-on.description": "有効なv-onディレクティブを強制する",
   "vue/valid-v-on.missing_event": "v-onにはイベント名が必要です",

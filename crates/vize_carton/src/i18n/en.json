@@ -29,6 +29,7 @@
   "vue/valid-v-else.help": "**Correct usage:**\n```vue\n<div v-if=\"type === 'A'\">A</div>\n<div v-else-if=\"type === 'B'\">B</div>\n<div v-else>Other</div>\n```\n\n**Rules:**\n- `v-else` takes no expression\n- Must immediately follow `v-if` or `v-else-if`\n- No other elements between them",
   "vue/valid-v-bind.description": "Enforce valid v-bind directives",
   "vue/valid-v-bind.missing_expression": "v-bind requires an expression",
+  "vue/valid-v-bind.unsupported_modifier": "v-bind does not support this modifier",
   "vue/valid-v-bind.help": "**Fix:** Provide a value to bind:\n```vue\n<!-- Shorthand -->\n<img :src=\"imageUrl\" :alt=\"imageAlt\">\n\n<!-- Full syntax -->\n<img v-bind:src=\"imageUrl\">\n\n<!-- Bind multiple attributes -->\n<div v-bind=\"{ id: itemId, class: itemClass }\"></div>\n```",
   "vue/valid-v-on.description": "Enforce valid v-on directives",
   "vue/valid-v-on.missing_event": "v-on requires an event name",

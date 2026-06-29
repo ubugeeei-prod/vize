@@ -29,6 +29,7 @@
   "vue/valid-v-else.help": "**正确用法:**\n```vue\n<div v-if=\"type === 'A'\">A</div>\n<div v-else-if=\"type === 'B'\">B</div>\n<div v-else>其他</div>\n```\n\n**规则:**\n- `v-else`不需要表达式\n- 必须紧跟在`v-if`或`v-else-if`之后\n- 它们之间不能有其他元素",
   "vue/valid-v-bind.description": "强制有效的v-bind指令",
   "vue/valid-v-bind.missing_expression": "v-bind需要一个表达式",
+  "vue/valid-v-bind.unsupported_modifier": "v-bind不支持此修饰符",
   "vue/valid-v-bind.help": "**修复:** 提供要绑定的值:\n```vue\n<!-- 简写 -->\n<img :src=\"imageUrl\" :alt=\"imageAlt\">\n\n<!-- 完整语法 -->\n<img v-bind:src=\"imageUrl\">\n\n<!-- 绑定多个属性 -->\n<div v-bind=\"{ id: itemId, class: itemClass }\"></div>\n```",
   "vue/valid-v-on.description": "强制有效的v-on指令",
   "vue/valid-v-on.missing_event": "v-on需要一个事件名",
