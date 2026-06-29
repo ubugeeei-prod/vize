@@ -84,6 +84,37 @@ fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
     }
 }
 
+/// Runs `vize check` against `project_root` in JSON mode, asserts the run
+/// succeeded with zero errors, and returns its stdout for further inspection.
+fn run_check_json(project_root: &Path, corsa_path: &Path) -> String {
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.json",
+            "--no-check-props",
+            "--no-check-emits",
+            "--no-check-template-bindings",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    assert!(
+        output.status.success(),
+        "check failed\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>")
+    );
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
+    assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
+    stdout.to_string()
+}
+
 #[test]
 fn check_explicit_vue_keeps_generated_graphql_schema_out_of_canon() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
@@ -170,31 +201,7 @@ void childComponents
     )
     .unwrap();
 
-    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
-        .current_dir(&project_root)
-        .env("CORSA_PATH", &corsa_path)
-        .args([
-            "check",
-            "--tsconfig",
-            "tsconfig.json",
-            "--no-check-props",
-            "--no-check-emits",
-            "--no-check-template-bindings",
-            "--format",
-            "json",
-        ])
-        .output()
-        .unwrap();
-
-    let stdout = std::str::from_utf8(&output.stdout).unwrap();
-    assert!(
-        output.status.success(),
-        "check failed\nstdout:\n{}\nstderr:\n{}",
-        stdout,
-        std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>")
-    );
-    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
-    assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
+    run_check_json(&project_root, &corsa_path);
     assert!(
         project_root
             .join("node_modules/.vize/canon/pages/_studyInfoId.vue.ts")
@@ -314,31 +321,7 @@ void childComponents
     )
     .unwrap();
 
-    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
-        .current_dir(&project_root)
-        .env("CORSA_PATH", &corsa_path)
-        .args([
-            "check",
-            "--tsconfig",
-            "tsconfig.json",
-            "--no-check-props",
-            "--no-check-emits",
-            "--no-check-template-bindings",
-            "--format",
-            "json",
-        ])
-        .output()
-        .unwrap();
-
-    let stdout = std::str::from_utf8(&output.stdout).unwrap();
-    assert!(
-        output.status.success(),
-        "check failed\nstdout:\n{}\nstderr:\n{}",
-        stdout,
-        std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>")
-    );
-    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
-    assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
+    let stdout = run_check_json(&project_root, &corsa_path);
     assert!(
         !stdout.contains("TS1360"),
         "generated GraphQL symbols should keep one type identity:\n{stdout}"
