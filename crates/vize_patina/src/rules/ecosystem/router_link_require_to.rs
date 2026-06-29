@@ -57,7 +57,7 @@ fn is_to_bind_directive(directive: &DirectiveNode<'_>) -> bool {
 
     matches!(
         directive.arg.as_ref(),
-        Some(ExpressionNode::Simple(arg)) if arg.content.as_str() == "to"
+        Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content.as_str() == "to"
     )
 }
 
@@ -85,6 +85,12 @@ mod tests {
         let result =
             create_linter().lint_template(r#"<router-link :to="{ name: 'home' }" />"#, "test.vue");
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn reports_dynamic_to_argument() {
+        let result = create_linter().lint_template(r#"<router-link :[to]="route" />"#, "test.vue");
+        assert_eq!(result.error_count, 1);
     }
 
     #[test]
