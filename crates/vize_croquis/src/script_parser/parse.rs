@@ -154,12 +154,33 @@ pub fn parse_script(source: &str) -> ScriptParseResult {
 
 /// Parse non-script-setup source code using OXC parser with explicit options.
 pub fn parse_script_with_options(source: &str, options: ScriptParserOptions) -> ScriptParseResult {
+    parse_script_with_options_source_type(
+        source,
+        options,
+        SourceType::from_path("script.ts").unwrap_or_default(),
+    )
+}
+
+/// Parse non-script-setup source code using OXC parser with JSX enabled.
+pub fn parse_script_with_options_and_jsx(
+    source: &str,
+    options: ScriptParserOptions,
+    jsx: bool,
+) -> ScriptParseResult {
+    let path = if jsx { "script.tsx" } else { "script.ts" };
+    parse_script_with_options_source_type(
+        source,
+        options,
+        SourceType::from_path(path).unwrap_or_default(),
+    )
+}
+
+pub(crate) fn parse_script_with_options_source_type(
+    source: &str,
+    options: ScriptParserOptions,
+    source_type: SourceType,
+) -> ScriptParseResult {
     let allocator = Allocator::default();
-    let source_type = if options.jsx {
-        SourceType::from_path("script.tsx").unwrap_or_default()
-    } else {
-        SourceType::from_path("script.ts").unwrap_or_default()
-    };
 
     let ret = profile!(
         "croquis.script_plain.oxc_parse",

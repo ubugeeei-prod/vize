@@ -516,7 +516,6 @@ export default {
         ScriptParserOptions {
             options_api: false,
             legacy_vue2: true,
-            jsx: false,
         },
     );
 
@@ -563,7 +562,6 @@ export default Vue.extend({
         ScriptParserOptions {
             options_api: false,
             legacy_vue2: true,
-            jsx: false,
         },
     );
 
@@ -598,7 +596,6 @@ export default Component
         ScriptParserOptions {
             options_api: false,
             legacy_vue2: true,
-            jsx: false,
         },
     );
 
@@ -619,7 +616,6 @@ export default {
         ScriptParserOptions {
             options_api: true,
             legacy_vue2: false,
-            jsx: false,
         },
     );
 
@@ -644,7 +640,6 @@ export default {
         ScriptParserOptions {
             options_api: true,
             legacy_vue2: false,
-            jsx: false,
         },
     );
 
@@ -677,7 +672,6 @@ export default {
         ScriptParserOptions {
             options_api: true,
             legacy_vue2: false,
-            jsx: false,
         },
     );
 
@@ -714,7 +708,6 @@ export default {
         ScriptParserOptions {
             options_api: true,
             legacy_vue2: false,
-            jsx: false,
         },
     );
 
@@ -751,7 +744,6 @@ export default {
         ScriptParserOptions {
             options_api: true,
             legacy_vue2: false,
-            jsx: false,
         },
     );
 
@@ -779,7 +771,6 @@ export default {
         ScriptParserOptions {
             options_api: true,
             legacy_vue2: false,
-            jsx: false,
         },
     );
 
@@ -1046,7 +1037,6 @@ fn test_parse_non_class_components_keep_unspecified_shape() {
         ScriptParserOptions {
             options_api: true,
             legacy_vue2: false,
-            jsx: false,
         },
     );
     assert_eq!(options_result.component_shape, ComponentShape::Unspecified);

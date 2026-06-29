@@ -440,10 +440,7 @@ fn compile_sfc_inner(
             .unwrap_or_else(|| script_source.to_compact_string());
 
         // Check if source script is TypeScript
-        let source_is_ts = script
-            .lang
-            .as_ref()
-            .is_some_and(|l| l == "ts" || l == "tsx");
+        let source_is_ts = is_ts_lang(script.lang.as_deref());
 
         // Rewrite `export default` to `const _sfc_main = ...`
         // Parse as TypeScript if source is TypeScript
@@ -486,16 +483,16 @@ fn compile_sfc_inner(
             // template/reactivity Croquis analysis the `<script setup>` path runs.
             let parsed = profile!(
                 "atelier.sfc.normal_script.options_api_bindings",
-                vize_croquis::script_parser::parse_script_with_options(
+                vize_croquis::script_parser::parse_script_with_options_and_jsx(
                     &script_content,
                     vize_croquis::script_parser::ScriptParserOptions {
                         options_api: true,
                         legacy_vue2: false,
-                        jsx: script
-                            .lang
-                            .as_deref()
-                            .is_some_and(|lang| matches!(lang.trim(), "tsx" | "jsx")),
                     },
+                    script
+                        .lang
+                        .as_deref()
+                        .is_some_and(|lang| matches!(lang.trim(), "tsx" | "jsx")),
                 )
             );
             let mut bindings = BindingMetadata::default();
@@ -670,10 +667,7 @@ fn compile_sfc_inner(
     let normal_script_content = if has_script {
         let script = descriptor.script.as_ref().unwrap();
         // Check if source is TypeScript
-        let source_is_ts = script
-            .lang
-            .as_ref()
-            .is_some_and(|l| l == "ts" || l == "tsx");
+        let source_is_ts = is_ts_lang(script.lang.as_deref());
         Some(profile!(
             "atelier.sfc.normal_script.extract",
             extract_normal_script_content(&script.content, source_is_ts, is_ts)

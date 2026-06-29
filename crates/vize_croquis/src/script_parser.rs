@@ -27,7 +27,7 @@ mod walk;
 
 pub use parse::{
     analyze_script_setup_program, parse_script, parse_script_setup,
-    parse_script_setup_with_generic, parse_script_with_options,
+    parse_script_setup_with_generic, parse_script_with_options, parse_script_with_options_and_jsx,
 };
 pub use process::{collect_options_descriptor, process_statement};
 pub(crate) use result::{ReactiveGetterContext, ReactiveValueOrigin, RuntimeObjectLiteral};
