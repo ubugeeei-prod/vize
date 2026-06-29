@@ -23,6 +23,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_carton::is_html_tag;
 use vize_relief::{DirectiveNode, ElementNode, ElementType};
 
 static META: RuleMeta = RuleMeta {
@@ -51,7 +52,7 @@ impl Rule for NoVTextVHtmlOnComponent {
             return;
         }
 
-        if element.tag_type != ElementType::Component {
+        if !is_component_like_tag(element) {
             return;
         }
 
@@ -67,6 +68,15 @@ impl Rule for NoVTextVHtmlOnComponent {
             ctx.t("vue/no-v-text-v-html-on-component.help"),
         );
     }
+}
+
+fn is_component_like_tag(element: &ElementNode<'_>) -> bool {
+    if element.tag_type == ElementType::Component {
+        return true;
+    }
+
+    let tag = element.tag.as_str();
+    tag == "component" || (tag.contains('-') && !is_html_tag(tag))
 }
 
 #[cfg(test)]
@@ -99,6 +109,23 @@ mod tests {
     fn test_invalid_v_html_on_component() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<MyComponent v-html="content" />"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_v_html_on_kebab_case_component() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<my-component v-html="content" />"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_v_html_on_dynamic_component() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<component :is="tagName" v-html="content" />"#,
+            "test.vue",
+        );
         assert_eq!(result.error_count, 1);
     }
 
