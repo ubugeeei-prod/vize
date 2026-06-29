@@ -21,7 +21,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{DirectiveNode, ElementNode, PropNode};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-slot",
@@ -62,6 +62,14 @@ impl ValidVSlot {
 
         (default_count, named_count)
     }
+
+    fn is_named_slot(directive: &DirectiveNode) -> bool {
+        match &directive.arg {
+            None => false,
+            Some(ExpressionNode::Simple(arg)) => arg.content.as_str() != "default",
+            Some(ExpressionNode::Compound(_)) => true,
+        }
+    }
 }
 
 impl Rule for ValidVSlot {
@@ -89,6 +97,14 @@ impl Rule for ValidVSlot {
                 ctx.t("vue/valid-v-slot.help"),
             );
             return;
+        }
+
+        if tag != "template" && Self::is_named_slot(directive) {
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-slot.invalid_location"),
+                &directive.loc,
+                ctx.t("vue/valid-v-slot.help"),
+            );
         }
 
         // Check for duplicate v-slot directives
@@ -155,6 +171,16 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_default_slot_argument_on_component() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<MyComponent v-slot:default="{ item }">{{ item }}</MyComponent>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
     fn test_valid_dynamic_component_slot() {
         let linter = create_linter();
         let result = linter.lint_template(
@@ -168,6 +194,16 @@ mod tests {
     fn test_invalid_on_html_element() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div v-slot:header></div>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_named_slot_on_component() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<MyComponent v-slot:header>Header</MyComponent>"#,
+            "test.vue",
+        );
         assert_eq!(result.error_count, 1);
     }
 
