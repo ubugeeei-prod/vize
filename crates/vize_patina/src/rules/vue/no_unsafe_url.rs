@@ -213,7 +213,7 @@ impl Rule for NoUnsafeUrl {
 
         // Get the attribute name
         let attr_name = match &directive.arg {
-            Some(ExpressionNode::Simple(s)) => s.content.as_str(),
+            Some(ExpressionNode::Simple(s)) if s.is_static => s.content.as_str(),
             _ => return,
         };
 

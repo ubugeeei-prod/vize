@@ -94,6 +94,13 @@ fn test_warns_dynamic_href() {
 }
 
 #[test]
+fn test_allows_dynamic_href_argument() {
+    let linter = create_linter();
+    let result = linter.lint_template(r#"<a :[href]="userUrl">Link</a>"#, "test.vue");
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
 fn test_allows_hash_template_href_binding() {
     let linter = create_linter();
     let result = linter.lint_template(r##"<a :href="`#${props.id}`">Link</a>"##, "test.vue");
@@ -175,5 +182,12 @@ fn test_allows_dynamic_action_prop_on_component() {
     // `:action` on a component is a prop; it is a URL only on <form>.
     let linter = create_linter();
     let result = linter.lint_template(r#"<MyForm :action="doThing" />"#, "test.vue");
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_allows_dynamic_action_argument() {
+    let linter = create_linter();
+    let result = linter.lint_template(r#"<form :[action]="url"></form>"#, "test.vue");
     assert_eq!(result.warning_count, 0);
 }
