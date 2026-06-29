@@ -19,6 +19,7 @@
   "vue/valid-v-for.description": "有効なv-forディレクティブを強制する",
   "vue/valid-v-for.missing_expression": "v-forディレクティブには式が必要です",
   "vue/valid-v-for.invalid_syntax": "v-forの構文が無効です: 'item in items' または '(item, index) in items' の形式が必要です",
+  "vue/valid-v-for.key_uses_variables": "v-forのkeyにはv-forで定義された変数を使用してください",
   "vue/valid-v-for.help": "構文: v-for=\"item in items\" または v-for=\"(item, index) in items\" を使用してください",
   "vue/valid-v-if.description": "有効なv-ifディレクティブを強制する",
   "vue/valid-v-if.missing_expression": "v-ifディレクティブには式が必要です",

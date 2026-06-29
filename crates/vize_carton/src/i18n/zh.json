@@ -19,6 +19,7 @@
   "vue/valid-v-for.description": "强制有效的v-for指令",
   "vue/valid-v-for.missing_expression": "v-for指令需要一个表达式",
   "vue/valid-v-for.invalid_syntax": "v-for语法无效: 需要'item in items'或'(item, index) in items'格式",
+  "vue/valid-v-for.key_uses_variables": "v-for的key应使用v-for定义的变量",
   "vue/valid-v-for.help": "**有效的v-for语法:**\n```vue\n<!-- 数组迭代 -->\n<li v-for=\"item in items\">{{ item }}</li>\n<li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n\n<!-- 对象迭代 -->\n<li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n<li v-for=\"(value, key, index) in object\">{{ index }}</li>\n\n<!-- 范围 -->\n<span v-for=\"n in 10\">{{ n }}</span>\n```",
   "vue/valid-v-if.description": "强制有效的v-if指令",
   "vue/valid-v-if.missing_expression": "v-if指令需要一个表达式",

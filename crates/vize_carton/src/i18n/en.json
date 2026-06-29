@@ -19,6 +19,7 @@
   "vue/valid-v-for.description": "Enforce valid v-for directives",
   "vue/valid-v-for.missing_expression": "v-for directive requires an expression",
   "vue/valid-v-for.invalid_syntax": "v-for has invalid syntax: expected 'item in items' or '(item, index) in items'",
+  "vue/valid-v-for.key_uses_variables": "v-for key should use variables defined by v-for",
   "vue/valid-v-for.help": "**Valid v-for syntax:**\n```vue\n<!-- Array iteration -->\n<li v-for=\"item in items\">{{ item }}</li>\n<li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n\n<!-- Object iteration -->\n<li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n<li v-for=\"(value, key, index) in object\">{{ index }}</li>\n\n<!-- Range -->\n<span v-for=\"n in 10\">{{ n }}</span>\n```",
   "vue/valid-v-if.description": "Enforce valid v-if directives",
   "vue/valid-v-if.missing_expression": "v-if directive requires an expression",
