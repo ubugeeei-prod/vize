@@ -889,7 +889,7 @@ const jsxState: VizePluginState = {
   ...hmrState,
   cache: new Map(),
   ssrCache: new Map(),
-  mergedOptions: { vapor: false },
+  mergedOptions: { vapor: false, include: /\.[jt]sx$/ },
 };
 
 const jsxTransform = await transformHook(jsxState, jsxFixtureSource, jsxFixturePath, {
@@ -926,7 +926,7 @@ assert.equal(
 
 const jsxVaporState: VizePluginState = {
   ...jsxState,
-  mergedOptions: { vapor: true },
+  mergedOptions: { ...jsxState.mergedOptions, vapor: true },
 };
 
 const jsxVaporTransform = await transformHook(jsxVaporState, jsxFixtureSource, jsxFixturePath, {

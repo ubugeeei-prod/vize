@@ -389,9 +389,8 @@ function shouldTransformJsxRequest(
       return false;
     }
   }
-  // Honor an explicit user exclude (e.g. third-party JSX), but JSX/TSX is not
-  // covered by the default `**/*.vue` filter, so a bare extension match is enough.
-  if (state.mergedOptions.exclude && !state.filter(request.path)) {
+  // JSX/TSX modules are valid plain Vite inputs; only compile explicit includes.
+  if (!state.mergedOptions.include || !state.filter(request.path)) {
     return false;
   }
   return true;

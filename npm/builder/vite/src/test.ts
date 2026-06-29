@@ -8,6 +8,7 @@ import "./plugin/css-modules.test.ts";
 import "./plugin/external-sfc-hmr.test.ts";
 import "./plugin/hmr.test.ts";
 import "./plugin/index.test.ts";
+import "./plugin/load-jsx-passthrough.test.ts";
 import "./plugin/load-storybook.test.ts";
 import "./plugin/load.test.ts";
 import "./plugin/load-dependency-sfc.test.ts";
