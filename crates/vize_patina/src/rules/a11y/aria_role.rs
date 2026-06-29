@@ -28,14 +28,6 @@ static META: RuleMeta = RuleMeta {
 
 /// Valid ARIA roles from WAI-ARIA specification.
 /// https://www.w3.org/TR/wai-aria/#role_definitions
-///
-/// This list includes:
-/// - Widget roles
-/// - Composite widget roles
-/// - Document structure roles
-/// - Landmark roles
-/// - Live region roles
-/// - Window roles
 const VALID_ARIA_ROLES: &[&str] = &[
     // === Widget Roles ===
     // https://www.w3.org/TR/wai-aria/#widget_roles
@@ -256,6 +248,7 @@ impl Rule for AriaRole {
                     // Check :role or v-bind:role with static value
                     if dir.name == "bind"
                         && let Some(vize_relief::ExpressionNode::Simple(arg)) = &dir.arg
+                        && arg.is_static
                         && arg.content.as_str() == "role"
                     {
                         // For dynamic roles, we can only check if the entire
@@ -348,7 +341,6 @@ mod tests {
     fn test_valid_dynamic_role() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :role="role"></div>"#, "test.vue");
-        // Dynamic roles with variable values are not checked
         assert_eq!(result.error_count, 0);
     }
 
@@ -357,6 +349,13 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :role="`buton`"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_valid_dynamic_role_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div :[role]="'roletype'"></div>"#, "test.vue");
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
@@ -376,7 +375,6 @@ mod tests {
     #[test]
     fn test_invalid_datepicker_role() {
         let linter = create_linter();
-        // "datepicker" is not an ARIA role
         let result = linter.lint_template(r#"<div role="datepicker"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
@@ -384,7 +382,6 @@ mod tests {
     #[test]
     fn test_invalid_abstract_range_role() {
         let linter = create_linter();
-        // "range" is an abstract ARIA role
         let result = linter.lint_template(r#"<div role="range"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
@@ -392,7 +389,6 @@ mod tests {
     #[test]
     fn test_invalid_abstract_input_role() {
         let linter = create_linter();
-        // "input" is an abstract ARIA role
         let result = linter.lint_template(r#"<div role="input"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
@@ -400,7 +396,6 @@ mod tests {
     #[test]
     fn test_invalid_abstract_widget_role() {
         let linter = create_linter();
-        // "widget" is an abstract ARIA role
         let result = linter.lint_template(r#"<div role="widget"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
