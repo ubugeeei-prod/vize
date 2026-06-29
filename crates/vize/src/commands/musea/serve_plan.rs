@@ -25,7 +25,12 @@ pub(super) fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePla
         }
         None => PathBuf::from("vite"),
     };
-    validate_direct_vite_musea_setup(cwd)?;
+    if let Err(message) = validate_direct_vite_musea_setup(cwd) {
+        if let Some(nuxt_root) = find_nuxt_project_root(cwd) {
+            return Err(nuxt_musea_message(&nuxt_root, args.build));
+        }
+        return Err(message);
+    }
     let mut env = Vec::new();
     if let Some(config_path) = &args.config {
         env.push((

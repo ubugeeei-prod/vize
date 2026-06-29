@@ -1,7 +1,8 @@
 use std::path::{Path, PathBuf};
 
 use super::{
-    component_tag_from_path, derive_component_path, is_story_file, output_path, story_basename,
+    component_tag_from_path, derive_component_path, is_default_ignored_story_path, is_story_file,
+    output_path, story_basename,
 };
 
 #[test]
@@ -13,6 +14,19 @@ fn is_story_file_matches_only_story_extensions() {
     assert!(!is_story_file(Path::new("Button.tsx")));
     assert!(!is_story_file(Path::new("Button.stories.vue")));
     assert!(!is_story_file(Path::new("stories.ts")));
+}
+
+#[test]
+fn default_ignored_story_paths_skip_dependencies_and_outputs() {
+    assert!(is_default_ignored_story_path(Path::new(
+        "node_modules/pkg/Button.stories.tsx"
+    )));
+    assert!(is_default_ignored_story_path(Path::new(
+        ".output/public/Button.stories.tsx"
+    )));
+    assert!(!is_default_ignored_story_path(Path::new(
+        "src/Button.stories.tsx"
+    )));
 }
 
 #[test]

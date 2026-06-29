@@ -8,11 +8,11 @@ use vize_canon::virtual_ts::VirtualTsOptions;
 use vize_carton::cstr;
 
 use super::super::dts::rewrite_relative_specifier;
-use super::detect_nuxt_auto_imports;
 use super::fallback::{fallback_stub_strings, parse_nuxt_config_modules};
 use super::parsing::{parse_export_names, parse_module_specifier};
 use super::plugins::extract_plugin_provide_keys_from_source;
 use super::stubs::declared_name;
+use super::{detect_legacy_nuxt_auto_imports, detect_nuxt_auto_imports};
 
 mod build_dir;
 
@@ -553,6 +553,43 @@ export default defineNuxtConfig({
         "expected i18n template globals, got: {:#?}",
         options.template_globals
     );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn detects_legacy_nuxt2_module_context_augmentations() {
+    let project_root = unique_case_dir("nuxt2-module-augmentations");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("pages")).unwrap();
+    std::fs::write(
+        project_root.join("nuxt.config.ts"),
+        r#"
+export default {
+  modules: ['@nuxtjs/gtm', '@nuxtjs/vuetify', 'nuxt-i18n'],
+}
+"#,
+    )
+    .unwrap();
+
+    let mut options = VirtualTsOptions::default();
+    let _ = detect_legacy_nuxt_auto_imports(&mut options, &project_root);
+    let stubs = options.auto_import_stubs.join("\n");
+
+    for expected in [
+        "declare module \"@nuxt/types\"",
+        "interface UseContextReturn",
+        "interface NuxtApp",
+        "$gtm: any;",
+        "$vuetify: any;",
+        "i18n: __VizeNuxt2I18n;",
+        "t: (...args: any[]) => any",
+    ] {
+        assert!(
+            stubs.contains(expected),
+            "expected legacy Nuxt2 module augmentation {expected:?}, got:\n{stubs}"
+        );
+    }
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

@@ -23,6 +23,8 @@ use super::stubs::{
 };
 use fallback_values::fallback_value_stubs;
 
+const MODULE_AUGMENTATION_STUB_PREFIX: &str = "// @vize-module-augmentation\n";
+
 pub(super) fn collect_fallback_stubs(
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
@@ -82,6 +84,57 @@ fn push_fallback_stub_group(
         }
         stubs.push(stub);
     }
+}
+
+pub(super) fn collect_legacy_module_augmentation_stubs(cwd: &Path, stubs: &mut Vec<String>) {
+    let config_source = nuxt_config_source(cwd);
+    if config_source.is_empty() {
+        return;
+    }
+    let modules = parse_nuxt_config_modules(&config_source);
+    let has_gtm = modules.might_include(&["@nuxtjs/gtm", "nuxt-gtm"]);
+    let has_vuetify = modules.might_include(&["@nuxtjs/vuetify"]);
+    let has_i18n = modules.might_include(&["@nuxtjs/i18n", "@nuxt/i18n", "nuxt-i18n"]);
+    if !(has_gtm || has_vuetify || has_i18n) {
+        return;
+    }
+
+    stubs.push(render_legacy_module_augmentation_stub(
+        has_gtm,
+        has_vuetify,
+        has_i18n,
+    ));
+}
+
+fn render_legacy_module_augmentation_stub(
+    has_gtm: bool,
+    has_vuetify: bool,
+    has_i18n: bool,
+) -> String {
+    let mut injected_context = String::default();
+    let mut injected_app = String::default();
+    if has_gtm {
+        injected_context.push_str("    $gtm: any;\n");
+        injected_app.push_str("    $gtm: any;\n");
+    }
+    if has_vuetify {
+        injected_context.push_str("    $vuetify: any;\n");
+        injected_app.push_str("    $vuetify: any;\n");
+    }
+    if has_i18n {
+        injected_app.push_str("    i18n: __VizeNuxt2I18n;\n");
+    }
+
+    let i18n_alias = if has_i18n {
+        "type __VizeNuxt2I18n = { t: (...args: any[]) => any } & Record<string, any>;\n"
+    } else {
+        ""
+    };
+
+    format!(
+        "{MODULE_AUGMENTATION_STUB_PREFIX}{i18n_alias}declare module \"@nuxt/types\" {{\n  interface Context {{\n{injected_context}  }}\n  interface NuxtAppOptions {{\n{injected_app}  }}\n}}\ndeclare module \"@nuxtjs/composition-api\" {{\n  interface UseContextReturn {{\n{injected_context}  }}\n}}\ndeclare module \"#app\" {{\n  interface NuxtApp {{\n{injected_app}  }}\n}}\n"
+    )
+    .into()
 }
 
 pub(super) fn collect_module_fallback_stubs(

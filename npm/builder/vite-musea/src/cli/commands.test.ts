@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { hasCiBlockingVrtResult } from "./commands.ts";
+import { hasCiBlockingVrtResult, isArtFileInput } from "./commands.ts";
 import type { VrtSummary } from "../vrt.ts";
 
 function summary(overrides: Partial<VrtSummary>): VrtSummary {
@@ -27,4 +27,9 @@ void test("VRT CI blocks on capture errors", () => {
 void test("VRT CI allows clean and newly-created baselines", () => {
   assert.equal(hasCiBlockingVrtResult(summary({})), false);
   assert.equal(hasCiBlockingVrtResult(summary({ passed: 0, new: 1 })), false);
+});
+
+void test("generate rejects existing art-file inputs", () => {
+  assert.equal(isArtFileInput("src/components/Button.art.vue"), true);
+  assert.equal(isArtFileInput("src/components/Button.vue"), false);
 });

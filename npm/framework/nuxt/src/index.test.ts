@@ -5,6 +5,11 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import {
+  registerNuxtMuseaStaticPublicAsset,
+  resolveNuxtMuseaStaticPublicAsset,
+} from "./musea-static.ts";
+
 const NUXT2_SAFE_KIT_VERSION = "3.11.2";
 
 void test("Nuxt module entry avoids loader-unsafe syntax and static kit imports", () => {
@@ -124,6 +129,43 @@ void test("Nuxt 2 host-compiler compatibility skips Vite plugin loading", async 
 
   assert.deepEqual(hookNames, ["close", "builder:prepared", "build:templates"]);
   assert.deepEqual(nuxt.options.vite, {});
+});
+
+void test("Nuxt Musea static public asset points at generated client output", () => {
+  let nitroConfigHook: ((config: { publicAssets?: unknown[] }) => unknown) | undefined;
+  registerNuxtMuseaStaticPublicAsset(
+    {
+      options: { rootDir: "/project", buildDir: ".nuxt" },
+      hook(name, callback) {
+        assert.equal(name, "nitro:config");
+        nitroConfigHook = callback;
+      },
+    },
+    "/docs/musea/",
+  );
+
+  const nitroConfig = { publicAssets: [{ dir: "/existing", baseURL: "/existing" }] };
+  nitroConfigHook?.(nitroConfig);
+
+  assert.deepEqual(nitroConfig.publicAssets, [
+    { dir: "/existing", baseURL: "/existing" },
+    {
+      dir: path.join("/project", ".nuxt", "dist", "client", "docs/musea"),
+      baseURL: "/docs/musea",
+    },
+  ]);
+
+  assert.deepEqual(resolveNuxtMuseaStaticPublicAsset("/project", ".nuxt", "/docs/musea/"), {
+    dir: path.join("/project", ".nuxt", "dist", "client", "docs/musea"),
+    baseURL: "/docs/musea",
+  });
+});
+
+void test("Nuxt Musea static public asset preserves root base path", () => {
+  assert.deepEqual(resolveNuxtMuseaStaticPublicAsset("/project", "/tmp/.nuxt", "/"), {
+    dir: path.join("/tmp/.nuxt", "dist", "client"),
+    baseURL: "/",
+  });
 });
 
 void test("packed Nuxt module depends on the Nuxt 2-safe kit line", () => {

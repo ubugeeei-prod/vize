@@ -38,8 +38,19 @@ pub(super) fn collect_passthrough_modules(
         else {
             continue;
         };
+        let declaration_path = adjacent_declaration_path(&original_path);
         if seen.insert(virtual_path.clone()) {
             files.push((virtual_path, original_path));
+        }
+        if let Some(declaration_path) = declaration_path {
+            let Ok(virtual_path) =
+                mirrored_virtual_path(project_root, virtual_root, &declaration_path)
+            else {
+                continue;
+            };
+            if seen.insert(virtual_path.clone()) {
+                files.push((virtual_path, declaration_path));
+            }
         }
     }
     files
@@ -156,6 +167,20 @@ fn normalize_existing_path(path: &Path) -> PathBuf {
     vize_carton::path::canonicalize_non_verbatim(path)
 }
 
+fn adjacent_declaration_path(path: &Path) -> Option<PathBuf> {
+    let extension = path.extension().and_then(|extension| extension.to_str())?;
+    let declaration_extension = match extension {
+        "js" | "jsx" => "d.ts",
+        "mjs" => "d.mts",
+        "cjs" => "d.cts",
+        _ => return None,
+    };
+    let candidate = path.with_extension(declaration_extension);
+    candidate
+        .is_file()
+        .then(|| normalize_existing_path(&candidate))
+}
+
 fn is_javascript_passthrough(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
@@ -230,6 +255,61 @@ mod tests {
                 (
                     PathBuf::from("tokens/colors.json"),
                     PathBuf::from("tokens/colors.json"),
+                ),
+            ]
+        );
+
+        let _ = std::fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn collects_adjacent_declaration_for_relative_js_module() {
+        let case_dir = unique_case_dir("js-adjacent-dts");
+        let _ = std::fs::remove_dir_all(&case_dir);
+        std::fs::create_dir_all(&case_dir).unwrap();
+        let root = vize_carton::path::canonicalize_non_verbatim(&case_dir);
+        let entry = write(
+            &root,
+            "src/main.ts",
+            "import { tokens } from './styles/tokens'\nvoid tokens\n",
+        );
+        write(&root, "src/styles/tokens.js", "export const tokens = {}\n");
+        write(
+            &root,
+            "src/styles/tokens.d.ts",
+            "export declare const tokens: Record<string, string>\n",
+        );
+        let virtual_root = root.join("node_modules/.vize/canon");
+
+        let mut files = collect_passthrough_modules(
+            &entry,
+            &std::fs::read_to_string(&entry).unwrap(),
+            &root,
+            &virtual_root,
+        );
+        files.sort();
+
+        assert_eq!(
+            files
+                .into_iter()
+                .map(|(virtual_path, original_path)| {
+                    (
+                        virtual_path
+                            .strip_prefix(&virtual_root)
+                            .unwrap()
+                            .to_path_buf(),
+                        original_path.strip_prefix(&root).unwrap().to_path_buf(),
+                    )
+                })
+                .collect::<Vec<_>>(),
+            vec![
+                (
+                    PathBuf::from("src/styles/tokens.d.ts"),
+                    PathBuf::from("src/styles/tokens.d.ts"),
+                ),
+                (
+                    PathBuf::from("src/styles/tokens.js"),
+                    PathBuf::from("src/styles/tokens.js"),
                 ),
             ]
         );

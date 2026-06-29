@@ -307,6 +307,10 @@ pub(super) fn extract_declared_name(stub: &str) -> Option<&str> {
 
 fn extract_import_names(import_text: &str) -> Vec<&str> {
     let mut names = Vec::new();
+    let trimmed = import_text.trim_start();
+    if trimmed.starts_with("import type ") {
+        return names;
+    }
 
     if let Some(brace_start) = import_text.find('{') {
         if let Some(brace_end) = import_text.find('}') {

@@ -6,7 +6,7 @@ use vize_carton::{String, append};
 
 use super::csf::{CsfModule, CsfStory, unwrap_expression};
 use super::jsx::convert_render;
-use super::text::{escape_attr, escape_js_string};
+use super::text::{escape_attr, escape_js_string, quote_directive_expression};
 
 const TODO_COMMENT: &str = "<!-- TODO(vize musea migrate): unsupported story; port manually -->";
 
@@ -91,16 +91,30 @@ fn emit_variant_inner(story: &CsfStory<'_>, component_tag: &str, source: &str) -
     }
 
     if let Some(args) = story.args {
-        return (emit_args_element(args, component_tag, source), false);
+        if args_contains_unmigrated_identifier(args) {
+            return (emit_todo_element(component_tag), true);
+        }
+        if let Some(element) = emit_args_element(args, component_tag, source) {
+            return (element, false);
+        }
+        return (emit_todo_element(component_tag), true);
     }
 
+    (emit_todo_element(component_tag), true)
+}
+
+fn emit_todo_element(component_tag: &str) -> String {
     let mut out = String::default();
     append!(out, "<{component_tag} />\n{TODO_COMMENT}");
-    (out, true)
+    out
 }
 
 /// Emit `<Component ...props />` from an `args` object literal.
-fn emit_args_element(args: &ObjectExpression<'_>, component_tag: &str, source: &str) -> String {
+fn emit_args_element(
+    args: &ObjectExpression<'_>,
+    component_tag: &str,
+    source: &str,
+) -> Option<String> {
     let mut out = String::default();
     append!(out, "<{component_tag}");
     for property in &args.properties {
@@ -114,23 +128,33 @@ fn emit_args_element(args: &ObjectExpression<'_>, component_tag: &str, source: &
             continue;
         };
         out.push(' ');
-        out.push_str(&attribute_from_value(name, &prop.value, source));
+        out.push_str(&attribute_from_value(name, &prop.value, source)?);
     }
     out.push_str(" />");
-    out
+    Some(out)
 }
 
 /// Map one `args` entry to an attribute: string literal -> `name="value"`,
 /// everything else -> `:name="<expr source>"`.
-fn attribute_from_value(name: &str, value: &Expression<'_>, source: &str) -> String {
+fn attribute_from_value(name: &str, value: &Expression<'_>, source: &str) -> Option<String> {
     let mut out = String::default();
     if let Expression::StringLiteral(literal) = unwrap_expression(value) {
         append!(out, "{name}=\"{}\"", escape_attr(literal.value.as_str()));
     } else {
         let text = value.span().source_text(source);
-        append!(out, ":{name}=\"{}\"", escape_attr(text));
+        let quoted = quote_directive_expression(text)?;
+        append!(out, ":{name}={}", quoted.as_str());
     }
-    out
+    Some(out)
+}
+
+fn args_contains_unmigrated_identifier(args: &ObjectExpression<'_>) -> bool {
+    args.properties.iter().any(|property| {
+        let ObjectPropertyKind::ObjectProperty(prop) = property else {
+            return false;
+        };
+        !prop.computed && matches!(unwrap_expression(&prop.value), Expression::Identifier(_))
+    })
 }
 
 fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {

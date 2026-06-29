@@ -376,10 +376,17 @@ fn generate_scope_node(
                 // signature stays unresolved (`unknown[]`, e.g. a fallthrough
                 // DOM event on a component), fall back to the single `$event`
                 // parameter so those handlers keep type-checking.
-                append!(
-                    *ts,
-                    "{indent}type {listener_type} = unknown[] extends {args_type} ? (($event: {event_type}) => unknown) : ((...args: {args_type}) => unknown);\n",
-                );
+                if ctx.legacy_vue2 {
+                    append!(
+                        *ts,
+                        "{indent}type {listener_type} = unknown[] extends {args_type} ? (($event: {event_type}) => unknown) : ((...args: __VizeVue2LooseEmitArgs<{args_type}>) => unknown);\n",
+                    );
+                } else {
+                    append!(
+                        *ts,
+                        "{indent}type {listener_type} = unknown[] extends {args_type} ? (($event: {event_type}) => unknown) : ((...args: {args_type}) => unknown);\n",
+                    );
+                }
                 // Receive every listener argument via a rest parameter typed by
                 // `Parameters<listener>` (always a tuple, so the spread targets a
                 // rest parameter and avoids TS2556). `$event` stays bound to the

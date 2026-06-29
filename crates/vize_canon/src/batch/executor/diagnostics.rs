@@ -299,16 +299,28 @@ fn parse_severity(severity: Option<i32>) -> u8 {
     }
 }
 
-pub(super) fn should_skip_diagnostic(code: Option<u32>, _message: &str) -> bool {
+pub(super) fn should_skip_diagnostic(code: Option<u32>, message: &str) -> bool {
     match code {
         // TS2666: virtual-TS generation injects helper bindings that can trip
         // this code outside the user's source — suppress to match vue-tsc.
         Some(2666) => true,
+        // Native TypeScript currently exposes Node Buffer backing stores as
+        // `ArrayBuffer | SharedArrayBuffer`, while projects pinned to older
+        // TypeScript/@types/node combinations accepted `buffer.slice(...)` as
+        // `ArrayBuffer`. Keep vize aligned with that project baseline until the
+        // native checker can select the project's exact lib surface.
+        Some(2322) if is_array_buffer_backing_store_lib_mismatch(message) => true,
         // TS7006/TS7043/TS7044 (noImplicitAny family) are user-facing errors
         // and must surface so `vize check` matches vue-tsc under
         // `noImplicitAny`/`strict`. They were previously suppressed (#966).
         _ => false,
     }
+}
+
+fn is_array_buffer_backing_store_lib_mismatch(message: &str) -> bool {
+    message
+        .contains("Type 'ArrayBuffer | SharedArrayBuffer' is not assignable to type 'ArrayBuffer'")
+        && message.contains("SharedArrayBuffer")
 }
 
 pub(super) fn should_skip_original_diagnostic(
@@ -619,6 +631,10 @@ mod tests {
         assert!(!should_skip_diagnostic(Some(7043), "any message"));
         assert!(!should_skip_diagnostic(Some(7044), "any message"));
         assert!(!should_skip_diagnostic(Some(2322), "any message"));
+        assert!(should_skip_diagnostic(
+            Some(2322),
+            "Type 'ArrayBuffer | SharedArrayBuffer' is not assignable to type 'ArrayBuffer'."
+        ));
         assert!(!should_skip_diagnostic(None, "any message"));
     }
 

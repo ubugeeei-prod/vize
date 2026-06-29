@@ -23,7 +23,9 @@ mod legacy_template_globals_tests;
 #[cfg(test)]
 mod tests;
 
-use fallback::{collect_fallback_stubs, collect_module_fallback_stubs};
+use fallback::{
+    collect_fallback_stubs, collect_legacy_module_augmentation_stubs, collect_module_fallback_stubs,
+};
 use generated::{collect_generated_stubs, collect_generated_template_globals};
 use generated_dir::resolve_nuxt_generated_dir;
 use plugins::collect_plugin_injection_stubs;
@@ -91,10 +93,15 @@ pub(in crate::commands::check) fn detect(
     // Surface the degraded fallback: without generated Nuxt types,
     // auto-imports resolve to permissive `any` stubs that hide real type
     // errors. detect_nuxt_auto_imports runs once per check, so this warns once.
-    if let Some(message) = missing_generated_types_warning(has_generated_imports, &generated_dir) {
+    if let Some(message) =
+        missing_generated_types_warning(has_generated_imports, &generated_dir, legacy_vue2)
+    {
         eprintln!("{message}");
     }
     collect_plugin_injection_stubs(cwd, &mut collected, &mut seen_names);
+    if legacy_vue2 {
+        collect_legacy_module_augmentation_stubs(cwd, &mut collected);
+    }
     collect_fallback_stubs(&mut collected, &mut seen_names, has_generated_imports);
     if !has_generated_imports {
         collect_module_fallback_stubs(cwd, &mut collected, &mut seen_names);
@@ -138,8 +145,19 @@ fn is_nuxt_project(cwd: &Path) -> bool {
 fn missing_generated_types_warning(
     has_generated_imports: bool,
     generated_dir: &generated_dir::NuxtGeneratedDir,
+    legacy_vue2: bool,
 ) -> Option<String> {
     (!has_generated_imports).then(|| {
+        if legacy_vue2 {
+            return format!(
+                "vize check: no generated `{}` types found; Nuxt auto-imports fall back to `any` \
+                 stubs and some type errors will be missed. For Nuxt 2/Bridge, run the project's \
+                 Nuxt type-generation step or build once so the generated type directory exists.",
+                generated_dir.display()
+            )
+            .into();
+        }
+
         format!(
             "vize check: no generated `{}` types found; Nuxt auto-imports fall back to `any` \
              stubs and some type errors will be missed. Run `nuxi prepare` to generate them.",

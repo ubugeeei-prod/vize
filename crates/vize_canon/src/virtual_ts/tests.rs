@@ -772,6 +772,52 @@ const count = 1
 }
 
 #[test]
+fn test_type_only_imports_do_not_shadow_auto_imported_components() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"/// <reference types="nuxt" />
+import type { Differences } from './types'
+const count = 1
+"#;
+    let template = r#"<Differences :count="count" />"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let options = VirtualTsOptions {
+        auto_import_stubs: vec![
+            "declare const Differences: typeof import('./components/Differences.vue')['default'];"
+                .into(),
+        ],
+        ..Default::default()
+    };
+
+    let output =
+        generate_virtual_ts_with_offsets(&summary, Some(script), Some(&root), 0, 0, &options);
+
+    assert!(
+        output
+            .code
+            .contains("declare const Differences: typeof import"),
+        "{}",
+        output.code
+    );
+    assert!(!output.code.contains("const Differences: any"));
+    assert!(
+        output
+            .code
+            .contains("type __Differences_Props_0 = typeof Differences"),
+        "{}",
+        output.code
+    );
+}
+
+#[test]
 fn test_external_template_bindings_do_not_shadow_auto_imported_components() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
@@ -2033,6 +2079,50 @@ fn test_plain_options_object_default_export_is_wrapped_with_define_component() {
     assert!(
         output.code.contains("\n  })\n"),
         "expected the wrap to be closed after the options object:\n{}",
+        output.code
+    );
+}
+
+#[test]
+fn test_legacy_nuxt2_page_validate_gets_contextual_type() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"export default {
+  name: 'StudentPage',
+  validate({ params }) {
+    return !Number.isNaN(Number(params.studentId))
+  }
+}
+"#;
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_plain(script);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts_with_offsets_and_checks(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+        VirtualTsGenerationOptions {
+            legacy_vue2: true,
+            ..Default::default()
+        },
+    );
+
+    assert!(
+        output
+            .code
+            .contains("validate?: (context: __VizeNuxt2Context) => unknown;"),
+        "legacy Nuxt 2 page options should declare a contextual validate type:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .contains("const __default__ = __vizeDefineComponent({"),
+        "plain object exports should be wrapped by the legacy helper:\n{}",
         output.code
     );
 }
