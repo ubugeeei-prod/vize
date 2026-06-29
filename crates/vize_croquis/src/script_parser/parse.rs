@@ -155,7 +155,11 @@ pub fn parse_script(source: &str) -> ScriptParseResult {
 /// Parse non-script-setup source code using OXC parser with explicit options.
 pub fn parse_script_with_options(source: &str, options: ScriptParserOptions) -> ScriptParseResult {
     let allocator = Allocator::default();
-    let source_type = SourceType::from_path("script.ts").unwrap_or_default();
+    let source_type = if options.jsx {
+        SourceType::from_path("script.tsx").unwrap_or_default()
+    } else {
+        SourceType::from_path("script.ts").unwrap_or_default()
+    };
 
     let ret = profile!(
         "croquis.script_plain.oxc_parse",

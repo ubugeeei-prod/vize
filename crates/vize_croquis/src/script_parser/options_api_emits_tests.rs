@@ -25,6 +25,7 @@ export default {
         ScriptParserOptions {
             options_api: true,
             legacy_vue2: true,
+            jsx: false,
         },
     );
 

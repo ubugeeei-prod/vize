@@ -137,6 +137,10 @@ pub struct ScriptParserOptions {
     /// Additionally treat the component as legacy Vue 2.7 / Nuxt 2: implies
     /// `options_api` binding resolution and adds Nuxt 2 template globals.
     pub legacy_vue2: bool,
+    /// Parse the script with JSX enabled. Vue `<script lang="tsx">` and
+    /// `<script lang="jsx">` module blocks need this so embedded JSX does not
+    /// collapse the script analysis that drives virtual TypeScript spans.
+    pub jsx: bool,
 }
 
 impl ScriptParseResult {

@@ -491,6 +491,10 @@ fn compile_sfc_inner(
                     vize_croquis::script_parser::ScriptParserOptions {
                         options_api: true,
                         legacy_vue2: false,
+                        jsx: script
+                            .lang
+                            .as_deref()
+                            .is_some_and(|lang| matches!(lang.trim(), "tsx" | "jsx")),
                     },
                 )
             );

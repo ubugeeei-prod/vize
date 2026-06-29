@@ -69,3 +69,45 @@ export const widgetTheme: RegisteredWidgetConfig = {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn batch_type_checker_accepts_type_exports_from_tsx_module_script() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "tsx-sfc-type-export-module-script",
+        &[(
+            "src/Foo.vue",
+            r#"<script lang="tsx">
+export type Foo = { label: string };
+export const renderFoo = (foo: Foo) => <span>{foo.label}</span>;
+</script>
+
+<script setup lang="tsx">
+defineProps<{ foo?: Foo }>();
+</script>
+
+<template>
+  <div />
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.iter().all(|(file, code, message)| {
+            !(file == "src/Foo.vue"
+                && *code == Some(1184)
+                && message.contains("Modifiers cannot appear here"))
+        }),
+        "TSX module script type exports should stay in module scope, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
