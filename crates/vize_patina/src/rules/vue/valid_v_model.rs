@@ -181,9 +181,9 @@ fn model_expression_error_key(exp: &Option<ExpressionNode<'_>>) -> Option<&'stat
     let source = simple.content.trim();
     let allocator = Allocator::default();
     let source_type = SourceType::default().with_typescript(true);
-    let expression = Parser::new(&allocator, source, source_type)
-        .parse_expression()
-        .ok()?;
+    let Ok(expression) = Parser::new(&allocator, source, source_type).parse_expression() else {
+        return Some("vue/valid-v-model.invalid_expression");
+    };
 
     if expression.span().end as usize != source.len() {
         return Some("vue/valid-v-model.invalid_expression");
