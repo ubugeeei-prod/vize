@@ -85,6 +85,7 @@ impl Rule for AnchorIsValid {
                 }
                 PropNode::Directive(dir) if dir.name == "bind" => {
                     if let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                        && arg.is_static
                         && arg.content == "href"
                     {
                         // Dynamic binding - assume valid
@@ -129,6 +130,13 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<a :href="url">Link</a>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_dynamic_href_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<a :[href]="url">Link</a>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
