@@ -153,3 +153,55 @@ function handleMathKey(key: string) {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn batch_type_checker_infers_event_name_from_define_emits_helper_argument() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "define-emits-helper-event-name-inference",
+        &[(
+            "src/Foo.vue",
+            r#"<script setup lang="ts">
+import type { MaybeRefOrGetter } from "vue";
+
+const props = defineProps<{ open?: boolean }>();
+const emit = defineEmits<{ "update:open": [value: boolean] }>();
+
+function createEventBridge<
+  State extends Record<string, unknown>,
+  EventName extends string
+>(
+  state: MaybeRefOrGetter<State>,
+  dispatch: (event: EventName, ...args: any[]) => void
+) {
+  return { state, dispatch };
+}
+
+createEventBridge(props, emit);
+</script>
+
+<template>
+  <button @click="emit('update:open', !props.open)" />
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.iter().all(|(file, code, message)| {
+            !(file == "src/Foo.vue"
+                && *code == Some(2345)
+                && message.contains("Type 'string' is not assignable to type"))
+        }),
+        "typed defineEmits should infer the helper's EventName, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

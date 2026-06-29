@@ -31,7 +31,7 @@ fn test_type_check_result() {
     coverage,
     ignore = "validated by normal test runs; Corsa TS2589 output is unstable under full llvm-cov"
 )]
-fn batch_type_checker_reports_runtime_emit_object_instance_props_recursion() {
+fn batch_type_checker_avoids_runtime_emit_object_instance_props_recursion() {
     let Some(corsa_path) = resolve_test_tsgo_binary().or_else(resolve_workspace_tsgo_wrapper)
     else {
         return;
@@ -80,8 +80,8 @@ void (null as unknown as TestProps);
                 .contains("Type instantiation is excessively deep")
     });
     assert!(
-        found,
-        "expected TS2589 in the TS consumer, got: {:?}",
+        !found,
+        "runtime emit object props should not recurse into TS2589, got: {:?}",
         result.diagnostics
     );
 

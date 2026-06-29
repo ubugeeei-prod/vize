@@ -35,7 +35,7 @@ type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends 
 type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
 type __BatchEmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
 type __BatchEmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
-type __BatchEmitFn<T> = __BatchEmitShape<T> extends (...args: any[]) => any ? __BatchEmitShape<T> : (<K extends keyof __BatchEmitShape<T>>(event: K, ...args: __BatchEmitArgs<__BatchEmitShape<T>, K>) => void);
+type __BatchEmitFn<T, __S = __BatchEmitShape<T>, __K extends keyof __S & string = keyof __S & string, __U = { [K in __K]: (event: K, ...args: __BatchEmitArgs<__S, K>) => void }[__K]> = __S extends (...args: any[]) => any ? __S : [__K] extends [never] ? (event: never, ...args: any[]) => void : (__U extends unknown ? (fn: __U) => void : never) extends (fn: infer __I) => void ? __I : never;
 type __DefaultFactory<T> = (props: any) => T;
 type __WithDefaultValue<T> = T | __DefaultFactory<T>;
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
