@@ -1,5 +1,4 @@
 import type { Plugin, ViteDevServer, ResolvedConfig } from "vite";
-import { transformWithEsbuild } from "vite";
 import fs from "node:fs";
 import path from "node:path";
 import type { MuseaOptions, ArtFileInfo } from "../types/index.js";
@@ -36,6 +35,7 @@ import {
 } from "../static-export.js";
 import { resolveMuseaSharedConfig } from "./config.js";
 import { processMuseaArtFile } from "./art-processing.js";
+import { transformMuseaVirtualModule } from "./virtual-transform.js";
 
 export function musea(options: MuseaOptions = {}): Plugin[] {
   let include = options.include ?? ["**/*.art.vue"];
@@ -271,12 +271,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         .replace(/_+/g, "_");
       const loaderId = path.join(config.root, `.musea-${safeId}.ts`);
 
-      return transformWithEsbuild(code, loaderId, {
-        loader: "ts",
-        format: "esm",
-        sourcemap: config.command === "serve",
-        target: "esnext",
-      });
+      return transformMuseaVirtualModule(code, loaderId, config.command === "serve");
     },
     handleHotUpdate,
   };
