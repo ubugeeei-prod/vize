@@ -73,7 +73,7 @@ fn is_named_bind_directive(directive: &DirectiveNode<'_>, name: &str) -> bool {
 
     matches!(
         directive.arg.as_ref(),
-        Some(ExpressionNode::Simple(arg)) if arg.content.as_str() == name
+        Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content.as_str() == name
     )
 }
 
@@ -113,6 +113,17 @@ import { Link } from "@void/vue";
 import { Link } from "@void/vue";
 </script>
 <template><Link>Settings</Link></template>"#;
+
+        let result = create_linter().lint_sfc(source, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn reports_dynamic_void_link_href_argument() {
+        let source = r#"<script setup>
+import { Link } from "@void/vue";
+</script>
+<template><Link :[href]="url">Settings</Link></template>"#;
 
         let result = create_linter().lint_sfc(source, "test.vue");
         assert_eq!(result.error_count, 1);
