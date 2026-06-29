@@ -76,23 +76,14 @@ impl Rule for NoDuplicateAttributes {
                         seen_attrs.insert(name.clone().into());
                     }
 
-                    // Check for coexistence with directives (unless allowed)
-                    if !self.allow_coexist_class
-                        && name == "class"
-                        && seen_directives.contains("class")
+                    if seen_directives.contains(name.as_str())
+                        && !self.can_coexist_with_bound_attribute(name.as_str())
                     {
                         ctx.error_with_help(
-                            ctx.t_fmt("vue/no-duplicate-attributes.message", &[("attr", "class")]),
-                            &attr.loc,
-                            ctx.t("vue/no-duplicate-attributes.help"),
-                        );
-                    }
-                    if !self.allow_coexist_style
-                        && name == "style"
-                        && seen_directives.contains("style")
-                    {
-                        ctx.error_with_help(
-                            ctx.t_fmt("vue/no-duplicate-attributes.message", &[("attr", "style")]),
+                            ctx.t_fmt(
+                                "vue/no-duplicate-attributes.message",
+                                &[("attr", name.as_str())],
+                            ),
                             &attr.loc,
                             ctx.t("vue/no-duplicate-attributes.help"),
                         );
@@ -119,28 +110,13 @@ impl Rule for NoDuplicateAttributes {
                                 seen_directives.insert(arg_name_str.into());
                             }
 
-                            // Check for coexistence with static attributes (unless allowed)
-                            if !self.allow_coexist_class
-                                && arg_name == "class"
-                                && seen_attrs.contains("class")
+                            if seen_attrs.contains(arg_name_str)
+                                && !self.can_coexist_with_bound_attribute(arg_name_str)
                             {
                                 ctx.error_with_help(
                                     ctx.t_fmt(
                                         "vue/no-duplicate-attributes.message",
-                                        &[("attr", "v-bind:class")],
-                                    ),
-                                    &dir.loc,
-                                    ctx.t("vue/no-duplicate-attributes.help"),
-                                );
-                            }
-                            if !self.allow_coexist_style
-                                && arg_name == "style"
-                                && seen_attrs.contains("style")
-                            {
-                                ctx.error_with_help(
-                                    ctx.t_fmt(
-                                        "vue/no-duplicate-attributes.message",
-                                        &[("attr", "v-bind:style")],
+                                        &[("attr", &format!("v-bind:{}", arg_name))],
                                     ),
                                     &dir.loc,
                                     ctx.t("vue/no-duplicate-attributes.help"),
@@ -205,6 +181,13 @@ impl Rule for NoDuplicateAttributes {
     }
 }
 
+impl NoDuplicateAttributes {
+    fn can_coexist_with_bound_attribute(&self, name: &str) -> bool {
+        (name == "class" && self.allow_coexist_class)
+            || (name == "style" && self.allow_coexist_style)
+    }
+}
+
 /// Get content from ExpressionNode
 fn get_expression_content(expr: &vize_relief::ExpressionNode) -> String {
     match expr {
@@ -256,6 +239,22 @@ mod tests {
         let linter = create_linter();
         let result =
             linter.lint_template_rules_only(r#"<div :id="foo" :id="bar"></div>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_static_and_bound_attribute() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template_rules_only(r#"<div id="foo" :id="bar"></div>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_bound_and_static_attribute() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template_rules_only(r#"<div :id="foo" id="bar"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
 
