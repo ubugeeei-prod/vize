@@ -10,6 +10,10 @@ use vize_carton::FxHashSet;
 
 use super::jsonc::parse_jsonc_value;
 
+mod tsconfig_types;
+
+pub(crate) use tsconfig_types::collect_tsconfig_type_packages;
+
 pub(crate) fn reference_type_packages(content: &str) -> Vec<std::string::String> {
     content
         .lines()

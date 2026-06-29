@@ -12,13 +12,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use serde_json::Value;
 use vize_carton::{FxHashSet, String, cstr};
 
 use super::resolve::resolve_from_config_dir;
 use crate::commands::check::tsconfig_inputs::{
-    parse_jsonc_value, read_extends_entries, reference_type_packages, resolve_extended_tsconfig,
-    resolve_type_package_declaration_files,
+    collect_tsconfig_type_packages, reference_type_packages, resolve_type_package_declaration_files,
 };
 
 pub(super) fn build_virtual_ts_options(
@@ -193,7 +191,7 @@ fn collect_global_component_type_packages(
     let mut seen = FxHashSet::default();
 
     for package in collect_tsconfig_type_packages(tsconfig_path) {
-        push_unique_type_package(&mut packages, &mut seen, package);
+        push_unique_type_package(&mut packages, &mut seen, package.into());
     }
 
     for path in files {
@@ -216,55 +214,6 @@ fn push_unique_type_package(
     if seen.insert(package.clone()) {
         packages.push(package);
     }
-}
-
-fn collect_tsconfig_type_packages(tsconfig_path: Option<&Path>) -> Vec<String> {
-    let Some(tsconfig_path) = tsconfig_path else {
-        return Vec::new();
-    };
-
-    let mut seen = FxHashSet::default();
-    load_tsconfig_type_packages(tsconfig_path, &mut seen).unwrap_or_default()
-}
-
-fn load_tsconfig_type_packages(
-    tsconfig_path: &Path,
-    seen: &mut FxHashSet<PathBuf>,
-) -> Option<Vec<String>> {
-    let resolved = vize_carton::path::canonicalize_non_verbatim(tsconfig_path);
-    if !seen.insert(resolved.clone()) {
-        return None;
-    }
-
-    let content = fs::read_to_string(&resolved).ok()?;
-    let value = parse_jsonc_value(&content).ok()?;
-
-    let mut inherited = Vec::new();
-    for extends in read_extends_entries(&value) {
-        let Some(extends_path) = resolve_extended_tsconfig(&resolved, &extends) else {
-            continue;
-        };
-        if let Some(parent_types) = load_tsconfig_type_packages(&extends_path, seen) {
-            inherited.extend(parent_types);
-        }
-    }
-
-    if let Some(types) = value
-        .get("compilerOptions")
-        .and_then(Value::as_object)
-        .and_then(|compiler_options| compiler_options.get("types"))
-        .and_then(Value::as_array)
-    {
-        return Some(
-            types
-                .iter()
-                .filter_map(Value::as_str)
-                .map(String::from)
-                .collect(),
-        );
-    }
-
-    (!inherited.is_empty()).then_some(inherited)
 }
 
 fn declared_stub_name(stub: &str) -> Option<&str> {

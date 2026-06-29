@@ -12,7 +12,10 @@ use super::collect_default_check_files_inner;
 use super::glob::normalize_input_path;
 use super::loader::TsconfigInputCache;
 use super::matching::{is_nuxt_import_manifest_path, path_has_component};
-use super::type_references::{reference_type_packages, resolve_type_reference_declaration_files};
+use super::type_references::{
+    collect_tsconfig_type_packages, reference_type_packages,
+    resolve_type_package_declaration_files, resolve_type_reference_declaration_files,
+};
 
 mod top_level;
 
@@ -39,8 +42,12 @@ pub(crate) fn collect_ambient_declaration_files(
     cache: &mut TsconfigInputCache,
 ) -> Vec<PathBuf> {
     let project_root = normalize_input_path(project_root);
-    let files = collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache);
-    collect_ambient_declaration_files_from(project_root, files)
+    let mut files =
+        collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache);
+    let explicit_type_declarations =
+        collect_tsconfig_type_declaration_files(&project_root, tsconfig_path);
+    files.extend(explicit_type_declarations.iter().cloned());
+    collect_ambient_declaration_files_from(project_root, files, explicit_type_declarations)
 }
 
 pub(crate) fn collect_hidden_ambient_declaration_files(
@@ -58,13 +65,24 @@ pub(crate) fn collect_hidden_ambient_declaration_files(
             .into_iter()
             .filter(|path| !visible.contains(path))
             .collect();
-    collect_ambient_declaration_files_from(project_root, hidden)
+    let explicit_type_declarations =
+        collect_tsconfig_type_declaration_files(&project_root, tsconfig_path);
+    collect_ambient_declaration_files_from(project_root, hidden, explicit_type_declarations)
 }
 
 fn collect_ambient_declaration_files_from(
     project_root: PathBuf,
     mut files: Vec<PathBuf>,
+    explicit_type_declarations: Vec<PathBuf>,
 ) -> Vec<PathBuf> {
+    let explicit_type_declarations = explicit_type_declarations
+        .into_iter()
+        .collect::<FxHashSet<_>>();
+    for path in &explicit_type_declarations {
+        if !files.contains(path) {
+            files.push(path.clone());
+        }
+    }
     let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
     let mut index = 0;
     while index < files.len() {
@@ -93,13 +111,26 @@ fn collect_ambient_declaration_files_from(
         .filter(|path| is_declaration_file(path))
         .filter(|path| match fs::read_to_string(path) {
             Ok(content) => {
-                !is_nuxt_import_manifest_path(path)
-                    && !is_reference_manifest_declaration(&content)
-                    && contributes_ambient_declarations(&content)
-                    && !declares_shadowing_ambient_module(&content)
+                if is_nuxt_import_manifest_path(path) || declares_shadowing_ambient_module(&content)
+                {
+                    return false;
+                }
+                explicit_type_declarations.contains(path)
+                    || (!is_reference_manifest_declaration(&content)
+                        && contributes_ambient_declarations(&content))
             }
             Err(_) => false,
         })
+        .collect()
+}
+
+fn collect_tsconfig_type_declaration_files(
+    project_root: &Path,
+    tsconfig_path: Option<&Path>,
+) -> Vec<PathBuf> {
+    collect_tsconfig_type_packages(tsconfig_path)
+        .into_iter()
+        .flat_map(|package| resolve_type_package_declaration_files(project_root, package.as_str()))
         .collect()
 }
 
@@ -257,78 +288,4 @@ fn is_shadowed_vue_package_specifier(specifier: &str) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::collect_ambient_declaration_files;
-    use crate::commands::check::tsconfig_inputs::TsconfigInputCache;
-    use std::path::{Path, PathBuf};
-
-    fn write(root: &Path, rel: &str, content: &str) {
-        let path = root.join(rel);
-        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
-        std::fs::write(path, content).unwrap();
-    }
-
-    fn unique_case_dir(name: &str) -> PathBuf {
-        static NEXT_CASE_ID: std::sync::atomic::AtomicUsize =
-            std::sync::atomic::AtomicUsize::new(0);
-        let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        std::env::temp_dir().join(format!(
-            "vize-ambient-{name}-{}-{case_id}",
-            std::process::id()
-        ))
-    }
-
-    fn relative_paths(root: &Path, files: &[PathBuf]) -> Vec<String> {
-        files
-            .iter()
-            .map(|path| {
-                path.strip_prefix(root)
-                    .unwrap()
-                    .to_string_lossy()
-                    .replace('\\', "/")
-            })
-            .collect()
-    }
-
-    #[test]
-    fn ambient_collection_skips_export_only_generated_declaration_modules() {
-        let root = unique_case_dir("generated-dts");
-        let _ = std::fs::remove_dir_all(&root);
-        write(
-            &root,
-            "types/codegen/schema.d.ts",
-            "export enum AimQuestionDisplayKind { Text = 'TEXT' }\nexport type AimQuestion = { kind: AimQuestionDisplayKind };\n",
-        );
-        write(
-            &root,
-            "src/globals.d.ts",
-            "export {};\ndeclare global { type GlobalTabType = 'a' | 'b'; }\n",
-        );
-        write(
-            &root,
-            "src/env.d.ts",
-            "declare const APP_VERSION: string;\n",
-        );
-        write(&root, "src/shims.d.ts", "declare module '*.css';\n");
-        write(
-            &root,
-            "tsconfig.json",
-            r#"{
-  "include": ["src/**/*.d.ts", "types/codegen/schema.d.ts"]
-}"#,
-        );
-
-        let project_root = root.canonicalize().unwrap();
-        let files = collect_ambient_declaration_files(
-            &project_root,
-            Some(&project_root.join("tsconfig.json")),
-            &mut TsconfigInputCache::default(),
-        );
-
-        assert_eq!(
-            relative_paths(&project_root, &files),
-            vec!["src/env.d.ts", "src/globals.d.ts", "src/shims.d.ts"]
-        );
-        let _ = std::fs::remove_dir_all(&root);
-    }
-}
+mod tests;
