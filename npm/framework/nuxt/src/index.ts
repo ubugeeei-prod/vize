@@ -636,7 +636,7 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
         ? ((museaOptions as Record<string, unknown>).basePath as string)
         : "/__musea__";
     (nuxt.options.vite ||= {}).plugins ||= [];
-    const museaConfig = { projectRoot: nuxt.options.rootDir, ...museaOptions };
+    const museaConfig = { projectRoot: nuxt.options.rootDir, vueVersion, ...museaOptions };
     nuxt.options.vite.plugins.push(...musea(museaConfig));
 
     // Print Musea Gallery URL after dev server starts
