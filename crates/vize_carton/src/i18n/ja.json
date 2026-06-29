@@ -40,6 +40,8 @@
   "vue/valid-v-model.description": "有効なv-modelディレクティブを強制する",
   "vue/valid-v-model.missing_expression": "v-modelには式が必要です",
   "vue/valid-v-model.invalid_element": "v-modelは<{tag}>要素では使用できません",
+  "vue/valid-v-model.invalid_expression": "v-modelには代入可能な式が必要です",
+  "vue/valid-v-model.optional_chain": "v-modelではオプショナルチェーンを使用できません",
   "vue/valid-v-model.unsupported_file_input": "v-modelはfile inputでは使用できません",
   "vue/valid-v-model.unexpected_argument": "ネイティブ要素のv-modelでは引数を使用できません",
   "vue/valid-v-model.help": "v-modelはinput、textarea、select、またはカスタムコンポーネントで使用できます",

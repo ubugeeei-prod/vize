@@ -26,6 +26,10 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use oxc_allocator::Allocator;
+use oxc_ast::ast::Expression as OxcExpression;
+use oxc_parser::Parser;
+use oxc_span::{GetSpan, SourceType};
 use vize_carton::is_html_tag;
 use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode};
 
@@ -74,6 +78,14 @@ impl Rule for ValidVModel {
                 ctx.t("vue/valid-v-model.help"),
             );
             return;
+        }
+
+        if let Some(expression_error_key) = model_expression_error_key(&directive.exp) {
+            ctx.error_with_help(
+                ctx.t(expression_error_key),
+                &directive.loc,
+                ctx.t("vue/valid-v-model.help"),
+            );
         }
 
         // Check 2: v-model must be on valid elements
@@ -161,6 +173,88 @@ fn is_empty_expression(exp: &ExpressionNode) -> bool {
         ExpressionNode::Compound(c) => c.children.is_empty(),
     }
 }
+
+fn model_expression_error_key(exp: &Option<ExpressionNode<'_>>) -> Option<&'static str> {
+    let Some(ExpressionNode::Simple(simple)) = exp else {
+        return None;
+    };
+    let source = simple.content.trim();
+    let allocator = Allocator::default();
+    let source_type = SourceType::default().with_typescript(true);
+    let expression = Parser::new(&allocator, source, source_type)
+        .parse_expression()
+        .ok()?;
+
+    if expression.span().end as usize != source.len() {
+        return None;
+    }
+    if expression_contains_optional_chain(&expression) {
+        return Some("vue/valid-v-model.optional_chain");
+    }
+    (!is_assignable_model_target(&expression)).then_some("vue/valid-v-model.invalid_expression")
+}
+
+fn is_assignable_model_target(expression: &OxcExpression<'_>) -> bool {
+    match expression {
+        OxcExpression::Identifier(_)
+        | OxcExpression::StaticMemberExpression(_)
+        | OxcExpression::ComputedMemberExpression(_)
+        | OxcExpression::PrivateFieldExpression(_) => true,
+        OxcExpression::ParenthesizedExpression(parenthesized) => {
+            is_assignable_model_target(&parenthesized.expression)
+        }
+        OxcExpression::TSNonNullExpression(ts_non_null) => {
+            is_assignable_model_target(&ts_non_null.expression)
+        }
+        OxcExpression::TSAsExpression(ts_as) => is_assignable_model_target(&ts_as.expression),
+        OxcExpression::TSSatisfiesExpression(ts_satisfies) => {
+            is_assignable_model_target(&ts_satisfies.expression)
+        }
+        OxcExpression::TSTypeAssertion(ts_assertion) => {
+            is_assignable_model_target(&ts_assertion.expression)
+        }
+        _ => false,
+    }
+}
+
+fn expression_contains_optional_chain(expression: &OxcExpression<'_>) -> bool {
+    match expression {
+        OxcExpression::ChainExpression(_) => true,
+        OxcExpression::StaticMemberExpression(member) => {
+            member.optional || expression_contains_optional_chain(&member.object)
+        }
+        OxcExpression::ComputedMemberExpression(member) => {
+            member.optional
+                || expression_contains_optional_chain(&member.object)
+                || expression_contains_optional_chain(&member.expression)
+        }
+        OxcExpression::PrivateFieldExpression(member) => {
+            member.optional || expression_contains_optional_chain(&member.object)
+        }
+        OxcExpression::CallExpression(call) => {
+            call.optional || expression_contains_optional_chain(&call.callee)
+        }
+        OxcExpression::ParenthesizedExpression(parenthesized) => {
+            expression_contains_optional_chain(&parenthesized.expression)
+        }
+        OxcExpression::TSNonNullExpression(ts_non_null) => {
+            expression_contains_optional_chain(&ts_non_null.expression)
+        }
+        OxcExpression::TSAsExpression(ts_as) => {
+            expression_contains_optional_chain(&ts_as.expression)
+        }
+        OxcExpression::TSSatisfiesExpression(ts_satisfies) => {
+            expression_contains_optional_chain(&ts_satisfies.expression)
+        }
+        OxcExpression::TSTypeAssertion(ts_assertion) => {
+            expression_contains_optional_chain(&ts_assertion.expression)
+        }
+        _ => false,
+    }
+}
+
+#[cfg(test)]
+mod assignment_target_tests;
 
 #[cfg(test)]
 mod tests {
