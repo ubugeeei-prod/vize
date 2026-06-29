@@ -18,6 +18,10 @@ export function hasCiBlockingVrtResult(summary: VrtSummary): boolean {
   return summary.failed > 0 || summary.skipped > 0;
 }
 
+export function isArtFileInput(filePath: string): boolean {
+  return filePath.endsWith(".art.vue");
+}
+
 export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Promise<void> {
   const totalVariants = artFiles.reduce(
     (sum, art) => sum + art.variants.filter((v) => !v.skipVrt).length,
@@ -197,6 +201,13 @@ export async function runGenerate(options: CliOptions): Promise<void> {
   }
 
   const componentPath = path.resolve(options.componentPath);
+  if (isArtFileInput(componentPath)) {
+    console.error(
+      "  Error: musea-vrt generate expects a source .vue component, not a .art.vue file.",
+    );
+    console.error("  Pass the component file that the art file should wrap.\n");
+    process.exit(1);
+  }
 
   // Check file exists
   try {
