@@ -87,7 +87,8 @@ impl Rule for NoAutofocus {
                     if dir.name == "bind"
                         && matches!(
                             &dir.arg,
-                            Some(ExpressionNode::Simple(arg)) if arg.content == "autofocus"
+                            Some(ExpressionNode::Simple(arg))
+                                if arg.is_static && arg.content == "autofocus"
                         ) =>
                 {
                     ctx.warn_with_help(
@@ -133,5 +134,15 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<input type="text" :autofocus="true" />"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_dynamic_autofocus_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<input type="text" :[autofocus]="enabled" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
     }
 }
