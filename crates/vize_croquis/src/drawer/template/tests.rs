@@ -4,7 +4,12 @@ use super::super::{Drawer, DrawerOptions};
 
 /// Collect the `vif_guard` attached to each template interpolation, keyed by
 /// expression text. Used to pin sibling-aware `v-if` / `v-else` narrowing.
-fn interpolation_guards(template: &str) -> Vec<(std::string::String, Option<std::string::String>)> {
+fn interpolation_guards(
+    template: &str,
+) -> Vec<(
+    vize_carton::CompactString,
+    Option<vize_carton::CompactString>,
+)> {
     use vize_armature::parse;
     use vize_carton::Bump;
 
@@ -23,12 +28,7 @@ fn interpolation_guards(template: &str) -> Vec<(std::string::String, Option<std:
                 crate::croquis::TemplateExpressionKind::Interpolation
             )
         })
-        .map(|e| {
-            (
-                e.content.to_string(),
-                e.vif_guard.as_ref().map(|g| g.to_string()),
-            )
-        })
+        .map(|e| (e.content.clone(), e.vif_guard.clone()))
         .collect()
 }
 

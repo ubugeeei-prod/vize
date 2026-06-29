@@ -150,9 +150,17 @@ impl ScriptParseResult {
     pub(crate) fn register_local_type(&mut self, decl: &Declaration<'_>, source: &str) {
         match decl {
             Declaration::TSInterfaceDeclaration(interface) => {
-                self.types.add_interface(
+                let extends = interface
+                    .extends
+                    .iter()
+                    .map(|heritage| heritage.span.source_text(source).trim())
+                    .filter(|heritage| !heritage.is_empty())
+                    .map(vize_carton::CompactString::new)
+                    .collect();
+                self.types.add_interface_with_extends(
                     interface.id.name.as_str(),
                     interface.body.span.source_text(source),
+                    extends,
                 );
             }
             Declaration::TSTypeAliasDeclaration(alias) => {

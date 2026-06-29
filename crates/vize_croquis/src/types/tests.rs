@@ -24,6 +24,25 @@ fn test_extract_props_from_reference() {
 }
 
 #[test]
+fn extract_properties_includes_interface_pick_heritage() {
+    let mut resolver = TypeResolver::new();
+    resolver.add_interface("BaseProps", "{ required?: boolean; disabled?: boolean }");
+    resolver.add_interface_with_extends(
+        "FooProps",
+        "{ value?: T }",
+        vec!["Pick<BaseProps, \"required\">".into()],
+    );
+
+    let props = resolver.extract_properties("FooProps<T>");
+    let names = props
+        .iter()
+        .map(|prop| prop.name.as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(names, ["required", "value"]);
+}
+
+#[test]
 fn extract_properties_keeps_union_members_nested() {
     let mut resolver = TypeResolver::new();
     resolver.add_interface(
