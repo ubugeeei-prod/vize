@@ -43,6 +43,8 @@
   "vue/valid-v-show.description": "强制有效的v-show指令",
   "vue/valid-v-show.missing_expression": "v-show指令需要一个表达式",
   "vue/valid-v-show.on_template": "v-show不能用于<template>元素",
+  "vue/valid-v-show.unexpected_argument": "v-show不支持参数",
+  "vue/valid-v-show.unexpected_modifier": "v-show不支持修饰符",
   "vue/valid-v-show.help": "**修复:** 添加布尔表达式:\n```vue\n<div v-show=\"isVisible\">内容</div>\n```\n\n**v-show vs v-if:**\n- `v-show`: 总是渲染，通过CSS切换显示（频繁切换时更好）\n- `v-if`: 条件渲染，完全添加/移除DOM",
   "vue/valid-v-slot.description": "强制有效的v-slot指令",
   "vue/valid-v-slot.invalid_location": "v-slot只能用于组件或template元素",

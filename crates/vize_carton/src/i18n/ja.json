@@ -43,6 +43,8 @@
   "vue/valid-v-show.description": "有効なv-showディレクティブを強制する",
   "vue/valid-v-show.missing_expression": "v-showディレクティブには式が必要です",
   "vue/valid-v-show.on_template": "v-showは<template>要素では使用できません",
+  "vue/valid-v-show.unexpected_argument": "v-showは引数を受け付けません",
+  "vue/valid-v-show.unexpected_modifier": "v-showは修飾子を受け付けません",
   "vue/valid-v-show.help": "v-showディレクティブに式を追加してください",
   "vue/valid-v-slot.description": "有効なv-slotディレクティブを強制する",
   "vue/valid-v-slot.invalid_location": "v-slotはコンポーネントまたはtemplate要素でのみ使用できます",

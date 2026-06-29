@@ -66,7 +66,29 @@ impl Rule for ValidVShow {
             return;
         }
 
-        // Check 2: v-show cannot be used on <template>
+        // Check 2: v-show does not support arguments
+        if let Some(arg) = &directive.arg {
+            let loc = match arg {
+                ExpressionNode::Simple(simple) => &simple.loc,
+                ExpressionNode::Compound(_) => &directive.loc,
+            };
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-show.unexpected_argument"),
+                loc,
+                ctx.t("vue/valid-v-show.help"),
+            );
+        }
+
+        // Check 3: v-show does not support modifiers
+        for modifier in directive.modifiers.iter() {
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-show.unexpected_modifier"),
+                &modifier.loc,
+                ctx.t("vue/valid-v-show.help"),
+            );
+        }
+
+        // Check 4: v-show cannot be used on <template>
         if element.tag.as_str() == "template" {
             ctx.error_with_help(
                 ctx.t("vue/valid-v-show.on_template"),
@@ -108,6 +130,20 @@ mod tests {
     fn test_invalid_v_show_no_expression() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div v-show></div>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_v_show_with_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div v-show:foo="visible"></div>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_v_show_with_modifier() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div v-show.foo="visible"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
 

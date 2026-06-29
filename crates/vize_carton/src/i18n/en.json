@@ -43,6 +43,8 @@
   "vue/valid-v-show.description": "Enforce valid v-show directives",
   "vue/valid-v-show.missing_expression": "v-show directive requires an expression",
   "vue/valid-v-show.on_template": "v-show cannot be used on <template> element",
+  "vue/valid-v-show.unexpected_argument": "v-show does not support arguments",
+  "vue/valid-v-show.unexpected_modifier": "v-show does not support modifiers",
   "vue/valid-v-show.help": "Add an expression to the v-show directive",
   "vue/valid-v-slot.description": "Enforce valid v-slot directives",
   "vue/valid-v-slot.invalid_location": "v-slot can only be used on components or template elements",
