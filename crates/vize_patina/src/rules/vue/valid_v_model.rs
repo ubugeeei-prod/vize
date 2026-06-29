@@ -186,7 +186,7 @@ fn model_expression_error_key(exp: &Option<ExpressionNode<'_>>) -> Option<&'stat
         .ok()?;
 
     if expression.span().end as usize != source.len() {
-        return None;
+        return Some("vue/valid-v-model.invalid_expression");
     }
     if expression_contains_optional_chain(&expression) {
         return Some("vue/valid-v-model.optional_chain");

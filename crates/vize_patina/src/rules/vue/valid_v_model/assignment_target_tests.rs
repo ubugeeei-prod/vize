@@ -37,6 +37,13 @@ fn invalid_v_model_this_expression() {
 }
 
 #[test]
+fn invalid_v_model_with_trailing_tokens() {
+    let linter = create_linter();
+    let result = linter.lint_template(r#"<input v-model="foo;bar">"#, "test.vue");
+    assert_eq!(result.error_count, 1);
+}
+
+#[test]
 fn valid_v_model_member_targets() {
     let linter = create_linter();
     for source in [
