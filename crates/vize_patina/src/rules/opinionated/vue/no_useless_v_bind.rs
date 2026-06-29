@@ -55,6 +55,9 @@ impl Rule for NoUselessVBind {
         let Some(ExpressionNode::Simple(arg)) = &directive.arg else {
             return;
         };
+        if !arg.is_static {
+            return;
+        }
         // Modifiers such as `.prop` change semantics; leave them alone.
         if !directive.modifiers.is_empty() {
             return;
@@ -123,6 +126,16 @@ mod tests {
     fn allows_dynamic_binding() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :foo="bar"></div>"#, "App.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn allows_dynamic_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div :[attr]="'bar'" v-bind:[other]="'baz'"></div>"#,
+            "App.vue",
+        );
         assert_eq!(result.warning_count, 0);
     }
 
