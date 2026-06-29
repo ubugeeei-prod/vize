@@ -77,6 +77,7 @@ impl ClickEventsHaveKeyEvents {
             if let PropNode::Directive(dir) = prop
                 && dir.name == "on"
                 && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                && arg.is_static
                 && arg.content == "click"
             {
                 return true;
@@ -91,6 +92,7 @@ impl ClickEventsHaveKeyEvents {
             if let PropNode::Directive(dir) = prop
                 && dir.name == "on"
                 && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                && arg.is_static
                 && matches!(arg.content.as_ref(), "keydown" | "keyup" | "keypress")
             {
                 return true;
@@ -178,6 +180,13 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div @click="handleClick">Click</div>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_dynamic_click_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div @[click]="handleClick">Click</div>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
