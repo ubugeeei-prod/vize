@@ -1,4 +1,7 @@
-use super::{reference_type_packages, resolve_type_reference_declaration_files};
+use super::{
+    collect_tsconfig_type_packages, reference_type_packages,
+    resolve_type_reference_declaration_files,
+};
 use std::path::{Path, PathBuf};
 
 fn write(root: &Path, rel: &str, content: &str) {
@@ -83,6 +86,49 @@ fn type_reference_resolution_supports_subpaths_exports_and_graphs() {
     assert_eq!(
         relative_paths(&root, &musea),
         vec!["node_modules/@vizejs/vite-plugin-musea/client.d.ts"]
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
+fn tsconfig_type_packages_follow_extends_and_local_overrides() {
+    let root = unique_case_dir("tsconfig-types");
+    let _ = std::fs::remove_dir_all(&root);
+    write(
+        &root,
+        "base.json",
+        r#"{
+  "compilerOptions": {
+    "types": ["nuxt-i18n", "@nuxtjs/vuetify"]
+  }
+}"#,
+    );
+    write(
+        &root,
+        "tsconfig.inherit.json",
+        r#"{
+  "extends": "./base.json"
+}"#,
+    );
+    write(
+        &root,
+        "tsconfig.override.json",
+        r#"{
+  "extends": "./base.json",
+  "compilerOptions": {
+    "types": ["@nuxt/types/app"]
+  }
+}"#,
+    );
+
+    assert_eq!(
+        collect_tsconfig_type_packages(Some(&root.join("tsconfig.inherit.json"))),
+        vec!["nuxt-i18n".to_string(), "@nuxtjs/vuetify".to_string()]
+    );
+    assert_eq!(
+        collect_tsconfig_type_packages(Some(&root.join("tsconfig.override.json"))),
+        vec!["@nuxt/types/app".to_string()]
     );
 
     let _ = std::fs::remove_dir_all(&root);

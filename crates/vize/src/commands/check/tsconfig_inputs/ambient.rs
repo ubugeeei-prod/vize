@@ -12,7 +12,10 @@ use super::collect_default_check_files_inner;
 use super::glob::normalize_input_path;
 use super::loader::TsconfigInputCache;
 use super::matching::{is_nuxt_import_manifest_path, path_has_component};
-use super::type_references::{reference_type_packages, resolve_type_reference_declaration_files};
+use super::type_references::{
+    collect_tsconfig_type_packages, reference_type_packages,
+    resolve_type_package_declaration_files, resolve_type_reference_declaration_files,
+};
 
 mod top_level;
 
@@ -39,8 +42,12 @@ pub(crate) fn collect_ambient_declaration_files(
     cache: &mut TsconfigInputCache,
 ) -> Vec<PathBuf> {
     let project_root = normalize_input_path(project_root);
-    let files = collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache);
-    collect_ambient_declaration_files_from(project_root, files)
+    let mut files =
+        collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache);
+    let explicit_type_declarations =
+        collect_tsconfig_type_declaration_files(&project_root, tsconfig_path);
+    files.extend(explicit_type_declarations.iter().cloned());
+    collect_ambient_declaration_files_from(project_root, files, explicit_type_declarations)
 }
 
 pub(crate) fn collect_hidden_ambient_declaration_files(
@@ -58,13 +65,24 @@ pub(crate) fn collect_hidden_ambient_declaration_files(
             .into_iter()
             .filter(|path| !visible.contains(path))
             .collect();
-    collect_ambient_declaration_files_from(project_root, hidden)
+    let explicit_type_declarations =
+        collect_tsconfig_type_declaration_files(&project_root, tsconfig_path);
+    collect_ambient_declaration_files_from(project_root, hidden, explicit_type_declarations)
 }
 
 fn collect_ambient_declaration_files_from(
     project_root: PathBuf,
     mut files: Vec<PathBuf>,
+    explicit_type_declarations: Vec<PathBuf>,
 ) -> Vec<PathBuf> {
+    let explicit_type_declarations = explicit_type_declarations
+        .into_iter()
+        .collect::<FxHashSet<_>>();
+    for path in &explicit_type_declarations {
+        if !files.contains(path) {
+            files.push(path.clone());
+        }
+    }
     let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
     let mut index = 0;
     while index < files.len() {
@@ -93,13 +111,26 @@ fn collect_ambient_declaration_files_from(
         .filter(|path| is_declaration_file(path))
         .filter(|path| match fs::read_to_string(path) {
             Ok(content) => {
-                !is_nuxt_import_manifest_path(path)
-                    && !is_reference_manifest_declaration(&content)
-                    && contributes_ambient_declarations(&content)
-                    && !declares_shadowing_ambient_module(&content)
+                if is_nuxt_import_manifest_path(path) || declares_shadowing_ambient_module(&content)
+                {
+                    return false;
+                }
+                explicit_type_declarations.contains(path)
+                    || (!is_reference_manifest_declaration(&content)
+                        && contributes_ambient_declarations(&content))
             }
             Err(_) => false,
         })
+        .collect()
+}
+
+fn collect_tsconfig_type_declaration_files(
+    project_root: &Path,
+    tsconfig_path: Option<&Path>,
+) -> Vec<PathBuf> {
+    collect_tsconfig_type_packages(tsconfig_path)
+        .into_iter()
+        .flat_map(|package| resolve_type_package_declaration_files(project_root, package.as_str()))
         .collect()
 }
 
@@ -328,6 +359,61 @@ mod tests {
         assert_eq!(
             relative_paths(&project_root, &files),
             vec!["src/env.d.ts", "src/globals.d.ts", "src/shims.d.ts"]
+        );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn ambient_collection_loads_compiler_options_type_packages() {
+        let root = unique_case_dir("compiler-options-types");
+        let _ = std::fs::remove_dir_all(&root);
+        write(&root, "src/App.vue", "<template><div /></template>\n");
+        write(
+            &root,
+            "node_modules/@nuxt/types/package.json",
+            r#"{ "types": "app.d.ts" }"#,
+        );
+        write(
+            &root,
+            "node_modules/@nuxt/types/app.d.ts",
+            "export interface Context { app: unknown }\n",
+        );
+        write(
+            &root,
+            "node_modules/nuxt-i18n/package.json",
+            r#"{ "types": "index.d.ts" }"#,
+        );
+        write(
+            &root,
+            "node_modules/nuxt-i18n/index.d.ts",
+            "export {};\ndeclare module \"@nuxt/types\" { interface Context { i18n: unknown } }\n",
+        );
+        write(
+            &root,
+            "tsconfig.json",
+            r#"{
+  "compilerOptions": {
+    "types": ["@nuxt/types", "nuxt-i18n"]
+  },
+  "include": ["src/**/*"]
+}"#,
+        );
+
+        let project_root = root.canonicalize().unwrap();
+        let files = collect_ambient_declaration_files(
+            &project_root,
+            Some(&project_root.join("tsconfig.json")),
+            &mut TsconfigInputCache::default(),
+        );
+
+        let relative = relative_paths(&project_root, &files);
+        assert!(
+            relative.contains(&"node_modules/@nuxt/types/app.d.ts".to_string()),
+            "{relative:?}"
+        );
+        assert!(
+            relative.contains(&"node_modules/nuxt-i18n/index.d.ts".to_string()),
+            "{relative:?}"
         );
         let _ = std::fs::remove_dir_all(&root);
     }
