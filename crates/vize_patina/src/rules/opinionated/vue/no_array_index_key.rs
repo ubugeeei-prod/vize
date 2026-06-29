@@ -63,6 +63,7 @@ impl Rule for NoArrayIndexKey {
                 "bind" => {
                     // `:key` / `v-bind:key` with a dynamic expression.
                     if let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                        && arg.is_static
                         && arg.content.as_str() == "key"
                         && let Some(ExpressionNode::Simple(exp)) = &dir.exp
                     {
@@ -188,6 +189,16 @@ mod tests {
         );
         assert_eq!(result.warning_count, 1);
         insta::assert_debug_snapshot!(result.diagnostics);
+    }
+
+    #[test]
+    fn allows_dynamic_key_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<li v-for="(item, index) in list" :[key]="index">{{ item }}</li>"#,
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
