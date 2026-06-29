@@ -258,6 +258,9 @@ fn static_slot_name(directive: &DirectiveNode) -> Option<String> {
 }
 
 #[cfg(test)]
+mod location_tests;
+
+#[cfg(test)]
 mod mixed_default_tests;
 
 #[cfg(test)]
@@ -290,16 +293,6 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_invalid_slot_template_under_plain_element() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<div><template #header>Header</template></div>"#,
-            "test.vue",
-        );
-        assert_eq!(result.error_count, 1);
     }
 
     #[test]
