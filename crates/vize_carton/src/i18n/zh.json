@@ -32,6 +32,7 @@
   "vue/valid-v-bind.help": "**修复:** 提供要绑定的值:\n```vue\n<!-- 简写 -->\n<img :src=\"imageUrl\" :alt=\"imageAlt\">\n\n<!-- 完整语法 -->\n<img v-bind:src=\"imageUrl\">\n\n<!-- 绑定多个属性 -->\n<div v-bind=\"{ id: itemId, class: itemClass }\"></div>\n```",
   "vue/valid-v-on.description": "强制有效的v-on指令",
   "vue/valid-v-on.missing_event": "v-on需要一个事件名",
+  "vue/valid-v-on.invalid_handler": "v-on处理器不能使用JavaScript关键字",
   "vue/valid-v-on.help": "**修复:** 指定事件名:\n```vue\n<!-- 简写 -->\n<button @click=\"handleClick\">点击</button>\n\n<!-- 完整语法 -->\n<button v-on:click=\"handleClick\">点击</button>\n\n<!-- 带修饰符 -->\n<form @submit.prevent=\"onSubmit\">...</form>\n<input @keyup.enter=\"onEnter\">\n```",
   "vue/valid-v-model.description": "强制有效的v-model指令",
   "vue/valid-v-model.missing_expression": "v-model需要一个表达式",

@@ -32,6 +32,7 @@
   "vue/valid-v-bind.help": "v-bindディレクティブに式を追加してください",
   "vue/valid-v-on.description": "有効なv-onディレクティブを強制する",
   "vue/valid-v-on.missing_event": "v-onにはイベント名が必要です",
+  "vue/valid-v-on.invalid_handler": "v-onハンドラーにはJavaScriptキーワードを使用できません",
   "vue/valid-v-on.help": "@clickやv-on:clickのようにイベント名を追加してください",
   "vue/valid-v-model.description": "有効なv-modelディレクティブを強制する",
   "vue/valid-v-model.missing_expression": "v-modelには式が必要です",

@@ -32,6 +32,7 @@
   "vue/valid-v-bind.help": "**Fix:** Provide a value to bind:\n```vue\n<!-- Shorthand -->\n<img :src=\"imageUrl\" :alt=\"imageAlt\">\n\n<!-- Full syntax -->\n<img v-bind:src=\"imageUrl\">\n\n<!-- Bind multiple attributes -->\n<div v-bind=\"{ id: itemId, class: itemClass }\"></div>\n```",
   "vue/valid-v-on.description": "Enforce valid v-on directives",
   "vue/valid-v-on.missing_event": "v-on requires an event name",
+  "vue/valid-v-on.invalid_handler": "v-on handler must not be a JavaScript keyword",
   "vue/valid-v-on.help": "**Fix:** Specify the event name:\n```vue\n<!-- Shorthand -->\n<button @click=\"handleClick\">Click</button>\n\n<!-- Full syntax -->\n<button v-on:click=\"handleClick\">Click</button>\n\n<!-- With modifiers -->\n<form @submit.prevent=\"onSubmit\">...</form>\n<input @keyup.enter=\"onEnter\">\n```",
   "vue/valid-v-model.description": "Enforce valid v-model directives",
   "vue/valid-v-model.missing_expression": "v-model requires an expression",
