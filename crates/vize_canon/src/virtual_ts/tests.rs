@@ -7,6 +7,7 @@ use super::{
 use vize_carton::config::VueVersion;
 mod component_navigation;
 mod define_props_scope;
+mod legacy_nuxt2_page_context;
 mod no_check_template_bindings;
 mod options_api_props_spread;
 mod options_api_setup_spread;
@@ -2033,50 +2034,6 @@ fn test_plain_options_object_default_export_is_wrapped_with_define_component() {
     assert!(
         output.code.contains("\n  })\n"),
         "expected the wrap to be closed after the options object:\n{}",
-        output.code
-    );
-}
-
-#[test]
-fn test_legacy_nuxt2_page_validate_gets_contextual_type() {
-    use vize_croquis::{Analyzer, AnalyzerOptions};
-
-    let script = r#"export default {
-  name: 'StudentPage',
-  validate({ params }) {
-    return !Number.isNaN(Number(params.studentId))
-  }
-}
-"#;
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-    analyzer.analyze_script_plain(script);
-    let summary = analyzer.finish();
-
-    let output = generate_virtual_ts_with_offsets_and_checks(
-        &summary,
-        Some(script),
-        None,
-        0,
-        0,
-        &Default::default(),
-        VirtualTsGenerationOptions {
-            legacy_vue2: true,
-            ..Default::default()
-        },
-    );
-
-    assert!(
-        output
-            .code
-            .contains("validate?: (context: __VizeNuxt2Context) => unknown;"),
-        "legacy Nuxt 2 page options should declare a contextual validate type:\n{}",
-        output.code
-    );
-    assert!(
-        output
-            .code
-            .contains("const __default__ = __vizeDefineComponent({"),
-        "plain object exports should be wrapped by the legacy helper:\n{}",
         output.code
     );
 }
