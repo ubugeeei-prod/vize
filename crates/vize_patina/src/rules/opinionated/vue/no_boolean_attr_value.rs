@@ -28,7 +28,8 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::html::helpers::BOOLEAN_ATTRIBUTES;
-use vize_relief::{ElementNode, ElementType, PropNode};
+use vize_carton::is_native_tag;
+use vize_relief::{ElementNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-boolean-attr-value",
@@ -47,7 +48,7 @@ impl Rule for NoBooleanAttrValue {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag_type == ElementType::Component {
+        if !is_native_tag(element.tag.as_str()) {
             return;
         }
 
@@ -109,6 +110,16 @@ mod tests {
     fn test_valid_dynamic_binding() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<input :disabled="isDisabled" />"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_component_like_custom_tag() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<my-button disabled="disabled" /><MyButton hidden="hidden" />"#,
+            "test.vue",
+        );
         assert_eq!(result.warning_count, 0);
     }
 
