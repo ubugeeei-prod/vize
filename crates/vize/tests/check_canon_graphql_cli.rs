@@ -209,12 +209,13 @@ void childComponents
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
-/// Regression for #2227: a `types/index.ts` barrel that re-exports a generated
-/// GraphQL `.d.ts` via a relative `export *` is materialized into canon, but the
-/// `.d.ts` is intentionally kept on its real path (#2047). Previously the
-/// barrel's relative `./codegen/schema` dangled inside the mirror, dropping the
-/// generated module's type identity so members re-exported through `~/types`
-/// were reported as missing/unrelated — a false positive vue-tsc does not raise.
+/// Regression for #2227/#2307: a `types/index.ts` barrel that re-exports a
+/// generated GraphQL `.d.ts` via a relative `export *` is materialized into
+/// canon, but the `.d.ts` is intentionally kept on its real path (#2047).
+/// Previously the barrel's relative `./codegen/schema` dangled inside the
+/// mirror, dropping the generated module's type identity so members re-exported
+/// through `~/types` were reported as missing/unrelated, including TS1360 false
+/// positives vue-tsc does not raise.
 #[test]
 fn check_barrel_reexport_preserves_generated_graphql_identity() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
@@ -338,6 +339,10 @@ void childComponents
     );
     let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
     assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
+    assert!(
+        !stdout.contains("TS1360"),
+        "generated GraphQL symbols should keep one type identity:\n{stdout}"
+    );
     assert!(
         !project_root
             .join("node_modules/.vize/canon/types/codegen/schema.d.ts")
