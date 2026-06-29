@@ -66,7 +66,29 @@ impl Rule for ValidVIf {
             );
         }
 
-        // Check 2: v-if should not be used with v-else or v-else-if
+        // Check 2: v-if does not support arguments
+        if let Some(arg) = &directive.arg {
+            let loc = match arg {
+                ExpressionNode::Simple(simple) => &simple.loc,
+                ExpressionNode::Compound(_) => &directive.loc,
+            };
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-if.unexpected_argument"),
+                loc,
+                ctx.t("vue/valid-v-if.help"),
+            );
+        }
+
+        // Check 3: v-if does not support modifiers
+        for modifier in directive.modifiers.iter() {
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-if.unexpected_modifier"),
+                &modifier.loc,
+                ctx.t("vue/valid-v-if.help"),
+            );
+        }
+
+        // Check 4: v-if should not be used with v-else or v-else-if
         let has_v_else = element.props.iter().any(|p| {
             matches!(p, PropNode::Directive(d) if d.name.as_str() == "else" || d.name.as_str() == "else-if")
         });
@@ -125,6 +147,20 @@ mod tests {
     fn test_invalid_v_if_empty_expression() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div v-if=""></div>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_v_if_with_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div v-if:foo="visible"></div>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_v_if_with_modifier() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div v-if.foo="visible"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
 }

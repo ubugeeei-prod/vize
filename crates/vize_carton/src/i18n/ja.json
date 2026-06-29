@@ -22,6 +22,8 @@
   "vue/valid-v-for.help": "構文: v-for=\"item in items\" または v-for=\"(item, index) in items\" を使用してください",
   "vue/valid-v-if.description": "有効なv-ifディレクティブを強制する",
   "vue/valid-v-if.missing_expression": "v-ifディレクティブには式が必要です",
+  "vue/valid-v-if.unexpected_argument": "v-ifは引数を受け付けません",
+  "vue/valid-v-if.unexpected_modifier": "v-ifは修飾子を受け付けません",
   "vue/valid-v-if.help": "v-ifディレクティブに式を追加してください",
   "vue/valid-v-else.description": "有効なv-elseディレクティブを強制する",
   "vue/valid-v-else.unexpected_expression": "v-elseディレクティブには式を指定できません",

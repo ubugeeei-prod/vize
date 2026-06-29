@@ -22,6 +22,8 @@
   "vue/valid-v-for.help": "**有效的v-for语法:**\n```vue\n<!-- 数组迭代 -->\n<li v-for=\"item in items\">{{ item }}</li>\n<li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n\n<!-- 对象迭代 -->\n<li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n<li v-for=\"(value, key, index) in object\">{{ index }}</li>\n\n<!-- 范围 -->\n<span v-for=\"n in 10\">{{ n }}</span>\n```",
   "vue/valid-v-if.description": "强制有效的v-if指令",
   "vue/valid-v-if.missing_expression": "v-if指令需要一个表达式",
+  "vue/valid-v-if.unexpected_argument": "v-if不支持参数",
+  "vue/valid-v-if.unexpected_modifier": "v-if不支持修饰符",
   "vue/valid-v-if.help": "**修复:** 添加布尔表达式:\n```vue\n<div v-if=\"isVisible\">内容</div>\n<div v-if=\"items.length > 0\">有项目</div>\n```\n\n**注意:** 频繁切换使用`v-show`（性能更好），很少改变的条件使用`v-if`。",
   "vue/valid-v-else.description": "强制有效的v-else指令",
   "vue/valid-v-else.unexpected_expression": "v-else指令不需要表达式",

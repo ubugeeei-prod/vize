@@ -22,6 +22,8 @@
   "vue/valid-v-for.help": "**Valid v-for syntax:**\n```vue\n<!-- Array iteration -->\n<li v-for=\"item in items\">{{ item }}</li>\n<li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n\n<!-- Object iteration -->\n<li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n<li v-for=\"(value, key, index) in object\">{{ index }}</li>\n\n<!-- Range -->\n<span v-for=\"n in 10\">{{ n }}</span>\n```",
   "vue/valid-v-if.description": "Enforce valid v-if directives",
   "vue/valid-v-if.missing_expression": "v-if directive requires an expression",
+  "vue/valid-v-if.unexpected_argument": "v-if does not support arguments",
+  "vue/valid-v-if.unexpected_modifier": "v-if does not support modifiers",
   "vue/valid-v-if.help": "**Fix:** Add a boolean expression:\n```vue\n<div v-if=\"isVisible\">Content</div>\n<div v-if=\"items.length > 0\">Has items</div>\n```\n\n**Note:** Use `v-show` for frequent toggling (better performance), `v-if` for conditions that rarely change.",
   "vue/valid-v-else.description": "Enforce valid v-else directives",
   "vue/valid-v-else.unexpected_expression": "v-else directives require no expression",
