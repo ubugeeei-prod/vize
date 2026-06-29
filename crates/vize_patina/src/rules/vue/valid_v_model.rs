@@ -90,7 +90,20 @@ impl Rule for ValidVModel {
             return;
         }
 
-        // Check 3: Validate modifiers (only for native elements)
+        // Check 3: Native v-model does not support arguments
+        if !is_component && let Some(arg) = &directive.arg {
+            let loc = match arg {
+                ExpressionNode::Simple(simple) => &simple.loc,
+                ExpressionNode::Compound(_) => &directive.loc,
+            };
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-model.unexpected_argument"),
+                loc,
+                ctx.t("vue/valid-v-model.help"),
+            );
+        }
+
+        // Check 4: Validate modifiers (only for native elements)
         if !is_component {
             for modifier in directive.modifiers.iter() {
                 let mod_name = modifier.content.as_str();
@@ -191,6 +204,13 @@ mod tests {
     fn test_invalid_v_model_no_expression() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<input v-model>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_v_model_argument_on_native_element() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<input v-model:foo="value">"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
 }
