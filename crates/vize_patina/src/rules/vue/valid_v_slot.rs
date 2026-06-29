@@ -21,7 +21,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
+use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-slot",
@@ -75,6 +76,12 @@ impl ValidVSlot {
 impl Rule for ValidVSlot {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        if Self::is_custom_component(element.tag.as_str()) {
+            check_child_slot_templates(ctx, element);
+        }
     }
 
     fn check_directive<'a>(
@@ -135,6 +142,81 @@ impl Rule for ValidVSlot {
                 ctx.t("vue/valid-v-slot.help"),
             );
         }
+    }
+}
+
+fn check_child_slot_templates(ctx: &mut LintContext, owner: &ElementNode) {
+    let mut seen_slots: FxHashSet<String> = FxHashSet::default();
+    let mut current_group_slots: FxHashSet<String> = FxHashSet::default();
+    let mut in_if_chain = false;
+
+    for child in owner.children.iter() {
+        let TemplateChildNode::Element(child) = child else {
+            continue;
+        };
+
+        let Some(slot) = child_slot_directive(child) else {
+            finish_slot_group(&mut seen_slots, &mut current_group_slots);
+            in_if_chain = false;
+            continue;
+        };
+
+        let starts_chain = has_directive(child, "if");
+        let continues_chain =
+            in_if_chain && (has_directive(child, "else-if") || has_directive(child, "else"));
+
+        if starts_chain || !continues_chain {
+            finish_slot_group(&mut seen_slots, &mut current_group_slots);
+            in_if_chain = starts_chain;
+        }
+
+        if let Some(name) = static_slot_name(slot) {
+            if !current_group_slots.contains(&name) && seen_slots.contains(&name) {
+                ctx.error_with_help(
+                    ctx.t("vue/valid-v-slot.invalid_location"),
+                    &slot.loc,
+                    ctx.t("vue/valid-v-slot.help"),
+                );
+            }
+            current_group_slots.insert(name);
+        }
+
+        if !starts_chain && !continues_chain {
+            finish_slot_group(&mut seen_slots, &mut current_group_slots);
+            in_if_chain = false;
+        }
+    }
+
+    finish_slot_group(&mut seen_slots, &mut current_group_slots);
+}
+
+fn finish_slot_group(seen_slots: &mut FxHashSet<String>, group_slots: &mut FxHashSet<String>) {
+    seen_slots.extend(group_slots.drain());
+}
+
+fn child_slot_directive<'a>(element: &'a ElementNode<'a>) -> Option<&'a DirectiveNode<'a>> {
+    if element.tag.as_str() != "template" {
+        return None;
+    }
+
+    element.props.iter().find_map(|prop| match prop {
+        PropNode::Directive(dir) if dir.name.as_str() == "slot" => Some(dir.as_ref()),
+        _ => None,
+    })
+}
+
+fn has_directive(element: &ElementNode, name: &str) -> bool {
+    element
+        .props
+        .iter()
+        .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name.as_str() == name))
+}
+
+fn static_slot_name(directive: &DirectiveNode) -> Option<String> {
+    match &directive.arg {
+        None => Some("default".into()),
+        Some(ExpressionNode::Simple(arg)) => Some(arg.content.to_compact_string()),
+        Some(ExpressionNode::Compound(_)) => None,
     }
 }
 
@@ -218,5 +300,31 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_duplicate_named_slot_in_if_else_chain() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<MyComponent>
+                <template v-if="ok" #header>Header A</template>
+                <template v-else #header>Header B</template>
+            </MyComponent>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_duplicate_named_slot_templates() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<MyComponent>
+                <template #header>Header A</template>
+                <template #header>Header B</template>
+            </MyComponent>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1);
     }
 }
