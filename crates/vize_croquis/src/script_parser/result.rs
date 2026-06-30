@@ -153,9 +153,9 @@ impl ScriptParseResult {
                 let extends = interface
                     .extends
                     .iter()
-                    .map(|heritage| heritage.span.source_text(source).trim())
-                    .filter(|heritage| !heritage.is_empty())
-                    .map(vize_carton::CompactString::new)
+                    .filter_map(|heritage| {
+                        normalize_interface_heritage(heritage.span.source_text(source))
+                    })
                     .collect();
                 self.types.add_interface_with_extends(
                     interface.id.name.as_str(),
@@ -274,5 +274,25 @@ impl ScriptParseResult {
         let mut summary = Croquis::new();
         self.apply_to_croquis(&mut summary);
         summary
+    }
+}
+
+fn normalize_interface_heritage(raw: &str) -> Option<vize_carton::CompactString> {
+    let mut heritage = raw.trim();
+    if let Some(rest) = heritage.strip_prefix("extends") {
+        let starts_like_keyword = rest
+            .chars()
+            .next()
+            .map(|c| c.is_whitespace())
+            .unwrap_or(true);
+        if starts_like_keyword {
+            heritage = rest.trim_start();
+        }
+    }
+    heritage = heritage.trim_start_matches(',').trim();
+    if heritage.is_empty() {
+        None
+    } else {
+        Some(vize_carton::CompactString::new(heritage))
     }
 }

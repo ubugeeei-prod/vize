@@ -11,7 +11,9 @@ use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::import_rewriter::{ImportRewriter, ImportSourceMap};
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
 
-use super::build::{descriptor_uses_jsx_script, virtual_ts_options_for_descriptor};
+use super::build::{
+    descriptor_uses_jsx_script, prepend_vue_jsx_reference, virtual_ts_options_for_descriptor,
+};
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
 
 /// Rewritten virtual TypeScript for a single in-memory `.vue` document.
@@ -79,7 +81,11 @@ pub fn generate_vue_document_virtual_ts_with_options(
     } else {
         SourceType::ts()
     };
-    let GeneratedVueFile { code, mappings, .. } = generate_vue_virtual_ts(
+    let GeneratedVueFile {
+        mut code,
+        mut mappings,
+        ..
+    } = generate_vue_virtual_ts(
         path,
         content,
         &descriptor,
@@ -94,6 +100,9 @@ pub fn generate_vue_document_virtual_ts_with_options(
             hoist_shared_preamble,
         },
     )?;
+    if use_tsx_virtual {
+        prepend_vue_jsx_reference(&mut code, &mut mappings);
+    }
 
     let rewritten = rewriter.rewrite(&code, source_type);
     Ok(VueDocumentVirtualTs {

@@ -44,23 +44,25 @@ type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends 
 type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
 type __DefaultFactory<T> = (props: any) => T;
 type __WithDefaultValue<T> = T | __DefaultFactory<T>;
+type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
+type __DefineProps<T> = __LooseRequired<T>;
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;
+type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof __LooseRequired<T>]-?: Exclude<__LooseRequired<T>[K], undefined> };
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
+type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
 type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
 type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
-type __VizeComponentProps<T> = T extends unknown ? T & Partial<__VizeKebabProps<T>> : never;"#
+type __VizeFallthroughAttrs = { class?: unknown; style?: unknown };
+type __VizeKebabOptionalKeys<T> = { [K in keyof T & string]: __VizeKebabCase<K> extends K ? never : K }[keyof T & string];
+type __VizeComponentProps<T> = T extends unknown ? Omit<T, __VizeKebabOptionalKeys<T>> & Partial<Pick<T, __VizeKebabOptionalKeys<T>>> & Partial<__VizeKebabProps<T>> & __VizeFallthroughAttrs : never;"#
     };
 }
 
 macro_rules! v_for_list_decls_text {
     () => {
-        r#"declare function __vForList<T>(source: readonly T[] | undefined | null): readonly [item: T, key: number, index: number][];
-declare function __vForList(source: number | undefined | null): readonly [item: number, key: number, index: number][];
-declare function __vForList(source: string | undefined | null): readonly [item: string, key: number, index: number][];
-declare function __vForList<T>(source: Iterable<T> | undefined | null): readonly [item: T, key: number, index: number][];
-declare function __vForList<T extends object>(source: T | undefined | null): readonly [item: T[keyof T], key: keyof T, index: number][];"#
+        r#"type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
+declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];"#
     };
 }
 
@@ -104,7 +106,7 @@ pub(crate) const EMIT_PROPS_HELPER: &str = "type __EmitProps<T> = { [K in keyof 
 /// Compiler macros stay setup-only, while runtime helper shims model Vue APIs.
 /// Parameters and type parameters are prefixed with _ to avoid "unused" warnings.
 pub(crate) const VUE_SETUP_HELPERS: &str = r#"  // Compiler macros (only valid in setup scope, not global)
-  function defineProps<_T = unknown>(): _T;
+  function defineProps<_T = unknown>(): __DefineProps<_T>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   function defineProps(_props?: any) { void _props; return undefined as any; }
@@ -193,7 +195,7 @@ pub const SHARED_PREAMBLE_DTS: &str = concat!(
     "  dev: boolean;\n",
     "  prod: boolean;\n",
     "  ssr: boolean;\n",
-    "}\n\ndeclare namespace JSX { interface IntrinsicAttributes { class?: unknown; style?: unknown; } }\ndeclare module 'vue/jsx-runtime' { export namespace JSX { interface IntrinsicAttributes { class?: unknown; style?: unknown; } } }\n",
+    "}\n\ndeclare namespace JSX { interface IntrinsicAttributes { class?: unknown; style?: unknown; } }\n",
     "\n",
     "// Shared type helpers used by generated virtual modules\n",
     vue_type_helpers_text!(),
@@ -202,7 +204,7 @@ pub const SHARED_PREAMBLE_DTS: &str = concat!(
     emit_overload_helpers_text!(),
     "\n",
     "// Compiler-macro signatures (aliased inside each module's __setup() scope)\n",
-    "declare function __vize_defineProps<_T = unknown>(): _T;\n",
+    "declare function __vize_defineProps<_T = unknown>(): __DefineProps<_T>;\n",
     "declare function __vize_defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };\n",
     "declare function __vize_defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;\n",
     "declare function __vize_defineEmits<_T = unknown>(): __EmitFn<_T>;\n",

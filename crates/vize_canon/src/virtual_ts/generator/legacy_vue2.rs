@@ -16,8 +16,10 @@ type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends 
 type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
 type __DefaultFactory<T> = (props: any) => T;
 type __WithDefaultValue<T> = T | __DefaultFactory<T>;
+type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
+type __DefineProps<T> = __LooseRequired<T>;
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;
+type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof __LooseRequired<T>]-?: Exclude<__LooseRequired<T>[K], undefined> };
 type __Ref<T> = { value: T };
 type __ShallowRef<T> = __Ref<T> & { readonly __v_isShallow?: true };
 type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;

@@ -38,9 +38,11 @@ type __BatchEmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
 type __BatchEmitFn<T, __S = __BatchEmitShape<T>, __K extends keyof __S & string = keyof __S & string, __U = { [K in __K]: (event: K, ...args: __BatchEmitArgs<__S, K>) => void }[__K]> = __S extends (...args: any[]) => any ? __S : [__K] extends [never] ? (event: never, ...args: any[]) => void : (__U extends unknown ? (fn: __U) => void : never) extends (fn: infer __I) => void ? __I : never;
 type __DefaultFactory<T> = (props: any) => T;
 type __WithDefaultValue<T> = T | __DefaultFactory<T>;
+type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
+type __DefineProps<T> = __LooseRequired<T>;
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;
-function defineProps<T>(): T;
+type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof __LooseRequired<T>]-?: Exclude<__LooseRequired<T>[K], undefined> };
+function defineProps<T>(): __DefineProps<T>;
 function defineProps<const T extends readonly string[]>(_props: T): { [K in T[number]]?: any };
 function defineProps<const T extends Record<string, any>>(_props: T): __RuntimePropShape<T>;
 function defineProps(_props?: any) { void _props; return undefined as any; }

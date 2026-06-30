@@ -150,7 +150,7 @@ const { thickness, label } = props;
 
     assert!(
             virtual_ts.contains(
-                r#"type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;"#
+                r#"type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof __LooseRequired<T>]-?: Exclude<__LooseRequired<T>[K], undefined> };"#
             ),
             "{virtual_ts}"
         );

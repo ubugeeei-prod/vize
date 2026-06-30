@@ -168,7 +168,6 @@ export const Example = () => (
         std::fs::read_to_string(project_root.join("node_modules/.vize/canon/__vize_helpers.d.ts"))
             .unwrap();
     assert!(helpers.contains("/// <reference types=\"vue/jsx\" />"));
-    assert!(helpers.contains("interface IntrinsicElements"));
     assert!(helpers.contains("interface IntrinsicAttributes"));
     assert!(helpers.contains("class?: unknown; style?: unknown"));
     assert!(helpers.contains("__VizeKebabProps"));
@@ -279,6 +278,83 @@ export const Tabs = () => (
     );
     let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
     assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_tsx_sfc_preserves_intrinsic_event_context_without_explicit_types() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = unique_case_dir("sfc-event-context");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("src")).unwrap();
+    link_workspace_vue(&project_root).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("src/Foo.vue"),
+        r#"<script setup lang="tsx">
+const button = (
+  <button
+    onClick={(event) => {
+      event.stopPropagation()
+    }}
+  >
+    Save
+  </button>
+)
+</script>
+
+<template>
+  <component :is="button" />
+</template>
+"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.json",
+            "src/Foo.vue",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    assert!(
+        output.status.success(),
+        "check failed\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>")
+    );
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
+    assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
+    let helpers =
+        std::fs::read_to_string(project_root.join("node_modules/.vize/canon/__vize_helpers.d.ts"))
+            .unwrap();
+    assert!(helpers.contains("/// <reference types=\"vue/jsx\" />"));
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

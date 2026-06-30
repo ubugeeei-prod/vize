@@ -19,12 +19,6 @@ use super::{
     SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject,
 };
 
-const VUE_JSX_INTRINSIC_ELEMENTS_DTS: &str = concat!(
-    "declare namespace JSX { interface IntrinsicElements { [name: string]: any; } }\n",
-    "declare module 'vue/jsx-runtime' { export namespace JSX { interface IntrinsicElements { [name: string]: any; } } }\n",
-    "declare module 'vue/jsx-dev-runtime' { export namespace JSX { interface IntrinsicElements { [name: string]: any; } } }\n",
-);
-
 impl VirtualProject {
     /// Materialize the virtual project to disk for diagnostics collection.
     ///
@@ -217,7 +211,6 @@ impl VirtualProject {
         let mut content = CompactString::default();
         if self.needs_vue_jsx_reference() {
             content.push_str("/// <reference types=\"vue/jsx\" />\n");
-            content.push_str(VUE_JSX_INTRINSIC_ELEMENTS_DTS);
         }
         content.push_str(crate::virtual_ts::SHARED_PREAMBLE_DTS);
         write_if_changed(

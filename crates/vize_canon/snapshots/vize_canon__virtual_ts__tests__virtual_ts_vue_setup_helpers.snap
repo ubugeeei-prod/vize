@@ -3,7 +3,7 @@ source: crates/vize_canon/src/virtual_ts/tests.rs
 expression: value
 ---
   // Compiler macros (only valid in setup scope, not global)
-  function defineProps<_T = unknown>(): _T;
+  function defineProps<_T = unknown>(): __DefineProps<_T>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   function defineProps(_props?: any) { void _props; return undefined as any; }

@@ -106,7 +106,7 @@ fn should_emit_keyed_template_prop_bindings(
     let base_name = strip_generic_params(type_name).trim();
     if let Some(body) = summary.types.definitions().resolve(base_name) {
         return has_top_level_type_operator(body.as_str())
-            || (emitted_names.is_empty() && !is_plain_inline_type_literal(body.as_str()));
+            || !is_plain_inline_type_literal(body.as_str());
     }
     emitted_names.is_empty() && !summary.types.definitions().is_defined(base_name)
 }

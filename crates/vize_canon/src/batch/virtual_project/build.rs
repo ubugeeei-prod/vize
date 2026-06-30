@@ -15,13 +15,15 @@ use crate::batch::Diagnostic;
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::import_rewriter::ImportRewriter;
 use crate::batch::source_map::{CompositeSourceMap, SfcSourceMap};
-use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
+use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
 
 use super::VirtualFile;
 use super::diagnostics::collect_sfc_block_ranges;
 use super::jsx_build::build_jsx_registered_file;
 use super::passthrough::collect_passthrough_modules;
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
+
+pub(super) const VUE_JSX_REFERENCE_DIRECTIVE: &str = "/// <reference types=\"vue/jsx\" />\n";
 
 /// Result of building a virtual file for a registered path, owned and
 /// independent of any `&mut VirtualProject` so it can be produced in parallel.
@@ -142,10 +144,13 @@ pub(super) fn build_vue_registered_file(
         )
     )?;
     let GeneratedVueFile {
-        code,
-        mappings,
+        mut code,
+        mut mappings,
         diagnostics,
     } = generated;
+    if use_tsx_virtual {
+        prepend_vue_jsx_reference(&mut code, &mut mappings);
+    }
     let rewritten = profile!(
         "canon.import.rewrite.vue",
         context.rewriter.rewrite(&code, virtual_source_type)
@@ -249,6 +254,25 @@ pub(super) fn virtual_ts_options_for_descriptor(
         css_modules,
         auto_import_stubs: Vec::new(),
         external_template_bindings: base.external_template_bindings.clone(),
+    }
+}
+
+pub(super) fn prepend_vue_jsx_reference(code: &mut CompactString, mappings: &mut [VizeMapping]) {
+    if code.starts_with(VUE_JSX_REFERENCE_DIRECTIVE) {
+        return;
+    }
+    let offset = VUE_JSX_REFERENCE_DIRECTIVE.len();
+    let mut prefixed = CompactString::with_capacity(offset + code.len());
+    prefixed.push_str(VUE_JSX_REFERENCE_DIRECTIVE);
+    prefixed.push_str(code.as_str());
+    *code = prefixed;
+    for mapping in mappings {
+        mapping.gen_range.start += offset;
+        mapping.gen_range.end += offset;
+        for sub_span in &mut mapping.sub_spans {
+            sub_span.gen_range.start += offset;
+            sub_span.gen_range.end += offset;
+        }
     }
 }
 

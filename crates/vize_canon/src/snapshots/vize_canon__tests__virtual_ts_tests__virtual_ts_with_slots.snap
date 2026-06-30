@@ -34,18 +34,20 @@ type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends 
 type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
 type __DefaultFactory<T> = (props: any) => T;
 type __WithDefaultValue<T> = T | __DefaultFactory<T>;
+type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
+type __DefineProps<T> = __LooseRequired<T>;
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;
+type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof __LooseRequired<T>]-?: Exclude<__LooseRequired<T>[K], undefined> };
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
+type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
 type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
 type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
-type __VizeComponentProps<T> = T extends unknown ? T & Partial<__VizeKebabProps<T>> : never;
-declare function __vForList<T>(source: readonly T[] | undefined | null): readonly [item: T, key: number, index: number][];
-declare function __vForList(source: number | undefined | null): readonly [item: number, key: number, index: number][];
-declare function __vForList(source: string | undefined | null): readonly [item: string, key: number, index: number][];
-declare function __vForList<T>(source: Iterable<T> | undefined | null): readonly [item: T, key: number, index: number][];
-declare function __vForList<T extends object>(source: T | undefined | null): readonly [item: T[keyof T], key: keyof T, index: number][];
+type __VizeFallthroughAttrs = { class?: unknown; style?: unknown };
+type __VizeKebabOptionalKeys<T> = { [K in keyof T & string]: __VizeKebabCase<K> extends K ? never : K }[keyof T & string];
+type __VizeComponentProps<T> = T extends unknown ? Omit<T, __VizeKebabOptionalKeys<T>> & Partial<Pick<T, __VizeKebabOptionalKeys<T>>> & Partial<__VizeKebabProps<T>> & __VizeFallthroughAttrs : never;
+type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
+declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
 import { useSlots } from 'vue'
 
 // ========== Exported Types ==========
@@ -54,7 +56,7 @@ export type Props = {};
 // ========== Setup Scope ==========
 function __setup() {
   // Compiler macros (only valid in setup scope, not global)
-  function defineProps<_T = unknown>(): _T;
+  function defineProps<_T = unknown>(): __DefineProps<_T>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   function defineProps(_props?: any) { void _props; return undefined as any; }
@@ -78,7 +80,7 @@ function __setup() {
   
   const slots = useSlots()
   
-  // @vize-map: 5666:5702 -> 0:58
+  // @vize-map: 6174:6210 -> 0:58
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
