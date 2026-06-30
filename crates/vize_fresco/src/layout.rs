@@ -7,6 +7,8 @@
 
 mod engine;
 mod flex;
+#[cfg(test)]
+mod flex_tests;
 mod rect;
 
 pub use engine::LayoutEngine;

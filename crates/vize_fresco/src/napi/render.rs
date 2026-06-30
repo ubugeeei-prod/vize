@@ -199,9 +199,6 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
 
             let mut render_node = RenderNode::new(node.id as u64, kind);
 
-            // Force all nodes to align to start (workaround for taffy centering)
-            render_node.style.align_self = AlignSelf::FlexStart;
-
             // For text nodes, set the size based on text content
             if node.node_type == "text" && !text_content.is_empty() {
                 use crate::text::TextWidth;
@@ -470,22 +467,6 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
             if let Some(ref children) = node.children {
                 for &child_id in children {
                     tree.add_child(node.id as u64, child_id as u64);
-                }
-            }
-        }
-
-        // Force root's direct child to have width: 100% to prevent centering
-        if let Some(first) = nodes.first()
-            && let Some(ref children) = first.children
-        {
-            for &child_id in children {
-                let child_id_u64 = child_id as u64;
-                if let Some(node) = tree.get(child_id_u64)
-                    && matches!(node.style.width, Dimension::Auto)
-                {
-                    let mut style = node.style.clone();
-                    style.width = Dimension::Percent(100.0);
-                    tree.set_style(child_id_u64, style);
                 }
             }
         }
