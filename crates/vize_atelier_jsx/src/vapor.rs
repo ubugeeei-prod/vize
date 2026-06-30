@@ -20,7 +20,7 @@ use vize_croquis::Croquis;
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::scoped::{ScopedStyle, build_scoped_style};
-use crate::{JsxLang, JsxOutputMode, LoweredRoot, lower_source};
+use crate::{ComponentSetupSpan, JsxLang, JsxOutputMode, LoweredRoot, lower_source};
 
 /// Options controlling JSX/TSX -> Vapor compilation.
 #[derive(Debug, Clone, Default)]
@@ -36,6 +36,9 @@ pub struct VaporCompileOptions {
 pub struct VaporComponent {
     /// Enclosing component-function name, if resolved.
     pub component_name: Option<String>,
+    /// Source spans for rebuilding block-body JSX components as stateful Vue
+    /// components.
+    pub component_setup: Option<ComponentSetupSpan>,
     /// Resolved output mode (defaults to [`JsxOutputMode::Vapor`] here).
     pub mode: JsxOutputMode,
     /// Generated Vapor render code (imports + templates + render function).
@@ -106,6 +109,7 @@ pub(crate) fn compile_root_to_vapor(
             crate::ssr::compile_lowered_root_to_ssr(bump, lowered, analysis, JsxOutputMode::Vapor);
         return VaporComponent {
             component_name: ssr.component_name,
+            component_setup: ssr.component_setup,
             mode: ssr.mode,
             code: ssr.code,
             templates: Vec::new(),
@@ -117,6 +121,7 @@ pub(crate) fn compile_root_to_vapor(
         mut root,
         mode,
         component_name,
+        component_setup,
         scoped_css,
         // The style interpolation spans are consumed by the type checker
         // (`vize_canon`), not the Vapor scoping backend.
@@ -155,6 +160,7 @@ pub(crate) fn compile_root_to_vapor(
 
     VaporComponent {
         component_name,
+        component_setup,
         mode: mode.unwrap_or(JsxOutputMode::Vapor),
         code,
         templates,

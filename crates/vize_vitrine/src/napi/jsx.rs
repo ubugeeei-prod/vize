@@ -281,6 +281,42 @@ mod tests {
     }
 
     #[test]
+    fn jsx_compile_result_wraps_block_body_setup_state() {
+        let source = r#"
+            import { computed, ref } from "vue";
+
+            export const App = () => {
+                const count = ref(0);
+                const doubled = computed(() => count.value * 2);
+                const increment = () => {
+                    count.value += 1;
+                };
+
+                return <button onClick={increment}>{doubled.value}</button>;
+            };
+        "#;
+        let result = compile_jsx_impl(source.to_string(), None);
+
+        assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
+        assert!(
+            result
+                .code
+                .contains("import { defineComponent as _defineComponent } from \"vue\""),
+            "{}",
+            result.code
+        );
+        assert!(
+            result
+                .code
+                .contains("export const App = _defineComponent({")
+        );
+        assert!(result.code.contains("const count = ref(0);"));
+        assert!(result.code.contains("count.value += 1;"));
+        assert!(result.code.contains("function render(_ctx, _cache)"));
+        assert!(!result.code.contains("export function render("));
+    }
+
+    #[test]
     fn jsx_compile_result_surfaces_source_map_when_requested() {
         let source = "const App = () => <div>{message}</div>;\nexport default App;\n";
 

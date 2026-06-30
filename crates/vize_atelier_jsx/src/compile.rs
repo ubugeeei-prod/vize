@@ -45,6 +45,8 @@ pub struct JsxCompileConfig {
 pub struct JsxCompileOutput {
     /// One entry per outermost JSX render root, in source order.
     pub components: Vec<JsxComponent>,
+    /// Original JSX/TSX source used to rebuild stateful component wrappers.
+    source: String,
     /// Parse, lowering, and transform diagnostics.
     pub diagnostics: Vec<JsxDiagnostic>,
 }
@@ -68,7 +70,7 @@ impl JsxCompileOutput {
     /// and report an empty preamble, so they pass through untouched.
     pub fn module_code(&self) -> String {
         let preamble = merge_preambles(self.components.iter().map(JsxComponent::preamble));
-        render_exports::module_code(&self.components, preamble)
+        render_exports::module_code(&self.components, preamble, &self.source)
     }
 
     /// The v3 source map (JSON) for the module's render code, when source-map
@@ -81,6 +83,13 @@ impl JsxCompileOutput {
     /// component (the shape the bundler plugins consume) is the case that carries
     /// a map; multi-component modules report `None` rather than a misaligned map.
     pub fn source_map(&self) -> Option<&str> {
+        if self
+            .components
+            .iter()
+            .any(|component| component.component_setup().is_some())
+        {
+            return None;
+        }
         match self.components.as_slice() {
             [only] => only.map(),
             _ => None,
@@ -245,6 +254,7 @@ pub fn compile_jsx(
 
     JsxCompileOutput {
         components,
+        source: String::from(source),
         diagnostics,
     }
 }

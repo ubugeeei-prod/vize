@@ -24,6 +24,16 @@ impl JsxComponent {
         }
     }
 
+    /// Source spans for rebuilding block-body JSX components as stateful Vue
+    /// components.
+    pub fn component_setup(&self) -> Option<&crate::ComponentSetupSpan> {
+        match self {
+            Self::Vdom(component) => component.component_setup.as_ref(),
+            Self::Vapor(component) => component.component_setup.as_ref(),
+            Self::Ssr(component) => component.component_setup.as_ref(),
+        }
+    }
+
     /// The resolved client output mode for this component.
     pub fn mode(&self) -> JsxOutputMode {
         match self {

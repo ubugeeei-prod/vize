@@ -1,8 +1,12 @@
 use vize_carton::{FxHashSet, String, ToCompactString};
 
 use super::JsxComponent;
+use crate::JsxOutputMode;
 
-pub(super) fn module_code(components: &[JsxComponent], preamble: String) -> String {
+pub(super) fn module_code(components: &[JsxComponent], preamble: String, source: &str) -> String {
+    if let Some(module) = stateful_module_code(components, preamble.as_str(), source) {
+        return module;
+    }
     let mut module = preamble;
     let multi_component = components.len() > 1;
     let mut render_export_names: FxHashSet<String> = FxHashSet::default();
@@ -26,6 +30,119 @@ pub(super) fn module_code(components: &[JsxComponent], preamble: String) -> Stri
         }
     }
     module
+}
+
+fn stateful_module_code(
+    components: &[JsxComponent],
+    preamble: &str,
+    source: &str,
+) -> Option<String> {
+    if components.is_empty() {
+        return None;
+    }
+    if !components.iter().all(|component| {
+        component.mode() == JsxOutputMode::Vdom && component.component_setup().is_some()
+    }) {
+        return None;
+    }
+
+    let mut ordered: Vec<&JsxComponent> = components.iter().collect();
+    ordered.sort_by_key(|component| component.component_setup().unwrap().declaration_start);
+
+    let mut module = String::default();
+    module.push_str(preamble);
+    if !module.is_empty() && !module.ends_with('\n') {
+        module.push('\n');
+    }
+    module.push_str("import { defineComponent as _defineComponent } from \"vue\"\n");
+
+    let mut cursor = 0usize;
+    for component in ordered {
+        let setup = component.component_setup()?;
+        let name = component.component_name()?.trim();
+        if !is_ascii_js_identifier(name) {
+            return None;
+        }
+        let declaration_start = setup.declaration_start as usize;
+        let declaration_end =
+            declaration_end_with_semicolon(source, setup.declaration_end as usize);
+        if declaration_start < cursor || declaration_end > source.len() {
+            return None;
+        }
+        let render = local_render_code(component.code())?;
+
+        module.push_str(&source[cursor..declaration_start]);
+        push_component_wrapper(&mut module, source, name, setup, render.as_str());
+        cursor = declaration_end;
+    }
+    module.push_str(&source[cursor..]);
+    Some(module)
+}
+
+fn declaration_end_with_semicolon(source: &str, end: usize) -> usize {
+    let bytes = source.as_bytes();
+    if bytes.get(end).is_some_and(|byte| *byte == b';') {
+        end + 1
+    } else {
+        end
+    }
+}
+
+fn local_render_code(code: &str) -> Option<std::string::String> {
+    if code
+        .lines()
+        .any(|line| line.trim_start().starts_with("import "))
+    {
+        return None;
+    }
+    Some(code.replacen("export function render(", "function render(", 1))
+        .filter(|local| local.as_str() != code)
+}
+
+fn push_component_wrapper(
+    module: &mut String,
+    source: &str,
+    name: &str,
+    setup: &crate::ComponentSetupSpan,
+    render: &str,
+) {
+    module.push_str("const ");
+    module.push_str(name);
+    module.push_str(" = _defineComponent({\n  name: \"");
+    module.push_str(&escape_js_string(name));
+    module.push_str("\",\n  setup() {\n");
+
+    let setup_source = &source[setup.setup_start as usize..setup.setup_end as usize];
+    push_indented_trimmed(module, setup_source, "    ");
+    push_indented_trimmed(module, render, "    ");
+
+    module.push_str("    return render\n  }\n});");
+}
+
+fn push_indented_trimmed(out: &mut String, block: &str, indent: &str) {
+    let block = block.trim();
+    if block.is_empty() {
+        return;
+    }
+    for line in block.lines() {
+        out.push_str(indent);
+        out.push_str(line);
+        out.push('\n');
+    }
+}
+
+fn escape_js_string(value: &str) -> String {
+    let mut escaped = String::default();
+    for ch in value.chars() {
+        match ch {
+            '\\' => escaped.push_str("\\\\"),
+            '"' => escaped.push_str("\\\""),
+            '\n' => escaped.push_str("\\n"),
+            '\r' => escaped.push_str("\\r"),
+            _ => escaped.push(ch),
+        }
+    }
+    escaped
 }
 
 pub(super) fn unique_render_export_name(

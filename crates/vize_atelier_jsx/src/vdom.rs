@@ -23,7 +23,7 @@ use vize_croquis::Croquis;
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::scoped::{ScopedStyle, build_scoped_style};
-use crate::{JsxLang, JsxOutputMode, LoweredRoot, lower_source};
+use crate::{ComponentSetupSpan, JsxLang, JsxOutputMode, LoweredRoot, lower_source};
 
 /// Options controlling JSX/TSX -> VDOM compilation.
 ///
@@ -43,6 +43,9 @@ pub struct VdomCompileOptions {
 pub struct VdomComponent {
     /// Enclosing component-function name, if resolved.
     pub component_name: Option<String>,
+    /// Source spans for rebuilding block-body JSX components as stateful Vue
+    /// components.
+    pub component_setup: Option<ComponentSetupSpan>,
     /// Resolved output mode (defaults to [`JsxOutputMode::Vdom`]).
     pub mode: JsxOutputMode,
     /// Generated render code.
@@ -126,6 +129,7 @@ pub(crate) fn compile_root_to_vdom(
         mut root,
         mode,
         component_name,
+        component_setup,
         scoped_css,
         // The style interpolation spans are consumed by the type checker
         // (`vize_canon`), not the VDOM scoping backend.
@@ -169,6 +173,7 @@ pub(crate) fn compile_root_to_vdom(
 
     VdomComponent {
         component_name,
+        component_setup,
         mode: mode.unwrap_or(JsxOutputMode::Vdom),
         code: result.code,
         preamble: result.preamble,

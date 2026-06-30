@@ -12,7 +12,7 @@ use vize_croquis::Croquis;
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::scoped::{ScopedStyle, build_scoped_style};
-use crate::{JsxLang, JsxOutputMode, LoweredRoot, lower_source};
+use crate::{ComponentSetupSpan, JsxLang, JsxOutputMode, LoweredRoot, lower_source};
 
 /// Options controlling JSX/TSX -> SSR compilation.
 #[derive(Debug, Clone, Default)]
@@ -26,6 +26,9 @@ pub struct SsrCompileOptions {
 pub struct SsrComponent {
     /// Enclosing component-function name, if resolved.
     pub component_name: Option<String>,
+    /// Source spans for rebuilding block-body JSX components as stateful Vue
+    /// components.
+    pub component_setup: Option<ComponentSetupSpan>,
     /// Resolved client output mode metadata for hydration.
     pub mode: JsxOutputMode,
     /// Generated SSR code: imports plus an `ssrRender` function.
@@ -94,6 +97,7 @@ pub(crate) fn compile_lowered_root_to_ssr(
         mut root,
         mode,
         component_name,
+        component_setup,
         scoped_css,
         scoped_style_exprs: _,
     } = lowered;
@@ -126,6 +130,7 @@ pub(crate) fn compile_lowered_root_to_ssr(
 
     SsrComponent {
         component_name,
+        component_setup,
         mode: mode.unwrap_or(default_mode),
         code,
         scoped_style,

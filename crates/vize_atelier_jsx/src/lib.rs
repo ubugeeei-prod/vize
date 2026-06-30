@@ -74,6 +74,9 @@ pub struct LoweredRoot<'a> {
     /// Name of the enclosing component function (`function App` / `const App =
     /// () => …`), if it could be resolved.
     pub component_name: Option<String>,
+    /// Source spans for a block-body component whose setup statements should be
+    /// preserved around the generated render function.
+    pub component_setup: Option<ComponentSetupSpan>,
     /// Raw (un-rewritten) CSS of the component's `<style scoped>` block(s),
     /// extracted from the markup and removed from the rendered children
     /// (#1495). `None` when the component had no `<style scoped>`. The backends
@@ -92,6 +95,24 @@ pub struct LoweredRoot<'a> {
     /// so a wrong type inside a style interpolation is reported at the
     /// interpolation. Empty when no `<style scoped>` interpolations were present.
     pub scoped_style_exprs: Vec<StyleExprSpan>,
+}
+
+/// Source spans needed to rebuild a JSX component as a stateful Vue component.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ComponentSetupSpan {
+    /// Full variable declaration span to replace, e.g. `const App = () => {}`.
+    pub declaration_start: u32,
+    /// End of the declaration span. A following semicolon may be consumed by the
+    /// module renderer.
+    pub declaration_end: u32,
+    /// Start of setup statements inside the component body.
+    pub setup_start: u32,
+    /// End of setup statements, immediately before the `return <jsx>` statement.
+    pub setup_end: u32,
+    /// Span of the JSX expression returned by the setup body.
+    pub render_start: u32,
+    /// End of the returned JSX expression span.
+    pub render_end: u32,
 }
 
 /// A `<style scoped>` template-literal interpolation expression (`${expr}`)

@@ -13,17 +13,18 @@
 //!   `const App = () => …`).
 
 use oxc_ast::ast::{
-    ArrowFunctionExpression, Function, FunctionBody, JSXElement, JSXFragment, Program,
-    VariableDeclarator,
+    ArrowFunctionExpression, Expression, Function, FunctionBody, JSXElement, JSXFragment, Program,
+    Statement, VariableDeclaration, VariableDeclarator,
 };
 use oxc_ast_visit::{Visit, walk};
+use oxc_span::{GetSpan, Span};
 use oxc_syntax::scope::ScopeFlags;
 use vize_carton::String;
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::lower::{Lowerer, ScopedStyleExpr};
 use crate::mode::{DirectiveKind, JsxOutputMode, classify_directive};
-use crate::{LoweredRoot, StyleExprSpan};
+use crate::{ComponentSetupSpan, LoweredRoot, StyleExprSpan};
 
 /// Lower every outermost JSX root in `program` into a [`LoweredRoot`].
 pub(crate) fn lower_program_roots<'a>(
@@ -35,6 +36,7 @@ pub(crate) fn lower_program_roots<'a>(
         roots: std::vec::Vec::new(),
         scopes: std::vec::Vec::new(),
         pending_name: None,
+        pending_declaration_span: None,
     };
     collector.visit_program(program);
     collector.roots
@@ -44,6 +46,7 @@ pub(crate) fn lower_program_roots<'a>(
 struct FnScope {
     mode: Option<JsxOutputMode>,
     name: Option<String>,
+    setup: Option<ComponentSetupSpan>,
 }
 
 struct RootLowerer<'l, 'a, 'm, 's> {
@@ -53,6 +56,7 @@ struct RootLowerer<'l, 'a, 'm, 's> {
     /// Name captured from a `const X = ...` declarator, claimed by the next
     /// function/arrow we enter.
     pending_name: Option<String>,
+    pending_declaration_span: Option<Span>,
 }
 
 impl RootLowerer<'_, '_, '_, '_> {
@@ -93,9 +97,45 @@ impl RootLowerer<'_, '_, '_, '_> {
         }
     }
 
-    fn push_scope(&mut self, body: Option<&FunctionBody<'_>>, name: Option<String>) {
+    fn push_scope(
+        &mut self,
+        body: Option<&FunctionBody<'_>>,
+        name: Option<String>,
+        setup: Option<ComponentSetupSpan>,
+    ) {
         let mode = body.and_then(|body| self.resolve_body_mode(body));
-        self.scopes.push(FnScope { mode, name });
+        self.scopes.push(FnScope { mode, name, setup });
+    }
+
+    fn current_setup_for_span(&self, span: Span) -> Option<ComponentSetupSpan> {
+        self.scopes.last().and_then(|scope| {
+            let setup = scope.setup.as_ref()?;
+            (setup.render_start == span.start && setup.render_end == span.end)
+                .then(|| setup.clone())
+        })
+    }
+
+    fn block_body_setup_span(
+        &self,
+        body: &FunctionBody<'_>,
+        declaration_span: Span,
+    ) -> Option<ComponentSetupSpan> {
+        let return_stmt = body.statements.iter().find_map(|stmt| {
+            let Statement::ReturnStatement(return_stmt) = stmt else {
+                return None;
+            };
+            let argument = return_stmt.argument.as_ref()?;
+            jsx_expression_span(argument).map(|span| (return_stmt.span, span))
+        })?;
+
+        Some(ComponentSetupSpan {
+            declaration_start: declaration_span.start,
+            declaration_end: declaration_span.end,
+            setup_start: body.span.start.saturating_add(1),
+            setup_end: return_stmt.0.start,
+            render_start: return_stmt.1.start,
+            render_end: return_stmt.1.end,
+        })
     }
 
     /// Resolve the JSX output mode declared by a function body's directive
@@ -148,6 +188,16 @@ impl RootLowerer<'_, '_, '_, '_> {
     }
 }
 
+fn jsx_expression_span(expression: &Expression<'_>) -> Option<Span> {
+    match expression {
+        Expression::JSXElement(_) | Expression::JSXFragment(_) => Some(expression.span()),
+        Expression::ParenthesizedExpression(parenthesized) => {
+            jsx_expression_span(&parenthesized.expression)
+        }
+        _ => None,
+    }
+}
+
 impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
     fn visit_variable_declarator(&mut self, it: &VariableDeclarator<'ast>) {
         // Capture `const App = ...` so an immediately-initialized function or
@@ -159,20 +209,33 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
         self.pending_name = None;
     }
 
+    fn visit_variable_declaration(&mut self, it: &VariableDeclaration<'ast>) {
+        let previous = self.pending_declaration_span;
+        self.pending_declaration_span = (it.declarations.len() == 1).then_some(it.span);
+        walk::walk_variable_declaration(self, it);
+        self.pending_declaration_span = previous;
+    }
+
     fn visit_function(&mut self, it: &Function<'ast>, flags: ScopeFlags) {
         let name = it
             .id
             .as_ref()
             .map(|id| String::from(id.name.as_str()))
             .or_else(|| self.pending_name.take());
-        self.push_scope(it.body.as_deref(), name);
+        self.push_scope(it.body.as_deref(), name, None);
         walk::walk_function(self, it, flags);
         self.scopes.pop();
     }
 
     fn visit_arrow_function_expression(&mut self, it: &ArrowFunctionExpression<'ast>) {
         let name = self.pending_name.take();
-        self.push_scope(Some(&it.body), name);
+        let setup = if it.expression {
+            None
+        } else {
+            self.pending_declaration_span
+                .and_then(|span| self.block_body_setup_span(&it.body, span))
+        };
+        self.push_scope(Some(&it.body), name, setup);
         walk::walk_arrow_function_expression(self, it);
         self.scopes.pop();
     }
@@ -186,6 +249,7 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
             root,
             mode: self.current_mode(),
             component_name: self.current_name(),
+            component_setup: self.current_setup_for_span(element.span),
             scoped_css,
             scoped_style_exprs,
         });
@@ -198,6 +262,7 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
             root,
             mode: self.current_mode(),
             component_name: self.current_name(),
+            component_setup: self.current_setup_for_span(fragment.span),
             scoped_css,
             scoped_style_exprs,
         });
