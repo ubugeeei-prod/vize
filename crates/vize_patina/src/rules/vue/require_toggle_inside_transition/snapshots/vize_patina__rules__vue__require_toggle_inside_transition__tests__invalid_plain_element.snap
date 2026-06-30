@@ -1,5 +1,5 @@
 ---
-source: crates/vize_patina/src/rules/vue/require_toggle_inside_transition.rs
+source: crates/vize_patina/src/rules/vue/require_toggle_inside_transition/tests.rs
 expression: result.diagnostics
 ---
 [
