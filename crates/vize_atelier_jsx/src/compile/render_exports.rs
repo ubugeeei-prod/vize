@@ -88,7 +88,7 @@ fn declaration_end_with_semicolon(source: &str, end: usize) -> usize {
     }
 }
 
-fn local_render_code(code: &str) -> Option<std::string::String> {
+fn local_render_code(code: &str) -> Option<String> {
     if code
         .lines()
         .any(|line| line.trim_start().starts_with("import "))
@@ -97,6 +97,7 @@ fn local_render_code(code: &str) -> Option<std::string::String> {
     }
     Some(code.replacen("export function render(", "function render(", 1))
         .filter(|local| local.as_str() != code)
+        .map(|local| local.to_compact_string())
 }
 
 fn push_component_wrapper(
