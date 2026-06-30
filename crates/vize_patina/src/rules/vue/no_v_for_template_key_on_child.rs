@@ -47,6 +47,18 @@ impl NoVForTemplateKeyOnChild {
         })
     }
 
+    /// Vue's compiler checks this rule after `v-if` / `v-for` transforms, so a
+    /// child with its own structural directive is no longer a plain direct
+    /// element child for this diagnostic.
+    fn has_child_control_flow(element: &ElementNode) -> bool {
+        element.props.iter().any(|prop| match prop {
+            PropNode::Directive(dir) => {
+                matches!(dir.name.as_str(), "if" | "else" | "else-if" | "for")
+            }
+            PropNode::Attribute(_) => false,
+        })
+    }
+
     /// Return the `:key`/`v-bind:key` directive on `element`, if any.
     ///
     /// Only the bound form is considered: the Vue 3 breaking change is about the
@@ -81,6 +93,9 @@ impl Rule for NoVForTemplateKeyOnChild {
             let TemplateChildNode::Element(child) = child else {
                 continue;
             };
+            if Self::has_child_control_flow(child) {
+                continue;
+            }
             if let Some(prop) = Self::key_binding(child) {
                 ctx.error_with_help(
                     ctx.t("vue/no-v-for-template-key-on-child.message"),
@@ -167,6 +182,44 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_key_on_child_with_own_control_flow() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"
+            <template v-for="row in rows" :key="row">
+              <li v-for="col in cols" :key="col">{{ col }}</li>
+            </template>
+            <template v-for="item in items">
+              <span v-if="item.visible" :key="item.id" />
+            </template>
+            <template v-for="x in list">
+              <span v-if="x.a" :key="x.k1" />
+              <span v-else-if="x.b" :key="x.k2" />
+              <span v-else :key="x.k3" />
+            </template>
+            "#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_reports_only_plain_child_key_when_mixed_with_control_flow_children() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"
+            <template v-for="item in items">
+              <span v-for="child in item.children" :key="child.id" />
+              <span v-if="item.visible" :key="item.id" />
+              <span :key="item.fallbackId" />
+            </template>
+            "#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1);
     }
 
     #[test]
