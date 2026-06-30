@@ -119,6 +119,21 @@ impl RequireToggleInsideTransition {
         }
         false
     }
+
+    /// `<Transition appear>` animates its initial mount without the child being
+    /// toggled by `v-if`, `v-show`, or a changing key.
+    fn has_appear(element: &ElementNode) -> bool {
+        element.props.iter().any(|prop| match prop {
+            PropNode::Attribute(attr) => attr.name.as_str() == "appear",
+            PropNode::Directive(dir) => {
+                dir.name.as_str() == "bind"
+                    && matches!(
+                        dir.arg.as_ref(),
+                        Some(ExpressionNode::Simple(arg)) if arg.content.as_str() == "appear"
+                    )
+            }
+        })
+    }
 }
 
 impl Rule for RequireToggleInsideTransition {
@@ -130,6 +145,10 @@ impl Rule for RequireToggleInsideTransition {
         // Built-in `<transition>` / `<Transition>` wrapper (case-insensitive,
         // matching how Vue resolves the built-in component name).
         if !element.tag.as_str().eq_ignore_ascii_case("transition") {
+            return;
+        }
+
+        if Self::has_appear(element) {
             return;
         }
 
@@ -272,6 +291,33 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<transition><div v-bind:key="k">x</div></transition>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_transition_appear() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"
+            <Transition name="fade" appear>
+              <div>loading</div>
+            </Transition>
+            <Transition name="fade">
+              <div>static</div>
+            </Transition>
+            "#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_valid_transition_bound_appear() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<transition :appear="shouldAppear"><div>loading</div></transition>"#,
             "test.vue",
         );
         assert_eq!(result.error_count, 0);
