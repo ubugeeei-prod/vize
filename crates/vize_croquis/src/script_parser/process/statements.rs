@@ -203,10 +203,7 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
         Statement::TSTypeAliasDeclaration(type_alias) => {
             // Type aliases are allowed (not bindings, but tracked)
             let name = type_alias.id.name.as_str();
-            result.types.add_type_alias(
-                name,
-                type_alias.type_annotation.span().source_text(source).trim(),
-            );
+            result.register_local_type_alias(type_alias, source);
             let typeof_refs = super::super::typeof_refs::collect_from_type_alias(type_alias);
             result.record_type_export(
                 TypeExport {
@@ -223,9 +220,7 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
         Statement::TSInterfaceDeclaration(interface) => {
             // Interfaces are allowed (not bindings, but tracked)
             let name = interface.id.name.as_str();
-            result
-                .types
-                .add_interface(name, interface.body.span.source_text(source));
+            result.register_local_interface(interface, source);
             let typeof_refs = super::super::typeof_refs::collect_from_interface(interface);
             result.record_type_export(
                 TypeExport {

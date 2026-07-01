@@ -37,6 +37,9 @@ pub use result::{ScriptParseResult, ScriptParserOptions};
 mod tests;
 
 #[cfg(test)]
+mod interface_extends_tests;
+
+#[cfg(test)]
 mod props_destructure_tests;
 
 #[cfg(test)]

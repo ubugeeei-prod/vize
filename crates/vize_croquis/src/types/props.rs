@@ -61,9 +61,10 @@ impl TypeResolver {
                 return Vec::new();
             }
             for heritage in self.definitions.interface_extends(&name) {
+                let mut local_seen = FxHashSet::default();
                 push_unique_properties(
                     &mut properties,
-                    self.extract_properties_inner(heritage.as_str(), resolving, seen),
+                    self.extract_properties_inner(heritage.as_str(), resolving, &mut local_seen),
                     seen,
                 );
             }

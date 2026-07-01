@@ -43,6 +43,21 @@ fn extract_properties_includes_interface_pick_heritage() {
 }
 
 #[test]
+fn extract_properties_includes_direct_interface_heritage() {
+    let mut resolver = TypeResolver::new();
+    resolver.add_interface("BaseProps", "{ required?: boolean }");
+    resolver.add_interface_with_extends("FooProps", "{ label: string }", vec!["BaseProps".into()]);
+
+    let props = resolver.extract_properties("FooProps");
+    let names = props
+        .iter()
+        .map(|prop| prop.name.as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(names, ["required", "label"]);
+}
+
+#[test]
 fn extract_properties_keeps_union_members_nested() {
     let mut resolver = TypeResolver::new();
     resolver.add_interface(

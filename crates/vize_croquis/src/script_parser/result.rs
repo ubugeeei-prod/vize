@@ -4,7 +4,7 @@
 //! [`ScriptParserOptions`], and the small metadata enums/structs that back
 //! plain-value and runtime-object tracking.
 
-use oxc_ast::ast::Declaration;
+use oxc_ast::ast::{Declaration, TSInterfaceDeclaration, TSTypeAliasDeclaration};
 use oxc_span::GetSpan;
 
 use crate::croquis::{BindingMetadata, ComponentRegistration, ComponentShape, Croquis};
@@ -150,27 +150,41 @@ impl ScriptParseResult {
     pub(crate) fn register_local_type(&mut self, decl: &Declaration<'_>, source: &str) {
         match decl {
             Declaration::TSInterfaceDeclaration(interface) => {
-                let extends = interface
-                    .extends
-                    .iter()
-                    .filter_map(|heritage| {
-                        normalize_interface_heritage(heritage.span.source_text(source))
-                    })
-                    .collect();
-                self.types.add_interface_with_extends(
-                    interface.id.name.as_str(),
-                    interface.body.span.source_text(source),
-                    extends,
-                );
+                self.register_local_interface(interface, source);
             }
             Declaration::TSTypeAliasDeclaration(alias) => {
-                self.types.add_type_alias(
-                    alias.id.name.as_str(),
-                    alias.type_annotation.span().source_text(source).trim(),
-                );
+                self.register_local_type_alias(alias, source);
             }
             _ => {}
         }
+    }
+
+    pub(crate) fn register_local_interface(
+        &mut self,
+        interface: &TSInterfaceDeclaration<'_>,
+        source: &str,
+    ) {
+        let extends = interface
+            .extends
+            .iter()
+            .filter_map(|heritage| normalize_interface_heritage(heritage.span.source_text(source)))
+            .collect();
+        self.types.add_interface_with_extends(
+            interface.id.name.as_str(),
+            interface.body.span.source_text(source),
+            extends,
+        );
+    }
+
+    pub(crate) fn register_local_type_alias(
+        &mut self,
+        alias: &TSTypeAliasDeclaration<'_>,
+        source: &str,
+    ) {
+        self.types.add_type_alias(
+            alias.id.name.as_str(),
+            alias.type_annotation.span().source_text(source).trim(),
+        );
     }
 
     /// Record a `TypeExport` together with type/value dependency references

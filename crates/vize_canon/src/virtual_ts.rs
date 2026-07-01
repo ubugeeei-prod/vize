@@ -12,6 +12,8 @@ mod generator;
 mod helpers;
 pub mod incremental;
 #[cfg(test)]
+mod interface_extends_tests;
+#[cfg(test)]
 mod legacy_vue2_vuetify_tests;
 mod props;
 mod scope;
