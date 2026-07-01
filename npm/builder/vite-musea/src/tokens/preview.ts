@@ -6,6 +6,7 @@ export type MuseaTokenPreviewKind =
   | "fontSize"
   | "fontWeight"
   | "lineHeight"
+  | "letterSpacing"
   | "shadow"
   | "radius"
   | "opacity"
@@ -163,6 +164,12 @@ function inferPreviewKind(
     hasSignal(candidates, ["border-radius", "borderradius", "radius", "round", "rounded"])
   ) {
     return "radius";
+  }
+  if (
+    hasType(candidates, ["letterspacing", "letter-spacing"]) ||
+    hasSignal(candidates, ["letter-spacing", "letterspacing", "tracking"])
+  ) {
+    return "letterSpacing";
   }
   if (
     hasType(candidates, ["spacing", "space"]) ||

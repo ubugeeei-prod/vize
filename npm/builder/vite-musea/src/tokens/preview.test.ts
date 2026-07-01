@@ -30,12 +30,13 @@ void test("token preview uses referenced token metadata and resolved value", () 
   });
 });
 
-void test("token preview includes default spacing, opacity, radius, and z-index previews", () => {
+void test("token preview includes default spacing, opacity, radius, z-index, and letter-spacing previews", () => {
   const cases: Array<[string, DesignToken, string]> = [
     ["spacing.4", { value: "1rem", type: "dimension" }, "spacing"],
     ["opacity.disabled", { value: 0.48 }, "opacity"],
     ["shape.round.full", { value: "9999px", type: "dimension" }, "radius"],
     ["zIndex.modal", { value: 1000 }, "zIndex"],
+    ["typography.tracking.tight", { value: "-0.02em", type: "letter-spacing" }, "letterSpacing"],
   ];
 
   for (const [tokenPath, token, expectedKind] of cases) {

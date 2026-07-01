@@ -3,7 +3,7 @@ import { computed } from "vue";
 
 const props = defineProps<{
   value: string | number;
-  tokenType: "fontSize" | "fontWeight" | "lineHeight";
+  tokenType: "fontSize" | "fontWeight" | "lineHeight" | "letterSpacing";
 }>();
 
 const style = computed(() => {
@@ -18,12 +18,23 @@ const style = computed(() => {
       return { fontWeight: val };
     case "lineHeight":
       return { lineHeight: val };
+    case "letterSpacing":
+      return { letterSpacing: cssLength(val) };
     default:
       return {};
   }
 });
 
 const isLineHeight = computed(() => props.tokenType === "lineHeight");
+
+function cssLength(value: string): string {
+  if (value === "0") return value;
+  return /^-?(?:\d+|\d*\.\d+)(?:px|rem|em|ch|ex|lh|rlh|vw|vh|vmin|vmax|cm|mm|q|in|pc|pt)$/i.test(
+    value,
+  )
+    ? value
+    : `${value}px`;
+}
 </script>
 
 <template>

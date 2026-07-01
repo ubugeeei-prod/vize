@@ -94,6 +94,11 @@ function zLevel(input: string | number): number {
         :value="value"
         token-type="lineHeight"
       />
+      <TypographyPreview
+        v-else-if="preview.kind === 'letterSpacing'"
+        :value="value"
+        token-type="letterSpacing"
+      />
       <div
         v-else-if="preview.kind === 'shadow'"
         class="shadow-swatch"
