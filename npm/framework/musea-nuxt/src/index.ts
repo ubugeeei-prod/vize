@@ -34,13 +34,57 @@ export function nuxtMusea(options: NuxtMuseaOptions = {}): Plugin {
 }
 
 export type { NuxtMuseaOptions } from "./types.js";
+export {
+  configureNuxtMuseaMocks,
+  resetNuxtMuseaMocks,
+  getRouteState,
+  getRuntimeConfigState,
+  getAppConfigState,
+} from "./context.js";
+export { installNuxtMuseaMocks, createNuxtMuseaPreviewSetup } from "./app.js";
 
 // Re-export mock composables for direct use
 export { useRoute, useRouter } from "./mocks/composables.js";
-export { useFetch, useAsyncData, useLazyFetch, useLazyAsyncData } from "./mocks/data.js";
-export { navigateTo, abortNavigation } from "./mocks/navigation.js";
-export { useHead, useSeoMeta } from "./mocks/head.js";
-export { useNuxtApp, useRuntimeConfig, useState, useCookie } from "./mocks/runtime.js";
+export {
+  useFetch,
+  useAsyncData,
+  useLazyFetch,
+  useLazyAsyncData,
+  useNuxtData,
+  refreshNuxtData,
+  clearNuxtData,
+  useRequestFetch,
+} from "./mocks/data.js";
+export {
+  navigateTo,
+  abortNavigation,
+  defineNuxtRouteMiddleware,
+  definePageMeta,
+  setPageLayout,
+  prefetchComponents,
+  preloadComponents,
+  preloadRouteComponents,
+} from "./mocks/navigation.js";
+export { useHead, useSeoMeta, useHeadSafe, useServerSeoMeta } from "./mocks/head.js";
+export { createError, showError, clearError, useError } from "./mocks/error.js";
+export {
+  useNuxtApp,
+  useRuntimeConfig,
+  useAppConfig,
+  updateAppConfig,
+  useState,
+  useRequestHeaders,
+  useRequestEvent,
+  useRequestURL,
+  useCookie,
+  clearNuxtState,
+  defineNuxtPlugin,
+  defineNuxtComponent,
+  onNuxtReady,
+  callOnce,
+  useId,
+  reloadNuxtApp,
+} from "./mocks/runtime.js";
 export {
   NuxtLink,
   NuxtPage,
@@ -48,4 +92,10 @@ export {
   NuxtLayout,
   NuxtLoadingIndicator,
   NuxtErrorBoundary,
+  NuxtRouteAnnouncer,
+  NuxtWelcome,
+  NuxtIsland,
+  NuxtClientFallback,
+  NuxtImg,
+  NuxtPicture,
 } from "./mocks/components.js";

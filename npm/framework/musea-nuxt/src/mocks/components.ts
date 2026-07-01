@@ -3,6 +3,12 @@
  */
 
 import { defineComponent, h } from "vue";
+import type { PropType } from "vue";
+
+import { resolveNavigationTarget } from "../context.js";
+import { navigateTo } from "./navigation.js";
+import { useRoute } from "./composables.js";
+import type { NuxtMuseaNavigationTarget } from "../types.js";
 
 /**
  * Mock NuxtLink - renders as <RouterLink> or <a>.
@@ -10,7 +16,7 @@ import { defineComponent, h } from "vue";
 export const NuxtLink = defineComponent({
   name: "NuxtLink",
   props: {
-    to: { type: [String, Object], default: "/" },
+    to: { type: [String, Object] as PropType<NuxtMuseaNavigationTarget>, default: "/" },
     href: { type: String, default: undefined },
     target: { type: String, default: undefined },
     rel: { type: String, default: undefined },
@@ -20,39 +26,39 @@ export const NuxtLink = defineComponent({
     noPrefetch: { type: Boolean, default: false },
     activeClass: { type: String, default: "router-link-active" },
     exactActiveClass: { type: String, default: "router-link-exact-active" },
+    custom: { type: Boolean, default: false },
   },
   setup(props, { slots }) {
     return () => {
-      const to = props.href || props.to;
-      if (props.external || (typeof to === "string" && to.startsWith("http"))) {
-        return h(
-          "a",
-          {
-            href: typeof to === "string" ? to : "/",
-            target: props.target,
-            rel: props.rel ?? (props.target === "_blank" ? "noopener noreferrer" : undefined),
-          },
-          slots.default?.(),
-        );
+      const target = props.href ?? props.to;
+      const href = typeof target === "string" ? target : routeTargetToHref(target);
+      const navigate = () => navigateTo(target, { replace: props.replace });
+
+      if (props.custom) {
+        return slots.default?.({
+          href,
+          navigate,
+          route: useRoute(),
+          isActive: false,
+          isExactActive: false,
+        });
       }
 
-      // Try to use RouterLink if available
-      try {
-        const { RouterLink } = require("vue-router");
-        return h(
-          RouterLink,
-          {
-            to,
-            replace: props.replace,
-            activeClass: props.activeClass,
-            exactActiveClass: props.exactActiveClass,
+      return h(
+        "a",
+        {
+          "data-nuxt-link": "",
+          href,
+          target: props.target,
+          rel: props.rel ?? (props.target === "_blank" ? "noopener noreferrer" : undefined),
+          onClick: (event: MouseEvent) => {
+            if (props.external || props.target === "_blank" || isExternalHref(href)) return;
+            event.preventDefault();
+            void navigate();
           },
-          slots,
-        );
-      } catch {
-        // Fallback to <a> if vue-router is not available
-        return h("a", { href: typeof to === "string" ? to : "/" }, slots.default?.());
-      }
+        },
+        slots.default?.(),
+      );
     };
   },
 });
@@ -73,12 +79,7 @@ export const NuxtPage = defineComponent({
       if (slots.default) {
         return slots.default();
       }
-      try {
-        const { RouterView } = require("vue-router");
-        return h(RouterView, { name: props.name });
-      } catch {
-        return h("div", { "data-nuxt-page": "" }, "NuxtPage placeholder");
-      }
+      return h("div", { "data-nuxt-page": props.name }, "NuxtPage placeholder");
     };
   },
 });
@@ -126,3 +127,78 @@ export const NuxtErrorBoundary = defineComponent({
     return () => slots.default?.() ?? null;
   },
 });
+
+export const NuxtRouteAnnouncer = defineComponent({
+  name: "NuxtRouteAnnouncer",
+  props: {
+    politeness: { type: String, default: "polite" },
+  },
+  setup(props) {
+    return () =>
+      h("span", {
+        "aria-live": props.politeness,
+        "data-nuxt-route-announcer": "",
+        style: "position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);",
+      });
+  },
+});
+
+export const NuxtWelcome = defineComponent({
+  name: "NuxtWelcome",
+  setup() {
+    return () => h("div", { "data-nuxt-welcome": "" }, "NuxtWelcome placeholder");
+  },
+});
+
+export const NuxtIsland = defineComponent({
+  name: "NuxtIsland",
+  setup(_props, { slots }) {
+    return () => slots.default?.() ?? null;
+  },
+});
+
+export const NuxtClientFallback = defineComponent({
+  name: "NuxtClientFallback",
+  setup(_props, { slots }) {
+    return () => slots.default?.() ?? slots.fallback?.() ?? null;
+  },
+});
+
+export const NuxtImg = defineComponent({
+  name: "NuxtImg",
+  props: {
+    src: { type: String, required: true },
+    alt: { type: String, default: "" },
+    width: { type: [String, Number], default: undefined },
+    height: { type: [String, Number], default: undefined },
+  },
+  setup(props, { attrs }) {
+    return () =>
+      h("img", {
+        ...attrs,
+        src: props.src,
+        alt: props.alt,
+        width: props.width,
+        height: props.height,
+      });
+  },
+});
+
+export const NuxtPicture = defineComponent({
+  name: "NuxtPicture",
+  props: {
+    src: { type: String, required: true },
+    alt: { type: String, default: "" },
+  },
+  setup(props, { attrs }) {
+    return () => h("picture", {}, [h("img", { ...attrs, src: props.src, alt: props.alt })]);
+  },
+});
+
+function routeTargetToHref(to: NuxtMuseaNavigationTarget): string {
+  return resolveNavigationTarget(to).fullPath;
+}
+
+function isExternalHref(href: string): boolean {
+  return /^(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(href);
+}

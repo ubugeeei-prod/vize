@@ -4,12 +4,33 @@
  */
 
 export { useRoute, useRouter } from "./mocks/composables.js";
-export { useFetch, useAsyncData, useLazyFetch, useLazyAsyncData } from "./mocks/data.js";
-export { navigateTo, abortNavigation, defineNuxtRouteMiddleware } from "./mocks/navigation.js";
+export {
+  useFetch,
+  useAsyncData,
+  useLazyFetch,
+  useLazyAsyncData,
+  useNuxtData,
+  refreshNuxtData,
+  clearNuxtData,
+  useRequestFetch,
+} from "./mocks/data.js";
+export {
+  navigateTo,
+  abortNavigation,
+  defineNuxtRouteMiddleware,
+  definePageMeta,
+  setPageLayout,
+  prefetchComponents,
+  preloadComponents,
+  preloadRouteComponents,
+} from "./mocks/navigation.js";
 export { useHead, useSeoMeta, useHeadSafe, useServerSeoMeta } from "./mocks/head.js";
+export { createError, showError, clearError, useError } from "./mocks/error.js";
 export {
   useNuxtApp,
   useRuntimeConfig,
+  useAppConfig,
+  updateAppConfig,
   useState,
   useRequestHeaders,
   useRequestEvent,
@@ -17,6 +38,11 @@ export {
   useCookie,
   clearNuxtState,
   defineNuxtPlugin,
+  defineNuxtComponent,
+  onNuxtReady,
+  callOnce,
+  useId,
+  reloadNuxtApp,
 } from "./mocks/runtime.js";
 
 // Re-export Vue core composables that Nuxt auto-imports

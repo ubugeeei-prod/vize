@@ -8,8 +8,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const VIRTUAL_IMPORTS_ID = "\0musea-nuxt:imports";
-const VIRTUAL_IMPORTS_MODULE = "#imports";
 const VIRTUAL_NUXT_COMPONENTS_ID = "\0musea-nuxt:components";
+const NUXT_IMPORT_IDS = new Set(["#imports", "#app", "#build", "nuxt/app"]);
+const NUXT_COMPONENT_IDS = new Set([
+  "#components",
+  "#build/components",
+  "nuxt/dist/app/components",
+]);
 
 export function createNuxtMuseaPlugin(options: NuxtMuseaOptions = {}): Plugin {
   const srcDir = path.dirname(fileURLToPath(import.meta.url));
@@ -18,30 +23,15 @@ export function createNuxtMuseaPlugin(options: NuxtMuseaOptions = {}): Plugin {
     name: "vite-plugin-musea-nuxt",
     enforce: "pre",
 
-    config() {
-      return {
-        resolve: {
-          alias: {
-            // Resolve #imports to our auto-imports module
-            "#imports": VIRTUAL_IMPORTS_MODULE,
-            // Resolve #app to our auto-imports (subset)
-            "#app": VIRTUAL_IMPORTS_MODULE,
-            // Resolve #build to empty module
-            "#build": VIRTUAL_IMPORTS_MODULE,
-          },
-        },
-      };
-    },
-
     resolveId(id) {
-      // Resolve #imports and related aliases
-      if (id === VIRTUAL_IMPORTS_MODULE || id === "#imports" || id === "#app" || id === "#build") {
-        return VIRTUAL_IMPORTS_ID;
+      // Resolve Nuxt component imports before the broad #build/* import alias.
+      if (NUXT_COMPONENT_IDS.has(id)) {
+        return VIRTUAL_NUXT_COMPONENTS_ID;
       }
 
-      // Resolve Nuxt component imports
-      if (id === "#components" || id === "nuxt/dist/app/components") {
-        return VIRTUAL_NUXT_COMPONENTS_ID;
+      // Resolve #imports and related aliases
+      if (NUXT_IMPORT_IDS.has(id) || id.startsWith("#app/") || id.startsWith("#build/")) {
+        return VIRTUAL_IMPORTS_ID;
       }
 
       return null;
@@ -58,27 +48,6 @@ export function createNuxtMuseaPlugin(options: NuxtMuseaOptions = {}): Plugin {
 
       return null;
     },
-
-    transform(code, id) {
-      // Auto-resolve Nuxt global components in Vue SFC templates
-      if (id.endsWith(".vue") || id.endsWith(".art.vue")) {
-        // Replace <NuxtLink> with mock component import
-        if (code.includes("<NuxtLink") || code.includes("<nuxt-link")) {
-          // Check if NuxtLink is already imported
-          if (!code.includes("NuxtLink")) {
-            const importLine = `import { NuxtLink } from '${VIRTUAL_IMPORTS_MODULE}';\n`;
-            // Insert import after last import statement or at the top
-            const lastImportIdx = code.lastIndexOf("import ");
-            if (lastImportIdx !== -1) {
-              const lineEnd = code.indexOf("\n", lastImportIdx);
-              code = code.slice(0, lineEnd + 1) + importLine + code.slice(lineEnd + 1);
-            }
-          }
-        }
-      }
-
-      return code;
-    },
   };
 }
 
@@ -91,15 +60,10 @@ function generateImportsModule(srcDir: string, options: NuxtMuseaOptions): strin
 export * from '${autoImportsPath}';
 
 // Configure mocks with provided options
-import { _setRouteConfig } from '${path.join(srcDir, "mocks", "composables.js").replace(/\\/g, "/")}';
-import { _setFetchMocks } from '${path.join(srcDir, "mocks", "data.js").replace(/\\/g, "/")}';
-import { _setRuntimeConfig, _setStateMocks } from '${path.join(srcDir, "mocks", "runtime.js").replace(/\\/g, "/")}';
+import { configureNuxtMuseaMocks } from '${path.join(srcDir, "context.js").replace(/\\/g, "/")}';
 
 const _config = ${configJson};
-_setRouteConfig(_config.route);
-_setFetchMocks(_config.fetchMocks ?? {});
-_setRuntimeConfig(_config.runtimeConfig);
-_setStateMocks(_config.stateMocks ?? {});
+configureNuxtMuseaMocks(_config);
 `;
 }
 
@@ -115,6 +79,12 @@ export {
   NuxtLayout,
   NuxtLoadingIndicator,
   NuxtErrorBoundary,
+  NuxtRouteAnnouncer,
+  NuxtWelcome,
+  NuxtIsland,
+  NuxtClientFallback,
+  NuxtImg,
+  NuxtPicture,
 } from '${componentsPath}';
 `;
 }

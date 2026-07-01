@@ -2,45 +2,43 @@
  * Mock Nuxt routing composables.
  */
 
-import { reactive, computed } from "vue";
-import type { NuxtMuseaOptions } from "../types.js";
+import { computed } from "vue";
 
-let _routeConfig: NuxtMuseaOptions["route"] = {};
+import { getRouteState, resolveNavigationTarget, setRouteConfig } from "../context.js";
+import type { NuxtMuseaNavigationTarget } from "../types.js";
 
-export function _setRouteConfig(config: NuxtMuseaOptions["route"]): void {
-  _routeConfig = config;
-}
+export { setRouteConfig as _setRouteConfig };
 
 /**
  * Mock useRoute - returns a reactive route object.
  */
 export function useRoute() {
-  return reactive({
-    path: _routeConfig?.path ?? "/",
-    name: _routeConfig?.name ?? "index",
-    params: _routeConfig?.params ?? {},
-    query: _routeConfig?.query ?? {},
-    hash: _routeConfig?.hash ?? "",
-    fullPath: _routeConfig?.fullPath ?? _routeConfig?.path ?? "/",
-    meta: _routeConfig?.meta ?? {},
-    matched: [],
-    redirectedFrom: undefined,
-  });
+  return getRouteState();
 }
 
 /**
  * Mock useRouter - returns a router-like object with no-op navigation.
  */
 export function useRouter() {
+  const navigate = async (to: NuxtMuseaNavigationTarget) => {
+    setRouteConfig(resolveNavigationTarget(to));
+  };
+
   return {
-    push: async (_to: unknown) => {},
-    replace: async (_to: unknown) => {},
-    back: () => {},
-    forward: () => {},
-    go: (_delta: number) => {},
-    resolve: (to: unknown) => ({
-      href: typeof to === "string" ? to : "/",
-      route: useRoute(),
+    push: navigate,
+    replace: navigate,
+    back: () => {
+      // no browser history in isolated previews
+    },
+    forward: () => {
+      // no browser history in isolated previews
+    },
+    go: (_delta: number) => {
+      // no browser history in isolated previews
+    },
+    resolve: (to: NuxtMuseaNavigationTarget) => ({
+      href: resolveNavigationTarget(to).fullPath,
+      route: resolveNavigationTarget(to),
     }),
     currentRoute: computed(() => useRoute()),
     addRoute: () => () => {},
