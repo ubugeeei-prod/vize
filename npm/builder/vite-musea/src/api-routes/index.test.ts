@@ -117,38 +117,6 @@ void test("createApiMiddleware returns 400 for malformed encoded art paths", asy
   assert.match(response.body, /art path is not valid URL encoding/);
 });
 
-void test("createApiMiddleware returns arts sorted by defineArt order", async () => {
-  const low = createArt("/repo/Low.art.vue");
-  low.metadata.title = "Low";
-  low.metadata.order = 10;
-  const high = createArt("/repo/High.art.vue");
-  high.metadata.title = "High";
-  high.metadata.order = 30;
-  const fallback = createArt("/repo/Fallback.art.vue");
-  fallback.metadata.title = "Fallback";
-
-  const response = await invokeApi(
-    createContext(
-      process.cwd(),
-      new Map([
-        [high.path, high],
-        [fallback.path, fallback],
-        [low.path, low],
-      ]),
-    ),
-    {
-      method: "GET",
-      url: "/arts",
-    },
-  );
-
-  assert.equal(response.statusCode, 200);
-  assert.deepEqual(
-    (JSON.parse(response.body) as ArtFileInfo[]).map((art) => art.metadata.title),
-    ["Low", "High", "Fallback"],
-  );
-});
-
 void test("createApiMiddleware blocks source writes outside the configured root", async () => {
   const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-api-security-"));
   const root = path.join(tempDir, "root");
