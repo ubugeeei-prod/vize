@@ -1,5 +1,12 @@
 export type { MuseaThemeColors, MuseaTheme, MuseaOptions } from "./plugin.js";
 
+export type {
+  MuseaTokenPreviewConfig,
+  MuseaTokenPreviewKind,
+  MuseaTokenPreviewRule,
+  ResolvedTokenPreview,
+} from "../tokens/preview.js";
+
 export type { ArtMetadata, ArtVariant, ArtFileInfo, CsfOutput } from "./art.js";
 
 export type {

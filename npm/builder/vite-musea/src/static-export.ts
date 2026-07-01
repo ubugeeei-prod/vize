@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { generateGalleryBody, generateGalleryScript } from "./gallery/template.js";
+import { generateGalleryGlobalsScript } from "./gallery/globals.js";
 import { serializeScriptValue } from "./security.js";
 import {
   createStaticGalleryPayload,
@@ -13,6 +14,7 @@ import {
   type StaticGalleryPayload,
 } from "./static-data.js";
 import type { ArtFileInfo } from "./types/index.js";
+import type { MuseaTokenPreviewConfig } from "./tokens/preview.js";
 import { escapeHtml } from "./utils.js";
 
 export const MUSEA_STATIC_BUILD_ENV = "VIZE_MUSEA_STATIC_BUILD";
@@ -34,6 +36,7 @@ type OutputChunk = {
 
 export interface StaticEmitContext extends StaticGalleryDataContext {
   themeConfig: { default: string; custom?: Record<string, unknown> } | undefined;
+  tokenPreviewConfig?: MuseaTokenPreviewConfig;
 }
 
 export function isMuseaStaticBuild(): boolean {
@@ -260,10 +263,12 @@ function injectStaticGlobals(
   ctx: StaticEmitContext,
   payload: StaticGalleryPayload,
 ): string {
-  const themeScript = ctx.themeConfig
-    ? `window.__MUSEA_THEME_CONFIG__=${serializeScriptValue(ctx.themeConfig)};`
-    : "";
-  const script = `<script>window.__MUSEA_BASE_PATH__=${serializeScriptValue(ctx.basePath)};window.__MUSEA_STATIC__=true;window.__MUSEA_STATIC_PREVIEWS__=${serializeScriptValue(payload.previews)};${themeScript}</script>`;
+  const script = `<script>${generateGalleryGlobalsScript({
+    basePath: ctx.basePath,
+    staticPreviews: payload.previews,
+    themeConfig: ctx.themeConfig,
+    tokenPreviewConfig: ctx.tokenPreviewConfig,
+  })}</script>`;
   return html.includes("</head>")
     ? html.replace("</head>", `${script}</head>`)
     : `${script}${html}`;

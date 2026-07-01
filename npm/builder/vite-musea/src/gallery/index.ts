@@ -7,7 +7,9 @@
 
 import { generateGalleryStyles } from "./styles.js";
 import { generateGalleryBody, generateGalleryScript } from "./template.js";
+import { generateGalleryGlobalsScript } from "./globals.js";
 import { serializeScriptValue } from "../security.js";
+import type { MuseaTokenPreviewConfig } from "../tokens/preview.js";
 
 /**
  * Generate the inline gallery HTML page.
@@ -16,17 +18,21 @@ export function generateGalleryHtml(
   basePath: string,
   devSessionToken: string,
   themeConfig?: { default: string; custom?: Record<string, unknown> },
+  tokenPreviewConfig?: MuseaTokenPreviewConfig,
 ): string {
-  const themeScript = themeConfig
-    ? `window.__MUSEA_THEME_CONFIG__=${serializeScriptValue(themeConfig)};`
-    : "";
+  const globalsScript = generateGalleryGlobalsScript({
+    basePath,
+    devSessionToken,
+    themeConfig,
+    tokenPreviewConfig,
+  });
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Musea - Component Gallery</title>
-  <script>window.__MUSEA_BASE_PATH__=${serializeScriptValue(basePath)};window.__MUSEA_SESSION_TOKEN__=${serializeScriptValue(devSessionToken)};${themeScript}${"<"}/script>
+  <script>${globalsScript}${"<"}/script>
   <style>${generateGalleryStyles()}
   </style>
 </head>

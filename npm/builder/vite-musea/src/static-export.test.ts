@@ -83,6 +83,9 @@ void test("emitStaticGallery packages browser-facing static output", async () =>
         resolvedPreviewSetup: null,
         devSessionToken: "static-test",
         themeConfig: undefined,
+        tokenPreviewConfig: {
+          rules: [{ pathIncludes: "elevation.overlay", kind: "zIndex" }],
+        },
       },
     );
 
@@ -130,6 +133,9 @@ void test("emitStaticGallery packages browser-facing static output", async () =>
         [art.path]: {
           Default: `/__musea__/preview/${previewId}.html`,
         },
+      },
+      __MUSEA_TOKEN_PREVIEWS__: {
+        rules: [{ pathIncludes: "elevation.overlay", kind: "zIndex" }],
       },
     });
 

@@ -210,6 +210,20 @@ musea({
 `tokensPath` reads tokens for the gallery and token APIs. Use `previewCss` separately when that
 CSS file should also be loaded inside component preview iframes.
 
+Token previews are inferred from token type, path, and referenced token metadata. Spacing, opacity,
+radius/round, and z-index tokens render previews by default. Add custom rules when your token names
+use project-specific categories:
+
+```ts
+musea({
+  tokensPath: "src/tokens.json",
+  tokenPreviews: {
+    rules: [{ pathIncludes: "elevation.overlay", kind: "zIndex" }],
+    disabledKinds: ["shadow"],
+  },
+});
+```
+
 ## Commands
 
 ```bash

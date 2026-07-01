@@ -34,6 +34,13 @@ export {
 
 export { generateTokensHtml, generateTokensMarkdown, processStyleDictionary } from "./generator.js";
 export { isTailwindTokenPath, parseTailwindTokens } from "./tailwind.js";
+export {
+  resolveTokenPreview,
+  type MuseaTokenPreviewConfig,
+  type MuseaTokenPreviewKind,
+  type MuseaTokenPreviewRule,
+  type ResolvedTokenPreview,
+} from "./preview.js";
 
 import { processStyleDictionary } from "./generator.js";
 export default processStyleDictionary;

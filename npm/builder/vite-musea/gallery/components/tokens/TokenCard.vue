@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { DesignToken } from "../../api";
-import SpacingPreview from "./SpacingPreview.vue";
-import TypographyPreview from "./TypographyPreview.vue";
+import TokenPreview from "./TokenPreview.vue";
 
 const props = withDefaults(
   defineProps<{
     name: string;
     token: DesignToken;
-    categoryPath?: string;
+    tokenPath: string;
+    tokenMap?: Record<string, DesignToken>;
     usageCount?: number;
   }>(),
   {
+    tokenMap: () => ({}),
     usageCount: 0,
   },
 );
@@ -22,86 +23,6 @@ const emit = defineEmits<{
   showUsage: [];
 }>();
 
-const isColor = computed(() => {
-  if (props.token.type === "color") return true;
-  if (typeof props.token.value !== "string") return false;
-  return (
-    props.token.value.startsWith("#") ||
-    props.token.value.startsWith("rgb") ||
-    props.token.value.startsWith("hsl")
-  );
-});
-
-const displayValue = computed(() => {
-  if (props.token.$tier === "semantic" && props.token.$resolvedValue !== undefined) {
-    return props.token.$resolvedValue;
-  }
-  return props.token.value;
-});
-
-const previewType = computed<
-  | "color"
-  | "spacing"
-  | "fontSize"
-  | "fontWeight"
-  | "lineHeight"
-  | "shadow"
-  | "borderRadius"
-  | "generic"
->(() => {
-  if (isColor.value) return "color";
-
-  const path = props.categoryPath?.toLowerCase() ?? "";
-  const type = props.token.type?.toLowerCase() ?? "";
-  const name = props.name.toLowerCase();
-
-  if (type === "dimension" || type === "spacing") {
-    if (
-      path.includes("spacing") ||
-      name.includes("spacing") ||
-      name.includes("gap") ||
-      name.includes("padding") ||
-      name.includes("margin")
-    ) {
-      return "spacing";
-    }
-    if (
-      path.includes("font-size") ||
-      path.includes("fontsize") ||
-      name.includes("font-size") ||
-      name.includes("fontsize")
-    ) {
-      return "fontSize";
-    }
-    if (
-      path.includes("border-radius") ||
-      path.includes("borderradius") ||
-      name.includes("radius")
-    ) {
-      return "borderRadius";
-    }
-  }
-
-  if (
-    type === "fontweight" ||
-    name.includes("font-weight") ||
-    name.includes("fontweight") ||
-    name.includes("weight")
-  ) {
-    return "fontWeight";
-  }
-
-  if (type === "lineheight" || name.includes("line-height") || name.includes("lineheight")) {
-    return "lineHeight";
-  }
-
-  if (type === "shadow" || name.includes("shadow")) {
-    return "shadow";
-  }
-
-  return "generic";
-});
-
 const tierLabel = computed(() => {
   if (props.token.$tier === "semantic") return "Semantic";
   if (props.token.$tier === "primitive") return "Primitive";
@@ -111,45 +32,7 @@ const tierLabel = computed(() => {
 
 <template>
   <div class="token-card" :class="{ 'token-card--semantic': token.$tier === 'semantic' }">
-    <!-- Preview -->
-    <div class="token-preview" :class="{ 'token-preview--color': previewType === 'color' }">
-      <div
-        v-if="previewType === 'color'"
-        class="color-swatch"
-        :style="{ background: String(displayValue) }"
-      />
-      <div v-else class="preview-compact">
-        <SpacingPreview v-if="previewType === 'spacing'" :value="displayValue" />
-        <TypographyPreview
-          v-else-if="previewType === 'fontSize'"
-          :value="displayValue"
-          token-type="fontSize"
-        />
-        <TypographyPreview
-          v-else-if="previewType === 'fontWeight'"
-          :value="displayValue"
-          token-type="fontWeight"
-        />
-        <TypographyPreview
-          v-else-if="previewType === 'lineHeight'"
-          :value="displayValue"
-          token-type="lineHeight"
-        />
-        <div
-          v-else-if="previewType === 'shadow'"
-          class="shadow-swatch"
-          :style="{ boxShadow: String(displayValue) }"
-        />
-        <div
-          v-else-if="previewType === 'borderRadius'"
-          class="radius-swatch"
-          :style="{ borderRadius: String(displayValue) }"
-        />
-        <div v-else class="generic-preview">
-          <span class="generic-value-icon">T</span>
-        </div>
-      </div>
-    </div>
+    <TokenPreview :token-path="tokenPath" :token="token" :token-map="tokenMap" />
 
     <!-- Info -->
     <div class="token-body">
@@ -270,63 +153,6 @@ const tierLabel = computed(() => {
 
 .token-card:hover .token-actions {
   opacity: 1;
-}
-
-/* Preview area */
-.token-preview {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  padding: 0.75rem;
-}
-
-.token-preview--color {
-  padding: 0;
-}
-
-.color-swatch {
-  width: 100%;
-  height: 64px;
-}
-
-.preview-compact {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 48px;
-}
-
-.shadow-swatch {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--musea-radius-md);
-  background: var(--musea-bg);
-}
-
-.radius-swatch {
-  width: 48px;
-  height: 48px;
-  border: 2px solid var(--musea-accent);
-  background: transparent;
-}
-
-.generic-preview {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--musea-border);
-  border-radius: var(--musea-radius-md);
-  color: var(--musea-text-muted);
-}
-
-.generic-value-icon {
-  font-family: var(--musea-font-mono);
-  font-size: 1rem;
-  font-weight: 600;
 }
 
 /* Body / info */

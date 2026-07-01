@@ -7,6 +7,7 @@ import path from "node:path";
 import type { Connect, ViteDevServer } from "vite";
 
 import {
+  generateDevGlobalsScript,
   registerMiddleware,
   serveGalleryAsset,
   type MiddlewareContext,
@@ -184,4 +185,15 @@ void test("art module middleware returns 400 for malformed encoded art paths", a
   assert.equal(response.statusCode, 400);
   assert.equal(response.nextCalled, false);
   assert.match(response.body, /art path is not valid URL encoding/);
+});
+
+void test("dev gallery globals include token preview configuration", () => {
+  const script = generateDevGlobalsScript("/__musea__", "session", undefined, {
+    rules: [{ pathIncludes: "elevation.overlay", kind: "zIndex" }],
+  });
+
+  assert.match(
+    script,
+    /window\.__MUSEA_TOKEN_PREVIEWS__=\{"rules":\[\{"pathIncludes":"elevation\.overlay","kind":"zIndex"\}\]\};/,
+  );
 });

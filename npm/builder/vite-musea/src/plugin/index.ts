@@ -49,6 +49,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   const storybookOutDir = options.storybookOutDir ?? ".storybook/stories";
   let inlineArt = options.inlineArt ?? false;
   const tokensPath = options.tokensPath;
+  let tokenPreviewConfig = options.tokenPreviews;
   const projectRootOption = options.projectRoot;
   const themeConfig = buildThemeConfig(options.theme);
   const previewCss = options.previewCss ?? [];
@@ -110,6 +111,8 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         if (options.storybookCompat === undefined && mc.storybookCompat !== undefined)
           storybookCompat = mc.storybookCompat;
         if (options.inlineArt === undefined && mc.inlineArt !== undefined) inlineArt = mc.inlineArt;
+        if (options.tokenPreviews === undefined && mc.tokenPreviews !== undefined)
+          tokenPreviewConfig = mc.tokenPreviews;
       }
       vueVersion = resolveStaticPreviewVueVersion(vueVersion, resolvedConfig.plugins);
 
@@ -137,6 +140,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         basePath,
         devSessionToken,
         themeConfig,
+        tokenPreviewConfig,
         artFiles,
         scanRoots,
         resolvedPreviewCss,
@@ -261,6 +265,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         resolvedPreviewSetup,
         devSessionToken,
         themeConfig,
+        tokenPreviewConfig,
       });
     },
     async transform(code, id) {

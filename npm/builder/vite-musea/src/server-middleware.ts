@@ -16,13 +16,11 @@ import { fileURLToPath } from "node:url";
 import type { ArtFileInfo } from "./types/index.js";
 import { generatePreviewModule, generatePreviewHtml } from "./preview/index.js";
 import { generateArtModule } from "./art-module.js";
-import {
-  decodeUrlComponent,
-  HttpError,
-  resolveUrlPathInside,
-  serializeScriptValue,
-} from "./security.js";
+import { decodeUrlComponent, HttpError, resolveUrlPathInside } from "./security.js";
 import { toPascalCase } from "./utils.js";
+import type { MuseaTokenPreviewConfig } from "./tokens/preview.js";
+import { generateDevGlobalsScript } from "./gallery/globals.js";
+export { generateDevGlobalsScript } from "./gallery/globals.js";
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const galleryAssetMimeTypes: Record<string, string> = {
@@ -47,23 +45,13 @@ function toViteFsPath(filePath: string): string {
   return encodeURI(`/@fs${filePath.split(path.sep).join("/")}`);
 }
 
-function generateDevGlobalsScript(
-  basePath: string,
-  devSessionToken: string,
-  themeConfig?: { default: string; custom?: Record<string, unknown> },
-): string {
-  const themeScript = themeConfig
-    ? `window.__MUSEA_THEME_CONFIG__=${serializeScriptValue(themeConfig)};`
-    : "";
-  return `window.__MUSEA_BASE_PATH__=${serializeScriptValue(basePath)};window.__MUSEA_SESSION_TOKEN__=${serializeScriptValue(devSessionToken)};${themeScript}`;
-}
-
 async function tryLoadSourceGalleryHtml(
   devServer: ViteDevServer,
   url: string,
   basePath: string,
   devSessionToken: string,
   themeConfig?: { default: string; custom?: Record<string, unknown> },
+  tokenPreviewConfig?: MuseaTokenPreviewConfig,
 ): Promise<string | null> {
   const gallerySourceDir = resolveGallerySourceDir();
   const indexHtmlPath = path.join(gallerySourceDir, "index.html");
@@ -80,7 +68,7 @@ async function tryLoadSourceGalleryHtml(
   html = html.replace('src="./main.ts"', `src="${sourceEntryPath}"`);
   html = html.replace(
     "</head>",
-    `<script>${generateDevGlobalsScript(basePath, devSessionToken, themeConfig)}</script></head>`,
+    `<script>${generateDevGlobalsScript(basePath, devSessionToken, themeConfig, tokenPreviewConfig)}</script></head>`,
   );
 
   return devServer.transformIndexHtml(url, html);
@@ -90,9 +78,10 @@ async function generateFallbackGalleryHtml(
   basePath: string,
   devSessionToken: string,
   themeConfig?: { default: string; custom?: Record<string, unknown> },
+  tokenPreviewConfig?: MuseaTokenPreviewConfig,
 ): Promise<string> {
   const { generateGalleryHtml } = await import("./gallery/index.js");
-  return generateGalleryHtml(basePath, devSessionToken, themeConfig);
+  return generateGalleryHtml(basePath, devSessionToken, themeConfig, tokenPreviewConfig);
 }
 
 export async function serveGalleryAsset(
@@ -128,6 +117,7 @@ export interface MiddlewareContext {
   basePath: string;
   devSessionToken: string;
   themeConfig: { default: string; custom?: Record<string, unknown> } | undefined;
+  tokenPreviewConfig?: MuseaTokenPreviewConfig;
   artFiles: Map<string, ArtFileInfo>;
   scanRoots: string[];
   resolvedPreviewCss: string[];
@@ -146,7 +136,7 @@ export interface MiddlewareContext {
  * - Art module route
  */
 export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareContext): void {
-  const { basePath, devSessionToken, themeConfig, artFiles } = ctx;
+  const { basePath, devSessionToken, themeConfig, tokenPreviewConfig, artFiles } = ctx;
 
   // --- Gallery SPA route ---
   devServer.middlewares.use(basePath, async (req, res, next) => {
@@ -167,7 +157,7 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
         let html = await fs.promises.readFile(indexHtmlPath, "utf-8");
         html = html.replace(
           "</head>",
-          `<script>${generateDevGlobalsScript(basePath, devSessionToken, themeConfig)}</script></head>`,
+          `<script>${generateDevGlobalsScript(basePath, devSessionToken, themeConfig, tokenPreviewConfig)}</script></head>`,
         );
         res.setHeader("Content-Type", "text/html");
         res.end(html);
@@ -179,6 +169,7 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
           basePath,
           devSessionToken,
           themeConfig,
+          tokenPreviewConfig,
         );
         if (sourceHtml) {
           res.setHeader("Content-Type", "text/html");
@@ -186,7 +177,12 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
           return;
         }
 
-        const html = await generateFallbackGalleryHtml(basePath, devSessionToken, themeConfig);
+        const html = await generateFallbackGalleryHtml(
+          basePath,
+          devSessionToken,
+          themeConfig,
+          tokenPreviewConfig,
+        );
         res.setHeader("Content-Type", "text/html");
         res.end(html);
         return;

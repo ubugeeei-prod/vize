@@ -17,8 +17,12 @@ export { musea } from "./plugin/index.js";
 
 export type {
   MuseaOptions,
+  MuseaTokenPreviewConfig,
+  MuseaTokenPreviewKind,
+  MuseaTokenPreviewRule,
   MuseaTheme,
   MuseaThemeColors,
+  ResolvedTokenPreview,
   ArtFileInfo,
   ArtMetadata,
   ArtVariant,
@@ -50,6 +54,7 @@ export {
   buildTokenMap,
   resolveReferences,
   scanTokenUsage,
+  resolveTokenPreview,
   type DesignToken,
   type TokenCategory,
   type StyleDictionaryConfig,

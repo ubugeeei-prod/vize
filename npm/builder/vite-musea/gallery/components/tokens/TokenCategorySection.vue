@@ -8,9 +8,11 @@ const props = withDefaults(
     level?: number;
     parentPath?: string;
     usageMap?: TokenUsageMap;
+    tokenMap?: Record<string, DesignToken>;
   }>(),
   {
     usageMap: () => ({}),
+    tokenMap: () => ({}),
   },
 );
 
@@ -55,7 +57,8 @@ function getUsageCount(name: string): number {
         :key="name"
         :name="String(name)"
         :token="token"
-        :category-path="getCategoryPath()"
+        :token-path="getTokenPath(String(name))"
+        :token-map="tokenMap"
         :usage-count="getUsageCount(String(name))"
         @edit="emit('edit', getTokenPath(String(name)), token)"
         @delete="emit('delete', getTokenPath(String(name)), token)"
@@ -71,6 +74,7 @@ function getUsageCount(name: string): number {
         :level="(level ?? 2) + 1"
         :parent-path="getCategoryPath()"
         :usage-map="usageMap"
+        :token-map="tokenMap"
         @edit="(path, token) => emit('edit', path, token)"
         @delete="(path, token) => emit('delete', path, token)"
         @show-usage="(tokenPath) => emit('showUsage', tokenPath)"

@@ -1,4 +1,5 @@
 import type { VrtOptions } from "./vrt.js";
+import type { MuseaTokenPreviewConfig } from "../tokens/preview.js";
 
 export type MuseaVueVersion = 0.11 | 1 | 2 | "2.7" | 3 | "legacy";
 
@@ -92,6 +93,12 @@ export interface MuseaOptions {
    * @example 'src/tokens.json', 'src/tokens/', or 'src/styles/main.css'
    */
   tokensPath?: string;
+
+  /**
+   * Design token preview rules for the gallery.
+   * Custom rules run before Musea's built-in previews.
+   */
+  tokenPreviews?: MuseaTokenPreviewConfig;
 
   /**
    * Project root that should be treated as the outer boundary for path resolution
