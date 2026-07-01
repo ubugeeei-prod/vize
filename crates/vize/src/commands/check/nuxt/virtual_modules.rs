@@ -47,10 +47,8 @@ pub(super) fn collect_fallback_path_aliases(
     // into the generated `tsconfig.json`. When present, consume those aliases
     // verbatim instead of guessing, so user-configured aliases (e.g. custom
     // `srcDir`, extra `alias` entries) are honoured.
-    let mut aliases = match collect_generated_path_aliases(cwd, generated_dir) {
-        Some(aliases) if !aliases.is_empty() => aliases,
-        _ => collect_guessed_path_aliases(cwd),
-    };
+    let mut aliases = collect_generated_path_aliases(cwd, generated_dir)
+        .unwrap_or_else(|| collect_guessed_path_aliases(cwd));
     push_nuxt_composition_api_alias(cwd, &mut aliases);
     aliases
 }
@@ -59,8 +57,8 @@ pub(super) fn collect_fallback_path_aliases(
 /// `compilerOptions.paths` into [`NuxtPathAlias`]es. Targets in the generated
 /// config are relative to the generated dir, so they are rebased to be relative
 /// to the project root (`cwd`) to match how downstream `tsconfig` synthesis
-/// interprets alias targets. Returns `None` when the file is absent or unparseable so the
-/// caller can fall back to the hardcoded guesses.
+/// interprets alias targets. Returns `None` only when the file is absent or
+/// unparseable so the caller can fall back to the hardcoded guesses.
 fn collect_generated_path_aliases(
     cwd: &Path,
     generated_dir: &NuxtGeneratedDir,
@@ -69,11 +67,14 @@ fn collect_generated_path_aliases(
     let content = tracked_read_to_string(&tsconfig_path).ok()?;
     let value = parse_jsonc_value(content.as_str()).ok()?;
 
-    let paths = value
+    let Some(paths) = value
         .get("compilerOptions")
         .and_then(Value::as_object)
         .and_then(|compiler_options| compiler_options.get("paths"))
-        .and_then(Value::as_object)?;
+        .and_then(Value::as_object)
+    else {
+        return Some(Vec::new());
+    };
 
     let mut aliases: Vec<NuxtPathAlias> = Vec::new();
     for (pattern, targets) in paths {

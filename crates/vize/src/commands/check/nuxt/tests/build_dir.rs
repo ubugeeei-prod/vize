@@ -227,6 +227,35 @@ fn path_aliases_come_from_custom_generated_nuxt_tsconfig_when_present() {
 }
 
 #[test]
+fn generated_nuxt_tsconfig_without_paths_does_not_use_guessed_aliases() {
+    let project_root = unique_case_dir("nuxt-empty-generated-tsconfig-aliases");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join(".nuxt")).unwrap();
+    std::fs::create_dir_all(project_root.join("app")).unwrap();
+    std::fs::create_dir_all(project_root.join("shared")).unwrap();
+    std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/tsconfig.json"),
+        r#"{ "compilerOptions": {} }"#,
+    )
+    .unwrap();
+
+    let mut options = VirtualTsOptions::default();
+    let aliases = detect_nuxt_auto_imports(&mut options, &project_root);
+
+    for guessed in ["~/*", "@/*", "~~/*", "@@/*", "#shared/*"] {
+        assert!(
+            !aliases
+                .iter()
+                .any(|alias| alias.pattern.as_str() == guessed),
+            "generated tsconfig should suppress guessed alias {guessed:?}: {aliases:#?}"
+        );
+    }
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn default_generated_dir_remains_dot_nuxt() {
     let generated_dir = resolve_nuxt_generated_dir(Path::new("/workspace"));
 
