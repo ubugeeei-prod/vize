@@ -10,6 +10,7 @@ import {
   handleArtPalette,
   handleArtSource,
 } from "./api-routes/handlers.js";
+import { sortedArts } from "./art-order.js";
 import type { ApiRoutesContext, SendError, SendJson } from "./api-routes/index.js";
 import type { ArtFileInfo } from "./types/index.js";
 
@@ -68,7 +69,7 @@ export async function createStaticGalleryPayload(
   ctx: StaticGalleryDataContext,
 ): Promise<StaticGalleryPayload> {
   const apiCtx = createApiContext(ctx);
-  const arts = Array.from(ctx.artFiles.values());
+  const arts = sortedArts(ctx.artFiles.values());
   const previews: StaticGalleryPayload["previews"] = {};
   const details: StaticGalleryPayload["details"] = {};
 

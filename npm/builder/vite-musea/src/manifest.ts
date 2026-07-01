@@ -6,11 +6,12 @@
  */
 
 import type { ArtFileInfo } from "./types/index.js";
+import { sortedArts } from "./art-order.js";
 
 /**
  * Generate the virtual manifest module code containing all art file metadata.
  */
 export function generateManifestModule(artFiles: Map<string, ArtFileInfo>): string {
-  const arts = Array.from(artFiles.values());
+  const arts = sortedArts(artFiles.values());
   return `export const arts = ${JSON.stringify(arts, null, 2)};`;
 }

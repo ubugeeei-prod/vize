@@ -15,6 +15,7 @@ import type { ResolvedConfig } from "vite";
 import fs from "node:fs";
 
 import type { ArtFileInfo } from "../types/index.js";
+import { sortedArts } from "../art-order.js";
 import {
   handleTokensUsage,
   handleTokensGet,
@@ -100,7 +101,7 @@ export function createApiMiddleware(ctx: ApiRoutesContext) {
 
       // --- GET /api/arts ---
       if (url === "/arts" && req.method === "GET") {
-        sendJson(Array.from(ctx.artFiles.values()));
+        sendJson(sortedArts(ctx.artFiles.values()));
         return;
       }
 
