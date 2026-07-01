@@ -109,6 +109,72 @@ const count = ref(0)
   assert.doesNotMatch(code, /return \{ Button,/);
 });
 
+void test("generateArtModule does not register local PascalCase constants as components", () => {
+  const art: ArtFileInfo = {
+    path: "/repo/components/Foo.art.vue",
+    metadata: {
+      title: "Foo",
+      tags: [],
+      status: "ready",
+    },
+    variants: [
+      {
+        name: "Default",
+        template: `<Foo />`,
+        isDefault: true,
+        skipVrt: false,
+      },
+    ],
+    hasScriptSetup: true,
+    scriptSetupContent: `
+defineArt("./Foo.vue", { title: "Foo" });
+const SAMPLE = "hello";
+`.trim(),
+    hasScript: false,
+    styleCount: 0,
+  };
+
+  const code = generateArtModule(art, art.path);
+
+  assert.match(code, /components: \{ "Foo": Foo \}/);
+  assert.doesNotMatch(code, /"SAMPLE": SAMPLE/);
+  assert.match(code, /return \{ SAMPLE \};/);
+});
+
+void test("generateArtModule preserves multiline template literal indentation in script setup", () => {
+  const art: ArtFileInfo = {
+    path: "/repo/components/Markdown.art.vue",
+    metadata: {
+      title: "Markdown",
+      tags: [],
+      status: "ready",
+    },
+    variants: [
+      {
+        name: "Default",
+        template: `<MarkdownView :content="md" />`,
+        isDefault: true,
+        skipVrt: false,
+      },
+    ],
+    hasScriptSetup: true,
+    scriptSetupContent: [
+      `defineArt("./MarkdownView.vue", { title: "Markdown" });`,
+      "const md = `# Title",
+      "",
+      "- a",
+      "- b`;",
+    ].join("\n"),
+    hasScript: false,
+    styleCount: 0,
+  };
+
+  const code = generateArtModule(art, art.path);
+
+  assert.ok(code.includes("const md = `# Title\n\n- a\n- b`;"));
+  assert.doesNotMatch(code, /`# Title\n    \n    - a\n    - b`/);
+});
+
 void test("parseScriptSetupForArt infers defineArt component source literals", () => {
   const parsed = parseScriptSetupForArt(
     `

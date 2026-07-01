@@ -113,7 +113,11 @@ function splitTopLevelCommaList(source: string): string[] {
   return parts;
 }
 
-function collectImportedNames(statement: string, returnNames: Set<string>): void {
+function collectImportedNames(
+  statement: string,
+  returnNames: Set<string>,
+  componentNames?: Set<string>,
+): void {
   const normalized = statement.replace(/\s+/g, " ").trim().replace(/;$/, "");
   const fromMatch = normalized.match(/^import\s+(type\s+)?(.+?)\s+from\s+['"][^'"]+['"]$/);
 
@@ -134,8 +138,10 @@ function collectImportedNames(statement: string, returnNames: Set<string>): void
     const namespaceMatch = defaultOrNamespace.match(/^\*\s+as\s+([A-Za-z_$][\w$]*)$/);
     if (namespaceMatch) {
       returnNames.add(namespaceMatch[1]);
+      addComponentName(namespaceMatch[1], componentNames);
     } else if (!defaultOrNamespace.startsWith("type ")) {
       returnNames.add(defaultOrNamespace);
+      addComponentName(defaultOrNamespace, componentNames);
     }
   }
 
@@ -162,7 +168,14 @@ function collectImportedNames(statement: string, returnNames: Set<string>): void
       ?.trim();
     if (alias) {
       returnNames.add(alias);
+      addComponentName(alias, componentNames);
     }
+  }
+}
+
+function addComponentName(name: string, componentNames: Set<string> | undefined): void {
+  if (componentNames && /^[A-Z]/.test(name)) {
+    componentNames.add(name);
   }
 }
 
@@ -306,6 +319,7 @@ export function parseScriptSetupForArt(content: string): {
   imports: string[];
   setupBody: string[];
   returnNames: string[];
+  componentNames: string[];
   defineArtComponentName?: string;
   defineArtComponentSource?: string;
 } {
@@ -313,6 +327,7 @@ export function parseScriptSetupForArt(content: string): {
   const imports: string[] = [];
   const setupBody: string[] = [];
   const returnNames: Set<string> = new Set();
+  const componentNames: Set<string> = new Set();
   let currentImport: string[] | null = null;
   const defineArtComponent = extractDefineArtComponent(content);
   let defineArtBalance = 0;
@@ -330,7 +345,7 @@ export function parseScriptSetupForArt(content: string): {
       const statement = currentImport.join("\n");
       if (isCompleteImportStatement(statement)) {
         imports.push(statement);
-        collectImportedNames(statement, returnNames);
+        collectImportedNames(statement, returnNames, componentNames);
         currentImport = null;
       }
       continue;
@@ -341,7 +356,7 @@ export function parseScriptSetupForArt(content: string): {
       const statement = currentImport.join("\n");
       if (isCompleteImportStatement(statement)) {
         imports.push(statement);
-        collectImportedNames(statement, returnNames);
+        collectImportedNames(statement, returnNames, componentNames);
         currentImport = null;
       }
       continue;
@@ -358,7 +373,7 @@ export function parseScriptSetupForArt(content: string): {
   if (currentImport) {
     const statement = currentImport.join("\n");
     imports.push(statement);
-    collectImportedNames(statement, returnNames);
+    collectImportedNames(statement, returnNames, componentNames);
   }
 
   collectTopLevelReturnNames(setupBody, returnNames);
@@ -373,6 +388,7 @@ export function parseScriptSetupForArt(content: string): {
     imports,
     setupBody,
     returnNames: [...returnNames],
+    componentNames: [...componentNames],
     defineArtComponentName: defineArtComponent.name,
     defineArtComponentSource: defineArtComponent.source,
   };
@@ -497,7 +513,7 @@ export const __styles__ = ${JSON.stringify(art.styleBlocks ?? [])};
   if (scriptSetup && hasSetup && !isolatedSetup) {
     code += `
 const __museaSharedSetup = (() => {
-${scriptSetup.setupBody.map((l) => `  ${l}`).join("\n")}
+${scriptSetup.setupBody.join("\n")}
   return ${setupReturn};
 })();
 `;
@@ -530,9 +546,8 @@ ${scriptSetup.setupBody.map((l) => `  ${l}`).join("\n")}
     const componentNames = new Map<string, string>();
     if (componentTagName) componentNames.set(componentTagName, componentBindingName);
     if (scriptSetup) {
-      for (const name of scriptSetup.returnNames) {
-        // PascalCase names starting with uppercase are likely components
-        if (/^[A-Z]/.test(name)) componentNames.set(name, name);
+      for (const name of scriptSetup.componentNames) {
+        componentNames.set(name, name);
       }
     }
     const components =
@@ -548,7 +563,7 @@ ${scriptSetup.setupBody.map((l) => `  ${l}`).join("\n")}
 export const ${variantComponentName} = defineComponent({
   name: '${variantComponentName}',
 ${components}  setup() {
-${scriptSetup.setupBody.map((l) => `    ${l}`).join("\n")}
+${scriptSetup.setupBody.join("\n")}
     return ${setupReturn};
   },
   template: \`${fullTemplate}\`,
