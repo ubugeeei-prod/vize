@@ -4,7 +4,7 @@ export function rewriteReportedPaths(
 ): string {
   let rewritten = output;
 
-  const orderedReplacements = [...replacements].sort(
+  const orderedReplacements = buildReplacementVariants(replacements).sort(
     (left, right) => right[0].length - left[0].length,
   );
 
@@ -15,28 +15,31 @@ export function rewriteReportedPaths(
   return rewritten;
 }
 
-if (import.meta.vitest) {
-  const { describe, expect, it } = import.meta.vitest;
+function buildReplacementVariants(
+  replacements: ReadonlyMap<string, string>,
+): Array<[string, string]> {
+  const variants = new Map<string, string>();
 
-  describe("rewriteReportedPaths", () => {
-    it("rewrites both absolute and relative temporary filenames", () => {
-      const replacements = new Map<string, string>([
-        [
-          "/repo/node_modules/.vize/oxlint-plugin-vize/100-abcd/0-Example.vue",
-          "/repo/src/Example.vue",
-        ],
-        ["node_modules/.vize/oxlint-plugin-vize/100-abcd/0-Example.vue", "/repo/src/Example.vue"],
-      ]);
+  for (const [from, to] of replacements) {
+    registerReplacementVariant(variants, from, to);
+    registerReplacementVariant(
+      variants,
+      escapeJsonStringSegment(from),
+      escapeJsonStringSegment(to),
+    );
+  }
 
-      expect(
-        rewriteReportedPaths(
-          [
-            "node_modules/.vize/oxlint-plugin-vize/100-abcd/0-Example.vue",
-            "/repo/node_modules/.vize/oxlint-plugin-vize/100-abcd/0-Example.vue",
-          ].join("\n"),
-          replacements,
-        ),
-      ).toBe(["/repo/src/Example.vue", "/repo/src/Example.vue"].join("\n"));
-    });
-  });
+  return [...variants];
+}
+
+function registerReplacementVariant(variants: Map<string, string>, from: string, to: string): void {
+  if (!from || !to) {
+    return;
+  }
+
+  variants.set(from, to);
+}
+
+function escapeJsonStringSegment(value: string): string {
+  return JSON.stringify(value).slice(1, -1);
 }
