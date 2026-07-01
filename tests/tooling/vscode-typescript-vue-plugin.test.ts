@@ -8,8 +8,13 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const require = createRequire(import.meta.url);
+// Prefer the TypeScript the VS Code extension bundles, but fall back to the
+// workspace copy: editors/vscode is excluded from the pnpm workspace, so its
+// node_modules is empty in CI while tests/node_modules pins the same version.
 const ts = require(
-  require.resolve("typescript", { paths: [path.join(root, "editors/vscode")] }),
+  require.resolve("typescript", {
+    paths: [path.join(root, "editors/vscode"), path.join(root, "tests")],
+  }),
 ) as typeof import("typescript");
 const initVuePlugin = require(
   path.join(root, "editors/vscode/typescript-vue-plugin/index.cjs"),
