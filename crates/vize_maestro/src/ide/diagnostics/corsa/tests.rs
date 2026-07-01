@@ -129,8 +129,9 @@ defineArt("./Button.vue", { title: "Button" });
   </variant>
 </art>"#;
 
-    let result = DiagnosticService::generate_virtual_ts_for_art(&uri, content)
-        .expect("virtual TS generated");
+    let result = DiagnosticService::generate_virtual_ts_for_art_with_dependencies(&uri, content)
+        .expect("virtual TS generated")
+        .virtual_result;
 
     assert!(
         result

@@ -10,6 +10,8 @@ mod mapping;
 mod message;
 mod virtual_ts;
 mod virtual_ts_art;
+mod virtual_ts_art_bindings;
+mod virtual_ts_art_imports;
 mod virtual_ts_inline_art;
 
 #[cfg(test)]

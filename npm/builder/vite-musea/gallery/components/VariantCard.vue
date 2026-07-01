@@ -196,6 +196,9 @@ const window = globalThis.window;
 }
 
 .variant-preview {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   aspect-ratio: 16 / 9;
   min-height: clamp(260px, 36vw, 560px);
   background: var(--musea-bg-tertiary);

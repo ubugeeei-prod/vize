@@ -84,6 +84,50 @@ test("TypeScript Vue plugin resolves existing relative .vue imports", () => {
   }
 });
 
+test("TypeScript Vue plugin maps .ts definition results back to real .vue files", () => {
+  const project = createVueProject('import App from "./app.vue";\nApp;\n', {
+    "app.vue": "<template />\n",
+  });
+  try {
+    const service = createLanguageService(project.mainTs, true);
+    const source = fs.readFileSync(project.mainTs, "utf8");
+    const vuePath = path.join(path.dirname(project.mainTs), "app.vue");
+
+    for (const position of [
+      source.indexOf("App from") + 1,
+      source.indexOf("./app.vue") + 2,
+      source.indexOf("App;") + 1,
+    ]) {
+      const definitions = service.getDefinitionAtPosition(project.mainTs, position);
+      assert.equal(definitions?.[0]?.fileName, vuePath);
+      assert.deepEqual(definitions?.[0]?.textSpan, { start: 0, length: 0 });
+
+      const bound = service.getDefinitionAndBoundSpan(project.mainTs, position);
+      assert.equal(bound?.definitions?.[0]?.fileName, vuePath);
+      assert.deepEqual(bound?.definitions?.[0]?.textSpan, { start: 0, length: 0 });
+    }
+  } finally {
+    fs.rmSync(project.root, { force: true, recursive: true });
+  }
+});
+
+test("TypeScript Vue plugin annotates .ts hover info for .vue imports", () => {
+  const project = createVueProject('import App from "./app.vue";\nApp;\n', {
+    "app.vue": "<template />\n",
+  });
+  try {
+    const service = createLanguageService(project.mainTs, true);
+    const source = fs.readFileSync(project.mainTs, "utf8");
+
+    for (const position of [source.indexOf("App from") + 1, source.indexOf("App;") + 1]) {
+      const quickInfo = service.getQuickInfoAtPosition(project.mainTs, position);
+      assert.equal(displayPartsText(quickInfo?.documentation), "Vue component: app.vue");
+    }
+  } finally {
+    fs.rmSync(project.root, { force: true, recursive: true });
+  }
+});
+
 test("TypeScript Vue plugin keeps missing .vue imports diagnostic", () => {
   const project = createVueProject('import Missing from "./missing.vue";\nMissing;\n', {});
   try {
@@ -107,17 +151,19 @@ function createVueProject(mainSource: string, vueFiles: Record<string, string>) 
 }
 
 function collectDiagnostics(mainTs: string, enablePlugin: boolean) {
+  return createLanguageService(mainTs, enablePlugin).getSemanticDiagnostics(mainTs);
+}
+
+function createLanguageService(mainTs: string, enablePlugin: boolean) {
   const host = createHost(path.dirname(path.dirname(mainTs)), mainTs);
   const service = ts.createLanguageService(host);
-  const activeService = enablePlugin
+  return enablePlugin
     ? initVuePlugin({ typescript: ts }).create({
         languageService: service,
         languageServiceHost: host,
         serverHost: ts.sys,
       })
     : service;
-
-  return activeService.getSemanticDiagnostics(mainTs);
 }
 
 function createHost(rootDir: string, mainTs: string): import("typescript").LanguageServiceHost {
@@ -164,6 +210,10 @@ function formatDiagnostics(diagnostics: readonly import("typescript").Diagnostic
   return diagnostics
     .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"))
     .join("\n");
+}
+
+function displayPartsText(parts: readonly import("typescript").SymbolDisplayPart[] | undefined) {
+  return parts?.map((part) => part.text).join("");
 }
 
 function readJson<T>(relativePath: string): T {

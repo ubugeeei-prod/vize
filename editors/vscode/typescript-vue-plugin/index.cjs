@@ -9,7 +9,7 @@ function init({ typescript: ts }) {
   return {
     create(info) {
       installVueImportResolver(ts, info);
-      return info.languageService;
+      return createLanguageServiceProxy(ts, info.languageService);
     },
   };
 }
@@ -105,6 +105,86 @@ function resolveVueModule(ts, specifier, containingFile, fileExists) {
     extension: ts.Extension.Dts,
     isExternalLibraryImport: false,
     resolvedFileName: virtualVueDtsPath(vuePath),
+  };
+}
+
+function createLanguageServiceProxy(ts, languageService) {
+  const proxy = Object.create(null);
+  for (const key of Object.keys(languageService)) {
+    const value = languageService[key];
+    proxy[key] = typeof value === "function" ? value.bind(languageService) : value;
+  }
+
+  proxy.getDefinitionAtPosition = (fileName, position) =>
+    remapVueVirtualDefinitions(ts, languageService.getDefinitionAtPosition(fileName, position));
+
+  proxy.getDefinitionAndBoundSpan = (fileName, position) => {
+    const result = languageService.getDefinitionAndBoundSpan(fileName, position);
+    if (!result || !result.definitions) {
+      return result;
+    }
+    return {
+      ...result,
+      definitions: remapVueVirtualDefinitions(ts, result.definitions),
+    };
+  };
+
+  proxy.getTypeDefinitionAtPosition = (fileName, position) =>
+    remapVueVirtualDefinitions(ts, languageService.getTypeDefinitionAtPosition(fileName, position));
+
+  proxy.getQuickInfoAtPosition = (fileName, position) => {
+    const quickInfo = languageService.getQuickInfoAtPosition(fileName, position);
+    if (!quickInfo) {
+      return quickInfo;
+    }
+
+    const vuePaths = vuePathsFromDefinitions(
+      languageService.getDefinitionAtPosition(fileName, position),
+    );
+    if (vuePaths.length === 0) {
+      return quickInfo;
+    }
+
+    return {
+      ...quickInfo,
+      documentation: [
+        ...(quickInfo.documentation || []),
+        {
+          kind: "text",
+          text: `Vue component: ${path.basename(vuePaths[0])}`,
+        },
+      ],
+    };
+  };
+
+  return proxy;
+}
+
+function remapVueVirtualDefinitions(ts, definitions) {
+  return definitions?.map((definition) => remapVueVirtualDefinition(ts, definition));
+}
+
+function vuePathsFromDefinitions(definitions) {
+  return (
+    definitions
+      ?.map((definition) => realVuePathFromVirtual(definition.fileName))
+      .filter((vuePath) => vuePath) || []
+  );
+}
+
+function remapVueVirtualDefinition(ts, definition) {
+  const vuePath = realVuePathFromVirtual(definition.fileName);
+  if (!vuePath) {
+    return definition;
+  }
+
+  return {
+    ...definition,
+    fileName: vuePath,
+    textSpan: { start: 0, length: 0 },
+    contextSpan: undefined,
+    kind: ts.ScriptElementKind.scriptElement,
+    name: path.basename(vuePath),
   };
 }
 

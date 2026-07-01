@@ -97,11 +97,11 @@ pub(super) fn generate_event_handler_expressions(
             }
             let gen_stmt_end = ts.len();
             mappings.push(VizeMapping {
-                gen_range: if is_implicit_reference {
-                    gen_stmt_start..gen_stmt_end
-                } else {
-                    generated_text_range(&ts[gen_stmt_start..gen_stmt_end], content, gen_stmt_start)
-                },
+                gen_range: generated_text_range(
+                    &ts[gen_stmt_start..gen_stmt_end],
+                    content,
+                    gen_stmt_start,
+                ),
                 src_range: src_start..src_end,
                 sub_spans: Vec::new(),
             });

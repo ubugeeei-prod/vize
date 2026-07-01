@@ -1,5 +1,7 @@
 //! Orchestration of Corsa diagnostic collection for a single SFC document.
 
+use std::path::Path;
+
 use tower_lsp::lsp_types::{Diagnostic, Url};
 
 use crate::server::ServerState;
@@ -45,16 +47,27 @@ impl DiagnosticService {
         let options_api = state.options_api_enabled();
         let legacy_vue2 = state.legacy_vue2_enabled();
         let mut diagnostics = if is_art_file {
-            let Some(virtual_result) = Self::generate_virtual_ts_for_art(uri, &content) else {
+            let Some(art_virtual) =
+                Self::generate_virtual_ts_for_art_with_dependencies(uri, &content)
+            else {
                 tracing::warn!("failed to generate virtual ts for {}", uri);
                 return vec![];
             };
+            sync_art_vue_dependencies(
+                &bridge,
+                &art_virtual.vue_dependencies,
+                CorsaVueVirtualDocumentOptions {
+                    options_api,
+                    legacy_vue2,
+                },
+            )
+            .await;
             collect_virtual_result_diagnostics(
                 &bridge,
                 uri,
                 content.as_str(),
                 cstr!("{}.ts", uri.path()).to_string(),
-                virtual_result,
+                art_virtual.virtual_result,
             )
             .await
         } else {
@@ -117,4 +130,46 @@ impl DiagnosticService {
 
         diagnostics
     }
+}
+
+async fn sync_art_vue_dependencies(
+    bridge: &std::sync::Arc<vize_canon::CorsaBridge>,
+    dependencies: &[std::path::PathBuf],
+    options: CorsaVueVirtualDocumentOptions,
+) {
+    for dependency in dependencies {
+        let Ok(content) = std::fs::read_to_string(dependency) else {
+            continue;
+        };
+        if bridge
+            .open_vue_virtual_document(dependency, &content, options)
+            .await
+            .is_ok()
+        {
+            continue;
+        }
+
+        let Some(fallback_uri) = vue_virtual_uri(dependency) else {
+            continue;
+        };
+        if let Err(error) = bridge
+            .open_or_update_virtual_document(
+                fallback_uri.as_str(),
+                "const component: any = undefined;\nexport default component;\n",
+            )
+            .await
+        {
+            tracing::debug!(
+                "failed to sync Art Vue dependency fallback {}: {}",
+                fallback_uri,
+                error
+            );
+        }
+    }
+}
+
+fn vue_virtual_uri(source_path: &Path) -> Option<String> {
+    let virtual_path =
+        source_path.with_file_name(cstr!("{}.ts", source_path.file_name()?.to_string_lossy()));
+    Url::from_file_path(virtual_path).ok().map(Into::into)
 }
