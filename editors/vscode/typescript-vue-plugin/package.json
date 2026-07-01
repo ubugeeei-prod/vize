@@ -1,0 +1,6 @@
+{
+  "name": "@vizejs/typescript-vue-plugin",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.cjs"
+}

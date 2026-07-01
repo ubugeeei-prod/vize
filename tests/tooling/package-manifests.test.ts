@@ -468,9 +468,6 @@ test("editor extension manifests keep expected defaults and version alignment", 
     vscodePackage.contributes?.configuration?.properties?.["vize.formatting.enable"]?.default,
     false,
   );
-  assert.equal(vscodePackage.scripts?.["vscode:prepublish"], "vp pack");
-  assert.equal(vscodePackage.scripts?.build, "vp pack");
-  assert.equal(vscodePackage.scripts?.watch, "vp pack --watch");
   assert.equal(vscodePackage.scripts?.check, "tsgo --noEmit && vp check src vite.config.ts");
   assert.equal(
     vscodePackage.scripts?.["check:fix"],

@@ -1,4 +1,5 @@
 node_modules/
+typescript-vue-plugin/
 src/
 .vscode-test/
 .vscode/

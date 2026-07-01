@@ -74,6 +74,7 @@ test("check workflow runs declared Node engine compatibility matrix", () => {
     job,
     /node --test tests\/tooling\/node-engine-matrix\.test\.ts tests\/tooling\/package-manifests\.test\.ts/,
   );
+  assert.doesNotMatch(job, /vscode-typescript-vue-plugin\.test\.ts/);
 });
 
 test("check workflow comments a detailed PR test report for each head push", () => {
