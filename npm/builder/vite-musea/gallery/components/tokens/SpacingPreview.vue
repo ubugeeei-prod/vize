@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { cssLengthToPx } from "../../../src/tokens/css-length.js";
 
 const props = defineProps<{
   value: string | number;
 }>();
 
 const numericValue = computed(() => {
-  if (typeof props.value === "number") return props.value;
-  const parsed = parseFloat(props.value);
-  return isNaN(parsed) ? 0 : parsed;
+  return cssLengthToPx(props.value) ?? 0;
 });
 
 const label = computed(() => {
