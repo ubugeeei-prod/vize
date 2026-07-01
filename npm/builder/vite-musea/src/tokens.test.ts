@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { generateTokensHtml } from "./tokens/generator.ts";
+import { normalizeCategories } from "./tokens/native.ts";
 import { parseTokens } from "./tokens/parser.ts";
 import {
   buildTokenMap,
@@ -89,6 +90,30 @@ void test("token parsing keeps prototype-like token names as data", async () => 
   } finally {
     await fs.promises.rm(tempDir, { recursive: true, force: true });
   }
+});
+
+void test("normalizeCategories orders tokens by attributes.order and name", () => {
+  const categories = normalizeCategories([
+    {
+      name: "color",
+      tokens: {
+        tertiary: { value: "#333", type: "color", attributes: { order: 30 } },
+        secondary: { value: "#222", type: "color", attributes: { order: "20" } },
+        neutral: { value: "#999", type: "color" },
+        primary: { value: "#111", type: "color", attributes: { order: 10 } },
+        accent: { value: "#f0f", type: "color" },
+      },
+    },
+  ]);
+
+  assert.deepEqual(Object.keys(categories[0]!.tokens), [
+    "primary",
+    "secondary",
+    "tertiary",
+    "accent",
+    "neutral",
+  ]);
+  assert.equal(Object.getPrototypeOf(categories[0]!.tokens), null);
 });
 
 void test("parseTokens reads Tailwind CSS theme variables", async () => {

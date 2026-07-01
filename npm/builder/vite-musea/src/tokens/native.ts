@@ -86,12 +86,39 @@ function parseJsonResult<T>(value: unknown): T {
 
 export function normalizeCategories(categories: TokenCategory[]): TokenCategory[] {
   for (const category of categories) {
-    category.tokens = nullRecord(category.tokens);
+    category.tokens = nullRecord(Object.fromEntries(sortTokenEntries(category.tokens)));
     if (category.subcategories) {
       normalizeCategories(category.subcategories);
     }
   }
   return categories;
+}
+
+function sortTokenEntries(tokens: Record<string, DesignToken>): Array<[string, DesignToken]> {
+  return Object.entries(tokens).sort((a, b) => {
+    const order = compareTokenOrder(a[1], b[1]);
+    if (order !== 0) return order;
+    return a[0].localeCompare(b[0], undefined, { numeric: true });
+  });
+}
+
+function compareTokenOrder(a: DesignToken, b: DesignToken): number {
+  const aOrder = tokenOrder(a);
+  const bOrder = tokenOrder(b);
+  if (aOrder === undefined && bOrder === undefined) return 0;
+  if (aOrder === undefined) return 1;
+  if (bOrder === undefined) return -1;
+  return aOrder - bOrder;
+}
+
+function tokenOrder(token: DesignToken): number | undefined {
+  const order = token.attributes?.order;
+  if (typeof order === "number" && Number.isFinite(order)) return order;
+  if (typeof order === "string") {
+    const parsed = Number(order);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return undefined;
 }
 
 export function nullRecord<T>(record: Record<string, T>): Record<string, T> {
