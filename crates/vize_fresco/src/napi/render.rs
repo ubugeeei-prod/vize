@@ -4,6 +4,7 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::cell::RefCell;
 
+use super::input_size::input_intrinsic_size;
 use super::terminal::with_backend;
 use super::types::{LayoutResultNapi, RenderNodeNapi, StyleNapi};
 use crate::layout::Rect;
@@ -208,22 +209,9 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                 render_node.style.height = Dimension::Points(text_height);
             }
 
-            // For input nodes, set size with text wrapping support
             if node.node_type == "input" {
-                use crate::text::TextWidth;
-                let value = node.value.as_deref().unwrap_or("");
-                let placeholder = node.placeholder.as_deref().unwrap_or("");
-                let content = if value.is_empty() { placeholder } else { value };
-
-                // Fixed width for wrapping (can be overridden by style)
-                let input_width = 30_usize;
-                let content_width = TextWidth::width(content);
-
-                // Calculate height based on wrapped lines
-                let num_lines = (content_width / input_width) + 1;
-                let height = num_lines.max(1) as f32;
-
-                render_node.style.width = Dimension::Points(input_width as f32);
+                let (input_width, height) = input_intrinsic_size(node);
+                render_node.style.width = Dimension::Points(input_width);
                 render_node.style.height = Dimension::Points(height);
             }
 
@@ -511,7 +499,7 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                 use crate::text::SegmentedText;
                 let st = SegmentedText::new(value);
                 let cursor_col = st.column_at_index(cursor_idx.min(st.grapheme_count));
-                let area_width = layout.width as usize;
+                let area_width = usize::from(layout.width.max(1));
 
                 // Calculate cursor line and column with text wrapping
                 let cursor_line = cursor_col / area_width;

@@ -8,6 +8,7 @@
     clippy::disallowed_macros
 )]
 mod input;
+mod input_size;
 #[allow(
     clippy::disallowed_types,
     clippy::disallowed_methods,
@@ -20,6 +21,8 @@ mod layout;
     clippy::disallowed_macros
 )]
 mod render;
+#[cfg(test)]
+mod render_tests;
 #[allow(
     clippy::disallowed_types,
     clippy::disallowed_methods,
