@@ -1,6 +1,7 @@
 //! Component event listener type generation.
 
-use vize_carton::{FxHashSet, String, append, cstr, profile};
+use vize_carton::{FxHashSet, String, append, cstr};
+use vize_croquis::croquis::PassedProp;
 use vize_croquis::{
     Croquis, EventHandlerScopeData, Scope, ScopeData, analysis::ComponentUsage,
     analyzer::strip_js_comments, naming::to_pascal_case,
@@ -152,6 +153,44 @@ struct EmitInferenceContext<'a> {
     indent: &'a str,
 }
 
+fn push_ts_string_literal(out: &mut String, value: &str) {
+    out.push('"');
+    for ch in value.chars() {
+        match ch {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            _ => out.push(ch),
+        }
+    }
+    out.push('"');
+}
+
+fn generated_prop_value(
+    prop: &PassedProp,
+    template_prop_names: &FxHashSet<String>,
+) -> Option<String> {
+    if !prop.is_dynamic {
+        let mut value = String::default();
+        if let Some(static_value) = prop.value.as_ref() {
+            push_ts_string_literal(&mut value, static_value.as_str());
+        } else {
+            value.push_str("true");
+        }
+        return Some(value);
+    }
+
+    let value = strip_js_comments(prop.value.as_ref()?.as_str());
+    let trimmed_value = value.as_ref().trim();
+    let rewritten_value = rewrite_reserved_template_prop(trimmed_value, template_prop_names);
+    Some(rewritten_value.as_ref().map_or_else(
+        || String::from(value.as_ref()),
+        |s| String::from(s.as_str()),
+    ))
+}
+
 fn generate_inferred_emit_args(ts: &mut String, ctx: &EmitInferenceContext<'_>) -> Option<String> {
     if !is_local_vue_component_binding(ctx.summary, ctx.component_name) {
         return None;
@@ -201,27 +240,15 @@ fn generate_inferred_emit_args(ts: &mut String, ctx: &EmitInferenceContext<'_>) 
         if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
             continue;
         }
-        let Some(ref value) = prop.value else {
+        let Some(generated_value) = generated_prop_value(prop, ctx.template_prop_names) else {
             continue;
         };
-        if !prop.is_dynamic {
-            continue;
-        }
-        let value = profile!(
-            "canon.virtual_ts.emit_payload.strip_comments",
-            strip_js_comments(value.as_str())
-        );
-        let trimmed_value = value.as_ref().trim();
-        let rewritten_value =
-            rewrite_reserved_template_prop(trimmed_value, ctx.template_prop_names);
-        let generated_value = rewritten_value
-            .as_ref()
-            .map_or_else(|| value.as_ref(), |s| s.as_str());
         let camel_prop_name = to_camel_case(prop.name.as_str());
         append!(
             *ts,
-            "{}  \"{camel_prop_name}\": {generated_value},\n",
-            ctx.indent
+            "{}  \"{camel_prop_name}\": {},\n",
+            ctx.indent,
+            generated_value.as_str(),
         );
     }
     append!(*ts, "{}}});\n", ctx.indent);

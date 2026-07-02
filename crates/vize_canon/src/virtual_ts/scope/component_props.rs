@@ -14,7 +14,9 @@ use crate::virtual_ts::expressions::generate_component_prop_checks;
 use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;
 
-use super::component_prop_checker::{append_prop_checker_alias, has_dynamic_props};
+use super::component_prop_checker::{
+    append_prop_checker_alias, has_dynamic_props, has_inference_props,
+};
 use super::component_prop_navigation;
 use super::context::{ComponentPropsContext, VForPropsContext};
 use super::emit::{
@@ -70,15 +72,10 @@ pub(super) fn generate_component_props(
 
     // Generic children expose `__vizeCheck<T>(props)`; fallback contextual
     // typing is limited to inline function props to avoid duplicate errors.
-    let any_dynamic_props = checkable_usages.iter().any(|(_, usage)| {
-        usage.props.iter().any(|p| {
-            p.name.as_str() != "key"
-                && p.name.as_str() != "ref"
-                && p.value.is_some()
-                && p.is_dynamic
-        })
-    });
-    if any_dynamic_props {
+    let any_inference_props = checkable_usages
+        .iter()
+        .any(|(_, usage)| has_inference_props(usage));
+    if any_inference_props {
         ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
         ts.push_str(
             "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;\n",
@@ -103,7 +100,7 @@ pub(super) fn generate_component_props(
         append!(*ts, "  // @vize-map: component -> {src_start}:{src_end}\n",);
         append!(
             *ts,
-            "  type __{component_type_name}_Props_{idx} = typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }} ? __P : (typeof {component_ref} extends (props: infer __P) => any ? __P : {{}});\n",
+            "  type __{component_type_name}_Props_{idx} = typeof {component_ref} extends {{ __vizeCheck: any }} ? Record<string, unknown> : (typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }} ? __P : (typeof {component_ref} extends (props: infer __P) => any ? __P : {{}}));\n",
         );
 
         for prop in &usage.props {
@@ -120,7 +117,7 @@ pub(super) fn generate_component_props(
             }
         }
 
-        if has_dynamic_props {
+        if has_inference_props(usage) {
             // Generic functional prop-checker for this component (#775).
             append_prop_checker_alias(
                 ts,

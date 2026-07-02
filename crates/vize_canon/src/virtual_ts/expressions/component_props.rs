@@ -13,8 +13,53 @@ use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
-use vize_croquis::croquis::ComponentUsage;
+use vize_croquis::croquis::{ComponentUsage, PassedProp};
 use vize_croquis::drawer::strip_js_comments;
+
+fn push_ts_string_literal(out: &mut String, value: &str) {
+    out.push('"');
+    for ch in value.chars() {
+        match ch {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            _ => out.push(ch),
+        }
+    }
+    out.push('"');
+}
+
+fn generated_prop_value(
+    prop: &PassedProp,
+    template_prop_names: &FxHashSet<String>,
+) -> Option<String> {
+    if !prop.is_dynamic {
+        let mut value = String::default();
+        if let Some(static_value) = prop.value.as_ref() {
+            push_ts_string_literal(&mut value, static_value.as_str());
+        } else {
+            value.push_str("true");
+        }
+        return Some(value);
+    }
+
+    let value = strip_js_comments(prop.value.as_ref()?.as_str());
+    let trimmed_value = value.as_ref().trim();
+    let rewritten_value = rewrite_reserved_template_prop(trimmed_value, template_prop_names);
+    Some(rewritten_value.as_ref().map_or_else(
+        || String::from(value.as_ref()),
+        |s| String::from(s.as_str()),
+    ))
+}
+
+fn has_inference_props(usage: &ComponentUsage) -> bool {
+    usage
+        .props
+        .iter()
+        .any(|prop| prop.name.as_str() != "key" && prop.name.as_str() != "ref")
+}
 
 /// Generate component prop value checks at the given indentation level.
 pub(crate) fn generate_component_prop_checks(
@@ -31,21 +76,13 @@ pub(crate) fn generate_component_prop_checks(
         if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
             continue;
         }
-        if let Some(ref value) = prop.value
-            && prop.is_dynamic
-        {
+        if prop.value.is_some() && prop.is_dynamic {
             let prop_src_start = (template_offset + prop.start) as usize;
             let prop_src_end = (template_offset + prop.end) as usize;
-            let value = profile!(
-                "canon.virtual_ts.prop_check.strip_comments",
-                strip_js_comments(value.as_str())
+            let generated_value = profile!(
+                "canon.virtual_ts.prop_check.value",
+                generated_prop_value(prop, template_prop_names).unwrap_or_default()
             );
-            let trimmed_value = value.as_ref().trim();
-            let rewritten_value =
-                rewrite_reserved_template_prop(trimmed_value, template_prop_names);
-            let generated_value = rewritten_value
-                .as_ref()
-                .map_or_else(|| value.as_ref(), |s| s.as_str());
             append!(
                 *ts,
                 "{indent}// @vize-map: prop -> {prop_src_start}:{prop_src_end}\n",
@@ -67,7 +104,7 @@ pub(crate) fn generate_component_prop_checks(
             append!(
                 *ts,
                 "{expr_indent}const {check_name}: __{component_type_name}_{idx}_prop_{safe_prop_name} = {};\n",
-                generated_value,
+                generated_value.as_str(),
             );
             let gen_stmt_end = ts.len();
             append!(*ts, "{expr_indent}void {check_name};\n");
@@ -111,10 +148,7 @@ fn generate_generic_props_call(
     template_offset: u32,
     indent: &str,
 ) {
-    let has_dynamic_props = usage.props.iter().any(|p| {
-        p.name.as_str() != "key" && p.name.as_str() != "ref" && p.value.is_some() && p.is_dynamic
-    });
-    if !has_dynamic_props {
+    if !has_inference_props(usage) {
         return;
     }
 
@@ -138,21 +172,12 @@ fn generate_generic_props_call(
         if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
             continue;
         }
-        let Some(ref value) = prop.value else {
+        let Some(generated_value) = generated_prop_value(prop, template_prop_names) else {
             continue;
         };
-        if !prop.is_dynamic {
-            continue;
-        }
 
         let prop_src_start = (template_offset + prop.start) as usize;
         let prop_src_end = (template_offset + prop.end) as usize;
-        let value = strip_js_comments(value.as_str());
-        let trimmed_value = value.as_ref().trim();
-        let rewritten_value = rewrite_reserved_template_prop(trimmed_value, template_prop_names);
-        let generated_value = rewritten_value
-            .as_ref()
-            .map_or_else(|| value.as_ref(), |s| s.as_str());
         let camel_prop_name = to_camel_case(prop.name.as_str());
 
         append!(*ts, "{expr_indent}  ");
@@ -161,7 +186,7 @@ fn generate_generic_props_call(
         // object-literal property at the property key, not the value, so a
         // value-only mapping would miss it and the diagnostic would be dropped.
         let entry_gen_start = ts.len();
-        append!(*ts, "\"{camel_prop_name}\": {generated_value}");
+        append!(*ts, "\"{camel_prop_name}\": {}", generated_value.as_str());
         let entry_gen_end = ts.len();
         ts.push_str(",\n");
         mappings.push(VizeMapping {

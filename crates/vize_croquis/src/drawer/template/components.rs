@@ -36,12 +36,16 @@ impl Drawer {
                                     CompactString::new(c.loc.source.as_str())
                                 }
                             };
-                            let value = dir.exp.as_ref().map(|e| match e {
-                                ExpressionNode::Simple(s) => s.content.clone(),
-                                ExpressionNode::Compound(c) => {
-                                    CompactString::new(c.loc.source.as_str())
-                                }
-                            });
+                            let value = dir
+                                .exp
+                                .as_ref()
+                                .map(|e| match e {
+                                    ExpressionNode::Simple(s) => s.content.clone(),
+                                    ExpressionNode::Compound(c) => {
+                                        CompactString::new(c.loc.source.as_str())
+                                    }
+                                })
+                                .or_else(|| Some(prop_name.clone()));
                             usage.props.push(PassedProp {
                                 name: prop_name,
                                 value,

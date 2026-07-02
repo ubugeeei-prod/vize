@@ -17,6 +17,13 @@ pub(super) fn has_dynamic_props(usage: &ComponentUsage) -> bool {
     })
 }
 
+pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
+    usage
+        .props
+        .iter()
+        .any(|prop| prop.name.as_str() != "key" && prop.name.as_str() != "ref")
+}
+
 pub(super) fn append_prop_checker_alias(
     ts: &mut String,
     usage: &ComponentUsage,
