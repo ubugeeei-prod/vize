@@ -138,7 +138,6 @@ test("release workflow creates GitHub Releases only after registry publishing su
   for (const requiredNeed of [
     "build-cli",
     "release-vscode-extension",
-    "release-open-vsx-extension",
     "release-npm-native",
     "release-npm-fresco-native",
     "release-npm-wasm",
@@ -173,15 +172,16 @@ test("release workflow does not block GitHub releases on VS Code Marketplace tok
   );
 });
 
-test("release workflow publishes the VS Code extension to Open VSX when configured", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
+test("Open VSX workflow publishes the VS Code extension when configured", () => {
+  const workflow = readRepoFile(".github", "workflows", "release-open-vsx.yml");
   const publishJob = workflowJobBody(workflow, "release-open-vsx-extension");
 
-  assert.match(publishJob, /needs:\s*build-editor-extensions/);
+  assert.match(workflow, /on:\s*\n\s*release:\s*\n\s*types:\s*\[published\]/);
   assert.match(publishJob, /environment:\s*open-vsx-registry/);
-  assert.match(publishJob, /OVSX_PAT:\s*\$\{\{ secrets\.OVSX_PAT \}\}/);
-  assert.match(publishJob, /name:\s*Download editor extension artifact/);
-  assert.match(publishJob, /path:\s*editor-extension-artifacts/);
+  assert.match(workflow, /OVSX_PAT:\s*\$\{\{ secrets\.OVSX_PAT \}\}/);
+  assert.match(publishJob, /name:\s*Download VSIX from GitHub Release/);
+  assert.match(publishJob, /gh release download/);
+  assert.match(publishJob, /--pattern "\*\.vsix"/);
   assert.match(publishJob, /name:\s*Skip publish when OVSX_PAT is absent/);
   assert.match(
     publishJob,

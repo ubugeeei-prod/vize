@@ -1,0 +1,47 @@
+name: Release Open VSX
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  OVSX_PAT: ${{ secrets.OVSX_PAT }}
+  PUBLISH_RESOLUTION_RETRY_LIMIT: 24
+  PUBLISH_RESOLUTION_RETRY_DELAY: 10
+
+jobs:
+  release-open-vsx-extension:
+    name: Release Open VSX extension
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    environment: open-vsx-registry
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Download VSIX from GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "${{ github.event.release.tag_name }}" --pattern "*.vsix" --dir open-vsx-artifacts
+
+      - name: Skip publish when OVSX_PAT is absent
+        if: env.OVSX_PAT == ''
+        run: echo "OVSX_PAT is not configured; skipping Open VSX publish."
+
+      - name: Publish Open VSX extension
+        if: env.OVSX_PAT != ''
+        continue-on-error: true
+        run: |
+          vsix=$(find open-vsx-artifacts -name '*.vsix' -print -quit)
+          test -n "$vsix"
+          moon run --target native - -- "$vsix" < tools/moon/scripts/publish_open_vsx_extension.mbtx
