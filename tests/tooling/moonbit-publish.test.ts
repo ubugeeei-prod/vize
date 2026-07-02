@@ -236,14 +236,7 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
 
     const calls = JSON.parse(fs.readFileSync(callsPath, "utf8")) as string[][];
-    assert.deepEqual(calls.at(-1), [
-      "dlx",
-      "-p",
-      "ovsx@^1.0.0",
-      "ovsx",
-      "publish",
-      vsixPath,
-    ]);
+    assert.deepEqual(calls.at(-1), ["dlx", "-p", "ovsx@^1.0.0", "ovsx", "publish", vsixPath]);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
