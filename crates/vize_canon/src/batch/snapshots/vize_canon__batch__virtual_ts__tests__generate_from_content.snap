@@ -23,7 +23,7 @@ type __WithDefaultValue<T> = T | __DefaultFactory<T>;
 type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
 type __DefineProps<T> = __LooseRequired<T>;
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof __LooseRequired<T>]-?: Exclude<__LooseRequired<T>[K], undefined> };
+type __WithDefaultsResult<T, D> = Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof __LooseRequired<T>]-?: Exclude<__LooseRequired<T>[K], undefined> };
 function defineProps<T>(): __DefineProps<T>;
 function defineProps<const T extends readonly string[]>(_props: T): { [K in T[number]]?: any };
 function defineProps<const T extends Record<string, any>>(_props: T): __RuntimePropShape<T>;
@@ -36,7 +36,7 @@ function defineModel<T>(): $Vue['Ref']<T | undefined> { return undefined as unkn
 function defineModel<T>(_options: any): $Vue['Ref']<T> { void _options; return undefined as unknown as $Vue['Ref']<T>; }
 function defineModel<T>(_name: string, _options?: any): $Vue['Ref']<T> { void _name; void _options; return undefined as unknown as $Vue['Ref']<T>; }
 function defineSlots<T>(): T { return undefined as unknown as T; }
-function withDefaults<T, D extends __WithDefaultsArgs<T>>(_props: T, _defaults: D): __WithDefaultsResult<T, D> { void _props; void _defaults; return undefined as unknown as __WithDefaultsResult<T, D>; }
+function withDefaults<T, D extends __WithDefaultsArgs<T>>(_props: T, _defaults: D): __WithDefaultsResult<T, D>; function withDefaults<T, D extends Record<string, any>>(_props: T, _defaults: D): __WithDefaultsResult<T, D>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
 function useTemplateRef<T = any>(_key: string): $Vue['ShallowRef']<T | null> { void _key; return undefined as unknown as $Vue['ShallowRef']<T | null>; }
 void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
