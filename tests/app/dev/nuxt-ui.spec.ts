@@ -143,6 +143,19 @@ async function gotoNuxtUi(page: Page, pathname = "/") {
   return response;
 }
 
+async function waitForVueHydration(page: Page, buttonName: string): Promise<void> {
+  await page.waitForFunction(
+    (name) => {
+      const button = Array.from(document.querySelectorAll("button")).find(
+        (el) => el.textContent?.trim() === name,
+      ) as (HTMLButtonElement & { __vueParentComponent?: unknown }) | undefined;
+      return Boolean(button?.__vueParentComponent);
+    },
+    buttonName,
+    { timeout: 30_000 },
+  );
+}
+
 function normalizeNuxtUiSnapshotHtml(html: string): string {
   const normalizedWorktreePath = encodeURIComponent(app.cwd);
   return html
@@ -151,6 +164,10 @@ function normalizeNuxtUiSnapshotHtml(html: string): string {
     .replace(
       /<script type="application\/json" data-nuxt-logs="nuxt-app">[\s\S]*?<\/script>/,
       '<script type="application/json" data-nuxt-logs="nuxt-app">__NUXT_UI_LOGS__</script>',
+    )
+    .replace(
+      /<style>@layer base {\n(?::where\(\.i-lucide\\:[\s\S]*?\n)+}<\/style>/g,
+      "<style>@layer base {\n__NUXT_UI_ICON_CSS__\n}</style>",
     )
     .replace(/\b\d{13}\b/g, "0");
 }
@@ -212,7 +229,7 @@ test.describe("nuxt-ui dev", () => {
       page.locator(app.mountSelector).getByRole("heading", { name: "Playground" }),
     ).toBeVisible();
     await expect(
-      page.locator(app.mountSelector).getByRole("button", { name: "Button" }).first(),
+      page.locator(app.mountSelector).getByRole("link", { name: "Button" }).first(),
     ).toBeVisible();
 
     const html = await verifySSRContent(page, app.url);
@@ -238,6 +255,7 @@ test.describe("nuxt-ui dev", () => {
     await expect(buttonPage.getByRole("button", { name: "Button" }).last()).toBeVisible();
     await expect(loadingAutoButton).toBeVisible();
 
+    await waitForVueHydration(page, "Loading auto");
     await loadingAutoButton.click();
     await expect(loadingAutoButton).toBeDisabled();
     await expect(loadingAutoButton).toBeEnabled({ timeout: 10_000 });

@@ -1,8 +1,8 @@
 //! HTML escaping utilities and child/control-flow processing for SSR codegen.
 
 use vize_atelier_core::{
-    CommentNode, ElementType, ForNode, IfNode, InterpolationNode, RuntimeHelper, TemplateChildNode,
-    TextNode,
+    CommentNode, ElementType, ForNode, IfNode, InterpolationNode, PropNode, RuntimeHelper,
+    TemplateChildNode, TextNode,
 };
 
 use super::SsrCodegenContext;
@@ -256,8 +256,9 @@ impl<'a> SsrCodegenContext<'a> {
         self.push_scoped_params(collect_for_scoped_params(for_node));
 
         // Process for body
-        let needs_fragment =
-            !disable_nested_fragments && rendered_child_count(&for_node.children) > 1;
+        let needs_fragment = !disable_nested_fragments
+            && (rendered_child_count(&for_node.children) > 1
+                || has_keyed_template_v_for_child(for_node));
         self.process_children(&for_node.children, needs_fragment, true, false);
         self.flush_push();
 
@@ -490,4 +491,42 @@ fn rendered_child_count(children: &[TemplateChildNode]) -> usize {
             _ => 1,
         })
         .sum()
+}
+
+fn has_keyed_template_v_for_child(for_node: &ForNode) -> bool {
+    if for_node.children.len() != 1 {
+        return false;
+    }
+
+    let TemplateChildNode::Element(el) = &for_node.children[0] else {
+        return false;
+    };
+
+    el.tag_type == ElementType::Template
+        && el.props.iter().any(is_key_prop)
+        && !has_single_plain_element_child(el)
+}
+
+fn has_single_plain_element_child(el: &vize_atelier_core::ElementNode) -> bool {
+    if el.children.len() != 1 {
+        return false;
+    }
+
+    matches!(
+        &el.children[0],
+        TemplateChildNode::Element(child_el) if child_el.tag_type == ElementType::Element
+    )
+}
+
+fn is_key_prop(prop: &PropNode) -> bool {
+    match prop {
+        PropNode::Attribute(attr) => attr.name == "key",
+        PropNode::Directive(dir) if dir.name == "bind" => {
+            matches!(
+                &dir.arg,
+                Some(vize_atelier_core::ExpressionNode::Simple(arg)) if arg.content == "key"
+            )
+        }
+        _ => false,
+    }
 }

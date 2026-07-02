@@ -701,83 +701,183 @@ fn generate_for_item_props_merged(
 
     let mut first_merge_arg = true;
 
-    if has_vbind_spread {
-        super::super::props::generate_vbind_object_exp(ctx, &el.props);
-        first_merge_arg = false;
-    }
+    let mut extra_pending = key_exp.is_some() || scope_id.is_some();
+    let mut seg_start = 0usize;
 
-    if has_von_spread {
+    for (index, prop) in el.props.iter().enumerate() {
+        let PropNode::Directive(dir) = prop else {
+            continue;
+        };
+        let is_vbind_spread = has_vbind_spread && dir.name == "bind" && dir.arg.is_none();
+        let is_von_spread = has_von_spread && dir.name == "on" && dir.arg.is_none();
+        if !is_vbind_spread && !is_von_spread {
+            continue;
+        }
+
+        flush_for_item_props_segment(
+            ctx,
+            &el.props[seg_start..index],
+            key_exp,
+            scope_id,
+            extra_pending,
+            &mut first_merge_arg,
+            skip_is_prop,
+        );
+        extra_pending = false;
+        seg_start = index + 1;
+
         if !first_merge_arg {
             ctx.push(", ");
         }
-        super::super::props::generate_von_object_exp(ctx, &el.props);
         first_merge_arg = false;
+        if is_vbind_spread {
+            if let Some(exp) = &dir.exp {
+                generate_expression(ctx, exp);
+            }
+        } else {
+            super::super::props::generate_von_object_exp(ctx, &el.props[index..=index]);
+        }
     }
 
-    let has_remaining = key_exp.is_some()
-        || scope_id.is_some()
-        || el.props.iter().any(|p| {
-            if should_skip_prop(p) || (skip_is_prop && is_is_prop(p)) {
-                return false;
-            }
-            if let PropNode::Directive(dir) = p
-                && dir.arg.is_none()
-                && (dir.name == "bind" || dir.name == "on")
-            {
-                return false;
-            }
-            true
-        });
-
-    if has_remaining {
-        if !first_merge_arg {
-            ctx.push(", ");
-        }
-        ctx.push("{");
-        ctx.indent();
-        let mut first_prop = true;
-
-        if let Some(key) = key_exp {
-            ctx.newline();
-            ctx.push("key: ");
-            generate_expression(ctx, key);
-            first_prop = false;
-        }
-
-        for prop in el.props.iter() {
-            if should_skip_prop(prop) || (skip_is_prop && is_is_prop(prop)) {
-                continue;
-            }
-            if let PropNode::Directive(dir) = prop
-                && dir.arg.is_none()
-                && (dir.name == "bind" || dir.name == "on")
-            {
-                continue;
-            }
-            if !first_prop {
-                ctx.push(",");
-            }
-            ctx.newline();
-            generate_single_prop(ctx, prop, super::super::props::StaticMerge::default());
-            first_prop = false;
-        }
-
-        if let Some(sid) = scope_id {
-            if !first_prop {
-                ctx.push(",");
-            }
-            ctx.newline();
-            ctx.push("\"");
-            ctx.push(sid.as_str());
-            ctx.push("\": \"\"");
-        }
-
-        ctx.deindent();
-        ctx.newline();
-        ctx.push("}");
-    }
+    flush_for_item_props_segment(
+        ctx,
+        &el.props[seg_start..],
+        key_exp,
+        scope_id,
+        extra_pending,
+        &mut first_merge_arg,
+        skip_is_prop,
+    );
 
     ctx.push(")");
+}
+
+fn flush_for_item_props_segment(
+    ctx: &mut CodegenContext,
+    props: &[PropNode<'_>],
+    key_exp: Option<&ExpressionNode<'_>>,
+    scope_id: &Option<vize_carton::String>,
+    include_extra: bool,
+    first_merge_arg: &mut bool,
+    skip_is_prop: bool,
+) {
+    let has_props = props
+        .iter()
+        .any(|prop| !is_for_item_segment_skip_prop(prop, skip_is_prop));
+    if !has_props && !include_extra {
+        return;
+    }
+
+    if !*first_merge_arg {
+        ctx.push(", ");
+    }
+    *first_merge_arg = false;
+
+    let skip_static_class = props.iter().any(|prop| {
+        matches!(
+            prop,
+            PropNode::Attribute(attr) if attr.name == "class"
+        )
+    }) && props.iter().any(|prop| {
+        matches!(
+            prop,
+            PropNode::Directive(dir)
+                if dir.name == "bind"
+                    && matches!(&dir.arg, Some(ExpressionNode::Simple(exp)) if exp.content == "class")
+        )
+    });
+    let skip_static_style = props.iter().any(|prop| {
+        matches!(
+            prop,
+            PropNode::Attribute(attr) if attr.name == "style"
+        )
+    }) && props.iter().any(|prop| {
+        matches!(
+            prop,
+            PropNode::Directive(dir)
+                if dir.name == "bind"
+                    && matches!(&dir.arg, Some(ExpressionNode::Simple(exp)) if exp.content == "style")
+        )
+    });
+
+    let full_merge = super::super::props::StaticMerge::from_props(props);
+    let merge_static = super::super::props::StaticMerge {
+        class: if skip_static_class {
+            full_merge.class
+        } else {
+            None
+        },
+        class_before: full_merge.class_before,
+        style: if skip_static_style {
+            full_merge.style
+        } else {
+            None
+        },
+        style_before: full_merge.style_before,
+    };
+
+    ctx.push("{");
+    ctx.indent();
+    let mut first_prop = true;
+    let prev_skip_normalize = ctx.skip_normalize;
+    ctx.skip_normalize = true;
+
+    if include_extra && let Some(key) = key_exp {
+        ctx.newline();
+        ctx.push("key: ");
+        generate_expression(ctx, key);
+        first_prop = false;
+    }
+
+    for prop in props {
+        if is_for_item_segment_skip_prop(prop, skip_is_prop) {
+            continue;
+        }
+        if skip_static_class
+            && let PropNode::Attribute(attr) = prop
+            && attr.name == "class"
+        {
+            continue;
+        }
+        if skip_static_style
+            && let PropNode::Attribute(attr) = prop
+            && attr.name == "style"
+        {
+            continue;
+        }
+        if !first_prop {
+            ctx.push(",");
+        }
+        ctx.newline();
+        generate_single_prop(ctx, prop, merge_static);
+        first_prop = false;
+    }
+
+    if include_extra && let Some(sid) = scope_id {
+        if !first_prop {
+            ctx.push(",");
+        }
+        ctx.newline();
+        ctx.push("\"");
+        ctx.push(sid.as_str());
+        ctx.push("\": \"\"");
+    }
+
+    ctx.skip_normalize = prev_skip_normalize;
+    ctx.deindent();
+    ctx.newline();
+    ctx.push("}");
+}
+
+fn is_for_item_segment_skip_prop(prop: &PropNode<'_>, skip_is_prop: bool) -> bool {
+    if should_skip_prop(prop) || (skip_is_prop && is_is_prop(prop)) {
+        return true;
+    }
+    matches!(
+        prop,
+        PropNode::Directive(dir)
+            if dir.arg.is_none() && (dir.name == "bind" || dir.name == "on")
+    )
 }
 
 /// Generate a single prop (attribute or directive)

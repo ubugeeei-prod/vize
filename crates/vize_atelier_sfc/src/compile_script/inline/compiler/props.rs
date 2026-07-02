@@ -100,7 +100,7 @@ pub(super) fn build_user_props_decl(
                 let key = runtime_prop_key(name);
                 decl.extend_from_slice(key.as_bytes());
                 let mut has_option = false;
-                if is_prod && runtime_js_type != "Boolean" {
+                if is_prod && !should_preserve_prod_prop_type(&runtime_js_type) {
                     decl.extend_from_slice(b": {");
                 } else {
                     decl.extend_from_slice(b": { type: ");
@@ -235,6 +235,10 @@ pub(super) fn build_user_props_decl(
     Some(s.into())
 }
 
+fn should_preserve_prod_prop_type(runtime_js_type: &str) -> bool {
+    runtime_js_type.contains("Boolean") || runtime_js_type.contains("Function")
+}
+
 fn build_unknown_type_destructured_props_decl(
     decl: &mut Vec<u8>,
     destructure: &PropsDestructuredBindings,
@@ -259,4 +263,18 @@ fn build_unknown_type_destructured_props_decl(
         decl.push(b'\n');
     }
     decl.extend_from_slice(b"  }");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::should_preserve_prod_prop_type;
+
+    #[test]
+    fn preserves_listener_relevant_prop_types_in_prod() {
+        assert!(should_preserve_prod_prop_type("Boolean"));
+        assert!(should_preserve_prod_prop_type("Function"));
+        assert!(should_preserve_prod_prop_type("[Function, Array]"));
+        assert!(!should_preserve_prod_prop_type("String"));
+        assert!(!should_preserve_prod_prop_type("Array"));
+    }
 }

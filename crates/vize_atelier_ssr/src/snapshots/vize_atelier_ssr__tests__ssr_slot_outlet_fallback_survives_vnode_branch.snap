@@ -1,6 +1,5 @@
 ---
 source: crates/vize_atelier_ssr/src/lib.rs
-assertion_line: 532
 expression: result.code.as_str()
 ---
 function ssrRender(_ctx, _push, _parent, _attrs) {
@@ -14,12 +13,12 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
           } else {
             _push(`<!---->`)
           }
-        }, _push, _parent)
+        }, _push, _parent, _scopeId)
         _push(`</button>`)
       } else {
         return [_createElementVNode("button", null, [_renderSlot(_ctx.$slots, "default", { ui: _ctx.ui }, () => [(_ctx.label) ? _createElementVNode("span", null, [_createTextVNode(_toDisplayString(_ctx.label))]) : _createCommentVNode("")])])]
       }
     }),
-    _: 1
+    _: 3 /* FORWARDED */
   }, _parent))
 }

@@ -2120,7 +2120,7 @@ return (_ctx: any,_cache: any) => {
         _createVNode(_component_OptionRow, null, {
           default: _withCtx(({ active }) => [
             _createElementVNode("li", {
-              class: _normalizeClass({ active: active }),
+            class: _normalizeClass({ active }),
               onClick: ($event: any) => (close())
             }, [
               _createElementVNode("span", null, _toDisplayString(_unref(format)('hello')), 1 /* TEXT */),

@@ -169,6 +169,19 @@ fn process_directive_expressions<'a>(
                         dir.exp = Some(processed);
                     }
                 }
+                "slot" => {
+                    if let Some(exp) = &dir.exp {
+                        let processed = process_expression(ctx, exp, true);
+                        dir.exp = Some(processed);
+                    }
+                    if let Some(arg) = &dir.arg
+                        && let ExpressionNode::Simple(simple_arg) = arg
+                        && !simple_arg.is_static
+                    {
+                        let processed = process_expression(ctx, arg, false);
+                        dir.arg = Some(processed);
+                    }
+                }
                 _ => {
                     // Custom directives - process value expression
                     if let Some(exp) = &dir.exp {

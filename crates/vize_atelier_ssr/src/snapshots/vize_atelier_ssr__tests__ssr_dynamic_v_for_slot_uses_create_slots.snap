@@ -18,7 +18,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
         name: name,
         fn: _withCtx((slotData, _push, _parent, _scopeId) => {
           if (_push) {
-            _ssrRenderSlot(_ctx.$slots, name, _mergeProps(slotData), null, _push, _parent)
+            _ssrRenderSlot(_ctx.$slots, name, _mergeProps(slotData), null, _push, _parent, _scopeId)
           } else {
             return [_renderSlot(_ctx.$slots, name, _mergeProps(slotData))]
           }

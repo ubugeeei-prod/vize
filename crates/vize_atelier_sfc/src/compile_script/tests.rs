@@ -110,6 +110,32 @@ const count = ref(0)
     }
 
     #[test]
+    fn test_compile_script_setup_resolves_extended_interface_prop_types() {
+        let content = r#"
+export interface LinkProps {
+  raw?: boolean
+  custom?: boolean
+  onClick?: unknown
+}
+
+export type LinkPropsKeys = 'raw'
+
+interface ButtonProps extends Omit<LinkProps, LinkPropsKeys | 'custom'> {
+  onClick?: ((event: MouseEvent) => void | Promise<void>) | Array<((event: MouseEvent) => void | Promise<void>)>
+}
+
+const props = defineProps<ButtonProps>()
+"#;
+        let result = compile_script_setup(content, "Test", false, true, None).unwrap();
+
+        assert!(
+            result.code.contains("onClick: { type: [Function, Array]"),
+            "{}",
+            result.code
+        );
+    }
+
+    #[test]
     fn test_compile_script_setup_with_define_model_array_destructure() {
         let content = r#"
 const [model, modifiers] = defineModel<string>()

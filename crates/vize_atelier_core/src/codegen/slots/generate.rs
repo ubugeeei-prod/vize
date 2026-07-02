@@ -34,8 +34,9 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
     let collected_slots = collect_slots(el);
     let has_forwarded_slots = has_forwarded_slot_outlet(el);
+    let forwarded_slots_are_dynamic = has_forwarded_slots && ctx.has_slot_params();
     let has_dynamic_slots =
-        ctx.in_v_for || collected_slots.iter().any(|s| s.is_dynamic) || has_forwarded_slots;
+        ctx.in_v_for || collected_slots.iter().any(|s| s.is_dynamic) || forwarded_slots_are_dynamic;
     let has_conditional_slots = has_conditional_or_loop_slots(el);
 
     // If there are conditional (v-if) or looped (v-for) slots, use createSlots
@@ -212,7 +213,7 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Add slot stability flag
     ctx.push(",");
     ctx.newline();
-    if has_forwarded_slots {
+    if has_forwarded_slots && !forwarded_slots_are_dynamic {
         ctx.push("_: 3 /* FORWARDED */");
     } else if has_dynamic_slots {
         ctx.push("_: 2 /* DYNAMIC */");

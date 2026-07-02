@@ -65,13 +65,28 @@ export interface BatchCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
-  templateSyntax?: "standard" | "strict" | "quirks";
+  templateSyntax?: string;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string;
   /** Preserve TypeScript in output when true */
   isTs?: boolean;
   threads?: number;
+  /**
+   * Include per-block style metadata (incl. `styles[].content`). Default OFF.
+   *
+   * `code`/`css` are always materialized; the per-block `styles` payload
+   * re-sends the raw CSS that `css` already carries, so the default boundary
+   * omits it to avoid duplicate UTF-8 -> V8 copies. Consumers that need the
+   * preprocessor/CSS-modules metadata opt in explicitly.
+   */
+  includeStyles?: boolean;
+  /** Include parsed custom blocks. Default OFF. */
+  includeCustomBlocks?: boolean;
+  /** Include compile-time macro artifacts. Default OFF. */
+  includeMacroArtifacts?: boolean;
+  /** Include template/style/script content hashes (for HMR). Default OFF. */
+  includeHashes?: boolean;
 }
 
 export interface BatchCompileResultNapi {
@@ -167,6 +182,11 @@ export declare function compileCss(
   options?: CssCompileOptionsNapi | undefined | null,
 ): CssCompileResultNapi;
 
+export declare function compileJsx(
+  source: string,
+  options?: JsxCompileOptionsNapi | undefined | null,
+): JsxCompileResultNapi;
+
 /** Compile result */
 export interface CompileResult {
   /** Generated code */
@@ -207,8 +227,8 @@ export interface CompilerOptions {
   isTs?: boolean;
   /** Whether the template targets a custom renderer instead of the DOM. */
   customRenderer?: boolean;
-  /** Template syntax compatibility mode. */
-  templateSyntax?: "standard" | "strict" | "quirks";
+  /** Template syntax compatibility mode: "standard", "strict", or "quirks". */
+  templateSyntax?: string;
   /** Module name for runtime imports. */
   runtimeModuleName?: string;
   /** Global variable name for standalone/function mode. */
@@ -218,88 +238,6 @@ export interface CompilerOptions {
    * Defaults to "downcompile"
    */
   scriptExt?: string;
-}
-
-export declare function compileJsx(
-  source: string,
-  options?: JsxCompileOptionsNapi | undefined | null,
-): JsxCompileResultNapi;
-
-/** Options for `compileJsx`. */
-export interface JsxCompileOptionsNapi {
-  /** Source filename, used to infer the language when `lang` is omitted. */
-  filename?: string;
-  /**
-   * Source language: "jsx" or "tsx". Defaults to "jsx" (or is inferred from a
-   * `.tsx` `filename`).
-   */
-  lang?: string;
-  /**
-   * Default output mode: "vdom" (default) or "vapor". Mirrors the
-   * `compiler.jsxMode` config key and takes precedence over `vapor`.
-   * Per-component "use vue:vapor" / "use vue:vdom" directives override it.
-   */
-  jsxMode?: string;
-  /**
-   * Legacy default-mode toggle: `true` compiles components to Vapor, `false`
-   * (default) to VDOM. Kept for back-compat; prefer `jsxMode`. Ignored when
-   * `jsxMode` is set.
-   */
-  vapor?: boolean;
-  /**
-   * Emit a v3 source map for the generated render code. When `true`, the
-   * result's `map` carries the map JSON; when `false` (default), `map` is
-   * `null` and no mapping work is done (#1533).
-   */
-  sourceMap?: boolean;
-}
-
-/** Result of `compileJsx`. */
-export interface JsxCompileResultNapi {
-  /**
-   * Generated render code for the module: the deduplicated runtime-helper
-   * preamble (`import { … } from "vue"`) followed by every component's render
-   * code in source order. A self-contained module string, matching the shape
-   * `compileSfc` returns (the runtime-helper imports are no longer dropped,
-   * #1533).
-   */
-  code: string;
-  /**
-   * v3 source map (JSON) for `code`, present only when `sourceMap` was
-   * requested and the module is a single component (the per-file shape the
-   * bundler plugins consume). `null` otherwise (#1533).
-   */
-  map?: string;
-  /** Error-severity diagnostic messages. */
-  errors: Array<string>;
-  /** Warning-severity diagnostic messages. */
-  warnings: Array<string>;
-  /**
-   * Extracted `<style scoped>` blocks across the module's components, in
-   * source order (#1495). Empty when no component had a `<style scoped>`. Each
-   * entry's CSS is already scope-rewritten; the bundler plugins emit it
-   * through the same path SFC styles use (#1533).
-   */
-  scopedStyles: Array<JsxScopedStyleNapi>;
-}
-
-/**
- * A JSX component's extracted `<style scoped>` block, surfaced to the bundler
- * plugins so a `.jsx`/`.tsx` component's scoped CSS reaches the same emission
- * path as SFC `<style>` blocks (#1495, #1533).
- */
-export interface JsxScopedStyleNapi {
-  /**
-   * The generated scope id, e.g. `data-v-1a2b3c4d`. Already injected into the
-   * component's rendered elements; surfaced here so the bundler can name the
-   * emitted stylesheet deterministically.
-   */
-  scopeId: string;
-  /**
-   * The scoped-rewritten CSS, with the `data-v-<hash>` attribute already
-   * applied to selectors. A bundler emits this verbatim.
-   */
-  css: string;
 }
 
 export declare function compileSfc(
@@ -596,6 +534,85 @@ export declare function isSfcImportableAssetUrl(url: string): boolean;
 
 export declare function isViteBareSpecifier(id: string): boolean;
 
+/** Options for [`compile_jsx`]. */
+export interface JsxCompileOptionsNapi {
+  /** Source filename, used to infer the language when `lang` is omitted. */
+  filename?: string;
+  /**
+   * Source language: `"jsx"` or `"tsx"`. Defaults to `"jsx"` (or is inferred
+   * from a `.tsx` `filename`).
+   */
+  lang?: string;
+  /**
+   * Default output mode: `"vdom"` (default) or `"vapor"`. Mirrors the
+   * `compiler.jsxMode` config key and takes precedence over `vapor`.
+   * Per-component `"use vue:vapor"` / `"use vue:vdom"` directives override it.
+   */
+  jsxMode?: string;
+  /**
+   * Legacy default-mode toggle: `true` compiles components to Vapor, `false`
+   * (default) to VDOM. Kept for back-compat; prefer `jsxMode`. Ignored when
+   * `jsxMode` is set.
+   */
+  vapor?: boolean;
+  /**
+   * Emit a v3 source map for the generated render code. When `true`, the
+   * result's `map` carries the map JSON; when `false` (default), `map` is
+   * `null` and no mapping work is done (#1533).
+   */
+  sourceMap?: boolean;
+  /** Emit SSR render code instead of client render code. */
+  ssr?: boolean;
+}
+
+/** Result of [`compile_jsx`]. */
+export interface JsxCompileResultNapi {
+  /**
+   * Generated render code for the module: the deduplicated runtime-helper
+   * preamble (`import { … } from "vue"`) followed by every component's render
+   * code in source order. This is a self-contained module string, matching
+   * the shape `compileSfc` returns, so a bundler can emit it directly
+   * (the runtime-helper imports are no longer dropped, #1533).
+   */
+  code: string;
+  /**
+   * v3 source map (JSON) for `code`, present only when `sourceMap` was
+   * requested and the module is a single component (the per-file shape the
+   * bundler plugins consume). `null` otherwise (#1533).
+   */
+  map?: string;
+  /** Error-severity diagnostic messages. */
+  errors: Array<string>;
+  /** Warning-severity diagnostic messages. */
+  warnings: Array<string>;
+  /**
+   * Extracted `<style scoped>` blocks across the module's components, in
+   * source order (#1495). Empty when no component had a `<style scoped>`. Each
+   * entry's CSS is already scope-rewritten; the bundler plugins emit it
+   * through the same path SFC styles use (#1533).
+   */
+  scopedStyles: Array<JsxScopedStyleNapi>;
+}
+
+/**
+ * A JSX component's extracted `<style scoped>` block, surfaced to the bundler
+ * plugins so a `.jsx`/`.tsx` component's scoped CSS reaches the same emission
+ * path as SFC `<style>` blocks (#1495, #1533).
+ */
+export interface JsxScopedStyleNapi {
+  /**
+   * The generated scope id, e.g. `data-v-1a2b3c4d`. Already injected into the
+   * component's rendered elements; surfaced here so the bundler can name the
+   * emitted stylesheet deterministically.
+   */
+  scopeId: string;
+  /**
+   * The scoped-rewritten CSS, with the `data-v-<hash>` attribute already
+   * applied to selectors. A bundler emits this verbatim.
+   */
+  css: string;
+}
+
 /** Lint Vue SFC files matching patterns (native multithreading, .gitignore-aware) */
 export declare function lint(
   patterns: Array<string>,
@@ -612,9 +629,13 @@ export interface LintOptionsNapi {
   quiet?: boolean;
   /** Automatically fix problems when diagnostics provide safe text edits */
   fix?: boolean;
+  /** Help display level: "full", "short", "none" */
   helpLevel?: string;
+  /** Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt" */
   preset?: string;
+  /** Enable native type-aware lint rules */
   typeAware?: boolean;
+  /** Path to the Corsa executable used by type-aware lint rules */
   corsaPath?: string;
 }
 
@@ -725,11 +746,15 @@ export interface PatinaLintOptionsNapi {
   filename?: string;
   /** Locale code: "en", "ja", or "zh" */
   locale?: string;
+  /** Help display level: "full", "short", or "none" */
   helpLevel?: string;
+  /** Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt" */
   preset?: string;
   /** Optional list of Patina rule names to enable */
   enabledRules?: Array<string>;
+  /** Enable native type-aware lint rules */
   typeAware?: boolean;
+  /** Path to the Corsa executable used by type-aware lint rules */
   corsaPath?: string;
 }
 
@@ -833,7 +858,7 @@ export interface SfcCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
-  templateSyntax?: "standard" | "strict" | "quirks";
+  templateSyntax?: string;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string;

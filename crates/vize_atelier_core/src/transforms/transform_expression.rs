@@ -568,6 +568,22 @@ mod tests {
     }
 
     #[test]
+    fn test_process_expression_ts_slot_params_have_no_diagnostic() {
+        let allocator = Bump::new();
+        let mut ctx = test_context(&allocator);
+        let source = "{ open, close }: { open: boolean, close?: () => void }";
+        let expr = compound_expression(&allocator, source);
+
+        let result = process_expression(&mut ctx, &expr, true);
+        let ExpressionNode::Simple(result) = result else {
+            panic!("expected simple expression");
+        };
+
+        assert_eq!(result.content.as_str(), source);
+        assert!(ctx.errors.is_empty(), "errors: {:?}", ctx.errors);
+    }
+
+    #[test]
     fn test_clone_expression_preserves_compound_source() {
         let allocator = Bump::new();
         let source = "foo + bar";

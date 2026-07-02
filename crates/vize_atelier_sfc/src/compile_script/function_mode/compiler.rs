@@ -19,9 +19,9 @@ use super::super::artifacts::erase_artifact_macro_statements;
 use super::super::import_utils::extract_import_identifiers;
 use super::super::lazy_hydration::transform_lazy_hydration_macros;
 use super::super::props::{
-    add_null_to_runtime_type, extract_emit_names_from_type, extract_prop_types_from_type,
-    normalize_destructure_default_value, runtime_prop_key,
-    validate_props_destructure_default_types,
+    PropTypeInfo, add_null_to_runtime_type, extract_emit_names_from_type,
+    extract_prop_types_from_type_with_context, normalize_destructure_default_value,
+    resolve_prop_js_type, runtime_prop_key, validate_props_destructure_default_types,
 };
 use super::super::statement_sections::extract_script_sections;
 use super::super::typescript::transform_typescript_to_js;
@@ -333,7 +333,7 @@ fn emit_props_definition(
             // Get the original props argument from defineProps (or generate from type args)
             let original_props: String = if let Some(ref props_macro) = ctx.macros.define_props {
                 if let Some(ref type_args) = props_macro.type_args {
-                    let prop_types = extract_prop_types_from_type(type_args);
+                    let prop_types = prop_types_from_context(ctx, type_args);
                     if prop_types.is_empty() {
                         if let Some(ref destructure) = ctx.macros.props_destructure {
                             destructured_props_runtime_decl(destructure)
@@ -395,7 +395,7 @@ fn emit_props_definition(
                 let prop_types = props_macro
                     .type_args
                     .as_ref()
-                    .map(|type_args| extract_prop_types_from_type(type_args))
+                    .map(|type_args| prop_types_from_context(ctx, type_args))
                     .unwrap_or_default();
                 if prop_types.is_empty() {
                     output.extend_from_slice(b"  props: ");
@@ -419,22 +419,23 @@ fn emit_props_definition(
     } else if let Some(ref props_macro) = ctx.macros.define_props {
         if let Some(ref type_args) = props_macro.type_args {
             // For type-based props, extract full prop definitions
-            let prop_types = extract_prop_types_from_type(type_args);
+            let prop_types = prop_types_from_context(ctx, type_args);
             if !prop_types.is_empty() {
                 output.extend_from_slice(b"  props: {\n");
                 // Sort props for deterministic output
                 let mut sorted_props: Vec<_> = prop_types.iter().collect();
                 sorted_props.sort_by(|a, b| a.0.cmp(&b.0));
                 for (name, prop_type) in sorted_props {
+                    let resolved_js_type = resolve_prop_type(prop_type, ctx);
                     let runtime_js_type =
-                        add_null_to_runtime_type(&prop_type.js_type, prop_type.nullable);
+                        add_null_to_runtime_type(&resolved_js_type, prop_type.nullable);
                     output.extend_from_slice(b"    ");
                     let key = runtime_prop_key(name);
                     output.extend_from_slice(key.as_bytes());
                     output.extend_from_slice(b": { type: ");
                     output.extend_from_slice(runtime_js_type.as_bytes());
                     if needs_prop_type && let Some(ref ts_type) = prop_type.ts_type {
-                        if prop_type.js_type == "null" {
+                        if resolved_js_type == "null" {
                             output.extend_from_slice(b" as unknown as PropType<");
                         } else {
                             output.extend_from_slice(b" as PropType<");
@@ -457,6 +458,30 @@ fn emit_props_definition(
             output.extend_from_slice(props_macro.args.as_bytes());
             output.extend_from_slice(b",\n");
         }
+    }
+}
+
+fn prop_types_from_context(
+    ctx: &ScriptCompileContext,
+    type_args: &str,
+) -> Vec<(String, PropTypeInfo)> {
+    let resolved_type_args = resolve_type_args(type_args, &ctx.interfaces, &ctx.type_aliases);
+    extract_prop_types_from_type_with_context(
+        &resolved_type_args,
+        Some(&ctx.interfaces),
+        Some(&ctx.type_aliases),
+    )
+}
+
+fn resolve_prop_type(prop_type: &PropTypeInfo, ctx: &ScriptCompileContext) -> String {
+    if prop_type.js_type == "null" {
+        prop_type
+            .ts_type
+            .as_ref()
+            .and_then(|ts_type| resolve_prop_js_type(ts_type, &ctx.interfaces, &ctx.type_aliases))
+            .unwrap_or_else(|| prop_type.js_type.clone())
+    } else {
+        prop_type.js_type.clone()
     }
 }
 
@@ -653,7 +678,7 @@ fn build_returned_bindings(
         .as_ref()
         .and_then(|p| p.type_args.as_ref())
         .map(|type_args| {
-            extract_prop_types_from_type(type_args)
+            prop_types_from_context(ctx, type_args)
                 .iter()
                 .map(|(n, _)| String::from(n.as_str()))
                 .collect()

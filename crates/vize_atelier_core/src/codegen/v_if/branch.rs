@@ -29,7 +29,7 @@ use super::{
         },
         slots::{
             generate_slot_outlet_name, generate_slot_outlet_props_with_key, generate_slots,
-            has_dynamic_slots_flag, has_slot_children,
+            has_dynamic_slots_flag, has_forwarded_slot_outlet, has_slot_children,
         },
     },
     generate::{
@@ -52,18 +52,25 @@ pub(super) fn generate_if_branch(
                 // Check if it's a template element - treat as fragment
                 if el.tag_type == ElementType::Template {
                     // Template with single child -> unwrap to single element
-                    if el.children.len() == 1
-                        && let TemplateChildNode::Element(inner) = &el.children[0]
-                    {
-                        // Check if inner element is a component
-                        if inner.tag_type == ElementType::Component {
-                            generate_if_branch_component(ctx, inner, branch, branch_index);
-                        } else if inner.tag_type == ElementType::Slot {
-                            generate_if_branch_slot(ctx, inner, branch, branch_index);
-                        } else {
-                            generate_if_branch_element(ctx, inner, branch, branch_index);
+                    if el.children.len() == 1 {
+                        match &el.children[0] {
+                            TemplateChildNode::Element(inner) => {
+                                // Check if inner element is a component
+                                if inner.tag_type == ElementType::Component {
+                                    generate_if_branch_component(ctx, inner, branch, branch_index);
+                                } else if inner.tag_type == ElementType::Slot {
+                                    generate_if_branch_slot(ctx, inner, branch, branch_index);
+                                } else {
+                                    generate_if_branch_element(ctx, inner, branch, branch_index);
+                                }
+                                return;
+                            }
+                            TemplateChildNode::For(for_node) => {
+                                generate_if_branch_for(ctx, for_node, branch, branch_index);
+                                return;
+                            }
+                            _ => {}
                         }
-                        return;
                     }
                     // Template with multiple children -> fragment
                     generate_if_branch_template_fragment(ctx, &el.children, branch, branch_index);
@@ -231,7 +238,11 @@ fn generate_if_branch_component(
         patch_flag = if new_flag > 0 { Some(new_flag) } else { None };
     }
 
-    if el.tag == "KeepAlive" || el.tag == "keep-alive" || has_dynamic_slots_flag(el) {
+    if el.tag == "KeepAlive"
+        || el.tag == "keep-alive"
+        || has_dynamic_slots_flag(el)
+        || (ctx.has_slot_params() && has_forwarded_slot_outlet(el))
+    {
         patch_flag = Some(patch_flag.unwrap_or(0) | 1024);
     }
 

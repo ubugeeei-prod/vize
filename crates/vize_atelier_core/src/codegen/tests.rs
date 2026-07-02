@@ -551,6 +551,44 @@ fn test_codegen_forwarded_default_slot_is_marked_forwarded() {
 }
 
 #[test]
+fn test_codegen_forwarded_slot_does_not_force_dynamic_patch_flag() {
+    let result = compile!(r#"<Primitive><slot /></Primitive>"#);
+    let output = result_output(&result);
+
+    assert!(
+        output.contains("_: 3 /* FORWARDED */"),
+        "plain forwarded slots should keep the forwarded slot flag:\n{}",
+        output
+    );
+    assert!(
+        !output.contains("DYNAMIC_SLOTS"),
+        "plain forwarded slots should not force the vnode DYNAMIC_SLOTS patch flag:\n{}",
+        output
+    );
+}
+
+#[test]
+fn test_codegen_forwarded_slot_inside_slot_scope_is_dynamic() {
+    let result = compile!(
+        r#"<Outer v-slot="{ active }">
+  <Inner><slot :active="active" /></Inner>
+</Outer>"#
+    );
+    let output = result_output(&result);
+
+    assert!(
+        output.contains("_: 2 /* DYNAMIC */"),
+        "slot forwarding inside a slot scope should use a dynamic slot flag:\n{}",
+        output
+    );
+    assert!(
+        output.contains("1024 /* DYNAMIC_SLOTS */"),
+        "slot forwarding inside a slot scope should keep the dynamic slots patch flag:\n{}",
+        output
+    );
+}
+
+#[test]
 fn test_codegen_v_if_branch_mixed_children_wrap_interpolations_in_text_vnodes() {
     let result = compile!(
         r#"<p v-if="speaker.affiliation || speaker.title">{{ speaker.affiliation }}<br v-if="speaker.affiliation && speaker.title" />{{ speaker.title }}</p>"#
@@ -730,6 +768,72 @@ fn test_codegen_v_on_option_modifier_events_are_not_merged() {
         !capture.contains("onClick: ["),
         "@click.capture and @click must not be merged into an array. Got:\n{}",
         capture
+    );
+}
+
+#[test]
+fn test_codegen_component_v_bind_then_on_preserves_listener_prop() {
+    let result = compile!(
+        r#"<UButton label="Loading auto" loading-auto v-bind="props" @click="onClick" />"#
+    );
+    let output = result_output(&result);
+
+    assert!(
+        output.contains(r#"_mergeProps({"#)
+            && output.contains(r#"label: "Loading auto""#)
+            && output.contains(r#""loading-auto": """#)
+            && output.contains(r#"}, props, { onClick: onClick })"#),
+        "component v-bind/@click merge order should match Vue. Got:\n{}",
+        output
+    );
+    assert!(
+        output.contains(r#"["onClick"]"#),
+        "component listener prop should be tracked as dynamic. Got:\n{}",
+        output
+    );
+}
+
+#[test]
+fn test_codegen_v_for_template_child_merges_static_and_dynamic_class_before_spread() {
+    let result = compile!(
+        r#"<div><template v-for="(combination, index) in combinations" :key="index"><div class="flex flex-col items-start gap-2" :class="props.containerClass" v-bind="props.containerProps"><slot v-bind="combination" /></div></template></div>"#
+    );
+    let output = result_output(&result);
+
+    assert!(
+        output.contains(r#"key: index"#),
+        "template v-for key should be forwarded to the unwrapped child. Got:\n{}",
+        output
+    );
+    assert!(
+        output.contains(r#"class: ["flex flex-col items-start gap-2", props.containerClass]"#),
+        "static and dynamic class should be merged before the object spread. Got:\n{}",
+        output
+    );
+    assert!(
+        output.find(r#"class: ["flex flex-col items-start gap-2", props.containerClass]"#)
+            < output.find("props.containerProps"),
+        "class object should preserve source order before v-bind spread. Got:\n{}",
+        output
+    );
+}
+
+#[test]
+fn test_codegen_template_v_if_single_v_for_uses_list_fragment_directly() {
+    let result = compile!(
+        r#"<slot><template v-if="items.length"><Item v-for="(item, index) in items" :key="index" /></template></slot>"#
+    );
+    let output = result_output(&result);
+
+    assert!(
+        output.contains("_createElementBlock(_Fragment, { key: 0 }, _renderList"),
+        "v-if branch key should be applied directly to the v-for Fragment. Got:\n{}",
+        output
+    );
+    assert!(
+        !output.contains("_createElementBlock(_Fragment, { key: 0 }, ["),
+        "single v-for inside template v-if must not add an extra stable Fragment. Got:\n{}",
+        output
     );
 }
 

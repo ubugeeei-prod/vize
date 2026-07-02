@@ -50,8 +50,10 @@ fn scoped_slot_props_shadow_inline_props_in_slot_outlet_vbind() {
         },
     ));
 
+    let forwards_scoped_href =
+        output.contains("href: href") || output.contains("_guardReactiveProps({ href })");
     assert!(
-        output.contains("href: href"),
+        forwards_scoped_href,
         "slot outlet should forward the scoped slot href, not component props. Got:\n{}",
         output
     );

@@ -396,6 +396,135 @@ mod tests {
     }
 
     #[test]
+    fn test_ssr_keyed_template_v_for_keeps_iteration_fragment() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<Comp>
+  <template v-for="item in items" :key="item.id">
+    <span v-if="item.visible">{{ item.label }}</span>
+    <span v-else>hidden</span>
+  </template>
+</Comp>"#,
+        );
+
+        assert!(errors.is_empty(), "{errors:?}");
+        let list_start = result
+            .code
+            .find("_ssrRenderList(_ctx.items")
+            .expect("expected ssr render list");
+        let list_body = &result.code[list_start..];
+        assert!(
+            list_body.contains("_push(`<!--[-->`)"),
+            "keyed template v-for iteration must render a Fragment boundary:\n{}",
+            result.code
+        );
+        assert!(
+            list_body.contains("_push(`<!--]-->`)"),
+            "keyed template v-for iteration must close its Fragment boundary:\n{}",
+            result.code
+        );
+        assert!(
+            result
+                .code
+                .contains("_createBlock(_Fragment, null, _renderList(_ctx.items"),
+            "vnode fallback must wrap v-for in a Fragment block:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("return [(_openBlock(true)"),
+            "slot functions must return vnode arrays:\n{}",
+            result.code
+        );
+        assert!(
+            result
+                .code
+                .contains("_createBlock(_Fragment, { key: item.id }"),
+            "vnode fallback must keep the keyed template iteration Fragment:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
+    fn test_ssr_keyed_template_v_for_single_element_unwraps_iteration_fragment() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<Comp>
+  <template v-for="(item, index) in items" :key="index">
+    <div class="item">{{ item.label }}</div>
+  </template>
+</Comp>"#,
+        );
+
+        assert!(errors.is_empty(), "{errors:?}");
+        let list_start = result
+            .code
+            .find("_ssrRenderList(_ctx.items")
+            .expect("expected ssr render list");
+        let list_body = &result.code[list_start..];
+        assert!(
+            !list_body.contains("_push(`<!--[-->`)"),
+            "single element template v-for iterations must not render an extra Fragment boundary:\n{}",
+            result.code
+        );
+        assert!(
+            result
+                .code
+                .contains("_createElementVNode(\"div\", { key: index"),
+            "vnode fallback must forward the template key to the unwrapped child:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
+    fn test_ssr_keyed_template_v_for_slot_fallback_keeps_iteration_fragment() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<Outer>
+  <slot>
+  <template v-for="displayed in [value]" :key="displayed">
+    <span v-if="displayed">{{ displayed }}</span>
+    <span v-else>empty</span>
+  </template>
+  </slot>
+</Outer>"#,
+        );
+
+        assert!(errors.is_empty(), "{errors:?}");
+        let list_start = result
+            .code
+            .find("_ssrRenderList([_ctx.value]")
+            .expect("expected ssr render list");
+        let list_body = &result.code[list_start..];
+        assert!(
+            list_body.contains("_push(`<!--[-->`)"),
+            "keyed template v-for fallback iteration must render a Fragment boundary:\n{}",
+            result.code
+        );
+        assert!(
+            list_body.contains("_push(`<!--]-->`)"),
+            "keyed template v-for fallback iteration must close its Fragment boundary:\n{}",
+            result.code
+        );
+        assert!(
+            result
+                .code
+                .contains("_createBlock(_Fragment, null, _renderList([_ctx.value]"),
+            "slot fallback vnode branch must wrap v-for in a Fragment block:\n{}",
+            result.code
+        );
+        assert!(
+            result
+                .code
+                .contains("_createBlock(_Fragment, { key: displayed }"),
+            "slot fallback vnode branch must keep the keyed template iteration Fragment:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
     fn test_ssr_static_and_dynamic_attrs() {
         let allocator = Bump::new();
         let (_, errors, result) = compile_ssr(
@@ -588,6 +717,82 @@ mod tests {
             result.code
         );
         insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_ssr_typescript_scoped_slot_props_are_accepted() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr_with_options(
+            &allocator,
+            r#"<Popover v-slot="{ open, close }: { open: boolean, close?: () => void }">
+  {{ open }}
+</Popover>"#,
+            SsrCompilerOptions {
+                is_ts: true,
+                ..Default::default()
+            },
+        );
+
+        assert!(errors.is_empty(), "{errors:?}");
+        assert!(
+            result.code.contains("default: _withCtx(({ open, close }"),
+            "SSR slot props should be stripped to runtime params:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
+    fn test_ssr_forwarded_slot_flags_match_vue_shape() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<NuxtLink v-slot="{ href, navigate, route: linkRoute, isActive, isExactActive, ...rest }" v-bind="nuxtLinkProps" :to="to" custom>
+  <template v-if="custom">
+    <slot
+      v-bind="{
+        ...$attrs,
+        as,
+        type,
+        disabled,
+        href,
+        navigate,
+        active: isLinkActive({ route: linkRoute, isActive, isExactActive })
+      }"
+    />
+  </template>
+  <ULinkBase v-else v-bind="{ as, type, disabled, href, navigate }">
+    <slot :active="isLinkActive({ route: linkRoute, isActive, isExactActive })" />
+  </ULinkBase>
+</NuxtLink>"#,
+        );
+        assert!(errors.is_empty(), "{errors:?}");
+        assert!(
+            result.code.contains("_: 3 /* FORWARDED */"),
+            "top-level slot forwarding should be marked FORWARDED:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("_: 2 /* DYNAMIC */"),
+            "slot forwarding nested inside a slot scope should be marked DYNAMIC:\n{}",
+            result.code
+        );
+        assert!(
+            !result
+                .code
+                .contains("_createVNode(_Fragment, null, [_renderSlot"),
+            "single-child template branches should not add a Fragment around renderSlot:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("_push, _parent, _scopeId)"),
+            "slot outlets rendered inside slot functions should receive _scopeId:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("_parent, _scopeId))"),
+            "components rendered inside slot functions should receive _scopeId:\n{}",
+            result.code
+        );
     }
 
     // Regression: static named slots with slot props must keep their own slot

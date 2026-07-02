@@ -971,6 +971,41 @@ function handlePresetChange(key: PresetKey) {}
 }
 
 #[test]
+fn test_typescript_scoped_slot_props_are_accepted() {
+    let source = r#"<script setup lang="ts">
+const label = 'ready'
+</script>
+
+<template>
+  <Popover v-slot="{ open, close }: { open: boolean, close?: () => void }">
+    {{ label }} {{ open }}
+  </Popover>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result
+            .code
+            .contains("({ open, close }: { open: boolean, close?: () => void }) =>"),
+        "{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_multi_statement_event_handler() {
     let source = r#"<script setup lang="ts">
 const editDashboard = ref()

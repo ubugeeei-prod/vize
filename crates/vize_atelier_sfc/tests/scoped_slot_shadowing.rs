@@ -13,6 +13,12 @@ defineProps<{ href?: string }>()
   </RouterLink>
 </template>"#;
 
+fn forwards_scoped_href(code: &str) -> bool {
+    code.contains("href: href")
+        || code.contains("_guardReactiveProps({ href })")
+        || code.contains("_mergeProps({ href })")
+}
+
 #[test]
 fn script_setup_prop_does_not_shadow_scoped_slot_outlet_vbind() {
     let descriptor = parse_sfc(SOURCE, SfcParseOptions::default()).expect("Failed to parse SFC");
@@ -30,7 +36,7 @@ fn script_setup_prop_does_not_shadow_scoped_slot_outlet_vbind() {
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
     assert!(
-        result.code.contains("href: href"),
+        forwards_scoped_href(&result.code),
         "slot outlet should forward RouterLink's scoped href:\n{}",
         result.code
     );
@@ -61,7 +67,7 @@ fn script_setup_prop_does_not_shadow_scoped_slot_outlet_vbind_in_ssr() {
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
     assert!(
-        result.code.contains("href: href"),
+        forwards_scoped_href(&result.code),
         "SSR slot outlet should forward RouterLink's scoped href:\n{}",
         result.code
     );

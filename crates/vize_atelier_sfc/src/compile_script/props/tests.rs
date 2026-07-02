@@ -102,3 +102,45 @@ fn leading_union_separator_does_not_add_null_runtime_type() {
 
     assert_eq!(ts_type_to_js_type(ty), "Object");
 }
+
+#[test]
+fn function_or_function_array_prop_keeps_runtime_union() {
+    let ty = "((event: MouseEvent) => void | Promise<void>) | Array<((event: MouseEvent) => void | Promise<void>)>";
+
+    assert_eq!(ts_type_to_js_type(ty), "[Function, Array]");
+}
+
+#[test]
+fn extract_props_keeps_function_or_function_array_runtime_union() {
+    let props = extract_prop_types_from_type_with_context(
+        "{ onClick?: ((event: MouseEvent) => void | Promise<void>) | Array<((event: MouseEvent) => void | Promise<void>)> }",
+        None,
+        None,
+    );
+
+    let on_click = props
+        .iter()
+        .find(|(name, _)| name == "onClick")
+        .expect("onClick prop should be extracted");
+    assert_eq!(on_click.1.js_type.as_str(), "[Function, Array]");
+}
+
+#[test]
+fn extract_props_keeps_runtime_union_after_omit_intersection() {
+    let mut interfaces: FxHashMap<vize_carton::String, vize_carton::String> = FxHashMap::default();
+    interfaces.insert(
+        "LinkProps".to_compact_string(),
+        "{ raw?: boolean; disabled?: boolean }".to_compact_string(),
+    );
+    interfaces.insert(
+        "ButtonProps".to_compact_string(),
+        "Omit<LinkProps, 'raw'> & { onClick?: ((event: MouseEvent) => void | Promise<void>) | Array<((event: MouseEvent) => void | Promise<void>)> }".to_compact_string(),
+    );
+    let props = extract_prop_types_from_type_with_context("ButtonProps", Some(&interfaces), None);
+
+    let on_click = props
+        .iter()
+        .find(|(name, _)| name == "onClick")
+        .expect("onClick prop should be extracted");
+    assert_eq!(on_click.1.js_type.as_str(), "[Function, Array]");
+}

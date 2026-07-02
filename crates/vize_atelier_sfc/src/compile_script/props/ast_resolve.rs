@@ -282,10 +282,14 @@ fn collect_props_from_mapped_type(
 }
 
 fn push_prop_type_info(props: &mut Vec<(String, PropTypeInfo)>, name: String, info: PropTypeInfo) {
-    if !props
-        .iter()
-        .any(|(existing, _)| existing.as_str() == name.as_str())
+    if let Some((_, existing_info)) = props
+        .iter_mut()
+        .find(|(existing, _)| existing.as_str() == name.as_str())
     {
+        if existing_info.js_type == "null" && info.js_type != "null" {
+            *existing_info = info;
+        }
+    } else {
         props.push((name, info));
     }
 }
@@ -718,17 +722,50 @@ fn resolve_type_reference_text(
     } else if let Some(interfaces) = interfaces
         && let Some(body) = interfaces.get(name)
     {
-        let mut source = String::with_capacity(body.len() + 4);
-        source.push_str("{ ");
-        source.push_str(body);
-        source.push_str(" }");
-        Some(source)
+        Some(interface_body_to_type_expression(body))
     } else {
         None
     }?;
 
     seen.push(name.to_compact_string());
     Some(resolved)
+}
+
+fn interface_body_to_type_expression(body: &str) -> String {
+    let trimmed = body.trim();
+    if trimmed.starts_with('{') || contains_top_level_type_composition(trimmed) {
+        return trimmed.to_compact_string();
+    }
+
+    let mut source = String::with_capacity(trimmed.len() + 4);
+    source.push_str("{ ");
+    source.push_str(trimmed);
+    source.push_str(" }");
+    source
+}
+
+fn contains_top_level_type_composition(value: &str) -> bool {
+    let mut depth = 0i32;
+    let mut prev = '\0';
+    for ch in value.chars() {
+        match ch {
+            '{' | '<' | '(' | '[' => depth += 1,
+            '}' | ')' | ']' => {
+                if depth > 0 {
+                    depth -= 1;
+                }
+            }
+            '>' => {
+                if prev != '=' && depth > 0 {
+                    depth -= 1;
+                }
+            }
+            '&' | '|' if depth == 0 => return true,
+            _ => {}
+        }
+        prev = ch;
+    }
+    false
 }
 
 fn finish_resolved_type_reference(name: &str, seen: &mut Vec<String>) {

@@ -140,15 +140,23 @@ impl<'a> SsrCodegenContext<'a> {
         match el.tag_type {
             ElementType::Element => Some(self.vnode_plain_element_expression(el)),
             ElementType::Component => Some(self.vnode_component_expression(el)),
-            ElementType::Template => Some(self.vnode_fragment_expression(&el.children)),
+            ElementType::Template => Some(self.vnode_template_expression(&el.children)),
             ElementType::Slot => Some(self.vnode_slot_outlet_expression(el)),
         }
     }
 
     fn vnode_plain_element_expression(&mut self, el: &ElementNode<'a>) -> String {
+        self.vnode_plain_element_expression_with_key(el, None)
+    }
+
+    fn vnode_plain_element_expression_with_key(
+        &mut self,
+        el: &ElementNode<'a>,
+        key: Option<&str>,
+    ) -> String {
         self.use_core_helper(RuntimeHelper::CreateElementVNode);
 
-        let props = self.build_plain_vnode_props(el);
+        let props = self.build_plain_vnode_props_with_key(el, key);
         let children = self.vnode_element_children_expression(&el.children);
 
         let mut out = String::from("_createElementVNode(");
@@ -217,7 +225,9 @@ impl<'a> SsrCodegenContext<'a> {
             self.use_core_helper(RuntimeHelper::WithCtx);
             let mut out = String::from("{ ");
             out.push_str(&self.vnode_slot_entry_fn_property(el));
-            out.push_str(", _: 1 }");
+            out.push_str(", ");
+            out.push_str(self.component_slot_flag(el));
+            out.push_str(" }");
             return out;
         }
 
@@ -258,7 +268,8 @@ impl<'a> SsrCodegenContext<'a> {
             out.push_str(&self.vnode_children_expression_from_refs(&default_children));
             out.push_str("), ");
         }
-        out.push_str("_: 1 }");
+        out.push_str(self.component_slot_flag(el));
+        out.push_str(" }");
         out
     }
 
@@ -480,12 +491,27 @@ impl<'a> SsrCodegenContext<'a> {
         })
     }
 
-    fn vnode_fragment_expression(&mut self, children: &[TemplateChildNode<'a>]) -> String {
+    fn vnode_template_expression(&mut self, children: &[TemplateChildNode<'a>]) -> String {
+        let expressions = self.vnode_child_expressions(children);
+        if expressions.len() == 1 {
+            return expressions.into_iter().next().unwrap_or_default();
+        }
+
         self.use_core_helper(RuntimeHelper::CreateVNode);
         self.use_core_helper(RuntimeHelper::Fragment);
 
         let mut out = String::from("_createVNode(_Fragment, null, ");
-        out.push_str(&self.vnode_children_expression(children));
+        out.push('[');
+        for (index, expression) in expressions.iter().enumerate() {
+            if index > 0 {
+                out.push_str(", ");
+            }
+            out.push_str(expression);
+        }
+        out.push(']');
+        if has_vnode_array_child(children) {
+            out.push_str(".flat()");
+        }
         out.push(')');
         out
     }
@@ -553,19 +579,75 @@ impl<'a> SsrCodegenContext<'a> {
 
     fn vnode_for_expression(&mut self, for_node: &ForNode<'a>) -> String {
         self.use_core_helper(RuntimeHelper::RenderList);
+        self.use_core_helper(RuntimeHelper::OpenBlock);
+        self.use_core_helper(RuntimeHelper::CreateBlock);
+        self.use_core_helper(RuntimeHelper::Fragment);
 
-        let mut out = String::from("_renderList(");
+        let mut out = String::from("(_openBlock(true), _createBlock(_Fragment, null, _renderList(");
         out.push_str(&self.expression_to_string(&for_node.source));
         out.push_str(", (");
         append_for_aliases(self, &mut out, for_node);
-        out.push_str(") => ");
+        out.push_str(") => { return ");
 
         self.push_scoped_params(collect_for_scoped_params(for_node));
-        let body = self.vnode_branch_expression(&for_node.children);
+        let key = single_for_child_key_expression(self, for_node);
+        let body = if let Some(template_el) = single_template_for_child(for_node) {
+            if let Some(key) = key.as_deref() {
+                if let Some(child_el) = single_plain_element_child(template_el) {
+                    self.vnode_plain_element_expression_with_key(child_el, Some(key))
+                } else {
+                    self.vnode_keyed_template_for_body(template_el, key)
+                }
+            } else {
+                self.vnode_branch_expression(&for_node.children)
+            }
+        } else {
+            self.vnode_branch_expression(&for_node.children)
+        };
         self.pop_scoped_params();
 
         out.push_str(&body);
-        out.push_str(").flat()");
+        out.push_str(" }), ");
+        if key.is_some() {
+            out.push_str("128 /* KEYED_FRAGMENT */");
+        } else {
+            out.push_str("256 /* UNKEYED_FRAGMENT */");
+        }
+        out.push_str("))");
+        out
+    }
+
+    fn vnode_keyed_template_for_body(
+        &mut self,
+        template_el: &ElementNode<'a>,
+        key: &str,
+    ) -> String {
+        let children = self.vnode_fragment_children_expression(&template_el.children);
+        let mut out = String::from("(_openBlock(), _createBlock(_Fragment, { key: ");
+        out.push_str(key);
+        out.push_str(" }, ");
+        out.push_str(&children);
+        out.push_str(", 64 /* STABLE_FRAGMENT */))");
+        out
+    }
+
+    fn vnode_fragment_children_expression(&mut self, children: &[TemplateChildNode<'a>]) -> String {
+        let expressions = self.vnode_child_expressions(children);
+        if expressions.is_empty() {
+            return "[]".to_compact_string();
+        }
+
+        let mut out = String::from("[");
+        for (index, expr) in expressions.iter().enumerate() {
+            if index > 0 {
+                out.push_str(", ");
+            }
+            out.push_str(expr);
+        }
+        out.push(']');
+        if has_vnode_array_child(children) {
+            out.push_str(".flat()");
+        }
         out
     }
 
@@ -593,8 +675,8 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    fn build_plain_vnode_props(&mut self, el: &ElementNode) -> String {
-        if el.props.is_empty() {
+    fn build_plain_vnode_props_with_key(&mut self, el: &ElementNode, key: Option<&str>) -> String {
+        if el.props.is_empty() && key.is_none() {
             if let Some(scope_id) = self.options.scope_id.as_deref() {
                 return component_props_object(&[component_prop_entry(scope_id, "\"\"", false)]);
             }
@@ -604,6 +686,10 @@ impl<'a> SsrCodegenContext<'a> {
         let mut entries: std::vec::Vec<VNodePropEntry> = std::vec::Vec::new();
         let mut spreads = std::vec::Vec::new();
         let mut needs_normalize = false;
+
+        if let Some(key) = key {
+            entries.push(component_prop_entry("key", key, false));
+        }
 
         for prop in &el.props {
             match prop {
@@ -699,13 +785,79 @@ fn append_for_aliases(ctx: &mut SsrCodegenContext<'_>, out: &mut String, for_nod
 }
 
 fn has_vnode_array_child(children: &[TemplateChildNode]) -> bool {
-    children
-        .iter()
-        .any(|child| matches!(child, TemplateChildNode::For(_)))
+    let _ = children;
+    false
 }
 
 fn has_vnode_array_child_ref(children: &[&TemplateChildNode]) -> bool {
-    children
+    let _ = children;
+    false
+}
+
+fn single_template_for_child<'node, 'a>(
+    for_node: &'node ForNode<'a>,
+) -> Option<&'node ElementNode<'a>> {
+    if for_node.children.len() != 1 {
+        return None;
+    }
+
+    let TemplateChildNode::Element(el) = &for_node.children[0] else {
+        return None;
+    };
+
+    (el.tag_type == ElementType::Template).then_some(el.as_ref())
+}
+
+fn single_plain_element_child<'node, 'a>(
+    template_el: &'node ElementNode<'a>,
+) -> Option<&'node ElementNode<'a>> {
+    if template_el.children.len() != 1 {
+        return None;
+    }
+
+    let TemplateChildNode::Element(child_el) = &template_el.children[0] else {
+        return None;
+    };
+
+    (child_el.tag_type == ElementType::Element).then_some(child_el.as_ref())
+}
+
+fn single_for_child_key_expression(
+    ctx: &mut SsrCodegenContext<'_>,
+    for_node: &ForNode,
+) -> Option<String> {
+    if for_node.children.len() != 1 {
+        return None;
+    }
+
+    let TemplateChildNode::Element(el) = &for_node.children[0] else {
+        return None;
+    };
+
+    el.props
         .iter()
-        .any(|child| matches!(**child, TemplateChildNode::For(_)))
+        .find_map(|prop| key_prop_expression(ctx, prop))
+}
+
+fn key_prop_expression(ctx: &mut SsrCodegenContext<'_>, prop: &PropNode) -> Option<String> {
+    match prop {
+        PropNode::Attribute(attr) if attr.name == "key" => Some(
+            attr.value
+                .as_ref()
+                .map(|value| quoted_js_string(&value.content))
+                .unwrap_or_else(|| "\"\"".to_compact_string()),
+        ),
+        PropNode::Directive(dir) if dir.name == "bind" => {
+            let is_key = matches!(
+                &dir.arg,
+                Some(ExpressionNode::Simple(arg)) if arg.content == "key"
+            );
+            if is_key {
+                dir.exp.as_ref().map(|exp| ctx.expression_to_string(exp))
+            } else {
+                None
+            }
+        }
+        _ => None,
+    }
 }
