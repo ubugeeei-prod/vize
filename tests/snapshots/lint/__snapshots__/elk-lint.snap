@@ -441,20 +441,9 @@
         "column": 7,
         "endLine": 191,
         "endColumn": 89
-      },
-      {
-        "ruleId": "vue/no-v-for-template-key-on-child",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-v-for-template-key-on-child] the `key` for a `<template v-for>` must be on the `<template>`, not on its child",
-        "line": 222,
-        "column": 43,
-        "endLine": 222,
-        "endColumn": 60,
-        "help": "Move the :key up onto the <template v-for> element. In Vue 3 the key lives on the template, not the child (the reverse of Vue 2)."
       }
     ],
-    "errorCount": 3,
+    "errorCount": 2,
     "warningCount": 0
   },
   {
@@ -1877,8 +1866,31 @@
   },
   {
     "file": "app/components/notification/NotificationGroupedLikes.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/valid-v-for",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/valid-v-for] v-for key should use variables defined by v-for",
+        "line": 25,
+        "column": 47,
+        "endLine": 25,
+        "endColumn": 57,
+        "help": "Valid v-for syntax:\n  <!-- Array iteration -->\n  <li v-for=\"item in items\">{{ item }}</li>\n  <li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n  \n  <!-- Object iteration -->\n  <li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n  <li v-for=\"(value, key, index) in object\">{{ index }}</li>\n  \n  <!-- Range -->\n  <span v-for=\"n in 10\">{{ n }}</span>"
+      },
+      {
+        "ruleId": "vue/valid-v-for",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/valid-v-for] v-for key should use variables defined by v-for",
+        "line": 41,
+        "column": 45,
+        "endLine": 41,
+        "endColumn": 55,
+        "help": "Valid v-for syntax:\n  <!-- Array iteration -->\n  <li v-for=\"item in items\">{{ item }}</li>\n  <li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n  \n  <!-- Object iteration -->\n  <li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n  <li v-for=\"(value, key, index) in object\">{{ index }}</li>\n  \n  <!-- Range -->\n  <span v-for=\"n in 10\">{{ n }}</span>"
+      }
+    ],
+    "errorCount": 2,
     "warningCount": 0
   },
   {
@@ -2187,6 +2199,17 @@
         "help": "Use CSS border instead."
       },
       {
+        "ruleId": "vue/valid-v-for",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/valid-v-for] v-for key should use variables defined by v-for",
+        "line": 420,
+        "column": 48,
+        "endLine": 420,
+        "endColumn": 56,
+        "help": "Valid v-for syntax:\n  <!-- Array iteration -->\n  <li v-for=\"item in items\">{{ item }}</li>\n  <li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n  \n  <!-- Object iteration -->\n  <li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n  <li v-for=\"(value, key, index) in object\">{{ index }}</li>\n  \n  <!-- Range -->\n  <span v-for=\"n in 10\">{{ n }}</span>"
+      },
+      {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2316,7 +2339,7 @@
         "endColumn": 59
       }
     ],
-    "errorCount": 4,
+    "errorCount": 5,
     "warningCount": 11
   },
   {

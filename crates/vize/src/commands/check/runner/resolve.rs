@@ -56,7 +56,10 @@ pub(super) fn resolve_project_root(
             .parent()
             .map(|parent| parent.to_path_buf())
             .unwrap_or_else(|| cwd.to_path_buf());
-        if files.is_empty() || project_root_has_package_boundary(&tsconfig_dir) {
+        if files.is_empty()
+            || (project_root_has_package_boundary(&tsconfig_dir)
+                && !has_source_input_outside_root(&tsconfig_dir, files))
+        {
             return tsconfig_dir;
         }
 
@@ -118,6 +121,22 @@ pub(super) fn explicit_input_root(project_root: &Path, cwd: &Path) -> PathBuf {
 
 pub(super) fn project_root_has_package_boundary(project_root: &Path) -> bool {
     project_root.join("package.json").is_file()
+}
+
+fn has_source_input_outside_root(root: &Path, files: &[PathBuf]) -> bool {
+    files.iter().any(|file| {
+        !path_has_component(file, "node_modules")
+            && !is_declaration_file(file)
+            && !file.starts_with(root)
+    })
+}
+
+fn is_declaration_file(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
 }
 
 pub(super) fn exit_if_inputs_outside_root(root: &Path, files: &[PathBuf], enabled: bool) {
@@ -287,6 +306,31 @@ mod tests {
         );
 
         assert_eq!(resolved, package_root);
+        let _ = std::fs::remove_dir_all(&workspace);
+    }
+
+    #[test]
+    fn explicit_tsconfig_with_package_boundary_widens_for_source_inputs_outside_package() {
+        let workspace = unique_case_dir("package-boundary-source-outside");
+        let _ = std::fs::remove_dir_all(&workspace);
+        let package_root = workspace.join("packages/primevue");
+        let sibling_root = workspace.join("packages/icons");
+        std::fs::create_dir_all(package_root.join("src")).unwrap();
+        std::fs::create_dir_all(sibling_root.join("src")).unwrap();
+        std::fs::write(package_root.join("package.json"), "{}").unwrap();
+        std::fs::write(package_root.join("tsconfig.json"), "{}").unwrap();
+        let app = package_root.join("src/Button.vue");
+        let sibling = sibling_root.join("src/Icon.vue");
+        std::fs::write(&app, "").unwrap();
+        std::fs::write(&sibling, "").unwrap();
+
+        let resolved = resolve_project_root(
+            Some(Path::new("packages/primevue/tsconfig.json")),
+            &workspace,
+            &[app, sibling],
+        );
+
+        assert_eq!(resolved, workspace.join("packages"));
         let _ = std::fs::remove_dir_all(&workspace);
     }
 }

@@ -3,6 +3,7 @@ import type { ChildProcess } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { elkApp, SCREENSHOT_DIR } from "../../_helpers/apps";
+import { disableViteHmrClient } from "../../_helpers/nuxtRuntime";
 import {
   waitForServerReady,
   startDevServer,
@@ -47,6 +48,7 @@ test.describe("elk dev", () => {
     await waitForHttpReady(app.url, app.port);
     const warmupPage = await browser.newPage();
     try {
+      await disableViteHmrClient(warmupPage);
       await warmupPage.goto(app.url, {
         waitUntil: app.waitUntil ?? "networkidle",
         timeout: 30_000,
@@ -56,6 +58,10 @@ test.describe("elk dev", () => {
       await warmupPage.close();
     }
     console.log(`${app.name} server is ready`);
+  });
+
+  test.beforeEach(async ({ page }) => {
+    await disableViteHmrClient(page);
   });
 
   test.afterAll(async () => {
