@@ -212,6 +212,49 @@ jobs:
         continue-on-error: true
         run: moon run --target native - -- editor-extension-artifacts/editors/vscode/dist/vize.vsix < tools/moon/scripts/publish_vscode_extension.mbtx
 
+  release-open-vsx-extension:
+    name: Release Open VSX extension
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    needs: build-editor-extensions
+    timeout-minutes: 15
+    environment: open-vsx-registry
+    permissions:
+      contents: read
+    env:
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Cache pnpm store for Open VSX extension tooling
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-open-vsx-release-${{ hashFiles('.node-version') }}-v1
+          restore-keys: |
+            ${{ runner.os }}-pnpm-open-vsx-release-
+
+      - name: Download editor extension artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: editor-extensions
+          path: editor-extension-artifacts
+
+      - name: Skip publish when OVSX_PAT is absent
+        if: env.OVSX_PAT == ''
+        run: echo "OVSX_PAT is not configured; skipping Open VSX publish."
+
+      - name: Publish Open VSX extension
+        if: env.OVSX_PAT != ''
+        continue-on-error: true
+        run: moon run --target native - -- editor-extension-artifacts/editors/vscode/dist/vize.vsix < tools/moon/scripts/publish_open_vsx_extension.mbtx
+
   # Build release npm packages once and reuse them across publish jobs
   build-release-packages:
     name: Build release npm packages
@@ -1042,6 +1085,7 @@ jobs:
     needs:
       - build-cli
       - release-vscode-extension
+      - release-open-vsx-extension
       - release-npm-native
       - release-npm-fresco-native
       - release-npm-wasm
