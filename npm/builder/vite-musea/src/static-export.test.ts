@@ -148,6 +148,89 @@ void test("emitStaticGallery packages browser-facing static output", async () =>
   }
 });
 
+void test("emitStaticGallery prefixes browser URLs with Vite base without nesting output", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-static-base-"));
+  try {
+    const artPath = path.join(tempDir, "src", "Button.art.vue");
+    await fs.promises.mkdir(path.dirname(artPath), { recursive: true });
+    await fs.promises.writeFile(artPath, "<art></art>", "utf8");
+    const art = createArt(artPath);
+    const assets = new Map<string, string>();
+
+    await emitStaticGallery(
+      (asset) => {
+        assets.set(
+          asset.fileName,
+          typeof asset.source === "string"
+            ? asset.source
+            : Buffer.from(asset.source).toString("utf8"),
+        );
+      },
+      {
+        "assets/musea-static-runtime.js": {
+          type: "chunk",
+          name: "musea-static-runtime",
+          fileName: "assets/musea-static-runtime.js",
+          facadeModuleId: null,
+        },
+      },
+      {
+        config: {
+          root: tempDir,
+          base: "/app/aim/aim-front/design-system/",
+        } as ResolvedConfig,
+        artFiles: new Map([[art.path, art]]),
+        scanRoots: [tempDir],
+        tokensPath: undefined,
+        basePath: "/__musea__",
+        resolvedPreviewCss: [],
+        resolvedPreviewSetup: null,
+        devSessionToken: "static-test",
+        themeConfig: undefined,
+      },
+    );
+
+    const previewId = staticPreviewId(art.path, "Default");
+    const publicBasePath = "/app/aim/aim-front/design-system/__musea__";
+    const staticPayload = JSON.parse(assetText(assets, "__musea__/api/static.json")) as {
+      previews: Record<string, Record<string, string>>;
+    };
+
+    assert.ok(assets.has("__musea__/index.html"));
+    assert.ok(assets.has(`__musea__/preview/${previewId}.html`));
+    assert.equal(
+      [...assets.keys()].some((fileName) => fileName.startsWith("app/aim/")),
+      false,
+    );
+    assert.deepEqual(staticPayload.previews, {
+      [art.path]: {
+        Default: `${publicBasePath}/preview/${previewId}.html`,
+      },
+    });
+
+    const galleryHtml = assetText(assets, "__musea__/index.html");
+    assert.match(galleryHtml, /\/app\/aim\/aim-front\/design-system\/__musea__\//u);
+    assert.doesNotMatch(galleryHtml, /"\/__musea__\//u);
+
+    const globals = executeStaticGlobals(galleryHtml);
+    assert.equal(globals.__MUSEA_BASE_PATH__, publicBasePath);
+    assert.deepEqual(globals.__MUSEA_STATIC_PREVIEWS__, {
+      [art.path]: {
+        Default: `${publicBasePath}/preview/${previewId}.html`,
+      },
+    });
+
+    const rootRedirect = assetText(assets, "index.html");
+    assert.match(rootRedirect, /url=\/app\/aim\/aim-front\/design-system\/__musea__\//u);
+    assert.match(
+      assetText(assets, `__musea__/preview/${previewId}.html`),
+      /window\.__MUSEA_BASE_PATH__="\/app\/aim\/aim-front\/design-system\/__musea__"/u,
+    );
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
 void test("static gallery runtime reports static-mode mutation and missing detail errors", async () => {
   const originalWindow = Reflect.get(globalThis, "window");
   const originalFetch = globalThis.fetch;

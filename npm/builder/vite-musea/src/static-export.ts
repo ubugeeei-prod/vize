@@ -125,22 +125,24 @@ export async function emitStaticGallery(
     throw new Error("musea static build could not find its generated runtime entry");
   }
 
-  const payload = await createStaticGalleryPayload(ctx);
   const staticRoot = staticRootFromBasePath(ctx.basePath);
-  await emitGalleryShell(emitFile, staticRoot, ctx, payload);
+  const publicBasePath = publicBasePathFromViteBase(ctx.config.base, ctx.basePath);
+  const publicCtx = { ...ctx, basePath: publicBasePath };
+  const publicPayload = await createStaticGalleryPayload(publicCtx);
+  await emitGalleryShell(emitFile, staticRoot, publicCtx, publicPayload);
   emitFile({
     type: "asset",
     fileName: joinFileName(staticRoot, "api", "static.json"),
-    source: JSON.stringify(payload, null, 2),
+    source: JSON.stringify(publicPayload, null, 2),
   });
   emitFile({
     type: "asset",
     fileName: joinFileName(staticRoot, "api", "arts"),
-    source: JSON.stringify(payload.arts, null, 2),
+    source: JSON.stringify(publicPayload.arts, null, 2),
   });
   await emitAxeVendor(emitFile, staticRoot);
-  emitPreviewHtml(emitFile, staticRoot, runtimeFileName, ctx.basePath, payload, ctx.artFiles);
-  emitRootRedirect(emitFile, staticRoot, ctx.basePath);
+  emitPreviewHtml(emitFile, staticRoot, runtimeFileName, publicBasePath, ctx.artFiles);
+  emitRootRedirect(emitFile, staticRoot, publicBasePath);
 }
 
 function findRuntimeFileName(bundle: OutputBundle): string | null {
@@ -176,10 +178,6 @@ async function emitGalleryShell(
       emitFile({ type: "asset", fileName: target, source: content });
     }
   }
-
-  if (payload.arts.length === 0) {
-    return;
-  }
 }
 
 function generateStaticFallbackGalleryHtml(basePath: string): string {
@@ -204,7 +202,6 @@ function emitPreviewHtml(
   staticRoot: string,
   runtimeFileName: string,
   basePath: string,
-  payload: StaticGalleryPayload,
   artFiles: Map<string, ArtFileInfo>,
 ): void {
   const previewDir = joinFileName(staticRoot, "preview");
@@ -217,8 +214,6 @@ function emitPreviewHtml(
       emitFile({ type: "asset", fileName: joinFileName(previewDir, `${id}.html`), source: html });
     }
   }
-
-  void payload;
 }
 
 function generateStaticPreviewHtml(
@@ -276,6 +271,12 @@ function injectStaticGlobals(
 
 function rewriteGalleryBase(html: string, basePath: string): string {
   return html.replaceAll("/__musea__/", `${basePath.replace(/\/?$/, "/")}`);
+}
+
+function publicBasePathFromViteBase(viteBase: string | undefined, basePath: string): string {
+  return viteBase && viteBase !== "/" && viteBase !== "./"
+    ? joinUrlPath(viteBase, basePath)
+    : basePath;
 }
 
 function emitRootRedirect(
