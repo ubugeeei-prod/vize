@@ -3,6 +3,7 @@ import type { Context } from "@oxlint/plugins";
 import type { HelpLevel, PatinaPreset, PatinaSettings } from "./model.js";
 
 const HELP_LEVELS = new Set<HelpLevel>(["none", "short", "full"]);
+const TYPE_AWARE_RULE_PREFIX = "type/";
 const PRESET_ALIASES = new Map<string, PatinaPreset>([
   ["generalrecommended", "general-recommended"],
   ["happypath", "general-recommended"],
@@ -39,6 +40,8 @@ export function parseVizeSettings(vize: unknown): PatinaSettings {
   const helpLevel = vizeRecord.helpLevel;
   const preset = vizeRecord.preset;
   const showHelp = vizeRecord.showHelp;
+  const typeAware = vizeRecord.typeAware;
+  const corsaPath = vizeRecord.corsaPath;
   const resolved: PatinaSettings = {};
 
   if (typeof locale === "string") {
@@ -50,6 +53,14 @@ export function parseVizeSettings(vize: unknown): PatinaSettings {
     if (normalizedPreset) {
       resolved.preset = normalizedPreset;
     }
+  }
+
+  if (typeof typeAware === "boolean") {
+    resolved.typeAware = typeAware;
+  }
+
+  if (typeof corsaPath === "string") {
+    resolved.corsaPath = corsaPath;
   }
 
   if (typeof helpLevel === "string" && HELP_LEVELS.has(helpLevel as HelpLevel)) {
@@ -73,7 +84,18 @@ export function isIncrementalPreset(settings: PatinaSettings): boolean {
 }
 
 export function getCacheKey(filename: string, settings: PatinaSettings): string {
-  return `${filename}::${settings.locale ?? ""}::${settings.helpLevel ?? ""}::${getActivePreset(settings)}`;
+  return [
+    filename,
+    settings.locale ?? "",
+    settings.helpLevel ?? "",
+    getActivePreset(settings),
+    settings.typeAware ? "type-aware" : "",
+    settings.corsaPath ?? "",
+  ].join("::");
+}
+
+export function isTypeAwareRuleName(ruleName: string): boolean {
+  return ruleName.startsWith(TYPE_AWARE_RULE_PREFIX);
 }
 
 function normalizePreset(value: string): PatinaPreset | undefined {
@@ -84,11 +106,21 @@ if (import.meta.vitest) {
   const { describe, expect, it } = import.meta.vitest;
 
   describe("parseVizeSettings", () => {
-    it("reads locale, help level, and preset", () => {
-      expect(parseVizeSettings({ locale: "ja", helpLevel: "short", preset: "essential" })).toEqual({
+    it("reads locale, help level, preset, and type-aware settings", () => {
+      expect(
+        parseVizeSettings({
+          locale: "ja",
+          helpLevel: "short",
+          preset: "essential",
+          typeAware: true,
+          corsaPath: "./node_modules/.bin/tsgo",
+        }),
+      ).toEqual({
         locale: "ja",
         helpLevel: "short",
         preset: "essential",
+        typeAware: true,
+        corsaPath: "./node_modules/.bin/tsgo",
       });
     });
 
@@ -120,7 +152,14 @@ if (import.meta.vitest) {
 
     it("ignores invalid values", () => {
       expect(
-        parseVizeSettings({ locale: 1, showHelp: "no", helpLevel: "verbose", preset: "wide" }),
+        parseVizeSettings({
+          locale: 1,
+          showHelp: "no",
+          helpLevel: "verbose",
+          preset: "wide",
+          typeAware: "yes",
+          corsaPath: false,
+        }),
       ).toEqual({});
     });
 

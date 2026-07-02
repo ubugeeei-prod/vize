@@ -75,13 +75,14 @@ export default {
     vize: {
       helpLevel: "short",
       preset: "opinionated",
+      typeAware: true,
     },
   },
-  rules: configs.opinionated,
+  rules: configs.opinionatedWithTypeAware,
 };
 ```
 
-`configs.recommended`, `configs.essential`, `configs.ecosystem`, `configs.opinionated`, `configs.nuxt`, and `configs.all` intentionally skip Vize's unstable type-aware rules for now. If you explicitly want those experimental rules too, use `configs.recommendedWithTypeAware`, `configs.ecosystemWithTypeAware`, `configs.opinionatedWithTypeAware`, or `createVizeRuleConfig({ includeTypeAware: true, preset: ... })`.
+`configs.recommended`, `configs.essential`, `configs.ecosystem`, `configs.opinionated`, `configs.nuxt`, and `configs.all` intentionally skip Vize's unstable type-aware rules for now. If you explicitly want those experimental rules too, use `configs.recommendedWithTypeAware`, `configs.ecosystemWithTypeAware`, `configs.opinionatedWithTypeAware`, or `createVizeRuleConfig({ includeTypeAware: true, preset: ... })`. Set `settings.vize.typeAware: true` to run the shared full-file Patina pass with Corsa enabled; explicitly configured `vize/type/*` rules also opt in when they are queried one by one.
 
 You can pass Patina settings through `settings.vize`:
 
@@ -91,7 +92,9 @@ You can pass Patina settings through `settings.vize`:
     "vize": {
       "locale": "ja",
       "preset": "essential",
-      "helpLevel": "short"
+      "helpLevel": "short",
+      "typeAware": true,
+      "corsaPath": "./node_modules/.bin/tsgo"
     }
   }
 }
@@ -106,6 +109,8 @@ You can pass Patina settings through `settings.vize`:
 - Legacy aliases such as `"GeneralRecommended"`, `"Essential"`, `"Ecosystem"`, `"Incremental"`, `"Opinionated"`, `"Nuxt"`, and `"happy-path"` are still accepted for compatibility.
 - `helpLevel` accepts `"full"`, `"short"`, or `"none"`.
 - `helpLevel: "full"` only expands the Patina remediation text. It does not restore original-SFC formatter anchors or machine-readable range fidelity.
+- `typeAware: true` enables Corsa-backed `vize/type/*` rules during shared Patina passes.
+- `corsaPath` selects the Corsa or `tsgo` executable for type-aware linting. Omit it to use Vize's normal resolver.
 - `showHelp` is still accepted for backward compatibility, but `helpLevel` is the preferred setting.
 
 For example, this keeps Oxlint focused on correctness-only Vize diagnostics while still allowing your existing Oxlint rules to run unchanged:
@@ -145,7 +150,7 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 - Formatter parity is not there yet. `stylish` is recommended for human-readable terminal output, while `json` and other machine-readable outputs are best treated as debugging aids for original template/style positions.
 - Oxlint core rules that need JavaScript bindings extracted from Vue templates, such as template-aware unused-variable checks, still depend on upstream work in [Oxc's Better Vue Support](https://github.com/oxc-project/oxc/issues/15761).
 - Vize's own SFC diagnostics can run through the plugin, but precise original-SFC ranges across all Oxlint formatters depend on the JS plugin reporting work tracked in [oxc-project/oxc#20465](https://github.com/oxc-project/oxc/issues/20465).
-- Type-aware Vize rules are experimental and excluded from the default exported configs. Opt into them explicitly with `configs.recommendedWithTypeAware`, `configs.opinionatedWithTypeAware`, or `createVizeRuleConfig({ includeTypeAware: true, preset: ... })`.
+- Type-aware Vize rules are experimental and excluded from the default exported configs. Opt into them explicitly with `configs.recommendedWithTypeAware`, `configs.opinionatedWithTypeAware`, or `createVizeRuleConfig({ includeTypeAware: true, preset: ... })`, and use `settings.vize.typeAware: true` when you want the shared full-file pass to run them eagerly.
 
 ## Current expectations
 

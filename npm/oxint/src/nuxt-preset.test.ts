@@ -65,6 +65,7 @@ assert.equal(run.exitCode, 0, "nuxt preset should allow Options API components")
 assert.doesNotMatch(run.output, /vize\(script\/no-options-api\)/);
 
 console.log("oxlint-plugin-vize Nuxt preset tests passed!");
+await import("./type-aware.test.ts");
 
 function findOxlintBin() {
   const pnpmStoreDir = path.join(workspaceRoot, "node_modules", ".pnpm");

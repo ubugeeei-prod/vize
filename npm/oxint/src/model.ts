@@ -42,6 +42,8 @@ export interface PatinaBinding {
       helpLevel?: HelpLevel;
       preset?: PatinaPreset;
       enabledRules?: string[];
+      typeAware?: boolean;
+      corsaPath?: string;
     },
   ): PatinaLintResult;
   getPatinaRules(): PatinaRuleMeta[];
@@ -60,6 +62,8 @@ export interface PatinaSettings {
   locale?: string;
   helpLevel?: HelpLevel;
   preset?: PatinaPreset;
+  typeAware?: boolean;
+  corsaPath?: string;
 }
 
 export interface LineColumn {

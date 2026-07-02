@@ -13,6 +13,8 @@ export function lintPatina(
     helpLevel: settings.helpLevel,
     preset: settings.preset,
     enabledRules: enabledRules ? [...enabledRules] : undefined,
+    typeAware: settings.typeAware,
+    corsaPath: settings.corsaPath,
   });
 }
 

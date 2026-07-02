@@ -14,6 +14,10 @@ export interface LintOptionsNapi {
   helpLevel?: string;
   /** Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt" */
   preset?: string;
+  /** Enable native type-aware lint rules */
+  typeAware?: boolean;
+  /** Path to the Corsa executable used by type-aware lint rules */
+  corsaPath?: string;
 }
 
 /** Lint result for NAPI */
@@ -42,6 +46,10 @@ export interface PatinaLintOptionsNapi {
   preset?: string;
   /** Optional list of Patina rule names to enable */
   enabledRules?: Array<string>;
+  /** Enable native type-aware lint rules */
+  typeAware?: boolean;
+  /** Path to the Corsa executable used by type-aware lint rules */
+  corsaPath?: string;
 }
 
 /** Get Patina's currently registered rule metadata. */

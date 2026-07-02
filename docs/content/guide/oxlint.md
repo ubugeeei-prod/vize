@@ -58,9 +58,10 @@ export default {
     vize: {
       helpLevel: "short",
       preset: "opinionated",
+      typeAware: true,
     },
   },
-  rules: configs.opinionated,
+  rules: configs.opinionatedWithTypeAware,
 };
 ```
 
@@ -72,6 +73,7 @@ Available preset exports include:
 - `configs.nuxt`
 - `configs.all`
 - `configs.recommendedWithTypeAware`
+- `configs.ecosystemWithTypeAware`
 - `configs.opinionatedWithTypeAware`
 
 ## Recommended Command
@@ -93,17 +95,21 @@ Settings are passed through `settings.vize`:
     "vize": {
       "locale": "ja",
       "preset": "general-recommended",
-      "helpLevel": "short"
+      "helpLevel": "short",
+      "typeAware": true,
+      "corsaPath": "./node_modules/.bin/tsgo"
     }
   }
 }
 ```
 
 - `locale` controls the diagnostic language.
-- `preset` accepts `"general-recommended"`, `"essential"`, `"incremental"`, `"opinionated"`, or `"nuxt"`.
+- `preset` accepts `"general-recommended"`, `"essential"`, `"ecosystem"`, `"incremental"`, `"opinionated"`, or `"nuxt"`.
 - `preset` defaults to `"general-recommended"`.
 - `incremental` runs only the rules you explicitly configure.
 - `helpLevel` accepts `"full"`, `"short"`, or `"none"`.
+- `typeAware: true` enables Corsa-backed `vize/type/*` rules during shared Patina passes.
+- `corsaPath` selects the Corsa or `tsgo` executable for type-aware linting.
 - `showHelp` and `settings.patina` are still accepted for backward compatibility.
 
 ## Current Limitations
@@ -115,6 +121,8 @@ Settings are passed through `settings.vize`:
 - `stylish` is currently the best human-readable formatter for mixed Oxlint + Vize output. JSON and
   other machine-readable formats should be treated as best-effort for original template/style
   positions.
+- Type-aware rule exports are experimental. Use a `*WithTypeAware` config and set
+  `settings.vize.typeAware: true` when you want the shared full-file pass to run those rules eagerly.
 
 ## Local Development
 

@@ -6,7 +6,12 @@ import { lintPatina } from "./binding.js";
 import type { PatinaDiagnostic, SfcBlock, SingleScriptMap } from "./model.js";
 import { extractSfcBlocks } from "./sfc-blocks.js";
 import { createSingleScriptMap } from "./script-map.js";
-import { getCacheKey, getVizeSettings, isIncrementalPreset } from "./settings.js";
+import {
+  getCacheKey,
+  getVizeSettings,
+  isIncrementalPreset,
+  isTypeAwareRuleName,
+} from "./settings.js";
 import { resolveWorkaroundSource } from "./workaround.js";
 
 export interface FileState {
@@ -18,12 +23,15 @@ export interface FileState {
   sfcBlocks: readonly SfcBlock[] | undefined;
   scriptMap: SingleScriptMap | null | undefined;
   allDiagnosticsByRule: Map<string, PatinaDiagnostic[]> | null;
+  allDiagnosticsIncludesTypeAware: boolean;
   partialDiagnosticsByRule: Map<string, readonly PatinaDiagnostic[]>;
   requestedRules: Set<string>;
+  reportedTypeAwareRuntimeDiagnostic: boolean;
 }
 
 const fileStateCache = new Map<string, FileState>();
 const EMPTY_DIAGNOSTICS: readonly PatinaDiagnostic[] = [];
+const TYPE_AWARE_RUNTIME_RULE = "type/corsa-runtime";
 
 export function getFileState(context: Context): FileState {
   const settings = getVizeSettings(context);
@@ -44,8 +52,10 @@ export function getFileState(context: Context): FileState {
     sfcBlocks: undefined,
     scriptMap: undefined,
     allDiagnosticsByRule: null,
+    allDiagnosticsIncludesTypeAware: false,
     partialDiagnosticsByRule: new Map(),
     requestedRules: new Set(),
+    reportedTypeAwareRuntimeDiagnostic: false,
   };
   fileStateCache.set(cacheKey, state);
   return state;
@@ -57,7 +67,15 @@ export function getDiagnosticsForRule(
   ruleName: string,
 ): readonly PatinaDiagnostic[] {
   if (state.allDiagnosticsByRule) {
-    return state.allDiagnosticsByRule.get(ruleName) ?? EMPTY_DIAGNOSTICS;
+    if (isTypeAwareRuleName(ruleName) && !state.allDiagnosticsIncludesTypeAware) {
+      const settings = getVizeSettings(context);
+      state.allDiagnosticsByRule = indexDiagnosticsByRule(
+        lintPatina(state.source, state.filename, { ...settings, typeAware: true }).diagnostics,
+      );
+      state.allDiagnosticsIncludesTypeAware = true;
+    }
+
+    return diagnosticsForRule(state, state.allDiagnosticsByRule, ruleName);
   }
 
   const cached = state.partialDiagnosticsByRule.get(ruleName);
@@ -66,28 +84,39 @@ export function getDiagnosticsForRule(
   }
 
   const settings = getVizeSettings(context);
+  const ruleSettings = isTypeAwareRuleName(ruleName) ? { ...settings, typeAware: true } : settings;
   if (isIncrementalPreset(settings)) {
-    const diagnostics = lintPatina(state.source, state.filename, settings, [ruleName]).diagnostics;
+    const diagnostics = lintPatina(state.source, state.filename, ruleSettings, [
+      ruleName,
+    ]).diagnostics;
     const indexedDiagnostics = indexDiagnosticsByRule(diagnostics);
-    const ruleDiagnostics = indexedDiagnostics.get(ruleName) ?? EMPTY_DIAGNOSTICS;
+    const ruleDiagnostics = diagnosticsForRule(state, indexedDiagnostics, ruleName);
     state.partialDiagnosticsByRule.set(ruleName, ruleDiagnostics);
     return ruleDiagnostics;
   }
 
   if (state.requestedRules.size === 0) {
     state.requestedRules.add(ruleName);
-    const diagnostics = lintPatina(state.source, state.filename, settings, [ruleName]).diagnostics;
+    const diagnostics = lintPatina(state.source, state.filename, ruleSettings, [
+      ruleName,
+    ]).diagnostics;
     const indexedDiagnostics = indexDiagnosticsByRule(diagnostics);
-    const ruleDiagnostics = indexedDiagnostics.get(ruleName) ?? EMPTY_DIAGNOSTICS;
+    const ruleDiagnostics = diagnosticsForRule(state, indexedDiagnostics, ruleName);
     state.partialDiagnosticsByRule.set(ruleName, ruleDiagnostics);
     return ruleDiagnostics;
   }
 
   state.requestedRules.add(ruleName);
-  const allDiagnostics = lintPatina(state.source, state.filename, settings).diagnostics;
+  const fullPassTypeAware =
+    settings.typeAware === true || Array.from(state.requestedRules).some(isTypeAwareRuleName);
+  const allDiagnostics = lintPatina(state.source, state.filename, {
+    ...settings,
+    typeAware: fullPassTypeAware,
+  }).diagnostics;
   state.allDiagnosticsByRule = indexDiagnosticsByRule(allDiagnostics);
+  state.allDiagnosticsIncludesTypeAware = fullPassTypeAware;
   state.partialDiagnosticsByRule.clear();
-  return state.allDiagnosticsByRule.get(ruleName) ?? EMPTY_DIAGNOSTICS;
+  return diagnosticsForRule(state, state.allDiagnosticsByRule, ruleName);
 }
 
 export function getScriptMap(state: FileState): SingleScriptMap | null {
@@ -133,4 +162,27 @@ function indexDiagnosticsByRule(
   }
 
   return grouped;
+}
+
+function diagnosticsForRule(
+  state: FileState,
+  diagnosticsByRule: Map<string, PatinaDiagnostic[]>,
+  ruleName: string,
+): readonly PatinaDiagnostic[] {
+  const directDiagnostics = diagnosticsByRule.get(ruleName);
+  if (directDiagnostics && directDiagnostics.length > 0) {
+    return directDiagnostics;
+  }
+
+  if (!isTypeAwareRuleName(ruleName) || state.reportedTypeAwareRuntimeDiagnostic) {
+    return EMPTY_DIAGNOSTICS;
+  }
+
+  const runtimeDiagnostics = diagnosticsByRule.get(TYPE_AWARE_RUNTIME_RULE);
+  if (!runtimeDiagnostics || runtimeDiagnostics.length === 0) {
+    return EMPTY_DIAGNOSTICS;
+  }
+
+  state.reportedTypeAwareRuntimeDiagnostic = true;
+  return runtimeDiagnostics;
 }

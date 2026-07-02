@@ -612,10 +612,10 @@ export interface LintOptionsNapi {
   quiet?: boolean;
   /** Automatically fix problems when diagnostics provide safe text edits */
   fix?: boolean;
-  /** Help display level: "full", "short", "none" */
   helpLevel?: string;
-  /** Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt" */
   preset?: string;
+  typeAware?: boolean;
+  corsaPath?: string;
 }
 
 /** Lint a single Vue SFC with Patina and return structured diagnostics. */
@@ -725,12 +725,12 @@ export interface PatinaLintOptionsNapi {
   filename?: string;
   /** Locale code: "en", "ja", or "zh" */
   locale?: string;
-  /** Help display level: "full", "short", or "none" */
   helpLevel?: string;
-  /** Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt" */
   preset?: string;
   /** Optional list of Patina rule names to enable */
   enabledRules?: Array<string>;
+  typeAware?: boolean;
+  corsaPath?: string;
 }
 
 export declare function printCssAst(
