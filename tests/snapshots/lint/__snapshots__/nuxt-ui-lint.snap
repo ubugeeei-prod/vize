@@ -23,76 +23,10 @@
         "endLine": 108,
         "endColumn": 24,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 108,
-        "column": 7,
-        "endLine": 108,
-        "endColumn": 24,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 117,
-        "column": 60,
-        "endLine": 117,
-        "endColumn": 72,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 122,
-        "column": 47,
-        "endLine": 122,
-        "endColumn": 59,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 125,
-        "column": 61,
-        "endLine": 125,
-        "endColumn": 73,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 132,
-        "column": 140,
-        "endLine": 132,
-        "endColumn": 152,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 134,
-        "column": 161,
-        "endLine": 134,
-        "endColumn": 173,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 8
+    "warningCount": 2
   },
   {
     "file": "src/runtime/components/Alert.vue",
@@ -415,32 +349,10 @@
         "endLine": 52,
         "endColumn": 37,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 52,
-        "column": 20,
-        "endLine": 52,
-        "endColumn": 37,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 54,
-        "column": 13,
-        "endLine": 54,
-        "endColumn": 25,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/ColorPicker.vue",
@@ -687,32 +599,10 @@
         "endLine": 156,
         "endColumn": 38,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 156,
-        "column": 21,
-        "endLine": 156,
-        "endColumn": 38,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 158,
-        "column": 13,
-        "endLine": 158,
-        "endColumn": 25,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/DropdownMenuContent.vue",
@@ -970,17 +860,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 576,
-        "column": 5,
-        "endLine": 576,
-        "endColumn": 34,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1014,28 +893,6 @@
         "help": "Reorder attributes to follow the recommended order"
       },
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 643,
-        "column": 119,
-        "endLine": 643,
-        "endColumn": 131,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 650,
-        "column": 120,
-        "endLine": 650,
-        "endColumn": 132,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1048,7 +905,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 6
   },
   {
     "file": "src/runtime/components/InputNumber.vue",
@@ -1181,87 +1038,10 @@
         "endLine": 142,
         "endColumn": 39,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 142,
-        "column": 15,
-        "endLine": 142,
-        "endColumn": 39,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 142,
-        "column": 15,
-        "endLine": 142,
-        "endColumn": 39,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 166,
-        "column": 30,
-        "endLine": 166,
-        "endColumn": 44,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 168,
-        "column": 33,
-        "endLine": 168,
-        "endColumn": 47,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 203,
-        "column": 31,
-        "endLine": 203,
-        "endColumn": 45,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 207,
-        "column": 33,
-        "endLine": 207,
-        "endColumn": 47,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 214,
-        "column": 13,
-        "endLine": 214,
-        "endColumn": 25,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 8
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/NavigationMenu.vue",
@@ -1311,28 +1091,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 415,
-        "column": 23,
-        "endLine": 415,
-        "endColumn": 43,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 422,
-        "column": 17,
-        "endLine": 422,
-        "endColumn": 31,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1367,7 +1125,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 7
   },
   {
     "file": "src/runtime/components/OverlayProvider.vue",
@@ -1566,17 +1324,6 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 119,
-        "column": 19,
-        "endLine": 119,
-        "endColumn": 82,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 119,
         "column": 19,
@@ -1593,17 +1340,6 @@
         "column": 19,
         "endLine": 119,
         "endColumn": 82,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 121,
-        "column": 13,
-        "endLine": 121,
-        "endColumn": 25,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       },
       {
@@ -1652,7 +1388,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 7
   },
   {
     "file": "src/runtime/components/PricingPlan.vue",
@@ -1703,17 +1439,6 @@
         "help": "Add text content, child elements, or use aria-label for accessible content."
       },
       {
-        "ruleId": "vue/no-v-for-template-key-on-child",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-v-for-template-key-on-child] the `key` for a `<template v-for>` must be on the `<template>`, not on its child",
-        "line": 285,
-        "column": 67,
-        "endLine": 285,
-        "endColumn": 115,
-        "help": "Move the :key up onto the <template v-for> element. In Vue 3 the key lives on the template, not the child (the reverse of Vue 2)."
-      },
-      {
         "ruleId": "html/no-empty-palpable-content",
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
@@ -1725,7 +1450,7 @@
         "help": "Add text content, child elements, or use aria-label for accessible content."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 4
   },
   {
@@ -1761,17 +1486,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 299,
-        "column": 5,
-        "endLine": 299,
-        "endColumn": 34,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1781,43 +1495,10 @@
         "endLine": 311,
         "endColumn": 23,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 317,
-        "column": 119,
-        "endLine": 317,
-        "endColumn": 131,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 323,
-        "column": 102,
-        "endLine": 323,
-        "endColumn": 114,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 335,
-        "column": 120,
-        "endLine": 335,
-        "endColumn": 132,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 2
   },
   {
     "file": "src/runtime/components/SelectMenu.vue",
@@ -1856,50 +1537,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 568,
-        "column": 5,
-        "endLine": 568,
-        "endColumn": 34,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 580,
-        "column": 121,
-        "endLine": 580,
-        "endColumn": 133,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 586,
-        "column": 104,
-        "endLine": 586,
-        "endColumn": 116,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 598,
-        "column": 122,
-        "endLine": 598,
-        "endColumn": 134,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1912,7 +1549,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 8
+    "warningCount": 4
   },
   {
     "file": "src/runtime/components/Separator.vue",
@@ -1939,87 +1576,10 @@
         "endLine": 140,
         "endColumn": 39,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 140,
-        "column": 15,
-        "endLine": 140,
-        "endColumn": 39,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 140,
-        "column": 15,
-        "endLine": 140,
-        "endColumn": 39,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 142,
-        "column": 13,
-        "endLine": 142,
-        "endColumn": 25,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 171,
-        "column": 30,
-        "endLine": 171,
-        "endColumn": 44,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 173,
-        "column": 33,
-        "endLine": 173,
-        "endColumn": 47,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 208,
-        "column": 31,
-        "endLine": 208,
-        "endColumn": 45,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 212,
-        "column": 33,
-        "endLine": 212,
-        "endColumn": 47,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 8
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/Slider.vue",
@@ -2192,17 +1752,6 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 126,
-        "column": 5,
-        "endLine": 126,
-        "endColumn": 43,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 167,
         "column": 10,
@@ -2231,21 +1780,10 @@
         "endLine": 179,
         "endColumn": 25,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 194,
-        "column": 7,
-        "endLine": 194,
-        "endColumn": 59,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 4
   },
   {
     "file": "src/runtime/components/Toaster.vue",
@@ -2266,32 +1804,10 @@
         "endLine": 83,
         "endColumn": 33,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 83,
-        "column": 16,
-        "endLine": 83,
-        "endColumn": 33,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 85,
-        "column": 13,
-        "endLine": 85,
-        "endColumn": 25,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/Tree.vue",
@@ -2522,50 +2038,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 165,
-        "column": 26,
-        "endLine": 165,
-        "endColumn": 43,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 166,
-        "column": 26,
-        "endLine": 166,
-        "endColumn": 38,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 169,
-        "column": 13,
-        "endLine": 169,
-        "endColumn": 25,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 173,
-        "column": 29,
-        "endLine": 173,
-        "endColumn": 41,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2575,43 +2047,10 @@
         "endLine": 179,
         "endColumn": 37,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 179,
-        "column": 20,
-        "endLine": 179,
-        "endColumn": 37,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 187,
-        "column": 33,
-        "endLine": 187,
-        "endColumn": 45,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 199,
-        "column": 33,
-        "endLine": 199,
-        "endColumn": 45,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 10
+    "warningCount": 3
   },
   {
     "file": "src/runtime/components/locale/LocaleSelect.vue",
@@ -2751,32 +2190,9 @@
   },
   {
     "file": "src/runtime/components/prose/Collapsible.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 63,
-        "column": 15,
-        "endLine": 63,
-        "endColumn": 34,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 68,
-        "column": 11,
-        "endLine": 68,
-        "endColumn": 131,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/prose/Em.vue",
@@ -2928,17 +2344,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 87,
-        "column": 27,
-        "endLine": 87,
-        "endColumn": 45,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2959,21 +2364,10 @@
         "endLine": 98,
         "endColumn": 91,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 98,
-        "column": 76,
-        "endLine": 98,
-        "endColumn": 90,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 8
+    "warningCount": 6
   },
   {
     "file": "src/runtime/components/prose/Kbd.vue",

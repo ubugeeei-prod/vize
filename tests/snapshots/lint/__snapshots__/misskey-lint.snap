@@ -1080,17 +1080,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/no-v-html",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 28,
-        "column": 78,
-        "endLine": 28,
-        "endColumn": 137,
-        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
-      },
-      {
         "ruleId": "a11y/no-static-element-interactions",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -1147,7 +1136,7 @@
       }
     ],
     "errorCount": 4,
-    "warningCount": 13
+    "warningCount": 12
   },
   {
     "file": "src/components/MkAvatars.vue",
@@ -1928,17 +1917,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/require-toggle-inside-transition",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/require-toggle-inside-transition] the element inside `<transition>` is expected to have a toggle such as `v-if`, `v-show`, or a bound `:key`",
-        "line": 14,
-        "column": 2,
-        "endLine": 14,
-        "endColumn": 98,
-        "help": "Add v-if, v-show, v-else, v-else-if, or a bound :key, or use a dynamic <component :is>; otherwise the element never enters or leaves and the <transition> does nothing."
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1950,7 +1928,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 9
   },
   {
@@ -5474,6 +5452,17 @@
     "file": "src/components/MkImageEffectorFxForm.vue",
     "messages": [
       {
+        "ruleId": "vue/valid-v-for",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/valid-v-for] v-for key should use variables defined by v-for",
+        "line": 8,
+        "column": 33,
+        "endLine": 8,
+        "endColumn": 41,
+        "help": "Valid v-for syntax:\n  <!-- Array iteration -->\n  <li v-for=\"item in items\">{{ item }}</li>\n  <li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n  \n  <!-- Object iteration -->\n  <li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n  <li v-for=\"(value, key, index) in object\">{{ index }}</li>\n  \n  <!-- Range -->\n  <span v-for=\"n in 10\">{{ n }}</span>"
+      },
+      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -5573,7 +5562,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 9
   },
   {
@@ -6814,28 +6803,6 @@
     "file": "src/components/MkMediaList.vue",
     "messages": [
       {
-        "ruleId": "vue/no-v-for-template-key-on-child",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-v-for-template-key-on-child] the `key` for a `<template v-for>` must be on the `<template>`, not on its child",
-        "line": 23,
-        "column": 51,
-        "endLine": 23,
-        "endColumn": 77,
-        "help": "Move the :key up onto the <template v-for> element. In Vue 3 the key lives on the template, not the child (the reverse of Vue 2)."
-      },
-      {
-        "ruleId": "vue/no-v-for-template-key-on-child",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-v-for-template-key-on-child] the `key` for a `<template v-for>` must be on the `<template>`, not on its child",
-        "line": 24,
-        "column": 56,
-        "endLine": 24,
-        "endColumn": 82,
-        "help": "Move the :key up onto the <template v-for> element. In Vue 3 the key lives on the template, not the child (the reverse of Vue 2)."
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -6869,7 +6836,7 @@
         "help": "Multiple style blocks of the same type can be merged for better organization"
       }
     ],
-    "errorCount": 2,
+    "errorCount": 0,
     "warningCount": 3
   },
   {
@@ -11156,6 +11123,61 @@
     "file": "src/components/MkReactionsViewer.vue",
     "messages": [
       {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'enterActiveClass' should be 'enter-active-class' (kebab-case)",
+        "line": 9,
+        "column": 2,
+        "endLine": 9,
+        "endColumn": 53,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'leaveActiveClass' should be 'leave-active-class' (kebab-case)",
+        "line": 10,
+        "column": 2,
+        "endLine": 10,
+        "endColumn": 53,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'enterFromClass' should be 'enter-from-class' (kebab-case)",
+        "line": 11,
+        "column": 2,
+        "endLine": 11,
+        "endColumn": 49,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'leaveToClass' should be 'leave-to-class' (kebab-case)",
+        "line": 12,
+        "column": 2,
+        "endLine": 12,
+        "endColumn": 45,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'moveClass' should be 'move-class' (kebab-case)",
+        "line": 13,
+        "column": 2,
+        "endLine": 13,
+        "endColumn": 39,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -11256,7 +11278,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 14
   },
   {
     "file": "src/components/MkRemoteCaution.vue",
@@ -12919,6 +12941,61 @@
         "help": "Remove the unused import or use the component in your template"
       },
       {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'enterActiveClass' should be 'enter-active-class' (kebab-case)",
+        "line": 25,
+        "column": 4,
+        "endLine": 25,
+        "endColumn": 55,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'leaveActiveClass' should be 'leave-active-class' (kebab-case)",
+        "line": 26,
+        "column": 4,
+        "endLine": 26,
+        "endColumn": 55,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'enterFromClass' should be 'enter-from-class' (kebab-case)",
+        "line": 27,
+        "column": 4,
+        "endLine": 27,
+        "endColumn": 51,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'leaveToClass' should be 'leave-to-class' (kebab-case)",
+        "line": 28,
+        "column": 4,
+        "endLine": 28,
+        "endColumn": 47,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'moveClass' should be 'move-class' (kebab-case)",
+        "line": 29,
+        "column": 4,
+        "endLine": 29,
+        "endColumn": 41,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -13019,7 +13096,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 11
+    "warningCount": 16
   },
   {
     "file": "src/components/MkStreamingNotificationsTimeline.vue",
@@ -13034,6 +13111,61 @@
         "endLine": 7,
         "endColumn": 15,
         "help": "Remove the unused import or use the component in your template"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'enterActiveClass' should be 'enter-active-class' (kebab-case)",
+        "line": 19,
+        "column": 4,
+        "endLine": 19,
+        "endColumn": 55,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'leaveActiveClass' should be 'leave-active-class' (kebab-case)",
+        "line": 20,
+        "column": 4,
+        "endLine": 20,
+        "endColumn": 55,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'enterFromClass' should be 'enter-from-class' (kebab-case)",
+        "line": 21,
+        "column": 4,
+        "endLine": 21,
+        "endColumn": 51,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'leaveToClass' should be 'leave-to-class' (kebab-case)",
+        "line": 22,
+        "column": 4,
+        "endLine": 22,
+        "endColumn": 47,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'moveClass' should be 'move-class' (kebab-case)",
+        "line": 23,
+        "column": 4,
+        "endLine": 23,
+        "endColumn": 41,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
         "ruleId": "vue/attribute-hyphenation",
@@ -13092,7 +13224,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 11
   },
   {
     "file": "src/components/MkSubNoteContent.vue",
@@ -15572,17 +15704,6 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
-        "ruleId": "vue/no-v-html",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 19,
-        "column": 10,
-        "endLine": 19,
-        "endColumn": 66,
-        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -15595,7 +15716,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/components/MkWaitingDialog.vue",
@@ -18009,17 +18130,6 @@
     "file": "src/components/global/MkResult.vue",
     "messages": [
       {
-        "ruleId": "vue/require-toggle-inside-transition",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/require-toggle-inside-transition] the element inside `<transition>` is expected to have a toggle such as `v-if`, `v-show`, or a bound `:key`",
-        "line": 8,
-        "column": 2,
-        "endLine": 8,
-        "endColumn": 42,
-        "help": "Add v-if, v-show, v-else, v-else-if, or a bound :key, or use a dynamic <component :is>; otherwise the element never enters or leaves and the <transition> does nothing."
-      },
-      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -18130,7 +18240,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 10
   },
   {
@@ -31195,17 +31305,6 @@
     "file": "src/pages/page-editor/els/page-editor.el.note.vue",
     "messages": [
       {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'props.modelValue.detailed' via v-model",
-        "line": 16,
-        "column": 13,
-        "endLine": 16,
-        "endColumn": 48,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -31217,7 +31316,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -31337,6 +31436,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'modelValue' should be 'model-value' (kebab-case)",
+        "line": 18,
+        "column": 52,
+        "endLine": 18,
+        "endColumn": 70,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -31349,7 +31459,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 7
+    "warningCount": 8
   },
   {
     "file": "src/pages/page-editor/page-editor.container.vue",
@@ -40125,6 +40235,61 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'moveClass' should be 'move-class' (kebab-case)",
+        "line": 79,
+        "column": 2,
+        "endLine": 79,
+        "endColumn": 50,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'enterActiveClass' should be 'enter-active-class' (kebab-case)",
+        "line": 80,
+        "column": 2,
+        "endLine": 80,
+        "endColumn": 64,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'leaveActiveClass' should be 'leave-active-class' (kebab-case)",
+        "line": 81,
+        "column": 2,
+        "endLine": 81,
+        "endColumn": 64,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'enterFromClass' should be 'enter-from-class' (kebab-case)",
+        "line": 82,
+        "column": 2,
+        "endLine": 82,
+        "endColumn": 60,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'leaveToClass' should be 'leave-to-class' (kebab-case)",
+        "line": 83,
+        "column": 2,
+        "endLine": 83,
+        "endColumn": 56,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -40159,7 +40324,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 43
+    "warningCount": 48
   },
   {
     "file": "src/ui/_common_/mobile-footer-menu.vue",
@@ -40260,6 +40425,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'activeClass' should be 'active-class' (kebab-case)",
+        "line": 18,
+        "column": 267,
+        "endLine": 18,
+        "endColumn": 295,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -40338,7 +40514,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 13
+    "warningCount": 14
   },
   {
     "file": "src/ui/_common_/navbar.vue",
@@ -40374,6 +40550,17 @@
         "column": 73,
         "endLine": 22,
         "endColumn": 101,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'activeClass' should be 'active-class' (kebab-case)",
+        "line": 33,
+        "column": 6,
+        "endLine": 33,
+        "endColumn": 34,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
@@ -40444,7 +40631,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 10
   },
   {
     "file": "src/ui/_common_/notification.vue",
@@ -41243,6 +41430,17 @@
         "help": "Reorder attributes to follow the recommended order"
       },
       {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'isStacked' should be 'is-stacked' (kebab-case)",
+        "line": 37,
+        "column": 8,
+        "endLine": 37,
+        "endColumn": 35,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -41255,7 +41453,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 2
+    "warningCount": 3
   },
   {
     "file": "src/ui/deck/antenna-column.vue",

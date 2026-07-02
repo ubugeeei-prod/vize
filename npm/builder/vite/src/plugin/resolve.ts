@@ -777,7 +777,7 @@ async function resolveAliasedVueImport(
   }
 
   const isResolvedNodeModules = realPath.includes("node_modules");
-  if (!handleNodeModules && isResolvedNodeModules) {
+  if (!handleNodeModules && preserveQueryAsPath && isResolvedNodeModules) {
     state.logger.log(`resolveId: skipping resolved node_modules path ${realPath}`);
     return null;
   }
@@ -1205,7 +1205,7 @@ export async function resolveIdHook(
 
     const vueRequestPath = request.path;
 
-    if (!handleNodeModules && vueRequestPath.includes("node_modules")) {
+    if (!handleNodeModules && preserveQueryAsPath && vueRequestPath.includes("node_modules")) {
       state.logger.log(`resolveId: skipping node_modules import ${id}`);
       return null;
     }
@@ -1231,7 +1231,7 @@ export async function resolveIdHook(
 
     const isNodeModulesPath = resolved.includes("node_modules");
 
-    if (!handleNodeModules && isNodeModulesPath) {
+    if (!handleNodeModules && preserveQueryAsPath && isNodeModulesPath) {
       state.logger.log(`resolveId: skipping node_modules path ${resolved}`);
       return null;
     }

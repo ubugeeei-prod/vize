@@ -5,6 +5,7 @@ import path from "node:path";
 
 import type { VizePluginState } from "./state.ts";
 import { resolveIdHook } from "./resolve.ts";
+import { toPluginVisibleVirtualId } from "../virtual.ts";
 
 const testRoot = fs.mkdtempSync(
   path.join(fs.realpathSync(os.tmpdir()), "vize-vite-plugin-dependency-style-"),
@@ -128,9 +129,17 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   writeFixtureFile(source, "<template><pre /></template>");
 
   assert.equal(
-    await resolveIdHook(nullResolveContext, createState(projectRoot), source, undefined, undefined),
-    null,
-    "Dependency Vue component requests should stay on the host Nuxt/Vite route",
+    expectResolvedId(
+      await resolveIdHook(
+        nullResolveContext,
+        createState(projectRoot),
+        source,
+        undefined,
+        undefined,
+      ),
+    ),
+    toPluginVisibleVirtualId(source),
+    "Dependency Vue component requests should use Vize virtual IDs so generated JS is not passed through raw .vue hooks",
   );
 
   const query = "?nuxt_component=async&nuxt_component_name=ProsePre&nuxt_component_export=default";

@@ -509,21 +509,10 @@
         "endLine": 100,
         "endColumn": 23,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "vue/no-v-html",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 118,
-        "column": 51,
-        "endLine": 118,
-        "endColumn": 64,
-        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/CollapsibleSection.vue",
@@ -962,31 +951,9 @@
         "endLine": 148,
         "endColumn": 44,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-v-for-template-key-on-child",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-v-for-template-key-on-child] the `key` for a `<template v-for>` must be on the `<template>`, not on its child",
-        "line": 185,
-        "column": 19,
-        "endLine": 185,
-        "endColumn": 46,
-        "help": "Move the :key up onto the <template v-for> element. In Vue 3 the key lives on the template, not the child (the reverse of Vue 2)."
-      },
-      {
-        "ruleId": "vue/no-v-for-template-key-on-child",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-v-for-template-key-on-child] the `key` for a `<template v-for>` must be on the `<template>`, not on its child",
-        "line": 189,
-        "column": 52,
-        "endLine": 189,
-        "endColumn": 69,
-        "help": "Move the :key up onto the <template v-for> element. In Vue 3 the key lives on the template, not the child (the reverse of Vue 2)."
       }
     ],
-    "errorCount": 2,
+    "errorCount": 0,
     "warningCount": 2
   },
   {
@@ -2589,28 +2556,6 @@
         "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
       },
       {
-        "ruleId": "vue/no-v-for-template-key-on-child",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-v-for-template-key-on-child] the `key` for a `<template v-for>` must be on the `<template>`, not on its child",
-        "line": 207,
-        "column": 52,
-        "endLine": 207,
-        "endColumn": 67,
-        "help": "Move the :key up onto the <template v-for> element. In Vue 3 the key lives on the template, not the child (the reverse of Vue 2)."
-      },
-      {
-        "ruleId": "vue/no-v-for-template-key-on-child",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-v-for-template-key-on-child] the `key` for a `<template v-for>` must be on the `<template>`, not on its child",
-        "line": 229,
-        "column": 15,
-        "endLine": 229,
-        "endColumn": 35,
-        "help": "Move the :key up onto the <template v-for> element. In Vue 3 the key lives on the template, not the child (the reverse of Vue 2)."
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2622,7 +2567,7 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 2,
+    "errorCount": 0,
     "warningCount": 4
   },
   {
@@ -3321,17 +3266,6 @@
     "file": "app/pages/compare.vue",
     "messages": [
       {
-        "ruleId": "html/id-duplication",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 2,
-        "message": "[vize:html/id-duplication] Duplicate id=\"comparison-heading\" found in template",
-        "line": 264,
-        "column": 11,
-        "endLine": 264,
-        "endColumn": 34,
-        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3343,7 +3277,7 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -3447,17 +3381,6 @@
   {
     "file": "app/pages/package/[[org]]/[name].vue",
     "messages": [
-      {
-        "ruleId": "html/id-duplication",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 2,
-        "message": "[vize:html/id-duplication] Duplicate id=\"package-article\" found in template",
-        "line": 762,
-        "column": 30,
-        "endLine": 762,
-        "endColumn": 50,
-        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
-      },
       {
         "ruleId": "vue/no-v-html",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -3646,7 +3569,7 @@
         "help": "Use kebab-case for attribute names"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 17
   },
   {
@@ -3682,28 +3605,6 @@
     "file": "app/pages/package-docs/[...path].vue",
     "messages": [
       {
-        "ruleId": "vue/no-v-html",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 177,
-        "column": 36,
-        "endLine": 177,
-        "endColumn": 57,
-        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
-      },
-      {
-        "ruleId": "vue/no-v-html",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 209,
-        "column": 61,
-        "endLine": 209,
-        "endColumn": 84,
-        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
-      },
-      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3716,7 +3617,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "app/pages/privacy.vue",
@@ -3877,20 +3778,9 @@
         "endLine": 81,
         "endColumn": 29,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "vue/no-v-for-template-key-on-child",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-v-for-template-key-on-child] the `key` for a `<template v-for>` must be on the `<template>`, not on its child",
-        "line": 176,
-        "column": 17,
-        "endLine": 176,
-        "endColumn": 35,
-        "help": "Move the :key up onto the <template v-for> element. In Vue 3 the key lives on the template, not the child (the reverse of Vue 2)."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
