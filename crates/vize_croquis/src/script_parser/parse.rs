@@ -22,8 +22,18 @@ use vize_carton::{CompactString, profile};
 /// This is a high-performance alternative to string-based analysis,
 /// providing accurate AST-based detection with proper span tracking.
 pub fn parse_script_setup_with_generic(source: &str, generic: Option<&str>) -> ScriptParseResult {
+    parse_script_setup_with_generic_and_jsx(source, generic, false)
+}
+
+/// Parse script setup source code using OXC parser with optional JSX syntax.
+pub fn parse_script_setup_with_generic_and_jsx(
+    source: &str,
+    generic: Option<&str>,
+    jsx: bool,
+) -> ScriptParseResult {
     let allocator = Allocator::default();
-    let source_type = SourceType::from_path("script.ts").unwrap_or_default();
+    let path = if jsx { "script.tsx" } else { "script.ts" };
+    let source_type = SourceType::from_path(path).unwrap_or_default();
 
     let ret = profile!(
         "croquis.script_setup.oxc_parse",

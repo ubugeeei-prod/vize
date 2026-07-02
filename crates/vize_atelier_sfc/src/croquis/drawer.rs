@@ -48,7 +48,11 @@ pub(super) fn analyze_scripts(
                 .map(|value| value.as_ref());
             profile!(
                 "atelier.sfc.croquis.script_setup",
-                setup_drawer.draw_script_setup_with_generic(script_setup.content.as_ref(), generic)
+                setup_drawer.draw_script_setup_with_generic_and_jsx(
+                    script_setup.content.as_ref(),
+                    generic,
+                    script_lang_is_jsx(script_setup.lang.as_deref()),
+                )
             );
 
             let mut summary = setup_drawer.finish();
@@ -66,7 +70,11 @@ pub(super) fn analyze_scripts(
                 .map(|value| value.as_ref());
             profile!(
                 "atelier.sfc.croquis.script_setup",
-                drawer.draw_script_setup_with_generic(script_setup.content.as_ref(), generic)
+                drawer.draw_script_setup_with_generic_and_jsx(
+                    script_setup.content.as_ref(),
+                    generic,
+                    script_lang_is_jsx(script_setup.lang.as_deref()),
+                )
             );
             drawer.finish()
         }

@@ -135,7 +135,14 @@ pub(super) fn lint_with_descriptor<'a>(
                 .attrs
                 .get("generic")
                 .map(|value| value.as_ref());
-            script_parser::parse_script_setup_with_generic(script_content, generic)
+            script_parser::parse_script_setup_with_generic_and_jsx(
+                script_content,
+                generic,
+                script_setup
+                    .lang
+                    .as_deref()
+                    .is_some_and(|lang| matches!(lang.trim(), "tsx" | "jsx")),
+            )
         } else {
             script_parser::parse_script(script_content)
         }
