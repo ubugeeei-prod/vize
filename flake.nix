@@ -50,7 +50,7 @@
           x86_64-linux = {
             version = "0.1.20260608-2026-06-08";
             url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-x86_64.tar.gz";
-            hash = "sha256-PFAX9WkoSALxoLhCLRSZY6AcpYfFFEURZK75HGXfiqg=";
+            hash = "sha256-ug6+47tfi5RiOb/4DITkEQHSsRSo07QwjnOibTY+GEg=";
           };
           aarch64-linux = {
             version = "0.1.20260608-2026-06-08";
