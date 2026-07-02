@@ -692,7 +692,7 @@
     {
       "file": "packages/core/src/Combobox/story/ComboboxBasic.story.vue",
       "diagnostics": [
-        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.\nType '\"as\"' is not assignable to type 'never'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'as' does not exist on type '__WithDefaultsResult<ContextMenuArrowProps, Pick<ContextMenuArrowProps, \"as\" | \"height\" | \"width\">>'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'asChild' does not exist on type '__WithDefaultsResult<ContextMenuArrowProps, Pick<ContextMenuArrowProps, \"as\" | \"height\" | \"width\">>'.\nProperty 'height' does not exist on type '__WithDefaultsResult<ContextMenuArrowProps, Pick<ContextMenuArrowProps, \"as\" | \"height\" | \"width\">>'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'rounded' does not exist on type '__WithDefaultsResult<ContextMenuArrowProps, Pick<ContextMenuArrowProps, \"as\" | \"height\" | \"width\">>'.\nProperty 'width' does not exist on type '__WithDefaultsResult<ContextMenuArrowProps, Pick<ContextMenuArrowProps, \"as\" | \"height\" | \"width\">>'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'defer' does not exist on type 'ContextMenuPortalProps'.\nProperty 'disabled' does not exist on type 'ContextMenuPortalProps'.\nProperty 'forceMount' does not exist on type 'ContextMenuPortalProps'.\nProperty 'to' does not exist on type 'ContextMenuPortalProps'."
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations."
       ]
     },
     {
@@ -710,7 +710,7 @@
     {
       "file": "packages/core/src/Combobox/story/ComboboxMultiple.story.vue",
       "diagnostics": [
-        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations."
+        "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.\nType '\"as\"' is not assignable to type 'never'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'as' does not exist on type '__WithDefaultsResult<ContextMenuArrowProps, Pick<ContextMenuArrowProps, \"as\" | \"height\" | \"width\">>'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'asChild' does not exist on type '__WithDefaultsResult<ContextMenuArrowProps, Pick<ContextMenuArrowProps, \"as\" | \"height\" | \"width\">>'.\nProperty 'height' does not exist on type '__WithDefaultsResult<ContextMenuArrowProps, Pick<ContextMenuArrowProps, \"as\" | \"height\" | \"width\">>'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'rounded' does not exist on type '__WithDefaultsResult<ContextMenuArrowProps, Pick<ContextMenuArrowProps, \"as\" | \"height\" | \"width\">>'.\nProperty 'width' does not exist on type '__WithDefaultsResult<ContextMenuArrowProps, Pick<ContextMenuArrowProps, \"as\" | \"height\" | \"width\">>'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'defer' does not exist on type 'ContextMenuPortalProps'.\nProperty 'disabled' does not exist on type 'ContextMenuPortalProps'.\nProperty 'forceMount' does not exist on type 'ContextMenuPortalProps'.\nProperty 'to' does not exist on type 'ContextMenuPortalProps'."
       ]
     },
     {
