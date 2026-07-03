@@ -104,8 +104,14 @@ const count = ref(0)
   assert.match(code, /import Button from "\/repo\/components\/Button\.vue";/);
   assert.doesNotMatch(code, /\bdefineArt\s*\(/);
   assert.match(code, /components: \{ "Button": Button \}/);
-  assert.match(code, /export const Primary = defineComponent\(\{[\s\S]*const count = ref\(0\)/);
-  assert.match(code, /export const Secondary = defineComponent\(\{[\s\S]*const count = ref\(0\)/);
+  assert.match(
+    code,
+    /export const Primary = __museaDefineComponent\(\{[\s\S]*const count = ref\(0\)/,
+  );
+  assert.match(
+    code,
+    /export const Secondary = __museaDefineComponent\(\{[\s\S]*const count = ref\(0\)/,
+  );
   assert.doesNotMatch(code, /return \{ Button,/);
 });
 

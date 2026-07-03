@@ -459,7 +459,7 @@ export function generateArtModule(
 
   let code = `
 // Auto-generated module for: ${path.basename(filePath)}
-import { defineComponent, h } from 'vue';
+import { defineComponent as __museaDefineComponent } from 'vue';
 `;
 
   // Add script setup imports at module level
@@ -544,7 +544,7 @@ ${scriptSetup.setupBody.join("\n")}
     if (scriptSetup && hasSetup && isolatedSetup) {
       // Generate variant with setup function from art file's <script setup>
       code += `
-export const ${variantComponentName} = defineComponent({
+export const ${variantComponentName} = __museaDefineComponent({
   name: '${variantComponentName}',
 ${components}  setup() {
 ${scriptSetup.setupBody.join("\n")}
@@ -555,7 +555,7 @@ ${scriptSetup.setupBody.join("\n")}
 `;
     } else if (scriptSetup && hasSetup) {
       code += `
-export const ${variantComponentName} = defineComponent({
+export const ${variantComponentName} = __museaDefineComponent({
   name: '${variantComponentName}',
 ${components}  setup() {
     return __museaSharedSetup;
