@@ -1,7 +1,7 @@
 //! Recursive-descent parser for JSON / JSONC into the [`super::ast`] value tree.
 
 use super::ast::{Comment, Element, Member, Node, split_trailing};
-use super::{json_error, trim_end};
+use super::{json_error, number, trim_end};
 use crate::error::FormatError;
 use vize_carton::{String, cstr};
 
@@ -109,7 +109,7 @@ impl<'a> Parser<'a> {
             Some('t') => Ok(Node::Scalar(self.parse_keyword("true")?)),
             Some('f') => Ok(Node::Scalar(self.parse_keyword("false")?)),
             Some('n') => Ok(Node::Scalar(self.parse_keyword("null")?)),
-            Some('-' | '0'..='9') => Ok(Node::Scalar(self.parse_number()?)),
+            Some('-' | '0'..='9') => Ok(Node::Scalar(number::parse(&mut self.iter)?)),
             Some(c) => Err(json_error(cstr!("unexpected character '{c}'"))),
             None => Err(json_error("unexpected end of input")),
         }
@@ -298,64 +298,6 @@ impl<'a> Parser<'a> {
                 }
                 Some(c) => out.push(c),
             }
-        }
-    }
-
-    /// Scan a JSON number and copy it verbatim.
-    ///
-    /// JSON numbers are `-? (0 | [1-9][0-9]*) (. [0-9]+)? ([eE] [+-]? [0-9]+)?`.
-    /// The formatter preserves the numeric token text, but still validates the
-    /// grammar so invalid JSON cannot be silently normalized into output.
-    fn parse_number(&mut self) -> Result<String, FormatError> {
-        let mut out = String::default();
-
-        if self.peek() == Some('-') {
-            out.push('-');
-            self.advance();
-        }
-
-        match self.peek() {
-            Some('0') => {
-                out.push('0');
-                self.advance();
-                if self.peek().is_some_and(|c| c.is_ascii_digit()) {
-                    return Err(json_error("leading zero in number"));
-                }
-            }
-            Some('1'..='9') => self.consume_digits(&mut out),
-            _ => return Err(json_error("expected digit in number")),
-        }
-
-        if self.peek() == Some('.') {
-            out.push('.');
-            self.advance();
-            if !self.peek().is_some_and(|c| c.is_ascii_digit()) {
-                return Err(json_error("expected digit after decimal point"));
-            }
-            self.consume_digits(&mut out);
-        }
-
-        if matches!(self.peek(), Some('e' | 'E')) {
-            if let Some(exponent) = self.advance() {
-                out.push(exponent);
-            }
-            if let Some(sign @ ('+' | '-')) = self.peek() {
-                out.push(sign);
-                self.advance();
-            }
-            if !self.peek().is_some_and(|c| c.is_ascii_digit()) {
-                return Err(json_error("expected digit in exponent"));
-            }
-            self.consume_digits(&mut out);
-        }
-
-        Ok(out)
-    }
-
-    fn consume_digits(&mut self, out: &mut String) {
-        while let Some(c @ '0'..='9') = self.peek() {
-            out.push(c);
-            self.advance();
         }
     }
 

@@ -16,7 +16,6 @@ use crate::profile_support;
 use collect::{collect_lint_files, load_lint_ignore_set, resolve_lint_config_path};
 use cross_file::apply_sfc_cross_file_lint;
 use fix::lint_source_with_optional_fix;
-use patterns::LINT_EXTENSIONS_DISPLAY;
 use rayon::prelude::*;
 use std::fs;
 use std::io::Write;
@@ -85,10 +84,7 @@ pub fn run(args: LintArgs) {
     let collect_time = collect_start.elapsed();
 
     if files.is_empty() {
-        eprintln!(
-            "No {LINT_EXTENSIONS_DISPLAY} files found matching patterns: {:?}",
-            args.patterns
-        );
+        eprintln!("{}", patterns::no_lint_files_message(&args.patterns));
         return;
     }
 

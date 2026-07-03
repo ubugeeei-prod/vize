@@ -22,6 +22,7 @@ use crate::options::FormatOptions;
 use vize_carton::String;
 
 mod ast;
+mod number;
 mod parser;
 mod printer;
 

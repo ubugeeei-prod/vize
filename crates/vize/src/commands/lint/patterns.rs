@@ -19,6 +19,10 @@ pub(super) const LINT_DEFAULT_PATTERNS: &[&str] = &[
 pub(super) const LINT_EXTENSIONS_DISPLAY: &str =
     ".vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx";
 
+pub(super) fn no_lint_files_message(patterns: &[vize_carton::String]) -> vize_carton::String {
+    vize_carton::cstr!("No {LINT_EXTENSIONS_DISPLAY} files found matching patterns: {patterns:?}")
+}
+
 #[inline]
 pub(super) fn is_lint_extension(extension: &str) -> bool {
     LINT_EXTENSIONS.contains(&extension)
