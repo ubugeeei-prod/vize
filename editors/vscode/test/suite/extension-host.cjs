@@ -251,7 +251,7 @@ async function runSyntaxHighlightContributionSmoke() {
   );
   assert.equal(
     vueGrammar.repository["vue-generic-attribute"].patterns[0].patterns[0].include,
-    "source.ts#type-inner",
+    "#vue-ts-type",
   );
   assert.equal(
     vueGrammar.repository["vue-interpolation"].patterns[0].include,
@@ -259,23 +259,23 @@ async function runSyntaxHighlightContributionSmoke() {
   );
   assert.equal(
     vueGrammar.repository["vue-directive-attributes"].patterns[0].patterns[0].include,
-    "source.ts#expression",
+    "#vue-ts-expression",
   );
   assert.equal(
     vueGrammar.repository["vue-directive-attributes"].patterns[0].beginCaptures["5"].patterns[0]
       .include,
-    "source.ts#expression",
+    "#vue-ts-expression",
   );
   assert.equal(
     vueGrammar.repository["vue-directive-attributes"].patterns[0].beginCaptures["1"].name,
     "keyword.control.directive.vue",
   );
   assert.equal(
-    vueGrammar.repository["vue-directive-attributes"].patterns[2].beginCaptures["2"].name,
+    vueGrammar.repository["vue-directive-attributes"].patterns[1].beginCaptures["2"].name,
     "entity.other.attribute-name.binding.vue",
   );
   assert.equal(
-    vueGrammar.repository["vue-directive-attributes"].patterns[4].beginCaptures["2"].name,
+    vueGrammar.repository["vue-directive-attributes"].patterns[2].beginCaptures["2"].name,
     "entity.other.attribute-name.event.vue",
   );
   assert.equal(

@@ -64,9 +64,7 @@ function installVueImportResolver(ts, info) {
 
   host.resolveModuleNameLiterals = (...args) => {
     const [moduleLiterals, containingFile] = args;
-    const previous = originalResolveModuleNameLiterals
-      ? originalResolveModuleNameLiterals(...args)
-      : [];
+    const previous = toArray(originalResolveModuleNameLiterals?.(...args));
 
     return moduleLiterals.map((literal, index) => {
       if (previous[index] && previous[index].resolvedModule) {
@@ -80,7 +78,7 @@ function installVueImportResolver(ts, info) {
 
   host.resolveModuleNames = (...args) => {
     const [moduleNames, containingFile] = args;
-    const previous = originalResolveModuleNames ? originalResolveModuleNames(...args) : [];
+    const previous = toArray(originalResolveModuleNames?.(...args));
 
     return moduleNames.map((moduleName, index) => {
       if (previous[index]) {
@@ -192,14 +190,20 @@ function bind(fn, thisArg) {
   return typeof fn === "function" ? fn.bind(thisArg) : undefined;
 }
 
+function toArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
 function isRelativeVueSpecifier(specifier) {
   return (
-    specifier.endsWith(vueExtension) && (specifier.startsWith("./") || specifier.startsWith("../"))
+    typeof specifier === "string" &&
+    specifier.endsWith(vueExtension) &&
+    (specifier.startsWith("./") || specifier.startsWith("../"))
   );
 }
 
 function realVuePathFromVirtual(fileName) {
-  return fileName.endsWith(`${vueExtension}${virtualDtsSuffix}`)
+  return typeof fileName === "string" && fileName.endsWith(`${vueExtension}${virtualDtsSuffix}`)
     ? fileName.slice(0, -virtualDtsSuffix.length)
     : undefined;
 }

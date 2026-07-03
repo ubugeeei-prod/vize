@@ -138,6 +138,20 @@ test("TypeScript Vue plugin keeps missing .vue imports diagnostic", () => {
   }
 });
 
+test("TypeScript Vue plugin keeps plain .ts projects crash-free with unresolved host fallbacks", () => {
+  const project = createVueProject('import value from "./missing";\nvalue;\n', {});
+  try {
+    const service = createLanguageService(project.mainTs, true, (host) => {
+      host.resolveModuleNameLiterals = () => undefined as never;
+      host.resolveModuleNames = () => undefined as never;
+    });
+
+    assert.doesNotThrow(() => service.getSemanticDiagnostics(project.mainTs));
+  } finally {
+    fs.rmSync(project.root, { force: true, recursive: true });
+  }
+});
+
 function createVueProject(mainSource: string, vueFiles: Record<string, string>) {
   const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vscode-vue-plugin-"));
   const srcDir = path.join(rootDir, "src");
@@ -154,8 +168,13 @@ function collectDiagnostics(mainTs: string, enablePlugin: boolean) {
   return createLanguageService(mainTs, enablePlugin).getSemanticDiagnostics(mainTs);
 }
 
-function createLanguageService(mainTs: string, enablePlugin: boolean) {
+function createLanguageService(
+  mainTs: string,
+  enablePlugin: boolean,
+  configureHost?: (host: import("typescript").LanguageServiceHost) => void,
+) {
   const host = createHost(path.dirname(path.dirname(mainTs)), mainTs);
+  configureHost?.(host);
   const service = ts.createLanguageService(host);
   return enablePlugin
     ? initVuePlugin({ typescript: ts }).create({
