@@ -20,7 +20,7 @@ function parseGithubEnv(envFile: string): Record<string, string> {
   );
 }
 
-test("Zig musl wrappers normalize cc-rs flags and avoid duplicate CRT startup objects", () => {
+test("Zig musl wrappers use rust-lld for final links and normalize cc-rs flags", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-zig-musl-linkers-"));
   const binDir = path.join(tempDir, "bin");
   const envFile = path.join(tempDir, "github-env");
@@ -38,7 +38,7 @@ test("Zig musl wrappers normalize cc-rs flags and avoid duplicate CRT startup ob
     });
 
     const githubEnv = parseGithubEnv(envFile);
-    const runWrapper = (envName: string, args: string[]) => {
+    const runCcWrapper = (envName: string, args: string[]) => {
       const logPath = path.join(tempDir, `${envName}.log`);
       execFileSync(githubEnv[envName], args, {
         env: { ...process.env, PATH: pathEnv, ZIG_ARGS_LOG: logPath },
@@ -46,12 +46,10 @@ test("Zig musl wrappers normalize cc-rs flags and avoid duplicate CRT startup ob
       return fs.readFileSync(logPath, "utf8").trim().split("\n");
     };
 
-    assert.notEqual(
-      githubEnv.CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER,
-      githubEnv.CC_x86_64_unknown_linux_musl,
-    );
+    assert.equal(githubEnv.CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER, "rust-lld");
+    assert.equal(githubEnv.CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER, "rust-lld");
     assert.deepEqual(
-      runWrapper("CC_x86_64_unknown_linux_musl", [
+      runCcWrapper("CC_x86_64_unknown_linux_musl", [
         "--target=x86_64-unknown-linux-musl",
         "-O3",
         "-c",
@@ -60,32 +58,12 @@ test("Zig musl wrappers normalize cc-rs flags and avoid duplicate CRT startup ob
       ["cc", "-target", "x86_64-linux-musl", "-O3", "-c", "static.c"],
     );
     assert.deepEqual(
-      runWrapper("CC_aarch64_unknown_linux_musl", [
+      runCcWrapper("CC_aarch64_unknown_linux_musl", [
         "--target",
         "aarch64-unknown-linux-musl",
         "-DMI_DEBUG=0",
       ]),
       ["cc", "-target", "aarch64-linux-musl", "-DMI_DEBUG=0"],
-    );
-    assert.deepEqual(
-      runWrapper("CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER", [
-        "-m64",
-        "--target=x86_64-unknown-linux-musl",
-        "rcrt1.o",
-        "-nostartfiles",
-        "-static-pie",
-      ]),
-      [
-        "cc",
-        "-target",
-        "x86_64-linux-musl",
-        "-m64",
-        "rcrt1.o",
-        "-nostartfiles",
-        "-static-pie",
-        "-nostdlib",
-        "-nostartfiles",
-      ],
     );
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });

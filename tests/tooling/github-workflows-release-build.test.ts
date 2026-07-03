@@ -273,8 +273,12 @@ test("release workflow configures Zig linkers for Linux musl CLI archives", () =
 
   assert.match(buildCliJob, /name:\s*Setup Zig \(Linux musl CLI\)/);
   assert.match(buildCliJob, /if:\s*endsWith\(matrix\.settings\.target, '-musl'\)/);
+  assert.match(
+    buildCliJob,
+    /Setup Wild linker \(Linux\)[\s\S]*if:\s*runner\.os == 'Linux' && !endsWith\(matrix\.settings\.target, '-musl'\)/,
+  );
   assert.match(buildCliJob, /bash tools\/github\/configure-zig-musl-linkers\.sh/);
-  assert.match(zigLinkerScript, /CARGO_TARGET_%s_LINKER/);
+  assert.match(zigLinkerScript, /CARGO_TARGET_%s_LINKER=rust-lld/);
   assert.match(zigLinkerScript, /write_cc X86_64_UNKNOWN_LINUX_MUSL x86_64-linux-musl/);
   assert.match(zigLinkerScript, /write_cc AARCH64_UNKNOWN_LINUX_MUSL aarch64-linux-musl/);
 });
