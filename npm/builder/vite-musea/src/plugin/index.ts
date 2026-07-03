@@ -36,10 +36,7 @@ import {
 import { resolveMuseaSharedConfig } from "./config.js";
 import { processMuseaArtFile } from "./art-processing.js";
 import { transformMuseaVirtualModule } from "./virtual-transform.js";
-import {
-  assertStaticPreviewRuntimeSupported,
-  resolveStaticPreviewVueVersion,
-} from "./static-preview.js";
+import { resolveStaticPreviewVueVersion } from "./static-preview.js";
 
 export function musea(options: MuseaOptions = {}): Plugin[] {
   let include = options.include ?? ["**/*.art.vue"];
@@ -75,6 +72,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
     resolvedPreviewSetup,
     getConfigRoot: () => config.root,
     getScanRoots: () => scanRoots,
+    getVueVersion: () => vueVersion,
     getServer: () => server,
     processArtFile,
   };
@@ -225,7 +223,6 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
 
     async buildStart() {
       console.log(`[musea] config.root: ${config.root}, include: ${JSON.stringify(include)}`);
-      assertStaticPreviewRuntimeSupported(vueVersion, staticBuildEnabled);
       if (storybookCompat && staticBuildEnabled) {
         await assertNoUnsupportedStorybookTsxInputs(config.root, include, exclude);
       }

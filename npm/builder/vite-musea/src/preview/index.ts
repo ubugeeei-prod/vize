@@ -6,6 +6,7 @@
  */
 
 import type { ArtFileInfo } from "../types/index.js";
+import type { MuseaVueVersion } from "../types/plugin.js";
 import { MUSEA_ADDONS_INIT_CODE } from "./addons.js";
 
 export { generatePreviewHtml } from "./html.js";
@@ -16,6 +17,7 @@ export function generatePreviewModule(
   variantName: string,
   cssImports: string[] = [],
   previewSetup: string | null = null,
+  vueVersion: MuseaVueVersion = 3,
 ): string {
   const artModuleId = `virtual:musea-art:${art.path}`;
   const artModuleIdLiteral = JSON.stringify(artModuleId);
@@ -31,11 +33,24 @@ export function generatePreviewModule(
   const actionEvents = JSON.stringify(art.metadata.actionEvents ?? []);
   const artStyleId = `musea-art-styles-${art.path.replace(/[^\w-]+/g, "_")}`;
   const artStyleIdLiteral = JSON.stringify(artStyleId);
+  const legacyVue = isLegacyVueVersion(vueVersion);
+  const vueImport = legacyVue
+    ? "import Vue, { reactive } from 'vue';"
+    : "import { createApp, reactive, h } from 'vue';";
+  const destroyCurrentApp = legacyVue ? "currentApp.$destroy();" : "currentApp.unmount();";
+  const mountInitialApp = legacyVue
+    ? "const app = new Vue({ render: (h) => h(VariantComponent) });"
+    : "const app = createApp(VariantComponent);";
+  const mountCurrentApp = legacyVue
+    ? "mountVue2App(app);"
+    : "app.mount(container);\n    currentApp = app;";
+  const mountHelper = legacyVue ? vue2MountHelperSnippet() : "";
+  const remountApp = legacyVue ? vue2RemountAppSnippet() : vue3RemountAppSnippet();
 
   return `
 ${cssImportStatements}
 ${setupImport}
-import { createApp, reactive, h } from 'vue';
+${vueImport}
 import * as artModule from ${artModuleIdLiteral};
 
 const container = document.getElementById('app');
@@ -88,6 +103,8 @@ function renderError(title, error) {
   container.appendChild(root);
 }
 
+${mountHelper}
+
 window.__museaSetProps = (props) => {
   // Clear old keys
   for (const key of Object.keys(propsOverride)) {
@@ -114,13 +131,12 @@ async function mount() {
     }
 
     // Create and mount the app
-    const app = createApp(VariantComponent);
+    ${mountInitialApp}
     ensureArtStyles(artModule.__styles__);
     ${setupCall}
     container.innerHTML = '';
     container.className = 'musea-variant';
-    app.mount(container);
-    currentApp = app;
+    ${mountCurrentApp}
 
     console.log('[musea-preview] Mounted variant:', ${variantNameLiteral});
     __museaInitAddons(container, ${variantNameLiteral}, ${actionEvents});
@@ -149,9 +165,53 @@ async function mount() {
 
 async function remountWithProps(Component) {
   if (currentApp) {
-    currentApp.unmount();
+    ${destroyCurrentApp}
   }
-  const app = createApp({
+  ${remountApp}
+  ensureArtStyles(artModule.__styles__);
+  ${setupCall}
+  container.innerHTML = '';
+  ${mountCurrentApp}
+}
+
+mount();
+`;
+}
+
+function isLegacyVueVersion(version: MuseaVueVersion | undefined): boolean {
+  return (
+    version === 0.11 || version === 1 || version === 2 || version === "2.7" || version === "legacy"
+  );
+}
+
+function vue2MountHelperSnippet(): string {
+  return `function mountVue2App(app) {
+  container.innerHTML = '';
+  const mountPoint = document.createElement('div');
+  container.appendChild(mountPoint);
+  app.$mount(mountPoint);
+  currentApp = app;
+}`;
+}
+
+function vue2RemountAppSnippet(): string {
+  return `const app = new Vue({
+    render(h) {
+      const slotFns = {};
+      const children = [];
+      for (const [name, content] of Object.entries(slotsOverride)) {
+        if (!content) continue;
+        const slot = () => [h('span', String(content))];
+        slotFns[name] = slot;
+        if (name === 'default') children.push(...slot());
+      }
+      return h(Component, { props: { ...propsOverride }, scopedSlots: slotFns }, children);
+    }
+  });`;
+}
+
+function vue3RemountAppSnippet(): string {
+  return `const app = createApp({
     setup() {
       return () => {
         const slotFns = {};
@@ -161,16 +221,7 @@ async function remountWithProps(Component) {
         return h(Component, { ...propsOverride }, slotFns);
       };
     }
-  });
-  ensureArtStyles(artModule.__styles__);
-  ${setupCall}
-  container.innerHTML = '';
-  app.mount(container);
-  currentApp = app;
-}
-
-mount();
-`;
+  });`;
 }
 
 export function generatePreviewModuleWithProps(
@@ -180,6 +231,7 @@ export function generatePreviewModuleWithProps(
   propsOverride: Record<string, unknown>,
   cssImports: string[] = [],
   previewSetup: string | null = null,
+  vueVersion: MuseaVueVersion = 3,
 ): string {
   const artModuleId = `virtual:musea-art:${art.path}`;
   const artModuleIdLiteral = JSON.stringify(artModuleId);
@@ -196,11 +248,30 @@ export function generatePreviewModuleWithProps(
   const actionEvents = JSON.stringify(art.metadata.actionEvents ?? []);
   const artStyleId = `musea-art-styles-${art.path.replace(/[^\w-]+/g, "_")}`;
   const artStyleIdLiteral = JSON.stringify(artStyleId);
+  const legacyVue = isLegacyVueVersion(vueVersion);
+  const vueImport = legacyVue ? "import Vue from 'vue';" : "import { createApp, h } from 'vue';";
+  const wrappedComponent = legacyVue
+    ? `const WrappedComponent = {
+      render(h) {
+        return h(VariantComponent, { props: propsOverride });
+      }
+    };`
+    : `const WrappedComponent = {
+      render() {
+        return h(VariantComponent, propsOverride);
+      }
+    };`;
+  const appCreate = legacyVue
+    ? "const app = new Vue(WrappedComponent);"
+    : "const app = createApp(WrappedComponent);";
+  const appMount = legacyVue
+    ? "const mountPoint = document.createElement('div');\n    container.appendChild(mountPoint);\n    app.$mount(mountPoint);"
+    : "app.mount(container);";
 
   return `
 ${cssImportStatements}
 ${setupImport}
-import { createApp, h } from 'vue';
+${vueImport}
 import * as artModule from ${artModuleIdLiteral};
 
 const container = document.getElementById('app');
@@ -250,18 +321,14 @@ async function mount() {
       throw new Error('Variant component ' + ${variantComponentNameLiteral} + ' not found');
     }
 
-    const WrappedComponent = {
-      render() {
-        return h(VariantComponent, propsOverride);
-      }
-    };
+    ${wrappedComponent}
 
-    const app = createApp(WrappedComponent);
+    ${appCreate}
     ensureArtStyles(artModule.__styles__);
     ${setupCall}
     container.innerHTML = '';
     container.className = 'musea-variant';
-    app.mount(container);
+    ${appMount}
     console.log('[musea-preview] Mounted variant with props override:', ${variantNameLiteral});
     __museaInitAddons(container, ${variantNameLiteral}, ${actionEvents});
   } catch (error) {

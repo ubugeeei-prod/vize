@@ -9,8 +9,9 @@ import path from "node:path";
 import type { ModuleNode } from "vite";
 
 import type { ArtFileInfo } from "../types/index.js";
+import type { MuseaVueVersion } from "../types/plugin.js";
 
-import { generateGalleryModule } from "../gallery/index.js";
+import { generateGalleryModule } from "../gallery/module.js";
 import { generatePreviewModule } from "../preview/index.js";
 import { generateManifestModule } from "../manifest.js";
 import { generateArtModule } from "../art-module.js";
@@ -34,6 +35,7 @@ export interface VirtualModuleState {
   resolvedPreviewSetup: string | null;
   getConfigRoot: () => string;
   getScanRoots: () => string[];
+  getVueVersion: () => MuseaVueVersion | undefined;
   getServer: () => {
     moduleGraph: { getModulesByFile(id: string): Set<ModuleNode> | undefined };
   } | null;
@@ -104,6 +106,7 @@ export function createLoad(state: VirtualModuleState) {
             variantName,
             state.resolvedPreviewCss,
             state.resolvedPreviewSetup,
+            state.getVueVersion(),
           );
         }
       }

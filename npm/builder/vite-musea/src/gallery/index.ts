@@ -8,8 +8,9 @@
 import { generateGalleryStyles } from "./styles.js";
 import { generateGalleryBody, generateGalleryScript } from "./template.js";
 import { generateGalleryGlobalsScript } from "./globals.js";
-import { serializeScriptValue } from "../security.js";
 import type { MuseaTokenPreviewConfig } from "../tokens/preview.js";
+
+export { generateGalleryModule } from "./module.js";
 
 /**
  * Generate the inline gallery HTML page.
@@ -42,17 +43,4 @@ export function generateGalleryHtml(
   </script>
 </body>
 </html>`;
-}
-
-/**
- * Generate the virtual gallery module code.
- */
-export function generateGalleryModule(basePath: string): string {
-  return `
-export const basePath = ${serializeScriptValue(basePath)};
-export async function loadArts() {
-  const res = await fetch(basePath + '/api/arts');
-  return res.json();
-}
-`;
 }

@@ -14,11 +14,7 @@ export function assertStaticPreviewRuntimeSupported(
   staticBuildEnabled: boolean,
 ): void {
   if (!staticBuildEnabled) return;
-  if (vueVersion === 3 || vueVersion === undefined) return;
-
-  throw new Error(
-    "[musea] Static Musea builds currently require the Vue 3 preview runtime. Vue 2/Nuxt 2 projects should use the dev gallery or run Nuxt static generation with @vizejs/nuxt until a Vue 2 static preview runtime is available.",
-  );
+  if (vueVersion === undefined) return;
 }
 
 function hasLegacyVueSfcCompilerPlugin(plugins: readonly Pick<{ name?: string }, "name">[]) {

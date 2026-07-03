@@ -146,7 +146,6 @@ export interface MuseaOptions {
 
   /**
    * Host Vue version for preview runtime compatibility checks.
-   * Legacy Vue static builds currently fail fast with an actionable diagnostic.
    * @default 3
    */
   vueVersion?: MuseaVueVersion;
