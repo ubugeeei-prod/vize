@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import type { Writable } from "node:stream";
 
 import { getLintTargets } from "./cli/args.js";
-import { collectVueFilesFromTargets } from "./cli/files.js";
+import { collectVueLikeFilesFromTargets } from "./cli/files.js";
 import { resolveOxlintCliEntrypoint } from "./cli/oxlint.js";
 import { rewriteReportedPaths } from "./cli/output.js";
 import { prepareScriptlessWorkaroundFiles } from "./cli/workaround-files.js";
@@ -11,7 +11,7 @@ async function main(): Promise<void> {
   const cwd = process.cwd();
   const forwardedArgs = process.argv.slice(2);
   const targets = getLintTargets(forwardedArgs);
-  const lintFiles = collectVueFilesFromTargets(cwd, targets);
+  const lintFiles = collectVueLikeFilesFromTargets(cwd, targets);
   const prepared = prepareScriptlessWorkaroundFiles(cwd, lintFiles);
   const oxlintEntrypoint = resolveOxlintCliEntrypoint(cwd);
   const args = [oxlintEntrypoint, ...forwardedArgs, ...prepared.appendedArgs];

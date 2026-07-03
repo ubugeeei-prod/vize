@@ -8,6 +8,7 @@ mod imports;
 mod imports_aliases;
 mod nuxt;
 mod path_cache;
+mod patterns;
 mod reporting;
 mod runner;
 mod tsconfig_inputs;
@@ -18,7 +19,7 @@ use std::path::PathBuf;
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
 pub struct CheckArgs {
-    /// Files or directories to type-check (`.vue`, `.ts`, `.tsx`, `.jsx`, `.d.ts`).
+    /// Files or directories to type-check (`.vue`, `.ts`, `.tsx`, `.mts`, `.cts`, `.jsx`, `.d.ts`).
     /// When omitted, `tsconfig.json` include/exclude/files are used if available.
     pub patterns: Vec<String>,
 

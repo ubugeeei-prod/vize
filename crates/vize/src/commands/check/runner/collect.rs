@@ -9,6 +9,7 @@ use glob::{MatchOptions, Pattern};
 use ignore::WalkBuilder;
 use vize_carton::{FxHashSet, String};
 
+use super::super::patterns::is_supported_check_file;
 use super::ignores::CheckIgnoreSet;
 
 const TARGET_DIR: &str = "target";
@@ -313,23 +314,6 @@ fn is_supported_collect_file(path: &Path, vue_only: bool, include_jsx: bool) -> 
         return path.extension().and_then(|extension| extension.to_str()) == Some("vue");
     }
     is_supported_check_file(path, include_jsx)
-}
-
-fn is_supported_check_file(path: &Path, include_jsx: bool) -> bool {
-    if path
-        .file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts"))
-    {
-        return true;
-    }
-
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| {
-            matches!(extension, "vue" | "ts" | "tsx" | "mts" | "cts")
-                || (include_jsx && extension == "jsx")
-        })
 }
 
 fn glob_match_options() -> MatchOptions {

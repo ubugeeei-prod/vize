@@ -4,6 +4,7 @@ use std::path::Path;
 
 use glob::MatchOptions;
 
+use super::super::patterns as check_patterns;
 use super::spec::GlobSpec;
 use super::{NODE_MODULES_DIR, TARGET_DIR, VIZE_CACHE_DIR};
 
@@ -115,20 +116,7 @@ pub(super) fn is_supported_check_file_with_options(
     path: &Path,
     options: SupportedFileOptions,
 ) -> bool {
-    if path
-        .file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts"))
-    {
-        return true;
-    }
-
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| {
-            matches!(extension, "vue" | "ts" | "tsx" | "mts" | "cts")
-                || (options.include_jsx && extension == "jsx")
-        })
+    check_patterns::is_supported_check_file(path, options.include_jsx)
 }
 
 pub(super) fn glob_match_options() -> MatchOptions {

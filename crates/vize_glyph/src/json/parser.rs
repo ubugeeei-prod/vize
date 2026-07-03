@@ -109,7 +109,7 @@ impl<'a> Parser<'a> {
             Some('t') => Ok(Node::Scalar(self.parse_keyword("true")?)),
             Some('f') => Ok(Node::Scalar(self.parse_keyword("false")?)),
             Some('n') => Ok(Node::Scalar(self.parse_keyword("null")?)),
-            Some('-' | '0'..='9') => Ok(Node::Scalar(self.parse_number())),
+            Some('-' | '0'..='9') => Ok(Node::Scalar(self.parse_number()?)),
             Some(c) => Err(json_error(cstr!("unexpected character '{c}'"))),
             None => Err(json_error("unexpected end of input")),
         }
@@ -285,7 +285,12 @@ impl<'a> Parser<'a> {
                                 }
                             }
                         }
-                        Some(c) => out.push(c),
+                        Some(c @ ('"' | '\\' | '/' | 'b' | 'f' | 'n' | 'r' | 't')) => {
+                            out.push(c);
+                        }
+                        Some(c) => {
+                            return Err(json_error(cstr!("invalid escape '\\{c}' in string")));
+                        }
                     }
                 }
                 Some(c) if (c as u32) < 0x20 => {
@@ -299,15 +304,59 @@ impl<'a> Parser<'a> {
     /// Scan a JSON number and copy it verbatim.
     ///
     /// JSON numbers are `-? (0 | [1-9][0-9]*) (. [0-9]+)? ([eE] [+-]? [0-9]+)?`.
-    /// We only reach this after the leading `-` or digit is confirmed, so we
-    /// consume greedily until the next non-number character.
-    fn parse_number(&mut self) -> String {
+    /// The formatter preserves the numeric token text, but still validates the
+    /// grammar so invalid JSON cannot be silently normalized into output.
+    fn parse_number(&mut self) -> Result<String, FormatError> {
         let mut out = String::default();
-        while let Some(c @ ('0'..='9' | '-' | '+' | '.' | 'e' | 'E')) = self.peek() {
+
+        if self.peek() == Some('-') {
+            out.push('-');
+            self.advance();
+        }
+
+        match self.peek() {
+            Some('0') => {
+                out.push('0');
+                self.advance();
+                if self.peek().is_some_and(|c| c.is_ascii_digit()) {
+                    return Err(json_error("leading zero in number"));
+                }
+            }
+            Some('1'..='9') => self.consume_digits(&mut out),
+            _ => return Err(json_error("expected digit in number")),
+        }
+
+        if self.peek() == Some('.') {
+            out.push('.');
+            self.advance();
+            if !self.peek().is_some_and(|c| c.is_ascii_digit()) {
+                return Err(json_error("expected digit after decimal point"));
+            }
+            self.consume_digits(&mut out);
+        }
+
+        if matches!(self.peek(), Some('e' | 'E')) {
+            if let Some(exponent) = self.advance() {
+                out.push(exponent);
+            }
+            if let Some(sign @ ('+' | '-')) = self.peek() {
+                out.push(sign);
+                self.advance();
+            }
+            if !self.peek().is_some_and(|c| c.is_ascii_digit()) {
+                return Err(json_error("expected digit in exponent"));
+            }
+            self.consume_digits(&mut out);
+        }
+
+        Ok(out)
+    }
+
+    fn consume_digits(&mut self, out: &mut String) {
+        while let Some(c @ '0'..='9') = self.peek() {
             out.push(c);
             self.advance();
         }
-        out
     }
 
     /// Consume and return an exact keyword (`true`, `false`, `null`).

@@ -55,8 +55,46 @@ fn escapes_required_string_characters() {
 }
 
 #[test]
+fn preserves_valid_number_tokens() {
+    let source = r#"{"ints":[0,-0,10],"fraction":1.25,"exp":6.02e+23,"small":1E-9}"#;
+    let result = format_json_source(source, &opts()).unwrap();
+    assert_eq!(
+        result.as_str(),
+        "{\n  \"ints\": [\n    0,\n    -0,\n    10\n  ],\n  \"fraction\": 1.25,\n  \"exp\": 6.02e+23,\n  \"small\": 1E-9\n}\n"
+    );
+}
+
+#[test]
 fn invalid_json_returns_error() {
     assert!(format_json_source("{\"a\":}", &opts()).is_err());
+}
+
+#[test]
+fn invalid_number_tokens_return_errors() {
+    for source in ["-", "01", "1.", "1e", "1e+", "[1e-]", r#"{"a":-}"#] {
+        assert!(
+            format_json_source(source, &opts()).is_err(),
+            "strict JSON should reject {source:?}"
+        );
+        assert!(
+            format_jsonc_source(source, &opts()).is_err(),
+            "JSONC should reject {source:?}"
+        );
+    }
+}
+
+#[test]
+fn invalid_string_escapes_return_errors() {
+    for source in [r#"{"a":"\x"}"#, r#"{"a":"\q"}"#, r#"{"a":"\u12g4"}"#] {
+        assert!(
+            format_json_source(source, &opts()).is_err(),
+            "strict JSON should reject {source:?}"
+        );
+        assert!(
+            format_jsonc_source(source, &opts()).is_err(),
+            "JSONC should reject {source:?}"
+        );
+    }
 }
 
 #[test]

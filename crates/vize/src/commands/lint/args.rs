@@ -4,23 +4,13 @@ use clap::Args;
 use std::path::PathBuf;
 use vize_carton::String;
 
+use super::patterns::LINT_DEFAULT_PATTERNS;
+
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
 pub struct LintArgs {
-    /// Glob pattern(s) to match .vue, standalone .html, .js, .ts, .jsx, or .tsx files
-    #[arg(default_values = [
-        "./**/*.vue",
-        "./**/*.html",
-        "./**/*.htm",
-        "./**/*.js",
-        "./**/*.mjs",
-        "./**/*.cjs",
-        "./**/*.ts",
-        "./**/*.mts",
-        "./**/*.cts",
-        "./**/*.jsx",
-        "./**/*.tsx"
-    ])]
+    /// Glob pattern(s) to match files supported by vize lint
+    #[arg(default_values = LINT_DEFAULT_PATTERNS)]
     pub patterns: Vec<String>,
 
     /// Automatically fix problems when diagnostics provide safe text edits

@@ -2,7 +2,7 @@ use glob::glob;
 use std::path::{Path, PathBuf};
 use vize_carton::String;
 
-use super::patterns::has_explicit_patterns;
+use super::patterns::{has_explicit_patterns, is_format_extension};
 use super::{FmtArgs, files::FmtPattern};
 use crate::config;
 
@@ -258,10 +258,5 @@ fn contains_glob_char(pattern: &str) -> bool {
 fn is_format_target(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| {
-            matches!(
-                extension,
-                "vue" | "jsx" | "tsx" | "js" | "mjs" | "cjs" | "ts" | "mts" | "cts"
-            )
-        })
+        .is_some_and(is_format_extension)
 }

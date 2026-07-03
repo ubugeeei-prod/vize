@@ -21,6 +21,7 @@ use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print
 use super::{
     CheckArgs,
     path_cache::CanonicalPathCache,
+    patterns::CHECK_INPUTS_DISPLAY,
     reporting::{JsonFileResult, JsonOutput},
     tsconfig_inputs::{
         TsconfigInputCache, collect_ambient_declaration_files, resolve_tsconfig_for_files,
@@ -195,7 +196,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             return;
         }
         eprintln!(
-            "No Vue, TypeScript, or JSX files found matching inputs: {:?}",
+            "No {CHECK_INPUTS_DISPLAY} files found matching inputs: {:?}",
             args.patterns
         );
         return;

@@ -3,6 +3,7 @@ use ignore::WalkBuilder;
 use std::path::{Path, PathBuf};
 
 use super::ignores::FmtIgnoreSet;
+use super::patterns::is_format_extension;
 
 const NODE_MODULES_DIR: &str = "node_modules";
 const VIZE_CACHE_DIR: &str = ".vize";
@@ -64,7 +65,8 @@ fn collect_walked_files(
 }
 
 fn should_include_format_file(path: &Path, ignore_set: Option<&FmtIgnoreSet>) -> bool {
-    is_format_target(path)
+    path.is_file()
+        && is_format_target(path)
         && !is_generated_path(path)
         && !ignore_set.is_some_and(|ignore_set| ignore_set.is_ignored(path))
 }
@@ -136,28 +138,6 @@ fn is_format_target(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
         .is_some_and(is_format_extension)
-}
-
-/// File extensions `vize fmt` knows how to format.
-fn is_format_extension(extension: &str) -> bool {
-    matches!(
-        extension,
-        "vue"
-            | "jsx"
-            | "tsx"
-            | "js"
-            | "mjs"
-            | "cjs"
-            | "ts"
-            | "mts"
-            | "cts"
-            | "json"
-            | "jsonc"
-            | "yaml"
-            | "yml"
-            | "md"
-            | "markdown"
-    )
 }
 
 #[inline]
@@ -275,6 +255,32 @@ mod tests {
                 src.join("types.d.ts"),
             ]
         );
+    }
+
+    #[test]
+    fn collect_files_ignores_supported_extension_directories() {
+        let root = unique_case_dir("format-extension-directories");
+        let src = root.join("src");
+        let component_dir = src.join("Directory.vue");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&component_dir).unwrap();
+        fs::write(src.join("App.vue"), "<template><div/></template>").unwrap();
+        fs::write(
+            component_dir.join("Nested.vue"),
+            "<template><div/></template>",
+        )
+        .unwrap();
+
+        let pattern = root.to_string_lossy().into_owned();
+        let glob_pattern = root.join("**/*.vue").to_string_lossy().into_owned();
+        let files_from_dir = collect_files(&[pattern], None);
+        let files_from_glob = collect_files(&[glob_pattern], None);
+        let _ = fs::remove_dir_all(&root);
+
+        let mut expected = vec![component_dir.join("Nested.vue"), src.join("App.vue")];
+        expected.sort();
+        assert_eq!(files_from_dir, expected);
+        assert_eq!(files_from_glob, expected);
     }
 
     #[test]

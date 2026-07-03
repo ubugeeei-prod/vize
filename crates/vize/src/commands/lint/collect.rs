@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use vize_carton::{FxHashSet, String};
 
 use super::LintArgs;
+use super::patterns::{is_lint_extension, is_plain_script_extension, is_standalone_html_extension};
 use crate::config;
 
 pub(super) struct LintIgnoreSet {
@@ -110,24 +111,21 @@ fn add_lint_file(
 }
 
 fn is_lintable_path(path: &Path) -> bool {
-    matches!(
-        path.extension().and_then(|extension| extension.to_str()),
-        Some("vue" | "html" | "htm" | "js" | "mjs" | "cjs" | "ts" | "mts" | "cts" | "jsx" | "tsx",)
-    )
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(is_lint_extension)
 }
 
 pub(super) fn is_standalone_html_path(path: &Path) -> bool {
-    matches!(
-        path.extension().and_then(|extension| extension.to_str()),
-        Some("html" | "htm")
-    )
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(is_standalone_html_extension)
 }
 
 pub(super) fn is_plain_script_path(path: &Path) -> bool {
-    matches!(
-        path.extension().and_then(|extension| extension.to_str()),
-        Some("js" | "mjs" | "cjs" | "ts" | "mts" | "cts")
-    )
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(is_plain_script_extension)
 }
 
 fn base_dir_from_lint_pattern(pattern: &str) -> PathBuf {

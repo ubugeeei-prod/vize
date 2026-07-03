@@ -12,12 +12,16 @@ fn workspace_root() -> PathBuf {
         .to_path_buf()
 }
 
-fn unique_case_dir(name: &str) -> PathBuf {
-    workspace_root()
+fn temp_case_dir(name: &str) -> tempfile::TempDir {
+    let base = workspace_root()
         .join("target")
         .join("vize-tests")
-        .join("tests")
-        .join(cstr!("check-canon-graphql-{name}-{}", std::process::id()).as_str())
+        .join("tests");
+    std::fs::create_dir_all(&base).expect("test base directory should be writable");
+    tempfile::Builder::new()
+        .prefix(&format!("check-canon-graphql-{name}-"))
+        .tempdir_in(base)
+        .expect("test case directory should be created")
 }
 
 fn resolve_test_corsa_path() -> Option<PathBuf> {
@@ -120,9 +124,8 @@ fn check_explicit_vue_keeps_generated_graphql_schema_out_of_canon() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
     };
-    let project_root = unique_case_dir("dedupe");
-    let _ = std::fs::remove_dir_all(&project_root);
-    std::fs::create_dir_all(&project_root).unwrap();
+    let project = temp_case_dir("dedupe");
+    let project_root = project.path();
     std::fs::create_dir_all(project_root.join("fragments")).unwrap();
     std::fs::create_dir_all(project_root.join("pages")).unwrap();
     link_workspace_vue(&project_root).unwrap();
@@ -212,8 +215,6 @@ void childComponents
             .join("node_modules/.vize/canon/types/codegen/schema.d.ts")
             .exists()
     );
-
-    let _ = std::fs::remove_dir_all(&project_root);
 }
 
 /// Regression for #2227/#2307: a `types/index.ts` barrel that re-exports a
@@ -228,8 +229,8 @@ fn check_barrel_reexport_preserves_generated_graphql_identity() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
     };
-    let project_root = unique_case_dir("barrel");
-    let _ = std::fs::remove_dir_all(&project_root);
+    let project = temp_case_dir("barrel");
+    let project_root = project.path();
     std::fs::create_dir_all(project_root.join("fragments")).unwrap();
     std::fs::create_dir_all(project_root.join("pages")).unwrap();
     std::fs::create_dir_all(project_root.join("types/codegen")).unwrap();
@@ -331,6 +332,4 @@ void childComponents
             .join("node_modules/.vize/canon/types/codegen/schema.d.ts")
             .exists()
     );
-
-    let _ = std::fs::remove_dir_all(&project_root);
 }

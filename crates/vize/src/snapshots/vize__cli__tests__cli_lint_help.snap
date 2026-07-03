@@ -1,0 +1,65 @@
+---
+source: crates/vize/src/cli.rs
+expression: "command_help(\"lint\")"
+---
+Lint Vue, HTML, JSX, and TSX files
+
+Usage: lint [OPTIONS] [PATTERNS]...
+
+Arguments:
+  [PATTERNS]...
+          Glob pattern(s) to match files supported by vize lint
+
+          [default: ./**/*.vue ./**/*.html ./**/*.htm ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx]
+
+Options:
+      --fix
+          Automatically fix problems when diagnostics provide safe text edits
+
+  -c, --config <CONFIG>
+          Config file path
+
+      --no-config
+          Do not load a config file
+
+  -f, --format <FORMAT>
+          Output format (text, ansi, plain, json, stylish, markdown, html, agent)
+
+          [default: text]
+
+      --max-warnings <MAX_WARNINGS>
+          Maximum number of warnings before failing
+
+  -q, --quiet
+          Quiet mode - only show summary
+
+      --help-level <HELP_LEVEL>
+          Help display level: full (default), short, none
+
+          [default: full]
+
+      --preset <PRESET>
+          Override the configured lint preset: ecosystem, happy-path, opinionated, essential, incremental, nuxt
+
+      --cross-file
+          Enable opt-in cross-file lint checks for provide/inject, reactivity flow, and race risks
+
+      --cross-file-tree
+          Print the provide/inject tree when cross-file lint is enabled
+
+      --type-aware
+          Enable native type-aware lint rules from the active lint configuration
+
+      --strict-reactivity
+          Enable opt-in type-aware reactivity-loss linting through the native checker
+
+      --profile
+          Show detailed timing profile
+
+      --slow-threshold <SLOW_THRESHOLD>
+          Slow file threshold in milliseconds for profile output
+
+          [default: 100]
+
+  -h, --help
+          Print help

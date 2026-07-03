@@ -1,21 +1,23 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { hasVueLikeExtension } from "../file-kinds.ts";
+
 const GLOB_PATTERN = /[*?[\]{}]/u;
 
-export function collectVueFilesFromTargets(cwd: string, targets: readonly string[]): string[] {
+export function collectVueLikeFilesFromTargets(cwd: string, targets: readonly string[]): string[] {
   const files = new Set<string>();
 
   for (const target of targets) {
-    for (const file of collectVueFilesFromTarget(cwd, target)) {
+    for (const file of collectVueLikeFilesFromTarget(cwd, target)) {
       files.add(file);
     }
   }
 
-  return [...files];
+  return [...files].sort();
 }
 
-function collectVueFilesFromTarget(cwd: string, target: string): string[] {
+function collectVueLikeFilesFromTarget(cwd: string, target: string): string[] {
   if (GLOB_PATTERN.test(target)) {
     return fs
       .globSync(target, {
@@ -44,9 +46,17 @@ function collectVueFilesFromTarget(cwd: string, target: string): string[] {
       .filter(isSupportedLintFile);
   }
 
-  return isSupportedLintFile(absoluteTarget) ? [absoluteTarget] : [];
+  return stat.isFile() && hasVueLikeExtension(absoluteTarget) ? [absoluteTarget] : [];
 }
 
 function isSupportedLintFile(filename: string): boolean {
-  return filename.endsWith(".vue") || filename.endsWith(".html") || filename.endsWith(".htm");
+  if (!hasVueLikeExtension(filename)) {
+    return false;
+  }
+
+  try {
+    return fs.statSync(filename).isFile();
+  } catch {
+    return false;
+  }
 }

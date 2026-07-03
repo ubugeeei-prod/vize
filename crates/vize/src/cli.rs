@@ -132,6 +132,11 @@ mod tests {
         insta::assert_snapshot!("cli_check_help", command_help("check"));
     }
 
+    #[test]
+    fn lint_help_snapshot() {
+        insta::assert_snapshot!("cli_lint_help", command_help("lint"));
+    }
+
     #[cfg(feature = "glyph")]
     #[test]
     fn ready_help_snapshot() {

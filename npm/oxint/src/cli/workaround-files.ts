@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { isStandaloneHtmlFile } from "../file-kinds.js";
 import { hasScriptLikeBlock, appendScriptlessWorkaround } from "../workaround.js";
 
 export interface PreparedWorkaroundFiles {
@@ -104,10 +105,6 @@ function isIgnorableRemoveDirError(error: unknown): boolean {
 
 function toCliPath(filename: string): string {
   return filename.split(path.sep).join("/");
-}
-
-function isStandaloneHtmlFile(filename: string): boolean {
-  return filename.endsWith(".html") || filename.endsWith(".htm");
 }
 
 function registerPathReplacementVariants(

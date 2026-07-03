@@ -8,7 +8,7 @@ Usage: fmt [OPTIONS] [PATTERNS]...
 
 Arguments:
   [PATTERNS]...
-          Glob pattern(s) to match .vue, .js, .ts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, and .markdown files
+          Glob pattern(s) to match files supported by vize fmt
 
           [default: ./**/*.vue ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx ./**/*.json ./**/*.jsonc ./**/*.yaml ./**/*.yml ./**/*.md ./**/*.markdown]
 

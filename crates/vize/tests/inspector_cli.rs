@@ -1,4 +1,7 @@
-use std::{fs, process::Command};
+use std::{
+    fs,
+    process::{Command, Stdio},
+};
 
 #[test]
 fn inspector_json_supports_single_file_payloads() {
@@ -325,6 +328,8 @@ require.resolve('vue/compiler-sfc');\n";
     Command::new("node")
         .current_dir(workspace_root)
         .args(["--input-type=module", "-e", script])
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
         .status()
         .is_ok_and(|status| status.success())
 }

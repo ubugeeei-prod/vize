@@ -84,6 +84,29 @@ const ignored = true
 }
 
 #[test]
+fn lint_reports_all_supported_extensions_when_patterns_match_no_files() {
+    let project_root = temp_project_dir("no-matching-files");
+    fs::create_dir_all(&project_root).unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["lint", "--no-config", "src/**/*.nothing"])
+        .output()
+        .unwrap();
+
+    assert!(output.status.success(), "{}", output_details(&output));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains(
+            "No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx files found"
+        ),
+        "{stderr}"
+    );
+
+    let _ = fs::remove_dir_all(project_root);
+}
+
+#[test]
 fn lint_uses_entry_preset_unless_cli_preset_overrides() {
     let project_root = temp_project_dir("entry-preset");
     write_project_file(

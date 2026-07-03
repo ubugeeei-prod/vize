@@ -1,6 +1,7 @@
 import type { Context } from "@oxlint/plugins";
 
 import type { HelpLevel, PatinaPreset, PatinaSettings } from "./model.js";
+export { isVueLikeFile } from "./file-kinds.js";
 
 const HELP_LEVELS = new Set<HelpLevel>(["none", "short", "full"]);
 const TYPE_AWARE_RULE_PREFIX = "type/";
@@ -20,10 +21,6 @@ const PRESET_ALIASES = new Map<string, PatinaPreset>([
   ["all", "opinionated"],
   ["nuxt", "nuxt"],
 ]);
-
-export function isVueLikeFile(filename: string): boolean {
-  return filename.endsWith(".vue") || filename.endsWith(".html") || filename.endsWith(".htm");
-}
 
 export function getVizeSettings(context: Context): PatinaSettings {
   const settings = context.settings as Record<string, unknown>;

@@ -29,12 +29,12 @@ mod patterns;
 
 pub(crate) use files::collect_files;
 use ignores::load_fmt_ignore_set;
-use patterns::default_fmt_patterns;
+use patterns::{FORMAT_EXTENSIONS_DISPLAY, default_fmt_patterns};
 
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
 pub struct FmtArgs {
-    /// Glob pattern(s) to match .vue, .js, .ts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, and .markdown files
+    /// Glob pattern(s) to match files supported by vize fmt
     #[arg(default_values_t = default_fmt_patterns())]
     pub patterns: Vec<String>,
 
@@ -116,7 +116,7 @@ pub fn run(args: FmtArgs) {
     let collect_time = collect_start.elapsed();
 
     if files.is_empty() {
-        eprintln!("No .vue, .js, .ts, .jsx, .tsx, or .json files found matching the patterns");
+        eprintln!("No {FORMAT_EXTENSIONS_DISPLAY} files found matching the patterns");
         if patterns.explicit {
             std::process::exit(1);
         }
