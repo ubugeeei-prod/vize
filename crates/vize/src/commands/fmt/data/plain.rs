@@ -64,16 +64,16 @@ fn normalize_yaml(source: &str) -> String {
 fn normalize_markdown(source: &str) -> String {
     let lf = to_lf(source);
     let mut out = String::with_capacity(lf.len());
-    let mut fence: Option<char> = None;
+    let mut fence: Option<FenceMarker> = None;
     for (index, line) in lf.split('\n').enumerate() {
         if index > 0 {
             out.push('\n');
         }
         let stripped = line.trim_start();
-        let fence_char = fence_marker(stripped);
-        if let Some(marker) = fence_char {
+        let marker = fence_marker(stripped);
+        if let Some(marker) = marker {
             match fence {
-                Some(open) if open == marker => fence = None,
+                Some(open) if marker.closes(open) => fence = None,
                 None => fence = Some(marker),
                 Some(_) => {}
             }
@@ -87,12 +87,31 @@ fn normalize_markdown(source: &str) -> String {
     ensure_final_newline(out)
 }
 
-/// The fence character if `stripped` opens/closes a fenced code block.
-fn fence_marker(stripped: &str) -> Option<char> {
-    if stripped.starts_with("```") {
-        Some('`')
-    } else if stripped.starts_with("~~~") {
-        Some('~')
+#[derive(Clone, Copy)]
+struct FenceMarker {
+    ch: char,
+    len: usize,
+}
+
+impl FenceMarker {
+    fn closes(self, open: Self) -> bool {
+        self.ch == open.ch && self.len >= open.len
+    }
+}
+
+/// The fence marker if `stripped` opens/closes a fenced code block.
+fn fence_marker(stripped: &str) -> Option<FenceMarker> {
+    let ch = match stripped.as_bytes().first().copied()? {
+        b'`' => '`',
+        b'~' => '~',
+        _ => return None,
+    };
+    let len = stripped
+        .chars()
+        .take_while(|candidate| *candidate == ch)
+        .count();
+    if len >= 3 {
+        Some(FenceMarker { ch, len })
     } else {
         None
     }
