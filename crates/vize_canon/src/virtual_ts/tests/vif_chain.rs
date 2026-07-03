@@ -34,3 +34,49 @@ const navItems: Item[] = []
         output.code
     );
 }
+
+#[test]
+fn test_v_for_enclosing_guard_does_not_reference_own_alias() {
+    let script = r#"type GuidanceTest =
+  | { testResult: 'Pass'; retestFlag: boolean; passOnly: string }
+  | { testResult: 'Fail'; retestFlag?: false; reason: string }
+type AimAtReport =
+  | { kind: 'summary'; title: string }
+  | { kind: 'history'; title: string; guidanceTests: GuidanceTest[] }
+const aimAtReports: AimAtReport[] = []
+"#;
+    let template = r#"<template v-for="aimAtReport in aimAtReports">
+  <template v-if="aimAtReport.kind === 'summary'">
+    <span>{{ aimAtReport.title }}</span>
+  </template>
+  <template v-else>
+    <template v-for="guidanceTest in aimAtReport.guidanceTests">
+      <span v-if="guidanceTest.retestFlag">{{ aimAtReport.title }}</span>
+      <span v-if="guidanceTest.testResult === 'Pass'">{{ guidanceTest.passOnly }}</span>
+    </template>
+  </template>
+</template>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    assert!(
+        output
+            .code
+            .contains("__vForList(aimAtReports).forEach(([aimAtReport]) => {"),
+        "expected parent v-for to declare aimAtReport before branch guards:\n{}",
+        output.code
+    );
+    assert!(
+        !output.code.contains("if ((aimAtReport.kind === 'summary')) {\n\n    // v-for scope: aimAtReport in aimAtReports"),
+        "v-for enclosing guard must not reference its own alias before declaration:\n{}",
+        output.code
+    );
+}

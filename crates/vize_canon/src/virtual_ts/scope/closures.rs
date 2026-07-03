@@ -25,7 +25,7 @@ use super::emit::{
 };
 use super::event_handler::generate_event_handler_expressions;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
-use super::vif_guard::common_vif_guard_prefix;
+use super::vif_guard::common_vif_guard_prefix_outside_v_for_scope;
 
 /// Generate scope closures from Croquis scope chain.
 /// Uses recursive tree-based generation so nested v-for/v-slot scopes
@@ -86,7 +86,9 @@ pub(crate) fn generate_scope_closures(
                         let scope_id = scope.id.as_u32();
                         expressions_by_scope
                             .get(&scope_id)
-                            .and_then(|exprs| common_vif_guard_prefix(exprs))
+                            .and_then(|exprs| {
+                                common_vif_guard_prefix_outside_v_for_scope(exprs, scope)
+                            })
                             .map(|guard| (scope_id, guard))
                     })
                     .collect()
@@ -236,7 +238,7 @@ fn generate_scope_node(
                 .expressions_by_scope
                 .get(&scope_id)
                 .filter(|_| ctx.check_options.check_template_bindings)
-                .and_then(|exprs| common_vif_guard_prefix(exprs));
+                .and_then(|exprs| common_vif_guard_prefix_outside_v_for_scope(exprs, scope));
             let enclosing_guard = enclosing_guard.as_deref();
             let (loop_indent, vfor_inner_indent) = if enclosing_guard.is_some() {
                 (cstr!("{indent}  "), cstr!("{inner_indent}  "))

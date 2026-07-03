@@ -22,6 +22,7 @@ use super::context::{ComponentPropsContext, VForPropsContext};
 use super::emit::{
     append_v_for_comment, emit_slot_function_open, emit_v_for_loop_open, slot_props_type,
 };
+use super::vif_guard::common_vif_guard_prefix_for_guards_outside_v_for;
 
 /// Generate component props type checks (scope-aware).
 /// Type declarations are at template level, value checks are in their scope.
@@ -157,6 +158,30 @@ pub(super) fn generate_component_props(
         .map(|s| s.id.as_u32())
         .collect();
 
+    let vfor_enclosing_guards: FxHashMap<u32, String> = summary
+        .scopes
+        .iter()
+        .filter(|scope| matches!(scope.kind, ScopeKind::VFor))
+        .filter_map(|scope| {
+            let scope_id = scope.id.as_u32();
+            let ScopeData::VFor(data) = scope.data() else {
+                return None;
+            };
+            ctx.vfor_enclosing_guards
+                .get(&scope_id)
+                .map(|guard| (scope_id, guard.clone()))
+                .or_else(|| {
+                    let usages = components_by_scope.get(&scope_id)?;
+                    let mut guards = Vec::new();
+                    for (_, usage) in usages {
+                        guards.push(usage.vif_guard.as_ref()?.as_str());
+                    }
+                    common_vif_guard_prefix_for_guards_outside_v_for(guards.as_slice(), data)
+                        .map(|guard| (scope_id, guard))
+                })
+        })
+        .collect();
+
     ts.push_str("\n  // Component props value checks (template scope)\n");
     for &(idx, usage) in &checkable_usages {
         if closure_scope_ids.contains(&usage.scope_id.as_u32()) {
@@ -189,7 +214,7 @@ pub(super) fn generate_component_props(
             summary,
             components_by_scope: &components_by_scope,
             children_map: ctx.children_map,
-            vfor_enclosing_guards: ctx.vfor_enclosing_guards,
+            vfor_enclosing_guards: &vfor_enclosing_guards,
             template_prop_names: ctx.template_prop_names,
             template_offset: ctx.template_offset,
         };
