@@ -242,8 +242,7 @@ pub(super) fn virtual_ts_options_for_descriptor(
         })
         .collect();
     let css_modules = if css_modules.is_empty() {
-        // No `<style module>` blocks: reuse the global css_modules (typically
-        // also empty) rather than the freshly collected empty Vec.
+        // No `<style module>` blocks: reuse the global css_modules.
         base.css_modules.clone()
     } else {
         css_modules

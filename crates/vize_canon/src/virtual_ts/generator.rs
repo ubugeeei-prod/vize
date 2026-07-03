@@ -43,7 +43,10 @@ use super::{
         extract_generic_names, strip_const_modifiers,
     },
     scope::{ScopeGenerationOptions, generate_scope_closures},
-    types::{VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput, VizeMapping},
+    types::{
+        DEFAULT_LIB_REFERENCES, VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput,
+        VizeMapping, emit_lib_reference_directives,
+    },
 };
 use vize_carton::{FxHashMap, FxHashSet, String, append, cstr, profile};
 use vize_croquis::{Croquis, ScopeData, ScopeKind};
@@ -147,11 +150,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         "Reference setup bindings (used in template/CSS v-bind)"
     };
 
-    // Header with ES target library references.
-    // These ensure import.meta, Promise, Array.includes(), etc. are available.
-    ts.push_str("/// <reference lib=\"es2022\" />\n");
-    ts.push_str("/// <reference lib=\"dom\" />\n");
-    ts.push_str("/// <reference lib=\"dom.iterable\" />\n");
+    let lib_references = generation_options
+        .lib_references
+        .unwrap_or(DEFAULT_LIB_REFERENCES);
+    emit_lib_reference_directives(&mut ts, lib_references);
     let has_script_reference_types = emit_reference_type_directives(&mut ts, script_content);
     ts.push_str("// ============================================\n");
     ts.push_str("// Virtual TypeScript for Vue SFC Type Checking\n");

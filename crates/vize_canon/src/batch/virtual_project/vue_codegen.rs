@@ -213,6 +213,7 @@ pub(super) fn generate_vue_virtual_ts(
                     TemplateSyntaxMode::Quirks
                 ),
                 hoist_shared_preamble,
+                lib_references: None,
             },
         )
     );

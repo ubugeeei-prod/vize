@@ -31,3 +31,26 @@ pub use helpers::{DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_
 pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping};
 #[cfg(any(test, feature = "native"))]
 pub(crate) use types::{VirtualTsCheckOptions, VirtualTsGenerationOptions};
+
+pub fn generate_virtual_ts_with_offsets_and_lib_references(
+    summary: &vize_croquis::Croquis,
+    script_content: Option<&str>,
+    template_ast: Option<&vize_relief::RootNode<'_>>,
+    script_offset: u32,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+    lib_references: &[&str],
+) -> VirtualTsOutput {
+    generator::generate_virtual_ts_with_offsets_and_checks(
+        summary,
+        script_content,
+        template_ast,
+        script_offset,
+        template_offset,
+        options,
+        types::VirtualTsGenerationOptions {
+            lib_references: Some(lib_references),
+            ..Default::default()
+        },
+    )
+}

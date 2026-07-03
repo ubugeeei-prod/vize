@@ -81,6 +81,25 @@ impl Default for VirtualTsOptions {
     }
 }
 
+pub(crate) const DEFAULT_LIB_REFERENCES: &[&str] = &["es2022", "dom", "dom.iterable"];
+
+pub(crate) fn emit_lib_reference_directives(output: &mut String, lib_references: &[&str]) {
+    for lib in lib_references {
+        let lib = lib.trim();
+        if lib.is_empty() || !is_safe_ts_lib_reference(lib) {
+            continue;
+        }
+        output.push_str("/// <reference lib=\"");
+        output.push_str(lib);
+        output.push_str("\" />\n");
+    }
+}
+
+pub(crate) fn is_safe_ts_lib_reference(lib: &str) -> bool {
+    lib.bytes()
+        .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'-' | b'_'))
+}
+
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct VirtualTsCheckOptions {
     pub(crate) check_props: bool,
@@ -134,6 +153,8 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     /// TypeScript program. Off by default so standalone single-document
     /// consumers keep self-contained output.
     pub(crate) hoist_shared_preamble: bool,
+    /// Override standard library triple-slash references for this generation.
+    pub(crate) lib_references: Option<&'a [&'a str]>,
 }
 
 /// Default plugin globals.
@@ -141,6 +162,23 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
 /// or `typeChecker.globalsFile`.
 fn default_plugin_globals() -> Vec<TemplateGlobal> {
     vec![]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::emit_lib_reference_directives;
+    use vize_carton::String;
+
+    #[test]
+    fn virtual_ts_lib_references_are_pluggable() {
+        let mut output = String::default();
+        emit_lib_reference_directives(&mut output, &["es2021", "webworker", "bad\" />"]);
+
+        assert_eq!(
+            output.as_str(),
+            "/// <reference lib=\"es2021\" />\n/// <reference lib=\"webworker\" />\n"
+        );
+    }
 }
 
 /// Output of virtual TypeScript generation.
