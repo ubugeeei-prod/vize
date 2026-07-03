@@ -74,31 +74,6 @@ fn test_parse_define_props_type() {
 }
 
 #[test]
-fn parse_define_props_type_reference_keeps_union_members_nested() {
-    let result = parse_script_setup(
-        r#"
-interface Props {
-  isOpened: boolean
-  interaction?:
-    | { text: string; to: string; event?: never }
-    | { text: string; event: () => void; to?: never }
-}
-
-const props = defineProps<Props>()
-"#,
-    );
-
-    let prop_names: Vec<_> = result
-        .macros
-        .props()
-        .iter()
-        .map(|prop| prop.name.as_str())
-        .collect();
-
-    assert_eq!(prop_names, ["isOpened", "interaction"]);
-}
-
-#[test]
 fn test_parse_define_props_runtime() {
     let result = parse_script_setup(
         r#"

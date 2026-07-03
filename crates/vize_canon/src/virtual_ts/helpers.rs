@@ -384,9 +384,6 @@ pub(crate) fn get_dom_event_type(event_name: &str) -> &'static str {
         "dblclick" | "mousedown" | "mouseup" | "mousemove" | "mouseenter" | "mouseleave"
         | "mouseover" | "mouseout" => "MouseEvent",
 
-        // Pointer events
-        // `click`/`auxclick`/`contextmenu` are PointerEvent in Vue's runtime
-        // DOM event map.
         "click" | "auxclick" | "contextmenu" | "pointerdown" | "pointerup" | "pointermove"
         | "pointerenter" | "pointerleave" | "pointerover" | "pointerout" | "pointercancel"
         | "gotpointercapture" | "lostpointercapture" => "PointerEvent",

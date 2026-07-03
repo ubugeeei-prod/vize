@@ -1,4 +1,5 @@
 mod anchors;
+mod component_export;
 mod emits;
 mod generics;
 mod imports;
@@ -12,6 +13,7 @@ mod setup_props;
 mod spans;
 mod template_refs;
 use self::anchors::emit_setup_binding_anchors;
+use self::component_export::emit_default_export_declaration;
 use self::emits::{emit_emit_props_helper, emit_emits_type};
 use self::generics::{generic_injection_point, references_any_identifier};
 use self::imports::{
@@ -972,17 +974,15 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         "type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;\n",
     );
     if let Some((generic_decl, generic_names)) = &generic_component_params {
+        let emit_props_field = if emits_info.has_emits_for_props {
+            " & __EmitProps<Emits>"
+        } else {
+            ""
+        };
         append!(
             ts,
-            "type __VizeGenericComponentConstructor = new <{generic_decl}>(...args: any[]) => {{\n"
+            "type __VizeGenericComponentConstructor = new <{generic_decl}>(...args: any[]) => {{\n  $props: __VizeComponentProps<Props<{generic_names}>>{emit_props_field};\n  $emit: __EmitFn<Emits>;\n  $slots: Slots;\n"
         );
-        append!(ts, "  $props: __VizeComponentProps<Props<{generic_names}>>");
-        if emits_info.has_emits_for_props {
-            ts.push_str(" & __EmitProps<Emits>");
-        }
-        ts.push_str(";\n");
-        ts.push_str("  $emit: __EmitFn<Emits>;\n");
-        ts.push_str("  $slots: Slots;\n");
         ts.push_str(instance_suffix(legacy_vue2, dialect, has_exposed_type));
     }
     ts.push_str("type __VizeVueComponentOptions = {\n");
@@ -1009,36 +1009,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ts.push_str("  __isKeepAlive?: boolean;\n");
     ts.push_str("  __isBuiltIn?: boolean;\n");
     ts.push_str("};\n");
-    // For a `<script setup generic="...">` component the construct signature's
-    // `$props` collapses `Props<T>` to its constraint, so a parent that extracts
-    // props via `typeof Comp extends { new (): { $props } }` cannot infer `T`
-    // from the passed prop values. Expose a generic functional prop-checker on
-    // the default export so the parent can invoke it with the assembled props
-    // object and let TypeScript infer `T` from the call (see #775). Non-generic
-    // components keep the plain construct signature unchanged.
-    let emit_props_static = emits_info.static_emit_props_field();
-    if let Some((generic_decl, generic_names)) = &generic_component_params {
-        let emit_props_resolver =
-            emits_info.generic_emit_props_resolver_field(generic_decl, generic_names.as_str());
-        let emit_props_separator = if emit_props_resolver.is_empty() {
-            ""
-        } else {
-            " "
-        };
-        append!(
-            ts,
-            "declare const __vize_component__: __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; {emit_props_static}{emit_props_separator}{emit_props_resolver} }};\n",
-        );
-    } else if emits_info.has_emits_for_props {
-        append!(
-            ts,
-            "declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions & {{ {emit_props_static} }};\n",
-        );
-    } else {
-        ts.push_str(
-            "declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions;\n",
-        );
-    }
+    emit_default_export_declaration(
+        &mut ts,
+        &emits_info,
+        generic_component_params
+            .as_ref()
+            .map(|(decl, names)| (decl.as_str(), names.as_str())),
+    );
     ts.push_str("export default __vize_component__;\n");
 
     VirtualTsOutput { code: ts, mappings }

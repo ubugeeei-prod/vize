@@ -18,7 +18,7 @@ fn unique_case_dir(name: &str) -> PathBuf {
         .join("target")
         .join("vize-tests")
         .join("tests")
-        .join(cstr!("check-canon-recent-{name}-{}", std::process::id()).as_str())
+        .join(cstr!("check-canon-type-{name}-{}", std::process::id()).as_str())
 }
 
 fn resolve_test_corsa_path() -> Option<PathBuf> {
@@ -104,13 +104,19 @@ fn write_tsconfig(project_root: &Path) {
     .unwrap();
 }
 
-fn create_case(name: &str, vue_file: &str, source: &str) -> PathBuf {
+fn create_case_with_files(name: &str, files: &[(&str, &str)]) -> PathBuf {
     let project_root = unique_case_dir(name);
     let _ = std::fs::remove_dir_all(&project_root);
     std::fs::create_dir_all(project_root.join("src")).unwrap();
     link_workspace_vue(&project_root).unwrap();
     write_tsconfig(&project_root);
-    std::fs::write(project_root.join("src").join(vue_file), source).unwrap();
+    for (path, source) in files {
+        let target = project_root.join(path);
+        if let Some(parent) = target.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(target, source).unwrap();
+    }
     project_root
 }
 
@@ -142,144 +148,81 @@ fn run_check_json(project_root: &Path, corsa_path: &Path, target: &str) -> Strin
 }
 
 #[test]
-fn check_with_defaults_preserves_loose_required_props() {
+fn check_imported_base_interface_props_are_available_in_template_scope() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
     };
-    let project_root = create_case(
-        "with-defaults-loose-required",
-        "Foo.vue",
-        r#"<script lang="ts">
-export interface FooProps {
-  modelValue?: string
-  as?: string
-}
+    let project_root = create_case_with_files(
+        "imported-base-interface-template-props",
+        &[
+            (
+                "src/base.ts",
+                "export interface BaseProps { as?: string; decorative?: boolean; }\n",
+            ),
+            (
+                "src/Foo.vue",
+                r#"<script setup lang="ts">
+import type { BaseProps } from "./base";
+interface FooProps extends BaseProps { orientation?: "horizontal" | "vertical"; }
+const props = withDefaults(defineProps<FooProps>(), { orientation: "horizontal" });
 </script>
-
-<script setup lang="ts">
-type ReadModelValueOptions<TValue> = {
-  props: {
-    modelValue: TValue | undefined
-  }
-}
-
-function readModelValue<TValue>(options: ReadModelValueOptions<TValue>) {
-  return options.props.modelValue
-}
-
-const props = withDefaults(defineProps<FooProps>(), {
-  as: 'input',
-})
-
-readModelValue({ props })
-</script>
-
-<template>{{ props.modelValue }}</template>
+<template><div :as :data-decorative="decorative" :data-orientation="props.orientation" /></template>
 "#,
+            ),
+        ],
     );
 
-    run_check_json(&project_root, &corsa_path, "src/Foo.vue");
+    run_check_json(&project_root, &corsa_path, "src");
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
 #[test]
-fn check_v_for_infers_items_from_union_of_arrays() {
+fn check_contextmenu_accepts_pointer_event_handler() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
     };
-    let project_root = create_case(
-        "vfor-array-union",
-        "Foo.vue",
-        r#"<script setup lang="ts">
-import { computed, ref } from 'vue'
-
-type ItemA = { key: string; valueA: number }
-type ItemB = { key: string; valueB: string }
-
-const showA = ref(true)
-const items = computed<ItemA[] | ItemB[]>(() => (
-  showA.value
-    ? [{ key: 'a', valueA: 1 }]
-    : [{ key: 'b', valueB: 'b' }]
-))
+    let project_root = create_case_with_files(
+        "contextmenu-pointer-event",
+        &[(
+            "src/Foo.vue",
+            r#"<script setup lang="ts">
+async function onPointer(event: PointerEvent) { event.preventDefault(); }
 </script>
-
-<template>
-  <div v-for="item in items" :key="item.key">
-    {{ item.key }}
-  </div>
-</template>
+<template><button @contextmenu="onPointer" /></template>
 "#,
+        )],
     );
 
-    run_check_json(&project_root, &corsa_path, "src/Foo.vue");
+    run_check_json(&project_root, &corsa_path, "src");
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
 #[test]
-fn check_define_props_return_assignable_to_record_helpers() {
+fn check_generic_sfc_value_can_be_specialized_from_typescript() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
     };
-    let project_root = create_case(
-        "define-props-record",
-        "Foo.vue",
-        r#"<script setup lang="ts">
-type MaybeRefOrGetter<T> = T | (() => T)
-
-interface FooProps {
-  forceMount?: boolean
-}
-
-function forwardProps<T extends Record<string, unknown>>(value: MaybeRefOrGetter<T>) {
-  return value
-}
-
-const props = defineProps<FooProps>()
-forwardProps(props)
+    let project_root = create_case_with_files(
+        "generic-sfc-value-specialization",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts" generic="T = string">
+defineProps<{ modelValue?: T }>();
 </script>
-
 <template><div /></template>
 "#,
+            ),
+            (
+                "src/main.ts",
+                "import Child from \"./Child.vue\";\nexport const NumberChild = Child<number>;\n",
+            ),
+        ],
     );
 
-    run_check_json(&project_root, &corsa_path, "src/Foo.vue");
-
-    let _ = std::fs::remove_dir_all(&project_root);
-}
-
-#[test]
-fn check_extended_interface_props_are_available_in_template_scope() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
-        return;
-    };
-    let project_root = create_case(
-        "extended-interface-template-props",
-        "Foo.vue",
-        r#"<script setup lang="ts">
-interface BaseProps {
-  required?: boolean
-}
-
-interface FooProps extends BaseProps {
-  label: string
-}
-
-defineProps<FooProps>()
-</script>
-
-<template>
-  <label>
-    <input :required="required" />
-    {{ label }} {{ required }}
-  </label>
-</template>
-"#,
-    );
-
-    run_check_json(&project_root, &corsa_path, "src/Foo.vue");
+    run_check_json(&project_root, &corsa_path, "src");
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

@@ -434,19 +434,17 @@ pub(crate) fn generate_props_variables(
             let type_properties = summary
                 .types
                 .extract_properties(type_reference_lookup_key(type_name));
-            if !type_properties.is_empty() {
-                for prop in &type_properties {
-                    if should_skip_template_prop_binding(summary, prop.name.as_str()) {
-                        continue;
-                    }
-                    emit_template_prop_binding(
-                        ts,
-                        template_props_type_ref.as_str(),
-                        prop.name.as_str(),
-                        defaulted_prop_names.contains(&prop.name),
-                    );
-                    emitted_names.insert(prop.name.as_str().into());
+            for prop in &type_properties {
+                if should_skip_template_prop_binding(summary, prop.name.as_str()) {
+                    continue;
                 }
+                emit_template_prop_binding(
+                    ts,
+                    template_props_type_ref.as_str(),
+                    prop.name.as_str(),
+                    defaulted_prop_names.contains(&prop.name),
+                );
+                emitted_names.insert(prop.name.as_str().into());
             }
             if has_props {
                 emit_macro_template_prop_bindings(
