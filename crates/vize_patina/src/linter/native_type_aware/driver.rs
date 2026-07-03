@@ -137,7 +137,7 @@ pub(super) fn lint_with_descriptor<'a>(
             let jsx = matches!(lang, Some("tsx" | "jsx"));
             script_parser::parse_script_setup_with_generic_and_jsx(script_content, generic, jsx)
         } else {
-            script_parser::parse_script(script_content)
+            super::script_options::parse_plain_script_for_type_aware(script_content)
         }
     });
     let config = VirtualTsConfig {

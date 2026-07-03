@@ -1,5 +1,5 @@
 mod opt_in;
-
+mod options_api;
 use super::{
     RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS, RULE_NO_UNSAFE_TEMPLATE_BINDING,
     RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS, lint_sfc_with_corsa,
