@@ -16,6 +16,8 @@ test("release platform plan includes slow targets on fifth minors", () => {
   assert.deepEqual(plan.skippedTargets, []);
   assert.ok(plan.cliMatrix.some((platform) => platform.target === "x86_64-apple-darwin"));
   assert.ok(plan.cliMatrix.some((platform) => platform.target === "aarch64-pc-windows-msvc"));
+  assert.ok(plan.cliMatrix.some((platform) => platform.target === "x86_64-unknown-linux-musl"));
+  assert.ok(plan.cliMatrix.some((platform) => platform.target === "aarch64-unknown-linux-musl"));
   assert.ok(plan.nativeMatrix.some((platform) => platform.target === "x86_64-apple-darwin"));
   assert.ok(plan.nativeMatrix.some((platform) => platform.target === "aarch64-pc-windows-msvc"));
 });
@@ -27,6 +29,8 @@ test("release platform plan includes slow targets outside fifth minors", () => {
   assert.deepEqual(plan.skippedTargets, []);
   assert.ok(plan.cliMatrix.some((platform) => platform.target === "x86_64-apple-darwin"));
   assert.ok(plan.cliMatrix.some((platform) => platform.target === "aarch64-pc-windows-msvc"));
+  assert.ok(plan.cliMatrix.some((platform) => platform.target === "x86_64-unknown-linux-musl"));
+  assert.ok(plan.cliMatrix.some((platform) => platform.target === "aarch64-unknown-linux-musl"));
   assert.ok(plan.nativeMatrix.some((platform) => platform.target === "x86_64-apple-darwin"));
   assert.ok(plan.nativeMatrix.some((platform) => platform.target === "aarch64-pc-windows-msvc"));
 });

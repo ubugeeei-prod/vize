@@ -170,7 +170,9 @@ test("release workflow builds native targets on MoonBit-supported runners", () =
     [hostedOrBlacksmith("macos-15"), "x86_64-apple-darwin"],
     [hostedOrBlacksmith("macos-15"), "aarch64-apple-darwin"],
     [hostedOrBlacksmith("ubuntu-24.04"), "x86_64-unknown-linux-gnu"],
+    [hostedOrBlacksmith("ubuntu-24.04"), "x86_64-unknown-linux-musl"],
     [hostedOrBlacksmith("ubuntu-24.04-arm"), "aarch64-unknown-linux-gnu"],
+    [hostedOrBlacksmith("ubuntu-24.04"), "aarch64-unknown-linux-musl"],
     [hostedOrBlacksmith("windows-2025"), "x86_64-pc-windows-msvc"],
     ["windows-11-arm", "aarch64-pc-windows-msvc"],
   ] as const) {
@@ -253,4 +255,25 @@ test("release workflow runs GitHub helper scripts with the native target on ever
     /Create archive \(Windows\)[\s\S]*moon run --target native - -- \$\{\{ matrix\.settings\.target \}\} \$\{\{ matrix\.settings\.archive \}\} vize\.exe < tools\/moon\/scripts\/github\/create_cli_archive\.mbtx/,
   );
   assert.match(workflow, /Build vize-native[\s\S]*moon run --target native - -- npm\/native/);
+});
+
+test("release workflow configures Zig linkers for Linux musl CLI archives", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const buildCliJob = workflowJobBody(workflow, "build-cli");
+  const releasePlatforms = readRepoFile("tools", "github", "release-platforms.mjs");
+
+  for (const [target, archive] of [
+    ["x86_64-unknown-linux-musl", "vize-x86_64-unknown-linux-musl.tar.gz"],
+    ["aarch64-unknown-linux-musl", "vize-aarch64-unknown-linux-musl.tar.gz"],
+  ] as const) {
+    assert.match(releasePlatforms, new RegExp(`target:\\s*"${target}"`));
+    assert.match(releasePlatforms, new RegExp(`archive:\\s*"${archive}"`));
+  }
+
+  assert.match(buildCliJob, /name:\s*Setup Zig \(Linux musl CLI\)/);
+  assert.match(buildCliJob, /if:\s*endsWith\(matrix\.settings\.target, '-musl'\)/);
+  assert.match(buildCliJob, /CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER/);
+  assert.match(buildCliJob, /CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER/);
+  assert.match(buildCliJob, /zig cc -target x86_64-linux-musl/);
+  assert.match(buildCliJob, /zig cc -target aarch64-linux-musl/);
 });

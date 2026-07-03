@@ -74,6 +74,42 @@ jobs:
         if: matrix.settings.target == 'aarch64-unknown-linux-gnu'
         run: moon run --target native - -- < tools/moon/scripts/github/install_cross_compile_tools.mbtx
 
+      - name: Setup Zig (Linux musl CLI)
+        if: endsWith(matrix.settings.target, '-musl')
+        uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
+
+      - name: Configure Zig linker (Linux musl CLI)
+        if: endsWith(matrix.settings.target, '-musl')
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/vize-zig-linkers"
+
+          cat > "$RUNNER_TEMP/vize-zig-linkers/zig-cc-x86_64-linux-musl" <<'EOF'
+          #!/usr/bin/env bash
+          exec zig cc -target x86_64-linux-musl "$@"
+          EOF
+
+          cat > "$RUNNER_TEMP/vize-zig-linkers/zig-cc-aarch64-linux-musl" <<'EOF'
+          #!/usr/bin/env bash
+          exec zig cc -target aarch64-linux-musl "$@"
+          EOF
+
+          cat > "$RUNNER_TEMP/vize-zig-linkers/zig-ar" <<'EOF'
+          #!/usr/bin/env bash
+          exec zig ar "$@"
+          EOF
+
+          chmod +x "$RUNNER_TEMP"/vize-zig-linkers/*
+
+          {
+            echo "CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=$RUNNER_TEMP/vize-zig-linkers/zig-cc-x86_64-linux-musl"
+            echo "CC_x86_64_unknown_linux_musl=$RUNNER_TEMP/vize-zig-linkers/zig-cc-x86_64-linux-musl"
+            echo "AR_x86_64_unknown_linux_musl=$RUNNER_TEMP/vize-zig-linkers/zig-ar"
+            echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=$RUNNER_TEMP/vize-zig-linkers/zig-cc-aarch64-linux-musl"
+            echo "CC_aarch64_unknown_linux_musl=$RUNNER_TEMP/vize-zig-linkers/zig-cc-aarch64-linux-musl"
+            echo "AR_aarch64_unknown_linux_musl=$RUNNER_TEMP/vize-zig-linkers/zig-ar"
+          } >> "$GITHUB_ENV"
+
       - name: Mount Rust sticky disks (Linux)
         if: runner.os == 'Linux'
         uses: ./.github/actions/setup-rust-sticky-cache
@@ -763,7 +799,10 @@ jobs:
     name: Release oxlint-plugin-vize to npm
     runs-on: ubuntu-24.04
     needs:
-      [plan-release-platforms, build-release-packages, release-npm-native, smoke-release-packages]
+      - plan-release-platforms
+      - build-release-packages
+      - release-npm-native
+      - smoke-release-packages
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -973,14 +1012,12 @@ jobs:
     name: Release @vizejs/nuxt to npm
     runs-on: ubuntu-24.04
     needs:
-      [
-        build-release-packages,
-        release-npm-vite-plugin,
-        release-npm-vite-plugin-musea,
-        release-npm-musea-nuxt,
-        release-npm-cli,
-        smoke-release-packages,
-      ]
+      - build-release-packages
+      - release-npm-vite-plugin
+      - release-npm-vite-plugin-musea
+      - release-npm-musea-nuxt
+      - release-npm-cli
+      - smoke-release-packages
     timeout-minutes: 15
     environment: npm
     permissions:

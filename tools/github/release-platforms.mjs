@@ -42,8 +42,18 @@ export const cliReleasePlatforms = [
   },
   {
     host: "blacksmith-32vcpu-ubuntu-2404",
+    target: "x86_64-unknown-linux-musl",
+    archive: "vize-x86_64-unknown-linux-musl.tar.gz",
+  },
+  {
+    host: "blacksmith-32vcpu-ubuntu-2404",
     target: "aarch64-unknown-linux-gnu",
     archive: "vize-aarch64-unknown-linux-gnu.tar.gz",
+  },
+  {
+    host: "blacksmith-32vcpu-ubuntu-2404",
+    target: "aarch64-unknown-linux-musl",
+    archive: "vize-aarch64-unknown-linux-musl.tar.gz",
   },
 ];
 
