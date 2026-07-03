@@ -4,24 +4,34 @@ const path = require("node:path");
 
 const vueExtension = ".vue";
 const virtualDtsSuffix = ".d.ts";
+const installedHosts = new WeakSet();
 
 function init({ typescript: ts }) {
   return {
     create(info) {
-      installVueImportResolver(ts, info);
-      return createLanguageServiceProxy(ts, info.languageService);
+      if (!info?.languageService) {
+        return info?.languageService;
+      }
+      try {
+        return installVueImportResolver(ts, info)
+          ? createLanguageServiceProxy(ts, info.languageService)
+          : info.languageService;
+      } catch (error) {
+        logPluginError(info, "create", error);
+        return info.languageService;
+      }
     },
   };
 }
 
 function installVueImportResolver(ts, info) {
   const host = info.languageServiceHost;
-  if (!host || host.__vizeVueImportResolverInstalled) {
-    return;
+  if (!host) {
+    return false;
   }
-  Object.defineProperty(host, "__vizeVueImportResolverInstalled", {
-    value: true,
-  });
+  if (installedHosts.has(host)) {
+    return true;
+  }
 
   const serverHost = info.serverHost || ts.sys;
   const originalFileExists = bind(host.fileExists, host) || bind(serverHost.fileExists, serverHost);
@@ -31,66 +41,107 @@ function installVueImportResolver(ts, info) {
   const originalResolveModuleNameLiterals = bind(host.resolveModuleNameLiterals, host);
   const originalResolveModuleNames = bind(host.resolveModuleNames, host);
 
-  host.fileExists = (fileName) => {
-    const vuePath = realVuePathFromVirtual(fileName);
-    if (vuePath) {
-      return originalFileExists(vuePath);
-    }
-    return originalFileExists(fileName);
-  };
+  if (!originalFileExists || !originalReadFile || !originalGetScriptSnapshot) {
+    return false;
+  }
 
-  host.readFile = (fileName) => {
-    const vuePath = realVuePathFromVirtual(fileName);
-    if (vuePath && originalFileExists(vuePath)) {
-      return virtualVueDts();
-    }
-    return originalReadFile(fileName);
-  };
+  const replacements = {
+    fileExists(fileName) {
+      const vuePath = realVuePathFromVirtual(fileName);
+      if (vuePath) {
+        return originalFileExists(vuePath);
+      }
+      return originalFileExists(fileName);
+    },
+    readFile(fileName) {
+      const vuePath = realVuePathFromVirtual(fileName);
+      if (vuePath && originalFileExists(vuePath)) {
+        return virtualVueDts();
+      }
+      return originalReadFile(fileName);
+    },
+    getScriptSnapshot(fileName) {
+      const vuePath = realVuePathFromVirtual(fileName);
+      if (vuePath && originalFileExists(vuePath)) {
+        return ts.ScriptSnapshot.fromString(virtualVueDts());
+      }
+      return originalGetScriptSnapshot(fileName);
+    },
+    getScriptKind(fileName) {
+      if (realVuePathFromVirtual(fileName)) {
+        return ts.ScriptKind.TS;
+      }
+      return originalGetScriptKind ? originalGetScriptKind(fileName) : ts.ScriptKind.Unknown;
+    },
+    resolveModuleNameLiterals(...args) {
+      const [moduleLiterals, containingFile] = args;
+      const previous = toArray(originalResolveModuleNameLiterals?.(...args));
 
-  host.getScriptSnapshot = (fileName) => {
-    const vuePath = realVuePathFromVirtual(fileName);
-    if (vuePath && originalFileExists(vuePath)) {
-      return ts.ScriptSnapshot.fromString(virtualVueDts());
-    }
-    return originalGetScriptSnapshot(fileName);
-  };
-
-  host.getScriptKind = (fileName) => {
-    if (realVuePathFromVirtual(fileName)) {
-      return ts.ScriptKind.TS;
-    }
-    return originalGetScriptKind ? originalGetScriptKind(fileName) : ts.ScriptKind.Unknown;
-  };
-
-  host.resolveModuleNameLiterals = (...args) => {
-    const [moduleLiterals, containingFile] = args;
-    const previous = toArray(originalResolveModuleNameLiterals?.(...args));
-
-    return moduleLiterals.map((literal, index) => {
-      if (previous[index] && previous[index].resolvedModule) {
-        return previous[index];
+      if (!Array.isArray(moduleLiterals)) {
+        return previous;
       }
 
-      const resolvedModule = resolveVueModule(ts, literal.text, containingFile, originalFileExists);
-      return resolvedModule ? { resolvedModule } : previous[index] || { resolvedModule: undefined };
-    });
-  };
+      return moduleLiterals.map((literal, index) => {
+        if (previous[index] && previous[index].resolvedModule) {
+          return previous[index];
+        }
 
-  host.resolveModuleNames = (...args) => {
-    const [moduleNames, containingFile] = args;
-    const previous = toArray(originalResolveModuleNames?.(...args));
+        const resolvedModule = resolveVueModule(
+          ts,
+          literal?.text,
+          containingFile,
+          originalFileExists,
+        );
+        return resolvedModule
+          ? { resolvedModule }
+          : previous[index] || { resolvedModule: undefined };
+      });
+    },
+    resolveModuleNames(...args) {
+      const [moduleNames, containingFile] = args;
+      const previous = toArray(originalResolveModuleNames?.(...args));
 
-    return moduleNames.map((moduleName, index) => {
-      if (previous[index]) {
-        return previous[index];
+      if (!Array.isArray(moduleNames)) {
+        return previous;
       }
-      return resolveVueModule(ts, moduleName, containingFile, originalFileExists);
-    });
+
+      return moduleNames.map((moduleName, index) => {
+        if (previous[index]) {
+          return previous[index];
+        }
+        return resolveVueModule(ts, moduleName, containingFile, originalFileExists);
+      });
+    },
   };
+
+  const replacementEntries = Object.entries(replacements);
+  if (!replacementEntries.every(([name]) => canAssignProperty(host, name))) {
+    return false;
+  }
+
+  const originals = new Map(replacementEntries.map(([name]) => [name, host[name]]));
+  try {
+    for (const [name, replacement] of replacementEntries) {
+      host[name] = replacement;
+    }
+  } catch (error) {
+    for (const [name, original] of originals) {
+      try {
+        host[name] = original;
+      } catch {
+        // Best effort rollback only; create() will return the unproxied service.
+      }
+    }
+    logPluginError(info, "install", error);
+    return false;
+  }
+
+  installedHosts.add(host);
+  return true;
 }
 
 function resolveVueModule(ts, specifier, containingFile, fileExists) {
-  if (!isRelativeVueSpecifier(specifier)) {
+  if (!isRelativeVueSpecifier(specifier) || typeof containingFile !== "string") {
     return undefined;
   }
 
@@ -137,7 +188,7 @@ function createLanguageServiceProxy(ts, languageService) {
     }
 
     const vuePaths = vuePathsFromDefinitions(
-      languageService.getDefinitionAtPosition(fileName, position),
+      safeCall(() => languageService.getDefinitionAtPosition(fileName, position), undefined),
     );
     if (vuePaths.length === 0) {
       return quickInfo;
@@ -156,6 +207,56 @@ function createLanguageServiceProxy(ts, languageService) {
   };
 
   return proxy;
+}
+
+function canAssignProperty(target, key) {
+  const descriptor = findPropertyDescriptor(target, key);
+  if (!descriptor) {
+    return isExtensible(target);
+  }
+  if ("writable" in descriptor) {
+    return descriptor.writable;
+  }
+  return typeof descriptor.set === "function";
+}
+
+function findPropertyDescriptor(target, key) {
+  let current = target;
+  while (current) {
+    const descriptor = Object.getOwnPropertyDescriptor(current, key);
+    if (descriptor) {
+      return descriptor;
+    }
+    current = Object.getPrototypeOf(current);
+  }
+  return undefined;
+}
+
+function isExtensible(target) {
+  try {
+    return Object.isExtensible(target);
+  } catch {
+    return false;
+  }
+}
+
+function safeCall(fn, fallback) {
+  try {
+    return fn();
+  } catch {
+    return fallback;
+  }
+}
+
+function logPluginError(info, phase, error) {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    info?.project?.projectService?.logger?.info?.(
+      `[vize] TypeScript Vue plugin ${phase} failed: ${message}`,
+    );
+  } catch {
+    // Logging must never be the reason the TypeScript server exits.
+  }
 }
 
 function remapVueVirtualDefinitions(ts, definitions) {

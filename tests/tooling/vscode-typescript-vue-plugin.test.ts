@@ -152,6 +152,56 @@ test("TypeScript Vue plugin keeps plain .ts projects crash-free with unresolved 
   }
 });
 
+test("TypeScript Vue plugin falls back when the tsserver host cannot be patched", () => {
+  const project = createVueProject("const value = 1;\nvalue;\n", {});
+  try {
+    const host = createHost(path.dirname(path.dirname(project.mainTs)), project.mainTs);
+    Object.freeze(host);
+    const service = ts.createLanguageService(host);
+    const plugin = initVuePlugin({ typescript: ts });
+    let wrapped: import("typescript").LanguageService | undefined;
+
+    assert.doesNotThrow(() => {
+      wrapped = plugin.create({
+        languageService: service,
+        languageServiceHost: host,
+        serverHost: ts.sys,
+      });
+    });
+    assert.equal(wrapped, service);
+    assert.doesNotThrow(() => wrapped?.getSemanticDiagnostics(project.mainTs));
+  } finally {
+    fs.rmSync(project.root, { force: true, recursive: true });
+  }
+});
+
+test("TypeScript Vue plugin tolerates resolver calls without a containing file", () => {
+  const project = createVueProject('import App from "./app.vue";\nApp;\n', {
+    "app.vue": "<template />\n",
+  });
+  try {
+    const host = createHost(path.dirname(path.dirname(project.mainTs)), project.mainTs);
+    const service = ts.createLanguageService(host);
+    const plugin = initVuePlugin({ typescript: ts });
+
+    plugin.create({
+      languageService: service,
+      languageServiceHost: host,
+      serverHost: ts.sys,
+    });
+
+    assert.doesNotThrow(() => {
+      const result = (host.resolveModuleNameLiterals as unknown as (...args: unknown[]) => unknown)(
+        [{ text: "./app.vue" }],
+        undefined,
+      );
+      assert.deepEqual(result, [{ resolvedModule: undefined }]);
+    });
+  } finally {
+    fs.rmSync(project.root, { force: true, recursive: true });
+  }
+});
+
 function createVueProject(mainSource: string, vueFiles: Record<string, string>) {
   const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vscode-vue-plugin-"));
   const srcDir = path.join(rootDir, "src");
