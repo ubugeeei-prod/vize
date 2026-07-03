@@ -20,7 +20,7 @@ function parseGithubEnv(envFile: string): Record<string, string> {
   );
 }
 
-test("Zig musl linker wrappers normalize cc-rs target flags", () => {
+test("Zig musl wrappers normalize cc-rs flags and avoid duplicate CRT startup objects", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-zig-musl-linkers-"));
   const binDir = path.join(tempDir, "bin");
   const envFile = path.join(tempDir, "github-env");
@@ -46,6 +46,10 @@ test("Zig musl linker wrappers normalize cc-rs target flags", () => {
       return fs.readFileSync(logPath, "utf8").trim().split("\n");
     };
 
+    assert.notEqual(
+      githubEnv.CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER,
+      githubEnv.CC_x86_64_unknown_linux_musl,
+    );
     assert.deepEqual(
       runWrapper("CC_x86_64_unknown_linux_musl", [
         "--target=x86_64-unknown-linux-musl",
@@ -62,6 +66,15 @@ test("Zig musl linker wrappers normalize cc-rs target flags", () => {
         "-DMI_DEBUG=0",
       ]),
       ["cc", "-target", "aarch64-linux-musl", "-DMI_DEBUG=0"],
+    );
+    assert.deepEqual(
+      runWrapper("CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER", [
+        "-m64",
+        "--target=x86_64-unknown-linux-musl",
+        "rcrt1.o",
+        "-nostartfiles",
+      ]),
+      ["cc", "-target", "x86_64-linux-musl", "-nostdlib", "-m64", "rcrt1.o", "-nostartfiles"],
     );
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });

@@ -8,13 +8,11 @@ mkdir -p "$linker_dir"
 printf '#!/usr/bin/env bash\nexec zig ar "$@"\n' > "$zig_ar"
 chmod +x "$zig_ar"
 
-write_cc() {
-  local rust_target="$1"
+write_zig_wrapper() {
+  local output="$1"
   local zig_target="$2"
-  local cc="$linker_dir/zig-cc-$zig_target"
-  local env_target
+  local mode="$3"
 
-  env_target="$(tr '[:upper:]' '[:lower:]' <<< "$rust_target")"
   {
     printf '#!/usr/bin/env bash\n'
     printf 'set -euo pipefail\n'
@@ -36,12 +34,28 @@ write_cc() {
     printf '      ;;\n'
     printf '  esac\n'
     printf 'done\n'
-    printf 'exec zig cc -target %s "${args[@]}"\n' "$zig_target"
-  } > "$cc"
-  chmod +x "$cc"
+    if [[ "$mode" == "link" ]]; then
+      printf 'exec zig cc -target %s -nostdlib "${args[@]}"\n' "$zig_target"
+    else
+      printf 'exec zig cc -target %s "${args[@]}"\n' "$zig_target"
+    fi
+  } > "$output"
+  chmod +x "$output"
+}
+
+write_cc() {
+  local rust_target="$1"
+  local zig_target="$2"
+  local cc="$linker_dir/zig-cc-$zig_target"
+  local linker="$linker_dir/zig-link-$zig_target"
+  local env_target
+
+  env_target="$(tr '[:upper:]' '[:lower:]' <<< "$rust_target")"
+  write_zig_wrapper "$cc" "$zig_target" "compile"
+  write_zig_wrapper "$linker" "$zig_target" "link"
 
   {
-    printf 'CARGO_TARGET_%s_LINKER=%s\n' "$rust_target" "$cc"
+    printf 'CARGO_TARGET_%s_LINKER=%s\n' "$rust_target" "$linker"
     printf 'CC_%s=%s\n' "$env_target" "$cc"
     printf 'AR_%s=%s\n' "$env_target" "$zig_ar"
   } >> "$GITHUB_ENV"
