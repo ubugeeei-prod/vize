@@ -8,6 +8,10 @@ use vize_carton::{FxHashSet, String as CompactString, cstr, profile, profiler::g
 use crate::commands::check::path_cache::CanonicalPathCache;
 use crate::commands::check::reporting::JsonOutput;
 
+mod suppressions;
+
+pub(super) use suppressions::is_suppressed_false_positive;
+
 pub(super) fn emit_json_output(json_output: JsonOutput) {
     match serde_json::to_string_pretty(&json_output) {
         Ok(output) => println!("{output}"),
@@ -44,15 +48,6 @@ fn is_source_path(path: &Path) -> bool {
                 "vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx"
             )
         })
-}
-
-pub(super) fn is_suppressed_false_positive(diagnostic: &vize_canon::BatchDiagnostic) -> bool {
-    diagnostic.code == Some(2320)
-        && diagnostic
-            .message
-            .contains("Interface 'ImportMeta' cannot simultaneously extend types")
-        && diagnostic.message.contains("NitroStaticBuildFlags")
-        && diagnostic.message.contains("NitroImportMeta")
 }
 
 #[allow(clippy::disallowed_types)]
