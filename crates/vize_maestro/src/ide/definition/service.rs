@@ -26,11 +26,11 @@ impl super::DefinitionService {
     /// Get definition for the symbol at the current position.
     pub fn definition(ctx: &IdeContext) -> Option<GotoDefinitionResponse> {
         match ctx.block_type? {
-            BlockType::Template => template::definition_in_template(ctx),
+            BlockType::Template => Self::definition_in_template_sync(ctx),
             BlockType::Script | BlockType::ScriptSetup => script::definition_in_script(ctx),
             BlockType::Style(_) => script::definition_in_style(ctx),
             BlockType::Art(ArtCursorPosition::VariantTemplate(_)) => {
-                template::definition_in_template(ctx)
+                Self::definition_in_template_sync(ctx)
             }
             BlockType::Art(_) => None,
         }
@@ -99,7 +99,7 @@ impl super::DefinitionService {
                     .open_or_update_virtual_document(&vdoc_uri, &tmpl.content)
                     .await
                 else {
-                    return template::definition_in_template(ctx);
+                    return Self::definition_in_template_sync(ctx);
                 };
 
                 if let Ok(locations) = bridge.definition(&uri, line, character).await
@@ -111,7 +111,7 @@ impl super::DefinitionService {
         }
 
         // Fall back to synchronous definition
-        template::definition_in_template(ctx)
+        Self::definition_in_template_sync(ctx)
     }
 
     /// Find definition in template with Corsa and component jump support.
@@ -129,6 +129,12 @@ impl super::DefinitionService {
 
         if let Some(definition) =
             Self::definition_via_canonical_corsa(ctx, corsa_bridge.as_ref()).await
+        {
+            return Some(definition);
+        }
+
+        if let Some(definition) =
+            Self::definition_for_html_attribute_with_corsa(ctx, corsa_bridge.as_ref()).await
         {
             return Some(definition);
         }
@@ -157,7 +163,7 @@ impl super::DefinitionService {
         }
 
         if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
-            return None;
+            return Self::definition_in_template_sync(ctx);
         }
 
         // Check if this is a props property access
@@ -179,7 +185,7 @@ impl super::DefinitionService {
         }
 
         // Fall back to synchronous definition
-        template::definition_in_template(ctx)
+        Self::definition_in_template_sync(ctx)
     }
 
     /// Find definition in script with Corsa support.
@@ -266,35 +272,5 @@ impl super::DefinitionService {
             [location] => Some(GotoDefinitionResponse::Scalar(location.clone())),
             _ => Some(GotoDefinitionResponse::Array(locations)),
         }
-    }
-
-    #[cfg(feature = "native")]
-    async fn definition_for_html_tag_with_corsa(
-        ctx: &IdeContext<'_>,
-        corsa_bridge: Option<&Arc<CorsaBridge>>,
-    ) -> Option<GotoDefinitionResponse> {
-        let tag_name = helpers::get_tag_at_offset(&ctx.content, ctx.offset)?;
-        if is_component_tag(&tag_name) {
-            return None;
-        }
-
-        let bridge = corsa_bridge?;
-        if !bridge.is_initialized() {
-            return None;
-        }
-
-        let doc = corsa_support::html_tag_virtual_document(&tag_name)?;
-        let request_path = corsa_support::html_tag_request_path(ctx.uri);
-        let request_uri = bridge
-            .open_or_update_virtual_document(&request_path, &doc.content)
-            .await
-            .ok()?;
-        let (line, character) = crate::ide::offset_to_position(&doc.content, doc.definition_offset);
-        let locations = bridge
-            .definition(&request_uri, line, character)
-            .await
-            .ok()?;
-
-        Self::convert_lsp_locations(locations, ctx)
     }
 }

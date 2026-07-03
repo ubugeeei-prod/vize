@@ -1,7 +1,4 @@
 //! Helper utilities for the definition service.
-//!
-//! Provides word extraction, position conversion, import resolution,
-//! and attribute inspection helpers.
 #![allow(
     clippy::disallowed_types,
     clippy::disallowed_methods,
@@ -158,6 +155,9 @@ fn find_tag_name_span(content: &str, offset: usize) -> Option<(usize, usize, usi
     let mut cursor = offset.min(bytes.len());
     if cursor == bytes.len() {
         cursor = cursor.saturating_sub(1);
+    }
+    if cursor > 0 && bytes.get(cursor) == Some(&b'>') {
+        cursor -= 1;
     }
 
     let mut tag_start = None;

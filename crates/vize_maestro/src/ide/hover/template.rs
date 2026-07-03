@@ -33,6 +33,11 @@ impl HoverService {
         }
 
         #[cfg(feature = "native")]
+        if let Some(hover) = Self::hover_native_dom_attribute(ctx) {
+            return Some(hover);
+        }
+
+        #[cfg(feature = "native")]
         if let Some(hover) = Self::hover_native_dom_tag(ctx) {
             return Some(hover);
         }

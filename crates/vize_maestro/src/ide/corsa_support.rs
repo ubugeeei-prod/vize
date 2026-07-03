@@ -7,6 +7,10 @@ mod canonical;
 #[cfg(all(test, feature = "native"))]
 mod canonical_tests;
 #[cfg(feature = "native")]
+mod html_attribute;
+#[cfg(all(test, feature = "native"))]
+mod html_attribute_tests;
+#[cfg(feature = "native")]
 mod html_tag;
 #[cfg(feature = "native")]
 mod virtual_mirror;
@@ -16,6 +20,10 @@ mod workspace_edit;
 pub(crate) use canonical::{
     canonical_source_offset_to_position, map_canonical_corsa_locations, map_canonical_lsp_range,
     open_canonical_virtual_document,
+};
+#[cfg(feature = "native")]
+pub(crate) use html_attribute::{
+    html_attribute_request_path, html_attribute_virtual_document, native_dom_attribute_info,
 };
 #[cfg(feature = "native")]
 pub(crate) use html_tag::{html_tag_request_path, html_tag_virtual_document, native_dom_tag_info};
