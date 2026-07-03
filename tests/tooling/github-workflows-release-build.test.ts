@@ -261,6 +261,7 @@ test("release workflow configures Zig linkers for Linux musl CLI archives", () =
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const buildCliJob = workflowJobBody(workflow, "build-cli");
   const releasePlatforms = readRepoFile("tools", "github", "release-platforms.mjs");
+  const zigLinkerScript = readRepoFile("tools", "github", "configure-zig-musl-linkers.sh");
 
   for (const [target, archive] of [
     ["x86_64-unknown-linux-musl", "vize-x86_64-unknown-linux-musl.tar.gz"],
@@ -272,8 +273,8 @@ test("release workflow configures Zig linkers for Linux musl CLI archives", () =
 
   assert.match(buildCliJob, /name:\s*Setup Zig \(Linux musl CLI\)/);
   assert.match(buildCliJob, /if:\s*endsWith\(matrix\.settings\.target, '-musl'\)/);
-  assert.match(buildCliJob, /CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER/);
-  assert.match(buildCliJob, /CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER/);
-  assert.match(buildCliJob, /zig cc -target x86_64-linux-musl/);
-  assert.match(buildCliJob, /zig cc -target aarch64-linux-musl/);
+  assert.match(buildCliJob, /bash tools\/github\/configure-zig-musl-linkers\.sh/);
+  assert.match(zigLinkerScript, /CARGO_TARGET_%s_LINKER/);
+  assert.match(zigLinkerScript, /write_cc X86_64_UNKNOWN_LINUX_MUSL x86_64-linux-musl/);
+  assert.match(zigLinkerScript, /write_cc AARCH64_UNKNOWN_LINUX_MUSL aarch64-linux-musl/);
 });
