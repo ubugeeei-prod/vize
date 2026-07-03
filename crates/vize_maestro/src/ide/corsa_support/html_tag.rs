@@ -1,6 +1,12 @@
 use tower_lsp::lsp_types::Url;
 use vize_carton::{String, cstr};
 
+pub(crate) struct NativeDomTagInfo {
+    pub(crate) category: &'static str,
+    pub(crate) type_expression: String,
+    pub(crate) documentation_url: String,
+}
+
 pub(crate) struct HtmlTagVirtualDocument {
     pub(crate) content: String,
     pub(crate) hover_offset: usize,
@@ -12,20 +18,20 @@ pub(crate) fn html_tag_request_path(uri: &Url) -> String {
 }
 
 pub(crate) fn html_tag_virtual_document(tag_name: &str) -> Option<HtmlTagVirtualDocument> {
-    if !is_native_html_tag_candidate(tag_name) {
-        return None;
-    }
+    let info = native_dom_tag_info(tag_name)?;
 
+    let type_expression = info.type_expression.as_str();
     let content = cstr!(
         "/// <reference lib=\"es2022\" />\n\
          /// <reference lib=\"dom\" />\n\
          /// <reference lib=\"dom.iterable\" />\n\
-         type __VizeHtmlElement = HTMLElementTagNameMap[\"{tag_name}\"];\n\
-         declare const __vizeHtmlElement: __VizeHtmlElement;\n\
-         __vizeHtmlElement;\n"
+         type __VizeDomElement = {type_expression};\n\
+         declare const __vizeDomElement: __VizeDomElement;\n\
+         __vizeDomElement;\n"
     );
-    let definition_offset = content.find("HTMLElementTagNameMap")?;
-    let hover_offset = content.rfind("__vizeHtmlElement")?;
+    let definition_symbol = dom_definition_symbol(tag_name)?;
+    let definition_offset = content.find(definition_symbol)?;
+    let hover_offset = content.rfind("__vizeDomElement")?;
 
     Some(HtmlTagVirtualDocument {
         content,
@@ -34,15 +40,54 @@ pub(crate) fn html_tag_virtual_document(tag_name: &str) -> Option<HtmlTagVirtual
     })
 }
 
-fn is_native_html_tag_candidate(tag_name: &str) -> bool {
-    !tag_name.is_empty()
-        && !matches!(
-            tag_name,
-            "component" | "template" | "slot" | "teleport" | "suspense"
-        )
-        && tag_name
-            .bytes()
-            .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit())
+pub(crate) fn native_dom_tag_info(tag_name: &str) -> Option<NativeDomTagInfo> {
+    if matches!(
+        tag_name,
+        "component" | "template" | "slot" | "teleport" | "suspense"
+    ) {
+        return None;
+    }
+
+    if vize_carton::is_html_tag(tag_name) {
+        return Some(NativeDomTagInfo {
+            category: "HTML element",
+            type_expression: cstr!("HTMLElementTagNameMap[\"{tag_name}\"]"),
+            documentation_url: cstr!(
+                "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/{tag_name}"
+            ),
+        });
+    }
+    if vize_carton::is_svg_tag(tag_name) {
+        return Some(NativeDomTagInfo {
+            category: "SVG element",
+            type_expression: cstr!("SVGElementTagNameMap[\"{tag_name}\"]"),
+            documentation_url: cstr!(
+                "https://developer.mozilla.org/en-US/docs/Web/SVG/Element/{tag_name}"
+            ),
+        });
+    }
+    if vize_carton::is_math_ml_tag(tag_name) {
+        return Some(NativeDomTagInfo {
+            category: "MathML element",
+            type_expression: String::from("MathMLElement"),
+            documentation_url: cstr!(
+                "https://developer.mozilla.org/en-US/docs/Web/MathML/Element/{tag_name}"
+            ),
+        });
+    }
+    None
+}
+
+fn dom_definition_symbol(tag_name: &str) -> Option<&'static str> {
+    if vize_carton::is_html_tag(tag_name) {
+        Some("HTMLElementTagNameMap")
+    } else if vize_carton::is_svg_tag(tag_name) {
+        Some("SVGElementTagNameMap")
+    } else if vize_carton::is_math_ml_tag(tag_name) {
+        Some("MathMLElement")
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]
@@ -58,8 +103,32 @@ mod tests {
             "HTMLElementTagNameMap",
         );
         assert_eq!(
-            &doc.content[doc.hover_offset..doc.hover_offset + "__vizeHtmlElement".len()],
-            "__vizeHtmlElement",
+            &doc.content[doc.hover_offset..doc.hover_offset + "__vizeDomElement".len()],
+            "__vizeDomElement",
         );
+    }
+
+    #[test]
+    fn html_tag_virtual_document_supports_svg_tags() {
+        let doc = super::html_tag_virtual_document("svg").expect("svg tag doc");
+
+        assert!(doc.content.contains("SVGElementTagNameMap[\"svg\"]"));
+        assert_eq!(
+            &doc.content
+                [doc.definition_offset..doc.definition_offset + "SVGElementTagNameMap".len()],
+            "SVGElementTagNameMap",
+        );
+    }
+
+    #[test]
+    fn native_dom_tag_info_rejects_custom_elements() {
+        assert!(super::native_dom_tag_info("my-element").is_none());
+    }
+
+    #[test]
+    fn native_dom_tag_info_rejects_vue_builtins() {
+        assert!(super::native_dom_tag_info("template").is_none());
+        assert!(super::native_dom_tag_info("slot").is_none());
+        assert!(super::native_dom_tag_info("component").is_none());
     }
 }

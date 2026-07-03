@@ -169,7 +169,7 @@ pub fn pascal_to_kebab(name: &str) -> String {
 /// Check if a tag name is a component (starts with uppercase or contains hyphen).
 #[inline]
 pub fn is_component_tag(name: &str) -> bool {
-    if name.is_empty() {
+    if name.is_empty() || vize_carton::is_native_tag(name) {
         return false;
     }
     let Some(first) = name.chars().next() else {
@@ -576,18 +576,16 @@ mod tests {
 
     #[test]
     fn test_is_component_tag() {
-        // PascalCase components
         assert!(is_component_tag("MyComponent"));
         assert!(is_component_tag("Button"));
 
-        // kebab-case components
         assert!(is_component_tag("my-component"));
         assert!(is_component_tag("v-button"));
 
-        // HTML elements (not components)
         assert!(!is_component_tag("div"));
         assert!(!is_component_tag("span"));
         assert!(!is_component_tag("button"));
+        assert!(!is_component_tag("color-profile"));
     }
 
     #[test]

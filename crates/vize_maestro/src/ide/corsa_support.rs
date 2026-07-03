@@ -18,7 +18,7 @@ pub(crate) use canonical::{
     open_canonical_virtual_document,
 };
 #[cfg(feature = "native")]
-pub(crate) use html_tag::{html_tag_request_path, html_tag_virtual_document};
+pub(crate) use html_tag::{html_tag_request_path, html_tag_virtual_document, native_dom_tag_info};
 pub(crate) use workspace_edit::map_corsa_workspace_edit;
 
 use vize_canon::LspLocation;

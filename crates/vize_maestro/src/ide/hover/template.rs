@@ -18,19 +18,22 @@ use crate::ide::IdeContext;
 impl HoverService {
     /// Get hover for template context.
     pub(super) fn hover_template(ctx: &IdeContext) -> Option<Hover> {
-        // Try to find what's under the cursor
         let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
 
         if word.is_empty() {
             return None;
         }
 
-        // Check for Vue directives
         if let Some(hover) = Self::hover_directive(&word) {
             return Some(hover);
         }
 
         if let Some(hover) = super::component_prop::hover_attribute(ctx) {
+            return Some(hover);
+        }
+
+        #[cfg(feature = "native")]
+        if let Some(hover) = Self::hover_native_dom_tag(ctx) {
             return Some(hover);
         }
 
@@ -45,12 +48,10 @@ impl HoverService {
             return Some(hover);
         }
 
-        // Try to get TypeScript type information from croquis analysis
         if let Some(hover) = Self::hover_ts_binding(ctx, &word) {
             return Some(hover);
         }
 
-        // Try to get type information from vize_canon
         if let Some(type_info) = crate::ide::TypeService::get_type_at(ctx) {
             #[allow(clippy::disallowed_macros)]
             let signature = format!("{word}: {}", type_info.display);
@@ -66,7 +67,6 @@ impl HoverService {
             return Some(builder.build());
         }
 
-        // Check for template bindings from script setup
         if let Some(ref virtual_docs) = ctx.virtual_docs
             && let Some(ref script_setup) = virtual_docs.script_setup
         {
@@ -90,7 +90,6 @@ impl HoverService {
             }
         }
 
-        // Default: show it's a template expression
         Some(
             HoverBuilder::new()
                 .title(&word)
