@@ -46,6 +46,27 @@ test("root quality gates ignore local generated environments", () => {
   }
 });
 
+test("socket.dev configuration scopes dependency and workflow scans", () => {
+  const socket = readRepoFile("socket.yml");
+
+  assert.match(socket, /^version:\s*2$/m);
+  assert.match(socket, /projectIgnorePaths:\n(?:\s+- .+\n)+/);
+  assert.match(socket, /triggerPaths:\n(?:\s+- .+\n)+/);
+  assert.match(socket, /githubApp:\n/);
+  assert.match(socket, /\s+enabled:\s*true/);
+  assert.match(socket, /\s+pullRequestAlertsEnabled:\s*true/);
+  assert.match(socket, /\s+projectReportsEnabled:\s*true/);
+
+  for (const pattern of [
+    "/tests/_fixtures",
+    "/pnpm-lock.yaml",
+    "/Cargo.lock",
+    "/.github/workflows/*.yml",
+  ]) {
+    assert.match(socket, new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+});
+
 function readRepoFile(...segments: string[]): string {
   return fs.readFileSync(path.join(root, ...segments), "utf8");
 }

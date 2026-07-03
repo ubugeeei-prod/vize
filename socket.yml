@@ -1,0 +1,41 @@
+version: 2
+
+projectIgnorePaths:
+  - "/.cache"
+  - "/.nuxt"
+  - "/_build"
+  - "/dist"
+  - "/node_modules"
+  - "/target"
+  - "/tests/_fixtures"
+
+triggerPaths:
+  - "/package.json"
+  - "/pnpm-lock.yaml"
+  - "/pnpm-workspace.yaml"
+  - "/Cargo.toml"
+  - "/Cargo.lock"
+  - "/bench/package.json"
+  - "/docs/package.json"
+  - "/docs/pnpm-lock.yaml"
+  - "/npm/**/package.json"
+  - "/editors/**/package.json"
+  - "/editors/**/Cargo.toml"
+  - "/editors/**/Cargo.lock"
+  - "/crates/**/Cargo.toml"
+  - "/examples/**/package.json"
+  - "/playground/**/package.json"
+  - "/tests/package.json"
+  - "/tests/fuzz/Cargo.toml"
+  - "/tests/fuzz/Cargo.lock"
+  - "/tests/vize_test_runner/Cargo.toml"
+  - "/.github/workflows/*.yml"
+  - "/.github/workflows/*.yaml"
+  - "/socket.yml"
+
+githubApp:
+  enabled: true
+  pullRequestAlertsEnabled: true
+  dependencyOverviewEnabled: true
+  projectReportsEnabled: true
+  disableCommentsAndCheckRuns: false
