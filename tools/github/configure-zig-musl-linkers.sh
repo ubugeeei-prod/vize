@@ -15,7 +15,29 @@ write_cc() {
   local env_target
 
   env_target="$(tr '[:upper:]' '[:lower:]' <<< "$rust_target")"
-  printf '#!/usr/bin/env bash\nexec zig cc -target %s "$@"\n' "$zig_target" > "$cc"
+  {
+    printf '#!/usr/bin/env bash\n'
+    printf 'set -euo pipefail\n'
+    printf 'args=()\n'
+    printf 'skip_next=0\n'
+    printf 'for arg in "$@"; do\n'
+    printf '  if (( skip_next )); then\n'
+    printf '    skip_next=0\n'
+    printf '    continue\n'
+    printf '  fi\n'
+    printf '  case "$arg" in\n'
+    printf '    --target=*)\n'
+    printf '      ;;\n'
+    printf '    --target)\n'
+    printf '      skip_next=1\n'
+    printf '      ;;\n'
+    printf '    *)\n'
+    printf '      args+=("$arg")\n'
+    printf '      ;;\n'
+    printf '  esac\n'
+    printf 'done\n'
+    printf 'exec zig cc -target %s "${args[@]}"\n' "$zig_target"
+  } > "$cc"
   chmod +x "$cc"
 
   {
