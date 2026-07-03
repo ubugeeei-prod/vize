@@ -163,6 +163,93 @@ void rootOnly;
 }
 
 #[test]
+fn check_from_workspace_root_accepts_subproject_directory_input() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+
+    let workspace = unique_case_dir("workspace-root-subproject-dir");
+    let _ = std::fs::remove_dir_all(&workspace);
+    std::fs::create_dir_all(&workspace).unwrap();
+    link_workspace_node_modules(&workspace);
+
+    write_file(
+        &workspace,
+        "tsconfig.json",
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["types/**/*.d.ts"]
+}"#,
+    );
+    write_file(
+        &workspace,
+        "types/root.d.ts",
+        r#"export {};
+declare global {
+  const rootValue: string;
+}
+"#,
+    );
+    write_file(
+        &workspace,
+        "devtools/tsconfig.json",
+        r#"{
+  "extends": "../tsconfig.json",
+  "include": ["src/**/*.vue", "../types/**/*.d.ts"]
+}"#,
+    );
+    write_file(
+        &workspace,
+        "devtools/src/App.vue",
+        r#"<script setup lang="ts">
+const msg: string = rootValue;
+</script>
+
+<template>{{ msg }}</template>
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&workspace)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "--no-config",
+            "--tsconfig",
+            "devtools/tsconfig.json",
+            "devtools/src",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(
+        output.status.success(),
+        "workspace-root subproject check failed:\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert!(
+        !stderr.contains("Failed to strip prefix from path"),
+        "subproject directory inputs must not crash during virtual path mirroring:\n{stderr}"
+    );
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(json["errorCount"], 0, "{stdout}\n{stderr}");
+    assert_eq!(json["warningCount"], 0, "{stdout}\n{stderr}");
+    assert_eq!(json["fileCount"], 1, "{stdout}\n{stderr}");
+    assert_eq!(json["files"][0]["file"], "devtools/src/App.vue");
+
+    let _ = std::fs::remove_dir_all(&workspace);
+}
+
+#[test]
 fn check_from_package_cwd_resolves_package_local_dependencies() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
