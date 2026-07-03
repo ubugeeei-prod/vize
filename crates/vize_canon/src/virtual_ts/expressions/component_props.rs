@@ -61,6 +61,43 @@ fn has_inference_props(usage: &ComponentUsage) -> bool {
         .any(|prop| prop.name.as_str() != "key" && prop.name.as_str() != "ref")
 }
 
+fn is_checkable_prop(prop: &PassedProp) -> bool {
+    prop.name.as_str() != "key" && prop.name.as_str() != "ref"
+}
+
+fn collect_generated_class_bindings<'a>(
+    usage: &'a ComponentUsage,
+    template_prop_names: &FxHashSet<String>,
+) -> Vec<(&'a PassedProp, String)> {
+    usage
+        .props
+        .iter()
+        .filter(|prop| is_checkable_prop(prop) && prop.name.as_str() == "class")
+        .filter_map(|prop| {
+            generated_prop_value(prop, template_prop_names).map(|value| (prop, value))
+        })
+        .collect()
+}
+
+fn merged_class_binding_value(bindings: &[(&PassedProp, String)]) -> Option<String> {
+    match bindings {
+        [] => None,
+        [(_, value)] => Some(value.clone()),
+        _ => {
+            let mut value = String::default();
+            value.push('[');
+            for (index, (_, binding_value)) in bindings.iter().enumerate() {
+                if index > 0 {
+                    value.push_str(", ");
+                }
+                value.push_str(binding_value.as_str());
+            }
+            value.push(']');
+            Some(value)
+        }
+    }
+}
+
 /// Generate component prop value checks at the given indentation level.
 pub(crate) fn generate_component_prop_checks(
     ts: &mut String,
@@ -168,16 +205,49 @@ fn generate_generic_props_call(
         "{expr_indent}(undefined as unknown as __{component_type_name}_Check_{idx})({{\n",
     );
 
+    let class_bindings = collect_generated_class_bindings(usage, template_prop_names);
+    let merge_class_bindings = class_bindings.len() > 1;
+    let mut emitted_merged_class = false;
     for prop in &usage.props {
-        if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
+        if !is_checkable_prop(prop) {
             continue;
         }
-        let Some(generated_value) = generated_prop_value(prop, template_prop_names) else {
+
+        let generated_value = if merge_class_bindings && prop.name.as_str() == "class" {
+            if emitted_merged_class {
+                continue;
+            }
+            emitted_merged_class = true;
+            merged_class_binding_value(&class_bindings)
+        } else {
+            generated_prop_value(prop, template_prop_names)
+        };
+        let Some(generated_value) = generated_value else {
             continue;
         };
 
-        let prop_src_start = (template_offset + prop.start) as usize;
-        let prop_src_end = (template_offset + prop.end) as usize;
+        let (prop_src_start, prop_src_end) =
+            if merge_class_bindings && prop.name.as_str() == "class" {
+                let start = class_bindings
+                    .iter()
+                    .map(|(binding, _)| binding.start)
+                    .min()
+                    .unwrap_or(prop.start);
+                let end = class_bindings
+                    .iter()
+                    .map(|(binding, _)| binding.end)
+                    .max()
+                    .unwrap_or(prop.end);
+                (
+                    (template_offset + start) as usize,
+                    (template_offset + end) as usize,
+                )
+            } else {
+                (
+                    (template_offset + prop.start) as usize,
+                    (template_offset + prop.end) as usize,
+                )
+            };
         let camel_prop_name = to_camel_case(prop.name.as_str());
 
         append!(*ts, "{expr_indent}  ");
@@ -200,5 +270,48 @@ fn generate_generic_props_call(
 
     if usage.vif_guard.is_some() {
         append!(*ts, "{indent}}}\n");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    use crate::virtual_ts::generate_virtual_ts;
+
+    #[test]
+    fn generic_props_call_merges_static_and_dynamic_class_bindings() {
+        let script = r#"import TeacherCard from "./TeacherCard.vue"
+const teacher = { name: "Ada" }
+const isLoading = false
+"#;
+        let template = r#"<TeacherCard
+  class="ma-1"
+  :teacher="teacher"
+  :class="{ 'loading-place-holder': isLoading }"
+/>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        assert!(
+            output
+                .code
+                .contains("\"class\": [\"ma-1\", { 'loading-place-holder': isLoading }]"),
+            "expected merged class binding in generic props call:\n{}",
+            output.code
+        );
+        assert_eq!(
+            output.code.matches("\"class\":").count(),
+            1,
+            "class should be emitted once in the props object:\n{}",
+            output.code
+        );
     }
 }
