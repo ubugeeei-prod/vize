@@ -59,7 +59,7 @@ export const Secondary: StoryObj = { args: { color: "secondary", label: "Hi" } }
 #[test]
 fn extracts_const_meta_default_export() {
     let source = r#"import Card from "../components/Card.vue";
-const meta = { component: Card, title: "Card" } satisfies Meta<typeof Card>;
+const meta = { component: Card, title: "Card", args: { tone: "neutral" } } satisfies Meta<typeof Card>;
 export default meta;
 export const Only = { args: {} };
 "#;
@@ -73,6 +73,7 @@ export const Only = { args: {} };
         module.component_path.as_deref(),
         Some("../components/Card.vue")
     );
+    assert!(module.meta_args.is_some());
     let stories: Vec<TestStory> = module
         .stories
         .iter()

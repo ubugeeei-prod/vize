@@ -30,6 +30,8 @@ pub(super) struct CsfModule<'a> {
     pub component_path: Option<String>,
     /// Meta `title` value (raw, may contain `Category/Name`).
     pub title: Option<String>,
+    /// Default CSF `args` object from the module meta, if present.
+    pub meta_args: Option<&'a ObjectExpression<'a>>,
     /// Ordered stories.
     pub stories: Vec<CsfStory<'a>>,
 }
@@ -39,6 +41,7 @@ pub(super) fn extract_csf<'a>(program: &'a Program<'a>) -> CsfModule<'a> {
     let meta = find_meta_object(program);
     let component_local = meta.and_then(meta_component_local);
     let title = meta.and_then(meta_title);
+    let meta_args = meta.and_then(meta_args);
     let component_path = component_local
         .as_deref()
         .and_then(|local| find_import_source(program, local));
@@ -48,6 +51,7 @@ pub(super) fn extract_csf<'a>(program: &'a Program<'a>) -> CsfModule<'a> {
     CsfModule {
         component_path,
         title,
+        meta_args,
         stories,
     }
 }
@@ -133,6 +137,16 @@ fn meta_component_local(meta: &ObjectExpression<'_>) -> Option<String> {
 fn meta_title(meta: &ObjectExpression<'_>) -> Option<String> {
     let value = object_property_value(meta, "title")?;
     string_literal_value(value)
+}
+
+/// Read the meta `args` object literal.
+fn meta_args<'a>(meta: &'a ObjectExpression<'a>) -> Option<&'a ObjectExpression<'a>> {
+    let value = object_property_value(meta, "args")?;
+    if let Expression::ObjectExpression(object) = unwrap_expression(value) {
+        Some(&**object)
+    } else {
+        None
+    }
 }
 
 /// Find the import specifier source path for a given local identifier.
@@ -306,6 +320,7 @@ pub(super) fn unwrap_expression<'a>(expr: &'a Expression<'a>) -> &'a Expression<
         current = match current {
             Expression::TSSatisfiesExpression(inner) => &inner.expression,
             Expression::TSAsExpression(inner) => &inner.expression,
+            Expression::TSNonNullExpression(inner) => &inner.expression,
             Expression::ParenthesizedExpression(inner) => &inner.expression,
             other => return other,
         };

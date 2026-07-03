@@ -159,6 +159,72 @@ export const Big = { args: { data: fixture } };
 }
 
 #[test]
+fn emits_meta_args_and_lets_story_args_override() {
+    let source = r#"import AfButton from "./AfButton.vue";
+export default { component: AfButton, title: "AfButton", args: { color: "primary", disabled: true, count: 1 } } satisfies Meta<typeof AfButton>;
+export const Primary = { args: {} };
+export const Secondary = { args: { color: "secondary", label: "Hi" } };
+"#;
+    let (content, variants, todos) = emit(source);
+
+    assert!(content.contains(r#"<AfButton color="primary" :disabled="true" :count="1" />"#));
+    assert!(
+        content
+            .contains(r#"<AfButton :disabled="true" :count="1" color="secondary" label="Hi" />"#)
+    );
+    assert!(!content.contains(r#"color="primary" :disabled="true" :count="1" color="secondary""#));
+    assert_eq!(variants, 2);
+    assert_eq!(todos, 0);
+}
+
+#[test]
+fn emits_meta_args_inside_render_args_spread() {
+    let source = r#"import AfButton from "./AfButton.vue";
+export default { component: AfButton, title: "AfButton", args: { color: "primary", disabled: true } } satisfies Meta<typeof AfButton>;
+export const Primary = {
+  args: { color: "secondary" },
+  render: args => () => <AfButton {...args}>Primary</AfButton>,
+};
+"#;
+    let (content, _variants, todos) = emit(source);
+
+    assert!(content.contains(r#"<AfButton :disabled="true" color="secondary">Primary</AfButton>"#));
+    assert_eq!(todos, 0);
+}
+
+#[test]
+fn emits_todo_for_meta_args_referencing_module_bindings() {
+    let source = r#"import AfButton from "./AfButton.vue";
+const base = createFixture();
+export default { component: AfButton, title: "AfButton", args: { data: base } } satisfies Meta<typeof AfButton>;
+export const Primary = { args: {} };
+"#;
+    let (content, variants, todos) = emit(source);
+
+    assert!(content.contains("<AfButton />"));
+    assert!(content.contains("TODO(vize musea migrate)"));
+    assert!(!content.contains(":data"));
+    assert_eq!(variants, 1);
+    assert_eq!(todos, 1);
+}
+
+#[test]
+fn emits_todo_for_nested_story_args_module_bindings() {
+    let source = r#"import AfButton from "./AfButton.vue";
+const base = createFixture();
+export default { component: AfButton, title: "AfButton" } satisfies Meta<typeof AfButton>;
+export const Primary = { args: { data: { ...base, status: Status.Ready } } };
+"#;
+    let (content, variants, todos) = emit(source);
+
+    assert!(content.contains("<AfButton />"));
+    assert!(content.contains("TODO(vize musea migrate)"));
+    assert!(!content.contains(":data"));
+    assert_eq!(variants, 1);
+    assert_eq!(todos, 1);
+}
+
+#[test]
 fn emits_directive_expressions_without_quot_entities() {
     let source = r#"import AfButton from "./AfButton.vue";
 export default { component: AfButton, title: "AfButton" } satisfies Meta<typeof AfButton>;

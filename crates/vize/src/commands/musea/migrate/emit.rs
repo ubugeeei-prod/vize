@@ -1,6 +1,8 @@
 //! Generate `.art.vue` text from extracted CSF metadata.
 
-use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, PropertyKey};
+use oxc_ast::ast::{
+    ArrayExpressionElement, Expression, ObjectExpression, ObjectPropertyKind, PropertyKey,
+};
 use oxc_span::GetSpan;
 use vize_carton::{String, append};
 
@@ -52,7 +54,7 @@ pub(super) fn emit_art(
     let mut todos = 0usize;
     for (index, story) in module.stories.iter().enumerate() {
         let is_default = index == 0;
-        let (inner, is_todo) = emit_variant_inner(story, component_tag, source);
+        let (inner, is_todo) = emit_variant_inner(story, module.meta_args, component_tag, source);
         if is_todo {
             todos += 1;
         }
@@ -83,7 +85,12 @@ pub(super) fn emit_art(
 }
 
 /// Build the inner markup of a `<variant>`. Returns `(markup, is_todo)`.
-fn emit_variant_inner(story: &CsfStory<'_>, component_tag: &str, source: &str) -> (String, bool) {
+fn emit_variant_inner(
+    story: &CsfStory<'_>,
+    meta_args: Option<&ObjectExpression<'_>>,
+    component_tag: &str,
+    source: &str,
+) -> (String, bool) {
     if story.unsupported {
         return (emit_todo_element(component_tag), true);
     }
@@ -92,17 +99,17 @@ fn emit_variant_inner(story: &CsfStory<'_>, component_tag: &str, source: &str) -
         let Some(markup) = convert_render(render, source) else {
             return (emit_todo_element(component_tag), true);
         };
-        return match inline_story_args_spread(markup, story.args, source) {
+        return match inline_story_args_spread(markup, meta_args, story.args, source) {
             Some(markup) => (markup, false),
             None => (emit_todo_element(component_tag), true),
         };
     }
 
-    if let Some(args) = story.args {
-        if args_contains_unmigrated_identifier(args) {
+    if meta_args.is_some() || story.args.is_some() {
+        if args_contain_unmigrated_bindings(meta_args, story.args) {
             return (emit_todo_element(component_tag), true);
         }
-        if let Some(element) = emit_args_element(args, component_tag, source) {
+        if let Some(element) = emit_args_element(meta_args, story.args, component_tag, source) {
             return (element, false);
         }
         return (emit_todo_element(component_tag), true);
@@ -119,19 +126,39 @@ fn emit_todo_element(component_tag: &str) -> String {
 
 /// Emit `<Component ...props />` from an `args` object literal.
 fn emit_args_element(
-    args: &ObjectExpression<'_>,
+    meta_args: Option<&ObjectExpression<'_>>,
+    story_args: Option<&ObjectExpression<'_>>,
     component_tag: &str,
     source: &str,
 ) -> Option<String> {
     let mut out = String::default();
     append!(out, "<{component_tag}");
-    out.push_str(&emit_args_attributes(args, source)?);
+    out.push_str(&emit_args_attributes(meta_args, story_args, source)?);
     out.push_str(" />");
     Some(out)
 }
 
-fn emit_args_attributes(args: &ObjectExpression<'_>, source: &str) -> Option<String> {
+fn emit_args_attributes(
+    meta_args: Option<&ObjectExpression<'_>>,
+    story_args: Option<&ObjectExpression<'_>>,
+    source: &str,
+) -> Option<String> {
     let mut out = String::default();
+    if let Some(args) = meta_args {
+        emit_args_object_attributes(args, story_args, source, &mut out)?;
+    }
+    if let Some(args) = story_args {
+        emit_args_object_attributes(args, None, source, &mut out)?;
+    }
+    Some(out)
+}
+
+fn emit_args_object_attributes(
+    args: &ObjectExpression<'_>,
+    overrides: Option<&ObjectExpression<'_>>,
+    source: &str,
+    out: &mut String,
+) -> Option<()> {
     for property in &args.properties {
         let ObjectPropertyKind::ObjectProperty(prop) = property else {
             continue;
@@ -142,26 +169,30 @@ fn emit_args_attributes(args: &ObjectExpression<'_>, source: &str) -> Option<Str
         let Some(name) = property_key_name(&prop.key) else {
             continue;
         };
+        if overrides.is_some_and(|object| args_has_static_property(object, name)) {
+            continue;
+        }
         out.push(' ');
         out.push_str(&attribute_from_value(name, &prop.value, source)?);
     }
-    Some(out)
+    Some(())
 }
 
 fn inline_story_args_spread(
     markup: String,
-    args: Option<&ObjectExpression<'_>>,
+    meta_args: Option<&ObjectExpression<'_>>,
+    story_args: Option<&ObjectExpression<'_>>,
     source: &str,
 ) -> Option<String> {
     let marker = " v-bind=\"args\"";
     if !markup.contains(marker) {
         return Some(markup);
     }
-    let args = args?;
-    if args_contains_unmigrated_identifier(args) {
+    meta_args.or(story_args)?;
+    if args_contain_unmigrated_bindings(meta_args, story_args) {
         return None;
     }
-    let attributes = emit_args_attributes(args, source)?;
+    let attributes = emit_args_attributes(meta_args, story_args, source)?;
     Some(markup.replace(marker, attributes.as_str()).into())
 }
 
@@ -179,12 +210,71 @@ fn attribute_from_value(name: &str, value: &Expression<'_>, source: &str) -> Opt
     Some(out)
 }
 
-fn args_contains_unmigrated_identifier(args: &ObjectExpression<'_>) -> bool {
+fn args_contain_unmigrated_bindings(
+    meta_args: Option<&ObjectExpression<'_>>,
+    story_args: Option<&ObjectExpression<'_>>,
+) -> bool {
+    if let Some(args) = meta_args
+        && args_object_contains_unmigrated_bindings(args, story_args)
+    {
+        return true;
+    }
+    story_args.is_some_and(|args| args_object_contains_unmigrated_bindings(args, None))
+}
+
+fn args_object_contains_unmigrated_bindings(
+    args: &ObjectExpression<'_>,
+    overrides: Option<&ObjectExpression<'_>>,
+) -> bool {
+    args.properties.iter().any(|property| {
+        let ObjectPropertyKind::ObjectProperty(prop) = property else {
+            return true;
+        };
+        if prop.computed {
+            return true;
+        }
+        let Some(name) = property_key_name(&prop.key) else {
+            return true;
+        };
+        if overrides.is_some_and(|object| args_has_static_property(object, name)) {
+            return false;
+        }
+        expression_needs_module_binding(&prop.value)
+    })
+}
+
+fn expression_needs_module_binding(expression: &Expression<'_>) -> bool {
+    match unwrap_expression(expression) {
+        Expression::StringLiteral(_)
+        | Expression::NumericLiteral(_)
+        | Expression::BooleanLiteral(_)
+        | Expression::NullLiteral(_) => false,
+        Expression::TemplateLiteral(template) => !template.expressions.is_empty(),
+        Expression::UnaryExpression(unary) => expression_needs_module_binding(&unary.argument),
+        Expression::ArrayExpression(array) => array.elements.iter().any(|element| match element {
+            ArrayExpressionElement::Elision(_) => false,
+            ArrayExpressionElement::SpreadElement(_) => true,
+            _ => element
+                .as_expression()
+                .is_none_or(expression_needs_module_binding),
+        }),
+        Expression::ObjectExpression(object) => {
+            args_object_contains_unmigrated_bindings(object, None)
+        }
+        Expression::Identifier(_)
+        | Expression::StaticMemberExpression(_)
+        | Expression::ComputedMemberExpression(_)
+        | Expression::CallExpression(_) => true,
+        _ => true,
+    }
+}
+
+fn args_has_static_property(args: &ObjectExpression<'_>, name: &str) -> bool {
     args.properties.iter().any(|property| {
         let ObjectPropertyKind::ObjectProperty(prop) = property else {
             return false;
         };
-        !prop.computed && matches!(unwrap_expression(&prop.value), Expression::Identifier(_))
+        !prop.computed && property_key_name(&prop.key) == Some(name)
     })
 }
 

@@ -90,6 +90,49 @@ export const Primary: Story = {
 }
 
 #[test]
+fn migrates_meta_args_or_todos_unsafe_bindings() {
+    let dir = tempfile::tempdir().unwrap();
+    let safe_story = dir.path().join("SafeButton.stories.tsx");
+    fs::write(
+        &safe_story,
+        r#"import SafeButton from "./SafeButton.vue";
+export default { component: SafeButton, title: "Base/SafeButton", args: { color: "primary", disabled: true } } satisfies Meta<typeof SafeButton>;
+export const Primary = { args: {} };
+export const Secondary = { args: { color: "secondary" } };
+"#,
+    )
+    .unwrap();
+    let unsafe_story = dir.path().join("UnsafeCard.stories.tsx");
+    fs::write(
+        &unsafe_story,
+        r#"import UnsafeCard from "./UnsafeCard.vue";
+const base = createFixture();
+export default { component: UnsafeCard, title: "Base/UnsafeCard", args: { data: base } } satisfies Meta<typeof UnsafeCard>;
+export const Primary = { args: {} };
+"#,
+    )
+    .unwrap();
+
+    let output = run_migrate(
+        dir.path(),
+        &["SafeButton.stories.tsx", "UnsafeCard.stories.tsx"],
+    );
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        std::string::String::from_utf8_lossy(&output.stderr)
+    );
+
+    let safe_generated = fs::read_to_string(dir.path().join("SafeButton.art.vue")).unwrap();
+    assert!(safe_generated.contains(r#"<SafeButton color="primary" :disabled="true" />"#));
+    assert!(safe_generated.contains(r#"<SafeButton :disabled="true" color="secondary" />"#));
+
+    let unsafe_generated = fs::read_to_string(dir.path().join("UnsafeCard.art.vue")).unwrap();
+    assert!(unsafe_generated.contains("TODO(vize musea migrate)"));
+    assert!(!unsafe_generated.contains(":data"));
+}
+
+#[test]
 fn migrates_unsupported_tsx_storyfn_as_todo_variant() {
     let dir = tempfile::tempdir().unwrap();
     let story = dir.path().join("Toggle.stories.tsx");
