@@ -112,7 +112,7 @@ jobs:
       - name: Create archive (Unix)
         if: runner.os != 'Windows'
         shell: bash
-        run: moon run --target native - -- ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize < tools/moon/scripts/github/create_cli_archive.mbtx
+        run: if [[ "${{ matrix.settings.target }}" == *-musl ]]; then bash tools/github/verify-musl-cli-binary.sh "${{ matrix.settings.target }}"; fi; moon run --target native - -- ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize < tools/moon/scripts/github/create_cli_archive.mbtx
 
       - name: Create archive (Windows)
         if: runner.os == 'Windows'

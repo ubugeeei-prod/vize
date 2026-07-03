@@ -69,3 +69,64 @@ test("Zig musl wrappers use rust-lld for final links and normalize cc-rs flags",
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
 });
+
+test("musl CLI verifier rejects dynamic interpreters and glibc symbol requirements", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-musl-verifier-"));
+  const binDir = path.join(tempDir, "bin");
+  const target = "x86_64-unknown-linux-musl";
+  const binary = path.join(tempDir, "target", target, "release", "vize");
+  const scriptPath = path.join(root, "tools", "github", "verify-musl-cli-binary.sh");
+
+  try {
+    fs.mkdirSync(path.dirname(binary), { recursive: true });
+    fs.mkdirSync(binDir, { recursive: true });
+    fs.writeFileSync(binary, "");
+    fs.writeFileSync(
+      path.join(binDir, "file"),
+      "#!/usr/bin/env bash\nprintf 'ELF static-pie\\n'\n",
+    );
+    fs.writeFileSync(
+      path.join(binDir, "readelf"),
+      [
+        "#!/usr/bin/env bash",
+        'if [[ "${VERIFY_MODE:-ok}" == "interpreter" ]]; then',
+        "  printf '[Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]\\n'",
+        "else",
+        "  printf 'Program Headers:\\n'",
+        "fi",
+        "",
+      ].join("\n"),
+    );
+    fs.writeFileSync(
+      path.join(binDir, "strings"),
+      [
+        "#!/usr/bin/env bash",
+        'if [[ "${VERIFY_MODE:-ok}" == "glibc" ]]; then',
+        "  printf 'GLIBC_2.39\\n'",
+        "else",
+        "  printf 'musl\\n'",
+        "fi",
+        "",
+      ].join("\n"),
+    );
+    for (const command of ["file", "readelf", "strings"]) {
+      fs.chmodSync(path.join(binDir, command), 0o755);
+    }
+
+    const runVerifier = (mode: string) =>
+      execFileSync("bash", [scriptPath, target], {
+        cwd: tempDir,
+        env: {
+          ...process.env,
+          PATH: `${binDir}${path.delimiter}${process.env.PATH}`,
+          VERIFY_MODE: mode,
+        },
+      });
+
+    runVerifier("ok");
+    assert.throws(() => runVerifier("interpreter"));
+    assert.throws(() => runVerifier("glibc"));
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});

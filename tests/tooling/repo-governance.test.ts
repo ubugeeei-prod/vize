@@ -46,6 +46,16 @@ test("root quality gates ignore local generated environments", () => {
   }
 });
 
+test("CodeRabbit reviews run in strict mode with actionable workflow context", () => {
+  const coderabbit = readRepoFile(".coderabbit.yaml");
+
+  assert.match(coderabbit, /^  profile:\s*assertive$/m);
+  assert.match(coderabbit, /^  request_changes_workflow:\s*true$/m);
+  assert.match(coderabbit, /^  review_details:\s*true$/m);
+  assert.match(coderabbit, /artifact\/linkage verification/);
+  assert.match(coderabbit, /workflow-shape tests cover the changed behavior/);
+});
+
 test("socket.dev configuration scopes dependency and workflow scans", () => {
   const socket = readRepoFile("socket.yml");
 

@@ -6,11 +6,12 @@ chat:
   auto_reply: true
 
 reviews:
-  profile: chill
+  profile: assertive
   high_level_summary: true
   changed_files_summary: true
   review_status: true
-  request_changes_workflow: false
+  review_details: true
+  request_changes_workflow: true
   poem: false
 
   auto_review:
@@ -47,7 +48,7 @@ reviews:
 
     - path: ".github/workflows/**"
       instructions: |
-        Review release and CI changes for runner compatibility, least-privilege permissions, pinned actions, cache correctness, and whether workflow-shape tests cover the changed behavior.
+        Review release and CI changes for runner compatibility, least-privilege permissions, pinned actions, cache correctness, artifact/linkage verification, and whether workflow-shape tests cover the changed behavior.
 
     - path: "tests/tooling/**"
       instructions: |

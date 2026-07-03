@@ -242,6 +242,26 @@ test("release workflow tunes Windows production Rust builds for cold runners", (
   );
 });
 
+test("release workflow inspects musl CLI binaries while archiving", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const buildCliJob = workflowJobBody(workflow, "build-cli");
+  const verifier = readRepoFile("tools", "github", "verify-musl-cli-binary.sh");
+
+  const buildIndex = buildCliJob.indexOf("name: Build CLI");
+  const archiveIndex = buildCliJob.indexOf("name: Create archive (Unix)");
+
+  assert.notEqual(buildIndex, -1);
+  assert.notEqual(archiveIndex, -1);
+  assert.ok(buildIndex < archiveIndex, "the musl binary check must inspect the built CLI binary");
+  assert.match(
+    buildCliJob,
+    /Create archive \(Unix\)[\s\S]*if \[\[ "\$\{\{ matrix\.settings\.target \}\}" == \*-musl \]\]; then bash tools\/github\/verify-musl-cli-binary\.sh/,
+  );
+  assert.match(buildCliJob, /verify-musl-cli-binary\.sh[\s\S]*create_cli_archive\.mbtx/);
+  assert.match(verifier, /readelf -l "\$binary"[\s\S]*Requesting program interpreter/);
+  assert.match(verifier, /strings "\$binary" \| grep -Eq 'GLIBC_\[0-9\]'/);
+});
+
 test("release workflow runs GitHub helper scripts with the native target on every runner", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
 
