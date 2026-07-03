@@ -5,61 +5,31 @@ use std::{path::Path, process::Command};
 use vize_carton::cstr;
 
 #[test]
-fn check_legacy_vue2_show_virtual_ts_omits_shared_helpers() {
+fn legacy_vue2_typed_emits_do_not_report_unused_loose_emit_helper() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
     };
-    let project_root = create_project("legacy-vue2-show-virtual-ts-no-shared-helpers");
-
-    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
-        .current_dir(&project_root)
-        .env("CORSA_PATH", corsa_path)
-        .args(["check", "src/App.vue", "--show-virtual-ts"])
-        .output()
-        .unwrap();
-
-    let stdout = std::str::from_utf8(&output.stdout).unwrap();
-    let stderr = std::str::from_utf8(&output.stderr).unwrap();
-    assert_eq!(
-        output.status.code(),
-        Some(0),
-        "stdout:\n{stdout}\nstderr:\n{stderr}"
-    );
-    assert!(
-        !stderr.contains(vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME),
-        "legacy Vue 2 should not show a shared helpers preamble:\n{stderr}"
-    );
-    assert!(
-        stderr.contains(
-            "declare function __vizeDefineComponent<T>(options: T & __VizeNuxt2PageOptions): T;"
-        ),
-        "expected per-file legacy defineComponent helper:\n{stderr}"
-    );
-    assert!(
-        stderr.contains("type __VizeComponentProps<T>"),
-        "legacy Vue 2 virtual TS must define component props helpers inline:\n{stderr}"
-    );
-    for vue3_only_helper in [
-        "import('vue').Ref",
-        "import('vue').ShallowRef",
-        "import('vue').ComponentPublicInstance",
-        "import('vue').defineComponent",
-    ] {
-        assert!(
-            !stderr.contains(vue3_only_helper),
-            "legacy Vue 2 virtual TS must not contain {vue3_only_helper}:\n{stderr}"
-        );
-    }
-
-    let _ = std::fs::remove_dir_all(&project_root);
+    let project_root = create_project("legacy-vue2-no-unused-loose-emit-helper");
+    std::fs::write(
+        project_root.join("src/App.vue"),
+        r#"<script setup lang="ts">
+interface Emits {
+  (event: 'click', value: MouseEvent): void
 }
 
-#[test]
-fn check_legacy_vue2_targeted_json_keeps_component_props_helper_available() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
-        return;
-    };
-    let project_root = create_project("legacy-vue2-targeted-json-component-props-helper");
+const emit = defineEmits<Emits>()
+
+function handleClick(event: MouseEvent) {
+  emit('click', event)
+}
+</script>
+
+<template>
+  <button @click="handleClick">Click</button>
+</template>
+"#,
+    )
+    .unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
@@ -85,35 +55,30 @@ fn check_legacy_vue2_targeted_json_keeps_component_props_helper_available() {
     let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
     assert_eq!(
         json["errorCount"], 0,
-        "stdout:\n{stdout}\nstderr:\n{stderr}"
+        "generated loose emit helpers must not surface under noUnusedLocals:\nstdout:\n{stdout}\nstderr:\n{stderr}"
     );
     assert!(
-        !stdout.contains("__VizeComponentProps"),
-        "targeted JSON check should not report missing component props helper:\n{stdout}"
+        !stdout.contains("__VizeVue2LooseEmitArgs"),
+        "JSON diagnostics should not mention the internal helper:\n{stdout}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
 #[test]
-fn legacy_vue2_full_tsconfig_no_template_bindings_keeps_props_helper() {
+fn legacy_vue2_no_unused_locals_still_reports_user_unused_bindings() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
     };
-    let project_root = create_project("legacy-vue2-full-tsconfig-component-props-helper");
+    let project_root = create_project("legacy-vue2-no-unused-user-binding");
     std::fs::write(
-        project_root.join("src/Dialog.vue"),
-        r#"<script lang="ts">
-export default {
-  props: {
-    title: String,
-  },
-}
+        project_root.join("src/App.vue"),
+        r#"<script setup lang="ts">
+const used = 1
+const unusedLocal = 2
 </script>
 
-<template>
-  <section>{{ title }}</section>
-</template>
+<template>{{ used }}</template>
 "#,
     )
     .unwrap();
@@ -125,9 +90,9 @@ export default {
             "check",
             "--tsconfig",
             "tsconfig.json",
-            "--no-check-template-bindings",
             "--format",
             "json",
+            "src/App.vue",
         ])
         .output()
         .unwrap();
@@ -136,18 +101,21 @@ export default {
     let stderr = std::str::from_utf8(&output.stderr).unwrap();
     assert_eq!(
         output.status.code(),
-        Some(0),
-        "stdout:\n{stdout}\nstderr:\n{stderr}"
+        Some(1),
+        "user unused locals should still fail the check\nstdout:\n{stdout}\nstderr:\n{stderr}"
     );
     let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
     assert_eq!(
-        json["errorCount"], 0,
+        json["errorCount"], 1,
         "stdout:\n{stdout}\nstderr:\n{stderr}"
     );
-    assert_eq!(json["fileCount"], 2, "stdout:\n{stdout}\nstderr:\n{stderr}");
     assert!(
-        !stdout.contains("__VizeComponentProps"),
-        "full tsconfig check should not report missing component props helper:\n{stdout}"
+        stdout.contains("unusedLocal"),
+        "expected the user unused binding diagnostic:\n{stdout}"
+    );
+    assert!(
+        !stdout.contains("__VizeVue2LooseEmitArgs"),
+        "internal helper diagnostics must stay suppressed without hiding user diagnostics:\n{stdout}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
@@ -167,7 +135,8 @@ fn create_project(name: &str) -> std::path::PathBuf {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "noEmit": true
+    "noEmit": true,
+    "noUnusedLocals": true
   },
   "include": ["src/**/*"]
 }"#,
@@ -180,22 +149,6 @@ fn create_project(name: &str) -> std::path::PathBuf {
     "legacyVue2": true
   }
 }"#,
-    )
-    .unwrap();
-    std::fs::write(
-        project_root.join("src/App.vue"),
-        r#"<script lang="ts">
-export default {
-  data() {
-    return { count: 0 }
-  },
-}
-</script>
-
-<template>
-  <div>{{ count }}</div>
-</template>
-"#,
     )
     .unwrap();
     project_root

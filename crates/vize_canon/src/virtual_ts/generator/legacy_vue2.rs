@@ -27,7 +27,7 @@ type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K]
 type __VizeComponentProps<T> = T extends unknown ? T & Partial<__VizeKebabProps<T>> : never;
 type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
 type __VizeVue2LooseEventArg<T> = __VizeIsAny<T> extends true ? any : [T] extends [Object] ? ([Object] extends [T] ? any : T) : T;
-type __VizeVue2LooseEmitArgs<A extends readonly unknown[]> = { [K in keyof A]: __VizeVue2LooseEventArg<A[K]> };
+declare type __VizeVue2LooseEmitArgs<A extends readonly unknown[]> = { [K in keyof A]: __VizeVue2LooseEventArg<A[K]> };
 type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];"#;
 const LEGACY_REF_UNWRAP_HELPER: &str =
