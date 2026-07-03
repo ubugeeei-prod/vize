@@ -145,11 +145,16 @@ fn has_structural_slot_directive(el: &ElementNode<'_>) -> bool {
     })
 }
 
-fn has_meaningful_implicit_default_child(child: &TemplateChildNode<'_>) -> bool {
+fn has_implicit_child(child: &TemplateChildNode<'_>) -> bool {
     match child {
         TemplateChildNode::Comment(_) => false,
         TemplateChildNode::Text(text) => !text.content.trim().is_empty(),
         TemplateChildNode::Element(el) if is_slot_template(el) => false,
+        TemplateChildNode::If(if_node) => if_node
+            .branches
+            .iter()
+            .any(|branch| branch.children.iter().any(has_implicit_child)),
+        TemplateChildNode::For(for_node) => for_node.children.iter().any(has_implicit_child),
         _ => true,
     }
 }
@@ -196,16 +201,14 @@ pub(crate) fn validate_v_slot_usage(ctx: &mut TransformContext<'_>, el: &Element
 
     for child in el.children.iter() {
         let TemplateChildNode::Element(child_el) = child else {
-            if first_implicit_default_loc.is_none() && has_meaningful_implicit_default_child(child)
-            {
+            if first_implicit_default_loc.is_none() && has_implicit_child(child) {
                 first_implicit_default_loc = Some(child.loc().clone());
             }
             continue;
         };
 
         let Some(slot_dir) = find_v_slot(child_el) else {
-            if first_implicit_default_loc.is_none() && has_meaningful_implicit_default_child(child)
-            {
+            if first_implicit_default_loc.is_none() && has_implicit_child(child) {
                 first_implicit_default_loc = Some(child.loc().clone());
             }
             continue;
@@ -370,10 +373,7 @@ pub fn has_dynamic_slots<'a>(el: &ElementNode<'a>) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        DirectiveNode, SourceLocation, TemplateChildNode, collect_slots, extract_slot_prop_names,
-        get_slot_name, get_slot_prop_names, has_v_slot,
-    };
+    use super::*;
     use crate::errors::{CompilerError, ErrorCode};
     use crate::lane::traverse::traverse_children;
     use crate::lane::{ParentNode, TransformContext};

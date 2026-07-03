@@ -319,9 +319,12 @@ fn dev_vue_compiler_available() -> bool {
     let Some(workspace_root) = manifest_dir.parent().and_then(|path| path.parent()) else {
         return false;
     };
+    let script = "import { createRequire } from 'node:module';\n\
+const require = createRequire(`${process.cwd()}/tests/package.json`);\n\
+require.resolve('vue/compiler-sfc');\n";
     Command::new("node")
         .current_dir(workspace_root)
-        .args(["--input-type=module", "-e", "import('vue/compiler-sfc')"])
+        .args(["--input-type=module", "-e", script])
         .status()
         .is_ok_and(|status| status.success())
 }

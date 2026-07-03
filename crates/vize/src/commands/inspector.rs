@@ -574,11 +574,11 @@ fn run_official_compiler_for_compare(
 fn dev_module_root() -> Option<String> {
     let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
     let root = manifest_dir.parent()?.parent()?;
-    root.join("node_modules")
-        .is_dir()
-        .then(|| root.to_string_lossy().as_ref().to_compact_string())
+    [root.to_path_buf(), root.join("tests")]
+        .into_iter()
+        .find(|candidate| candidate.join("node_modules/vue/compiler-sfc").is_dir())
+        .map(|candidate| candidate.to_string_lossy().as_ref().to_compact_string())
 }
-
 fn output_text<'a>(code: &'a str, formatted_code: &'a str, error: Option<&'a str>) -> &'a str {
     error.unwrap_or({
         if formatted_code.is_empty() {
