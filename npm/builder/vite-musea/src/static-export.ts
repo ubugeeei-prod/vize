@@ -47,6 +47,11 @@ export function shouldEnableMuseaStaticBuild(command: string): boolean {
   return isMuseaStaticBuild() || command === "build";
 }
 
+export function shouldEmitMuseaStaticGallery(command: string, storybookCompat: boolean): boolean {
+  if (isMuseaStaticBuild()) return true;
+  return shouldEnableMuseaStaticBuild(command) && !storybookCompat;
+}
+
 export function museaStaticBuildInput(input: StaticBuildInput): Record<string, string> {
   const entries: Record<string, string> = {};
 

@@ -14,6 +14,7 @@ import {
   loadStaticRuntimeModule,
   resolveStaticRuntimeId,
   shouldEnableMuseaStaticBuild,
+  shouldEmitMuseaStaticGallery,
   VIRTUAL_STATIC_RUNTIME,
   type StaticBuildInput,
 } from "./static-export.js";
@@ -81,6 +82,27 @@ void test("static build mode is enabled for direct vite builds without env flag"
 
     process.env[MUSEA_STATIC_BUILD_ENV] = "1";
     assert.equal(shouldEnableMuseaStaticBuild("serve"), true);
+  } finally {
+    if (previousEnv === undefined) {
+      Reflect.deleteProperty(process.env, MUSEA_STATIC_BUILD_ENV);
+    } else {
+      process.env[MUSEA_STATIC_BUILD_ENV] = previousEnv;
+    }
+  }
+});
+
+void test("storybook compatibility suppresses implicit static gallery builds", () => {
+  const previousEnv = process.env[MUSEA_STATIC_BUILD_ENV];
+  try {
+    Reflect.deleteProperty(process.env, MUSEA_STATIC_BUILD_ENV);
+
+    assert.equal(shouldEmitMuseaStaticGallery("build", false), true);
+    assert.equal(shouldEmitMuseaStaticGallery("build", true), false);
+    assert.equal(shouldEmitMuseaStaticGallery("serve", true), false);
+
+    process.env[MUSEA_STATIC_BUILD_ENV] = "1";
+    assert.equal(shouldEmitMuseaStaticGallery("build", true), true);
+    assert.equal(shouldEmitMuseaStaticGallery("serve", true), true);
   } finally {
     if (previousEnv === undefined) {
       Reflect.deleteProperty(process.env, MUSEA_STATIC_BUILD_ENV);

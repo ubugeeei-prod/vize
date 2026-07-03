@@ -30,7 +30,7 @@ import {
   loadStaticRuntimeModule,
   museaStaticBuildConfig,
   resolveStaticRuntimeId,
-  shouldEnableMuseaStaticBuild,
+  shouldEmitMuseaStaticGallery,
   type StaticBuildInput,
 } from "../static-export.js";
 import { resolveMuseaSharedConfig } from "./config.js";
@@ -91,7 +91,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
     },
 
     config(userConfig, env) {
-      staticBuildEnabled = shouldEnableMuseaStaticBuild(env.command);
+      staticBuildEnabled = shouldEmitMuseaStaticGallery(env.command, storybookCompat);
       const staticBuildConfig = staticBuildEnabled
         ? museaStaticBuildConfig(userConfig.build?.rollupOptions?.input as StaticBuildInput)
         : {};
@@ -115,6 +115,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
           tokenPreviewConfig = mc.tokenPreviews;
       }
       vueVersion = resolveStaticPreviewVueVersion(vueVersion, resolvedConfig.plugins);
+      staticBuildEnabled = shouldEmitMuseaStaticGallery(resolvedConfig.command, storybookCompat);
 
       virtualState.basePath = basePath;
 
