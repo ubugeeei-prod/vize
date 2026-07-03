@@ -128,6 +128,35 @@ function moveToDetail(item: Manager) {
 }
 
 #[test]
+fn legacy_vue2_unresolved_component_event_payloads_stay_variadic() {
+    let script = r#"import CalendarRange from './CalendarRange.vue'
+function updateRange(
+  calendarDate: { start: string; end: string },
+  highlightSelectedDate: () => void,
+) {
+  void calendarDate
+  highlightSelectedDate()
+}
+function submitHooks(hooks: { before?: () => void; after?: () => void }) {
+  hooks.before?.()
+}
+"#;
+    let template = r#"<CalendarRange @range-change="updateRange" @submit="submitHooks" />"#;
+
+    let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
+    assert!(
+        legacy.contains("_range_change_legacy_args")
+            && legacy.contains("_submit_legacy_args")
+            && legacy.contains("extends [] ? any[] : unknown[] extends"),
+        "legacy Vue 2 unresolved/empty component event args should become variadic any[]:\n{legacy}"
+    );
+    assert!(
+        !legacy.contains(" ? (($event: "),
+        "legacy Vue 2 component listeners should not collapse unresolved events to one $event:\n{legacy}"
+    );
+}
+
+#[test]
 fn legacy_vue2_skips_external_component_prop_checks() {
     let script = "const width = 320\n";
     let template = r#"<VDatePicker :width="width" />"#;
