@@ -102,17 +102,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         .source_path
         .as_deref()
         .and_then(|path| crate::config::load_compiler_template_syntax(Some(path)));
-    // Configured Vue dialect (`vue.version`) threads into dialect-aware virtual TS.
     let dialect = dialect_from_features(loaded_config.features.vue_version);
-    // Vue 3 Options API binding resolution is officially supported and is a
-    // standard-build opt-in (not the `legacy` feature).
     let options_api = loaded_config.features.type_checker_options_api;
-    // Opt-in type-checking of `.jsx`/`.tsx` Vize components (#1497). Default-off
-    // so React `.tsx` is not accidentally routed through the Vue JSX checker.
     let jsx_typecheck = loaded_config.features.type_checker_jsx_typecheck;
-    // Legacy Vue 2.7 / Nuxt 2 Options-API type checking is opt-in and compiled out
-    // of the default Vue 3 binary. Without the `legacy` feature, honor the config
-    // flag by warning instead of silently ignoring it.
     let legacy_vue2 = cfg!(feature = "legacy") && loaded_config.features.type_checker_legacy_vue2;
     #[cfg(not(feature = "legacy"))]
     if loaded_config.features.type_checker_legacy_vue2 {
@@ -256,7 +248,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
     let tsconfig = program_tsconfig_path.as_deref();
     let nuxt_root = &nuxt_project_root;
-    let nuxt_path_aliases = nuxt::detect(&mut virtual_ts_options, nuxt_root, tsconfig, legacy_vue2);
+    let nuxt_path_aliases = nuxt::detect(
+        &mut virtual_ts_options,
+        nuxt_root,
+        tsconfig,
+        legacy_vue2,
+        dialect,
+    );
     collect_project_global_component_stubs(
         &mut virtual_ts_options,
         &files,

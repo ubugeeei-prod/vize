@@ -5,7 +5,7 @@
 use std::path::Path;
 
 use vize_canon::virtual_ts::VirtualTsOptions;
-use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_carton::{FxHashSet, String, ToCompactString, config::VueVersion};
 
 mod fallback;
 mod generated;
@@ -43,7 +43,7 @@ pub(in crate::commands::check) fn detect_nuxt_auto_imports(
     options: &mut VirtualTsOptions,
     cwd: &Path,
 ) -> Vec<NuxtPathAlias> {
-    detect(options, cwd, None, false)
+    detect(options, cwd, None, false, VueVersion::V3)
 }
 
 #[cfg(test)]
@@ -51,7 +51,7 @@ pub(in crate::commands::check) fn detect_legacy_nuxt_auto_imports(
     options: &mut VirtualTsOptions,
     cwd: &Path,
 ) -> Vec<NuxtPathAlias> {
-    detect(options, cwd, None, true)
+    detect(options, cwd, None, true, VueVersion::V2_7)
 }
 
 pub(in crate::commands::check) fn detect(
@@ -59,6 +59,7 @@ pub(in crate::commands::check) fn detect(
     cwd: &Path,
     tsconfig_path: Option<&Path>,
     legacy_vue2: bool,
+    dialect: VueVersion,
 ) -> Vec<NuxtPathAlias> {
     if !is_nuxt_project(cwd) {
         return Vec::new();
@@ -91,9 +92,13 @@ pub(in crate::commands::check) fn detect(
     // Surface the degraded fallback: without generated Nuxt types,
     // auto-imports resolve to permissive `any` stubs that hide real type
     // errors. detect_nuxt_auto_imports runs once per check, so this warns once.
-    if let Some(message) =
-        missing_generated_types_warning(has_generated_imports, &generated_dir, legacy_vue2)
-    {
+    let legacy_generated_type_guidance =
+        legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
+    if let Some(message) = missing_generated_types_warning(
+        has_generated_imports,
+        &generated_dir,
+        legacy_generated_type_guidance,
+    ) {
         eprintln!("{message}");
     }
     collect_plugin_injection_stubs(cwd, &mut collected, &mut seen_names);
