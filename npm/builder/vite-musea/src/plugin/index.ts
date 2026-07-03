@@ -93,7 +93,17 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       const staticBuildConfig = staticBuildEnabled
         ? museaStaticBuildConfig(userConfig.build?.rollupOptions?.input as StaticBuildInput)
         : {};
-      return { resolve: { alias: [createVueRuntimeCompilerAlias()] }, ...staticBuildConfig };
+      return {
+        resolve: {
+          alias: [
+            createVueRuntimeCompilerAlias({
+              root: userConfig.root ? path.resolve(userConfig.root) : process.cwd(),
+              runtimeCompiler: options.vueRuntimeCompiler,
+            }),
+          ],
+        },
+        ...staticBuildConfig,
+      };
     },
 
     options: applyMuseaStaticBuildInput,

@@ -149,4 +149,13 @@ export interface MuseaOptions {
    * @default 3
    */
   vueVersion?: MuseaVueVersion;
+
+  /**
+   * Vue runtime compiler entry used by the static preview alias for bare `vue`.
+   * Defaults to resolving `vue/dist/vue.esm-bundler.js` from the Vite project root.
+   *
+   * Use this when a workspace needs a custom Vue build or a non-standard package
+   * manager layout.
+   */
+  vueRuntimeCompiler?: string;
 }
