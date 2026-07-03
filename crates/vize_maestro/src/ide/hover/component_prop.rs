@@ -2,12 +2,38 @@ use tower_lsp::lsp_types::Hover;
 
 use super::HoverBuilder;
 use crate::ide::IdeContext;
+use crate::ide::completion::template::component_metadata;
 
 pub(super) fn hover_attribute(ctx: &IdeContext<'_>) -> Option<Hover> {
     let (attr_name, component_name) =
         crate::ide::definition::helpers::get_attribute_and_component_at_offset(ctx)?;
     if !crate::ide::is_component_tag(&component_name) {
         return None;
+    }
+
+    let prop_name = crate::ide::definition::helpers::kebab_to_camel(&attr_name);
+    if let Some(metadata) = component_metadata(ctx, &component_name)
+        && let Some(prop) = metadata.props.iter().find(|prop| prop.name == prop_name)
+    {
+        let type_detail = prop.type_detail.as_deref().unwrap_or("unknown");
+        let optional = if prop.required { "" } else { "?" };
+        let signature = format!("{}{}: {}", prop.name, optional, type_detail);
+        let requirement = if prop.required {
+            "Required"
+        } else {
+            "Optional"
+        };
+        let mut builder = HoverBuilder::new()
+            .title(&prop.name)
+            .meta("Component prop")
+            .code("typescript", &signature)
+            .section("Requirement", requirement);
+
+        if let Some(default) = prop.default_value.as_deref() {
+            builder = builder.section("Default", &format!("`{default}`"));
+        }
+
+        return Some(builder.build());
     }
 
     let import_path = crate::ide::definition::helpers::find_import_path(ctx, &component_name)?;
@@ -24,7 +50,6 @@ pub(super) fn hover_attribute(ctx: &IdeContext<'_>) -> Option<Hover> {
     .ok()?;
     let script_setup = descriptor.script_setup.as_ref()?;
     let script = script_setup.content.as_ref();
-    let prop_name = crate::ide::definition::helpers::kebab_to_camel(&attr_name);
     let define_props_pos = script.find("defineProps")?;
     let after_define_props = &script[define_props_pos..];
     let prop_pos =
@@ -57,5 +82,72 @@ fn prop_signature_at(script: &str, offset: usize, prop_name: &str) -> String {
         prop_name.to_string()
     } else {
         line.to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    use super::super::{HoverContents, HoverService};
+    use crate::{ide::IdeContext, server::ServerState};
+    use tower_lsp::lsp_types::Url;
+
+    #[test]
+    fn hover_component_prop_uses_croquis_metadata() {
+        let dir = tempfile::tempdir().unwrap();
+        let child_path = dir.path().join("Child.vue");
+        let parent_path = dir.path().join("Parent.vue");
+
+        fs::write(
+            &child_path,
+            r#"<script setup lang="ts">
+defineModel<string>({ required: true })
+</script>
+"#,
+        )
+        .unwrap();
+        let source = r#"<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child model-value="draft" />
+</template>
+"#;
+        fs::write(&parent_path, source).unwrap();
+
+        let uri = Url::from_file_path(&parent_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let offset = source.find("model-value").unwrap() + "model-value".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let hover = HoverService::hover(&ctx).unwrap();
+        let value = hover_markdown(hover);
+
+        assert!(value.contains("modelValue: string"), "got {value:?}");
+        assert!(value.contains("Required"), "got {value:?}");
+    }
+
+    fn hover_markdown(hover: tower_lsp::lsp_types::Hover) -> String {
+        match hover.contents {
+            HoverContents::Markup(content) => content.value,
+            HoverContents::Scalar(marked) => match marked {
+                tower_lsp::lsp_types::MarkedString::String(value) => value,
+                tower_lsp::lsp_types::MarkedString::LanguageString(value) => value.value,
+            },
+            HoverContents::Array(items) => items
+                .into_iter()
+                .map(|item| match item {
+                    tower_lsp::lsp_types::MarkedString::String(value) => value,
+                    tower_lsp::lsp_types::MarkedString::LanguageString(value) => value.value,
+                })
+                .collect::<Vec<_>>()
+                .join("\n\n"),
+        }
     }
 }

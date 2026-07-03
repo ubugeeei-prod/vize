@@ -65,7 +65,7 @@ pub(crate) fn component_surface_completions(ctx: &IdeContext) -> Vec<CompletionI
 
 #[derive(Debug, Clone)]
 pub(crate) struct ComponentMetadata {
-    props: Vec<ComponentProp>,
+    pub(crate) props: Vec<ComponentProp>,
     slots: Vec<ComponentSlot>,
 }
 
@@ -79,14 +79,12 @@ pub(crate) struct CachedComponentMetadata {
 }
 
 #[derive(Debug, Clone)]
-struct ComponentProp {
-    name: String,
-    type_detail: Option<String>,
-    required: bool,
-    /// Default value source — populated from `withDefaults` or per-prop
-    /// `default` config. Renders into the completion documentation so the
-    /// user knows what the prop falls back to.
-    default_value: Option<String>,
+pub(crate) struct ComponentProp {
+    pub(crate) name: String,
+    pub(crate) type_detail: Option<String>,
+    pub(crate) required: bool,
+    /// Default value source rendered into completion and hover docs.
+    pub(crate) default_value: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -95,7 +93,10 @@ struct ComponentSlot {
     props_type: Option<String>,
 }
 
-fn component_metadata(ctx: &IdeContext, component_name: &str) -> Option<Arc<ComponentMetadata>> {
+pub(crate) fn component_metadata(
+    ctx: &IdeContext,
+    component_name: &str,
+) -> Option<Arc<ComponentMetadata>> {
     if let Some(metadata) = super::self_component::metadata(ctx, component_name) {
         return Some(metadata);
     }
@@ -122,10 +123,7 @@ fn component_metadata(ctx: &IdeContext, component_name: &str) -> Option<Arc<Comp
     None
 }
 
-/// Return parsed metadata for the component at `resolved`, reusing a cached
-/// parse when the file's length + modification time are unchanged. Only the
-/// `fs::metadata` stat runs on the hot (cache-hit) path; the disk read, SFC
-/// parse, and Croquis analysis happen solely on a miss.
+/// Return parsed metadata, reusing it while length + mtime stay unchanged.
 pub(super) fn cached_component_metadata(
     ctx: &IdeContext,
     resolved: &std::path::Path,
