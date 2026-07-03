@@ -8,8 +8,7 @@ use vize_carton::{CompactString, String};
 use vize_relief::BindingType;
 
 use super::super::ScriptParseResult;
-use super::common::static_property_name;
-use super::props_type::{prop_type_from_annotation, runtime_prop_type_from_ts_type};
+use super::props_type::runtime_prop_type_from_ts_type;
 
 pub fn extract_props_from_type(
     result: &mut ScriptParseResult,
@@ -17,23 +16,15 @@ pub fn extract_props_from_type(
     source: &str,
 ) {
     for tp in type_params.iter() {
-        if let TSType::TSTypeLiteral(lit) = tp {
-            for member in lit.members.iter() {
-                if let oxc_ast::ast::TSSignature::TSPropertySignature(prop) = member
-                    && let Some(name) = static_property_name(&prop.key)
-                {
-                    result.macros.add_prop(PropDefinition {
-                        name: CompactString::new(name),
-                        required: !prop.optional,
-                        prop_type: prop_type_from_annotation(
-                            prop.type_annotation.as_deref(),
-                            source,
-                        ),
-                        default_value: None,
-                    });
-                    result.bindings.add(name, BindingType::Props);
-                }
-            }
+        let type_source = tp.span().source_text(source);
+        for prop in result.types.extract_properties(type_source) {
+            result.macros.add_prop(PropDefinition {
+                name: prop.name.clone(),
+                required: !prop.optional,
+                prop_type: prop.prop_type,
+                default_value: None,
+            });
+            result.bindings.add(prop.name.as_str(), BindingType::Props);
         }
     }
 }

@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/tests.rs
+assertion_line: 388
 expression: virtual_ts
 ---
 /// <reference lib="es2022" />
@@ -164,6 +165,11 @@ type __VizeComponentInstance = {
   $slots: Slots;
 };
 type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;
+type __VizeGenericComponentConstructor = new <T extends string | number = any>(...args: any[]) => {
+  $props: __VizeComponentProps<Props<T>> & __EmitProps<Emits>;
+  $emit: __EmitFn<Emits>;
+  $slots: Slots;
+};
 type __VizeVueComponentOptions = {
   name?: string;
   __name?: string;
@@ -188,5 +194,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions & { __vizeCheck: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => void; __vizeEmitProps?: __VizeStaticEmitProps; __vizeResolveEmitProps?: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => __EmitProps<Emits<T>>; };
+declare const __vize_component__: __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions & { __vizeCheck: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => void; __vizeEmitProps?: __VizeStaticEmitProps; __vizeResolveEmitProps?: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => __EmitProps<Emits<T>>; };
 export default __vize_component__;

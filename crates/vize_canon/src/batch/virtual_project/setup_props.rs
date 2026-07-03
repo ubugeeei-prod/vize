@@ -40,6 +40,11 @@ pub(super) fn augment_type_based_props_from_script_context(
     ctx.analyze();
 
     let known_props = known_type_based_prop_names(croquis);
+    let top_level_props = croquis
+        .macros
+        .define_props()
+        .and_then(|call| call.type_args.as_ref())
+        .map(|type_args| ctx.resolve_type_prop_names(strip_outer_angle_brackets(type_args)));
     let mut missing_props: Vec<CompactString> = ctx
         .bindings
         .bindings
@@ -48,6 +53,11 @@ pub(super) fn augment_type_based_props_from_script_context(
             matches!(binding_type, vize_relief::BindingType::Props)
                 .then(|| name)
                 .filter(|name| !known_props.contains(*name))
+                .filter(|name| {
+                    top_level_props
+                        .as_ref()
+                        .is_some_and(|props| props.contains(*name))
+                })
                 .cloned()
         })
         .collect();

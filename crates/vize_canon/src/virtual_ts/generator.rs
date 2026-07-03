@@ -955,6 +955,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // Default export
     ts.push_str("// ========== Default Export ==========\n");
     ts.push_str(instance_helper(legacy_vue2, dialect));
+    let generic_component_params = setup_props_plan
+        .generic_param(generic_param)
+        .map(|generic| {
+            (
+                add_generic_defaults(generic),
+                extract_generic_names(generic),
+            )
+        });
     ts.push_str("type __VizeComponentInstance = {\n");
     setup_props_plan.emit_component_props_field(&mut ts, emits_info.has_emits_for_props);
     ts.push_str("  $emit: __EmitFn<Emits>;\n");
@@ -963,6 +971,20 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ts.push_str(
         "type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;\n",
     );
+    if let Some((generic_decl, generic_names)) = &generic_component_params {
+        append!(
+            ts,
+            "type __VizeGenericComponentConstructor = new <{generic_decl}>(...args: any[]) => {{\n"
+        );
+        append!(ts, "  $props: __VizeComponentProps<Props<{generic_names}>>");
+        if emits_info.has_emits_for_props {
+            ts.push_str(" & __EmitProps<Emits>");
+        }
+        ts.push_str(";\n");
+        ts.push_str("  $emit: __EmitFn<Emits>;\n");
+        ts.push_str("  $slots: Slots;\n");
+        ts.push_str(instance_suffix(legacy_vue2, dialect, has_exposed_type));
+    }
     ts.push_str("type __VizeVueComponentOptions = {\n");
     ts.push_str("  name?: string;\n");
     ts.push_str("  __name?: string;\n");
@@ -995,11 +1017,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // object and let TypeScript infer `T` from the call (see #775). Non-generic
     // components keep the plain construct signature unchanged.
     let emit_props_static = emits_info.static_emit_props_field();
-    if let Some(generic) = setup_props_plan.generic_param(generic_param) {
-        let generic_decl = add_generic_defaults(generic);
-        let generic_names = extract_generic_names(generic);
+    if let Some((generic_decl, generic_names)) = &generic_component_params {
         let emit_props_resolver =
-            emits_info.generic_emit_props_resolver_field(&generic_decl, generic_names.as_str());
+            emits_info.generic_emit_props_resolver_field(generic_decl, generic_names.as_str());
         let emit_props_separator = if emit_props_resolver.is_empty() {
             ""
         } else {
@@ -1007,7 +1027,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         };
         append!(
             ts,
-            "declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; {emit_props_static}{emit_props_separator}{emit_props_resolver} }};\n",
+            "declare const __vize_component__: __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; {emit_props_static}{emit_props_separator}{emit_props_resolver} }};\n",
         );
     } else if emits_info.has_emits_for_props {
         append!(

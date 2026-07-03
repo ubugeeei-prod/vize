@@ -20,15 +20,13 @@ pub(crate) fn collect_template_prop_names(summary: &Croquis) -> FxHashSet<String
         })
         .unwrap_or_default();
 
-    if !type_properties.is_empty() {
-        for prop in &type_properties {
-            insert_reserved_prop_name(summary, &mut names, prop.name.as_str());
-        }
-    } else if !props.is_empty() {
+    for prop in &type_properties {
+        insert_reserved_prop_name(summary, &mut names, prop.name.as_str());
+    }
+    if !props.is_empty() {
         for prop in props {
             insert_reserved_prop_name(summary, &mut names, prop.name.as_str());
         }
-        return names;
     }
 
     for model in summary.macros.models() {

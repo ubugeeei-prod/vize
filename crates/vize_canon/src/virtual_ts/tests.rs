@@ -1044,11 +1044,11 @@ fn test_dom_event_type_mapping() {
     assert_eq!(get_dom_event_type("mousedown"), "MouseEvent");
     assert_eq!(get_dom_event_type("mouseup"), "MouseEvent");
     assert_eq!(get_dom_event_type("mousemove"), "MouseEvent");
-    assert_eq!(get_dom_event_type("contextmenu"), "MouseEvent");
 
     // Pointer events
     assert_eq!(get_dom_event_type("click"), "PointerEvent");
     assert_eq!(get_dom_event_type("auxclick"), "PointerEvent");
+    assert_eq!(get_dom_event_type("contextmenu"), "PointerEvent");
     assert_eq!(get_dom_event_type("pointerdown"), "PointerEvent");
     assert_eq!(get_dom_event_type("pointerup"), "PointerEvent");
 

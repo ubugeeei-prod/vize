@@ -382,13 +382,14 @@ pub(crate) fn get_dom_event_type(event_name: &str) -> &'static str {
     match event_name {
         // Mouse events
         "dblclick" | "mousedown" | "mouseup" | "mousemove" | "mouseenter" | "mouseleave"
-        | "mouseover" | "mouseout" | "contextmenu" => "MouseEvent",
+        | "mouseover" | "mouseout" => "MouseEvent",
 
         // Pointer events
-        // `click`/`auxclick` are PointerEvent in current TypeScript DOM maps.
-        "click" | "auxclick" | "pointerdown" | "pointerup" | "pointermove" | "pointerenter"
-        | "pointerleave" | "pointerover" | "pointerout" | "pointercancel" | "gotpointercapture"
-        | "lostpointercapture" => "PointerEvent",
+        // `click`/`auxclick`/`contextmenu` are PointerEvent in Vue's runtime
+        // DOM event map.
+        "click" | "auxclick" | "contextmenu" | "pointerdown" | "pointerup" | "pointermove"
+        | "pointerenter" | "pointerleave" | "pointerover" | "pointerout" | "pointercancel"
+        | "gotpointercapture" | "lostpointercapture" => "PointerEvent",
 
         // Touch events
         "touchstart" | "touchend" | "touchmove" | "touchcancel" => "TouchEvent",
@@ -472,6 +473,7 @@ mod event_type_tests {
     fn maps_legacy_dom_events() {
         assert_eq!(get_dom_event_type("click"), "PointerEvent");
         assert_eq!(get_dom_event_type("auxclick"), "PointerEvent");
+        assert_eq!(get_dom_event_type("contextmenu"), "PointerEvent");
         assert_eq!(get_dom_event_type("dblclick"), "MouseEvent");
         assert_eq!(get_dom_event_type("keydown"), "KeyboardEvent");
         assert_eq!(get_dom_event_type("submit"), "SubmitEvent");

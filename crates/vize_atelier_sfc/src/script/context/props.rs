@@ -3,7 +3,7 @@
 //! Handles extracting prop names and types from both runtime
 //! and type-based defineProps declarations.
 
-use vize_carton::ToCompactString;
+use vize_carton::{CompactString, FxHashSet, String, ToCompactString};
 
 use crate::script::resolve_type_to_object_body;
 use crate::types::BindingType;
@@ -101,47 +101,109 @@ impl ScriptCompileContext {
             return;
         };
 
-        // Split by commas/semicolons/newlines (but not inside nested braces)
-        let mut depth = 0;
-        let mut current = vize_carton::String::default();
+        for_each_top_level_type_member(&resolved_content, |segment| {
+            self.extract_single_prop_from_type(segment);
+        });
+    }
 
-        for c in resolved_content.chars() {
-            match c {
-                '{' | '<' | '(' | '[' => {
-                    depth += 1;
-                    current.push(c);
-                }
-                '}' | '>' | ')' | ']' => {
-                    depth -= 1;
-                    current.push(c);
-                }
-                ',' | ';' | '\n' if depth == 0 => {
-                    self.extract_single_prop_from_type(&current);
-                    current.clear();
-                }
-                _ => current.push(c),
+    /// Resolve type-based defineProps arguments to top-level prop names.
+    ///
+    /// This follows the same type-reference expansion and member splitting used
+    /// by `extract_props_from_type_args`, but returns a set for callers that need
+    /// to distinguish top-level props from nested object/union members.
+    pub fn resolve_type_prop_names(&self, type_args: &str) -> FxHashSet<CompactString> {
+        let content = type_args.trim();
+        let Some(resolved_content) =
+            resolve_type_to_object_body(content, &self.interfaces, &self.type_aliases)
+        else {
+            return FxHashSet::default();
+        };
+
+        let mut names = FxHashSet::default();
+        for_each_top_level_type_member(&resolved_content, |segment| {
+            if let Some(name) = type_prop_name(segment) {
+                names.insert(name);
             }
-        }
-        self.extract_single_prop_from_type(&current);
+        });
+        names
     }
 
     /// Extract a single prop name from a type definition segment
     fn extract_single_prop_from_type(&mut self, segment: &str) {
-        let trimmed = segment.trim();
-        if trimmed.is_empty() {
-            return;
+        if let Some(name) = type_prop_name(segment) {
+            self.bindings.bindings.insert(name, BindingType::Props);
         }
+    }
+}
 
-        // Parse "name?: Type" or "name: Type"
-        if let Some(colon_pos) = trimmed.find(':') {
-            let name_part = &trimmed[..colon_pos];
-            let name = normalize_type_prop_name(name_part);
+fn for_each_top_level_type_member(content: &str, mut visit: impl FnMut(&str)) {
+    let mut depth = 0;
+    let mut current = String::default();
+    let mut prev = '\0';
 
-            if !name.is_empty() && is_valid_identifier(name) {
-                self.bindings
-                    .bindings
-                    .insert(name.to_compact_string(), BindingType::Props);
+    for c in content.chars() {
+        match c {
+            '{' | '<' | '(' | '[' => {
+                depth += 1;
+                current.push(c);
             }
+            '}' | ')' | ']' => {
+                depth -= 1;
+                current.push(c);
+            }
+            '>' if prev != '=' => {
+                depth -= 1;
+                current.push(c);
+            }
+            ',' | ';' | '\n' if depth == 0 => {
+                visit(&current);
+                current.clear();
+            }
+            _ => current.push(c),
         }
+        prev = c;
+    }
+    visit(&current);
+}
+
+fn type_prop_name(segment: &str) -> Option<CompactString> {
+    let trimmed = segment.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+
+    let colon_pos = trimmed.find(':')?;
+    let name_part = &trimmed[..colon_pos];
+    let name = normalize_type_prop_name(name_part);
+    (!name.is_empty() && is_valid_identifier(name)).then(|| name.to_compact_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ScriptCompileContext;
+
+    #[test]
+    fn resolve_type_prop_names_keeps_union_members_nested() {
+        let mut ctx = ScriptCompileContext::new(
+            r#"
+interface Props {
+  isOpened: boolean
+  interaction?:
+    | { text: string; to: string; event?: never }
+    | { text: string; event: () => void; to?: never }
+}
+
+const props = defineProps<Props>()
+"#,
+        );
+        ctx.analyze();
+
+        let names = ctx.resolve_type_prop_names("Props");
+
+        assert!(names.contains("isOpened"));
+        assert!(names.contains("interaction"));
+        assert!(!names.contains("text"));
+        assert!(!names.contains("to"));
+        assert!(!names.contains("event"));
     }
 }

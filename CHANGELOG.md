@@ -10,6 +10,12 @@ deprecation contract that backs the entries below.
 
 ## [Unreleased]
 
+### Fixed
+
+- Expose imported base-interface props in templates, align `contextmenu` handlers
+  with Vue's `PointerEvent` map, and preserve generic SFC specialization from
+  TypeScript consumers (#2491, #2492, #2493)
+
 ## [0.212.0] - 2026-06-13
 
 ### Added

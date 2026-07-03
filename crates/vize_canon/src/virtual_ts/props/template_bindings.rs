@@ -37,7 +37,9 @@ pub(super) fn emit_macro_template_prop_bindings(
     emitted_names: &mut FxHashSet<String>,
 ) {
     for prop in props {
-        if should_skip_template_prop_binding(summary, prop.name.as_str()) {
+        if emitted_names.contains(prop.name.as_str())
+            || should_skip_template_prop_binding(summary, prop.name.as_str())
+        {
             continue;
         }
         emit_template_prop_binding(

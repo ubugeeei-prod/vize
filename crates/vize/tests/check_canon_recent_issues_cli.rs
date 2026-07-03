@@ -105,12 +105,22 @@ fn write_tsconfig(project_root: &Path) {
 }
 
 fn create_case(name: &str, vue_file: &str, source: &str) -> PathBuf {
+    create_case_with_files(name, &[(format!("src/{vue_file}"), source)])
+}
+
+fn create_case_with_files(name: &str, files: &[(String, &str)]) -> PathBuf {
     let project_root = unique_case_dir(name);
     let _ = std::fs::remove_dir_all(&project_root);
     std::fs::create_dir_all(project_root.join("src")).unwrap();
     link_workspace_vue(&project_root).unwrap();
     write_tsconfig(&project_root);
-    std::fs::write(project_root.join("src").join(vue_file), source).unwrap();
+    for (path, source) in files {
+        let target = project_root.join(path);
+        if let Some(parent) = target.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(target, source).unwrap();
+    }
     project_root
 }
 
@@ -280,6 +290,108 @@ defineProps<FooProps>()
     );
 
     run_check_json(&project_root, &corsa_path, "src/Foo.vue");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_imported_base_interface_props_are_available_in_template_scope() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_case_with_files(
+        "imported-base-interface-template-props",
+        &[
+            (
+                "src/base.ts".to_string(),
+                r#"export interface BaseProps {
+  as?: string;
+  decorative?: boolean;
+}
+"#,
+            ),
+            (
+                "src/Foo.vue".to_string(),
+                r#"<script setup lang="ts">
+import type { BaseProps } from "./base";
+
+interface FooProps extends BaseProps {
+  orientation?: "horizontal" | "vertical";
+}
+
+const props = withDefaults(defineProps<FooProps>(), {
+  orientation: "horizontal"
+});
+</script>
+
+<template>
+  <div :as :data-decorative="decorative" :data-orientation="props.orientation" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    run_check_json(&project_root, &corsa_path, "src");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_contextmenu_accepts_pointer_event_handler() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_case(
+        "contextmenu-pointer-event",
+        "Foo.vue",
+        r#"<script setup lang="ts">
+async function onPointer(event: PointerEvent) {
+  event.preventDefault();
+}
+</script>
+
+<template>
+  <button @contextmenu="onPointer" />
+</template>
+"#,
+    );
+
+    run_check_json(&project_root, &corsa_path, "src");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_generic_sfc_value_can_be_specialized_from_typescript() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_case_with_files(
+        "generic-sfc-value-specialization",
+        &[
+            (
+                "src/Child.vue".to_string(),
+                r#"<script setup lang="ts" generic="T = string">
+defineProps<{ modelValue?: T }>();
+</script>
+
+<template>
+  <div />
+</template>
+"#,
+            ),
+            (
+                "src/main.ts".to_string(),
+                r#"import Child from "./Child.vue";
+
+export const NumberChild = Child<number>;
+"#,
+            ),
+        ],
+    );
+
+    run_check_json(&project_root, &corsa_path, "src");
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

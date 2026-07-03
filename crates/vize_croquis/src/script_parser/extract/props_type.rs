@@ -1,18 +1,6 @@
-use oxc_ast::ast::{TSType, TSTypeAnnotation, TSTypeName};
+use oxc_ast::ast::{TSType, TSTypeName};
 use oxc_span::GetSpan;
 use vize_carton::CompactString;
-
-pub(super) fn prop_type_from_annotation(
-    annotation: Option<&TSTypeAnnotation<'_>>,
-    source: &str,
-) -> Option<CompactString> {
-    let span = annotation?.type_annotation.span();
-    source
-        .get(span.start as usize..span.end as usize)
-        .map(str::trim)
-        .filter(|ty| !ty.is_empty())
-        .map(CompactString::new)
-}
 
 pub(super) fn runtime_prop_type_from_ts_type(
     ts_type: &TSType<'_>,
