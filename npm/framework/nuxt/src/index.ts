@@ -353,7 +353,7 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
   const buildAssetsDir = getNuxtBuildAssetsDir(nuxtWithBuilderOptions);
   const bridgeOptions = resolveNuxtBridgeOptions(options.bridge);
   const devOptions = resolveNuxtDevOptions(options.dev);
-  const museaOptions = resolveNuxtMuseaOptions(options.musea);
+  const museaOptions = detectedNuxtMajor === 2 ? false : resolveNuxtMuseaOptions(options.musea);
   const unocssOptions = resolveNuxtUnoCssOptions(options.unocss);
 
   if (museaOptions !== false) nuxt.hook("components:dirs", appendMuseaArtComponentIgnore);
