@@ -76,6 +76,46 @@ export const Primary = {
 }
 
 #[test]
+fn emits_todo_for_template_bind_storyfn_exports() {
+    let source = r#"import AfButton from "./AfButton.vue";
+export default { component: AfButton, title: "Base/AfButton" } satisfies Meta<typeof AfButton>;
+const Template: StoryFn = (args) => <AfButton {...args} />;
+export const Primary = Template.bind({});
+Primary.args = { color: "primary" };
+"#;
+    let (content, variants, todos) = emit(source);
+
+    assert!(content.contains(r#"<variant name="Primary" default>"#));
+    assert!(content.contains("TODO(vize musea migrate)"));
+    assert_eq!(variants, 1);
+    assert_eq!(todos, 1);
+}
+
+#[test]
+fn emits_todo_when_render_object_would_drop_state_or_slots() {
+    let source = r#"import AfButton from "./AfButton.vue";
+export default { component: AfButton, title: "Base/AfButton" } satisfies Meta<typeof AfButton>;
+export const Stateful = {
+  args: { color: "primary" },
+  render: args => ({
+    setup() {
+      const open = ref(false);
+      return { args, open };
+    },
+    template: '<AfButton v-bind="args"><span>Primary</span></AfButton>',
+  }),
+};
+"#;
+    let (content, variants, todos) = emit(source);
+
+    assert!(content.contains(r#"<variant name="Stateful" default>"#));
+    assert!(content.contains("TODO(vize musea migrate)"));
+    assert!(!content.contains(r#"<AfButton color="primary" />"#));
+    assert_eq!(variants, 1);
+    assert_eq!(todos, 1);
+}
+
+#[test]
 fn emits_plain_title_without_category() {
     let source = r#"import AfButton from "./AfButton.vue";
 export default { component: AfButton, title: "AfButton" } satisfies Meta<typeof AfButton>;

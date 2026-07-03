@@ -90,6 +90,34 @@ export const Primary: Story = {
 }
 
 #[test]
+fn migrates_unsupported_tsx_storyfn_as_todo_variant() {
+    let dir = tempfile::tempdir().unwrap();
+    let story = dir.path().join("Toggle.stories.tsx");
+    fs::write(
+        &story,
+        r#"import type { Meta, StoryFn } from "@storybook/vue3";
+import Toggle from "./Toggle.vue";
+export default { component: Toggle, title: "Controls/Toggle" } satisfies Meta<typeof Toggle>;
+const Template: StoryFn = (args) => <Toggle {...args} />;
+export const Checked = Template.bind({});
+Checked.args = { checked: true };
+"#,
+    )
+    .unwrap();
+
+    let output = run_migrate(dir.path(), &["Toggle.stories.tsx"]);
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        std::string::String::from_utf8_lossy(&output.stderr)
+    );
+
+    let generated = fs::read_to_string(dir.path().join("Toggle.art.vue")).unwrap();
+    assert!(generated.contains(r#"<variant name="Checked" default>"#));
+    assert!(generated.contains("TODO(vize musea migrate)"));
+}
+
+#[test]
 fn dry_run_prints_without_writing() {
     let dir = tempfile::tempdir().unwrap();
     let story = dir.path().join("Box.stories.tsx");

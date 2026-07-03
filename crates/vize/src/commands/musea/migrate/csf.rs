@@ -20,6 +20,8 @@ pub(super) struct CsfStory<'a> {
     pub render: Option<&'a Expression<'a>>,
     /// `args` object literal, if present.
     pub args: Option<&'a ObjectExpression<'a>>,
+    /// Story shape was recognized as CSF but cannot be migrated safely.
+    pub unsupported: bool,
 }
 
 /// Everything migration needs from one CSF module.
@@ -178,10 +180,10 @@ fn collect_stories<'a>(program: &'a Program<'a>) -> Vec<CsfStory<'a>> {
             let Some(init) = declarator.init.as_ref() else {
                 continue;
             };
-            let Some(object) = unwrap_object(init) else {
-                continue;
-            };
-            stories.push(story_from_object(export_name, object));
+            let story = unwrap_object(init)
+                .map(|object| story_from_object(export_name, object))
+                .unwrap_or_else(|| unsupported_story(export_name));
+            stories.push(story);
         }
     }
 
@@ -194,7 +196,8 @@ fn story_from_object<'a>(export_name: &str, object: &'a ObjectExpression<'a>) ->
         .and_then(string_literal_value)
         .unwrap_or_else(|| export_name.into());
 
-    let render = object_property_value(object, "render").and_then(render_body);
+    let render_value = object_property_value(object, "render");
+    let render = render_value.and_then(render_body);
     let args = object_property_value(object, "args").and_then(|value| {
         if let Expression::ObjectExpression(object) = unwrap_expression(value) {
             Some(&**object)
@@ -203,7 +206,21 @@ fn story_from_object<'a>(export_name: &str, object: &'a ObjectExpression<'a>) ->
         }
     });
 
-    CsfStory { name, render, args }
+    CsfStory {
+        name,
+        render,
+        args,
+        unsupported: render_value.is_some() && render.is_none(),
+    }
+}
+
+fn unsupported_story(export_name: &str) -> CsfStory<'_> {
+    CsfStory {
+        name: export_name.into(),
+        render: None,
+        args: None,
+        unsupported: true,
+    }
 }
 
 /// Reach the single JSX-returning expression of a `render` arrow/function.

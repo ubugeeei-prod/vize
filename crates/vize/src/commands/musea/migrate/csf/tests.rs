@@ -10,6 +10,7 @@ struct TestStory<'a> {
     name: &'a str,
     has_render: bool,
     has_args: bool,
+    unsupported: bool,
 }
 
 #[test]
@@ -33,6 +34,7 @@ export const Secondary: StoryObj = { args: { color: "secondary", label: "Hi" } }
             name: story.name.as_str(),
             has_render: story.render.is_some(),
             has_args: story.args.is_some(),
+            unsupported: story.unsupported,
         })
         .collect();
     assert_eq!(
@@ -42,11 +44,13 @@ export const Secondary: StoryObj = { args: { color: "secondary", label: "Hi" } }
                 name: "Primary",
                 has_render: true,
                 has_args: false,
+                unsupported: false,
             },
             TestStory {
                 name: "Secondary",
                 has_render: false,
                 has_args: true,
+                unsupported: false,
             },
         ]
     );
@@ -76,6 +80,7 @@ export const Only = { args: {} };
             name: story.name.as_str(),
             has_render: story.render.is_some(),
             has_args: story.args.is_some(),
+            unsupported: story.unsupported,
         })
         .collect();
     assert_eq!(
@@ -84,6 +89,7 @@ export const Only = { args: {} };
             name: "Only",
             has_render: false,
             has_args: true,
+            unsupported: false,
         }]
     );
 }
@@ -108,6 +114,7 @@ export const First = { name: "Custom Name", render: () => <Box /> };
             name: story.name.as_str(),
             has_render: story.render.is_some(),
             has_args: story.args.is_some(),
+            unsupported: story.unsupported,
         })
         .collect();
     assert_eq!(
@@ -116,6 +123,41 @@ export const First = { name: "Custom Name", render: () => <Box /> };
             name: "Custom Name",
             has_render: true,
             has_args: false,
+            unsupported: false,
+        }]
+    );
+}
+
+#[test]
+fn extracts_template_bind_exports_as_unsupported_stories() {
+    let source = r#"import Toggle from "./Toggle.vue";
+export default { component: Toggle, title: "Toggle" } satisfies Meta<typeof Toggle>;
+const Template: StoryFn = (args) => <Toggle {...args} />;
+export const Checked = Template.bind({});
+Checked.args = { checked: true };
+"#;
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, source, SourceType::tsx()).parse();
+    assert!(!parsed.panicked);
+    let module = extract_csf(&parsed.program);
+
+    let stories: Vec<TestStory> = module
+        .stories
+        .iter()
+        .map(|story| TestStory {
+            name: story.name.as_str(),
+            has_render: story.render.is_some(),
+            has_args: story.args.is_some(),
+            unsupported: story.unsupported,
+        })
+        .collect();
+    assert_eq!(
+        stories,
+        vec![TestStory {
+            name: "Checked",
+            has_render: false,
+            has_args: false,
+            unsupported: true,
         }]
     );
 }

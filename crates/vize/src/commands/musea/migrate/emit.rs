@@ -84,9 +84,14 @@ pub(super) fn emit_art(
 
 /// Build the inner markup of a `<variant>`. Returns `(markup, is_todo)`.
 fn emit_variant_inner(story: &CsfStory<'_>, component_tag: &str, source: &str) -> (String, bool) {
-    if let Some(render) = story.render
-        && let Some(markup) = convert_render(render, source)
-    {
+    if story.unsupported {
+        return (emit_todo_element(component_tag), true);
+    }
+
+    if let Some(render) = story.render {
+        let Some(markup) = convert_render(render, source) else {
+            return (emit_todo_element(component_tag), true);
+        };
         return match inline_story_args_spread(markup, story.args, source) {
             Some(markup) => (markup, false),
             None => (emit_todo_element(component_tag), true),
