@@ -1,4 +1,4 @@
-import type { LanguageServerConfig, VizeConfig, VizeConfigEntry } from "./generated.js";
+import type { LanguageServerConfig, VizeConfig, VizeConfigEntry, VueVersion } from "./generated.js";
 
 // ============================================================================
 // TS-specific runtime types (cannot be expressed in Pkl)
@@ -12,15 +12,37 @@ export interface ConfigEnv {
   isSsrBuild?: boolean;
 }
 
-export type UserConfig = VizeConfig & {
+export type VueConfig = {
+  /**
+   * Vue dialect selected by the documented `vue.version` config key.
+   */
+  version?: VueVersion;
+};
+
+export type UserConfigEntry = VizeConfigEntry & {
+  /**
+   * Shared Vue dialect section accepted by the Rust config model.
+   */
+  vue?: VueConfig;
+};
+
+export type UserConfig = Omit<VizeConfig, "entries"> & {
+  /**
+   * Shared Vue dialect section accepted by the Rust config model.
+   */
+  vue?: VueConfig;
   /**
    * Legacy alias for `languageServer`.
    * Prefer `languageServer`.
    */
   lsp?: LanguageServerConfig;
+  /**
+   * Scoped config entries for monorepos and workspaces.
+   */
+  entries?: UserConfigEntry[];
 };
 
-export type UserConfigInput = UserConfig | VizeConfigEntry[];
+export type UserConfigInput = UserConfig | UserConfigEntry[];
 
 export type ResolvedVizeConfig = VizeConfig & {
   /**

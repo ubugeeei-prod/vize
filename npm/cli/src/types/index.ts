@@ -31,6 +31,9 @@ export type LspConfig = import("./generated.js").LanguageServerConfig;
 export type {
   MaybePromise,
   ConfigEnv,
+  VueConfig,
+  UserConfig,
+  UserConfigEntry,
   UserConfigInput,
   UserConfigExport,
   ResolvedVizeConfig,
