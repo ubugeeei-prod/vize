@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: en-US
+
+chat:
+  auto_reply: true
+
+reviews:
+  profile: chill
+  high_level_summary: true
+  changed_files_summary: true
+  review_status: true
+  request_changes_workflow: false
+  poem: false
+
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+    ignore_title_keywords:
+      - WIP
+      - Draft
+
+  path_filters:
+    - "!**/node_modules/**"
+    - "!**/target/**"
+    - "!**/dist/**"
+    - "!**/.nuxt/**"
+    - "!**/.cache/**"
+    - "!tests/_fixtures/_git/**"
+    - "!tests/snapshots/**"
+    - "!crates/**/src/snapshots/**"
+    - "!npm/**/src/__snapshots__/**"
+    - "!**/*.snap"
+    - "!**/*.tar.gz"
+    - "!**/*.vsix"
+
+  path_instructions:
+    - path: "crates/**"
+      instructions: |
+        Focus on parser/compiler correctness, source locations, UTF-8/UTF-16 offset handling, and panic-free LSP behavior. Flag changes that only work for small fixtures but break real Vue/Nuxt projects.
+
+    - path: "npm/**"
+      instructions: |
+        Check package boundaries, peer/optional dependency behavior, ESM/CJS compatibility, and whether published files stay usable from a consumer project rather than only inside the monorepo.
+
+    - path: ".github/workflows/**"
+      instructions: |
+        Review release and CI changes for runner compatibility, least-privilege permissions, pinned actions, cache correctness, and whether workflow-shape tests cover the changed behavior.
+
+    - path: "tests/tooling/**"
+      instructions: |
+        Ensure workflow and release tests assert observable behavior rather than incidental formatting. Prefer focused assertions that keep PRs small and failures easy to diagnose.
