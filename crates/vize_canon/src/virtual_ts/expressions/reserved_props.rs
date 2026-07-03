@@ -72,8 +72,12 @@ pub(crate) fn rewrite_reserved_template_prop(
             continue;
         }
 
-        output.push(current as char);
-        i += 1;
+        let ch = expression[i..]
+            .chars()
+            .next()
+            .expect("valid UTF-8 boundary");
+        output.push(ch);
+        i += ch.len_utf8();
     }
 
     changed.then_some(output)

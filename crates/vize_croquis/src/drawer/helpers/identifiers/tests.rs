@@ -1,4 +1,6 @@
-use super::{IdentifierRef, extract_identifier_refs_oxc, extract_identifiers_oxc};
+use super::{
+    IdentifierRef, extract_identifier_refs_oxc, extract_identifiers_oxc, strip_js_comments,
+};
 use vize_carton::CompactString;
 
 #[test]
@@ -33,6 +35,17 @@ fn test_extract_identifiers_ignores_comment_words() {
         "/** comment words should disappear */ disabled ? true : undefined",
     ));
     assert_eq!(ids, vec!["disabled", "true", "undefined"]);
+}
+
+#[test]
+fn test_strip_js_comments_preserves_non_ascii_literals_after_comments() {
+    let expr = "/* hidden */ menu.header === 'アカウント' ? '選択中' : '通常'";
+    let stripped = strip_js_comments(expr);
+
+    assert_eq!(
+        stripped.as_ref(),
+        "  menu.header === 'アカウント' ? '選択中' : '通常'"
+    );
 }
 
 #[test]
