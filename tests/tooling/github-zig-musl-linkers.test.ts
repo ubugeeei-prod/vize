@@ -73,8 +73,19 @@ test("Zig musl wrappers normalize cc-rs flags and avoid duplicate CRT startup ob
         "--target=x86_64-unknown-linux-musl",
         "rcrt1.o",
         "-nostartfiles",
+        "-static-pie",
       ]),
-      ["cc", "-target", "x86_64-linux-musl", "-nostdlib", "-m64", "rcrt1.o", "-nostartfiles"],
+      [
+        "cc",
+        "-target",
+        "x86_64-linux-musl",
+        "-m64",
+        "rcrt1.o",
+        "-nostartfiles",
+        "-static-pie",
+        "-nostdlib",
+        "-nostartfiles",
+      ],
     );
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });

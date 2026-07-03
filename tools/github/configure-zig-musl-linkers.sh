@@ -35,7 +35,7 @@ write_zig_wrapper() {
     printf '  esac\n'
     printf 'done\n'
     if [[ "$mode" == "link" ]]; then
-      printf 'exec zig cc -target %s -nostdlib "${args[@]}"\n' "$zig_target"
+      printf 'exec zig cc -target %s "${args[@]}" -nostdlib -nostartfiles\n' "$zig_target"
     else
       printf 'exec zig cc -target %s "${args[@]}"\n' "$zig_target"
     fi
