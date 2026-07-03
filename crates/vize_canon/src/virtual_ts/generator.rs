@@ -128,7 +128,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // (e.g. a Vue 2 `this`/template shape with `$listeners`,
     // `$children`, `$on`, ... that Vue 3's `ComponentPublicInstance` lacks).
     let dialect = generation_options.dialect;
-    let legacy_vue2 = generation_options.legacy_vue2;
+    let legacy_vue2 = generation_options.legacy_vue2
+        || matches!(
+            dialect,
+            vize_carton::config::VueVersion::V2 | vize_carton::config::VueVersion::V2_7
+        );
     let _ = generation_options.template_syntax_quirks;
     let options_api = generation_options.options_api || legacy_vue2;
     let hoist_shared_preamble = generation_options.hoist_shared_preamble;

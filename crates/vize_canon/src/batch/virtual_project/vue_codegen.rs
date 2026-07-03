@@ -157,10 +157,12 @@ pub(super) fn generate_vue_virtual_ts(
     }
 
     let croquis_options = SfcCroquisOptions::full();
+    let vue2_compat = codegen_options.legacy_vue2
+        || matches!(codegen_options.dialect, VueVersion::V2 | VueVersion::V2_7);
 
     let analysis = profile!(
         "canon.croquis.analyze_sfc",
-        if codegen_options.legacy_vue2 {
+        if vue2_compat {
             analyze_sfc_descriptor_with_context_legacy_vue2(
                 descriptor,
                 template_ast.as_ref(),
@@ -189,9 +191,7 @@ pub(super) fn generate_vue_virtual_ts(
         collect_art_template_referenced_names(descriptor, codegen_options.template_syntax)
     });
 
-    let hoist_shared_preamble = codegen_options.hoist_shared_preamble
-        && !codegen_options.legacy_vue2
-        && !matches!(codegen_options.dialect, VueVersion::V2 | VueVersion::V2_7);
+    let hoist_shared_preamble = codegen_options.hoist_shared_preamble && !vue2_compat;
     let output = profile!(
         "canon.virtual_ts.generate",
         generate_virtual_ts_with_offsets_and_checks(
@@ -206,8 +206,8 @@ pub(super) fn generate_vue_virtual_ts(
                 dialect: codegen_options.dialect,
                 preserve_unused_diagnostics: codegen_options.preserve_unused_diagnostics,
                 extra_template_referenced_names: extra_template_referenced_names.as_ref(),
-                options_api: codegen_options.options_api,
-                legacy_vue2: codegen_options.legacy_vue2,
+                options_api: codegen_options.options_api || vue2_compat,
+                legacy_vue2: vue2_compat,
                 template_syntax_quirks: matches!(
                     codegen_options.template_syntax,
                     TemplateSyntaxMode::Quirks

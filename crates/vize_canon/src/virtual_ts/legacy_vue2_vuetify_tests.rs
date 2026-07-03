@@ -1,3 +1,4 @@
+use vize_carton::config::VueVersion;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 use super::{
@@ -31,6 +32,33 @@ fn legacy_virtual_ts(script: &str, template: &str, options: &VirtualTsOptions) -
         options,
         VirtualTsGenerationOptions {
             legacy_vue2: true,
+            ..Default::default()
+        },
+    )
+    .code
+    .to_string()
+}
+
+fn dialect_virtual_ts(
+    script: &str,
+    template: &str,
+    options: &VirtualTsOptions,
+    dialect: VueVersion,
+) -> String {
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    generate_virtual_ts_with_offsets_and_checks(
+        &analyzer.finish(),
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        options,
+        VirtualTsGenerationOptions {
+            dialect,
             ..Default::default()
         },
     )
@@ -143,5 +171,35 @@ defineProps<Props>()
         legacy.contains("(props as Record<string, unknown>)[\"width\"]")
             && !legacy.contains("satisfies keyof Props"),
         "legacy Vue 2 keyed prop fallback should not reject Vuetify/mixin names:\n{legacy}"
+    );
+}
+
+#[test]
+fn vue2_dialect_unresolved_keyed_props_are_unchecked() {
+    let script = r#"
+type Props = { mini?: boolean } & { dense?: boolean }
+defineProps<Props>()
+"#;
+    let template = r#"<div>{{ isMini }} {{ hideDetails }} {{ chips }} {{ width }}</div>"#;
+
+    let standard = standard_virtual_ts(script, template, &VirtualTsOptions::default());
+    assert!(
+        standard.contains("\"isMini\" satisfies keyof Props"),
+        "standard keyed prop fallback should still catch unknown props:\n{standard}"
+    );
+
+    let vue2 = dialect_virtual_ts(
+        script,
+        template,
+        &VirtualTsOptions::default(),
+        VueVersion::V2_7,
+    );
+    assert!(
+        vue2.contains("(props as Record<string, unknown>)[\"isMini\"]")
+            && vue2.contains("(props as Record<string, unknown>)[\"hideDetails\"]")
+            && vue2.contains("(props as Record<string, unknown>)[\"chips\"]")
+            && vue2.contains("(props as Record<string, unknown>)[\"width\"]")
+            && !vue2.contains("satisfies keyof Props"),
+        "Vue 2 dialect keyed prop fallback should not reject Vuetify/mixin names:\n{vue2}"
     );
 }
