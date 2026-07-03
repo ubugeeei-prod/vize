@@ -40,7 +40,6 @@ pub(super) fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePla
     }
 
     if args.build {
-        env.push((cstr!("VIZE_MUSEA_STATIC_BUILD"), cstr!("1")));
         return Ok(ServePlan {
             program,
             args: vec![cstr!("build")],

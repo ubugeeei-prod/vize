@@ -9,7 +9,7 @@ use new::NewArgs;
 use serve_plan::create_serve_plan;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use vize_carton::{String, cstr};
+use vize_carton::{String, append, cstr};
 
 #[derive(Args)]
 pub struct MuseaArgs {
@@ -113,6 +113,16 @@ fn run_serve(args: ServeArgs) {
             .collect::<Vec<_>>()
             .join(" ")
     );
+    if !plan.env.is_empty() {
+        let mut env = String::default();
+        for (index, (key, value)) in plan.env.iter().enumerate() {
+            if index > 0 {
+                env.push(' ');
+            }
+            append!(env, "{key}={value}");
+        }
+        eprintln!("  env: {}", env);
+    }
     if args.build {
         eprintln!("  output: Musea static gallery entry is emitted under /__musea__/");
     } else {
@@ -132,6 +142,9 @@ fn run_serve(args: ServeArgs) {
         .status();
     match status {
         Ok(status) => {
+            if !status.success() {
+                eprintln!("vize musea: Vite exited with status {}", status);
+            }
             std::process::exit(status.code().unwrap_or(1));
         }
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
