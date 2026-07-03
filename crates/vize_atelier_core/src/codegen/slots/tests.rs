@@ -67,6 +67,45 @@ fn test_prefix_slot_defaults() {
         prefix_slot_defaults("{ x = undefined }"),
         "{ x = undefined }"
     );
+    assert_eq!(
+        prefix_slot_defaults("{ item = fallback.item }"),
+        "{ item = _ctx.fallback.item }"
+    );
+    assert_eq!(
+        prefix_slot_defaults("{ item, active = item.active }"),
+        "{ item, active = item.active }"
+    );
+    assert_eq!(
+        prefix_slot_defaults("{ label = makeLabel(seed) }"),
+        "{ label = _ctx.makeLabel(_ctx.seed) }"
+    );
+    assert_eq!(
+        prefix_slot_defaults("{ item = { label } }"),
+        "{ item = { label: _ctx.label } }"
+    );
+    assert_eq!(
+        prefix_slot_defaults("{ id = Math.random(), value = Number(seed) }"),
+        "{ id = Math.random(), value = Number(_ctx.seed) }"
+    );
+    assert_eq!(
+        prefix_slot_defaults("{ mapper = item => item.label, label = () => labelText }"),
+        "{ mapper = item => item.label, label = () => _ctx.labelText }"
+    );
+}
+
+#[test]
+fn scoped_slot_default_expressions_prefix_context_only() {
+    let result = compile!(
+        r#"<Comp v-slot="{ item, active = item.active, label = fallback.label, meta = { text }, id = Math.random() }">{{ active }}{{ label }}</Comp>"#
+    );
+    let output = result_output(&result);
+
+    assert!(output.contains("active = item.active"), "{output}");
+    assert!(output.contains("label = _ctx.fallback.label"), "{output}");
+    assert!(output.contains("meta = { text: _ctx.text }"), "{output}");
+    assert!(output.contains("id = Math.random()"), "{output}");
+    assert!(!output.contains("_ctx.item.active"), "{output}");
+    assert!(!output.contains("_ctx.Math"), "{output}");
 }
 
 #[test]
