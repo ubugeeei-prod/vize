@@ -3,6 +3,7 @@ use crate::LintPreset;
 use vize_carton::{Allocator, ToCompactString};
 
 mod basic;
+mod css;
 mod directives;
 mod jsx;
 mod jsx_fallback;

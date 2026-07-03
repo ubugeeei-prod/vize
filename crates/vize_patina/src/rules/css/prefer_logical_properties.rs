@@ -46,7 +46,7 @@ impl PreferLogicalProperties {
         rule: &LCssRule,
         offset: usize,
         result: &mut CssLintResult,
-        reported: &mut FxHashSet<(u32, u32)>,
+        reported: &mut FxHashSet<u32>,
     ) {
         match rule {
             LCssRule::Style(style_rule) => {
@@ -76,7 +76,7 @@ impl PreferLogicalProperties {
         declarations: &DeclarationBlock,
         offset: usize,
         result: &mut CssLintResult,
-        reported: &mut FxHashSet<(u32, u32)>,
+        reported: &mut FxHashSet<u32>,
     ) {
         // Check all declarations (both regular and important)
         for decl in declarations.declarations.iter() {
@@ -93,7 +93,7 @@ impl PreferLogicalProperties {
         prop_id: PropertyId,
         offset: usize,
         result: &mut CssLintResult,
-        reported: &mut FxHashSet<(u32, u32)>,
+        reported: &mut FxHashSet<u32>,
     ) {
         let (physical, logical) = match prop_id {
             PropertyId::MarginLeft => ("margin-left", "margin-inline-start"),
@@ -110,7 +110,7 @@ impl PreferLogicalProperties {
         // Report at offset since PropertyId doesn't provide precise location
         let start = offset as u32;
         let end = (offset + physical.len()) as u32;
-        if !reported.insert((start, end)) {
+        if !reported.insert(start) {
             return;
         }
         let _ = logical; // suppress unused warnings
