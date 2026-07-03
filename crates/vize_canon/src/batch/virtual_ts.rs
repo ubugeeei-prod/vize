@@ -28,7 +28,7 @@ pub struct VirtualTsResult {
 
 /// Vue setup-scope helpers - defined with parameters marked as used.
 const VUE_SETUP_HELPERS: &str = r#"// Compiler macros (transformed at compile time by Vue)
-type __RuntimePropValue<T> = T extends { new (...args: any[]): infer V } ? V : T extends { (): infer V } ? V : never;
+type __RuntimePropValue<T> = T extends abstract new (...args: any[]) => infer V ? V : T extends (...args: any[]) => infer V ? V : never;
 type __RuntimePropCtorInner<T> = T extends null | undefined ? never : T extends readonly (infer U)[] ? __RuntimePropCtorInner<U> : T extends { type: infer U } ? __RuntimePropCtorInner<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : __RuntimePropValue<T>;
 type __RuntimePropCtor<T> = [__RuntimePropCtorInner<T>] extends [never] ? unknown : __RuntimePropCtorInner<T>;
 type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : false;
