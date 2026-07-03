@@ -68,6 +68,16 @@ fn markdown_preserves_shorter_fence_inside_longer_fence() {
 }
 
 #[test]
+fn markdown_preserves_info_string_fence_inside_same_length_fence() {
+    let source = "```md\n```ts\nconst value = 1   \nexample done   \n```\ntext   \n";
+    let result = format_markdown(source);
+    assert_eq!(
+        result.code.as_str(),
+        "```md\n```ts\nconst value = 1   \nexample done   \n```\ntext\n"
+    );
+}
+
+#[test]
 fn markdown_preserves_indented_code_block() {
     let source = "para\n\n    code with spaces   \n";
     let result = format_markdown(source);

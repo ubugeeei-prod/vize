@@ -91,11 +91,12 @@ fn normalize_markdown(source: &str) -> String {
 struct FenceMarker {
     ch: char,
     len: usize,
+    blank_tail: bool,
 }
 
 impl FenceMarker {
     fn closes(self, open: Self) -> bool {
-        self.ch == open.ch && self.len >= open.len
+        self.ch == open.ch && self.len >= open.len && self.blank_tail
     }
 }
 
@@ -111,7 +112,11 @@ fn fence_marker(stripped: &str) -> Option<FenceMarker> {
         .take_while(|candidate| *candidate == ch)
         .count();
     if len >= 3 {
-        Some(FenceMarker { ch, len })
+        Some(FenceMarker {
+            ch,
+            len,
+            blank_tail: stripped[len..].trim().is_empty(),
+        })
     } else {
         None
     }
