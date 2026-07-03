@@ -210,18 +210,28 @@ fn story_from_object<'a>(export_name: &str, object: &'a ObjectExpression<'a>) ->
 fn render_body<'a>(value: &'a Expression<'a>) -> Option<&'a Expression<'a>> {
     match unwrap_expression(value) {
         Expression::ArrowFunctionExpression(arrow) => {
-            if arrow.expression {
-                // `() => <expr>`: body holds a single expression statement.
+            let body = if arrow.expression {
                 first_expression_statement(&arrow.body.statements)
             } else {
                 first_return_argument(&arrow.body.statements)
-            }
+            }?;
+            render_expression(body)
         }
-        Expression::FunctionExpression(func) => func
-            .body
-            .as_ref()
-            .and_then(|body| first_return_argument(&body.statements)),
+        Expression::FunctionExpression(func) => render_expression(
+            func.body
+                .as_ref()
+                .and_then(|body| first_return_argument(&body.statements))?,
+        ),
         _ => None,
+    }
+}
+
+fn render_expression<'a>(expr: &'a Expression<'a>) -> Option<&'a Expression<'a>> {
+    match unwrap_expression(expr) {
+        Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_) => {
+            render_body(expr)
+        }
+        other => Some(other),
     }
 }
 

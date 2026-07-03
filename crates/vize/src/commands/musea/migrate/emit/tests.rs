@@ -60,6 +60,22 @@ defineArt("./AfButton.vue", {
 }
 
 #[test]
+fn emits_nested_render_children_with_story_args() {
+    let source = r#"import AfButton from "./AfButton.vue";
+export default { component: AfButton, title: "Base/AfButton" } satisfies Meta<typeof AfButton>;
+export const Primary = {
+  args: { color: "primary" },
+  render: args => () => <AfButton {...args}>Primary</AfButton>,
+};
+"#;
+    let (content, variants, todos) = emit(source);
+
+    assert!(content.contains(r#"<AfButton color="primary">Primary</AfButton>"#));
+    assert_eq!(variants, 1);
+    assert_eq!(todos, 0);
+}
+
+#[test]
 fn emits_plain_title_without_category() {
     let source = r#"import AfButton from "./AfButton.vue";
 export default { component: AfButton, title: "AfButton" } satisfies Meta<typeof AfButton>;

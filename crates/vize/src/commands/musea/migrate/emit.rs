@@ -87,7 +87,10 @@ fn emit_variant_inner(story: &CsfStory<'_>, component_tag: &str, source: &str) -
     if let Some(render) = story.render
         && let Some(markup) = convert_render(render, source)
     {
-        return (markup, false);
+        return match inline_story_args_spread(markup, story.args, source) {
+            Some(markup) => (markup, false),
+            None => (emit_todo_element(component_tag), true),
+        };
     }
 
     if let Some(args) = story.args {
@@ -117,6 +120,13 @@ fn emit_args_element(
 ) -> Option<String> {
     let mut out = String::default();
     append!(out, "<{component_tag}");
+    out.push_str(&emit_args_attributes(args, source)?);
+    out.push_str(" />");
+    Some(out)
+}
+
+fn emit_args_attributes(args: &ObjectExpression<'_>, source: &str) -> Option<String> {
+    let mut out = String::default();
     for property in &args.properties {
         let ObjectPropertyKind::ObjectProperty(prop) = property else {
             continue;
@@ -130,8 +140,24 @@ fn emit_args_element(
         out.push(' ');
         out.push_str(&attribute_from_value(name, &prop.value, source)?);
     }
-    out.push_str(" />");
     Some(out)
+}
+
+fn inline_story_args_spread(
+    markup: String,
+    args: Option<&ObjectExpression<'_>>,
+    source: &str,
+) -> Option<String> {
+    let marker = " v-bind=\"args\"";
+    if !markup.contains(marker) {
+        return Some(markup);
+    }
+    let args = args?;
+    if args_contains_unmigrated_identifier(args) {
+        return None;
+    }
+    let attributes = emit_args_attributes(args, source)?;
+    Some(markup.replace(marker, attributes.as_str()).into())
 }
 
 /// Map one `args` entry to an attribute: string literal -> `name="value"`,
