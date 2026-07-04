@@ -219,7 +219,7 @@ pub(super) fn resolve_import_base(
         return Some(canonical_paths.canonicalize(base));
     }
 
-    // 2. A `.js`/`.mjs`/`.cjs` specifier resolving to its `.ts`/`.tsx` sibling.
+    // 2. A `.js`/`.mjs`/`.cjs` specifier resolving to its TS sibling.
     if let Some(rewritten) = rewrite_js_to_ts(base, canonical_paths) {
         return Some(rewritten);
     }
@@ -245,11 +245,16 @@ pub(super) fn resolve_import_base(
 
 fn rewrite_js_to_ts(base: &Path, canonical_paths: &mut CanonicalPathCache) -> Option<PathBuf> {
     let name = base.file_name()?.to_str()?;
-    let stem = name
-        .strip_suffix(".js")
-        .or_else(|| name.strip_suffix(".mjs"))
-        .or_else(|| name.strip_suffix(".cjs"))?;
-    for ext in [".ts", ".tsx", ".mts", ".cts"] {
+    let (stem, extensions): (&str, &[&str]) = if let Some(stem) = name.strip_suffix(".mjs") {
+        (stem, &[".mts"])
+    } else if let Some(stem) = name.strip_suffix(".cjs") {
+        (stem, &[".cts"])
+    } else if let Some(stem) = name.strip_suffix(".js") {
+        (stem, &[".ts", ".tsx"])
+    } else {
+        return None;
+    };
+    for ext in extensions {
         let candidate = base.with_file_name(cstr!("{stem}{ext}"));
         if candidate.is_file() {
             return Some(canonical_paths.canonicalize(&candidate));

@@ -138,6 +138,41 @@ fn jsx_imports_are_resolved_only_when_jsx_typecheck_is_enabled() {
 }
 
 #[test]
+fn module_js_specifiers_prefer_module_source_extensions() {
+    let root = std::env::temp_dir().join(cstr!("vize-imports-module-js-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(root.join("src")).unwrap();
+
+    let entry = write(
+        &root,
+        "src/entry.ts",
+        "import { esm } from './esm.mjs'\nimport { common } from './common.cjs'\nvoid esm\nvoid common\n",
+    );
+    let esm_mts = write(&root, "src/esm.mts", "export const esm = 'mts'\n");
+    write(&root, "src/esm.ts", "export const esm = 'ts'\n");
+    let common_cts = write(&root, "src/common.cts", "export const common = 'cts'\n");
+    write(&root, "src/common.ts", "export const common = 'ts'\n");
+
+    let discovered = collect_transitive_local_imports(
+        &[entry],
+        &root,
+        &mut CanonicalPathCache::default(),
+        false,
+        None,
+    );
+
+    assert_eq!(
+        discovered,
+        vec![
+            canonicalize_non_verbatim(&esm_mts),
+            canonicalize_non_verbatim(&common_cts),
+        ]
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
 fn collects_only_non_relative_imports_that_need_virtual_rewrites() {
     let root = std::env::temp_dir().join(cstr!("vize-imports-matrix-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&root);
