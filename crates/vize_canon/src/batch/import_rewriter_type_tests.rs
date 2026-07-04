@@ -29,3 +29,57 @@ export type AppProps = import("./App.vue.ts").PublicProps;"#;
 export type AppProps = import("./App.vue").PublicProps;"#
     );
 }
+
+#[test]
+fn rewrites_ts_import_equals_external_module_references() {
+    let rewriter = ImportRewriter::new();
+    let source = r#"import App = require("./App.vue");
+export type AppModule = typeof App;"#;
+    let result = rewriter.rewrite(source, SourceType::ts());
+
+    assert_eq!(
+        result.code,
+        r#"import App = require("./App.vue.ts");
+export type AppModule = typeof App;"#
+    );
+}
+
+#[test]
+fn rewrites_common_js_require_specifiers() {
+    let rewriter = ImportRewriter::new();
+    let source = r#"const App = require("./App.vue");
+const util = require("./util");"#;
+    let result = rewriter.rewrite(source, SourceType::ts());
+
+    assert_eq!(
+        result.code,
+        r#"const App = require("./App.vue.ts");
+const util = require("./util");"#
+    );
+}
+
+#[test]
+fn rewrites_declaration_require_specifiers() {
+    let rewriter = ImportRewriter::new();
+    let source = r#"import App = require("./App.vue.ts");
+export { App };"#;
+    let result = rewriter.rewrite_declaration_specifiers(source, SourceType::ts());
+
+    assert_eq!(
+        result.code,
+        r#"import App = require("./App.vue");
+export { App };"#
+    );
+}
+
+#[test]
+fn collects_relative_vue_specifiers_from_require_forms() {
+    let rewriter = ImportRewriter::new();
+    let source = r#"import App = require("./App.vue");
+const Other = require("../Other.vue");"#;
+
+    assert_eq!(
+        rewriter.collect_relative_vue_specifiers(source, SourceType::ts()),
+        vec!["./App.vue", "../Other.vue"]
+    );
+}

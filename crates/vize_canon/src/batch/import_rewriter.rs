@@ -2,8 +2,8 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    ExportAllDeclaration, ExportNamedDeclaration, Expression, ImportDeclaration, ImportExpression,
-    TSImportType,
+    CallExpression, ExportAllDeclaration, ExportNamedDeclaration, Expression, ImportDeclaration,
+    ImportExpression, TSExternalModuleReference, TSImportType,
 };
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk;
@@ -318,6 +318,13 @@ impl<'a> Visit<'a> for ModuleSpecifierCollector {
         walk::walk_import_expression(self, expr);
     }
 
+    fn visit_call_expression(&mut self, expr: &CallExpression<'a>) {
+        if let Some(lit) = expr.common_js_require() {
+            self.push(lit.span.start, lit.span.end, lit.value.as_str());
+        }
+        walk::walk_call_expression(self, expr);
+    }
+
     fn visit_ts_import_type(&mut self, import_type: &TSImportType<'a>) {
         self.push(
             import_type.source.span.start,
@@ -325,5 +332,14 @@ impl<'a> Visit<'a> for ModuleSpecifierCollector {
             import_type.source.value.as_str(),
         );
         walk::walk_ts_import_type(self, import_type);
+    }
+
+    fn visit_ts_external_module_reference(&mut self, reference: &TSExternalModuleReference<'a>) {
+        self.push(
+            reference.expression.span.start,
+            reference.expression.span.end,
+            reference.expression.value.as_str(),
+        );
+        walk::walk_ts_external_module_reference(self, reference);
     }
 }
