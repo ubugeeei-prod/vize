@@ -134,6 +134,45 @@ fn shards_along_import_graph_components() {
 }
 
 #[test]
+fn shards_along_module_source_import_graph_components() {
+    use super::partition_virtual_files;
+
+    let case_dir = unique_case_dir("shard-module-components");
+    let _ = fs::remove_dir_all(&case_dir);
+    let src = case_dir.join("src");
+    fs::create_dir_all(&src).unwrap();
+    fs::write(
+        src.join("A.vue"),
+        "<script setup lang=\"ts\">import value from './module'\nvoid value</script><template />",
+    )
+    .unwrap();
+    fs::write(src.join("module.mts"), "export default 1;\n").unwrap();
+    for name in ["C", "D"] {
+        fs::write(
+            src.join(cstr!("{name}.vue").as_str()),
+            "<script setup lang=\"ts\">const n = 1</script><template>{{ n }}</template>",
+        )
+        .unwrap();
+    }
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    let paths: Vec<_> = fs::read_dir(&src)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .collect();
+    project.register_paths(&paths).unwrap();
+
+    let plan = partition_virtual_files(&project, 2);
+    let owner_a = plan.owners.get(&src.join("A.vue")).copied();
+    let owner_module = plan.owners.get(&src.join("module.mts")).copied();
+
+    assert!(owner_a.is_some());
+    assert_eq!(owner_a, owner_module);
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
 fn recognizes_global_and_positioned_diagnostic_lines() {
     assert!(is_global_diagnostic_line(
         "error TS2688: Cannot find type definition file for 'vite/client'."

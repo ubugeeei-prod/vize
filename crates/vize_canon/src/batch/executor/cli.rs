@@ -14,7 +14,10 @@ use vize_carton::path::canonicalize_non_verbatim;
 use vize_carton::{FxHashMap, profile};
 use vize_carton::{String, cstr};
 
+mod import_resolution;
 mod project_diagnostics;
+
+use import_resolution::resolve_virtual_import;
 
 pub(super) fn check_with_cli(
     corsa_path: &Path,
@@ -409,25 +412,6 @@ fn is_ambient_declaration(path: &Path) -> bool {
 
 fn declares_program_wide_types(content: &str) -> bool {
     content.contains("declare module") || content.contains("declare global")
-}
-
-/// Resolve a normalized relative import target against the registered virtual
-/// files, trying the extension candidates TypeScript would.
-fn resolve_virtual_import(
-    target: &Path,
-    index_by_virtual: &FxHashMap<&Path, usize>,
-) -> Option<usize> {
-    if let Some(&index) = index_by_virtual.get(target) {
-        return Some(index);
-    }
-    let target_str = target.to_string_lossy();
-    for suffix in [".ts", ".tsx", ".d.ts", "/index.ts", "/index.tsx"] {
-        let candidate = PathBuf::from(cstr!("{target_str}{suffix}").as_str());
-        if let Some(&index) = index_by_virtual.get(candidate.as_path()) {
-            return Some(index);
-        }
-    }
-    None
 }
 
 fn run_cli_for_config(
