@@ -13,6 +13,8 @@ fn native_dom_attribute_info_maps_html_attributes_to_dom_properties() {
 
     let class_attr = native_dom_attribute_info("div", "class").expect("class attr");
     assert_eq!(class_attr.property_name.as_str(), "className");
+    let access_key = native_dom_attribute_info("div", "accesskey").expect("accesskey attr");
+    assert_eq!(access_key.property_name.as_str(), "accessKey");
     let bound = native_dom_attribute_info("button", "v-bind:disabled").expect("v-bind attr");
     assert_eq!(bound.property_name.as_str(), "disabled");
     let aria = native_dom_attribute_info("button", "aria-label").expect("aria-label attr");
@@ -53,13 +55,30 @@ fn native_dom_attribute_info_preserves_svg_dom_property_names() {
         text_path_href.type_expression.as_str(),
         "SVGElementTagNameMap[\"textPath\"][\"href\"]"
     );
+
+    let svg_class = native_dom_attribute_info("svg", "class").expect("svg class attr");
+    assert_eq!(svg_class.property_name.as_str(), "className");
+    assert_eq!(
+        svg_class.type_expression.as_str(),
+        "SVGElementTagNameMap[\"svg\"][\"className\"]"
+    );
+    let math_tabindex = native_dom_attribute_info("math", "tabindex").expect("math tabindex attr");
+    assert_eq!(math_tabindex.property_name.as_str(), "tabIndex");
+    assert_eq!(
+        math_tabindex.type_expression.as_str(),
+        "MathMLElement[\"tabIndex\"]"
+    );
 }
 
 #[test]
 fn native_dom_attribute_info_rejects_unknown_and_component_attributes() {
     assert!(native_dom_attribute_info("button", "not-real").is_none());
     assert!(native_dom_attribute_info("div", "href").is_none());
+    assert!(native_dom_attribute_info("div", "is").is_none());
+    assert!(native_dom_attribute_info("div", "itemprop").is_none());
     assert!(native_dom_attribute_info("svg", "not-real").is_none());
+    assert!(native_dom_attribute_info("svg", "accesskey").is_none());
+    assert!(native_dom_attribute_info("math", "contenteditable").is_none());
     assert!(native_dom_attribute_info("textPath", "x").is_none());
     assert!(native_dom_attribute_info("animate", "href").is_none());
     assert!(native_dom_attribute_info("my-element", "disabled").is_none());

@@ -168,6 +168,7 @@ fn dom_attribute_property_name(tag_name: &str, attr_name: &str) -> Option<String
 fn mapped_dom_attribute_property(attr_name: &str) -> Option<&'static str> {
     match attr_name {
         "accept-charset" => Some("acceptCharset"),
+        "accesskey" => Some("accessKey"),
         "allowfullscreen" => Some("allowFullscreen"),
         "class" => Some("className"),
         "colspan" => Some("colSpan"),
@@ -199,11 +200,18 @@ fn mapped_dom_attribute_property(attr_name: &str) -> Option<&'static str> {
 }
 
 fn is_known_native_attribute_for_tag(tag_name: &str, attr_name: &str) -> bool {
-    is_global_native_attribute(attr_name)
-        || vize_carton::is_html_tag(tag_name)
-            && HTML_TAG_ATTRIBUTES
+    if vize_carton::is_html_tag(tag_name) {
+        return is_html_global_native_attribute(attr_name)
+            || HTML_TAG_ATTRIBUTES
                 .iter()
-                .any(|(tag, attrs)| *tag == tag_name && attrs.contains(&attr_name))
+                .any(|(tag, attrs)| *tag == tag_name && attrs.contains(&attr_name));
+    }
+
+    if vize_carton::is_svg_tag(tag_name) || vize_carton::is_math_ml_tag(tag_name) {
+        return is_dom_element_global_attribute(attr_name);
+    }
+
+    false
 }
 
 #[rustfmt::skip]
@@ -220,12 +228,6 @@ const GLOBAL_ATTRIBUTES: &[&str] = &[
     "id",
     "inert",
     "inputmode",
-    "is",
-    "itemid",
-    "itemprop",
-    "itemref",
-    "itemscope",
-    "itemtype",
     "lang",
     "nonce",
     "popover",
@@ -286,8 +288,15 @@ const HTML_TAG_ATTRIBUTES: &[(&str, &[&str])] = &[
     ("video", &["autoplay", "controls", "crossorigin", "height", "loop", "muted", "playsinline", "poster", "preload", "src", "width"]),
 ];
 
-fn is_global_native_attribute(attr_name: &str) -> bool {
+fn is_html_global_native_attribute(attr_name: &str) -> bool {
     GLOBAL_ATTRIBUTES.contains(&attr_name)
+}
+
+fn is_dom_element_global_attribute(attr_name: &str) -> bool {
+    matches!(
+        attr_name,
+        "class" | "id" | "nonce" | "role" | "slot" | "style" | "tabindex"
+    )
 }
 
 fn kebab_to_camel(value: &str) -> String {
