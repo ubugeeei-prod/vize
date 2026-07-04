@@ -17,6 +17,8 @@ use super::parsing::{
 };
 use crate::commands::check::tsconfig_inputs::parse_jsonc_value;
 
+const DECLARATION_SUFFIXES: &[&str] = &[".d.ts", ".d.mts", ".d.cts"];
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(super) struct NuxtGeneratedDir {
     path: PathBuf,
@@ -33,6 +35,12 @@ impl NuxtGeneratedDir {
     }
 
     pub(super) fn imports_path(&self) -> PathBuf {
+        for suffix in DECLARATION_SUFFIXES {
+            let path = self.path.join(format!("imports{suffix}"));
+            if path.is_file() {
+                return path;
+            }
+        }
         self.path.join("imports.d.ts")
     }
 
@@ -52,13 +60,7 @@ impl NuxtGeneratedDir {
         entries
             .flatten()
             .map(|entry| entry.path())
-            .filter(|path| {
-                path.is_file()
-                    && path
-                        .file_name()
-                        .and_then(|name| name.to_str())
-                        .is_some_and(|name| name.ends_with(".d.ts"))
-            })
+            .filter(|path| path.is_file() && is_declaration_file(path))
             .collect()
     }
 
@@ -73,17 +75,32 @@ impl NuxtGeneratedDir {
 
             for entry in walker.flatten() {
                 let path = entry.path();
-                let is_dts = path
-                    .file_name()
-                    .and_then(|name| name.to_str())
-                    .is_some_and(|name| name.ends_with(".d.ts"));
-                if path.is_file() && is_dts {
+                if path.is_file() && is_declaration_file(path) {
                     files.push(path.to_path_buf());
                 }
             }
         }
         files
     }
+}
+
+pub(super) fn is_declaration_file(path: &Path) -> bool {
+    declaration_stem(path).is_some()
+}
+
+pub(super) fn is_imports_declaration(path: &Path) -> bool {
+    declaration_stem(path) == Some("imports")
+}
+
+pub(super) fn is_nitro_imports_declaration(path: &Path) -> bool {
+    declaration_stem(path) == Some("nitro-imports")
+}
+
+fn declaration_stem(path: &Path) -> Option<&str> {
+    let file_name = path.file_name().and_then(|name| name.to_str())?;
+    DECLARATION_SUFFIXES
+        .iter()
+        .find_map(|suffix| file_name.strip_suffix(suffix))
 }
 
 pub(super) fn resolve_nuxt_generated_dir(cwd: &Path) -> NuxtGeneratedDir {

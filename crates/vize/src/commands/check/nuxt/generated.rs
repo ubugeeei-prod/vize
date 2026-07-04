@@ -10,7 +10,9 @@ use super::super::dts::{
     parse_declared_global_values, parse_interface_members_with_rewritten_imports,
     rewrite_relative_specifier,
 };
-use super::generated_dir::NuxtGeneratedDir;
+use super::generated_dir::{
+    NuxtGeneratedDir, is_declaration_file, is_imports_declaration, is_nitro_imports_declaration,
+};
 use super::parsing::{
     normalize_component_binding_name, parse_export_names, parse_module_specifier,
 };
@@ -34,22 +36,14 @@ pub(super) fn collect_generated_stubs(
 
         for entry in walker.flatten() {
             let path = entry.path();
-            let is_dts = path
-                .file_name()
-                .and_then(|name| name.to_str())
-                .is_some_and(|name| name.ends_with(".d.ts"));
-            if !path.is_file() || !is_dts {
+            if !path.is_file() || !is_declaration_file(path) {
                 continue;
             }
 
-            let file_name = path
-                .file_name()
-                .and_then(|name| name.to_str())
-                .unwrap_or("");
-            if file_name == "nitro-imports.d.ts" {
+            if is_nitro_imports_declaration(path) {
                 continue;
             }
-            if file_name == "imports.d.ts" {
+            if is_imports_declaration(path) {
                 found_import_manifest = true;
             }
 
@@ -261,7 +255,7 @@ fn module_path_exists(path: &Path) -> bool {
     }
 
     for extension in [
-        "ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs", "vue", "d.ts",
+        "ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs", "vue", "d.ts", "d.mts", "d.cts",
     ] {
         if path.with_extension(extension).is_file() {
             return true;
@@ -270,7 +264,7 @@ fn module_path_exists(path: &Path) -> bool {
 
     if path.is_dir() {
         for extension in [
-            "ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs", "vue", "d.ts",
+            "ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs", "vue", "d.ts", "d.mts", "d.cts",
         ] {
             if path.join("index").with_extension(extension).is_file() {
                 return true;

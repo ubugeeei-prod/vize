@@ -19,6 +19,8 @@ mod tsconfig_aliases;
 mod virtual_modules;
 
 #[cfg(test)]
+mod generated_tests;
+#[cfg(test)]
 mod legacy_template_globals_tests;
 #[cfg(test)]
 mod tests;
