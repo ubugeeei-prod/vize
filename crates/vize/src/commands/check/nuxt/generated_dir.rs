@@ -151,7 +151,7 @@ fn generated_dir_from_imports_target(cwd: &Path, target: &str) -> Option<PathBuf
 
     let file_name = path.file_name().and_then(|name| name.to_str())?;
     let mut dir = match file_name {
-        "imports" | "imports.d.ts" => path.parent()?.to_path_buf(),
+        "imports" => path.parent()?.to_path_buf(),
         "*" => {
             let parent = path.parent()?;
             if parent.file_name().and_then(|name| name.to_str()) == Some("imports") {
@@ -160,6 +160,7 @@ fn generated_dir_from_imports_target(cwd: &Path, target: &str) -> Option<PathBuf
                 parent.to_path_buf()
             }
         }
+        _ if is_imports_declaration(&path) => path.parent()?.to_path_buf(),
         _ => return None,
     };
 

@@ -75,7 +75,13 @@ fn is_generated_component(previous: Option<&str>, name: &str) -> bool {
 }
 
 pub(super) fn is_nuxt_import_manifest_path(path: &Path) -> bool {
-    if path.file_name().and_then(|name| name.to_str()) != Some("imports.d.ts") {
+    let Some(file_name) = path.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    if !matches!(
+        file_name,
+        "imports.d.ts" | "imports.d.mts" | "imports.d.cts"
+    ) {
         return false;
     }
 
@@ -85,10 +91,10 @@ pub(super) fn is_nuxt_import_manifest_path(path: &Path) -> bool {
         .collect::<Vec<_>>();
     components
         .windows(2)
-        .any(|window| window == [".nuxt", "imports.d.ts"])
+        .any(|window| window[0] == ".nuxt" && window[1] == file_name)
         || components
             .windows(3)
-            .any(|window| window == [".nuxt", "types", "imports.d.ts"])
+            .any(|window| window[0] == ".nuxt" && window[1] == "types" && window[2] == file_name)
 }
 
 pub(super) fn is_generated_codegen_declaration_path(path: &Path) -> bool {

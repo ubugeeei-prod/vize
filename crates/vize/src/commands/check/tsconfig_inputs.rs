@@ -22,6 +22,8 @@ mod type_references;
 #[cfg(test)]
 mod codegen_tests;
 #[cfg(test)]
+mod nuxt_manifest_tests;
+#[cfg(test)]
 mod tests;
 
 pub(crate) use ambient::{

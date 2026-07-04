@@ -144,6 +144,62 @@ export {}
 }
 
 #[test]
+fn detects_generated_imports_from_tsconfig_module_imports_path() {
+    let cases = [
+        ("imports.d.mts", "useImportsPathDmts"),
+        ("types/imports.d.cts", "useImportsPathDcts"),
+    ];
+
+    for (target, imported_name) in cases {
+        let project_root = unique_case_dir(&format!(
+            "nuxt-tsconfig-module-imports-path-{imported_name}"
+        ));
+        let _ = std::fs::remove_dir_all(&project_root);
+        let declaration_path = project_root.join(".out/.nuxt").join(target);
+        std::fs::create_dir_all(declaration_path.parent().unwrap()).unwrap();
+        std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
+        std::fs::write(
+            project_root.join("tsconfig.json"),
+            format!(
+                r##"{{
+  "compilerOptions": {{
+    "paths": {{
+      "#imports": [".out/.nuxt/{target}"]
+    }}
+  }}
+}}
+"##
+            ),
+        )
+        .unwrap();
+        std::fs::write(
+            declaration_path,
+            format!(
+                r#"declare global {{
+  const {imported_name}: () => number
+}}
+export {{}}
+"#,
+            ),
+        )
+        .unwrap();
+
+        let mut options = VirtualTsOptions::default();
+        let _ = detect_nuxt_auto_imports(&mut options, &project_root);
+
+        assert!(
+            options.auto_import_stubs.iter().any(|stub| {
+                stub.as_str() == format!("declare const {imported_name}: () => number;")
+            }),
+            "expected generated import from tsconfig #imports path, got: {:#?}",
+            options.auto_import_stubs
+        );
+
+        let _ = std::fs::remove_dir_all(&project_root);
+    }
+}
+
+#[test]
 fn warning_mentions_resolved_generated_dir() {
     let project_root = unique_case_dir("nuxt-warning-custom-build-dir");
     let _ = std::fs::remove_dir_all(&project_root);
