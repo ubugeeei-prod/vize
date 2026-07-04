@@ -21,7 +21,7 @@ use std::path::{Path, PathBuf};
 pub enum AutoImportKind {
     /// Default export from a `.vue` file.
     VueComponent,
-    /// Named export from a `.ts` / `.js` file matching `use*` convention.
+    /// Named export from a script file matching the `use*` convention.
     Composable,
 }
 
@@ -44,7 +44,7 @@ pub struct AutoImportIndex {
 
 impl AutoImportIndex {
     /// Build the index by scanning `root` for `.vue` files (treated as
-    /// default exports of components) and `use*.ts` / `use*.js` files
+    /// default exports of components) and `use*` script files
     /// (treated as composable exports).
     ///
     /// The scan is shallow on purpose so the foundation costs ~milliseconds
@@ -66,19 +66,12 @@ impl AutoImportIndex {
                     source: path,
                     kind: AutoImportKind::VueComponent,
                 });
-            } else if file_name.starts_with("use") {
-                let lowered = file_name.to_ascii_lowercase();
-                if lowered.ends_with(".ts") || lowered.ends_with(".js") {
-                    let stem = path
-                        .file_stem()
-                        .and_then(|n| n.to_str())
-                        .unwrap_or(file_name);
-                    entries.push(AutoImportEntry {
-                        name: stem.to_string(),
-                        source: path,
-                        kind: AutoImportKind::Composable,
-                    });
-                }
+            } else if let Some(stem) = composable_file_stem(file_name) {
+                entries.push(AutoImportEntry {
+                    name: stem.to_string(),
+                    source: path,
+                    kind: AutoImportKind::Composable,
+                });
             }
         }
         Self { entries }
@@ -114,17 +107,14 @@ impl AutoImportIndex {
                         kind: AutoImportKind::VueComponent,
                     });
                 }
-            } else if file_name.starts_with("use") {
-                let lowered = file_name.to_ascii_lowercase();
-                if (lowered.ends_with(".ts") || lowered.ends_with(".js"))
-                    && path.file_stem().and_then(|n| n.to_str()) == Some(name)
-                {
-                    return Some(AutoImportEntry {
-                        name: name.to_string(),
-                        source: path,
-                        kind: AutoImportKind::Composable,
-                    });
-                }
+            } else if let Some(stem) = composable_file_stem(file_name)
+                && stem == name
+            {
+                return Some(AutoImportEntry {
+                    name: name.to_string(),
+                    source: path,
+                    kind: AutoImportKind::Composable,
+                });
             }
         }
         None
@@ -139,6 +129,19 @@ impl AutoImportIndex {
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
     }
+}
+
+const COMPOSABLE_EXTENSIONS: &[&str] = &[".ts", ".js", ".mts", ".cts", ".mjs", ".cjs"];
+
+fn composable_file_stem(file_name: &str) -> Option<&str> {
+    if !file_name.starts_with("use") {
+        return None;
+    }
+    let lowered = file_name.to_ascii_lowercase();
+    COMPOSABLE_EXTENSIONS
+        .iter()
+        .find(|extension| lowered.ends_with(*extension))
+        .and_then(|extension| file_name.get(..file_name.len() - extension.len()))
 }
 
 fn pascal_case(s: &str) -> String {
@@ -168,15 +171,21 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(dir.path().join("MyButton.vue"), "").unwrap();
         std::fs::write(dir.path().join("useCounter.ts"), "").unwrap();
+        std::fs::write(dir.path().join("useServer.mts"), "").unwrap();
+        std::fs::write(dir.path().join("useLegacy.cjs"), "").unwrap();
         std::fs::write(dir.path().join("random.txt"), "").unwrap();
 
         let index = AutoImportIndex::from_directory(dir.path());
-        assert_eq!(index.len(), 2, "expected 2 entries, got {:?}", index);
+        assert_eq!(index.len(), 4, "expected 4 entries, got {:?}", index);
 
         let button = index.lookup("MyButton").next().unwrap();
         assert_eq!(button.kind, AutoImportKind::VueComponent);
         let counter = index.lookup("useCounter").next().unwrap();
         assert_eq!(counter.kind, AutoImportKind::Composable);
+        let server = index.lookup("useServer").next().unwrap();
+        assert_eq!(server.kind, AutoImportKind::Composable);
+        let legacy = index.lookup("useLegacy").next().unwrap();
+        assert_eq!(legacy.kind, AutoImportKind::Composable);
     }
 
     #[test]
@@ -190,7 +199,7 @@ mod tests {
     fn find_in_directory_matches_lookup_first() {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(dir.path().join("MyButton.vue"), "").unwrap();
-        std::fs::write(dir.path().join("useCounter.ts"), "").unwrap();
+        std::fs::write(dir.path().join("useCounter.mjs"), "").unwrap();
         std::fs::write(dir.path().join("random.txt"), "").unwrap();
 
         let index = AutoImportIndex::from_directory(dir.path());

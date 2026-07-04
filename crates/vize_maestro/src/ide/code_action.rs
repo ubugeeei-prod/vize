@@ -645,16 +645,16 @@ fn relative_specifier(from_dir: &std::path::Path, target: &std::path::Path) -> O
     if !s.starts_with('.') && !s.starts_with('/') {
         s.insert_str(0, "./");
     }
-    if s.ends_with(".ts") || s.ends_with(".js") {
-        // Strip trailing .ts/.js for the import specifier so the bundler /
-        // tsconfig resolution picks the right file.
-        s.truncate(s.len() - 3);
+    if let Some(suffix) = [".mts", ".cts", ".mjs", ".cjs", ".ts", ".js"]
+        .into_iter()
+        .find(|suffix| s.ends_with(suffix))
+    {
+        s.truncate(s.len() - suffix.len());
     }
     Some(s)
 }
 
-/// Compute `target` relative to `base`. Mirrors `pathdiff::diff_paths` —
-/// inlined here to avoid pulling a new dependency for one function.
+/// Compute `target` relative to `base`; inlined to avoid a dependency.
 fn diff_paths(target: &std::path::Path, base: &std::path::Path) -> Option<std::path::PathBuf> {
     use std::path::{Component, PathBuf};
     if target.is_absolute() != base.is_absolute() {
