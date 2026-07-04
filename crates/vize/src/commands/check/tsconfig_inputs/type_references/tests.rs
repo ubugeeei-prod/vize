@@ -92,6 +92,49 @@ fn type_reference_resolution_supports_subpaths_exports_and_graphs() {
 }
 
 #[test]
+fn type_reference_resolution_supports_module_declaration_suffixes() {
+    let root = unique_case_dir("module-suffixes");
+    let _ = std::fs::remove_dir_all(&root);
+    write(
+        &root,
+        "node_modules/modern-env/package.json",
+        r#"{ "types": "index.d.mts" }"#,
+    );
+    write(
+        &root,
+        "node_modules/modern-env/index.d.mts",
+        "/// <reference path=\"./globals.d.cts\" />\nexport {};\n",
+    );
+    write(
+        &root,
+        "node_modules/modern-env/globals.d.cts",
+        "declare const MODERN_ENV: true;\n",
+    );
+    write(
+        &root,
+        "node_modules/modern-subpath/worker.d.cts",
+        "declare const WORKER_ENV: true;\n",
+    );
+
+    let root = root.canonicalize().unwrap();
+    let modern_env = resolve_type_reference_declaration_files(&root, "modern-env");
+    assert_eq!(
+        relative_paths(&root, &modern_env),
+        vec![
+            "node_modules/modern-env/index.d.mts",
+            "node_modules/modern-env/globals.d.cts",
+        ]
+    );
+    let modern_subpath = resolve_type_reference_declaration_files(&root, "modern-subpath/worker");
+    assert_eq!(
+        relative_paths(&root, &modern_subpath),
+        vec!["node_modules/modern-subpath/worker.d.cts"]
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
 fn tsconfig_type_packages_follow_extends_and_local_overrides() {
     let root = unique_case_dir("tsconfig-types");
     let _ = std::fs::remove_dir_all(&root);

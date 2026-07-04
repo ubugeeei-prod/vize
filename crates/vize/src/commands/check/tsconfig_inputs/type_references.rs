@@ -248,7 +248,11 @@ fn push_declaration_entry_candidate(candidates: &mut Vec<PathBuf>, path: PathBuf
     push_unique_candidate(candidates, path.clone());
     if path.extension().is_none() {
         push_unique_candidate(candidates, path.with_extension("d.ts"));
+        push_unique_candidate(candidates, path.with_extension("d.mts"));
+        push_unique_candidate(candidates, path.with_extension("d.cts"));
         push_unique_candidate(candidates, path.join("index.d.ts"));
+        push_unique_candidate(candidates, path.join("index.d.mts"));
+        push_unique_candidate(candidates, path.join("index.d.cts"));
     }
 }
 
@@ -318,7 +322,9 @@ fn reference_path_attribute(line: &str) -> Option<&str> {
 fn is_declaration_path(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts"))
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
 }
 
 #[cfg(test)]

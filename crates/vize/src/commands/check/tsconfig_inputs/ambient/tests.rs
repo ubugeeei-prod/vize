@@ -73,6 +73,53 @@ fn ambient_collection_skips_export_only_generated_declaration_modules() {
 }
 
 #[test]
+fn ambient_collection_loads_module_declaration_suffixes() {
+    let root = unique_case_dir("module-suffixes");
+    let _ = std::fs::remove_dir_all(&root);
+    write(&root, "src/App.vue", "<template><div /></template>\n");
+    write(
+        &root,
+        "src/env.d.mts",
+        "/// <reference path=\"./feature-flags.d.cts\" />\nexport {};\n",
+    );
+    write(
+        &root,
+        "src/feature-flags.d.cts",
+        "export {};\ndeclare global { interface ImportMeta { vfFeature: boolean } }\n",
+    );
+    write(
+        &root,
+        "src/globals.d.mts",
+        "declare const APP_VERSION: string;\n",
+    );
+    write(
+        &root,
+        "src/generated.d.cts",
+        "export type GeneratedOnly = { ok: true };\n",
+    );
+    write(
+        &root,
+        "tsconfig.json",
+        r#"{
+  "include": ["src/**/*"]
+}"#,
+    );
+
+    let project_root = root.canonicalize().unwrap();
+    let files = collect_ambient_declaration_files(
+        &project_root,
+        Some(&project_root.join("tsconfig.json")),
+        &mut TsconfigInputCache::default(),
+    );
+
+    assert_eq!(
+        relative_paths(&project_root, &files),
+        vec!["src/feature-flags.d.cts", "src/globals.d.mts"]
+    );
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
 fn ambient_collection_loads_compiler_options_type_packages() {
     let root = unique_case_dir("compiler-options-types");
     let _ = std::fs::remove_dir_all(&root);
@@ -122,6 +169,56 @@ fn ambient_collection_loads_compiler_options_type_packages() {
     );
     assert!(
         relative.contains(&"node_modules/nuxt-i18n/index.d.ts".to_string()),
+        "{relative:?}"
+    );
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
+fn ambient_collection_loads_compiler_options_module_declaration_packages() {
+    let root = unique_case_dir("compiler-options-module-types");
+    let _ = std::fs::remove_dir_all(&root);
+    write(&root, "src/App.vue", "<template><div /></template>\n");
+    write(
+        &root,
+        "node_modules/modern-env/package.json",
+        r#"{ "types": "index.d.mts" }"#,
+    );
+    write(
+        &root,
+        "node_modules/modern-env/index.d.mts",
+        "/// <reference path=\"./globals.d.cts\" />\nexport {};\n",
+    );
+    write(
+        &root,
+        "node_modules/modern-env/globals.d.cts",
+        "export {};\ndeclare global { const MODERN_ENV: true }\n",
+    );
+    write(
+        &root,
+        "tsconfig.json",
+        r#"{
+  "compilerOptions": {
+    "types": ["modern-env"]
+  },
+  "include": ["src/**/*"]
+}"#,
+    );
+
+    let project_root = root.canonicalize().unwrap();
+    let files = collect_ambient_declaration_files(
+        &project_root,
+        Some(&project_root.join("tsconfig.json")),
+        &mut TsconfigInputCache::default(),
+    );
+
+    let relative = relative_paths(&project_root, &files);
+    assert!(
+        relative.contains(&"node_modules/modern-env/index.d.mts".to_string()),
+        "{relative:?}"
+    );
+    assert!(
+        relative.contains(&"node_modules/modern-env/globals.d.cts".to_string()),
         "{relative:?}"
     );
     let _ = std::fs::remove_dir_all(&root);

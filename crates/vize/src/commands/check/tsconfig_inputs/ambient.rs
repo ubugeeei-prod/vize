@@ -1,4 +1,4 @@
-//! Ambient declaration (`.d.ts`) collection for partial `vize check` runs.
+//! Ambient declaration collection for partial `vize check` runs.
 
 use std::{
     fs,
@@ -21,7 +21,7 @@ mod top_level;
 
 use top_level::has_top_level_import_or_export;
 
-/// Collect ambient declaration (`.d.ts`) files that belong to the tsconfig
+/// Collect ambient declaration files that belong to the tsconfig
 /// "program" so their global types stay in scope when only a subset of files is
 /// checked explicitly (e.g. `vize check src/App.vue`).
 ///
@@ -138,7 +138,9 @@ fn collect_tsconfig_type_declaration_files(
 pub(super) fn is_declaration_file(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts"))
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
 }
 
 /// Returns `true` when a declaration file would replace real Vue package types
