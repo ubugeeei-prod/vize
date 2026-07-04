@@ -33,14 +33,7 @@ pub(super) fn mapped_svg_dom_attribute_property(
         "y1" if tag_name == "line" => Some("y1"),
         "x2" if tag_name == "line" => Some("x2"),
         "y2" if tag_name == "line" => Some("y2"),
-        "href"
-            if matches!(
-                tag_name,
-                "a" | "animate" | "animateMotion" | "image" | "mpath" | "textPath" | "use"
-            ) =>
-        {
-            Some("href")
-        }
+        "href" if matches!(tag_name, "a" | "image" | "mpath" | "textPath" | "use") => Some("href"),
         _ => None,
     }
 }
@@ -70,7 +63,7 @@ fn svg_has_text_length(tag_name: &str) -> bool {
 fn svg_has_x_y(tag_name: &str) -> bool {
     matches!(
         tag_name,
-        "svg" | "rect" | "image" | "use" | "text" | "textPath" | "tspan"
+        "svg" | "rect" | "image" | "use" | "text" | "tspan"
     )
 }
 

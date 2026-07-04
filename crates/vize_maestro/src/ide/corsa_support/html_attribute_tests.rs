@@ -46,6 +46,13 @@ fn native_dom_attribute_info_preserves_svg_dom_property_names() {
         circle_center.type_expression.as_str(),
         "SVGElementTagNameMap[\"circle\"][\"cx\"]"
     );
+
+    let text_path_href = native_dom_attribute_info("textPath", "href").expect("textPath href");
+    assert_eq!(text_path_href.property_name.as_str(), "href");
+    assert_eq!(
+        text_path_href.type_expression.as_str(),
+        "SVGElementTagNameMap[\"textPath\"][\"href\"]"
+    );
 }
 
 #[test]
@@ -53,6 +60,8 @@ fn native_dom_attribute_info_rejects_unknown_and_component_attributes() {
     assert!(native_dom_attribute_info("button", "not-real").is_none());
     assert!(native_dom_attribute_info("div", "href").is_none());
     assert!(native_dom_attribute_info("svg", "not-real").is_none());
+    assert!(native_dom_attribute_info("textPath", "x").is_none());
+    assert!(native_dom_attribute_info("animate", "href").is_none());
     assert!(native_dom_attribute_info("my-element", "disabled").is_none());
     assert!(native_dom_attribute_info("button", "@click").is_none());
 }
