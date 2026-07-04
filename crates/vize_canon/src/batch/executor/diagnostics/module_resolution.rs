@@ -43,7 +43,7 @@ pub(crate) fn relative_module_resolves_on_disk(message: &str, importer: &Path) -
 }
 
 /// Source extensions a relative specifier may resolve to.
-const SOURCE_EXTENSIONS: &[&str] = &["ts", "tsx", "d.ts", "mts", "cts", "vue"];
+const SOURCE_EXTENSIONS: &[&str] = &["ts", "tsx", "d.ts", "d.mts", "d.cts", "mts", "cts", "vue"];
 
 /// Resolve `specifier` against `dir` the way TypeScript would for a Vue/TS
 /// project: an explicit supported extension, an extension appended to the
@@ -84,6 +84,8 @@ fn relative_specifier_resolves(dir: &Path, specifier: &str) -> bool {
 fn specifier_has_source_extension(specifier: &str) -> bool {
     specifier.ends_with(".vue")
         || specifier.ends_with(".d.ts")
+        || specifier.ends_with(".d.mts")
+        || specifier.ends_with(".d.cts")
         || specifier.ends_with(".ts")
         || specifier.ends_with(".tsx")
         || specifier.ends_with(".mts")
@@ -102,15 +104,22 @@ mod tests {
         let importer = dir.path().join("App.vue");
         std::fs::write(&importer, "").unwrap();
         std::fs::write(dir.path().join("types.ts"), "").unwrap();
+        std::fs::write(dir.path().join("module-types.d.mts"), "").unwrap();
         std::fs::write(dir.path().join("Panel.vue"), "<template />").unwrap();
         std::fs::create_dir_all(dir.path().join("util")).unwrap();
         std::fs::write(dir.path().join("util").join("index.ts"), "").unwrap();
+        std::fs::create_dir_all(dir.path().join("common")).unwrap();
+        std::fs::write(dir.path().join("common").join("index.d.cts"), "").unwrap();
 
         let resolvable_ts = "Cannot find module './types' or its corresponding type declarations.";
         let resolvable_vue_ts =
             "Cannot find module './Panel.vue.ts' or its corresponding type declarations.";
         let resolvable_index =
             "Cannot find module './util' or its corresponding type declarations.";
+        let resolvable_dmts =
+            "Cannot find module './module-types' or its corresponding type declarations.";
+        let resolvable_index_dcts =
+            "Cannot find module './common' or its corresponding type declarations.";
         let resolvable_js_to_ts =
             "Cannot find module './types.js' or its corresponding type declarations.";
         let missing_relative =
@@ -124,6 +133,11 @@ mod tests {
         ));
         assert!(relative_module_resolves_on_disk(
             resolvable_index,
+            &importer
+        ));
+        assert!(relative_module_resolves_on_disk(resolvable_dmts, &importer));
+        assert!(relative_module_resolves_on_disk(
+            resolvable_index_dcts,
             &importer
         ));
         assert!(relative_module_resolves_on_disk(
