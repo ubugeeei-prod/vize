@@ -31,9 +31,7 @@ impl DocumentLinkService {
 
         let base_path = uri.to_file_path().ok();
 
-        // Collect links from script setup
         if let Some(ref script_setup) = descriptor.script_setup {
-            // src attribute
             if let Some(ref src) = script_setup.src
                 && let Some((start, end)) =
                     Self::find_src_attr_range(content, script_setup.loc.start)
@@ -42,7 +40,6 @@ impl DocumentLinkService {
                 links.push(Self::create_link(content, start, end, target));
             }
 
-            // Import statements
             Self::collect_import_links(
                 &script_setup.content,
                 script_setup.loc.start,
@@ -53,9 +50,7 @@ impl DocumentLinkService {
             Self::collect_define_art_source_links(content, uri, &mut links);
         }
 
-        // Collect links from script
         if let Some(ref script) = descriptor.script {
-            // src attribute
             if let Some(ref src) = script.src
                 && let Some((start, end)) = Self::find_src_attr_range(content, script.loc.start)
                 && let Some(target) = Self::resolve_path(src, base_path.as_deref())
@@ -63,7 +58,6 @@ impl DocumentLinkService {
                 links.push(Self::create_link(content, start, end, target));
             }
 
-            // Import statements
             Self::collect_import_links(
                 &script.content,
                 script.loc.start,
@@ -73,7 +67,6 @@ impl DocumentLinkService {
             );
         }
 
-        // Collect links from template src
         if let Some(ref template) = descriptor.template
             && let Some(ref src) = template.src
             && let Some((start, end)) = Self::find_src_attr_range(content, template.loc.start)
@@ -82,9 +75,7 @@ impl DocumentLinkService {
             links.push(Self::create_link(content, start, end, target));
         }
 
-        // Collect links from styles
         for style in &descriptor.styles {
-            // src attribute
             if let Some(ref src) = style.src
                 && let Some((start, end)) = Self::find_src_attr_range(content, style.loc.start)
                 && let Some(target) = Self::resolve_path(src, base_path.as_deref())
@@ -92,7 +83,6 @@ impl DocumentLinkService {
                 links.push(Self::create_link(content, start, end, target));
             }
 
-            // @import statements
             Self::collect_css_import_links(
                 &style.content,
                 style.loc.start,
@@ -324,9 +314,17 @@ impl DocumentLinkService {
             resolved.with_extension("vue"),
             resolved.with_extension("tsx"),
             resolved.with_extension("jsx"),
+            resolved.with_extension("mts"),
+            resolved.with_extension("cts"),
+            resolved.with_extension("mjs"),
+            resolved.with_extension("cjs"),
             resolved.join("index.ts"),
             resolved.join("index.js"),
             resolved.join("index.vue"),
+            resolved.join("index.mts"),
+            resolved.join("index.cts"),
+            resolved.join("index.mjs"),
+            resolved.join("index.cjs"),
         ];
 
         for candidate in &candidates {

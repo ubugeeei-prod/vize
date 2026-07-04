@@ -38,12 +38,14 @@ test("vize lsp documentLink resolves relative imports and ranges", async (t) => 
 `,
       "utf8",
     );
+    const modulePath = path.join(workspaceDir, "useServer.mjs");
+    fs.writeFileSync(modulePath, "export const useServer = () => 1\n", "utf8");
 
-    // Line 0: <script setup ...>; line 1: the two import statements.
-    // Keep both imports on a single known line so column math is unambiguous.
-    const importLine = `import Dep from './Dep.vue'`;
+    const componentImportLine = `import Dep from './Dep.vue'`;
+    const moduleImportLine = `import { useServer } from './useServer'`;
     const source = `<script setup lang="ts">
-${importLine}
+${componentImportLine}
+${moduleImportLine}
 import { ref } from 'vue'
 const _x = ref(0)
 </script>
@@ -77,17 +79,17 @@ const _x = ref(0)
         })) as DocumentLink[] | null;
 
         assert.ok(Array.isArray(links), JSON.stringify(links));
-        // Only the relative './Dep.vue' import produces a link; the bare
-        // 'vue' package import is skipped.
-        assert.equal(links.length, 1, JSON.stringify(links));
+        assert.equal(links.length, 2, JSON.stringify(links));
 
-        const link = links[0];
-        assert.ok(link.target, JSON.stringify(link));
-        const targetPath = new URL(link.target).pathname;
-        assert.equal(path.basename(decodeURIComponent(targetPath)), "Dep.vue");
-        // The bare 'vue' import contributes no link, so there is nothing on
-        // line 2 (the 'vue' import line).
-        assert.equal(link.range.start.line, 1);
+        const targets = links.map((link) => {
+          assert.ok(link.target, JSON.stringify(link));
+          return path.basename(decodeURIComponent(new URL(link.target).pathname));
+        });
+        assert.deepEqual(targets.sort(), ["Dep.vue", "useServer.mjs"]);
+        assert.ok(
+          links.every((link) => link.range.start.line !== 3),
+          JSON.stringify(links),
+        );
       },
     );
 
@@ -97,19 +99,21 @@ const _x = ref(0)
       })) as DocumentLink[] | null;
 
       assert.ok(Array.isArray(links), JSON.stringify(links));
-      assert.equal(links.length, 1, JSON.stringify(links));
+      assert.equal(links.length, 2, JSON.stringify(links));
 
       // Compute expected columns from the source rather than hardcoding: the
       // range spans the opening quote through the closing quote inclusive.
-      const lineStartOffset = source.indexOf(importLine);
+      const lineStartOffset = source.indexOf(componentImportLine);
       const quoteStartOffset = source.indexOf("'", lineStartOffset);
       const quoteEndOffset = source.indexOf("'", quoteStartOffset + 1) + 1;
 
       const expectedStart = offsetToPosition(source, quoteStartOffset);
       const expectedEnd = offsetToPosition(source, quoteEndOffset);
+      const componentLink = links.find((link) => link.target?.endsWith("/Dep.vue"));
+      assert.ok(componentLink, JSON.stringify(links));
 
-      assert.deepEqual(links[0].range.start, expectedStart);
-      assert.deepEqual(links[0].range.end, expectedEnd);
+      assert.deepEqual(componentLink.range.start, expectedStart);
+      assert.deepEqual(componentLink.range.end, expectedEnd);
     });
   } finally {
     await session.shutdown();
