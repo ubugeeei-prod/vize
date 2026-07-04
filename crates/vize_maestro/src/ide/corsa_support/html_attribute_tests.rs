@@ -104,6 +104,31 @@ fn native_dom_attribute_info_maps_html_attributes_to_dom_properties() {
     assert_eq!(style_disabled.property_name.as_str(), "disabled");
     assert!(style_disabled.is_boolean);
 
+    let table_cell_char = native_dom_attribute_info("td", "char").expect("td char attr");
+    assert_eq!(table_cell_char.property_name.as_str(), "ch");
+    assert_eq!(
+        table_cell_char.type_expression.as_str(),
+        "HTMLElementTagNameMap[\"td\"][\"ch\"]"
+    );
+    let table_cell_char_off = native_dom_attribute_info("td", "charoff").expect("td charoff attr");
+    assert_eq!(table_cell_char_off.property_name.as_str(), "chOff");
+    assert_eq!(
+        table_cell_char_off.type_expression.as_str(),
+        "HTMLElementTagNameMap[\"td\"][\"chOff\"]"
+    );
+    let table_cell_bg_color = native_dom_attribute_info("td", "bgcolor").expect("td bgcolor attr");
+    assert_eq!(table_cell_bg_color.property_name.as_str(), "bgColor");
+    let table_cell_nowrap = native_dom_attribute_info("td", "nowrap").expect("td nowrap attr");
+    assert_eq!(table_cell_nowrap.property_name.as_str(), "noWrap");
+    assert!(table_cell_nowrap.is_boolean);
+    let table_header_valign = native_dom_attribute_info("th", "valign").expect("th valign attr");
+    assert_eq!(table_header_valign.property_name.as_str(), "vAlign");
+    let table_col_valign = native_dom_attribute_info("col", "valign").expect("col valign attr");
+    assert_eq!(table_col_valign.property_name.as_str(), "vAlign");
+    let table_colgroup_charoff =
+        native_dom_attribute_info("colgroup", "charoff").expect("colgroup charoff attr");
+    assert_eq!(table_colgroup_charoff.property_name.as_str(), "chOff");
+
     let iframe_frame_border =
         native_dom_attribute_info("iframe", "frameborder").expect("iframe frameborder attr");
     assert_eq!(iframe_frame_border.property_name.as_str(), "frameBorder");

@@ -84,6 +84,7 @@ pub static BOOLEAN_ATTRS: phf::Set<&'static str> = phf_set! {
     "muted",
     "nomodule",
     "novalidate",
+    "nowrap",
     "open",
     "playsinline",
     "readonly",
@@ -183,6 +184,7 @@ mod tests {
     fn test_boolean_attrs() {
         assert!(is_boolean_attr("checked"));
         assert!(is_boolean_attr("disabled"));
+        assert!(is_boolean_attr("nowrap"));
         assert!(!is_boolean_attr("aria-label"));
     }
 
