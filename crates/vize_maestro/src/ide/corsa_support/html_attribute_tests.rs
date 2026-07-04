@@ -91,6 +91,8 @@ fn native_dom_attribute_info_rejects_unknown_and_component_attributes() {
     assert!(native_dom_attribute_info("div", "itemprop").is_none());
     assert!(native_dom_attribute_info("area", "hreflang").is_none());
     assert!(native_dom_attribute_info("meta", "charset").is_none());
+    assert!(native_dom_attribute_info("param", "name").is_none());
+    assert!(native_dom_attribute_info("param", "value").is_none());
     assert!(native_dom_attribute_info("svg", "not-real").is_none());
     assert!(native_dom_attribute_info("svg", "accesskey").is_none());
     assert!(native_dom_attribute_info("math", "contenteditable").is_none());

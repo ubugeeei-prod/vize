@@ -48,7 +48,7 @@ pub(crate) fn native_dom_tag_info(tag_name: &str) -> Option<NativeDomTagInfo> {
         return None;
     }
 
-    if vize_carton::is_html_tag(tag_name) {
+    if has_html_element_tag_name_map_entry(tag_name) {
         return Some(NativeDomTagInfo {
             category: "HTML element",
             type_expression: cstr!("HTMLElementTagNameMap[\"{tag_name}\"]"),
@@ -79,7 +79,7 @@ pub(crate) fn native_dom_tag_info(tag_name: &str) -> Option<NativeDomTagInfo> {
 }
 
 fn dom_definition_symbol(tag_name: &str) -> Option<&'static str> {
-    if vize_carton::is_html_tag(tag_name) {
+    if has_html_element_tag_name_map_entry(tag_name) {
         Some("HTMLElementTagNameMap")
     } else if vize_carton::is_svg_tag(tag_name) {
         Some("SVGElementTagNameMap")
@@ -88,6 +88,10 @@ fn dom_definition_symbol(tag_name: &str) -> Option<&'static str> {
     } else {
         None
     }
+}
+
+fn has_html_element_tag_name_map_entry(tag_name: &str) -> bool {
+    vize_carton::is_html_tag(tag_name) && !matches!(tag_name, "param")
 }
 
 #[cfg(test)]
@@ -130,5 +134,11 @@ mod tests {
         assert!(super::native_dom_tag_info("template").is_none());
         assert!(super::native_dom_tag_info("slot").is_none());
         assert!(super::native_dom_tag_info("component").is_none());
+    }
+
+    #[test]
+    fn native_dom_tag_info_rejects_html_tags_missing_dom_map_entries() {
+        assert!(super::native_dom_tag_info("param").is_none());
+        assert!(super::html_tag_virtual_document("param").is_none());
     }
 }
