@@ -146,6 +146,28 @@ fn native_dom_attribute_info_maps_html_attributes_to_dom_properties() {
     let iframe_scrolling =
         native_dom_attribute_info("iframe", "scrolling").expect("iframe scrolling attr");
     assert_eq!(iframe_scrolling.property_name.as_str(), "scrolling");
+
+    let object_code_base =
+        native_dom_attribute_info("object", "codebase").expect("object codebase attr");
+    assert_eq!(object_code_base.property_name.as_str(), "codeBase");
+    assert_eq!(
+        object_code_base.type_expression.as_str(),
+        "HTMLElementTagNameMap[\"object\"][\"codeBase\"]"
+    );
+    let object_code_type =
+        native_dom_attribute_info("object", "codetype").expect("object codetype attr");
+    assert_eq!(object_code_type.property_name.as_str(), "codeType");
+    let object_declare =
+        native_dom_attribute_info("object", "declare").expect("object declare attr");
+    assert_eq!(object_declare.property_name.as_str(), "declare");
+    assert!(object_declare.is_boolean);
+    for attr_name in [
+        "align", "archive", "border", "code", "hspace", "standby", "vspace",
+    ] {
+        let object_attr =
+            native_dom_attribute_info("object", attr_name).expect("object legacy attr");
+        assert_eq!(object_attr.property_name.as_str(), attr_name);
+    }
 }
 
 #[test]

@@ -73,6 +73,7 @@ pub static BOOLEAN_ATTRS: phf::Set<&'static str> = phf_set! {
     "controls",
     "default",
     "defer",
+    "declare",
     "disabled",
     "formnovalidate",
     "hidden",
@@ -183,6 +184,7 @@ mod tests {
     #[test]
     fn test_boolean_attrs() {
         assert!(is_boolean_attr("checked"));
+        assert!(is_boolean_attr("declare"));
         assert!(is_boolean_attr("disabled"));
         assert!(is_boolean_attr("nowrap"));
         assert!(!is_boolean_attr("aria-label"));
