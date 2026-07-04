@@ -725,9 +725,7 @@ fn strip_extension(path: &Path) -> PathBuf {
 }
 
 fn is_index_file(path: &Path) -> bool {
-    path.file_stem()
-        .and_then(|stem| stem.to_str())
-        .is_some_and(|stem| stem == "index")
+    strip_extension(path).ends_with("index")
 }
 
 #[cfg(feature = "native")]

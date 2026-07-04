@@ -1,6 +1,8 @@
 //! File rename support for workspace import updates.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
+#[cfg(all(test, feature = "native"))]
+mod declaration_index_tests;
 mod manual;
 
 use tower_lsp::lsp_types::{
@@ -221,23 +223,14 @@ fn changes_to_document_edits(
 mod tests {
     use tower_lsp::lsp_types::{
         DocumentChangeOperation, DocumentChanges, OneOf, OptionalVersionedTextDocumentIdentifier,
-        Position, Range, RenameFile, ResourceOp, TextDocumentEdit, TextEdit, Url, WorkspaceEdit,
+        RenameFile, ResourceOp, TextDocumentEdit, TextEdit, Url, WorkspaceEdit,
     };
 
     use super::merge_workspace_edits;
 
     fn text_edit(new_text: &str) -> TextEdit {
         TextEdit {
-            range: Range {
-                start: Position {
-                    line: 0,
-                    character: 0,
-                },
-                end: Position {
-                    line: 0,
-                    character: 0,
-                },
-            },
+            range: Default::default(),
             new_text: new_text.to_string(),
         }
     }
