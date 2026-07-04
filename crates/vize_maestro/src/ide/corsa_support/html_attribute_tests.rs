@@ -44,6 +44,23 @@ fn native_dom_attribute_info_maps_html_attributes_to_dom_properties() {
         dir_name.type_expression.as_str(),
         "HTMLElementTagNameMap[\"textarea\"][\"dirName\"]"
     );
+
+    let anchor_type = native_dom_attribute_info("a", "type").expect("anchor type attr");
+    assert_eq!(anchor_type.property_name.as_str(), "type");
+    assert_eq!(
+        anchor_type.type_expression.as_str(),
+        "HTMLElementTagNameMap[\"a\"][\"type\"]"
+    );
+    let area_alt = native_dom_attribute_info("area", "alt").expect("area alt attr");
+    assert_eq!(area_alt.property_name.as_str(), "alt");
+    assert_eq!(
+        area_alt.type_expression.as_str(),
+        "HTMLElementTagNameMap[\"area\"][\"alt\"]"
+    );
+    let area_coords = native_dom_attribute_info("area", "coords").expect("area coords attr");
+    assert_eq!(area_coords.property_name.as_str(), "coords");
+    let area_shape = native_dom_attribute_info("area", "shape").expect("area shape attr");
+    assert_eq!(area_shape.property_name.as_str(), "shape");
 }
 
 #[test]

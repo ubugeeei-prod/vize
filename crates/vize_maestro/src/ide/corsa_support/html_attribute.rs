@@ -250,8 +250,8 @@ const GLOBAL_ATTRIBUTES: &[&str] = &[
 
 #[rustfmt::skip]
 const HTML_TAG_ATTRIBUTES: &[(&str, &[&str])] = &[
-    ("a", &["download", "href", "hreflang", "ping", "referrerpolicy", "rel", "target"]),
-    ("area", &["download", "href", "ping", "referrerpolicy", "rel", "target"]),
+    ("a", &["charset", "coords", "download", "href", "hreflang", "name", "ping", "referrerpolicy", "rel", "rev", "shape", "target", "type"]),
+    ("area", &["alt", "coords", "download", "href", "ping", "referrerpolicy", "rel", "shape", "target"]),
     ("audio", &["autoplay", "controls", "crossorigin", "loop", "muted", "preload", "src"]),
     ("base", &["href", "target"]),
     ("blockquote", &["cite"]),
