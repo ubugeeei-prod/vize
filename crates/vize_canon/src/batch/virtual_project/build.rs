@@ -12,6 +12,7 @@ use vize_carton::{String as CompactString, ToCompactString, cstr, profile};
 use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
 
 use crate::batch::Diagnostic;
+use crate::batch::declaration_path::is_declaration_file;
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::import_rewriter::ImportRewriter;
 use crate::batch::source_map::{CompositeSourceMap, SfcSourceMap};
@@ -64,11 +65,7 @@ pub(super) fn build_registered_file(
         return build_vue_registered_file(path, content, context);
     }
 
-    if path
-        .file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts"))
-    {
+    if is_declaration_file(path) {
         return build_script_registered_file(
             path,
             content,

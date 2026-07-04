@@ -7,6 +7,7 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use super::declaration_path::is_declaration_file;
 use super::error::{CorsaError, CorsaNotFoundError, CorsaResult};
 use super::import_rewriter::ImportRewriter;
 use super::materialize_lock::MaterializeLock;
@@ -269,11 +270,7 @@ fn collect_declaration_outputs(out_dir: &Path) -> CorsaResult<Vec<DeclarationOut
         if !path.is_file() {
             continue;
         }
-        if !path
-            .file_name()
-            .and_then(|name| name.to_str())
-            .is_some_and(|name| name.ends_with(".d.ts"))
-        {
+        if !is_declaration_file(path) {
             continue;
         }
 
@@ -306,7 +303,7 @@ fn rewrite_declaration_outputs(out_dir: &Path) -> CorsaResult<()> {
         let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
             continue;
         };
-        if !name.ends_with(".d.ts") {
+        if !is_declaration_file(path) {
             continue;
         }
 

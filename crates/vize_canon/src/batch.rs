@@ -5,6 +5,7 @@
 //! project in `node_modules/.vize/canon/`, and requests diagnostics from
 //! Corsa's LSP instead of parsing CLI text output.
 
+mod declaration_path;
 mod error;
 mod executor;
 mod import_rewriter;

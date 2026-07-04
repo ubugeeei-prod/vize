@@ -4,6 +4,7 @@ use std::{
 };
 
 use super::super::{Diagnostic, TypeCheckResult, VirtualProject};
+use crate::batch::declaration_path::is_declaration_file;
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::executor::diagnostics::{
     DiagnosticMapper, dedup_diagnostics, relative_module_resolves_on_disk, should_skip_diagnostic,
@@ -403,9 +404,7 @@ fn is_vue_original(path: &Path) -> bool {
 }
 
 fn is_ambient_declaration(path: &Path) -> bool {
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts"))
+    is_declaration_file(path)
 }
 
 fn declares_program_wide_types(content: &str) -> bool {

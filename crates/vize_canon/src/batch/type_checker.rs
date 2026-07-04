@@ -3,6 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use super::Diagnostic;
+use super::declaration_path::is_declaration_file;
 use super::error::{CorsaError, CorsaResult};
 use super::executor::CorsaExecutor;
 use super::virtual_project::VirtualProject;
@@ -325,10 +326,7 @@ fn is_supported_input(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
         .is_some_and(|extension| matches!(extension, "vue" | "ts" | "tsx" | "mts" | "cts"))
-        || path
-            .file_name()
-            .and_then(|name| name.to_str())
-            .is_some_and(|name| name.ends_with(".d.ts"))
+        || is_declaration_file(path)
 }
 
 #[cfg(test)]
