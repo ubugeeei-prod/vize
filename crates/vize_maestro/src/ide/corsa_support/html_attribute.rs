@@ -281,7 +281,7 @@ const HTML_TAG_ATTRIBUTES: &[(&str, &[&str])] = &[
     ("form", &["accept-charset", "action", "autocomplete", "enctype", "method", "name", "novalidate", "rel", "target"]),
     ("iframe", &["align", "allow", "allowfullscreen", "frameborder", "height", "loading", "longdesc", "marginheight", "marginwidth", "name", "referrerpolicy", "sandbox", "scrolling", "src", "srcdoc", "width"]),
     ("img", &["align", "alt", "border", "crossorigin", "decoding", "fetchpriority", "height", "hspace", "ismap", "loading", "longdesc", "lowsrc", "name", "referrerpolicy", "sizes", "src", "srcset", "usemap", "vspace", "width"]),
-    ("input", &["accept", "alt", "autocomplete", "capture", "checked", "dirname", "disabled", "form", "formaction", "formenctype", "formmethod", "formnovalidate", "formtarget", "height", "list", "max", "maxlength", "min", "minlength", "multiple", "name", "pattern", "placeholder", "readonly", "required", "size", "src", "step", "type", "value", "width"]),
+    ("input", &["accept", "align", "alt", "autocomplete", "capture", "checked", "dirname", "disabled", "form", "formaction", "formenctype", "formmethod", "formnovalidate", "formtarget", "height", "list", "max", "maxlength", "min", "minlength", "multiple", "name", "pattern", "placeholder", "readonly", "required", "size", "src", "step", "type", "usemap", "value", "webkitdirectory", "width"]),
     ("ins", &["cite", "datetime"]),
     ("label", &["for", "form"]),
     ("li", &["value"]),

@@ -44,6 +44,21 @@ fn native_dom_attribute_info_maps_html_attributes_to_dom_properties() {
         image_long_desc.type_expression.as_str(),
         "HTMLElementTagNameMap[\"img\"][\"longDesc\"]"
     );
+    let input_use_map = native_dom_attribute_info("input", "usemap").expect("input usemap attr");
+    assert_eq!(input_use_map.property_name.as_str(), "useMap");
+    assert_eq!(
+        input_use_map.type_expression.as_str(),
+        "HTMLElementTagNameMap[\"input\"][\"useMap\"]"
+    );
+    let input_webkit_directory =
+        native_dom_attribute_info("input", "webkitdirectory").expect("input webkitdirectory attr");
+    assert_eq!(
+        input_webkit_directory.property_name.as_str(),
+        "webkitdirectory"
+    );
+    assert!(input_webkit_directory.is_boolean);
+    let input_align = native_dom_attribute_info("input", "align").expect("input align attr");
+    assert_eq!(input_align.property_name.as_str(), "align");
     for (attr_name, property_name) in [
         ("align", "align"),
         ("border", "border"),

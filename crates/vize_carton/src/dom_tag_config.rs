@@ -91,7 +91,8 @@ pub static BOOLEAN_ATTRS: phf::Set<&'static str> = phf_set! {
     "readonly",
     "required",
     "reversed",
-    "selected"
+    "selected",
+    "webkitdirectory"
 };
 
 /// Check if tag is a valid HTML tag
@@ -187,6 +188,7 @@ mod tests {
         assert!(is_boolean_attr("declare"));
         assert!(is_boolean_attr("disabled"));
         assert!(is_boolean_attr("nowrap"));
+        assert!(is_boolean_attr("webkitdirectory"));
         assert!(!is_boolean_attr("aria-label"));
     }
 
