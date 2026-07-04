@@ -275,9 +275,12 @@ impl ImportRewriter {
             return Some(rewritten);
         }
         let candidate = std::path::Path::new(path);
+        let canonical_candidate = vize_carton::path::canonicalize_non_verbatim(candidate);
+        let canonical_project_root = vize_carton::path::canonicalize_non_verbatim(roots.0);
         if candidate.is_absolute()
-            && let Ok(relative) =
-                vize_carton::path::canonicalize_non_verbatim(candidate).strip_prefix(roots.0)
+            && let Ok(relative) = canonical_candidate
+                .strip_prefix(canonical_project_root.as_path())
+                .or_else(|_| candidate.strip_prefix(roots.0))
             && is_rewritable_project_specifier(relative)
         {
             if !path.ends_with(".vue") && !absolute_import_needs_virtual_rewrite(candidate) {

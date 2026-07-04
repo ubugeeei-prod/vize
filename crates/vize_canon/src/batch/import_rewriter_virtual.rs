@@ -10,7 +10,8 @@ use vize_carton::{FxHashSet, String, cstr};
 use super::DynamicImportCollector;
 
 const SOURCE_EXTENSIONS: &[&str] = &[
-    ".ts", ".tsx", ".vue", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs",
+    ".ts", ".tsx", ".d.ts", ".d.mts", ".d.cts", ".vue", ".mts", ".cts", ".js", ".jsx", ".mjs",
+    ".cjs",
 ];
 
 pub(super) fn absolute_import_needs_virtual_rewrite(path: &Path) -> bool {
@@ -165,4 +166,60 @@ fn collect_import_specifiers(source: &str) -> Vec<String> {
     }
 
     specifiers
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use std::path::{Path, PathBuf};
+
+    use vize_carton::cstr;
+
+    use super::{absolute_import_needs_virtual_rewrite, collect_import_specifiers};
+
+    fn unique_case_dir(name: &str) -> PathBuf {
+        static NEXT_CASE_ID: std::sync::atomic::AtomicUsize =
+            std::sync::atomic::AtomicUsize::new(0);
+        let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        std::env::temp_dir().join(
+            cstr!(
+                "vize-import-rewriter-virtual-helper-{name}-{}-{case_id}",
+                std::process::id()
+            )
+            .as_str(),
+        )
+    }
+
+    fn write(dir: &Path, rel: &str, contents: &str) -> PathBuf {
+        let path = dir.join(rel);
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).unwrap();
+        }
+        fs::write(&path, contents).unwrap();
+        path
+    }
+
+    #[test]
+    fn absolute_index_module_declaration_detects_vue_import() {
+        let root = unique_case_dir("index-dcts");
+        let _ = fs::remove_dir_all(&root);
+        write(
+            &root,
+            "src/feature/index.d.cts",
+            "import Widget from '../Widget.vue'\nexport type Feature = typeof Widget\n",
+        );
+        write(&root, "src/Widget.vue", "<template />");
+
+        assert_eq!(
+            collect_import_specifiers(
+                "import Widget from '../Widget.vue'\nexport type Feature = typeof Widget\n"
+            ),
+            vec!["../Widget.vue".to_string()]
+        );
+        assert!(absolute_import_needs_virtual_rewrite(
+            &root.join("src/feature")
+        ));
+
+        let _ = fs::remove_dir_all(&root);
+    }
 }
