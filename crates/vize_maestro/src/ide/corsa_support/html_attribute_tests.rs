@@ -61,6 +61,31 @@ fn native_dom_attribute_info_maps_html_attributes_to_dom_properties() {
     assert_eq!(area_coords.property_name.as_str(), "coords");
     let area_shape = native_dom_attribute_info("area", "shape").expect("area shape attr");
     assert_eq!(area_shape.property_name.as_str(), "shape");
+
+    let link_image_sizes =
+        native_dom_attribute_info("link", "imagesizes").expect("link imagesizes attr");
+    assert_eq!(link_image_sizes.property_name.as_str(), "imageSizes");
+    assert_eq!(
+        link_image_sizes.type_expression.as_str(),
+        "HTMLElementTagNameMap[\"link\"][\"imageSizes\"]"
+    );
+    let link_image_srcset =
+        native_dom_attribute_info("link", "imagesrcset").expect("link imagesrcset attr");
+    assert_eq!(link_image_srcset.property_name.as_str(), "imageSrcset");
+    assert_eq!(
+        link_image_srcset.type_expression.as_str(),
+        "HTMLElementTagNameMap[\"link\"][\"imageSrcset\"]"
+    );
+    let script_for = native_dom_attribute_info("script", "for").expect("script for attr");
+    assert_eq!(script_for.property_name.as_str(), "htmlFor");
+    assert_eq!(
+        script_for.type_expression.as_str(),
+        "HTMLElementTagNameMap[\"script\"][\"htmlFor\"]"
+    );
+    let style_disabled =
+        native_dom_attribute_info("style", "disabled").expect("style disabled attr");
+    assert_eq!(style_disabled.property_name.as_str(), "disabled");
+    assert!(style_disabled.is_boolean);
 }
 
 #[test]
