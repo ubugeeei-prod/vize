@@ -21,6 +21,19 @@ fn native_dom_attribute_info_maps_html_attributes_to_dom_properties() {
     assert_eq!(aria.property_name.as_str(), "ariaLabel");
     let data = native_dom_attribute_info("div", "data-test-id").expect("data attribute");
     assert_eq!(data.property_name.as_str(), "dataset");
+    let fetch_priority =
+        native_dom_attribute_info("img", "fetchpriority").expect("fetchpriority attr");
+    assert_eq!(fetch_priority.property_name.as_str(), "fetchPriority");
+    assert_eq!(
+        fetch_priority.type_expression.as_str(),
+        "HTMLElementTagNameMap[\"img\"][\"fetchPriority\"]"
+    );
+    let dir_name = native_dom_attribute_info("textarea", "dirname").expect("dirname attr");
+    assert_eq!(dir_name.property_name.as_str(), "dirName");
+    assert_eq!(
+        dir_name.type_expression.as_str(),
+        "HTMLElementTagNameMap[\"textarea\"][\"dirName\"]"
+    );
 }
 
 #[test]
@@ -76,6 +89,8 @@ fn native_dom_attribute_info_rejects_unknown_and_component_attributes() {
     assert!(native_dom_attribute_info("div", "href").is_none());
     assert!(native_dom_attribute_info("div", "is").is_none());
     assert!(native_dom_attribute_info("div", "itemprop").is_none());
+    assert!(native_dom_attribute_info("area", "hreflang").is_none());
+    assert!(native_dom_attribute_info("meta", "charset").is_none());
     assert!(native_dom_attribute_info("svg", "not-real").is_none());
     assert!(native_dom_attribute_info("svg", "accesskey").is_none());
     assert!(native_dom_attribute_info("math", "contenteditable").is_none());

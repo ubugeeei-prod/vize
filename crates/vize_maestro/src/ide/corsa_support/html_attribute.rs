@@ -176,6 +176,8 @@ fn mapped_dom_attribute_property(attr_name: &str) -> Option<&'static str> {
         "crossorigin" => Some("crossOrigin"),
         "datetime" => Some("dateTime"),
         "enterkeyhint" => Some("enterKeyHint"),
+        "dirname" => Some("dirName"),
+        "fetchpriority" => Some("fetchPriority"),
         "for" => Some("htmlFor"),
         "formaction" => Some("formAction"),
         "formenctype" => Some("formEnctype"),
@@ -243,7 +245,7 @@ const GLOBAL_ATTRIBUTES: &[&str] = &[
 #[rustfmt::skip]
 const HTML_TAG_ATTRIBUTES: &[(&str, &[&str])] = &[
     ("a", &["download", "href", "hreflang", "ping", "referrerpolicy", "rel", "target"]),
-    ("area", &["download", "href", "hreflang", "ping", "referrerpolicy", "rel", "target"]),
+    ("area", &["download", "href", "ping", "referrerpolicy", "rel", "target"]),
     ("audio", &["autoplay", "controls", "crossorigin", "loop", "muted", "preload", "src"]),
     ("base", &["href", "target"]),
     ("blockquote", &["cite"]),
@@ -266,7 +268,7 @@ const HTML_TAG_ATTRIBUTES: &[(&str, &[&str])] = &[
     ("li", &["value"]),
     ("link", &["as", "crossorigin", "disabled", "fetchpriority", "href", "hreflang", "integrity", "media", "referrerpolicy", "rel", "sizes", "type"]),
     ("map", &["name"]),
-    ("meta", &["charset", "content", "http-equiv", "name"]),
+    ("meta", &["content", "http-equiv", "name"]),
     ("meter", &["high", "low", "max", "min", "optimum", "value"]),
     ("object", &["data", "form", "height", "name", "type", "usemap", "width"]),
     ("ol", &["reversed", "start", "type"]),
