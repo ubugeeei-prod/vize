@@ -257,6 +257,8 @@ fn resolve_relative_script_import(dir: &Path, specifier: &str) -> Option<PathBuf
         "index.mjs",
         "index.cjs",
         "index.d.ts",
+        "index.d.mts",
+        "index.d.cts",
     ] {
         let candidate = base.join(name);
         if candidate.exists() {
@@ -305,4 +307,31 @@ fn normalize_path(path: &Path) -> PathBuf {
         }
     }
     normalized
+}
+
+#[cfg(test)]
+mod tests {
+    use super::resolve_relative_script_import;
+
+    #[test]
+    fn resolves_directory_module_declaration_indices() {
+        let project = tempfile::TempDir::new().expect("temp project");
+        let src = project.path().join("src");
+        std::fs::create_dir_all(src.join("esm")).expect("esm dir");
+        std::fs::create_dir_all(src.join("cjs")).expect("cjs dir");
+
+        let esm = src.join("esm").join("index.d.mts");
+        let cjs = src.join("cjs").join("index.d.cts");
+        std::fs::write(&esm, "export type Value = string;\n").expect("esm dts");
+        std::fs::write(&cjs, "export type Value = string;\n").expect("cjs dts");
+
+        assert_eq!(
+            resolve_relative_script_import(&src, "./esm").as_deref(),
+            Some(esm.as_path())
+        );
+        assert_eq!(
+            resolve_relative_script_import(&src, "./cjs").as_deref(),
+            Some(cjs.as_path())
+        );
+    }
 }
