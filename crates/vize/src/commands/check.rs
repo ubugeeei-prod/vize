@@ -19,7 +19,7 @@ use std::path::PathBuf;
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
 pub struct CheckArgs {
-    /// Files or directories to type-check (`.vue`, `.ts`, `.tsx`, `.mts`, `.cts`, `.jsx`, `.d.ts`).
+    /// Files or directories to type-check (`.vue`, `.ts`, `.tsx`, `.mts`, `.cts`, `.jsx`, `.d.ts`, `.d.mts`, `.d.cts`).
     /// When omitted, `tsconfig.json` include/exclude/files are used if available.
     pub patterns: Vec<String>,
 

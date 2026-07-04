@@ -1,6 +1,7 @@
 use std::path::Path;
 
-pub(super) const CHECK_INPUTS_DISPLAY: &str = ".vue, .ts, .tsx, .mts, .cts, .jsx, or .d.ts";
+pub(super) const CHECK_INPUTS_DISPLAY: &str =
+    ".vue, .ts, .tsx, .mts, .cts, .jsx, .d.ts, .d.mts, or .d.cts";
 
 const CHECK_EXTENSIONS: &[&str] = &["vue", "ts", "tsx", "mts", "cts"];
 
@@ -17,7 +18,9 @@ pub(super) fn is_supported_check_file(path: &Path, include_jsx: bool) -> bool {
 fn is_declaration_path(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts"))
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
 }
 
 #[cfg(test)]
@@ -34,6 +37,8 @@ mod tests {
             "worker.mts",
             "config.cts",
             "env.d.ts",
+            "env.d.mts",
+            "env.d.cts",
         ] {
             assert!(is_supported_check_file(Path::new(file), false), "{file}");
         }
@@ -59,6 +64,14 @@ mod tests {
         assert!(
             CHECK_INPUTS_DISPLAY.contains(".d.ts"),
             "missing .d.ts from display text"
+        );
+        assert!(
+            CHECK_INPUTS_DISPLAY.contains(".d.mts"),
+            "missing .d.mts from display text"
+        );
+        assert!(
+            CHECK_INPUTS_DISPLAY.contains(".d.cts"),
+            "missing .d.cts from display text"
         );
     }
 }

@@ -38,7 +38,7 @@ fn base_dir_from_glob_patterns() {
 }
 
 #[test]
-fn collect_check_files_includes_ts_and_vue_and_dts() {
+fn collect_check_files_includes_ts_vue_and_declarations() {
     let case_dir = unique_case_dir("collect-check");
     let _ = fs::remove_dir_all(&case_dir);
     fs::create_dir_all(case_dir.join("src")).unwrap();
@@ -46,6 +46,8 @@ fn collect_check_files_includes_ts_and_vue_and_dts() {
     fs::write(case_dir.join("src/Component.jsx"), "").unwrap();
     fs::write(case_dir.join("src/main.ts"), "").unwrap();
     fs::write(case_dir.join("src/env.d.ts"), "").unwrap();
+    fs::write(case_dir.join("src/env.d.mts"), "").unwrap();
+    fs::write(case_dir.join("src/env.d.cts"), "").unwrap();
     fs::write(case_dir.join("src/skip.js"), "").unwrap();
 
     let files = collect_check_files(&vec![case_dir.display().to_string()], false);
@@ -54,6 +56,8 @@ fn collect_check_files_includes_ts_and_vue_and_dts() {
         files,
         vec![
             case_dir.join("src/App.vue"),
+            case_dir.join("src/env.d.cts"),
+            case_dir.join("src/env.d.mts"),
             case_dir.join("src/env.d.ts"),
             case_dir.join("src/main.ts"),
         ]
