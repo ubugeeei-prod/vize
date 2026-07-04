@@ -57,7 +57,7 @@ pub(crate) fn native_dom_tag_info(tag_name: &str) -> Option<NativeDomTagInfo> {
             ),
         });
     }
-    if vize_carton::is_svg_tag(tag_name) {
+    if has_svg_element_tag_name_map_entry(tag_name) {
         return Some(NativeDomTagInfo {
             category: "SVG element",
             type_expression: cstr!("SVGElementTagNameMap[\"{tag_name}\"]"),
@@ -81,7 +81,7 @@ pub(crate) fn native_dom_tag_info(tag_name: &str) -> Option<NativeDomTagInfo> {
 fn dom_definition_symbol(tag_name: &str) -> Option<&'static str> {
     if has_html_element_tag_name_map_entry(tag_name) {
         Some("HTMLElementTagNameMap")
-    } else if vize_carton::is_svg_tag(tag_name) {
+    } else if has_svg_element_tag_name_map_entry(tag_name) {
         Some("SVGElementTagNameMap")
     } else if vize_carton::is_math_ml_tag(tag_name) {
         Some("MathMLElement")
@@ -92,6 +92,23 @@ fn dom_definition_symbol(tag_name: &str) -> Option<&'static str> {
 
 fn has_html_element_tag_name_map_entry(tag_name: &str) -> bool {
     vize_carton::is_html_tag(tag_name) && !matches!(tag_name, "param")
+}
+
+fn has_svg_element_tag_name_map_entry(tag_name: &str) -> bool {
+    vize_carton::is_svg_tag(tag_name)
+        && !matches!(
+            tag_name,
+            "color-profile"
+                | "discard"
+                | "hatch"
+                | "hatchpath"
+                | "mesh"
+                | "meshgradient"
+                | "meshpatch"
+                | "meshrow"
+                | "solidcolor"
+                | "unknown"
+        )
 }
 
 #[cfg(test)]
@@ -140,5 +157,27 @@ mod tests {
     fn native_dom_tag_info_rejects_html_tags_missing_dom_map_entries() {
         assert!(super::native_dom_tag_info("param").is_none());
         assert!(super::html_tag_virtual_document("param").is_none());
+    }
+
+    #[test]
+    fn native_dom_tag_info_rejects_svg_tags_missing_dom_map_entries() {
+        for tag_name in [
+            "color-profile",
+            "discard",
+            "hatch",
+            "hatchpath",
+            "mesh",
+            "meshgradient",
+            "meshpatch",
+            "meshrow",
+            "solidcolor",
+            "unknown",
+        ] {
+            assert!(super::native_dom_tag_info(tag_name).is_none(), "{tag_name}");
+            assert!(
+                super::html_tag_virtual_document(tag_name).is_none(),
+                "{tag_name}",
+            );
+        }
     }
 }

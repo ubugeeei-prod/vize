@@ -98,6 +98,8 @@ fn native_dom_attribute_info_rejects_unknown_and_component_attributes() {
     assert!(native_dom_attribute_info("math", "contenteditable").is_none());
     assert!(native_dom_attribute_info("textPath", "x").is_none());
     assert!(native_dom_attribute_info("animate", "href").is_none());
+    assert!(native_dom_attribute_info("mesh", "id").is_none());
+    assert!(native_dom_attribute_info("unknown", "id").is_none());
     assert!(native_dom_attribute_info("my-element", "disabled").is_none());
     assert!(native_dom_attribute_info("button", "@click").is_none());
 }
