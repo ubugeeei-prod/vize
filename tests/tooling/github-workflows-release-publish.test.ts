@@ -177,14 +177,25 @@ test("Open VSX workflow publishes the VS Code extension when configured", () => 
   const publishJob = workflowJobBody(workflow, "release-open-vsx-extension");
 
   assert.match(workflow, /on:\s*\n\s*release:\s*\n\s*types:\s*\[published\]/);
+  assert.match(
+    workflow,
+    /workflow_dispatch:\s*\n\s*inputs:\s*\n\s*tag_name:\s*\n\s*description:\s*Release tag to publish to Open VSX[\s\S]*required:\s*true[\s\S]*type:\s*string/,
+  );
   assert.match(publishJob, /environment:\s*open-vsx-registry/);
   assert.match(workflow, /OVSX_PAT:\s*\$\{\{ secrets\.OVSX_PAT \}\}/);
+  assert.match(publishJob, /name:\s*Resolve release tag/);
+  assert.match(
+    publishJob,
+    /RELEASE_TAG_NAME:\s*\$\{\{ github\.event\.release\.tag_name \|\| inputs\.tag_name \}\}/,
+  );
+  assert.match(publishJob, /tag_name=%s\\n/);
   assert.match(publishJob, /name:\s*Download VSIX from GitHub Release/);
-  assert.match(publishJob, /gh release download/);
+  assert.match(publishJob, /gh release download "\$\{\{ steps\.release\.outputs\.tag_name \}\}"/);
   assert.match(publishJob, /--pattern "\*\.vsix"/);
   assert.match(publishJob, /name:\s*Skip publish when OVSX_PAT is absent/);
   assert.match(
     publishJob,
-    /name:\s*Publish Open VSX extension[\s\S]*if:\s*env\.OVSX_PAT != ''[\s\S]*continue-on-error:\s*true[\s\S]*publish_open_vsx_extension\.mbtx/,
+    /name:\s*Publish Open VSX extension[\s\S]*if:\s*env\.OVSX_PAT != ''[\s\S]*publish_open_vsx_extension\.mbtx/,
   );
+  assert.doesNotMatch(publishJob, /continue-on-error:\s*true/);
 });

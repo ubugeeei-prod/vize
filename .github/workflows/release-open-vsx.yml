@@ -3,6 +3,12 @@ name: Release Open VSX
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Release tag to publish to Open VSX
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -29,10 +35,18 @@ jobs:
           run-install: false
       - uses: ./.github/actions/setup-moonbit
 
+      - name: Resolve release tag
+        id: release
+        env:
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name || inputs.tag_name }}
+        run: |
+          test -n "$RELEASE_TAG_NAME"
+          printf 'tag_name=%s\n' "$RELEASE_TAG_NAME" >> "$GITHUB_OUTPUT"
+
       - name: Download VSIX from GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release download "${{ github.event.release.tag_name }}" --pattern "*.vsix" --dir open-vsx-artifacts
+        run: gh release download "${{ steps.release.outputs.tag_name }}" --pattern "*.vsix" --dir open-vsx-artifacts
 
       - name: Skip publish when OVSX_PAT is absent
         if: env.OVSX_PAT == ''
@@ -40,7 +54,6 @@ jobs:
 
       - name: Publish Open VSX extension
         if: env.OVSX_PAT != ''
-        continue-on-error: true
         run: |
           vsix=$(find open-vsx-artifacts -name '*.vsix' -print -quit)
           test -n "$vsix"
