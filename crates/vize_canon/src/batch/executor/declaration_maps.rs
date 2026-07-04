@@ -38,40 +38,62 @@ fn rewrite_declaration_map(path: &Path, project: &VirtualProject) -> CorsaResult
         .and_then(Value::as_str)
         .unwrap_or_default()
         .into();
-    let Some(sources) = map.get_mut("sources").and_then(Value::as_array_mut) else {
+    let Some(sources) = map.get("sources").and_then(Value::as_array) else {
         return Ok(());
     };
     let map_dir = path.parent().unwrap_or_else(|| Path::new("."));
-    let mut changed = false;
 
-    for source in sources {
-        let Some(value) = source.as_str() else {
-            continue;
-        };
-        let Some(rewritten) = rewrite_map_source(value, source_root.as_str(), map_dir, project)
-        else {
-            continue;
-        };
-        *source = Value::String(rewritten.into());
-        changed = true;
+    let rewrites = sources
+        .iter()
+        .enumerate()
+        .filter_map(|(index, source)| {
+            let value = source.as_str()?;
+            rewrite_map_source(value, source_root.as_str(), map_dir, project)
+                .map(|rewrite| (index, rewrite))
+        })
+        .collect::<Vec<_>>();
+
+    if rewrites.is_empty() {
+        return Ok(());
     }
 
-    if changed {
-        if let Some(object) = map.as_object_mut() {
-            object.insert("sourceRoot".into(), Value::String("".into()));
+    if let Some(sources) = map.get_mut("sources").and_then(Value::as_array_mut) {
+        for (index, rewrite) in &rewrites {
+            sources[*index] = Value::String(rewrite.source.as_str().into());
         }
-        fs::write(path, serde_json::to_string(&map)?)?;
     }
+
+    if let Some(sources_content) = map.get_mut("sourcesContent").and_then(Value::as_array_mut) {
+        for (index, rewrite) in &rewrites {
+            let Some(source_content) = rewrite.source_content else {
+                continue;
+            };
+            let Some(value) = sources_content.get_mut(*index) else {
+                continue;
+            };
+            *value = Value::String(source_content.into());
+        }
+    }
+
+    if let Some(object) = map.as_object_mut() {
+        object.insert("sourceRoot".into(), Value::String("".into()));
+    }
+    fs::write(path, serde_json::to_string(&map)?)?;
 
     Ok(())
 }
 
-fn rewrite_map_source(
+struct MapSourceRewrite<'a> {
+    source: String,
+    source_content: Option<&'a str>,
+}
+
+fn rewrite_map_source<'a>(
     source: &str,
     source_root: &str,
     map_dir: &Path,
-    project: &VirtualProject,
-) -> Option<String> {
+    project: &'a VirtualProject,
+) -> Option<MapSourceRewrite<'a>> {
     let source_path = normalize_path_lexically(&resolve_source_path(source, source_root, map_dir));
     let virtual_path = canonicalize_non_verbatim(&source_path);
     let file = project
@@ -79,10 +101,10 @@ fn rewrite_map_source(
         .or_else(|| project.find_by_virtual(&source_path))?;
     let map_dir = canonicalize_non_verbatim(map_dir);
     let original_path = canonicalize_non_verbatim(&file.original_path);
-    Some(path_to_map_source(&relative_path_from(
-        &map_dir,
-        &original_path,
-    )))
+    Some(MapSourceRewrite {
+        source: path_to_map_source(&relative_path_from(&map_dir, &original_path)),
+        source_content: project.original_content_for_virtual(&file.virtual_path),
+    })
 }
 
 fn resolve_source_path(source: &str, source_root: &str, map_dir: &Path) -> PathBuf {
@@ -186,17 +208,14 @@ mod tests {
 
         let vue_path = src.join("App.vue");
         let index_path = src.join("index.ts");
-        fs::write(
-            &vue_path,
-            r#"<script setup lang="ts">
+        let vue_source = r#"<script setup lang="ts">
 export interface PublicProps {
   label: string
 }
 defineProps<PublicProps>()
 </script>
-"#,
-        )
-        .unwrap();
+"#;
+        fs::write(&vue_path, vue_source).unwrap();
         fs::write(&index_path, "export { default as App } from './App.vue'\n").unwrap();
 
         let mut project = VirtualProject::new(&root).unwrap();
@@ -213,6 +232,9 @@ defineProps<PublicProps>()
                 "sourceRoot": "",
                 "sources": [
                     path_to_map_source(&relative_path_from(&out_dir, &vue_virtual.virtual_path))
+                ],
+                "sourcesContent": [
+                    vue_virtual.content.as_str()
                 ],
                 "names": [],
                 "mappings": ""
@@ -239,6 +261,7 @@ defineProps<PublicProps>()
         rewrite_declaration_map_outputs(&out_dir, &project).unwrap();
 
         assert_map_sources(&out_dir.join("App.vue.d.ts.map"), &["../../src/App.vue"]);
+        assert_map_source_content(&out_dir.join("App.vue.d.ts.map"), 0, vue_source);
         assert_map_sources(&out_dir.join("index.d.ts.map"), &["../../src/index.ts"]);
     }
 
@@ -253,5 +276,12 @@ defineProps<PublicProps>()
             .collect::<Vec<_>>();
         assert_eq!(sources, expected);
         assert_eq!(map["sourceRoot"], "");
+    }
+
+    fn assert_map_source_content(path: &std::path::Path, index: usize, expected: &str) {
+        let map: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(path).unwrap()).unwrap();
+        let content = map["sourcesContent"][index].as_str().unwrap();
+        assert_eq!(content, expected);
     }
 }

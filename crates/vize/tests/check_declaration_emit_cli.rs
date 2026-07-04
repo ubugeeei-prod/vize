@@ -172,12 +172,7 @@ fn check_declaration_emit_rewrites_declaration_map_sources() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
     };
-    let project_root = create_cli_project(
-        "declaration-map-sources",
-        &[
-            (
-                "src/App.vue",
-                r#"<script setup lang="ts">
+    let app_source = r#"<script setup lang="ts">
 export interface PublicProps {
   label: string
 }
@@ -188,14 +183,12 @@ defineProps<PublicProps>()
 <template>
   <p>{{ label }}</p>
 </template>
-"#,
-            ),
-            (
-                "src/index.ts",
-                r#"export { default as App } from "./App.vue";
-"#,
-            ),
-        ],
+"#;
+    let index_source = r#"export { default as App } from "./App.vue";
+"#;
+    let project_root = create_cli_project(
+        "declaration-map-sources",
+        &[("src/App.vue", app_source), ("src/index.ts", index_source)],
     );
     std::fs::write(
         project_root.join("tsconfig.json"),
@@ -206,6 +199,8 @@ defineProps<PublicProps>()
     "module": "ESNext",
     "moduleResolution": "bundler",
     "declarationMap": true,
+    "sourceMap": true,
+    "inlineSources": true,
     "noEmit": true
   },
   "include": ["src/**/*"]
@@ -240,6 +235,15 @@ defineProps<PublicProps>()
         index_map["sources"],
         serde_json::json!(["../../src/index.ts"])
     );
+    if !app_map["sourcesContent"].is_null() {
+        assert_eq!(app_map["sourcesContent"], serde_json::json!([app_source]));
+    }
+    if !index_map["sourcesContent"].is_null() {
+        assert_eq!(
+            index_map["sourcesContent"],
+            serde_json::json!([index_source])
+        );
+    }
 
     let app_map_text = std::fs::read_to_string(app_map_path).unwrap();
     let index_map_text = std::fs::read_to_string(index_map_path).unwrap();
