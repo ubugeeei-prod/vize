@@ -38,6 +38,23 @@ fn native_dom_attribute_info_maps_html_attributes_to_dom_properties() {
         fetch_priority.type_expression.as_str(),
         "HTMLElementTagNameMap[\"img\"][\"fetchPriority\"]"
     );
+    let image_long_desc = native_dom_attribute_info("img", "longdesc").expect("img longdesc attr");
+    assert_eq!(image_long_desc.property_name.as_str(), "longDesc");
+    assert_eq!(
+        image_long_desc.type_expression.as_str(),
+        "HTMLElementTagNameMap[\"img\"][\"longDesc\"]"
+    );
+    for (attr_name, property_name) in [
+        ("align", "align"),
+        ("border", "border"),
+        ("hspace", "hspace"),
+        ("lowsrc", "lowsrc"),
+        ("name", "name"),
+        ("vspace", "vspace"),
+    ] {
+        let image_attr = native_dom_attribute_info("img", attr_name).expect("img legacy attr");
+        assert_eq!(image_attr.property_name.as_str(), property_name);
+    }
     let dir_name = native_dom_attribute_info("textarea", "dirname").expect("dirname attr");
     assert_eq!(dir_name.property_name.as_str(), "dirName");
     assert_eq!(
