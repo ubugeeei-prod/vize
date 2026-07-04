@@ -1,5 +1,4 @@
 //! Check command execution logic.
-//!
 //! The direct runner delegates to `vize_canon`'s project-backed Corsa type checker so Vue SFCs,
 //! TypeScript sources, ambient declarations, and emitted declarations share one virtual project.
 
@@ -391,8 +390,30 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     };
     let check_time = check_start.elapsed();
 
+    let diagnostics_render_start = Instant::now();
+    let reported_raw = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| {
+            if !is_reported(&reported_files, &diagnostic.file, &mut canonical_paths) {
+                return false;
+            }
+            !is_suppressed_false_positive(diagnostic)
+        })
+        .cloned()
+        .collect::<Vec<_>>();
+    let diagnostics = render_diagnostics(&reported_raw);
+    let diagnostics_render_time = diagnostics_render_start.elapsed();
+    let total_errors = reported_raw
+        .iter()
+        .filter(|diagnostic| diagnostic.severity == 1)
+        .count();
+    let total_warnings = reported_raw
+        .iter()
+        .filter(|diagnostic| diagnostic.severity == 2)
+        .count();
     let emit_start = Instant::now();
-    let emitted_declarations = if args.declaration {
+    let emitted_declarations = if args.declaration && total_errors == 0 {
         let declaration_options = resolve_declaration_emit_options(
             args.declaration_dir.as_deref(),
             program_tsconfig_path.as_deref(),
@@ -407,34 +428,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             }
         }
     } else {
+        if args.declaration && total_errors > 0 && !args.quiet {
+            eprintln!("Skipping declaration emit because type errors were reported.");
+        }
         None
     };
     let emit_time = emit_start.elapsed();
-    let diagnostics_render_start = Instant::now();
-    // Restrict diagnostics to the requested files for an explicit subset; the
-    // ambient/transitive files were registered only to resolve cross-file types.
-    let reported_raw = result
-        .diagnostics
-        .iter()
-        .filter(|diagnostic| {
-            if !is_reported(&reported_files, &diagnostic.file, &mut canonical_paths) {
-                return false;
-            }
-            !is_suppressed_false_positive(diagnostic)
-        })
-        .cloned()
-        .collect::<Vec<_>>();
-    let diagnostics = render_diagnostics(&reported_raw);
-    let diagnostics_render_time = diagnostics_render_start.elapsed();
     let total_time = start.elapsed();
-    let total_errors = reported_raw
-        .iter()
-        .filter(|diagnostic| diagnostic.severity == 1)
-        .count();
-    let total_warnings = reported_raw
-        .iter()
-        .filter(|diagnostic| diagnostic.severity == 2)
-        .count();
 
     if args.profile {
         let profiler = global_profiler();
@@ -716,7 +716,7 @@ fn resolve_nuxt_project_root(
 }
 
 fn is_nuxt_project_root(path: &Path) -> bool {
-    path.join("nuxt.config.ts").exists()
-        || path.join("nuxt.config.js").exists()
-        || path.join("nuxt.config.mts").exists()
+    ["nuxt.config.ts", "nuxt.config.js", "nuxt.config.mts"]
+        .iter()
+        .any(|file| path.join(file).exists())
 }

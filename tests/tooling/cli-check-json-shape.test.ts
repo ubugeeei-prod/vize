@@ -77,10 +77,11 @@ function withWorkspace<T>(run: (dir: string) => T): T {
 }
 
 type CheckJson = {
-  files: Array<{ file: string; virtualTs: string; diagnostics: string[] }>;
+  files: Array<{ file: string; virtualTs?: string; diagnostics: string[] }>;
   errorCount: number;
   warningCount: number;
   fileCount: number;
+  declarations?: string[];
 };
 
 function parseJson(result: CheckResult): CheckJson {
@@ -91,6 +92,7 @@ function parseJson(result: CheckResult): CheckJson {
 // to exercise the JSON envelope when diagnostics are present; the cases below
 // never assert the checker's message text, only the stable JSON shape.
 const BAD_TS = "export const x: string = 123;";
+const GOOD_TS = "export const answer = 42 as const;\n";
 
 test(
   "vize check --format json has a stable top-level shape and key names",
@@ -130,6 +132,75 @@ test(
       assert.equal(typeof parsed.errorCount, "number");
       assert.equal(typeof parsed.warningCount, "number");
       assert.equal(typeof parsed.fileCount, "number");
+    });
+  },
+);
+
+test(
+  "vize check --format json exposes declaration outputs when --declaration succeeds",
+  {
+    skip: CHECKER == null ? "no corsa/tsgo checker discoverable" : false,
+  },
+  () => {
+    withWorkspace((dir) => {
+      fs.writeFileSync(path.join(dir, "good.ts"), GOOD_TS, "utf8");
+      const result = runCheck(
+        [
+          "good.ts",
+          "--declaration",
+          "--declaration-dir",
+          "types",
+          "--format",
+          "json",
+          "--corsa-path",
+          CHECKER as string,
+        ],
+        dir,
+      );
+      assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+
+      const parsed = parseJson(result);
+      assert.deepEqual(parsed.declarations, ["types/good.d.ts"]);
+      const declarationPath = path.join(dir, parsed.declarations[0] as string);
+      assert.equal(fs.existsSync(declarationPath), true, "declaration file should exist on disk");
+      const declaration = fs.readFileSync(declarationPath, "utf8");
+      assert.match(declaration, /export declare const answer/u);
+      assert.equal(parsed.declarations[0]?.includes("\\"), false, "path should use '/'");
+    });
+  },
+);
+
+test(
+  "vize check --format json skips declaration outputs when type errors exist",
+  {
+    skip: CHECKER == null ? "no corsa/tsgo checker discoverable" : false,
+  },
+  () => {
+    withWorkspace((dir) => {
+      fs.writeFileSync(path.join(dir, "bad.ts"), BAD_TS, "utf8");
+      const result = runCheck(
+        [
+          "bad.ts",
+          "--declaration",
+          "--declaration-dir",
+          "types",
+          "--format",
+          "json",
+          "--corsa-path",
+          CHECKER as string,
+        ],
+        dir,
+      );
+      assert.equal(result.status, 1, `${result.stdout}\n${result.stderr}`);
+
+      const parsed = parseJson(result);
+      assert.equal("declarations" in parsed, false, "failed checks must not report d.ts outputs");
+      assert.match(result.stderr, /Skipping declaration emit because type errors were reported\./u);
+      assert.equal(
+        fs.existsSync(path.join(dir, "types", "bad.d.ts")),
+        false,
+        "failed checks must not leave a declaration file",
+      );
     });
   },
 );
