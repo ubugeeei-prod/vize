@@ -59,3 +59,45 @@ const message = 'Hello'
 
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+#[test]
+fn materialize_rewrites_relative_vue_module_declaration_names() {
+    let case_dir = unique_case_dir("materialize-module-declaration-name");
+    let _ = fs::remove_dir_all(&case_dir);
+    let src_dir = case_dir.join("src");
+    fs::create_dir_all(&src_dir).unwrap();
+
+    let vue_path = src_dir.join("App.vue");
+    fs::write(&vue_path, "<template />\n").unwrap();
+
+    let augment_path = src_dir.join("augment.ts");
+    fs::write(
+        &augment_path,
+        r#"declare module "./App.vue" {
+  export const marker: true;
+}
+declare module "*.vue" {
+  const component: unknown;
+  export default component;
+}
+"#,
+    )
+    .unwrap();
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.register_path(&vue_path).unwrap();
+    project.register_path(&augment_path).unwrap();
+    project.materialize().unwrap();
+
+    let materialized = fs::read_to_string(project.virtual_root().join("src/augment.ts")).unwrap();
+    assert!(
+        materialized.contains(r#"declare module "./App.vue.ts""#),
+        "{materialized}"
+    );
+    assert!(
+        materialized.contains(r#"declare module "*.vue""#),
+        "{materialized}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}

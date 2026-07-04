@@ -3,15 +3,13 @@
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     CallExpression, ExportAllDeclaration, ExportNamedDeclaration, Expression, ImportDeclaration,
-    ImportExpression, TSExternalModuleReference, TSImportType,
+    ImportExpression, StringLiteral, TSExternalModuleReference, TSImportType,
+    TSModuleDeclarationName,
 };
-use oxc_ast_visit::Visit;
-use oxc_ast_visit::walk;
+use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::String;
-use vize_carton::ToCompactString;
-use vize_carton::cstr;
+use vize_carton::{String, ToCompactString, cstr};
 
 #[path = "import_rewriter_virtual.rs"]
 mod virtual_rewrite;
@@ -283,37 +281,33 @@ impl ModuleSpecifierCollector {
     fn push(&mut self, start: u32, end: u32, specifier: &str) {
         self.specifiers.push((start + 1, end - 1, specifier.into()));
     }
+
+    fn push_literal(&mut self, lit: &StringLiteral<'_>) {
+        self.push(lit.span.start, lit.span.end, lit.value.as_str());
+    }
 }
 
 impl<'a> Visit<'a> for ModuleSpecifierCollector {
     fn visit_import_declaration(&mut self, decl: &ImportDeclaration<'a>) {
-        self.push(
-            decl.source.span.start,
-            decl.source.span.end,
-            decl.source.value.as_str(),
-        );
+        self.push_literal(&decl.source);
         walk::walk_import_declaration(self, decl);
     }
 
     fn visit_export_named_declaration(&mut self, decl: &ExportNamedDeclaration<'a>) {
         if let Some(source) = &decl.source {
-            self.push(source.span.start, source.span.end, source.value.as_str());
+            self.push_literal(source);
         }
         walk::walk_export_named_declaration(self, decl);
     }
 
     fn visit_export_all_declaration(&mut self, decl: &ExportAllDeclaration<'a>) {
-        self.push(
-            decl.source.span.start,
-            decl.source.span.end,
-            decl.source.value.as_str(),
-        );
+        self.push_literal(&decl.source);
         walk::walk_export_all_declaration(self, decl);
     }
 
     fn visit_import_expression(&mut self, expr: &ImportExpression<'a>) {
         if let Expression::StringLiteral(lit) = &expr.source {
-            self.push(lit.span.start, lit.span.end, lit.value.as_str());
+            self.push_literal(lit);
         }
         walk::walk_import_expression(self, expr);
     }
@@ -326,20 +320,19 @@ impl<'a> Visit<'a> for ModuleSpecifierCollector {
     }
 
     fn visit_ts_import_type(&mut self, import_type: &TSImportType<'a>) {
-        self.push(
-            import_type.source.span.start,
-            import_type.source.span.end,
-            import_type.source.value.as_str(),
-        );
+        self.push_literal(&import_type.source);
         walk::walk_ts_import_type(self, import_type);
     }
 
     fn visit_ts_external_module_reference(&mut self, reference: &TSExternalModuleReference<'a>) {
-        self.push(
-            reference.expression.span.start,
-            reference.expression.span.end,
-            reference.expression.value.as_str(),
-        );
+        self.push_literal(&reference.expression);
         walk::walk_ts_external_module_reference(self, reference);
+    }
+
+    fn visit_ts_module_declaration_name(&mut self, name: &TSModuleDeclarationName<'a>) {
+        if let TSModuleDeclarationName::StringLiteral(lit) = name {
+            self.push_literal(lit);
+        }
+        walk::walk_ts_module_declaration_name(self, name);
     }
 }

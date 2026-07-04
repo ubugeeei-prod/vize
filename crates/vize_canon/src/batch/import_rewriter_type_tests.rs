@@ -83,3 +83,55 @@ const Other = require("../Other.vue");"#;
         vec!["./App.vue", "../Other.vue"]
     );
 }
+
+#[test]
+fn rewrites_module_declaration_specifiers() {
+    let rewriter = ImportRewriter::new();
+    let source = r#"declare module "./App.vue" {
+  export const marker: true;
+}
+declare module "*.vue" {
+  const component: unknown;
+  export default component;
+}"#;
+    let result = rewriter.rewrite(source, SourceType::ts());
+
+    assert_eq!(
+        result.code,
+        r#"declare module "./App.vue.ts" {
+  export const marker: true;
+}
+declare module "*.vue" {
+  const component: unknown;
+  export default component;
+}"#
+    );
+}
+
+#[test]
+fn rewrites_declaration_module_declaration_specifiers() {
+    let rewriter = ImportRewriter::new();
+    let source = r#"declare module "./App.vue.ts" {
+  export const marker: true;
+}"#;
+    let result = rewriter.rewrite_declaration_specifiers(source, SourceType::ts());
+
+    assert_eq!(
+        result.code,
+        r#"declare module "./App.vue" {
+  export const marker: true;
+}"#
+    );
+}
+
+#[test]
+fn collects_relative_vue_specifiers_from_module_declarations() {
+    let rewriter = ImportRewriter::new();
+    let source = r#"declare module "./App.vue" {}
+declare module "*.vue" {}"#;
+
+    assert_eq!(
+        rewriter.collect_relative_vue_specifiers(source, SourceType::ts()),
+        vec!["./App.vue"]
+    );
+}
