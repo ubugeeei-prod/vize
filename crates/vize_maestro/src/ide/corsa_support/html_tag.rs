@@ -66,6 +66,15 @@ pub(crate) fn native_dom_tag_info(tag_name: &str) -> Option<NativeDomTagInfo> {
             ),
         });
     }
+    if has_math_ml_element_tag_name_map_entry(tag_name) {
+        return Some(NativeDomTagInfo {
+            category: "MathML element",
+            type_expression: cstr!("MathMLElementTagNameMap[\"{tag_name}\"]"),
+            documentation_url: cstr!(
+                "https://developer.mozilla.org/en-US/docs/Web/MathML/Element/{tag_name}"
+            ),
+        });
+    }
     if vize_carton::is_math_ml_tag(tag_name) {
         return Some(NativeDomTagInfo {
             category: "MathML element",
@@ -83,6 +92,8 @@ fn dom_definition_symbol(tag_name: &str) -> Option<&'static str> {
         Some("HTMLElementTagNameMap")
     } else if has_svg_element_tag_name_map_entry(tag_name) {
         Some("SVGElementTagNameMap")
+    } else if has_math_ml_element_tag_name_map_entry(tag_name) {
+        Some("MathMLElementTagNameMap")
     } else if vize_carton::is_math_ml_tag(tag_name) {
         Some("MathMLElement")
     } else {
@@ -108,6 +119,43 @@ fn has_svg_element_tag_name_map_entry(tag_name: &str) -> bool {
                 | "meshrow"
                 | "solidcolor"
                 | "unknown"
+        )
+}
+
+fn has_math_ml_element_tag_name_map_entry(tag_name: &str) -> bool {
+    vize_carton::is_math_ml_tag(tag_name)
+        && matches!(
+            tag_name,
+            "annotation"
+                | "annotation-xml"
+                | "maction"
+                | "math"
+                | "merror"
+                | "mfrac"
+                | "mi"
+                | "mmultiscripts"
+                | "mn"
+                | "mo"
+                | "mover"
+                | "mpadded"
+                | "mphantom"
+                | "mprescripts"
+                | "mroot"
+                | "mrow"
+                | "ms"
+                | "mspace"
+                | "msqrt"
+                | "mstyle"
+                | "msub"
+                | "msubsup"
+                | "msup"
+                | "mtable"
+                | "mtd"
+                | "mtext"
+                | "mtr"
+                | "munder"
+                | "munderover"
+                | "semantics"
         )
 }
 
@@ -138,6 +186,32 @@ mod tests {
             &doc.content
                 [doc.definition_offset..doc.definition_offset + "SVGElementTagNameMap".len()],
             "SVGElementTagNameMap",
+        );
+    }
+
+    #[test]
+    fn html_tag_virtual_document_supports_mathml_tag_map_entries() {
+        let doc = super::html_tag_virtual_document("math").expect("math tag doc");
+
+        assert!(doc.content.contains("MathMLElementTagNameMap[\"math\"]"));
+        assert_eq!(
+            &doc.content
+                [doc.definition_offset..doc.definition_offset + "MathMLElementTagNameMap".len()],
+            "MathMLElementTagNameMap",
+        );
+    }
+
+    #[test]
+    fn html_tag_virtual_document_uses_mathml_fallback_for_unmapped_tags() {
+        let doc = super::html_tag_virtual_document("menclose").expect("menclose tag doc");
+
+        assert!(
+            doc.content
+                .contains("type __VizeDomElement = MathMLElement;")
+        );
+        assert_eq!(
+            &doc.content[doc.definition_offset..doc.definition_offset + "MathMLElement".len()],
+            "MathMLElement",
         );
     }
 

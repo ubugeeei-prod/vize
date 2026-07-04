@@ -79,6 +79,14 @@ fn native_dom_attribute_info_preserves_svg_dom_property_names() {
     assert_eq!(math_tabindex.property_name.as_str(), "tabIndex");
     assert_eq!(
         math_tabindex.type_expression.as_str(),
+        "MathMLElementTagNameMap[\"math\"][\"tabIndex\"]"
+    );
+
+    let menclose_tabindex =
+        native_dom_attribute_info("menclose", "tabindex").expect("menclose tabindex attr");
+    assert_eq!(menclose_tabindex.property_name.as_str(), "tabIndex");
+    assert_eq!(
+        menclose_tabindex.type_expression.as_str(),
         "MathMLElement[\"tabIndex\"]"
     );
 }
