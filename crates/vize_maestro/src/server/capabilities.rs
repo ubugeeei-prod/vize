@@ -312,9 +312,11 @@ mod tests {
         let options = file_rename_registration_options();
         let file_glob = &options.filters[0].pattern.glob;
 
-        assert!(
-            file_glob.contains("d.ts"),
-            "rename operations should include declaration shims: {file_glob}"
-        );
+        for extension in ["d.ts", "d.mts", "d.cts"] {
+            assert!(
+                file_glob.contains(extension),
+                "rename operations should include declaration shims: {file_glob}"
+            );
+        }
     }
 }
