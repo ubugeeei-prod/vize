@@ -156,6 +156,7 @@ mod tests {
         let grand_child_path = src.join("GrandChild.vue");
         let util_path = src.join("util.ts");
         let types_path = src.join("types.ts");
+        let helper_path = src.join("helper.ts");
         let child_util_path = src.join("childUtil.ts");
         std::fs::write(
             &host_path,
@@ -196,10 +197,12 @@ defineProps<{ label?: string }>();
         std::fs::write(
             &types_path,
             r#"export type ChildModule = typeof import("./Child.vue");
+export type HelperModule = import("./helper").Helper;
 export { default as ReexportedChild } from "./Child.vue";
 "#,
         )
         .expect("types");
+        std::fs::write(&helper_path, "export type Helper = { ok: true };\n").expect("helper");
         std::fs::write(&child_util_path, "export const childValue = 2;\n").expect("child util");
 
         let host = std::fs::read_to_string(&host_path).expect("host source");
@@ -231,6 +234,10 @@ export { default as ReexportedChild } from "./Child.vue";
             types_document.contains(r#"import("./Child.vue.ts")"#)
                 && types_document.contains(r#"from "./Child.vue.ts""#),
             "TS dependency Vue specifiers must target virtual Vue modules:\n{types_document}",
+        );
+        assert!(
+            uris.contains(&path_to_file_uri(&helper_path).as_str()),
+            "TS import-type dependencies must be synced too: {uris:?}",
         );
         assert!(
             uris.contains(&path_to_file_uri(&child_util_path).as_str()),

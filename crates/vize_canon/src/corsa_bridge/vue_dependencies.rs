@@ -4,9 +4,10 @@ use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, String, ToCompactString, cstr};
+use vize_carton::{FxHashSet, String, cstr};
 
 use super::bridge::normalize_document_uri;
+use super::vue_dependency_specifiers::collect_relative_ts_specifiers;
 use super::vue_document::{
     CorsaVueVirtualDocumentOptions, GeneratedVueDocument, generate_vue_document,
 };
@@ -181,61 +182,6 @@ fn queue_ts_imports(
             content: content.into(),
         });
     }
-}
-
-fn collect_relative_ts_specifiers(code: &str, source_type: SourceType) -> Vec<String> {
-    use oxc_allocator::Allocator;
-    use oxc_ast::ast::{Expression, Statement};
-    use oxc_ast_visit::Visit;
-    use oxc_parser::Parser;
-
-    let allocator = Allocator::default();
-    let result = Parser::new(&allocator, code, source_type).parse();
-    let mut specifiers = Vec::new();
-    let mut push = |path: &str| {
-        if (path.starts_with("./") || path.starts_with("../"))
-            && !path.ends_with(".vue")
-            && !path.ends_with(".vue.ts")
-            && !specifiers.iter().any(|known| known == path)
-        {
-            specifiers.push(path.to_compact_string());
-        }
-    };
-
-    for stmt in &result.program.body {
-        match stmt {
-            Statement::ImportDeclaration(decl) => push(&decl.source.value),
-            Statement::ExportNamedDeclaration(decl) => {
-                if let Some(source) = &decl.source {
-                    push(&source.value);
-                }
-            }
-            Statement::ExportAllDeclaration(decl) => push(&decl.source.value),
-            _ => {}
-        }
-    }
-
-    struct DynamicImportCollector {
-        imports: Vec<String>,
-    }
-    impl<'a> Visit<'a> for DynamicImportCollector {
-        fn visit_import_expression(&mut self, expr: &oxc_ast::ast::ImportExpression<'a>) {
-            if let Expression::StringLiteral(lit) = &expr.source {
-                self.imports.push(lit.value.as_str().to_compact_string());
-            }
-            oxc_ast_visit::walk::walk_import_expression(self, expr);
-        }
-    }
-
-    let mut collector = DynamicImportCollector {
-        imports: Vec::new(),
-    };
-    collector.visit_program(&result.program);
-    for path in collector.imports {
-        push(&path);
-    }
-
-    specifiers
 }
 
 fn resolve_relative_script_import(dir: &Path, specifier: &str) -> Option<PathBuf> {

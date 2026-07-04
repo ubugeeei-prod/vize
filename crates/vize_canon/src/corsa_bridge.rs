@@ -7,6 +7,7 @@
 mod bridge;
 mod types;
 mod vue_dependencies;
+mod vue_dependency_specifiers;
 mod vue_document;
 
 pub use bridge::{BatchTypeChecker, CorsaBridge};
