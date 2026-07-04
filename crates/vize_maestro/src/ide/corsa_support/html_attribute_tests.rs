@@ -86,6 +86,24 @@ fn native_dom_attribute_info_maps_html_attributes_to_dom_properties() {
         native_dom_attribute_info("style", "disabled").expect("style disabled attr");
     assert_eq!(style_disabled.property_name.as_str(), "disabled");
     assert!(style_disabled.is_boolean);
+
+    let iframe_frame_border =
+        native_dom_attribute_info("iframe", "frameborder").expect("iframe frameborder attr");
+    assert_eq!(iframe_frame_border.property_name.as_str(), "frameBorder");
+    assert_eq!(
+        iframe_frame_border.type_expression.as_str(),
+        "HTMLElementTagNameMap[\"iframe\"][\"frameBorder\"]"
+    );
+    let iframe_margin_height =
+        native_dom_attribute_info("iframe", "marginheight").expect("iframe marginheight attr");
+    assert_eq!(iframe_margin_height.property_name.as_str(), "marginHeight");
+    assert_eq!(
+        iframe_margin_height.type_expression.as_str(),
+        "HTMLElementTagNameMap[\"iframe\"][\"marginHeight\"]"
+    );
+    let iframe_scrolling =
+        native_dom_attribute_info("iframe", "scrolling").expect("iframe scrolling attr");
+    assert_eq!(iframe_scrolling.property_name.as_str(), "scrolling");
 }
 
 #[test]
