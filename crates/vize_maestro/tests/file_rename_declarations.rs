@@ -49,6 +49,20 @@ fn normalize_edit(root: &Path, edit: &tower_lsp::lsp_types::WorkspaceEdit) -> se
 
 #[test]
 fn rewrites_extensionless_declaration_imports_for_renamed_dts() {
+    assert_declaration_rename("d.ts");
+}
+
+#[test]
+fn rewrites_extensionless_declaration_imports_for_renamed_dmts() {
+    assert_declaration_rename("d.mts");
+}
+
+#[test]
+fn rewrites_extensionless_declaration_imports_for_renamed_dcts() {
+    assert_declaration_rename("d.cts");
+}
+
+fn assert_declaration_rename(extension: &str) {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
     let src_dir = root.join("src");
@@ -56,8 +70,8 @@ fn rewrites_extensionless_declaration_imports_for_renamed_dts() {
     fs::create_dir_all(&types_dir).unwrap();
 
     let entry_path = src_dir.join("entry.ts");
-    let old_declaration = types_dir.join("schema.d.ts");
-    let new_declaration = types_dir.join("generated-schema.d.ts");
+    let old_declaration = types_dir.join(format!("schema.{extension}"));
+    let new_declaration = types_dir.join(format!("generated-schema.{extension}"));
 
     fs::write(
         &entry_path,

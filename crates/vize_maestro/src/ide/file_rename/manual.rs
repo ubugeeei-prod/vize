@@ -20,9 +20,8 @@ use crate::{ide::offset_to_position, server::ServerState};
 
 const SCRIPT_EXTENSIONS: &[&str] = &["ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs"];
 const RESOLVABLE_SCRIPT_EXTENSIONS: &[&str] = &[
-    "ts", "tsx", "d.ts", "js", "jsx", "mts", "cts", "mjs", "cjs", "vue",
+    "ts", "tsx", "d.ts", "d.mts", "d.cts", "js", "jsx", "mts", "cts", "mjs", "cjs", "vue",
 ];
-
 #[derive(Clone)]
 struct RenameTarget {
     old_path: PathBuf,
@@ -715,7 +714,10 @@ fn normalize_path_buf(path: &Path) -> PathBuf {
 
 fn strip_extension(path: &Path) -> PathBuf {
     let mut stripped = normalize_path_buf(path);
-    let extension_depth = 1 + usize::from(stripped.to_string_lossy().ends_with(".d.ts"));
+    let path = stripped.to_string_lossy();
+    let extension_depth = 1 + usize::from(
+        path.ends_with(".d.ts") || path.ends_with(".d.mts") || path.ends_with(".d.cts"),
+    );
     for _ in 0..extension_depth {
         let _ = stripped.set_extension("");
     }
@@ -743,15 +745,13 @@ fn workspace_root(_state: &ServerState) -> PathBuf {
 #[cfg(all(test, feature = "native"))]
 #[allow(clippy::disallowed_macros)]
 mod tests {
+    use super::{collect_import_rename_edits, rename_open_documents};
+    use crate::server::ServerState;
+    use insta::assert_snapshot;
     use std::collections::BTreeMap;
     use std::fs;
     use std::path::{Path, PathBuf};
-
-    use insta::assert_snapshot;
     use tower_lsp::lsp_types::{FileRename, Url, WorkspaceEdit};
-
-    use super::{collect_import_rename_edits, rename_open_documents};
-    use crate::server::ServerState;
 
     fn test_dir() -> tempfile::TempDir {
         let base = PathBuf::from(env!("CARGO_MANIFEST_DIR"))

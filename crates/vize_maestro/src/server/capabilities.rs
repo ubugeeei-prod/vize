@@ -210,7 +210,7 @@ fn file_rename_registration_options() -> FileOperationRegistrationOptions {
             FileOperationFilter {
                 scheme: Some("file".to_string()),
                 pattern: FileOperationPattern {
-                    glob: "**/*.{vue,ts,tsx,d.ts,js,jsx,mts,cts,mjs,cjs}".to_string(),
+                    glob: "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}".to_string(),
                     matches: Some(FileOperationPatternKind::File),
                     options: None,
                 },
