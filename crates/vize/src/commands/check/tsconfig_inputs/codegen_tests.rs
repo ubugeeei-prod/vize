@@ -52,8 +52,18 @@ fn default_collection_skips_generated_codegen_declaration_modules() {
     )
     .unwrap();
     fs::write(
+        case_dir.join("types/codegen/schema-module.d.mts"),
+        "export type ModuleSchema = { ok: true };\n",
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("types/codegen/schema-common.d.cts"),
+        "export type CommonSchema = { ok: true };\n",
+    )
+    .unwrap();
+    fs::write(
         case_dir.join("tsconfig.json"),
-        r#"{ "include": ["src/**/*.vue", "src/**/*.d.ts", "types/codegen/schema.d.ts"] }"#,
+        r#"{ "include": ["src/**/*.vue", "src/**/*.d.ts", "types/codegen/schema.d.ts", "types/codegen/schema-module.d.mts", "types/codegen/schema-common.d.cts"] }"#,
     )
     .unwrap();
 

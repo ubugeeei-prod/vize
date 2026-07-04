@@ -2850,7 +2850,7 @@ function eventHandler(eventArg: string) {
 "#,
             ),
             (
-                "src/components.d.ts",
+                "src/components.d.mts",
                 r#"import "vue";
 
 declare module "vue" {

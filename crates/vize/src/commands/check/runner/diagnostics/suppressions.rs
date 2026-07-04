@@ -48,7 +48,9 @@ fn declaration_source_contains(path: &Path, needles: &[&str]) -> bool {
     if !path
         .file_name()
         .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts"))
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
     {
         return false;
     }
@@ -81,7 +83,7 @@ mod tests {
     #[test]
     fn suppresses_project_vue_wildcard_component_duplicates() {
         let temp = tempfile::tempdir().unwrap();
-        let shim = temp.path().join("ts-shim.d.ts");
+        let shim = temp.path().join("ts-shim.d.cts");
         std::fs::write(
             &shim,
             "declare module '*.vue' {\n  import Vue from 'vue';\n  export default Vue;\n}\n",
@@ -98,7 +100,7 @@ mod tests {
     #[test]
     fn suppresses_nuxt_bridge_injection_duplicates_against_any() {
         let temp = tempfile::tempdir().unwrap();
-        let shim = temp.path().join("gtag.d.ts");
+        let shim = temp.path().join("gtag.d.mts");
         std::fs::write(
             &shim,
             "declare module '@nuxt/bridge-schema' {\n  interface Context { $gtag: Gtag.Gtag; }\n}\n",

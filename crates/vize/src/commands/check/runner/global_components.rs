@@ -183,7 +183,9 @@ struct GlobalComponentDeclarationSource {
 fn is_declaration_path(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts"))
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
 }
 
 fn collect_global_component_type_packages(
@@ -339,3 +341,6 @@ fn parse_dts_globals(
             .collect(),
     )
 }
+
+#[cfg(test)]
+mod tests;

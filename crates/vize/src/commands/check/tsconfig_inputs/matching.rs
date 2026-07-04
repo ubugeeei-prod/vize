@@ -95,7 +95,9 @@ pub(super) fn is_generated_codegen_declaration_path(path: &Path) -> bool {
     if !path
         .file_name()
         .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts"))
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
     {
         return false;
     }
