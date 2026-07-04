@@ -101,6 +101,7 @@ defineProps<PublicProps>()
             (
                 "src/modern.mts",
                 r#"export { default as App } from "./App.vue";
+export type AppModule = typeof import("./App.vue");
 export const answer = 42;
 "#,
             ),
@@ -157,6 +158,10 @@ export const answer = 42;
     assert!(
         modern_declaration.contains("./App.vue"),
         "declaration import should point at .vue:\n{modern_declaration}"
+    );
+    assert!(
+        modern_declaration.contains(r#"typeof import("./App.vue")"#),
+        "declaration import types should point at .vue:\n{modern_declaration}"
     );
     assert!(
         !modern_declaration.contains(".vue.ts"),

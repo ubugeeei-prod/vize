@@ -1,13 +1,12 @@
 use std::path::{Path, PathBuf};
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::Statement;
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String, cstr};
 
-use super::DynamicImportCollector;
+use super::ModuleSpecifierCollector;
 
 const SOURCE_EXTENSIONS: &[&str] = &[
     ".ts", ".tsx", ".d.ts", ".d.mts", ".d.cts", ".vue", ".mts", ".cts", ".js", ".jsx", ".mjs",
@@ -140,32 +139,13 @@ fn collect_import_specifiers(source: &str) -> Vec<String> {
     let allocator = Allocator::default();
     let parser = Parser::new(&allocator, source, SourceType::tsx());
     let result = parser.parse();
-    let mut specifiers: Vec<String> = Vec::new();
-
-    for stmt in &result.program.body {
-        match stmt {
-            Statement::ImportDeclaration(decl) => {
-                specifiers.push(decl.source.value.as_str().into())
-            }
-            Statement::ExportNamedDeclaration(decl) => {
-                if let Some(source) = &decl.source {
-                    specifiers.push(source.value.as_str().into());
-                }
-            }
-            Statement::ExportAllDeclaration(decl) => {
-                specifiers.push(decl.source.value.as_str().into());
-            }
-            _ => {}
-        }
-    }
-
-    let mut collector = DynamicImportCollector::new();
+    let mut collector = ModuleSpecifierCollector::new();
     collector.visit_program(&result.program);
-    for (_, _, path) in collector.imports {
-        specifiers.push(path);
-    }
-
-    specifiers
+    collector
+        .specifiers
+        .into_iter()
+        .map(|(_, _, path)| path)
+        .collect()
 }
 
 #[cfg(test)]
@@ -206,14 +186,12 @@ mod tests {
         write(
             &root,
             "src/feature/index.d.cts",
-            "import Widget from '../Widget.vue'\nexport type Feature = typeof Widget\n",
+            "export type Feature = typeof import('../Widget.vue')\n",
         );
         write(&root, "src/Widget.vue", "<template />");
 
         assert_eq!(
-            collect_import_specifiers(
-                "import Widget from '../Widget.vue'\nexport type Feature = typeof Widget\n"
-            ),
+            collect_import_specifiers("export type Feature = typeof import('../Widget.vue')\n"),
             vec!["../Widget.vue".to_string()]
         );
         assert!(absolute_import_needs_virtual_rewrite(

@@ -12,6 +12,8 @@ mod import_rewriter;
 #[cfg(test)]
 mod import_rewriter_tests;
 #[cfg(test)]
+mod import_rewriter_type_tests;
+#[cfg(test)]
 mod import_rewriter_virtual_tests;
 mod materialize_fs;
 mod materialize_lock;

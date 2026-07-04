@@ -1,7 +1,10 @@
 //! Import rewriter for transforming .vue imports to .vue.ts.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Expression, Statement};
+use oxc_ast::ast::{
+    ExportAllDeclaration, ExportNamedDeclaration, Expression, ImportDeclaration, ImportExpression,
+    TSImportType,
+};
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk;
 use oxc_parser::Parser;
@@ -145,41 +148,9 @@ impl ImportRewriter {
         let result = parser.parse();
 
         let mut rewrites: Vec<(u32, u32, String)> = Vec::new();
-
-        for stmt in &result.program.body {
-            match stmt {
-                Statement::ImportDeclaration(decl) => {
-                    if let Some(rewrite) = rewrite_specifier(&decl.source.value) {
-                        rewrites.push((
-                            decl.source.span.start + 1, // +1 to skip opening quote
-                            decl.source.span.end - 1,   // -1 to skip closing quote
-                            rewrite,
-                        ));
-                    }
-                }
-                Statement::ExportNamedDeclaration(decl) => {
-                    if let Some(source) = &decl.source
-                        && let Some(rewrite) = rewrite_specifier(&source.value)
-                    {
-                        rewrites.push((source.span.start + 1, source.span.end - 1, rewrite));
-                    }
-                }
-                Statement::ExportAllDeclaration(decl) => {
-                    if let Some(rewrite) = rewrite_specifier(&decl.source.value) {
-                        rewrites.push((
-                            decl.source.span.start + 1,
-                            decl.source.span.end - 1,
-                            rewrite,
-                        ));
-                    }
-                }
-                _ => {}
-            }
-        }
-
-        let mut collector = DynamicImportCollector::new();
+        let mut collector = ModuleSpecifierCollector::new();
         collector.visit_program(&result.program);
-        for (start, end, path) in collector.imports {
+        for (start, end, path) in collector.specifiers {
             if let Some(rewrite) = rewrite_specifier(&path) {
                 rewrites.push((start, end, rewrite));
             }
@@ -224,32 +195,15 @@ impl ImportRewriter {
         let result = parser.parse();
 
         let mut specifiers: Vec<String> = Vec::new();
-        let mut push = |path: &str| {
+        let mut collector = ModuleSpecifierCollector::new();
+        collector.visit_program(&result.program);
+        for (_, _, path) in collector.specifiers {
             if path.ends_with(".vue") && (path.starts_with("./") || path.starts_with("../")) {
                 let candidate = path.to_compact_string();
                 if !specifiers.iter().any(|s| s.as_str() == candidate.as_str()) {
                     specifiers.push(candidate);
                 }
             }
-        };
-
-        for stmt in &result.program.body {
-            match stmt {
-                Statement::ImportDeclaration(decl) => push(&decl.source.value),
-                Statement::ExportNamedDeclaration(decl) => {
-                    if let Some(source) = &decl.source {
-                        push(&source.value);
-                    }
-                }
-                Statement::ExportAllDeclaration(decl) => push(&decl.source.value),
-                _ => {}
-            }
-        }
-
-        let mut collector = DynamicImportCollector::new();
-        collector.visit_program(&result.program);
-        for (_, _, path) in collector.imports {
-            push(&path);
         }
 
         specifiers
@@ -315,27 +269,61 @@ impl Default for ImportRewriter {
     }
 }
 
-struct DynamicImportCollector {
-    imports: Vec<(u32, u32, String)>,
+struct ModuleSpecifierCollector {
+    specifiers: Vec<(u32, u32, String)>,
 }
 
-impl DynamicImportCollector {
+impl ModuleSpecifierCollector {
     fn new() -> Self {
         Self {
-            imports: Vec::new(),
+            specifiers: Vec::new(),
         }
+    }
+
+    fn push(&mut self, start: u32, end: u32, specifier: &str) {
+        self.specifiers.push((start + 1, end - 1, specifier.into()));
     }
 }
 
-impl<'a> Visit<'a> for DynamicImportCollector {
-    fn visit_import_expression(&mut self, expr: &oxc_ast::ast::ImportExpression<'a>) {
+impl<'a> Visit<'a> for ModuleSpecifierCollector {
+    fn visit_import_declaration(&mut self, decl: &ImportDeclaration<'a>) {
+        self.push(
+            decl.source.span.start,
+            decl.source.span.end,
+            decl.source.value.as_str(),
+        );
+        walk::walk_import_declaration(self, decl);
+    }
+
+    fn visit_export_named_declaration(&mut self, decl: &ExportNamedDeclaration<'a>) {
+        if let Some(source) = &decl.source {
+            self.push(source.span.start, source.span.end, source.value.as_str());
+        }
+        walk::walk_export_named_declaration(self, decl);
+    }
+
+    fn visit_export_all_declaration(&mut self, decl: &ExportAllDeclaration<'a>) {
+        self.push(
+            decl.source.span.start,
+            decl.source.span.end,
+            decl.source.value.as_str(),
+        );
+        walk::walk_export_all_declaration(self, decl);
+    }
+
+    fn visit_import_expression(&mut self, expr: &ImportExpression<'a>) {
         if let Expression::StringLiteral(lit) = &expr.source {
-            self.imports.push((
-                lit.span.start + 1,
-                lit.span.end - 1,
-                lit.value.as_str().into(),
-            ));
+            self.push(lit.span.start, lit.span.end, lit.value.as_str());
         }
         walk::walk_import_expression(self, expr);
+    }
+
+    fn visit_ts_import_type(&mut self, import_type: &TSImportType<'a>) {
+        self.push(
+            import_type.source.span.start,
+            import_type.source.span.end,
+            import_type.source.value.as_str(),
+        );
+        walk::walk_ts_import_type(self, import_type);
     }
 }

@@ -315,6 +315,7 @@ import Aliased from '@/Aliased.vue';
 import { ref } from 'vue';
 import Lazy from './App.vue';
 const Lazy2 = () => import('./Lazy.vue');
+type AppModule = typeof import('./Typed.vue');
 export { default as Re } from './Re.vue';
 "#;
     let mut found = rewriter.collect_relative_vue_specifiers(source, SourceType::ts());
@@ -325,7 +326,8 @@ export { default as Re } from './Re.vue';
             "../shared/Sibling.vue",
             "./App.vue",
             "./Lazy.vue",
-            "./Re.vue"
+            "./Re.vue",
+            "./Typed.vue"
         ]
     );
 }
