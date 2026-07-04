@@ -101,7 +101,7 @@ fn queue_imports(
     source_type: SourceType,
 ) {
     queue_vue_imports(&mut imports, options, rewriter, dir, code, source_type);
-    queue_ts_imports(&mut imports, dir, code, source_type);
+    queue_ts_imports(&mut imports, rewriter, dir, code, source_type);
 }
 
 fn queue_vue_imports(
@@ -155,6 +155,7 @@ fn fallback_vue_virtual_uri(path: &Path) -> String {
 
 fn queue_ts_imports(
     imports: &mut ImportQueue<'_>,
+    rewriter: &ImportRewriter,
     dir: &Path,
     code: &str,
     source_type: SourceType,
@@ -170,11 +171,13 @@ fn queue_ts_imports(
         let Ok(content) = std::fs::read_to_string(&path) else {
             continue;
         };
+        let dependency_source_type = source_type_for_path(&path);
+        let rewritten = rewriter.rewrite(&content, dependency_source_type).code;
         let uri = normalize_document_uri(path_to_file_uri(&path).as_str());
-        imports.documents.push((uri, content.to_compact_string()));
+        imports.documents.push((uri, rewritten));
         imports.queue.push_back(DependencyScan::Script {
             path: path.clone(),
-            source_type: source_type_for_path(&path),
+            source_type: dependency_source_type,
             content: content.into(),
         });
     }

@@ -155,13 +155,16 @@ mod tests {
         let child_path = src.join("Child.vue");
         let grand_child_path = src.join("GrandChild.vue");
         let util_path = src.join("util.ts");
+        let types_path = src.join("types.ts");
         let child_util_path = src.join("childUtil.ts");
         std::fs::write(
             &host_path,
             r#"<script setup lang="ts">
 import Child from "./Child.vue";
 import { value } from "./util";
+import type { ChildModule } from "./types";
 const current = value;
+type _ChildModule = ChildModule;
 </script>
 <template><Child :value="current" /></template>
 "#,
@@ -190,6 +193,13 @@ defineProps<{ label?: string }>();
         )
         .expect("grand child");
         std::fs::write(&util_path, "export const value = 1;\n").expect("util");
+        std::fs::write(
+            &types_path,
+            r#"export type ChildModule = typeof import("./Child.vue");
+export { default as ReexportedChild } from "./Child.vue";
+"#,
+        )
+        .expect("types");
         std::fs::write(&child_util_path, "export const childValue = 2;\n").expect("child util");
 
         let host = std::fs::read_to_string(&host_path).expect("host source");
@@ -210,6 +220,17 @@ defineProps<{ label?: string }>();
             uris.contains(&path_to_file_uri(&util_path).as_str()),
             "uris: {uris:?}\n{}",
             virtual_project.host.pre_rewrite_code,
+        );
+        let types_document = virtual_project
+            .documents
+            .iter()
+            .find(|(uri, _)| uri == path_to_file_uri(&types_path).as_str())
+            .map(|(_, content)| content.as_str())
+            .expect("TS dependency document should be synced");
+        assert!(
+            types_document.contains(r#"import("./Child.vue.ts")"#)
+                && types_document.contains(r#"from "./Child.vue.ts""#),
+            "TS dependency Vue specifiers must target virtual Vue modules:\n{types_document}",
         );
         assert!(
             uris.contains(&path_to_file_uri(&child_util_path).as_str()),
