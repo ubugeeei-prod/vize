@@ -6,6 +6,12 @@ use std::{fs, path::Path};
 
 use vize_carton::{String, ToCompactString, profile, profiler::global_profiler};
 
+use super::dts_import_aliases::{
+    ImportTypeAliases, collect_import_type_aliases, rewrite_import_type_aliases,
+};
+use super::dts_rewrite::rewrite_relative_import_types;
+pub(super) use super::dts_rewrite::rewrite_relative_specifier;
+
 pub(super) fn parse_interface_members(
     path: &Path,
     interface_name: &str,
@@ -38,12 +44,13 @@ pub(super) fn parse_interface_members_with_rewritten_imports(
         }
     };
     let source_dir = path.parent().unwrap_or_else(|| Path::new("."));
+    let import_aliases = collect_import_type_aliases(content.as_str(), source_dir);
     Ok(parse_interface_members_content(&content, interface_name)
         .into_iter()
         .map(|(name, type_annotation)| {
             (
                 name,
-                normalize_rewritten_type(type_annotation.as_str(), source_dir),
+                normalize_rewritten_type(type_annotation.as_str(), source_dir, &import_aliases),
             )
         })
         .collect())
@@ -63,12 +70,13 @@ pub(super) fn parse_global_component_members_with_rewritten_imports(
         }
     };
     let source_dir = path.parent().unwrap_or_else(|| Path::new("."));
+    let import_aliases = collect_import_type_aliases(content.as_str(), source_dir);
     Ok(parse_global_component_members_content(&content)
         .into_iter()
         .map(|(name, type_annotation)| {
             (
                 name,
-                normalize_rewritten_type(type_annotation.as_str(), source_dir),
+                normalize_rewritten_type(type_annotation.as_str(), source_dir, &import_aliases),
             )
         })
         .collect())
@@ -228,6 +236,7 @@ pub(super) fn parse_declared_global_values_content(
     content: &str,
     source_dir: &Path,
 ) -> Vec<(String, String)> {
+    let import_aliases = collect_import_type_aliases(content, source_dir);
     let mut values = Vec::new();
     let mut in_global = false;
     let mut brace_depth = 0i32;
@@ -252,6 +261,7 @@ pub(super) fn parse_declared_global_values_content(
                 &mut current_name,
                 &mut current_type,
                 source_dir,
+                &import_aliases,
             );
             in_global = false;
             continue;
@@ -267,6 +277,7 @@ pub(super) fn parse_declared_global_values_content(
             &mut current_type,
             trimmed,
             source_dir,
+            &import_aliases,
         ) {
             continue;
         }
@@ -283,7 +294,7 @@ pub(super) fn parse_declared_global_values_content(
             } else if is_type_complete(type_ann.as_str()) {
                 values.push((
                     name,
-                    normalize_rewritten_type(type_ann.as_str(), source_dir),
+                    normalize_rewritten_type(type_ann.as_str(), source_dir, &import_aliases),
                 ));
             } else {
                 current_name = Some(name);
@@ -297,6 +308,7 @@ pub(super) fn parse_declared_global_values_content(
         &mut current_name,
         &mut current_type,
         source_dir,
+        &import_aliases,
     );
     values
 }
@@ -330,6 +342,7 @@ fn append_pending_global(
     current_type: &mut String,
     trimmed: &str,
     source_dir: &Path,
+    import_aliases: &ImportTypeAliases,
 ) -> bool {
     if current_name.is_none() {
         return false;
@@ -343,7 +356,7 @@ fn append_pending_global(
     {
         values.push((
             name,
-            normalize_rewritten_type(current_type.as_str(), source_dir),
+            normalize_rewritten_type(current_type.as_str(), source_dir, import_aliases),
         ));
         current_type.clear();
     }
@@ -367,11 +380,12 @@ fn flush_pending_global(
     current_name: &mut Option<String>,
     current_type: &mut String,
     source_dir: &Path,
+    import_aliases: &ImportTypeAliases,
 ) {
     if let Some(name) = current_name.take() {
         values.push((
             name,
-            normalize_rewritten_type(current_type.as_str(), source_dir),
+            normalize_rewritten_type(current_type.as_str(), source_dir, import_aliases),
         ));
         current_type.clear();
     }
@@ -405,8 +419,16 @@ fn normalize_type(type_annotation: &str) -> String {
         .to_compact_string()
 }
 
-fn normalize_rewritten_type(type_annotation: &str, source_dir: &Path) -> String {
-    normalize_type(&rewrite_relative_import_types(type_annotation, source_dir))
+fn normalize_rewritten_type(
+    type_annotation: &str,
+    source_dir: &Path,
+    import_aliases: &ImportTypeAliases,
+) -> String {
+    let type_annotation = rewrite_import_type_aliases(type_annotation, import_aliases);
+    normalize_type(&rewrite_relative_import_types(
+        type_annotation.as_str(),
+        source_dir,
+    ))
 }
 
 fn brace_delta(line: &str) -> i32 {
@@ -437,69 +459,6 @@ fn is_type_complete(s: &str) -> bool {
         }
     }
     paren <= 0 && angle <= 0 && brace <= 0
-}
-
-fn rewrite_relative_import_types(type_annotation: &str, source_dir: &Path) -> String {
-    let bytes = type_annotation.as_bytes();
-    let mut out = String::with_capacity(type_annotation.len());
-    let mut i = 0usize;
-
-    while i < bytes.len() {
-        let import_prefix = if type_annotation[i..].starts_with("import('") {
-            Some('\'')
-        } else if type_annotation[i..].starts_with("import(\"") {
-            Some('"')
-        } else {
-            None
-        };
-
-        let Some(quote) = import_prefix else {
-            out.push(bytes[i] as char);
-            i += 1;
-            continue;
-        };
-
-        out.push_str("import(");
-        out.push(quote);
-        i += 8;
-
-        let start = i;
-        while i < bytes.len() && bytes[i] != quote as u8 {
-            i += 1;
-        }
-
-        let specifier = &type_annotation[start..i];
-        out.push_str(&rewrite_relative_specifier(specifier, source_dir));
-
-        if i < bytes.len() {
-            out.push(quote);
-            i += 1;
-        }
-    }
-
-    out
-}
-
-pub(super) fn rewrite_relative_specifier(specifier: &str, source_dir: &Path) -> String {
-    if !specifier.starts_with("./") && !specifier.starts_with("../") {
-        return specifier.to_compact_string();
-    }
-
-    normalize_path(&source_dir.join(specifier))
-}
-
-fn normalize_path(path: &Path) -> String {
-    let mut normalized = std::path::PathBuf::new();
-    for component in path.components() {
-        match component {
-            std::path::Component::CurDir => {}
-            std::path::Component::ParentDir => {
-                normalized.pop();
-            }
-            _ => normalized.push(component.as_os_str()),
-        }
-    }
-    normalized.to_string_lossy().to_compact_string()
 }
 
 #[cfg(test)]

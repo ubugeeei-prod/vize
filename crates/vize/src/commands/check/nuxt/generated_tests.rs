@@ -96,6 +96,88 @@ export {}
 }
 
 #[test]
+fn expands_generated_import_type_aliases() {
+    let project_root = unique_case_dir("import-type-aliases");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join(".nuxt/types")).unwrap();
+    std::fs::create_dir_all(project_root.join("app/types")).unwrap();
+    std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
+    std::fs::write(
+        project_root.join("app/types/user.ts"),
+        "export type User = { id: string };\nexport type Wrapped = { ok: true };\n",
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("app/types/default.ts"),
+        "export default interface DefaultThing { id: string }\n",
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("app/types/shared.ts"),
+        "export interface Thing { name: string }\n",
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/types/imports.d.ts"),
+        r#"import type { User, Wrapped as AliasedWrapped } from '../../app/types/user'
+import type DefaultThing from '../../app/types/default'
+import type * as Shared from '../../app/types/shared'
+declare global {
+  const useTypedUser: () => User
+  const useWrapped: () => AliasedWrapped
+  const useDefaultThing: () => DefaultThing
+  const useSharedThing: () => Shared.Thing
+}
+export {}
+"#,
+    )
+    .unwrap();
+
+    let mut options = VirtualTsOptions::default();
+    let _ = detect_nuxt_auto_imports(&mut options, &project_root);
+    let stubs = options.auto_import_stubs.join("\n");
+    let user = project_root
+        .join("app/types/user")
+        .to_string_lossy()
+        .replace('\\', "/");
+    let default = project_root
+        .join("app/types/default")
+        .to_string_lossy()
+        .replace('\\', "/");
+    let shared = project_root
+        .join("app/types/shared")
+        .to_string_lossy()
+        .replace('\\', "/");
+
+    assert!(
+        stubs.contains(&format!(
+            "declare const useTypedUser: () => import('{user}').User;"
+        )),
+        "expected named import type alias expansion, got:\n{stubs}"
+    );
+    assert!(
+        stubs.contains(&format!(
+            "declare const useWrapped: () => import('{user}').Wrapped;"
+        )),
+        "expected aliased import type expansion, got:\n{stubs}"
+    );
+    assert!(
+        stubs.contains(&format!(
+            "declare const useDefaultThing: () => import('{default}').default;"
+        )),
+        "expected default import type expansion, got:\n{stubs}"
+    );
+    assert!(
+        stubs.contains(&format!(
+            "declare const useSharedThing: () => import('{shared}').Thing;"
+        )),
+        "expected namespace import type expansion, got:\n{stubs}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn detects_root_module_declaration_import_manifest() {
     let project_root = unique_case_dir("root-module-declaration-imports");
     let _ = std::fs::remove_dir_all(&project_root);
