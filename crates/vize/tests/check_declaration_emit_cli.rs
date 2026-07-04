@@ -1,5 +1,7 @@
 use std::{path::Path, process::Command};
 
+use vize_carton::{String, ToCompactString, cstr};
+
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -14,7 +16,7 @@ fn unique_case_dir(name: &str) -> std::path::PathBuf {
         .join("target")
         .join("vize-tests")
         .join("tests")
-        .join(format!("{name}-{}-{case_id}", std::process::id()))
+        .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
 }
 
 fn link_workspace_node_modules(project_root: &Path) {
@@ -64,13 +66,13 @@ fn resolve_test_corsa_path() -> Option<String> {
     let workspace_root = workspace_root();
     let sibling_cache = workspace_root.parent()?.join("corsa-bind/.cache/tsgo");
     if sibling_cache.exists() {
-        return Some(sibling_cache.display().to_string());
+        return Some(sibling_cache.to_string_lossy().to_compact_string());
     }
 
     let workspace_bin = workspace_root.join("node_modules/.bin/tsgo");
     workspace_bin
         .exists()
-        .then(|| workspace_bin.display().to_string())
+        .then(|| workspace_bin.to_string_lossy().to_compact_string())
 }
 
 #[test]
@@ -112,7 +114,7 @@ export const answer = 42;
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
-        .env("CORSA_PATH", corsa_path)
+        .env("CORSA_PATH", corsa_path.as_str())
         .args([
             "check",
             ".",
@@ -125,15 +127,15 @@ export const answer = 42;
         .output()
         .unwrap();
 
-    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
-    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
     assert_eq!(
         output.status.code(),
         Some(0),
         "stdout:\n{stdout}\nstderr:\n{stderr}"
     );
 
-    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
     let declarations = json["declarations"]
         .as_array()
         .unwrap()
@@ -161,6 +163,89 @@ export const answer = 42;
         "declaration import should not leak virtual .vue.ts paths:\n{modern_declaration}"
     );
     assert!(project_root.join("types/legacy.d.cts").is_file());
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_declaration_emit_rewrites_declaration_map_sources() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "declaration-map-sources",
+        &[
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+export interface PublicProps {
+  label: string
+}
+
+defineProps<PublicProps>()
+</script>
+
+<template>
+  <p>{{ label }}</p>
+</template>
+"#,
+            ),
+            (
+                "src/index.ts",
+                r#"export { default as App } from "./App.vue";
+"#,
+            ),
+        ],
+    );
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "declarationMap": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path.as_str())
+        .args(["check", ".", "--format", "json", "--declaration"])
+        .output()
+        .unwrap();
+
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let app_map_path = project_root.join("dist/types/App.vue.d.ts.map");
+    let index_map_path = project_root.join("dist/types/index.d.ts.map");
+    let app_map: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&app_map_path).unwrap()).unwrap();
+    let index_map: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&index_map_path).unwrap()).unwrap();
+
+    assert_eq!(app_map["sources"], serde_json::json!(["../../src/App.vue"]));
+    assert_eq!(
+        index_map["sources"],
+        serde_json::json!(["../../src/index.ts"])
+    );
+
+    let app_map_text = std::fs::read_to_string(app_map_path).unwrap();
+    let index_map_text = std::fs::read_to_string(index_map_path).unwrap();
+    assert!(!app_map_text.contains(".vize"), "{app_map_text}");
+    assert!(!app_map_text.contains(".vue.ts"), "{app_map_text}");
+    assert!(!index_map_text.contains(".vize"), "{index_map_text}");
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

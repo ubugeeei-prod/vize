@@ -1,8 +1,7 @@
 //! Corsa-backed batch executor.
 //!
-//! This module materializes the virtual project, asks the Corsa project-session
-//! API for diagnostics across every generated file, and maps those diagnostics
-//! back to the original source positions.
+//! This module materializes the virtual project, asks Corsa for diagnostics,
+//! and maps those diagnostics back to the original source positions.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -25,12 +24,10 @@ use vize_carton::{
     cstr, profile,
 };
 
-/// Helper-type declarations shipped alongside emitted declaration outputs.
-/// Shares the mirror helpers file name so the artifact is recognizable, but
-/// carries only the type aliases (no global augmentation, no macro values).
 const DECLARATION_HELPERS_FILE: &str = crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME;
 
 mod cli;
+mod declaration_maps;
 mod diagnostics;
 
 use cli::{auto_server_count, check_with_cli, check_with_cli_sharded};
@@ -203,6 +200,7 @@ impl CorsaExecutor {
             "canon.dts.rewrite_outputs",
             rewrite_declaration_outputs(options.out_dir.as_path())
         )?;
+        declaration_maps::rewrite_declaration_map_outputs(options.out_dir.as_path(), project)?;
 
         Ok(DeclarationEmitResult {
             files: profile!(
