@@ -19,8 +19,9 @@ use tower_lsp::lsp_types::{FileRename, Range, TextEdit, Url, WorkspaceEdit};
 use crate::{ide::offset_to_position, server::ServerState};
 
 const SCRIPT_EXTENSIONS: &[&str] = &["ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs"];
-const RESOLVABLE_SCRIPT_EXTENSIONS: &[&str] =
-    &["ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs", "vue"];
+const RESOLVABLE_SCRIPT_EXTENSIONS: &[&str] = &[
+    "ts", "tsx", "d.ts", "js", "jsx", "mts", "cts", "mjs", "cjs", "vue",
+];
 
 #[derive(Clone)]
 struct RenameTarget {
@@ -714,8 +715,9 @@ fn normalize_path_buf(path: &Path) -> PathBuf {
 
 fn strip_extension(path: &Path) -> PathBuf {
     let mut stripped = normalize_path_buf(path);
-    if stripped.extension().is_some() {
-        stripped.set_extension("");
+    let extension_depth = 1 + usize::from(stripped.to_string_lossy().ends_with(".d.ts"));
+    for _ in 0..extension_depth {
+        let _ = stripped.set_extension("");
     }
     stripped
 }
@@ -741,11 +743,9 @@ fn workspace_root(_state: &ServerState) -> PathBuf {
 #[cfg(all(test, feature = "native"))]
 #[allow(clippy::disallowed_macros)]
 mod tests {
-    use std::{
-        collections::BTreeMap,
-        fs,
-        path::{Path, PathBuf},
-    };
+    use std::collections::BTreeMap;
+    use std::fs;
+    use std::path::{Path, PathBuf};
 
     use insta::assert_snapshot;
     use tower_lsp::lsp_types::{FileRename, Url, WorkspaceEdit};

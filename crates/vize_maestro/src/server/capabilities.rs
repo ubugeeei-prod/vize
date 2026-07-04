@@ -210,7 +210,7 @@ fn file_rename_registration_options() -> FileOperationRegistrationOptions {
             FileOperationFilter {
                 scheme: Some("file".to_string()),
                 pattern: FileOperationPattern {
-                    glob: "**/*.{vue,ts,tsx,js,jsx,mts,cts,mjs,cjs}".to_string(),
+                    glob: "**/*.{vue,ts,tsx,d.ts,js,jsx,mts,cts,mjs,cjs}".to_string(),
                     matches: Some(FileOperationPatternKind::File),
                     options: None,
                 },
@@ -304,6 +304,17 @@ mod tests {
                 .workspace
                 .and_then(|workspace| workspace.file_operations)
                 .is_some()
+        );
+    }
+
+    #[test]
+    fn file_rename_registration_mentions_declaration_files() {
+        let options = file_rename_registration_options();
+        let file_glob = &options.filters[0].pattern.glob;
+
+        assert!(
+            file_glob.contains("d.ts"),
+            "rename operations should include declaration shims: {file_glob}"
         );
     }
 }
