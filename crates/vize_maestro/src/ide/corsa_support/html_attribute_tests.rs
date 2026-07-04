@@ -10,9 +10,19 @@ fn native_dom_attribute_info_maps_html_attributes_to_dom_properties() {
         disabled.type_expression.as_str(),
         "HTMLElementTagNameMap[\"button\"][\"disabled\"]"
     );
+    assert!(
+        disabled
+            .documentation_url
+            .ends_with("/Web/HTML/Reference/Attributes/disabled")
+    );
 
     let class_attr = native_dom_attribute_info("div", "class").expect("class attr");
     assert_eq!(class_attr.property_name.as_str(), "className");
+    assert!(
+        class_attr
+            .documentation_url
+            .ends_with("/Web/HTML/Reference/Global_attributes/class")
+    );
     let access_key = native_dom_attribute_info("div", "accesskey").expect("accesskey attr");
     assert_eq!(access_key.property_name.as_str(), "accessKey");
     let bound = native_dom_attribute_info("button", "v-bind:disabled").expect("v-bind attr");
@@ -80,6 +90,11 @@ fn native_dom_attribute_info_preserves_svg_dom_property_names() {
     assert_eq!(
         math_tabindex.type_expression.as_str(),
         "MathMLElementTagNameMap[\"math\"][\"tabIndex\"]"
+    );
+    assert!(
+        math_tabindex
+            .documentation_url
+            .ends_with("/Web/HTML/Reference/Global_attributes/tabindex")
     );
 
     let menclose_tabindex =

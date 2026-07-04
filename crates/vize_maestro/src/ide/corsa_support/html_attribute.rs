@@ -78,6 +78,12 @@ pub(crate) fn native_dom_attribute_info(
         cstr!(
             "https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Attribute/{normalized_attr}"
         )
+    } else if is_html_global_native_attribute(&normalized_attr)
+        || is_dom_element_global_attribute(&normalized_attr)
+    {
+        cstr!(
+            "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/{normalized_attr}"
+        )
     } else {
         cstr!(
             "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/{normalized_attr}"
