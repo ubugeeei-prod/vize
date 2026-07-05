@@ -136,6 +136,9 @@ fn queue_vue_imports(
             generated.virtual_uri.clone(),
             generated.generated.code.clone(),
         ));
+        if generated.generated.virtual_suffix == ".tsx" {
+            imports.documents.push(tsx_vue_import_shim(&path));
+        }
         imports.queue.push_back(DependencyScan::Vue {
             dir: parent_dir(&generated.source_path),
             source_type: generated.generated.source_type,
@@ -152,6 +155,26 @@ fn fallback_vue_virtual_uri(path: &Path) -> String {
             .unwrap_or_default()
     ));
     path_to_file_uri(&virtual_path)
+}
+
+fn tsx_vue_import_shim(path: &Path) -> (String, String) {
+    let shim_path = path.with_file_name(cstr!(
+        "{}.ts",
+        path.file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or_default()
+    ));
+    let target_name = shim_path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .map(|name| cstr!("{name}x"))
+        .unwrap_or_else(|| "component.vue.tsx".into());
+    (
+        path_to_file_uri(&shim_path),
+        cstr!(
+            "export {{ default }} from \"./{target_name}\";\nexport * from \"./{target_name}\";\n"
+        ),
+    )
 }
 
 fn queue_ts_imports(

@@ -9,6 +9,8 @@ mod types;
 mod vue_dependencies;
 mod vue_dependency_specifiers;
 mod vue_document;
+#[cfg(test)]
+mod vue_document_tests;
 
 pub use bridge::{BatchTypeChecker, CorsaBridge};
 pub use types::{
