@@ -52,7 +52,9 @@ fn relative_specifier_resolves(dir: &Path, specifier: &str) -> bool {
     if specifier_has_source_extension(specifier) && dir.join(specifier).is_file() {
         return true;
     }
-    if let Some(stem) = specifier.strip_suffix(".vue.ts")
+    if let Some(stem) = specifier
+        .strip_suffix(".vue.ts")
+        .or_else(|| specifier.strip_suffix(".vue.tsx"))
         && dir.join(cstr!("{stem}.vue").as_str()).is_file()
     {
         return true;
@@ -114,6 +116,8 @@ mod tests {
         let resolvable_ts = "Cannot find module './types' or its corresponding type declarations.";
         let resolvable_vue_ts =
             "Cannot find module './Panel.vue.ts' or its corresponding type declarations.";
+        let resolvable_vue_tsx =
+            "Cannot find module './Panel.vue.tsx' or its corresponding type declarations.";
         let resolvable_index =
             "Cannot find module './util' or its corresponding type declarations.";
         let resolvable_dmts =
@@ -129,6 +133,10 @@ mod tests {
         assert!(relative_module_resolves_on_disk(resolvable_ts, &importer));
         assert!(relative_module_resolves_on_disk(
             resolvable_vue_ts,
+            &importer
+        ));
+        assert!(relative_module_resolves_on_disk(
+            resolvable_vue_tsx,
             &importer
         ));
         assert!(relative_module_resolves_on_disk(
