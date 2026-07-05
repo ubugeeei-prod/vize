@@ -120,7 +120,7 @@ impl ImportRewriter {
         source: &str,
         source_type: SourceType,
     ) -> RewriteResult {
-        if !source.contains(".vue.ts") {
+        if !source.contains(".vue.ts") && !source.contains(".vue.tsx") {
             return RewriteResult {
                 code: source.to_compact_string(),
                 source_map: ImportSourceMap::empty(),
@@ -252,6 +252,11 @@ impl ImportRewriter {
     }
 
     fn rewrite_declaration_specifier(&self, path: &str) -> Option<String> {
+        if path.ends_with(".vue.tsx") {
+            return path
+                .strip_suffix(".tsx")
+                .map(|value| value.to_compact_string());
+        }
         if path.ends_with(".vue.ts") {
             return path
                 .strip_suffix(".ts")

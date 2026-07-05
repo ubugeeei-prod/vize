@@ -31,6 +31,20 @@ export type AppProps = import("./App.vue").PublicProps;"#
 }
 
 #[test]
+fn rewrites_declaration_tsx_vue_specifiers() {
+    let rewriter = ImportRewriter::new();
+    let source = r#"export { default as App } from "./App.vue.tsx";
+export type AppProps = import("./App.vue.tsx").PublicProps;"#;
+    let result = rewriter.rewrite_declaration_specifiers(source, SourceType::ts());
+
+    assert_eq!(
+        result.code,
+        r#"export { default as App } from "./App.vue";
+export type AppProps = import("./App.vue").PublicProps;"#
+    );
+}
+
+#[test]
 fn rewrites_ts_import_equals_external_module_references() {
     let rewriter = ImportRewriter::new();
     let source = r#"import App = require("./App.vue");
