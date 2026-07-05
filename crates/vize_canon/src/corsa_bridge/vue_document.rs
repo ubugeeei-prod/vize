@@ -7,7 +7,7 @@ use vize_carton::{String, cstr};
 
 use super::bridge::CorsaBridge;
 use super::types::CorsaBridgeError;
-use super::vue_dependencies::collect_dependency_documents;
+use super::vue_dependencies::{collect_dependency_documents, tsx_vue_import_shim};
 use crate::batch::{
     ImportRewriter, ImportSourceMap, VueDocumentVirtualTs, VueDocumentVirtualTsOptions,
     generate_vue_document_virtual_ts_with_options,
@@ -88,6 +88,9 @@ pub(crate) fn build_vue_virtual_project(
     let rewriter = ImportRewriter::new();
     let host = generate_vue_document(source_path, content, options, &rewriter)?;
     let mut documents = vec![(host.virtual_uri.clone(), host.generated.code.clone())];
+    if host.generated.virtual_suffix == ".tsx" {
+        documents.push(tsx_vue_import_shim(&host.source_path));
+    }
     collect_dependency_documents(&mut documents, &host, options, &rewriter);
 
     let generated = host.generated;

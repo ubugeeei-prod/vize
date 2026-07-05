@@ -157,7 +157,7 @@ fn fallback_vue_virtual_uri(path: &Path) -> String {
     path_to_file_uri(&virtual_path)
 }
 
-fn tsx_vue_import_shim(path: &Path) -> (String, String) {
+pub(super) fn tsx_vue_import_shim(path: &Path) -> (String, String) {
     let shim_path = path.with_file_name(cstr!(
         "{}.ts",
         path.file_name()
