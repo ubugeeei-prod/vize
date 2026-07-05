@@ -157,6 +157,7 @@ mod tests {
         let util_path = src.join("util.ts");
         let types_path = src.join("types.ts");
         let helper_path = src.join("helper.ts");
+        let schema_path = src.join("schema.d.ts");
         let child_util_path = src.join("childUtil.ts");
         std::fs::write(
             &host_path,
@@ -198,11 +199,13 @@ defineProps<{ label?: string }>();
             &types_path,
             r#"export type ChildModule = typeof import("./Child.vue");
 export type HelperModule = import("./helper").Helper;
+export type SchemaModule = import("./schema").Schema;
 export { default as ReexportedChild } from "./Child.vue";
 "#,
         )
         .expect("types");
         std::fs::write(&helper_path, "export type Helper = { ok: true };\n").expect("helper");
+        std::fs::write(&schema_path, "export type Schema = { id: string };\n").expect("schema");
         std::fs::write(&child_util_path, "export const childValue = 2;\n").expect("child util");
 
         let host = std::fs::read_to_string(&host_path).expect("host source");
@@ -238,6 +241,10 @@ export { default as ReexportedChild } from "./Child.vue";
         assert!(
             uris.contains(&path_to_file_uri(&helper_path).as_str()),
             "TS import-type dependencies must be synced too: {uris:?}",
+        );
+        assert!(
+            uris.contains(&path_to_file_uri(&schema_path).as_str()),
+            "extensionless TS import-type dependencies must resolve generated d.ts files too: {uris:?}",
         );
         assert!(
             uris.contains(&path_to_file_uri(&child_util_path).as_str()),

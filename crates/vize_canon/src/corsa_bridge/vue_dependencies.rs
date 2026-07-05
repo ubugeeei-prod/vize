@@ -190,7 +190,9 @@ fn resolve_relative_script_import(dir: &Path, specifier: &str) -> Option<PathBuf
         return known_script_path(&base).then(|| normalize_path(&base));
     }
 
-    for ext in ["ts", "tsx", "mts", "cts", "js", "jsx", "mjs", "cjs"] {
+    for ext in [
+        "ts", "tsx", "mts", "cts", "d.ts", "d.mts", "d.cts", "js", "jsx", "mjs", "cjs",
+    ] {
         let candidate = base.with_extension(ext);
         if candidate.exists() {
             return Some(normalize_path(&candidate));
@@ -271,8 +273,10 @@ mod tests {
 
         let esm = src.join("esm").join("index.d.mts");
         let cjs = src.join("cjs").join("index.d.cts");
+        let schema = src.join("schema.d.ts");
         std::fs::write(&esm, "export type Value = string;\n").expect("esm dts");
         std::fs::write(&cjs, "export type Value = string;\n").expect("cjs dts");
+        std::fs::write(&schema, "export type Schema = { id: string };\n").expect("schema dts");
 
         assert_eq!(
             resolve_relative_script_import(&src, "./esm").as_deref(),
@@ -281,6 +285,10 @@ mod tests {
         assert_eq!(
             resolve_relative_script_import(&src, "./cjs").as_deref(),
             Some(cjs.as_path())
+        );
+        assert_eq!(
+            resolve_relative_script_import(&src, "./schema").as_deref(),
+            Some(schema.as_path())
         );
     }
 }
