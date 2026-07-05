@@ -27,6 +27,7 @@ impl RelativeTsSpecifierCollector {
         if (specifier.starts_with("./") || specifier.starts_with("../"))
             && !specifier.ends_with(".vue")
             && !specifier.ends_with(".vue.ts")
+            && !specifier.ends_with(".vue.tsx")
             && !self
                 .specifiers
                 .iter()
@@ -104,6 +105,8 @@ export type { Model } from "../model";
 export type Lazy = import("./lazy").Lazy;
 import Common = require("./common");
 const runtime = require("./runtime");
+type VirtualTs = typeof import("./App.vue.ts");
+type VirtualTsx = typeof import("./App.vue.tsx");
 declare module "./augment" {}
 type App = typeof import("./App.vue");
 "#;
