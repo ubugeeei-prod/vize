@@ -67,6 +67,8 @@ fn extract_relative_module_specifiers(source: &str) -> Vec<CompactString> {
             4
         } else if matches_keyword(bytes, i, b"import") {
             6
+        } else if matches_keyword(bytes, i, b"require") {
+            7
         } else {
             i += 1;
             continue;
@@ -214,13 +216,23 @@ mod tests {
         let entry = write(
             &root,
             "lint/__tests__/rule.spec.ts",
-            "import config from '../../.eslintrc.js'\nimport rule from '../rules/no-access-process'\nimport colors from '../../tokens/colors.json'\n",
+            "import config from '../../.eslintrc.js'\nimport rule from '../rules/no-access-process'\nimport colors from '../../tokens/colors.json'\nconst runtime = require('../plugins/runtime.cjs')\n",
         );
         write(&root, ".eslintrc.js", "export default {}\n");
         write(
             &root,
             "lint/rules/no-access-process.js",
             "export default {}\n",
+        );
+        write(
+            &root,
+            "lint/plugins/runtime.cjs",
+            "exports.runtime = true\n",
+        );
+        write(
+            &root,
+            "lint/plugins/runtime.d.cts",
+            "export declare const runtime: true\n",
         );
         write(&root, "tokens/colors.json", "{}\n");
         let virtual_root = root.join("node_modules/.vize/canon");
@@ -248,6 +260,14 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec![
                 (PathBuf::from(".eslintrc.js"), PathBuf::from(".eslintrc.js")),
+                (
+                    PathBuf::from("lint/plugins/runtime.cjs"),
+                    PathBuf::from("lint/plugins/runtime.cjs"),
+                ),
+                (
+                    PathBuf::from("lint/plugins/runtime.d.cts"),
+                    PathBuf::from("lint/plugins/runtime.d.cts"),
+                ),
                 (
                     PathBuf::from("lint/rules/no-access-process.js"),
                     PathBuf::from("lint/rules/no-access-process.js"),
