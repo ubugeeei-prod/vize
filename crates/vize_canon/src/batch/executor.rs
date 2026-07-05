@@ -223,7 +223,9 @@ fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {
         if is_internal_virtual_project_file(virtual_root, path) {
             continue;
         }
-        if let Some("ts" | "tsx") = path.extension().and_then(|extension| extension.to_str()) {
+        if let Some("ts" | "tsx" | "mts" | "cts") =
+            path.extension().and_then(|extension| extension.to_str())
+        {
             uris.push(path_to_file_uri(path));
         }
     }
@@ -534,6 +536,10 @@ mod tests {
 
         fs::write(root.join("index.ts"), "").unwrap();
         fs::write(root.join("component.vue.ts"), "").unwrap();
+        fs::write(root.join("module.mts"), "").unwrap();
+        fs::write(root.join("common.cts"), "").unwrap();
+        fs::write(root.join("module-types.d.mts"), "").unwrap();
+        fs::write(root.join("common-types.d.cts"), "").unwrap();
         fs::write(root.join("__vize_vue_modules.d.ts"), "").unwrap();
         fs::write(root.join("__vize_auto_imports.d.ts"), "").unwrap();
         fs::create_dir_all(root.join("node_modules/vue")).unwrap();
@@ -548,8 +554,12 @@ mod tests {
         assert_eq!(
             uris,
             vec![
+                path_to_file_uri(root.join("common-types.d.cts").as_path()),
+                path_to_file_uri(root.join("common.cts").as_path()),
                 path_to_file_uri(root.join("component.vue.ts").as_path()),
                 path_to_file_uri(root.join("index.ts").as_path()),
+                path_to_file_uri(root.join("module-types.d.mts").as_path()),
+                path_to_file_uri(root.join("module.mts").as_path()),
             ]
         );
     }
