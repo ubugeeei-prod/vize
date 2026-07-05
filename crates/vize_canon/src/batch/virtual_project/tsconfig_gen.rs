@@ -100,7 +100,7 @@ impl VirtualProject {
         Ok(config_path)
     }
 
-    fn write_tsconfig_file_with_includes(
+    pub(super) fn write_tsconfig_file_with_includes(
         &self,
         path: &Path,
         out_dir: Option<&Path>,

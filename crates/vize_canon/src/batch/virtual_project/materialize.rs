@@ -130,12 +130,20 @@ impl VirtualProject {
         declaration_map: bool,
     ) -> CorsaResult<PathBuf> {
         let config_path = self.virtual_root.join("tsconfig.declaration.json");
+        self.rewrite_tsx_vue_declaration_inputs()?;
+        let include_paths = self.declaration_emit_include_paths();
         profile!(
             "canon.project.write_dts_tsconfig",
-            self.write_tsconfig_file(&config_path, Some(out_dir), declaration_map)
+            self.write_tsconfig_file_with_includes(
+                &config_path,
+                Some(out_dir),
+                declaration_map,
+                Some(&include_paths),
+            )
         )?;
         Ok(config_path)
     }
+
     fn write_auto_import_stubs(&self) -> CorsaResult<()> {
         if !self.has_global_auto_import_stubs() {
             return Ok(());

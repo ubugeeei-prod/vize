@@ -2,6 +2,9 @@ use std::{path::Path, process::Command};
 
 use vize_carton::{String, ToCompactString, cstr};
 
+#[path = "support/vue_stub.rs"]
+mod vue_stub;
+
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -99,9 +102,27 @@ defineProps<PublicProps>()
 "#,
             ),
             (
+                "src/TsxWidget.vue",
+                r#"<script setup lang="tsx">
+export interface TsxProps {
+  active: boolean
+}
+
+defineProps<TsxProps>()
+const vnode = null as unknown
+</script>
+
+<template>
+  <div />
+</template>
+"#,
+            ),
+            (
                 "src/modern.mts",
                 r#"export { default as App } from "./App.vue";
 export type AppModule = typeof import("./App.vue");
+export { default as TsxWidget } from "./TsxWidget.vue";
+export type TsxWidgetModule = typeof import("./TsxWidget.vue");
 export const answer = 42;
 "#,
             ),
@@ -112,6 +133,7 @@ export const answer = 42;
             ),
         ],
     );
+    vue_stub::install_vue_jsx_type_stub(&project_root);
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
@@ -164,8 +186,23 @@ export const answer = 42;
         "declaration import types should point at .vue:\n{modern_declaration}"
     );
     assert!(
+        modern_declaration.contains("./TsxWidget.vue"),
+        "TSX SFC declaration import should point at .vue:\n{modern_declaration}"
+    );
+    assert!(
+        modern_declaration.contains(r#"typeof import("./TsxWidget.vue")"#),
+        "TSX SFC declaration import types should point at .vue:\n{modern_declaration}"
+    );
+    assert!(
         !modern_declaration.contains(".vue.ts"),
-        "declaration import should not leak virtual .vue.ts paths:\n{modern_declaration}"
+        "declaration import should not leak virtual .vue.ts/.vue.tsx paths:\n{modern_declaration}"
+    );
+    let tsx_widget_declaration =
+        std::fs::read_to_string(project_root.join("types/TsxWidget.vue.d.ts"))
+            .expect("TSX widget declaration should be emitted");
+    assert!(
+        tsx_widget_declaration.contains("export interface TsxProps"),
+        "TSX SFC declaration should preserve exported props:\n{tsx_widget_declaration}"
     );
     assert!(project_root.join("types/legacy.d.cts").is_file());
 

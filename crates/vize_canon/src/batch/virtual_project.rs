@@ -26,6 +26,7 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
 mod art_usage;
 mod build;
+mod declaration_emit;
 mod document;
 pub use document::{
     VueDocumentVirtualTs, VueDocumentVirtualTsOptions, generate_vue_document_virtual_ts,
