@@ -51,6 +51,7 @@ const visibleSsrVirtualId = toPluginVisibleVirtualId(
   true,
   "?vue&used=true",
 );
+const visibleTsxVirtualId = "/repo/app/components/Foo.vue.tsx?vue&vize";
 
 assert.equal(
   visibleVirtualId,
@@ -66,6 +67,11 @@ assert.equal(
   fromPluginVisibleVirtualId(visibleVirtualId),
   "/repo/app/components/Foo.vue",
   "Plugin-visible virtual IDs should resolve back to the real .vue path",
+);
+assert.equal(
+  fromPluginVisibleVirtualId(visibleTsxVirtualId),
+  "/repo/app/components/Foo.vue",
+  "Plugin-visible TSX virtual IDs should resolve back to the real .vue path",
 );
 assert.equal(
   isPluginVisibleSsrVirtualId(visibleSsrVirtualId),

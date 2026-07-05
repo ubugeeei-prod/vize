@@ -64,7 +64,7 @@ function mergeNuxtCompilerPatterns(
 }
 
 export function isVizeVirtualVueModuleId(id: string): boolean {
-  return id.startsWith("\0") && /\.vue\.ts(?:\?|$)/.test(id);
+  return id.startsWith("\0") && /\.vue\.tsx?(?:\?|$)/.test(id);
 }
 
 export function isVizeGeneratedVueModuleId(id: string): boolean {
@@ -74,7 +74,7 @@ export function isVizeGeneratedVueModuleId(id: string): boolean {
   } else if (normalized.startsWith("__x00__")) {
     normalized = normalized.slice("__x00__".length);
   }
-  return /\.vue\.ts(?:\?|$)/.test(normalized);
+  return /\.vue\.tsx?(?:\?|$)/.test(normalized);
 }
 
 /**
@@ -82,7 +82,7 @@ export function isVizeGeneratedVueModuleId(id: string): boolean {
  *
  * Unlike `.vue` files, JSX/TSX modules are transformed in place by the
  * underlying Vite plugin (the original `.jsx`/`.tsx` id is preserved, no
- * `\0`-prefixed `.vue.ts` virtual id is created). Nuxt's auto-import,
+ * `\0`-prefixed `.vue.ts[x]` virtual id is created). Nuxt's auto-import,
  * component, and i18n transforms still need to run on these modules, so the
  * Nuxt transform bridge keys off this predicate in addition to
  * `isVizeGeneratedVueModuleId`.
@@ -94,7 +94,7 @@ export function isVizeGeneratedVueModuleId(id: string): boolean {
 export function isVizeJsxModuleId(id: string): boolean {
   const queryIndex = id.indexOf("?");
   const pathPart = queryIndex === -1 ? id : id.slice(0, queryIndex);
-  if (!/\.(?:jsx|tsx)$/.test(pathPart)) {
+  if (/\.vue\.tsx?$/.test(pathPart) || !/\.(?:jsx|tsx)$/.test(pathPart)) {
     return false;
   }
 
@@ -113,7 +113,7 @@ export function isVizeJsxModuleId(id: string): boolean {
 
 export function normalizeVizeVirtualVueModuleId(id: string): string {
   const withoutPrefix = id.startsWith("\0vize-ssr:") ? id.slice("\0vize-ssr:".length) : id.slice(1);
-  return withoutPrefix.replace(/\.ts(?=\?|$)/, "");
+  return withoutPrefix.replace(/\.tsx?(?=\?|$)/, "");
 }
 
 export function normalizeVizeGeneratedVueModuleId(id: string): string {
@@ -124,7 +124,7 @@ export function normalizeVizeGeneratedVueModuleId(id: string): string {
   return id
     .replace(/^\/@id\/__x00__/, "")
     .replace(/^__x00__/, "")
-    .replace(/\.ts(?=\?|$)/, "");
+    .replace(/\.tsx?(?=\?|$)/, "");
 }
 
 const NUXT_INJECTED_MARKER = "/* nuxt-injected */";

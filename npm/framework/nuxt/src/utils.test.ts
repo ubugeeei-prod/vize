@@ -94,6 +94,7 @@ assert.equal(
 
 assert.equal(isVizeGeneratedVueModuleId("\0/repo/app/components/Foo.vue.ts"), true);
 assert.equal(isVizeGeneratedVueModuleId("/repo/app/components/Foo.vue.ts"), true);
+assert.equal(isVizeGeneratedVueModuleId("/repo/app/components/Foo.vue.tsx"), true);
 assert.equal(isVizeGeneratedVueModuleId("/@id/__x00__/repo/app/components/Foo.vue.ts"), true);
 assert.equal(isVizeGeneratedVueModuleId("/repo/app/components/Foo.vue"), false);
 
@@ -119,6 +120,12 @@ assert.equal(
   normalizeVizeGeneratedVueModuleId("/repo/app/components/Foo.vue.ts?vue&vize"),
   "/repo/app/components/Foo.vue?vue&vize",
   "Nuxt bridge normalization should also handle plugin-visible dev ids",
+);
+
+assert.equal(
+  normalizeVizeGeneratedVueModuleId("/repo/app/components/Foo.vue.tsx?vue&vize"),
+  "/repo/app/components/Foo.vue?vue&vize",
+  "Nuxt bridge normalization should also handle TSX Vue virtual dev ids",
 );
 
 {

@@ -58,14 +58,26 @@ export function fromPluginVisibleVirtualId(id: string): string | null {
     return null;
   }
   const request = classifyVitePluginRequest(id);
-  if (!request.path.endsWith(".vue.ts") || !request.querySuffix) {
+  if (!isPluginVisibleVueVirtualPath(request.path) || !request.querySuffix) {
     return null;
   }
   const params = new URLSearchParams(request.querySuffix.slice(1));
   if (!params.has("vue") || (!params.has("vize") && !params.has("vize-ssr"))) {
     return null;
   }
-  return classifyVitePluginRequest(request.normalizedFsId ?? id).normalizedVuePath;
+  const normalizedRequest = classifyVitePluginRequest(request.normalizedFsId ?? id);
+  return stripPluginVisibleVueVirtualSuffix(normalizedRequest.path);
+}
+
+function isPluginVisibleVueVirtualPath(path: string): boolean {
+  return path.endsWith(".vue.ts") || path.endsWith(".vue.tsx");
+}
+
+function stripPluginVisibleVueVirtualSuffix(path: string): string {
+  if (path.endsWith(".vue.tsx")) {
+    return path.slice(0, -4);
+  }
+  return path.endsWith(".vue.ts") ? path.slice(0, -3) : path;
 }
 
 export function isPluginVisibleSsrVirtualId(id: string): boolean {

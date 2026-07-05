@@ -9,7 +9,7 @@ pub struct VitePluginRequestNapi {
     pub path: String,
     /// Query suffix including the leading `?`, or an empty string.
     pub query_suffix: String,
-    /// Path normalized for macro virtual modules (`.vue.ts` -> `.vue`).
+    /// Path normalized for macro virtual modules (`.vue.ts[x]` -> `.vue`).
     pub normalized_vue_path: String,
     /// For `\0...` virtual macro IDs, the real path without the virtual prefix.
     pub stripped_virtual_path: Option<String>,

@@ -26,11 +26,11 @@ function stripBridgePrefix(id: string): string {
 }
 
 function isUnoCssBridgeModuleId(id: string): boolean {
-  return /\.vue\.ts(?:\?|$)/.test(stripBridgePrefix(id));
+  return /\.vue\.tsx?(?:\?|$)/.test(stripBridgePrefix(id));
 }
 
 function normalizeUnoCssBridgeModuleId(id: string): string {
-  return stripBridgePrefix(id).replace(/\.ts(?=\?|$)/, "");
+  return stripBridgePrefix(id).replace(/\.tsx?(?=\?|$)/, "");
 }
 
 function appendOriginalVueSourceForUnoCss(code: string, normalizedId: string): string {

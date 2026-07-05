@@ -87,10 +87,11 @@ void test("isVizeVirtualVueModuleId requires a NUL prefix while generated does n
   assert.equal(isVizeGeneratedVueModuleId("/App.vue.ts"), true);
 });
 
-void test("the .vue.tsx extension is neither virtual nor generated", () => {
-  // The regex anchors ".vue.ts" to "?" or end-of-string, so the trailing "x" excludes it.
-  assert.equal(isVizeVirtualVueModuleId("\0/App.vue.tsx"), false);
-  assert.equal(isVizeGeneratedVueModuleId("/App.vue.tsx"), false);
+void test("the .vue.tsx extension is treated as a generated Vue virtual module", () => {
+  assert.equal(isVizeVirtualVueModuleId("\0/App.vue.tsx"), true);
+  assert.equal(isVizeGeneratedVueModuleId("/App.vue.tsx"), true);
+  assert.equal(normalizeVizeVirtualVueModuleId("\0/App.vue.tsx?vue"), "/App.vue?vue");
+  assert.equal(normalizeVizeGeneratedVueModuleId("/App.vue.tsx?vue&vize"), "/App.vue?vue&vize");
 });
 
 void test("ids without .vue are rejected and a query after .vue.ts is accepted", () => {
@@ -102,7 +103,7 @@ void test("ids without .vue are rejected and a query after .vue.ts is accepted",
 
 void test("isVizeJsxModuleId matches in-place .jsx and .tsx component modules", () => {
   // Raw JSX/TSX Vue components are compiled in place: the underlying Vite
-  // plugin keeps the original id (no `.vue.ts` virtual), so the Nuxt bridge
+  // plugin keeps the original id (no `.vue.ts[x]` virtual), so the Nuxt bridge
   // must recognize them through this predicate to apply auto-imports etc.
   assert.equal(isVizeJsxModuleId("/components/Foo.jsx"), true);
   assert.equal(isVizeJsxModuleId("/components/Foo.tsx"), true);
@@ -115,6 +116,7 @@ void test("isVizeJsxModuleId matches in-place .jsx and .tsx component modules", 
 
 void test("isVizeJsxModuleId rejects non-JSX ids and asset-import queries", () => {
   assert.equal(isVizeJsxModuleId("/App.vue.ts"), false);
+  assert.equal(isVizeJsxModuleId("/App.vue.tsx"), false);
   assert.equal(isVizeJsxModuleId("/App.ts"), false);
   assert.equal(isVizeJsxModuleId("/App.js"), false);
   // `.jsx`/`.tsx` referenced as raw/url/worker assets are not component modules.

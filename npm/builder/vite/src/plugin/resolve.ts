@@ -674,7 +674,7 @@ function isPotentialVizeResolveId(id: string): boolean {
     id === VIRTUAL_CSS_MODULE ||
     id.endsWith(".vue") ||
     id.includes(".vue?") ||
-    id.includes(".vue.ts?") ||
+    /\.vue\.tsx?\?/.test(id) ||
     id.includes("?macro=true") ||
     id.includes("?definePage")
   );
@@ -751,7 +751,7 @@ function cleanVueSfcImporter(
     cleanImporter = cleanImporter.slice("__x00__".length);
   }
 
-  return cleanImporter.endsWith(".vue.ts") ? cleanImporter.slice(0, -3) : cleanImporter;
+  return classifyVitePluginRequest(cleanImporter).normalizedVuePath;
 }
 
 async function resolveAliasedVueImport(
@@ -847,7 +847,7 @@ export async function resolveIdHook(
 
   // Skip all virtual module IDs
   if (id.startsWith("\0")) {
-    // This is one of our .vue.ts virtual modules. Return the ID so Rolldown/Rollup
+    // This is one of our .vue.ts[x] virtual modules. Return the ID so Rolldown/Rollup
     // treats imports of Vize virtual modules from other virtual modules as resolved.
     if (request.isVizeVirtual) {
       if (isSsrRequest && !request.isVizeSsrVirtual && request.vizeVirtualPath) {

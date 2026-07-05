@@ -1009,7 +1009,7 @@ export interface VitePluginRequestNapi {
   path: string;
   /** Query suffix including the leading `?`, or an empty string. */
   querySuffix: string;
-  /** Path normalized for macro virtual modules (`.vue.ts` -> `.vue`). */
+  /** Path normalized for macro virtual modules (`.vue.ts[x]` -> `.vue`). */
   normalizedVuePath: string;
   /** For `\0...` virtual macro IDs, the real path without the virtual prefix. */
   strippedVirtualPath?: string;
