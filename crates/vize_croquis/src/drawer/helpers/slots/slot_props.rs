@@ -24,12 +24,21 @@ pub fn extract_slot_props(pattern: &str) -> SmallVec<[CompactString; 4]> {
         return SmallVec::new();
     }
 
-    // Fast path: simple object destructuring
-    if bytes[0] == b'{' && !pattern.contains(':') && !pattern.contains('{') {
-        let inner = &pattern[1..pattern.len().saturating_sub(1)];
+    // Fast path: simple object destructuring. Stay conservative so default
+    // expressions that can contain commas still fall back to OXC.
+    if bytes[0] == b'{'
+        && pattern.ends_with('}')
+        && can_parse_simple_object_destructure_fast(&pattern[1..pattern.len() - 1])
+    {
+        let inner = &pattern[1..pattern.len() - 1];
         let mut props = SmallVec::new();
+        let mut valid = true;
         for part in inner.split(',') {
             let part = part.trim();
+            if part.is_empty() {
+                continue;
+            }
+            let part = part.strip_prefix("...").unwrap_or(part).trim();
             let name = if let Some(eq_pos) = part.find('=') {
                 part[..eq_pos].trim()
             } else {
@@ -37,9 +46,12 @@ pub fn extract_slot_props(pattern: &str) -> SmallVec<[CompactString; 4]> {
             };
             if !name.is_empty() && is_valid_identifier_fast(name.as_bytes()) {
                 props.push(CompactString::new(name));
+            } else {
+                valid = false;
+                break;
             }
         }
-        if !props.is_empty() {
+        if valid && !props.is_empty() {
             return props;
         }
     }
@@ -79,6 +91,15 @@ fn extract_slot_props_with_oxc(pattern: &str) -> SmallVec<[CompactString; 4]> {
         ),
         Err(_) => SmallVec::new(),
     }
+}
+
+fn can_parse_simple_object_destructure_fast(inner: &str) -> bool {
+    !inner.as_bytes().iter().any(|byte| {
+        matches!(
+            byte,
+            b':' | b'{' | b'}' | b'[' | b']' | b'(' | b')' | b'"' | b'\'' | b'`'
+        )
+    })
 }
 
 /// Parse slot pattern using OXC
@@ -129,5 +150,35 @@ fn extract_slot_binding_names(
         BindingPattern::AssignmentPattern(assign) => {
             extract_slot_binding_names(&assign.left, names);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::extract_slot_props;
+
+    fn names(pattern: &str) -> Vec<String> {
+        extract_slot_props(pattern)
+            .iter()
+            .map(|name| name.to_string())
+            .collect()
+    }
+
+    #[test]
+    fn extracts_simple_object_rest_with_default() {
+        assert_eq!(names("{ open = false, ...rest }"), vec!["open", "rest"]);
+    }
+
+    #[test]
+    fn falls_back_for_nested_object_patterns() {
+        assert_eq!(names("{ item: { id }, ...rest }"), vec!["id", "rest"]);
+    }
+
+    #[test]
+    fn falls_back_for_default_calls_with_commas() {
+        assert_eq!(
+            names("{ value = getDefault(a, b), rest }"),
+            vec!["value", "rest"]
+        );
     }
 }

@@ -18,7 +18,7 @@
 //! <MyComponent><template v-slot:header>Header</template></MyComponent>
 //! ```
 
-use crate::context::LintContext;
+use crate::context::{ElementContext, LintContext};
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::{FxHashSet, String, ToCompactString, is_native_tag};
@@ -258,7 +258,12 @@ fn has_directive(element: &ElementNode, name: &str) -> bool {
 
 fn has_component_parent(ctx: &LintContext) -> bool {
     ctx.parent_element()
-        .is_some_and(|parent| ValidVSlot::is_custom_component_tag(parent.tag.as_str(), None))
+        .is_some_and(is_component_parent_context)
+}
+
+fn is_component_parent_context(parent: &ElementContext) -> bool {
+    let tag = parent.tag.as_str();
+    !matches!(tag, "slot" | "template") && (tag == "component" || !is_native_tag(tag))
 }
 
 fn static_slot_name(directive: &DirectiveNode) -> Option<String> {
