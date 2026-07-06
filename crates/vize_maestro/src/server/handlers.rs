@@ -218,27 +218,22 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         }
 
+        #[cfg(feature = "native")]
         {
-            #[cfg(feature = "native")]
+            let corsa_bridge = self.state.get_corsa_bridge().await;
+            if let Some(response) = CompletionService::complete_with_corsa(&ctx, corsa_bridge).await
             {
-                let corsa_bridge = self.state.get_corsa_bridge().await;
-                if let Some(response) =
-                    CompletionService::complete_with_corsa(&ctx, corsa_bridge).await
-                {
-                    return Ok(Some(response));
-                }
+                return Ok(Some(response));
             }
+        }
 
-            #[cfg(not(feature = "native"))]
-            {
-                if let Some(response) = CompletionService::complete(&ctx) {
-                    return Ok(Some(response));
-                }
-            }
+        #[cfg(not(feature = "native"))]
+        if let Some(response) = CompletionService::complete(&ctx) {
+            return Ok(Some(response));
+        }
 
-            if ctx.block_type.is_some() {
-                return Ok(None);
-            }
+        if ctx.block_type.is_some() {
+            return Ok(None);
         }
 
         let items = self.get_block_snippets();
