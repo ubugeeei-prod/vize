@@ -136,6 +136,10 @@ export interface BatchTypeCheckResultNapi {
 
 export declare function buildDesignTokenMap(categories: string): string;
 
+export declare function buildInspectorGraph(
+  files: Array<InspectorSourceFileNapi>,
+): InspectorGraphNapi;
+
 /** Catalog entry for NAPI */
 export interface CatalogEntryNapi {
   title: string;
@@ -667,6 +671,31 @@ export interface MacroArtifactNapi {
   moduleCode?: string;
   start: number;
   end: number;
+}
+
+export interface InspectorGraphEdgeNapi {
+  from: string;
+  to: string;
+  kind: string;
+  specifier: string;
+}
+
+export interface InspectorGraphNapi {
+  nodes: Array<InspectorGraphNodeNapi>;
+  edges: Array<InspectorGraphEdgeNapi>;
+}
+
+export interface InspectorGraphNodeNapi {
+  path: string;
+  kind: string;
+  isEntry: boolean;
+  sourceBytes: number;
+  sourceLines: number;
+}
+
+export interface InspectorSourceFileNapi {
+  path: string;
+  source: string;
 }
 
 export declare function normalizeViteCssModuleFilename(filename: string): string;

@@ -762,6 +762,7 @@ module.exports = nativeBinding;
 module.exports.applyViteDefineReplacements = nativeBinding.applyViteDefineReplacements;
 module.exports.artToCsf = nativeBinding.artToCsf;
 module.exports.buildDesignTokenMap = nativeBinding.buildDesignTokenMap;
+module.exports.buildInspectorGraph = nativeBinding.buildInspectorGraph;
 module.exports.chunkVitePrecompileFiles = nativeBinding.chunkVitePrecompileFiles;
 module.exports.classifyVitePluginRequest = nativeBinding.classifyVitePluginRequest;
 module.exports.collectSfcTemplateAssetUrls = nativeBinding.collectSfcTemplateAssetUrls;

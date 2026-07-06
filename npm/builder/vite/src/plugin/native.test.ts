@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
-import { classifyVitePluginRequest, rewriteViteImportMetaGlobBase } from "@vizejs/native";
+import {
+  buildInspectorGraph,
+  classifyVitePluginRequest,
+  rewriteViteImportMetaGlobBase,
+} from "@vizejs/native";
 
 {
   const request = classifyVitePluginRequest("/src/pages/Home.vue?definePage");
@@ -56,5 +60,25 @@ import { classifyVitePluginRequest, rewriteViteImportMetaGlobBase } from "@vizej
   assert.equal(
     rewriteViteImportMetaGlobBase(code, "/project/src/App.vue", "/project"),
     `const modules = import.meta.glob(["/src/demos/*.vue", "!/legacy/*.vue"], { eager: true });`,
+  );
+}
+
+{
+  const graph = buildInspectorGraph([
+    {
+      path: "src/App.vue",
+      source: `<script setup>import UsedChild from "./UsedChild.vue"; import "./side";</script><template><UsedChild /></template>`,
+    },
+    { path: "src/UsedChild.vue", source: "<template><p>child</p></template>" },
+    { path: "src/side.ts", source: "export const side = true;" },
+  ]);
+
+  assert.deepEqual(
+    graph.edges.map((edge) => [edge.from, edge.to, edge.kind, edge.specifier]),
+    [
+      ["src/App.vue", "src/UsedChild.vue", "component", "./UsedChild.vue"],
+      ["src/App.vue", "src/UsedChild.vue", "import", "./UsedChild.vue"],
+      ["src/App.vue", "src/side.ts", "import", "./side"],
+    ],
   );
 }
