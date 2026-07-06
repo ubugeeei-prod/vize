@@ -85,11 +85,19 @@ fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
     }
 }
 
-fn create_case_with_files(name: &str, files: &[(&str, &str)]) -> PathBuf {
+fn skip_case(name: &str, reason: impl std::fmt::Display) {
+    eprintln!("skipping {name}: {reason}");
+}
+
+fn create_case_with_files(name: &str, files: &[(&str, &str)]) -> Option<PathBuf> {
     let project_root = unique_case_dir(name);
     let _ = std::fs::remove_dir_all(&project_root);
     std::fs::create_dir_all(project_root.join("src")).unwrap();
-    link_workspace_vue(&project_root).unwrap();
+    if let Err(error) = link_workspace_vue(&project_root) {
+        skip_case(name, error);
+        let _ = std::fs::remove_dir_all(&project_root);
+        return None;
+    }
     std::fs::write(
         project_root.join("tsconfig.json"),
         r#"{"compilerOptions":{"strict":true,"target":"ES2022","module":"ESNext","moduleResolution":"bundler","jsx":"preserve","jsxImportSource":"vue","noEmit":true},"include":["src/**/*"]}"#,
@@ -102,7 +110,7 @@ fn create_case_with_files(name: &str, files: &[(&str, &str)]) -> PathBuf {
         }
         std::fs::write(target, source).unwrap();
     }
-    project_root
+    Some(project_root)
 }
 
 fn run_check_json(project_root: &Path, corsa_path: &Path) {
@@ -131,12 +139,24 @@ fn run_check_json(project_root: &Path, corsa_path: &Path) {
     assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
 }
 
-#[test]
-fn generic_model_array_normalization_accepts_empty_arrays() {
+fn run_generic_props_case(name: &str, files: &[(&str, &str)]) {
     let Some(corsa_path) = resolve_test_corsa_path() else {
+        skip_case(name, "tsgo not found");
         return;
     };
-    let project_root = create_case_with_files(
+
+    let Some(project_root) = create_case_with_files(name, files) else {
+        return;
+    };
+
+    run_check_json(&project_root, &corsa_path);
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn generic_model_array_normalization_accepts_empty_arrays() {
+    run_generic_props_case(
         "model-array-normalization",
         &[(
             "src/Foo.vue",
@@ -158,18 +178,11 @@ if (props.multiple && !Array.isArray(modelValue.value)) {
 "#,
         )],
     );
-
-    run_check_json(&project_root, &corsa_path);
-
-    let _ = std::fs::remove_dir_all(&project_root);
 }
 
 #[test]
 fn generic_model_sentinel_comparison_keeps_literal_member() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
-        return;
-    };
-    let project_root = create_case_with_files(
+    run_generic_props_case(
         "model-sentinel-comparison",
         &[(
             "src/Foo.vue",
@@ -188,18 +201,11 @@ const isSpecial = computed(() => modelValue.value === "special");
 "#,
         )],
     );
-
-    run_check_json(&project_root, &corsa_path);
-
-    let _ = std::fs::remove_dir_all(&project_root);
 }
 
 #[test]
 fn imported_generic_props_do_not_pollute_computed_values_with_boolean() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
-        return;
-    };
-    let project_root = create_case_with_files(
+    run_generic_props_case(
         "imported-props-computed-boolean-pollution",
         &[
             (
@@ -233,18 +239,11 @@ const entries = computed(() => {
             ),
         ],
     );
-
-    run_check_json(&project_root, &corsa_path);
-
-    let _ = std::fs::remove_dir_all(&project_root);
 }
 
 #[test]
 fn generic_function_prop_is_callable_after_typeof_guard() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
-        return;
-    };
-    let project_root = create_case_with_files(
+    run_generic_props_case(
         "function-prop-typeof-guard",
         &[(
             "src/Foo.vue",
@@ -270,8 +269,4 @@ if (typeof props.getChildren === "function") {
 "#,
         )],
     );
-
-    run_check_json(&project_root, &corsa_path);
-
-    let _ = std::fs::remove_dir_all(&project_root);
 }
