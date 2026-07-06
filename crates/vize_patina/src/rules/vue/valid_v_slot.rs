@@ -21,8 +21,10 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::{FxHashSet, String, ToCompactString};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode};
+use vize_carton::{FxHashSet, String, ToCompactString, is_native_tag};
+use vize_relief::{
+    DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode,
+};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-slot",
@@ -37,12 +39,22 @@ static META: RuleMeta = RuleMeta {
 pub struct ValidVSlot;
 
 impl ValidVSlot {
-    fn is_custom_component(tag: &str) -> bool {
-        // Custom components: PascalCase, kebab-case with hyphen, or Vue's
-        // built-in dynamic component element.
-        tag == "component"
-            || tag.chars().next().is_some_and(|c| c.is_uppercase())
-            || tag.contains('-')
+    fn is_custom_component(element: &ElementNode) -> bool {
+        Self::is_custom_component_tag(element.tag.as_str(), Some(element.tag_type))
+    }
+
+    fn is_custom_component_tag(tag: &str, tag_type: Option<ElementType>) -> bool {
+        if matches!(tag_type, Some(ElementType::Slot | ElementType::Template))
+            || matches!(tag, "slot" | "template")
+        {
+            return false;
+        }
+
+        // Vue treats unknown non-native tags as components, including
+        // lowercase single-word registered components such as <draggable>.
+        matches!(tag_type, Some(ElementType::Component))
+            || tag == "component"
+            || !is_native_tag(tag)
     }
 
     fn count_slot_directives(element: &ElementNode) -> (usize, usize) {
@@ -79,7 +91,7 @@ impl Rule for ValidVSlot {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if Self::is_custom_component(element.tag.as_str()) {
+        if Self::is_custom_component(element) {
             check_child_slot_templates(ctx, element);
         }
     }
@@ -97,7 +109,7 @@ impl Rule for ValidVSlot {
         let tag = element.tag.as_str();
 
         // v-slot can only be used on components or <template>
-        if tag != "template" && !Self::is_custom_component(tag) {
+        if tag != "template" && !Self::is_custom_component(element) {
             ctx.error_with_help(
                 ctx.t("vue/valid-v-slot.invalid_location"),
                 &directive.loc,
@@ -246,7 +258,7 @@ fn has_directive(element: &ElementNode, name: &str) -> bool {
 
 fn has_component_parent(ctx: &LintContext) -> bool {
     ctx.parent_element()
-        .is_some_and(|parent| ValidVSlot::is_custom_component(parent.tag.as_str()))
+        .is_some_and(|parent| ValidVSlot::is_custom_component_tag(parent.tag.as_str(), None))
 }
 
 fn static_slot_name(directive: &DirectiveNode) -> Option<String> {

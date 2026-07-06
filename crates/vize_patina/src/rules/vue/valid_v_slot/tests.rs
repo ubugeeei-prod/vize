@@ -29,6 +29,20 @@ fn test_valid_named_slot_template() {
 }
 
 #[test]
+fn test_valid_named_slot_template_on_lowercase_component() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<draggable :list="items">
+            <template #item="{ element }">
+                <span>{{ element }}</span>
+            </template>
+        </draggable>"#,
+        "test.vue",
+    );
+    assert_eq!(result.error_count, 0);
+}
+
+#[test]
 fn test_valid_default_slot_argument_on_component() {
     let linter = create_linter();
     let result = linter.lint_template(

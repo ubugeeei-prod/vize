@@ -33,3 +33,17 @@ fn parse_scope_expression_splits_tuple_around_destructured_value() {
     assert_eq!(aliases.key_alias.as_deref(), Some("index"));
     assert!(aliases.index_alias.is_none());
 }
+
+#[test]
+fn parse_expression_collects_array_destructured_tuple_value() {
+    let (bindings, source) = super::parse_v_for_expression("([name, count], index) of entries");
+
+    assert_eq!(source.as_str(), "entries");
+    assert_eq!(
+        bindings
+            .iter()
+            .map(|name| name.as_str())
+            .collect::<Vec<_>>(),
+        vec!["name", "count", "index"]
+    );
+}

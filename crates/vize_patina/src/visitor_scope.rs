@@ -5,6 +5,7 @@
 //! template-local bindings from unresolved identifiers.
 
 use vize_carton::CompactString;
+use vize_croquis::drawer::{extract_slot_props, parse_v_for_expression};
 use vize_relief::ExpressionNode;
 
 /// Parse v-for expression to extract variable names.
@@ -22,19 +23,10 @@ pub fn parse_v_for_variables(exp: &ExpressionNode) -> Vec<CompactString> {
         ExpressionNode::Compound(_) => return Vec::new(),
     };
 
-    // Split on " in " or " of " - use byte search for speed
-    let bytes = content.as_bytes();
-    let (alias_part, _) = if let Some(idx) = find_pattern(bytes, b" in ") {
-        (&content[..idx], &content[idx + 4..])
-    } else if let Some(idx) = find_pattern(bytes, b" of ") {
-        (&content[..idx], &content[idx + 4..])
-    } else {
-        return Vec::new();
-    };
-
-    let alias_str = alias_part.trim();
-
-    parse_binding_variables(alias_str)
+    parse_v_for_expression(content)
+        .0
+        .into_iter()
+        .collect::<Vec<_>>()
 }
 
 /// Parse a scoped slot expression to extract variable names.
@@ -45,77 +37,7 @@ pub fn parse_slot_scope_variables(exp: &ExpressionNode) -> Vec<CompactString> {
         ExpressionNode::Compound(_) => return Vec::new(),
     };
 
-    parse_binding_variables(content.trim())
-}
-
-fn parse_binding_variables(alias_str: &str) -> Vec<CompactString> {
-    if alias_str.is_empty() {
-        return Vec::new();
-    }
-
-    // Handle destructuring: (item, index), { id, name }, or [first, second]
-    let is_tuple = alias_str.starts_with('(') && alias_str.ends_with(')');
-    let is_object = alias_str.starts_with('{') && alias_str.ends_with('}');
-    let is_array = alias_str.starts_with('[') && alias_str.ends_with(']');
-
-    if is_tuple || is_object || is_array {
-        let inner = &alias_str[1..alias_str.len() - 1];
-        // Pre-allocate with estimated capacity
-        let mut vars = Vec::with_capacity(3);
-        for s in inner.split(',') {
-            let trimmed = s.trim();
-            if trimmed.is_empty() {
-                continue;
-            }
-            // Handle object shorthand: { id } -> id, { id: itemId } -> itemId
-            if is_object {
-                if let Some(colon_idx) = trimmed.find(':') {
-                    // { id: itemId } -> itemId
-                    let value_part = trimmed[colon_idx + 1..].trim();
-                    if let Some(name) = normalize_binding_name(value_part) {
-                        vars.push(CompactString::from(name));
-                    }
-                } else {
-                    // { id } -> id (shorthand)
-                    if let Some(name) = normalize_binding_name(trimmed) {
-                        vars.push(CompactString::from(name));
-                    }
-                }
-            } else {
-                if let Some(name) = normalize_binding_name(trimmed) {
-                    vars.push(CompactString::from(name));
-                }
-            }
-        }
-        vars
-    } else {
-        // Single variable - avoid allocation if possible
-        normalize_binding_name(alias_str)
-            .map(|name| vec![CompactString::from(name)])
-            .unwrap_or_default()
-    }
-}
-
-fn normalize_binding_name(binding: &str) -> Option<&str> {
-    let binding = binding.trim().trim_start_matches("...").trim();
-    let binding = binding
-        .split_once('=')
-        .map(|(name, _)| name.trim())
-        .unwrap_or(binding);
-
-    (!binding.is_empty()).then_some(binding)
-}
-
-/// Fast byte pattern search
-#[inline]
-fn find_pattern(haystack: &[u8], needle: &[u8]) -> Option<usize> {
-    if needle.is_empty() || haystack.len() < needle.len() {
-        return None;
-    }
-
-    haystack
-        .windows(needle.len())
-        .position(|window| window == needle)
+    extract_slot_props(content.trim()).into_iter().collect()
 }
 
 #[cfg(test)]

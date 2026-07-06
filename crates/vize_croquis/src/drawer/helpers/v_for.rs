@@ -43,7 +43,11 @@ pub fn parse_v_for_expression(expr: &str) -> (SmallVec<[CompactString; 3]>, Comp
     }
 
     // Fast path: simple tuple (item, index)
-    if alias_part.starts_with('(') && alias_part.ends_with(')') && !alias_part.contains('{') {
+    if alias_part.starts_with('(')
+        && alias_part.ends_with(')')
+        && !alias_part.contains('{')
+        && !alias_part.contains('[')
+    {
         let inner = &alias_part[1..alias_part.len() - 1];
         let mut vars = SmallVec::new();
         for part in inner.split(',') {
