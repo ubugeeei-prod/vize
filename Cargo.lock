@@ -3665,8 +3665,15 @@ name = "vize_curator"
 version = "0.277.0"
 dependencies = [
  "insta",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_parser",
+ "oxc_span",
  "serde",
  "serde_json",
+ "vize_atelier_core",
+ "vize_atelier_sfc",
  "vize_carton",
 ]
 

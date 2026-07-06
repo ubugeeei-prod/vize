@@ -2,7 +2,7 @@
 
 use vize_carton::{String, ToCompactString};
 
-use super::imports::{extract_imports, skip_whitespace};
+use super::imports::analyze_file;
 use super::payload::InspectorSourceFile;
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -34,12 +34,16 @@ pub struct InspectorGraphEdge {
 pub fn build_graph(files: &[InspectorSourceFile]) -> InspectorGraph {
     let normalized_files: Vec<_> = files
         .iter()
-        .map(|file| (normalize_path(file.path.as_str()), file.source.as_str()))
+        .map(|file| {
+            let path = normalize_path(file.path.as_str());
+            let analysis = analyze_file(path.as_str(), file.source.as_str());
+            (path, file.source.as_str(), analysis)
+        })
         .collect();
 
     let nodes = normalized_files
         .iter()
-        .map(|(path, source)| InspectorGraphNode {
+        .map(|(path, source, _)| InspectorGraphNode {
             path: path.clone(),
             kind: file_kind(path.as_str()),
             is_entry: is_entry_path(path.as_str()),
@@ -49,8 +53,8 @@ pub fn build_graph(files: &[InspectorSourceFile]) -> InspectorGraph {
         .collect();
 
     let mut edges = Vec::new();
-    for (path, source) in &normalized_files {
-        for import in extract_imports(source) {
+    for (path, _, analysis) in &normalized_files {
+        for import in &analysis.imports {
             if let Some(to) =
                 resolve_import(&normalized_files, path.as_str(), import.specifier.as_str())
             {
@@ -66,7 +70,7 @@ pub fn build_graph(files: &[InspectorSourceFile]) -> InspectorGraph {
 
                 if to.ends_with(".vue")
                     && import.kind == "import"
-                    && component_is_used(source, &import.locals)
+                    && component_is_used(&analysis.template_used_ids, &import.locals)
                 {
                     push_graph_edge(
                         &mut edges,
@@ -74,7 +78,7 @@ pub fn build_graph(files: &[InspectorSourceFile]) -> InspectorGraph {
                             from: path.clone(),
                             to,
                             kind: "component",
-                            specifier: import.specifier,
+                            specifier: import.specifier.clone(),
                         },
                     );
                 }
@@ -93,54 +97,13 @@ pub fn build_graph(files: &[InspectorSourceFile]) -> InspectorGraph {
     InspectorGraph { nodes, edges }
 }
 
-fn component_is_used(source: &str, locals: &[String]) -> bool {
-    locals.iter().any(|local| {
-        tag_is_used(source, local.as_str())
-            || tag_is_used(source, to_kebab_case(local.as_str()).as_str())
-    })
-}
-
-fn tag_is_used(source: &str, tag: &str) -> bool {
-    if tag.is_empty() {
-        return false;
-    }
-
-    let bytes = source.as_bytes();
-    let tag_bytes = tag.as_bytes();
-    let mut offset = 0;
-    while let Some(index) = source[offset..].find('<') {
-        let mut cursor = offset + index + 1;
-        cursor = skip_whitespace(source, cursor);
-        if bytes
-            .get(cursor..cursor + tag_bytes.len())
-            .is_some_and(|candidate| candidate == tag_bytes)
-            && bytes
-                .get(cursor + tag_bytes.len())
-                .is_some_and(|byte| byte.is_ascii_whitespace() || matches!(*byte, b'/' | b'>'))
-        {
-            return true;
-        }
-        offset = cursor.saturating_add(1);
-    }
-
-    false
-}
-
-fn to_kebab_case(value: &str) -> String {
-    let mut output = String::default();
-    for (index, char) in value.chars().enumerate() {
-        if char == '_' {
-            output.push('-');
-        } else if char.is_ascii_uppercase() {
-            if index > 0 {
-                output.push('-');
-            }
-            output.extend(char.to_lowercase());
-        } else {
-            output.push(char);
-        }
-    }
-    output
+fn component_is_used(
+    template_used_ids: &vize_carton::FxHashSet<String>,
+    locals: &[String],
+) -> bool {
+    locals
+        .iter()
+        .any(|local| template_used_ids.contains(local.as_str()))
 }
 
 fn push_graph_edge(edges: &mut Vec<InspectorGraphEdge>, edge: InspectorGraphEdge) {
@@ -149,7 +112,11 @@ fn push_graph_edge(edges: &mut Vec<InspectorGraphEdge>, edge: InspectorGraphEdge
     }
 }
 
-fn resolve_import(files: &[(String, &str)], from: &str, specifier: &str) -> Option<String> {
+fn resolve_import(
+    files: &[(String, &str, super::imports::FileAnalysis)],
+    from: &str,
+    specifier: &str,
+) -> Option<String> {
     if !specifier.starts_with('.') {
         return None;
     }
@@ -159,7 +126,7 @@ fn resolve_import(files: &[(String, &str)], from: &str, specifier: &str) -> Opti
         .find(|candidate| {
             files
                 .iter()
-                .any(|(path, _)| path.as_str() == candidate.as_str())
+                .any(|(path, _, _)| path.as_str() == candidate.as_str())
         })
 }
 

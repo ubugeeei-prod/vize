@@ -1,6 +1,15 @@
-//! Lightweight scanner for static and dynamic import statements in source text.
+//! AST-backed import extraction for inspector graphs.
 
-use vize_carton::{String, ToCompactString};
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{Expression, ImportDeclaration, ImportDeclarationSpecifier, ImportExpression};
+use oxc_ast_visit::{Visit, walk};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
+use vize_atelier_core::parser::parse;
+use vize_atelier_sfc::{
+    SfcParseOptions, SfcScriptBlock, parse_sfc, script::resolve_template_used_identifiers,
+};
+use vize_carton::{Bump, FxHashSet, String, ToCompactString};
 
 #[derive(Debug)]
 pub(super) struct ImportEdge {
@@ -9,190 +18,171 @@ pub(super) struct ImportEdge {
     pub locals: Vec<String>,
 }
 
-pub(super) fn extract_imports(source: &str) -> Vec<ImportEdge> {
-    let mut imports = Vec::new();
-    collect_static_imports(source, &mut imports);
-    collect_dynamic_imports(source, &mut imports);
-    imports
+#[derive(Debug, Default)]
+pub(super) struct FileAnalysis {
+    pub imports: Vec<ImportEdge>,
+    pub template_used_ids: FxHashSet<String>,
 }
 
-fn collect_static_imports(source: &str, imports: &mut Vec<ImportEdge>) {
-    let mut offset = 0;
-    while let Some(index) = source[offset..].find("import") {
-        let import_start = offset + index;
-        let clause_start = import_start + "import".len();
-        if !is_word_boundary(source, import_start, clause_start) {
-            offset = clause_start;
-            continue;
-        }
+pub(super) fn analyze_file(path: &str, source: &str) -> FileAnalysis {
+    if path.ends_with(".vue") {
+        return analyze_sfc_file(path, source);
+    }
 
-        let start = skip_whitespace(source, clause_start);
-        if source[start..].starts_with('(') {
-            offset = start + 1;
-            continue;
-        }
-        if source[start..].starts_with('.') {
-            offset = start + 1;
-            continue;
-        }
-
-        if let Some((specifier, end)) = read_quoted(source, start) {
-            imports.push(ImportEdge {
-                specifier,
-                kind: "import",
-                locals: Vec::new(),
-            });
-            offset = end;
-            continue;
-        }
-
-        let Some(from_index) = find_import_from(source, start) else {
-            offset = clause_start;
-            continue;
-        };
-
-        if let Some((specifier, end)) = read_quoted(source, from_index + "from".len()) {
-            let clause = &source[start..from_index];
-            imports.push(ImportEdge {
-                specifier,
-                kind: "import",
-                locals: extract_import_locals(clause),
-            });
-            offset = end;
-        } else {
-            offset = from_index + "from".len();
-        }
+    FileAnalysis {
+        imports: extract_script_imports(source, source_type_for_path(path)),
+        template_used_ids: FxHashSet::default(),
     }
 }
 
-fn collect_dynamic_imports(source: &str, imports: &mut Vec<ImportEdge>) {
-    let mut offset = 0;
-    while let Some(index) = source[offset..].find("import") {
-        let import_start = offset + index;
-        let import_end = import_start + "import".len();
-        if !is_word_boundary(source, import_start, import_end) {
-            offset = import_end;
-            continue;
-        }
+fn analyze_sfc_file(path: &str, source: &str) -> FileAnalysis {
+    let Ok(descriptor) = parse_sfc(
+        source,
+        SfcParseOptions {
+            filename: path.into(),
+            ..Default::default()
+        },
+    ) else {
+        return FileAnalysis::default();
+    };
 
-        let start = skip_whitespace(source, import_end);
-        if !source[start..].starts_with('(') {
-            offset = import_end;
-            continue;
-        }
+    let mut imports = Vec::new();
+    if let Some(script) = descriptor.script.as_ref() {
+        imports.extend(extract_script_block_imports(script));
+    }
+    if let Some(script_setup) = descriptor.script_setup.as_ref() {
+        imports.extend(extract_script_block_imports(script_setup));
+    }
 
-        if let Some((specifier, end)) = read_quoted(source, start + 1) {
-            imports.push(ImportEdge {
-                specifier,
+    let template_used_ids = descriptor
+        .template
+        .as_ref()
+        .map(|template| {
+            let allocator = Bump::new();
+            let (root, _) = parse(&allocator, template.content.as_ref());
+            resolve_template_used_identifiers(&root).used_ids
+        })
+        .unwrap_or_default();
+
+    FileAnalysis {
+        imports,
+        template_used_ids,
+    }
+}
+
+fn extract_script_block_imports(script: &SfcScriptBlock<'_>) -> Vec<ImportEdge> {
+    extract_script_imports(
+        script.content.as_ref(),
+        source_type_for_script_lang(script.lang.as_deref()),
+    )
+}
+
+fn extract_script_imports(source: &str, source_type: SourceType) -> Vec<ImportEdge> {
+    let allocator = Allocator::default();
+    let result = Parser::new(&allocator, source, source_type).parse();
+    if result.panicked {
+        return Vec::new();
+    }
+
+    let mut collector = ImportCollector::default();
+    collector.visit_program(&result.program);
+    collector.imports
+}
+
+#[derive(Default)]
+struct ImportCollector {
+    imports: Vec<ImportEdge>,
+}
+
+impl ImportCollector {
+    fn collect_static_import(&mut self, import: &ImportDeclaration<'_>) {
+        let Some(locals) = runtime_import_locals(import) else {
+            return;
+        };
+
+        self.imports.push(ImportEdge {
+            specifier: import.source.value.as_str().to_compact_string(),
+            kind: "import",
+            locals,
+        });
+    }
+}
+
+impl<'a> Visit<'a> for ImportCollector {
+    fn visit_import_declaration(&mut self, import: &ImportDeclaration<'a>) {
+        self.collect_static_import(import);
+        walk::walk_import_declaration(self, import);
+    }
+
+    fn visit_import_expression(&mut self, import: &ImportExpression<'a>) {
+        if let Expression::StringLiteral(literal) = &import.source {
+            self.imports.push(ImportEdge {
+                specifier: literal.value.as_str().to_compact_string(),
                 kind: "dynamic-import",
                 locals: Vec::new(),
             });
-            offset = end;
-        } else {
-            offset = start + 1;
         }
+
+        walk::walk_import_expression(self, import);
     }
 }
 
-pub(super) fn skip_whitespace(source: &str, mut index: usize) -> usize {
-    let bytes = source.as_bytes();
-    while index < bytes.len() && bytes[index].is_ascii_whitespace() {
-        index += 1;
-    }
-    index
-}
-
-fn is_word_boundary(source: &str, start: usize, end: usize) -> bool {
-    let bytes = source.as_bytes();
-    let before = start
-        .checked_sub(1)
-        .and_then(|index| bytes.get(index))
-        .is_none_or(|byte| !is_identifier_byte(*byte));
-    let after = bytes.get(end).is_none_or(|byte| !is_identifier_byte(*byte));
-    before && after
-}
-
-fn is_identifier_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
-}
-
-fn find_import_from(source: &str, start: usize) -> Option<usize> {
-    let mut offset = start;
-    while let Some(index) = source[offset..].find("from") {
-        let from_index = offset + index;
-        let from_end = from_index + "from".len();
-        if is_word_boundary(source, from_index, from_end) {
-            return Some(from_index);
-        }
-        offset = from_end;
-    }
-    None
-}
-
-fn read_quoted(source: &str, start: usize) -> Option<(String, usize)> {
-    let bytes = source.as_bytes();
-    let mut index = skip_whitespace(source, start);
-    let quote = *bytes.get(index)?;
-    if quote != b'\'' && quote != b'"' {
+fn runtime_import_locals(import: &ImportDeclaration<'_>) -> Option<Vec<String>> {
+    if import.import_kind.is_type() {
         return None;
     }
-    index += 1;
-    let value_start = index;
-    while index < bytes.len() && bytes[index] != quote {
-        index += 1;
-    }
-    if index >= bytes.len() {
-        return None;
-    }
-    Some((String::from(&source[value_start..index]), index + 1))
-}
 
-fn extract_import_locals(clause: &str) -> Vec<String> {
-    let mut locals = Vec::new();
-    let trimmed = clause.trim();
-    if trimmed.starts_with("type ") {
-        return locals;
-    }
-
-    if let Some(default_name) = trimmed.split(',').next().map(str::trim)
-        && is_identifier(default_name)
-    {
-        locals.push(default_name.to_compact_string());
-    }
-
-    if let Some(namespace_name) = trimmed.strip_prefix("* as ").map(str::trim)
-        && is_identifier(namespace_name)
-    {
-        locals.push(namespace_name.to_compact_string());
-    }
-
-    if let Some(named_start) = trimmed.find('{')
-        && let Some(named_end) = trimmed[named_start + 1..].find('}')
-    {
-        let named = &trimmed[named_start + 1..named_start + 1 + named_end];
-        for part in named.split(',') {
-            let part = part.trim();
-            if part.starts_with("type ") {
-                continue;
-            }
-            let local = part
-                .rsplit_once(" as ")
-                .map(|(_, local)| local)
-                .unwrap_or(part);
-            if is_identifier(local.trim()) {
-                locals.push(local.trim().to_compact_string());
-            }
-        }
-    }
-
-    locals
-}
-
-fn is_identifier(value: &str) -> bool {
-    let mut chars = value.chars();
-    let Some(first) = chars.next() else {
-        return false;
+    let Some(specifiers) = import.specifiers.as_ref() else {
+        return Some(Vec::new());
     };
-    (first == '_' || first == '$' || first.is_ascii_alphabetic())
-        && chars.all(|char| char == '_' || char == '$' || char.is_ascii_alphanumeric())
+
+    let mut locals = Vec::new();
+    let mut saw_type_only_specifier = false;
+    for specifier in specifiers {
+        match specifier {
+            ImportDeclarationSpecifier::ImportSpecifier(specifier) => {
+                if specifier.import_kind.is_type() {
+                    saw_type_only_specifier = true;
+                } else {
+                    locals.push(specifier.local.name.as_str().to_compact_string());
+                }
+            }
+            ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
+                locals.push(specifier.local.name.as_str().to_compact_string());
+            }
+            ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                locals.push(specifier.local.name.as_str().to_compact_string());
+            }
+        }
+    }
+
+    if specifiers.is_empty() || !locals.is_empty() || !saw_type_only_specifier {
+        Some(locals)
+    } else {
+        None
+    }
+}
+
+fn source_type_for_path(path: &str) -> SourceType {
+    let path_without_query = path.split(['?', '#']).next().unwrap_or(path);
+    match path_without_query
+        .rsplit_once('.')
+        .map(|(_, extension)| extension)
+    {
+        Some("tsx" | "jsx") => SourceType::tsx().with_module(true),
+        Some("js" | "mjs" | "cjs") => SourceType::from_path("module.js")
+            .unwrap_or_else(|_| SourceType::default())
+            .with_module(true),
+        _ => SourceType::ts().with_module(true),
+    }
+}
+
+fn source_type_for_script_lang(lang: Option<&str>) -> SourceType {
+    match lang {
+        Some("tsx" | "jsx") => SourceType::tsx().with_module(true),
+        Some("js" | "mjs" | "cjs") => SourceType::from_path("module.js")
+            .unwrap_or_else(|_| SourceType::default())
+            .with_module(true),
+        _ => SourceType::ts().with_module(true),
+    }
 }

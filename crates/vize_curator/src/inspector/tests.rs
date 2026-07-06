@@ -53,7 +53,7 @@ fn builds_graph_edges_for_relative_imports() {
     let files = vec![
         InspectorSourceFile {
             path: cstr!("src/App.vue"),
-            source: cstr!("import Child from './Child.vue'\n"),
+            source: cstr!("<script setup>import Child from './Child.vue'</script>\n"),
         },
         InspectorSourceFile {
             path: cstr!("src/Child.vue"),
@@ -129,6 +129,63 @@ import RuntimeOnly from './RuntimeOnly.vue';
 }
 
 #[test]
+fn graph_uses_ast_for_imports_and_template_component_usage() {
+    let files = vec![
+        InspectorSourceFile {
+            path: cstr!("src/App.vue"),
+            source: cstr!(
+                r#"<script setup>
+// import Ghost from './Ghost.vue'
+const example = "import Phantom from './Phantom.vue'; <Hidden />";
+import RuntimeOnly from './RuntimeOnly.vue';
+import Hidden from './Hidden.vue';
+const Lazy = () => import('./Lazy.vue');
+</script>
+<template>
+  <RuntimeOnly />
+</template>"#
+            ),
+        },
+        InspectorSourceFile {
+            path: cstr!("src/RuntimeOnly.vue"),
+            source: cstr!("<template><span /></template>\n"),
+        },
+        InspectorSourceFile {
+            path: cstr!("src/Hidden.vue"),
+            source: cstr!("<template><span /></template>\n"),
+        },
+        InspectorSourceFile {
+            path: cstr!("src/Lazy.vue"),
+            source: cstr!("<template><span /></template>\n"),
+        },
+        InspectorSourceFile {
+            path: cstr!("src/Ghost.vue"),
+            source: cstr!("<template><span /></template>\n"),
+        },
+        InspectorSourceFile {
+            path: cstr!("src/Phantom.vue"),
+            source: cstr!("<template><span /></template>\n"),
+        },
+    ];
+
+    let graph = build_graph(&files);
+    let mut edges: Vec<_> = graph
+        .edges
+        .iter()
+        .map(|edge| (edge.kind, edge.to.as_str()))
+        .collect();
+    edges.sort_unstable();
+
+    assert!(edges.contains(&("component", "src/RuntimeOnly.vue")));
+    assert!(edges.contains(&("dynamic-import", "src/Lazy.vue")));
+    assert!(edges.contains(&("import", "src/Hidden.vue")));
+    assert!(edges.contains(&("import", "src/RuntimeOnly.vue")));
+    assert!(!edges.contains(&("component", "src/Hidden.vue")));
+    assert!(!edges.iter().any(|(_, to)| *to == "src/Ghost.vue"));
+    assert!(!edges.iter().any(|(_, to)| *to == "src/Phantom.vue"));
+}
+
+#[test]
 fn builds_line_diff_and_stats() {
     let diff = build_diff("one\ntwo\nthree", "one\nTWO\nthree\nfour");
 
@@ -179,7 +236,7 @@ fn builds_agent_report_with_payload_url_and_graph() {
     let files = vec![
         InspectorSourceFile {
             path: cstr!("src/App.vue"),
-            source: cstr!("import Child from './Child'\n"),
+            source: cstr!("<script setup>import Child from './Child'</script>\n"),
         },
         InspectorSourceFile {
             path: cstr!("src/Child.vue"),
