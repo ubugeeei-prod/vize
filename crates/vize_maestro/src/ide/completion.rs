@@ -20,6 +20,8 @@ pub(crate) mod template;
 #[cfg(test)]
 mod component_props_tests;
 #[cfg(test)]
+mod dedup_tests;
+#[cfg(test)]
 mod tests;
 
 // Cross-module reuse: inlay-hint code resolves reactive binding types with

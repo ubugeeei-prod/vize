@@ -14,6 +14,8 @@ mod component_meta;
 mod components;
 mod directives;
 mod native;
+#[cfg(test)]
+mod native_tests;
 mod self_component;
 mod slot_outlets;
 mod tag_context;
@@ -107,19 +109,25 @@ fn open_tag_completion_matches_prefix(label: &str, prefix: &str) -> bool {
         return label.starts_with(prefix) || label == "v-on";
     }
 
-    if let Some(name_prefix) = prefix.strip_prefix(':') {
-        return label == ":" || label == "v-bind" || label.starts_with(name_prefix);
+    if prefix.starts_with(':') {
+        return is_bind_completion_label(label);
     }
 
-    if let Some(name_prefix) = prefix.strip_prefix("v-bind:") {
-        return label == "v-bind" || label.starts_with(name_prefix);
+    if prefix.starts_with("v-bind:") {
+        return is_bind_completion_label(label);
     }
 
-    if prefix.starts_with('#') {
-        return label.starts_with(prefix) || label == "v-slot";
+    if let Some(slot_prefix) = prefix.strip_prefix('#') {
+        return label == "#" || label == "v-slot" || label.starts_with(slot_prefix);
     }
 
     label.starts_with(prefix)
+}
+
+fn is_bind_completion_label(label: &str) -> bool {
+    label == ":"
+        || label == "v-bind"
+        || (!label.starts_with('@') && !label.starts_with('#') && !label.starts_with("v-"))
 }
 
 pub(crate) fn corsa_template_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
