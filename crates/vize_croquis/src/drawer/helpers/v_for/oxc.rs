@@ -15,7 +15,7 @@ pub(super) fn parse_v_for_with_oxc(
     let prefix = b"let [";
     let suffix = b"] = x";
 
-    let inner = tuple_alias_inner(alias);
+    let inner = tuple_alias_inner(alias.trim_start_matches("const ").trim());
 
     let total_len = prefix.len() + inner.len() + suffix.len();
     if total_len > buffer.len() {

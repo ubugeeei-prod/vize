@@ -9,6 +9,8 @@
 
 use vize_carton::{CompactString, SmallVec, profile, smallvec};
 
+use super::is_valid_identifier_fast;
+
 /// Parsed aliases for a v-for scope.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VForScopeAliases {
@@ -29,6 +31,10 @@ pub struct VForScopeAliases {
 pub fn parse_v_for_expression(expr: &str) -> (SmallVec<[CompactString; 3]>, CompactString) {
     let expr = expr.trim();
     parse_first_v_for_candidate(expr, |alias_part, source_part| {
+        if let Some(bindings) = parse_simple_v_for_bindings(alias_part) {
+            return Some((bindings, CompactString::new(source_part)));
+        }
+
         let source = CompactString::new(source_part);
         let (bindings, source) = profile!(
             "croquis.helpers.v_for.oxc",
@@ -44,6 +50,10 @@ pub fn parse_v_for_expression(expr: &str) -> (SmallVec<[CompactString; 3]>, Comp
 #[inline]
 pub fn parse_v_for_scope_expression(expr: &str) -> Option<VForScopeAliases> {
     parse_first_v_for_candidate(expr.trim(), |alias_part, source_part| {
+        if let Some(aliases) = parse_simple_v_for_scope_aliases(alias_part, source_part) {
+            return Some(aliases);
+        }
+
         let source = CompactString::new(source_part);
 
         profile!(
@@ -97,6 +107,79 @@ fn parse_first_v_for_candidate<T>(
     }
 
     None
+}
+
+fn parse_simple_v_for_bindings(alias: &str) -> Option<SmallVec<[CompactString; 3]>> {
+    let alias = alias.trim_start_matches("const ").trim();
+    if is_valid_identifier_fast(alias.as_bytes()) {
+        return Some(smallvec![CompactString::new(alias)]);
+    }
+
+    let inner = simple_tuple_inner(alias)?;
+    let mut bindings = SmallVec::new();
+    for part in inner.split(',') {
+        let part = part.trim();
+        if !is_valid_identifier_fast(part.as_bytes()) {
+            return None;
+        }
+        bindings.push(CompactString::new(part));
+    }
+
+    (!bindings.is_empty()).then_some(bindings)
+}
+
+fn parse_simple_v_for_scope_aliases(alias: &str, source: &str) -> Option<VForScopeAliases> {
+    let alias = alias.trim_start_matches("const ").trim();
+    if is_valid_identifier_fast(alias.as_bytes()) {
+        return Some(VForScopeAliases {
+            value_pattern: CompactString::new(alias),
+            value_bindings: smallvec![CompactString::new(alias)],
+            key_alias: None,
+            index_alias: None,
+            source: CompactString::new(source),
+        });
+    }
+
+    let inner = simple_tuple_inner(alias)?;
+    let mut parts = inner.split(',');
+    let value_pattern = parts.next()?.trim();
+    if !is_valid_identifier_fast(value_pattern.as_bytes()) {
+        return None;
+    }
+
+    let key_alias = simple_tuple_part(parts.next())?;
+    let index_alias = simple_tuple_part(parts.next())?;
+    if parts.any(|part| !part.trim().is_empty()) {
+        return None;
+    }
+
+    Some(VForScopeAliases {
+        value_pattern: CompactString::new(value_pattern),
+        value_bindings: smallvec![CompactString::new(value_pattern)],
+        key_alias,
+        index_alias,
+        source: CompactString::new(source),
+    })
+}
+
+fn simple_tuple_part(part: Option<&str>) -> Option<Option<CompactString>> {
+    let Some(part) = part else {
+        return Some(None);
+    };
+    let part = part.trim();
+    if part.is_empty() {
+        return Some(None);
+    }
+    is_valid_identifier_fast(part.as_bytes()).then(|| Some(CompactString::new(part)))
+}
+
+fn simple_tuple_inner(alias: &str) -> Option<&str> {
+    let alias = alias.trim();
+    if alias.starts_with('(') && alias.ends_with(')') {
+        Some(alias[1..alias.len() - 1].trim())
+    } else {
+        None
+    }
 }
 
 mod oxc;
