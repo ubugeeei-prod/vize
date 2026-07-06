@@ -46,6 +46,10 @@ impl HoverService {
             return Some(hover);
         }
 
+        if let Some(hover) = Self::hover_template_directive_attribute(ctx) {
+            return Some(hover);
+        }
+
         if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
             return None;
         }
@@ -106,6 +110,91 @@ impl HoverService {
                 .description("Expression evaluated against the component template scope.")
                 .build(),
         )
+    }
+
+    fn hover_template_directive_attribute(ctx: &IdeContext<'_>) -> Option<Hover> {
+        let attr_name = template_attribute_name_at_offset(&ctx.content, ctx.offset)?;
+
+        if let Some(event_name) = attr_name
+            .strip_prefix('@')
+            .or_else(|| attr_name.strip_prefix("v-on:"))
+        {
+            let event_name = event_name
+                .split_once('.')
+                .map_or(event_name, |(name, _)| name);
+            let title = if event_name.is_empty() {
+                "v-on".to_string()
+            } else {
+                format!("@{event_name}")
+            };
+            let example = if event_name.is_empty() {
+                "v-on:event=\"handler\"".to_string()
+            } else {
+                format!("@{event_name}=\"handler\"")
+            };
+
+            return Some(
+                HoverBuilder::new()
+                    .title(&title)
+                    .meta("Vue event listener")
+                    .code("vue", &example)
+                    .description(
+                        "Attaches a DOM or component event listener. The handler expression is evaluated in component scope.",
+                    )
+                    .bullets(
+                        "Template behavior",
+                        &[
+                            "`$event` is available inside inline handler expressions.",
+                            "Event modifiers such as `.stop`, `.prevent`, and key modifiers are compiled by Vue.",
+                        ],
+                    )
+                    .link(
+                        "Vue Event Handling",
+                        "https://vuejs.org/guide/essentials/event-handling.html",
+                    )
+                    .build(),
+            );
+        }
+
+        if attr_name.starts_with(':') || attr_name.starts_with("v-bind:") || attr_name == "v-bind" {
+            return Some(
+                HoverBuilder::new()
+                    .title("v-bind")
+                    .meta("Vue attribute / prop binding")
+                    .code("vue", ":prop=\"expression\"")
+                    .description(
+                        "Binds an attribute or component prop to a JavaScript expression in template scope.",
+                    )
+                    .bullets(
+                        "Template behavior",
+                        &[
+                            "Native element bindings patch DOM attributes or reflected properties.",
+                            "Component bindings resolve to props when the target is a component.",
+                        ],
+                    )
+                    .link(
+                        "Vue v-bind",
+                        "https://vuejs.org/api/built-in-directives.html#v-bind",
+                    )
+                    .build(),
+            );
+        }
+
+        if attr_name.starts_with('#') || attr_name.starts_with("v-slot:") || attr_name == "v-slot" {
+            return Self::hover_directive("v-slot");
+        }
+
+        if attr_name.starts_with("v-") {
+            let without_argument = attr_name
+                .split_once(':')
+                .map_or(attr_name, |(name, _)| name);
+            let base = without_argument
+                .split_once('.')
+                .map_or(without_argument, |(name, _)| name);
+            return Self::hover_directive(base);
+        }
+
+        None
     }
 
     /// Get hover for TypeScript binding using croquis analysis.
@@ -280,4 +369,100 @@ impl HoverService {
                 .build(),
         )
     }
+}
+
+fn template_attribute_name_at_offset(content: &str, offset: usize) -> Option<&str> {
+    let cursor = offset.min(content.len());
+    let tag_start = content[..cursor].rfind('<')?;
+    let bytes = content.as_bytes();
+    if matches!(bytes.get(tag_start + 1), Some(b'/' | b'!' | b'?')) {
+        return None;
+    }
+
+    let tag_end = find_open_tag_end(content, tag_start)?;
+    if cursor > tag_end {
+        return None;
+    }
+
+    let mut pos = tag_start + 1;
+    while pos < tag_end {
+        let byte = bytes[pos];
+        if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_') {
+            pos += 1;
+        } else {
+            break;
+        }
+    }
+
+    while pos < tag_end {
+        while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+            pos += 1;
+        }
+        if pos >= tag_end || matches!(bytes[pos], b'/' | b'>') {
+            break;
+        }
+
+        let attr_start = pos;
+        while pos < tag_end
+            && !bytes[pos].is_ascii_whitespace()
+            && !matches!(bytes[pos], b'=' | b'/' | b'>')
+        {
+            pos += 1;
+        }
+        let attr_end = pos;
+        if attr_start == attr_end {
+            return None;
+        }
+
+        if cursor >= attr_start && cursor <= attr_end {
+            return Some(&content[attr_start..attr_end]);
+        }
+
+        while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+            pos += 1;
+        }
+        if pos < tag_end && bytes[pos] == b'=' {
+            pos += 1;
+            while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+                pos += 1;
+            }
+            if pos < tag_end && matches!(bytes[pos], b'"' | b'\'') {
+                let quote = bytes[pos];
+                pos += 1;
+                while pos < tag_end && bytes[pos] != quote {
+                    pos += 1;
+                }
+                if pos < tag_end {
+                    pos += 1;
+                }
+            } else {
+                while pos < tag_end && !bytes[pos].is_ascii_whitespace() && bytes[pos] != b'>' {
+                    pos += 1;
+                }
+            }
+        }
+    }
+
+    None
+}
+
+fn find_open_tag_end(content: &str, tag_start: usize) -> Option<usize> {
+    let mut quote = None;
+    let mut pos = tag_start;
+
+    while pos < content.len() {
+        let ch = content[pos..].chars().next()?;
+        if let Some(open_quote) = quote {
+            if ch == open_quote {
+                quote = None;
+            }
+        } else if ch == '"' || ch == '\'' {
+            quote = Some(ch);
+        } else if ch == '>' {
+            return Some(pos);
+        }
+        pos += ch.len_utf8();
+    }
+
+    None
 }

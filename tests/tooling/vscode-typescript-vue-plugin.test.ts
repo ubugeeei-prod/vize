@@ -26,7 +26,7 @@ const initVuePlugin = require(
   }): import("typescript").LanguageService;
 };
 
-test("VS Code extension ships the TypeScript Vue plugin", () => {
+test("VS Code extension does not install a global TypeScript server plugin", () => {
   const manifest = readJson<{
     contributes?: {
       typescriptServerPlugins?: Array<{
@@ -36,32 +36,30 @@ test("VS Code extension ships the TypeScript Vue plugin", () => {
     };
     scripts?: Record<string, string>;
   }>("editors/vscode/package.json");
-  const plugin = manifest.contributes?.typescriptServerPlugins?.find(
-    (entry) => entry.name === "@vizejs/typescript-vue-plugin",
-  );
-  const stageScript = "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage && vp pack";
 
-  assert.ok(plugin, "manifest should contribute the Vue TypeScript plugin");
-  assert.equal(plugin.enableForWorkspaceTypeScriptVersions, true);
-  assert.equal(manifest.scripts?.["vscode:prepublish"], stageScript);
-  assert.equal(manifest.scripts?.build, stageScript);
-  assert.equal(manifest.scripts?.watch, `${stageScript} --watch`);
   assert.equal(
-    manifest.scripts?.package,
-    "vsce package --no-dependencies --out dist/vize.vsix && node ../../tools/vscode-vize/sync-typescript-plugin.mjs inject dist/vize.vsix",
+    manifest.contributes?.typescriptServerPlugins,
+    undefined,
+    "Vize must not inject a TypeScript server plugin into every .ts/.tsx project",
   );
+  assert.equal(manifest.scripts?.["vscode:prepublish"], "vp pack");
+  assert.equal(manifest.scripts?.build, "vp pack");
+  assert.equal(manifest.scripts?.watch, "vp pack --watch");
+  assert.equal(manifest.scripts?.package, "vsce package --no-dependencies --out dist/vize.vsix");
+
+  for (const file of [
+    "editors/vscode/package.json",
+    "tools/vite-plus/tasks/build.ts",
+    "tools/vite-plus/tasks/test-benchmark.ts",
+  ]) {
+    assert.doesNotMatch(readFile(file), /sync-typescript-plugin\.mjs/);
+    assert.doesNotMatch(readFile(file), /@vizejs\/typescript-vue-plugin/);
+  }
+
+  assert.match(readFile("editors/vscode/.vscodeignore"), /^typescript-vue-plugin\/$/m);
   assert.ok(
     fs.existsSync(path.join(root, "editors/vscode/typescript-vue-plugin/index.cjs")),
-    "plugin package source must exist for the local file dependency",
-  );
-  assert.match(readFile("editors/vscode/.vscodeignore"), /^typescript-vue-plugin\/$/m);
-  assert.match(
-    readFile("tools/vite-plus/tasks/build.ts"),
-    /package:vscode-extension[\s\S]*vscode-typescript-vue-plugin\.test\.ts/,
-  );
-  assert.match(
-    readFile("tools/vite-plus/tasks/build.ts"),
-    /package:editor-extensions[\s\S]*vscode-typescript-vue-plugin\.test\.ts/,
+    "kept plugin source is tested below but no longer packaged or contributed",
   );
 });
 

@@ -168,7 +168,7 @@ const secondaryLabel = ref('secondary')
       const labels = completionLabels(response);
       assert.ok(labels.includes("secondaryLabel"), labels.join(", "));
       assert.ok(labels.includes("primaryLabel"), labels.join(", "));
-      assert.ok(labels.includes("v-if"), labels.join(", "));
+      assert.ok(!labels.includes("v-if"), labels.join(", "));
     });
 
     await t.test("definition and references use UTF-16 LSP coordinates", async () => {

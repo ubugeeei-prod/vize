@@ -5,16 +5,18 @@ import { root } from "./paths.ts";
 /**
  * Resolves the fastest available way to launch `vize lsp` for smoke tests.
  *
- * A CI-profile binary wins when it is already present, then a release binary,
- * then a debug binary, then a globally installed CLI. Falling back to Cargo
- * keeps fresh checkouts usable at the cost of a slower first run, which is
- * acceptable for CI coverage.
+ * A caller-provided binary wins first, then the checkout's debug binary, then
+ * CI/release artifacts, then a globally installed CLI. Preferring the debug
+ * binary keeps local and workflow tests tied to the code that was just built
+ * instead of a stale `target/ci/vize` left by a previous job.
  */
 export function resolveVizeLaunchCommand(): string[] {
+  const envBinary = process.env.VIZE_LSP_BIN;
   const candidates = [
+    ...(envBinary ? [[envBinary, "lsp"]] : []),
+    [path.join(root, "target/debug/vize"), "lsp"],
     [path.join(root, "target/ci/vize"), "lsp"],
     [path.join(root, "target/release/vize"), "lsp"],
-    [path.join(root, "target/debug/vize"), "lsp"],
     ["vize", "lsp"],
   ];
 

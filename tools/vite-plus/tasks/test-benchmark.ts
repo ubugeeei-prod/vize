@@ -92,7 +92,6 @@ export const testAndBenchmarkTasks = defineTasks({
   "test:vscode-extension:vsix": noCacheTask(
     runInVscodeExtension(
       "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
-      "node ../../tools/vscode-vize/sync-typescript-plugin.mjs inject dist/vize.vsix",
       "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
     ),
   ),

@@ -63,6 +63,47 @@ import Child from './Child.vue'
     const stylePath = path.join(workspaceDir, "StyleMod.vue");
     fs.writeFileSync(stylePath, styleSource, "utf8");
 
+    const authoringSource = `<script setup lang="ts">
+import { ref } from 'vue'
+const count = ref(0)
+</script>
+<template>
+  <button
+    
+  >
+    {{ count }}
+  </button>
+</template>
+`;
+    const authoringPath = path.join(workspaceDir, "Authoring.vue");
+    fs.writeFileSync(authoringPath, authoringSource, "utf8");
+
+    const eventPrefixSource = `<template>
+  <button @cli></button>
+</template>
+`;
+    const eventPrefixPath = path.join(workspaceDir, "EventPrefix.vue");
+    fs.writeFileSync(eventPrefixPath, eventPrefixSource, "utf8");
+
+    const multilineEventSource = `<script setup lang="ts">
+import { ref } from 'vue'
+const count = ref(0)
+</script>
+<template>
+  <button
+    @click="
+      () => {
+        co
+      }
+    "
+  >
+    {{ count }}
+  </button>
+</template>
+`;
+    const multilineEventPath = path.join(workspaceDir, "MultilineEvent.vue");
+    fs.writeFileSync(multilineEventPath, multilineEventSource, "utf8");
+
     await session.initialize(workspaceDir, {
       editor: true,
       lint: true,
@@ -73,6 +114,9 @@ import Child from './Child.vue'
     const ltUri = pathToFileURL(ltPath).href;
     const commentUri = pathToFileURL(commentPath).href;
     const styleUri = pathToFileURL(stylePath).href;
+    const authoringUri = pathToFileURL(authoringPath).href;
+    const eventPrefixUri = pathToFileURL(eventPrefixPath).href;
+    const multilineEventUri = pathToFileURL(multilineEventPath).href;
 
     const openDocument = (uri: string, text: string): void => {
       session.notify("textDocument/didOpen", {
@@ -89,6 +133,9 @@ import Child from './Child.vue'
     openDocument(ltUri, ltSource);
     openDocument(commentUri, commentSource);
     openDocument(styleUri, styleSource);
+    openDocument(authoringUri, authoringSource);
+    openDocument(eventPrefixUri, eventPrefixSource);
+    openDocument(multilineEventUri, multilineEventSource);
 
     await session.waitForNotification("textDocument/publishDiagnostics");
 
@@ -108,6 +155,7 @@ import Child from './Child.vue'
         assert.ok(labels.includes("disabled"), labels.join(", "));
         assert.ok(labels.includes("v-if"), labels.join(", "));
         assert.ok(labels.includes(":"), labels.join(", "));
+        assert.ok(!labels.includes("Transition"), labels.join(", "));
       },
     );
 
@@ -179,6 +227,47 @@ import Child from './Child.vue'
       for (const item of items) {
         assert.equal(item.kind, 5, JSON.stringify(item));
       }
+    });
+
+    await t.test("inside a native opening tag surfaces HTML attrs and Vue events", async () => {
+      const offset = authoringSource.indexOf("    \n  >") + "    ".length;
+      const response = await session.request("textDocument/completion", {
+        textDocument: { uri: authoringUri },
+        position: offsetToPosition(authoringSource, offset),
+      });
+
+      const labels = completionLabels(response);
+      for (const label of ["class", "type", "@click", "v-if"]) {
+        assert.ok(labels.includes(label), `missing ${label}; got ${labels.join(", ")}`);
+      }
+      assert.ok(!labels.includes("count"), labels.join(", "));
+      assert.ok(!labels.includes("Transition"), labels.join(", "));
+    });
+
+    await t.test("typing @cli in an opening tag offers @click", async () => {
+      const offset = eventPrefixSource.indexOf("@cli") + "@cli".length;
+      const response = await session.request("textDocument/completion", {
+        textDocument: { uri: eventPrefixUri },
+        position: offsetToPosition(eventPrefixSource, offset),
+      });
+
+      const labels = completionLabels(response);
+      assert.ok(labels.includes("@click"), labels.join(", "));
+      assert.ok(!labels.includes("v-if"), labels.join(", "));
+      assert.ok(!labels.includes("class"), labels.join(", "));
+    });
+
+    await t.test("inside a multiline event handler surfaces script setup bindings", async () => {
+      const offset = multilineEventSource.indexOf("        co") + "        co".length;
+      const response = await session.request("textDocument/completion", {
+        textDocument: { uri: multilineEventUri },
+        position: offsetToPosition(multilineEventSource, offset),
+      });
+
+      const labels = completionLabels(response);
+      assert.ok(labels.includes("count"), labels.join(", "));
+      assert.ok(!labels.includes("v-if"), labels.join(", "));
+      assert.ok(!labels.includes("Transition"), labels.join(", "));
     });
   } finally {
     await session.shutdown();

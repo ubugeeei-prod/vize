@@ -13,6 +13,7 @@ mod bindings;
 mod component_meta;
 mod components;
 mod directives;
+mod native;
 mod self_component;
 mod slot_outlets;
 mod tag_context;
@@ -46,29 +47,79 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
         return items;
     }
 
+    let is_template_expression =
+        crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset);
+
+    if let Some(tag_ctx) = tag_context::opening_tag_context_at_offset(&ctx.content, ctx.offset) {
+        if !tag_ctx.inside_attribute_value {
+            let mut items_vec = contextual_directive_completions(ctx);
+            items_vec.extend(native::native_element_attribute_completions(ctx));
+            items_vec.extend(component_meta::component_surface_completions(ctx));
+            return filter_open_tag_completions(items_vec, &tag_ctx.current_token);
+        }
+
+        if !is_template_expression {
+            return Vec::new();
+        }
+    }
+
+    if is_template_expression {
+        return analyzed_template_binding_completions(ctx, true);
+    }
+
     let mut items_vec = Vec::new();
 
-    // Add Vue directives
+    // Add Vue directives and built-in components for template text/tag contexts.
     items_vec.extend(contextual_directive_completions(ctx));
-
-    // Add built-in components
     items_vec.extend(builtin_component_completions());
     if ctx.state.lsp_features().legacy_vue2 {
         items_vec.extend(components::legacy_vue2_component_completions());
     }
     items_vec.extend(component_meta::component_surface_completions(ctx));
 
-    if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
-        items_vec.extend(bindings::template_snippets());
-        return items_vec;
-    }
-
-    items_vec.extend(analyzed_template_binding_completions(ctx, true));
-
     // Add common template snippets
     items_vec.extend(bindings::template_snippets());
 
     items_vec
+}
+
+fn filter_open_tag_completions(
+    items: Vec<CompletionItem>,
+    current_token: &str,
+) -> Vec<CompletionItem> {
+    let prefix = current_token.trim();
+    if prefix.is_empty() {
+        return items;
+    }
+
+    items
+        .into_iter()
+        .filter(|item| open_tag_completion_matches_prefix(&item.label, prefix))
+        .collect()
+}
+
+fn open_tag_completion_matches_prefix(label: &str, prefix: &str) -> bool {
+    if prefix.contains('=') {
+        return false;
+    }
+
+    if prefix.starts_with('@') {
+        return label.starts_with(prefix) || label == "v-on";
+    }
+
+    if let Some(name_prefix) = prefix.strip_prefix(':') {
+        return label == ":" || label == "v-bind" || label.starts_with(name_prefix);
+    }
+
+    if let Some(name_prefix) = prefix.strip_prefix("v-bind:") {
+        return label == "v-bind" || label.starts_with(name_prefix);
+    }
+
+    if prefix.starts_with('#') {
+        return label.starts_with(prefix) || label == "v-slot";
+    }
+
+    label.starts_with(prefix)
 }
 
 pub(crate) fn corsa_template_completions(ctx: &IdeContext) -> Vec<CompletionItem> {

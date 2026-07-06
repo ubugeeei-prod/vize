@@ -29,13 +29,13 @@
   "publisher": "ubugeeei",
   "main": "./dist/extension.cjs",
   "scripts": {
-    "vscode:prepublish": "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage && vp pack",
-    "build": "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage && vp pack",
-    "watch": "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage && vp pack --watch",
+    "vscode:prepublish": "vp pack",
+    "build": "vp pack",
+    "watch": "vp pack --watch",
     "check": "tsgo --noEmit && vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts && tsgo --noEmit",
     "fmt": "vp fmt --write src vite.config.ts",
-    "package": "vsce package --no-dependencies --out dist/vize.vsix && node ../../tools/vscode-vize/sync-typescript-plugin.mjs inject dist/vize.vsix",
+    "package": "vsce package --no-dependencies --out dist/vize.vsix",
     "test:host": "node test/run-extension-host.mjs",
     "publish": "npm run package && vsce publish --packagePath dist/vize.vsix",
     "publish:pre": "npm run package && vsce publish --pre-release --packagePath dist/vize.vsix"
@@ -83,12 +83,6 @@
           "light": "./icons/vue.svg",
           "dark": "./icons/vue.svg"
         }
-      }
-    ],
-    "typescriptServerPlugins": [
-      {
-        "name": "@vizejs/typescript-vue-plugin",
-        "enableForWorkspaceTypeScriptVersions": true
       }
     ],
     "grammars": [
