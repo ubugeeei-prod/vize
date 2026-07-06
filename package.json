@@ -16,6 +16,7 @@
     "oxfmt": "catalog:linting",
     "oxlint": "catalog:linting",
     "pkg-pr-new": "catalog:repo-tooling",
+    "shiki": "catalog:content",
     "tsdown": "catalog:vite-stack",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack"

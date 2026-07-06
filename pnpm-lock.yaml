@@ -247,6 +247,9 @@ importers:
       pkg-pr-new:
         specifier: catalog:repo-tooling
         version: 0.0.73
+      shiki:
+        specifier: catalog:content
+        version: 4.0.2
       tsdown:
         specifier: catalog:vite-stack
         version: 0.22.0(@tsdown/css@0.22.0)(@typescript/native-preview@7.0.0-dev.20260602.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(vue-tsc@3.2.9(typescript@6.0.3))

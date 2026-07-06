@@ -3,24 +3,14 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  onigurumaModulePath,
+  onigurumaWasmPath,
+  shikiLanguageModulePath,
+  textmateModulePath,
+} from "./support/textmate-deps.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const textmateModulePath = path.join(
-  root,
-  "node_modules/.pnpm/@shikijs+vscode-textmate@10.0.2/node_modules/@shikijs/vscode-textmate/dist/index.js",
-);
-const onigurumaModulePath = path.join(
-  root,
-  "node_modules/.pnpm/@shikijs+engine-oniguruma@4.0.2/node_modules/@shikijs/engine-oniguruma/dist/index.mjs",
-);
-const onigurumaWasmPath = path.join(
-  root,
-  "node_modules/.pnpm/shiki@4.0.2/node_modules/shiki/dist/onig.wasm",
-);
-const shikiLangsPath = path.join(
-  root,
-  "node_modules/.pnpm/@shikijs+langs@4.0.2/node_modules/@shikijs/langs/dist",
-);
 
 type TextMateToken = {
   endIndex: number;
@@ -53,7 +43,7 @@ function createStubGrammar(scopeName: string) {
 }
 
 async function loadBundledLanguageGrammar(name: string) {
-  const module = await import(pathToFileURL(path.join(shikiLangsPath, `${name}.mjs`)).href);
+  const module = await import(pathToFileURL(shikiLanguageModulePath(name)).href);
   return Array.isArray(module.default) ? module.default[0] : module.default;
 }
 

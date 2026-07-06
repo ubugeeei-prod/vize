@@ -161,6 +161,7 @@ function createCapabilities() {
     },
     definitionProvider: true,
     documentFormattingProvider: true,
+    documentHighlightProvider: true,
     documentLinkProvider: {
       resolveProvider: false,
     },
@@ -238,6 +239,18 @@ function createResponse(message) {
 
     case "textDocument/definition":
       return [definitionLocation(uri)];
+
+    case "textDocument/documentHighlight":
+      return [
+        {
+          kind: 3,
+          range: fixtureRange(),
+        },
+        {
+          kind: 2,
+          range: referenceLocation(uri).range,
+        },
+      ];
 
     case "textDocument/references":
       return [definitionLocation(uri), referenceLocation(uri)];

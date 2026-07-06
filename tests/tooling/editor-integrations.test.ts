@@ -3,20 +3,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  onigurumaModulePath,
+  onigurumaWasmPath,
+  textmateModulePath,
+} from "./support/textmate-deps.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const textmateModulePath = path.join(
-  root,
-  "node_modules/.pnpm/@shikijs+vscode-textmate@10.0.2/node_modules/@shikijs/vscode-textmate/dist/index.js",
-);
-const onigurumaModulePath = path.join(
-  root,
-  "node_modules/.pnpm/@shikijs+engine-oniguruma@4.0.2/node_modules/@shikijs/engine-oniguruma/dist/index.mjs",
-);
-const onigurumaWasmPath = path.join(
-  root,
-  "node_modules/.pnpm/shiki@4.0.2/node_modules/shiki/dist/onig.wasm",
-);
 
 function readJson<T>(relativePath: string): T {
   return JSON.parse(fs.readFileSync(path.join(root, relativePath), "utf-8")) as T;
