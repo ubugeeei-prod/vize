@@ -81,7 +81,7 @@ const testEl = readTextEntry(entryMap, "emacs/test/vize-test.el");
 
 assert.match(vizeEl, /lexical-binding: t/);
 assert.match(vizeEl, /defcustom vize-eglot-command '\("vize" "lsp"\)/);
-assert.match(vizeEl, /defcustom vize-eglot-profile 'lint/);
+assert.match(vizeEl, /defcustom vize-eglot-profile 'recommended/);
 assert.match(vizeEl, /recommended \. \(:editor t :ecosystem t :lint t :typecheck t\)/);
 assert.match(vizeEl, /define-derived-mode vize-vue-mode/);
 assert.match(vizeEl, /define-derived-mode vize-art-vue-mode/);
@@ -95,7 +95,7 @@ assert.match(vizeEl, /:initializationOptions options/);
 assert.match(vizeEl, /eglot-server-programs/);
 assert.match(vizeEl, /provide 'vize/);
 assert.match(testEl, /ert-deftest vize-eglot-default-program/);
-assert.match(testEl, /:initializationOptions \(:lint t\)/);
+assert.match(testEl, /:initializationOptions\s*\(:editor t :ecosystem t :lint t :typecheck t\)/);
 assert.match(testEl, /ert-deftest vize-eglot-off-program/);
 
 console.log(

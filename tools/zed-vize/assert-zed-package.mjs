@@ -130,6 +130,11 @@ assert.match(libRs, /const SERVER_BINARY: &'static str = "vize";/);
 assert.match(libRs, /worktree\.which\(Self::SERVER_BINARY\)/);
 assert.match(libRs, /unwrap_or_else\(\|\| vec!\["lsp"\.to_string\(\)\]\)/);
 assert.match(libRs, /language_server_initialization_options/);
+assert.match(libRs, /recommended_initialization_options/);
+assert.match(libRs, /"editor": true/);
+assert.match(libRs, /"ecosystem": true/);
+assert.match(libRs, /"lint": true/);
+assert.match(libRs, /"typecheck": true/);
 assert.match(libRs, /language_server_workspace_configuration/);
 assert.match(libRs, /zed::register_extension!\(VizeExtension\);/);
 

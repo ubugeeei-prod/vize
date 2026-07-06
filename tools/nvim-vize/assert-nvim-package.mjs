@@ -97,6 +97,7 @@ assert.match(
 );
 assert.match(configLua, /lint = true/);
 assert.match(configLua, /recommended = \{/);
+assert.match(configLua, /init_options = profiles\.recommended/);
 assert.match(configLua, /assert_list\("cmd"/);
 assert.match(initLua, /vim\.lsp\.config\("vize", resolved\)/);
 assert.match(initLua, /vim\.lsp\.enable\("vize"\)/);

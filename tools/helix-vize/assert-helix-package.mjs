@@ -74,7 +74,12 @@ const parsed = toml.parse(languagesToml);
 
 assert.equal(parsed["language-server"].vize.command, "vize");
 assert.deepEqual(parsed["language-server"].vize.args, ["lsp"]);
-assert.deepEqual(parsed["language-server"].vize.config, { lint: true });
+assert.deepEqual(parsed["language-server"].vize.config, {
+  editor: true,
+  ecosystem: true,
+  lint: true,
+  typecheck: true,
+});
 
 const languages = new Map(parsed.language.map((language) => [language.name, language]));
 assertLanguage(languages.get("vue"), {
@@ -92,7 +97,10 @@ assert.match(languagesToml, /^\[language-server\.vize\]$/m);
 assert.match(languagesToml, /^command = "vize"$/m);
 assert.match(languagesToml, /^args = \["lsp"\]$/m);
 assert.match(languagesToml, /^\[language-server\.vize\.config\]$/m);
+assert.match(languagesToml, /^editor = true$/m);
+assert.match(languagesToml, /^ecosystem = true$/m);
 assert.match(languagesToml, /^lint = true$/m);
+assert.match(languagesToml, /^typecheck = true$/m);
 assert.match(languagesToml, /^file-types = \[\{ glob = "\*\.art\.vue" \}\]$/m);
 
 console.log(

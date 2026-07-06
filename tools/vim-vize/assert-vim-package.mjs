@@ -88,7 +88,7 @@ const spec = readTextEntry(entryMap, "vim/test/vize_spec.vim");
 
 assert.match(autoload, /'cmd': \['vize', 'lsp'\]/);
 assert.match(autoload, /'allowlist': \['vue', 'art-vue'\]/);
-assert.match(autoload, /'initialization_options': s:profiles\.lint/);
+assert.match(autoload, /'initialization_options': s:profiles\.recommended/);
 assert.match(autoload, /function! vize#vim_lsp_config/);
 assert.match(autoload, /lsp#register_server/);
 assert.match(ftdetect, /\*\.vue setlocal filetype=vue/);
