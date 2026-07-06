@@ -29,6 +29,67 @@ fn static_boolean_attribute_is_detected_at_identifier_end_boundary() {
 }
 
 #[test]
+fn multiline_bound_attribute_is_detected_at_identifier_end_boundary() {
+    let dir = tempfile::tempdir().unwrap();
+    let source_path = dir.path().join("MultilineBound.vue");
+    let source = r#"<template>
+  <button
+    :disabled="isDisabled"
+  >
+    Save
+  </button>
+</template>
+"#;
+    fs::write(&source_path, source).unwrap();
+
+    let uri = Url::from_file_path(&source_path).unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    let offset = source.find(":disabled").unwrap() + ":disabled".len();
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+
+    assert_eq!(
+        helpers::get_attribute_and_component_at_offset(&ctx),
+        Some(("disabled".to_string(), "button".to_string()))
+    );
+}
+
+#[test]
+fn multiline_bound_attribute_ignores_gt_inside_previous_attribute_value() {
+    let dir = tempfile::tempdir().unwrap();
+    let source_path = dir.path().join("MultilineWithEvent.vue");
+    let source = r#"<template>
+  <button
+    @click="() => { count }"
+    :disabled="isDisabled"
+  >
+    Save
+  </button>
+</template>
+"#;
+    fs::write(&source_path, source).unwrap();
+
+    let uri = Url::from_file_path(&source_path).unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    let offset = source.find(":disabled").unwrap() + ":disabled".len();
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+
+    assert_eq!(
+        helpers::get_attribute_and_component_at_offset(&ctx),
+        Some(("disabled".to_string(), "button".to_string()))
+    );
+}
+
+#[test]
 fn definition_resolves_native_html_tag_to_mdn_reference() {
     let (state, uri, source) = open_source(
         "NativeTag.vue",
@@ -59,6 +120,30 @@ fn definition_resolves_native_html_attribute_to_mdn_reference() {
     );
 
     let offset = source.find("disabled").unwrap() + "disabled".len();
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+    let location = scalar_location(DefinitionService::definition(&ctx).unwrap());
+
+    assert_eq!(
+        location.uri.as_str(),
+        "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/disabled"
+    );
+}
+
+#[test]
+fn definition_resolves_multiline_native_html_attribute_to_mdn_reference() {
+    let (state, uri, source) = open_source(
+        "MultilineNativeAttribute.vue",
+        r#"<template>
+  <button
+    :disabled="isDisabled"
+  >
+    Save
+  </button>
+</template>
+"#,
+    );
+
+    let offset = source.find(":disabled").unwrap() + ":disabled".len();
     let ctx = IdeContext::new(&state, &uri, offset).unwrap();
     let location = scalar_location(DefinitionService::definition(&ctx).unwrap());
 

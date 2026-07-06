@@ -8,7 +8,7 @@ Copy or merge `languages.toml` into:
 ~/.config/helix/languages.toml
 ```
 
-The default profile is lint-only:
+The default profile is recommended:
 
 ```toml
 [language-server.vize]
@@ -16,7 +16,10 @@ command = "vize"
 args = ["lsp"]
 
 [language-server.vize.config]
+editor = true
+ecosystem = true
 lint = true
+typecheck = true
 ```
 
 The package registers Vize for `vue` and `art-vue`. The `art-vue` language uses a glob so

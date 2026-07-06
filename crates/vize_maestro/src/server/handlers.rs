@@ -235,6 +235,10 @@ impl LanguageServer for MaestroServer {
                     return Ok(Some(response));
                 }
             }
+
+            if ctx.block_type.is_some() {
+                return Ok(None);
+            }
         }
 
         let items = self.get_block_snippets();

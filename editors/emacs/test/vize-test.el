@@ -5,7 +5,8 @@
 (ert-deftest vize-eglot-default-program ()
   (should
    (equal (vize-eglot-server-program)
-          '("vize" "lsp" :initializationOptions (:lint t)))))
+          '("vize" "lsp" :initializationOptions
+            (:editor t :ecosystem t :lint t :typecheck t)))))
 
 (ert-deftest vize-eglot-recommended-program ()
   (should

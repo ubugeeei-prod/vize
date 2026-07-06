@@ -17,7 +17,7 @@ local default_config = {
   autostart = true,
   cmd = { "vize", "lsp" },
   filetypes = { "vue", "art-vue" },
-  init_options = profiles.lint,
+  init_options = profiles.recommended,
   root_markers = { "vize.config.pkl", "vize.config.json", "package.json", ".git" },
   settings = {},
 }

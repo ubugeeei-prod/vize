@@ -16,8 +16,8 @@ test("emacs vize.el defines the eglot command default and customizable profile",
   // The LSP launch command defaults to running the `vize lsp` subcommand.
   assert.match(el, /\(defcustom\s+vize-eglot-command\s+'\("vize"\s+"lsp"\)/);
 
-  // The default feature profile is `lint`.
-  assert.match(el, /\(defcustom\s+vize-eglot-profile\s+'lint\b/);
+  // The default feature profile is `recommended`.
+  assert.match(el, /\(defcustom\s+vize-eglot-profile\s+'recommended\b/);
 
   // The profile is a customizable choice exposing lint / recommended / off.
   assert.match(

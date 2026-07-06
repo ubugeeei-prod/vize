@@ -1,13 +1,16 @@
 # Vize for Zed
 
-Opt-in Vue diagnostics and language support powered by Vize.
+Vue diagnostics and language support powered by Vize.
 
 This extension expects the `vize` CLI to be available on `PATH`, or configured through Zed settings.
 
 The extension also registers an `Art Vue` language for `*.art.vue`, so Vize can power hover,
 completion, go-to-definition, and references there without relying on a separate Zed extension.
 
-## Enable Lint First
+By default, the extension starts Vize with the recommended profile: lint, typecheck, editor
+features, and ecosystem helpers. Override `initialization_options` if you need a narrower profile.
+
+## Recommended Profile
 
 ```json
 {
@@ -22,20 +25,8 @@ completion, go-to-definition, and references there without relying on a separate
   "lsp": {
     "vize": {
       "initialization_options": {
-        "lint": true
-      }
-    }
-  }
-}
-```
-
-## Add Type Checking
-
-```json
-{
-  "lsp": {
-    "vize": {
-      "initialization_options": {
+        "editor": true,
+        "ecosystem": true,
         "lint": true,
         "typecheck": true
       }
@@ -44,9 +35,24 @@ completion, go-to-definition, and references there without relying on a separate
 }
 ```
 
-## Evaluate Editor Features
+## Lint Only
 
-Use this only when you are ready to let Vize overlap with the existing Vue language server.
+```json
+{
+  "lsp": {
+    "vize": {
+      "initialization_options": {
+        "lint": true,
+        "typecheck": false,
+        "editor": false,
+        "ecosystem": false
+      }
+    }
+  }
+}
+```
+
+## Narrow Editor Profile
 
 ```json
 {

@@ -12,7 +12,7 @@ let s:profiles = {
 let s:default_config = {
       \ 'allowlist': ['vue', 'art-vue'],
       \ 'cmd': ['vize', 'lsp'],
-      \ 'initialization_options': s:profiles.lint,
+      \ 'initialization_options': s:profiles.recommended,
       \ }
 
 function! vize#profile(name) abort

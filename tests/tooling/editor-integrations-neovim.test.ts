@@ -44,7 +44,7 @@ test("nvim config default cmd, filetypes and root_markers declare the canonical 
   );
 });
 
-test("nvim config defines the lint, recommended and off profiles, defaulting init_options to lint", () => {
+test("nvim config defines profiles and defaults init_options to recommended", () => {
   const config = readRepoFile("editors/nvim/lua/vize/config.lua");
 
   // All three named profiles are defined inside the profiles table.
@@ -52,8 +52,8 @@ test("nvim config defines the lint, recommended and off profiles, defaulting ini
   assert.match(config, /\brecommended\s*=\s*\{/);
   assert.match(config, /\boff\s*=\s*\{\s*\}/);
 
-  // Default init_options points at the lint profile.
-  assert.match(config, /init_options\s*=\s*profiles\.lint/);
+  // Default init_options points at the full editor profile.
+  assert.match(config, /init_options\s*=\s*profiles\.recommended/);
 });
 
 test("nvim plugin entrypoint wires the plugin via guard + setup command", () => {

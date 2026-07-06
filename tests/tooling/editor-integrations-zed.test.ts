@@ -46,6 +46,16 @@ test("zed extension.toml declares vize server, language ids, grammar pin and ver
   assert.equal(declaredVersion, workspaceVersion());
 });
 
+test("zed extension source falls back to the recommended initialization profile", () => {
+  const source = readRepoFile("editors/zed/src/lib.rs");
+
+  assert.match(source, /recommended_initialization_options/);
+  assert.match(source, /"editor": true/);
+  assert.match(source, /"ecosystem": true/);
+  assert.match(source, /"lint": true/);
+  assert.match(source, /"typecheck": true/);
+});
+
 test("zed art-vue config.toml declares comments, brackets, autoclose and tailwind opt-in", () => {
   const config = readRepoFile("editors/zed/languages/art-vue/config.toml");
 

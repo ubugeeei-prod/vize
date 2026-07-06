@@ -10,7 +10,12 @@ end
 local defaults = config.normalize()
 assert_eq(defaults.cmd, { "vize", "lsp" }, "default cmd")
 assert_eq(defaults.filetypes, { "vue", "art-vue" }, "default filetypes")
-assert_eq(defaults.init_options, { lint = true }, "default lint profile")
+assert_eq(defaults.init_options, {
+  editor = true,
+  ecosystem = true,
+  lint = true,
+  typecheck = true,
+}, "default recommended profile")
 assert(defaults.root_markers[1] == "vize.config.pkl", "prefers vize config root marker")
 
 local recommended = config.normalize({ profile = "recommended" })

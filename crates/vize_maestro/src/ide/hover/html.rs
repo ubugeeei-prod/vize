@@ -207,6 +207,33 @@ const disabled = true
     }
 
     #[test]
+    fn test_hover_template_describes_multiline_native_html_bound_attribute_name() {
+        let source = r#"<script setup>
+const disabled = true
+</script>
+<template>
+  <button
+    :disabled="disabled"
+  >
+    Save
+  </button>
+</template>
+"#;
+        let (state, uri) = state_with_document("MultilineNativeBoundAttributeHover.vue", source);
+
+        let offset = source.find(":disabled").unwrap() + ":disabled".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let hover = HoverService::hover(&ctx).unwrap();
+        let value = hover_markdown(hover);
+
+        assert!(value.contains("disabled on <button>"), "got {value:?}");
+        assert!(
+            value.contains("HTMLElementTagNameMap[\"button\"][\"disabled\"]"),
+            "got {value:?}"
+        );
+    }
+
+    #[test]
     fn test_hover_template_does_not_describe_custom_element_as_native_dom() {
         let source = r#"<template>
   <my-widget />

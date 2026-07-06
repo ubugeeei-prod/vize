@@ -3,7 +3,10 @@ command = "vize"
 args = ["lsp"]
 
 [language-server.vize.config]
+editor = true
+ecosystem = true
 lint = true
+typecheck = true
 
 [[language]]
 name = "vue"

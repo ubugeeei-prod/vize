@@ -4,7 +4,12 @@ runtime autoload/vize.vim
 let s:defaults = vize#normalize({})
 call assert_equal(['vize', 'lsp'], s:defaults.cmd)
 call assert_equal(['vue', 'art-vue'], s:defaults.allowlist)
-call assert_equal({'lint': v:true}, s:defaults.initialization_options)
+call assert_equal({
+      \ 'editor': v:true,
+      \ 'ecosystem': v:true,
+      \ 'lint': v:true,
+      \ 'typecheck': v:true,
+      \ }, s:defaults.initialization_options)
 
 let s:recommended = vize#normalize({'profile': 'recommended'})
 call assert_equal({

@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
 use zed_extension_api::{
-    self as zed, Result,
+    self as zed,
     settings::{CommandSettings, LspSettings},
+    Result,
 };
 
 struct VizeExtension;
@@ -65,7 +66,9 @@ impl zed::Extension for VizeExtension {
         worktree: &zed::Worktree,
     ) -> Result<Option<zed::serde_json::Value>> {
         let settings = LspSettings::for_worktree(language_server_id.as_ref(), worktree)?;
-        Ok(settings.initialization_options)
+        Ok(settings
+            .initialization_options
+            .or_else(|| Some(recommended_initialization_options())))
     }
 
     fn language_server_workspace_configuration(
@@ -104,9 +107,20 @@ fn merge_env(shell_env: zed::EnvVars, custom_env: Option<HashMap<String, String>
     env
 }
 
+fn recommended_initialization_options() -> zed::serde_json::Value {
+    zed::serde_json::json!({
+        "editor": true,
+        "ecosystem": true,
+        "lint": true,
+        "typecheck": true,
+    })
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{CommandSettings, LspSettings, VizeExtension, zed};
+    use super::{
+        recommended_initialization_options, zed, CommandSettings, LspSettings, VizeExtension,
+    };
 
     #[test]
     fn discovered_binary_defaults_to_lsp() {
@@ -196,6 +210,19 @@ mod tests {
 
         assert!(error.contains("Install the Vize CLI"));
         assert!(error.contains("lsp.vize.binary.path"));
+    }
+
+    #[test]
+    fn default_initialization_options_are_recommended_profile() {
+        assert_eq!(
+            recommended_initialization_options(),
+            zed::serde_json::json!({
+                "editor": true,
+                "ecosystem": true,
+                "lint": true,
+                "typecheck": true,
+            })
+        );
     }
 
     fn settings_with_binary(binary: CommandSettings) -> LspSettings {

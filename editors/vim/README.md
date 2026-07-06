@@ -9,8 +9,11 @@ Vim does not include a built-in LSP client. This package provides filetype detec
 Plug 'prabirshrestha/vim-lsp'
 Plug 'ubugeeei-prod/vize', { 'rtp': 'editors/vim' }
 
-call vize#setup({'profile': 'lint'})
+call vize#setup({'profile': 'recommended'})
 ```
+
+The default profile is `recommended`, so Vim starts Vize with diagnostics, hover,
+completion, definition, references, symbols, and ecosystem helpers enabled.
 
 Profiles:
 

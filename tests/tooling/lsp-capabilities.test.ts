@@ -22,6 +22,10 @@ import { LspSession } from "./support/lsp/session.ts";
  * bundle flags, so this test widens it with the per-feature toggles it needs.
  */
 type GranularInitOptions = LspInitializationOptions & {
+  completion?: boolean;
+  hover?: boolean;
+  definition?: boolean;
+  references?: boolean;
   inlayHints?: boolean;
   foldingRanges?: boolean;
   documentSymbols?: boolean;
@@ -47,6 +51,8 @@ type ServerCapabilities = {
     resolveProvider?: boolean;
   };
   hoverProvider?: unknown;
+  definitionProvider?: unknown;
+  referencesProvider?: unknown;
   textDocumentSync?: {
     change?: number;
     openClose?: boolean;
@@ -89,6 +95,9 @@ test("vize lsp advertises the full editor-feature provider set with exact shapes
     assert.equal(capabilities.inlayHintProvider, true);
     assert.equal(capabilities.documentHighlightProvider, true);
     assert.equal(capabilities.workspaceSymbolProvider, true);
+    assert.equal(capabilities.hoverProvider, true);
+    assert.equal(capabilities.definitionProvider, true);
+    assert.equal(capabilities.referencesProvider, true);
 
     // Resolve-provider shapes.
     assert.equal(capabilities.codeLensProvider?.resolveProvider, false);
@@ -145,6 +154,9 @@ test("vize lsp editor:false strips editor providers but keeps lint-driven codeAc
       assert.equal(capabilities.documentLinkProvider, undefined);
       assert.equal(capabilities.workspaceSymbolProvider, undefined);
       assert.equal(capabilities.hoverProvider, undefined);
+      assert.equal(capabilities.definitionProvider, undefined);
+      assert.equal(capabilities.referencesProvider, undefined);
+      assert.equal(capabilities.documentHighlightProvider, undefined);
 
       // Lint code actions survive without the editor bundle.
       assert.ok(capabilities.codeActionProvider, "codeActionProvider should remain present");
@@ -174,6 +186,26 @@ test("vize lsp per-feature init flags toggle individual providers independently"
       assert.equal(capabilities.semanticTokensProvider, undefined);
       // A sibling editor provider is untouched.
       assert.equal(capabilities.hoverProvider, true);
+    },
+  );
+
+  await withCapabilities(
+    "granular-authoring-off",
+    {
+      editor: true,
+      completion: false,
+      hover: false,
+      definition: false,
+      references: false,
+    },
+    (capabilities) => {
+      assert.equal(capabilities.completionProvider, undefined);
+      assert.equal(capabilities.hoverProvider, undefined);
+      assert.equal(capabilities.definitionProvider, undefined);
+      assert.equal(capabilities.referencesProvider, undefined);
+      assert.equal(capabilities.documentHighlightProvider, undefined);
+      // A sibling editor provider is untouched.
+      assert.equal(capabilities.documentSymbolProvider, true);
     },
   );
 

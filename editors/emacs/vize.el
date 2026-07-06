@@ -19,7 +19,7 @@
   :type '(repeat string)
   :group 'vize)
 
-(defcustom vize-eglot-profile 'lint
+(defcustom vize-eglot-profile 'recommended
   "Default Vize feature profile for Eglot."
   :type '(choice (const :tag "Lint only" lint)
                  (const :tag "Recommended" recommended)

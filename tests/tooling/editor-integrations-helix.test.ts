@@ -18,9 +18,12 @@ test("helix languages.toml registers the vize language server with the lsp comma
   assert.match(config, /^command = "vize"$/m);
   assert.match(config, /^args = \["lsp"\]$/m);
 
-  // Server-level config enables linting.
+  // Server-level config enables the recommended editor profile.
   assert.match(config, /^\[language-server\.vize\.config\]$/m);
+  assert.match(config, /^editor = true$/m);
+  assert.match(config, /^ecosystem = true$/m);
   assert.match(config, /^lint = true$/m);
+  assert.match(config, /^typecheck = true$/m);
 });
 
 test("helix languages.toml declares the vue language wired to the vize server", () => {
