@@ -26,6 +26,14 @@ export interface VizeInspectorGraphPayload {
   graph: ReturnType<typeof buildInspectorGraph>;
 }
 
+export function installDevMiddleware(
+  devServer: ViteDevServer,
+  state: Pick<VizePluginState, "ignorePatterns" | "logger" | "root" | "scanPatterns">,
+): void {
+  installVirtualAssetMiddleware(devServer, state);
+  installInspectorGraphMiddleware(devServer, state);
+}
+
 export function installVirtualAssetMiddleware(
   devServer: ViteDevServer,
   state: Pick<VizePluginState, "logger">,

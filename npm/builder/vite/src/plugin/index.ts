@@ -35,10 +35,7 @@ import {
 import { patchUnoCssBridge } from "./unocss.ts";
 import { patchQuasarBridge } from "./quasar.ts";
 import { patchCssModuleGenerateScopedName } from "./css-modules.ts";
-import {
-  installInspectorGraphMiddleware,
-  installVirtualAssetMiddleware,
-} from "./dev-middleware.ts";
+import { installDevMiddleware } from "./dev-middleware.ts";
 import {
   createLegacyVueCompatibilityPlugin,
   isLegacyVueCompatibilityMode,
@@ -312,8 +309,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
 
     configureServer(devServer: ViteDevServer) {
       state.server = devServer;
-      installVirtualAssetMiddleware(devServer, state);
-      installInspectorGraphMiddleware(devServer, state);
+      installDevMiddleware(devServer, state);
     },
 
     async buildStart() {
