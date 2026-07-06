@@ -6,38 +6,7 @@ use vize_carton::{CompactString, SmallVec, String, profile};
 
 use super::VForScopeAliases;
 
-pub(super) fn is_valid_v_for_alias(alias: &str) -> bool {
-    let inner = tuple_alias_inner(alias.trim_start_matches("const ").trim());
-    let pattern_str = format_binding_pattern(inner);
-    let allocator = Allocator::default();
-    let source_type = SourceType::default().with_typescript(true);
-    let ret = Parser::new(&allocator, &pattern_str, source_type).parse();
-    if !ret.errors.is_empty() {
-        return false;
-    }
-
-    ret.program.body.first().is_some_and(|statement| {
-        if let oxc_ast::ast::Statement::VariableDeclaration(var_decl) = statement
-            && let Some(declarator) = var_decl.declarations.first()
-            && let BindingPattern::ArrayPattern(root) = &declarator.id
-        {
-            root.elements.first().and_then(Option::as_ref).is_some()
-        } else {
-            false
-        }
-    })
-}
-
-pub(super) fn is_valid_expression(source: &str) -> bool {
-    let allocator = Allocator::default();
-    let source_type = SourceType::default().with_typescript(true);
-    Parser::new(&allocator, source, source_type)
-        .parse_expression()
-        .is_ok()
-}
-
 /// Parse complex v-for alias using OXC
-#[cold]
 pub(super) fn parse_v_for_with_oxc(
     alias: &str,
     source: CompactString,

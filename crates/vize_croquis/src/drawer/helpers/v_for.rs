@@ -27,62 +27,73 @@ pub struct VForScopeAliases {
 /// Parse v-for expression into variables and source
 #[inline]
 pub fn parse_v_for_expression(expr: &str) -> (SmallVec<[CompactString; 3]>, CompactString) {
-    let Some((alias_part, source_part)) = split_v_for_expression(expr) else {
-        return (smallvec![], CompactString::new(expr.trim()));
-    };
-    let source = CompactString::new(source_part);
+    let expr = expr.trim();
+    parse_first_v_for_candidate(expr, |alias_part, source_part| {
+        let source = CompactString::new(source_part);
+        let (bindings, source) = profile!(
+            "croquis.helpers.v_for.oxc",
+            oxc::parse_v_for_with_oxc(alias_part, source)
+        );
 
-    profile!(
-        "croquis.helpers.v_for.oxc",
-        oxc::parse_v_for_with_oxc(alias_part, source)
-    )
+        (!bindings.is_empty()).then_some((bindings, source))
+    })
+    .unwrap_or_else(|| (smallvec![], CompactString::new(expr)))
 }
 
 /// Parse v-for expression into structured scope aliases.
 #[inline]
 pub fn parse_v_for_scope_expression(expr: &str) -> Option<VForScopeAliases> {
-    let (alias_part, source_part) = split_v_for_expression(expr)?;
-    let source = CompactString::new(source_part);
+    parse_first_v_for_candidate(expr.trim(), |alias_part, source_part| {
+        let source = CompactString::new(source_part);
 
-    profile!(
-        "croquis.helpers.v_for.scope_oxc",
-        oxc::parse_v_for_scope_aliases(alias_part.trim_start_matches("const ").trim(), source)
-    )
+        profile!(
+            "croquis.helpers.v_for.scope_oxc",
+            oxc::parse_v_for_scope_aliases(alias_part.trim_start_matches("const ").trim(), source)
+        )
+    })
 }
 
-fn split_v_for_expression(expr: &str) -> Option<(&str, &str)> {
-    let expr = expr.trim();
-    let chars: Vec<_> = expr.char_indices().collect();
+fn parse_first_v_for_candidate<T>(
+    expr: &str,
+    mut parse: impl FnMut(&str, &str) -> Option<T>,
+) -> Option<T> {
+    let mut previous_char = None;
 
-    for keyword_idx in 0..chars.len().saturating_sub(1) {
-        match (chars[keyword_idx].1, chars[keyword_idx + 1].1) {
-            ('i', 'n') | ('o', 'f') => {}
-            _ => continue,
-        }
+    for (keyword_start, ch) in expr.char_indices() {
+        let keyword_len = match ch {
+            'i' if expr[keyword_start..].starts_with("in") => 2,
+            'o' if expr[keyword_start..].starts_with("of") => 2,
+            _ => {
+                previous_char = Some(ch);
+                continue;
+            }
+        };
 
-        let has_space_before = keyword_idx > 0 && chars[keyword_idx - 1].1.is_whitespace();
-        let after_keyword_idx = keyword_idx + 2;
-        let has_space_after = chars
-            .get(after_keyword_idx)
-            .is_some_and(|(_, ch)| ch.is_whitespace());
-        if !has_space_before || !has_space_after {
+        if !previous_char.is_some_and(char::is_whitespace) {
+            previous_char = Some(ch);
             continue;
         }
 
-        let keyword_start = chars[keyword_idx].0;
-        let keyword_end = chars
-            .get(after_keyword_idx)
-            .map_or(expr.len(), |(byte_idx, _)| *byte_idx);
+        let keyword_end = keyword_start + keyword_len;
+        if !expr[keyword_end..]
+            .chars()
+            .next()
+            .is_some_and(char::is_whitespace)
+        {
+            previous_char = Some(ch);
+            continue;
+        }
+
         let alias_part = expr[..keyword_start].trim();
         let source_part = expr[keyword_end..].trim();
-
         if !alias_part.is_empty()
             && !source_part.is_empty()
-            && oxc::is_valid_v_for_alias(alias_part)
-            && oxc::is_valid_expression(source_part)
+            && let Some(parsed) = parse(alias_part, source_part)
         {
-            return Some((alias_part, source_part));
+            return Some(parsed);
         }
+
+        previous_char = Some(ch);
     }
 
     None

@@ -19,7 +19,6 @@ pub fn extract_slot_props(pattern: &str) -> SmallVec<[CompactString; 4]> {
 }
 
 /// Parse complex slot props using OXC
-#[cold]
 fn extract_slot_props_with_oxc(pattern: &str) -> SmallVec<[CompactString; 4]> {
     let mut buffer = [0u8; 256];
     let prefix = b"let ";
