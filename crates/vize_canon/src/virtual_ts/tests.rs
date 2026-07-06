@@ -960,7 +960,7 @@ fn test_define_expose_is_part_of_component_instance() {
         output.code
     );
     assert!(
-        output.code.contains("type __VizeComponentInstance = {\n  $props: __VizeComponentProps<Props>;\n  $emit: __EmitFn<Emits>;\n  $slots: Slots;\n} & Exposed;"),
+        output.code.contains("type __VizeComponentInstance = {\n  $props: __VizeComponentProps<Props>;\n  $emit: __EmitFn<Emits>;\n  $slots: Slots;\n} & __VizeShallowUnwrapRef<Exposed>;"),
         "component instance should include exposed bindings:\n{}",
         output.code
     );

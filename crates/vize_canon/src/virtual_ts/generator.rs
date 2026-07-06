@@ -21,7 +21,7 @@ use self::imports::{
     extract_declared_name,
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
-use self::legacy_vue2::{instance_helper, instance_suffix};
+use self::legacy_vue2::{exposed_unwrap_helper, instance_helper, instance_suffix};
 use self::options_api::{
     find_default_export_targets, find_options_api_props, generate_options_api_bridge,
     generate_options_api_variables,
@@ -963,6 +963,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // Default export
     ts.push_str("// ========== Default Export ==========\n");
     ts.push_str(instance_helper(legacy_vue2, dialect));
+    if has_exposed_type {
+        ts.push_str(exposed_unwrap_helper(legacy_vue2, dialect));
+    }
     let generic_component_params = setup_props_plan
         .generic_param(generic_param)
         .map(|generic| {

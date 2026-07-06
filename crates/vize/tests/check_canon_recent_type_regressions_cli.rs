@@ -226,3 +226,50 @@ defineProps<{ modelValue?: T }>();
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn check_exposed_template_ref_is_unwrapped_on_component_instance() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_case_with_files(
+        "exposed-template-ref-instance-unwrap",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+const element = useTemplateRef<HTMLElement>("element");
+
+defineExpose({ element });
+</script>
+
+<template>
+  <div ref="element" />
+</template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+import Child from "./Child.vue";
+
+const child = useTemplateRef<InstanceType<typeof Child>>("child");
+</script>
+
+<template>
+  <Child ref="child" />
+  {{ child?.element?.id }}
+</template>
+"#,
+            ),
+        ],
+    );
+
+    run_check_json(&project_root, &corsa_path, "src");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

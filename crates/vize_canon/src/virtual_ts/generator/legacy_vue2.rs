@@ -32,10 +32,12 @@ type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, ind
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];"#;
 const LEGACY_REF_UNWRAP_HELPER: &str =
     "    type __U<T> = T extends { value: infer __V } ? __V : T;\n";
+const LEGACY_EXPOSED_UNWRAP_HELPER: &str = "type __VizeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends { value: infer __V } ? __V : T[K] };\n";
 const MODERN_REF_UNWRAP_HELPER: &str = r#"    type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
     type __VizeWidenTemplateRef<T> = __VizeIsUnion<T> extends true ? T : T extends string ? string : T extends number ? number : T extends boolean ? boolean : T;
     type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;
 "#;
+const MODERN_EXPOSED_UNWRAP_HELPER: &str = "type __VizeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };\n";
 const LEGACY_DEFINE_COMPONENT_HELPER: &str = r#"type __VizeNuxt2Context = {
   app: any;
   route: any;
@@ -103,6 +105,14 @@ pub(super) fn ref_unwrap_helper(legacy_vue2: bool, dialect: VueVersion) -> &'sta
     }
 }
 
+pub(super) fn exposed_unwrap_helper(legacy_vue2: bool, dialect: VueVersion) -> &'static str {
+    if needs_legacy_vue2_helpers(legacy_vue2, dialect) {
+        LEGACY_EXPOSED_UNWRAP_HELPER
+    } else {
+        MODERN_EXPOSED_UNWRAP_HELPER
+    }
+}
+
 pub(super) fn define_component_helper(legacy_vue2: bool, dialect: VueVersion) -> &'static str {
     if needs_legacy_vue2_helpers(legacy_vue2, dialect) {
         LEGACY_DEFINE_COMPONENT_HELPER
@@ -128,9 +138,9 @@ pub(super) fn instance_suffix(
         needs_legacy_vue2_helpers(legacy_vue2, dialect),
         has_exposed_type,
     ) {
-        (true, true) => "} & __VizeVue2ComponentInstance & Exposed;\n",
+        (true, true) => "} & __VizeVue2ComponentInstance & __VizeShallowUnwrapRef<Exposed>;\n",
         (true, false) => "} & __VizeVue2ComponentInstance;\n",
-        (false, true) => "} & Exposed;\n",
+        (false, true) => "} & __VizeShallowUnwrapRef<Exposed>;\n",
         (false, false) => "};\n",
     }
 }
