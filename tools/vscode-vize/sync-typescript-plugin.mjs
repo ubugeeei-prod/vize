@@ -41,7 +41,7 @@ function injectPlugin(vsixPath) {
     const targetDir = path.join(tempDir, "extension", packagePath);
     stagePlugin(targetDir);
     const entries = pluginFiles.map((file) => path.posix.join("extension", packagePath, file));
-    const result = spawnSync("zip", ["-q", vsixPath, ...entries], {
+    const result = spawnSync("zip", ["-X", "-q", vsixPath, ...entries], {
       cwd: tempDir,
       encoding: "utf8",
     });

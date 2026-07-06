@@ -7,10 +7,8 @@ import { fileURLToPath } from "node:url";
 import zlib from "node:zlib";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const vsixPath = path.resolve(
-  process.cwd(),
-  process.argv[2] ?? path.join(root, "editors/vscode/dist/vize.vsix"),
-);
+const defaultVsixPath = path.join(root, "editors/vscode/dist/vize.vsix");
+const vsixPath = path.resolve(process.cwd(), process.argv[2] ?? defaultVsixPath);
 const builtins = new Set([
   ...builtinModules,
   ...builtinModules.map((moduleName) => `node:${moduleName}`),
@@ -19,9 +17,9 @@ const builtins = new Set([
 assert.ok(fs.existsSync(vsixPath), `VSIX does not exist: ${vsixPath}`);
 
 const archive = readZip(vsixPath);
-const entryNames = archive.entries
-  .map((entry) => entry.name)
-  .sort((left, right) => left.localeCompare(right));
+const topLevelEntry = /^(?:extension\/|extension\.vsixmanifest$|\[Content_Types\]\.xml$)/;
+const entryNames = archive.entries.map((entry) => entry.name);
+entryNames.sort((left, right) => left.localeCompare(right));
 const entries = new Set(entryNames);
 const vsixSize = fs.statSync(vsixPath).size;
 
@@ -34,11 +32,7 @@ for (const name of entryNames) {
   assert.ok(!name.includes("\0"), `VSIX entry contains a NUL byte: ${name}`);
   assert.ok(!name.startsWith("/"), `VSIX entry must be relative: ${name}`);
   assert.ok(!name.split("/").includes(".."), `VSIX entry must not traverse: ${name}`);
-  assert.match(
-    name,
-    /^(?:extension\/|extension\.vsixmanifest$|\[Content_Types\]\.xml$)/,
-    `VSIX entry has an unexpected top-level path: ${name}`,
-  );
+  assert.match(name, topLevelEntry, `VSIX entry has an unexpected top-level path: ${name}`);
 }
 
 const requiredFiles = [
@@ -310,6 +304,11 @@ function readZip(filePath) {
     const commentLength = buffer.readUInt16LE(offset + 32);
     const localHeaderOffset = buffer.readUInt32LE(offset + 42);
     const name = buffer.subarray(offset + 46, offset + 46 + fileNameLength).toString("utf-8");
+    const localExtraLength = buffer.readUInt16LE(localHeaderOffset + 28);
+
+    assert.equal(buffer.readUInt32LE(localHeaderOffset), 0x04034b50);
+    assert.equal(extraLength, 0, `VSIX entry has central ZIP extra fields: ${name}`);
+    assert.equal(localExtraLength, 0, `VSIX entry has local ZIP extra fields: ${name}`);
 
     entries.push({
       compressedSize,

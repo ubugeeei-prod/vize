@@ -44,6 +44,9 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
         "  }",
         "  process.exit(1);",
         "}",
+        "if (args[0] === 'dlx' && args[2] === 'ovsx@^1.0.0' && args[3] === 'ovsx' && args[4] === 'create-namespace') {",
+        "  process.exit(0);",
+        "}",
         "if (args[0] === 'dlx' && args[2] === 'ovsx@^1.0.0' && args[3] === 'ovsx' && args[4] === 'publish') {",
         "  state.published = true;",
         "  fs.writeFileSync(process.env.STATE_PATH, JSON.stringify(state));",
@@ -63,6 +66,14 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
 
     const calls = JSON.parse(fs.readFileSync(callsPath, "utf8")) as string[][];
+    assert.deepEqual(calls.at(-2), [
+      "dlx",
+      "-p",
+      "ovsx@^1.0.0",
+      "ovsx",
+      "create-namespace",
+      "ubugeeei",
+    ]);
     assert.deepEqual(calls.at(-1), ["dlx", "-p", "ovsx@^1.0.0", "ovsx", "publish", vsixPath]);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });

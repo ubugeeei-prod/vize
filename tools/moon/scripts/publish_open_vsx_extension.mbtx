@@ -20,6 +20,7 @@ import {
 ///|
 struct ExtensionInfo {
   extension_id : String
+  publisher : String
   version : String
 }
 
@@ -80,7 +81,7 @@ fn extension_info_from_package_json(value : Json) -> ExtensionInfo? {
   guard obj.get("name") is Some(String(name)) else { return None }
   guard obj.get("version") is Some(String(version)) else { return None }
   guard publisher != "" && name != "" && version != "" else { return None }
-  Some(ExtensionInfo::{ extension_id: publisher + "." + name, version })
+  Some(ExtensionInfo::{ extension_id: publisher + "." + name, publisher, version })
 }
 
 ///|
@@ -157,6 +158,17 @@ async fn wait_for_extension_visibility(
 }
 
 ///|
+async fn ensure_namespace(vp_bin : String, publisher : String) -> Unit {
+  let exit_code = @process.run(
+    vp_bin,
+    ["dlx", "-p", "ovsx@^1.0.0", "ovsx", "create-namespace", publisher],
+  )
+  if exit_code != 0 {
+    println("Open VSX namespace \{publisher} may already exist; continuing to publish.")
+  }
+}
+
+///|
 async fn run_app() -> Int {
   let args = cli_args()
   if args.is_empty() || args.length() > 2 {
@@ -200,6 +212,7 @@ async fn run_app() -> Int {
     )
     return 0
   }
+  ensure_namespace(vp_bin, extension_info.publisher)
 
   let exit_code = @process.run(
     vp_bin,
