@@ -9,6 +9,7 @@ mod options_api_props_identifiers;
 mod options_api_support;
 mod props_anchors;
 mod script_module;
+mod setup_helpers;
 mod setup_props;
 mod spans;
 mod template_refs;
@@ -28,6 +29,7 @@ use self::options_api::{
 };
 use self::options_api_props_identifiers::PropsConstAssertions;
 use self::props_anchors::emit_setup_scope_prop_anchors;
+use self::setup_helpers::emit_setup_helpers;
 use self::setup_props::SetupPropsPlan;
 use self::spans::{
     DEFINE_COMPONENT_REF, merge_overlapping_spans, preserved_template_usage,
@@ -35,8 +37,8 @@ use self::spans::{
 };
 use super::{
     helpers::{
-        IMPORT_META_AUGMENTATION, SETUP_SCOPE_HELPER_NAMES, VUE_SETUP_HELPERS,
-        VUE_SETUP_HELPERS_HOISTED, generate_template_context, to_safe_identifier,
+        IMPORT_META_AUGMENTATION, SETUP_SCOPE_HELPER_NAMES, generate_template_context,
+        to_safe_identifier,
     },
     props::{
         OptionsApiPropsSource, add_generic_defaults, collect_template_prop_names,
@@ -471,11 +473,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     append!(ts, "{async_prefix}function __setup{generic_params}() {{\n",);
 
     // Setup helpers (only valid inside setup scope)
-    ts.push_str(if hoist_shared_preamble {
-        VUE_SETUP_HELPERS_HOISTED
-    } else {
-        VUE_SETUP_HELPERS
-    });
+    emit_setup_helpers(
+        &mut ts,
+        script_content,
+        generic_param,
+        hoist_shared_preamble,
+    );
     ts.push_str("\n\n");
 
     // User's script content (minus imports)

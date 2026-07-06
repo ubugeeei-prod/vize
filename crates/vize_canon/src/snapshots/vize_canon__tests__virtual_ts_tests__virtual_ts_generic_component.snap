@@ -59,8 +59,9 @@ export type Props<T extends string | number = any> = {
 
 // ========== Setup Scope ==========
 function __setup<T extends string | number>() {
+  type __VizeDefinePropsBooleanKeys<_T> = never;
   // Compiler macros (only valid in setup scope, not global)
-  function defineProps<_T = unknown>(): __DefineProps<_T>;
+  function defineProps<_T = unknown>(): __DefineProps<_T, Extract<__VizeDefinePropsBooleanKeys<_T>, keyof _T>>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   function defineProps(_props?: any) { void _props; return undefined as any; }
@@ -93,7 +94,7 @@ function __setup<T extends string | number>() {
   
   const activeItem = ref<T | null>(null)
   
-  // @vize-map: 6588:6782 -> 0:193
+  // @vize-map: 6690:6884 -> 0:193
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

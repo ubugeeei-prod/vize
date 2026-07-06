@@ -273,3 +273,72 @@ const child = useTemplateRef<InstanceType<typeof Child>>("child");
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn check_with_defaults_generic_props_do_not_gain_boolean_intersections() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_case_with_files(
+        "with-defaults-generic-boolean-keys",
+        &[(
+            "src/Foo.vue",
+            r#"<script lang="ts">
+interface Props<T> {
+  as?: string;
+  value: T;
+}
+</script>
+
+<script setup lang="ts" generic="T extends Record<string, unknown>">
+const props = withDefaults(defineProps<Props<T>>(), {
+  as: "div"
+});
+
+function getKey(value: Record<PropertyKey, unknown>) {
+  return String(value.id);
+}
+
+getKey(props.value);
+</script>
+"#,
+        )],
+    );
+
+    run_check_json(&project_root, &corsa_path, "src");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_generic_define_props_preserves_local_boolean_keys() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_case_with_files(
+        "generic-define-props-local-boolean-keys",
+        &[(
+            "src/Foo.vue",
+            r#"<script setup lang="ts" generic="T extends Record<string, unknown>">
+interface Props<T> {
+  enabled?: boolean;
+  value: T;
+}
+
+const props = defineProps<Props<T>>();
+const enabled: boolean = props.enabled;
+
+function getKey(value: Record<PropertyKey, unknown>) {
+  return String(value.id);
+}
+
+getKey(props.value);
+</script>
+"#,
+        )],
+    );
+
+    run_check_json(&project_root, &corsa_path, "src");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
