@@ -155,6 +155,58 @@ function handleMathKey(key: string) {
 }
 
 #[test]
+fn batch_type_checker_infers_dynamic_component_kebab_listener_payload() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "dynamic-component-kebab-listener-payload",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts">
+defineEmits<{ escapeKeyDown: [event: KeyboardEvent] }>();
+</script>
+
+<template>
+  <button type="button" @keydown.escape="$emit('escapeKeyDown', $event)">
+    Close
+  </button>
+</template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import Child from "./Child.vue";
+
+function handleEscape(event: KeyboardEvent) {
+  event.preventDefault();
+}
+</script>
+
+<template>
+  <component :is="Child" @escape-key-down="handleEscape" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "dynamic component kebab-case listener should infer child emit payload, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_infers_event_name_from_define_emits_helper_argument() {
     if resolve_test_tsgo_binary().is_none() {
         return;

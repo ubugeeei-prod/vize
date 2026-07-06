@@ -1,7 +1,11 @@
 use crate::croquis::{TemplateExpression, TemplateExpressionKind};
 use crate::drawer::Drawer;
+use oxc_allocator::Allocator;
+use oxc_ast::ast::Expression;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_carton::{CompactString, profile};
-use vize_relief::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 impl Drawer {
     pub(super) fn process_element_directives(
@@ -11,6 +15,7 @@ impl Drawer {
         is_component: bool,
         tag: &str,
     ) {
+        let event_target_component = event_target_component(el, is_component, tag);
         profile!("croquis.template.element.second_pass", {
             for prop in &el.props {
                 let PropNode::Directive(dir) = prop else {
@@ -38,10 +43,9 @@ impl Drawer {
                         TemplateExpressionKind::VModel,
                     );
                 } else if dir.name == "on" && self.options.analyze_template_scopes {
-                    let target_component = is_component.then(|| CompactString::new(tag));
                     profile!(
                         "croquis.template.directive.v_on",
-                        self.handle_v_on_directive(dir, scope_vars, target_component)
+                        self.handle_v_on_directive(dir, scope_vars, event_target_component.clone())
                     );
                 }
             }
@@ -95,6 +99,62 @@ impl Drawer {
             scope_id,
             vif_guard: self.current_vif_guard(),
         });
+    }
+}
+
+fn event_target_component(
+    el: &ElementNode<'_>,
+    is_component: bool,
+    tag: &str,
+) -> Option<CompactString> {
+    if is_component {
+        return Some(CompactString::new(tag));
+    }
+
+    dynamic_component_target(el, tag)
+}
+
+fn dynamic_component_target(el: &ElementNode<'_>, tag: &str) -> Option<CompactString> {
+    if tag != "component" {
+        return None;
+    }
+
+    el.props.iter().find_map(|prop| {
+        let PropNode::Directive(dir) = prop else {
+            return None;
+        };
+        if !is_bind_is_directive(dir) {
+            return None;
+        }
+        expression_identifier(dir.exp.as_ref()?)
+    })
+}
+
+fn is_bind_is_directive(dir: &DirectiveNode<'_>) -> bool {
+    dir.name == "bind"
+        && matches!(
+            dir.arg.as_ref(),
+            Some(ExpressionNode::Simple(arg)) if arg.content == "is"
+        )
+}
+
+fn expression_identifier(exp: &ExpressionNode<'_>) -> Option<CompactString> {
+    let source = match exp {
+        ExpressionNode::Simple(simple) => simple.content.as_str(),
+        ExpressionNode::Compound(compound) => compound.loc.source.as_str(),
+    };
+    parse_identifier_expression(source)
+}
+
+fn parse_identifier_expression(source: &str) -> Option<CompactString> {
+    let allocator = Allocator::default();
+    let source_type = SourceType::from_path("expr.ts").unwrap_or_default();
+    let expression = Parser::new(&allocator, source, source_type)
+        .parse_expression()
+        .ok()?;
+    match expression {
+        Expression::Identifier(identifier) => Some(CompactString::new(identifier.name.as_str())),
+        _ => None,
     }
 }
 
