@@ -47,3 +47,33 @@ fn parse_expression_collects_array_destructured_tuple_value() {
         vec!["name", "count", "index"]
     );
 }
+
+#[test]
+fn parse_expression_uses_parser_validated_separator() {
+    let (bindings, source) =
+        super::parse_v_for_expression(r#"({ label = " in " }, index) in items"#);
+
+    assert_eq!(source.as_str(), "items");
+    assert_eq!(
+        bindings
+            .iter()
+            .map(|name| name.as_str())
+            .collect::<Vec<_>>(),
+        vec!["label", "index"]
+    );
+
+    let (bindings, source) =
+        super::parse_v_for_expression("item in items.filter(entry => entry.kind in allowed)");
+
+    assert_eq!(
+        source.as_str(),
+        "items.filter(entry => entry.kind in allowed)"
+    );
+    assert_eq!(
+        bindings
+            .iter()
+            .map(|name| name.as_str())
+            .collect::<Vec<_>>(),
+        vec!["item"]
+    );
+}

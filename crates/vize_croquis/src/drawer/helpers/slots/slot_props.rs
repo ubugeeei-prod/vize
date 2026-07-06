@@ -2,9 +2,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::BindingPattern;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{CompactString, SmallVec, profile, smallvec};
-
-use crate::drawer::helpers::is_valid_identifier_fast;
+use vize_carton::{CompactString, SmallVec, profile};
 
 /// Extract prop names from v-slot expression pattern
 #[inline]
@@ -14,49 +12,6 @@ pub fn extract_slot_props(pattern: &str) -> SmallVec<[CompactString; 4]> {
         return SmallVec::new();
     }
 
-    let bytes = pattern.as_bytes();
-
-    // Fast path: simple identifier
-    if bytes[0] != b'{' && bytes[0] != b'[' {
-        if is_valid_identifier_fast(bytes) {
-            return smallvec![CompactString::new(pattern)];
-        }
-        return SmallVec::new();
-    }
-
-    // Fast path: simple object destructuring. Stay conservative so default
-    // expressions that can contain commas still fall back to OXC.
-    if bytes[0] == b'{'
-        && pattern.ends_with('}')
-        && can_parse_simple_object_destructure_fast(&pattern[1..pattern.len() - 1])
-    {
-        let inner = &pattern[1..pattern.len() - 1];
-        let mut props = SmallVec::new();
-        let mut valid = true;
-        for part in inner.split(',') {
-            let part = part.trim();
-            if part.is_empty() {
-                continue;
-            }
-            let part = part.strip_prefix("...").unwrap_or(part).trim();
-            let name = if let Some(eq_pos) = part.find('=') {
-                part[..eq_pos].trim()
-            } else {
-                part
-            };
-            if !name.is_empty() && is_valid_identifier_fast(name.as_bytes()) {
-                props.push(CompactString::new(name));
-            } else {
-                valid = false;
-                break;
-            }
-        }
-        if valid && !props.is_empty() {
-            return props;
-        }
-    }
-
-    // Complex case: use OXC parser
     profile!(
         "croquis.helpers.slot_props.oxc",
         extract_slot_props_with_oxc(pattern)
@@ -93,15 +48,6 @@ fn extract_slot_props_with_oxc(pattern: &str) -> SmallVec<[CompactString; 4]> {
     }
 }
 
-fn can_parse_simple_object_destructure_fast(inner: &str) -> bool {
-    !inner.as_bytes().iter().any(|byte| {
-        matches!(
-            byte,
-            b':' | b'{' | b'}' | b'[' | b']' | b'(' | b')' | b'"' | b'\'' | b'`'
-        )
-    })
-}
-
 /// Parse slot pattern using OXC
 fn parse_slot_pattern(pattern_str: &str) -> SmallVec<[CompactString; 4]> {
     let allocator = Allocator::default();
@@ -110,6 +56,9 @@ fn parse_slot_pattern(pattern_str: &str) -> SmallVec<[CompactString; 4]> {
         "croquis.helpers.slot_props.oxc_parse",
         Parser::new(&allocator, pattern_str, source_type).parse()
     );
+    if !ret.errors.is_empty() {
+        return SmallVec::new();
+    }
 
     let mut props = SmallVec::new();
 
