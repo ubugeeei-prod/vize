@@ -45,6 +45,28 @@ impl LintResult {
     pub fn has_diagnostics(&self) -> bool {
         !self.diagnostics.is_empty()
     }
+
+    #[inline]
+    pub(crate) fn add_diagnostic(&mut self, diagnostic: LintDiagnostic) {
+        match diagnostic.severity {
+            Severity::Error => self.error_count += 1,
+            Severity::Warning => self.warning_count += 1,
+        }
+        self.diagnostics.push(diagnostic);
+    }
+
+    pub(crate) fn extend_diagnostics_with_severity_overrides(
+        &mut self,
+        diagnostics: impl IntoIterator<Item = LintDiagnostic>,
+        severity_overrides: &FxHashMap<String, Severity>,
+    ) {
+        for mut diagnostic in diagnostics {
+            if let Some(severity) = severity_overrides.get(diagnostic.rule_name) {
+                diagnostic.severity = *severity;
+            }
+            self.add_diagnostic(diagnostic);
+        }
+    }
 }
 
 /// Main linter struct.

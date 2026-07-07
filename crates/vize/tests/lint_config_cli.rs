@@ -328,3 +328,67 @@ await nextTick()
 
     let _ = fs::remove_dir_all(project_root);
 }
+
+#[test]
+fn lint_config_rule_severity_override_applies_to_script_rules() {
+    let project_root = temp_project_dir("script-rule-severity-override");
+    write_project_file(
+        &project_root,
+        "vize.config.json",
+        r#"{
+  "linter": {
+    "preset": "nuxt",
+    "rules": {
+      "script/custom-event-name-casing": "warn"
+    }
+  }
+}"#,
+    );
+    write_project_file(
+        &project_root,
+        "src/AfsStepperDialog.vue",
+        r#"<script setup lang="ts">
+defineOptions({ name: "AfsStepperDialog" })
+
+const emit = defineEmits<{
+  "update:current-step-index": [number]
+}>()
+
+const handleStepClick = () => {
+  emit("update:current-step-index", 1)
+}
+</script>
+
+<template>
+  <button type="button" @click="handleStepClick">Step</button>
+</template>
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--format",
+            "json",
+            "src/AfsStepperDialog.vue",
+        ])
+        .output()
+        .unwrap();
+
+    assert!(output.status.success(), "{}", output_details(&output));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let file = &json[0];
+    assert_eq!(file["errorCount"], 0, "{stdout}");
+    assert_eq!(file["warningCount"], 1, "{stdout}");
+    assert_eq!(
+        file["messages"][0]["ruleId"], "script/custom-event-name-casing",
+        "{stdout}"
+    );
+    assert_eq!(file["messages"][0]["severity"], 1, "{stdout}");
+
+    let _ = fs::remove_dir_all(project_root);
+}
