@@ -255,6 +255,21 @@ test("vscode start and enabled-capability checks handle false-only configs", () 
   assert.equal(hasAnyExplicitCapabilityValue(config), true);
 });
 
+test("vscode file rename can be enabled without the editor bundle", () => {
+  const config = new FakeConfig({
+    enable: true,
+    "editor.enable": false,
+    "fileRename.enable": true,
+  });
+
+  assert.deepEqual(getInitializationOptions(config), {
+    editor: false,
+    fileRename: true,
+  });
+  assert.equal(hasAnyEnabledCapability(config), true);
+  assert.equal(hasAnyExplicitCapabilityValue(config), true);
+});
+
 test("vscode explicit capability detection ignores unrelated settings", () => {
   const config = new FakeConfig({
     enable: true,
@@ -295,5 +310,16 @@ test("vscode capability description only includes true options in stable order",
       unknownFutureFeature: true,
     }),
     "completion, editor bundle, unknownFutureFeature",
+  );
+});
+
+test("vscode capability description names file rename explicitly", () => {
+  assert.equal(
+    describeCapabilities({
+      documentLinks: true,
+      fileRename: true,
+      rename: false,
+    }),
+    "document links, file rename",
   );
 });

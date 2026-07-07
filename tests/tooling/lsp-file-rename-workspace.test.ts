@@ -123,6 +123,155 @@ type FooModule = typeof import("./components/Foo.vue");
   }
 });
 
+test("vize lsp willRenameFiles rewrites SFC block src attributes and CSS imports", async () => {
+  const testRootDir = path.join(testOutputRoot, "lsp-file-rename-sfc-resources");
+  fs.mkdirSync(testRootDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    await session.initialize(workspaceDir, {
+      editor: true,
+      fileRename: true,
+      lint: false,
+      typecheck: false,
+    });
+
+    fs.mkdirSync(path.join(workspaceDir, "partials"), { recursive: true });
+    fs.mkdirSync(path.join(workspaceDir, "styles"), { recursive: true });
+
+    const oldTemplatePath = path.join(workspaceDir, "partials", "card.html");
+    const newTemplatePath = path.join(workspaceDir, "partials", "panel.html");
+    const oldScriptPath = path.join(workspaceDir, "entry.ts");
+    const newScriptPath = path.join(workspaceDir, "boot.ts");
+    const oldStylePath = path.join(workspaceDir, "styles", "card.css");
+    const newStylePath = path.join(workspaceDir, "styles", "panel.css");
+    const oldResetPath = path.join(workspaceDir, "styles", "reset.css");
+    const newResetPath = path.join(workspaceDir, "styles", "modern-reset.css");
+    const oldThemePath = path.join(workspaceDir, "styles", "theme.css");
+    const newThemePath = path.join(workspaceDir, "styles", "brand.css");
+
+    fs.writeFileSync(oldTemplatePath, "<section />\n", "utf8");
+    fs.writeFileSync(oldScriptPath, "export const value = 1\n", "utf8");
+    fs.writeFileSync(oldStylePath, ".card {}\n", "utf8");
+    fs.writeFileSync(oldResetPath, "* { box-sizing: border-box }\n", "utf8");
+    fs.writeFileSync(oldThemePath, ":root { color: black }\n", "utf8");
+
+    const source = `<template src="./partials/card.html"></template>
+<script src="./entry.ts"></script>
+<style src="./styles/card.css"></style>
+<style>
+@import "./styles/reset.css";
+@import url('./styles/theme.css');
+@import "https://cdn.example.test/remote.css";
+</style>
+`;
+    const componentPath = path.join(workspaceDir, "LinkedBlocks.vue");
+    const componentUri = pathToFileURL(componentPath).href;
+    fs.writeFileSync(componentPath, source, "utf8");
+
+    const edit = (await session.request("workspace/willRenameFiles", {
+      files: [
+        {
+          oldUri: pathToFileURL(oldTemplatePath).href,
+          newUri: pathToFileURL(newTemplatePath).href,
+        },
+        { oldUri: pathToFileURL(oldScriptPath).href, newUri: pathToFileURL(newScriptPath).href },
+        { oldUri: pathToFileURL(oldStylePath).href, newUri: pathToFileURL(newStylePath).href },
+        { oldUri: pathToFileURL(oldResetPath).href, newUri: pathToFileURL(newResetPath).href },
+        { oldUri: pathToFileURL(oldThemePath).href, newUri: pathToFileURL(newThemePath).href },
+      ],
+    })) as WorkspaceEdit;
+
+    const componentEdits = editsForUri(edit, componentUri);
+    assert.equal(componentEdits.length, 5, JSON.stringify(edit));
+    assert.deepEqual(
+      componentEdits.map((textEdit) => textEdit.newText),
+      [
+        "./partials/panel.html",
+        "./boot.ts",
+        "./styles/panel.css",
+        "./styles/modern-reset.css",
+        "./styles/brand.css",
+      ],
+    );
+    assert.deepEqual(
+      componentEdits.map((textEdit) => textAtRange(source, textEdit.range)),
+      [
+        "./partials/card.html",
+        "./entry.ts",
+        "./styles/card.css",
+        "./styles/reset.css",
+        "./styles/theme.css",
+      ],
+    );
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(testRootDir, { recursive: true, force: true });
+  }
+});
+
+test("vize lsp willRenameFiles rewrites SFC resource paths when the importer moves", async () => {
+  const testRootDir = path.join(testOutputRoot, "lsp-file-rename-sfc-importer-move");
+  fs.mkdirSync(testRootDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    await session.initialize(workspaceDir, {
+      editor: true,
+      fileRename: true,
+      lint: false,
+      typecheck: false,
+    });
+
+    fs.mkdirSync(path.join(workspaceDir, "views"), { recursive: true });
+    fs.mkdirSync(path.join(workspaceDir, "partials"), { recursive: true });
+    fs.mkdirSync(path.join(workspaceDir, "styles"), { recursive: true });
+    fs.writeFileSync(path.join(workspaceDir, "partials", "card.html"), "<section />\n", "utf8");
+    fs.writeFileSync(path.join(workspaceDir, "entry.ts"), "export const value = 1\n", "utf8");
+    fs.writeFileSync(path.join(workspaceDir, "styles", "card.css"), ".card {}\n", "utf8");
+    fs.writeFileSync(path.join(workspaceDir, "styles", "reset.css"), "* {}\n", "utf8");
+
+    const source = `<template src="../partials/card.html"></template>
+<script src="../entry.ts"></script>
+<style src="../styles/card.css"></style>
+<style>
+@import url(../styles/reset.css);
+</style>
+`;
+    const componentPath = path.join(workspaceDir, "views", "Card.vue");
+    const newComponentPath = path.join(workspaceDir, "features", "cards", "Card.vue");
+    const componentUri = pathToFileURL(componentPath).href;
+    fs.writeFileSync(componentPath, source, "utf8");
+
+    const edit = (await session.request("workspace/willRenameFiles", {
+      files: [{ oldUri: componentUri, newUri: pathToFileURL(newComponentPath).href }],
+    })) as WorkspaceEdit;
+
+    const componentEdits = editsForUri(edit, componentUri);
+    assert.equal(componentEdits.length, 4, JSON.stringify(edit));
+    assert.deepEqual(
+      componentEdits.map((textEdit) => textEdit.newText),
+      [
+        "../../partials/card.html",
+        "../../entry.ts",
+        "../../styles/card.css",
+        "../../styles/reset.css",
+      ],
+    );
+    assert.deepEqual(
+      componentEdits.map((textEdit) => textAtRange(source, textEdit.range)),
+      ["../partials/card.html", "../entry.ts", "../styles/card.css", "../styles/reset.css"],
+    );
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(testRootDir, { recursive: true, force: true });
+  }
+});
+
 test("vize lsp didRenameFiles moves open document state to the new URI", async (t) => {
   const testRootDir = path.join(testOutputRoot, "lsp-did-rename-workspace");
   fs.mkdirSync(testRootDir, { recursive: true });
