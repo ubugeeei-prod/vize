@@ -26,6 +26,17 @@ assert_eq(recommended.init_options, {
   typecheck = true,
 }, "recommended profile")
 
+assert_eq(config.profile("lint"), { lint = true }, "lint profile")
+assert_eq(config.profile("off"), {}, "off profile")
+
+local lint_profile = config.profile("lint")
+lint_profile.lint = false
+assert_eq(config.profile("lint"), { lint = true }, "profile returns copy")
+
+local default_copy = config.default_config()
+default_copy.cmd[1] = "changed"
+assert_eq(config.default_config().cmd, { "vize", "lsp" }, "default config returns copy")
+
 local custom = config.normalize({
   autostart = false,
   cmd = { "/tmp/vize", "lsp", "--debug" },
@@ -41,8 +52,19 @@ assert_eq(custom.init_options, { hover = true, references = true }, "custom init
 assert_eq(custom.root_markers, { "deno.json", ".git" }, "custom root markers")
 assert(custom.autostart == false, "custom autostart")
 
+local mutable_opts = { init_options = { hover = true } }
+local mutable_config = config.normalize(mutable_opts)
+mutable_opts.init_options.hover = false
+assert_eq(mutable_config.init_options, { hover = true }, "normalization copies init options")
+
+local profile_ok, profile_err = pcall(config.profile, "missing")
+assert(not profile_ok and profile_err:match("unknown vize profile"), "rejects unknown profile")
+
 local ok, err = pcall(config.normalize, { cmd = {} })
 assert(not ok and err:match("cmd"), "rejects empty cmd")
+
+local filetype_ok, filetype_err = pcall(config.normalize, { filetypes = { "" } })
+assert(not filetype_ok and filetype_err:match("filetypes"), "rejects empty filetype")
 
 local setup_config = require("vize").setup({ autostart = false, profile = "off" })
 assert_eq(setup_config.init_options, {}, "setup returns normalized config")

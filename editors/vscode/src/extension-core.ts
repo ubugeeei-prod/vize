@@ -196,15 +196,16 @@ function setDiagnosticsAliasOption(
   options: LspInitializationOptions,
   config: VizeConfigurationLike,
 ): void {
+  if (hasExplicitConfigurationValue(config, "lint.enable")) {
+    return;
+  }
+
   const enabled = config.get<boolean>("diagnostics.enable", false);
   if (enabled === true) {
     options.lint = true;
     return;
   }
-  if (
-    hasExplicitConfigurationValue(config, "diagnostics.enable") &&
-    !hasExplicitConfigurationValue(config, "lint.enable")
-  ) {
+  if (hasExplicitConfigurationValue(config, "diagnostics.enable")) {
     options.lint = false;
   }
 }

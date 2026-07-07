@@ -25,10 +25,24 @@ fn vscode_status_trims_lines_and_ignores_case() {
 }
 
 #[test]
+fn vscode_status_accepts_extension_id_among_crlf_lines() {
+    assert!(vscode_extension_is_installed(
+        "foo.bar\r\n  ubugeeei.vize  \r\nbaz.qux\r\n"
+    ));
+}
+
+#[test]
 fn vscode_status_rejects_empty_and_partial_lines() {
     assert!(!vscode_extension_is_installed(""));
     assert!(!vscode_extension_is_installed("ubugeeei.vize-extra\n"));
     assert!(!vscode_extension_is_installed("prefix ubugeeei.vize\n"));
+}
+
+#[test]
+fn vscode_status_rejects_comments_suffixes_and_other_publishers() {
+    assert!(!vscode_extension_is_installed("ubugeeei.vize # comment\n"));
+    assert!(!vscode_extension_is_installed("publisher.ubugeeei.vize\n"));
+    assert!(!vscode_extension_is_installed("ubugeeei.vize.preview\n"));
 }
 
 #[test]
@@ -56,9 +70,33 @@ fn editor_operation_prefers_uninstall_over_status_and_install() {
 }
 
 #[test]
+fn editor_operation_prefers_uninstall_when_install_is_false() {
+    assert_eq!(
+        editor_operation(&editor_args(false, true, false)),
+        EditorOperation::Uninstall
+    );
+}
+
+#[test]
+fn editor_operation_prefers_uninstall_over_status() {
+    assert_eq!(
+        editor_operation(&editor_args(false, true, true)),
+        EditorOperation::Uninstall
+    );
+}
+
+#[test]
 fn editor_operation_prefers_status_over_install() {
     assert_eq!(
         editor_operation(&editor_args(true, false, true)),
+        EditorOperation::Status
+    );
+}
+
+#[test]
+fn editor_operation_accepts_status_without_install() {
+    assert_eq!(
+        editor_operation(&editor_args(false, false, true)),
         EditorOperation::Status
     );
 }

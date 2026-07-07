@@ -29,6 +29,8 @@ test("editor adapters consistently route Vue documents to the Vize LSP", () => {
   assert.match(nvimConfig, /cmd = \{ "vize", "lsp" \}/);
   assert.match(nvimConfig, /filetypes = \{ "vue", "art-vue" \}/);
   assert.match(nvimConfig, /init_options = profiles\.recommended/);
+  assert.match(nvimConfig, /lint = \{\s*lint = true,\s*\}/);
+  assert.match(nvimConfig, /off = \{\}/);
   assert.match(nvimConfig, /editor = true/);
   assert.match(nvimConfig, /ecosystem = true/);
   assert.match(nvimConfig, /lint = true/);
@@ -38,6 +40,8 @@ test("editor adapters consistently route Vue documents to the Vize LSP", () => {
   assert.match(vimConfig, /'cmd': \['vize', 'lsp'\]/);
   assert.match(vimConfig, /'allowlist': \['vue', 'art-vue'\]/);
   assert.match(vimConfig, /'initialization_options': s:profiles\.recommended/);
+  assert.match(vimConfig, /'lint': \{'lint': v:true\}/);
+  assert.match(vimConfig, /'off': \{\}/);
   assert.match(vimConfig, /'editor': v:true/);
   assert.match(vimConfig, /'ecosystem': v:true/);
   assert.match(vimConfig, /'lint': v:true/);
@@ -57,6 +61,8 @@ test("editor adapters consistently route Vue documents to the Vize LSP", () => {
   assert.match(emacsConfig, /defcustom vize-eglot-command '\("vize" "lsp"\)/);
   assert.match(emacsConfig, /defcustom vize-eglot-profile 'recommended/);
   assert.match(emacsConfig, /vue-mode vue-ts-mode web-mode vize-vue-mode vize-art-vue-mode/);
+  assert.match(emacsConfig, /\(lint \. \(:lint t\)\)/);
+  assert.match(emacsConfig, /\(off \. nil\)/);
   assert.match(emacsConfig, /recommended \. \(:editor t :ecosystem t :lint t :typecheck t\)/);
 
   const zedManifest = fs.readFileSync(path.join(root, "editors/zed/extension.toml"), "utf-8");
