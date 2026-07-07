@@ -16,6 +16,7 @@ mod engine;
 mod native_type_aware;
 mod restricted_rules;
 pub(crate) mod script_rules;
+mod severity;
 
 pub use config::{LintResult, Linter};
 

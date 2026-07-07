@@ -10,5 +10,6 @@ mod jsx_fallback;
 mod no_top_level_ref;
 mod nuxt;
 mod script;
+mod severity_overrides;
 mod sfc;
 mod v_for_unused_vars;

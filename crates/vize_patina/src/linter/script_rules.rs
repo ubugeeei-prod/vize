@@ -1,4 +1,4 @@
-use super::{LintResult, Linter};
+use super::{LintResult, Linter, severity::append_with_rule_overrides};
 use crate::rules::script::{ScriptLintResult, script_source_type};
 use memchr::memmem;
 use oxc_allocator::Allocator;
@@ -235,7 +235,7 @@ fn run_builtin_script_rule(
     } else {
         profile!(entry.profile_name, rule.check(source, offset, &mut lint));
     }
-    merge_script_result(result, lint);
+    merge_script_result(linter, result, lint);
 }
 
 pub(crate) fn append_builtin_script_diagnostics_from_html(
@@ -252,10 +252,9 @@ pub(crate) fn append_builtin_script_diagnostics_from_html(
     }
 }
 
-fn merge_script_result(result: &mut LintResult, script_result: ScriptLintResult) {
-    result.error_count += script_result.error_count;
-    result.warning_count += script_result.warning_count;
-    result.diagnostics.extend(script_result.diagnostics);
+fn merge_script_result(linter: &Linter, result: &mut LintResult, script_result: ScriptLintResult) {
+    let overrides = &linter.severity_overrides;
+    append_with_rule_overrides(result, script_result.diagnostics, overrides);
 }
 
 /// Run every enabled built-in script rule against a single script block.
