@@ -7,6 +7,11 @@ import { generateGalleryBody, generateGalleryScript } from "./gallery/template.j
 import { generateGalleryGlobalsScript } from "./gallery/globals.js";
 import { serializeScriptValue } from "./security.js";
 import {
+  publicBasePathFromViteBase,
+  rewriteGalleryBase,
+  rewriteGalleryTextAssetBase,
+} from "./static-base.js";
+import {
   createStaticGalleryPayload,
   joinUrlPath,
   staticPreviewId,
@@ -180,7 +185,8 @@ async function emitGalleryShell(
       const html = injectStaticGlobals(content.toString("utf-8"), ctx, payload);
       emitFile({ type: "asset", fileName: target, source: rewriteGalleryBase(html, ctx.basePath) });
     } else {
-      emitFile({ type: "asset", fileName: target, source: content });
+      const source = rewriteGalleryTextAssetBase(content, relative, ctx.basePath);
+      emitFile({ type: "asset", fileName: target, source });
     }
   }
 }
@@ -272,16 +278,6 @@ function injectStaticGlobals(
   return html.includes("</head>")
     ? html.replace("</head>", `${script}</head>`)
     : `${script}${html}`;
-}
-
-function rewriteGalleryBase(html: string, basePath: string): string {
-  return html.replaceAll("/__musea__/", `${basePath.replace(/\/?$/, "/")}`);
-}
-
-function publicBasePathFromViteBase(viteBase: string | undefined, basePath: string): string {
-  return viteBase && viteBase !== "/" && viteBase !== "./"
-    ? joinUrlPath(viteBase, basePath)
-    : basePath;
 }
 
 function emitRootRedirect(

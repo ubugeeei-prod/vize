@@ -6,6 +6,7 @@ import test from "node:test";
 import vm from "node:vm";
 import type { ResolvedConfig } from "vite";
 
+import { rewriteGalleryTextAssetBase } from "./static-base.js";
 import { joinUrlPath, staticPreviewId } from "./static-data.js";
 import {
   emitStaticGallery,
@@ -229,6 +230,22 @@ void test("emitStaticGallery prefixes browser URLs with Vite base without nestin
   } finally {
     await fs.promises.rm(tempDir, { recursive: true, force: true });
   }
+});
+
+void test("static gallery text assets rewrite Monaco worker URLs with Vite base", () => {
+  const source = Buffer.from(
+    "new Worker(new URL(`/__musea__/assets/css.worker.js`, import.meta.url));",
+  );
+  const rewritten = rewriteGalleryTextAssetBase(
+    source,
+    "assets/MonacoEditorMode.js",
+    "/app/aim/aim-front/design-system/__musea__",
+  );
+  const expected =
+    "new Worker(new URL(`/app/aim/aim-front/design-system/__musea__/assets/css.worker.js`, import.meta.url));";
+
+  assert.equal(rewritten, expected);
+  assert.equal(rewriteGalleryTextAssetBase(source, "assets/logo.png", "/base"), source);
 });
 
 void test("static gallery runtime reports static-mode mutation and missing detail errors", async () => {
