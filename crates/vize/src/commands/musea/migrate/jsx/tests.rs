@@ -8,7 +8,11 @@ use super::convert_render;
 
 /// Wrap a JSX expression in `const x = (<JSX>);` and convert it to template.
 fn convert(jsx: &str) -> Option<String> {
-    let mut source = std::string::String::from("const x = (");
+    convert_with_args(jsx, Some("args"))
+}
+
+fn convert_with_args(jsx: &str, render_args_name: Option<&str>) -> Option<String> {
+    let mut source = String::from("const x = (");
     source.push_str(jsx);
     source.push_str(");\n");
 
@@ -27,7 +31,7 @@ fn convert(jsx: &str) -> Option<String> {
         Expression::ParenthesizedExpression(inner) => &inner.expression,
         other => other,
     };
-    convert_render(expr, &source)
+    convert_render(expr, &source, render_args_name)
 }
 
 #[test]
@@ -54,9 +58,18 @@ fn converts_expression_attr_and_bare_attr() {
 #[test]
 fn converts_spread_attr_to_v_bind() {
     assert_eq!(
-        convert("<AfButton {...props} />").as_deref(),
+        convert("<AfButton {...args} />").as_deref(),
+        Some(r#"<AfButton v-bind="args" />"#)
+    );
+    assert_eq!(
+        convert_with_args("<AfButton {...props} />", Some("props")).as_deref(),
         Some(r#"<AfButton v-bind="props" />"#)
     );
+}
+
+#[test]
+fn rejects_non_render_args_spread_attr() {
+    assert_eq!(convert("<AfButton {...props} />").as_deref(), None);
 }
 
 #[test]
@@ -101,6 +114,10 @@ fn rejects_identifier_attribute_without_script_binding() {
 #[test]
 fn rejects_render_args_member_attribute() {
     assert_eq!(convert("<AfButton value={args.value} />").as_deref(), None);
+    assert_eq!(
+        convert_with_args("<AfButton value={props.value} />", Some("props")).as_deref(),
+        None
+    );
 }
 
 #[test]

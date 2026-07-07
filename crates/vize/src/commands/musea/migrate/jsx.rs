@@ -15,29 +15,41 @@ use vize_carton::{String, append};
 /// Convert a JSX expression (element or fragment) to Vue template markup.
 ///
 /// `source` is the full original file text; spans index into it.
-pub(super) fn convert_render(expr: &Expression<'_>, source: &str) -> Option<String> {
+pub(super) fn convert_render(
+    expr: &Expression<'_>,
+    source: &str,
+    render_args_name: Option<&str>,
+) -> Option<String> {
     match expr {
-        Expression::JSXElement(element) => convert_element(element, source),
-        Expression::JSXFragment(fragment) => convert_fragment(fragment, source),
+        Expression::JSXElement(element) => convert_element(element, source, render_args_name),
+        Expression::JSXFragment(fragment) => convert_fragment(fragment, source, render_args_name),
         _ => None,
     }
 }
 
 /// A fragment `<>...</>` emits only its children (no wrapper element).
-fn convert_fragment(fragment: &JSXFragment<'_>, source: &str) -> Option<String> {
-    convert_children(&fragment.children, source)
+fn convert_fragment(
+    fragment: &JSXFragment<'_>,
+    source: &str,
+    render_args_name: Option<&str>,
+) -> Option<String> {
+    convert_children(&fragment.children, source, render_args_name)
 }
 
-fn convert_element(element: &JSXElement<'_>, source: &str) -> Option<String> {
+fn convert_element(
+    element: &JSXElement<'_>,
+    source: &str,
+    render_args_name: Option<&str>,
+) -> Option<String> {
     let tag = element_name(&element.opening_element.name)?;
 
     let mut attributes = String::default();
     for item in &element.opening_element.attributes {
         attributes.push(' ');
-        attributes.push_str(&convert_attribute(item, source)?);
+        attributes.push_str(&convert_attribute(item, source, render_args_name)?);
     }
 
-    let children = convert_children(&element.children, source)?;
+    let children = convert_children(&element.children, source, render_args_name)?;
 
     let mut out = String::default();
     if children.is_empty() {
@@ -48,7 +60,11 @@ fn convert_element(element: &JSXElement<'_>, source: &str) -> Option<String> {
     Some(out)
 }
 
-fn convert_children(children: &[JSXChild<'_>], source: &str) -> Option<String> {
+fn convert_children(
+    children: &[JSXChild<'_>],
+    source: &str,
+    render_args_name: Option<&str>,
+) -> Option<String> {
     let mut out = String::default();
     for child in children {
         match child {
@@ -58,8 +74,12 @@ fn convert_children(children: &[JSXChild<'_>], source: &str) -> Option<String> {
                     out.push_str(trimmed);
                 }
             }
-            JSXChild::Element(element) => out.push_str(&convert_element(element, source)?),
-            JSXChild::Fragment(fragment) => out.push_str(&convert_fragment(fragment, source)?),
+            JSXChild::Element(element) => {
+                out.push_str(&convert_element(element, source, render_args_name)?);
+            }
+            JSXChild::Fragment(fragment) => {
+                out.push_str(&convert_fragment(fragment, source, render_args_name)?);
+            }
             JSXChild::ExpressionContainer(container) => match &container.expression {
                 JSXExpression::EmptyExpression(_) => {}
                 expression => {
@@ -67,7 +87,7 @@ fn convert_children(children: &[JSXChild<'_>], source: &str) -> Option<String> {
                         return None;
                     }
                     let text = jsx_expression_source(expression, source)?;
-                    if references_render_args(text.as_str()) {
+                    if references_render_args(text.as_str(), render_args_name) {
                         return None;
                     }
                     append!(out, "{{{{ {text} }}}}");
@@ -80,7 +100,11 @@ fn convert_children(children: &[JSXChild<'_>], source: &str) -> Option<String> {
     Some(out)
 }
 
-fn convert_attribute(item: &JSXAttributeItem<'_>, source: &str) -> Option<String> {
+fn convert_attribute(
+    item: &JSXAttributeItem<'_>,
+    source: &str,
+    render_args_name: Option<&str>,
+) -> Option<String> {
     match item {
         JSXAttributeItem::Attribute(attribute) => {
             let name = attribute_name(&attribute.name)?;
@@ -96,7 +120,7 @@ fn convert_attribute(item: &JSXAttributeItem<'_>, source: &str) -> Option<String
                         JSXExpression::EmptyExpression(_) => None,
                         expression => {
                             let text = jsx_expression_source(expression, source)?;
-                            if references_render_args(text.as_str())
+                            if references_render_args(text.as_str(), render_args_name)
                                 || attribute_expression_requires_binding(expression)
                             {
                                 return None;
@@ -113,6 +137,9 @@ fn convert_attribute(item: &JSXAttributeItem<'_>, source: &str) -> Option<String
         }
         JSXAttributeItem::SpreadAttribute(spread) => {
             let text = expression_source(&spread.argument, source)?;
+            if !is_render_args_spread(text.as_str(), render_args_name) {
+                return None;
+            }
             let mut out = String::default();
             append!(out, "v-bind=\"{}\"", escape_attr(text.as_str()));
             Some(out)
@@ -235,12 +262,22 @@ fn attribute_value_requires_binding(expression: &Expression<'_>) -> bool {
     }
 }
 
-fn references_render_args(text: &str) -> bool {
+fn references_render_args(text: &str, render_args_name: Option<&str>) -> bool {
+    let Some(args_name) = render_args_name else {
+        return false;
+    };
     let text = text.trim();
-    text == "args"
-        || text.starts_with("args.")
-        || text.starts_with("args?.")
-        || text.starts_with("args[")
+    text == args_name
+        || text.strip_prefix(args_name).is_some_and(|rest| {
+            rest.starts_with('.') || rest.starts_with("?.") || rest.starts_with('[')
+        })
+}
+
+fn is_render_args_spread(text: &str, render_args_name: Option<&str>) -> bool {
+    let Some(args_name) = render_args_name else {
+        return false;
+    };
+    text.trim() == args_name
 }
 
 /// Source text of a `JSXExpression` (the expression inside `{...}`).

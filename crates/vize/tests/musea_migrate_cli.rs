@@ -162,6 +162,38 @@ Checked.args = { checked: true };
 }
 
 #[test]
+fn migrates_render_spread_with_renamed_args_param() {
+    let dir = tempfile::tempdir().unwrap();
+    let story = dir.path().join("AfButton.stories.tsx");
+    fs::write(
+        &story,
+        r#"import type { Meta, StoryObj } from "@storybook/vue3";
+import AfButton from "./AfButton.vue";
+const meta = { component: AfButton, title: "Base/AfButton" } satisfies Meta<typeof AfButton>;
+export default meta;
+type Story = StoryObj<typeof meta>;
+export const Primary: Story = {
+  args: { color: "primary", disabled: true },
+  render: props => <AfButton {...props}>Primary</AfButton>,
+};
+"#,
+    )
+    .unwrap();
+
+    let output = run_migrate(dir.path(), &["AfButton.stories.tsx"]);
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        std::string::String::from_utf8_lossy(&output.stderr)
+    );
+
+    let generated = fs::read_to_string(dir.path().join("AfButton.art.vue")).unwrap();
+    assert!(generated.contains(r#"<AfButton color="primary" :disabled="true">Primary</AfButton>"#));
+    assert!(!generated.contains("v-bind=\"props\""));
+    assert!(!generated.contains("TODO(vize musea migrate)"));
+}
+
+#[test]
 fn migrates_unsupported_render_output_as_todo_variants() {
     let dir = tempfile::tempdir().unwrap();
     let story = dir.path().join("AfsForm.stories.tsx");

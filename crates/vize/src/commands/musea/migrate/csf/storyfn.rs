@@ -4,8 +4,8 @@ use oxc_ast::ast::{
 use oxc_syntax::operator::AssignmentOperator;
 
 use super::{
-    CsfStory, binding_name, render_body, story_from_object, unsupported_story, unwrap_expression,
-    unwrap_object,
+    CsfRender, CsfStory, binding_name, render_body, story_from_object, unsupported_story,
+    unwrap_expression, unwrap_object,
 };
 
 pub(super) fn collect_stories<'a>(program: &'a Program<'a>) -> Vec<CsfStory<'a>> {
@@ -45,7 +45,7 @@ pub(super) fn collect_stories<'a>(program: &'a Program<'a>) -> Vec<CsfStory<'a>>
     stories
 }
 
-fn collect_template_renders<'a>(program: &'a Program<'a>) -> Vec<(&'a str, &'a Expression<'a>)> {
+fn collect_template_renders<'a>(program: &'a Program<'a>) -> Vec<(&'a str, CsfRender<'a>)> {
     let mut templates = Vec::new();
     for stmt in &program.body {
         let Statement::VariableDeclaration(decl) = stmt else {
@@ -90,7 +90,7 @@ fn story_args_assignment<'a>(
 fn story_from_template_bind<'a>(
     export_name: &str,
     init: &'a Expression<'a>,
-    templates: &[(&'a str, &'a Expression<'a>)],
+    templates: &[(&'a str, CsfRender<'a>)],
     args: Option<&'a ObjectExpression<'a>>,
 ) -> Option<CsfStory<'a>> {
     let template_name = template_bind_name(init)?;
@@ -138,9 +138,9 @@ fn static_member_target_name<'a>(
 }
 
 fn find_expression_by_name<'a>(
-    items: &[(&'a str, &'a Expression<'a>)],
+    items: &[(&'a str, CsfRender<'a>)],
     name: &str,
-) -> Option<&'a Expression<'a>> {
+) -> Option<CsfRender<'a>> {
     items
         .iter()
         .rev()

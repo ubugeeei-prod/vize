@@ -1,11 +1,12 @@
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use vize_carton::String;
 
 use super::super::csf::extract_csf;
 use super::emit_art;
 
-fn emit(source: &str) -> (std::string::String, usize, usize) {
+fn emit(source: &str) -> (String, usize, usize) {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::tsx()).parse();
     assert!(!parsed.panicked, "fixture should parse");
@@ -15,11 +16,7 @@ fn emit(source: &str) -> (std::string::String, usize, usize) {
         .clone()
         .unwrap_or_else(|| "./Component.vue".into());
     let result = emit_art(&module, "AfButton", component_path.as_str(), source);
-    (
-        result.content.as_str().to_owned(),
-        result.variants,
-        result.todos,
-    )
+    (result.content, result.variants, result.todos)
 }
 
 #[test]
@@ -213,6 +210,22 @@ export const Primary = {
     let (content, _variants, todos) = emit(source);
 
     assert!(content.contains(r#"<AfButton :disabled="true" color="secondary">Primary</AfButton>"#));
+    assert_eq!(todos, 0);
+}
+
+#[test]
+fn emits_story_args_inside_renamed_render_param_spread() {
+    let source = r#"import AfButton from "./AfButton.vue";
+export default { component: AfButton, title: "AfButton" } satisfies Meta<typeof AfButton>;
+export const Primary = {
+  args: { color: "primary", disabled: true },
+  render: props => <AfButton {...props}>Primary</AfButton>,
+};
+"#;
+    let (content, _variants, todos) = emit(source);
+
+    assert!(content.contains(r#"<AfButton color="primary" :disabled="true">Primary</AfButton>"#));
+    assert!(!content.contains("v-bind=\"props\""));
     assert_eq!(todos, 0);
 }
 

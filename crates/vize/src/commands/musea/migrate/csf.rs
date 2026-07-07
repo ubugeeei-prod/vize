@@ -6,6 +6,7 @@
 //! as borrowed AST references so the JSX/template emitter can slice the original
 //! source by span.
 
+mod render;
 mod storyfn;
 
 use oxc_ast::ast::{
@@ -14,14 +15,22 @@ use oxc_ast::ast::{
 };
 use vize_carton::String;
 
+use self::render::render_body;
 use self::storyfn::collect_stories;
+
+/// JSX render expression plus the story args binding name visible to it.
+#[derive(Clone, Copy)]
+pub(super) struct CsfRender<'a> {
+    pub expression: &'a Expression<'a>,
+    pub args_name: Option<&'a str>,
+}
 
 /// A single CSF story (named export) ready for template emission.
 pub(super) struct CsfStory<'a> {
     /// Variant name (the `name:` override if present, else the export name).
     pub name: String,
     /// `render` arrow/function body expression (a JSX element/fragment), if any.
-    pub render: Option<&'a Expression<'a>>,
+    pub render: Option<CsfRender<'a>>,
     /// `args` object literal, if present.
     pub args: Option<&'a ObjectExpression<'a>>,
     /// Story shape was recognized as CSF but cannot be migrated safely.
@@ -210,49 +219,6 @@ fn unsupported_story(export_name: &str) -> CsfStory<'_> {
         render: None,
         args: None,
         unsupported: true,
-    }
-}
-
-/// Reach the single JSX-returning expression of a `render` arrow/function.
-fn render_body<'a>(value: &'a Expression<'a>) -> Option<&'a Expression<'a>> {
-    match unwrap_expression(value) {
-        Expression::ArrowFunctionExpression(arrow) => {
-            let body = if arrow.expression {
-                first_expression_statement(&arrow.body.statements)
-            } else {
-                first_return_argument(&arrow.body.statements)
-            }?;
-            render_expression(body)
-        }
-        Expression::FunctionExpression(func) => render_expression(
-            func.body
-                .as_ref()
-                .and_then(|body| first_return_argument(&body.statements))?,
-        ),
-        _ => None,
-    }
-}
-
-fn render_expression<'a>(expr: &'a Expression<'a>) -> Option<&'a Expression<'a>> {
-    match unwrap_expression(expr) {
-        Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_) => {
-            render_body(expr)
-        }
-        other => Some(other),
-    }
-}
-
-fn first_expression_statement<'a>(statements: &'a [Statement<'a>]) -> Option<&'a Expression<'a>> {
-    match statements.first()? {
-        Statement::ExpressionStatement(stmt) => Some(&stmt.expression),
-        _ => None,
-    }
-}
-
-fn first_return_argument<'a>(statements: &'a [Statement<'a>]) -> Option<&'a Expression<'a>> {
-    match statements.first()? {
-        Statement::ReturnStatement(stmt) => stmt.argument.as_ref(),
-        _ => None,
     }
 }
 

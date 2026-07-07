@@ -96,10 +96,16 @@ fn emit_variant_inner(
     }
 
     if let Some(render) = story.render {
-        let Some(markup) = convert_render(render, source) else {
+        let Some(markup) = convert_render(render.expression, source, render.args_name) else {
             return (emit_todo_element(component_tag), true);
         };
-        return match inline_story_args_spread(markup, meta_args, story.args, source) {
+        return match inline_story_args_spread(
+            markup,
+            render.args_name,
+            meta_args,
+            story.args,
+            source,
+        ) {
             Some(markup) => (markup, false),
             None => (emit_todo_element(component_tag), true),
         };
@@ -180,11 +186,20 @@ fn emit_args_object_attributes(
 
 fn inline_story_args_spread(
     markup: String,
+    render_args_name: Option<&str>,
     meta_args: Option<&ObjectExpression<'_>>,
     story_args: Option<&ObjectExpression<'_>>,
     source: &str,
 ) -> Option<String> {
-    let marker = " v-bind=\"args\"";
+    let marker = render_args_name.map(|name| {
+        let mut marker = String::from(" v-bind=\"");
+        marker.push_str(name);
+        marker.push('"');
+        marker
+    });
+    let Some(marker) = marker.as_deref() else {
+        return Some(markup);
+    };
     if !markup.contains(marker) {
         return Some(markup);
     }
