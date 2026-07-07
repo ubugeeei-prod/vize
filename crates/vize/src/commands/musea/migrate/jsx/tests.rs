@@ -94,6 +94,25 @@ fn escapes_quotes_in_expression_attr() {
 }
 
 #[test]
+fn rejects_identifier_attribute_without_script_binding() {
+    assert_eq!(convert("<AfButton data={schema} />").as_deref(), None);
+}
+
+#[test]
+fn rejects_render_args_member_attribute() {
+    assert_eq!(convert("<AfButton value={args.value} />").as_deref(), None);
+}
+
+#[test]
+fn rejects_tsx_slot_object_children() {
+    assert_eq!(
+        convert("<AfTooltip>{{ activator: () => <AfButton>Hover</AfButton> }}</AfTooltip>")
+            .as_deref(),
+        None
+    );
+}
+
+#[test]
 fn non_jsx_render_returns_none() {
     assert_eq!(convert("42").as_deref(), None);
 }

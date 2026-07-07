@@ -63,7 +63,13 @@ fn convert_children(children: &[JSXChild<'_>], source: &str) -> Option<String> {
             JSXChild::ExpressionContainer(container) => match &container.expression {
                 JSXExpression::EmptyExpression(_) => {}
                 expression => {
+                    if child_expression_requires_binding(expression) {
+                        return None;
+                    }
                     let text = jsx_expression_source(expression, source)?;
+                    if references_render_args(text.as_str()) {
+                        return None;
+                    }
                     append!(out, "{{{{ {text} }}}}");
                 }
             },
@@ -90,6 +96,11 @@ fn convert_attribute(item: &JSXAttributeItem<'_>, source: &str) -> Option<String
                         JSXExpression::EmptyExpression(_) => None,
                         expression => {
                             let text = jsx_expression_source(expression, source)?;
+                            if references_render_args(text.as_str())
+                                || attribute_expression_requires_binding(expression)
+                            {
+                                return None;
+                            }
                             let mut out = String::default();
                             append!(out, ":{name}=\"{}\"", escape_attr(text.as_str()));
                             Some(out)
@@ -136,6 +147,100 @@ fn attribute_name<'a>(name: &'a JSXAttributeName<'a>) -> Option<&'a str> {
         // Namespaced attribute names (`foo:bar`) have no clean Vue mapping.
         JSXAttributeName::NamespacedName(_) => None,
     }
+}
+
+fn child_expression_requires_binding(expression: &JSXExpression<'_>) -> bool {
+    match expression {
+        JSXExpression::ObjectExpression(_)
+        | JSXExpression::ArrowFunctionExpression(_)
+        | JSXExpression::FunctionExpression(_)
+        | JSXExpression::JSXElement(_)
+        | JSXExpression::JSXFragment(_) => true,
+        JSXExpression::ParenthesizedExpression(inner) => {
+            child_value_requires_binding(&inner.expression)
+        }
+        JSXExpression::TSAsExpression(inner) => child_value_requires_binding(&inner.expression),
+        JSXExpression::TSSatisfiesExpression(inner) => {
+            child_value_requires_binding(&inner.expression)
+        }
+        JSXExpression::TSNonNullExpression(inner) => {
+            child_value_requires_binding(&inner.expression)
+        }
+        _ => false,
+    }
+}
+
+fn child_value_requires_binding(expression: &Expression<'_>) -> bool {
+    match expression {
+        Expression::ObjectExpression(_)
+        | Expression::ArrowFunctionExpression(_)
+        | Expression::FunctionExpression(_)
+        | Expression::JSXElement(_)
+        | Expression::JSXFragment(_) => true,
+        Expression::ParenthesizedExpression(inner) => {
+            child_value_requires_binding(&inner.expression)
+        }
+        Expression::TSAsExpression(inner) => child_value_requires_binding(&inner.expression),
+        Expression::TSSatisfiesExpression(inner) => child_value_requires_binding(&inner.expression),
+        Expression::TSNonNullExpression(inner) => child_value_requires_binding(&inner.expression),
+        _ => false,
+    }
+}
+
+fn attribute_expression_requires_binding(expression: &JSXExpression<'_>) -> bool {
+    match expression {
+        JSXExpression::Identifier(_)
+        | JSXExpression::StaticMemberExpression(_)
+        | JSXExpression::ComputedMemberExpression(_)
+        | JSXExpression::PrivateFieldExpression(_)
+        | JSXExpression::CallExpression(_)
+        | JSXExpression::ChainExpression(_)
+        | JSXExpression::NewExpression(_)
+        | JSXExpression::ThisExpression(_) => true,
+        JSXExpression::ParenthesizedExpression(inner) => {
+            attribute_value_requires_binding(&inner.expression)
+        }
+        JSXExpression::TSAsExpression(inner) => attribute_value_requires_binding(&inner.expression),
+        JSXExpression::TSSatisfiesExpression(inner) => {
+            attribute_value_requires_binding(&inner.expression)
+        }
+        JSXExpression::TSNonNullExpression(inner) => {
+            attribute_value_requires_binding(&inner.expression)
+        }
+        _ => false,
+    }
+}
+
+fn attribute_value_requires_binding(expression: &Expression<'_>) -> bool {
+    match expression {
+        Expression::Identifier(_)
+        | Expression::StaticMemberExpression(_)
+        | Expression::ComputedMemberExpression(_)
+        | Expression::PrivateFieldExpression(_)
+        | Expression::CallExpression(_)
+        | Expression::ChainExpression(_)
+        | Expression::NewExpression(_)
+        | Expression::ThisExpression(_) => true,
+        Expression::ParenthesizedExpression(inner) => {
+            attribute_value_requires_binding(&inner.expression)
+        }
+        Expression::TSAsExpression(inner) => attribute_value_requires_binding(&inner.expression),
+        Expression::TSSatisfiesExpression(inner) => {
+            attribute_value_requires_binding(&inner.expression)
+        }
+        Expression::TSNonNullExpression(inner) => {
+            attribute_value_requires_binding(&inner.expression)
+        }
+        _ => false,
+    }
+}
+
+fn references_render_args(text: &str) -> bool {
+    let text = text.trim();
+    text == "args"
+        || text.starts_with("args.")
+        || text.starts_with("args?.")
+        || text.starts_with("args[")
 }
 
 /// Source text of a `JSXExpression` (the expression inside `{...}`).

@@ -161,6 +161,42 @@ Checked.args = { checked: true };
 }
 
 #[test]
+fn migrates_unsupported_render_output_as_todo_variants() {
+    let dir = tempfile::tempdir().unwrap();
+    let story = dir.path().join("AfsForm.stories.tsx");
+    fs::write(
+        &story,
+        r#"import AfsForm from "./AfsForm.vue";
+const loginSchema = createSchema();
+export default { component: AfsForm, title: "Forms/AfsForm" } satisfies Meta<typeof AfsForm>;
+export const UsesLocalBinding = { render: () => <AfsForm schema={loginSchema} /> };
+export const UsesRenderArgs = { render: args => <AfsForm value={args.value} /> };
+export const UsesSlotObject = {
+  render: () => <AfsForm>{{ default: () => <div>body</div> }}</AfsForm>,
+};
+"#,
+    )
+    .unwrap();
+
+    let output = run_migrate(dir.path(), &["AfsForm.stories.tsx"]);
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        std::string::String::from_utf8_lossy(&output.stderr)
+    );
+
+    let stderr = std::string::String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("3 variant(s) generated, 3 TODO fallback(s)"));
+    let generated = fs::read_to_string(dir.path().join("AfsForm.art.vue")).unwrap();
+    assert!(generated.contains(r#"<variant name="UsesLocalBinding" default>"#));
+    assert!(generated.contains(r#"<variant name="UsesRenderArgs">"#));
+    assert!(generated.contains(r#"<variant name="UsesSlotObject">"#));
+    assert!(!generated.contains(":schema=\"loginSchema\""));
+    assert!(!generated.contains(":value=\"args.value\""));
+    assert!(!generated.contains("=> <div>"));
+}
+
+#[test]
 fn dry_run_prints_without_writing() {
     let dir = tempfile::tempdir().unwrap();
     let story = dir.path().join("Box.stories.tsx");

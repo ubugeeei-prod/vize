@@ -116,6 +116,29 @@ export const Stateful = {
 }
 
 #[test]
+fn emits_todo_for_render_output_requiring_story_bindings() {
+    let source = r#"import AfButton from "./AfButton.vue";
+const schema = createSchema();
+export default { component: AfButton, title: "Base/AfButton" } satisfies Meta<typeof AfButton>;
+export const LocalBinding = { render: () => <AfButton data={schema} /> };
+export const ArgsMember = { render: args => <AfButton value={args.value} /> };
+export const SlotObject = {
+  render: () => <AfButton>{{ default: () => <span>Primary</span> }}</AfButton>,
+};
+"#;
+    let (content, variants, todos) = emit(source);
+
+    assert!(content.contains(r#"<variant name="LocalBinding" default>"#));
+    assert!(content.contains(r#"<variant name="ArgsMember">"#));
+    assert!(content.contains(r#"<variant name="SlotObject">"#));
+    assert!(!content.contains(":data=\"schema\""));
+    assert!(!content.contains(":value=\"args.value\""));
+    assert!(!content.contains("=> <span>"));
+    assert_eq!(variants, 3);
+    assert_eq!(todos, 3);
+}
+
+#[test]
 fn emits_plain_title_without_category() {
     let source = r#"import AfButton from "./AfButton.vue";
 export default { component: AfButton, title: "AfButton" } satisfies Meta<typeof AfButton>;
