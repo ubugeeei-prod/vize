@@ -261,6 +261,23 @@ export const Primary = { args: {} };
 }
 
 #[test]
+fn emits_todo_for_static_args_with_nested_module_bindings() {
+    let source = r#"import AfButton from "./AfButton.vue";
+const base = { label: "Hi" };
+const fixture = { data: base };
+export default { component: AfButton, title: "AfButton" } satisfies Meta<typeof AfButton>;
+export const Primary = { args: { data: fixture } };
+"#;
+    let (content, variants, todos) = emit(source);
+
+    assert!(content.contains("<AfButton />"));
+    assert!(content.contains("TODO(vize musea migrate)"));
+    assert!(!content.contains(":data"));
+    assert_eq!(variants, 1);
+    assert_eq!(todos, 1);
+}
+
+#[test]
 fn emits_todo_for_nested_story_args_module_bindings() {
     let source = r#"import AfButton from "./AfButton.vue";
 const base = createFixture();

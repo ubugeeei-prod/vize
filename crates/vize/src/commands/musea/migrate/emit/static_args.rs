@@ -38,35 +38,33 @@ fn args_object_contains_unmigrated_bindings(
         if overrides.is_some_and(|object| args_has_static_property(object, name)) {
             return false;
         }
-        expression_needs_module_binding(&prop.value, module_bindings)
+        if static_binding_value(&prop.value, module_bindings).is_some() {
+            return false;
+        }
+        expression_needs_module_binding(&prop.value)
     })
 }
 
-fn expression_needs_module_binding(
-    expression: &Expression<'_>,
-    module_bindings: &ModuleBindings<'_>,
-) -> bool {
+fn expression_needs_module_binding(expression: &Expression<'_>) -> bool {
     match unwrap_expression(expression) {
         Expression::StringLiteral(_)
         | Expression::NumericLiteral(_)
         | Expression::BooleanLiteral(_)
         | Expression::NullLiteral(_) => false,
         Expression::TemplateLiteral(template) => !template.expressions.is_empty(),
-        Expression::UnaryExpression(unary) => {
-            expression_needs_module_binding(&unary.argument, module_bindings)
-        }
+        Expression::UnaryExpression(unary) => expression_needs_module_binding(&unary.argument),
         Expression::ArrayExpression(array) => array.elements.iter().any(|element| match element {
             ArrayExpressionElement::Elision(_) => false,
             ArrayExpressionElement::SpreadElement(_) => true,
-            _ => element.as_expression().is_none_or(|expression| {
-                expression_needs_module_binding(expression, module_bindings)
-            }),
+            _ => element
+                .as_expression()
+                .is_none_or(expression_needs_module_binding),
         }),
         Expression::ObjectExpression(object) => {
-            args_object_contains_unmigrated_bindings(object, None, module_bindings)
+            args_object_contains_unmigrated_bindings(object, None, &[])
         }
-        Expression::Identifier(_) => static_binding_value(expression, module_bindings).is_none(),
-        Expression::StaticMemberExpression(_)
+        Expression::Identifier(_)
+        | Expression::StaticMemberExpression(_)
         | Expression::ComputedMemberExpression(_)
         | Expression::CallExpression(_) => true,
         _ => true,
@@ -84,7 +82,7 @@ pub(super) fn static_binding_value<'a>(
         .iter()
         .rev()
         .find_map(|(name, value)| (*name == ident.name.as_str()).then_some(*value))?;
-    (!expression_needs_module_binding(value, &[])).then_some(value)
+    (!expression_needs_module_binding(value)).then_some(value)
 }
 
 pub(super) fn args_has_static_property(args: &ObjectExpression<'_>, name: &str) -> bool {

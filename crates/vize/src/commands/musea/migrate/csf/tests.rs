@@ -96,6 +96,25 @@ export const Only = { args: {} };
 }
 
 #[test]
+fn extracts_exported_const_module_bindings() {
+    let source = r#"import Card from "../components/Card.vue";
+export default { component: Card, title: "Card" } satisfies Meta<typeof Card>;
+export const fixture = { tone: "neutral" };
+"#;
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, source, SourceType::tsx()).parse();
+    assert!(!parsed.panicked);
+    let module = extract_csf(&parsed.program);
+
+    assert!(
+        module
+            .module_bindings
+            .iter()
+            .any(|(name, _)| *name == "fixture")
+    );
+}
+
+#[test]
 fn extracts_as_meta_and_name_override() {
     let source = r#"import Box from "./Box.vue";
 export default { component: Box, title: "Box" } as Meta;

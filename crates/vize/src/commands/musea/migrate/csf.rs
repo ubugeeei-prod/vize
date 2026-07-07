@@ -10,8 +10,8 @@ mod render;
 mod storyfn;
 
 use oxc_ast::ast::{
-    ExportDefaultDeclarationKind, Expression, ImportDeclarationSpecifier, ObjectExpression,
-    ObjectPropertyKind, Program, PropertyKey, Statement, VariableDeclarationKind,
+    Declaration, ExportDefaultDeclarationKind, Expression, ImportDeclarationSpecifier,
+    ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement, VariableDeclarationKind,
     VariableDeclarator,
 };
 use vize_carton::String;
@@ -77,8 +77,16 @@ pub(super) fn extract_csf<'a>(program: &'a Program<'a>) -> CsfModule<'a> {
 fn collect_module_bindings<'a>(program: &'a Program<'a>) -> Vec<(&'a str, &'a Expression<'a>)> {
     let mut bindings = Vec::new();
     for stmt in &program.body {
-        let Statement::VariableDeclaration(decl) = stmt else {
-            continue;
+        let decl = match stmt {
+            Statement::VariableDeclaration(decl) => decl,
+            Statement::ExportNamedDeclaration(export) => {
+                let Some(Declaration::VariableDeclaration(decl)) = export.declaration.as_ref()
+                else {
+                    continue;
+                };
+                decl
+            }
+            _ => continue,
         };
         if decl.kind != VariableDeclarationKind::Const {
             continue;
