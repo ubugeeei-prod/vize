@@ -31,10 +31,12 @@ pub(super) fn collect_stories<'a>(program: &'a Program<'a>) -> Vec<CsfStory<'a>>
             };
             let assigned_args = find_object_by_name(&story_args, export_name);
             let story = if let Some(object) = unwrap_object(init) {
-                if !is_story_object(object, &object_bindings) {
+                let story_kind = classify_story_object(export_name, object, &object_bindings);
+                if story_kind == StoryObjectKind::Fixture {
                     continue;
                 }
                 let mut story = story_from_object(export_name, object);
+                story.unsupported |= story_kind == StoryObjectKind::Unsupported;
                 if story.args.is_none() {
                     story.args = assigned_args;
                 }
@@ -79,44 +81,101 @@ fn collect_object_bindings<'a>(
     bindings
 }
 
-fn is_story_object<'a>(
-    object: &'a ObjectExpression<'a>,
-    object_bindings: &[(&'a str, &'a ObjectExpression<'a>)],
-) -> bool {
-    is_story_object_at_depth(object, object_bindings, 0)
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum StoryObjectKind {
+    Fixture,
+    Story,
+    Unsupported,
 }
 
-fn is_story_object_at_depth<'a>(
+fn classify_story_object<'a>(
+    export_name: &str,
+    object: &'a ObjectExpression<'a>,
+    object_bindings: &[(&'a str, &'a ObjectExpression<'a>)],
+) -> StoryObjectKind {
+    classify_story_object_at_depth(export_name, object, object_bindings, 0)
+}
+
+fn classify_story_object_at_depth<'a>(
+    export_name: &str,
     object: &'a ObjectExpression<'a>,
     object_bindings: &[(&'a str, &'a ObjectExpression<'a>)],
     depth: usize,
-) -> bool {
+) -> StoryObjectKind {
     const MAX_SPREAD_DEPTH: usize = 8;
     if depth > MAX_SPREAD_DEPTH {
-        return false;
+        return StoryObjectKind::Unsupported;
     }
 
-    object.properties.is_empty()
-        || object.properties.iter().any(|property| match property {
+    let mut has_story_shape = object.properties.is_empty();
+    let mut has_unsupported_spread = false;
+
+    for property in &object.properties {
+        match property {
             ObjectPropertyKind::SpreadProperty(spread) => {
-                spread_story_object(&spread.argument, object_bindings, depth + 1)
+                match spread_story_object(export_name, &spread.argument, object_bindings, depth + 1)
+                {
+                    StoryObjectKind::Fixture => {}
+                    StoryObjectKind::Story => has_story_shape = true,
+                    StoryObjectKind::Unsupported => has_unsupported_spread = true,
+                }
             }
             ObjectPropertyKind::ObjectProperty(prop) => {
-                !prop.computed && property_key_name(&prop.key).is_some_and(is_story_annotation_key)
+                if !prop.computed
+                    && property_key_name(&prop.key).is_some_and(is_story_annotation_key)
+                {
+                    has_story_shape = true;
+                }
             }
-        })
+        }
+    }
+
+    if has_unsupported_spread {
+        StoryObjectKind::Unsupported
+    } else if has_story_shape {
+        StoryObjectKind::Story
+    } else {
+        StoryObjectKind::Fixture
+    }
 }
 
 fn spread_story_object<'a>(
+    export_name: &str,
     expression: &'a Expression<'a>,
     object_bindings: &[(&'a str, &'a ObjectExpression<'a>)],
     depth: usize,
-) -> bool {
-    let Expression::Identifier(ident) = unwrap_expression(expression) else {
-        return false;
-    };
-    find_object_by_name(object_bindings, ident.name.as_str())
-        .is_some_and(|object| is_story_object_at_depth(object, object_bindings, depth))
+) -> StoryObjectKind {
+    let expression = unwrap_expression(expression);
+    if let Expression::Identifier(ident) = expression
+        && let Some(object) = find_object_by_name(object_bindings, ident.name.as_str())
+    {
+        return classify_story_object_at_depth(export_name, object, object_bindings, depth);
+    }
+
+    if unresolved_spread_may_be_story(export_name, expression) {
+        StoryObjectKind::Unsupported
+    } else {
+        StoryObjectKind::Fixture
+    }
+}
+
+fn unresolved_spread_may_be_story(export_name: &str, expression: &Expression<'_>) -> bool {
+    story_like_name(export_name)
+        || match expression {
+            Expression::Identifier(ident) => story_like_name(ident.name.as_str()),
+            Expression::StaticMemberExpression(member) => {
+                if let Expression::Identifier(object) = unwrap_expression(&member.object) {
+                    story_like_name(object.name.as_str())
+                } else {
+                    false
+                }
+            }
+            _ => false,
+        }
+}
+
+fn story_like_name(name: &str) -> bool {
+    name.contains("Story") || name.chars().next().is_some_and(|ch| ch.is_uppercase())
 }
 
 fn is_story_annotation_key(key: &str) -> bool {

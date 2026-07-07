@@ -310,6 +310,21 @@ export const Primary = { args: { data: { ...base, status: Status.Ready } } };
 }
 
 #[test]
+fn emits_todo_for_unresolved_story_spread() {
+    let source = r#"import AfButton from "./AfButton.vue";
+import { Primary as BaseStory } from "./Base.stories";
+export default { component: AfButton, title: "AfButton" } satisfies Meta<typeof AfButton>;
+export const Imported = { ...BaseStory };
+"#;
+    let (content, variants, todos) = emit(source);
+
+    assert!(content.contains(r#"<variant name="Imported" default>"#));
+    assert!(content.contains("TODO(vize musea migrate)"));
+    assert_eq!(variants, 1);
+    assert_eq!(todos, 1);
+}
+
+#[test]
 fn emits_directive_expressions_without_quot_entities() {
     let source = r#"import AfButton from "./AfButton.vue";
 export default { component: AfButton, title: "AfButton" } satisfies Meta<typeof AfButton>;

@@ -98,13 +98,17 @@ export const Only = { args: {} };
 #[test]
 fn extracts_exported_const_module_bindings() {
     let source = r#"import Card from "../components/Card.vue";
+import { Primary as ImportedStory } from "./Card.stories";
 export default { component: Card, title: "Card" } satisfies Meta<typeof Card>;
 const storyBase = { args: { tone: "neutral" } };
 export const fixture = { tone: "neutral" };
 export const currentUser = { name: "Jane" };
 export const mergedFixture = { ...fixture, label: "Hi" };
+export const externalFixture = { ...defaults, label: "Hi" };
 export const Empty = {};
 export const SpreadStory = { ...storyBase };
+export const ImportedSpread = { ...ImportedStory };
+export const NamespaceSpread = { ...Stories.Primary };
 "#;
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::tsx()).parse();
@@ -128,6 +132,12 @@ export const SpreadStory = { ...storyBase };
             .module_bindings
             .iter()
             .any(|(name, _)| *name == "mergedFixture")
+    );
+    assert!(
+        module
+            .module_bindings
+            .iter()
+            .any(|(name, _)| *name == "externalFixture")
     );
     let stories: Vec<TestStory> = module
         .stories
@@ -153,6 +163,18 @@ export const SpreadStory = { ...storyBase };
                 has_render: false,
                 has_args: false,
                 unsupported: false,
+            },
+            TestStory {
+                name: "ImportedSpread",
+                has_render: false,
+                has_args: false,
+                unsupported: true,
+            },
+            TestStory {
+                name: "NamespaceSpread",
+                has_render: false,
+                has_args: false,
+                unsupported: true,
             }
         ]
     );
