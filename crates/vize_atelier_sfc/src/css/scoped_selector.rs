@@ -2,7 +2,7 @@
 
 use super::transform::find_matching_paren;
 
-pub(super) fn split_before_trailing_universal_or_pseudo(
+pub(crate) fn split_before_trailing_universal_or_pseudo(
     selector: &str,
 ) -> Option<(&str, &str, &str)> {
     let (prefix_end, suffix_start) = trailing_compound_boundary(selector)?;

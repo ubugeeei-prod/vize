@@ -1,3 +1,4 @@
+use crate::css::scoped_selector::split_before_trailing_universal_or_pseudo;
 use vize_carton::{SmallVec, String};
 
 /// Scope CSS with the Vite plugin pipeline's selector model.
@@ -454,6 +455,13 @@ fn add_scope_before_trailing_combinator(selector: &str, scope_id: &str) -> Strin
 }
 
 fn add_scope_to_selector_end(selector: &str, scope_id: &str) -> String {
+    if let Some((prefix, boundary, suffix)) = split_before_trailing_universal_or_pseudo(selector) {
+        let mut output = add_scope_to_selector_end(prefix.trim_end(), scope_id);
+        output.push_str(boundary);
+        output.push_str(suffix.trim_start());
+        return output;
+    }
+
     let target_start = find_last_compound_start(selector);
     let before_target = &selector[..target_start];
     let target = &selector[target_start..];
@@ -708,23 +716,15 @@ mod tests {
     }
 
     #[test]
-    fn scopes_slotted_selector_with_slotted_scope_id() {
+    fn scopes_slotted_selectors_with_slotted_scope_id() {
         assert_eq!(
             scope_css_for_pipeline(":slotted(.foo) { color: red; }", "data-v-x").as_str(),
             ".foo[data-v-x-s]{color: red;}"
         );
-    }
-
-    #[test]
-    fn scopes_legacy_v_slotted_selector_with_slotted_scope_id() {
         assert_eq!(
             scope_css_for_pipeline("::v-slotted(.foo) { color: red; }", "data-v-x").as_str(),
             ".foo[data-v-x-s]{color: red;}"
         );
-    }
-
-    #[test]
-    fn scopes_slotted_selector_with_pseudo_suffix() {
         assert_eq!(
             scope_css_for_pipeline(":slotted(.foo):hover { color: red; }", "data-v-x").as_str(),
             ".foo[data-v-x-s]:hover{color: red;}"

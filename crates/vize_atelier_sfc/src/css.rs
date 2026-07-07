@@ -15,7 +15,7 @@ use vize_carton::{FxHashMap, String};
 #[cfg(feature = "native")]
 mod parser;
 mod scoped;
-mod scoped_selector;
+pub(crate) mod scoped_selector;
 #[cfg(test)]
 mod tests;
 mod transform;
