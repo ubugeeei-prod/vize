@@ -12,6 +12,7 @@ use super::{
 pub(super) fn collect_stories<'a>(program: &'a Program<'a>) -> Vec<CsfStory<'a>> {
     let templates = collect_template_renders(program);
     let story_args = collect_story_args(program);
+    let object_bindings = collect_object_bindings(program);
     let mut stories = Vec::new();
 
     for stmt in &program.body {
@@ -30,7 +31,7 @@ pub(super) fn collect_stories<'a>(program: &'a Program<'a>) -> Vec<CsfStory<'a>>
             };
             let assigned_args = find_object_by_name(&story_args, export_name);
             let story = if let Some(object) = unwrap_object(init) {
-                if !is_story_object(object) {
+                if !is_story_object(object, &object_bindings) {
                     continue;
                 }
                 let mut story = story_from_object(export_name, object);
@@ -49,14 +50,73 @@ pub(super) fn collect_stories<'a>(program: &'a Program<'a>) -> Vec<CsfStory<'a>>
     stories
 }
 
-fn is_story_object(object: &ObjectExpression<'_>) -> bool {
+fn collect_object_bindings<'a>(
+    program: &'a Program<'a>,
+) -> Vec<(&'a str, &'a ObjectExpression<'a>)> {
+    let mut bindings = Vec::new();
+    for stmt in &program.body {
+        let decl = match stmt {
+            Statement::VariableDeclaration(decl) => decl,
+            Statement::ExportNamedDeclaration(export) => {
+                let Some(Declaration::VariableDeclaration(decl)) = export.declaration.as_ref()
+                else {
+                    continue;
+                };
+                decl
+            }
+            _ => continue,
+        };
+        for declarator in &decl.declarations {
+            let Some(name) = binding_name(declarator) else {
+                continue;
+            };
+            let Some(object) = declarator.init.as_ref().and_then(unwrap_object) else {
+                continue;
+            };
+            bindings.push((name, object));
+        }
+    }
+    bindings
+}
+
+fn is_story_object<'a>(
+    object: &'a ObjectExpression<'a>,
+    object_bindings: &[(&'a str, &'a ObjectExpression<'a>)],
+) -> bool {
+    is_story_object_at_depth(object, object_bindings, 0)
+}
+
+fn is_story_object_at_depth<'a>(
+    object: &'a ObjectExpression<'a>,
+    object_bindings: &[(&'a str, &'a ObjectExpression<'a>)],
+    depth: usize,
+) -> bool {
+    const MAX_SPREAD_DEPTH: usize = 8;
+    if depth > MAX_SPREAD_DEPTH {
+        return false;
+    }
+
     object.properties.is_empty()
         || object.properties.iter().any(|property| match property {
-            ObjectPropertyKind::SpreadProperty(_) => true,
+            ObjectPropertyKind::SpreadProperty(spread) => {
+                spread_story_object(&spread.argument, object_bindings, depth + 1)
+            }
             ObjectPropertyKind::ObjectProperty(prop) => {
                 !prop.computed && property_key_name(&prop.key).is_some_and(is_story_annotation_key)
             }
         })
+}
+
+fn spread_story_object<'a>(
+    expression: &'a Expression<'a>,
+    object_bindings: &[(&'a str, &'a ObjectExpression<'a>)],
+    depth: usize,
+) -> bool {
+    let Expression::Identifier(ident) = unwrap_expression(expression) else {
+        return false;
+    };
+    find_object_by_name(object_bindings, ident.name.as_str())
+        .is_some_and(|object| is_story_object_at_depth(object, object_bindings, depth))
 }
 
 fn is_story_annotation_key(key: &str) -> bool {
@@ -69,7 +129,6 @@ fn is_story_annotation_key(key: &str) -> bool {
             | "experimental_afterEach"
             | "globals"
             | "loaders"
-            | "name"
             | "parameters"
             | "play"
             | "render"

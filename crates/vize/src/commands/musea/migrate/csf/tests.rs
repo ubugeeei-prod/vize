@@ -99,8 +99,12 @@ export const Only = { args: {} };
 fn extracts_exported_const_module_bindings() {
     let source = r#"import Card from "../components/Card.vue";
 export default { component: Card, title: "Card" } satisfies Meta<typeof Card>;
+const storyBase = { args: { tone: "neutral" } };
 export const fixture = { tone: "neutral" };
+export const currentUser = { name: "Jane" };
+export const mergedFixture = { ...fixture, label: "Hi" };
 export const Empty = {};
+export const SpreadStory = { ...storyBase };
 "#;
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::tsx()).parse();
@@ -112,6 +116,18 @@ export const Empty = {};
             .module_bindings
             .iter()
             .any(|(name, _)| *name == "fixture")
+    );
+    assert!(
+        module
+            .module_bindings
+            .iter()
+            .any(|(name, _)| *name == "currentUser")
+    );
+    assert!(
+        module
+            .module_bindings
+            .iter()
+            .any(|(name, _)| *name == "mergedFixture")
     );
     let stories: Vec<TestStory> = module
         .stories
@@ -125,12 +141,20 @@ export const Empty = {};
         .collect();
     assert_eq!(
         stories,
-        vec![TestStory {
-            name: "Empty",
-            has_render: false,
-            has_args: false,
-            unsupported: false,
-        }]
+        vec![
+            TestStory {
+                name: "Empty",
+                has_render: false,
+                has_args: false,
+                unsupported: false,
+            },
+            TestStory {
+                name: "SpreadStory",
+                has_render: false,
+                has_args: false,
+                unsupported: false,
+            }
+        ]
     );
 }
 
