@@ -34,7 +34,7 @@ impl DocumentLinkService {
         if let Some(ref script_setup) = descriptor.script_setup {
             if let Some(ref src) = script_setup.src
                 && let Some((start, end)) =
-                    Self::find_src_attr_range(content, script_setup.loc.start)
+                    Self::find_src_attr_range(content, script_setup.loc.tag_start)
                 && let Some(target) = Self::resolve_path(src, base_path.as_deref())
             {
                 links.push(Self::create_link(content, start, end, target));
@@ -52,7 +52,7 @@ impl DocumentLinkService {
 
         if let Some(ref script) = descriptor.script {
             if let Some(ref src) = script.src
-                && let Some((start, end)) = Self::find_src_attr_range(content, script.loc.start)
+                && let Some((start, end)) = Self::find_src_attr_range(content, script.loc.tag_start)
                 && let Some(target) = Self::resolve_path(src, base_path.as_deref())
             {
                 links.push(Self::create_link(content, start, end, target));
@@ -69,7 +69,7 @@ impl DocumentLinkService {
 
         if let Some(ref template) = descriptor.template
             && let Some(ref src) = template.src
-            && let Some((start, end)) = Self::find_src_attr_range(content, template.loc.start)
+            && let Some((start, end)) = Self::find_src_attr_range(content, template.loc.tag_start)
             && let Some(target) = Self::resolve_path(src, base_path.as_deref())
         {
             links.push(Self::create_link(content, start, end, target));
@@ -77,7 +77,7 @@ impl DocumentLinkService {
 
         for style in &descriptor.styles {
             if let Some(ref src) = style.src
-                && let Some((start, end)) = Self::find_src_attr_range(content, style.loc.start)
+                && let Some((start, end)) = Self::find_src_attr_range(content, style.loc.tag_start)
                 && let Some(target) = Self::resolve_path(src, base_path.as_deref())
             {
                 links.push(Self::create_link(content, start, end, target));
@@ -270,10 +270,7 @@ impl DocumentLinkService {
 
     /// Find src attribute range in the opening tag.
     fn find_src_attr_range(content: &str, tag_start: usize) -> Option<(usize, usize)> {
-        // Find the end of opening tag (>)
-        let tag_content = &content[tag_start..];
-        let tag_end = tag_content.find('>')?;
-        let tag = &tag_content[..tag_end];
+        let tag = content.get(tag_start..)?.split_once('>')?.0;
 
         // Find src="..." or src='...'
         let src_pos = tag.find("src=")?;
@@ -285,7 +282,7 @@ impl DocumentLinkService {
         }
 
         let value_start = src_pos + 5; // src=" plus quote
-        let value_end = after_src[1..].find(quote)? + 1; // content length
+        let value_end = after_src[1..].find(quote)?;
 
         Some((tag_start + value_start, tag_start + value_start + value_end))
     }

@@ -14,6 +14,13 @@ type SymbolInformation = {
   location: { uri: string; range: { start: { line: number; character: number } } };
 };
 
+async function queryWorkspaceSymbols(
+  session: LspSession,
+  query: string,
+): Promise<SymbolInformation[] | null> {
+  return (await session.request("workspace/symbol", { query })) as SymbolInformation[] | null;
+}
+
 /**
  * workspaceSymbol only indexes documents that are currently open in the
  * editor (the server iterates `state.documents`), and classifies script-setup
@@ -136,6 +143,94 @@ const internalState = ref(1)
       query: "zzzNoSuchSymbol",
     });
     assert.equal(unmatched, null);
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(testRootDir, { recursive: true, force: true });
+  }
+});
+
+test("vize lsp workspaceSymbol follows didChange and didClose document lifecycle", async (t) => {
+  const testRootDir = path.join(testOutputRoot, "lsp-workspace-symbol-lifecycle");
+  fs.mkdirSync(testRootDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    await session.initialize(workspaceDir, {
+      editor: true,
+      lint: false,
+      typecheck: false,
+    });
+
+    const initialSource = `<script setup lang="ts">
+const staleName = 1
+</script>
+
+<template>
+  <span>{{ staleName }}</span>
+</template>
+`;
+    const changedSource = `<script setup lang="ts">
+const freshName = 2
+</script>
+
+<template>
+  <span>{{ freshName }}</span>
+</template>
+`;
+    const filePath = path.join(workspaceDir, "Lifecycle.vue");
+    const uri = pathToFileURL(filePath).href;
+    fs.writeFileSync(filePath, initialSource, "utf8");
+
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri,
+        languageId: "vue",
+        version: 1,
+        text: initialSource,
+      },
+    });
+
+    await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
+      isDiagnosticsForUri(params, uri),
+    );
+
+    await t.test("opened document contributes its current script bindings", async () => {
+      const symbols = await queryWorkspaceSymbols(session, "staleName");
+      assert.equal(symbols?.length, 1, JSON.stringify(symbols));
+      assert.equal(symbols?.[0]?.location.uri, uri);
+      assert.equal(await queryWorkspaceSymbols(session, "freshName"), null);
+    });
+
+    session.notify("textDocument/didChange", {
+      textDocument: {
+        uri,
+        version: 2,
+      },
+      contentChanges: [{ text: changedSource }],
+    });
+    await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
+      isDiagnosticsForUri(params, uri),
+    );
+
+    await t.test("full document changes replace stale workspace symbols", async () => {
+      const symbols = await queryWorkspaceSymbols(session, "freshName");
+      assert.equal(symbols?.length, 1, JSON.stringify(symbols));
+      assert.equal(symbols?.[0]?.location.uri, uri);
+      assert.equal(await queryWorkspaceSymbols(session, "staleName"), null);
+    });
+
+    session.notify("textDocument/didClose", {
+      textDocument: { uri },
+    });
+    await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
+      isDiagnosticsForUri(params, uri),
+    );
+
+    await t.test("closed documents are removed from the workspace symbol index", async () => {
+      assert.equal(await queryWorkspaceSymbols(session, "freshName"), null);
+    });
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });

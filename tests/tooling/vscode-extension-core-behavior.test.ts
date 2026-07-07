@@ -5,6 +5,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   FEATURE_SETTING_KEYS,
+  LINT_ONLY_CONFIGURATION_UPDATES,
   createDocumentSelector,
   describeCapabilities,
   getInitializationOptions,
@@ -41,6 +42,31 @@ const FEATURE_TO_OPTION = {
   "inlayHints.enable": "inlayHints",
   "fileRename.enable": "fileRename",
 } as const satisfies Record<(typeof FEATURE_SETTING_KEYS)[number], string>;
+
+const FEATURE_MANIFEST_DEFAULTS = {
+  "lint.enable": true,
+  "diagnostics.enable": false,
+  "typecheck.enable": true,
+  "editor.enable": true,
+  "ecosystem.enable": true,
+  "optionsApi.enable": false,
+  "legacyVue2.enable": false,
+  "completion.enable": true,
+  "hover.enable": true,
+  "definition.enable": true,
+  "references.enable": true,
+  "documentSymbols.enable": true,
+  "workspaceSymbols.enable": true,
+  "codeActions.enable": true,
+  "rename.enable": true,
+  "codeLens.enable": true,
+  "formatting.enable": false,
+  "semanticTokens.enable": true,
+  "documentLinks.enable": true,
+  "foldingRanges.enable": true,
+  "inlayHints.enable": true,
+  "fileRename.enable": true,
+} as const satisfies Record<(typeof FEATURE_SETTING_KEYS)[number], boolean>;
 
 type Scope = "global" | "workspace" | "workspaceFolder";
 type ConfigValue = {
@@ -117,6 +143,20 @@ for (const key of FEATURE_SETTING_KEYS) {
   }
 }
 
+for (const key of FEATURE_SETTING_KEYS) {
+  test(`vscode manifest default for ${key} matches extension-core fallback`, () => {
+    const manifest = readJson<{
+      contributes?: {
+        configuration?: { properties?: Record<string, { default?: unknown; type?: string }> };
+      };
+    }>("editors/vscode/package.json");
+    const property = manifest.contributes?.configuration?.properties?.[`vize.${key}`];
+
+    assert.equal(property?.type, "boolean", `vize.${key}`);
+    assert.equal(property?.default, FEATURE_MANIFEST_DEFAULTS[key], `vize.${key}`);
+  });
+}
+
 test("vscode lint.enable takes precedence over deprecated diagnostics.enable", () => {
   assert.deepEqual(
     getInitializationOptions(
@@ -161,6 +201,38 @@ test("vscode feature keys are complete boolean manifest properties", () => {
   for (const key of FEATURE_SETTING_KEYS) {
     assert.equal(properties[`vize.${key}`]?.type, "boolean", `vize.${key}`);
   }
+});
+
+test("vscode lint-only profile updates every feature switch exactly once", () => {
+  const keys = LINT_ONLY_CONFIGURATION_UPDATES.map(([key]) => key);
+
+  assert.equal(new Set(keys).size, keys.length);
+  assert.deepEqual(keys.sort(), ["enable", ...FEATURE_SETTING_KEYS].sort());
+  assert.deepEqual(Object.fromEntries(LINT_ONLY_CONFIGURATION_UPDATES), {
+    enable: true,
+    "lint.enable": true,
+    "diagnostics.enable": false,
+    "typecheck.enable": false,
+    "editor.enable": false,
+    "ecosystem.enable": false,
+    "optionsApi.enable": false,
+    "legacyVue2.enable": false,
+    "completion.enable": false,
+    "hover.enable": false,
+    "definition.enable": false,
+    "references.enable": false,
+    "documentSymbols.enable": false,
+    "workspaceSymbols.enable": false,
+    "codeActions.enable": false,
+    "rename.enable": false,
+    "codeLens.enable": false,
+    "formatting.enable": false,
+    "semanticTokens.enable": false,
+    "documentLinks.enable": false,
+    "foldingRanges.enable": false,
+    "inlayHints.enable": false,
+    "fileRename.enable": false,
+  });
 });
 
 test("vscode explicit feature switches suppress synthesized recommended defaults", () => {
