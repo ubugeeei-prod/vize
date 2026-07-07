@@ -974,16 +974,15 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     if has_exposed_type {
         ts.push_str(exposed_unwrap_helper(legacy_vue2, dialect));
     }
-    let generic_component_params = setup_props_plan
-        .generic_param(generic_param)
-        .map(|generic| {
-            (
-                add_generic_defaults(generic),
-                extract_generic_names(generic),
-            )
-        });
+    let generic_component_params = setup_props_plan.generic_component_params(generic_param);
     ts.push_str("type __VizeComponentInstance = {\n");
-    setup_props_plan.emit_component_props_field(&mut ts, emits_info.has_emits_for_props);
+    setup_props_plan.emit_component_props_field(
+        &mut ts,
+        emits_info.has_emits_for_props,
+        generic_component_params
+            .as_ref()
+            .map(|(_, names)| names.as_str()),
+    );
     ts.push_str("  $emit: __EmitFn<Emits>;\n");
     ts.push_str("  $slots: Slots;\n");
     ts.push_str(instance_suffix(legacy_vue2, dialect, has_exposed_type));

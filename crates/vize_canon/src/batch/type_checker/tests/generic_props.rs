@@ -44,3 +44,58 @@ defineProps<FooProps<T>>();
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn batch_type_checker_infers_generic_sfc_props_through_extracted_component_props() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "generic-sfc-extracted-component-props",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts" generic="TValue = undefined">
+defineProps<{ value?: TValue }>();
+</script>
+"#,
+            ),
+            (
+                "src/usage.ts",
+                r#"import Child from "./Child.vue";
+
+type ComponentProps<T> = T extends new (...args: any) => { $props: infer P }
+  ? NonNullable<P>
+  : {};
+
+declare function mount<T>(
+  component: T,
+  options?: { props?: ComponentProps<T> }
+): void;
+
+mount(Child, {
+  props: {
+    value: "one"
+  }
+});
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.iter().all(|(file, code, message)| {
+            !(file == "src/usage.ts"
+                && *code == Some(2322)
+                && message.contains("Type 'string' is not assignable to type 'undefined'"))
+        }),
+        "generic SFC props should infer through extracted component props, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
