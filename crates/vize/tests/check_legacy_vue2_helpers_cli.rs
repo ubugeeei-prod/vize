@@ -153,6 +153,72 @@ export default {
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
+#[test]
+fn legacy_vue2_accepts_nuxt2_layout_and_head_this_bindings() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_project("legacy-vue2-nuxt2-layout-head-this");
+    std::fs::create_dir_all(project_root.join("layouts")).unwrap();
+    std::fs::write(
+        project_root.join("layouts/error.vue"),
+        r#"<script>
+export default {
+  layout: "empty",
+  props: {
+    error: {
+      type: Object,
+      default: null,
+    },
+  },
+  data() {
+    return {
+      pageNotFound: "404 Not Found",
+      otherError: "An error occurred",
+    };
+  },
+  head() {
+    const title = this.error.statusCode === 404 ? this.pageNotFound : this.otherError;
+    return { title };
+  },
+};
+</script>
+"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "--config",
+            "vize.config.json",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+            "layouts/error.vue",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
 fn create_project(name: &str) -> std::path::PathBuf {
     let project_root = unique_case_dir(name);
     let _ = std::fs::remove_dir_all(&project_root);

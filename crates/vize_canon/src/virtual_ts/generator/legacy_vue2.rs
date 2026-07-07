@@ -54,11 +54,17 @@ const LEGACY_DEFINE_COMPONENT_HELPER: &str = r#"type __VizeNuxt2Context = {
   isDev?: boolean;
   isHMR?: boolean;
 } & Record<string, any>;
-type __VizeNuxt2PageOptions = {
+type __VizeNuxt2PageOptions = ThisType<any> & {
   validate?: (context: __VizeNuxt2Context) => unknown;
   asyncData?: (context: __VizeNuxt2Context) => any;
   fetch?: (context: __VizeNuxt2Context) => any;
+  head?: any;
+  layout?: any;
+  layoutTransition?: any;
+  loading?: any;
   middleware?: any;
+  scrollToTop?: any;
+  transition?: any;
 };
 declare function __vizeDefineComponent<T>(options: T & __VizeNuxt2PageOptions): T;
 "#;

@@ -38,6 +38,14 @@ fn test_legacy_nuxt2_page_validate_gets_contextual_type() {
     assert!(
         output
             .code
+            .contains("type __VizeNuxt2PageOptions = ThisType<any> & {")
+            && output.code.contains("layout?: any;"),
+        "legacy Nuxt 2 page options should accept page-only options without narrowing `this`:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
             .contains("const __default__ = __vizeDefineComponent({"),
         "plain object exports should be wrapped by the legacy helper:\n{}",
         output.code
