@@ -4,6 +4,7 @@ import { type HmrUpdateType, generateHmrCode } from "../hmr.ts";
 
 // Re-export CSS utilities for backward compatibility
 export { resolveCssImports, type CssAliasRule } from "./css.ts";
+export { createFilter } from "./filter.ts";
 
 /** Known CSS preprocessor languages that must be delegated to Vite */
 const PREPROCESSOR_LANGS = new Set(["scss", "sass", "less", "stylus", "styl"]);
@@ -82,28 +83,6 @@ function insertAfterStaticImports(output: string, imports: string): string {
 export function generateScopeId(filename: string): string {
   const hash = createHash("sha256").update(filename).digest("hex");
   return hash.slice(0, 8);
-}
-
-export function createFilter(
-  include?: string | RegExp | (string | RegExp)[],
-  exclude?: string | RegExp | (string | RegExp)[],
-): (id: string) => boolean {
-  const includePatterns = include ? (Array.isArray(include) ? include : [include]) : [/\.vue$/];
-  const excludePatterns = exclude
-    ? Array.isArray(exclude)
-      ? exclude
-      : [exclude]
-    : [/node_modules/];
-
-  return (id: string) => {
-    const matchInclude = includePatterns.some((pattern) =>
-      typeof pattern === "string" ? id.includes(pattern) : pattern.test(id),
-    );
-    const matchExclude = excludePatterns.some((pattern) =>
-      typeof pattern === "string" ? id.includes(pattern) : pattern.test(id),
-    );
-    return matchInclude && !matchExclude;
-  };
 }
 
 export interface GenerateOutputOptions {
