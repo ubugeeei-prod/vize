@@ -262,7 +262,7 @@ const items = ref(['a', 'b', 'c'])
         assert!(
             virtual_ts.contains(r#"void function _slot_default_"#)
                 && virtual_ts.contains(
-                    r#"({ item, index }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "default"?: (props: infer __P"#
+                    r#"({ item, index }: typeof MyList extends { new (): { $slots: infer __S } } ? ("default" extends keyof __S ? (NonNullable<__S["default"]> extends (props: infer __P"#
                 ),
             "<template #default> slot props should be typed from the owning component:\n{virtual_ts}"
         );

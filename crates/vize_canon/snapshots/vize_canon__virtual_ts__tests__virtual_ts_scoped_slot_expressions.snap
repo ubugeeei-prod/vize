@@ -95,7 +95,7 @@ function __setup() {
   // @vize-map: expr -> 16:21
 
   // v-slot scope: #default
-  void function _slot_default_7({ item }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "default"?: (props: infer __P, ...args: any[]) => any } ? __P : any) : any) {
+  void function _slot_default_7({ item }: typeof MyList extends { new (): { $slots: infer __S } } ? ("default" extends keyof __S ? (NonNullable<__S["default"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any) {
     void item;
     void (item); // Interpolation
     // @vize-map: expr -> 64:68
@@ -126,7 +126,7 @@ function __setup() {
   });
 
   // Component props in v-slot scope: #default
-  void function _slot_props_default_7({ item }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "default"?: (props: infer __P, ...args: any[]) => any } ? __P : any) : any) {
+  void function _slot_props_default_7({ item }: typeof MyList extends { new (): { $slots: infer __S } } ? ("default" extends keyof __S ? (NonNullable<__S["default"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any) {
     void item;
   };
 

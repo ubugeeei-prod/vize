@@ -7,10 +7,7 @@ use setup_scoped::props_type_ref;
 pub(crate) use setup_scoped::{PropsTypeEmission, generate_setup_scoped_props_artifact};
 use template_bindings::{emit_macro_template_prop_bindings, should_skip_template_prop_binding};
 pub(crate) use template_names::collect_template_prop_names;
-use vize_carton::FxHashSet;
-use vize_carton::String;
-use vize_carton::append;
-use vize_carton::cstr;
+use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 use vize_croquis::macros::{MacroKind, ModelDefinition};
 use with_defaults::collect_with_defaults_default_names_from_source;
@@ -102,6 +99,9 @@ fn should_emit_keyed_template_prop_bindings(
         return false;
     }
     let base_name = strip_generic_params(type_name).trim();
+    if summary.types.definitions().has_interface_extends(base_name) {
+        return true;
+    }
     if let Some(body) = summary.types.definitions().resolve(base_name) {
         return has_top_level_type_operator(body.as_str())
             || !is_plain_inline_type_literal(body.as_str());

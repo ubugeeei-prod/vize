@@ -37,6 +37,8 @@ const MODERN_REF_UNWRAP_HELPER: &str = r#"    type __VizeIsUnion<T, __U = T> = T
     type __VizeWidenTemplateRef<T> = __VizeIsUnion<T> extends true ? T : T extends string ? string : T extends number ? number : T extends boolean ? boolean : T;
     type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;
 "#;
+const MODERN_GENERIC_REF_UNWRAP_HELPER: &str =
+    "    type __U<T> = T extends import('vue').Ref ? T['value'] : T;\n";
 const MODERN_EXPOSED_UNWRAP_HELPER: &str = "type __VizeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };\n";
 const LEGACY_DEFINE_COMPONENT_HELPER: &str = r#"type __VizeNuxt2Context = {
   app: any;
@@ -105,6 +107,18 @@ pub(super) fn ref_unwrap_helper(legacy_vue2: bool, dialect: VueVersion) -> &'sta
     }
 }
 
+pub(super) fn ref_unwrap_helper_for_template(
+    legacy_vue2: bool,
+    dialect: VueVersion,
+    has_generic_param: bool,
+) -> &'static str {
+    if has_generic_param && !needs_legacy_vue2_helpers(legacy_vue2, dialect) {
+        MODERN_GENERIC_REF_UNWRAP_HELPER
+    } else {
+        ref_unwrap_helper(legacy_vue2, dialect)
+    }
+}
+
 pub(super) fn exposed_unwrap_helper(legacy_vue2: bool, dialect: VueVersion) -> &'static str {
     if needs_legacy_vue2_helpers(legacy_vue2, dialect) {
         LEGACY_EXPOSED_UNWRAP_HELPER
@@ -140,7 +154,9 @@ pub(super) fn instance_suffix(
     ) {
         (true, true) => "} & __VizeVue2ComponentInstance & __VizeShallowUnwrapRef<Exposed>;\n",
         (true, false) => "} & __VizeVue2ComponentInstance;\n",
-        (false, true) => "} & __VizeShallowUnwrapRef<Exposed>;\n",
+        (false, true) => {
+            "} & import('vue').ComponentPublicInstance & __VizeShallowUnwrapRef<Exposed>;\n"
+        }
         (false, false) => "};\n",
     }
 }

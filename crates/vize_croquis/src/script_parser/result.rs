@@ -211,6 +211,23 @@ impl ScriptParseResult {
             return;
         }
 
+        let imported_names: FxHashSet<&str> = self
+            .binding_spans
+            .iter()
+            .filter_map(|(name, (start, end))| {
+                self.import_statements
+                    .iter()
+                    .any(|import| *start >= import.start && *end <= import.end)
+                    .then_some(name.as_str())
+            })
+            .collect();
+
+        for type_export in &mut self.type_exports {
+            if imported_names.contains(type_export.name.as_str()) {
+                type_export.hoisted = false;
+            }
+        }
+
         // A `typeof name` ref keeps a type hoisted only when `name` is visible
         // at module scope. Rather than materialize all imported binding names
         // up front (O(imports × bindings)), test each referenced name's

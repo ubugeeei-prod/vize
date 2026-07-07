@@ -16,6 +16,7 @@ mod no_check_props;
 mod no_unused;
 mod options_api_required_props;
 mod package_exports_types;
+mod recent_issues;
 mod scan;
 mod tsx_sfc;
 #[test]
@@ -40,7 +41,6 @@ const count: number = 'oops'
         insta::assert_debug_snapshot!("batch_type_checker_vue_diagnostics", snapshot);
     });
 }
-
 #[test]
 fn batch_type_checker_snapshots_script_setup_type_error() {
     if resolve_test_tsgo_binary().is_none() {

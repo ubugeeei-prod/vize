@@ -2,7 +2,7 @@ use vize_carton::config::VueVersion;
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{BindingType, Croquis};
 
-use super::legacy_vue2::ref_unwrap_helper;
+use super::legacy_vue2::ref_unwrap_helper_for_template;
 use super::spans::is_local_setup_binding;
 
 pub(super) struct TemplateRefUnwraps {
@@ -81,13 +81,18 @@ impl TemplateRefUnwraps {
         mut ts: &mut String,
         legacy_vue2: bool,
         dialect: VueVersion,
+        has_generic_param: bool,
     ) {
         if self.setup_bindings.is_empty() && self.options_api_setup_bindings.is_empty() {
             return;
         }
 
         ts.push_str("    // Auto-unwrap Vue refs in template scope\n");
-        ts.push_str(ref_unwrap_helper(legacy_vue2, dialect));
+        ts.push_str(ref_unwrap_helper_for_template(
+            legacy_vue2,
+            dialect,
+            has_generic_param,
+        ));
         for name in &self.setup_bindings {
             append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
         }

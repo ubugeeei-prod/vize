@@ -105,7 +105,7 @@ function __setup() {
   // @vize-map: expr -> 161:166
 
   // v-slot scope: #default
-  void function _slot_default_8({ item, index }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "default"?: (props: infer __P, ...args: any[]) => any } ? __P : any) : any) {
+  void function _slot_default_8({ item, index }: typeof MyList extends { new (): { $slots: infer __S } } ? ("default" extends keyof __S ? (NonNullable<__S["default"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any) {
     void item;
     void index;
     void (index); // Interpolation
@@ -115,7 +115,7 @@ function __setup() {
   };
 
   // v-slot scope: #header
-  void function _slot_header_9({ title }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "header"?: (props: infer __P, ...args: any[]) => any } ? __P : any) : any) {
+  void function _slot_header_9({ title }: typeof MyList extends { new (): { $slots: infer __S } } ? ("header" extends keyof __S ? (NonNullable<__S["header"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any) {
     void title;
     void (title); // Interpolation
     // @vize-map: expr -> 318:323
@@ -146,13 +146,13 @@ function __setup() {
   });
 
   // Component props in v-slot scope: #default
-  void function _slot_props_default_8({ item, index }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "default"?: (props: infer __P, ...args: any[]) => any } ? __P : any) : any) {
+  void function _slot_props_default_8({ item, index }: typeof MyList extends { new (): { $slots: infer __S } } ? ("default" extends keyof __S ? (NonNullable<__S["default"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any) {
     void item;
     void index;
   };
 
   // Component props in v-slot scope: #header
-  void function _slot_props_header_9({ title }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "header"?: (props: infer __P, ...args: any[]) => any } ? __P : any) : any) {
+  void function _slot_props_header_9({ title }: typeof MyList extends { new (): { $slots: infer __S } } ? ("header" extends keyof __S ? (NonNullable<__S["header"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any) {
     void title;
   };
 

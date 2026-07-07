@@ -749,7 +749,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
             // Shadow ref bindings with unwrapped types.
             // `var` allows reassignment (Vue templates can assign to refs).
-            template_ref_unwraps.emit_template_variables(&mut ts, legacy_vue2, dialect);
+            template_ref_unwraps.emit_template_variables(
+                &mut ts,
+                legacy_vue2,
+                dialect,
+                generic_param.is_some(),
+            );
 
             // Vue template context (available in template expressions)
             let template_context = profile!(

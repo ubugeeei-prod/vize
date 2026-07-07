@@ -118,6 +118,12 @@ impl TypeDefinitions {
         self.imported_types.contains_key(type_name)
     }
 
+    /// Check whether a local interface declaration has heritage clauses.
+    #[inline]
+    pub fn has_interface_extends(&self, name: &str) -> bool {
+        !self.interface_extends(name).is_empty()
+    }
+
     /// Merge another set of definitions in, keeping existing entries on a name
     /// clash. Used to fold a plain `<script>`'s local types into a
     /// `<script setup>` summary, which keeps precedence for setup-local data.

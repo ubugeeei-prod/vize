@@ -24,7 +24,7 @@ pub(super) fn slot_props_type(
             let component_ref = to_safe_identifier(component);
             if slot_name_is_static {
                 cstr!(
-                    "typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? (__S extends {{ \"{slot_name}\"?: (props: infer __P, ...args: any[]) => any }} ? __P : any) : any"
+                    "typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? (\"{slot_name}\" extends keyof __S ? (NonNullable<__S[\"{slot_name}\"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any"
                 )
             } else {
                 cstr!(
