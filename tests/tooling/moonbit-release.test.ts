@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
+import { moonScriptPath, repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
 
 function writeTempFile(contents: string): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-test-"));
@@ -184,4 +184,17 @@ test("release script includes nested release packages in extra synced manifests"
       `${manifestPath} version must be bumped with release commits`,
     );
   }
+});
+
+test("release script bypasses local git hooks when committing", () => {
+  const script = fs.readFileSync(moonScriptPath("release"), "utf8");
+
+  assert.ok(
+    script.includes('["commit", "--allow-empty", "--no-verify", "-m", "chore: release \\{tag}"]'),
+    "force-tag release commits must bypass local hooks",
+  );
+  assert.ok(
+    script.includes('["commit", "--no-verify", "-m", "chore: release \\{tag}"]'),
+    "normal release commits must bypass local hooks",
+  );
 });

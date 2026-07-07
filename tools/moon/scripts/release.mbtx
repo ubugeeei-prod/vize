@@ -888,9 +888,9 @@ async fn run_app() -> Int {
     return 1
   }
   let commit_args = if staged_output.text().trim() == "" && force_tag {
-    ["commit", "--allow-empty", "-m", "chore: release \{tag}"]
+    ["commit", "--allow-empty", "--no-verify", "-m", "chore: release \{tag}"]
   } else {
-    ["commit", "-m", "chore: release \{tag}"]
+    ["commit", "--no-verify", "-m", "chore: release \{tag}"]
   }
   if @process.run("git", commit_args) != 0 {
     @stdio.stderr.write("Failed to create the release commit\n")
