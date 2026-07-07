@@ -33,6 +33,7 @@ fn parses_tuple_entries_and_plain_object_export() {
 export default {
   modules: [
     ['@nuxtjs/i18n', { locales: ['en'] }],
+    [`@vueuse/nuxt`, { ssrHandlers: true }],
     'nuxt-og-image',
   ],
 }
@@ -40,8 +41,9 @@ export default {
     );
 
     assert!(modules.might_include(&["@nuxtjs/i18n", "@nuxt/i18n"]));
+    assert!(modules.might_include(&["@vueuse/nuxt"]));
     assert!(modules.might_include(&["nuxt-og-image"]));
-    assert!(!modules.might_include(&["@vueuse/nuxt"]));
+    assert!(!modules.might_include(&["@nuxtjs/color-mode"]));
 
     let empty = parse_nuxt_config_modules("export default defineNuxtConfig({})");
     assert!(!empty.might_include(&["@nuxtjs/i18n", "@nuxt/i18n"]));

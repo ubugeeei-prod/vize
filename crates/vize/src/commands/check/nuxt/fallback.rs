@@ -244,11 +244,7 @@ fn collect_nuxt_config_module_list(value: &Expression<'_>, resolved: &mut NuxtCo
             ArrayExpressionElement::Elision(_) => {}
             ArrayExpressionElement::SpreadElement(_) => resolved.has_unresolved_entries = true,
             _ => match element.as_expression().and_then(extract_expression) {
-                Some(Expression::StringLiteral(literal)) => resolved.insert(&literal.value),
-                Some(Expression::TemplateLiteral(template)) => match template.single_quasi() {
-                    Some(name) => resolved.insert(&name),
-                    None => resolved.has_unresolved_entries = true,
-                },
+                Some(expression) if static_module_name(expression, resolved) => {}
                 // `['module-name', { ...options }]` tuple form.
                 Some(Expression::ArrayExpression(tuple)) => {
                     match tuple
@@ -257,13 +253,30 @@ fn collect_nuxt_config_module_list(value: &Expression<'_>, resolved: &mut NuxtCo
                         .and_then(ArrayExpressionElement::as_expression)
                         .and_then(extract_expression)
                     {
-                        Some(Expression::StringLiteral(literal)) => resolved.insert(&literal.value),
+                        Some(expression) if static_module_name(expression, resolved) => {}
                         _ => resolved.has_unresolved_entries = true,
                     }
                 }
                 _ => resolved.has_unresolved_entries = true,
             },
         }
+    }
+}
+
+fn static_module_name(expression: &Expression<'_>, resolved: &mut NuxtConfigModules) -> bool {
+    match expression {
+        Expression::StringLiteral(literal) => {
+            resolved.insert(&literal.value);
+            true
+        }
+        Expression::TemplateLiteral(template) => match template.single_quasi() {
+            Some(name) => {
+                resolved.insert(&name);
+                true
+            }
+            None => false,
+        },
+        _ => false,
     }
 }
 
