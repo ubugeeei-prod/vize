@@ -57,6 +57,18 @@
     (setcar program "changed")
     (should (equal vize-eglot-command '("/tmp/vize" "lsp")))))
 
+(ert-deftest vize-eglot-server-program-does-not-mutate-command-for-profile-options ()
+  (let* ((vize-eglot-command '("/tmp/vize" "lsp"))
+         (program (vize-eglot-server-program 'lint)))
+    (setcar program "changed")
+    (should (equal vize-eglot-command '("/tmp/vize" "lsp")))))
+
+(ert-deftest vize-profile-options-recommended-copy-is-independent ()
+  (let ((first-copy (vize-profile-options 'recommended))
+        (second-copy (vize-profile-options 'recommended)))
+    (plist-put first-copy :editor nil)
+    (should (equal second-copy '(:editor t :ecosystem t :lint t :typecheck t)))))
+
 (ert-deftest vize-eglot-major-modes-cover-common-and-fallback-modes ()
   (dolist (mode '(vue-mode vue-ts-mode web-mode vize-vue-mode vize-art-vue-mode))
     (should (memq mode vize-eglot-major-modes))))
@@ -64,3 +76,19 @@
 (ert-deftest vize-auto-mode-alist-registers-vue-patterns ()
   (should (equal (cdr (assoc "\\.vue\\'" auto-mode-alist)) 'vize-vue-mode))
   (should (equal (cdr (assoc "\\.art\\.vue\\'" auto-mode-alist)) 'vize-art-vue-mode)))
+
+(ert-deftest vize-setup-eglot-registers-each-configured-major-mode ()
+  (let ((eglot-server-programs nil)
+        (vize-eglot-major-modes '(vize-vue-mode vize-art-vue-mode)))
+    (vize-setup-eglot 'lint)
+    (provide 'eglot)
+    (should
+     (equal eglot-server-programs
+            '((vize-art-vue-mode "vize" "lsp" :initializationOptions (:lint t))
+              (vize-vue-mode "vize" "lsp" :initializationOptions (:lint t)))))))
+
+(ert-deftest vize-setup-eglot-off-profile-registers-command-only ()
+  (let ((eglot-server-programs nil)
+        (vize-eglot-major-modes '(vize-vue-mode)))
+    (vize-setup-eglot 'off)
+    (should (equal eglot-server-programs '((vize-vue-mode "vize" "lsp"))))))

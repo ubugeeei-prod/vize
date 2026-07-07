@@ -9,6 +9,7 @@ import {
   describeCapabilities,
   getInitializationOptions,
   hasAnyEnabledCapability,
+  hasAnyExplicitCapabilityValue,
   shouldStartFromConfiguration,
   type ConfigurationInspection,
   type VizeConfigurationLike,
@@ -41,22 +42,43 @@ const FEATURE_TO_OPTION = {
   "fileRename.enable": "fileRename",
 } as const satisfies Record<(typeof FEATURE_SETTING_KEYS)[number], string>;
 
-class FakeConfig implements VizeConfigurationLike {
-  readonly values: Record<string, unknown>;
+type Scope = "global" | "workspace" | "workspaceFolder";
+type ConfigValue = {
+  scope: Scope;
+  value: unknown;
+};
 
-  constructor(values: Record<string, unknown>) {
-    this.values = values;
+class FakeConfig implements VizeConfigurationLike {
+  readonly values: Record<string, ConfigValue>;
+
+  constructor(values: Record<string, unknown>, scopes: Record<string, Scope> = {}) {
+    this.values = Object.fromEntries(
+      Object.entries(values).map(([key, value]) => [
+        key,
+        {
+          scope: scopes[key] ?? "workspace",
+          value,
+        },
+      ]),
+    );
   }
 
   get<T>(key: string, defaultValue: T): T {
-    return Object.hasOwn(this.values, key) ? (this.values[key] as T) : defaultValue;
+    return Object.hasOwn(this.values, key) ? (this.values[key].value as T) : defaultValue;
   }
 
   inspect<T>(key: string): ConfigurationInspection<T> | undefined {
-    if (!Object.hasOwn(this.values, key)) {
+    const entry = this.values[key];
+    if (!entry) {
       return undefined;
     }
-    return { workspaceValue: this.values[key] as T };
+    if (entry.scope === "global") {
+      return { globalValue: entry.value as T };
+    }
+    if (entry.scope === "workspaceFolder") {
+      return { workspaceFolderValue: entry.value as T };
+    }
+    return { workspaceValue: entry.value as T };
   }
 }
 
@@ -78,6 +100,21 @@ for (const key of FEATURE_SETTING_KEYS) {
       [option]: true,
     });
   });
+}
+
+for (const key of FEATURE_SETTING_KEYS) {
+  const option = FEATURE_TO_OPTION[key];
+
+  for (const scope of ["global", "workspace", "workspaceFolder"] as const) {
+    for (const value of [false, true] as const) {
+      test(`vscode ${scope} ${key}:${value} is explicit and maps to ${option}`, () => {
+        const config = new FakeConfig({ enable: true, [key]: value }, { [key]: scope });
+
+        assert.deepEqual(getInitializationOptions(config), { [option]: value });
+        assert.equal(hasAnyExplicitCapabilityValue(config), true);
+      });
+    }
+  }
 }
 
 test("vscode lint.enable takes precedence over deprecated diagnostics.enable", () => {
@@ -143,6 +180,23 @@ test("vscode start and enabled-capability checks handle false-only configs", () 
 
   assert.equal(shouldStartFromConfiguration(config), true);
   assert.equal(hasAnyEnabledCapability(config), false);
+  assert.equal(hasAnyExplicitCapabilityValue(config), true);
+});
+
+test("vscode explicit capability detection ignores unrelated settings", () => {
+  const config = new FakeConfig({
+    enable: true,
+    serverPath: "/tmp/vize",
+    "trace.server": "verbose",
+  });
+
+  assert.equal(hasAnyExplicitCapabilityValue(config), false);
+  assert.deepEqual(getInitializationOptions(config), {
+    editor: true,
+    ecosystem: true,
+    lint: true,
+    typecheck: true,
+  });
 });
 
 test("vscode document selector does not duplicate language and scheme pairs", () => {

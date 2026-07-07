@@ -6,7 +6,7 @@ export type JsonRpcMessage = {
   method?: string;
   params?: unknown;
   result?: unknown;
-  error?: { code: number; message: string };
+  error?: { code: number; message: string; data?: unknown };
 };
 
 export type LspInitializationOptions = {

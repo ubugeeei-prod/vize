@@ -39,6 +39,12 @@ call assert_equal(['/tmp/vize', 'lsp', '--debug'], s:custom.cmd)
 call assert_equal(['vue'], s:custom.allowlist)
 call assert_equal({'hover': v:true, 'references': v:true}, s:custom.initialization_options)
 
+let s:override_profile = vize#normalize({
+      \ 'profile': 'lint',
+      \ 'initialization_options': {'hover': v:true, 'references': v:true},
+      \ })
+call assert_equal({'hover': v:true, 'references': v:true}, s:override_profile.initialization_options)
+
 let s:mutable_opts = {'initialization_options': {'hover': v:true}}
 let s:mutable_config = vize#normalize(s:mutable_opts)
 let s:mutable_opts.initialization_options.hover = v:false
@@ -54,10 +60,27 @@ let s:mutable_cmd_config = vize#normalize(s:mutable_cmd_opts)
 let s:mutable_cmd_opts.cmd[0] = 'changed'
 call assert_equal(['vize', 'lsp'], s:mutable_cmd_config.cmd)
 
+let s:mutable_allowlist_opts = {'allowlist': ['vue', 'art-vue']}
+let s:mutable_allowlist_config = vize#normalize(s:mutable_allowlist_opts)
+let s:mutable_allowlist_opts.allowlist[0] = 'changed'
+call assert_equal(['vue', 'art-vue'], s:mutable_allowlist_config.allowlist)
+
+let s:default_config_nested_copy = vize#default_config()
+let s:default_config_nested_copy.initialization_options.editor = v:false
+call assert_equal({
+      \ 'editor': v:true,
+      \ 'ecosystem': v:true,
+      \ 'lint': v:true,
+      \ 'typecheck': v:true,
+      \ }, vize#default_config().initialization_options)
+
 let s:lsp_config = vize#vim_lsp_config({'profile': 'off'})
 call assert_equal('vize', s:lsp_config.name)
 call assert_equal(['vue', 'art-vue'], s:lsp_config.allowlist)
 call assert_equal({}, s:lsp_config.initialization_options)
+call assert_equal(['vize', 'lsp'], s:lsp_config.cmd({}))
+let s:lsp_cmd_copy = s:lsp_config.cmd({})
+let s:lsp_cmd_copy[0] = 'changed'
 call assert_equal(['vize', 'lsp'], s:lsp_config.cmd({}))
 
 let s:custom_lsp_config = vize#vim_lsp_config({
