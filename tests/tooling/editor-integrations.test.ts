@@ -11,14 +11,16 @@ import {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
+function readText(relativePath: string): string {
+  return fs.readFileSync(path.join(root, relativePath), "utf-8");
+}
+
 function readJson<T>(relativePath: string): T {
-  return JSON.parse(fs.readFileSync(path.join(root, relativePath), "utf-8")) as T;
+  return JSON.parse(readText(relativePath)) as T;
 }
 
 function workspaceVersion(): string {
-  const version = fs
-    .readFileSync(path.join(root, "Cargo.toml"), "utf-8")
-    .match(/^version = "(.+)"$/m)?.[1];
+  const version = readText("Cargo.toml").match(/^version = "(.+)"$/m)?.[1];
 
   assert.ok(version);
   return version;
@@ -194,14 +196,13 @@ test("vscode-vize wires art-vue documents into editor features", () => {
     }
   }
 
-  const extensionSource = fs.readFileSync(
-    path.join(root, "editors/vscode/src/extension.ts"),
-    "utf-8",
-  );
+  const extensionSource = readText("editors/vscode/src/extension.ts");
+  const extensionCoreSource = readText("editors/vscode/src/extension-core.ts");
 
-  assert.match(extensionSource, /SUPPORTED_LANGUAGE_IDS\s*=\s*\["vue", "art-vue", "html"\]/);
-  assert.match(extensionSource, /SUPPORTED_URI_SCHEMES\s*=\s*\["file", "untitled"\]/);
-  assert.match(extensionSource, /documentSelector:\s*SUPPORTED_URI_SCHEMES\.flatMap/);
+  assert.match(extensionCoreSource, /SUPPORTED_LANGUAGE_IDS\s*=\s*\["vue", "art-vue", "html"\]/);
+  assert.match(extensionCoreSource, /SUPPORTED_URI_SCHEMES\s*=\s*\["file", "untitled"\]/);
+  assert.match(extensionCoreSource, /function createDocumentSelector/);
+  assert.match(extensionSource, /documentSelector:\s*createDocumentSelector\(\)/);
   assert.match(extensionSource, /onDidChangeConfiguration/);
   assert.match(extensionSource, /scheduleClientSync\(context,\s*"configuration changed"\)/);
   assert.match(extensionSource, /function scheduleClientSync/);
@@ -429,16 +430,13 @@ test("vscode-art grammar stays aligned with vue-aware editor support", () => {
 });
 
 test("zed-vize registers art-vue as a first-party language", () => {
-  const manifest = fs.readFileSync(path.join(root, "editors/zed/extension.toml"), "utf-8");
+  const manifest = readText("editors/zed/extension.toml");
   assert.match(manifest, /^languages = \["Vue", "Art Vue"\]$/m);
   assert.match(manifest, /^"Vue" = "vue"$/m);
   assert.match(manifest, /^"Art Vue" = "art-vue"$/m);
   assert.match(manifest, /^\[grammars\.art-vue\]$/m);
 
-  const artConfig = fs.readFileSync(
-    path.join(root, "editors/zed/languages/art-vue/config.toml"),
-    "utf-8",
-  );
+  const artConfig = readText("editors/zed/languages/art-vue/config.toml");
   assert.match(artConfig, /^name = "Art Vue"$/m);
   assert.match(artConfig, /^grammar = "art-vue"$/m);
   assert.match(artConfig, /^path_suffixes = \["art\.vue"\]$/m);
@@ -459,22 +457,16 @@ test("zed-vize registers art-vue as a first-party language", () => {
     );
   }
 
-  const injections = fs.readFileSync(
-    path.join(root, "editors/zed/languages/art-vue/injections.scm"),
-    "utf-8",
-  );
+  const injections = readText("editors/zed/languages/art-vue/injections.scm");
   assert.match(injections, /directive_attribute/);
   assert.match(injections, /style_element/);
   assert.match(injections, /template_element/);
 });
 
 test("CI packages editor extension artifacts", () => {
-  const workflow = fs.readFileSync(path.join(root, ".github/workflows/check.yml"), "utf-8");
-  const buildTasks = fs.readFileSync(path.join(root, "tools/vite-plus/tasks/build.ts"), "utf-8");
-  const testTasks = fs.readFileSync(
-    path.join(root, "tools/vite-plus/tasks/test-benchmark.ts"),
-    "utf-8",
-  );
+  const workflow = readText(".github/workflows/check.yml");
+  const buildTasks = readText("tools/vite-plus/tasks/build.ts");
+  const testTasks = readText("tools/vite-plus/tasks/test-benchmark.ts");
 
   assert.match(
     workflow,

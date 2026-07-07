@@ -10,6 +10,7 @@ use std::process::Command;
 
 mod editor_files;
 
+use crate::commands::lsp::{LspTransport, transport_from_port};
 use editor_files::{copy_dir_all, find_vscode_vsix, find_zed_extension_source};
 
 const VSCODE_EXTENSION_ID: &str = "ubugeeei.vize";
@@ -56,6 +57,13 @@ pub struct EditorArgs {
     pub status: bool,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum EditorOperation {
+    Install,
+    Status,
+    Uninstall,
+}
+
 pub fn run(args: IdeArgs) {
     match args.command {
         Some(IdeCommands::Vscode(editor_args)) => run_vscode(editor_args),
@@ -66,10 +74,9 @@ pub fn run(args: IdeArgs) {
 
 /// Run LSP server (default behavior)
 fn run_lsp(args: IdeArgs) {
-    let result = if let Some(port) = args.port {
-        vize_maestro::serve_tcp_blocking(port)
-    } else {
-        vize_maestro::serve_blocking()
+    let result = match transport_from_port(args.port) {
+        LspTransport::Stdio => vize_maestro::serve_blocking(),
+        LspTransport::Tcp(port) => vize_maestro::serve_tcp_blocking(port),
     };
 
     if let Err(e) = result {
@@ -80,29 +87,29 @@ fn run_lsp(args: IdeArgs) {
 
 /// Handle VSCode extension operations
 fn run_vscode(args: EditorArgs) {
-    if args.uninstall {
-        vscode_uninstall();
-    } else if args.status {
-        vscode_status();
-    } else if args.install {
-        vscode_install();
-    } else {
-        // Default to install
-        vscode_install();
+    match editor_operation(&args) {
+        EditorOperation::Install => vscode_install(),
+        EditorOperation::Status => vscode_status(),
+        EditorOperation::Uninstall => vscode_uninstall(),
     }
 }
 
 /// Handle Zed extension operations
 fn run_zed(args: EditorArgs) {
+    match editor_operation(&args) {
+        EditorOperation::Install => zed_install(),
+        EditorOperation::Status => zed_status(),
+        EditorOperation::Uninstall => zed_uninstall(),
+    }
+}
+
+fn editor_operation(args: &EditorArgs) -> EditorOperation {
     if args.uninstall {
-        zed_uninstall();
+        EditorOperation::Uninstall
     } else if args.status {
-        zed_status();
-    } else if args.install {
-        zed_install();
+        EditorOperation::Status
     } else {
-        // Default to install
-        zed_install();
+        EditorOperation::Install
     }
 }
 

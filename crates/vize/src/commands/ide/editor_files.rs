@@ -1,12 +1,17 @@
 use std::path::{Path, PathBuf};
 
 pub(super) fn find_vscode_vsix() -> Option<PathBuf> {
+    let repo_source = PathBuf::from("editors/vscode");
+    let exe_source = std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(|p| p.join("../../editors/vscode")))
+        .unwrap_or_default();
+
     find_vscode_vsix_in_locations([
-        PathBuf::from("editors/vscode"),
-        std::env::current_exe()
-            .ok()
-            .and_then(|p| p.parent().map(|p| p.join("../../editors/vscode")))
-            .unwrap_or_default(),
+        repo_source.join("dist"),
+        repo_source,
+        exe_source.join("dist"),
+        exe_source,
     ])
 }
 
@@ -130,6 +135,24 @@ mod tests {
             find_vscode_vsix_in_locations([dir.path().join("missing"), dir.path().to_path_buf()]);
 
         assert_eq!(found.as_deref(), Some(package.as_path()));
+    }
+
+    #[test]
+    fn vscode_vsix_lookup_prefers_packaged_dist_directory() {
+        let extension_dir = tempfile::tempdir().unwrap();
+        let dist_dir = extension_dir.path().join("dist");
+        std::fs::create_dir(&dist_dir).unwrap();
+        let stale_package = extension_dir.path().join("vize-old.vsix");
+        let packaged = dist_dir.join("vize.vsix");
+        std::fs::write(&stale_package, "old").unwrap();
+        std::fs::write(&packaged, "new").unwrap();
+
+        let found = find_vscode_vsix_in_locations([
+            extension_dir.path().join("dist"),
+            extension_dir.path().to_path_buf(),
+        ]);
+
+        assert_eq!(found.as_deref(), Some(packaged.as_path()));
     }
 
     #[test]

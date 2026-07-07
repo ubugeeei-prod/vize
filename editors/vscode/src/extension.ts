@@ -26,6 +26,16 @@ import {
   Trace,
   TransportKind,
 } from "vscode-languageclient/node";
+import {
+  LINT_ONLY_CONFIGURATION_UPDATES,
+  createDocumentSelector,
+  describeCapabilities,
+  getInitializationOptions,
+  hasAnyEnabledCapability,
+  hasExplicitConfigurationValue,
+  shouldStartFromConfiguration,
+  type LspInitializationOptions,
+} from "./extension-core";
 
 const execFileAsync = promisify(execFile);
 let client: LanguageClient | undefined;
@@ -38,7 +48,6 @@ let currentStatusDetail = "";
 let configurationSyncTimer: ReturnType<typeof setTimeout> | undefined;
 let suppressConfigurationSync = false;
 
-type LspInitializationOptions = Partial<Record<string, boolean>>;
 type ServerCandidateSource =
   | "configured"
   | "bundled"
@@ -70,8 +79,6 @@ type VizeStatusAction =
 type VizeStatusQuickPickItem = QuickPickItem & {
   action: VizeStatusAction;
 };
-const SUPPORTED_LANGUAGE_IDS = ["vue", "art-vue", "html"] as const;
-const SUPPORTED_URI_SCHEMES = ["file", "untitled"] as const;
 const RECOMMENDED_SETUP_ACTION = "Enable Recommended";
 const LINT_ONLY_SETUP_ACTION = "Enable Lint Only";
 const OPEN_SETTINGS_ACTION = "Open Settings";
@@ -83,52 +90,6 @@ const INITIAL_SETUP_PROMPT_DISMISSED_KEY = "vize.initialSetupPrompt.dismissed";
 const CAPABILITY_PROMPT_DISMISSED_KEY = "vize.capabilityPrompt.dismissed";
 const RELEASE_DOWNLOAD_TIMEOUT_MS = 30_000;
 const RELEASE_DOWNLOAD_MAX_REDIRECTS = 5;
-const FEATURE_SETTING_KEYS = [
-  "lint.enable",
-  "diagnostics.enable",
-  "typecheck.enable",
-  "editor.enable",
-  "ecosystem.enable",
-  "optionsApi.enable",
-  "legacyVue2.enable",
-  "completion.enable",
-  "hover.enable",
-  "definition.enable",
-  "references.enable",
-  "documentSymbols.enable",
-  "workspaceSymbols.enable",
-  "codeActions.enable",
-  "rename.enable",
-  "codeLens.enable",
-  "formatting.enable",
-  "semanticTokens.enable",
-  "documentLinks.enable",
-  "foldingRanges.enable",
-  "inlayHints.enable",
-  "fileRename.enable",
-] as const;
-const CAPABILITY_LABELS: Record<string, string> = {
-  lint: "lint",
-  typecheck: "type check",
-  editor: "editor bundle",
-  optionsApi: "Vue 3 Options API",
-  legacyVue2: "Vue 2.7 / Nuxt 2",
-  completion: "completion",
-  hover: "hover",
-  definition: "definition",
-  references: "references",
-  documentSymbols: "document symbols",
-  workspaceSymbols: "workspace symbols",
-  codeActions: "code actions",
-  rename: "rename",
-  codeLens: "code lens",
-  formatting: "formatting",
-  semanticTokens: "semantic tokens",
-  documentLinks: "document links",
-  foldingRanges: "folding",
-  inlayHints: "inlay hints",
-  fileRename: "file rename",
-};
 
 export async function activate(context: ExtensionContext): Promise<void> {
   outputChannel = window.createOutputChannel("Vize");
@@ -212,12 +173,12 @@ function scheduleClientSync(context: ExtensionContext, reason: string): void {
 
 async function syncClientToConfiguration(context: ExtensionContext, reason: string): Promise<void> {
   let config = workspace.getConfiguration("vize");
-  let enabled = shouldStartFromConfiguration(config);
+  let enabled = shouldStartFromConfiguration(config, hasWorkspaceLspConfig());
 
   if (!enabled) {
     await maybeOfferInitialSetup(context, config);
     config = workspace.getConfiguration("vize");
-    enabled = shouldStartFromConfiguration(config);
+    enabled = shouldStartFromConfiguration(config, hasWorkspaceLspConfig());
 
     if (!enabled) {
       if (client) {
@@ -338,29 +299,7 @@ async function applyRecommendedConfiguration(): Promise<void> {
 }
 
 async function applyLintOnlyConfiguration(): Promise<void> {
-  await applyConfigurationUpdates([
-    ["enable", true],
-    ["lint.enable", true],
-    ["diagnostics.enable", false],
-    ["typecheck.enable", false],
-    ["editor.enable", false],
-    ["ecosystem.enable", false],
-    ["completion.enable", false],
-    ["hover.enable", false],
-    ["definition.enable", false],
-    ["references.enable", false],
-    ["documentSymbols.enable", false],
-    ["workspaceSymbols.enable", false],
-    ["codeActions.enable", false],
-    ["rename.enable", false],
-    ["codeLens.enable", false],
-    ["formatting.enable", false],
-    ["semanticTokens.enable", false],
-    ["documentLinks.enable", false],
-    ["foldingRanges.enable", false],
-    ["inlayHints.enable", false],
-    ["fileRename.enable", false],
-  ]);
+  await applyConfigurationUpdates(LINT_ONLY_CONFIGURATION_UPDATES);
 }
 
 async function applyConfigurationUpdates(updates: Array<[string, unknown]>): Promise<void> {
@@ -405,7 +344,10 @@ async function selectServerExecutable(context: ExtensionContext): Promise<void> 
 
 async function showStatus(context: ExtensionContext): Promise<void> {
   const config = workspace.getConfiguration("vize");
-  const initializationOptions = getInitializationOptions(config, { logDefaultProfile: false });
+  const initializationOptions = getInitializationOptions(config, {
+    hasWorkspaceLspConfig: hasWorkspaceLspConfig(),
+    logDefaultProfile: false,
+  });
   const items = createStatusItems(config);
 
   const selected = await window.showQuickPick(items, {
@@ -518,49 +460,6 @@ function getConfigurationTarget(): ConfigurationTarget {
     : ConfigurationTarget.Global;
 }
 
-function hasExplicitConfigurationValue(
-  config: ReturnType<typeof workspace.getConfiguration>,
-  key: string,
-): boolean {
-  const inspected = config.inspect(key) as
-    | {
-        globalValue?: unknown;
-        workspaceValue?: unknown;
-        workspaceFolderValue?: unknown;
-      }
-    | undefined;
-
-  return (
-    inspected?.globalValue !== undefined ||
-    inspected?.workspaceValue !== undefined ||
-    inspected?.workspaceFolderValue !== undefined
-  );
-}
-
-function hasAnyEnabledCapability(config: ReturnType<typeof workspace.getConfiguration>): boolean {
-  return FEATURE_SETTING_KEYS.some((key) => config.get<boolean>(key, false));
-}
-
-function hasAnyExplicitCapabilityValue(
-  config: ReturnType<typeof workspace.getConfiguration>,
-): boolean {
-  return FEATURE_SETTING_KEYS.some((key) => hasExplicitConfigurationValue(config, key));
-}
-
-function shouldStartFromConfiguration(
-  config: ReturnType<typeof workspace.getConfiguration>,
-): boolean {
-  if (config.get<boolean>("enable", false)) {
-    return true;
-  }
-
-  if (hasExplicitConfigurationValue(config, "enable")) {
-    return false;
-  }
-
-  return hasWorkspaceLspConfig();
-}
-
 function hasWorkspaceLspConfig(): boolean {
   const workspaceFolders = workspace.workspaceFolders;
   if (!workspaceFolders) {
@@ -609,7 +508,10 @@ async function startClient(
   context: ExtensionContext,
   config: ReturnType<typeof workspace.getConfiguration>,
 ): Promise<void> {
-  const initializationOptions = getInitializationOptions(config);
+  const initializationOptions = getInitializationOptions(config, {
+    hasWorkspaceLspConfig: hasWorkspaceLspConfig(),
+    log: (message) => outputChannel.appendLine(message),
+  });
   activeInitializationOptions = initializationOptions;
   updateStatusBar("starting", `Starting with ${describeCapabilities(initializationOptions)}`);
 
@@ -665,12 +567,7 @@ function createClientOptions(
   initializationOptions: LspInitializationOptions,
 ): LanguageClientOptions {
   return {
-    documentSelector: SUPPORTED_URI_SCHEMES.flatMap((scheme) =>
-      SUPPORTED_LANGUAGE_IDS.map((language) => ({
-        scheme,
-        language,
-      })),
-    ),
+    documentSelector: createDocumentSelector(),
     synchronize: {
       configurationSection: "vize",
       fileEvents: [
@@ -698,87 +595,6 @@ function applyTraceSetting(
 
   void nextClient.setTrace(trace);
   outputChannel.appendLine(`Vize trace level: ${traceSetting}`);
-}
-
-function getInitializationOptions(
-  config: ReturnType<typeof workspace.getConfiguration>,
-  behavior: { logDefaultProfile?: boolean } = {},
-): LspInitializationOptions {
-  const options: LspInitializationOptions = {};
-
-  setFeatureOption(options, config, "lint.enable", "lint", true);
-  setDiagnosticsAliasOption(options, config);
-  setFeatureOption(options, config, "typecheck.enable", "typecheck", true);
-  setFeatureOption(options, config, "editor.enable", "editor", true);
-  setFeatureOption(options, config, "ecosystem.enable", "ecosystem", true);
-  setFeatureOption(options, config, "optionsApi.enable", "optionsApi", false);
-  setFeatureOption(options, config, "legacyVue2.enable", "legacyVue2", false);
-  setFeatureOption(options, config, "completion.enable", "completion", true);
-  setFeatureOption(options, config, "hover.enable", "hover", true);
-  setFeatureOption(options, config, "definition.enable", "definition", true);
-  setFeatureOption(options, config, "references.enable", "references", true);
-  setFeatureOption(options, config, "documentSymbols.enable", "documentSymbols", true);
-  setFeatureOption(options, config, "workspaceSymbols.enable", "workspaceSymbols", true);
-  setFeatureOption(options, config, "codeActions.enable", "codeActions", true);
-  setFeatureOption(options, config, "rename.enable", "rename", true);
-  setFeatureOption(options, config, "codeLens.enable", "codeLens", true);
-  setFeatureOption(options, config, "formatting.enable", "formatting", false);
-  setFeatureOption(options, config, "semanticTokens.enable", "semanticTokens", true);
-  setFeatureOption(options, config, "documentLinks.enable", "documentLinks", true);
-  setFeatureOption(options, config, "foldingRanges.enable", "foldingRanges", true);
-  setFeatureOption(options, config, "inlayHints.enable", "inlayHints", true);
-  setFeatureOption(options, config, "fileRename.enable", "fileRename", true);
-
-  if (
-    Object.keys(options).length === 0 &&
-    config.get<boolean>("enable", false) &&
-    !hasAnyExplicitCapabilityValue(config) &&
-    !hasWorkspaceLspConfig()
-  ) {
-    if (behavior.logDefaultProfile !== false) {
-      outputChannel.appendLine(
-        "Vize is enabled with no explicit feature switches. Using the recommended diagnostics, editor, and ecosystem profile.",
-      );
-    }
-    options.lint = true;
-    options.typecheck = true;
-    options.editor = true;
-    options.ecosystem = true;
-  }
-
-  return options;
-}
-
-function setDiagnosticsAliasOption(
-  options: LspInitializationOptions,
-  config: ReturnType<typeof workspace.getConfiguration>,
-): void {
-  const enabled = config.get<boolean>("diagnostics.enable", false);
-  if (enabled === true) {
-    options.lint = true;
-    return;
-  }
-  if (
-    hasExplicitConfigurationValue(config, "diagnostics.enable") &&
-    !hasExplicitConfigurationValue(config, "lint.enable")
-  ) {
-    options.lint = false;
-  }
-}
-
-function setFeatureOption(
-  options: LspInitializationOptions,
-  config: ReturnType<typeof workspace.getConfiguration>,
-  key: string,
-  name: string,
-  defaultValue: boolean,
-): void {
-  if (!hasExplicitConfigurationValue(config, key)) {
-    return;
-  }
-
-  const enabled = config.get<boolean>(key, defaultValue);
-  options[name] = enabled;
 }
 
 export async function deactivate(): Promise<void> {
@@ -903,14 +719,6 @@ function formatStatus(status: VizeStatus): string {
     starting: "starting",
   };
   return labels[status];
-}
-
-function describeCapabilities(options: LspInitializationOptions): string {
-  const capabilities = Object.entries(options)
-    .filter(([, enabled]) => enabled === true)
-    .map(([name]) => CAPABILITY_LABELS[name] ?? name);
-
-  return capabilities.length ? capabilities.join(", ") : "none";
 }
 
 function collectServerCandidates(context: ExtensionContext, exeName: string): ServerCandidate[] {

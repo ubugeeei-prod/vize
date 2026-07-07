@@ -25,7 +25,9 @@ const explicitlyDisabledInitializationOptions = {
   formatting: false,
   hover: false,
   inlayHints: false,
+  legacyVue2: false,
   lint: false,
+  optionsApi: false,
   references: false,
   rename: false,
   semanticTokens: false,
@@ -42,6 +44,8 @@ const featureSettingKeys = [
   "typecheck.enable",
   "editor.enable",
   "ecosystem.enable",
+  "optionsApi.enable",
+  "legacyVue2.enable",
   "completion.enable",
   "hover.enable",
   "definition.enable",
@@ -699,13 +703,9 @@ function readGrammar(extension, grammarPath) {
   return JSON.parse(fs.readFileSync(path.join(extension.extensionPath, grammarPath), "utf-8"));
 }
 
-function initializeMessages(entries) {
-  return entries.filter((entry) => entry.method === "initialize");
-}
+const initializeMessages = (entries) => entries.filter((entry) => entry.method === "initialize");
 
-function methodMessages(entries, method) {
-  return entries.filter((entry) => entry.method === method);
-}
+const methodMessages = (entries, method) => entries.filter((entry) => entry.method === method);
 
 function lastInitialize(entries) {
   const message = initializeMessages(entries).at(-1);

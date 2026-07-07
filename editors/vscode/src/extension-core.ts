@@ -1,0 +1,225 @@
+export type LspInitializationOptions = Partial<Record<string, boolean>>;
+
+export type ConfigurationInspection<T = unknown> = {
+  globalValue?: T;
+  workspaceValue?: T;
+  workspaceFolderValue?: T;
+};
+
+export type VizeConfigurationLike = {
+  get<T>(key: string, defaultValue: T): T;
+  inspect<T>(key: string): ConfigurationInspection<T> | undefined;
+};
+
+export type InitializationOptionBehavior = {
+  hasWorkspaceLspConfig?: boolean;
+  log?: (message: string) => void;
+  logDefaultProfile?: boolean;
+};
+
+export const SUPPORTED_LANGUAGE_IDS = ["vue", "art-vue", "html"] as const;
+export const SUPPORTED_URI_SCHEMES = ["file", "untitled"] as const;
+export const FEATURE_SETTING_KEYS = [
+  "lint.enable",
+  "diagnostics.enable",
+  "typecheck.enable",
+  "editor.enable",
+  "ecosystem.enable",
+  "optionsApi.enable",
+  "legacyVue2.enable",
+  "completion.enable",
+  "hover.enable",
+  "definition.enable",
+  "references.enable",
+  "documentSymbols.enable",
+  "workspaceSymbols.enable",
+  "codeActions.enable",
+  "rename.enable",
+  "codeLens.enable",
+  "formatting.enable",
+  "semanticTokens.enable",
+  "documentLinks.enable",
+  "foldingRanges.enable",
+  "inlayHints.enable",
+  "fileRename.enable",
+] as const;
+
+export const LINT_ONLY_CONFIGURATION_UPDATES: Array<[string, boolean]> = [
+  ["enable", true],
+  ["lint.enable", true],
+  ["diagnostics.enable", false],
+  ["typecheck.enable", false],
+  ["editor.enable", false],
+  ["ecosystem.enable", false],
+  ["optionsApi.enable", false],
+  ["legacyVue2.enable", false],
+  ["completion.enable", false],
+  ["hover.enable", false],
+  ["definition.enable", false],
+  ["references.enable", false],
+  ["documentSymbols.enable", false],
+  ["workspaceSymbols.enable", false],
+  ["codeActions.enable", false],
+  ["rename.enable", false],
+  ["codeLens.enable", false],
+  ["formatting.enable", false],
+  ["semanticTokens.enable", false],
+  ["documentLinks.enable", false],
+  ["foldingRanges.enable", false],
+  ["inlayHints.enable", false],
+  ["fileRename.enable", false],
+];
+
+export const CAPABILITY_LABELS: Record<string, string> = {
+  lint: "lint",
+  typecheck: "type check",
+  editor: "editor bundle",
+  optionsApi: "Vue 3 Options API",
+  legacyVue2: "Vue 2.7 / Nuxt 2",
+  completion: "completion",
+  hover: "hover",
+  definition: "definition",
+  references: "references",
+  documentSymbols: "document symbols",
+  workspaceSymbols: "workspace symbols",
+  codeActions: "code actions",
+  rename: "rename",
+  codeLens: "code lens",
+  formatting: "formatting",
+  semanticTokens: "semantic tokens",
+  documentLinks: "document links",
+  foldingRanges: "folding",
+  inlayHints: "inlay hints",
+  fileRename: "file rename",
+};
+
+export function createDocumentSelector(): Array<{ language: string; scheme: string }> {
+  return SUPPORTED_URI_SCHEMES.flatMap((scheme) =>
+    SUPPORTED_LANGUAGE_IDS.map((language) => ({
+      scheme,
+      language,
+    })),
+  );
+}
+
+export function hasExplicitConfigurationValue(config: VizeConfigurationLike, key: string): boolean {
+  const inspected = config.inspect(key);
+
+  return (
+    inspected?.globalValue !== undefined ||
+    inspected?.workspaceValue !== undefined ||
+    inspected?.workspaceFolderValue !== undefined
+  );
+}
+
+export function hasAnyEnabledCapability(config: VizeConfigurationLike): boolean {
+  return FEATURE_SETTING_KEYS.some((key) => config.get<boolean>(key, false));
+}
+
+export function hasAnyExplicitCapabilityValue(config: VizeConfigurationLike): boolean {
+  return FEATURE_SETTING_KEYS.some((key) => hasExplicitConfigurationValue(config, key));
+}
+
+export function shouldStartFromConfiguration(
+  config: VizeConfigurationLike,
+  hasWorkspaceLspConfig = false,
+): boolean {
+  if (config.get<boolean>("enable", false)) {
+    return true;
+  }
+
+  if (hasExplicitConfigurationValue(config, "enable")) {
+    return false;
+  }
+
+  return hasWorkspaceLspConfig;
+}
+
+export function getInitializationOptions(
+  config: VizeConfigurationLike,
+  behavior: InitializationOptionBehavior = {},
+): LspInitializationOptions {
+  const options: LspInitializationOptions = {};
+
+  setFeatureOption(options, config, "lint.enable", "lint", true);
+  setDiagnosticsAliasOption(options, config);
+  setFeatureOption(options, config, "typecheck.enable", "typecheck", true);
+  setFeatureOption(options, config, "editor.enable", "editor", true);
+  setFeatureOption(options, config, "ecosystem.enable", "ecosystem", true);
+  setFeatureOption(options, config, "optionsApi.enable", "optionsApi", false);
+  setFeatureOption(options, config, "legacyVue2.enable", "legacyVue2", false);
+  setFeatureOption(options, config, "completion.enable", "completion", true);
+  setFeatureOption(options, config, "hover.enable", "hover", true);
+  setFeatureOption(options, config, "definition.enable", "definition", true);
+  setFeatureOption(options, config, "references.enable", "references", true);
+  setFeatureOption(options, config, "documentSymbols.enable", "documentSymbols", true);
+  setFeatureOption(options, config, "workspaceSymbols.enable", "workspaceSymbols", true);
+  setFeatureOption(options, config, "codeActions.enable", "codeActions", true);
+  setFeatureOption(options, config, "rename.enable", "rename", true);
+  setFeatureOption(options, config, "codeLens.enable", "codeLens", true);
+  setFeatureOption(options, config, "formatting.enable", "formatting", false);
+  setFeatureOption(options, config, "semanticTokens.enable", "semanticTokens", true);
+  setFeatureOption(options, config, "documentLinks.enable", "documentLinks", true);
+  setFeatureOption(options, config, "foldingRanges.enable", "foldingRanges", true);
+  setFeatureOption(options, config, "inlayHints.enable", "inlayHints", true);
+  setFeatureOption(options, config, "fileRename.enable", "fileRename", true);
+
+  if (
+    Object.keys(options).length === 0 &&
+    config.get<boolean>("enable", false) &&
+    !hasAnyExplicitCapabilityValue(config) &&
+    !behavior.hasWorkspaceLspConfig
+  ) {
+    if (behavior.logDefaultProfile !== false) {
+      behavior.log?.(
+        "Vize is enabled with no explicit feature switches. Using the recommended diagnostics, editor, and ecosystem profile.",
+      );
+    }
+    options.lint = true;
+    options.typecheck = true;
+    options.editor = true;
+    options.ecosystem = true;
+  }
+
+  return options;
+}
+
+export function describeCapabilities(options: LspInitializationOptions): string {
+  const capabilities = Object.entries(options)
+    .filter(([, enabled]) => enabled === true)
+    .map(([name]) => CAPABILITY_LABELS[name] ?? name);
+
+  return capabilities.length ? capabilities.join(", ") : "none";
+}
+
+function setDiagnosticsAliasOption(
+  options: LspInitializationOptions,
+  config: VizeConfigurationLike,
+): void {
+  const enabled = config.get<boolean>("diagnostics.enable", false);
+  if (enabled === true) {
+    options.lint = true;
+    return;
+  }
+  if (
+    hasExplicitConfigurationValue(config, "diagnostics.enable") &&
+    !hasExplicitConfigurationValue(config, "lint.enable")
+  ) {
+    options.lint = false;
+  }
+}
+
+function setFeatureOption(
+  options: LspInitializationOptions,
+  config: VizeConfigurationLike,
+  key: string,
+  name: string,
+  defaultValue: boolean,
+): void {
+  if (!hasExplicitConfigurationValue(config, key)) {
+    return;
+  }
+
+  const enabled = config.get<boolean>(key, defaultValue);
+  options[name] = enabled;
+}
