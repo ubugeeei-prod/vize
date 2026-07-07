@@ -63,7 +63,7 @@ pub(in crate::commands::check) fn detect(
     legacy_vue2: bool,
     dialect: VueVersion,
 ) -> Vec<NuxtPathAlias> {
-    if !is_nuxt_project(cwd) {
+    if !is_nuxt_project_root(cwd) {
         return Vec::new();
     }
 
@@ -133,10 +133,11 @@ pub(in crate::commands::check) fn detect(
     path_aliases
 }
 
-fn is_nuxt_project(cwd: &Path) -> bool {
+pub(in crate::commands::check) fn is_nuxt_project_root(cwd: &Path) -> bool {
     cwd.join("nuxt.config.ts").exists()
         || cwd.join("nuxt.config.js").exists()
         || cwd.join("nuxt.config.mts").exists()
+        || cwd.join("nuxt.config.mjs").exists()
 }
 
 /// Warning shown once per `vize check` run for a Nuxt project that has no

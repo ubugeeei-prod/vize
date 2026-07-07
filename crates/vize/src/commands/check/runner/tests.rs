@@ -13,7 +13,6 @@ use std::{
 
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
-
     let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("target")
@@ -24,6 +23,7 @@ fn unique_case_dir(name: &str) -> PathBuf {
         ))
 }
 
+mod nuxt_root;
 #[test]
 fn suppresses_nuxt_nitro_import_meta_conflict_false_positive() {
     let diagnostic = vize_canon::BatchDiagnostic {

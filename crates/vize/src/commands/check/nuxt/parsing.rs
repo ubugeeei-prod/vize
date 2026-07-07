@@ -206,7 +206,12 @@ pub(super) fn default_export_config_object<'a>(
 }
 
 pub(super) fn nuxt_config_source(cwd: &Path) -> String {
-    for file_name in ["nuxt.config.ts", "nuxt.config.js", "nuxt.config.mts"] {
+    for file_name in [
+        "nuxt.config.ts",
+        "nuxt.config.js",
+        "nuxt.config.mts",
+        "nuxt.config.mjs",
+    ] {
         let path = cwd.join(file_name);
         if let Ok(source) = tracked_read_to_string(path.as_path()) {
             return source.into();

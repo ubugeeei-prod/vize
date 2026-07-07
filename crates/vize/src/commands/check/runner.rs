@@ -701,22 +701,16 @@ fn resolve_nuxt_project_root(
         .parent()
         .map(Path::to_path_buf)
         .unwrap_or_else(|| fallback.to_path_buf());
-    if is_nuxt_project_root(&tsconfig_dir) {
+    if super::nuxt::is_nuxt_project_root(&tsconfig_dir) {
         return tsconfig_dir;
     }
     if tsconfig_dir.join("package.json").exists() {
         return tsconfig_dir;
     }
     if let Some(parent) = tsconfig_dir.parent()
-        && is_nuxt_project_root(parent)
+        && super::nuxt::is_nuxt_project_root(parent)
     {
         return parent.to_path_buf();
     }
     tsconfig_dir
-}
-
-fn is_nuxt_project_root(path: &Path) -> bool {
-    ["nuxt.config.ts", "nuxt.config.js", "nuxt.config.mts"]
-        .iter()
-        .any(|file| path.join(file).exists())
 }

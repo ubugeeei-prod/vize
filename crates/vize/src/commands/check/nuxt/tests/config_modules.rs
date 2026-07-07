@@ -100,6 +100,36 @@ export default defineNuxtConfig({
 }
 
 #[test]
+fn detects_module_fallbacks_from_mjs_nuxt_config() {
+    let project_root = unique_case_dir("nuxt-mjs-module-fallbacks");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(&project_root).unwrap();
+    std::fs::write(
+        project_root.join("nuxt.config.mjs"),
+        r#"
+export default defineNuxtConfig({
+  modules: ['@vueuse/nuxt'],
+})
+"#,
+    )
+    .unwrap();
+
+    let mut options = VirtualTsOptions::default();
+    let _ = detect_nuxt_auto_imports(&mut options, &project_root);
+
+    assert!(
+        options
+            .auto_import_stubs
+            .iter()
+            .any(|stub| stub.starts_with("declare function useClipboard<T = any")),
+        "expected @vueuse/nuxt fallback stub from nuxt.config.mjs, got: {:#?}",
+        options.auto_import_stubs
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn falls_back_conservatively_for_dynamic_entries() {
     // A spread may contribute any module name, so unmatched candidates stay
     // conservatively "maybe present" while static entries still resolve.
