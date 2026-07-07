@@ -109,6 +109,7 @@ export const Empty = {};
 export const SpreadStory = { ...storyBase };
 export const ImportedSpread = { ...ImportedStory };
 export const NamespaceSpread = { ...Stories.Primary };
+export const base = { ...utils.PrimaryStory };
 "#;
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::tsx()).parse();
@@ -172,6 +173,12 @@ export const NamespaceSpread = { ...Stories.Primary };
             },
             TestStory {
                 name: "NamespaceSpread",
+                has_render: false,
+                has_args: false,
+                unsupported: true,
+            },
+            TestStory {
+                name: "base",
                 has_render: false,
                 has_args: false,
                 unsupported: true,

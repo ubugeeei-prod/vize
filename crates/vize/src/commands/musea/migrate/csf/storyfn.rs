@@ -164,11 +164,11 @@ fn unresolved_spread_may_be_story(export_name: &str, expression: &Expression<'_>
         || match expression {
             Expression::Identifier(ident) => story_like_name(ident.name.as_str()),
             Expression::StaticMemberExpression(member) => {
-                if let Expression::Identifier(object) = unwrap_expression(&member.object) {
-                    story_like_name(object.name.as_str())
-                } else {
-                    false
-                }
+                story_like_name(member.property.name.as_str())
+                    || matches!(
+                        unwrap_expression(&member.object),
+                        Expression::Identifier(object) if story_like_name(object.name.as_str())
+                    )
             }
             _ => false,
         }
