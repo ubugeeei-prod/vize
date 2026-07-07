@@ -7,6 +7,11 @@ local function assert_eq(actual, expected, label)
   assert(vim.deep_equal(actual, expected), label .. "\nactual: " .. vim.inspect(actual))
 end
 
+local function assert_fails(label, fn, pattern)
+  local ok, err = pcall(fn)
+  assert(not ok and err:match(pattern), label .. "\nerror: " .. tostring(err))
+end
+
 local defaults = config.normalize()
 assert_eq(defaults.cmd, { "vize", "lsp" }, "default cmd")
 assert_eq(defaults.filetypes, { "vue", "art-vue" }, "default filetypes")
@@ -57,14 +62,50 @@ local mutable_config = config.normalize(mutable_opts)
 mutable_opts.init_options.hover = false
 assert_eq(mutable_config.init_options, { hover = true }, "normalization copies init options")
 
-local profile_ok, profile_err = pcall(config.profile, "missing")
-assert(not profile_ok and profile_err:match("unknown vize profile"), "rejects unknown profile")
+local mutable_settings_opts = { settings = { vize = { trace = "messages" } } }
+local mutable_settings_config = config.normalize(mutable_settings_opts)
+mutable_settings_opts.settings.vize.trace = "off"
+assert_eq(
+  mutable_settings_config.settings,
+  { vize = { trace = "messages" } },
+  "normalization copies nested settings"
+)
 
-local ok, err = pcall(config.normalize, { cmd = {} })
-assert(not ok and err:match("cmd"), "rejects empty cmd")
+local mutable_cmd_opts = { cmd = { "vize", "lsp" } }
+local mutable_cmd_config = config.normalize(mutable_cmd_opts)
+mutable_cmd_opts.cmd[1] = "changed"
+assert_eq(mutable_cmd_config.cmd, { "vize", "lsp" }, "normalization copies cmd")
 
-local filetype_ok, filetype_err = pcall(config.normalize, { filetypes = { "" } })
-assert(not filetype_ok and filetype_err:match("filetypes"), "rejects empty filetype")
+assert_fails("rejects unknown profile", function()
+  config.profile("missing")
+end, "unknown vize profile")
+assert_fails("rejects non-table setup options", function()
+  config.normalize("invalid")
+end, "options")
+assert_fails("rejects empty cmd", function()
+  config.normalize({ cmd = {} })
+end, "cmd")
+assert_fails("rejects non-list cmd", function()
+  config.normalize({ cmd = "vize" })
+end, "cmd")
+assert_fails("rejects non-string cmd item", function()
+  config.normalize({ cmd = { "vize", 42 } })
+end, "cmd")
+assert_fails("rejects empty filetype", function()
+  config.normalize({ filetypes = { "" } })
+end, "filetypes")
+assert_fails("rejects empty root marker", function()
+  config.normalize({ root_markers = { "" } })
+end, "root_markers")
+assert_fails("rejects non-table init options", function()
+  config.normalize({ init_options = false })
+end, "init_options")
+assert_fails("rejects non-table settings", function()
+  config.normalize({ settings = "trace" })
+end, "settings")
+assert_fails("rejects non-boolean autostart", function()
+  config.normalize({ autostart = "yes" })
+end, "autostart")
 
 local setup_config = require("vize").setup({ autostart = false, profile = "off" })
 assert_eq(setup_config.init_options, {}, "setup returns normalized config")
