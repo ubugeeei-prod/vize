@@ -16,7 +16,7 @@ use crate::batch::runtime_deps::materialize_runtime_dependencies;
 
 use super::{
     AUTO_IMPORT_STUBS_FILE, MODULE_AUGMENTATION_STUB_PREFIX, MODULE_AUGMENTATION_STUBS_FILE,
-    SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject,
+    PACKAGE_BOUNDARY_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject,
 };
 
 impl VirtualProject {
@@ -48,6 +48,11 @@ impl VirtualProject {
         profile!(
             "canon.project.runtime_deps",
             materialize_runtime_dependencies(&self.project_root, &self.virtual_root)
+        )?;
+
+        profile!(
+            "canon.project.write_package_boundary",
+            self.write_package_boundary()
         )?;
 
         profile!(
@@ -120,6 +125,12 @@ impl VirtualProject {
             "canon.project.write_tsconfig",
             self.write_tsconfig_file(&self.virtual_root.join("tsconfig.json"), None, false)
         )?;
+        Ok(())
+    }
+
+    fn write_package_boundary(&self) -> CorsaResult<()> {
+        let content = b"{\n  \"type\": \"commonjs\"\n}\n";
+        write_if_changed(&self.virtual_root.join(PACKAGE_BOUNDARY_FILE), content)?;
         Ok(())
     }
 
@@ -265,6 +276,7 @@ impl VirtualProject {
         if self.uses_shared_helpers() {
             files.insert(self.virtual_root.join(SHARED_HELPERS_FILE));
         }
+        files.insert(self.virtual_root.join(PACKAGE_BOUNDARY_FILE));
         files.insert(self.virtual_root.join("tsconfig.json"));
         files
     }

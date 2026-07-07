@@ -50,6 +50,7 @@ mod tests;
 pub(super) const AUTO_IMPORT_STUBS_FILE: &str = "__vize_auto_imports.d.ts";
 pub(super) const MODULE_AUGMENTATION_STUBS_FILE: &str = "__vize_module_augmentations.d.ts";
 pub(super) const MODULE_AUGMENTATION_STUB_PREFIX: &str = "// @vize-module-augmentation\n";
+pub(super) const PACKAGE_BOUNDARY_FILE: &str = "package.json";
 pub(super) const VUE_MODULE_STUBS_FILE: &str = "__vize_vue_modules.d.ts";
 /// Shared ambient helpers materialized once per program; generated `.vue.ts`
 /// modules are emitted with their preamble hoisted into this file.
