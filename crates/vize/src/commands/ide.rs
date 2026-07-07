@@ -8,6 +8,10 @@ use clap::{Args, Subcommand};
 use std::path::PathBuf;
 use std::process::Command;
 
+mod editor_files;
+
+use editor_files::{copy_dir_all, find_vscode_vsix, find_zed_extension_source};
+
 const VSCODE_EXTENSION_ID: &str = "ubugeeei.vize";
 const LEGACY_VSCODE_EXTENSION_ID: &str = "vize.vize";
 
@@ -185,33 +189,6 @@ fn vscode_extension_is_installed(extensions: &str) -> bool {
     })
 }
 
-fn find_vscode_vsix() -> Option<PathBuf> {
-    // Look for VSIX in common locations
-    let locations = [
-        // Current working directory
-        PathBuf::from("editors/vscode"),
-        // Relative to executable
-        std::env::current_exe()
-            .ok()
-            .and_then(|p| p.parent().map(|p| p.join("../../editors/vscode")))
-            .unwrap_or_default(),
-    ];
-
-    for base in &locations {
-        // Look for any .vsix file
-        if let Ok(entries) = std::fs::read_dir(base) {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.extension().map(|e| e == "vsix").unwrap_or(false) {
-                    return Some(path);
-                }
-            }
-        }
-    }
-
-    None
-}
-
 fn build_vscode_extension() -> bool {
     // Try to find the extension source
     let source_dir = PathBuf::from("editors/vscode");
@@ -342,36 +319,6 @@ fn zed_install() {
     }
 }
 
-fn find_zed_extension_source() -> Option<PathBuf> {
-    let locations = [
-        PathBuf::from("editors/zed"),
-        std::env::current_exe()
-            .ok()
-            .and_then(|p| p.parent().map(|p| p.join("../../editors/zed")))
-            .unwrap_or_default(),
-    ];
-
-    locations
-        .into_iter()
-        .find(|path| path.join("extension.toml").exists())
-}
-
-fn copy_dir_all(src: &std::path::Path, dst: &std::path::Path) -> std::io::Result<()> {
-    std::fs::create_dir_all(dst)?;
-    for entry in std::fs::read_dir(src)? {
-        let entry = entry?;
-        let file_type = entry.file_type()?;
-        let from = entry.path();
-        let to = dst.join(entry.file_name());
-        if file_type.is_dir() {
-            copy_dir_all(&from, &to)?;
-        } else if file_type.is_file() {
-            std::fs::copy(&from, &to)?;
-        }
-    }
-    Ok(())
-}
-
 fn zed_uninstall() {
     println!("Uninstalling Vize Zed extension...");
 
@@ -439,23 +386,4 @@ fn get_zed_extensions_dir() -> Option<PathBuf> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::vscode_extension_is_installed;
-
-    #[test]
-    fn vscode_status_accepts_published_extension_id() {
-        assert!(vscode_extension_is_installed(
-            "ms-vscode.cpptools\nubugeeei.vize\n"
-        ));
-    }
-
-    #[test]
-    fn vscode_status_accepts_legacy_extension_id() {
-        assert!(vscode_extension_is_installed("vize.vize\n"));
-    }
-
-    #[test]
-    fn vscode_status_requires_exact_extension_id() {
-        assert!(!vscode_extension_is_installed("some.ubugeeei.vize-plus\n"));
-    }
-}
+mod tests;

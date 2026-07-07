@@ -38,17 +38,7 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
 
         // Completion support
         completion_provider: features.completion.then_some(CompletionOptions {
-            trigger_characters: Some(vec![
-                ".".to_string(),
-                ":".to_string(),
-                "@".to_string(),
-                "#".to_string(),
-                "<".to_string(),
-                "/".to_string(),
-                "\"".to_string(),
-                "'".to_string(),
-                " ".to_string(),
-            ]),
+            trigger_characters: Some(crate::ide::trigger_characters()),
             resolve_provider: Some(true),
             work_done_progress_options: WorkDoneProgressOptions::default(),
             all_commit_characters: None,
@@ -228,95 +218,4 @@ fn file_rename_registration_options() -> FileOperationRegistrationOptions {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn all_features() -> LspFeatureConfig {
-        LspFeatureConfig {
-            lint: true,
-            typecheck: true,
-            ecosystem: true,
-            options_api: true,
-            legacy_vue2: true,
-            completion: true,
-            hover: true,
-            definition: true,
-            references: true,
-            document_symbols: true,
-            workspace_symbols: true,
-            code_actions: true,
-            rename: true,
-            formatting: true,
-            code_lens: true,
-            semantic_tokens: true,
-            document_links: true,
-            folding_ranges: true,
-            inlay_hints: true,
-            file_rename: true,
-            cross_file: true,
-        }
-    }
-
-    #[test]
-    fn default_features_advertise_non_opinionated_providers() {
-        let capabilities = server_capabilities(LspFeatureConfig::default());
-
-        assert!(capabilities.signature_help_provider.is_none());
-        assert!(capabilities.selection_range_provider.is_none());
-        assert!(capabilities.completion_provider.is_some());
-        assert!(capabilities.hover_provider.is_some());
-        assert!(capabilities.definition_provider.is_some());
-        assert!(capabilities.document_link_provider.is_some());
-        assert!(capabilities.document_formatting_provider.is_none());
-    }
-
-    #[test]
-    fn all_features_skip_unimplemented_providers_and_keep_implemented_ones() {
-        let capabilities = server_capabilities(all_features());
-
-        assert!(capabilities.signature_help_provider.is_none());
-        assert!(capabilities.selection_range_provider.is_none());
-        assert_eq!(
-            capabilities
-                .document_link_provider
-                .as_ref()
-                .and_then(|provider| provider.resolve_provider),
-            Some(false)
-        );
-
-        assert!(capabilities.completion_provider.is_some());
-        assert!(capabilities.hover_provider.is_some());
-        assert!(capabilities.definition_provider.is_some());
-        assert!(capabilities.references_provider.is_some());
-        assert!(capabilities.document_symbol_provider.is_some());
-        assert!(capabilities.workspace_symbol_provider.is_some());
-        assert!(capabilities.code_action_provider.is_some());
-        assert!(capabilities.rename_provider.is_some());
-        assert!(capabilities.document_formatting_provider.is_some());
-        assert!(capabilities.document_range_formatting_provider.is_none());
-        assert!(capabilities.code_lens_provider.is_some());
-        assert!(capabilities.semantic_tokens_provider.is_some());
-        assert!(capabilities.document_link_provider.is_some());
-        assert!(capabilities.folding_range_provider.is_some());
-        assert!(capabilities.inlay_hint_provider.is_some());
-        assert!(
-            capabilities
-                .workspace
-                .and_then(|workspace| workspace.file_operations)
-                .is_some()
-        );
-    }
-
-    #[test]
-    fn file_rename_registration_mentions_declaration_files() {
-        let options = file_rename_registration_options();
-        let file_glob = &options.filters[0].pattern.glob;
-
-        for extension in ["d.ts", "d.mts", "d.cts"] {
-            assert!(
-                file_glob.contains(extension),
-                "rename operations should include declaration shims: {file_glob}"
-            );
-        }
-    }
-}
+mod tests;
