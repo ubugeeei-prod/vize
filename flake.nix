@@ -41,20 +41,22 @@
         nixCargoLockContents = builtins.replaceStrings [ cratesIoIndex ] [ cratesIoNixIndex ] (
           builtins.readFile ./Cargo.lock
         );
+        moonbitVersion = "0.10.3+16975d007";
+        moonbitUrlVersion = builtins.replaceStrings [ "+" ] [ "%2B" ] moonbitVersion;
         moonbitArtifacts = {
           aarch64-darwin = {
-            version = "0.1.20260703-2026-07-03";
-            url = "https://cli.moonbitlang.com/binaries/latest/moonbit-darwin-aarch64.tar.gz";
+            version = moonbitVersion;
+            url = "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-darwin-aarch64.tar.gz";
             hash = "sha256-WDV4V3lmdDNeYL4KJ8/8SbzJ+KJJfgZo7BVNw6LcJOU=";
           };
           x86_64-linux = {
-            version = "0.1.20260703-2026-07-03";
-            url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-x86_64.tar.gz";
+            version = moonbitVersion;
+            url = "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-linux-x86_64.tar.gz";
             hash = "sha256-1F49AgHPOxNhIG6pxybNShx7jN+DLbKuCzX1zfKxwTY=";
           };
           aarch64-linux = {
-            version = "0.1.20260703-2026-07-03";
-            url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-aarch64.tar.gz";
+            version = moonbitVersion;
+            url = "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-linux-aarch64.tar.gz";
             hash = "sha256-Vf0CZCXEVcLVa160aKZ5cEoxTyBoQ4uslLocPw83Ix4=";
           };
         };
@@ -70,7 +72,8 @@
                 inherit (artifact) url hash;
               };
               coreSrc = pkgs.fetchurl {
-                url = "https://cli.moonbitlang.com/cores/core-latest.tar.gz";
+                name = "core-${moonbitVersion}.tar.gz";
+                url = "https://cli.moonbitlang.com/cores/core-${moonbitUrlVersion}.tar.gz";
                 hash = "sha256-PHPWerElUb0jNNM4nq99AzbxmsCKucOW8R4SfjdbPQY=";
               };
               nativeBuildInputs = lib.optionals pkgs.stdenv.isLinux [ pkgs.patchelf ];
