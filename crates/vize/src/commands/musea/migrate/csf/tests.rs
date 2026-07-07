@@ -100,6 +100,7 @@ fn extracts_exported_const_module_bindings() {
     let source = r#"import Card from "../components/Card.vue";
 export default { component: Card, title: "Card" } satisfies Meta<typeof Card>;
 export const fixture = { tone: "neutral" };
+export const Empty = {};
 "#;
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::tsx()).parse();
@@ -111,6 +112,25 @@ export const fixture = { tone: "neutral" };
             .module_bindings
             .iter()
             .any(|(name, _)| *name == "fixture")
+    );
+    let stories: Vec<TestStory> = module
+        .stories
+        .iter()
+        .map(|story| TestStory {
+            name: story.name.as_str(),
+            has_render: story.render.is_some(),
+            has_args: story.args.is_some(),
+            unsupported: story.unsupported,
+        })
+        .collect();
+    assert_eq!(
+        stories,
+        vec![TestStory {
+            name: "Empty",
+            has_render: false,
+            has_args: false,
+            unsupported: false,
+        }]
     );
 }
 

@@ -1,11 +1,12 @@
 use oxc_ast::ast::{
-    AssignmentTarget, Declaration, Expression, ObjectExpression, Program, Statement,
+    AssignmentTarget, Declaration, Expression, ObjectExpression, ObjectPropertyKind, Program,
+    Statement,
 };
 use oxc_syntax::operator::AssignmentOperator;
 
 use super::{
-    CsfRender, CsfStory, binding_name, render_body, story_from_object, unsupported_story,
-    unwrap_expression, unwrap_object,
+    CsfRender, CsfStory, binding_name, property_key_name, render_body, story_from_object,
+    unsupported_story, unwrap_expression, unwrap_object,
 };
 
 pub(super) fn collect_stories<'a>(program: &'a Program<'a>) -> Vec<CsfStory<'a>> {
@@ -29,6 +30,9 @@ pub(super) fn collect_stories<'a>(program: &'a Program<'a>) -> Vec<CsfStory<'a>>
             };
             let assigned_args = find_object_by_name(&story_args, export_name);
             let story = if let Some(object) = unwrap_object(init) {
+                if !is_story_object(object) {
+                    continue;
+                }
                 let mut story = story_from_object(export_name, object);
                 if story.args.is_none() {
                     story.args = assigned_args;
@@ -43,6 +47,35 @@ pub(super) fn collect_stories<'a>(program: &'a Program<'a>) -> Vec<CsfStory<'a>>
     }
 
     stories
+}
+
+fn is_story_object(object: &ObjectExpression<'_>) -> bool {
+    object.properties.is_empty()
+        || object.properties.iter().any(|property| match property {
+            ObjectPropertyKind::SpreadProperty(_) => true,
+            ObjectPropertyKind::ObjectProperty(prop) => {
+                !prop.computed && property_key_name(&prop.key).is_some_and(is_story_annotation_key)
+            }
+        })
+}
+
+fn is_story_annotation_key(key: &str) -> bool {
+    matches!(
+        key,
+        "args"
+            | "argTypes"
+            | "beforeEach"
+            | "decorators"
+            | "experimental_afterEach"
+            | "globals"
+            | "loaders"
+            | "name"
+            | "parameters"
+            | "play"
+            | "render"
+            | "storyName"
+            | "tags"
+    )
 }
 
 fn collect_template_renders<'a>(program: &'a Program<'a>) -> Vec<(&'a str, CsfRender<'a>)> {

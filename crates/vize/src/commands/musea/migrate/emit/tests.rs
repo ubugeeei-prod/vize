@@ -180,6 +180,22 @@ export const Big = { args: { data: fixture } };
 }
 
 #[test]
+fn skips_exported_fixture_object_variants() {
+    let source = r#"import AfButton from "./AfButton.vue";
+export const fixture = { label: "Hi" };
+export default { component: AfButton, title: "AfButton" } satisfies Meta<typeof AfButton>;
+export const Primary = { args: { data: fixture } };
+"#;
+    let (content, variants, todos) = emit(source);
+
+    assert!(content.contains(r#"<variant name="Primary" default>"#));
+    assert!(!content.contains(r#"<variant name="fixture""#));
+    assert!(content.contains(r#"<AfButton :data='{ label: "Hi" }' />"#));
+    assert_eq!(variants, 1);
+    assert_eq!(todos, 0);
+}
+
+#[test]
 fn emits_meta_args_and_lets_story_args_override() {
     let source = r#"import AfButton from "./AfButton.vue";
 export default { component: AfButton, title: "AfButton", args: { color: "primary", disabled: true, count: 1 } } satisfies Meta<typeof AfButton>;
