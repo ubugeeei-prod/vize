@@ -197,7 +197,7 @@ impl NuxtConfigModules {
     }
 }
 
-/// Parses `nuxt.config` source and extracts the `modules` array from the
+/// Parses `nuxt.config` source and extracts module arrays from the
 /// default-exported config object, handling both
 /// `export default defineNuxtConfig({ ... })` and `export default { ... }`.
 pub(super) fn parse_nuxt_config_modules(config_source: &str) -> NuxtConfigModules {
@@ -214,17 +214,31 @@ pub(super) fn parse_nuxt_config_modules(config_source: &str) -> NuxtConfigModule
         return NuxtConfigModules::unresolved();
     };
 
-    let Some(modules_value) = find_object_property(config_object, "modules") else {
-        // A statically-visible config without a `modules` key registers no
+    let mut resolved = NuxtConfigModules::default();
+    let mut found_module_list = false;
+    for key in ["modules", "buildModules"] {
+        let Some(modules_value) = find_object_property(config_object, key) else {
+            continue;
+        };
+        found_module_list = true;
+        collect_nuxt_config_module_list(modules_value, &mut resolved);
+    }
+
+    if !found_module_list {
+        // A statically-visible config without module list keys registers no
         // modules, so nothing needs stubbing.
         return NuxtConfigModules::default();
+    }
+
+    resolved
+}
+
+fn collect_nuxt_config_module_list(value: &Expression<'_>, resolved: &mut NuxtConfigModules) {
+    let Some(Expression::ArrayExpression(modules)) = extract_expression(value) else {
+        resolved.has_unresolved_entries = true;
+        return;
     };
 
-    let Some(Expression::ArrayExpression(modules)) = extract_expression(modules_value) else {
-        return NuxtConfigModules::unresolved();
-    };
-
-    let mut resolved = NuxtConfigModules::default();
     for element in &modules.elements {
         match element {
             ArrayExpressionElement::Elision(_) => {}
@@ -251,7 +265,6 @@ pub(super) fn parse_nuxt_config_modules(config_source: &str) -> NuxtConfigModule
             },
         }
     }
-    resolved
 }
 
 #[cfg(test)]
