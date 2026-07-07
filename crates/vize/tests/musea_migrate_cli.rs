@@ -133,7 +133,7 @@ export const Primary = { args: {} };
 }
 
 #[test]
-fn migrates_unsupported_tsx_storyfn_as_todo_variant() {
+fn migrates_tsx_storyfn_template_bind_variant() {
     let dir = tempfile::tempdir().unwrap();
     let story = dir.path().join("Toggle.stories.tsx");
     fs::write(
@@ -141,7 +141,7 @@ fn migrates_unsupported_tsx_storyfn_as_todo_variant() {
         r#"import type { Meta, StoryFn } from "@storybook/vue3";
 import Toggle from "./Toggle.vue";
 export default { component: Toggle, title: "Controls/Toggle" } satisfies Meta<typeof Toggle>;
-const Template: StoryFn = (args) => <Toggle {...args} />;
+const Template: StoryFn = (args) => <Toggle {...args}>Enabled</Toggle>;
 export const Checked = Template.bind({});
 Checked.args = { checked: true };
 "#,
@@ -157,7 +157,8 @@ Checked.args = { checked: true };
 
     let generated = fs::read_to_string(dir.path().join("Toggle.art.vue")).unwrap();
     assert!(generated.contains(r#"<variant name="Checked" default>"#));
-    assert!(generated.contains("TODO(vize musea migrate)"));
+    assert!(generated.contains(r#"<Toggle :checked="true">Enabled</Toggle>"#));
+    assert!(!generated.contains("TODO(vize musea migrate)"));
 }
 
 #[test]

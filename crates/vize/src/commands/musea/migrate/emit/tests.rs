@@ -76,7 +76,7 @@ export const Primary = {
 }
 
 #[test]
-fn emits_todo_for_template_bind_storyfn_exports() {
+fn emits_template_bind_storyfn_exports_with_assigned_args() {
     let source = r#"import AfButton from "./AfButton.vue";
 export default { component: AfButton, title: "Base/AfButton" } satisfies Meta<typeof AfButton>;
 const Template: StoryFn = (args) => <AfButton {...args} />;
@@ -86,9 +86,10 @@ Primary.args = { color: "primary" };
     let (content, variants, todos) = emit(source);
 
     assert!(content.contains(r#"<variant name="Primary" default>"#));
-    assert!(content.contains("TODO(vize musea migrate)"));
+    assert!(content.contains(r#"<AfButton color="primary" />"#));
+    assert!(!content.contains("TODO(vize musea migrate)"));
     assert_eq!(variants, 1);
-    assert_eq!(todos, 1);
+    assert_eq!(todos, 0);
 }
 
 #[test]

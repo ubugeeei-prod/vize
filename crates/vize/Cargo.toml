@@ -69,6 +69,7 @@ oxc_parser = { workspace = true }
 oxc_codegen = { workspace = true }
 oxc_semantic = { workspace = true }
 oxc_span = { workspace = true }
+oxc_syntax = { workspace = true }
 oxc_transformer = { workspace = true }
 
 # Home/config directory detection

@@ -130,7 +130,7 @@ export const First = { name: "Custom Name", render: () => <Box /> };
 }
 
 #[test]
-fn extracts_template_bind_exports_as_unsupported_stories() {
+fn extracts_template_bind_exports_with_assigned_args() {
     let source = r#"import Toggle from "./Toggle.vue";
 export default { component: Toggle, title: "Toggle" } satisfies Meta<typeof Toggle>;
 const Template: StoryFn = (args) => <Toggle {...args} />;
@@ -156,9 +156,9 @@ Checked.args = { checked: true };
         stories,
         vec![TestStory {
             name: "Checked",
-            has_render: false,
-            has_args: false,
-            unsupported: true,
+            has_render: true,
+            has_args: true,
+            unsupported: false,
         }]
     );
 }

@@ -6,11 +6,15 @@
 //! as borrowed AST references so the JSX/template emitter can slice the original
 //! source by span.
 
+mod storyfn;
+
 use oxc_ast::ast::{
-    Declaration, ExportDefaultDeclarationKind, Expression, ImportDeclarationSpecifier,
-    ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement, VariableDeclarator,
+    ExportDefaultDeclarationKind, Expression, ImportDeclarationSpecifier, ObjectExpression,
+    ObjectPropertyKind, Program, PropertyKey, Statement, VariableDeclarator,
 };
 use vize_carton::String;
+
+use self::storyfn::collect_stories;
 
 /// A single CSF story (named export) ready for template emission.
 pub(super) struct CsfStory<'a> {
@@ -174,34 +178,6 @@ fn find_import_source(program: &Program<'_>, local: &str) -> Option<String> {
         }
     }
     None
-}
-
-/// Collect `export const NAME = {...}` stories in source order.
-fn collect_stories<'a>(program: &'a Program<'a>) -> Vec<CsfStory<'a>> {
-    let mut stories = Vec::new();
-
-    for stmt in &program.body {
-        let Statement::ExportNamedDeclaration(decl) = stmt else {
-            continue;
-        };
-        let Some(Declaration::VariableDeclaration(var)) = decl.declaration.as_ref() else {
-            continue;
-        };
-        for declarator in &var.declarations {
-            let Some(export_name) = binding_name(declarator) else {
-                continue;
-            };
-            let Some(init) = declarator.init.as_ref() else {
-                continue;
-            };
-            let story = unwrap_object(init)
-                .map(|object| story_from_object(export_name, object))
-                .unwrap_or_else(|| unsupported_story(export_name));
-            stories.push(story);
-        }
-    }
-
-    stories
 }
 
 /// Build a [`CsfStory`] from a story object literal.
