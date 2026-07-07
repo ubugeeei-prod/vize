@@ -54,7 +54,7 @@ pub(super) fn find_zed_extension_source_in_locations(
 ) -> Option<PathBuf> {
     locations
         .into_iter()
-        .find(|path| path.join("extension.toml").exists())
+        .find(|path| path.join("extension.toml").is_file())
 }
 
 pub(super) fn copy_dir_all(src: &Path, dst: &Path) -> std::io::Result<()> {
@@ -147,6 +147,61 @@ mod tests {
     }
 
     #[test]
+    fn zed_source_lookup_rejects_directory_named_extension_manifest() {
+        let fake_source = tempfile::tempdir().unwrap();
+        let source = tempfile::tempdir().unwrap();
+        std::fs::create_dir(fake_source.path().join("extension.toml")).unwrap();
+        std::fs::write(source.path().join("extension.toml"), "id = \"vize\"").unwrap();
+
+        let found = find_zed_extension_source_in_locations([
+            fake_source.path().to_path_buf(),
+            source.path().to_path_buf(),
+        ]);
+
+        assert_eq!(found.as_deref(), Some(source.path()));
+    }
+
+    #[test]
+    fn zed_source_lookup_prefers_first_real_manifest() {
+        let first = tempfile::tempdir().unwrap();
+        let second = tempfile::tempdir().unwrap();
+        std::fs::write(first.path().join("extension.toml"), "id = \"first\"").unwrap();
+        std::fs::write(second.path().join("extension.toml"), "id = \"second\"").unwrap();
+
+        let found = find_zed_extension_source_in_locations([
+            first.path().to_path_buf(),
+            second.path().to_path_buf(),
+        ]);
+
+        assert_eq!(found.as_deref(), Some(first.path()));
+    }
+
+    #[test]
+    fn vscode_vsix_lookup_rejects_nested_or_suffix_matches() {
+        let dir = tempfile::tempdir().unwrap();
+        let nested = dir.path().join("nested");
+        std::fs::create_dir(&nested).unwrap();
+        std::fs::write(nested.join("vize.vsix"), "nested").unwrap();
+        std::fs::write(dir.path().join("vize.vsix.bak"), "backup").unwrap();
+
+        let found = find_vscode_vsix_in_locations([dir.path().to_path_buf()]);
+
+        assert!(found.is_none());
+    }
+
+    #[test]
+    fn vsix_file_detection_rejects_missing_and_suffix_extensions() {
+        let dir = tempfile::tempdir().unwrap();
+        let no_extension = dir.path().join("vize");
+        let suffix = dir.path().join("vize.vsix.bak");
+        std::fs::write(&no_extension, "package").unwrap();
+        std::fs::write(&suffix, "package").unwrap();
+
+        assert!(!is_vsix_file(&no_extension));
+        assert!(!is_vsix_file(&suffix));
+    }
+
+    #[test]
     fn copy_dir_all_copies_nested_files_without_touching_source() {
         let source = tempfile::tempdir().unwrap();
         let nested = source.path().join("grammars");
@@ -167,5 +222,39 @@ mod tests {
             "(source_file)"
         );
         assert!(source.path().join("extension.toml").exists());
+    }
+
+    #[test]
+    fn copy_dir_all_overwrites_files_and_keeps_unrelated_targets() {
+        let source = tempfile::tempdir().unwrap();
+        std::fs::write(source.path().join("extension.toml"), "id = \"new\"").unwrap();
+
+        let target = tempfile::tempdir().unwrap();
+        let install_dir = target.path().join("vize");
+        std::fs::create_dir(&install_dir).unwrap();
+        std::fs::write(install_dir.join("extension.toml"), "id = \"old\"").unwrap();
+        std::fs::write(install_dir.join("local-only.txt"), "keep").unwrap();
+
+        copy_dir_all(source.path(), &install_dir).unwrap();
+
+        assert_eq!(
+            std::fs::read_to_string(install_dir.join("extension.toml")).unwrap(),
+            "id = \"new\""
+        );
+        assert_eq!(
+            std::fs::read_to_string(install_dir.join("local-only.txt")).unwrap(),
+            "keep"
+        );
+    }
+
+    #[test]
+    fn copy_dir_all_returns_error_for_missing_source() {
+        let target = tempfile::tempdir().unwrap();
+        let missing = target.path().join("missing-source");
+        let install_dir = target.path().join("vize");
+
+        let error = copy_dir_all(&missing, &install_dir).unwrap_err();
+
+        assert_eq!(error.kind(), std::io::ErrorKind::NotFound);
     }
 }
