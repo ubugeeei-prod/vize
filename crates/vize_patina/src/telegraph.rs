@@ -446,11 +446,15 @@ impl Emitter<LintTransmission> for LspEmitter {
     }
 
     fn emit_all(&self, transmissions: &[LintTransmission]) -> String {
-        let mut output = String::default();
-        for transmission in transmissions {
-            output.push_str(&self.emit(transmission));
-        }
-        output
+        let diagnostics: Vec<_> = transmissions
+            .iter()
+            .flat_map(|transmission| {
+                Self::to_lsp_diagnostics_with_source(&transmission.result, &transmission.source)
+            })
+            .collect();
+        serde_json::to_string_pretty(&diagnostics)
+            .unwrap_or_default()
+            .into()
     }
 }
 
@@ -464,138 +468,4 @@ pub struct OxlintBridge {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{FormatEmitter, LintResult, LspEmitter, Telegraph, offset_to_line_col};
-    use crate::diagnostic::LintDiagnostic;
-    use crate::output::OutputFormat;
-    use vize_carton::ToCompactString;
-
-    #[test]
-    fn test_telegraph_with_text() {
-        let telegraph = Telegraph::with_text();
-        assert_eq!(telegraph.len(), 1);
-    }
-
-    #[test]
-    fn test_telegraph_with_json() {
-        let telegraph = Telegraph::with_json();
-        assert_eq!(telegraph.len(), 1);
-    }
-
-    #[test]
-    fn test_telegraph_with_format() {
-        let telegraph = Telegraph::with_format(OutputFormat::Markdown);
-        assert_eq!(telegraph.len(), 1);
-    }
-
-    #[test]
-    fn test_format_emitter_transmit_all_renders_single_report() {
-        let mut telegraph = Telegraph::new();
-        telegraph.add_emitter(Box::new(FormatEmitter::new(OutputFormat::Html)));
-        let result = LintResult {
-            filename: "test.vue".to_compact_string(),
-            diagnostics: vec![LintDiagnostic::warn(
-                "vue/no-v-html",
-                "Avoid raw HTML",
-                0,
-                3,
-            )],
-            error_count: 0,
-            warning_count: 1,
-        };
-        let outputs = telegraph.transmit_all(&[(result, "abc".to_compact_string())]);
-
-        assert_eq!(outputs.len(), 1);
-        assert_eq!(outputs[0].matches("<!doctype html>").count(), 1);
-        assert!(outputs[0].contains("docs/content/rules/vue.md"));
-    }
-
-    #[test]
-    fn test_lsp_diagnostic_conversion() {
-        let result = LintResult {
-            filename: "test.vue".to_compact_string(),
-            diagnostics: vec![
-                LintDiagnostic::error("vue/require-v-for-key", "Missing key", 50, 70)
-                    .with_help("Add :key attribute"),
-            ],
-            error_count: 1,
-            warning_count: 0,
-        };
-
-        let lsp_diagnostics = LspEmitter::to_lsp_diagnostics(&result);
-        assert_eq!(lsp_diagnostics.len(), 1);
-        assert_eq!(lsp_diagnostics[0].severity, 1); // Error
-        assert_eq!(lsp_diagnostics[0].code, "vue/require-v-for-key");
-    }
-
-    #[test]
-    fn test_lsp_diagnostic_with_source() {
-        let source = "line1\nline2\nline3 v-for=\"item in items\"";
-        let result = LintResult {
-            filename: "test.vue".to_compact_string(),
-            diagnostics: vec![LintDiagnostic::error(
-                "vue/require-v-for-key",
-                "Missing key",
-                18, // Start of "v-for"
-                44, // End of directive
-            )],
-            error_count: 1,
-            warning_count: 0,
-        };
-
-        let lsp_diagnostics = LspEmitter::to_lsp_diagnostics_with_source(&result, source);
-        assert_eq!(lsp_diagnostics.len(), 1);
-        assert_eq!(lsp_diagnostics[0].range.start.line, 2); // 0-indexed, third line
-    }
-
-    #[test]
-    fn test_lsp_emitter_emit_uses_source_for_line_column() {
-        use super::{Emitter, LintTransmission};
-
-        let source = "line1\nline2\nline3 v-for=\"item in items\"";
-        let result = LintResult {
-            filename: "test.vue".to_compact_string(),
-            diagnostics: vec![LintDiagnostic::error(
-                "vue/require-v-for-key",
-                "Missing key",
-                18, // Start of "v-for" on the third line
-                44,
-            )],
-            error_count: 1,
-            warning_count: 0,
-        };
-        let transmission = LintTransmission::new(result, source);
-
-        let json = LspEmitter.emit(&transmission);
-        // The emitter must convert the byte offset to a real (line, column),
-        // not the degraded `line: 0` fallback of `to_lsp_diagnostics`.
-        assert!(
-            json.contains("\"line\": 2"),
-            "expected emit() to report line 2, got: {json}"
-        );
-        assert!(!json.contains("\"character\": 18"));
-    }
-
-    #[test]
-    fn test_offset_to_line_col() {
-        let source = "abc\ndef\nghi";
-        assert_eq!(offset_to_line_col(source, 0), (0, 0)); // 'a'
-        assert_eq!(offset_to_line_col(source, 3), (0, 3)); // '\n'
-        assert_eq!(offset_to_line_col(source, 4), (1, 0)); // 'd'
-        assert_eq!(offset_to_line_col(source, 8), (2, 0)); // 'g'
-    }
-
-    #[test]
-    fn test_offset_to_line_col_counts_utf16_code_units() {
-        let source = "a🦀b\nc";
-        let crab_offset = "a".len();
-        let b_offset = "a🦀".len();
-        let newline_offset = "a🦀b".len();
-        let c_offset = "a🦀b\n".len();
-
-        assert_eq!(offset_to_line_col(source, crab_offset), (0, 1));
-        assert_eq!(offset_to_line_col(source, b_offset), (0, 3));
-        assert_eq!(offset_to_line_col(source, newline_offset), (0, 4));
-        assert_eq!(offset_to_line_col(source, c_offset), (1, 0));
-    }
-}
+mod tests;
