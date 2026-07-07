@@ -13,7 +13,9 @@ use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, append, cstr};
 
 use super::NuxtPathAlias;
 use super::generated_dir::{NuxtGeneratedDir, normalize_path_lexically};
-use super::parsing::{is_ts_identifier, source_type_for_path, source_type_for_script_lang};
+use super::parsing::{
+    is_ts_identifier, nuxt_config_static_string, source_type_for_path, source_type_for_script_lang,
+};
 use super::stubs::tracked_read_to_string;
 use crate::commands::check::tsconfig_inputs::parse_jsonc_value;
 
@@ -122,16 +124,21 @@ fn rebase_generated_target(nuxt_dir: &Path, project_root: &Path, target: &str) -
 }
 
 fn collect_guessed_path_aliases(cwd: &Path) -> Vec<NuxtPathAlias> {
-    let source_target = if cwd.join("app").is_dir() {
-        "app/*"
-    } else {
-        "*"
-    };
+    let source_target = nuxt_config_static_string(cwd, "srcDir")
+        .filter(|dir| !dir.is_empty() && !Path::new(dir.as_str()).is_absolute())
+        .map(|dir| cstr!("{}/*", dir.trim_end_matches('/')))
+        .unwrap_or_else(|| {
+            if cwd.join("app").is_dir() {
+                cstr!("app/*")
+            } else {
+                cstr!("*")
+            }
+        });
 
     let mut aliases = Vec::new();
     for (pattern, targets) in [
-        ("~/*", vec![source_target]),
-        ("@/*", vec![source_target]),
+        ("~/*", vec![source_target.as_str()]),
+        ("@/*", vec![source_target.as_str()]),
         ("~~/*", vec!["*"]),
         ("@@/*", vec!["*"]),
     ] {

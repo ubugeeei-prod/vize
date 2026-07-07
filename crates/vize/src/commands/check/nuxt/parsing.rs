@@ -2,9 +2,11 @@
 
 use std::path::Path;
 
+use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Expression, ModuleExportName, ObjectExpression, ObjectPropertyKind, PropertyKey, Statement,
 };
+use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString};
 
@@ -211,6 +213,33 @@ pub(super) fn nuxt_config_source(cwd: &Path) -> String {
         }
     }
     String::default()
+}
+
+pub(super) fn nuxt_config_static_string(cwd: &Path, key: &str) -> Option<String> {
+    let source = nuxt_config_source(cwd);
+    if source.is_empty() {
+        return None;
+    }
+
+    let allocator = Allocator::default();
+    let source_type = source_type_for_path(Path::new("nuxt.config.ts"));
+    let ret = Parser::new(&allocator, source.as_str(), source_type).parse();
+    if ret.panicked {
+        return None;
+    }
+
+    let config_object = default_export_config_object(&ret.program.body)?;
+    find_object_property(config_object, key).and_then(static_string_value)
+}
+
+pub(super) fn static_string_value(expression: &Expression<'_>) -> Option<String> {
+    match extract_expression(expression)? {
+        Expression::StringLiteral(literal) => Some(literal.value.as_str().to_compact_string()),
+        Expression::TemplateLiteral(template) => template
+            .single_quasi()
+            .map(|value| value.as_str().to_compact_string()),
+        _ => None,
+    }
 }
 
 pub(super) fn collect_object_keys(object: &ObjectExpression<'_>, keys: &mut Vec<String>) {

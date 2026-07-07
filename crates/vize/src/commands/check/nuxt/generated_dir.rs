@@ -6,15 +6,10 @@ use std::{
 };
 
 use ignore::WalkBuilder;
-use oxc_allocator::Allocator;
-use oxc_ast::ast::Expression;
-use oxc_parser::Parser;
 use serde_json::Value;
 use vize_carton::{String, ToCompactString};
 
-use super::parsing::{
-    default_export_config_object, extract_expression, find_object_property, nuxt_config_source,
-};
+use super::parsing::nuxt_config_static_string;
 use crate::commands::check::tsconfig_inputs::parse_jsonc_value;
 
 const DECLARATION_SUFFIXES: &[&str] = &[".d.ts", ".d.mts", ".d.cts"];
@@ -174,37 +169,13 @@ fn generated_dir_from_imports_target(cwd: &Path, target: &str) -> Option<PathBuf
 }
 
 fn generated_dir_from_nuxt_config(cwd: &Path) -> Option<PathBuf> {
-    let source = nuxt_config_source(cwd);
-    if source.is_empty() {
-        return None;
-    }
-
-    let allocator = Allocator::default();
-    let source_type = super::parsing::source_type_for_path(Path::new("nuxt.config.ts"));
-    let ret = Parser::new(&allocator, source.as_str(), source_type).parse();
-    if ret.panicked {
-        return None;
-    }
-
-    let config_object = default_export_config_object(&ret.program.body)?;
-    let build_dir =
-        find_object_property(config_object, "buildDir").and_then(static_string_value)?;
+    let build_dir = nuxt_config_static_string(cwd, "buildDir")?;
     let path = PathBuf::from(build_dir.as_str());
     Some(if path.is_absolute() {
         path
     } else {
         cwd.join(path)
     })
-}
-
-fn static_string_value(expression: &Expression<'_>) -> Option<String> {
-    match extract_expression(expression)? {
-        Expression::StringLiteral(literal) => Some(literal.value.as_str().to_compact_string()),
-        Expression::TemplateLiteral(template) => template
-            .single_quasi()
-            .map(|value| value.as_str().to_compact_string()),
-        _ => None,
-    }
 }
 
 pub(super) fn normalize_path_lexically(path: &Path) -> PathBuf {
