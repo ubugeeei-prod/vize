@@ -43,19 +43,19 @@
         );
         moonbitArtifacts = {
           aarch64-darwin = {
-            version = "0.1.20260608-2026-06-08";
+            version = "0.1.20260703-2026-07-03";
             url = "https://cli.moonbitlang.com/binaries/latest/moonbit-darwin-aarch64.tar.gz";
-            hash = "sha256-YAgKPu+uA4e2Z/UXJJpwt2ezdMANIjLuczet2ff3JIc=";
+            hash = "sha256-WDV4V3lmdDNeYL4KJ8/8SbzJ+KJJfgZo7BVNw6LcJOU=";
           };
           x86_64-linux = {
-            version = "0.1.20260608-2026-06-08";
+            version = "0.1.20260703-2026-07-03";
             url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-x86_64.tar.gz";
-            hash = "sha256-ug6+47tfi5RiOb/4DITkEQHSsRSo07QwjnOibTY+GEg=";
+            hash = "sha256-1F49AgHPOxNhIG6pxybNShx7jN+DLbKuCzX1zfKxwTY=";
           };
           aarch64-linux = {
-            version = "0.1.20260608-2026-06-08";
+            version = "0.1.20260703-2026-07-03";
             url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-aarch64.tar.gz";
-            hash = "sha256-fw4LyzobPWKaDV/9sattbQzjs2GXdRJ+wLhr/4dtVo4=";
+            hash = "sha256-Vf0CZCXEVcLVa160aKZ5cEoxTyBoQ4uslLocPw83Ix4=";
           };
         };
         moonbit =
