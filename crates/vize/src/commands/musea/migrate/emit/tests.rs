@@ -164,7 +164,7 @@ defineArt("./AfButton.vue", {
 }
 
 #[test]
-fn emits_todo_for_args_referencing_local_fixture_identifiers() {
+fn inlines_static_local_fixture_args() {
     let source = r#"import AfButton from "./AfButton.vue";
 const fixture = { label: "Hi" };
 export default { component: AfButton, title: "AfButton" } satisfies Meta<typeof AfButton>;
@@ -172,11 +172,11 @@ export const Big = { args: { data: fixture } };
 "#;
     let (content, variants, todos) = emit(source);
 
-    assert!(content.contains("<AfButton />"));
-    assert!(content.contains("TODO(vize musea migrate)"));
+    assert!(content.contains(r#"<AfButton :data='{ label: "Hi" }' />"#));
+    assert!(!content.contains("TODO(vize musea migrate)"));
     assert!(!content.contains(":data=\"fixture\""));
     assert_eq!(variants, 1);
-    assert_eq!(todos, 1);
+    assert_eq!(todos, 0);
 }
 
 #[test]
@@ -243,6 +243,21 @@ export const Primary = { args: {} };
     assert!(!content.contains(":data"));
     assert_eq!(variants, 1);
     assert_eq!(todos, 1);
+}
+
+#[test]
+fn inlines_static_meta_args_module_bindings() {
+    let source = r#"import AfButton from "./AfButton.vue";
+const base = { label: "Hi" } as const;
+export default { component: AfButton, title: "AfButton", args: { data: base } } satisfies Meta<typeof AfButton>;
+export const Primary = { args: {} };
+"#;
+    let (content, variants, todos) = emit(source);
+
+    assert!(content.contains(r#"<AfButton :data='{ label: "Hi" } as const' />"#));
+    assert!(!content.contains("TODO(vize musea migrate)"));
+    assert_eq!(variants, 1);
+    assert_eq!(todos, 0);
 }
 
 #[test]

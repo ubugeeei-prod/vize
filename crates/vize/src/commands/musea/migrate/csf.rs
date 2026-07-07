@@ -11,7 +11,8 @@ mod storyfn;
 
 use oxc_ast::ast::{
     ExportDefaultDeclarationKind, Expression, ImportDeclarationSpecifier, ObjectExpression,
-    ObjectPropertyKind, Program, PropertyKey, Statement, VariableDeclarator,
+    ObjectPropertyKind, Program, PropertyKey, Statement, VariableDeclarationKind,
+    VariableDeclarator,
 };
 use vize_carton::String;
 
@@ -45,6 +46,8 @@ pub(super) struct CsfModule<'a> {
     pub title: Option<String>,
     /// Default CSF `args` object from the module meta, if present.
     pub meta_args: Option<&'a ObjectExpression<'a>>,
+    /// Top-level `const` initializers available for static args inlining.
+    pub module_bindings: Vec<(&'a str, &'a Expression<'a>)>,
     /// Ordered stories.
     pub stories: Vec<CsfStory<'a>>,
 }
@@ -55,6 +58,7 @@ pub(super) fn extract_csf<'a>(program: &'a Program<'a>) -> CsfModule<'a> {
     let component_local = meta.and_then(meta_component_local);
     let title = meta.and_then(meta_title);
     let meta_args = meta.and_then(meta_args);
+    let module_bindings = collect_module_bindings(program);
     let component_path = component_local
         .as_deref()
         .and_then(|local| find_import_source(program, local));
@@ -65,8 +69,31 @@ pub(super) fn extract_csf<'a>(program: &'a Program<'a>) -> CsfModule<'a> {
         component_path,
         title,
         meta_args,
+        module_bindings,
         stories,
     }
+}
+
+fn collect_module_bindings<'a>(program: &'a Program<'a>) -> Vec<(&'a str, &'a Expression<'a>)> {
+    let mut bindings = Vec::new();
+    for stmt in &program.body {
+        let Statement::VariableDeclaration(decl) = stmt else {
+            continue;
+        };
+        if decl.kind != VariableDeclarationKind::Const {
+            continue;
+        }
+        for declarator in &decl.declarations {
+            let Some(name) = binding_name(declarator) else {
+                continue;
+            };
+            let Some(init) = declarator.init.as_ref() else {
+                continue;
+            };
+            bindings.push((name, init));
+        }
+    }
+    bindings
 }
 
 /// Find the meta object literal: either the `export default {...}` expression or
