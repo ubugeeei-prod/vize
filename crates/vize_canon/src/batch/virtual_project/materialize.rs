@@ -129,7 +129,7 @@ impl VirtualProject {
     }
 
     fn write_package_boundary(&self) -> CorsaResult<()> {
-        let content = b"{\n  \"type\": \"commonjs\"\n}\n";
+        let content = b"{\n  \"type\": \"module\"\n}\n";
         write_if_changed(&self.virtual_root.join(PACKAGE_BOUNDARY_FILE), content)?;
         Ok(())
     }

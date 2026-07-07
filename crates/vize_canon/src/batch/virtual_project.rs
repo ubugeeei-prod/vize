@@ -38,6 +38,7 @@ mod jsx_codegen;
 mod mapping;
 mod materialize;
 mod passthrough;
+mod paths;
 mod project;
 mod setup_props;
 mod tsconfig_gen;

@@ -203,7 +203,7 @@ pub(super) fn build_script_registered_file(
         "canon.import.rewrite.script",
         rewriter.rewrite_for_virtual_project(content, source_type, roots, path.parent())
     );
-    let virtual_path = mirrored_virtual_path(roots.0, roots.1, path)?;
+    let virtual_path = super::paths::script_virtual_path(roots.0, roots.1, path)?;
 
     Ok(RegisteredFile {
         file: VirtualFile {
