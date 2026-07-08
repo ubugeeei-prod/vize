@@ -766,6 +766,7 @@ module.exports.buildInspectorGraph = nativeBinding.buildInspectorGraph;
 module.exports.chunkVitePrecompileFiles = nativeBinding.chunkVitePrecompileFiles;
 module.exports.classifyVitePluginRequest = nativeBinding.classifyVitePluginRequest;
 module.exports.collectSfcTemplateAssetUrls = nativeBinding.collectSfcTemplateAssetUrls;
+module.exports.rewriteSfcTemplateAssetReferences = nativeBinding.rewriteSfcTemplateAssetReferences;
 module.exports.compile = nativeBinding.compile;
 module.exports.compileCss = nativeBinding.compileCss;
 module.exports.compileJsx = nativeBinding.compileJsx;

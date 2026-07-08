@@ -192,6 +192,11 @@ export declare function collectSfcTemplateAssetUrls(
   filename?: string | undefined | null,
 ): Array<TemplateAssetUrlNapi>;
 
+export declare function rewriteSfcTemplateAssetReferences(
+  code: string,
+  assets: Array<TemplateAssetUrlNapi>,
+): string;
+
 export declare function extractSfcCustomBlocks(
   source: string,
   filename?: string | undefined | null,

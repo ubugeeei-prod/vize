@@ -137,6 +137,54 @@ fn collects_template_asset_urls() {
 }
 
 #[test]
+fn rewrites_template_asset_references_without_touching_script_literals() {
+    let code = r#"
+const same = "./logo.png";
+const _hoisted_1 = { src: "./logo.png" };
+function _sfc_render() {
+  return _createElementVNode("img", { src: "./logo.png" });
+}
+"#;
+    let assets = vec![TemplateAssetUrl {
+        url: "./logo.png".into(),
+        var_name: "_imports_0".into(),
+    }];
+
+    let output = rewrite_template_asset_references(code, &assets);
+
+    assert!(output.contains(r#"const same = "./logo.png";"#));
+    assert!(output.contains("const _hoisted_1 = { src: _imports_0 };"));
+    assert!(output.contains(r#"_createElementVNode("img", { src: _imports_0 })"#));
+}
+
+#[test]
+fn rewrites_ssr_template_literals_as_asset_concatenations() {
+    let code = r#"
+const same = "./logo.png";
+function ssrRender(_ctx, _push) {
+  _push(`<img src="./logo.png"><use href="./icons.svg#home"></use>`);
+}
+"#;
+    let assets = vec![
+        TemplateAssetUrl {
+            url: "./logo.png".into(),
+            var_name: "_imports_0".into(),
+        },
+        TemplateAssetUrl {
+            url: "./icons.svg#home".into(),
+            var_name: "_imports_1".into(),
+        },
+    ];
+
+    let output = rewrite_template_asset_references(code, &assets);
+
+    assert!(output.contains(r#"const same = "./logo.png";"#));
+    assert!(output.contains(
+        r##"_push("<img src=\"" + _imports_0 + "\"><use href=\"" + _imports_1 + "#home" + "\"></use>")"##
+    ));
+}
+
+#[test]
 fn strips_css_comments_without_touching_strings() {
     let input = ".a { color: red; }\n/* :deep(.x) */\n.b::before { content: \"/* kept */\"; }";
     let output = strip_css_comments_for_scoped(input);

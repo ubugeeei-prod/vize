@@ -849,6 +849,11 @@ export declare function resolveViteVuePath(
   importer?: string | undefined | null,
 ): string;
 
+export declare function rewriteSfcTemplateAssetReferences(
+  code: string,
+  assets: Array<TemplateAssetUrlNapi>,
+): string;
+
 export declare function rewriteViteDynamicTemplateImports(
   code: string,
   aliasRules: Array<DynamicImportAliasRuleNapi>,

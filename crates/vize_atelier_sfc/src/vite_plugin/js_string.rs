@@ -1,6 +1,6 @@
 use vize_carton::String;
 
-pub(super) fn push_js_string_literal(output: &mut String, value: &str) {
+pub(crate) fn push_js_string_literal(output: &mut String, value: &str) {
     output.push('"');
 
     let mut segment_start = 0usize;

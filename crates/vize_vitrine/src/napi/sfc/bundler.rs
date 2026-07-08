@@ -58,6 +58,15 @@ impl From<vize_atelier_sfc::TemplateAssetUrl> for TemplateAssetUrlNapi {
     }
 }
 
+impl From<TemplateAssetUrlNapi> for vize_atelier_sfc::TemplateAssetUrl {
+    fn from(url: TemplateAssetUrlNapi) -> Self {
+        Self {
+            url: url.url.into(),
+            var_name: url.var_name.into(),
+        }
+    }
+}
+
 impl From<TemplateAssetTagRuleNapi> for vize_atelier_sfc::TemplateAssetTagRule {
     fn from(rule: TemplateAssetTagRuleNapi) -> Self {
         Self {
@@ -125,6 +134,15 @@ pub fn collect_sfc_template_asset_urls(
         .into_iter()
         .map(Into::into)
         .collect()
+}
+
+#[napi(js_name = "rewriteSfcTemplateAssetReferences")]
+pub fn rewrite_sfc_template_asset_references(
+    code: String,
+    assets: Vec<TemplateAssetUrlNapi>,
+) -> String {
+    let assets = assets.into_iter().map(Into::into).collect::<Vec<_>>();
+    vize_atelier_sfc::bundler::rewrite_template_asset_references(&code, &assets).into()
 }
 
 #[napi(js_name = "stripSfcScopedCssComments")]

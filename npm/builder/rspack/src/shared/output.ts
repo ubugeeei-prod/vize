@@ -1,6 +1,7 @@
 /** JS module output assembly for compiled SFCs. */
 
 import path from "node:path";
+import { rewriteSfcTemplateAssetReferences } from "@vizejs/native";
 import type { CompiledModule } from "../types/index.ts";
 import { genHotReloadCode, genCSSModuleHotReloadCode } from "./hotReload.ts";
 
@@ -24,19 +25,8 @@ export function generateOutput(
   let output = compiled.code;
   const isCustomElement = compiled.isCustomElement;
 
-  // Template static-asset URL rewrite: replace URL string literals in compiled
-  // output with import bindings so Rspack can bundle them as assets.
-  // Caveat: string-based replacement may also match identical literals in <script>.
   if (compiled.templateAssetUrls.length > 0) {
-    for (const { url, varName } of compiled.templateAssetUrls) {
-      const hashIdx = url.indexOf("#");
-      const fragment = hashIdx >= 0 ? url.slice(hashIdx) : "";
-      const replacement = fragment ? `${varName} + ${JSON.stringify(fragment)}` : varName;
-
-      const escaped = url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      output = output.replace(new RegExp(`"${escaped}"`, "g"), replacement);
-      output = output.replace(new RegExp(`'${escaped}'`, "g"), replacement);
-    }
+    output = rewriteSfcTemplateAssetReferences(output, compiled.templateAssetUrls);
   }
 
   const exportDefaultRegex = /^export default /m;
