@@ -21,10 +21,9 @@
 //! import { ref, computed } from 'vue'
 //! ```
 
-use memchr::memmem;
-
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
+use oxc_ast::ast::{ImportDeclaration, Program, Statement};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-internal-imports",
@@ -32,14 +31,14 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Error,
 };
 
-/// Internal import patterns that should be forbidden (as byte slices for fast comparison)
-const INTERNAL_PATTERNS: &[&[u8]] = &[
-    b"/dist/",      // Any dist import
-    b"/src/",       // Source imports
-    b"/esm/",       // ESM subpath
-    b"vue.esm",     // Direct bundle imports
-    b"vue.cjs",     // CJS bundle imports
-    b"vue.runtime", // Runtime bundle imports
+/// Internal import patterns that should be forbidden.
+const INTERNAL_PATTERNS: &[&str] = &[
+    "/dist/",      // Any dist import
+    "/src/",       // Source imports
+    "/esm/",       // ESM subpath
+    "vue.esm",     // Direct bundle imports
+    "vue.cjs",     // CJS bundle imports
+    "vue.runtime", // Runtime bundle imports
 ];
 
 /// Disallow importing from Vue internal modules
@@ -51,91 +50,73 @@ impl ScriptRule for NoInternalImports {
     }
 
     #[inline]
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let bytes = source.as_bytes();
+    fn uses_ast(&self) -> bool {
+        true
+    }
 
-        // Early bailout: no vue-related imports possible
-        if memmem::find(bytes, b"vue").is_none() {
-            return;
-        }
-
-        // Find all "from" statements efficiently
-        let from_finder = memmem::Finder::new(b"from");
-        let mut search_start = 0;
-
-        while let Some(from_pos) = from_finder.find(&bytes[search_start..]) {
-            let abs_from_pos = search_start + from_pos;
-
-            // Skip whitespace after "from"
-            let after_from = &bytes[abs_from_pos + 4..];
-            let trimmed_start = skip_whitespace(after_from);
-
-            if trimmed_start >= after_from.len() {
-                search_start = abs_from_pos + 4;
-                continue;
-            }
-
-            let quote = after_from[trimmed_start];
-            if quote != b'\'' && quote != b'"' {
-                search_start = abs_from_pos + 4;
-                continue;
-            }
-
-            // Find the closing quote
-            let specifier_start = trimmed_start + 1;
-            let Some(quote_end) = memchr::memchr(quote, &after_from[specifier_start..]) else {
-                search_start = abs_from_pos + 4;
+    #[inline]
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        for statement in &program.body {
+            let Statement::ImportDeclaration(import) = statement else {
                 continue;
             };
-
-            let module_specifier = &after_from[specifier_start..specifier_start + quote_end];
-
-            // Only check Vue-related imports
-            if !contains_vue(module_specifier) {
-                search_start = abs_from_pos + 4 + specifier_start + quote_end;
-                continue;
-            }
-
-            // Check for internal patterns
-            for pattern in INTERNAL_PATTERNS {
-                if memmem::find(module_specifier, pattern).is_some() {
-                    // Calculate absolute position in source
-                    let spec_abs_start = abs_from_pos + 4 + specifier_start;
-                    let start = offset + spec_abs_start;
-                    let end = start + module_specifier.len();
-
-                    result.add_diagnostic(
-                        LintDiagnostic::error(
-                            META.name,
-                            "Importing from internal Vue module is forbidden",
-                            start as u32,
-                            end as u32,
-                        )
-                        .with_help("Import from 'vue' directly instead of internal modules"),
-                    );
-                    break;
-                }
-            }
-
-            search_start = abs_from_pos + 4 + specifier_start + quote_end;
+            check_import(import, source, offset, result);
         }
     }
 }
 
-/// Skip ASCII whitespace and return the offset
-#[inline]
-fn skip_whitespace(bytes: &[u8]) -> usize {
-    let mut i = 0;
-    while i < bytes.len() && bytes[i].is_ascii_whitespace() {
-        i += 1;
+fn check_import(
+    import: &ImportDeclaration<'_>,
+    source: &str,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
+    let specifier = import.source.value.as_str();
+    if !is_vue_import(specifier) || !is_internal_import(specifier) {
+        return;
     }
-    i
+
+    let (span_start, span_end) = specifier_span(import, source);
+    let start = offset as u32 + span_start;
+    let end = offset as u32 + span_end;
+    result.add_diagnostic(
+        LintDiagnostic::error(
+            META.name,
+            "Importing from internal Vue module is forbidden",
+            start,
+            end,
+        )
+        .with_help("Import from 'vue' directly instead of internal modules"),
+    );
 }
 
-/// Check if bytes contain "vue" (case-sensitive)
-#[inline]
-fn contains_vue(bytes: &[u8]) -> bool {
-    memmem::find(bytes, b"vue").is_some() || memmem::find(bytes, b"@vue/").is_some()
+fn is_vue_import(specifier: &str) -> bool {
+    specifier.contains("vue") || specifier.contains("@vue/")
+}
+
+fn is_internal_import(specifier: &str) -> bool {
+    INTERNAL_PATTERNS
+        .iter()
+        .any(|pattern| specifier.contains(pattern))
+}
+
+fn specifier_span(import: &ImportDeclaration<'_>, source: &str) -> (u32, u32) {
+    let start = import.source.span.start as usize;
+    let end = import.source.span.end as usize;
+    let bytes = source.as_bytes();
+    if let (Some(quote_start), Some(quote_end)) = (bytes.get(start), bytes.get(end - 1))
+        && matches!(quote_start, b'\'' | b'"')
+        && quote_start == quote_end
+    {
+        return ((start + 1) as u32, (end - 1) as u32);
+    }
+    (import.source.span.start, import.source.span.end)
 }
 
 #[cfg(test)]
@@ -205,5 +186,23 @@ mod tests {
         let mut result = ScriptLintResult::default();
         rule.check(source, 0, &mut result);
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_side_effect_internal_import() {
+        let source = "import 'vue/dist/vue.esm-bundler.js'";
+        let rule = NoInternalImports;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_string_literal_false_positive() {
+        let source = "const specifier = \"from 'vue/dist/vue.esm-bundler.js'\"";
+        let rule = NoInternalImports;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 0);
     }
 }
