@@ -518,10 +518,10 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
         // 2. i18n function injection: inject useI18n() for $t, $rt, $d, $n, $tm, $te
         // @nuxtjs/i18n's TransformI18nFunctionPlugin skips \0-prefixed IDs.
         // Must inject inside the setup() function body, not at module top level.
-        // Use negative lookbehind to exclude `_ctx.$t(` and `this.$t(` (property access),
-        // which are Vue template globals and don't need useI18n injection.
+        // Parse the virtual module so string literals, comments, and Vue template
+        // globals do not look like setup-scope runtime helper calls.
         if (bridgeOptions.i18n) {
-          const nextResult = injectNuxtI18nHelpers(result);
+          const nextResult = injectNuxtI18nHelpers(result, id);
           if (nextResult !== result) {
             result = nextResult;
             changed = true;

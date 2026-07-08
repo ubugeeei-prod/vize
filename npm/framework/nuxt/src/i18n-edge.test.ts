@@ -116,9 +116,7 @@ export default {
   assert.equal(out.match(/useI18n\(\)/g)?.length, 2);
 });
 
-// SURPRISING (text-based regex): a "$t(" that lives only inside a string literal still
-// matches and triggers injection, because the transform never parses JS.
-void test("matches helper-looking text inside a string literal (no JS parsing)", () => {
+void test("ignores helper-looking text inside a string literal", () => {
   const out = injectNuxtI18nHelpers(`
 export default {
   setup(__props) {
@@ -126,11 +124,10 @@ export default {
   }
 }
 `);
-  assert.match(out, /const \{ t: \$t \} = useI18n\(\);/);
+  assert.equal(out.includes("useI18n()"), false);
 });
 
-// SURPRISING (text-based regex): a "$d(" inside a line comment also triggers injection.
-void test("matches helper-looking text inside a comment (no JS parsing)", () => {
+void test("ignores helper-looking text inside a comment", () => {
   const out = injectNuxtI18nHelpers(`
 export default {
   setup(__props) {
@@ -139,5 +136,20 @@ export default {
   }
 }
 `);
-  assert.match(out, /const \{ d: \$d \} = useI18n\(\);/);
+  assert.equal(out.includes("useI18n()"), false);
+});
+
+void test("parses TypeScript syntax while collecting runtime helper calls", () => {
+  const out = injectNuxtI18nHelpers(
+    `
+export default {
+  setup(__props: { msg: string }) {
+    const title: string = $t("settings.title");
+    return { title };
+  }
+}
+`,
+    "Component.vue.ts",
+  );
+  assert.match(out, /const \{ t: \$t \} = useI18n\(\);/);
 });
