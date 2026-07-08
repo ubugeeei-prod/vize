@@ -52,6 +52,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "catalog:integrations",
     "@vizejs/native": "workspace:*",
+    "@vue/compiler-dom": "catalog:vue-stable",
     "typescript": "catalog:typescript"
   },
   "devDependencies": {

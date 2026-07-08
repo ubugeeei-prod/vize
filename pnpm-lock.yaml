@@ -180,6 +180,9 @@ catalogs:
       specifier: 3.6.0-beta.10
       version: 3.6.0-beta.10
   vue-stable:
+    '@vue/compiler-dom':
+      specifier: 3.5.35
+      version: 3.5.35
     '@vue/runtime-core':
       specifier: 3.5.35
       version: 3.5.35
@@ -422,6 +425,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: catalog:integrations
         version: 1.29.0(zod@3.25.76)
+      '@vue/compiler-dom':
+        specifier: catalog:vue-stable
+        version: 3.5.35
       '@vizejs/native':
         specifier: workspace:*
         version: link:../native

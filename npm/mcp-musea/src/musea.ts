@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
+import { formatGeneratedMarkdown } from "./markdown-template.js";
 import { buildPaletteTypescript } from "./palette-typescript.js";
 import type { ArtInfo, NativeBinding, ServerContext } from "./types.js";
 
@@ -609,37 +610,6 @@ export async function analyzeResolvedComponent(
       emits: analysis.emits,
     },
   };
-}
-
-function formatGeneratedMarkdown(markdown: string, componentName: string): string {
-  let formatted = markdown
-    .replace(/<Self(\s|>|\/)/g, `<${componentName}$1`)
-    .replace(/<\/Self>/g, `</${componentName}>`);
-
-  formatted = formatted.replace(
-    /```(\w*)\n([\s\S]*?)```/g,
-    (_match: string, lang: string, code: string) => {
-      const lines = code.split("\n");
-      let minIndent = Infinity;
-
-      for (const line of lines) {
-        if (line.trim()) {
-          const indent = line.match(/^(\s*)/)?.[1].length ?? 0;
-          minIndent = Math.min(minIndent, indent);
-        }
-      }
-
-      if (minIndent === Infinity) {
-        minIndent = 0;
-      }
-
-      const normalizedLines = minIndent > 0 ? lines.map((line) => line.slice(minIndent)) : lines;
-
-      return `\`\`\`${lang}\n${normalizedLines.join("\n")}\`\`\``;
-    },
-  );
-
-  return formatted;
 }
 
 export async function buildPalette(

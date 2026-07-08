@@ -49,6 +49,7 @@ catalogs:
   # Stable Vue ecosystem packages used by shipping examples and integrations.
   vue-stable:
     vue: "3.5.35"
+    "@vue/compiler-dom": "3.5.35"
     "@vue/runtime-core": "3.5.35"
     "@vue/test-utils": "2.4.10"
     vue-router: "4.5.1"
