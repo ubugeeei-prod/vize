@@ -14,7 +14,8 @@ pub use registry::BuiltinScriptRuleMeta;
 use registry::{
     ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry,
     RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS, RULE_PINIA_PREFER_STORE_TO_REFS,
-    RULE_PREFER_COMPUTED, RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+    RULE_PREFER_COMPUTED, RULE_PREFER_IMPORT_FROM_VUE, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
+    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
 };
 
 #[cfg(test)]
@@ -304,13 +305,12 @@ fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
                 && memmem::find(bytes, b".html").is_some()
         }
         RULE_PREFER_COMPUTED => memmem::find(bytes, b"watch").is_some(),
+        RULE_PREFER_IMPORT_FROM_VUE => memmem::find(bytes, b"@vue/").is_some(),
         RULE_NO_RESTRICTED_GLOBALS => {
             memmem::find(bytes, b"process").is_some()
                 || memmem::find(bytes, b"localStorage").is_some()
                 || memmem::find(bytes, b"sessionStorage").is_some()
         }
-        // The static singleton has an empty deny list and never fires; configured
-        // instances bypass this prefilter via `entry_may_match`.
         RULE_NO_RESTRICTED_MEMBERS => false,
         _ => true,
     }

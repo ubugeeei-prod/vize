@@ -23,10 +23,12 @@
 
 #![allow(clippy::disallowed_macros)]
 
-use memchr::memmem;
+use oxc_ast::ast::{ImportDeclaration, Program, Statement};
+use oxc_span::GetSpan;
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
+use vize_carton::String;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/prefer-import-from-vue",
@@ -51,100 +53,83 @@ impl ScriptRule for PreferImportFromVue {
     }
 
     #[inline]
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let bytes = source.as_bytes();
+    fn uses_ast(&self) -> bool {
+        true
+    }
 
-        // Early bailout: no @vue imports
-        if memmem::find(bytes, b"@vue/").is_none() {
-            return;
-        }
-
-        // Find all "from" keywords and check the module specifier
-        let from_finder = memmem::Finder::new(b"from");
-        let mut search_start = 0;
-
-        while let Some(from_pos) = from_finder.find(&bytes[search_start..]) {
-            let abs_from_pos = search_start + from_pos;
-
-            // Skip whitespace after "from"
-            let after_from = &bytes[abs_from_pos + 4..];
-            let trimmed_start = skip_whitespace(after_from);
-
-            if trimmed_start >= after_from.len() {
-                search_start = abs_from_pos + 4;
-                continue;
-            }
-
-            let quote = after_from[trimmed_start];
-            if quote != b'\'' && quote != b'"' {
-                search_start = abs_from_pos + 4;
-                continue;
-            }
-
-            // Find the closing quote
-            let specifier_start = trimmed_start + 1;
-            let Some(quote_end) = memchr::memchr(quote, &after_from[specifier_start..]) else {
-                search_start = abs_from_pos + 4;
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        for statement in &program.body {
+            let Statement::ImportDeclaration(import) = statement else {
                 continue;
             };
-
-            // Check if it matches any internal package
-            let specifier_abs_start = abs_from_pos + 4 + specifier_start;
-            let specifier_abs_end = specifier_abs_start + quote_end;
-            let Some(specifier_str) = source.get(specifier_abs_start..specifier_abs_end) else {
-                search_start = abs_from_pos + 4 + specifier_start + quote_end;
-                continue;
-            };
-
-            for pkg in INTERNAL_PACKAGES {
-                if specifier_str == *pkg {
-                    // Calculate the "from" to closing quote range
-                    let pattern_start = offset + abs_from_pos;
-                    let pattern_end = offset + abs_from_pos + 4 + specifier_start + quote_end + 1; // +1 for closing quote
-
-                    // Create fix string
-                    let fix_str = if trimmed_start > 0 {
-                        if quote == b'\'' {
-                            "from 'vue'"
-                        } else {
-                            "from \"vue\""
-                        }
-                    } else if quote == b'\'' {
-                        "from'vue'"
-                    } else {
-                        "from\"vue\""
-                    };
-
-                    result.add_diagnostic(
-                        LintDiagnostic::warn(
-                            META.name,
-                            format!("Import from '{}' should be replaced with 'vue'", pkg),
-                            pattern_start as u32,
-                            pattern_end as u32,
-                        )
-                        .with_help("Import from 'vue' directly for better compatibility")
-                        .with_fix(Fix::new(
-                            "Replace with 'vue'",
-                            TextEdit::new(pattern_start as u32, pattern_end as u32, fix_str),
-                        )),
-                    );
-                    break;
-                }
-            }
-
-            search_start = abs_from_pos + 4 + specifier_start + quote_end;
+            check_import(import, source, offset, result);
         }
     }
 }
 
-/// Skip ASCII whitespace and return the offset
-#[inline]
-fn skip_whitespace(bytes: &[u8]) -> usize {
-    let mut i = 0;
-    while i < bytes.len() && bytes[i].is_ascii_whitespace() {
-        i += 1;
+fn check_import(
+    import: &ImportDeclaration<'_>,
+    source: &str,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
+    let specifier = import.source.value.as_str();
+    if !INTERNAL_PACKAGES.contains(&specifier) {
+        return;
     }
-    i
+
+    let Some(from_start) = import_from_start(import, source) else {
+        return;
+    };
+    let source_start = import.source.span.start as usize;
+    let pattern_start = offset + from_start;
+    let pattern_end = offset + import.source.span.end as usize;
+    let fix_str = replacement_from_clause(source, from_start, source_start);
+
+    result.add_diagnostic(
+        LintDiagnostic::warn(
+            META.name,
+            format!("Import from '{}' should be replaced with 'vue'", specifier),
+            pattern_start as u32,
+            pattern_end as u32,
+        )
+        .with_help("Import from 'vue' directly for better compatibility")
+        .with_fix(Fix::new(
+            "Replace with 'vue'",
+            TextEdit::new(pattern_start as u32, pattern_end as u32, fix_str),
+        )),
+    );
+}
+
+fn import_from_start(import: &ImportDeclaration<'_>, source: &str) -> Option<usize> {
+    let import_start = import.span().start as usize;
+    let source_start = import.source.span.start as usize;
+    source
+        .get(import_start..source_start)?
+        .rfind("from")
+        .map(|pos| import_start + pos)
+}
+
+fn replacement_from_clause(source: &str, from_start: usize, source_start: usize) -> String {
+    let separator = source.get(from_start + 4..source_start).unwrap_or(" ");
+    let quote = source
+        .as_bytes()
+        .get(source_start)
+        .copied()
+        .filter(|quote| matches!(quote, b'\'' | b'"'))
+        .unwrap_or(b'\'') as char;
+    let mut replacement = String::from("from");
+    replacement.push_str(separator);
+    replacement.push(quote);
+    replacement.push_str("vue");
+    replacement.push(quote);
+    replacement
 }
 
 #[cfg(test)]
@@ -225,5 +210,14 @@ import { h } from '@vue/runtime-dom'
         let mut result = ScriptLintResult::default();
         rule.check(source, 0, &mut result);
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_ignores_from_text_inside_string() {
+        let source = "const code = \"import { ref } from '@vue/runtime-core'\"";
+        let rule = PreferImportFromVue;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.warning_count, 0);
     }
 }
