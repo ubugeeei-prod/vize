@@ -70,10 +70,14 @@ impl ScriptRule for NoDeepDestructureInProps {
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
+        if !may_contain_define_props_object_binding(source) {
+            return;
+        }
+
         let mut visitor = NoDeepDestructureInPropsVisitor {
             max_depth: self.max_depth,
             offset,
@@ -178,6 +182,81 @@ fn call_is_named(call: &CallExpression<'_>, name: &str) -> bool {
     )
 }
 
+fn may_contain_define_props_object_binding(source: &str) -> bool {
+    source.contains("defineProps") && contains_object_binding_declaration(source)
+}
+
+fn contains_object_binding_declaration(source: &str) -> bool {
+    let bytes = source.as_bytes();
+    let mut index = 0;
+
+    while index < bytes.len() {
+        let Some(keyword) = declaration_keyword_at(source, index) else {
+            index += 1;
+            continue;
+        };
+
+        let cursor = skip_javascript_trivia(bytes, index + keyword.len());
+
+        if bytes.get(cursor) == Some(&b'{') {
+            return true;
+        }
+
+        index = cursor;
+    }
+
+    false
+}
+
+fn declaration_keyword_at(source: &str, index: usize) -> Option<&'static str> {
+    ["const", "let", "var"].into_iter().find(|keyword| {
+        source[index..].starts_with(keyword) && has_keyword_boundaries(source, index, keyword)
+    })
+}
+
+fn skip_javascript_trivia(bytes: &[u8], mut cursor: usize) -> usize {
+    loop {
+        while matches!(bytes.get(cursor), Some(b' ' | b'\t' | b'\n' | b'\r')) {
+            cursor += 1;
+        }
+
+        match (bytes.get(cursor), bytes.get(cursor + 1)) {
+            (Some(b'/'), Some(b'/')) => {
+                cursor += 2;
+                while !matches!(bytes.get(cursor), None | Some(b'\n' | b'\r')) {
+                    cursor += 1;
+                }
+            }
+            (Some(b'/'), Some(b'*')) => {
+                cursor += 2;
+                while !matches!(
+                    (bytes.get(cursor), bytes.get(cursor + 1)),
+                    (None, _) | (Some(b'*'), Some(b'/'))
+                ) {
+                    cursor += 1;
+                }
+                if bytes.get(cursor).is_some() {
+                    cursor += 2;
+                }
+            }
+            _ => return cursor,
+        }
+    }
+}
+
+fn has_keyword_boundaries(source: &str, index: usize, keyword: &str) -> bool {
+    let bytes = source.as_bytes();
+    let before = index.checked_sub(1).and_then(|before| bytes.get(before));
+    let after = bytes.get(index + keyword.len());
+
+    before.is_none_or(|byte| !is_identifier_byte(*byte))
+        && after.is_none_or(|byte| !is_identifier_byte(*byte))
+}
+
+fn is_identifier_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
+}
+
 #[cfg(test)]
 mod tests {
     use super::NoDeepDestructureInProps;
@@ -221,7 +300,7 @@ mod tests {
     fn test_invalid_very_deep_destructure() {
         let linter = create_linter();
         let result = linter.lint(
-            "const { config: { settings: { theme } } } = defineProps()",
+            "const /* props */ { config: { settings: { theme } } } = defineProps()",
             0,
         );
         assert_eq!(result.warning_count, 1);
