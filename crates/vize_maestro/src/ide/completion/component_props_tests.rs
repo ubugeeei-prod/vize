@@ -1,6 +1,6 @@
 use std::fs;
 
-use tower_lsp::lsp_types::{CompletionResponse, CompletionTextEdit, Url};
+use tower_lsp::lsp_types::{CompletionResponse, CompletionTextEdit, Documentation, Url};
 
 use super::CompletionService;
 use crate::{ide::IdeContext, server::ServerState};
@@ -41,10 +41,22 @@ import Child from './Child.vue'
 
     let offset = source.find("<Child  />").unwrap() + "<Child ".len();
     let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+    let items = completion_items(CompletionService::complete(&ctx).unwrap());
+    let labels = items
+        .iter()
+        .map(|item| item.label.clone())
+        .collect::<Vec<_>>();
 
     assert!(has_label(&labels, "some-message"), "{labels:?}");
     assert!(has_label(&labels, "disabled"), "{labels:?}");
+    let prop = items
+        .iter()
+        .find(|item| item.label == "some-message")
+        .expect("some-message prop completion should be present");
+    let doc = markdown_doc(&prop.documentation);
+    assert!(doc.contains("```typescript"), "got {doc:?}");
+    assert!(doc.contains("```vue"), "got {doc:?}");
+    assert!(doc.contains("Vue Component Props"), "got {doc:?}");
 }
 
 #[test]
@@ -200,6 +212,13 @@ fn completion_items(response: CompletionResponse) -> Vec<tower_lsp::lsp_types::C
     match response {
         CompletionResponse::Array(items) => items,
         CompletionResponse::List(list) => list.items,
+    }
+}
+
+fn markdown_doc(doc: &Option<Documentation>) -> &str {
+    match doc.as_ref().expect("completion should include docs") {
+        Documentation::MarkupContent(content) => &content.value,
+        Documentation::String(value) => value,
     }
 }
 

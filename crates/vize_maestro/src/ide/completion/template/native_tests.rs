@@ -1,6 +1,6 @@
 use std::fs;
 
-use tower_lsp::lsp_types::{CompletionResponse, Url};
+use tower_lsp::lsp_types::{CompletionResponse, Documentation, Url};
 
 use crate::ide::{CompletionService, IdeContext};
 use crate::server::ServerState;
@@ -21,7 +21,11 @@ const count = ref(0)
     let (state, uri) = state_with_document("NativeAttributeCompletion.vue", source);
     let offset = source.find("    \n  >").unwrap() + "    ".len();
     let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+    let items = completion_items(CompletionService::complete(&ctx).unwrap());
+    let labels = items
+        .iter()
+        .map(|item| item.label.clone())
+        .collect::<Vec<_>>();
 
     assert!(has_label(&labels, "class"), "{labels:?}");
     assert!(has_label(&labels, "type"), "{labels:?}");
@@ -30,6 +34,18 @@ const count = ref(0)
     assert!(!has_label(&labels, "Transition"), "{labels:?}");
     assert!(!has_label(&labels, "vfor"), "{labels:?}");
     assert!(!has_label(&labels, "count"), "{labels:?}");
+    let class_doc = markdown_doc(
+        &items
+            .iter()
+            .find(|item| item.label == "class")
+            .unwrap()
+            .documentation,
+    );
+    assert!(class_doc.contains("```vue"), "got {class_doc:?}");
+    assert!(
+        class_doc.contains("Vue template syntax"),
+        "got {class_doc:?}"
+    );
 }
 
 #[test]
@@ -76,17 +92,28 @@ const count = ref(0)
 }
 
 fn completion_labels(response: CompletionResponse) -> Vec<String> {
+    completion_items(response)
+        .into_iter()
+        .map(|item| item.label)
+        .collect()
+}
+
+fn completion_items(response: CompletionResponse) -> Vec<tower_lsp::lsp_types::CompletionItem> {
     match response {
         CompletionResponse::Array(items) => items,
         CompletionResponse::List(list) => list.items,
     }
-    .into_iter()
-    .map(|item| item.label)
-    .collect()
 }
 
 fn has_label(labels: &[String], expected: &str) -> bool {
     labels.iter().any(|label| label == expected)
+}
+
+fn markdown_doc(doc: &Option<Documentation>) -> &str {
+    match doc.as_ref().expect("completion should include docs") {
+        Documentation::MarkupContent(content) => &content.value,
+        Documentation::String(value) => value,
+    }
 }
 
 fn state_with_document(name: &str, source: &str) -> (ServerState, Url) {

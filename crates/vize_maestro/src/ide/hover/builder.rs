@@ -1,4 +1,6 @@
-use tower_lsp::lsp_types::{Hover, HoverContents, MarkupContent, MarkupKind, Range};
+use tower_lsp::lsp_types::{Hover, HoverContents, Range};
+
+use crate::ide::markup;
 
 /// Hover content builder for creating rich hover information.
 pub struct HoverBuilder {
@@ -30,8 +32,17 @@ impl HoverBuilder {
     /// Add a code block.
     #[allow(clippy::disallowed_macros)]
     pub fn code(mut self, language: &str, code: &str) -> Self {
-        self.sections
-            .push(format!("```{}\n{}\n```", language, code));
+        self.sections.push(markup::code_block(language, code));
+        self
+    }
+
+    /// Add a syntax-highlightable example block.
+    #[allow(clippy::disallowed_macros)]
+    pub fn example(mut self, language: &str, code: &str) -> Self {
+        self.sections.push(format!(
+            "**Example**\n\n{}",
+            markup::code_block(language, code)
+        ));
         self
     }
 
@@ -67,17 +78,22 @@ impl HoverBuilder {
     /// Add a documentation link.
     #[allow(clippy::disallowed_macros)]
     pub fn link(mut self, text: &str, url: &str) -> Self {
-        self.sections.push(format!("[{}]({})", text, url));
+        self.sections.push(markup::link(text, url));
+        self
+    }
+
+    /// Add a named documentation link section.
+    #[allow(clippy::disallowed_macros)]
+    pub fn docs(mut self, text: &str, url: &str) -> Self {
+        self.sections
+            .push(format!("**Docs**\n\n{}", markup::link(text, url)));
         self
     }
 
     /// Build the hover.
     pub fn build(self) -> Hover {
         Hover {
-            contents: HoverContents::Markup(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value: self.sections.join("\n\n"),
-            }),
+            contents: HoverContents::Markup(markup::markdown_content(self.sections.join("\n\n"))),
             range: None,
         }
     }
@@ -85,10 +101,7 @@ impl HoverBuilder {
     /// Build the hover with a range.
     pub fn build_with_range(self, range: Range) -> Hover {
         Hover {
-            contents: HoverContents::Markup(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value: self.sections.join("\n\n"),
-            }),
+            contents: HoverContents::Markup(markup::markdown_content(self.sections.join("\n\n"))),
             range: Some(range),
         }
     }

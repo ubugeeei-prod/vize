@@ -137,7 +137,7 @@ impl HoverService {
                 HoverBuilder::new()
                     .title(&title)
                     .meta("Vue event listener")
-                    .code("vue", &example)
+                    .example("vue", &example)
                     .description(
                         "Attaches a DOM or component event listener. The handler expression is evaluated in component scope.",
                     )
@@ -148,7 +148,7 @@ impl HoverService {
                             "Event modifiers such as `.stop`, `.prevent`, and key modifiers are compiled by Vue.",
                         ],
                     )
-                    .link(
+                    .docs(
                         "Vue Event Handling",
                         "https://vuejs.org/guide/essentials/event-handling.html",
                     )
@@ -161,7 +161,7 @@ impl HoverService {
                 HoverBuilder::new()
                     .title("v-bind")
                     .meta("Vue attribute / prop binding")
-                    .code("vue", ":prop=\"expression\"")
+                    .example("vue", ":prop=\"expression\"")
                     .description(
                         "Binds an attribute or component prop to a JavaScript expression in template scope.",
                     )
@@ -172,7 +172,7 @@ impl HoverService {
                             "Component bindings resolve to props when the target is a component.",
                         ],
                     )
-                    .link(
+                    .docs(
                         "Vue v-bind",
                         "https://vuejs.org/api/built-in-directives.html#v-bind",
                     )
@@ -362,7 +362,7 @@ impl HoverService {
                         "Directive expressions are evaluated in component scope.",
                     ],
                 )
-                .link(
+                .docs(
                     "Vue Built-in Directives",
                     "https://vuejs.org/api/built-in-directives.html",
                 )

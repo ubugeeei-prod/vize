@@ -90,6 +90,9 @@ const items = [1, 2]
     assert.match(clickHoverText, /Vue event listener/);
     assert.match(clickHoverText, /@click="handler"/);
     assert.match(clickHoverText, /\$event/);
+    assert.match(clickHoverText, /\*\*Example\*\*/);
+    assert.match(clickHoverText, /```vue/);
+    assert.match(clickHoverText, /Vue Event Handling/);
 
     const countUsageStart = source.lastIndexOf("count }}");
     const countUsagePosition = offsetToPosition(source, countUsageStart + "count".length);

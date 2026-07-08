@@ -162,6 +162,8 @@ const isReady = ref(false)
       assert.match(disabledText, /disabled on <button>/);
       assert.match(disabledText, /HTML attribute/);
       assert.match(disabledText, /MDN reference/);
+      assert.match(disabledText, /\*\*Example\*\*/);
+      assert.match(disabledText, /```vue/);
 
       const clickOffset = source.indexOf("@click") + "@click".length;
       const clickHover = (await session.request("textDocument/hover", {
@@ -171,6 +173,8 @@ const isReady = ref(false)
       const clickText = hoverToText(clickHover);
       assert.match(clickText, /Vue event listener/);
       assert.match(clickText, /\$event/);
+      assert.match(clickText, /\*\*Example\*\*/);
+      assert.match(clickText, /```vue/);
 
       const interpolationOffset = source.lastIndexOf("count }}") + "count".length;
       const bindingHover = (await session.request("textDocument/hover", {

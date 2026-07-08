@@ -6,7 +6,9 @@
 
 use super::CompletionService;
 use crate::{ide::IdeContext, server::ServerState};
-use tower_lsp::lsp_types::{CompletionItemKind, CompletionResponse, CompletionTextEdit, Url};
+use tower_lsp::lsp_types::{
+    CompletionItemKind, CompletionResponse, CompletionTextEdit, Documentation, Url,
+};
 
 #[test]
 fn event_completion_replaces_typed_shorthand_prefix() {
@@ -25,6 +27,9 @@ fn event_completion_replaces_typed_shorthand_prefix() {
         .find(|item| item.label == "@click")
         .expect("@click completion should be present for @c");
     assert_eq!(click.kind, Some(CompletionItemKind::EVENT));
+    let doc = markdown_doc(&click.documentation);
+    assert!(doc.contains("```vue"), "got {doc:?}");
+    assert!(doc.contains("Vue event handling"), "got {doc:?}");
     assert_eq!(click.insert_text, None);
 
     let edit = match click
@@ -73,4 +78,11 @@ fn completion_items(response: CompletionResponse) -> Vec<tower_lsp::lsp_types::C
 
 fn has_label(labels: &[String], expected: &str) -> bool {
     labels.iter().any(|label| label == expected)
+}
+
+fn markdown_doc(doc: &Option<Documentation>) -> &str {
+    match doc.as_ref().expect("completion should include docs") {
+        Documentation::MarkupContent(content) => &content.value,
+        Documentation::String(value) => value,
+    }
 }

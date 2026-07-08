@@ -9,10 +9,11 @@
 )]
 
 use tower_lsp::lsp_types::{
-    CompletionItem, CompletionItemKind, CompletionItemLabelDetails, Documentation,
-    InsertTextFormat, MarkupContent, MarkupKind,
+    CompletionItem, CompletionItemKind, CompletionItemLabelDetails, InsertTextFormat,
 };
 use vize_relief::BindingType;
+
+use crate::ide::markup::{self, Markdown};
 
 /// Convert BindingType to completion item information.
 pub(crate) fn binding_type_to_completion_info(
@@ -92,6 +93,7 @@ pub(crate) fn binding_type_to_completion_info(
 /// Create a directive completion item.
 #[allow(clippy::disallowed_macros)]
 pub(crate) fn directive_item(label: &str, description: &str, snippet: &str) -> CompletionItem {
+    let example = markup::snippet_for_docs(snippet);
     CompletionItem {
         label: label.to_string(),
         kind: Some(directive_completion_kind(label)),
@@ -102,13 +104,21 @@ pub(crate) fn directive_item(label: &str, description: &str, snippet: &str) -> C
         }),
         insert_text: Some(snippet.to_string()),
         insert_text_format: Some(InsertTextFormat::SNIPPET),
-        documentation: Some(Documentation::MarkupContent(MarkupContent {
-            kind: MarkupKind::Markdown,
-            value: format!(
-                "**`{}`**\n\n{}\n\n```vue\n<template>\n  <div {}></div>\n</template>\n```\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)",
-                label, description, snippet
-            ),
-        })),
+        documentation: Some(
+            Markdown::new()
+                .title(&format!("`{label}`"))
+                .meta("Vue directive")
+                .paragraph(description)
+                .example(
+                    "vue",
+                    &format!("<template>\n  <div {example}></div>\n</template>"),
+                )
+                .docs(
+                    "Vue built-in directives",
+                    "https://vuejs.org/api/built-in-directives.html",
+                )
+                .into_documentation(),
+        ),
         ..Default::default()
     }
 }
@@ -125,6 +135,7 @@ fn directive_completion_kind(label: &str) -> CompletionItemKind {
 /// Create a @vize: directive completion item.
 #[allow(clippy::disallowed_macros)]
 pub(crate) fn vize_directive_item(label: &str, snippet: &str, description: &str) -> CompletionItem {
+    let example = markup::snippet_for_docs(snippet);
     CompletionItem {
         label: label.to_string(),
         kind: Some(CompletionItemKind::KEYWORD),
@@ -132,13 +143,18 @@ pub(crate) fn vize_directive_item(label: &str, snippet: &str, description: &str)
         insert_text: Some(snippet.to_string()),
         insert_text_format: Some(InsertTextFormat::SNIPPET),
         sort_text: Some(format!("!{}", label)),
-        documentation: Some(Documentation::MarkupContent(MarkupContent {
-            kind: MarkupKind::Markdown,
-            value: format!(
-                "**`{}`**\n\n{}\n\nUsage: `<!-- {} -->`",
-                label, description, label
-            ),
-        })),
+        documentation: Some(
+            Markdown::new()
+                .title(&format!("`{label}`"))
+                .meta("Vize comment directive")
+                .paragraph(description)
+                .example("html", &format!("<!-- {example} -->"))
+                .docs(
+                    "Vize comment annotations",
+                    "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/guide/comment-annotations.md",
+                )
+                .into_documentation(),
+        ),
         ..Default::default()
     }
 }
@@ -146,19 +162,25 @@ pub(crate) fn vize_directive_item(label: &str, snippet: &str, description: &str)
 /// Create a component completion item.
 #[allow(clippy::disallowed_macros)]
 pub(crate) fn component_item(label: &str, description: &str, snippet: &str) -> CompletionItem {
+    let example = markup::snippet_for_docs(snippet);
     CompletionItem {
         label: label.to_string(),
         kind: Some(CompletionItemKind::CLASS),
         detail: Some(format!("Vue built-in: {}", description)),
         insert_text: Some(snippet.to_string()),
         insert_text_format: Some(InsertTextFormat::SNIPPET),
-        documentation: Some(Documentation::MarkupContent(MarkupContent {
-            kind: MarkupKind::Markdown,
-            value: format!(
-                "**<{}>**\n\n{}\n\n[Vue Documentation](https://vuejs.org/api/built-in-components.html)",
-                label, description
-            ),
-        })),
+        documentation: Some(
+            Markdown::new()
+                .title(&format!("<{label}>"))
+                .meta("Vue built-in component")
+                .paragraph(description)
+                .example("vue", &example)
+                .docs(
+                    "Vue built-in components",
+                    "https://vuejs.org/api/built-in-components.html",
+                )
+                .into_documentation(),
+        ),
         ..Default::default()
     }
 }
@@ -182,13 +204,15 @@ pub(crate) fn api_item(label: &str, signature: &str, description: &str) -> Compl
         label: label.to_string(),
         kind: Some(CompletionItemKind::FUNCTION),
         detail: Some(signature.to_string()),
-        documentation: Some(Documentation::MarkupContent(MarkupContent {
-            kind: MarkupKind::Markdown,
-            value: format!(
-                "```typescript\n{}\n```\n\n{}\n\n[Vue Documentation](https://vuejs.org/api/)",
-                signature, description
-            ),
-        })),
+        documentation: Some(
+            Markdown::new()
+                .title(label)
+                .meta("Vue API")
+                .code("typescript", signature)
+                .paragraph(description)
+                .docs("Vue API", "https://vuejs.org/api/")
+                .into_documentation(),
+        ),
         ..Default::default()
     }
 }
@@ -207,13 +231,15 @@ pub(crate) fn macro_item(
         detail: Some(format!("Macro: {}", signature)),
         insert_text: Some(snippet.to_string()),
         insert_text_format: Some(InsertTextFormat::SNIPPET),
-        documentation: Some(Documentation::MarkupContent(MarkupContent {
-            kind: MarkupKind::Markdown,
-            value: format!(
-                "```typescript\n{}\n```\n\n{}\n\n*Compiler macro - only usable in `<script setup>`*",
-                signature, description
-            ),
-        })),
+        documentation: Some(
+            Markdown::new()
+                .title(label)
+                .meta("Vue compiler macro")
+                .code("typescript", signature)
+                .paragraph(description)
+                .section("Scope", "Only usable inside `<script setup>`.")
+                .into_documentation(),
+        ),
         ..Default::default()
     }
 }
@@ -232,12 +258,28 @@ pub(crate) fn import_item(label: &str, description: &str, snippet: &str) -> Comp
 
 /// Create an attribute completion item.
 pub(crate) fn attr_item(label: &str, description: &str, snippet: &str) -> CompletionItem {
+    let example = markup::snippet_for_docs(snippet);
     CompletionItem {
         label: label.to_string(),
         kind: Some(CompletionItemKind::PROPERTY),
         detail: Some(description.to_string()),
         insert_text: Some(snippet.to_string()),
         insert_text_format: Some(InsertTextFormat::SNIPPET),
+        documentation: Some(
+            Markdown::new()
+                .title(label)
+                .meta("Template attribute")
+                .paragraph(description)
+                .example(
+                    "vue",
+                    &format!("<template>\n  <div {example}></div>\n</template>"),
+                )
+                .docs(
+                    "Vue template syntax",
+                    "https://vuejs.org/guide/essentials/template-syntax.html",
+                )
+                .into_documentation(),
+        ),
         ..Default::default()
     }
 }
@@ -256,13 +298,51 @@ pub(crate) fn css_item(
         detail: Some(format!("Vue CSS: {}", signature)),
         insert_text: Some(snippet.to_string()),
         insert_text_format: Some(InsertTextFormat::SNIPPET),
-        documentation: Some(Documentation::MarkupContent(MarkupContent {
-            kind: MarkupKind::Markdown,
-            value: format!(
-                "**{}**\n\n{}\n\n[Vue SFC CSS Features](https://vuejs.org/api/sfc-css-features.html)",
-                signature, description
-            ),
-        })),
+        documentation: Some(
+            Markdown::new()
+                .title(signature)
+                .meta("Vue SFC CSS feature")
+                .code("css", snippet)
+                .paragraph(description)
+                .docs(
+                    "Vue SFC CSS features",
+                    "https://vuejs.org/api/sfc-css-features.html",
+                )
+                .into_documentation(),
+        ),
         ..Default::default()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{attr_item, directive_item};
+    use tower_lsp::lsp_types::Documentation;
+
+    #[test]
+    fn directive_completion_docs_include_highlightable_example() {
+        let item = directive_item("v-if", "Conditional rendering", "v-if=\"$1\"");
+        let doc = markdown_doc(&item.documentation);
+
+        assert!(doc.contains("**Example**"), "got {doc:?}");
+        assert!(doc.contains("```vue"), "got {doc:?}");
+        assert!(doc.contains("Vue built-in directives"), "got {doc:?}");
+    }
+
+    #[test]
+    fn attribute_completion_docs_include_template_syntax_link() {
+        let item = attr_item("class", "CSS classes", "class=\"$1\"");
+        let doc = markdown_doc(&item.documentation);
+
+        assert!(doc.contains("Template attribute"), "got {doc:?}");
+        assert!(doc.contains("```vue"), "got {doc:?}");
+        assert!(doc.contains("Vue template syntax"), "got {doc:?}");
+    }
+
+    fn markdown_doc(doc: &Option<Documentation>) -> &str {
+        match doc.as_ref().expect("completion should include docs") {
+            Documentation::MarkupContent(content) => &content.value,
+            Documentation::String(value) => value,
+        }
     }
 }

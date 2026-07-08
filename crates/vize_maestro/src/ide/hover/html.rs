@@ -23,6 +23,7 @@ impl HoverService {
         } else {
             "DOM reflected attribute"
         };
+        let example = native_attribute_example(&tag_name, &attr_name, info.is_boolean);
 
         Some(
             HoverBuilder::new()
@@ -40,7 +41,8 @@ impl HoverService {
                         "Component prop lookup is skipped because the enclosing tag is a native element.",
                     ],
                 )
-                .link("MDN reference", &info.documentation_url)
+                .example("vue", &example)
+                .docs("MDN reference", &info.documentation_url)
                 .build(),
         )
     }
@@ -70,7 +72,8 @@ impl HoverService {
                         "Component resolution is skipped for this tag because it is part of the platform DOM surface.",
                     ],
                 )
-                .link("MDN reference", &info.documentation_url)
+                .example("vue", &native_tag_example(&tag_name))
+                .docs("MDN reference", &info.documentation_url)
                 .build(),
         )
     }
@@ -131,6 +134,18 @@ impl HoverService {
     }
 }
 
+fn native_attribute_example(tag_name: &str, attr_name: &str, is_boolean: bool) -> String {
+    if is_boolean {
+        format!("<template>\n  <{tag_name} {attr_name}>...</{tag_name}>\n</template>")
+    } else {
+        format!("<template>\n  <{tag_name} {attr_name}=\"...\">...</{tag_name}>\n</template>")
+    }
+}
+
+fn native_tag_example(tag_name: &str) -> String {
+    format!("<template>\n  <{tag_name}>...</{tag_name}>\n</template>")
+}
+
 #[cfg(test)]
 mod tests {
     use std::fs;
@@ -159,6 +174,8 @@ mod tests {
             "got {value:?}"
         );
         assert!(value.contains("MDN reference"), "got {value:?}");
+        assert!(value.contains("**Example**"), "got {value:?}");
+        assert!(value.contains("```vue"), "got {value:?}");
     }
 
     #[test]
@@ -181,6 +198,8 @@ mod tests {
             "got {value:?}"
         );
         assert!(value.contains("Boolean HTML attribute"), "got {value:?}");
+        assert!(value.contains("**Example**"), "got {value:?}");
+        assert!(value.contains("```vue"), "got {value:?}");
     }
 
     #[test]

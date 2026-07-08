@@ -10,6 +10,7 @@
 
 mod art;
 mod bindings;
+mod component_docs;
 mod component_meta;
 mod components;
 mod directives;

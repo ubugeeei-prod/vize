@@ -4,8 +4,7 @@ use std::{collections::BTreeSet, sync::Arc};
 
 use oxc_ast::ast::{PropertyKey, Statement, TSSignature, TSType};
 use tower_lsp::lsp_types::{
-    CompletionItem, CompletionItemKind, CompletionItemLabelDetails, Documentation,
-    InsertTextFormat, MarkupContent, MarkupKind,
+    CompletionItem, CompletionItemKind, CompletionItemLabelDetails, InsertTextFormat,
 };
 use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
@@ -13,6 +12,7 @@ use vize_relief::BindingType;
 use crate::ide::definition::helpers as definition_helpers;
 use crate::ide::{IdeContext, is_component_tag, kebab_to_pascal, pascal_to_kebab};
 
+use super::component_docs;
 use super::tag_context::{
     is_dynamic_prop_prefix, is_prop_completion_prefix, is_slot_completion_prefix,
     nearest_open_component_before, opening_tag_context_at_offset,
@@ -316,7 +316,7 @@ fn prop_completion_item(prop: &ComponentProp, dynamic: bool) -> CompletionItem {
     };
     let insert_name = label.clone();
     let insert_text = if !dynamic && prop.type_detail.as_deref() == Some("boolean") {
-        insert_name
+        insert_name.clone()
     } else {
         format!("{insert_name}=\"$1\"")
     };
@@ -327,15 +327,14 @@ fn prop_completion_item(prop: &ComponentProp, dynamic: bool) -> CompletionItem {
     };
     let type_detail = prop.type_detail.as_deref().unwrap_or("unknown");
 
-    let mut doc_body = format!(
-        "**Prop** `{}`\n\n```typescript\n{}: {}\n```",
-        prop.name, prop.name, type_detail
+    let documentation = component_docs::prop_documentation(
+        &prop.name,
+        type_detail,
+        prop.required,
+        prop.default_value.as_deref(),
+        &insert_name,
+        dynamic,
     );
-    if let Some(ref default) = prop.default_value {
-        doc_body.push_str("\n\nDefault: `");
-        doc_body.push_str(default);
-        doc_body.push('`');
-    }
 
     CompletionItem {
         label,
@@ -347,10 +346,7 @@ fn prop_completion_item(prop: &ComponentProp, dynamic: bool) -> CompletionItem {
         }),
         insert_text: Some(insert_text),
         insert_text_format: Some(InsertTextFormat::SNIPPET),
-        documentation: Some(Documentation::MarkupContent(MarkupContent {
-            kind: MarkupKind::Markdown,
-            value: doc_body,
-        })),
+        documentation: Some(documentation),
         sort_text: Some(format!("00-prop-{kebab_name}")),
         ..Default::default()
     }
@@ -368,7 +364,7 @@ fn slot_completion_item(slot: &ComponentSlot, prefix: &str) -> CompletionItem {
         .props_type
         .as_ref()
         .and_then(|ty| extract_slot_prop_names(ty));
-    let value_snippet = match destructure {
+    let value_snippet = match destructure.as_ref() {
         Some(names) if !names.is_empty() => {
             // Pre-populate the destructure with the resolved slot prop names
             // so the user gets `{ row, col }` rather than just `="$1"`.
@@ -401,10 +397,7 @@ fn slot_completion_item(slot: &ComponentSlot, prefix: &str) -> CompletionItem {
         insert_text: Some(insert_text),
         insert_text_format: Some(InsertTextFormat::SNIPPET),
         documentation: slot.props_type.as_ref().map(|props| {
-            Documentation::MarkupContent(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value: format!("**Slot** `{}`\n\n```typescript\n{}\n```", slot.name, props),
-            })
+            component_docs::slot_documentation(&slot.name, props, destructure.as_deref())
         }),
         sort_text: Some(format!("00-slot-{}", slot.name)),
         ..Default::default()

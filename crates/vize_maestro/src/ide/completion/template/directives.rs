@@ -1,12 +1,12 @@
 //! Vue / petite-vue / Vize directive completions.
 
 use tower_lsp::lsp_types::{
-    CompletionItem, CompletionItemKind, CompletionItemLabelDetails, Documentation,
-    InsertTextFormat, MarkupContent, MarkupKind,
+    CompletionItem, CompletionItemKind, CompletionItemLabelDetails, InsertTextFormat,
 };
 
 use crate::ide::IdeContext;
 use crate::ide::completion::items;
+use crate::ide::markup::{self, Markdown};
 
 /// Vue directive completions.
 pub(crate) fn directive_completions() -> Vec<CompletionItem> {
@@ -64,12 +64,21 @@ fn event_item(label: &str, detail: &str) -> CompletionItem {
         }),
         insert_text: Some(format!("{label}=\"$1\"")),
         insert_text_format: Some(InsertTextFormat::SNIPPET),
-        documentation: Some(Documentation::MarkupContent(MarkupContent {
-            kind: MarkupKind::Markdown,
-            value: format!(
-                "**`{label}`**\n\nVue event listener shorthand.\n\n```vue\n<template>\n  <button {label}=\"handler\"></button>\n</template>\n```\n\n[Vue event handling](https://vuejs.org/guide/essentials/event-handling.html)"
-            ),
-        })),
+        documentation: Some(
+            Markdown::new()
+                .title(&format!("`{label}`"))
+                .meta("Vue event listener")
+                .paragraph("Shorthand for `v-on:event`. The handler runs in component scope.")
+                .example(
+                    "vue",
+                    &format!("<template>\n  <button {label}=\"handler\"></button>\n</template>"),
+                )
+                .docs(
+                    "Vue event handling",
+                    "https://vuejs.org/guide/essentials/event-handling.html",
+                )
+                .into_documentation(),
+        ),
         ..Default::default()
     }
 }
@@ -120,19 +129,22 @@ fn petite_vue_item(
     snippet: &str,
     documentation: &str,
 ) -> CompletionItem {
+    let example = markup::snippet_for_docs(snippet);
     CompletionItem {
         label: label.to_string(),
         kind: Some(CompletionItemKind::KEYWORD),
         detail: Some(detail.to_string()),
         insert_text: Some(snippet.to_string()),
         insert_text_format: Some(InsertTextFormat::SNIPPET),
-        documentation: Some(Documentation::MarkupContent(MarkupContent {
-            kind: MarkupKind::Markdown,
-            value: format!(
-                "**{}**\n\n{}\n\n[petite-vue](https://github.com/vuejs/petite-vue)",
-                label, documentation
-            ),
-        })),
+        documentation: Some(
+            Markdown::new()
+                .title(label)
+                .meta("petite-vue directive")
+                .paragraph(documentation)
+                .example("html", &format!("<div {example}></div>"))
+                .docs("petite-vue", "https://github.com/vuejs/petite-vue")
+                .into_documentation(),
+        ),
         ..Default::default()
     }
 }

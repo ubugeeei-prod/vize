@@ -29,6 +29,7 @@ pub mod file_rename;
 pub mod hover;
 pub mod inlay_hint;
 pub mod jsx;
+pub(crate) mod markup;
 pub(crate) mod musea;
 pub mod references;
 pub mod rename;
@@ -69,7 +70,6 @@ use crate::virtual_code::{
     ArtCursorPosition, BlockType, VirtualDocuments, find_art_block_at_offset, find_block_at_offset,
 };
 
-// =============================================================================
 // Position conversion utilities
 // =============================================================================
 
