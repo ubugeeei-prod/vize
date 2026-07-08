@@ -8,7 +8,7 @@ use vize_carton::{Bump, FxHashSet, String, ToCompactString};
 use vize_croquis::macros::runtime_erased_macro_names;
 
 use crate::script::{
-    PropsDestructuredBindings, ScriptCompileContext, TemplateUsedIdentifiers,
+    PropsDestructuredBindings, ScriptCompileContext, TemplateUsedIdentifiers, define_model_name,
     model_modifiers_binding_name, resolve_template_used_identifiers, resolve_type_args,
     transform_destructured_props,
 };
@@ -503,23 +503,7 @@ fn collect_model_names(ctx: &ScriptCompileContext) -> Vec<String> {
     ctx.macros
         .define_models
         .iter()
-        .map(|m| {
-            if m.args.is_empty() {
-                "modelValue".to_compact_string()
-            } else {
-                let args_trimmed = m.args.trim();
-                if args_trimmed.starts_with('\'') || args_trimmed.starts_with('"') {
-                    let quote_char = args_trimmed.as_bytes()[0] as char;
-                    if let Some(end_pos) = args_trimmed[1..].find(quote_char) {
-                        String::from(&args_trimmed[1..end_pos + 1])
-                    } else {
-                        "modelValue".to_compact_string()
-                    }
-                } else {
-                    "modelValue".to_compact_string()
-                }
-            }
-        })
+        .map(|m| define_model_name(ctx.source.as_str(), m))
         .collect()
 }
 
@@ -600,24 +584,7 @@ fn emit_model_bindings(
     let mut model_binding_names: Vec<String> = Vec::new();
     for model_call in &ctx.macros.define_models {
         if let Some(ref binding_name) = model_call.binding_name {
-            // Extract model name from args (first string argument) or default to "modelValue"
-            let model_name = if model_call.args.is_empty() {
-                "modelValue".to_compact_string()
-            } else {
-                // Try to extract the first string argument (e.g., 'title' from defineModel('title'))
-                let args_trimmed = model_call.args.trim();
-                if args_trimmed.starts_with('\'') || args_trimmed.starts_with('"') {
-                    // Extract string content
-                    let quote_char = args_trimmed.as_bytes()[0] as char;
-                    if let Some(end_pos) = args_trimmed[1..].find(quote_char) {
-                        String::from(&args_trimmed[1..end_pos + 1])
-                    } else {
-                        "modelValue".to_compact_string()
-                    }
-                } else {
-                    "modelValue".to_compact_string()
-                }
-            };
+            let model_name = define_model_name(ctx.source.as_str(), model_call);
 
             output.extend_from_slice(b"  const ");
             if let Some(ref modifiers_binding_name) =

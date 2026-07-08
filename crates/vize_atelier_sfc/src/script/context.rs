@@ -167,18 +167,9 @@ impl ScriptCompileContext {
         // Convert models
         for model_call in &self.macros.define_models {
             if let Some(ref binding_name) = model_call.binding_name {
-                // Extract model name from args if present
-                let args = model_call.args.trim();
-                let name = if args.starts_with('\'') || args.starts_with('"') {
-                    let quote = args.as_bytes()[0];
-                    if let Some(end) = args[1..].find(|c: char| c as u8 == quote) {
-                        CompactString::new(&args[1..=end])
-                    } else {
-                        CompactString::new("modelValue")
-                    }
-                } else {
-                    CompactString::new("modelValue")
-                };
+                let name = CompactString::new(
+                    super::define_model_name(self.source.as_str(), model_call).as_str(),
+                );
 
                 summary.macros.add_model(ModelDefinition {
                     name: name.clone(),

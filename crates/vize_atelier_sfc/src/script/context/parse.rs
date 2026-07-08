@@ -234,14 +234,13 @@ impl ScriptCompileContext {
                         if let Expression::CallExpression(call) = init
                             && is_call_of(call, "withDefaults")
                         {
-                            self.macros.with_defaults = Some(MacroCall {
-                                start: call.span.start as usize,
-                                end: call.span.end as usize,
-                                args: source[call.span.start as usize..call.span.end as usize]
-                                    .into(),
-                                type_args: None,
-                                binding_name: binding_name.as_deref().map(Into::into),
-                            });
+                            self.macros.with_defaults = Some(MacroCall::new(
+                                call.span.start as usize,
+                                call.span.end as usize,
+                                source[call.span.start as usize..call.span.end as usize].into(),
+                                None,
+                                binding_name.as_deref().map(Into::into),
+                            ));
 
                             // Also extract the inner defineProps
                             if let Some(Argument::CallExpression(inner_call)) =
@@ -249,13 +248,13 @@ impl ScriptCompileContext {
                                 && is_call_of(inner_call, "defineProps")
                             {
                                 let type_args = extract_type_args_from_call(inner_call, source);
-                                let props_call = MacroCall {
-                                    start: inner_call.span.start as usize,
-                                    end: inner_call.span.end as usize,
-                                    args: extract_args_from_call(inner_call, source),
+                                let props_call = MacroCall::new(
+                                    inner_call.span.start as usize,
+                                    inner_call.span.end as usize,
+                                    extract_args_from_call(inner_call, source),
                                     type_args,
-                                    binding_name: binding_name.as_deref().map(String::from),
-                                };
+                                    binding_name.as_deref().map(String::from),
+                                );
                                 self.extract_props_bindings(&props_call);
                                 self.macros.define_props = Some(props_call);
                                 self.has_define_props_call = true;
@@ -410,26 +409,26 @@ impl ScriptCompileContext {
                 if let Expression::CallExpression(call) = &expr_stmt.expression
                     && is_call_of(call, "withDefaults")
                 {
-                    self.macros.with_defaults = Some(MacroCall {
-                        start: call.span.start as usize,
-                        end: call.span.end as usize,
-                        args: source[call.span.start as usize..call.span.end as usize].into(),
-                        type_args: None,
-                        binding_name: None,
-                    });
+                    self.macros.with_defaults = Some(MacroCall::new(
+                        call.span.start as usize,
+                        call.span.end as usize,
+                        source[call.span.start as usize..call.span.end as usize].into(),
+                        None,
+                        None,
+                    ));
 
                     // Also extract the inner defineProps
                     if let Some(Argument::CallExpression(inner_call)) = call.arguments.first()
                         && is_call_of(inner_call, "defineProps")
                     {
                         let type_args = extract_type_args_from_call(inner_call, source);
-                        let props_call = MacroCall {
-                            start: inner_call.span.start as usize,
-                            end: inner_call.span.end as usize,
-                            args: extract_args_from_call(inner_call, source),
+                        let props_call = MacroCall::new(
+                            inner_call.span.start as usize,
+                            inner_call.span.end as usize,
+                            extract_args_from_call(inner_call, source),
                             type_args,
-                            binding_name: None,
-                        };
+                            None,
+                        );
                         self.extract_props_bindings(&props_call);
                         self.macros.define_props = Some(props_call);
                         self.has_define_props_call = true;

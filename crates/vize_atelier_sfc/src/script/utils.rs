@@ -29,7 +29,6 @@ pub struct ScriptSetupMacros {
     pub props_destructure: Option<super::PropsDestructuredBindings>,
 }
 
-/// Information about a macro call
 #[derive(Debug, Clone)]
 pub struct MacroCall {
     /// Start offset
@@ -42,6 +41,24 @@ pub struct MacroCall {
     pub type_args: Option<String>,
     /// Variable name this macro is assigned to (e.g., "emit" for "const emit = defineEmits(...)")
     pub binding_name: Option<String>,
+}
+
+impl MacroCall {
+    pub(crate) fn new(
+        start: usize,
+        end: usize,
+        args: String,
+        type_args: Option<String>,
+        binding_name: Option<String>,
+    ) -> Self {
+        Self {
+            start,
+            end,
+            args,
+            type_args,
+            binding_name,
+        }
+    }
 }
 
 pub(crate) fn model_modifiers_binding_name(source: &str, call: &MacroCall) -> Option<String> {

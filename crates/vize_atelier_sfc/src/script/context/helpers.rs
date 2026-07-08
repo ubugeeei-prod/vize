@@ -27,13 +27,13 @@ pub(super) fn extract_macro_from_expr(
 
             return Some((
                 callee_name,
-                MacroCall {
-                    start: call.span.start as usize,
-                    end: call.span.end as usize,
+                MacroCall::new(
+                    call.span.start as usize,
+                    call.span.end as usize,
                     args,
                     type_args,
-                    binding_name: None, // Will be set by caller if applicable
-                },
+                    None,
+                ),
             ));
         }
     }
