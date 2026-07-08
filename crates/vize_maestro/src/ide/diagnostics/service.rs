@@ -62,19 +62,13 @@ impl DiagnosticService {
             return diagnostics;
         }
 
-        // Build the line index once for this document. Every collector below
-        // maps byte offsets in `content` to (line, utf16_col) against it, so
-        // sharing one index avoids re-scanning the whole document per offset.
         let line_index = LineIndex::new(&content);
 
-        // Check if this is an Art file (*.art.vue)
         let path = uri.path();
         if path.ends_with(".art.vue") {
-            // Musea-specific diagnostics for Art files
             if features.lint {
                 diagnostics.extend(Self::collect_musea_diagnostics(uri, &content, &line_index));
             }
-            // Don't return early here; async collection still adds Corsa diagnostics.
             return diagnostics;
         }
 
@@ -96,10 +90,6 @@ impl DiagnosticService {
             return diagnostics;
         }
 
-        // JSX/TSX files (*.jsx, *.tsx): surface JSX compiler/lowering
-        // diagnostics (parse errors, lowering warnings) as LSP squiggles. This
-        // is diagnostics-only — no virtual TypeScript document is generated for
-        // JSX/TSX (type-aware features are deferred to #1497).
         if is_jsx_path(path) {
             let jsx_diags = Self::collect_jsx_diagnostics(uri, &content, &line_index);
             tracing::info!("collect: jsx compiler diagnostics: {}", jsx_diags.len());
@@ -107,8 +97,6 @@ impl DiagnosticService {
             return diagnostics;
         }
 
-        // Standard SFC processing — parse once and share the descriptor with
-        // every block-level collector below.
         let descriptor = match Self::parse_sfc_for_collect(uri, &content) {
             Ok(descriptor) => descriptor,
             Err(parse_diagnostic) => {
@@ -151,6 +139,15 @@ impl DiagnosticService {
         );
         diagnostics.extend(sfc_compile_diags);
 
+        Self::extend_component_required_prop_diagnostics(
+            state,
+            uri,
+            &content,
+            &descriptor,
+            &line_index,
+            features.typecheck,
+            &mut diagnostics,
+        );
         if features.lint {
             // Collect linter diagnostics (vize_patina)
             let lint_diags = Self::collect_lint_diagnostics(

@@ -66,7 +66,18 @@ impl HoverService {
                     "Required props not passed"
                 };
                 builder = section_from_items(builder, heading, &missing_required);
+                if !usage.has_spread_attrs {
+                    builder = builder.code(
+                        "vue",
+                        &missing_required_example(tag_name.as_str(), &missing_required),
+                    );
+                }
             }
+
+            builder = builder.link(
+                "Vue Component Props",
+                "https://vuejs.org/guide/components/props.html",
+            );
         }
 
         Some(builder.build())
@@ -202,6 +213,14 @@ fn section_from_items(builder: HoverBuilder, heading: &str, items: &[String]) ->
 
 fn prop_names_match(passed: &PassedProp, declared_name: &str) -> bool {
     passed.name == declared_name || helpers::kebab_to_camel(passed.name.as_str()) == declared_name
+}
+
+fn missing_required_example(tag_name: &str, missing_required: &[String]) -> String {
+    let attrs = missing_required
+        .iter()
+        .map(|name| format!(" :{}=\"...\"", crate::ide::pascal_to_kebab(name)))
+        .collect::<String>();
+    format!("<{tag_name}{attrs} />")
 }
 
 fn starts_with_uppercase(tag_name: &str) -> bool {

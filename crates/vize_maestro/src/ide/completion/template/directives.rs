@@ -1,7 +1,8 @@
 //! Vue / petite-vue / Vize directive completions.
 
 use tower_lsp::lsp_types::{
-    CompletionItem, CompletionItemKind, Documentation, InsertTextFormat, MarkupContent, MarkupKind,
+    CompletionItem, CompletionItemKind, CompletionItemLabelDetails, Documentation,
+    InsertTextFormat, MarkupContent, MarkupKind,
 };
 
 use crate::ide::IdeContext;
@@ -57,11 +58,17 @@ fn event_item(label: &str, detail: &str) -> CompletionItem {
         label: label.to_string(),
         kind: Some(CompletionItemKind::EVENT),
         detail: Some(detail.to_string()),
+        label_details: Some(CompletionItemLabelDetails {
+            detail: None,
+            description: Some("Vue event".to_string()),
+        }),
         insert_text: Some(format!("{label}=\"$1\"")),
         insert_text_format: Some(InsertTextFormat::SNIPPET),
         documentation: Some(Documentation::MarkupContent(MarkupContent {
             kind: MarkupKind::Markdown,
-            value: format!("**`{label}`**\n\nVue event listener shorthand."),
+            value: format!(
+                "**`{label}`**\n\nVue event listener shorthand.\n\n```vue\n<template>\n  <button {label}=\"handler\"></button>\n</template>\n```\n\n[Vue event handling](https://vuejs.org/guide/essentials/event-handling.html)"
+            ),
         })),
         ..Default::default()
     }

@@ -9,6 +9,9 @@
 
 mod builder;
 mod collectors;
+mod component_props;
+#[cfg(test)]
+mod component_props_tests;
 #[cfg(feature = "native")]
 pub(in crate::ide) mod corsa;
 #[cfg(all(test, feature = "native"))]
@@ -40,5 +43,6 @@ pub mod sources {
     pub const JSX_COMPILER: &str = "vize/jsx";
     pub const LINTER: &str = "vize/lint";
     pub const TYPE_CHECKER: &str = "vize/types";
+    pub const COMPONENTS: &str = "vize/components";
     pub const MUSEA: &str = "vize/musea";
 }

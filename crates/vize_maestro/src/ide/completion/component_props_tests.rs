@@ -1,6 +1,6 @@
 use std::fs;
 
-use tower_lsp::lsp_types::{CompletionResponse, Url};
+use tower_lsp::lsp_types::{CompletionResponse, CompletionTextEdit, Url};
 
 use super::CompletionService;
 use crate::{ide::IdeContext, server::ServerState};
@@ -45,6 +45,58 @@ import Child from './Child.vue'
 
     assert!(has_label(&labels, "some-message"), "{labels:?}");
     assert!(has_label(&labels, "disabled"), "{labels:?}");
+}
+
+#[test]
+fn template_component_prop_completion_replaces_dynamic_prefix() {
+    let dir = tempfile::tempdir().unwrap();
+    let child_path = dir.path().join("Child.vue");
+    fs::write(
+        &child_path,
+        r#"<script setup lang="ts">
+defineProps<{
+  someMessage: string
+}>()
+</script>
+"#,
+    )
+    .unwrap();
+
+    let source = r#"<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child :so />
+</template>
+"#;
+    let parent_path = dir.path().join("Parent.vue");
+    fs::write(&parent_path, source).unwrap();
+
+    let uri = Url::from_file_path(&parent_path).unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    let offset = source.find(":so").unwrap() + ":so".len();
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+    let items = completion_items(CompletionService::complete(&ctx).unwrap());
+    let prop = items
+        .iter()
+        .find(|item| item.label == "someMessage")
+        .expect("dynamic prop completion should use the camelCase label");
+
+    let edit = match prop
+        .text_edit
+        .as_ref()
+        .expect("dynamic prop completion should replace the typed prefix")
+    {
+        CompletionTextEdit::Edit(edit) => edit,
+        CompletionTextEdit::InsertAndReplace(_) => panic!("expected a simple text edit"),
+    };
+    assert_eq!(edit.new_text, ":someMessage=\"$1\"");
 }
 
 #[cfg(feature = "native")]
@@ -138,13 +190,17 @@ import Child from './Child.vue'
 }
 
 fn completion_labels(response: CompletionResponse) -> Vec<String> {
+    completion_items(response)
+        .into_iter()
+        .map(|item| item.label)
+        .collect()
+}
+
+fn completion_items(response: CompletionResponse) -> Vec<tower_lsp::lsp_types::CompletionItem> {
     match response {
         CompletionResponse::Array(items) => items,
         CompletionResponse::List(list) => list.items,
     }
-    .into_iter()
-    .map(|item| item.label)
-    .collect()
 }
 
 fn has_label(labels: &[String], expected: &str) -> bool {

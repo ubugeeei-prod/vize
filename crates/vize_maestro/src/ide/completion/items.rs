@@ -9,7 +9,8 @@
 )]
 
 use tower_lsp::lsp_types::{
-    CompletionItem, CompletionItemKind, Documentation, InsertTextFormat, MarkupContent, MarkupKind,
+    CompletionItem, CompletionItemKind, CompletionItemLabelDetails, Documentation,
+    InsertTextFormat, MarkupContent, MarkupKind,
 };
 use vize_relief::BindingType;
 
@@ -93,18 +94,31 @@ pub(crate) fn binding_type_to_completion_info(
 pub(crate) fn directive_item(label: &str, description: &str, snippet: &str) -> CompletionItem {
     CompletionItem {
         label: label.to_string(),
-        kind: Some(CompletionItemKind::KEYWORD),
+        kind: Some(directive_completion_kind(label)),
         detail: Some(description.to_string()),
+        label_details: Some(CompletionItemLabelDetails {
+            detail: None,
+            description: Some("Vue directive".to_string()),
+        }),
         insert_text: Some(snippet.to_string()),
         insert_text_format: Some(InsertTextFormat::SNIPPET),
         documentation: Some(Documentation::MarkupContent(MarkupContent {
             kind: MarkupKind::Markdown,
             value: format!(
-                "**{}**\n\n{}\n\n[Vue Documentation](https://vuejs.org/api/built-in-directives.html)",
-                label, description
+                "**`{}`**\n\n{}\n\n```vue\n<template>\n  <div {}></div>\n</template>\n```\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)",
+                label, description, snippet
             ),
         })),
         ..Default::default()
+    }
+}
+
+fn directive_completion_kind(label: &str) -> CompletionItemKind {
+    match label {
+        "@" | "v-on" => CompletionItemKind::EVENT,
+        ":" | "v-bind" | "v-model" => CompletionItemKind::PROPERTY,
+        "#" | "v-slot" => CompletionItemKind::FIELD,
+        _ => CompletionItemKind::KEYWORD,
     }
 }
 

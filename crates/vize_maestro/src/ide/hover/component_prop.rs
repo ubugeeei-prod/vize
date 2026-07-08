@@ -27,7 +27,17 @@ pub(super) fn hover_attribute(ctx: &IdeContext<'_>) -> Option<Hover> {
             .title(&prop.name)
             .meta("Component prop")
             .code("typescript", &signature)
-            .section("Requirement", requirement);
+            .section("Requirement", requirement)
+            .code(
+                "vue",
+                &format!(
+                    "<{component_name} {attr_name}=\"...\" />\n<{component_name} :{attr_name}=\"value\" />"
+                ),
+            )
+            .link(
+                "Vue Component Props",
+                "https://vuejs.org/guide/components/props.html",
+            );
 
         if let Some(default) = prop.default_value.as_deref() {
             builder = builder.section("Default", &format!("`{default}`"));
@@ -131,6 +141,11 @@ import Child from './Child.vue'
 
         assert!(value.contains("modelValue: string"), "got {value:?}");
         assert!(value.contains("Required"), "got {value:?}");
+        assert!(
+            value.contains("<Child model-value=\"...\" />"),
+            "got {value:?}"
+        );
+        assert!(value.contains("Vue Component Props"), "got {value:?}");
     }
 
     fn hover_markdown(hover: tower_lsp::lsp_types::Hover) -> String {

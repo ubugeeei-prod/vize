@@ -8,6 +8,7 @@ pub(super) struct OpenTagContext {
     pub tag_name: String,
     pub tag_start: usize,
     pub current_token: String,
+    pub current_token_start: usize,
     pub inside_attribute_value: bool,
 }
 
@@ -43,12 +44,13 @@ pub(super) fn opening_tag_context_at_offset(
 
     let tag_name = content[name_start..name_end].to_string();
     let inside_attribute_value = is_inside_open_tag_attribute_value(content, tag_start, cursor);
-    let current_token = current_open_tag_token(content, tag_start, cursor);
+    let (current_token_start, current_token) = current_open_tag_token(content, tag_start, cursor);
 
     Some(OpenTagContext {
         tag_name,
         tag_start,
         current_token,
+        current_token_start,
         inside_attribute_value,
     })
 }
@@ -74,7 +76,7 @@ fn is_inside_open_tag_attribute_value(content: &str, tag_start: usize, cursor: u
     quote.is_some()
 }
 
-fn current_open_tag_token(content: &str, tag_start: usize, cursor: usize) -> String {
+fn current_open_tag_token(content: &str, tag_start: usize, cursor: usize) -> (usize, String) {
     let slice = &content[tag_start..cursor];
     let mut token_start = tag_start;
 
@@ -84,7 +86,10 @@ fn current_open_tag_token(content: &str, tag_start: usize, cursor: usize) -> Str
         }
     }
 
-    content[token_start..cursor].trim_start().to_string()
+    (
+        token_start,
+        content[token_start..cursor].trim_start().to_string(),
+    )
 }
 
 pub(super) fn is_prop_completion_prefix(prefix: &str) -> bool {

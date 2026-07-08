@@ -20,7 +20,7 @@ mod self_component;
 mod slot_outlets;
 mod tag_context;
 
-use tower_lsp::lsp_types::CompletionItem;
+use tower_lsp::lsp_types::{CompletionItem, CompletionTextEdit, Position, Range, TextEdit};
 
 use super::is_inside_html_comment;
 use crate::ide::IdeContext;
@@ -57,7 +57,7 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
             let mut items_vec = contextual_directive_completions(ctx);
             items_vec.extend(native::native_element_attribute_completions(ctx));
             items_vec.extend(component_meta::component_surface_completions(ctx));
-            return filter_open_tag_completions(items_vec, &tag_ctx.current_token);
+            return prepare_open_tag_completions(ctx, &tag_ctx, items_vec);
         }
 
         if !is_template_expression {
@@ -100,6 +100,89 @@ fn filter_open_tag_completions(
         .collect()
 }
 
+fn prepare_open_tag_completions(
+    ctx: &IdeContext,
+    tag_ctx: &tag_context::OpenTagContext,
+    items: Vec<CompletionItem>,
+) -> Vec<CompletionItem> {
+    let items = filter_open_tag_completions(items, &tag_ctx.current_token);
+    with_open_tag_text_edits(ctx, tag_ctx, items)
+}
+
+fn with_open_tag_text_edits(
+    ctx: &IdeContext,
+    tag_ctx: &tag_context::OpenTagContext,
+    mut items: Vec<CompletionItem>,
+) -> Vec<CompletionItem> {
+    if tag_ctx.current_token.is_empty() {
+        return items;
+    }
+
+    let range = range_from_offsets(&ctx.content, tag_ctx.current_token_start, ctx.offset);
+    for item in &mut items {
+        let insert_text = item
+            .insert_text
+            .take()
+            .unwrap_or_else(|| item.label.clone());
+        item.text_edit = Some(CompletionTextEdit::Edit(TextEdit {
+            range,
+            new_text: replacement_text_for_open_tag_completion(
+                &tag_ctx.current_token,
+                &insert_text,
+            ),
+        }));
+    }
+
+    items
+}
+
+fn replacement_text_for_open_tag_completion(prefix: &str, insert_text: &str) -> String {
+    if prefix.starts_with("v-bind:")
+        && !insert_text.starts_with("v-bind:")
+        && !insert_text.starts_with(':')
+    {
+        return format!("v-bind:{insert_text}");
+    }
+
+    if prefix.starts_with(':')
+        && !insert_text.starts_with(':')
+        && !insert_text.starts_with("v-bind:")
+    {
+        return format!(":{insert_text}");
+    }
+
+    if prefix.starts_with("v-slot:")
+        && !insert_text.starts_with("v-slot:")
+        && !insert_text.starts_with('#')
+    {
+        return format!("v-slot:{insert_text}");
+    }
+
+    if prefix.starts_with('#')
+        && !insert_text.starts_with('#')
+        && !insert_text.starts_with("v-slot:")
+    {
+        return format!("#{insert_text}");
+    }
+
+    insert_text.to_string()
+}
+
+fn range_from_offsets(content: &str, start: usize, end: usize) -> Range {
+    let (start_line, start_character) = crate::ide::offset_to_position(content, start);
+    let (end_line, end_character) = crate::ide::offset_to_position(content, end);
+    Range {
+        start: Position {
+            line: start_line,
+            character: start_character,
+        },
+        end: Position {
+            line: end_line,
+            character: end_character,
+        },
+    }
+}
+
 fn open_tag_completion_matches_prefix(label: &str, prefix: &str) -> bool {
     if prefix.contains('=') {
         return false;
@@ -134,6 +217,11 @@ pub(crate) fn corsa_template_completions(ctx: &IdeContext) -> Vec<CompletionItem
     let mut items = contextual_directive_completions(ctx);
     items.extend(component_meta::component_surface_completions(ctx));
     items.extend(legacy_vue2_template_completions(ctx));
+    if let Some(tag_ctx) = tag_context::opening_tag_context_at_offset(&ctx.content, ctx.offset)
+        && !tag_ctx.inside_attribute_value
+    {
+        return prepare_open_tag_completions(ctx, &tag_ctx, items);
+    }
     items
 }
 
