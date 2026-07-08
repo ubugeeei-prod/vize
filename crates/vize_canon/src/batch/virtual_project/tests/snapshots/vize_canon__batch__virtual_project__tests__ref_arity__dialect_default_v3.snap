@@ -63,7 +63,7 @@ function __setup() {
 
   // Props are available in template as variables
   // Access via `propName` or `props.propName`
-  const props: Props = {} as Props;
+  const props: __DefineProps<Props> = {} as __DefineProps<Props>;
   void props; // Mark as used to avoid TS6133
   const test = props["test"];
   void test;

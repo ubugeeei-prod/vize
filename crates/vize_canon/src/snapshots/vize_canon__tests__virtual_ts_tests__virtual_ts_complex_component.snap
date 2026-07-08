@@ -128,9 +128,9 @@ function __setup() {
 
   // Props are available in template as variables
   // Access via `propName` or `props.propName`
-  const props: __WithDefaultsResult<Props, Pick<Props, "initialCount">> = {} as __WithDefaultsResult<Props, Pick<Props, "initialCount">>;
+  const props: __WithDefaultsResult<__DefineProps<Props>, Pick<__DefineProps<Props>, "initialCount">> = {} as __WithDefaultsResult<__DefineProps<Props>, Pick<__DefineProps<Props>, "initialCount">>;
   void props; // Mark as used to avoid TS6133
-  const initialCount = props["initialCount"] as Exclude<__WithDefaultsResult<Props, Pick<Props, "initialCount">>["initialCount"], undefined>;
+  const initialCount = props["initialCount"] as Exclude<__WithDefaultsResult<__DefineProps<Props>, Pick<__DefineProps<Props>, "initialCount">>["initialCount"], undefined>;
   void initialCount;
   const title = props["title"];
   void title;

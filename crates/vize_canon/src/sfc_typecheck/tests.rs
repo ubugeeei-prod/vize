@@ -156,7 +156,7 @@ const { thickness, label } = props;
         );
     assert!(
         virtual_ts.contains(
-            r#"const props: __WithDefaultsResult<Props, Pick<Props, "label" | "thickness">>"#
+            r#"const props: __WithDefaultsResult<__DefineProps<Props>, Pick<__DefineProps<Props>, "label" | "thickness">>"#
         ),
         "{virtual_ts}"
     );
@@ -260,7 +260,7 @@ void props;
 
     assert!(
             virtual_ts.contains(
-                r#"const count = props["count"] as Exclude<__WithDefaultsResult<Props, Pick<Props, "count">>["count"], undefined>;"#
+                r#"const count = props["count"] as Exclude<__WithDefaultsResult<__DefineProps<Props>, Pick<__DefineProps<Props>, "count">>["count"], undefined>;"#
             ),
             "{virtual_ts}"
         );

@@ -32,6 +32,7 @@ fn emit_template_prop_binding(
 fn emit_keyed_template_prop_binding(
     ts: &mut String,
     props_type_ref: &str,
+    key_type_ref: &str,
     prop_name: &str,
     has_default: bool,
 ) {
@@ -39,12 +40,12 @@ fn emit_keyed_template_prop_binding(
     if has_default {
         append!(
             *ts,
-            "  const {binding_name} = props[(\"{prop_name}\" satisfies keyof {props_type_ref})] as Exclude<{props_type_ref}[\"{prop_name}\"], undefined>;\n"
+            "  const {binding_name} = props[(\"{prop_name}\" satisfies keyof {key_type_ref})] as Exclude<{props_type_ref}[\"{prop_name}\"], undefined>;\n"
         );
     } else {
         append!(
             *ts,
-            "  const {binding_name} = props[(\"{prop_name}\" satisfies keyof {props_type_ref})];\n"
+            "  const {binding_name} = props[(\"{prop_name}\" satisfies keyof {key_type_ref})];\n"
         );
     }
     append!(*ts, "  void {binding_name};\n");
@@ -334,8 +335,6 @@ fn emit_options_api_props_type(
     }
 }
 
-/// Generate props variables inside template closure.
-/// When `generic_param` is present, uses `Props<T, P>` instead of `Props`.
 pub(crate) fn generate_props_variables(
     ts: &mut String,
     summary: &Croquis,
@@ -359,8 +358,13 @@ pub(crate) fn generate_props_variables(
             defaulted_prop_names.insert(model.name.as_str().into());
         }
     }
+    let template_base_props_type_ref = if define_props_type_args.is_some() {
+        cstr!("__DefineProps<{props_type_ref}>")
+    } else {
+        props_type_ref.clone()
+    };
     let template_props_type_ref =
-        template_props_type_ref(props_type_ref.as_str(), &defaulted_prop_names);
+        template_props_type_ref(template_base_props_type_ref.as_str(), &defaulted_prop_names);
 
     if has_props || define_props_type_args.is_some() || has_models {
         ts.push_str("  // Props are available in template as variables\n");
@@ -373,15 +377,8 @@ pub(crate) fn generate_props_variables(
 
         let mut emitted_names = FxHashSet::default();
         if let Some(type_args) = define_props_type_args {
-            // Type-only defineProps<TypeName>(): extract fields
-            // type_args may include angle brackets (e.g., "<Props>", "<Foo<T>>"), strip outer pair
             let type_name = strip_outer_angle_brackets(type_args.trim());
 
-            // Resolve the named type's fields through the croquis TypeResolver,
-            // which the script analysis populates from the OXC AST (local
-            // interfaces/type literals included). This handles inline object
-            // types, registered local types, nested braces, generics, and
-            // comments — no raw-text scanning.
             let type_properties = summary
                 .types
                 .extract_properties(type_reference_lookup_key(type_name));
@@ -414,6 +411,7 @@ pub(crate) fn generate_props_variables(
                         emit_keyed_template_prop_binding(
                             ts,
                             template_props_type_ref.as_str(),
+                            props_type_ref.as_str(),
                             name.as_str(),
                             defaulted_prop_names.contains(&name),
                         );

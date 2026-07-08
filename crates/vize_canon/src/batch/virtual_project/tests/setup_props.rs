@@ -104,7 +104,7 @@ void props
 
     assert!(
         virtual_ts.contains(
-            r#"const targetStudent = props["targetStudent"] as Exclude<__WithDefaultsResult<Props, Pick<Props, "targetStudent">>["targetStudent"], undefined>;"#
+            r#"const targetStudent = props["targetStudent"] as Exclude<__WithDefaultsResult<__DefineProps<Props>, Pick<__DefineProps<Props>, "targetStudent">>["targetStudent"], undefined>;"#
         ),
         "legacy Vue2 template scope must expose inline defineProps keys:\n{virtual_ts}"
     );
