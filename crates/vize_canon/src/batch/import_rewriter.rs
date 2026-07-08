@@ -80,6 +80,13 @@ impl ImportRewriter {
     }
 
     pub fn rewrite(&self, source: &str, source_type: SourceType) -> RewriteResult {
+        if !source.contains(".vue") {
+            return RewriteResult {
+                code: source.to_compact_string(),
+                source_map: ImportSourceMap::empty(),
+            };
+        }
+
         self.rewrite_with(source, source_type, |path| {
             self.rewrite_module_specifier(path)
         })
@@ -94,6 +101,15 @@ impl ImportRewriter {
         roots: (&std::path::Path, &std::path::Path),
         source_dir: Option<&std::path::Path>,
     ) -> RewriteResult {
+        let project_root = roots.0.to_string_lossy();
+        let dts_candidate = source_dir.is_some() && source_may_contain_relative_specifier(source);
+        if !source.contains(".vue") && !source.contains(project_root.as_ref()) && !dts_candidate {
+            return RewriteResult {
+                code: source.to_compact_string(),
+                source_map: ImportSourceMap::empty(),
+            };
+        }
+
         self.rewrite_with(source, source_type, |path| {
             self.rewrite_virtual_project_specifier(path, roots, source_dir)
         })
@@ -104,6 +120,13 @@ impl ImportRewriter {
         source: &str,
         source_type: SourceType,
     ) -> RewriteResult {
+        if !source.contains(".vue.ts") && !source.contains(".vue.tsx") {
+            return RewriteResult {
+                code: source.to_compact_string(),
+                source_map: ImportSourceMap::empty(),
+            };
+        }
+
         self.rewrite_with(source, source_type, |path| {
             self.rewrite_declaration_specifier(path)
         })
@@ -162,6 +185,10 @@ impl ImportRewriter {
         source: &str,
         source_type: SourceType,
     ) -> Vec<String> {
+        if !source.contains(".vue") {
+            return Vec::new();
+        }
+
         let allocator = Allocator::default();
         let parser = Parser::new(&allocator, source, source_type);
         let result = parser.parse();
@@ -238,6 +265,12 @@ impl ImportRewriter {
         }
         None
     }
+}
+
+fn source_may_contain_relative_specifier(source: &str) -> bool {
+    ["'./", "\"./", "'../", "\"../"]
+        .iter()
+        .any(|needle| source.contains(needle))
 }
 
 impl Default for ImportRewriter {
