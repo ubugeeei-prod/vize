@@ -3,8 +3,6 @@
 const path = require("node:path");
 
 const vueExtension = ".vue";
-const virtualDtsSuffix = ".d.ts";
-const installedHosts = new WeakSet();
 
 function init({ typescript: ts }) {
   return {
@@ -13,8 +11,9 @@ function init({ typescript: ts }) {
         return info?.languageService;
       }
       try {
-        return installVueImportResolver(ts, info)
-          ? createLanguageServiceProxy(ts, info.languageService)
+        const support = createVueImportSupport(ts, info);
+        return support
+          ? createLanguageServiceProxy(ts, info.languageService, support)
           : info.languageService;
       } catch (error) {
         logPluginError(info, "create", error);
@@ -24,228 +23,89 @@ function init({ typescript: ts }) {
   };
 }
 
-function installVueImportResolver(ts, info) {
+function createVueImportSupport(ts, info) {
   const host = info.languageServiceHost;
   if (!host) {
-    return false;
-  }
-  if (installedHosts.has(host)) {
-    return true;
+    return undefined;
   }
 
   const serverHost = info.serverHost || ts.sys;
   const originalFileExists = bind(host.fileExists, host) || bind(serverHost.fileExists, serverHost);
   const originalReadFile = bind(host.readFile, host) || bind(serverHost.readFile, serverHost);
-  const originalGetScriptSnapshot = bind(host.getScriptSnapshot, host);
-  const originalGetScriptKind = bind(host.getScriptKind, host);
-  const originalResolveModuleNameLiterals = bind(host.resolveModuleNameLiterals, host);
-  const originalResolveModuleNames = bind(host.resolveModuleNames, host);
 
-  if (!originalFileExists || !originalReadFile || !originalGetScriptSnapshot) {
-    return false;
-  }
-
-  const replacements = {
-    fileExists(fileName) {
-      const vuePath = realVuePathFromVirtual(fileName);
-      if (vuePath) {
-        return originalFileExists(vuePath);
-      }
-      return originalFileExists(fileName);
-    },
-    readFile(fileName) {
-      const vuePath = realVuePathFromVirtual(fileName);
-      if (vuePath && originalFileExists(vuePath)) {
-        return virtualVueDts();
-      }
-      return originalReadFile(fileName);
-    },
-    getScriptSnapshot(fileName) {
-      const vuePath = realVuePathFromVirtual(fileName);
-      if (vuePath && originalFileExists(vuePath)) {
-        return ts.ScriptSnapshot.fromString(virtualVueDts());
-      }
-      return originalGetScriptSnapshot(fileName);
-    },
-    getScriptKind(fileName) {
-      if (realVuePathFromVirtual(fileName)) {
-        return ts.ScriptKind.TS;
-      }
-      return originalGetScriptKind ? originalGetScriptKind(fileName) : ts.ScriptKind.Unknown;
-    },
-    resolveModuleNameLiterals(...args) {
-      const [moduleLiterals, containingFile] = args;
-      const previous = toArray(originalResolveModuleNameLiterals?.(...args));
-
-      if (!Array.isArray(moduleLiterals)) {
-        return previous;
-      }
-
-      return moduleLiterals.map((literal, index) => {
-        if (previous[index] && previous[index].resolvedModule) {
-          return previous[index];
-        }
-
-        const resolvedModule = resolveVueModule(
-          ts,
-          literal?.text,
-          containingFile,
-          originalFileExists,
-        );
-        return resolvedModule
-          ? { resolvedModule }
-          : previous[index] || { resolvedModule: undefined };
-      });
-    },
-    resolveModuleNames(...args) {
-      const [moduleNames, containingFile] = args;
-      const previous = toArray(originalResolveModuleNames?.(...args));
-
-      if (!Array.isArray(moduleNames)) {
-        return previous;
-      }
-
-      return moduleNames.map((moduleName, index) => {
-        if (previous[index]) {
-          return previous[index];
-        }
-        return resolveVueModule(ts, moduleName, containingFile, originalFileExists);
-      });
-    },
-  };
-
-  const replacementEntries = Object.entries(replacements);
-  if (!replacementEntries.every(([name]) => canAssignProperty(host, name))) {
-    return false;
-  }
-
-  const originals = new Map(replacementEntries.map(([name]) => [name, host[name]]));
-  try {
-    for (const [name, replacement] of replacementEntries) {
-      host[name] = replacement;
-    }
-  } catch (error) {
-    for (const [name, original] of originals) {
-      try {
-        host[name] = original;
-      } catch {
-        // Best effort rollback only; create() will return the unproxied service.
-      }
-    }
-    logPluginError(info, "install", error);
-    return false;
-  }
-
-  installedHosts.add(host);
-  return true;
-}
-
-function resolveVueModule(ts, specifier, containingFile, fileExists) {
-  if (!isRelativeVueSpecifier(specifier) || typeof containingFile !== "string") {
-    return undefined;
-  }
-
-  const vuePath = path.resolve(path.dirname(containingFile), specifier);
-  if (!fileExists(vuePath)) {
+  if (!originalFileExists || !originalReadFile) {
     return undefined;
   }
 
   return {
-    extension: ts.Extension.Dts,
-    isExternalLibraryImport: false,
-    resolvedFileName: virtualVueDtsPath(vuePath),
+    fileExists: originalFileExists,
+    readFile: originalReadFile,
   };
 }
 
-function createLanguageServiceProxy(ts, languageService) {
+function createLanguageServiceProxy(ts, languageService, support) {
   const proxy = Object.create(null);
   for (const key of Object.keys(languageService)) {
     const value = languageService[key];
     proxy[key] = typeof value === "function" ? value.bind(languageService) : value;
   }
 
-  proxy.getDefinitionAtPosition = (fileName, position) =>
-    remapVueVirtualDefinitions(ts, languageService.getDefinitionAtPosition(fileName, position));
+  proxy.getSemanticDiagnostics = (fileName) =>
+    filterVueImportDiagnostics(ts, languageService.getSemanticDiagnostics(fileName), {
+      fileExists: support.fileExists,
+      fileName,
+    });
 
-  proxy.getDefinitionAndBoundSpan = (fileName, position) => {
-    const result = languageService.getDefinitionAndBoundSpan(fileName, position);
-    if (!result || !result.definitions) {
-      return result;
-    }
-    return {
-      ...result,
-      definitions: remapVueVirtualDefinitions(ts, result.definitions),
-    };
+  proxy.getDefinitionAtPosition = (fileName, position) => {
+    const vueDefinition = resolveVueImportDefinition(ts, support, fileName, position);
+    return vueDefinition
+      ? [vueDefinition.definition]
+      : languageService.getDefinitionAtPosition(fileName, position);
   };
 
-  proxy.getTypeDefinitionAtPosition = (fileName, position) =>
-    remapVueVirtualDefinitions(ts, languageService.getTypeDefinitionAtPosition(fileName, position));
-
-  proxy.getQuickInfoAtPosition = (fileName, position) => {
-    const quickInfo = languageService.getQuickInfoAtPosition(fileName, position);
-    if (!quickInfo) {
-      return quickInfo;
+  proxy.getDefinitionAndBoundSpan = (fileName, position) => {
+    const vueDefinition = resolveVueImportDefinition(ts, support, fileName, position);
+    if (vueDefinition) {
+      return {
+        definitions: [vueDefinition.definition],
+        textSpan: vueDefinition.textSpan,
+      };
     }
 
-    const vuePaths = vuePathsFromDefinitions(
-      safeCall(() => languageService.getDefinitionAtPosition(fileName, position), undefined),
-    );
-    if (vuePaths.length === 0) {
+    const result = languageService.getDefinitionAndBoundSpan(fileName, position);
+    return result;
+  };
+
+  proxy.getTypeDefinitionAtPosition = (fileName, position) => {
+    const vueDefinition = resolveVueImportDefinition(ts, support, fileName, position);
+    return vueDefinition
+      ? [vueDefinition.definition]
+      : languageService.getTypeDefinitionAtPosition(fileName, position);
+  };
+
+  proxy.getQuickInfoAtPosition = (fileName, position) => {
+    const vueDefinition = resolveVueImportDefinition(ts, support, fileName, position);
+    const quickInfo = languageService.getQuickInfoAtPosition(fileName, position);
+    if (!vueDefinition) {
       return quickInfo;
     }
 
     return {
-      ...quickInfo,
+      kind: ts.ScriptElementKind.alias,
+      kindModifiers: "",
+      textSpan: vueDefinition.textSpan,
+      ...(quickInfo || {}),
       documentation: [
-        ...(quickInfo.documentation || []),
+        ...(quickInfo?.documentation || []),
         {
           kind: "text",
-          text: `Vue component: ${path.basename(vuePaths[0])}`,
+          text: `Vue component: ${path.basename(vueDefinition.definition.fileName)}`,
         },
       ],
     };
   };
 
   return proxy;
-}
-
-function canAssignProperty(target, key) {
-  const descriptor = findPropertyDescriptor(target, key);
-  if (!descriptor) {
-    return isExtensible(target);
-  }
-  if ("writable" in descriptor) {
-    return descriptor.writable;
-  }
-  return typeof descriptor.set === "function";
-}
-
-function findPropertyDescriptor(target, key) {
-  let current = target;
-  while (current) {
-    const descriptor = Object.getOwnPropertyDescriptor(current, key);
-    if (descriptor) {
-      return descriptor;
-    }
-    current = Object.getPrototypeOf(current);
-  }
-  return undefined;
-}
-
-function isExtensible(target) {
-  try {
-    return Object.isExtensible(target);
-  } catch {
-    return false;
-  }
-}
-
-function safeCall(fn, fallback) {
-  try {
-    return fn();
-  } catch {
-    return fallback;
-  }
 }
 
 function logPluginError(info, phase, error) {
@@ -259,40 +119,159 @@ function logPluginError(info, phase, error) {
   }
 }
 
-function remapVueVirtualDefinitions(ts, definitions) {
-  return definitions?.map((definition) => remapVueVirtualDefinition(ts, definition));
+function filterVueImportDiagnostics(ts, diagnostics, { fileExists, fileName }) {
+  return diagnostics.filter((diagnostic) => {
+    if (diagnostic.code !== 2307) {
+      return true;
+    }
+
+    const specifier = diagnosticVueSpecifier(ts, diagnostic);
+    const containingFile = diagnostic.file?.fileName || fileName;
+    return !resolveExistingVueSpecifier(containingFile, specifier, fileExists);
+  });
 }
 
-function vuePathsFromDefinitions(definitions) {
-  return (
-    definitions
-      ?.map((definition) => realVuePathFromVirtual(definition.fileName))
-      .filter((vuePath) => vuePath) || []
-  );
+function diagnosticVueSpecifier(ts, diagnostic) {
+  const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+  return message.match(/Cannot find module ['"]([^'"]+\.vue)['"]/)?.[1];
 }
 
-function remapVueVirtualDefinition(ts, definition) {
-  const vuePath = realVuePathFromVirtual(definition.fileName);
-  if (!vuePath) {
-    return definition;
+function resolveVueImportDefinition(ts, support, fileName, position) {
+  if (typeof fileName !== "string") {
+    return undefined;
+  }
+
+  const sourceText = support.readFile(fileName);
+  if (typeof sourceText !== "string") {
+    return undefined;
+  }
+
+  const vueImport = findVueImportAtPosition(ts, sourceText, position);
+  const vuePath = resolveExistingVueSpecifier(fileName, vueImport?.specifier, support.fileExists);
+  if (!vueImport || !vuePath) {
+    return undefined;
   }
 
   return {
-    ...definition,
-    fileName: vuePath,
-    textSpan: { start: 0, length: 0 },
-    contextSpan: undefined,
-    kind: ts.ScriptElementKind.scriptElement,
-    name: path.basename(vuePath),
+    definition: {
+      fileName: vuePath,
+      kind: ts.ScriptElementKind.scriptElement,
+      name: path.basename(vuePath),
+      textSpan: { start: 0, length: 0 },
+    },
+    textSpan: vueImport.textSpan,
   };
 }
 
-function bind(fn, thisArg) {
-  return typeof fn === "function" ? fn.bind(thisArg) : undefined;
+function findVueImportAtPosition(ts, sourceText, position) {
+  const sourceFile = ts.createSourceFile(
+    "vize-vue-import.ts",
+    sourceText,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
+  const imports = [];
+
+  visit(sourceFile, (node) => {
+    if (!ts.isImportDeclaration(node) || !isStringLiteralLike(ts, node.moduleSpecifier)) {
+      return;
+    }
+
+    const specifier = node.moduleSpecifier.text;
+    if (!isRelativeVueSpecifier(specifier)) {
+      return;
+    }
+
+    const localNames = new Set();
+    const importClause = node.importClause;
+    if (importClause?.name) {
+      localNames.add(importClause.name.text);
+    }
+    const namedBindings = importClause?.namedBindings;
+    if (namedBindings && ts.isNamespaceImport(namedBindings)) {
+      localNames.add(namedBindings.name.text);
+    } else if (namedBindings && ts.isNamedImports(namedBindings)) {
+      for (const element of namedBindings.elements) {
+        localNames.add(element.name.text);
+      }
+    }
+
+    imports.push({
+      localNames,
+      specifier,
+      specifierSpan: {
+        length: specifier.length,
+        start: node.moduleSpecifier.getStart(sourceFile) + 1,
+      },
+    });
+  });
+
+  for (const vueImport of imports) {
+    if (containsPosition(vueImport.specifierSpan, position)) {
+      return {
+        specifier: vueImport.specifier,
+        textSpan: vueImport.specifierSpan,
+      };
+    }
+  }
+
+  const identifier = identifierAtPosition(ts, sourceFile, position);
+  if (!identifier) {
+    return undefined;
+  }
+
+  const identifierText = identifier.text;
+  const vueImport = imports.find((entry) => entry.localNames.has(identifierText));
+  if (!vueImport) {
+    return undefined;
+  }
+
+  return {
+    specifier: vueImport.specifier,
+    textSpan: {
+      length: identifier.getEnd() - identifier.getStart(sourceFile),
+      start: identifier.getStart(sourceFile),
+    },
+  };
 }
 
-function toArray(value) {
-  return Array.isArray(value) ? value : [];
+function identifierAtPosition(ts, sourceFile, position) {
+  let result;
+  visit(sourceFile, (node) => {
+    if (
+      result ||
+      !ts.isIdentifier(node) ||
+      position < node.getStart(sourceFile) ||
+      position > node.getEnd()
+    ) {
+      return;
+    }
+    result = node;
+  });
+  return result;
+}
+
+function visit(node, callback) {
+  callback(node);
+  node.forEachChild((child) => visit(child, callback));
+}
+
+function isStringLiteralLike(ts, node) {
+  return ts.isStringLiteral(node) || node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral;
+}
+
+function containsPosition(span, position) {
+  return position >= span.start && position <= span.start + span.length;
+}
+
+function resolveExistingVueSpecifier(containingFile, specifier, fileExists) {
+  if (!isRelativeVueSpecifier(specifier) || typeof containingFile !== "string") {
+    return undefined;
+  }
+
+  const vuePath = path.resolve(path.dirname(containingFile), specifier);
+  return fileExists(vuePath) ? vuePath : undefined;
 }
 
 function isRelativeVueSpecifier(specifier) {
@@ -303,18 +282,8 @@ function isRelativeVueSpecifier(specifier) {
   );
 }
 
-function realVuePathFromVirtual(fileName) {
-  return typeof fileName === "string" && fileName.endsWith(`${vueExtension}${virtualDtsSuffix}`)
-    ? fileName.slice(0, -virtualDtsSuffix.length)
-    : undefined;
-}
-
-function virtualVueDtsPath(vuePath) {
-  return `${vuePath}${virtualDtsSuffix}`;
-}
-
-function virtualVueDts() {
-  return "declare const component: any;\nexport default component;\n";
+function bind(fn, thisArg) {
+  return typeof fn === "function" ? fn.bind(thisArg) : undefined;
 }
 
 module.exports = init;

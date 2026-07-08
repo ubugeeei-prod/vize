@@ -35,8 +35,8 @@
     "check": "tsgo --noEmit && vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts && tsgo --noEmit",
     "fmt": "vp fmt --write src vite.config.ts",
-    "package": "vsce package --no-dependencies --out dist/vize.vsix",
-    "test:host": "node test/run-extension-host.mjs",
+    "package": "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage && vsce package --no-dependencies --out dist/vize.vsix && node ../../tools/vscode-vize/sync-typescript-plugin.mjs inject dist/vize.vsix",
+    "test:host": "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage && node test/run-extension-host.mjs",
     "publish": "npm run package && vsce publish --packagePath dist/vize.vsix",
     "publish:pre": "npm run package && vsce publish --pre-release --packagePath dist/vize.vsix"
   },
@@ -53,6 +53,12 @@
     "vite-plus": "0.1.19"
   },
   "contributes": {
+    "typescriptServerPlugins": [
+      {
+        "name": "@vizejs/typescript-vue-plugin",
+        "enableForWorkspaceTypeScriptVersions": true
+      }
+    ],
     "languages": [
       {
         "id": "art-vue",

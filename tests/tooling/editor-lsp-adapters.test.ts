@@ -14,7 +14,10 @@ test("editor adapters consistently route Vue documents to the Vize LSP", () => {
   const vscodeManifest = readJson<{
     activationEvents?: string[];
     contributes?: {
-      typescriptServerPlugins?: unknown;
+      typescriptServerPlugins?: Array<{
+        enableForWorkspaceTypeScriptVersions?: boolean;
+        name?: string;
+      }>;
     };
   }>("editors/vscode/package.json");
   for (const language of ["vue", "art-vue", "html"]) {
@@ -23,7 +26,12 @@ test("editor adapters consistently route Vue documents to the Vize LSP", () => {
       `missing VS Code activation for ${language}`,
     );
   }
-  assert.equal(vscodeManifest.contributes?.typescriptServerPlugins, undefined);
+  assert.deepEqual(vscodeManifest.contributes?.typescriptServerPlugins, [
+    {
+      enableForWorkspaceTypeScriptVersions: true,
+      name: "@vizejs/typescript-vue-plugin",
+    },
+  ]);
 
   const nvimConfig = fs.readFileSync(path.join(root, "editors/nvim/lua/vize/config.lua"), "utf-8");
   assert.match(nvimConfig, /cmd = \{ "vize", "lsp" \}/);

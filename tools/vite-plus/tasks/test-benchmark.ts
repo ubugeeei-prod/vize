@@ -11,6 +11,15 @@ import {
 } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
+const stageVscodeTypeScriptPlugin = "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage";
+const injectVscodeTypeScriptPlugin =
+  "node ../../tools/vscode-vize/sync-typescript-plugin.mjs inject dist/vize.vsix";
+const packageVscodeExtension = [
+  stageVscodeTypeScriptPlugin,
+  "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
+  injectVscodeTypeScriptPlugin,
+].join(" && ");
+
 const jsPackageTestCommand = runInPackages("test", testedPackages, {
   concurrencyLimit: 1,
 });
@@ -91,12 +100,12 @@ export const testAndBenchmarkTasks = defineTasks({
   ),
   "test:vscode-extension:vsix": noCacheTask(
     runInVscodeExtension(
-      "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
+      packageVscodeExtension,
       "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
     ),
   ),
   "test:vscode-extension:host": noCacheTask(
-    runInVscodeExtension("pnpm exec vp pack", "pnpm run test:host"),
+    runInVscodeExtension(stageVscodeTypeScriptPlugin, "pnpm exec vp pack", "pnpm run test:host"),
   ),
   "test:zed-extension:package": noCacheTask("vp run --workspace-root package:zed-extension"),
   "test:zed-extension:unit": task("cargo test --manifest-path editors/zed/Cargo.toml", {

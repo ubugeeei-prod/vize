@@ -26,7 +26,7 @@ const initVuePlugin = require(
   }): import("typescript").LanguageService;
 };
 
-test("VS Code extension does not install a global TypeScript server plugin", () => {
+test("VS Code extension installs the guarded TypeScript Vue plugin", () => {
   const manifest = readJson<{
     contributes?: {
       typescriptServerPlugins?: Array<{
@@ -37,29 +37,39 @@ test("VS Code extension does not install a global TypeScript server plugin", () 
     scripts?: Record<string, string>;
   }>("editors/vscode/package.json");
 
-  assert.equal(
-    manifest.contributes?.typescriptServerPlugins,
-    undefined,
-    "Vize must not inject a TypeScript server plugin into every .ts/.tsx project",
-  );
+  assert.deepEqual(manifest.contributes?.typescriptServerPlugins, [
+    {
+      enableForWorkspaceTypeScriptVersions: true,
+      name: "@vizejs/typescript-vue-plugin",
+    },
+  ]);
   assert.equal(manifest.scripts?.["vscode:prepublish"], "vp pack");
   assert.equal(manifest.scripts?.build, "vp pack");
   assert.equal(manifest.scripts?.watch, "vp pack --watch");
-  assert.equal(manifest.scripts?.package, "vsce package --no-dependencies --out dist/vize.vsix");
+  assert.equal(
+    manifest.scripts?.package,
+    "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage && vsce package --no-dependencies --out dist/vize.vsix && node ../../tools/vscode-vize/sync-typescript-plugin.mjs inject dist/vize.vsix",
+  );
+  assert.equal(
+    manifest.scripts?.["test:host"],
+    "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage && node test/run-extension-host.mjs",
+  );
 
-  for (const file of [
-    "editors/vscode/package.json",
-    "tools/vite-plus/tasks/build.ts",
-    "tools/vite-plus/tasks/test-benchmark.ts",
-  ]) {
-    assert.doesNotMatch(readFile(file), /sync-typescript-plugin\.mjs/);
-    assert.doesNotMatch(readFile(file), /@vizejs\/typescript-vue-plugin/);
-  }
+  assert.match(readFile("tools/vite-plus/tasks/build.ts"), /sync-typescript-plugin\.mjs stage/);
+  assert.match(readFile("tools/vite-plus/tasks/build.ts"), /sync-typescript-plugin\.mjs inject/);
+  assert.match(
+    readFile("tools/vite-plus/tasks/test-benchmark.ts"),
+    /sync-typescript-plugin\.mjs stage/,
+  );
+  assert.match(
+    readFile("tools/vite-plus/tasks/test-benchmark.ts"),
+    /sync-typescript-plugin\.mjs inject/,
+  );
 
   assert.match(readFile("editors/vscode/.vscodeignore"), /^typescript-vue-plugin\/$/m);
   assert.ok(
     fs.existsSync(path.join(root, "editors/vscode/typescript-vue-plugin/index.cjs")),
-    "kept plugin source is tested below but no longer packaged or contributed",
+    "plugin source is synchronized into node_modules/@vizejs/typescript-vue-plugin for VS Code",
   );
 });
 
@@ -109,6 +119,34 @@ test("TypeScript Vue plugin maps .ts definition results back to real .vue files"
   }
 });
 
+test("TypeScript Vue plugin filters existing .vue import diagnostics without patching host resolution", () => {
+  const project = createVueProject('import App from "./app.vue";\nApp;\n', {
+    "app.vue": "<template />\n",
+  });
+  try {
+    const host = createHost(path.dirname(path.dirname(project.mainTs)), project.mainTs);
+    const service = ts.createLanguageService(host);
+    const plugin = initVuePlugin({ typescript: ts });
+    const wrapped = plugin.create({
+      languageService: service,
+      languageServiceHost: host,
+      serverHost: ts.sys,
+    });
+
+    assert.equal(Reflect.get(host, "resolveModuleNameLiterals"), undefined);
+    assert.equal(Reflect.get(host, "resolveModuleNames"), undefined);
+
+    const diagnostics = wrapped.getSemanticDiagnostics(project.mainTs);
+    assert.equal(
+      hasCannotFindVueModule(diagnostics, "./app.vue"),
+      false,
+      formatDiagnostics(diagnostics),
+    );
+  } finally {
+    fs.rmSync(project.root, { force: true, recursive: true });
+  }
+});
+
 test("TypeScript Vue plugin annotates .ts hover info for .vue imports", () => {
   const project = createVueProject('import App from "./app.vue";\nApp;\n', {
     "app.vue": "<template />\n",
@@ -136,13 +174,10 @@ test("TypeScript Vue plugin keeps missing .vue imports diagnostic", () => {
   }
 });
 
-test("TypeScript Vue plugin keeps plain .ts projects crash-free with unresolved host fallbacks", () => {
+test("TypeScript Vue plugin keeps plain .ts projects crash-free without host resolver patches", () => {
   const project = createVueProject('import value from "./missing";\nvalue;\n', {});
   try {
-    const service = createLanguageService(project.mainTs, true, (host) => {
-      host.resolveModuleNameLiterals = () => undefined as never;
-      host.resolveModuleNames = () => undefined as never;
-    });
+    const service = createLanguageService(project.mainTs, true);
 
     assert.doesNotThrow(() => service.getSemanticDiagnostics(project.mainTs));
   } finally {
@@ -150,7 +185,7 @@ test("TypeScript Vue plugin keeps plain .ts projects crash-free with unresolved 
   }
 });
 
-test("TypeScript Vue plugin falls back when the tsserver host cannot be patched", () => {
+test("TypeScript Vue plugin does not require a patchable tsserver host", () => {
   const project = createVueProject("const value = 1;\nvalue;\n", {});
   try {
     const host = createHost(path.dirname(path.dirname(project.mainTs)), project.mainTs);
@@ -166,14 +201,14 @@ test("TypeScript Vue plugin falls back when the tsserver host cannot be patched"
         serverHost: ts.sys,
       });
     });
-    assert.equal(wrapped, service);
+    assert.notEqual(wrapped, service);
     assert.doesNotThrow(() => wrapped?.getSemanticDiagnostics(project.mainTs));
   } finally {
     fs.rmSync(project.root, { force: true, recursive: true });
   }
 });
 
-test("TypeScript Vue plugin tolerates resolver calls without a containing file", () => {
+test("TypeScript Vue plugin leaves host resolver calls untouched", () => {
   const project = createVueProject('import App from "./app.vue";\nApp;\n', {
     "app.vue": "<template />\n",
   });
@@ -189,11 +224,8 @@ test("TypeScript Vue plugin tolerates resolver calls without a containing file",
     });
 
     assert.doesNotThrow(() => {
-      const result = (host.resolveModuleNameLiterals as unknown as (...args: unknown[]) => unknown)(
-        [{ text: "./app.vue" }],
-        undefined,
-      );
-      assert.deepEqual(result, [{ resolvedModule: undefined }]);
+      assert.equal(Reflect.get(host, "resolveModuleNameLiterals"), undefined);
+      assert.equal(Reflect.get(host, "resolveModuleNames"), undefined);
     });
   } finally {
     fs.rmSync(project.root, { force: true, recursive: true });

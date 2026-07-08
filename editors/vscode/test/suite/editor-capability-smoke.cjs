@@ -1,5 +1,8 @@
 const assert = require("node:assert/strict");
+const path = require("node:path");
 const vscode = require("vscode");
+
+const extensionId = "ubugeeei.vize";
 
 async function runEditorCapabilityProviderSmoke({
   assertLocation,
@@ -14,6 +17,8 @@ async function runEditorCapabilityProviderSmoke({
   waitForLogEntries,
   waitForReadyServer,
 }) {
+  await runTypeScriptVueImportSmoke(openWorkspaceDocument);
+
   const { logPath, serverPath } = getFakeServer();
 
   await prepareConfiguredFakeServer({ logPath, serverPath });
@@ -231,8 +236,61 @@ async function runEditorCapabilityProviderSmoke({
   await disableVizeAndWaitForShutdown(logPath);
 }
 
+async function runTypeScriptVueImportSmoke(openWorkspaceDocument) {
+  const extension = vscode.extensions.getExtension(extensionId);
+  assert.ok(extension, `missing extension: ${extensionId}`);
+  assert.deepEqual(extension.packageJSON.contributes?.typescriptServerPlugins, [
+    {
+      enableForWorkspaceTypeScriptVersions: true,
+      name: "@vizejs/typescript-vue-plugin",
+    },
+  ]);
+
+  const document = await openWorkspaceDocument("src", "main.ts");
+  assert.equal(document.languageId, "typescript");
+  await vscode.window.showTextDocument(document);
+
+  const source = document.getText();
+  const specifierOffset = source.indexOf("./App.vue");
+  assert.notEqual(specifierOffset, -1, "main.ts must import App.vue");
+
+  const definitions = await vscode.commands.executeCommand(
+    "vscode.executeDefinitionProvider",
+    document.uri,
+    document.positionAt(specifierOffset + 3),
+  );
+  const appVueUri = vscode.Uri.file(path.join(getWorkspaceFolder().uri.fsPath, "src", "App.vue"));
+
+  assert.ok(
+    Array.isArray(definitions) &&
+      definitions.some(
+        (definition) => definitionUri(definition)?.toString() === appVueUri.toString(),
+      ),
+    `expected TypeScript Vue plugin to resolve ./App.vue, got ${JSON.stringify(definitions)}`,
+  );
+
+  const diagnostics = vscode.languages.getDiagnostics(document.uri);
+  assert.equal(
+    diagnostics.some((diagnostic) =>
+      /Cannot find module ['"]\.\/App\.vue['"]/.test(diagnostic.message),
+    ),
+    false,
+    `main.ts should not report TS2307 for App.vue. Diagnostics: ${JSON.stringify(diagnostics)}`,
+  );
+}
+
 function assertIncludesWhere(items, predicate, message) {
   assert.ok(items?.some(predicate), message);
+}
+
+function definitionUri(definition) {
+  return definition?.uri ?? definition?.targetUri;
+}
+
+function getWorkspaceFolder() {
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+  assert.ok(workspaceFolder, "expected a workspace folder");
+  return workspaceFolder;
 }
 
 module.exports = { runEditorCapabilityProviderSmoke };

@@ -12,6 +12,15 @@ import {
 } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
+const stageVscodeTypeScriptPlugin = "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage";
+const injectVscodeTypeScriptPlugin =
+  "node ../../tools/vscode-vize/sync-typescript-plugin.mjs inject dist/vize.vsix";
+const packageVscodeExtension = [
+  stageVscodeTypeScriptPlugin,
+  "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
+  injectVscodeTypeScriptPlugin,
+].join(" && ");
+
 /**
  * Build and packaging tasks for the repository's compiled artifacts.
  *
@@ -53,11 +62,13 @@ export const buildTasks = defineTasks({
   ),
   "build:plugin": noCacheTask(runTask("build:vite-plugin")),
   "build:cli": task("cargo build --release -p vize"),
-  "build:vscode-extension": noCacheTask(runInVscodeExtension("pnpm exec vp pack")),
+  "build:vscode-extension": noCacheTask(
+    runInVscodeExtension(stageVscodeTypeScriptPlugin, "pnpm exec vp pack"),
+  ),
   "build:editor-extensions": noCacheTask(runTasks("build:vscode-extension", "check:zed-extension")),
   "package:vscode-extension": noCacheTask(
     runInVscodeExtension(
-      "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
+      packageVscodeExtension,
       "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
     ),
   ),
@@ -83,7 +94,7 @@ export const buildTasks = defineTasks({
     `${runInVscodeExtension(
       "pnpm exec tsgo --noEmit",
       "pnpm exec vp check src vite.config.ts",
-      "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
+      packageVscodeExtension,
       "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
     )} && ${runTask("check:zed-extension")} && ${runTask(
       "test:zed-extension:unit",

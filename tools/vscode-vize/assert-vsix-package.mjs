@@ -5,6 +5,7 @@ import { builtinModules } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import zlib from "node:zlib";
+import * as tsVueVsix from "./typescript-vue-plugin-vsix-policy.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const defaultVsixPath = path.join(root, "editors/vscode/dist/vize.vsix");
@@ -44,6 +45,7 @@ const requiredFiles = [
   "extension/icons/logo.png",
   "extension/icons/vue.svg",
   "extension/language-configuration.json",
+  ...tsVueVsix.typescriptVuePluginRequiredFiles,
   "extension/package.json",
   "extension/readme.md",
   "extension/syntaxes/art-vue.tmLanguage.json",
@@ -61,6 +63,7 @@ const allowedExtensionEntries = [
   /^extension\/dist\/extension\.cjs$/,
   /^extension\/icons\/(?:logo\.png|vue\.svg)$/,
   /^extension\/language-configuration\.json$/,
+  tsVueVsix.typescriptVuePluginAllowedEntry,
   /^extension\/package\.json$/,
   /^extension\/readme\.md$/,
   /^extension\/syntaxes\/(?:art-vue|vue)\.tmLanguage\.json$/,
@@ -78,7 +81,7 @@ const forbiddenEntries = [
   /^extension\/\.vscode-test\//,
   /^extension\/\.vscode\//,
   /^extension\/dist\/.*\.map$/,
-  /^extension\/node_modules\//,
+  tsVueVsix.forbiddenNonPluginNodeModules,
   /^extension\/package-lock\.json$/,
   /^extension\/pnpm-lock\.yaml$/,
   /^extension\/src\//,
@@ -123,7 +126,11 @@ for (const command of packageJson.contributes.commands) {
 
 assert.ok(packageJson.activationEvents.includes("onLanguage:vue"));
 assert.ok(packageJson.activationEvents.includes("onLanguage:art-vue"));
-assert.equal(packageJson.contributes.typescriptServerPlugins, undefined);
+tsVueVsix.assertTypeScriptVuePluginPackage({
+  packageJson,
+  readJsonEntry: (name) => readJsonEntry(archive, name),
+  readTextEntry: (name) => readTextEntry(archive, name),
+});
 
 const languages = new Map(
   packageJson.contributes.languages.map((language) => [language.id, language]),
