@@ -1,6 +1,11 @@
 import { createHash } from "node:crypto";
 import type { CompiledModule, StyleBlockInfo } from "../types.ts";
 import { type HmrUpdateType, generateHmrCode } from "../hmr.ts";
+import {
+  analyzeModuleOutput,
+  insertBeforeSfcMainDefaultExport,
+  rewriteDefaultExportToSfcMain,
+} from "./module-output.ts";
 
 // Re-export CSS utilities for backward compatibility
 export { resolveCssImports, type CssAliasRule } from "./css.ts";
@@ -103,19 +108,14 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
 
   let output = compiled.code;
 
-  // Rewrite "export default" to named variable for HMR
-  // Use regex to match only line-start "export default" (not inside strings)
-  const exportDefaultRegex = /^export default /m;
-  const hasExportDefault = exportDefaultRegex.test(output);
-  const hasNamedRenderExport = /^export function render\b/m.test(output);
-  const hasNamedSsrRenderExport = /^export function ssrRender\b/m.test(output);
-
-  // Check if _sfc_main is already defined (Case 2: non-script-setup SFCs)
-  // In this case, the compiler already outputs: const _sfc_main = ...; export default _sfc_main
-  const hasSfcMainDefined = /\bconst\s+_sfc_main\s*=/.test(output);
+  const moduleInfo = analyzeModuleOutput(output);
+  const hasExportDefault = moduleInfo.hasDefaultExport;
+  const hasNamedRenderExport = moduleInfo.hasNamedRenderExport;
+  const hasNamedSsrRenderExport = moduleInfo.hasNamedSsrRenderExport;
+  const hasSfcMainDefined = moduleInfo.hasSfcMainDefined;
 
   if (hasExportDefault && !hasSfcMainDefined) {
-    output = output.replace(exportDefaultRegex, "const _sfc_main = ");
+    output = rewriteDefaultExportToSfcMain(output);
     // Add __scopeId for scoped CSS support
     if (compiled.hasScoped && compiled.scopeId) {
       output += `\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`;
@@ -124,10 +124,9 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
   } else if (hasExportDefault && hasSfcMainDefined) {
     // _sfc_main already defined, just add scopeId if needed
     if (compiled.hasScoped && compiled.scopeId) {
-      // Insert scopeId assignment before the export default line
-      output = output.replace(
-        /^export default _sfc_main/m,
-        `_sfc_main.__scopeId = "data-v-${compiled.scopeId}";\nexport default _sfc_main`,
+      output = insertBeforeSfcMainDefaultExport(
+        output,
+        `_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`,
       );
     }
   } else if (!hasExportDefault && !hasSfcMainDefined && hasNamedRenderExport) {
@@ -210,12 +209,9 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
             `_sfc_main.__cssModules = _sfc_main.__cssModules || {};\n_sfc_main.__cssModules[${JSON.stringify(m.name)}] = ${m.bindingName};`,
         )
         .join("\n");
-      // Insert before the final export, regardless of whether the compiler
-      // emitted a trailing semicolon.
-      output = output.replace(
-        /^export default _sfc_main;?$/m,
-        `${cssModuleSetup}\nexport default _sfc_main;`,
-      );
+      output = insertBeforeSfcMainDefaultExport(output, cssModuleSetup, {
+        normalizeSemicolon: true,
+      });
     }
   } else if (!ssr && compiled.css && !(isProduction && extractCss)) {
     // --- Inline CSS injection (original behavior for plain CSS) ---

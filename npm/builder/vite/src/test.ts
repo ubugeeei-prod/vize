@@ -2,6 +2,7 @@ import "./hmr.test.ts";
 import "./compiler.test.ts";
 import "./config.test.ts";
 import "./options-api-events.test.ts";
+import "./output-ast.test.ts";
 import "./utils-filter.test.ts";
 import "./utils.test.ts";
 import "./plugin/compat.test.ts";
