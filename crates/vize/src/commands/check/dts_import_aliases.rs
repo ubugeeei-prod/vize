@@ -1,5 +1,9 @@
 use std::path::Path;
 
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{ImportDeclaration, ImportDeclarationSpecifier, ModuleExportName, Statement};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_carton::{FxHashMap, String, ToCompactString, cstr};
 
 use super::dts_rewrite::rewrite_relative_specifier;
@@ -17,28 +21,16 @@ enum ImportTypeAlias {
 
 pub(super) fn collect_import_type_aliases(content: &str, source_dir: &Path) -> ImportTypeAliases {
     let mut aliases = ImportTypeAliases::default();
-    let mut current = String::default();
-
-    for line in content.lines() {
-        let trimmed = line.trim();
-        if current.is_empty() {
-            if !trimmed.starts_with("import ") {
-                continue;
-            }
-            current.push_str(trimmed);
-        } else {
-            current.push(' ');
-            current.push_str(trimmed);
-        }
-
-        if import_statement_complete(current.as_str()) {
-            collect_import_statement(current.as_str(), source_dir, &mut aliases);
-            current.clear();
-        }
+    let allocator = Allocator::default();
+    let ret = Parser::new(&allocator, content, SourceType::d_ts()).parse();
+    if ret.panicked {
+        return aliases;
     }
 
-    if !current.is_empty() {
-        collect_import_statement(current.as_str(), source_dir, &mut aliases);
+    for statement in &ret.program.body {
+        if let Statement::ImportDeclaration(import) = statement {
+            collect_import_declaration(import, source_dir, &mut aliases);
+        }
     }
 
     aliases
@@ -105,94 +97,56 @@ pub(super) fn rewrite_import_type_aliases(
     out
 }
 
-fn collect_import_statement(statement: &str, source_dir: &Path, aliases: &mut ImportTypeAliases) {
-    let statement = statement.trim().trim_end_matches(';').trim();
-    let Some(rest) = statement.strip_prefix("import ") else {
-        return;
-    };
-    let Some((imports, from_part)) = rest.rsplit_once(" from ") else {
-        return;
-    };
-    let Some(specifier) = parse_module_specifier(from_part) else {
-        return;
-    };
-    let module = rewrite_relative_specifier(specifier, source_dir);
-    let imports = imports.trim();
-
-    if let Some(type_imports) = imports.strip_prefix("type ") {
-        collect_type_only_imports(type_imports.trim(), module.as_str(), aliases);
-    } else {
-        collect_inline_type_imports(imports, module.as_str(), aliases);
-    }
-}
-
-fn collect_type_only_imports(imports: &str, module: &str, aliases: &mut ImportTypeAliases) {
-    if imports.starts_with('{') {
-        collect_named_imports(imports, module, aliases, false);
-        return;
-    }
-    if let Some(namespace) = imports.strip_prefix("* as ") {
-        push_namespace_alias(namespace.trim(), module, aliases);
-        return;
-    }
-    if let Some((default_import, rest)) = imports.split_once(',') {
-        push_default_alias(default_import.trim(), module, aliases);
-        collect_type_only_imports(rest.trim(), module, aliases);
-        return;
-    }
-    push_default_alias(imports.trim(), module, aliases);
-}
-
-fn collect_inline_type_imports(imports: &str, module: &str, aliases: &mut ImportTypeAliases) {
-    if imports.starts_with('{') {
-        collect_named_imports(imports, module, aliases, true);
-    }
-}
-
-fn collect_named_imports(
-    imports: &str,
-    module: &str,
+fn collect_import_declaration(
+    declaration: &ImportDeclaration,
+    source_dir: &Path,
     aliases: &mut ImportTypeAliases,
-    require_type_prefix: bool,
 ) {
-    let Some(inner) = imports
-        .trim()
-        .strip_prefix('{')
-        .and_then(|value| value.strip_suffix('}'))
-    else {
+    let module = rewrite_relative_specifier(declaration.source.value.as_str(), source_dir);
+    let Some(specifiers) = &declaration.specifiers else {
         return;
     };
+    let declaration_is_type = declaration.import_kind.is_type();
 
-    for raw in inner.split(',') {
-        let mut item = raw.trim();
-        if item.is_empty() {
-            continue;
-        }
-        if require_type_prefix {
-            let Some(rest) = item.strip_prefix("type ") else {
-                continue;
-            };
-            item = rest.trim();
-        }
-        let (imported, local) = parse_import_binding(item);
-        if is_identifier(imported) && is_identifier(local) {
-            aliases.aliases.insert(
-                local.to_compact_string(),
-                ImportTypeAlias::Named {
-                    module: module.into(),
-                    imported: imported.into(),
-                },
-            );
+    for specifier in specifiers {
+        match specifier {
+            ImportDeclarationSpecifier::ImportSpecifier(specifier)
+                if declaration_is_type || specifier.import_kind.is_type() =>
+            {
+                let Some(imported) = module_export_name(&specifier.imported) else {
+                    continue;
+                };
+                push_named_alias(
+                    specifier.local.name.as_str(),
+                    module.as_str(),
+                    imported,
+                    aliases,
+                );
+            }
+            ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier)
+                if declaration_is_type =>
+            {
+                push_default_alias(specifier.local.name.as_str(), module.as_str(), aliases);
+            }
+            ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier)
+                if declaration_is_type =>
+            {
+                push_namespace_alias(specifier.local.name.as_str(), module.as_str(), aliases);
+            }
+            _ => {}
         }
     }
 }
 
-fn parse_import_binding(item: &str) -> (&str, &str) {
-    let mut parts = item.split_whitespace();
-    let imported = parts.next().unwrap_or_default();
-    match (parts.next(), parts.next()) {
-        (Some("as"), Some(local)) => (imported, local),
-        _ => (imported, imported),
+fn push_named_alias(local: &str, module: &str, imported: &str, aliases: &mut ImportTypeAliases) {
+    if is_identifier(local) && is_identifier(imported) {
+        aliases.aliases.insert(
+            local.to_compact_string(),
+            ImportTypeAlias::Named {
+                module: module.into(),
+                imported: imported.into(),
+            },
+        );
     }
 }
 
@@ -216,25 +170,6 @@ fn push_namespace_alias(local: &str, module: &str, aliases: &mut ImportTypeAlias
             },
         );
     }
-}
-
-fn import_statement_complete(statement: &str) -> bool {
-    statement.ends_with(';')
-        || statement
-            .rsplit_once(" from ")
-            .and_then(|(_, from_part)| parse_module_specifier(from_part))
-            .is_some()
-}
-
-fn parse_module_specifier(from_part: &str) -> Option<&str> {
-    let from_part = from_part.trim();
-    let quote = from_part
-        .chars()
-        .next()
-        .filter(|ch| *ch == '\'' || *ch == '"')?;
-    let rest = &from_part[quote.len_utf8()..];
-    let end = rest.find(quote)?;
-    Some(&rest[..end])
 }
 
 fn copy_quoted(input: &str, start: usize, out: &mut String) -> usize {
@@ -285,6 +220,14 @@ fn is_identifier_char(ch: char) -> bool {
     is_identifier_start(ch) || ch.is_ascii_digit()
 }
 
+fn module_export_name<'a>(name: &'a ModuleExportName<'a>) -> Option<&'a str> {
+    match name {
+        ModuleExportName::IdentifierName(identifier) => Some(identifier.name.as_str()),
+        ModuleExportName::IdentifierReference(identifier) => Some(identifier.name.as_str()),
+        ModuleExportName::StringLiteral(literal) => Some(literal.value.as_str()),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::path::Path;
@@ -319,6 +262,24 @@ import type * as Shared from '../../app/types/shared'
         assert_eq!(
             rewritten.as_str(),
             "Record<'User', import('/workspace/.nuxt/types/types').User> | value"
+        );
+    }
+
+    #[test]
+    fn collects_multiline_type_import_declarations() {
+        let content = r#"
+import type DefaultThing, {
+  User,
+  Wrapped as AliasedWrapped,
+} from '../../app/types/user'
+"#;
+        let aliases = collect_import_type_aliases(content, Path::new("/workspace/.nuxt/types"));
+        let rewritten =
+            rewrite_import_type_aliases("DefaultThing | User | AliasedWrapped", &aliases);
+
+        assert_eq!(
+            rewritten.as_str(),
+            "import('/workspace/app/types/user').default | import('/workspace/app/types/user').User | import('/workspace/app/types/user').Wrapped"
         );
     }
 }
