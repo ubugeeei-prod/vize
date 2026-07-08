@@ -32,9 +32,17 @@
 //! const myData = {}
 //! ```
 
-use memchr::memmem;
-
 use crate::diagnostic::{LintDiagnostic, Severity};
+use oxc_ast::ast::{
+    AssignmentExpression, AssignmentTarget, BindingIdentifier, BindingPattern, Function, Program,
+    VariableDeclarator,
+};
+use oxc_ast_visit::{
+    Visit,
+    walk::{walk_assignment_expression, walk_function, walk_variable_declarator},
+};
+use oxc_span::Span;
+use oxc_syntax::scope::ScopeFlags;
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 
@@ -74,47 +82,103 @@ impl ScriptRule for NoReservedIdentifiers {
         &META
     }
 
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let bytes = source.as_bytes();
+    #[inline]
+    fn uses_ast(&self) -> bool {
+        true
+    }
 
-        for reserved in RESERVED_IDENTIFIERS {
-            let finder = memmem::Finder::new(reserved.as_bytes());
-            let mut search_start = 0;
+    #[inline]
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        let mut visitor = NoReservedIdentifiersVisitor { offset, result };
+        visitor.visit_program(program);
+    }
+}
 
-            while let Some(pos) = finder.find(&bytes[search_start..]) {
-                let abs_pos = search_start + pos;
-                search_start = abs_pos + reserved.len();
+struct NoReservedIdentifiersVisitor<'result> {
+    offset: usize,
+    result: &'result mut ScriptLintResult,
+}
 
-                // Check if this is a variable declaration
-                let before = &source[..abs_pos];
-                let trimmed = before.trim_end();
+impl<'a> Visit<'a> for NoReservedIdentifiersVisitor<'_> {
+    fn visit_variable_declarator(&mut self, it: &VariableDeclarator<'a>) {
+        self.check_binding_pattern(&it.id);
+        walk_variable_declarator(self, it);
+    }
 
-                // Look for const, let, var, or function before the identifier
-                let is_declaration = trimmed.ends_with("const")
-                    || trimmed.ends_with("let")
-                    || trimmed.ends_with("var")
-                    || trimmed.ends_with("function");
+    fn visit_function(&mut self, it: &Function<'a>, flags: ScopeFlags) {
+        if let Some(id) = &it.id {
+            self.check_binding_identifier(id);
+        }
+        walk_function(self, it, flags);
+    }
 
-                // Also check if it's being assigned
-                let after = &source[abs_pos + reserved.len()..];
-                let after_trimmed = after.trim_start();
-                let is_assignment =
-                    after_trimmed.starts_with('=') && !after_trimmed.starts_with("==");
+    fn visit_assignment_expression(&mut self, it: &AssignmentExpression<'a>) {
+        if let AssignmentTarget::AssignmentTargetIdentifier(identifier) = &it.left {
+            self.check_identifier(identifier.name.as_str(), identifier.span);
+        }
+        walk_assignment_expression(self, it);
+    }
+}
 
-                if is_declaration || is_assignment {
-                    result.add_diagnostic(
-                        LintDiagnostic::error(
-                            META.name,
-                            "Vue compiler reserved identifier should not be used",
-                            (offset + abs_pos) as u32,
-                            (offset + abs_pos + reserved.len()) as u32,
-                        )
-                        .with_help("Choose a different variable name to avoid conflicts with Vue internals"),
-                    );
+impl NoReservedIdentifiersVisitor<'_> {
+    fn check_binding_pattern(&mut self, pattern: &BindingPattern<'_>) {
+        match pattern {
+            BindingPattern::BindingIdentifier(identifier) => {
+                self.check_binding_identifier(identifier);
+            }
+            BindingPattern::ObjectPattern(object) => {
+                for property in &object.properties {
+                    self.check_binding_pattern(&property.value);
                 }
+                if let Some(rest) = &object.rest {
+                    self.check_binding_pattern(&rest.argument);
+                }
+            }
+            BindingPattern::ArrayPattern(array) => {
+                for element in array.elements.iter().flatten() {
+                    self.check_binding_pattern(element);
+                }
+                if let Some(rest) = &array.rest {
+                    self.check_binding_pattern(&rest.argument);
+                }
+            }
+            BindingPattern::AssignmentPattern(assignment) => {
+                self.check_binding_pattern(&assignment.left);
             }
         }
     }
+
+    fn check_binding_identifier(&mut self, identifier: &BindingIdentifier<'_>) {
+        self.check_identifier(identifier.name.as_str(), identifier.span);
+    }
+
+    fn check_identifier(&mut self, name: &str, span: Span) {
+        if is_reserved_identifier(name) {
+            let start = self.offset as u32 + span.start;
+            let end = self.offset as u32 + span.end;
+            self.result.add_diagnostic(
+                LintDiagnostic::error(
+                    META.name,
+                    "Vue compiler reserved identifier should not be used",
+                    start,
+                    end,
+                )
+                .with_help(
+                    "Choose a different variable name to avoid conflicts with Vue internals",
+                ),
+            );
+        }
+    }
+}
+
+fn is_reserved_identifier(name: &str) -> bool {
+    RESERVED_IDENTIFIERS.contains(&name) || name.starts_with("_hoisted_")
 }
 
 #[cfg(test)]
@@ -154,5 +218,40 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint("var __sfc__ = {}", 0);
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_reserved_hoisted_prefix() {
+        let linter = create_linter();
+        let result = linter.lint("const _hoisted_1 = {}", 0);
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_reserved_function_name() {
+        let linter = create_linter();
+        let result = linter.lint("function _openBlock() {}", 0);
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_reserved_assignment() {
+        let linter = create_linter();
+        let result = linter.lint("__props = {}", 0);
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_reserved_identifier_string_not_matched() {
+        let linter = create_linter();
+        let result = linter.lint(r#"const text = "const __props = {}""#, 0);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_reserved_member_assignment_not_matched() {
+        let linter = create_linter();
+        let result = linter.lint("state.__props = {}", 0);
+        assert_eq!(result.error_count, 0);
     }
 }
