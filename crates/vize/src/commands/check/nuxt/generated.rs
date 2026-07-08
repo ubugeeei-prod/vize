@@ -8,14 +8,15 @@ use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 
 use super::super::dts::{
     parse_declared_global_values, parse_interface_members_with_rewritten_imports,
-    rewrite_relative_specifier,
+};
+use super::generated_ast::{
+    collect_import_type_specifiers, parse_import_manifest_exports,
+    rewrite_component_imports_for_virtual_project,
 };
 use super::generated_dir::{
     NuxtGeneratedDir, is_declaration_file, is_imports_declaration, is_nitro_imports_declaration,
 };
-use super::parsing::{
-    normalize_component_binding_name, parse_export_names, parse_module_specifier,
-};
+use super::parsing::normalize_component_binding_name;
 use super::stubs::{push_declared_const, tracked_read_to_string};
 
 pub(super) fn collect_generated_stubs(
@@ -91,42 +92,20 @@ pub(super) fn collect_generated_stubs(
 
     if let Ok(content) = tracked_read_to_string(&imports_path) {
         let base_dir = imports_path.parent().unwrap_or_else(|| Path::new("."));
-        for line in content.lines() {
-            let trimmed = line.trim();
-            if !trimmed.starts_with("export {") {
-                continue;
-            }
-
-            let Some((exports_part, from_part)) = trimmed
-                .strip_prefix("export {")
-                .and_then(|rest| rest.split_once("} from "))
-            else {
-                continue;
-            };
-
-            let module_specifier = parse_module_specifier(from_part);
-            let Some(module_specifier) = module_specifier else {
-                continue;
-            };
-            let module_specifier = rewrite_relative_specifier(module_specifier, base_dir);
-
-            for export_part in exports_part.split(',') {
-                let export_part = export_part.trim();
-                if export_part.is_empty() {
-                    continue;
-                }
-
-                let (local_name, exported_name) = parse_export_names(export_part);
-                let type_annotation = cstr!("typeof import('{module_specifier}')['{local_name}']");
-                push_generated_declared_const(
-                    cwd,
-                    &imports_path,
-                    stubs,
-                    seen_names,
-                    exported_name,
-                    type_annotation.as_str(),
-                );
-            }
+        for manifest_export in parse_import_manifest_exports(content.as_str(), base_dir) {
+            let type_annotation = cstr!(
+                "typeof import('{}')['{}']",
+                manifest_export.module_specifier,
+                manifest_export.local_name
+            );
+            push_generated_declared_const(
+                cwd,
+                &imports_path,
+                stubs,
+                seen_names,
+                manifest_export.exported_name.as_str(),
+                type_annotation.as_str(),
+            );
         }
     }
 
@@ -184,39 +163,9 @@ fn has_missing_project_import_type(
     type_origin: &Path,
     project_root: &Path,
 ) -> bool {
-    let bytes = type_annotation.as_bytes();
-    let mut i = 0usize;
-
-    while i < bytes.len() {
-        let quote = if type_annotation[i..].starts_with("import('") {
-            Some('\'')
-        } else if type_annotation[i..].starts_with("import(\"") {
-            Some('"')
-        } else {
-            None
-        };
-
-        let Some(quote) = quote else {
-            i += 1;
-            continue;
-        };
-
-        i += 8;
-        let start = i;
-        while i < bytes.len() && bytes[i] != quote as u8 {
-            i += 1;
-        }
-
-        if generated_import_specifier_is_missing(
-            &type_annotation[start..i],
-            type_origin,
-            project_root,
-        ) {
+    for specifier in collect_import_type_specifiers(type_annotation) {
+        if generated_import_specifier_is_missing(specifier.as_str(), type_origin, project_root) {
             return true;
-        }
-
-        if i < bytes.len() {
-            i += 1;
         }
     }
 
@@ -382,69 +331,4 @@ fn push_template_global(
             default_value: "undefined as any".into(),
         });
     }
-}
-
-fn rewrite_component_imports_for_virtual_project(
-    type_annotation: &str,
-    project_root: &Path,
-) -> String {
-    let bytes = type_annotation.as_bytes();
-    let mut out = String::with_capacity(type_annotation.len());
-    let mut i = 0usize;
-
-    while i < bytes.len() {
-        let quote = if type_annotation[i..].starts_with("import('") {
-            Some('\'')
-        } else if type_annotation[i..].starts_with("import(\"") {
-            Some('"')
-        } else {
-            None
-        };
-
-        let Some(quote) = quote else {
-            out.push(bytes[i] as char);
-            i += 1;
-            continue;
-        };
-
-        out.push_str("import(");
-        out.push(quote);
-        i += 8;
-
-        let start = i;
-        while i < bytes.len() && bytes[i] != quote as u8 {
-            i += 1;
-        }
-
-        let specifier = &type_annotation[start..i];
-        out.push_str(&virtual_project_specifier(specifier, project_root));
-
-        if i < bytes.len() {
-            out.push(quote);
-            i += 1;
-        }
-    }
-
-    out
-}
-
-fn virtual_project_specifier(specifier: &str, project_root: &Path) -> String {
-    if !specifier.ends_with(".vue") {
-        return specifier.to_compact_string();
-    }
-
-    let specifier_path = Path::new(specifier);
-    let relative = if specifier_path.is_absolute() {
-        specifier_path.strip_prefix(project_root).ok()
-    } else {
-        None
-    };
-
-    if let Some(relative) = relative {
-        let mut rendered = cstr!("./{}", relative.display());
-        rendered.push_str(".ts");
-        return rendered;
-    }
-
-    cstr!("{specifier}.ts")
 }

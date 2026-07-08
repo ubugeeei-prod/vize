@@ -51,25 +51,6 @@ pub(super) fn module_export_name<'a>(name: &'a ModuleExportName<'a>) -> Option<&
     }
 }
 
-pub(super) fn parse_module_specifier(from_part: &str) -> Option<&str> {
-    let from_part = from_part.trim().trim_end_matches(';').trim();
-    let quote = from_part.chars().next()?;
-    if quote != '\'' && quote != '"' {
-        return None;
-    }
-    let rest = &from_part[1..];
-    let end = rest.find(quote)?;
-    Some(&rest[..end])
-}
-
-pub(super) fn parse_export_names(export_part: &str) -> (&str, &str) {
-    if let Some((local_name, exported_name)) = export_part.split_once(" as ") {
-        (local_name.trim(), exported_name.trim())
-    } else {
-        (export_part, export_part)
-    }
-}
-
 pub(super) fn normalize_component_binding_name(name: &str) -> Option<String> {
     let name = name.trim().trim_matches('"').trim_matches('\'');
     if name.is_empty() {

@@ -10,23 +10,12 @@ use vize_carton::cstr;
 use super::super::dts::rewrite_relative_specifier;
 use super::detect_nuxt_auto_imports;
 use super::fallback::fallback_stub_strings;
-use super::parsing::{parse_export_names, parse_module_specifier};
 use super::plugins::extract_plugin_provide_keys_from_source;
 use super::stubs::declared_name;
 
 mod build_dir;
 mod config_modules;
 mod path_aliases;
-
-#[test]
-fn parses_module_export_lines() {
-    assert_eq!(
-        parse_module_specifier("'../../app/composables/users';"),
-        Some("../../app/composables/users")
-    );
-    assert_eq!(parse_export_names("foo as bar"), ("foo", "bar"));
-    assert_eq!(parse_export_names("foo"), ("foo", "foo"));
-}
 
 #[test]
 fn extracts_plugin_provide_keys_from_callback_plugin() {

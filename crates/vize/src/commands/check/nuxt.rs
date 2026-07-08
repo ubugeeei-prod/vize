@@ -9,6 +9,7 @@ use vize_carton::{FxHashSet, String, ToCompactString, config::VueVersion};
 
 mod fallback;
 mod generated;
+mod generated_ast;
 mod generated_dir;
 mod legacy_template_globals;
 mod parsing;
@@ -18,6 +19,8 @@ mod stubs;
 mod tsconfig_aliases;
 mod virtual_modules;
 
+#[cfg(test)]
+mod generated_ast_tests;
 #[cfg(test)]
 mod generated_tests;
 #[cfg(test)]
