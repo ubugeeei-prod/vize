@@ -1583,7 +1583,7 @@ const arr = [(event: PointerEvent) => event.preventDefault()]
 }
 
 #[test]
-fn test_component_event_fallback_uses_dom_event_type_when_args_stay_unknown() {
+fn test_component_event_fallback_uses_any_when_args_stay_unknown() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
     let script = r#"import Child from './Child.vue'
@@ -1611,8 +1611,8 @@ function eventHandler(event: Event) {
     );
     assert!(
         standard_output.code.contains("unknown[] extends __Child_")
-            && standard_output.code.contains("? KeyboardEvent : __Child_"),
-        "standard component event fallback should use the DOM event type when args stay unknown:\n{}",
+            && standard_output.code.contains("? any : __Child_"),
+        "standard component event fallback should stay loose when args stay unknown:\n{}",
         standard_output.code
     );
 
@@ -1630,8 +1630,8 @@ function eventHandler(event: Event) {
     );
     assert!(
         quirks_output.code.contains("unknown[] extends __Child_")
-            && quirks_output.code.contains("? KeyboardEvent : __Child_"),
-        "quirks component event fallback should use the DOM event type when args stay unknown:\n{}",
+            && quirks_output.code.contains("? any : __Child_"),
+        "quirks component event fallback should stay loose when args stay unknown:\n{}",
         quirks_output.code
     );
 }

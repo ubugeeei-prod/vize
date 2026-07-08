@@ -1,6 +1,47 @@
 use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 
 #[test]
+fn batch_type_checker_accepts_component_fallthrough_touch_listener() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "component-fallthrough-touch-listener",
+        &[(
+            "src/Foo.vue",
+            r#"<script setup lang="ts">
+import { defineComponent, h } from "vue";
+
+const Child = defineComponent(() => () => h("button"));
+
+function onPress(event: MouseEvent) {
+  event.preventDefault();
+}
+</script>
+
+<template>
+  <Child @touchstart="onPress" />
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.iter().all(|(file, code, message)| {
+            !(file == "src/Foo.vue" && *code == Some(2345) && message.contains("TouchEvent"))
+        }),
+        "component fallthrough listeners should not be checked as native DOM listeners, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_infers_generic_component_listener_payload_from_props() {
     if resolve_test_tsgo_binary().is_none() {
         return;

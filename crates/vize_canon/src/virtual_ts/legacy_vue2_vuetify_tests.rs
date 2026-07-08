@@ -77,8 +77,8 @@ function updateDate(newDate: string) {
 
     let standard = standard_virtual_ts(script, template, &VirtualTsOptions::default());
     assert!(
-        standard.contains("? InputEvent :"),
-        "standard component event fallback should stay DOM-typed:\n{standard}"
+        standard.contains("? any :") && !standard.contains("? InputEvent :"),
+        "standard component event fallback should stay permissive:\n{standard}"
     );
 
     let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());

@@ -9,7 +9,7 @@ use vize_croquis::{
 
 use crate::virtual_ts::{
     expressions::rewrite_reserved_template_prop,
-    helpers::{get_dom_event_type, to_camel_case, to_safe_identifier, to_safe_identifier_fragment},
+    helpers::{to_camel_case, to_safe_identifier, to_safe_identifier_fragment},
 };
 
 pub(super) struct ComponentEventTypes {
@@ -130,10 +130,9 @@ pub(super) fn generate_component_event_types(
         );
         legacy_args_type
     } else {
-        let fallback_event = get_dom_event_type(data.event_name.as_str());
         append!(
             *ts,
-            "{indent}type {event_type} = {args_type} extends [] ? any : unknown[] extends {args_type} ? {fallback_event} : {args_type}[0];\n",
+            "{indent}type {event_type} = {args_type} extends [] ? any : unknown[] extends {args_type} ? any : {args_type}[0];\n",
         );
         args_type.clone()
     };
