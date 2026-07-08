@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
+import { buildPaletteTypescript } from "./palette-typescript.js";
 import type { ArtInfo, NativeBinding, ServerContext } from "./types.js";
 
 type PaletteControl = {
@@ -569,19 +570,7 @@ function buildPaletteFromAnalysis(title: string, analysis: ComponentAnalysisResu
     controls,
     groups: [],
     json: JSON.stringify({ title, controls }, null, 2),
-    typescript: `export interface ${title.replace(/\s+/g, "")}Props {\n${controls
-      .map((control) => {
-        const type =
-          control.control === "boolean"
-            ? "boolean"
-            : control.control === "number"
-              ? "number"
-              : control.control === "select" && control.options.length > 0
-                ? control.options.map((option) => `"${String(option.value)}"`).join(" | ")
-                : "string";
-        return `  ${control.name}${control.required ? "" : "?"}: ${type};`;
-      })
-      .join("\n")}\n}\n`,
+    typescript: buildPaletteTypescript(title, controls),
   };
 }
 

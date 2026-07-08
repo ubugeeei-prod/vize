@@ -425,6 +425,9 @@ importers:
       '@vizejs/native':
         specifier: workspace:*
         version: link:../native
+      typescript:
+        specifier: catalog:typescript
+        version: 6.0.3
     devDependencies:
       '@tsdown/css':
         specifier: catalog:content
@@ -438,9 +441,6 @@ importers:
       tsx:
         specifier: catalog:typescript
         version: 4.22.4
-      typescript:
-        specifier: catalog:typescript
-        version: 6.0.3
       vite:
         specifier: catalog:vite-stack
         version: '@voidzero-dev/vite-plus-core@0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)'
