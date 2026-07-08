@@ -49,9 +49,14 @@
 //! </script>
 //! ```
 
-use memchr::memmem;
-
 use crate::diagnostic::{LintDiagnostic, Severity};
+use oxc_ast::ast::{
+    ArrowFunctionExpression, CallExpression, Expression, Function, Program, Statement,
+    VariableDeclarationKind,
+};
+use oxc_ast_visit::{Visit, walk::walk_call_expression};
+use oxc_span::Span;
+use oxc_syntax::scope::ScopeFlags;
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 
@@ -76,103 +81,83 @@ impl ScriptRule for NoTopLevelRefInScript {
         false
     }
 
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let bytes = source.as_bytes();
+    #[inline]
+    fn uses_ast(&self) -> bool {
+        true
+    }
 
-        // This rule is for regular <script> blocks, not <script setup>
-        // The caller should only pass non-setup script content
+    #[inline]
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        for statement in &program.body {
+            let Statement::VariableDeclaration(declaration) = statement else {
+                continue;
+            };
+            if !matches!(
+                declaration.kind,
+                VariableDeclarationKind::Const | VariableDeclarationKind::Let
+            ) {
+                continue;
+            }
 
-        // Find top-level reactive state patterns
-        // We need to ensure they're at module level (not inside functions/setup)
-
-        let reactive_patterns = [
-            ("ref(", "ref"),
-            ("reactive(", "reactive"),
-            ("computed(", "computed"),
-            ("shallowRef(", "shallowRef"),
-            ("shallowReactive(", "shallowReactive"),
-        ];
-
-        for (pattern, name) in reactive_patterns {
-            self.check_top_level_usage(source, bytes, offset, pattern, name, result);
+            for declarator in &declaration.declarations {
+                if let Some(init) = &declarator.init {
+                    let mut visitor = TopLevelRefVisitor { offset, result };
+                    visitor.visit_expression(init);
+                }
+            }
         }
     }
 }
 
-impl NoTopLevelRefInScript {
-    fn check_top_level_usage(
-        &self,
-        source: &str,
-        bytes: &[u8],
-        offset: usize,
-        pattern: &str,
-        _name: &str,
-        result: &mut ScriptLintResult,
-    ) {
-        let finder = memmem::Finder::new(pattern.as_bytes());
-        let mut search_start = 0;
+struct TopLevelRefVisitor<'result> {
+    offset: usize,
+    result: &'result mut ScriptLintResult,
+}
 
-        while let Some(pos) = finder.find(&bytes[search_start..]) {
-            let abs_pos = search_start + pos;
-            search_start = abs_pos + pattern.len();
-
-            // Make sure it's not part of another identifier
-            if abs_pos > 0 {
-                let prev_char = bytes[abs_pos - 1];
-                if prev_char.is_ascii_alphanumeric() || prev_char == b'_' {
-                    continue;
-                }
-            }
-
-            // Check if this is at module/top level by counting braces
-            let before = &source[..abs_pos];
-
-            // Count brace depth - if we're inside braces, it's not top-level
-            let mut brace_depth: i32 = 0;
-            let mut in_string = false;
-            let mut string_char = ' ';
-
-            for c in before.chars() {
-                if in_string {
-                    if c == string_char && !before.ends_with('\\') {
-                        in_string = false;
-                    }
-                } else {
-                    match c {
-                        '"' | '\'' | '`' => {
-                            in_string = true;
-                            string_char = c;
-                        }
-                        '{' => brace_depth += 1,
-                        '}' => brace_depth = brace_depth.saturating_sub(1),
-                        _ => {}
-                    }
-                }
-            }
-
-            // Only report if at top level (brace_depth == 0)
-            // Also check it's a variable assignment (const/let)
-            if brace_depth == 0 {
-                // Look backwards for const or let
-                let line_start = before.rfind('\n').map(|p| p + 1).unwrap_or(0);
-                let line = before[line_start..].trim();
-
-                if line.starts_with("const ") || line.starts_with("let ") {
-                    result.add_diagnostic(
-                        LintDiagnostic::error(
-                            META.name,
-                            "Top-level reactive state in <script> can cause Cross-Request State Pollution in SSR",
-                            (offset + abs_pos) as u32,
-                            (offset + abs_pos + pattern.len()) as u32,
-                        )
-                        .with_help(
-                            "Move reactive state inside setup() or use <script setup>. \
-                             Top-level state is shared across requests in SSR.",
-                        ),
-                    );
-                }
-            }
+impl<'a> Visit<'a> for TopLevelRefVisitor<'_> {
+    fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
+        if let Some(span) = reactive_callee_span(it) {
+            let start = self.offset as u32 + span.start;
+            let end = self.offset as u32 + span.end;
+            self.result.add_diagnostic(
+                LintDiagnostic::error(
+                    META.name,
+                    "Top-level reactive state in <script> can cause Cross-Request State Pollution in SSR",
+                    start,
+                    end,
+                )
+                .with_help(
+                    "Move reactive state inside setup() or use <script setup>. \
+                     Top-level state is shared across requests in SSR.",
+                ),
+            );
         }
+
+        walk_call_expression(self, it);
+    }
+
+    fn visit_arrow_function_expression(&mut self, _it: &ArrowFunctionExpression<'a>) {}
+
+    fn visit_function(&mut self, _it: &Function<'a>, _flags: ScopeFlags) {}
+}
+
+fn reactive_callee_span(call: &CallExpression<'_>) -> Option<Span> {
+    let Expression::Identifier(identifier) = &call.callee else {
+        return None;
+    };
+    if matches!(
+        identifier.name.as_str(),
+        "ref" | "reactive" | "computed" | "shallowRef" | "shallowReactive"
+    ) {
+        Some(Span::new(identifier.span.start, identifier.span.end + 1))
+    } else {
+        None
     }
 }
 
@@ -234,5 +219,26 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint("const API_URL = 'https://api.example.com'", 0);
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_arrow_function_factory() {
+        let linter = create_linter();
+        let result = linter.lint("const createState = () => ref(0)", 0);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_ignores_string_literal_source() {
+        let linter = create_linter();
+        let result = linter.lint(r#"const source = "const count = ref(0)""#, 0);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_nested_initializer_ref() {
+        let linter = create_linter();
+        let result = linter.lint("const state = { count: ref(0) }", 0);
+        assert_eq!(result.error_count, 1);
     }
 }
