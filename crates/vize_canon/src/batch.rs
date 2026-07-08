@@ -10,6 +10,8 @@ mod error;
 mod executor;
 mod import_rewriter;
 #[cfg(test)]
+mod import_rewriter_dts_tests;
+#[cfg(test)]
 mod import_rewriter_tests;
 #[cfg(test)]
 mod import_rewriter_type_tests;

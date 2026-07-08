@@ -14,16 +14,6 @@ use vize_carton::{String, cstr};
 
 use super::virtual_rewrite::append_extension;
 
-/// Cheap text gate: whether `source` has any relative module specifier worth
-/// resolving for the relative-`.d.ts` rewrite. Avoids parsing files that only
-/// import bare packages or aliases.
-pub(super) fn source_contains_relative_specifier(source: &str) -> bool {
-    source.contains("'./")
-        || source.contains("\"./")
-        || source.contains("'../")
-        || source.contains("\"../")
-}
-
 /// Rewrite a relative specifier that resolves to a generated `.d.ts` kept on its
 /// real path to that real (extensionless) path, so the re-exported identity is
 /// preserved inside the mirror.

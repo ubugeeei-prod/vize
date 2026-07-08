@@ -20,7 +20,7 @@ use virtual_rewrite::{
 
 #[path = "import_rewriter_dts.rs"]
 mod dts_rewrite;
-use dts_rewrite::{rewrite_relative_dts_specifier, source_contains_relative_specifier};
+use dts_rewrite::rewrite_relative_dts_specifier;
 
 #[derive(Debug, Clone)]
 pub struct OffsetAdjustment {
@@ -80,13 +80,6 @@ impl ImportRewriter {
     }
 
     pub fn rewrite(&self, source: &str, source_type: SourceType) -> RewriteResult {
-        if !source.contains(".vue") {
-            return RewriteResult {
-                code: source.to_compact_string(),
-                source_map: ImportSourceMap::empty(),
-            };
-        }
-
         self.rewrite_with(source, source_type, |path| {
             self.rewrite_module_specifier(path)
         })
@@ -101,15 +94,6 @@ impl ImportRewriter {
         roots: (&std::path::Path, &std::path::Path),
         source_dir: Option<&std::path::Path>,
     ) -> RewriteResult {
-        let project_root = roots.0.to_string_lossy();
-        let dts_candidate = source_dir.is_some() && source_contains_relative_specifier(source);
-        if !source.contains(".vue") && !source.contains(project_root.as_ref()) && !dts_candidate {
-            return RewriteResult {
-                code: source.to_compact_string(),
-                source_map: ImportSourceMap::empty(),
-            };
-        }
-
         self.rewrite_with(source, source_type, |path| {
             self.rewrite_virtual_project_specifier(path, roots, source_dir)
         })
@@ -120,13 +104,6 @@ impl ImportRewriter {
         source: &str,
         source_type: SourceType,
     ) -> RewriteResult {
-        if !source.contains(".vue.ts") && !source.contains(".vue.tsx") {
-            return RewriteResult {
-                code: source.to_compact_string(),
-                source_map: ImportSourceMap::empty(),
-            };
-        }
-
         self.rewrite_with(source, source_type, |path| {
             self.rewrite_declaration_specifier(path)
         })
@@ -145,9 +122,10 @@ impl ImportRewriter {
         let parser = Parser::new(&allocator, source, source_type);
         let result = parser.parse();
 
-        let mut rewrites: Vec<(u32, u32, String)> = Vec::new();
         let mut collector = ModuleSpecifierCollector::new();
         collector.visit_program(&result.program);
+
+        let mut rewrites: Vec<(u32, u32, String)> = Vec::new();
         for (start, end, path) in collector.specifiers {
             if let Some(rewrite) = rewrite_specifier(&path) {
                 rewrites.push((start, end, rewrite));
@@ -184,10 +162,6 @@ impl ImportRewriter {
         source: &str,
         source_type: SourceType,
     ) -> Vec<String> {
-        if !source.contains(".vue") {
-            return Vec::new();
-        }
-
         let allocator = Allocator::default();
         let parser = Parser::new(&allocator, source, source_type);
         let result = parser.parse();
