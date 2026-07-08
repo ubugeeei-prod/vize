@@ -27,9 +27,10 @@
 //! const userName = computed(() => props.user.name)
 //! ```
 
-use memchr::memmem;
-
 use crate::diagnostic::{LintDiagnostic, Severity};
+use oxc_ast::ast::{BindingPattern, CallExpression, Expression, Program, VariableDeclarator};
+use oxc_ast_visit::{Visit, walk::walk_variable_declarator};
+use oxc_span::Span;
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 
@@ -38,6 +39,10 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     description: "Disallow deeply nested destructuring in defineProps",
     default_severity: Severity::Warning,
 };
+
+const MESSAGE: &str = "Avoid deeply nested destructuring in defineProps";
+const HELP: &str =
+    "Use simple destructuring and access nested properties via computed or direct prop access";
 
 /// Disallow deep destructuring in defineProps
 pub struct NoDeepDestructureInProps {
@@ -51,103 +56,126 @@ impl Default for NoDeepDestructureInProps {
     }
 }
 
-impl NoDeepDestructureInProps {
-    /// Check if a destructuring pattern has nested objects beyond max_depth
-    fn has_deep_nesting(pattern: &str, max_depth: usize) -> bool {
-        let mut depth: usize = 0;
-        let mut max_seen: usize = 0;
-
-        for c in pattern.chars() {
-            match c {
-                '{' => {
-                    depth += 1;
-                    max_seen = max_seen.max(depth);
-                }
-                '}' => {
-                    depth = depth.saturating_sub(1);
-                }
-                _ => {}
-            }
-        }
-
-        // max_seen > max_depth means we have deeper nesting than allowed
-        // For max_depth = 1, we allow { a, b } but not { a: { b } }
-        max_seen > max_depth
-    }
-
-    /// Extract the destructuring pattern from a defineProps call
-    fn extract_destructure_pattern(source: &str, define_props_pos: usize) -> Option<&str> {
-        // Look backwards from defineProps to find the pattern
-        let before = &source[..define_props_pos];
-
-        // Find the last '=' before defineProps
-        let eq_pos = before.rfind('=')?;
-
-        // Find 'const' or 'let' before that
-        let decl_start = before[..eq_pos]
-            .rfind("const ")
-            .or_else(|| before[..eq_pos].rfind("let "))?;
-
-        // Extract the pattern between const/let and =
-        let pattern_start = if before[decl_start..].starts_with("const ") {
-            decl_start + 6
-        } else {
-            decl_start + 4
-        };
-
-        let pattern = before[pattern_start..eq_pos].trim();
-
-        // Only interested in destructuring patterns (starts with {)
-        if pattern.starts_with('{') {
-            Some(pattern)
-        } else {
-            None
-        }
-    }
-}
-
 impl ScriptRule for NoDeepDestructureInProps {
     fn meta(&self) -> &'static ScriptRuleMeta {
         &META
     }
 
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let bytes = source.as_bytes();
-
-        // Fast bailout: check if defineProps is used
-        if memmem::find(bytes, b"defineProps").is_none() {
-            return;
-        }
-
-        // Find all occurrences of defineProps
-        let finder = memmem::Finder::new(b"defineProps");
-        let mut search_start = 0;
-
-        while let Some(pos) = finder.find(&bytes[search_start..]) {
-            let abs_pos = search_start + pos;
-            search_start = abs_pos + 11;
-
-            // Extract the destructuring pattern
-            if let Some(pattern) = Self::extract_destructure_pattern(source, abs_pos)
-                && Self::has_deep_nesting(pattern, self.max_depth)
-            {
-                // Find pattern position
-                let pattern_start = source[..abs_pos].rfind(pattern).unwrap_or(abs_pos);
-
-                result.add_diagnostic(
-                        LintDiagnostic::warn(
-                            META.name,
-                            "Avoid deeply nested destructuring in defineProps",
-                            (offset + pattern_start) as u32,
-                            (offset + pattern_start + pattern.len()) as u32,
-                        )
-                        .with_help(
-                            "Use simple destructuring and access nested properties via computed or direct prop access",
-                        ),
-                    );
-            }
-        }
+    #[inline]
+    fn uses_ast(&self) -> bool {
+        true
     }
+
+    #[inline]
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        let mut visitor = NoDeepDestructureInPropsVisitor {
+            max_depth: self.max_depth,
+            offset,
+            result,
+        };
+        visitor.visit_program(program);
+    }
+}
+
+struct NoDeepDestructureInPropsVisitor<'result> {
+    max_depth: usize,
+    offset: usize,
+    result: &'result mut ScriptLintResult,
+}
+
+impl<'a> Visit<'a> for NoDeepDestructureInPropsVisitor<'_> {
+    fn visit_variable_declarator(&mut self, it: &VariableDeclarator<'a>) {
+        if let Some(init) = &it.init
+            && is_define_props_call(init)
+            && let Some(span) = deep_object_pattern_span(&it.id, self.max_depth)
+        {
+            let start = self.offset as u32 + span.start;
+            let end = self.offset as u32 + span.end;
+            self.result.add_diagnostic(
+                LintDiagnostic::warn(META.name, MESSAGE, start, end).with_help(HELP),
+            );
+        }
+        walk_variable_declarator(self, it);
+    }
+}
+
+fn deep_object_pattern_span(pattern: &BindingPattern<'_>, max_depth: usize) -> Option<Span> {
+    match pattern {
+        BindingPattern::ObjectPattern(object) => {
+            (object_pattern_depth(pattern, 0) > max_depth).then_some(object.span)
+        }
+        _ => None,
+    }
+}
+
+fn object_pattern_depth(pattern: &BindingPattern<'_>, current_depth: usize) -> usize {
+    match pattern {
+        BindingPattern::ObjectPattern(object) => {
+            let depth = current_depth + 1;
+            let property_depth = object
+                .properties
+                .iter()
+                .map(|property| object_pattern_depth(&property.value, depth))
+                .max()
+                .unwrap_or(depth);
+            let rest_depth = object
+                .rest
+                .as_ref()
+                .map(|rest| object_pattern_depth(&rest.argument, depth))
+                .unwrap_or(depth);
+            property_depth.max(rest_depth)
+        }
+        BindingPattern::ArrayPattern(array) => {
+            let element_depth = array
+                .elements
+                .iter()
+                .flatten()
+                .map(|element| object_pattern_depth(element, current_depth))
+                .max()
+                .unwrap_or(current_depth);
+            let rest_depth = array
+                .rest
+                .as_ref()
+                .map(|rest| object_pattern_depth(&rest.argument, current_depth))
+                .unwrap_or(current_depth);
+            element_depth.max(rest_depth)
+        }
+        BindingPattern::AssignmentPattern(assignment) => {
+            object_pattern_depth(&assignment.left, current_depth)
+        }
+        BindingPattern::BindingIdentifier(_) => current_depth,
+    }
+}
+
+fn is_define_props_call(expression: &Expression<'_>) -> bool {
+    let Expression::CallExpression(call) = expression else {
+        return false;
+    };
+    if call_is_named(call, "defineProps") {
+        return true;
+    }
+    if call_is_named(call, "withDefaults")
+        && let Some(first) = call
+            .arguments
+            .first()
+            .and_then(|argument| argument.as_expression())
+    {
+        return is_define_props_call(first);
+    }
+    false
+}
+
+fn call_is_named(call: &CallExpression<'_>, name: &str) -> bool {
+    matches!(
+        &call.callee,
+        Expression::Identifier(identifier) if identifier.name.as_str() == name
+    )
 }
 
 #[cfg(test)]
@@ -200,27 +228,43 @@ mod tests {
     }
 
     #[test]
-    fn test_has_deep_nesting() {
-        assert!(!NoDeepDestructureInProps::has_deep_nesting("{ a, b }", 1));
-        assert!(!NoDeepDestructureInProps::has_deep_nesting(
-            "{ a, b = 1 }",
-            1
-        ));
-        assert!(NoDeepDestructureInProps::has_deep_nesting(
-            "{ a: { b } }",
-            1
-        ));
-        assert!(NoDeepDestructureInProps::has_deep_nesting(
-            "{ a: { b: { c } } }",
-            1
-        ));
-        assert!(NoDeepDestructureInProps::has_deep_nesting(
-            "{ a: { b: { c } } }",
-            2
-        ));
-        assert!(!NoDeepDestructureInProps::has_deep_nesting(
-            "{ a: { b } }",
-            2
-        ));
+    fn test_invalid_deep_destructure_with_defaults() {
+        let linter = create_linter();
+        let result = linter.lint(
+            "const { user: { name } } = withDefaults(defineProps<{ user: User }>(), {})",
+            0,
+        );
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_with_higher_max_depth() {
+        let mut linter = ScriptLinter::new();
+        linter.add_rule(Box::new(NoDeepDestructureInProps { max_depth: 2 }));
+        let result = linter.lint(
+            "const { user: { name } } = defineProps<{ user: User }>()",
+            0,
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_define_props_string_not_matched() {
+        let linter = create_linter();
+        let result = linter.lint(
+            r#"const text = "const { user: { name } } = defineProps()""#,
+            0,
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_unrelated_deep_destructure_not_matched() {
+        let linter = create_linter();
+        let result = linter.lint(
+            "const { user: { name } } = createProps<{ user: User }>()",
+            0,
+        );
+        assert_eq!(result.warning_count, 0);
     }
 }
