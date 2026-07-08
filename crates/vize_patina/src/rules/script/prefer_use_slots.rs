@@ -28,9 +28,16 @@
 //! return () => h('div', slots.default?.())
 //! ```
 
-use memchr::memmem;
-
 use crate::diagnostic::{LintDiagnostic, Severity};
+use oxc_ast::ast::{
+    BindingPattern, Expression, FormalParameters, ObjectProperty, Program, PropertyKey,
+    StaticMemberExpression,
+};
+use oxc_ast_visit::{
+    Visit,
+    walk::{walk_object_property, walk_static_member_expression},
+};
+use oxc_span::Span;
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 
@@ -48,49 +55,94 @@ impl ScriptRule for PreferUseSlots {
         &META
     }
 
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let bytes = source.as_bytes();
+    #[inline]
+    fn uses_ast(&self) -> bool {
+        true
+    }
 
-        // Check for destructuring { slots } from setup context
-        let finder = memmem::Finder::new(b"{ slots }");
-        let mut search_start = 0;
+    #[inline]
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        let mut visitor = PreferUseSlotsVisitor { offset, result };
+        visitor.visit_program(program);
+    }
+}
 
-        while let Some(pos) = finder.find(&bytes[search_start..]) {
-            let abs_pos = search_start + pos;
-            search_start = abs_pos + 9;
+struct PreferUseSlotsVisitor<'result> {
+    offset: usize,
+    result: &'result mut ScriptLintResult,
+}
 
-            let before = &source[..abs_pos];
-            if before.contains("setup(") {
-                result.add_diagnostic(
-                    LintDiagnostic::warn(
-                        META.name,
-                        "Prefer useSlots() over destructuring slots from setup context",
-                        (offset + abs_pos) as u32,
-                        (offset + abs_pos + 9) as u32,
-                    )
-                    .with_help("Use `const slots = useSlots()` instead"),
-                );
-            }
-        }
-
-        // Check for context.slots usage
-        let finder2 = memmem::Finder::new(b"context.slots");
-        search_start = 0;
-
-        while let Some(pos) = finder2.find(&bytes[search_start..]) {
-            let abs_pos = search_start + pos;
-            search_start = abs_pos + 13;
-
-            result.add_diagnostic(
-                LintDiagnostic::warn(
-                    META.name,
-                    "Prefer useSlots() over context.slots",
-                    (offset + abs_pos) as u32,
-                    (offset + abs_pos + 13) as u32,
-                )
-                .with_help("Use `const slots = useSlots()` instead"),
+impl<'a> Visit<'a> for PreferUseSlotsVisitor<'_> {
+    fn visit_object_property(&mut self, it: &ObjectProperty<'a>) {
+        if !it.computed
+            && property_key_name(&it.key) == Some("setup")
+            && let Some(params) = setup_parameters(&it.value)
+            && let Some(span) = setup_context_property_span(params, "slots")
+        {
+            self.add_diagnostic(
+                "Prefer useSlots() over destructuring slots from setup context",
+                span,
             );
         }
+
+        walk_object_property(self, it);
+    }
+
+    fn visit_static_member_expression(&mut self, it: &StaticMemberExpression<'a>) {
+        if it.property.name.as_str() == "slots"
+            && matches!(&it.object, Expression::Identifier(identifier) if identifier.name.as_str() == "context")
+        {
+            self.add_diagnostic("Prefer useSlots() over context.slots", it.span);
+        }
+
+        walk_static_member_expression(self, it);
+    }
+}
+
+impl PreferUseSlotsVisitor<'_> {
+    fn add_diagnostic(&mut self, message: &'static str, span: Span) {
+        let start = self.offset as u32 + span.start;
+        let end = self.offset as u32 + span.end;
+        self.result.add_diagnostic(
+            LintDiagnostic::warn(META.name, message, start, end)
+                .with_help("Use `const slots = useSlots()` instead"),
+        );
+    }
+}
+
+fn setup_parameters<'a>(value: &'a Expression<'a>) -> Option<&'a FormalParameters<'a>> {
+    match value {
+        Expression::FunctionExpression(function) => Some(&function.params),
+        Expression::ArrowFunctionExpression(arrow) => Some(&arrow.params),
+        _ => None,
+    }
+}
+
+fn setup_context_property_span(params: &FormalParameters<'_>, name: &str) -> Option<Span> {
+    let context = params.items.get(1)?;
+    let BindingPattern::ObjectPattern(object) = &context.pattern else {
+        return None;
+    };
+
+    for property in &object.properties {
+        if !property.computed && property_key_name(&property.key) == Some(name) {
+            return Some(property.span);
+        }
+    }
+    None
+}
+
+fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+    match key {
+        PropertyKey::StaticIdentifier(id) => Some(id.name.as_str()),
+        PropertyKey::StringLiteral(string) => Some(string.value.as_str()),
+        _ => None,
     }
 }
 
@@ -115,7 +167,35 @@ mod tests {
     #[test]
     fn test_invalid_context_slots() {
         let linter = create_linter();
-        let result = linter.lint("return context.slots.default?.()", 0);
+        let result = linter.lint("const slot = context.slots.default?.()", 0);
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_destructure_slots() {
+        let linter = create_linter();
+        let result = linter.lint("export default { setup(props, { slots }) {} }", 0);
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_arrow_setup_destructure_slots() {
+        let linter = create_linter();
+        let result = linter.lint("export default { setup: (props, { slots }) => {} }", 0);
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_no_warning_for_string_or_unrelated_destructure() {
+        let linter = create_linter();
+        let result = linter.lint(
+            r#"
+const text = "context.slots"
+const { slots } = context
+export default { mounted() { console.log(context.slots) } }
+"#,
+            0,
+        );
         assert_eq!(result.warning_count, 1);
     }
 }
