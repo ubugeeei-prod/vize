@@ -68,7 +68,8 @@
     "test:update": "pnpm build && node --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
   },
   "dependencies": {
-    "@vizejs/native": "workspace:*"
+    "@vizejs/native": "workspace:*",
+    "oxc-parser": "catalog:oxc"
   },
   "devDependencies": {
     "@rspack/core": "catalog:bundlers",

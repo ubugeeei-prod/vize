@@ -4,6 +4,11 @@ import path from "node:path";
 import { rewriteSfcTemplateAssetReferences } from "@vizejs/native";
 import type { CompiledModule } from "../types/index.ts";
 import { genHotReloadCode, genCSSModuleHotReloadCode } from "./hotReload.ts";
+import {
+  analyzeModuleOutput,
+  insertBeforeSfcMainDefaultExport,
+  rewriteDefaultExportToSfcMain,
+} from "./module-output.ts";
 
 /** Generate JS output with style/custom-block imports and optional HMR code. */
 export function generateOutput(
@@ -29,20 +34,20 @@ export function generateOutput(
     output = rewriteSfcTemplateAssetReferences(output, compiled.templateAssetUrls);
   }
 
-  const exportDefaultRegex = /^export default /m;
-  const hasExportDefault = exportDefaultRegex.test(output);
-  const hasSfcMainDefined = /\bconst\s+_sfc_main\s*=/.test(output);
+  const moduleInfo = analyzeModuleOutput(output);
+  const hasExportDefault = moduleInfo.hasDefaultExport;
+  const hasSfcMainDefined = moduleInfo.hasSfcMainDefined;
 
   if (hasExportDefault && !hasSfcMainDefined) {
-    output = output.replace(exportDefaultRegex, "const _sfc_main = ");
+    output = rewriteDefaultExportToSfcMain(output);
     if (compiled.hasScoped && compiled.scopeId) {
       output += `\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`;
     }
     output += "\nexport default _sfc_main;";
   } else if (hasExportDefault && hasSfcMainDefined && compiled.hasScoped && compiled.scopeId) {
-    output = output.replace(
-      /^export default _sfc_main/m,
-      `_sfc_main.__scopeId = "data-v-${compiled.scopeId}";\nexport default _sfc_main`,
+    output = insertBeforeSfcMainDefaultExport(
+      output,
+      `_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`,
     );
   }
 
@@ -102,10 +107,9 @@ export function generateOutput(
 
     if (isCustomElement) {
       const stylesArray = activeStyles.map((style) => `_style_${style.index}`).join(",");
-      output = output.replace(
-        /^export default _sfc_main;/m,
-        `_sfc_main.styles = [${stylesArray}];\nexport default _sfc_main;`,
-      );
+      output = insertBeforeSfcMainDefaultExport(output, `_sfc_main.styles = [${stylesArray}];`, {
+        normalizeSemicolon: true,
+      });
     }
 
     if (!isCustomElement && cssModuleHmrEntries.length > 0) {
@@ -130,10 +134,9 @@ export function generateOutput(
               .join("\n")
           : "";
 
-      output = output.replace(
-        /^export default _sfc_main;/m,
-        `${cssModuleSetup}\n${cssModuleHmr}\nexport default _sfc_main;`,
-      );
+      output = insertBeforeSfcMainDefaultExport(output, `${cssModuleSetup}\n${cssModuleHmr}`, {
+        normalizeSemicolon: true,
+      });
     }
   }
 
@@ -141,17 +144,17 @@ export function generateOutput(
     const relativePath = options.rootContext
       ? path.relative(options.rootContext, options.filePath).replace(/\\/g, "/")
       : path.basename(options.filePath);
-    output = output.replace(
-      /^export default _sfc_main;/m,
-      `_sfc_main.__file = ${JSON.stringify(relativePath)};\nexport default _sfc_main;`,
+    output = insertBeforeSfcMainDefaultExport(
+      output,
+      `_sfc_main.__file = ${JSON.stringify(relativePath)};`,
+      { normalizeSemicolon: true },
     );
   }
 
   if (options.hmr && compiled.scopeId) {
-    output = output.replace(
-      /^export default _sfc_main;/m,
-      `${genHotReloadCode(compiled.scopeId)}\nexport default _sfc_main;`,
-    );
+    output = insertBeforeSfcMainDefaultExport(output, genHotReloadCode(compiled.scopeId), {
+      normalizeSemicolon: true,
+    });
   }
 
   if (compiled.customBlocks.length > 0) {
@@ -180,10 +183,9 @@ export function generateOutput(
       })
       .join("\n");
 
-    output = output.replace(
-      /^export default _sfc_main;/m,
-      `${customBlockImports}\nexport default _sfc_main;`,
-    );
+    output = insertBeforeSfcMainDefaultExport(output, customBlockImports, {
+      normalizeSemicolon: true,
+    });
   }
 
   if (compiled.templateAssetUrls.length > 0) {

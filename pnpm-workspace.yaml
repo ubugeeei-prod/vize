@@ -105,6 +105,7 @@ catalogs:
 
   # JS-side OXC transform bridge.
   oxc:
+    oxc-parser: "0.133.0"
     oxc-transform: "0.130.0"
 
   # Published native binary packages that are installed optionally at runtime.

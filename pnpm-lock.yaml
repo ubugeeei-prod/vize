@@ -558,6 +558,9 @@ importers:
       '@vizejs/native':
         specifier: workspace:*
         version: link:../../native
+      oxc-parser:
+        specifier: catalog:oxc
+        version: 0.133.0
     devDependencies:
       '@rspack/core':
         specifier: catalog:bundlers

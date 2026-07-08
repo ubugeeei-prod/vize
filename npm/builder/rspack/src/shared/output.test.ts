@@ -1,9 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import type { CompiledModule } from "../types/index.ts";
+import type { CompiledModule, TemplateAssetUrl } from "../types/index.ts";
 import { generateOutput } from "./output.ts";
 
-function compiledModule(code: string): CompiledModule {
+function compiledModule(
+  code: string,
+  overrides: Partial<Pick<CompiledModule, "templateAssetUrls">> = {},
+): CompiledModule {
   return {
     code,
     errors: [],
@@ -13,8 +16,9 @@ function compiledModule(code: string): CompiledModule {
     styles: [],
     customBlocks: [],
     isCustomElement: false,
-    templateAssetUrls: [{ url: "./logo.png", varName: "_imports_0" }],
+    templateAssetUrls: [{ url: "./logo.png", varName: "_imports_0" }] satisfies TemplateAssetUrl[],
     macroArtifacts: [],
+    ...overrides,
   };
 }
 
@@ -55,4 +59,37 @@ export default _sfc_main;
 
   assert.match(output, /const same = "\.\/logo\.png";/);
   assert.ok(output.includes('_push("<img src=\\"" + _imports_0 + "\\">")'));
+});
+
+void test("output export rewrite ignores export default text inside template literals", () => {
+  const output = generateOutput(
+    compiledModule(
+      ["const message = `", "export default fake", "`;", "export default { name: 'Real' };"].join(
+        "\n",
+      ),
+      { templateAssetUrls: [] },
+    ),
+    { requestPath: "./App.vue" },
+  );
+
+  assert.match(output, /export default fake/);
+  assert.doesNotMatch(output, /const _sfc_main = fake/);
+  assert.match(output, /const _sfc_main = \{ name: 'Real' \};/);
+  assert.match(output, /export default _sfc_main;/);
+});
+
+void test("output export rewrite preserves pure annotations on default exports", () => {
+  const output = generateOutput(
+    compiledModule(
+      [
+        'import { defineComponent } from "vue";',
+        "export default /*#__PURE__*/ defineComponent({ name: 'Annotated' });",
+      ].join("\n"),
+      { templateAssetUrls: [] },
+    ),
+    { requestPath: "./App.vue" },
+  );
+
+  assert.match(output, /const _sfc_main = \/\*#__PURE__\*\/ defineComponent/);
+  assert.match(output, /export default _sfc_main;/);
 });
