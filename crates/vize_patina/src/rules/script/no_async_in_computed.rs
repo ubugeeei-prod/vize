@@ -36,9 +36,10 @@
 //! const { data } = useAsyncData(() => fetch('/api/data'))
 //! ```
 
-use memchr::memmem;
-
 use crate::diagnostic::{LintDiagnostic, Severity};
+use oxc_ast::ast::{CallExpression, Expression, Program};
+use oxc_ast_visit::{Visit, walk::walk_call_expression};
+use oxc_span::Span;
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 
@@ -56,50 +57,63 @@ impl ScriptRule for NoAsyncInComputed {
         &META
     }
 
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let bytes = source.as_bytes();
+    #[inline]
+    fn uses_ast(&self) -> bool {
+        true
+    }
 
-        // Fast bailout: check if computed is used
-        if memmem::find(bytes, b"computed").is_none() {
-            return;
+    #[inline]
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        let mut visitor = NoAsyncInComputedVisitor { offset, result };
+        visitor.visit_program(program);
+    }
+}
+
+struct NoAsyncInComputedVisitor<'result> {
+    offset: usize,
+    result: &'result mut ScriptLintResult,
+}
+
+impl<'a> Visit<'a> for NoAsyncInComputedVisitor<'_> {
+    fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
+        if matches!(&it.callee, Expression::Identifier(identifier) if identifier.name.as_str() == "computed")
+            && let Some(argument) = it
+                .arguments
+                .first()
+                .and_then(|argument| argument.as_expression())
+            && let Some(span) = async_function_span(argument)
+        {
+            let start = self.offset as u32 + it.span.start;
+            let end = self.offset as u32 + span.start + 5;
+            self.result.add_diagnostic(
+                LintDiagnostic::error(
+                    META.name,
+                    "Computed properties cannot be async. They must return a value synchronously.",
+                    start,
+                    end,
+                )
+                .with_help(
+                    "Use ref with watch() and cleanup for async operations; \
+                     abort or ignore stale work before assigning the result.",
+                ),
+            );
         }
 
-        // Look for patterns like:
-        // computed(async () => ...)
-        // computed(async function() ...)
+        walk_call_expression(self, it);
+    }
+}
 
-        let finder = memmem::Finder::new(b"computed(");
-        let mut search_start = 0;
-
-        while let Some(pos) = finder.find(&bytes[search_start..]) {
-            let abs_pos = search_start + pos;
-            search_start = abs_pos + 9;
-
-            // Get the content after "computed("
-            let after = &source[abs_pos + 9..];
-            let trimmed = after.trim_start();
-
-            // Check if it starts with async
-            if let Some(after_async) = trimmed.strip_prefix("async") {
-                // Make sure "async" is followed by whitespace or arrow/function
-                let next_char = after_async.chars().next();
-
-                if matches!(next_char, Some(' ') | Some('\t') | Some('\n') | Some('(')) {
-                    result.add_diagnostic(
-                        LintDiagnostic::error(
-                            META.name,
-                            "Computed properties cannot be async. They must return a value synchronously.",
-                            (offset + abs_pos) as u32,
-                            (offset + abs_pos + 9 + trimmed.find("async").unwrap_or(0) + 5) as u32,
-                        )
-                        .with_help(
-                            "Use ref with watch() and cleanup for async operations; \
-                             abort or ignore stale work before assigning the result.",
-                        ),
-                    );
-                }
-            }
-        }
+fn async_function_span(expression: &Expression<'_>) -> Option<Span> {
+    match expression {
+        Expression::ArrowFunctionExpression(arrow) if arrow.r#async => Some(arrow.span),
+        Expression::FunctionExpression(function) if function.r#async => Some(function.span),
+        _ => None,
     }
 }
 
@@ -155,6 +169,13 @@ mod tests {
 })"#,
             0,
         );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_string_literal_false_positive() {
+        let linter = create_linter();
+        let result = linter.lint("const source = 'computed(async () => value)'", 0);
         assert_eq!(result.error_count, 0);
     }
 }
