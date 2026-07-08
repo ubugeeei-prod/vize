@@ -19,7 +19,7 @@ use vize_atelier_core::{
     codegen::generate,
     lane::{transform, transform_with_template_syntax_quirks},
     options::{CodegenMode, CodegenOptions, ParserOptions, TransformOptions},
-    parser::{parse, parse_with_options_and_template_syntax},
+    parser::{parse_with_options, parse_with_options_and_template_syntax},
 };
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor_with_template_syntax};
 
@@ -34,6 +34,7 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
     // Parse
     let parser_opts = ParserOptions {
         custom_renderer: opts.custom_renderer.unwrap_or(false),
+        experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         ..Default::default()
     };
     let (mut root, errors) =
@@ -58,6 +59,7 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         cache_handlers: opts.cache_handlers.unwrap_or(false),
         scope_id: opts.scope_id.clone().map(|s| s.into()),
         ssr: opts.ssr.unwrap_or(false),
+        experimental_patterned_template: opts.experimental_patterned_template.unwrap_or(false),
         ..Default::default()
     };
     if template_syntax.is_quirks() {
@@ -117,6 +119,8 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
     let vapor_opts = VaporCompilerOptions {
         prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
         ssr: opts.ssr.unwrap_or(false),
+        experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
+        experimental_patterned_template: opts.experimental_patterned_template.unwrap_or(false),
         ..Default::default()
     };
     let result =
@@ -148,11 +152,19 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
 #[napi]
 pub fn parse_template(
     template: String,
-    _options: Option<CompilerOptions>,
+    options: Option<CompilerOptions>,
 ) -> Result<serde_json::Value> {
     let allocator = Bump::new();
+    let opts = options.unwrap_or_default();
 
-    let (root, errors) = parse(&allocator, &template);
+    let (root, errors) = parse_with_options(
+        &allocator,
+        &template,
+        ParserOptions {
+            experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
+            ..Default::default()
+        },
+    );
 
     if !errors.is_empty() {
         return Err(Error::new(
@@ -204,6 +216,11 @@ fn build_ast_json(root: &vize_atelier_core::RootNode<'_>) -> serde_json::Value {
     serde_json::json!({
         "type": "ROOT",
         "children": children,
+        "comments": root.comments.iter().map(|comment| serde_json::json!({
+            "type": "COMMENT",
+            "kind": format!("{:?}", comment.kind),
+            "content": comment.content.as_str(),
+        })).collect::<Vec<_>>(),
         "helpers": root.helpers.iter().map(|h| h.name()).collect::<Vec<_>>(),
         "components": root.components.iter().map(|c| c.as_str()).collect::<Vec<_>>(),
         "directives": root.directives.iter().map(|d| d.as_str()).collect::<Vec<_>>(),

@@ -50,6 +50,7 @@ impl VirtualProject {
             jsx_typecheck: false,
             dialect: vize_carton::config::VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),
+            experimental_in_tag_comments: false,
             virtual_files: FxHashMap::default(),
             passthrough_files: FxHashMap::default(),
             original_index: FxHashMap::default(),
@@ -110,6 +111,10 @@ impl VirtualProject {
         self.template_syntax = template_syntax;
     }
 
+    pub(crate) fn set_experimental_in_tag_comments(&mut self, enabled: bool) {
+        self.experimental_in_tag_comments = enabled;
+    }
+
     /// Get the project root.
     pub fn project_root(&self) -> &Path {
         &self.project_root
@@ -142,6 +147,7 @@ impl VirtualProject {
                 jsx_typecheck: self.jsx_typecheck,
                 dialect: self.dialect,
                 template_syntax: self.template_syntax,
+                experimental_in_tag_comments: self.experimental_in_tag_comments,
                 rewriter: &self.rewriter,
             },
         )?;
@@ -189,6 +195,7 @@ impl VirtualProject {
             jsx_typecheck: self.jsx_typecheck,
             dialect: self.dialect,
             template_syntax: self.template_syntax,
+            experimental_in_tag_comments: self.experimental_in_tag_comments,
             rewriter: &self.rewriter,
         };
 
@@ -223,6 +230,7 @@ impl VirtualProject {
                 jsx_typecheck: self.jsx_typecheck,
                 dialect: self.dialect,
                 template_syntax: self.template_syntax,
+                experimental_in_tag_comments: self.experimental_in_tag_comments,
                 rewriter: &self.rewriter,
             },
         )?;

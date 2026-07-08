@@ -192,6 +192,31 @@ assert.deepEqual(
   "SSR requests should continue to use the VDOM compiler while client builds hydrate with Vapor",
 );
 
+assert.deepEqual(
+  getCompileOptionsForRequest(
+    {
+      isProduction: false,
+      mergedOptions: {
+        experimentalInTagComments: true,
+        experimentalPatternedTemplate: true,
+        experimentalServerScript: true,
+      },
+    },
+    false,
+  ),
+  {
+    sourceMap: true,
+    ssr: false,
+    vapor: false,
+    customRenderer: false,
+    templateSyntax: "standard",
+    experimentalInTagComments: true,
+    experimentalPatternedTemplate: true,
+    experimentalServerScript: true,
+  },
+  "Request compile options should pass experimental flags to native compilation",
+);
+
 const cssState = {
   extractCss: true,
   collectedCss: new Map<string, string>(),

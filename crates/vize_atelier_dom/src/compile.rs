@@ -166,6 +166,7 @@ fn compile_template_inner_with_sections<'a>(
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
         comments: options.comments,
+        experimental_in_tag_comments: options.experimental_in_tag_comments,
         dialect: options.dialect,
         ..ParserOptions::default()
     };
@@ -210,6 +211,7 @@ fn compile_template_inner_with_sections<'a>(
         is_ts: options.is_ts,
         inline: options.inline,
         custom_renderer: options.custom_renderer,
+        experimental_patterned_template: options.experimental_patterned_template,
         binding_metadata: options.binding_metadata.clone(),
         dialect: options.dialect,
         ..Default::default()

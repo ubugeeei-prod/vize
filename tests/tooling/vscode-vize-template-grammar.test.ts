@@ -143,7 +143,10 @@ function assertTextDoesNotHaveScope(
 
 test("vscode-vize template grammar recurses through template content", () => {
   const grammar = readJson<{
-    repository?: Record<string, { patterns?: Array<{ include?: string }> }>;
+    repository?: Record<
+      string,
+      { patterns?: Array<{ include?: string; match?: string; name?: string }> }
+    >;
   }>("editors/vscode/syntaxes/vue.tmLanguage.json");
   const repository = grammar.repository ?? {};
 
@@ -158,8 +161,11 @@ test("vscode-vize template grammar recurses through template content", () => {
       "#html-entities",
     ],
   );
+  const tagPatterns = repository["vue-template-tag"]?.patterns ?? [];
+  assert.equal(tagPatterns[0]?.match, "(?<!\\S)//.*$");
+  assert.equal(tagPatterns[0]?.name, "comment.line.double-slash.vue");
   assert.deepEqual(
-    (repository["vue-template-tag"]?.patterns ?? []).map((pattern) => pattern.include),
+    tagPatterns.slice(1).map((pattern) => pattern.include),
     ["#vue-directive-attributes", "#vue-directives", "#vue-tag-attributes"],
   );
   assert.equal(
@@ -174,6 +180,31 @@ test("vscode-vize template grammar recurses through template content", () => {
     "generic='T extends Foo<User>'",
     new RegExp(repository["vue-generic-attribute"]?.patterns?.[0]?.begin ?? ""),
   );
+});
+
+test("vscode-vize grammar highlights Vue in-tag comments", async () => {
+  const { grammar, registry } = await loadVueTextMateGrammar();
+
+  try {
+    const tokens = tokenizeLines(grammar, [
+      "<template>",
+      "  <LegacySelect",
+      '    :options="options"',
+      "    // @vue-expect-error legacy API",
+      '    :selected-id="selectedId"',
+      "  />",
+      '  <div title="not // a comment" data-id="ok" />',
+      "</template>",
+    ]);
+
+    assertTextHasScope(tokens, "@vue-expect-error", "comment.line.double-slash.vue");
+    assertTextHasScope(tokens, "selected-id", "entity.other.attribute-name.binding.vue");
+    assertTextDoesNotHaveScope(tokens, "selected-id", "comment.line.double-slash.vue");
+    assertTextDoesNotHaveScope(tokens, "not // a comment", "comment.line.double-slash.vue");
+    assertTextHasScope(tokens, "data-id", "entity.other.attribute-name.html");
+  } finally {
+    registry.dispose();
+  }
 });
 
 test("vscode-vize grammar keeps Vue scopes after nested template blocks", async () => {

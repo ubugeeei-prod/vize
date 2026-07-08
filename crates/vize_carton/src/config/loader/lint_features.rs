@@ -9,7 +9,11 @@ pub fn load_config_and_linter_with_lint_features_and_source(
 ) -> (LoadedConfigWithFeatures, LinterConfig, LinterFeatureFlags) {
     let loaded = load_raw_config_with_source(path);
     let compiler_compatibility_vue_version = loaded.config.compiler.compatibility.vue_version;
-    let compiler_vapor = loaded.config.compiler.vapor;
+    let compiler_vapor = loaded
+        .config
+        .compiler
+        .vapor
+        .or_else(|| loaded.config.experimentals.vapor_enabled().then_some(true));
     let linter = load_linter_from_raw_config(&loaded.config);
     let (config, features) = loaded.config.into_config_and_features();
     let linter_features = LinterFeatureFlags::from_config_features(

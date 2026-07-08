@@ -1,5 +1,6 @@
 import "./hmr.test.ts";
 import "./compiler.test.ts";
+import "./compile-options.test.ts";
 import "./config.test.ts";
 import "./options-api-events.test.ts";
 import "./output-ast.test.ts";

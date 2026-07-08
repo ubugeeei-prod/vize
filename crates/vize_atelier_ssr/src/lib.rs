@@ -7,8 +7,6 @@
 //! - SSR component rendering
 //! - SSR teleport and suspense handling
 //!
-//! ## Name Origin
-//!
 //! **Atelier** (/ˌætəlˈjeɪ/) is an artist's workshop or studio. The "ssr" atelier
 //! specializes in server-side rendering output, producing HTML strings instead of
 //! VNode trees.
@@ -97,6 +95,7 @@ fn compile_ssr_inner<'a>(
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
         comments: options.comments,
+        experimental_in_tag_comments: options.experimental_in_tag_comments,
         dialect: options.dialect,
         ..ParserOptions::default()
     };
@@ -130,6 +129,7 @@ fn compile_ssr_inner<'a>(
         is_ts: codegen_options.is_ts,
         inline: codegen_options.inline,
         custom_renderer: codegen_options.custom_renderer,
+        experimental_patterned_template: codegen_options.experimental_patterned_template,
         binding_metadata: codegen_options.binding_metadata.clone(),
         dialect: codegen_options.dialect,
         ..Default::default()

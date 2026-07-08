@@ -1,9 +1,37 @@
 //! Per-file compile settings and template-syntax mapping for the build command.
 
+use std::path::Path;
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_carton::config::VueVersion;
+use vize_carton::config::{ConfigFeatureFlags, VueVersion};
 
 use crate::commands::build::ScriptExtension;
+
+pub(super) struct BuildConfigSettings {
+    pub(super) compiler_template_syntax: Option<&'static str>,
+    pub(super) features: ConfigFeatureFlags,
+    pub(super) vapor: Option<bool>,
+    pub(super) dialect: Option<VueVersion>,
+    pub(super) host_compiler: Option<bool>,
+}
+
+pub(super) fn load_build_config(no_config: bool, config: Option<&Path>) -> BuildConfigSettings {
+    if no_config {
+        return BuildConfigSettings {
+            compiler_template_syntax: None,
+            features: ConfigFeatureFlags::default(),
+            vapor: None,
+            dialect: None,
+            host_compiler: None,
+        };
+    }
+    BuildConfigSettings {
+        compiler_template_syntax: crate::config::load_compiler_template_syntax(config),
+        features: crate::config::load_config_with_features_and_source(config).features,
+        vapor: crate::config::load_compiler_vapor(config),
+        dialect: crate::config::load_compiler_vue_version(config),
+        host_compiler: crate::config::load_compiler_host_compiler(config),
+    }
+}
 
 /// Compile a single `.vue` file with profiling information.
 #[derive(Clone, Copy)]
@@ -12,6 +40,8 @@ pub(super) struct CompileFileSettings {
     pub(super) vapor: bool,
     pub(super) custom_renderer: bool,
     pub(super) template_syntax: TemplateSyntaxMode,
+    pub(super) experimental_in_tag_comments: bool,
+    pub(super) experimental_patterned_template: bool,
     /// Vue dialect from `vue.version`; defaults to [`VueVersion::V3`] and is
     /// threaded into each file's compile options.
     pub(super) dialect: VueVersion,
@@ -36,6 +66,8 @@ impl CompileFileSettings {
                 ScriptExtension::Downcompile => 0,
             }
             | (u16::from(dialect_bits(self.dialect)) << 6)
+            | (u16::from(self.experimental_in_tag_comments) << 9)
+            | (u16::from(self.experimental_patterned_template) << 10)
     }
 }
 

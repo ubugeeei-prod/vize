@@ -30,6 +30,18 @@ fn linter_features_read_explicit_compiler_vapor_false() {
 }
 
 #[test]
+fn linter_features_read_experimental_vapor() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(&config_path, r#"{ "experimentals": { "vapor": {} } }"#).unwrap();
+
+    let (_, _, linter_features) =
+        load_config_and_linter_with_lint_features_and_source(Some(&config_path));
+
+    assert_eq!(linter_features.vapor, Some(true));
+}
+
+#[test]
 fn linter_features_read_legacy_vue2_flags() {
     let dir = tempfile::tempdir().unwrap();
     let config_path = dir.path().join("vize.config.json");

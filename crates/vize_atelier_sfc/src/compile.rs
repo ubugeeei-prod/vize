@@ -344,7 +344,7 @@ fn compile_sfc_inner(
                     &scope_id,
                     has_scoped,
                     None,
-                    options.template.custom_renderer,
+                    &options.template,
                     template_syntax,
                 )
             )
@@ -535,7 +535,7 @@ fn compile_sfc_inner(
                         &scope_id,
                         has_scoped,
                         None,
-                        options.template.custom_renderer,
+                        &options.template,
                         template_syntax,
                     )
                 )
@@ -851,7 +851,7 @@ fn compile_sfc_inner(
                     &scope_id,
                     has_scoped,
                     Some(&script_bindings),
-                    options.template.custom_renderer,
+                    &options.template,
                     template_syntax,
                 )
             ))

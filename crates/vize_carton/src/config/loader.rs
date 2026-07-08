@@ -6,12 +6,15 @@
 //! main flow.
 
 mod discovery;
+#[cfg(test)]
+mod experimental_tests;
 mod js;
 mod lint_features;
 mod parse;
 mod pkl;
 #[cfg(test)]
 mod tests;
+mod vapor;
 
 use std::path::{Path, PathBuf};
 
@@ -24,6 +27,7 @@ use super::model::{
 };
 
 pub use lint_features::load_config_and_linter_with_lint_features_and_source;
+pub use vapor::load_compiler_vapor;
 
 const CONFIG_FILE_NAMES: [&str; 5] = [
     "vize.config.pkl",
@@ -33,23 +37,16 @@ const CONFIG_FILE_NAMES: [&str; 5] = [
     "vize.config.json",
 ];
 
-/// Loaded config and its source path.
 #[derive(Debug, Clone)]
 pub struct LoadedConfig {
-    /// Effective configuration with defaults applied.
     pub config: VizeConfig,
-    /// Path of the config file that was used, if any.
     pub source_path: Option<PathBuf>,
 }
 
-/// Loaded config with auxiliary feature flags.
 #[derive(Debug, Clone, Default)]
 pub struct LoadedConfigWithFeatures {
-    /// Effective configuration with defaults applied.
     pub config: VizeConfig,
-    /// Path of the config file that was used, if any.
     pub source_path: Option<PathBuf>,
-    /// Auxiliary feature flags parsed from config keys.
     pub features: ConfigFeatureFlags,
 }
 

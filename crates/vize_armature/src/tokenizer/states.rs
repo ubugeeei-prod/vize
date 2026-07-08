@@ -46,6 +46,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             | State::InClosingTagName
             | State::AfterClosingTagName
             | State::BeforeAttrName
+            | State::InTagComment
             | State::InAttrName
             | State::InDirName
             | State::InDirArg
@@ -98,6 +99,9 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             }
             State::BeforeAttrName => {
                 self.callbacks.on_open_tag_end(inferred_tag_end);
+            }
+            State::InTagComment => {
+                self.recover_in_tag_comment_at_eof(inferred_tag_end);
             }
             State::InAttrName => {
                 self.callbacks
@@ -177,8 +181,6 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         }
         self.callbacks.on_attrib_end(quote, self.index);
     }
-
-    // ========== State handlers ==========
 
     pub(super) fn state_text(&mut self, c: u8) {
         if c == LT {
@@ -325,7 +327,6 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 
     pub(super) fn state_before_closing_tag_name(&mut self, c: u8) {
         if is_whitespace(c) {
-            // Skip
         } else if c == GT {
             self.callbacks
                 .on_error(ErrorCode::MissingEndTagName, self.index);
@@ -377,6 +378,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                 self.state = State::Text;
             }
             self.section_start = self.index + 1;
+        } else if self.try_start_in_tag_comment(c) {
         } else if c == SLASH {
             self.after_quoted_attr_value = false;
             self.state = State::InSelfClosingTag;
@@ -555,9 +557,6 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.state = State::BeforeAttrName;
             self.state_before_attr_name(c);
         } else if !is_whitespace(c) {
-            // Per HTML spec, anything other than `"`, `'`, `>`, or whitespace
-            // (including `/`) is reconsumed in the attribute value (unquoted)
-            // state. This keeps unquoted URL-ish values intact (#959).
             self.section_start = self.index;
             self.state = State::InAttrValueNq;
             self.state_in_attr_value_nq(c);

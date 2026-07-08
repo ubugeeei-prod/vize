@@ -122,6 +122,9 @@ pub struct VirtualProject {
     /// Template syntax compatibility used when parsing SFC templates.
     template_syntax: TemplateSyntaxMode,
 
+    /// Enable experimental Vue in-tag comments while parsing SFC templates.
+    experimental_in_tag_comments: bool,
+
     /// Virtual files keyed by materialized path.
     virtual_files: FxHashMap<PathBuf, VirtualFile>,
 

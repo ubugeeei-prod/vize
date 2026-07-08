@@ -66,6 +66,9 @@ export interface BatchCompileOptionsNapi {
   vapor?: boolean;
   customRenderer?: boolean;
   templateSyntax?: string;
+  experimentalInTagComments?: boolean;
+  experimentalPatternedTemplate?: boolean;
+  experimentalServerScript?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string;
@@ -233,6 +236,12 @@ export interface CompilerOptions {
   customRenderer?: boolean;
   /** Template syntax compatibility mode: "standard", "strict", or "quirks". */
   templateSyntax?: string;
+  /** Enable experimental Vue in-tag comments (`// ...`) inside opening tags. */
+  experimentalInTagComments?: boolean;
+  /** Enable experimental `v-match` / `v-case` patterned template desugaring. */
+  experimentalPatternedTemplate?: boolean;
+  /** Enable experimental server-script related RFC surface. */
+  experimentalServerScript?: boolean;
   /** Module name for runtime imports. */
   runtimeModuleName?: string;
   /** Global variable name for standalone/function mode. */
@@ -893,6 +902,9 @@ export interface SfcCompileOptionsNapi {
   vapor?: boolean;
   customRenderer?: boolean;
   templateSyntax?: string;
+  experimentalInTagComments?: boolean;
+  experimentalPatternedTemplate?: boolean;
+  experimentalServerScript?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string;

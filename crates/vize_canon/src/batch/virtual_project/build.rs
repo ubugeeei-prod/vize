@@ -53,6 +53,7 @@ pub(super) struct VirtualBuildContext<'a> {
     pub(super) jsx_typecheck: bool,
     pub(super) dialect: vize_carton::config::VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
+    pub(super) experimental_in_tag_comments: bool,
     pub(super) rewriter: &'a ImportRewriter,
 }
 
@@ -136,6 +137,7 @@ pub(super) fn build_vue_registered_file(
                 legacy_vue2: context.legacy_vue2,
                 dialect: context.dialect,
                 template_syntax: context.template_syntax,
+                experimental_in_tag_comments: context.experimental_in_tag_comments,
                 hoist_shared_preamble: true,
             },
         )

@@ -47,6 +47,7 @@ export interface VizeConfig {
    */
   extends?: string | string[];
   compiler?: CompilerConfig;
+  experimentals?: Record<string, boolean | Record<string, unknown> | null>;
   vite?: VitePluginConfig;
   linter?: LinterConfig;
   typeChecker?: TypeCheckerConfig;
@@ -148,9 +149,6 @@ export interface CompilerCompatibilityConfig {
    */
   webpackVersion?: 4 | 5;
 }
-/**
- * Vite plugin options
- */
 export interface VitePluginConfig {
   /**
    * Files to include in compilation (glob patterns or strings)
@@ -199,9 +197,6 @@ export interface LinterConfig {
     security?: "off" | "warn" | "error";
   };
 }
-/**
- * Type checker options
- */
 export interface TypeCheckerConfig {
   /**
    * Enable type checking
@@ -589,6 +584,7 @@ export interface VizeConfigEntry {
    */
   extends?: string | string[];
   compiler?: CompilerConfig;
+  experimentals?: Record<string, boolean | Record<string, unknown> | null>;
   vite?: VitePluginConfig;
   linter?: LinterConfig;
   typeChecker?: TypeCheckerConfig;

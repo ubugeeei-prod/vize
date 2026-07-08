@@ -7,6 +7,7 @@ use vize_carton::{Bump, FxHashSet, String as CompactString};
 pub(super) fn collect_art_template_referenced_names(
     descriptor: &SfcDescriptor<'_>,
     template_syntax: TemplateSyntaxMode,
+    experimental_in_tag_comments: bool,
 ) -> FxHashSet<CompactString> {
     let mut names = FxHashSet::default();
 
@@ -14,7 +15,12 @@ pub(super) fn collect_art_template_referenced_names(
         if block.block_type.as_ref() != "art" {
             continue;
         }
-        collect_variant_template_referenced_names(&block.content, template_syntax, &mut names);
+        collect_variant_template_referenced_names(
+            &block.content,
+            template_syntax,
+            experimental_in_tag_comments,
+            &mut names,
+        );
     }
 
     names
@@ -23,6 +29,7 @@ pub(super) fn collect_art_template_referenced_names(
 fn collect_variant_template_referenced_names(
     art_content: &str,
     template_syntax: TemplateSyntaxMode,
+    experimental_in_tag_comments: bool,
     names: &mut FxHashSet<CompactString>,
 ) {
     let mut cursor = 0;
@@ -53,6 +60,7 @@ fn collect_variant_template_referenced_names(
         collect_template_source_referenced_names(
             art_content[template_start..close_start].trim(),
             template_syntax,
+            experimental_in_tag_comments,
             names,
         );
         cursor = close_start + "</variant>".len();
@@ -66,6 +74,7 @@ fn is_variant_tag_boundary(next: Option<u8>) -> bool {
 fn collect_template_source_referenced_names(
     template: &str,
     template_syntax: TemplateSyntaxMode,
+    experimental_in_tag_comments: bool,
     names: &mut FxHashSet<CompactString>,
 ) {
     if template.is_empty() {
@@ -76,7 +85,10 @@ fn collect_template_source_referenced_names(
     let (root, _) = parse_with_options_and_template_syntax(
         &allocator,
         template,
-        ParserOptions::default(),
+        ParserOptions {
+            experimental_in_tag_comments,
+            ..ParserOptions::default()
+        },
         template_syntax,
     );
     names.extend(resolve_template_used_identifiers(&root).used_ids);

@@ -9,7 +9,7 @@ use vize_carton::{Bump, String, ToCompactString};
 
 use crate::{
     compile_template::{TemplateBlockCompileResult, recoverable_template_warnings},
-    types::{BindingMetadata, SfcError, SfcTemplateBlock},
+    types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions},
 };
 
 /// Compile template block using Vapor mode
@@ -18,17 +18,22 @@ pub(crate) fn compile_template_block_vapor(
     scope_id: &str,
     has_scoped: bool,
     bindings: Option<&BindingMetadata>,
-    custom_renderer: bool,
+    options: &TemplateCompileOptions,
     template_syntax: TemplateSyntaxMode,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
     let allocator = Bump::new();
+    let compiler_options = options.compiler_options.as_ref();
 
     // Build Vapor compiler options
     let vapor_opts = VaporCompilerOptions {
         prefix_identifiers: false,
         ssr: false,
         binding_metadata: bindings.cloned(),
-        custom_renderer,
+        custom_renderer: options.custom_renderer,
+        experimental_in_tag_comments: compiler_options
+            .is_some_and(|opts| opts.experimental_in_tag_comments),
+        experimental_patterned_template: compiler_options
+            .is_some_and(|opts| opts.experimental_patterned_template),
         ..Default::default()
     };
 

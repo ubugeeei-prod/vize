@@ -6,6 +6,9 @@ void test("defaults from an empty options object", (t) => {
 
   t.assert.equal(options.ssr, false);
   t.assert.equal(options.vapor, false);
+  t.assert.equal(options.experimentalInTagComments, false);
+  t.assert.equal(options.experimentalPatternedTemplate, false);
+  t.assert.equal(options.experimentalServerScript, false);
   t.assert.equal(options.customRenderer, false);
   t.assert.equal(options.templateSyntax, "standard");
   t.assert.equal(options.runtimeModuleName, "vue");
@@ -118,6 +121,19 @@ void test("templateSyntax passes through non-standard values", (t) => {
     normalizeOptions({ templateSyntax: "quirks", isProduction: true }).templateSyntax,
     "quirks",
   );
+});
+
+void test("experimental options pass through", (t) => {
+  const options = normalizeOptions({
+    isProduction: true,
+    experimentalInTagComments: true,
+    experimentalPatternedTemplate: true,
+    experimentalServerScript: true,
+  });
+
+  t.assert.equal(options.experimentalInTagComments, true);
+  t.assert.equal(options.experimentalPatternedTemplate, true);
+  t.assert.equal(options.experimentalServerScript, true);
 });
 
 void test("runtime module and global names can be overridden", (t) => {

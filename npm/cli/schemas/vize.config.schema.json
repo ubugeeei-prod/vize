@@ -124,7 +124,6 @@
       "additionalProperties": false
     },
     "VitePluginConfig": {
-      "description": "Vite plugin options",
       "type": "object",
       "properties": {
         "include": {
@@ -229,7 +228,6 @@
       "additionalProperties": false
     },
     "TypeCheckerConfig": {
-      "description": "Type checker options",
       "type": "object",
       "properties": {
         "enabled": {
@@ -741,6 +739,7 @@
         "compiler": {
           "$ref": "#/definitions/CompilerConfig"
         },
+        "experimentals": { "type": "object" },
         "vite": {
           "$ref": "#/definitions/VitePluginConfig"
         },
@@ -821,6 +820,7 @@
     "compiler": {
       "$ref": "#/definitions/CompilerConfig"
     },
+    "experimentals": { "type": "object" },
     "vite": {
       "$ref": "#/definitions/VitePluginConfig"
     },

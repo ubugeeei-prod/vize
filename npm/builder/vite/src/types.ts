@@ -1,4 +1,8 @@
 import type { UserConfigExport } from "../../../cli/src/types/index.ts";
+import type {
+  ExperimentalCompileFlags,
+  ExperimentalPluginOptions,
+} from "./experimental-options.ts";
 
 export type {
   VizeConfig,
@@ -8,7 +12,7 @@ export type {
   UserConfigExport,
 } from "../../../cli/src/types/index.ts";
 
-export interface SfcCompileOptionsNapi {
+export interface SfcCompileOptionsNapi extends ExperimentalCompileFlags {
   filename?: string;
   mode?: "module" | "function";
   sourceMap?: boolean;
@@ -135,7 +139,7 @@ export interface VizeCompatibilityOptions {
   webpackVersion?: 4 | 5;
 }
 
-export interface VizeOptions {
+export interface VizeOptions extends ExperimentalPluginOptions {
   /**
    * Inline shared Vize config for Vite Plus-first projects.
    * Direct plugin options still take precedence over these values.
@@ -201,16 +205,9 @@ export interface VizeOptions {
    */
   isProduction?: boolean;
 
-  /**
-   * Enable SSR mode
-   * @default false
-   */
   ssr?: boolean;
 
-  /**
-   * Enable source map generation
-   * @default true in development, false in production
-   */
+  /** Enable source map generation */
   sourceMap?: boolean;
 
   /**
@@ -367,7 +364,7 @@ export interface BatchFileResult {
   styles?: NativeStyleBlockInfo[];
 }
 
-export interface BatchCompileOptionsNapi {
+export interface BatchCompileOptionsNapi extends ExperimentalCompileFlags {
   mode?: "module" | "function";
   ssr?: boolean;
   vapor?: boolean;

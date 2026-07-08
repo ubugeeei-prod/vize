@@ -2,9 +2,12 @@ use napi::{Result, Status};
 use napi_derive::napi;
 use vize_carton::cstr;
 
-use super::types::{
-    SfcCompileOptionsNapi, SfcCompileResultNapi, custom_blocks_to_napi, macro_artifacts_to_napi,
-    style_blocks_to_napi,
+use super::{
+    experimentals::ExperimentalTemplateOptions,
+    types::{
+        SfcCompileOptionsNapi, SfcCompileResultNapi, custom_blocks_to_napi,
+        macro_artifacts_to_napi, style_blocks_to_napi,
+    },
 };
 use crate::template_syntax::resolve_template_syntax;
 
@@ -21,10 +24,8 @@ pub fn compile_sfc(
     };
 
     let opts = options.unwrap_or_default();
-    let filename: vize_carton::CompactString = opts
-        .filename
-        .unwrap_or_else(|| "anonymous.vue".to_string())
-        .into();
+    let filename: vize_carton::CompactString =
+        opts.filename.as_deref().unwrap_or("anonymous.vue").into();
     let parse_opts = SfcParseOptions {
         filename: filename.clone(),
         ..Default::default()
@@ -57,6 +58,7 @@ pub fn compile_sfc(
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
+    let experimentals = ExperimentalTemplateOptions::from_compile(&opts);
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
     let standalone = opts.mode.as_deref() == Some("function");
@@ -74,7 +76,7 @@ pub fn compile_sfc(
         };
         Some(vize_atelier_dom::DomCompilerOptions {
             scope_id,
-            ..Default::default()
+            ..experimentals.dom_options()
         })
     };
 

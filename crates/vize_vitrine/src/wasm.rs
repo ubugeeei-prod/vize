@@ -17,6 +17,7 @@
 mod analyze;
 mod compiler;
 mod cross_file;
+mod experimentals;
 #[cfg(feature = "glyph")]
 mod format;
 mod inspector;

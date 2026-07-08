@@ -36,6 +36,7 @@ import { patchUnoCssBridge } from "./unocss.ts";
 import { patchQuasarBridge } from "./quasar.ts";
 import { patchCssModuleGenerateScopedName } from "./css-modules.ts";
 import { installDevMiddleware } from "./dev-middleware.ts";
+import { resolveExperimentalCompilerOptions } from "./experimentals.ts";
 import {
   createLegacyVueCompatibilityPlugin,
   isLegacyVueCompatibilityMode,
@@ -233,8 +234,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         ...options,
         ssr: options.ssr ?? compilerConfig.ssr ?? false,
         sourceMap: options.sourceMap ?? compilerConfig.sourceMap,
-        vapor: options.vapor ?? compilerConfig.vapor ?? false,
-        jsxMode: options.jsxMode ?? compilerConfig.jsxMode,
+        ...resolveExperimentalCompilerOptions(options, compilerConfig, sharedConfig?.experimentals),
         customRenderer: options.customRenderer ?? compilerConfig.customRenderer ?? false,
         templateSyntax,
         compatibility,

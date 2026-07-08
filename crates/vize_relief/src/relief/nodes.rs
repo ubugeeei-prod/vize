@@ -17,6 +17,7 @@ use super::{
 #[derive(Debug)]
 pub struct RootNode<'a> {
     pub children: Vec<'a, TemplateChildNode<'a>>,
+    pub comments: Vec<'a, CommentNode>,
     pub helpers: Vec<'a, RuntimeHelper>,
     pub components: Vec<'a, String>,
     pub directives: Vec<'a, String>,
@@ -46,6 +47,7 @@ impl<'a> RootNode<'a> {
     pub fn new(allocator: &'a Bump, source: impl Into<String>) -> Self {
         Self {
             children: Vec::new_in(allocator),
+            comments: Vec::new_in(allocator),
             helpers: Vec::new_in(allocator),
             components: Vec::new_in(allocator),
             directives: Vec::new_in(allocator),

@@ -49,6 +49,7 @@ pub(super) struct VueCodegenOptions {
     pub(super) legacy_vue2: bool,
     pub(super) dialect: VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
+    pub(super) experimental_in_tag_comments: bool,
     /// Hoist shared helpers to the batch ambient `.d.ts`; socket sessions keep
     /// them inline because they do not materialize that file.
     pub(super) hoist_shared_preamble: bool,
@@ -119,7 +120,10 @@ pub(super) fn generate_vue_virtual_ts(
             let (root, errors) = parse_with_options_and_template_syntax(
                 &allocator,
                 &template.content,
-                ParserOptions::default(),
+                ParserOptions {
+                    experimental_in_tag_comments: codegen_options.experimental_in_tag_comments,
+                    ..ParserOptions::default()
+                },
                 codegen_options.template_syntax,
             );
             for error in errors {
@@ -188,7 +192,11 @@ pub(super) fn generate_vue_virtual_ts(
         augment_type_based_props_from_script_context(&mut croquis, descriptor, path)
     );
     let extra_template_referenced_names = codegen_options.preserve_unused_diagnostics.then(|| {
-        collect_art_template_referenced_names(descriptor, codegen_options.template_syntax)
+        collect_art_template_referenced_names(
+            descriptor,
+            codegen_options.template_syntax,
+            codegen_options.experimental_in_tag_comments,
+        )
     });
 
     let hoist_shared_preamble = codegen_options.hoist_shared_preamble && !vue2_compat;

@@ -105,6 +105,10 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
         self.parser.on_comment_impl(start, end);
     }
 
+    fn on_in_tag_comment(&mut self, start: usize, end: usize) {
+        self.parser.on_in_tag_comment_impl(start, end);
+    }
+
     fn on_cdata(&mut self, start: usize, end: usize) {
         self.parser.on_cdata_impl(start, end);
     }

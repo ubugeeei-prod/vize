@@ -68,7 +68,7 @@ export function getEnvironmentCache(
   return ssr ? state.ssrCache : state.cache;
 }
 
-export interface CompileOptionsForRequest {
+export type CompileOptionsForRequest = {
   sourceMap: boolean;
   ssr: boolean;
   vapor: boolean;
@@ -78,7 +78,12 @@ export interface CompileOptionsForRequest {
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string | number;
-}
+} & Partial<
+  Pick<
+    VizeOptions,
+    "experimentalInTagComments" | "experimentalPatternedTemplate" | "experimentalServerScript"
+  >
+>;
 
 export function getCompileOptionsForRequest(
   state: Pick<VizePluginState, "isProduction" | "mergedOptions">,
@@ -104,6 +109,15 @@ export function getCompileOptionsForRequest(
   }
   if (state.mergedOptions?.vueVersion !== undefined) {
     options.vueVersion = state.mergedOptions.vueVersion;
+  }
+  if (state.mergedOptions?.experimentalInTagComments) {
+    options.experimentalInTagComments = true;
+  }
+  if (state.mergedOptions?.experimentalPatternedTemplate) {
+    options.experimentalPatternedTemplate = true;
+  }
+  if (state.mergedOptions?.experimentalServerScript) {
+    options.experimentalServerScript = true;
   }
 
   return options;
@@ -254,6 +268,9 @@ export async function compileAll(state: VizePluginState): Promise<void> {
       mode: state.mergedOptions.mode,
       customRenderer: state.mergedOptions.customRenderer ?? false,
       templateSyntax: state.mergedOptions.templateSyntax ?? "standard",
+      experimentalInTagComments: state.mergedOptions.experimentalInTagComments ?? false,
+      experimentalPatternedTemplate: state.mergedOptions.experimentalPatternedTemplate ?? false,
+      experimentalServerScript: state.mergedOptions.experimentalServerScript ?? false,
       runtimeModuleName: state.mergedOptions.runtimeModuleName,
       runtimeGlobalName: state.mergedOptions.runtimeGlobalName,
       vueVersion: state.mergedOptions.vueVersion,

@@ -26,6 +26,10 @@ pub struct VaporCompilerOptions {
     pub inline: bool,
     /// Whether the template targets a custom renderer instead of the DOM.
     pub custom_renderer: bool,
+    /// Enable experimental Vue in-tag comments (`// ...`) inside opening tags.
+    pub experimental_in_tag_comments: bool,
+    /// Enable experimental `v-match` / `v-case` patterned template desugaring.
+    pub experimental_patterned_template: bool,
 }
 
 /// Vapor compilation result
@@ -112,6 +116,7 @@ fn compile_vapor_inner<'a>(
         is_void_tag: vize_carton::is_void_tag,
         is_native_tag: Some(vize_carton::is_native_tag),
         custom_renderer: options.custom_renderer,
+        experimental_in_tag_comments: options.experimental_in_tag_comments,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
         ..ParserOptions::default()
@@ -141,6 +146,7 @@ fn compile_vapor_inner<'a>(
         inline: options.inline,
         vapor: true,
         custom_renderer: options.custom_renderer,
+        experimental_patterned_template: options.experimental_patterned_template,
         ..Default::default()
     };
     if template_syntax.is_quirks() {

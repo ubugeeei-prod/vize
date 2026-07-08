@@ -10,14 +10,13 @@ use std::{
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{FxHashMap, hash::hash_str};
 
-use super::types::{BatchCompileOptionsNapi, BatchCompileResultNapi};
+use super::{
+    experimentals::ExperimentalTemplateOptions,
+    types::{BatchCompileOptionsNapi, BatchCompileResultNapi},
+};
 use crate::template_syntax::resolve_template_syntax;
 
 /// Aggregate counters for the native batch stats surface.
-///
-/// `compileSfcBatch` reports totals instead of per-file code, so each compiled
-/// job can represent many logical input files. These counters must therefore be
-/// updated by the repeat count, not by the number of physical compile jobs.
 #[derive(Default)]
 struct BatchStats {
     success: usize,
@@ -45,11 +44,6 @@ impl BatchStats {
 
 /// Fingerprint used to collapse repeated batch inputs before compiling.
 ///
-/// The native aggregate API does not return code for each file. It can group
-/// repeated sources, compile one representative, and multiply the resulting
-/// counters by `repeats`. The key includes only fields that can affect those
-/// counters:
-///
 /// - source hash and length identify the repeated SFC body without storing a
 ///   second owned copy of the source in the map key.
 /// - parent hash and length prevent grouping across directories, where
@@ -65,14 +59,10 @@ struct BatchCompileKey {
     parent_hash: u64,
     parent_len: usize,
     component_name_len: usize,
-    options: u8,
+    options: u16,
 }
 
 /// One physical compile job, possibly standing in for many logical files.
-///
-/// `source` is kept once per unique key. `input_bytes` is the sum for all
-/// grouped files so the API still reports the bytes the caller supplied, not
-/// just the bytes actually compiled.
 struct BatchCompileJob {
     path: PathBuf,
     source: String,
@@ -93,21 +83,20 @@ impl BatchCompileJob {
 }
 
 /// Packs options that can change aggregate compile results into the cache key.
-///
-/// This mirrors the CLI stats cache. N-API options that are not consumed by this
-/// aggregate function are intentionally absent so they do not fragment groups.
 fn batch_options_bits(
     ssr: bool,
     vapor: bool,
     is_ts: bool,
     template_syntax: TemplateSyntaxMode,
     standalone: bool,
-) -> u8 {
-    u8::from(ssr)
-        | (u8::from(vapor) << 1)
-        | (u8::from(is_ts) << 2)
-        | (template_syntax_bits(template_syntax) << 3)
-        | (u8::from(standalone) << 5)
+    experimental_bits: u16,
+) -> u16 {
+    u16::from(ssr)
+        | (u16::from(vapor) << 1)
+        | (u16::from(is_ts) << 2)
+        | (u16::from(template_syntax_bits(template_syntax)) << 3)
+        | (u16::from(standalone) << 5)
+        | experimental_bits
 }
 
 fn template_syntax_bits(template_syntax: TemplateSyntaxMode) -> u8 {
@@ -217,15 +206,20 @@ pub fn compile_sfc_batch(
     let ssr = opts.ssr.unwrap_or(false);
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
+    let experimentals = ExperimentalTemplateOptions::from_batch(&opts);
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
     let standalone = opts.mode.as_deref() == Some("function");
     let start = Instant::now();
-    // Snapshot the filesystem for this batch: imported-type resolution treats
-    // every file it stats as stable for the batch's duration, so the second and
-    // later hits of a shared types barrel skip their revalidation syscalls.
     vize_atelier_sfc::begin_type_resolution_batch();
-    let option_bits = batch_options_bits(ssr, vapor, is_ts, template_syntax, standalone);
+    let option_bits = batch_options_bits(
+        ssr,
+        vapor,
+        is_ts,
+        template_syntax,
+        standalone,
+        experimentals.bits(),
+    );
     let read_inputs: Vec<_> = files
         .par_iter()
         .map(|path| match fs::read_to_string(path) {
@@ -310,7 +304,7 @@ pub fn compile_sfc_batch(
                     scoped: has_scoped,
                     ssr,
                     is_ts,
-                    compiler_options: Some(vize_atelier_dom::DomCompilerOptions::default()),
+                    compiler_options: Some(experimentals.dom_options()),
                     ..Default::default()
                 },
                 style: StyleCompileOptions {

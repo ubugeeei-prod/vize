@@ -8,6 +8,9 @@ export interface CompileFileOptions {
   mode?: "module" | "function";
   customRenderer?: boolean;
   templateSyntax?: "standard" | "strict" | "quirks";
+  experimentalInTagComments?: boolean;
+  experimentalPatternedTemplate?: boolean;
+  experimentalServerScript?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string | number;
@@ -19,6 +22,9 @@ export interface CompileBatchOptions {
   mode?: "module" | "function";
   customRenderer?: boolean;
   templateSyntax?: "standard" | "strict" | "quirks";
+  experimentalInTagComments?: boolean;
+  experimentalPatternedTemplate?: boolean;
+  experimentalServerScript?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string | number;
@@ -34,6 +40,9 @@ export function buildCompileFileOptions(
     ssr: options.ssr,
     vapor: options.vapor,
     customRenderer: options.customRenderer ?? false,
+    experimentalInTagComments: options.experimentalInTagComments ?? false,
+    experimentalPatternedTemplate: options.experimentalPatternedTemplate ?? false,
+    experimentalServerScript: options.experimentalServerScript ?? false,
     scopeId: `data-v-${generateScopeId(filePath)}`,
     ...(options.mode === undefined ? {} : { mode: options.mode }),
     ...(options.templateSyntax === undefined ? {} : { templateSyntax: options.templateSyntax }),
@@ -52,6 +61,9 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
     ssr: options.ssr,
     vapor: options.vapor,
     customRenderer: options.customRenderer ?? false,
+    experimentalInTagComments: options.experimentalInTagComments ?? false,
+    experimentalPatternedTemplate: options.experimentalPatternedTemplate ?? false,
+    experimentalServerScript: options.experimentalServerScript ?? false,
     // Opt into exactly the optional payloads the bundler pipeline consumes:
     // per-block style metadata, macro artifacts, and HMR content hashes.
     // Custom blocks are not used in the batch path, so they stay omitted.

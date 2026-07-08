@@ -7,9 +7,12 @@ use std::{
 };
 use vize_carton::cstr;
 
-use super::types::{
-    BatchCompileOptionsNapi, BatchCompileResultWithFilesNapi, BatchFileInputNapi,
-    BatchFileResultNapi, custom_blocks_to_napi, macro_artifacts_to_napi, style_blocks_to_napi,
+use super::{
+    experimentals::ExperimentalTemplateOptions,
+    types::{
+        BatchCompileOptionsNapi, BatchCompileResultWithFilesNapi, BatchFileInputNapi,
+        BatchFileResultNapi, custom_blocks_to_napi, macro_artifacts_to_napi, style_blocks_to_napi,
+    },
 };
 use crate::template_syntax::resolve_template_syntax;
 
@@ -38,6 +41,7 @@ pub fn compile_sfc_batch_with_results(
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
     let custom_renderer = opts.custom_renderer.unwrap_or(false);
+    let experimentals = ExperimentalTemplateOptions::from_batch(&opts);
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
     let standalone = opts.mode.as_deref() == Some("function");
@@ -112,7 +116,7 @@ pub fn compile_sfc_batch_with_results(
             let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
             let template_compiler_options = Some(vize_atelier_dom::DomCompilerOptions {
                 scope_id: has_scoped.then(|| cstr!("data-v-{scope_id}")),
-                ..Default::default()
+                ..experimentals.dom_options()
             });
             // `parse.filename` is left empty: compile falls back to `script.id`,
             // which carries the same value, so no per-file clone is needed.

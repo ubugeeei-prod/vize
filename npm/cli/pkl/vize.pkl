@@ -36,6 +36,16 @@ class CompilerConfig {
   runtimeGlobalName: String? = null
 }
 
+class ExperimentalsConfig {
+  vapor: Boolean? = null
+  jsxVapor: Boolean? = null
+  intagComment: Boolean? = null
+  inTagComment: Boolean? = null
+  pattenedTemplate: Boolean? = null
+  patternedTemplate: Boolean? = null
+  serverScript: Boolean? = null
+}
+
 class VitePluginConfig {
   include: FilterPattern? = null
   exclude: FilterPattern? = null
@@ -179,6 +189,7 @@ class ConfigEntry {
   ignores: Listing<String>? = null
   `extends`: ConfigExtends? = null
   compiler: CompilerConfig?
+  experimentals: ExperimentalsConfig?
   vite: VitePluginConfig?
   linter: LinterConfig?
   typeChecker: TypeCheckerConfig?
@@ -196,6 +207,7 @@ files: Listing<String>? = null
 ignores: Listing<String>? = null
 `extends`: ConfigExtends? = null
 compiler: CompilerConfig?
+experimentals: ExperimentalsConfig?
 vite: VitePluginConfig?
 linter: LinterConfig?
 typeChecker: TypeCheckerConfig?

@@ -42,6 +42,12 @@ export interface CompilerOptions {
   customRenderer?: boolean;
   /** Template syntax compatibility mode. */
   templateSyntax?: "standard" | "strict" | "quirks";
+  /** Enable experimental Vue in-tag comments (`// ...`) inside opening tags. */
+  experimentalInTagComments?: boolean;
+  /** Enable experimental `v-match` / `v-case` patterned template desugaring. */
+  experimentalPatternedTemplate?: boolean;
+  /** Enable experimental server-script related RFC surface. */
+  experimentalServerScript?: boolean;
   /**
    * Script extension handling: "preserve" (keep TypeScript) or "downcompile" (transpile to JS)
    * Defaults to "downcompile"

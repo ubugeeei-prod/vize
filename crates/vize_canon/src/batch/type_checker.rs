@@ -194,6 +194,11 @@ impl BatchTypeChecker {
         self.project.set_template_syntax(template_syntax);
     }
 
+    /// Enable experimental Vue in-tag comments for template parsing.
+    pub fn set_experimental_in_tag_comments(&mut self, enabled: bool) {
+        self.project.set_experimental_in_tag_comments(enabled);
+    }
+
     /// Set the configured Vue dialect (`vue.version`; default
     /// [`VueVersion::V3`](vize_carton::config::VueVersion::V3)).
     ///

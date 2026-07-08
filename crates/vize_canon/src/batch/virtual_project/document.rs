@@ -97,6 +97,7 @@ pub fn generate_vue_document_virtual_ts_with_options(
             legacy_vue2: document_options.legacy_vue2,
             dialect: vize_carton::config::VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),
+            experimental_in_tag_comments: false,
             hoist_shared_preamble,
         },
     )?;

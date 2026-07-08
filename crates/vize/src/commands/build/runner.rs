@@ -37,7 +37,7 @@ use cache::StatsCompileCache;
 use collect::collect_files;
 use compile::compile_file_with_profile;
 use compile_stats::compile_file_stats_with_cache;
-use settings::{CompileFileSettings, template_syntax_mode};
+use settings::{CompileFileSettings, load_build_config, template_syntax_mode};
 
 /// Main entry point for the build command.
 pub(crate) fn run(args: BuildArgs) {
@@ -50,23 +50,11 @@ pub(crate) fn run(args: BuildArgs) {
         eprintln!("\x1b[31mError:\x1b[0m {}", error);
         std::process::exit(1);
     }
-    let compiler_template_syntax = if args.no_config {
-        None
-    } else {
-        crate::config::load_compiler_template_syntax(args.config.as_deref())
-    };
-    let configured_dialect = if args.no_config {
-        None
-    } else {
-        crate::config::load_compiler_vue_version(args.config.as_deref())
-    };
-    let configured_host_compiler = if args.no_config {
-        None
-    } else {
-        crate::config::load_compiler_host_compiler(args.config.as_deref())
-    };
-    if configured_dialect.is_some_and(|dialect| dialect.is_legacy())
-        && configured_host_compiler == Some(false)
+    let build_config = load_build_config(args.no_config, args.config.as_deref());
+    if build_config
+        .dialect
+        .is_some_and(|dialect| dialect.is_legacy())
+        && build_config.host_compiler == Some(false)
     {
         eprintln!(
             "\x1b[31mError:\x1b[0m compiler.compatibility.hostCompiler=false is unsupported for Vue 2 compatibility mode"
@@ -114,13 +102,15 @@ pub(crate) fn run(args: BuildArgs) {
     let compile_start = Instant::now();
     let compile_settings = CompileFileSettings {
         ssr: args.ssr,
-        vapor: args.vapor,
+        vapor: args.vapor || build_config.vapor.unwrap_or(false),
         custom_renderer: args.custom_renderer,
         template_syntax: args
             .template_syntax
             .map(Into::into)
-            .unwrap_or_else(|| template_syntax_mode(compiler_template_syntax)),
-        dialect: configured_dialect.unwrap_or_default(),
+            .unwrap_or_else(|| template_syntax_mode(build_config.compiler_template_syntax)),
+        experimental_in_tag_comments: build_config.features.experimental_in_tag_comments,
+        experimental_patterned_template: build_config.features.experimental_patterned_template,
+        dialect: build_config.dialect.unwrap_or_default(),
         script_ext: args.script_ext,
         record_profile_totals: args.profile,
     };

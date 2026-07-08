@@ -10,7 +10,6 @@ use crate::config::{JsxMode, VueVersion};
 fn validate_explicit_config_path_missing_errors() {
     let dir = tempfile::tempdir().unwrap();
     let missing = dir.path().join("does-not-exist.toml");
-
     let result = validate_explicit_config_path(&missing);
     assert!(result.is_err());
     assert_eq!(

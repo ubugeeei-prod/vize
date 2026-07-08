@@ -1,6 +1,7 @@
 //! Shared config model.
 
 mod compiler;
+mod experimentals;
 mod formatter;
 mod global_types;
 mod language_server;
@@ -12,6 +13,7 @@ mod vue;
 use serde::{Deserialize, Serialize};
 
 use compiler::RawCompilerConfig;
+use experimentals::RawExperimentalsConfig;
 use vue::RawVueConfig;
 
 pub use compiler::JsxMode;
@@ -98,6 +100,11 @@ pub struct ConfigFeatureFlags {
     /// mode-selection logic so a single module can still mix VDOM and Vapor via
     /// `"use vue:*"` directives.
     pub jsx_mode: Option<JsxMode>,
+    pub experimental_vapor: bool,
+    pub experimental_jsx_vapor: bool,
+    pub experimental_in_tag_comments: bool,
+    pub experimental_patterned_template: bool,
+    pub experimental_server_script: bool,
 }
 
 impl Default for ConfigFeatureFlags {
@@ -110,6 +117,11 @@ impl Default for ConfigFeatureFlags {
             language_server_legacy_vue2: None,
             vue_version: None,
             jsx_mode: None,
+            experimental_vapor: false,
+            experimental_jsx_vapor: false,
+            experimental_in_tag_comments: false,
+            experimental_patterned_template: false,
+            experimental_server_script: false,
         }
     }
 }
@@ -154,6 +166,7 @@ pub(crate) struct RawVizeConfig {
     pub dialect: Option<VueDialect>,
     pub formatter: FormatterConfig,
     pub(crate) compiler: RawCompilerConfig,
+    pub(crate) experimentals: RawExperimentalsConfig,
     pub(crate) vue: RawVueConfig,
     pub linter: RawLinterConfig,
     #[serde(rename = "typeChecker")]
@@ -235,6 +248,7 @@ impl RawVizeConfig {
             dialect,
             formatter,
             compiler,
+            experimentals,
             vue,
             linter: _,
             type_checker: raw_type_checker,
@@ -279,7 +293,14 @@ impl RawVizeConfig {
             type_checker_jsx_typecheck,
             language_server_legacy_vue2: language_server_raw.legacy_vue2,
             vue_version: vue.version.or(compiler.compatibility.vue_version),
-            jsx_mode: compiler.jsx_mode,
+            jsx_mode: compiler
+                .jsx_mode
+                .or_else(|| experimentals.jsx_vapor_enabled().then_some(JsxMode::Vapor)),
+            experimental_vapor: experimentals.vapor_enabled(),
+            experimental_jsx_vapor: experimentals.jsx_vapor_enabled(),
+            experimental_in_tag_comments: experimentals.in_tag_comments_enabled(),
+            experimental_patterned_template: experimentals.patterned_template_enabled(),
+            experimental_server_script: experimentals.server_script_enabled(),
         };
 
         let config = VizeConfig {

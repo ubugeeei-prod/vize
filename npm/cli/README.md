@@ -81,6 +81,13 @@ export default defineConfig({
     customRenderer: false,
     templateSyntax: "standard",
   },
+  experimentals: {
+    vapor: false,
+    jsxVapor: false,
+    intagComment: false,
+    pattenedTemplate: false,
+    serverScript: false,
+  },
   vite: {
     scanPatterns: ["src/**/*.vue"],
   },
@@ -154,19 +161,24 @@ Use the Rust CLI when you need Corsa project diagnostics across Vue, TS, TSX, an
 
 Important shared fields:
 
-| Field                     | Used by                | Purpose                                                   |
-| ------------------------- | ---------------------- | --------------------------------------------------------- |
-| `compiler.sourceMap`      | Vite plugin            | Enable source maps                                        |
-| `compiler.ssr`            | npm build, Vite plugin | Force SSR compilation                                     |
-| `compiler.vapor`          | npm build, Vite plugin | Enable Vapor compilation                                  |
-| `compiler.customRenderer` | npm build, Vite plugin | Support custom renderer element semantics                 |
-| `compiler.templateSyntax` | npm build, Vite plugin | Choose standard, strict, or quirks template syntax mode   |
-| `compiler.compatibility`  | integrations           | Opt into legacy Vue, Nuxt, CDN, Vapor, or Webpack bridges |
-| `compiler.scriptExt`      | npm build              | Preserve TypeScript output or downcompile to JavaScript   |
-| `vite.scanPatterns`       | Vite plugin            | Pre-compile matching Vue files                            |
-| `linter.preset`           | npm lint               | Select the Patina lint preset                             |
-| `typeChecker.strict`      | npm check              | Enable strict checks                                      |
-| `formatter.printWidth`    | npm fmt                | Set formatting width                                      |
+| Field                            | Used by                        | Purpose                                                   |
+| -------------------------------- | ------------------------------ | --------------------------------------------------------- |
+| `compiler.sourceMap`             | Vite plugin                    | Enable source maps                                        |
+| `compiler.ssr`                   | npm build, Vite plugin         | Force SSR compilation                                     |
+| `compiler.vapor`                 | npm build, Vite plugin         | Enable Vapor compilation                                  |
+| `compiler.customRenderer`        | npm build, Vite plugin         | Support custom renderer element semantics                 |
+| `compiler.templateSyntax`        | npm build, Vite plugin         | Choose standard, strict, or quirks template syntax mode   |
+| `experimentals.vapor`            | npm build, Vite plugin         | Opt into experimental SFC Vapor before compiler support   |
+| `experimentals.jsxVapor`         | Vite plugin                    | Opt into experimental JSX Vapor by default                |
+| `experimentals.intagComment`     | npm build, Vite plugin, syntax | Opt into in-tag `//` comments                             |
+| `experimentals.pattenedTemplate` | npm build, Vite plugin         | Opt into `v-match` / `v-case` templates                   |
+| `experimentals.serverScript`     | npm build, Vite plugin         | Preserve server-script RFC opt-in surface                 |
+| `compiler.compatibility`         | integrations                   | Opt into legacy Vue, Nuxt, CDN, Vapor, or Webpack bridges |
+| `compiler.scriptExt`             | npm build                      | Preserve TypeScript output or downcompile to JavaScript   |
+| `vite.scanPatterns`              | Vite plugin                    | Pre-compile matching Vue files                            |
+| `linter.preset`                  | npm lint                       | Select the Patina lint preset                             |
+| `typeChecker.strict`             | npm check                      | Enable strict checks                                      |
+| `formatter.printWidth`           | npm fmt                        | Set formatting width                                      |
 
 ### Template syntax
 

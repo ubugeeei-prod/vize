@@ -6,6 +6,8 @@
 mod context;
 #[path = "transform/element.rs"]
 pub mod element;
+#[path = "transform/patterned_template.rs"]
+pub mod patterned_template;
 #[path = "transform/structural.rs"]
 pub mod structural;
 #[path = "transform/traverse.rs"]
@@ -270,6 +272,10 @@ fn transform_inner<'a>(
         use vize_armature::legacy::LegacyDialectCapabilities;
         let caps = LegacyDialectCapabilities::for_dialect(ctx.options.dialect);
         crate::steps::legacy::desugar_legacy_template(allocator, root, caps);
+    }
+
+    if ctx.options.experimental_patterned_template {
+        patterned_template::desugar_patterned_templates(allocator, root);
     }
 
     // Transform the root children

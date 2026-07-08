@@ -72,16 +72,14 @@ pub struct ParserOptions {
     /// When enabled, lowercase non-HTML tags default to renderer-native
     /// elements instead of Vue component resolution.
     pub custom_renderer: bool,
-    /// Whether is a void tag
     pub is_void_tag: fn(&str) -> bool,
-    /// Get the namespace for a tag
     pub get_namespace: fn(&str, Option<&str>) -> crate::Namespace,
     /// Error handler
     pub on_error: Option<fn(crate::CompilerError)>,
     /// Warning handler
     pub on_warn: Option<fn(crate::CompilerError)>,
-    /// Enable comment preservation
     pub comments: bool,
+    pub experimental_in_tag_comments: bool,
     /// Vue dialect the source is written in, resolved once per file from
     /// `vue.version`. Defaults to [`VueVersion::V3`]; any legacy line is opt-in
     /// behind the `legacy` cargo feature. Parsing/tokenizing only consults this
@@ -106,6 +104,7 @@ impl Default for ParserOptions {
             on_error: None,
             on_warn: None,
             comments: true,
+            experimental_in_tag_comments: false,
             dialect: VueVersion::V3,
         }
     }
@@ -146,8 +145,8 @@ pub struct TransformOptions {
     pub is_ts: bool,
     /// Whether in Vapor mode (skip v-model expansion)
     pub vapor: bool,
-    /// Whether the template targets a custom renderer instead of the DOM.
     pub custom_renderer: bool,
+    pub experimental_patterned_template: bool,
     /// Vue dialect the source is written in, resolved once per file from
     /// `vue.version`. Defaults to [`VueVersion::V3`]; any legacy line is opt-in
     /// behind the `legacy` cargo feature. Transforms only consult this at cold
@@ -172,6 +171,7 @@ impl Default for TransformOptions {
             is_ts: false,
             vapor: false,
             custom_renderer: false,
+            experimental_patterned_template: false,
             dialect: VueVersion::V3,
         }
     }

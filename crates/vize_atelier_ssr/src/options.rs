@@ -18,6 +18,14 @@ pub struct SsrCompilerOptions {
     #[serde(default)]
     pub comments: bool,
 
+    /// Enable experimental Vue in-tag comments (`// ...`) inside opening tags.
+    #[serde(default)]
+    pub experimental_in_tag_comments: bool,
+
+    /// Enable experimental `v-match` / `v-case` patterned template desugaring.
+    #[serde(default)]
+    pub experimental_patterned_template: bool,
+
     /// Current SFC component name for self-reference resolution
     #[serde(default)]
     pub component_name: Option<String>,
@@ -59,6 +67,8 @@ impl Clone for SsrCompilerOptions {
         Self {
             scope_id: self.scope_id.clone(),
             comments: self.comments,
+            experimental_in_tag_comments: self.experimental_in_tag_comments,
+            experimental_patterned_template: self.experimental_patterned_template,
             component_name: self.component_name.clone(),
             inline: self.inline,
             is_ts: self.is_ts,

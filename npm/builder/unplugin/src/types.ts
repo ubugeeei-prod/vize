@@ -6,6 +6,9 @@ export interface SfcCompileOptionsNapi {
   vapor?: boolean;
   customRenderer?: boolean;
   templateSyntax?: VizeTemplateSyntax;
+  experimentalInTagComments?: boolean;
+  experimentalPatternedTemplate?: boolean;
+  experimentalServerScript?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: VizeVueVersion;
@@ -95,6 +98,9 @@ export interface VizeUnpluginOptions {
   sourceMap?: boolean;
   mode?: "module" | "function";
   vapor?: boolean;
+  experimentalInTagComments?: boolean;
+  experimentalPatternedTemplate?: boolean;
+  experimentalServerScript?: boolean;
   /**
    * Default output mode for `.jsx`/`.tsx` components without a `"use vue:*"`
    * directive. Distinct from `vapor` (which targets `.vue` SFCs). A
@@ -182,6 +188,9 @@ export interface NormalizedVizeUnpluginOptions {
   sourceMap: boolean;
   mode: "module" | "function";
   vapor: boolean;
+  experimentalInTagComments: boolean;
+  experimentalPatternedTemplate: boolean;
+  experimentalServerScript: boolean;
   /** Default JSX output mode; `undefined` when unset (treated as VDOM). */
   jsxMode?: "vdom" | "vapor";
   customRenderer: boolean;

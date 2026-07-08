@@ -29,6 +29,16 @@ typealias ConfigExtends = String | Listing<String>
 /// When absent, the dialect is detected structurally per document.
 typealias VueDialect = "vue" | "petite-vue"
 
+class ExperimentalsConfig {
+  vapor: Boolean? = null
+  jsxVapor: Boolean? = null
+  intagComment: Boolean? = null
+  inTagComment: Boolean? = null
+  pattenedTemplate: Boolean? = null
+  patternedTemplate: Boolean? = null
+  serverScript: Boolean? = null
+}
+
 class ConfigEntry {
   /// Human-readable entry name for inspect output and diagnostics.
   name: String? = null
@@ -51,6 +61,9 @@ class ConfigEntry {
 
   /// Vue compiler options.
   compiler: CompilerConfig.CompilerConfig = new CompilerConfig.CompilerConfig {}
+
+  /// Experimental RFC opt-ins.
+  experimentals: ExperimentalsConfig = new ExperimentalsConfig {}
 
   /// Vite plugin options.
   vite: VitePluginConfig.VitePluginConfig = new VitePluginConfig.VitePluginConfig {}
@@ -102,6 +115,9 @@ dialect: VueDialect? = null
 
 /// Vue compiler options.
 compiler: CompilerConfig.CompilerConfig = new CompilerConfig.CompilerConfig {}
+
+/// Experimental RFC opt-ins.
+experimentals: ExperimentalsConfig = new ExperimentalsConfig {}
 
 /// Vite plugin options.
 vite: VitePluginConfig.VitePluginConfig = new VitePluginConfig.VitePluginConfig {}

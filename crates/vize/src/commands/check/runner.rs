@@ -311,6 +311,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         checker.enable_jsx_typecheck();
     }
     checker.set_template_syntax(template_syntax_mode(compiler_template_syntax));
+    checker.set_experimental_in_tag_comments(loaded_config.features.experimental_in_tag_comments);
     checker.set_dialect(dialect);
     checker.set_virtual_ts_checks(
         config.type_checker.check_props && !args.no_check_props,

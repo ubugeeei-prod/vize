@@ -25,6 +25,7 @@ pub enum State {
 
     // Attributes
     BeforeAttrName,
+    InTagComment,
     InAttrName,
     InDirName,
     InDirArg,
@@ -105,6 +106,7 @@ pub trait Callbacks {
     fn on_dir_modifier(&mut self, start: usize, end: usize);
 
     fn on_comment(&mut self, start: usize, end: usize);
+    fn on_in_tag_comment(&mut self, _start: usize, _end: usize) {}
     fn on_cdata(&mut self, start: usize, end: usize);
     fn on_processing_instruction(&mut self, start: usize, end: usize);
 

@@ -66,10 +66,9 @@
       "begin": "\\G",
       "end": ">",
       "applyEndPatternLast": true,
-      "endCaptures": {
-        "0": { "name": "punctuation.definition.tag.end.html" }
-      },
+      "endCaptures": { "0": { "name": "punctuation.definition.tag.end.html" } },
       "patterns": [
+        { "match": "(?<!\\S)//.*$", "name": "comment.line.double-slash.vue" },
         { "include": "#vue-directive-attributes" },
         { "include": "#vue-directives" },
         { "include": "#vue-tag-attributes" }
@@ -751,10 +750,9 @@
             "2": { "name": "entity.name.tag.html" }
           },
           "end": "(/?>)",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.tag.end.html" }
-          },
+          "endCaptures": { "1": { "name": "punctuation.definition.tag.end.html" } },
           "patterns": [
+            { "match": "(?<!\\S)//.*$", "name": "comment.line.double-slash.vue" },
             { "include": "#vue-directive-attributes" },
             { "include": "#vue-directives" },
             { "include": "#vue-tag-attributes" }

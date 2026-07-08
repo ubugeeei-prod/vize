@@ -99,7 +99,6 @@ local compilerConfigDef: JsonSchema = new JsonSchema {
 }
 local vitePluginConfigDef: JsonSchema = new JsonSchema {
   type = "object"
-  description = "Vite plugin options"
   properties {
     ["include"] = new JsonSchema {
       description = "Files to include in compilation (glob patterns or strings)"
@@ -176,7 +175,6 @@ local linterConfigDef: JsonSchema = new JsonSchema {
 
 local typeCheckerConfigDef: JsonSchema = new JsonSchema {
   type = "object"
-  description = "Type checker options"
   properties {
     ["enabled"] = new JsonSchema {
       type = "boolean"
@@ -647,6 +645,7 @@ local configEntryDef: JsonSchema = new JsonSchema {
     }
     ["extends"] = configExtendsDef
     ["compiler"] = new JsonSchema { `$ref` = "#/definitions/CompilerConfig" }
+    ["experimentals"] = new JsonSchema { type = "object" }
     ["vite"] = new JsonSchema { `$ref` = "#/definitions/VitePluginConfig" }
     ["linter"] = new JsonSchema { `$ref` = "#/definitions/LinterConfig" }
     ["typeChecker"] = new JsonSchema { `$ref` = "#/definitions/TypeCheckerConfig" }
@@ -706,6 +705,7 @@ output {
       }
       ["extends"] = configExtendsDef
       ["compiler"] = new JsonSchema { `$ref` = "#/definitions/CompilerConfig" }
+      ["experimentals"] = new JsonSchema { type = "object" }
       ["vite"] = new JsonSchema { `$ref` = "#/definitions/VitePluginConfig" }
       ["linter"] = new JsonSchema { `$ref` = "#/definitions/LinterConfig" }
       ["typeChecker"] = new JsonSchema { `$ref` = "#/definitions/TypeCheckerConfig" }
