@@ -123,13 +123,9 @@ impl VirtualProject {
         let mut config = Map::new();
         let original_tsconfig = self.resolved_tsconfig_path();
 
-        // The effective compiler options are flattened into the generated
-        // config instead of `extends`-ing the user's tsconfig. Corsa would
-        // otherwise re-parse the whole original chain and fail the entire CLI
-        // run on config-file diagnostics vize already compensates for (e.g.
-        // TS5102 for the removed `baseUrl` the mirror strips and re-anchors),
-        // and the real tree's `files`/`include` lists must not leak into the
-        // virtual program anyway.
+        // Flatten the effective compiler options instead of `extends`-ing the
+        // user's tsconfig, so Corsa does not re-parse the source chain or inherit
+        // real-tree `files`/`include` entries into the virtual program.
         let mut compiler_options = self.load_compiler_options(original_tsconfig.as_deref())?;
 
         // Capture the original path-alias map and type roots before stripping
@@ -229,7 +225,11 @@ impl VirtualProject {
             file.virtual_path
                 .file_name()
                 .and_then(|name| name.to_str())
-                .is_some_and(|name| name.ends_with(".vue.tsx"))
+                .is_some_and(|name| {
+                    name.ends_with(".vue.tsx")
+                        || name.ends_with(".tsx.ts")
+                        || name.ends_with(".jsx.ts")
+                })
         })
     }
 

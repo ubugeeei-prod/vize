@@ -25,6 +25,7 @@ fn load_config_reads_experimentals() {
     assert!(loaded.features.experimental_in_tag_comments);
     assert!(loaded.features.experimental_patterned_template);
     assert!(loaded.features.experimental_server_script);
+    assert!(loaded.features.type_checker_jsx_typecheck);
     assert_eq!(loaded.features.jsx_mode, Some(JsxMode::Vapor));
     assert_eq!(load_compiler_vapor(Some(&config_path)), Some(true));
 }
@@ -52,6 +53,7 @@ fn load_config_accepts_experimental_aliases_and_false_switches() {
     assert!(loaded.features.experimental_in_tag_comments);
     assert!(!loaded.features.experimental_patterned_template);
     assert!(!loaded.features.experimental_server_script);
+    assert!(loaded.features.type_checker_jsx_typecheck);
     assert_eq!(loaded.features.jsx_mode, Some(JsxMode::Vdom));
     assert_eq!(load_compiler_vapor(Some(&config_path)), Some(false));
 }

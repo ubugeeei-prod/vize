@@ -83,9 +83,9 @@ pub struct ConfigFeatureFlags {
     pub type_checker_legacy_vue2: bool,
     /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497). Default-off
     /// so mixed Vue/React repositories do not accidentally route React `.tsx`
-    /// through the Vue JSX checker. Set `typeChecker.jsxTypecheck: true` to route
-    /// `.jsx`/`.tsx` through the Vize JSX virtual-TS path instead of the verbatim
-    /// passthrough.
+    /// through the Vue JSX checker. Set `typeChecker.jsxTypecheck: true` or
+    /// opt into `experimentals.jsxVapor` to route `.jsx`/`.tsx` through the
+    /// Vize JSX virtual-TS path instead of the verbatim passthrough.
     pub type_checker_jsx_typecheck: bool,
     pub language_server_legacy_vue2: Option<bool>,
     /// Dialect selected by `vue.version`; `None` when the key is absent
@@ -264,7 +264,8 @@ impl RawVizeConfig {
         // Default-on (matches vue-tsc); explicit `false` opts out.
         let type_checker_options_api = raw_type_checker.options_api.unwrap_or(true);
         let type_checker_legacy_vue2 = raw_type_checker.legacy_vue2;
-        let type_checker_jsx_typecheck = raw_type_checker.jsx_typecheck;
+        let experimental_jsx_vapor = experimentals.jsx_vapor_enabled();
+        let type_checker_jsx_typecheck = raw_type_checker.jsx_typecheck || experimental_jsx_vapor;
         let mut type_checker = raw_type_checker.config;
         if let Some(legacy_check) = legacy_check {
             if type_checker.globals_file.is_none() {
@@ -295,9 +296,9 @@ impl RawVizeConfig {
             vue_version: vue.version.or(compiler.compatibility.vue_version),
             jsx_mode: compiler
                 .jsx_mode
-                .or_else(|| experimentals.jsx_vapor_enabled().then_some(JsxMode::Vapor)),
+                .or_else(|| experimental_jsx_vapor.then_some(JsxMode::Vapor)),
             experimental_vapor: experimentals.vapor_enabled(),
-            experimental_jsx_vapor: experimentals.jsx_vapor_enabled(),
+            experimental_jsx_vapor,
             experimental_in_tag_comments: experimentals.in_tag_comments_enabled(),
             experimental_patterned_template: experimentals.patterned_template_enabled(),
             experimental_server_script: experimentals.server_script_enabled(),
