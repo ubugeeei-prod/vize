@@ -4,6 +4,7 @@
 
 mod detect;
 mod generate;
+mod name;
 mod outlet;
 mod params;
 
