@@ -1,16 +1,23 @@
+mod predicates;
+mod replacements;
+
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    BindingPattern, Expression, Function, ObjectProperty, PropertyKey, ReturnStatement,
-    StringLiteral, TemplateLiteral, VariableDeclarator,
+    ArrowFunctionExpression, Expression, Function, ObjectProperty, ReturnStatement, StringLiteral,
+    TemplateLiteral, VariableDeclarator,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use oxc_syntax::scope::ScopeFlags;
+use predicates::{is_render_function_name, is_template_hoist_declarator, property_key_name};
+use replacements::{
+    AssetReferenceReplacement, apply_asset_replacements, asset_expression, join_expression_parts,
+    push_string_part,
+};
 use vize_carton::{SmallVec, String};
 
 use super::assets::TemplateAssetUrl;
-use crate::vite_plugin::js_string::push_js_string_literal;
 
 /// Rewrite compiled template asset references into import identifiers.
 ///
@@ -35,15 +42,10 @@ pub fn rewrite_template_asset_references(code: &str, assets: &[TemplateAssetUrl]
         replacements: Vec::new(),
         render_depth: 0,
         setup_depth: 0,
+        setup_function_depth: 0,
     };
     collector.visit_program(&parsed.program);
     apply_asset_replacements(code, collector.replacements)
-}
-
-struct AssetReferenceReplacement {
-    start: usize,
-    end: usize,
-    value: String,
 }
 
 struct TemplateAssetReferenceCollector<'a> {
@@ -52,6 +54,7 @@ struct TemplateAssetReferenceCollector<'a> {
     replacements: Vec<AssetReferenceReplacement>,
     render_depth: usize,
     setup_depth: usize,
+    setup_function_depth: usize,
 }
 
 impl<'a> TemplateAssetReferenceCollector<'a> {
@@ -65,6 +68,12 @@ impl<'a> TemplateAssetReferenceCollector<'a> {
         self.setup_depth += 1;
         visit(self);
         self.setup_depth -= 1;
+    }
+
+    fn with_setup_nested_function(&mut self, visit: impl FnOnce(&mut Self)) {
+        self.setup_function_depth += 1;
+        visit(self);
+        self.setup_function_depth -= 1;
     }
 
     fn asset_for_value(&self, value: &str) -> Option<&'a TemplateAssetUrl> {
@@ -116,16 +125,12 @@ impl<'a> TemplateAssetReferenceCollector<'a> {
                 .map_or_else(|| quasi.value.raw.as_str(), |value| value.as_str());
             self.push_template_text_parts(text, &mut parts, &mut changed);
 
-            if let Some(expression) = template.expressions.get(index) {
-                let span = expression.span();
-                let start = span.start as usize;
-                let end = span.end as usize;
-                if start <= end && end <= self.code.len() {
-                    let mut source = String::from("(");
-                    source.push_str(&self.code[start..end]);
-                    source.push(')');
-                    parts.push(source);
-                }
+            if let Some(expression) = template.expressions.get(index)
+                && let Some((source, expression_changed)) =
+                    self.template_expression_part(expression)
+            {
+                changed |= expression_changed;
+                parts.push(source);
             }
         }
 
@@ -134,6 +139,34 @@ impl<'a> TemplateAssetReferenceCollector<'a> {
         }
 
         Some(join_expression_parts(parts))
+    }
+
+    fn template_expression_part<'b>(&self, expression: &Expression<'b>) -> Option<(String, bool)> {
+        if let Some(value) = self.template_expression_asset(expression) {
+            return Some((value, true));
+        }
+
+        let span = expression.span();
+        let start = span.start as usize;
+        let end = span.end as usize;
+        if start > end || end > self.code.len() {
+            return None;
+        }
+
+        let mut source = String::from("(");
+        source.push_str(&self.code[start..end]);
+        source.push(')');
+        Some((source, false))
+    }
+
+    fn template_expression_asset<'b>(&self, expression: &Expression<'b>) -> Option<String> {
+        match expression {
+            Expression::StringLiteral(literal) => self
+                .asset_for_value(literal.value.as_str())
+                .map(asset_expression),
+            Expression::TemplateLiteral(template) => self.template_literal_expression(template),
+            _ => None,
+        }
     }
 
     fn push_template_text_parts(
@@ -163,7 +196,11 @@ impl<'a> TemplateAssetReferenceCollector<'a> {
         self.assets
             .iter()
             .filter_map(|asset| text.find(asset.url.as_str()).map(|index| (index, asset)))
-            .min_by_key(|(index, _)| *index)
+            .min_by(|(left_index, left_asset), (right_index, right_asset)| {
+                left_index
+                    .cmp(right_index)
+                    .then_with(|| right_asset.url.len().cmp(&left_asset.url.len()))
+            })
     }
 }
 
@@ -191,12 +228,31 @@ impl<'a> Visit<'a> for TemplateAssetReferenceCollector<'_> {
             return;
         }
 
+        if self.setup_depth > 0 {
+            self.with_setup_nested_function(|this| walk::walk_function(this, function, flags));
+            return;
+        }
+
         walk::walk_function(self, function, flags);
+    }
+
+    fn visit_arrow_function_expression(&mut self, arrow: &ArrowFunctionExpression<'a>) {
+        if self.setup_depth > 0 {
+            self.with_setup_nested_function(|this| {
+                walk::walk_arrow_function_expression(this, arrow)
+            });
+            return;
+        }
+
+        walk::walk_arrow_function_expression(self, arrow);
     }
 
     fn visit_object_property(&mut self, property: &ObjectProperty<'a>) {
         match property_key_name(&property.key) {
             Some("setup") => {
+                if self.visit_setup_expression(&property.value) {
+                    return;
+                }
                 self.with_setup_scope(|this| walk::walk_object_property(this, property));
             }
             Some("render" | "ssrRender") => {
@@ -211,6 +267,7 @@ impl<'a> Visit<'a> for TemplateAssetReferenceCollector<'_> {
 
     fn visit_return_statement(&mut self, statement: &ReturnStatement<'a>) {
         if self.setup_depth > 0
+            && self.setup_function_depth == 0
             && let Some(argument) = &statement.argument
             && self.visit_render_expression(argument)
         {
@@ -235,6 +292,22 @@ impl<'a> Visit<'a> for TemplateAssetReferenceCollector<'_> {
 }
 
 impl TemplateAssetReferenceCollector<'_> {
+    fn visit_setup_expression<'a>(&mut self, expression: &Expression<'a>) -> bool {
+        match expression {
+            Expression::ArrowFunctionExpression(arrow) => {
+                self.with_setup_scope(|this| walk::walk_arrow_function_expression(this, arrow));
+                true
+            }
+            Expression::FunctionExpression(function) => {
+                self.with_setup_scope(|this| {
+                    walk::walk_function(this, function, ScopeFlags::Function)
+                });
+                true
+            }
+            _ => false,
+        }
+    }
+
     fn visit_render_expression<'a>(&mut self, expression: &Expression<'a>) -> bool {
         match expression {
             Expression::ArrowFunctionExpression(arrow) => {
@@ -250,92 +323,4 @@ impl TemplateAssetReferenceCollector<'_> {
             _ => false,
         }
     }
-}
-
-fn is_template_hoist_declarator(declarator: &VariableDeclarator<'_>) -> bool {
-    let BindingPattern::BindingIdentifier(id) = &declarator.id else {
-        return false;
-    };
-
-    let name = id.name.as_str();
-    name.starts_with("_hoisted_")
-        && name["_hoisted_".len()..]
-            .bytes()
-            .all(|byte| byte.is_ascii_digit())
-}
-
-fn is_render_function_name(name: &str) -> bool {
-    matches!(name, "render" | "_sfc_render" | "ssrRender")
-}
-
-fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
-    match key {
-        PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
-        PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
-        _ => None,
-    }
-}
-
-fn asset_expression(asset: &TemplateAssetUrl) -> String {
-    let Some(hash_index) = asset.url.find('#') else {
-        return asset.var_name.clone();
-    };
-
-    let mut output = String::from(asset.var_name.as_str());
-    output.push_str(" + ");
-    push_js_string_literal(&mut output, &asset.url[hash_index..]);
-    output
-}
-
-fn push_string_part(parts: &mut SmallVec<[String; 8]>, value: &str) {
-    let mut output = String::default();
-    push_js_string_literal(&mut output, value);
-    parts.push(output);
-}
-
-fn join_expression_parts(parts: SmallVec<[String; 8]>) -> String {
-    let mut output = String::default();
-    let mut first = true;
-
-    for part in parts {
-        if !first {
-            output.push_str(" + ");
-        }
-        first = false;
-        output.push_str(part.as_str());
-    }
-
-    output
-}
-
-fn apply_asset_replacements(
-    code: &str,
-    mut replacements: Vec<AssetReferenceReplacement>,
-) -> String {
-    if replacements.is_empty() {
-        return String::from(code);
-    }
-
-    replacements.sort_by_key(|replacement| replacement.start);
-    let mut output = String::with_capacity(code.len());
-    let mut last = 0usize;
-    let mut changed = false;
-
-    for replacement in replacements {
-        if replacement.start < last || replacement.end > code.len() {
-            continue;
-        }
-
-        output.push_str(&code[last..replacement.start]);
-        output.push_str(replacement.value.as_str());
-        last = replacement.end;
-        changed = true;
-    }
-
-    if !changed {
-        return String::from(code);
-    }
-
-    output.push_str(&code[last..]);
-    output
 }

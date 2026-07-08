@@ -185,6 +185,82 @@ function ssrRender(_ctx, _push) {
 }
 
 #[test]
+fn rewrites_longest_matching_ssr_template_asset_url() {
+    let code = r##"
+function ssrRender(_ctx, _push) {
+  _push(`<use href="./icons.svg#home"></use><img src="./icons.svg">`);
+}
+"##;
+    let assets = vec![
+        TemplateAssetUrl {
+            url: "./icons.svg".into(),
+            var_name: "_imports_0".into(),
+        },
+        TemplateAssetUrl {
+            url: "./icons.svg#home".into(),
+            var_name: "_imports_1".into(),
+        },
+    ];
+
+    let output = rewrite_template_asset_references(code, &assets);
+
+    assert!(output.contains(r##"_imports_1 + "#home""##));
+    assert!(output.contains("_imports_0"));
+    assert!(!output.contains(r##"_imports_0 + "#home""##));
+}
+
+#[test]
+fn rewrites_asset_string_expressions_inside_changed_ssr_template_literals() {
+    let code = r##"
+function ssrRender(_ctx, _push) {
+  _push(`<img src="./logo.png"><img src="${"./badge.png"}">`);
+}
+"##;
+    let assets = vec![
+        TemplateAssetUrl {
+            url: "./logo.png".into(),
+            var_name: "_imports_0".into(),
+        },
+        TemplateAssetUrl {
+            url: "./badge.png".into(),
+            var_name: "_imports_1".into(),
+        },
+    ];
+
+    let output = rewrite_template_asset_references(code, &assets);
+
+    assert!(output.contains("_imports_0"));
+    assert!(output.contains("_imports_1"));
+    assert!(!output.contains(r#""./badge.png""#));
+}
+
+#[test]
+fn does_not_rewrite_nested_setup_returns_as_render_functions() {
+    let code = r#"
+export default {
+  setup() {
+    const arrowHelper = () => {
+      return () => "./logo.png";
+    };
+    function functionHelper() {
+      return () => "./logo.png";
+    }
+    return () => _createElementVNode("img", { src: "./logo.png" });
+  }
+}
+"#;
+    let assets = vec![TemplateAssetUrl {
+        url: "./logo.png".into(),
+        var_name: "_imports_0".into(),
+    }];
+
+    let output = rewrite_template_asset_references(code, &assets);
+
+    assert_eq!(output.matches(r#"return () => "./logo.png";"#).count(), 2);
+    assert!(output.contains(r#"_createElementVNode("img", { src: _imports_0 })"#));
+}
+
+#[test]
 fn strips_css_comments_without_touching_strings() {
     let input = ".a { color: red; }\n/* :deep(.x) */\n.b::before { content: \"/* kept */\"; }";
     let output = strip_css_comments_for_scoped(input);
