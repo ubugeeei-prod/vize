@@ -197,4 +197,34 @@ fn semantic_snapshot_is_deterministic_for_manual_croquis_facts() {
     assert_eq!(snapshot.injects[0].destructured_names, ["color"]);
     assert_eq!(snapshot.reactive_sources[0].id, "reactive:alpha@20");
     assert_eq!(snapshot.reactivity_losses[0].kind, "refValueExtract");
+
+    let alpha = snapshot
+        .binding_by_name("alpha")
+        .expect("binding helper should find alpha");
+    assert_eq!(alpha.id, "binding:alpha@20");
+    assert!(snapshot.binding_by_name("missing").is_none());
+    assert!(snapshot.scope_by_id(ScopeId::ROOT.as_u32()).is_some());
+
+    let panel_usages: Vec<_> = snapshot.component_usages_by_name("Panel").collect();
+    assert_eq!(panel_usages.len(), 1);
+    assert_eq!(panel_usages[0].props[0].name, "title");
+
+    let root_expressions: Vec<_> = snapshot
+        .template_expressions_in_scope(ScopeId::ROOT.as_u32())
+        .collect();
+    assert_eq!(root_expressions.len(), 1);
+    assert_eq!(root_expressions[0].content, "alpha");
+
+    let theme_provides: Vec<_> = snapshot.provides_by_key("theme").collect();
+    assert_eq!(theme_provides.len(), 1);
+    assert_eq!(theme_provides[0].value, "alpha");
+
+    let theme_injects: Vec<_> = snapshot.injects_by_key("theme").collect();
+    assert_eq!(theme_injects.len(), 1);
+    assert_eq!(theme_injects[0].destructured_names, ["color"]);
+
+    let reactive_alpha = snapshot
+        .reactive_source_by_name("alpha")
+        .expect("reactive helper should find alpha");
+    assert_eq!(reactive_alpha.kind, "ref");
 }
