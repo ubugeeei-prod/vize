@@ -1,0 +1,148 @@
+---
+source: crates/vize_croquis_cf/src/analyzer/tests_snapshots/provide_inject.rs
+expression: output
+---
+=== Provide/Inject Tree Outputs ===
+
+== Summary ==
+{
+  "rootCount": 3,
+  "nodeCount": 7,
+  "leafComponentCount": 4,
+  "passThroughComponentCount": 1,
+  "providerComponentCount": 3,
+  "injectorComponentCount": 4,
+  "provideCount": 3,
+  "injectCount": 4,
+  "defaultedInjectCount": 1,
+  "matchedInjectCount": 3,
+  "unmatchedInjectCount": 1,
+  "maxDepth": 4,
+  "maxChildFanout": 2,
+  "maxProviderConsumerCount": 2
+}
+
+== Tree JSON ==
+{
+  "roots": [
+    {
+      "fileId": 0,
+      "componentName": "App",
+      "provides": [
+        {
+          "key": "theme",
+          "valueType": null,
+          "offset": 61,
+          "consumerCount": 2
+        }
+      ],
+      "injects": [],
+      "children": [
+        {
+          "fileId": 1,
+          "componentName": "Layout",
+          "provides": [],
+          "injects": [],
+          "children": [
+            {
+              "fileId": 2,
+              "componentName": "Panel",
+              "provides": [
+                {
+                  "key": "panelState",
+                  "valueType": null,
+                  "offset": 112,
+                  "consumerCount": 1
+                }
+              ],
+              "injects": [
+                {
+                  "key": "theme",
+                  "hasDefault": false,
+                  "provider": 0,
+                  "offset": 57
+                }
+              ],
+              "children": [
+                {
+                  "fileId": 3,
+                  "componentName": "Button",
+                  "provides": [],
+                  "injects": [
+                    {
+                      "key": "panelState",
+                      "hasDefault": false,
+                      "provider": 2,
+                      "offset": 48
+                    }
+                  ],
+                  "children": []
+                }
+              ]
+            },
+            {
+              "fileId": 4,
+              "componentName": "Sidebar",
+              "provides": [],
+              "injects": [
+                {
+                  "key": "theme",
+                  "hasDefault": false,
+                  "provider": 0,
+                  "offset": 43
+                }
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "fileId": 5,
+      "componentName": "Orphan",
+      "provides": [],
+      "injects": [
+        {
+          "key": "missing",
+          "hasDefault": true,
+          "provider": null,
+          "offset": 45
+        }
+      ],
+      "children": []
+    },
+    {
+      "fileId": 6,
+      "componentName": "UnusedProvider",
+      "provides": [
+        {
+          "key": "stale",
+          "valueType": null,
+          "offset": 30,
+          "consumerCount": 0
+        }
+      ],
+      "injects": [],
+      "children": []
+    }
+  ]
+}
+
+== Markdown ==
+## Provide/Inject Tree
+
+📦 **App**
+  🔹 provide(`"theme"`) → 2 consumer(s)
+  📦 **Layout**
+    📦 **Panel**
+      🔹 provide(`"panelState"`) → 1 consumer(s)
+      🔸 inject(`"theme"`) ✅
+      📦 **Button**
+        🔸 inject(`"panelState"`) ✅
+    📦 **Sidebar**
+      🔸 inject(`"theme"`) ✅
+📦 **Orphan**
+  🔸 inject(`"missing"`) (has default) ❌ _no provider_
+📦 **UnusedProvider**
+  🔹 provide(`"stale"`) ⚠️ _unused_

@@ -6,4 +6,5 @@ use vize_croquis::AnalyzerOptions;
 
 mod full;
 mod graph;
+mod provide_inject;
 mod reactivity;
