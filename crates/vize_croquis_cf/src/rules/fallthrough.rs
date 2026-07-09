@@ -113,6 +113,8 @@ pub fn analyze_fallthrough(
     let usage_facts = collect_fallthrough_usage_facts(registry, graph);
     let mut passed_attrs_map: FxHashMap<FileId, FxHashMap<FileId, FxHashSet<CompactString>>> =
         FxHashMap::default();
+    let mut fallthrough_related_map: FxHashMap<FileId, Vec<FallthroughUsageRelated>> =
+        FxHashMap::default();
     for fact in &usage_facts {
         let attrs = passed_attrs_map
             .entry(fact.child_file_id)
@@ -120,6 +122,21 @@ pub fn analyze_fallthrough(
             .entry(fact.parent_file_id)
             .or_default();
         attrs.extend(fact.attrs.iter().map(|attr| attr.name.clone()));
+
+        let related = fallthrough_related_map
+            .entry(fact.child_file_id)
+            .or_default();
+        related.extend(
+            fact.attrs
+                .iter()
+                .filter(|attr| attr.fallthrough)
+                .map(|attr| FallthroughUsageRelated {
+                    parent_file_id: fact.parent_file_id,
+                    attr_name: attr.name.clone(),
+                    source_start: attr.source_start,
+                    component_name: fact.component_name.clone(),
+                }),
+        );
     }
 
     // Merge passed attrs into infos
@@ -142,7 +159,7 @@ pub fn analyze_fallthrough(
 
             if has_fallthrough {
                 // Use offset 0 to point to <template> tag start (wasm.rs adds tag_start offset)
-                diagnostics.push(
+                diagnostics.push(with_fallthrough_relateds(
                     CrossFileDiagnostic::with_span(
                         CrossFileDiagnosticKind::MultiRootMissingAttrs,
                         DiagnosticSeverity::Warning,
@@ -154,14 +171,18 @@ pub fn analyze_fallthrough(
                     .with_suggestion(
                         "Add v-bind=\"$attrs\" to the intended root element or wrap in single root",
                     ),
-                );
+                    fallthrough_related_map
+                        .get(&info.file_id)
+                        .map(Vec::as_slice),
+                    None,
+                ));
             }
         }
 
         // Check for inheritAttrs: false without $attrs usage
         if info.inherit_attrs_disabled && !info.uses_attrs && !info.binds_attrs {
             // Use offset 0 to point to <template> tag start (wasm.rs adds tag_start offset)
-            diagnostics.push(
+            diagnostics.push(with_fallthrough_relateds(
                 CrossFileDiagnostic::with_span(
                     CrossFileDiagnosticKind::InheritAttrsDisabledUnused,
                     DiagnosticSeverity::Warning,
@@ -171,7 +192,11 @@ pub fn analyze_fallthrough(
                     "inheritAttrs is disabled but $attrs is not used anywhere",
                 )
                 .with_suggestion("Use v-bind=\"$attrs\" or $attrs.class/$attrs.style in template"),
-            );
+                fallthrough_related_map
+                    .get(&info.file_id)
+                    .map(Vec::as_slice),
+                None,
+            ));
         }
 
         // Check for unused fallthrough attributes
@@ -188,7 +213,7 @@ pub fn analyze_fallthrough(
 
         if !unused_attrs.is_empty() && !info.binds_attrs && info.root_element_count > 1 {
             // Use offset 0 to point to <template> tag start (wasm.rs adds tag_start offset)
-            diagnostics.push(
+            diagnostics.push(with_fallthrough_relateds(
                 CrossFileDiagnostic::with_span(
                     CrossFileDiagnosticKind::UnusedFallthroughAttrs {
                         passed_attrs: unused_attrs.clone(),
@@ -203,7 +228,11 @@ pub fn analyze_fallthrough(
                     ),
                 )
                 .with_suggestion("Bind $attrs explicitly or declare as props"),
-            );
+                fallthrough_related_map
+                    .get(&info.file_id)
+                    .map(Vec::as_slice),
+                Some(&unused_attrs),
+            ));
         }
     }
 
@@ -260,6 +289,48 @@ fn is_listener_attr(attr: &str) -> bool {
         .and_then(|suffix| suffix.chars().next())
         .is_some_and(|first| first.is_ascii_uppercase())
 }
+
+struct FallthroughUsageRelated {
+    parent_file_id: FileId,
+    attr_name: CompactString,
+    source_start: u32,
+    component_name: CompactString,
+}
+
+fn with_fallthrough_relateds(
+    mut diagnostic: CrossFileDiagnostic,
+    relateds: Option<&[FallthroughUsageRelated]>,
+    attrs_filter: Option<&[CompactString]>,
+) -> CrossFileDiagnostic {
+    let Some(relateds) = relateds else {
+        return diagnostic;
+    };
+
+    for related in relateds {
+        if attrs_filter.is_some_and(|attrs| {
+            !attrs
+                .iter()
+                .any(|attr| attr.as_str() == related.attr_name.as_str())
+        }) {
+            continue;
+        }
+
+        diagnostic = diagnostic.with_related(
+            related.parent_file_id,
+            related.source_start,
+            cstr!(
+                "{} passed to <{}>",
+                related.attr_name,
+                related.component_name
+            ),
+        );
+    }
+
+    diagnostic
+}
+
+#[cfg(test)]
+mod diagnostics_tests;
 
 #[cfg(test)]
 mod tests;
