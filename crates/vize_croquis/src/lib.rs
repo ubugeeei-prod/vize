@@ -98,6 +98,7 @@ pub use croquis::{
     UnusedVarContext,
 };
 pub use drawer::{Drawer, DrawerOptions};
+pub use effect_graph::EffectGraphSummary;
 pub use reactivity_overlay::{
     ReactivityEffectEdgeOverlay, ReactivityEffectGraphOverlay, ReactivityLossOverlay,
     ReactivityOverlay, ReactivityOverlaySummary, ReactivitySourceOverlay,

@@ -8,6 +8,7 @@
 //! follow-ups. The intent of landing the model now is so the analyzer and
 //! the lint rule can be developed against a stable shape.
 
+use serde::Serialize;
 use vize_carton::CompactString;
 
 /// A node in the effect graph — usually a reactive binding name.
@@ -28,6 +29,16 @@ pub struct EffectGraph {
     edges: Vec<EffectEdge>,
 }
 
+/// Stable counters for one reactive effect graph.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EffectGraphSummary {
+    pub node_count: usize,
+    pub edge_count: usize,
+    pub cycle_count: usize,
+    pub cycle_node_count: usize,
+}
+
 impl EffectGraph {
     /// Add a `from → to` dependency edge.
     pub fn add_edge(&mut self, from: impl Into<EffectNodeId>, to: impl Into<EffectNodeId>) {
@@ -43,6 +54,31 @@ impl EffectGraph {
     /// Iterate over all dependency edges.
     pub fn edges(&self) -> impl Iterator<Item = &EffectEdge> {
         self.edges.iter()
+    }
+
+    /// Count unique nodes that appear in dependency edges.
+    pub fn node_count(&self) -> usize {
+        let mut nodes = std::collections::BTreeSet::new();
+        for edge in &self.edges {
+            nodes.insert(&edge.from);
+            nodes.insert(&edge.to);
+        }
+        nodes.len()
+    }
+
+    /// Summarize edge and cycle counts for reports and diagnostics.
+    pub fn summary(&self) -> EffectGraphSummary {
+        let cycle = self.find_cycle();
+
+        EffectGraphSummary {
+            node_count: self.node_count(),
+            edge_count: self.edges.len(),
+            cycle_count: usize::from(cycle.is_some()),
+            cycle_node_count: cycle
+                .as_ref()
+                .map(|cycle| cycle.len().saturating_sub(1))
+                .unwrap_or_default(),
+        }
     }
 
     /// Detect the first cycle reachable from any node, returned as the chain
@@ -121,6 +157,18 @@ mod tests {
         assert_eq!(cycle.first(), cycle.last());
         assert!(cycle.contains(&"a".into()));
         assert!(cycle.contains(&"b".into()));
+
+        let summary = g.summary();
+        assert_eq!(summary.node_count, 2);
+        assert_eq!(summary.edge_count, 2);
+        assert_eq!(summary.cycle_count, 1);
+        assert_eq!(summary.cycle_node_count, 2);
+
+        let json = serde_json::to_string(&summary).unwrap();
+        assert_eq!(
+            json,
+            r#"{"nodeCount":2,"edgeCount":2,"cycleCount":1,"cycleNodeCount":2}"#
+        );
     }
 
     #[test]
@@ -130,6 +178,8 @@ mod tests {
         g.add_edge("b", "c");
         g.add_edge("a", "c");
         assert!(g.find_cycle().is_none());
+        assert_eq!(g.summary().node_count, 3);
+        assert_eq!(g.summary().cycle_count, 0);
     }
 
     #[test]
