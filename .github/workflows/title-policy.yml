@@ -30,6 +30,9 @@ jobs:
           ref: ${{ github.event.repository.default_branch }}
           sparse-checkout: |
             .github/actions/setup-moonbit
+            tools/moon/moon.mod
+            tools/moon/moon.pkg
+            tools/moon/lib
             tools/moon/cmd/github/issue_pr_title_policy
           sparse-checkout-cone-mode: false
 
