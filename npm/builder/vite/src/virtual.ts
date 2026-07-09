@@ -11,7 +11,6 @@ import {
   fromViteVirtualId,
   normalizeViteFsIdForBuild,
   normalizeViteVirtualVueModuleId as normalizeNativeViteVirtualVueModuleId,
-  rewriteViteDynamicTemplateImports,
   toViteBrowserImportPrefix,
 } from "@vizejs/native";
 
@@ -102,11 +101,4 @@ export function toBrowserImportPrefix(replacement: string): string {
 
 export function normalizeFsIdForBuild(id: string): string {
   return normalizeViteFsIdForBuild(id);
-}
-
-export function rewriteDynamicTemplateImports(
-  code: string,
-  aliasRules: DynamicImportAliasRule[],
-): string {
-  return rewriteViteDynamicTemplateImports(code, aliasRules);
 }

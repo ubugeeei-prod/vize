@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 
-import { createVirtualTypeScriptTransformer } from "./vite-transform.ts";
+import {
+  createVirtualTypeScriptTransformer,
+  needsVirtualTypeScriptTransform,
+} from "./vite-transform.ts";
 
 {
   let used = "";
@@ -61,3 +64,17 @@ import { createVirtualTypeScriptTransformer } from "./vite-transform.ts";
     "virtual Vue module TS stripping must not emit an unguarded slot-scope access",
   );
 }
+
+assert.equal(
+  needsVirtualTypeScriptTransform(
+    'import { ref as _ref } from "vue";\nconst count = _ref(0);\nexport default {};',
+  ),
+  false,
+  "plain generated JavaScript with import aliases should skip the virtual TS strip pass",
+);
+
+assert.equal(
+  needsVirtualTypeScriptTransform("const value: number = 1"),
+  true,
+  "virtual modules with TypeScript annotations should still use Vite's TS strip pass",
+);

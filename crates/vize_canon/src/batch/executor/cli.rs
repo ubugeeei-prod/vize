@@ -120,7 +120,12 @@ pub(super) fn auto_server_count(project: &VirtualProject) -> usize {
     let threads = std::thread::available_parallelism()
         .map(std::num::NonZero::get)
         .unwrap_or(1);
-    (threads / 4).min(vue_files / 64).clamp(1, 8)
+    let cpu_budget = if threads >= 8 {
+        4
+    } else {
+        threads.div_ceil(4)
+    };
+    cpu_budget.min(vue_files / 64).clamp(1, 8)
 }
 
 struct ShardPlan<'a> {

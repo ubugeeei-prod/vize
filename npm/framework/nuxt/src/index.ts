@@ -33,6 +33,11 @@ const VUE_RUNTIME_DEDUPE = [
   "@vue/shared",
 ];
 const VUE_CLIENT_RUNTIME_IMPORT = "vue/dist/vue.runtime.esm-bundler.js";
+const NUXT_COMPONENT_BRIDGE_RE =
+  /(?:_?resolveComponent\s*\(|from\s+(["'])#components\1)/;
+const NUXT_I18N_BRIDGE_RE = /\b(?:\$t|\$rt|\$d|\$n|\$tm|\$te)\s*\(/;
+const NUXT_STABLE_KEY_BRIDGE_RE =
+  /\b(?:useFetch|useLazyFetch)\s*\(|\/\*\s*nuxt-injected\s*\*\//;
 type VitePluginWithTransform = {
   name?: string;
   transform?: unknown;
@@ -505,7 +510,7 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
 
         // 1. Component auto-imports: replace _resolveComponent("Name") with direct imports
         // Nuxt's LoaderPlugin normally does this, but skips \0-prefixed IDs.
-        if (nuxtComponentResolver) {
+        if (nuxtComponentResolver && NUXT_COMPONENT_BRIDGE_RE.test(result)) {
           const nextComponentResult = injectNuxtComponentImports(result, (name) => {
             return nuxtComponentResolver.resolve(name);
           });
@@ -520,7 +525,7 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
         // Must inject inside the setup() function body, not at module top level.
         // Parse the virtual module so string literals, comments, and Vue template
         // globals do not look like setup-scope runtime helper calls.
-        if (bridgeOptions.i18n) {
+        if (bridgeOptions.i18n && NUXT_I18N_BRIDGE_RE.test(result)) {
           const nextResult = injectNuxtI18nHelpers(result, id);
           if (nextResult !== result) {
             result = nextResult;
@@ -552,7 +557,7 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
           }
         }
 
-        if (bridgeOptions.stableInjectedKeys) {
+        if (bridgeOptions.stableInjectedKeys && NUXT_STABLE_KEY_BRIDGE_RE.test(result)) {
           const stableKeyResult = stabilizeNuxtInjectedKeysForVizeVirtualModule(result, id);
           if (stableKeyResult !== result) {
             result = stableKeyResult;

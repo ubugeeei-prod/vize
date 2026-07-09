@@ -24,14 +24,14 @@ import {
   isPluginVisibleSsrVirtualId,
   LEGACY_VIZE_PREFIX,
   RESOLVED_CSS_MODULE,
-  rewriteDynamicTemplateImports,
 } from "../virtual.ts";
 import {
   applyDefineReplacements,
+  rewriteDynamicTemplateImports,
   rewriteImportMetaGlobBase,
   rewriteStaticAssetUrls,
 } from "../transform.ts";
-import { transformVirtualTypeScript } from "./vite-transform.ts";
+import { needsVirtualTypeScriptTransform, transformVirtualTypeScript } from "./vite-transform.ts";
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
@@ -210,6 +210,10 @@ export function loadHook(
   id: string,
   loadOptions?: { ssr?: boolean; addWatchFile?: (id: string) => void },
 ): string | { code: string; map: null } | null {
+  if (id !== RESOLVED_CSS_MODULE && !id.startsWith("\0") && !id.includes(".vue")) {
+    return null;
+  }
+
   const request = classifyVitePluginRequest(id);
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
   const loadableVueSfcPath = getLoadableVueSfcPath(request);
@@ -461,14 +465,21 @@ export async function transformHook(
   id: string,
   options?: { ssr?: boolean },
 ): Promise<TransformResult | null> {
+  const maybeJsxComponent = isJsxComponentPath(id);
+  if (!id.startsWith("\0") && !id.includes(".vue.ts") && !maybeJsxComponent) {
+    return null;
+  }
+
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
 
   // Compile `.jsx`/`.tsx` Vue components through Vize. Unlike SFCs, JSX/TSX
   // modules are real files Vite hands directly to the transform hook, so they
   // are handled here rather than through the virtual-module load pipeline.
-  const jsxResult = transformJsxRequest(state, code, id, { ssr: options?.ssr });
-  if (jsxResult !== undefined) {
-    return jsxResult;
+  if (maybeJsxComponent) {
+    const jsxResult = transformJsxRequest(state, code, id, { ssr: options?.ssr });
+    if (jsxResult !== undefined) {
+      return jsxResult;
+    }
   }
 
   if (!id.startsWith("\0") && !pluginVisibleVirtualPath) {
@@ -480,13 +491,18 @@ export async function transformHook(
     const realPath = request.isMacroVirtualId
       ? (request.strippedVirtualPath ?? "")
       : (request.vizeVirtualPath ?? pluginVisibleVirtualPath ?? "");
+    const needsTsTransform = request.isMacroVirtualId || needsVirtualTypeScriptTransform(code);
     try {
-      const result = await transformVirtualTypeScript(code, realPath);
-      const defines = getVirtualModuleDefines(state, options?.ssr ?? false);
+      const result = needsTsTransform
+        ? await transformVirtualTypeScript(code, realPath)
+        : { code };
       let transformed = result.code;
-      transformed = applyDefineReplacements(transformed, defines);
+      if (transformed.includes("import.meta.")) {
+        const defines = getVirtualModuleDefines(state, options?.ssr ?? false);
+        transformed = applyDefineReplacements(transformed, defines);
+      }
 
-      return { code: transformed, map: null };
+      return transformed === code ? null : { code: transformed, map: null };
     } catch (e: unknown) {
       state.logger.error(`transformWithOxc failed for ${realPath}:`, e);
       let dumpPath: string | null = null;

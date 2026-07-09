@@ -115,7 +115,7 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
   const hasSfcMainDefined = moduleInfo.hasSfcMainDefined;
 
   if (hasExportDefault && !hasSfcMainDefined) {
-    output = rewriteDefaultExportToSfcMain(output);
+    output = rewriteDefaultExportToSfcMain(output, moduleInfo);
     // Add __scopeId for scoped CSS support
     if (compiled.hasScoped && compiled.scopeId) {
       output += `\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`;

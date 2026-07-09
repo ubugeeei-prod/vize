@@ -2,6 +2,7 @@ import { parseSync } from "vite";
 
 const OUTPUT_PARSE_ID = "vize-output.tsx";
 const SFC_MAIN_NAME = "_sfc_main";
+const EXPORT_DEFAULT = "export default";
 
 type AstNode = {
   type?: string;
@@ -15,6 +16,8 @@ export type ModuleOutputInfo = {
   hasSfcMainDefined: boolean;
   hasNamedRenderExport: boolean;
   hasNamedSsrRenderExport: boolean;
+  defaultExportKeywordEnd: number | null;
+  defaultExportStart: number | null;
 };
 
 function isNode(value: unknown): value is AstNode {
@@ -105,6 +108,36 @@ function findDefaultExport(program: AstNode | null): AstNode | null {
   );
 }
 
+function analyzeFastDefaultOutput(code: string): ModuleOutputInfo | null {
+  if (
+    code.includes(SFC_MAIN_NAME) ||
+    code.includes("export function render") ||
+    code.includes("export function ssrRender") ||
+    code.includes("export {")
+  ) {
+    return null;
+  }
+
+  const defaultExportStart = code.indexOf(EXPORT_DEFAULT);
+  if (defaultExportStart === -1 || defaultExportStart !== code.lastIndexOf(EXPORT_DEFAULT)) {
+    return null;
+  }
+
+  const before = defaultExportStart === 0 ? "\n" : code[defaultExportStart - 1];
+  if (!before || !/\s|;/.test(before)) {
+    return null;
+  }
+
+  return {
+    hasDefaultExport: true,
+    hasSfcMainDefined: false,
+    hasNamedRenderExport: false,
+    hasNamedSsrRenderExport: false,
+    defaultExportStart,
+    defaultExportKeywordEnd: defaultExportStart + EXPORT_DEFAULT.length,
+  };
+}
+
 function getExportDefaultKeywordEnd(code: string, defaultExport: AstNode): number | null {
   const exportStart = getNodeStart(defaultExport);
   if (exportStart == null) {
@@ -116,9 +149,18 @@ function getExportDefaultKeywordEnd(code: string, defaultExport: AstNode): numbe
 }
 
 export function analyzeModuleOutput(code: string): ModuleOutputInfo {
+  const fastOutput = analyzeFastDefaultOutput(code);
+  if (fastOutput) {
+    return fastOutput;
+  }
+
   const program = parseProgram(code);
   const body = getProgramBody(program);
   const defaultExport = findDefaultExport(program);
+  const defaultExportStart = getNodeStart(defaultExport);
+  const defaultExportKeywordEnd = defaultExport
+    ? getExportDefaultKeywordEnd(code, defaultExport)
+    : null;
   const exportedNames = body
     .filter((statement) => statement.type === "ExportNamedDeclaration")
     .flatMap(getExportedNames);
@@ -133,13 +175,25 @@ export function analyzeModuleOutput(code: string): ModuleOutputInfo {
     }),
     hasNamedRenderExport: exportedNames.includes("render"),
     hasNamedSsrRenderExport: exportedNames.includes("ssrRender"),
+    defaultExportKeywordEnd,
+    defaultExportStart,
   };
 }
 
-export function rewriteDefaultExportToSfcMain(code: string): string {
-  const defaultExport = findDefaultExport(parseProgram(code));
-  const exportStart = getNodeStart(defaultExport);
-  const keywordEnd = defaultExport ? getExportDefaultKeywordEnd(code, defaultExport) : null;
+export function rewriteDefaultExportToSfcMain(
+  code: string,
+  moduleInfo: Pick<ModuleOutputInfo, "defaultExportKeywordEnd" | "defaultExportStart"> = {
+    defaultExportKeywordEnd: null,
+    defaultExportStart: null,
+  },
+): string {
+  let exportStart = moduleInfo.defaultExportStart;
+  let keywordEnd = moduleInfo.defaultExportKeywordEnd;
+  if (exportStart == null || keywordEnd == null) {
+    const defaultExport = findDefaultExport(parseProgram(code));
+    exportStart = getNodeStart(defaultExport);
+    keywordEnd = defaultExport ? getExportDefaultKeywordEnd(code, defaultExport) : null;
+  }
   if (exportStart == null || keywordEnd == null) {
     return code;
   }
