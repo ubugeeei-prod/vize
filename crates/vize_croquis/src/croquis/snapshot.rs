@@ -5,6 +5,7 @@
 //! report, and cross-file crates can share without re-walking parser data.
 
 mod builders;
+mod losses;
 mod names;
 mod types;
 
@@ -24,7 +25,7 @@ impl CroquisSemanticSnapshot {
             provides: builders::provide_snapshots(croquis),
             injects: builders::inject_snapshots(croquis),
             reactive_sources: builders::reactive_source_snapshots(croquis),
-            reactivity_losses: builders::reactivity_loss_snapshots(croquis),
+            reactivity_losses: losses::reactivity_loss_snapshots(croquis),
         }
     }
 }

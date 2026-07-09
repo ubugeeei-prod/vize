@@ -1,14 +1,13 @@
 use super::super::{
     ComponentUsage, Croquis, EventListener, PassedProp, SlotUsage, TemplateExpression,
 };
-use super::names::*;
-use super::types::*;
+use super::{names, types as snapshot};
 use crate::provide::{InjectEntry, ProvideEntry};
-use crate::reactivity::{ReactiveSource, ReactivityLoss, ReactivityLossKind};
+use crate::reactivity::ReactiveSource;
 use crate::scope::ScopeBinding;
 use vize_carton::CompactString;
 
-pub(super) fn binding_snapshots(croquis: &Croquis) -> Vec<SemanticBindingSnapshot> {
+pub(super) fn binding_snapshots(croquis: &Croquis) -> Vec<snapshot::SemanticBindingSnapshot> {
     let mut bindings: Vec<_> = croquis
         .bindings
         .iter()
@@ -17,12 +16,16 @@ pub(super) fn binding_snapshots(croquis: &Croquis) -> Vec<SemanticBindingSnapsho
             let range = croquis
                 .binding_spans
                 .get(name)
-                .map(|(start, end)| SemanticSourceRange::new(*start, *end));
-            SemanticBindingSnapshot {
-                id: semantic_id("binding", name, range.map(|range| range.start).unwrap_or(0)),
+                .map(|(start, end)| snapshot::SemanticSourceRange::new(*start, *end));
+            snapshot::SemanticBindingSnapshot {
+                id: names::semantic_id(
+                    "binding",
+                    name,
+                    range.map(|range| range.start).unwrap_or(0),
+                ),
                 name: CompactString::new(name),
-                kind: binding_kind(kind),
-                category: binding_category(kind),
+                kind: names::binding_kind(kind),
+                category: names::binding_category(kind),
                 prop_name,
                 needs_value_in_script: croquis.needs_value_in_script(name),
                 range,
@@ -33,7 +36,7 @@ pub(super) fn binding_snapshots(croquis: &Croquis) -> Vec<SemanticBindingSnapsho
     bindings
 }
 
-pub(super) fn scope_snapshots(croquis: &Croquis) -> Vec<SemanticScopeSnapshot> {
+pub(super) fn scope_snapshots(croquis: &Croquis) -> Vec<snapshot::SemanticScopeSnapshot> {
     croquis
         .scopes
         .iter()
@@ -44,11 +47,11 @@ pub(super) fn scope_snapshots(croquis: &Croquis) -> Vec<SemanticScopeSnapshot> {
                 .collect();
             bindings.sort_by(|left, right| left.name.as_str().cmp(right.name.as_str()));
 
-            SemanticScopeSnapshot {
+            snapshot::SemanticScopeSnapshot {
                 id: scope.id.as_u32(),
                 parent_ids: scope.parents.iter().map(|parent| parent.as_u32()).collect(),
                 kind: scope.kind.to_display(),
-                range: SemanticSourceRange::new(scope.span.start, scope.span.end),
+                range: snapshot::SemanticSourceRange::new(scope.span.start, scope.span.end),
                 binding_count: scope.binding_count(),
                 bindings,
             }
@@ -56,10 +59,13 @@ pub(super) fn scope_snapshots(croquis: &Croquis) -> Vec<SemanticScopeSnapshot> {
         .collect()
 }
 
-fn scope_binding_snapshot(name: &str, binding: &ScopeBinding) -> SemanticScopeBindingSnapshot {
-    SemanticScopeBindingSnapshot {
+fn scope_binding_snapshot(
+    name: &str,
+    binding: &ScopeBinding,
+) -> snapshot::SemanticScopeBindingSnapshot {
+    snapshot::SemanticScopeBindingSnapshot {
         name: CompactString::new(name),
-        kind: binding_kind(binding.binding_type),
+        kind: names::binding_kind(binding.binding_type),
         declaration_offset: binding.declaration_offset,
         used: binding.is_used(),
         mutated: binding.is_mutated(),
@@ -68,7 +74,7 @@ fn scope_binding_snapshot(name: &str, binding: &ScopeBinding) -> SemanticScopeBi
 
 pub(super) fn template_expression_snapshots(
     croquis: &Croquis,
-) -> Vec<SemanticTemplateExpressionSnapshot> {
+) -> Vec<snapshot::SemanticTemplateExpressionSnapshot> {
     let mut expressions: Vec<_> = croquis
         .template_expressions
         .iter()
@@ -86,18 +92,20 @@ pub(super) fn template_expression_snapshots(
 
 fn template_expression_snapshot(
     expression: &TemplateExpression,
-) -> SemanticTemplateExpressionSnapshot {
-    SemanticTemplateExpressionSnapshot {
-        id: semantic_id("template", expression.kind.as_str(), expression.start),
+) -> snapshot::SemanticTemplateExpressionSnapshot {
+    snapshot::SemanticTemplateExpressionSnapshot {
+        id: names::semantic_id("template", expression.kind.as_str(), expression.start),
         content: expression.content.clone(),
-        kind: template_expression_kind(expression.kind),
-        range: SemanticSourceRange::new(expression.start, expression.end),
+        kind: names::template_expression_kind(expression.kind),
+        range: snapshot::SemanticSourceRange::new(expression.start, expression.end),
         scope_id: expression.scope_id.as_u32(),
         vif_guard: expression.vif_guard.clone(),
     }
 }
 
-pub(super) fn component_usage_snapshots(croquis: &Croquis) -> Vec<SemanticComponentUsageSnapshot> {
+pub(super) fn component_usage_snapshots(
+    croquis: &Croquis,
+) -> Vec<snapshot::SemanticComponentUsageSnapshot> {
     let mut usages: Vec<_> = croquis
         .component_usages
         .iter()
@@ -113,11 +121,11 @@ pub(super) fn component_usage_snapshots(croquis: &Croquis) -> Vec<SemanticCompon
     usages
 }
 
-fn component_usage_snapshot(usage: &ComponentUsage) -> SemanticComponentUsageSnapshot {
-    SemanticComponentUsageSnapshot {
-        id: semantic_id("component", usage.name.as_str(), usage.start),
+fn component_usage_snapshot(usage: &ComponentUsage) -> snapshot::SemanticComponentUsageSnapshot {
+    snapshot::SemanticComponentUsageSnapshot {
+        id: names::semantic_id("component", usage.name.as_str(), usage.start),
         name: usage.name.clone(),
-        range: SemanticSourceRange::new(usage.start, usage.end),
+        range: snapshot::SemanticSourceRange::new(usage.start, usage.end),
         scope_id: usage.scope_id.as_u32(),
         vif_guard: usage.vif_guard.clone(),
         has_spread_attrs: usage.has_spread_attrs,
@@ -127,34 +135,34 @@ fn component_usage_snapshot(usage: &ComponentUsage) -> SemanticComponentUsageSna
     }
 }
 
-fn passed_prop_snapshot(prop: &PassedProp) -> SemanticPassedPropSnapshot {
-    SemanticPassedPropSnapshot {
+fn passed_prop_snapshot(prop: &PassedProp) -> snapshot::SemanticPassedPropSnapshot {
+    snapshot::SemanticPassedPropSnapshot {
         name: prop.name.clone(),
         value: prop.value.clone(),
-        range: SemanticSourceRange::new(prop.start, prop.end),
+        range: snapshot::SemanticSourceRange::new(prop.start, prop.end),
         dynamic: prop.is_dynamic,
     }
 }
 
-fn event_listener_snapshot(event: &EventListener) -> SemanticEventListenerSnapshot {
-    SemanticEventListenerSnapshot {
+fn event_listener_snapshot(event: &EventListener) -> snapshot::SemanticEventListenerSnapshot {
+    snapshot::SemanticEventListenerSnapshot {
         name: event.name.clone(),
         handler: event.handler.clone(),
         modifiers: event.modifiers.iter().cloned().collect(),
-        range: SemanticSourceRange::new(event.start, event.end),
+        range: snapshot::SemanticSourceRange::new(event.start, event.end),
     }
 }
 
-fn slot_usage_snapshot(slot: &SlotUsage) -> SemanticSlotUsageSnapshot {
-    SemanticSlotUsageSnapshot {
+fn slot_usage_snapshot(slot: &SlotUsage) -> snapshot::SemanticSlotUsageSnapshot {
+    snapshot::SemanticSlotUsageSnapshot {
         name: slot.name.clone(),
         scope_vars: slot.scope_vars.iter().cloned().collect(),
-        range: SemanticSourceRange::new(slot.start, slot.end),
+        range: snapshot::SemanticSourceRange::new(slot.start, slot.end),
         scoped: slot.has_scope,
     }
 }
 
-pub(super) fn provide_snapshots(croquis: &Croquis) -> Vec<SemanticProvideSnapshot> {
+pub(super) fn provide_snapshots(croquis: &Croquis) -> Vec<snapshot::SemanticProvideSnapshot> {
     let mut provides: Vec<_> = croquis
         .provide_inject
         .provides()
@@ -171,20 +179,20 @@ pub(super) fn provide_snapshots(croquis: &Croquis) -> Vec<SemanticProvideSnapsho
     provides
 }
 
-fn provide_snapshot(provide: &ProvideEntry) -> SemanticProvideSnapshot {
-    let key = provide_key_value(&provide.key);
-    SemanticProvideSnapshot {
-        id: semantic_id("provide", key.as_str(), provide.start),
+fn provide_snapshot(provide: &ProvideEntry) -> snapshot::SemanticProvideSnapshot {
+    let key = names::provide_key_value(&provide.key);
+    snapshot::SemanticProvideSnapshot {
+        id: names::semantic_id("provide", key.as_str(), provide.start),
         key,
-        key_kind: provide_key_kind(&provide.key),
+        key_kind: names::provide_key_kind(&provide.key),
         value: provide.value.clone(),
         value_type: provide.value_type.clone(),
         from_composable: provide.from_composable.clone(),
-        range: SemanticSourceRange::new(provide.start, provide.end),
+        range: snapshot::SemanticSourceRange::new(provide.start, provide.end),
     }
 }
 
-pub(super) fn inject_snapshots(croquis: &Croquis) -> Vec<SemanticInjectSnapshot> {
+pub(super) fn inject_snapshots(croquis: &Croquis) -> Vec<snapshot::SemanticInjectSnapshot> {
     let mut injects: Vec<_> = croquis
         .provide_inject
         .injects()
@@ -201,23 +209,25 @@ pub(super) fn inject_snapshots(croquis: &Croquis) -> Vec<SemanticInjectSnapshot>
     injects
 }
 
-fn inject_snapshot(inject: &InjectEntry) -> SemanticInjectSnapshot {
-    let key = provide_key_value(&inject.key);
-    SemanticInjectSnapshot {
-        id: semantic_id("inject", key.as_str(), inject.start),
+fn inject_snapshot(inject: &InjectEntry) -> snapshot::SemanticInjectSnapshot {
+    let key = names::provide_key_value(&inject.key);
+    snapshot::SemanticInjectSnapshot {
+        id: names::semantic_id("inject", key.as_str(), inject.start),
         key,
-        key_kind: provide_key_kind(&inject.key),
+        key_kind: names::provide_key_kind(&inject.key),
         local_name: inject.local_name.clone(),
         default_value: inject.default_value.clone(),
         expected_type: inject.expected_type.clone(),
-        pattern: inject_pattern_kind(&inject.pattern),
-        destructured_names: inject_pattern_names(&inject.pattern),
+        pattern: names::inject_pattern_kind(&inject.pattern),
+        destructured_names: names::inject_pattern_names(&inject.pattern),
         from_composable: inject.from_composable.clone(),
-        range: SemanticSourceRange::new(inject.start, inject.end),
+        range: snapshot::SemanticSourceRange::new(inject.start, inject.end),
     }
 }
 
-pub(super) fn reactive_source_snapshots(croquis: &Croquis) -> Vec<SemanticReactiveSourceSnapshot> {
+pub(super) fn reactive_source_snapshots(
+    croquis: &Croquis,
+) -> Vec<snapshot::SemanticReactiveSourceSnapshot> {
     let mut sources: Vec<_> = croquis
         .reactivity
         .sources()
@@ -231,113 +241,13 @@ pub(super) fn reactive_source_snapshots(croquis: &Croquis) -> Vec<SemanticReacti
     sources
 }
 
-fn reactive_source_snapshot(source: &ReactiveSource) -> SemanticReactiveSourceSnapshot {
-    SemanticReactiveSourceSnapshot {
-        id: semantic_id("reactive", source.name.as_str(), source.declaration_offset),
+fn reactive_source_snapshot(source: &ReactiveSource) -> snapshot::SemanticReactiveSourceSnapshot {
+    snapshot::SemanticReactiveSourceSnapshot {
+        id: names::semantic_id("reactive", source.name.as_str(), source.declaration_offset),
         name: source.name.clone(),
-        kind: reactive_kind_name(source.kind),
-        category: reactive_kind_category(source.kind),
+        kind: names::reactive_kind_name(source.kind),
+        category: names::reactive_kind_category(source.kind),
         needs_value_access: source.kind.needs_value_access(),
         declaration_offset: source.declaration_offset,
     }
-}
-
-pub(super) fn reactivity_loss_snapshots(croquis: &Croquis) -> Vec<SemanticReactivityLossSnapshot> {
-    let mut losses: Vec<_> = croquis
-        .reactivity
-        .losses()
-        .iter()
-        .map(reactivity_loss_snapshot)
-        .collect();
-    losses.sort_by(|left, right| {
-        (left.range.start, left.range.end, left.kind).cmp(&(
-            right.range.start,
-            right.range.end,
-            right.kind,
-        ))
-    });
-    losses
-}
-
-fn reactivity_loss_snapshot(loss: &ReactivityLoss) -> SemanticReactivityLossSnapshot {
-    let mut snapshot = SemanticReactivityLossSnapshot {
-        id: semantic_id(
-            "reactivity-loss",
-            reactivity_loss_kind_name(&loss.kind),
-            loss.start,
-        ),
-        kind: reactivity_loss_kind_name(&loss.kind),
-        category: "loss",
-        source_name: None,
-        target_name: None,
-        property_name: None,
-        extracted_names: Vec::new(),
-        range: SemanticSourceRange::new(loss.start, loss.end),
-    };
-
-    match &loss.kind {
-        ReactivityLossKind::ReactiveDestructure {
-            source_name,
-            destructured_props,
-        }
-        | ReactivityLossKind::RefValueDestructure {
-            source_name,
-            destructured_props,
-        } => {
-            snapshot.source_name = Some(source_name.clone());
-            snapshot.extracted_names = destructured_props.clone();
-        }
-        ReactivityLossKind::RefValueExtract {
-            source_name,
-            target_name,
-        } => {
-            snapshot.source_name = Some(source_name.clone());
-            snapshot.target_name = Some(target_name.clone());
-        }
-        ReactivityLossKind::ReactivePropertyExtract {
-            source_name,
-            prop_name,
-            target_name,
-        } => {
-            snapshot.source_name = Some(source_name.clone());
-            snapshot.property_name = Some(prop_name.clone());
-            snapshot.target_name = Some(target_name.clone());
-        }
-        ReactivityLossKind::PropsDestructure { destructured_props } => {
-            snapshot.extracted_names = destructured_props.clone();
-        }
-        ReactivityLossKind::FunctionArgumentExtract {
-            source_name,
-            argument_name,
-            callee_name: _,
-        } => {
-            snapshot.source_name = Some(source_name.clone());
-            snapshot.target_name = Some(argument_name.clone());
-        }
-        ReactivityLossKind::GetterCallExtract {
-            source_name,
-            getter_name,
-            target_name,
-            ..
-        } => {
-            snapshot.source_name = Some(source_name.clone());
-            snapshot.property_name = Some(getter_name.clone());
-            snapshot.target_name = Some(target_name.clone());
-        }
-        ReactivityLossKind::PlainValueAlias {
-            source_name,
-            alias_name,
-            target_name,
-        } => {
-            snapshot.source_name = Some(source_name.clone());
-            snapshot.property_name = Some(alias_name.clone());
-            snapshot.target_name = Some(target_name.clone());
-        }
-        ReactivityLossKind::ReactiveSpread { source_name }
-        | ReactivityLossKind::ReactiveReassign { source_name } => {
-            snapshot.source_name = Some(source_name.clone());
-        }
-    }
-
-    snapshot
 }
