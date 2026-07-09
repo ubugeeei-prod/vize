@@ -93,9 +93,49 @@ export interface CrossFileStats {
   analysisTimeMs: number;
 }
 
+export interface CrossFileComplexityInput {
+  componentCount: number;
+  templateIfCount: number;
+  templateForCount: number;
+  templateLogicalOperatorCount: number;
+  componentTreeVIfMaxDepth: number;
+  componentTreeVForMaxDepth: number;
+  componentTreeScopedSlotMaxDepth: number;
+  componentTreeTemplateNestingScore: number;
+  slotCount: number;
+  propDrillingEdgeCount: number;
+  globalStateReferenceCount: number;
+  provideInjectMaxDepth: number;
+  provideInjectReferenceCount: number;
+  fallthroughRiskCount: number;
+  reactiveNodeCount: number;
+  reactiveEdgeCount: number;
+  reactiveCycleCount: number;
+}
+
+export interface CrossFileComplexityDimensions {
+  templateControlFlow: number;
+  slotUsage: number;
+  propDrilling: number;
+  globalState: number;
+  provideInject: number;
+  fallthroughAttrs: number;
+  reactiveGraph: number;
+}
+
+export interface CrossFileComplexityReport {
+  input: CrossFileComplexityInput;
+  dimensions: CrossFileComplexityDimensions;
+  cyclomaticScore: number;
+  cognitiveScore: number;
+  totalScore: number;
+  band: "low" | "moderate" | "high" | "extreme";
+}
+
 export interface CrossFileResult {
   diagnostics: CrossFileDiagnostic[];
   circularDependencies: string[][];
+  complexityReport: CrossFileComplexityReport;
   stats: CrossFileStats;
   filePaths: string[];
 }

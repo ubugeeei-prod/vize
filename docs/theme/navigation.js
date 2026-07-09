@@ -48,6 +48,7 @@ const vizeDocsNavigation = (() => {
     ["/guide/unplugin", "Bundler Integrations"],
     ["/guide/wasm", "WASM Bindings"],
     ["/guide/static-analysis", "Static Analysis"],
+    ["/guide/cross-file-complexity", "Cross-file Complexity"],
     ["/guide/analysis-diagnostics", "Diagnostics"],
     ["/guide/oxlint", "Oxlint Plugin"],
     ["/guide/comment-annotations", "Comment Annotations"],
@@ -101,6 +102,7 @@ const vizeDocsNavigation = (() => {
       title: "Static Analysis",
       paths: [
         "/guide/static-analysis",
+        "/guide/cross-file-complexity",
         "/guide/analysis-diagnostics",
         "/guide/oxlint",
         "/guide/comment-annotations",

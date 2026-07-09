@@ -15,11 +15,14 @@ use vize_croquis::{ScopeKind, TemplateExpressionKind};
 /// Raw cross-file signals used to score Vue component complexity.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct ComplexityInput {
+    pub component_count: usize,
     pub template_if_count: usize,
     pub template_for_count: usize,
+    pub template_logical_operator_count: usize,
     pub component_tree_v_if_max_depth: usize,
     pub component_tree_v_for_max_depth: usize,
     pub component_tree_scoped_slot_max_depth: usize,
+    pub component_tree_template_nesting_score: usize,
     pub slot_count: usize,
     pub prop_drilling_edge_count: usize,
     pub global_state_reference_count: usize,
@@ -70,23 +73,18 @@ pub enum ComplexityBand {
 pub struct ComplexityReport {
     pub input: ComplexityInput,
     pub dimensions: ComplexityDimensionScores,
+    pub cyclomatic_score: u32,
+    pub cognitive_score: u32,
     pub total_score: u32,
     pub band: ComplexityBand,
 }
 
 impl ComplexityReport {
     pub fn from_input(input: ComplexityInput) -> Self {
+        let cyclomatic_score = cyclomatic_score(input);
+        let cognitive_score = cognitive_score(input);
         let dimensions = ComplexityDimensionScores {
-            template_control_flow: weighted(input.template_if_count, 2)
-                .saturating_add(weighted(input.template_for_count, 3))
-                .saturating_add(weighted(
-                    input.component_tree_v_if_max_depth.saturating_sub(1),
-                    4,
-                ))
-                .saturating_add(weighted(
-                    input.component_tree_v_for_max_depth.saturating_sub(1),
-                    5,
-                )),
+            template_control_flow: cyclomatic_score.saturating_add(cognitive_score),
             slot_usage: weighted(input.slot_count, 2).saturating_add(weighted(
                 input.component_tree_scoped_slot_max_depth.saturating_sub(1),
                 4,
@@ -105,6 +103,8 @@ impl ComplexityReport {
         Self {
             input,
             dimensions,
+            cyclomatic_score,
+            cognitive_score,
             total_score,
             band: band_for_score(total_score),
         }
@@ -198,12 +198,19 @@ fn complexity_input(registry: &ModuleRegistry, result: &CrossFileResult) -> Comp
 
     for entry in registry.vue_components() {
         let analysis = &entry.analysis;
+        input.component_count = input.component_count.saturating_add(1);
 
         input.template_if_count += analysis
             .template_expressions
             .iter()
             .filter(|expr| expr.kind == TemplateExpressionKind::VIf)
             .count();
+        input.template_logical_operator_count += analysis
+            .template_expressions
+            .iter()
+            .filter(|expr| expr.kind == TemplateExpressionKind::VIf)
+            .map(|expr| logical_operator_count(expr.content.as_str()))
+            .sum::<usize>();
         input.template_for_count += analysis
             .scopes
             .iter()
@@ -230,4 +237,26 @@ fn weighted(count: usize, weight: u32) -> u32 {
     u32::try_from(count)
         .unwrap_or(u32::MAX)
         .saturating_mul(weight)
+}
+
+fn cyclomatic_score(input: ComplexityInput) -> u32 {
+    weighted(
+        input
+            .component_count
+            .saturating_add(input.template_if_count)
+            .saturating_add(input.template_for_count)
+            .saturating_add(input.template_logical_operator_count),
+        1,
+    )
+}
+
+fn cognitive_score(input: ComplexityInput) -> u32 {
+    weighted(input.component_tree_template_nesting_score, 1)
+}
+
+fn logical_operator_count(content: &str) -> usize {
+    content
+        .matches("&&")
+        .count()
+        .saturating_add(content.matches("||").count())
 }

@@ -16,11 +16,14 @@ use vize_croquis::{Croquis, ScopeId, VForScopeData, VSlotScopeData};
 #[test]
 fn scores_each_complexity_dimension() {
     let report = ComplexityReport::from_input(ComplexityInput {
+        component_count: 1,
         template_if_count: 2,
         template_for_count: 1,
+        template_logical_operator_count: 2,
         component_tree_v_if_max_depth: 3,
         component_tree_v_for_max_depth: 2,
         component_tree_scoped_slot_max_depth: 3,
+        component_tree_template_nesting_score: 9,
         slot_count: 3,
         prop_drilling_edge_count: 2,
         global_state_reference_count: 4,
@@ -32,14 +35,16 @@ fn scores_each_complexity_dimension() {
         reactive_cycle_count: 1,
     });
 
-    assert_eq!(report.dimensions.template_control_flow, 20);
+    assert_eq!(report.cyclomatic_score, 6);
+    assert_eq!(report.cognitive_score, 9);
+    assert_eq!(report.dimensions.template_control_flow, 15);
     assert_eq!(report.dimensions.slot_usage, 14);
     assert_eq!(report.dimensions.prop_drilling, 6);
     assert_eq!(report.dimensions.global_state, 8);
     assert_eq!(report.dimensions.provide_inject, 9);
     assert_eq!(report.dimensions.fallthrough_attrs, 8);
     assert_eq!(report.dimensions.reactive_graph, 30);
-    assert_eq!(report.total_score, 95);
+    assert_eq!(report.total_score, 90);
     assert_eq!(report.band, ComplexityBand::Extreme);
 }
 
@@ -47,7 +52,7 @@ fn scores_each_complexity_dimension() {
 fn summarizes_complexity_from_registry_and_result() {
     let mut analysis = Croquis::new();
     analysis.template_expressions.push(TemplateExpression {
-        content: CompactString::new("ready"),
+        content: CompactString::new("ready && active"),
         kind: TemplateExpressionKind::VIf,
         start: 0,
         end: 5,
@@ -136,6 +141,9 @@ fn summarizes_complexity_from_registry_and_result() {
 
     assert_eq!(report.input.template_if_count, 1);
     assert_eq!(report.input.template_for_count, 1);
+    assert_eq!(report.input.template_logical_operator_count, 1);
+    assert_eq!(report.cyclomatic_score, 4);
+    assert_eq!(report.cognitive_score, 0);
     assert_eq!(report.input.slot_count, 1);
     assert_eq!(report.input.prop_drilling_edge_count, 1);
     assert_eq!(report.input.global_state_reference_count, 1);
@@ -144,7 +152,7 @@ fn summarizes_complexity_from_registry_and_result() {
     assert_eq!(report.input.fallthrough_risk_count, 1);
     assert_eq!(report.input.reactive_node_count, 1);
     assert_eq!(report.input.reactive_edge_count, 1);
-    assert_eq!(report.total_score, 26);
+    assert_eq!(report.total_score, 25);
     assert_eq!(report.band, ComplexityBand::Moderate);
 }
 
@@ -212,7 +220,10 @@ fn summarizes_component_tree_template_nesting() {
     assert_eq!(report.input.component_tree_v_if_max_depth, 2);
     assert_eq!(report.input.component_tree_v_for_max_depth, 2);
     assert_eq!(report.input.component_tree_scoped_slot_max_depth, 2);
-    assert_eq!(report.dimensions.template_control_flow, 17);
+    assert_eq!(report.input.component_tree_template_nesting_score, 17);
+    assert_eq!(report.cyclomatic_score, 5);
+    assert_eq!(report.cognitive_score, 17);
+    assert_eq!(report.dimensions.template_control_flow, 22);
     assert_eq!(report.dimensions.slot_usage, 6);
 }
 

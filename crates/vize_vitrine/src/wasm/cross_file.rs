@@ -286,10 +286,10 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
         })
         .collect();
 
-    // Build result JSON
     let output = serde_json::json!({
         "diagnostics": diagnostics,
         "circularDependencies": circular_deps,
+        "complexityReport": super::cross_file_complexity::complexity_report_json(&result.complexity_report),
         "stats": {
             "filesAnalyzed": result.stats.files_analyzed,
             "vueComponents": result.stats.vue_components,
