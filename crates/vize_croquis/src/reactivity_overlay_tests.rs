@@ -1,5 +1,6 @@
 use crate::effect_graph::EffectGraph;
 use crate::reactivity::{ReactiveKind, ReactivityTracker};
+use crate::script_parser::parse_script_setup;
 use vize_carton::CompactString;
 
 #[test]
@@ -48,4 +49,26 @@ fn overlay_sorts_sources_by_id_and_losses_by_range() {
     assert_eq!(overlay.sources[1].name.as_str(), "earlier");
     assert_eq!(overlay.losses[0].kind, "refValueExtract");
     assert_eq!(overlay.losses[1].kind, "reactiveSpread");
+}
+
+#[test]
+fn parser_overlay_preserves_reactive_declaration_offsets() {
+    let source = r#"import { ref as vue_ref } from 'vue'
+const greeting = 'こんにちは👋'
+const count = vue_ref(0), state = shallowReactive({ count: 0 })
+const doubled = computed(() => count.value * 2)
+"#;
+    let overlay = parse_script_setup(source).reactivity.overlay();
+
+    for source_overlay in &overlay.sources {
+        assert_eq!(
+            source_overlay.declaration_offset as usize,
+            source.find(source_overlay.name.as_str()).unwrap(),
+            "overlay offset for `{}`",
+            source_overlay.name
+        );
+    }
+
+    let json = serde_json::to_string_pretty(&overlay).unwrap();
+    insta::assert_snapshot!(json);
 }

@@ -38,7 +38,7 @@ ScriptParseResult {
                 ),
                 name: "count",
                 kind: Ref,
-                declaration_offset: 0,
+                declaration_offset: 19,
             },
             ReactiveSource {
                 id: ReactiveId(
@@ -46,7 +46,7 @@ ScriptParseResult {
                 ),
                 name: "doubled",
                 kind: Computed,
-                declaration_offset: 0,
+                declaration_offset: 52,
             },
             ReactiveSource {
                 id: ReactiveId(
@@ -54,7 +54,7 @@ ScriptParseResult {
                 ),
                 name: "state",
                 kind: Reactive,
-                declaration_offset: 0,
+                declaration_offset: 112,
             },
         ],
         by_name: {

@@ -23,11 +23,14 @@ pub fn detect_reactivity_call(
         .unwrap_or(callee_name);
 
     match resolved_name {
-        "ref" | "shallowRef" => Some((ReactiveKind::Ref, BindingType::SetupRef)),
+        "ref" => Some((ReactiveKind::Ref, BindingType::SetupRef)),
+        "shallowRef" => Some((ReactiveKind::ShallowRef, BindingType::SetupRef)),
         "computed" => Some((ReactiveKind::Computed, BindingType::SetupRef)),
-        "reactive" | "shallowReactive" => {
-            Some((ReactiveKind::Reactive, BindingType::SetupReactiveConst))
-        }
+        "reactive" => Some((ReactiveKind::Reactive, BindingType::SetupReactiveConst)),
+        "shallowReactive" => Some((
+            ReactiveKind::ShallowReactive,
+            BindingType::SetupReactiveConst,
+        )),
         "toRef" => Some((ReactiveKind::ToRef, BindingType::SetupRef)),
         "toRefs" => Some((ReactiveKind::ToRefs, BindingType::SetupRef)),
         "customRef" => Some((ReactiveKind::Ref, BindingType::SetupRef)),

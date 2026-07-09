@@ -1222,7 +1222,7 @@ Croquis {
                 ),
                 name: "count",
                 kind: Ref,
-                declaration_offset: 0,
+                declaration_offset: 19,
             },
         ],
         by_name: {

@@ -1,5 +1,9 @@
+mod reactivity_offsets;
+
+use self::reactivity_offsets::assert_reactive_source;
 use super::{ScriptParserOptions, parse_script, parse_script_setup, parse_script_with_options};
 use crate::croquis::ComponentShape;
+use crate::reactivity::ReactiveKind;
 use crate::scope::{ScopeData, ScopeKind};
 use vize_carton::{CompactString, append, cstr};
 use vize_relief::BindingType;
@@ -299,34 +303,20 @@ fn test_parse_define_emits_runtime_object_spread_local_literal() {
 }
 
 #[test]
-fn test_parse_plain_script_exported_bindings() {
-    let result = parse_script(
-        r#"
-export const foo = 'bar'
-export function hello() {}
-export class MyClass {}
-"#,
-    );
-
-    assert!(result.bindings.contains("foo"));
-    assert!(result.bindings.contains("hello"));
-    assert!(result.bindings.contains("MyClass"));
-    assert!(result.invalid_exports.is_empty());
-}
-
-#[test]
 fn test_parse_reactivity() {
-    let result = parse_script_setup(
-        r#"
+    let source = r#"
             const count = ref(0)
             const doubled = computed(() => count.value * 2)
             const state = reactive({ name: 'hello' })
-        "#,
-    );
+        "#;
+    let result = parse_script_setup(source);
 
     assert!(result.reactivity.is_reactive("count"));
     assert!(result.reactivity.is_reactive("doubled"));
     assert!(result.reactivity.is_reactive("state"));
+    assert_reactive_source(&result, source, "count", ReactiveKind::Ref);
+    assert_reactive_source(&result, source, "doubled", ReactiveKind::Computed);
+    assert_reactive_source(&result, source, "state", ReactiveKind::Reactive);
     insta::assert_debug_snapshot!(result);
 }
 

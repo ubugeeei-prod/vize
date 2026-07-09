@@ -44,7 +44,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
     match &declarator.id {
         BindingPattern::BindingIdentifier(id) => {
             let name = id.name.as_str();
-
+            let at = id.span.start;
             // Record definition span for Go-to-Definition
             result
                 .binding_spans
@@ -69,7 +69,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     if macro_kind == MacroKind::DefineModel {
                         result
                             .reactivity
-                            .register(CompactString::new(name), ReactiveKind::Ref, 0);
+                            .register(CompactString::new(name), ReactiveKind::Ref, at);
                     }
                     if matches!(macro_kind, MacroKind::DefineProps | MacroKind::WithDefaults) {
                         result.reactivity.register(
@@ -93,7 +93,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
 
                     result
                         .reactivity
-                        .register(CompactString::new(name), reactive_kind, 0);
+                        .register(CompactString::new(name), reactive_kind, at);
                     result.bindings.add(name, binding_type);
                     // Walk into the call's callback arguments to track nested scopes
                     walk_call_arguments(result, call, source);

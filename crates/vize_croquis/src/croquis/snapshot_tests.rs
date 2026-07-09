@@ -88,9 +88,16 @@ function save() {
             && inject.local_name == "theme"
             && inject.default_value.as_deref() == Some("'light'")
     }));
-    assert!(snapshot.reactive_sources.iter().any(|source| {
-        source.name == "doubled" && source.kind == "computed" && source.category == "computed"
-    }));
+    let doubled = snapshot
+        .reactive_sources
+        .iter()
+        .find(|source| source.name == "doubled")
+        .expect("computed source should be exposed");
+    let doubled_offset = script.find("doubled").unwrap() as u32;
+    assert_eq!(doubled.kind, "computed");
+    assert_eq!(doubled.category, "computed");
+    assert_eq!(doubled.declaration_offset, doubled_offset);
+    assert_eq!(doubled.id, format!("reactive:doubled@{doubled_offset}"));
     assert!(
         snapshot
             .scopes
