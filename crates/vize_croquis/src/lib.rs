@@ -87,8 +87,13 @@ pub use symbol::{Symbol, SymbolFlags, SymbolId, SymbolTable};
 pub use analyzer::{Analyzer, AnalyzerOptions};
 pub use croquis::{
     AnalysisStats, BindingMetadata, COMPILER_MACRO_NAMES, ComponentShape, Croquis,
-    CroquisSemanticSummary, CroquisStats, ImportStatementInfo, InvalidExport, InvalidExportKind,
-    OptionGroup, OptionKey, OptionMember, OptionsDescriptor, ReExportInfo, TemplateExpression,
+    CroquisSemanticSnapshot, CroquisSemanticSummary, CroquisStats, ImportStatementInfo,
+    InvalidExport, InvalidExportKind, OptionGroup, OptionKey, OptionMember, OptionsDescriptor,
+    ReExportInfo, SemanticBindingSnapshot, SemanticComponentUsageSnapshot,
+    SemanticEventListenerSnapshot, SemanticInjectSnapshot, SemanticPassedPropSnapshot,
+    SemanticProvideSnapshot, SemanticReactiveSourceSnapshot, SemanticReactivityLossSnapshot,
+    SemanticScopeBindingSnapshot, SemanticScopeSnapshot, SemanticSlotUsageSnapshot,
+    SemanticSourceRange, SemanticTemplateExpressionSnapshot, TemplateExpression,
     TemplateExpressionKind, TypeExport, TypeExportKind, UndefinedRef, UnusedTemplateVar,
     UnusedVarContext,
 };

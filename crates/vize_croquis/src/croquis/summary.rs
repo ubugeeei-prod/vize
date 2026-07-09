@@ -6,9 +6,11 @@
 use super::Croquis;
 use super::template::TemplateExpressionKind;
 use crate::scope::ScopeKind;
+use serde::Serialize;
 
 /// Aggregate counts for the semantic facts stored in a [`Croquis`].
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
 #[non_exhaustive]
 pub struct CroquisSemanticSummary {
     pub scope_count: usize,
