@@ -552,8 +552,8 @@ async function measureVariants(variants, options) {
   }
 
   return variants.map((variant) => {
-    const runs = runsById.get(variant.id);
-    const medianMs = median(runs);
+    const runs = runsById.get(variant.id).map((ms) => Number(ms.toFixed(3)));
+    const medianMs = Number(median(runs).toFixed(3));
     return {
       id: variant.id,
       label: variant.label,
