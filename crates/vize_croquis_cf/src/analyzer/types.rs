@@ -198,6 +198,9 @@ pub struct CrossFileResult {
     /// Provide/inject tree, populated when provide/inject analysis is enabled.
     pub provide_inject_tree: Option<rules::ProvideInjectTree>,
 
+    /// Provide/inject tree summary, populated when provide/inject analysis is enabled.
+    pub provide_inject_tree_summary: Option<rules::ProvideInjectTreeSummary>,
+
     /// Unique ID issues.
     pub unique_id_issues: Vec<rules::UniqueIdIssue>,
 

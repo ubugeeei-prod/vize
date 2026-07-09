@@ -36,7 +36,7 @@ pub use props_validation::{
 pub(crate) use provide_inject::{
     ProvideInjectIndex, analyze_provide_inject_with_index, build_provide_inject_tree_with_index,
 };
-pub use provide_inject::{ProvideInjectMatch, ProvideInjectTree};
+pub use provide_inject::{ProvideInjectMatch, ProvideInjectTree, ProvideInjectTreeSummary};
 pub use race_conditions::RaceConditionIssue;
 pub(crate) use race_conditions::analyze_race_conditions_with_index;
 pub use reactivity::{ReactivityIssue, ReactivityIssueKind, analyze_reactivity};

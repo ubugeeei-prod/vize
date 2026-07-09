@@ -123,6 +123,21 @@ const state = inject('state')"#,
     assert_eq!(tree.roots[0].children.len(), 1);
     assert_eq!(tree.roots[0].children[0].children.len(), 1);
     assert_eq!(tree.roots[0].children[0].children[0].injects.len(), 1);
+
+    let summary = result
+        .provide_inject_tree_summary
+        .expect("tree summary should be built");
+    assert_eq!(summary.root_count, 1);
+    assert_eq!(summary.node_count, 3);
+    assert_eq!(summary.provider_component_count, 1);
+    assert_eq!(summary.injector_component_count, 1);
+    assert_eq!(summary.provide_count, 1);
+    assert_eq!(summary.inject_count, 1);
+    assert_eq!(summary.matched_inject_count, 1);
+    assert_eq!(summary.unmatched_inject_count, 0);
+    assert_eq!(summary.max_depth, 3);
+    assert_eq!(summary.max_child_fanout, 1);
+    assert_eq!(summary.max_provider_consumer_count, 1);
 }
 
 #[test]
