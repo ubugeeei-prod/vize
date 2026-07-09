@@ -18,6 +18,7 @@ mod options_api_required_props;
 mod package_exports_types;
 mod recent_issues;
 mod scan;
+mod template_block;
 mod tsx_sfc;
 #[test]
 fn batch_type_checker_snapshots_vue_diagnostics() {
@@ -67,7 +68,6 @@ const count: string = 0;
         insta::assert_debug_snapshot!("batch_type_checker_script_setup_type_error", relevant);
     });
 }
-
 #[test]
 fn corsa_bridge_completion_returns_inner_members_for_chained_ref_value() {
     // Guards the wired Corsa completion path (see #751): when the bridge is

@@ -225,6 +225,59 @@ fn ambient_collection_loads_compiler_options_module_declaration_packages() {
 }
 
 #[test]
+fn ambient_collection_keeps_vue_plugin_globals_from_exported_type_package() {
+    let root = unique_case_dir("compiler-options-vue-plugin-types");
+    let _ = std::fs::remove_dir_all(&root);
+    write(&root, "src/App.vue", "<template><VpButton /></template>\n");
+    write(
+        &root,
+        "node_modules/vue-plugin/package.json",
+        r#"{
+  "exports": {
+    "./components": {
+      "types": "./components.d.ts",
+      "import": "./components.mjs"
+    }
+  }
+}"#,
+    );
+    write(
+        &root,
+        "node_modules/vue-plugin/components.d.ts",
+        "export {};\ndeclare module \"vue\" { export interface GlobalComponents { VpButton: unknown } }\n",
+    );
+    write(
+        &root,
+        "node_modules/vue-plugin/components.mjs",
+        "export {}\n",
+    );
+    write(
+        &root,
+        "tsconfig.json",
+        r#"{
+  "compilerOptions": {
+    "types": ["vue-plugin/components"]
+  },
+  "include": ["src/**/*"]
+}"#,
+    );
+
+    let project_root = root.canonicalize().unwrap();
+    let files = collect_ambient_declaration_files(
+        &project_root,
+        Some(&project_root.join("tsconfig.json")),
+        &mut TsconfigInputCache::default(),
+    );
+
+    assert!(
+        relative_paths(&project_root, &files)
+            .contains(&"node_modules/vue-plugin/components.d.ts".to_string()),
+        "{files:?}"
+    );
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
 fn ambient_collection_resolves_compiler_options_types_from_tsconfig_dir() {
     let root = unique_case_dir("compiler-options-types-nested");
     let _ = std::fs::remove_dir_all(&root);

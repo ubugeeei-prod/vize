@@ -160,3 +160,88 @@ fn check_tsx_intrinsic_elements_with_experimental_jsx_vapor() {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn check_tsx_vapor_keeps_script_type_errors() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = unique_case_dir("jsx-vapor-type-error");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("src")).unwrap();
+    if link_workspace_vue(&project_root).is_err() {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    }
+    std::fs::write(
+        project_root.join("vize.config.json"),
+        r#"{ "experimentals": { "jsxVapor": {} } }"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("src/Standalone.tsx"),
+        r#"export const Example = () => {
+  const count: number = "bad";
+  return <div>{count}</div>;
+};
+"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.json",
+            "src/Standalone.tsx",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let stderr = std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>");
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap_or_else(|error| {
+        panic!("failed to parse JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+    let diagnostics = json["files"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .flat_map(|file| file["diagnostics"].as_array().cloned().unwrap_or_default())
+        .map(|diagnostic| diagnostic.as_str().unwrap_or_default().to_string())
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(json["errorCount"], serde_json::json!(1), "{diagnostics:#?}");
+    assert!(
+        diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.contains("[TS2322]")),
+        "JSX Vapor typecheck should keep TSX script errors: {diagnostics:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

@@ -7,12 +7,12 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use vize_carton::{cstr, path::canonicalize_non_verbatim};
 mod codegen;
+mod tsx_owner;
 // Each call uses a fresh run-scoped cache, mirroring how an actual `vize
 // check` run constructs one `TsconfigInputCache` per invocation.
 fn collect_default_check_files(project_root: &Path, tsconfig_path: Option<&Path>) -> Vec<PathBuf> {
     collect_default_check_files_with_jsx(project_root, tsconfig_path, false)
 }
-
 fn collect_default_check_files_with_jsx(
     project_root: &Path,
     tsconfig_path: Option<&Path>,

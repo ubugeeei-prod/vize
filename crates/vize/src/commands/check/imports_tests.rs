@@ -173,6 +173,44 @@ fn module_js_specifiers_prefer_module_source_extensions() {
 }
 
 #[test]
+fn js_specifiers_can_follow_tsx_when_jsx_typecheck_is_enabled() {
+    let root = std::env::temp_dir().join(cstr!("vize-imports-js-to-tsx-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(root.join("src")).unwrap();
+
+    let entry = write(
+        &root,
+        "src/entry.ts",
+        "import { Panel } from './Panel.js'\nvoid Panel\n",
+    );
+    let panel = write(
+        &root,
+        "src/Panel.tsx",
+        "export const Panel = () => <section />\n",
+    );
+
+    let disabled = collect_transitive_local_imports(
+        std::slice::from_ref(&entry),
+        &root,
+        &mut CanonicalPathCache::default(),
+        false,
+        None,
+    );
+    let enabled = collect_transitive_local_imports(
+        &[entry],
+        &root,
+        &mut CanonicalPathCache::default(),
+        true,
+        None,
+    );
+
+    assert_eq!(disabled, Vec::<PathBuf>::new());
+    assert_eq!(enabled, vec![canonicalize_non_verbatim(&panel)]);
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
 fn collects_only_non_relative_imports_that_need_virtual_rewrites() {
     let root = std::env::temp_dir().join(cstr!("vize-imports-matrix-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&root);

@@ -92,6 +92,56 @@ fn type_reference_resolution_supports_subpaths_exports_and_graphs() {
 }
 
 #[test]
+fn type_reference_resolution_prefers_nested_exports_types_conditions() {
+    let root = unique_case_dir("nested-exports-types");
+    let _ = std::fs::remove_dir_all(&root);
+    write(
+        &root,
+        "node_modules/vue-plugin/package.json",
+        r#"{
+  "exports": {
+    "./global-components": {
+      "vue": {
+        "types": "./types/vue-components.d.ts",
+        "default": "./dist/vue-components.js"
+      },
+      "import": "./dist/global-components.mjs",
+      "default": "./dist/global-components.js"
+    }
+  }
+}"#,
+    );
+    write(
+        &root,
+        "node_modules/vue-plugin/types/vue-components.d.ts",
+        "/// <reference path=\"./shared.d.ts\" />\nexport {};\ndeclare module 'vue' { export interface GlobalComponents { VpButton: unknown } }\n",
+    );
+    write(
+        &root,
+        "node_modules/vue-plugin/types/shared.d.ts",
+        "export {};\ndeclare global { interface Window { __vp: true } }\n",
+    );
+    write(
+        &root,
+        "node_modules/vue-plugin/dist/global-components.mjs",
+        "export default {}\n",
+    );
+
+    let root = root.canonicalize().unwrap();
+    let files = resolve_type_reference_declaration_files(&root, "vue-plugin/global-components");
+
+    assert_eq!(
+        relative_paths(&root, &files),
+        vec![
+            "node_modules/vue-plugin/types/vue-components.d.ts",
+            "node_modules/vue-plugin/types/shared.d.ts",
+        ]
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
 fn type_reference_resolution_supports_module_declaration_suffixes() {
     let root = unique_case_dir("module-suffixes");
     let _ = std::fs::remove_dir_all(&root);
