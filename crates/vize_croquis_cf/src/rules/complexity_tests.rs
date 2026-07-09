@@ -1,8 +1,8 @@
-use super::complexity::summarize_complexity;
+use super::complexity::{summarize_complexity, summarize_complexity_with_effects};
 use super::{
     ComplexityBand, ComplexityDimension, ComplexityInput, ComplexityReport, FallthroughInfo,
     FallthroughSummary, ProvideInjectTreeSummary, ReactivityIssue, ReactivityIssueKind,
-    summarize_complexity_with_graph,
+    summarize_complexity_with_effect_graphs,
 };
 use crate::analyzer::CrossFileResult;
 use crate::graph::{DependencyEdge, DependencyGraph, ModuleNode};
@@ -12,7 +12,7 @@ use vize_croquis::croquis::{
     ComponentUsage, EventListener, PassedProp, SlotUsage, TemplateExpression,
     TemplateExpressionKind,
 };
-use vize_croquis::{Croquis, ScopeId, VForScopeData, VSlotScopeData};
+use vize_croquis::{Croquis, EffectGraphSummary, ScopeId, VForScopeData, VSlotScopeData};
 
 #[test]
 fn scores_each_complexity_dimension() {
@@ -173,7 +173,14 @@ fn summarizes_complexity_from_registry_and_result() {
         ..CrossFileResult::default()
     };
 
-    let report = summarize_complexity(&registry, &result);
+    let effect_graphs = vize_carton::FxHashMap::from_iter([(
+        file_id,
+        EffectGraphSummary {
+            edge_count: 1,
+            ..EffectGraphSummary::default()
+        },
+    )]);
+    let report = summarize_complexity_with_effects(&registry, &effect_graphs, &result);
 
     assert_eq!(report.input.template_if_count, 1);
     assert_eq!(report.input.template_for_count, 1);
@@ -293,7 +300,12 @@ fn summarizes_component_tree_template_nesting() {
     graph.add_node(component_node(child_id, "Child.vue", "Child"));
     graph.add_edge(parent_id, child_id, DependencyEdge::ComponentUsage);
 
-    let report = summarize_complexity_with_graph(&registry, &graph, &CrossFileResult::default());
+    let report = summarize_complexity_with_effect_graphs(
+        &registry,
+        &graph,
+        &vize_carton::FxHashMap::default(),
+        &CrossFileResult::default(),
+    );
 
     assert_eq!(report.input.template_if_count, 1);
     assert_eq!(report.input.template_for_count, 2);

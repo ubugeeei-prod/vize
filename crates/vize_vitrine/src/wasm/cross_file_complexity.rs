@@ -92,4 +92,74 @@ mod tests {
     fn complexity_hotspots_json_serializes_empty_list() {
         assert_eq!(complexity_hotspots_json(&[]), json!([]));
     }
+
+    #[test]
+    fn parser_effect_graph_counts_reach_wasm_complexity_json() {
+        const SOURCE: &str = r#"
+import { computed, ref, watch, watchEffect } from 'vue'
+const count = ref(0)
+const doubled = computed(() => count.value * 2)
+watchEffect(() => console.log(doubled.value))
+watch(count, () => {})
+"#;
+
+        let mut drawer =
+            vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
+        drawer.analyze_script_setup(SOURCE);
+        let mut analyzer =
+            vize_croquis_cf::CrossFileAnalyzer::new(vize_croquis_cf::CrossFileOptions::minimal());
+        analyzer.add_file_with_analysis("Reactive.vue", SOURCE, drawer.finish());
+        let result = analyzer.analyze();
+
+        assert_eq!(
+            complexity_report_json(&result.complexity_report),
+            json!({
+                "input": {
+                    "componentCount": 1,
+                    "templateIfCount": 0,
+                    "templateForCount": 0,
+                    "templateLogicalOperatorCount": 0,
+                    "componentTreeVIfMaxDepth": 0,
+                    "componentTreeVForMaxDepth": 0,
+                    "componentTreeScopedSlotMaxDepth": 0,
+                    "componentTreeTemplateNestingScore": 0,
+                    "slotCount": 0,
+                    "propDrillingEdgeCount": 0,
+                    "globalStateReferenceCount": 0,
+                    "provideInjectMaxDepth": 0,
+                    "provideInjectReferenceCount": 0,
+                    "provideInjectFanoutCount": 0,
+                    "fallthroughRiskCount": 0,
+                    "reactiveNodeCount": 2,
+                    "reactiveEdgeCount": 3,
+                    "reactiveCycleCount": 0
+                },
+                "dimensions": {
+                    "templateControlFlow": 1,
+                    "slotUsage": 0,
+                    "propDrilling": 0,
+                    "globalState": 0,
+                    "provideInject": 0,
+                    "fallthroughAttrs": 0,
+                    "reactiveGraph": 8
+                },
+                "cyclomaticScore": 1,
+                "cognitiveScore": 0,
+                "totalScore": 9,
+                "band": "low"
+            })
+        );
+        assert_eq!(
+            complexity_hotspots_json(&result.complexity_hotspots),
+            json!([{
+                "fileId": 0,
+                "fileName": "Reactive.vue",
+                "componentName": "Reactive",
+                "input": result.complexity_report.input,
+                "dimensions": result.complexity_report.dimensions,
+                "totalScore": 9,
+                "dominantDimension": { "dimension": "reactive-graph", "score": 8 }
+            }])
+        );
+    }
 }

@@ -5,11 +5,13 @@ mod nesting;
 
 use crate::analyzer::CrossFileResult;
 use crate::graph::DependencyGraph;
-use crate::registry::ModuleRegistry;
+use crate::registry::{FileId, ModuleRegistry};
 use crate::rules::cross_file_reactivity::CrossFileReactivityIssueKind;
-use vize_croquis::{ScopeKind, TemplateExpressionKind};
+use vize_carton::FxHashMap;
+use vize_croquis::{EffectGraphSummary, ScopeKind, TemplateExpressionKind};
 
-pub use hotspots::{ComplexityHotspot, summarize_complexity_hotspots};
+pub use hotspots::ComplexityHotspot;
+pub(crate) use hotspots::summarize_complexity_hotspots_with_effect_graphs;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -194,39 +196,36 @@ pub(super) fn summarize_complexity(
     registry: &ModuleRegistry,
     result: &CrossFileResult,
 ) -> ComplexityReport {
-    ComplexityReport::from_input(complexity_input(registry, result))
+    ComplexityReport::from_input(complexity_input(registry, &FxHashMap::default(), result))
 }
 
-/// Summarize complexity with component-tree template nesting signals.
-pub fn summarize_complexity_with_graph(
+#[cfg(test)]
+pub(super) fn summarize_complexity_with_effects(
     registry: &ModuleRegistry,
-    graph: &DependencyGraph,
+    effect_graphs: &FxHashMap<FileId, EffectGraphSummary>,
     result: &CrossFileResult,
 ) -> ComplexityReport {
-    let mut input = complexity_input(registry, result);
+    ComplexityReport::from_input(complexity_input(registry, effect_graphs, result))
+}
+
+pub(crate) fn summarize_complexity_with_effect_graphs(
+    registry: &ModuleRegistry,
+    graph: &DependencyGraph,
+    effect_graphs: &FxHashMap<FileId, EffectGraphSummary>,
+    result: &CrossFileResult,
+) -> ComplexityReport {
+    let mut input = complexity_input(registry, effect_graphs, result);
     nesting::add_component_tree_template_nesting(&mut input, registry, graph);
     ComplexityReport::from_input(input)
 }
 
-fn complexity_input(registry: &ModuleRegistry, result: &CrossFileResult) -> ComplexityInput {
+fn complexity_input(
+    registry: &ModuleRegistry,
+    effect_graphs: &FxHashMap<FileId, EffectGraphSummary>,
+    result: &CrossFileResult,
+) -> ComplexityInput {
     let mut input = ComplexityInput {
         fallthrough_risk_count: fallthrough_risk_count(result),
-        // Provide/inject references have their own dimension and are not
-        // necessarily reactive. Only tracker-produced issues contribute here.
-        reactive_edge_count: result
-            .reactivity_issues
-            .len()
-            .saturating_add(result.cross_file_reactivity_issues.len()),
-        reactive_cycle_count: result
-            .cross_file_reactivity_issues
-            .iter()
-            .filter(|issue| {
-                matches!(
-                    issue.kind,
-                    CrossFileReactivityIssueKind::CircularReactiveDependency { .. }
-                )
-            })
-            .count(),
         global_state_reference_count: result
             .reactivity_issues
             .iter()
@@ -296,6 +295,9 @@ fn complexity_input(registry: &ModuleRegistry, result: &CrossFileResult) -> Comp
             .map(|usage| usage.props.len())
             .sum::<usize>();
         input.reactive_node_count += analysis.reactivity.count();
+        let effect_graph = effect_graphs.get(&entry.id).copied().unwrap_or_default();
+        input.reactive_edge_count += effect_graph.edge_count;
+        input.reactive_cycle_count += effect_graph.cycle_count;
     }
 
     input

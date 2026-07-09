@@ -1,6 +1,7 @@
 use super::{
     ComplexityDimension, CrossFileReactivityIssue, CrossFileReactivityIssueKind, FallthroughInfo,
-    ProvideInjectMatch, ReactivityIssue, ReactivityIssueKind, summarize_complexity_hotspots,
+    ProvideInjectMatch, ReactivityIssue, ReactivityIssueKind,
+    summarize_complexity_hotspots_with_effect_graphs,
 };
 use crate::analyzer::CrossFileResult;
 use crate::diagnostics::DiagnosticSeverity;
@@ -8,7 +9,7 @@ use crate::registry::ModuleRegistry;
 use vize_carton::{CompactString, FxHashSet, smallvec};
 use vize_croquis::analysis::{ComponentUsage, PassedProp, SlotUsage, TemplateExpression};
 use vize_croquis::reactivity::ReactiveKind;
-use vize_croquis::{Croquis, ScopeId, TemplateExpressionKind, VForScopeData};
+use vize_croquis::{Croquis, EffectGraphSummary, ScopeId, TemplateExpressionKind, VForScopeData};
 
 #[test]
 fn ranks_hotspots_with_dimension_inputs_and_json_shape() {
@@ -110,7 +111,28 @@ fn ranks_hotspots_with_dimension_inputs_and_json_shape() {
         ..CrossFileResult::default()
     };
 
-    let hotspots = summarize_complexity_hotspots(&registry, &result);
+    let effect_graphs = vize_carton::FxHashMap::from_iter([
+        (
+            parent_id,
+            EffectGraphSummary {
+                node_count: 2,
+                edge_count: 1,
+                cycle_count: 0,
+                cycle_node_count: 0,
+            },
+        ),
+        (
+            child_id,
+            EffectGraphSummary {
+                node_count: 3,
+                edge_count: 2,
+                cycle_count: 1,
+                cycle_node_count: 2,
+            },
+        ),
+    ]);
+    let hotspots =
+        summarize_complexity_hotspots_with_effect_graphs(&registry, &effect_graphs, &result);
 
     assert_eq!(hotspots.len(), 2);
     assert_eq!(hotspots[0].file_id, child_id);

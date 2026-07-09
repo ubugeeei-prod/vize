@@ -2,7 +2,7 @@ use super::CrossFileAnalyzer;
 use crate::graph::{DependencyEdge, ModuleNode};
 use crate::registry::FileId;
 use std::path::Path;
-use vize_croquis::Croquis;
+use vize_croquis::{Croquis, build_effect_graph_from_script};
 
 impl CrossFileAnalyzer {
     /// Add a file to be analyzed.
@@ -14,6 +14,8 @@ impl CrossFileAnalyzer {
 
         // Register in module registry (takes ownership of analysis)
         let (file_id, is_new) = self.registry.register(path, source, analysis);
+        self.effect_graph_summaries
+            .insert(file_id, build_effect_graph_from_script(source).summary());
 
         if is_new {
             // Add to dependency graph
@@ -64,6 +66,8 @@ impl CrossFileAnalyzer {
 
         // Register in module registry (takes ownership of analysis)
         let (file_id, is_new) = self.registry.register(path, source, analysis);
+        self.effect_graph_summaries
+            .insert(file_id, build_effect_graph_from_script(source).summary());
 
         if is_new {
             // Add to dependency graph

@@ -31,6 +31,7 @@ impl CrossFileAnalyzer {
     pub fn clear(&mut self) {
         self.registry.clear();
         self.graph = DependencyGraph::new();
+        self.effect_graph_summaries.clear();
     }
 
     pub(super) fn count_edges(&self) -> usize {

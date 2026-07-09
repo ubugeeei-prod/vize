@@ -22,6 +22,10 @@ mod tests_fallthrough;
 mod tests_element_id;
 
 #[cfg(test)]
+#[path = "analyzer/tests_complexity_effect_graph.rs"]
+mod tests_complexity_effect_graph;
+
+#[cfg(test)]
 mod tests_provide_inject;
 
 #[cfg(test)]

@@ -4,7 +4,7 @@ use crate::analyzer::CrossFileResult;
 use crate::registry::{FileId, ModuleEntry, ModuleRegistry};
 use crate::rules::ReactivityIssueKind;
 use vize_carton::{CompactString, FxHashMap};
-use vize_croquis::{ScopeKind, TemplateExpressionKind};
+use vize_croquis::{EffectGraphSummary, ScopeKind, TemplateExpressionKind};
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -18,12 +18,12 @@ pub struct ComplexityHotspot {
     pub dominant_dimension: Option<ComplexityDimensionBreakdown>,
 }
 
-/// Rank Vue files by their local contribution to the cross-file complexity score.
-pub fn summarize_complexity_hotspots(
+pub(crate) fn summarize_complexity_hotspots_with_effect_graphs(
     registry: &ModuleRegistry,
+    effect_graphs: &FxHashMap<FileId, EffectGraphSummary>,
     result: &CrossFileResult,
 ) -> Vec<ComplexityHotspot> {
-    let mut inputs = local_inputs(registry);
+    let mut inputs = local_inputs(registry, effect_graphs);
     add_fallthrough_inputs(&mut inputs, result);
     add_reactivity_inputs(&mut inputs, result);
     add_provide_inject_inputs(&mut inputs, result);
@@ -40,14 +40,20 @@ pub fn summarize_complexity_hotspots(
     hotspots
 }
 
-fn local_inputs(registry: &ModuleRegistry) -> FxHashMap<FileId, ComplexityInput> {
+fn local_inputs(
+    registry: &ModuleRegistry,
+    effect_graphs: &FxHashMap<FileId, EffectGraphSummary>,
+) -> FxHashMap<FileId, ComplexityInput> {
     registry
         .vue_components()
-        .map(|entry| (entry.id, local_input(entry)))
+        .map(|entry| {
+            let effect_graph = effect_graphs.get(&entry.id).copied().unwrap_or_default();
+            (entry.id, local_input(entry, effect_graph))
+        })
         .collect()
 }
 
-fn local_input(entry: &ModuleEntry) -> ComplexityInput {
+fn local_input(entry: &ModuleEntry, effect_graph: EffectGraphSummary) -> ComplexityInput {
     let analysis = &entry.analysis;
 
     ComplexityInput {
@@ -80,6 +86,8 @@ fn local_input(entry: &ModuleEntry) -> ComplexityInput {
             .map(|usage| usage.props.len())
             .sum(),
         reactive_node_count: analysis.reactivity.count(),
+        reactive_edge_count: effect_graph.edge_count,
+        reactive_cycle_count: effect_graph.cycle_count,
         ..ComplexityInput::default()
     }
 }
@@ -103,7 +111,6 @@ fn add_reactivity_inputs(
 ) {
     for issue in &result.reactivity_issues {
         let input = inputs.entry(issue.file_id).or_default();
-        input.reactive_edge_count += 1;
         if matches!(issue.kind, ReactivityIssueKind::ShouldUseStoreToRefs { .. }) {
             input.global_state_reference_count += 1;
         }
@@ -111,15 +118,8 @@ fn add_reactivity_inputs(
 
     for issue in &result.cross_file_reactivity_issues {
         let input = inputs.entry(issue.file_id).or_default();
-        input.reactive_edge_count += 1;
-        match issue.kind {
-            CrossFileReactivityIssueKind::StoreDestructured { .. } => {
-                input.global_state_reference_count += 1;
-            }
-            CrossFileReactivityIssueKind::CircularReactiveDependency { .. } => {
-                input.reactive_cycle_count += 1;
-            }
-            _ => {}
+        if let CrossFileReactivityIssueKind::StoreDestructured { .. } = issue.kind {
+            input.global_state_reference_count += 1;
         }
     }
 }

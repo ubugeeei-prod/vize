@@ -35,7 +35,9 @@ pub use boundary::{BoundaryInfo, BoundaryKind, analyze_boundaries};
 pub use complexity::{
     ComplexityBand, ComplexityDimension, ComplexityDimensionBreakdown, ComplexityDimensionScores,
     ComplexityHotspot, ComplexityInput, ComplexityReport, band_for_score,
-    summarize_complexity_hotspots, summarize_complexity_with_graph,
+};
+pub(crate) use complexity::{
+    summarize_complexity_hotspots_with_effect_graphs, summarize_complexity_with_effect_graphs,
 };
 pub use component_resolution::{ComponentResolutionIssue, analyze_component_resolution};
 pub use element_id::{UniqueIdIssue, analyze_element_ids};
