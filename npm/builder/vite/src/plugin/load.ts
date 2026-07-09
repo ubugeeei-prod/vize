@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { classifyVitePluginRequest } from "@vizejs/native";
 import type { TransformResult } from "vite";
@@ -26,12 +25,11 @@ import {
   RESOLVED_CSS_MODULE,
 } from "../virtual.ts";
 import {
-  applyDefineReplacements,
   rewriteDynamicTemplateImports,
   rewriteImportMetaGlobBase,
   rewriteStaticAssetUrls,
 } from "../transform.ts";
-import { needsVirtualTypeScriptTransform, transformVirtualTypeScript } from "./vite-transform.ts";
+import { transformVizeVirtualModule } from "./vite-transform.ts";
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
@@ -51,26 +49,6 @@ export function getBoundaryPlaceholderCode(realPath: string, ssr: boolean): stri
     return SERVER_PLACEHOLDER_CODE;
   }
   return null;
-}
-
-function getOxcDumpPath(root: string, realPath: string): string {
-  const dumpDir = path.resolve(root || process.cwd(), "node_modules", ".vize", "oxc-dumps");
-  fs.mkdirSync(dumpDir, { recursive: true });
-  return path.join(dumpDir, `vize-oxc-error-${path.basename(realPath)}.ts`);
-}
-
-function getVirtualModuleDefines(
-  state: Pick<VizePluginState, "clientViteDefine" | "isProduction" | "serverViteDefine">,
-  ssr: boolean,
-): Record<string, string> {
-  return {
-    "import.meta.client": ssr ? "false" : "true",
-    "import.meta.server": ssr ? "true" : "false",
-    "import.meta.dev": state.isProduction ? "false" : "true",
-    "import.meta.test": "false",
-    "import.meta.prerender": "false",
-    ...(ssr ? state.serverViteDefine : state.clientViteDefine),
-  };
 }
 
 export function normalizeVueServerRendererImport(code: string): string {
@@ -210,9 +188,7 @@ export function loadHook(
   id: string,
   loadOptions?: { ssr?: boolean; addWatchFile?: (id: string) => void },
 ): string | { code: string; map: null } | null {
-  if (id !== RESOLVED_CSS_MODULE && !id.startsWith("\0") && !id.includes(".vue")) {
-    return null;
-  }
+  if (id !== RESOLVED_CSS_MODULE && !id.startsWith("\0") && !id.includes(".vue")) return null;
 
   const request = classifyVitePluginRequest(id);
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
@@ -465,21 +441,16 @@ export async function transformHook(
   id: string,
   options?: { ssr?: boolean },
 ): Promise<TransformResult | null> {
-  const maybeJsxComponent = isJsxComponentPath(id);
-  if (!id.startsWith("\0") && !id.includes(".vue.ts") && !maybeJsxComponent) {
-    return null;
-  }
+  if (!id.startsWith("\0") && !id.includes(".vue.ts") && !isJsxComponentPath(id)) return null;
 
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
 
   // Compile `.jsx`/`.tsx` Vue components through Vize. Unlike SFCs, JSX/TSX
   // modules are real files Vite hands directly to the transform hook, so they
   // are handled here rather than through the virtual-module load pipeline.
-  if (maybeJsxComponent) {
-    const jsxResult = transformJsxRequest(state, code, id, { ssr: options?.ssr });
-    if (jsxResult !== undefined) {
-      return jsxResult;
-    }
+  const jsxResult = transformJsxRequest(state, code, id, { ssr: options?.ssr });
+  if (jsxResult !== undefined) {
+    return jsxResult;
   }
 
   if (!id.startsWith("\0") && !pluginVisibleVirtualPath) {
@@ -491,40 +462,14 @@ export async function transformHook(
     const realPath = request.isMacroVirtualId
       ? (request.strippedVirtualPath ?? "")
       : (request.vizeVirtualPath ?? pluginVisibleVirtualPath ?? "");
-    const needsTsTransform = request.isMacroVirtualId || needsVirtualTypeScriptTransform(code);
-    try {
-      const result = needsTsTransform ? await transformVirtualTypeScript(code, realPath) : { code };
-      let transformed = result.code;
-      if (transformed.includes("import.meta.")) {
-        const defines = getVirtualModuleDefines(state, options?.ssr ?? false);
-        transformed = applyDefineReplacements(transformed, defines);
-      }
-
-      return transformed === code ? null : { code: transformed, map: null };
-    } catch (e: unknown) {
-      state.logger.error(`transformWithOxc failed for ${realPath}:`, e);
-      let dumpPath: string | null = null;
-      try {
-        dumpPath = getOxcDumpPath(state.root, realPath);
-        fs.writeFileSync(dumpPath, code, "utf-8");
-        state.logger.error(`Dumped failing code to ${dumpPath}`);
-      } catch (dumpError: unknown) {
-        state.logger.error(`Failed to dump failing virtual module for ${realPath}:`, dumpError);
-      }
-
-      const message = [
-        `[vize] Virtual module transform failed for ${realPath}: ${formatUnknownError(e)}`,
-        dumpPath ? `Dumped failing code to ${dumpPath}` : null,
-      ]
-        .filter(Boolean)
-        .join("\n");
-      throw new Error(message);
-    }
+    return transformVizeVirtualModule(
+      state,
+      code,
+      realPath,
+      options?.ssr ?? false,
+      request.isMacroVirtualId,
+    );
   }
 
   return null;
-}
-
-function formatUnknownError(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }

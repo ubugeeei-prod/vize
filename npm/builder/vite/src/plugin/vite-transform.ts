@@ -1,4 +1,10 @@
+import fs from "node:fs";
+import path from "node:path";
 import * as vite from "vite";
+import type { TransformResult } from "vite";
+
+import type { VizePluginState } from "./state.ts";
+import { applyDefineReplacements } from "../transform.ts";
 
 type TransformOutput = { code: string; map?: unknown };
 type OxcOptions = { lang: "ts"; sourcemap: false; target: "esnext" };
@@ -134,3 +140,62 @@ export function needsVirtualTypeScriptTransform(code: string): boolean {
 }
 
 export const transformVirtualTypeScript = createVirtualTypeScriptTransformer(vite);
+
+function getOxcDumpPath(root: string, realPath: string): string {
+  const dumpDir = path.resolve(root || process.cwd(), "node_modules", ".vize", "oxc-dumps");
+  fs.mkdirSync(dumpDir, { recursive: true });
+  return path.join(dumpDir, `vize-oxc-error-${path.basename(realPath)}.ts`);
+}
+
+function getVirtualModuleDefines(
+  state: Pick<VizePluginState, "clientViteDefine" | "isProduction" | "serverViteDefine">,
+  ssr: boolean,
+): Record<string, string> {
+  return {
+    "import.meta.client": ssr ? "false" : "true",
+    "import.meta.server": ssr ? "true" : "false",
+    "import.meta.dev": state.isProduction ? "false" : "true",
+    "import.meta.test": "false",
+    "import.meta.prerender": "false",
+    ...(ssr ? state.serverViteDefine : state.clientViteDefine),
+  };
+}
+
+function formatUnknownError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+export async function transformVizeVirtualModule(
+  state: VizePluginState,
+  code: string,
+  realPath: string,
+  ssr: boolean,
+  forceTypeScriptTransform = false,
+): Promise<TransformResult | null> {
+  const needsTsTransform = forceTypeScriptTransform || needsVirtualTypeScriptTransform(code);
+  try {
+    const result = needsTsTransform ? await transformVirtualTypeScript(code, realPath) : { code };
+    let transformed = result.code;
+    if (transformed.includes("import.meta.")) {
+      transformed = applyDefineReplacements(transformed, getVirtualModuleDefines(state, ssr));
+    }
+    return transformed === code ? null : { code: transformed, map: null };
+  } catch (e: unknown) {
+    state.logger.error(`transformWithOxc failed for ${realPath}:`, e);
+    let dumpPath: string | null = null;
+    try {
+      dumpPath = getOxcDumpPath(state.root, realPath);
+      fs.writeFileSync(dumpPath, code, "utf-8");
+      state.logger.error(`Dumped failing code to ${dumpPath}`);
+    } catch (dumpError: unknown) {
+      state.logger.error(`Failed to dump failing virtual module for ${realPath}:`, dumpError);
+    }
+    const message = [
+      `[vize] Virtual module transform failed for ${realPath}: ${formatUnknownError(e)}`,
+      dumpPath ? `Dumped failing code to ${dumpPath}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+    throw new Error(message);
+  }
+}
