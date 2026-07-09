@@ -4,6 +4,7 @@ use std::path::Path;
 use vize_carton::append;
 use vize_croquis::AnalyzerOptions;
 
+mod fallthrough;
 mod full;
 mod graph;
 mod provide_inject;

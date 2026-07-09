@@ -30,6 +30,7 @@ impl CrossFileAnalyzer {
             let usage_facts = rules::collect_fallthrough_usage_facts(&self.registry, &self.graph);
             result.fallthrough_component_facts =
                 rules::collect_fallthrough_component_facts(&info, &usage_facts);
+            result.fallthrough_usage_facts = usage_facts;
             result.fallthrough_summary = Some(rules::summarize_fallthrough(&info));
             result.fallthrough_info = info;
             result.diagnostics.extend(diags);

@@ -186,6 +186,9 @@ pub struct CrossFileResult {
     /// Fallthrough attribute information per component.
     pub fallthrough_info: Vec<rules::FallthroughInfo>,
 
+    /// Per-usage fallthrough facts with parent-side source ranges.
+    pub fallthrough_usage_facts: Vec<rules::FallthroughUsageFact>,
+
     /// Fallthrough attribute summary, populated when fallthrough analysis is enabled.
     pub fallthrough_summary: Option<rules::FallthroughSummary>,
 

@@ -1,0 +1,233 @@
+---
+source: crates/vize_croquis_cf/src/analyzer/tests_snapshots/fallthrough.rs
+expression: output
+---
+=== Fallthrough Usage Facts ===
+
+== Summary ==
+{
+  "componentCount": 4,
+  "componentsWithPassedAttrs": 2,
+  "componentsConsumingFallthroughAttrs": 1,
+  "componentsWithPotentialIssues": 1,
+  "inheritAttrsDisabledCount": 0,
+  "usesAttrsCount": 1,
+  "bindsAttrsCount": 1,
+  "multiRootCount": 1,
+  "multiRootWithoutAttrsCount": 1,
+  "passedAttrCount": 7,
+  "declaredPropCount": 1,
+  "undeclaredPassedAttrCount": 6,
+  "consumedFallthroughAttrCount": 2,
+  "unconsumedFallthroughAttrCount": 4,
+  "safeStandardFallthroughAttrCount": 4,
+  "riskyUnconsumedFallthroughAttrCount": 2,
+  "maxPassedAttrs": 5,
+  "maxRootElementCount": 2
+}
+
+== Usage Facts ==
+[
+  {
+    "parentFileId": 2,
+    "childFileId": 0,
+    "componentName": "Panel",
+    "usageStart": 10,
+    "usageEnd": 90,
+    "hasSpreadAttrs": true,
+    "attrs": [
+      {
+        "name": "kind",
+        "kind": "prop",
+        "sourceStart": 18,
+        "sourceEnd": 29,
+        "dynamic": false,
+        "declaredProp": true,
+        "standardHtmlAttr": false,
+        "fallthrough": false
+      },
+      {
+        "name": "trackingId",
+        "kind": "prop",
+        "sourceStart": 34,
+        "sourceEnd": 58,
+        "dynamic": true,
+        "declaredProp": false,
+        "standardHtmlAttr": false,
+        "fallthrough": true
+      },
+      {
+        "name": "class",
+        "kind": "prop",
+        "sourceStart": 59,
+        "sourceEnd": 72,
+        "dynamic": false,
+        "declaredProp": false,
+        "standardHtmlAttr": true,
+        "fallthrough": true
+      },
+      {
+        "name": "onClose",
+        "kind": "listener",
+        "sourceStart": 73,
+        "sourceEnd": 88,
+        "dynamic": true,
+        "declaredProp": false,
+        "standardHtmlAttr": true,
+        "fallthrough": true
+      }
+    ]
+  },
+  {
+    "parentFileId": 3,
+    "childFileId": 0,
+    "componentName": "Panel",
+    "usageStart": 20,
+    "usageEnd": 60,
+    "hasSpreadAttrs": false,
+    "attrs": [
+      {
+        "name": "telemetryKey",
+        "kind": "prop",
+        "sourceStart": 28,
+        "sourceEnd": 48,
+        "dynamic": false,
+        "declaredProp": false,
+        "standardHtmlAttr": false,
+        "fallthrough": true
+      }
+    ]
+  },
+  {
+    "parentFileId": 2,
+    "childFileId": 1,
+    "componentName": "Forwarder",
+    "usageStart": 100,
+    "usageEnd": 150,
+    "hasSpreadAttrs": false,
+    "attrs": [
+      {
+        "name": "data-testid",
+        "kind": "prop",
+        "sourceStart": 110,
+        "sourceEnd": 135,
+        "dynamic": false,
+        "declaredProp": false,
+        "standardHtmlAttr": true,
+        "fallthrough": true
+      },
+      {
+        "name": "onFocus",
+        "kind": "listener",
+        "sourceStart": 136,
+        "sourceEnd": 148,
+        "dynamic": true,
+        "declaredProp": false,
+        "standardHtmlAttr": true,
+        "fallthrough": true
+      }
+    ]
+  }
+]
+
+== Component Facts ==
+[
+  {
+    "fileId": 0,
+    "usageCount": 2,
+    "parentCount": 2,
+    "spreadUsageCount": 1,
+    "passedAttrCount": 5,
+    "usageAttrCount": 5,
+    "propAttrCount": 4,
+    "listenerAttrCount": 1,
+    "dynamicAttrCount": 2,
+    "declaredPropAttrCount": 1,
+    "fallthroughAttrCount": 4,
+    "consumedFallthroughAttrCount": 0,
+    "unconsumedFallthroughAttrCount": 4,
+    "safeStandardFallthroughAttrCount": 2,
+    "riskyUnconsumedFallthroughAttrCount": 2,
+    "declaredPropCount": 1,
+    "rootElementCount": 2,
+    "inheritAttrsDisabled": false,
+    "usesAttrs": false,
+    "bindsAttrs": false,
+    "hasPotentialIssues": true
+  },
+  {
+    "fileId": 1,
+    "usageCount": 1,
+    "parentCount": 1,
+    "spreadUsageCount": 0,
+    "passedAttrCount": 2,
+    "usageAttrCount": 2,
+    "propAttrCount": 1,
+    "listenerAttrCount": 1,
+    "dynamicAttrCount": 1,
+    "declaredPropAttrCount": 0,
+    "fallthroughAttrCount": 2,
+    "consumedFallthroughAttrCount": 2,
+    "unconsumedFallthroughAttrCount": 0,
+    "safeStandardFallthroughAttrCount": 2,
+    "riskyUnconsumedFallthroughAttrCount": 0,
+    "declaredPropCount": 0,
+    "rootElementCount": 1,
+    "inheritAttrsDisabled": false,
+    "usesAttrs": true,
+    "bindsAttrs": true,
+    "hasPotentialIssues": false
+  },
+  {
+    "fileId": 2,
+    "usageCount": 0,
+    "parentCount": 0,
+    "spreadUsageCount": 0,
+    "passedAttrCount": 0,
+    "usageAttrCount": 0,
+    "propAttrCount": 0,
+    "listenerAttrCount": 0,
+    "dynamicAttrCount": 0,
+    "declaredPropAttrCount": 0,
+    "fallthroughAttrCount": 0,
+    "consumedFallthroughAttrCount": 0,
+    "unconsumedFallthroughAttrCount": 0,
+    "safeStandardFallthroughAttrCount": 0,
+    "riskyUnconsumedFallthroughAttrCount": 0,
+    "declaredPropCount": 0,
+    "rootElementCount": 0,
+    "inheritAttrsDisabled": false,
+    "usesAttrs": false,
+    "bindsAttrs": false,
+    "hasPotentialIssues": false
+  },
+  {
+    "fileId": 3,
+    "usageCount": 0,
+    "parentCount": 0,
+    "spreadUsageCount": 0,
+    "passedAttrCount": 0,
+    "usageAttrCount": 0,
+    "propAttrCount": 0,
+    "listenerAttrCount": 0,
+    "dynamicAttrCount": 0,
+    "declaredPropAttrCount": 0,
+    "fallthroughAttrCount": 0,
+    "consumedFallthroughAttrCount": 0,
+    "unconsumedFallthroughAttrCount": 0,
+    "safeStandardFallthroughAttrCount": 0,
+    "riskyUnconsumedFallthroughAttrCount": 0,
+    "declaredPropCount": 0,
+    "rootElementCount": 0,
+    "inheritAttrsDisabled": false,
+    "usesAttrs": false,
+    "bindsAttrs": false,
+    "hasPotentialIssues": false
+  }
+]
+
+== Diagnostics ==
+[
+  "MultiRootMissingAttrs@0:0:120 related=[(FileId(2), 34, \"trackingId passed to <Panel>\"), (FileId(2), 59, \"class passed to <Panel>\"), (FileId(2), 73, \"onClose passed to <Panel>\"), (FileId(3), 28, \"telemetryKey passed to <Panel>\")]",
+  "UnusedFallthroughAttrs { passed_attrs: [\"telemetryKey\", \"trackingId\"] }@0:0:120 related=[(FileId(2), 34, \"trackingId passed to <Panel>\"), (FileId(3), 28, \"telemetryKey passed to <Panel>\")]"
+]
