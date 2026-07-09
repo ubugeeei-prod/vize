@@ -112,6 +112,7 @@ impl CrossFileAnalyzer {
 
         result.complexity_report =
             rules::summarize_complexity_with_graph(&self.registry, &self.graph, &result);
+        result.complexity_hotspots = rules::summarize_complexity_hotspots(&self.registry, &result);
 
         dedupe_diagnostics(&mut result.diagnostics);
         sort_diagnostics(&mut result.diagnostics);

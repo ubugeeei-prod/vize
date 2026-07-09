@@ -1,5 +1,6 @@
 //! Cross-file complexity scoring.
 
+mod hotspots;
 mod nesting;
 
 use crate::analyzer::CrossFileResult;
@@ -7,6 +8,8 @@ use crate::graph::DependencyGraph;
 use crate::registry::ModuleRegistry;
 use crate::rules::cross_file_reactivity::CrossFileReactivityIssueKind;
 use vize_croquis::{ScopeKind, TemplateExpressionKind};
+
+pub use hotspots::{ComplexityHotspot, summarize_complexity_hotspots};
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 #[serde(rename_all = "camelCase")]

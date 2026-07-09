@@ -234,6 +234,9 @@ pub struct CrossFileResult {
     /// Explainable complexity score derived from the enabled cross-file facts.
     pub complexity_report: rules::ComplexityReport,
 
+    /// Top per-file complexity contributors derived from the same cross-file facts.
+    pub complexity_hotspots: Vec<rules::ComplexityHotspot>,
+
     /// Statistics.
     pub stats: CrossFileStats,
 }

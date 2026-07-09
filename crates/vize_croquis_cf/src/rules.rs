@@ -13,6 +13,8 @@
 mod boundary;
 mod complexity;
 #[cfg(test)]
+mod complexity_hotspots_tests;
+#[cfg(test)]
 mod complexity_tests;
 mod component_resolution;
 pub(crate) mod cross_file_reactivity;
@@ -30,7 +32,8 @@ mod setup_context;
 pub use boundary::{BoundaryInfo, BoundaryKind, analyze_boundaries};
 pub use complexity::{
     ComplexityBand, ComplexityDimension, ComplexityDimensionBreakdown, ComplexityDimensionScores,
-    ComplexityInput, ComplexityReport, band_for_score, summarize_complexity_with_graph,
+    ComplexityHotspot, ComplexityInput, ComplexityReport, band_for_score,
+    summarize_complexity_hotspots, summarize_complexity_with_graph,
 };
 pub use component_resolution::{ComponentResolutionIssue, analyze_component_resolution};
 pub use element_id::{UniqueIdIssue, analyze_element_ids};
