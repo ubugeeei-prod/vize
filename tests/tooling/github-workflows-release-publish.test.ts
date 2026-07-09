@@ -112,7 +112,7 @@ test("release workflow smokes the wasm package wrapper before publishing", () =>
   assert.match(buildJob, /runs-on:\s*blacksmith-\d+vcpu-ubuntu-2404/);
   assert.match(buildJob, /npm\/wasm\/index\.js/);
   assert.match(buildJob, /npm\/wasm\/index\.d\.ts/);
-  assert.match(buildJob, /tools\/moon\/scripts\/build_vize_wasm_package\.mbtx/);
+  assert.match(buildJob, /moon run --target native tools\/moon\/cmd\/build_vize_wasm_package --/);
   assert.match(buildJob, /name:\s*release-package-vize-wasm/);
   assert.match(publishJob, /needs:\s*build-wasm-package/);
   assert.match(publishJob, /name:\s*release-package-vize-wasm/);
@@ -168,7 +168,7 @@ test("release workflow does not block GitHub releases on VS Code Marketplace tok
   assert.match(publishJob, /name:\s*Skip publish when VSCE_PAT is absent/);
   assert.match(
     publishJob,
-    /name:\s*Publish VS Code extension[\s\S]*if:\s*env\.VSCE_PAT != ''[\s\S]*continue-on-error:\s*true[\s\S]*publish_vscode_extension\.mbtx/,
+    /name:\s*Publish VS Code extension[\s\S]*if:\s*env\.VSCE_PAT != ''[\s\S]*continue-on-error:\s*true[\s\S]*tools\/moon\/cmd\/publish_vscode_extension/,
   );
 });
 
@@ -195,7 +195,7 @@ test("Open VSX workflow publishes the VS Code extension when configured", () => 
   assert.match(publishJob, /name:\s*Skip publish when OVSX_PAT is absent/);
   assert.match(
     publishJob,
-    /name:\s*Publish Open VSX extension[\s\S]*if:\s*env\.OVSX_PAT != ''[\s\S]*publish_open_vsx_extension\.mbtx/,
+    /name:\s*Publish Open VSX extension[\s\S]*if:\s*env\.OVSX_PAT != ''[\s\S]*tools\/moon\/cmd\/publish_open_vsx_extension/,
   );
   assert.doesNotMatch(publishJob, /continue-on-error:\s*true/);
 });

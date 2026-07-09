@@ -1,0 +1,11 @@
+import {
+  "moonbitlang/core/json",
+  "moonbitlang/async",
+  "moonbitlang/async/process",
+  "moonbitlang/x/fs" @xfs,
+  "moonbitlang/x/sys",
+}
+
+options(
+  "is-main": true,
+)

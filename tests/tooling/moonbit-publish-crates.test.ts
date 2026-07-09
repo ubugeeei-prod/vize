@@ -26,7 +26,7 @@ type CargoDependency = {
 };
 
 function getScriptCrateArray(variableName: string): string[] {
-  const scriptPath = path.join(repoRoot, "tools", "moon", "scripts", "publish_crates.mbtx");
+  const scriptPath = path.join(repoRoot, "tools", "moon", "cmd", "publish_crates", "main.mbt");
   const script = fs.readFileSync(scriptPath, "utf8");
   const arrayBody = script.match(
     new RegExp(
@@ -35,7 +35,7 @@ function getScriptCrateArray(variableName: string): string[] {
     ),
   )?.groups?.body;
 
-  assert.ok(arrayBody, `Failed to locate ${variableName} in publish_crates.mbtx`);
+  assert.ok(arrayBody, `Failed to locate ${variableName} in publish_crates`);
   return Array.from(arrayBody.matchAll(/"([^"]+)"/g), ([, crateName]) => crateName);
 }
 

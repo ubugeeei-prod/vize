@@ -202,14 +202,14 @@ test("release workflow bundles fresco-native binaries into the root package inst
 
   assert.match(
     frescoJob,
-    /Clean bundled native binaries[\s\S]*tools\/moon\/scripts\/github\/clean_node_binaries\.mbtx/,
+    /Clean bundled native binaries[\s\S]*moon run --target native tools\/moon\/cmd\/github\/clean_node_binaries --/,
   );
   assert.match(
     frescoJob,
-    /Stage bundled native binaries[\s\S]*tools\/moon\/scripts\/github\/collect_native_artifacts\.mbtx/,
+    /Stage bundled native binaries[\s\S]*moon run --target native tools\/moon\/cmd\/github\/collect_native_artifacts --/,
   );
   assert.doesNotMatch(frescoJob, /napi create-npm-dirs/);
-  assert.doesNotMatch(frescoJob, /publish_npm_package_dirs\.mbtx/);
+  assert.doesNotMatch(frescoJob, /tools\/moon\/cmd\/publish_npm_package_dirs/);
 });
 
 test("cargo config forces the bundled Rust linker for Windows MSVC targets", () => {
@@ -238,7 +238,7 @@ test("release workflow tunes Windows production Rust builds for cold runners", (
   );
   assert.match(
     workflow,
-    /Tune Windows release profile[\s\S]*Build vize-native[\s\S]*tools\/moon\/scripts\/github\/build_napi_package\.mbtx/,
+    /Tune Windows release profile[\s\S]*Build vize-native[\s\S]*moon run --target native tools\/moon\/cmd\/github\/build_napi_package --/,
   );
 });
 
@@ -257,7 +257,10 @@ test("release workflow inspects musl CLI binaries while archiving", () => {
     buildCliJob,
     /Create archive \(Unix\)[\s\S]*if \[\[ "\$\{\{ matrix\.settings\.target \}\}" == \*-musl \]\]; then bash tools\/github\/verify-musl-cli-binary\.sh/,
   );
-  assert.match(buildCliJob, /verify-musl-cli-binary\.sh[\s\S]*create_cli_archive\.mbtx/);
+  assert.match(
+    buildCliJob,
+    /verify-musl-cli-binary\.sh[\s\S]*tools\/moon\/cmd\/github\/create_cli_archive/,
+  );
   assert.match(verifier, /readelf -l "\$binary"[\s\S]*Requesting program interpreter/);
   assert.match(verifier, /strings "\$binary" \| grep -Eq 'GLIBC_\[0-9\]'/);
 });
@@ -268,13 +271,16 @@ test("release workflow runs GitHub helper scripts with the native target on ever
   assert.doesNotMatch(workflow, /MOON_HELPER_TARGET/);
   assert.match(
     workflow,
-    /Install cross-compilation tools \(Linux ARM64\)[\s\S]*moon run --target native - -- < tools\/moon\/scripts\/github\/install_cross_compile_tools\.mbtx/,
+    /Install cross-compilation tools \(Linux ARM64\)[\s\S]*moon run --target native tools\/moon\/cmd\/github\/install_cross_compile_tools --/,
   );
   assert.match(
     workflow,
-    /Create archive \(Windows\)[\s\S]*moon run --target native - -- \$\{\{ matrix\.settings\.target \}\} \$\{\{ matrix\.settings\.archive \}\} vize\.exe < tools\/moon\/scripts\/github\/create_cli_archive\.mbtx/,
+    /Create archive \(Windows\)[\s\S]*moon run --target native tools\/moon\/cmd\/github\/create_cli_archive -- \$\{\{ matrix\.settings\.target \}\} \$\{\{ matrix\.settings\.archive \}\} vize\.exe/,
   );
-  assert.match(workflow, /Build vize-native[\s\S]*moon run --target native - -- npm\/native/);
+  assert.match(
+    workflow,
+    /Build vize-native[\s\S]*moon run --target native tools\/moon\/cmd\/github\/build_napi_package -- npm\/native/,
+  );
 });
 
 test("release workflow configures Zig linkers for Linux musl CLI archives", () => {

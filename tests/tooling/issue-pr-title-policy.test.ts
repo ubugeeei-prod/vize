@@ -1,20 +1,11 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
 import { root } from "./support/github-workflows.ts";
-
-const scriptPath = path.join(
-  root,
-  "tools",
-  "moon",
-  "scripts",
-  "github",
-  "issue_pr_title_policy.mbtx",
-);
+import { runMoonScript } from "./_helpers/moonbit.ts";
 
 function runPolicy(payload: unknown, eventName: string) {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-title-policy-"));
@@ -35,12 +26,9 @@ function runPolicy(payload: unknown, eventName: string) {
   );
   fs.chmodSync(fakeGhPath, 0o755);
 
-  const result = spawnSync("moon", ["run", "--target", "native", "-", "--"], {
+  const result = runMoonScript("github/issue_pr_title_policy", [], {
     cwd: root,
-    input: fs.readFileSync(scriptPath),
-    encoding: "utf8",
     env: {
-      ...process.env,
       PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
       FAKE_GH_LOG: ghLogPath,
       GITHUB_EVENT_NAME: eventName,

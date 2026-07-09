@@ -57,4 +57,4 @@ jobs:
         run: |
           vsix=$(find open-vsx-artifacts -name '*.vsix' -print -quit)
           test -n "$vsix"
-          moon run --target native - -- "$vsix" < tools/moon/scripts/publish_open_vsx_extension.mbtx
+          moon run --target native tools/moon/cmd/publish_open_vsx_extension -- "$vsix"

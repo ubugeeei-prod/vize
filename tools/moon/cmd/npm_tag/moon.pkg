@@ -1,0 +1,8 @@
+import {
+  "vizejs/tools/lib" @tool,
+  "moonbitlang/x/sys",
+}
+
+options(
+  "is-main": true,
+)

@@ -52,7 +52,7 @@ vp run --filter './npm/native' build:debug
 - [ ] Release captain runs the release preparation script:
 
 ```bash
-moon run --target native - -- alpha -y < tools/moon/scripts/release.mbtx
+moon run --target native tools/moon/cmd/release -- alpha -y
 ```
 
 - [ ] The release commit is pushed to `main`.

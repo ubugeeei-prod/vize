@@ -36,7 +36,7 @@ jobs:
       - uses: ./.github/actions/setup-moonbit
 
       - name: Install package build dependencies
-        run: moon run --target native - -- --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/oxint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt...' < tools/moon/scripts/github/vp_install.mbtx
+        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/oxint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt...'
 
       - name: Build preview packages
         run: vp run --workspace-root build:packages

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -22,6 +23,10 @@ interface NpmPackage {
 
 function readWorkspaceYaml(): string {
   return fs.readFileSync(path.join(root, "pnpm-workspace.yaml"), "utf-8");
+}
+
+function isGitIgnored(relativePath: string): boolean {
+  return spawnSync("git", ["check-ignore", "-q", "--", relativePath], { cwd: root }).status === 0;
 }
 
 // Package paths that pnpm-workspace.yaml explicitly excludes via "!<dir>"
@@ -51,7 +56,11 @@ function readNpmPackages(): NpmPackage[] {
   const visit = (relativeDir: string) => {
     const absoluteDir = path.join(npmDir, relativeDir);
     const packagePath = path.join(absoluteDir, "package.json");
-    if (fs.existsSync(packagePath)) {
+    const relativePackagePath = path
+      .join("npm", relativeDir, "package.json")
+      .split(path.sep)
+      .join("/");
+    if (fs.existsSync(packagePath) && !isGitIgnored(relativePackagePath)) {
       const json = JSON.parse(fs.readFileSync(packagePath, "utf-8")) as PackageJson;
       packages.push({ dir: relativeDir, json, name: json.name ?? relativeDir });
     }

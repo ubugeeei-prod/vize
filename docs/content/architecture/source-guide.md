@@ -111,12 +111,12 @@ usually make better extraction targets than shared data structures.
 
 ## Tooling Scripts
 
-Repository automation prefers MoonBit (`.mbtx`) scripts under `tools/moon/scripts/`. They run
-through native script mode (`moon run --target native - -- <args> < tools/moon/scripts/<name>.mbtx`),
-share the toolchain that already builds the compiler, and are covered by `tests/tooling/*.test.ts`
-suites that exercise them via `moon run` and assert full expected output. Root tasks invoke them with
-the `moonScript` helper in `tools/vite-plus/task-commands.ts`, so each consumer stays a stable task
-name rather than an inline command.
+Repository automation prefers MoonBit command packages under `tools/moon/cmd/`. They run through the
+normal package path (`moon run --target native tools/moon/cmd/<name> -- <args>`), share the toolchain
+that already builds the compiler, and are covered by `tests/tooling/*.test.ts` suites that exercise
+them via `moon run` and assert full expected output. Root tasks invoke them with the `moonScript`
+helper in `tools/vite-plus/task-commands.ts`, so each consumer stays a stable task name rather than
+an inline command.
 
 Good MoonBit candidates are small, pure, and dependency-light: argument parsing, JSON or text
 transforms, inventories, and pass/fail checks whose correctness can be proved with a `moon run` test.

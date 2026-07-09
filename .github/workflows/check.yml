@@ -81,7 +81,7 @@ jobs:
     # Matrix legs run in parallel and keep breaking changes attributed per crate.
     # PRs compare against base; pushes compare against the previous main commit.
     # Conventional breaking markers (`type(scope)!:` / `BREAKING CHANGE:`) are major.
-    # Keep this list in sync with crates published by publish_crates.mbtx.
+    # Keep this list in sync with crates published by tools/moon/cmd/publish_crates.
     # New crates are omitted until first publish so registry fallback cannot hit
     # "not found in registry"; dependents of those crates are omitted with them.
     strategy:
@@ -423,7 +423,7 @@ jobs:
         run: npm install --global @pkl-community/pkl@0.27.2
 
       - name: Coverage report
-        run: moon run --target native - -- < tools/moon/scripts/github/write_coverage_summary.mbtx
+        run: moon run --target native tools/moon/cmd/github/write_coverage_summary --
 
   source-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -582,7 +582,7 @@ jobs:
 
       - name: Build WASM
         if: steps.cache-wasm.outputs.cache-hit != 'true'
-        run: moon run --target native - -- playground/src/wasm < tools/moon/scripts/github/build_vitrine_wasm.mbtx
+        run: moon run --target native tools/moon/cmd/github/build_vitrine_wasm -- playground/src/wasm
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -592,7 +592,7 @@ jobs:
           run-install: false
 
       - name: Install JS dependencies
-        run: moon run --target native - -- --filter './playground...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' < tools/moon/scripts/github/vp_install.mbtx
+        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './playground...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
 
       - name: Download shared JS build artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -609,7 +609,7 @@ jobs:
 
       - name: Install Playwright browsers
         if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: moon run --target native - -- < tools/moon/scripts/github/install_playwright_browsers.mbtx
+        run: moon run --target native tools/moon/cmd/github/install_playwright_browsers --
 
       - name: Run playground tests
         run: vp run --filter './playground' test:browser

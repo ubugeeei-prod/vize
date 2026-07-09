@@ -78,6 +78,33 @@ test("source length script rejects grown over-limit files", () => {
   assert.match(result.stdout, /large\.ts/);
 });
 
+test("source length script accepts unchanged over-limit files", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-lengths-unchanged-"));
+  const filePath = path.join(cwd, "large.ts");
+  runGit(cwd, ["init", "-q"]);
+  writeLines(filePath, 351);
+  runGit(cwd, ["add", "large.ts"]);
+  runGit(cwd, [
+    "-c",
+    "user.name=Vize",
+    "-c",
+    "user.email=vize@example.com",
+    "commit",
+    "-qm",
+    "base",
+  ]);
+  const baseRef = runGit(cwd, ["rev-parse", "HEAD"]);
+
+  const result = runMoonScript(
+    "source_file_lengths",
+    ["--check", "--base-ref", baseRef, "--max-lines", "350", "--limit", "5"],
+    { cwd },
+  );
+
+  assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+  assert.match(result.stdout, /No new or grown files exceed 350 lines/);
+});
+
 test("source length script compares renamed over-limit files to their base path", () => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-lengths-rename-"));
   const filePath = path.join(cwd, "large.ts");

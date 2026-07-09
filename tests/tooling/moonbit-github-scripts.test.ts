@@ -60,7 +60,7 @@ test("github/clean_node_binaries removes only top-level .node files", () => {
 
 test("github/clean_node_binaries stays free of async filesystem imports so it works on both native and JS targets", () => {
   const script = fs.readFileSync(
-    path.join(process.cwd(), "tools", "moon", "scripts", "github", "clean_node_binaries.mbtx"),
+    path.join(process.cwd(), "tools", "moon", "cmd", "github", "clean_node_binaries", "main.mbt"),
     "utf8",
   );
 

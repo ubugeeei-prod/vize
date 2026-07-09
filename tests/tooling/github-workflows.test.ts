@@ -140,12 +140,9 @@ test("title policy workflow mutates only issue and PR metadata", () => {
   assert.match(job, /timeout-minutes:\s*5/);
   assert.match(job, /ref:\s*\$\{\{\s*github\.event\.repository\.default_branch\s*\}\}/);
   assert.match(job, /\.github\/actions\/setup-moonbit/);
-  assert.match(job, /tools\/moon\/scripts\/github\/issue_pr_title_policy\.mbtx/);
+  assert.match(job, /tools\/moon\/cmd\/github\/issue_pr_title_policy/);
   assert.match(job, /uses:\s*\.\/\.github\/actions\/setup-moonbit/);
-  assert.match(
-    job,
-    /moon run --target native - -- < tools\/moon\/scripts\/github\/issue_pr_title_policy\.mbtx/,
-  );
+  assert.match(job, /moon run --target native tools\/moon\/cmd\/github\/issue_pr_title_policy --/);
   assert.doesNotMatch(job, /\.github\/scripts\/issue-pr-title-policy\.mjs/);
   assert.doesNotMatch(job, /github\.event\.pull_request\.head/);
 });

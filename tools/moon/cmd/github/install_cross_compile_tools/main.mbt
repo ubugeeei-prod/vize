@@ -1,0 +1,12 @@
+
+async fn main {
+  let update_exit = @process.run("sudo", ["apt-get", "update"])
+  if update_exit != 0 {
+    @sys.exit(update_exit)
+  }
+  let install_exit = @process.run(
+    "sudo",
+    ["apt-get", "install", "-y", "gcc-aarch64-linux-gnu"],
+  )
+  @sys.exit(install_exit)
+}

@@ -3,12 +3,12 @@ import { test } from "node:test";
 
 import { hostedOrBlacksmith, readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-test("deploy-docs deploy job installs MoonBit before running script-mode helpers", () => {
+test("deploy-docs deploy job installs MoonBit before running command packages", () => {
   const workflow = readRepoFile(".github", "workflows", "deploy-docs.yml");
   const deployJob = workflow.slice(workflow.indexOf("\n  deploy:\n"));
   const setupIndex = deployJob.indexOf("- uses: ./.github/actions/setup-moonbit");
   const moonRunIndex = deployJob.indexOf(
-    "run: moon run --target native - -- < tools/moon/scripts/github/create_site_structure.mbtx",
+    "run: moon run --target native tools/moon/cmd/github/create_site_structure --",
   );
 
   assert.notEqual(setupIndex, -1);
@@ -44,19 +44,18 @@ test("WASM build jobs install MoonBit before invoking moon run", () => {
       workflowName: "check.yml",
       jobName: "playground-test",
       moonRun:
-        "run: moon run --target native - -- playground/src/wasm < tools/moon/scripts/github/build_vitrine_wasm.mbtx",
+        "run: moon run --target native tools/moon/cmd/github/build_vitrine_wasm -- playground/src/wasm",
     },
     {
       workflowName: "deploy-docs.yml",
       jobName: "build-playground",
       moonRun:
-        "run: moon run --target native - -- npm/wasm playground/src/wasm < tools/moon/scripts/github/build_vitrine_wasm.mbtx",
+        "run: moon run --target native tools/moon/cmd/github/build_vitrine_wasm -- npm/wasm playground/src/wasm",
     },
     {
       workflowName: "release.yml",
       jobName: "build-wasm-package",
-      moonRun:
-        "run: moon run --target native - -- < tools/moon/scripts/build_vize_wasm_package.mbtx",
+      moonRun: "run: moon run --target native tools/moon/cmd/build_vize_wasm_package --",
     },
   ] as const;
 
@@ -98,7 +97,7 @@ test("setup-moonbit smoke test validates the native async process runtime", () =
 
   assert.match(installer, /function hasExistingMoonInstall\(\)/);
   assert.match(installer, /\["run", "-q", "--target", "native", "-", "--"\]/);
-  assert.match(installer, /"moonbitlang\/async@0\.19\.0\/process"/);
+  assert.match(installer, /"moonbitlang\/async@0\.20\.1\/process"/);
   assert.match(installer, /@process\.run/);
 });
 

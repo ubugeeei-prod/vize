@@ -14,7 +14,11 @@ const workspaceMoonCommand = path.join(
 const moonbitTempDir = path.join(testOutputRoot, "moonbit-tmp");
 
 export function moonScriptPath(name: string): string {
-  return path.join(repoRoot, "tools", "moon", "scripts", `${name}.mbtx`);
+  return path.join(repoRoot, "tools", "moon", "cmd", ...name.split("/"), "main.mbt");
+}
+
+export function moonScriptPackagePath(name: string): string {
+  return path.join(repoRoot, "tools", "moon", "cmd", ...name.split("/"));
 }
 
 function resolveRunnerShim(env: NodeJS.ProcessEnv): string | undefined {
@@ -90,7 +94,7 @@ export function runMoonScript(
     ...(options.denyWarn ? ["--deny-warn"] : []),
     "--target",
     "native",
-    "-",
+    moonScriptPackagePath(name),
     "--",
     ...args,
   ];
@@ -98,7 +102,6 @@ export function runMoonScript(
     cwd: options.cwd ?? repoRoot,
     env,
     encoding: "utf8",
-    input: fs.readFileSync(moonScriptPath(name), "utf8"),
   });
   return {
     ...result,
