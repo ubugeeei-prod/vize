@@ -1,14 +1,19 @@
 use super::types::{ProvideInjectTree, ProvideNode};
+use serde::Serialize;
 
 /// Stable counters for a provide/inject tree.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ProvideInjectTreeSummary {
     pub root_count: usize,
     pub node_count: usize,
+    pub leaf_component_count: usize,
+    pub pass_through_component_count: usize,
     pub provider_component_count: usize,
     pub injector_component_count: usize,
     pub provide_count: usize,
     pub inject_count: usize,
+    pub defaulted_inject_count: usize,
     pub matched_inject_count: usize,
     pub unmatched_inject_count: usize,
     pub max_depth: usize,
@@ -37,6 +42,12 @@ fn summarize_node(node: &ProvideNode, depth: usize, summary: &mut ProvideInjectT
     summary.max_depth = summary.max_depth.max(depth);
     summary.max_child_fanout = summary.max_child_fanout.max(node.children.len());
 
+    if node.children.is_empty() {
+        summary.leaf_component_count += 1;
+    } else if node.provides.is_empty() && node.injects.is_empty() {
+        summary.pass_through_component_count += 1;
+    }
+
     if !node.provides.is_empty() {
         summary.provider_component_count += 1;
     }
@@ -54,6 +65,9 @@ fn summarize_node(node: &ProvideNode, depth: usize, summary: &mut ProvideInjectT
     summary.inject_count += node.injects.len();
 
     for inject in &node.injects {
+        if inject.has_default {
+            summary.defaulted_inject_count += 1;
+        }
         if inject.provider.is_some() {
             summary.matched_inject_count += 1;
         } else {
@@ -128,14 +142,20 @@ mod tests {
 
         assert_eq!(summary.root_count, 1);
         assert_eq!(summary.node_count, 4);
+        assert_eq!(summary.leaf_component_count, 2);
+        assert_eq!(summary.pass_through_component_count, 0);
         assert_eq!(summary.provider_component_count, 1);
         assert_eq!(summary.injector_component_count, 2);
         assert_eq!(summary.provide_count, 1);
         assert_eq!(summary.inject_count, 2);
+        assert_eq!(summary.defaulted_inject_count, 1);
         assert_eq!(summary.matched_inject_count, 1);
         assert_eq!(summary.unmatched_inject_count, 1);
         assert_eq!(summary.max_depth, 3);
         assert_eq!(summary.max_child_fanout, 2);
         assert_eq!(summary.max_provider_consumer_count, 2);
+
+        let json = serde_json::to_string(&summary).unwrap();
+        assert!(json.contains(r#""defaultedInjectCount":1"#));
     }
 }

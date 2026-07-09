@@ -3657,6 +3657,8 @@ dependencies = [
  "oxc_parser",
  "oxc_span",
  "rustc-hash",
+ "serde",
+ "serde_json",
  "vize_armature",
  "vize_carton",
  "vize_croquis",
