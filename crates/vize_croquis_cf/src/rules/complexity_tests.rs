@@ -1,7 +1,8 @@
 use super::complexity::summarize_complexity;
 use super::{
-    ComplexityBand, ComplexityInput, ComplexityReport, FallthroughInfo, ProvideInjectTreeSummary,
-    ReactivityIssue, ReactivityIssueKind, summarize_complexity_with_graph,
+    ComplexityBand, ComplexityDimension, ComplexityInput, ComplexityReport, FallthroughInfo,
+    ProvideInjectTreeSummary, ReactivityIssue, ReactivityIssueKind,
+    summarize_complexity_with_graph,
 };
 use crate::analyzer::CrossFileResult;
 use crate::graph::{DependencyEdge, DependencyGraph, ModuleNode};
@@ -46,6 +47,20 @@ fn scores_each_complexity_dimension() {
     assert_eq!(report.dimensions.reactive_graph, 30);
     assert_eq!(report.total_score, 90);
     assert_eq!(report.band, ComplexityBand::Extreme);
+
+    let dominant = report
+        .dominant_dimension()
+        .expect("non-zero report should expose a dominant dimension");
+    assert_eq!(dominant.dimension, ComplexityDimension::ReactiveGraph);
+    assert_eq!(dominant.dimension.as_str(), "reactive-graph");
+    assert_eq!(dominant.score, 30);
+}
+
+#[test]
+fn dominant_dimension_is_none_for_zero_score() {
+    let report = ComplexityReport::from_input(ComplexityInput::default());
+
+    assert!(report.dominant_dimension().is_none());
 }
 
 #[test]

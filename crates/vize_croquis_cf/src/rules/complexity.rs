@@ -46,6 +46,39 @@ pub struct ComplexityDimensionScores {
     pub reactive_graph: u32,
 }
 
+/// Named complexity dimension for explainable report output.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ComplexityDimension {
+    TemplateControlFlow,
+    SlotUsage,
+    PropDrilling,
+    GlobalState,
+    ProvideInject,
+    FallthroughAttrs,
+    ReactiveGraph,
+}
+
+impl ComplexityDimension {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::TemplateControlFlow => "template-control-flow",
+            Self::SlotUsage => "slot-usage",
+            Self::PropDrilling => "prop-drilling",
+            Self::GlobalState => "global-state",
+            Self::ProvideInject => "provide-inject",
+            Self::FallthroughAttrs => "fallthrough-attrs",
+            Self::ReactiveGraph => "reactive-graph",
+        }
+    }
+}
+
+/// One scored dimension in a complexity report.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ComplexityDimensionBreakdown {
+    pub dimension: ComplexityDimension,
+    pub score: u32,
+}
+
 impl ComplexityDimensionScores {
     pub fn total(self) -> u32 {
         self.template_control_flow
@@ -55,6 +88,46 @@ impl ComplexityDimensionScores {
             .saturating_add(self.provide_inject)
             .saturating_add(self.fallthrough_attrs)
             .saturating_add(self.reactive_graph)
+    }
+
+    pub fn breakdown(self) -> [ComplexityDimensionBreakdown; 7] {
+        [
+            ComplexityDimensionBreakdown {
+                dimension: ComplexityDimension::TemplateControlFlow,
+                score: self.template_control_flow,
+            },
+            ComplexityDimensionBreakdown {
+                dimension: ComplexityDimension::SlotUsage,
+                score: self.slot_usage,
+            },
+            ComplexityDimensionBreakdown {
+                dimension: ComplexityDimension::PropDrilling,
+                score: self.prop_drilling,
+            },
+            ComplexityDimensionBreakdown {
+                dimension: ComplexityDimension::GlobalState,
+                score: self.global_state,
+            },
+            ComplexityDimensionBreakdown {
+                dimension: ComplexityDimension::ProvideInject,
+                score: self.provide_inject,
+            },
+            ComplexityDimensionBreakdown {
+                dimension: ComplexityDimension::FallthroughAttrs,
+                score: self.fallthrough_attrs,
+            },
+            ComplexityDimensionBreakdown {
+                dimension: ComplexityDimension::ReactiveGraph,
+                score: self.reactive_graph,
+            },
+        ]
+    }
+
+    pub fn dominant_dimension(self) -> Option<ComplexityDimensionBreakdown> {
+        self.breakdown()
+            .into_iter()
+            .filter(|breakdown| breakdown.score > 0)
+            .max_by_key(|breakdown| breakdown.score)
     }
 }
 
@@ -108,6 +181,10 @@ impl ComplexityReport {
             total_score,
             band: band_for_score(total_score),
         }
+    }
+
+    pub fn dominant_dimension(self) -> Option<ComplexityDimensionBreakdown> {
+        self.dimensions.dominant_dimension()
     }
 }
 

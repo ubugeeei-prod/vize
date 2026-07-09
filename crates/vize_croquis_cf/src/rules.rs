@@ -29,8 +29,8 @@ mod setup_context;
 // Re-export rule result types
 pub use boundary::{BoundaryInfo, BoundaryKind, analyze_boundaries};
 pub use complexity::{
-    ComplexityBand, ComplexityDimensionScores, ComplexityInput, ComplexityReport, band_for_score,
-    summarize_complexity_with_graph,
+    ComplexityBand, ComplexityDimension, ComplexityDimensionBreakdown, ComplexityDimensionScores,
+    ComplexityInput, ComplexityReport, band_for_score, summarize_complexity_with_graph,
 };
 pub use component_resolution::{ComponentResolutionIssue, analyze_component_resolution};
 pub use element_id::{UniqueIdIssue, analyze_element_ids};
