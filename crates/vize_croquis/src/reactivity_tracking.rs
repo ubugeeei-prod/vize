@@ -36,8 +36,8 @@ use vize_carton::{CompactString, FxHashSet, SmallVec};
 
 // Re-export the tracker (it is the primary public API)
 pub use summary::{
-    BindingStateCounts, ReactiveOriginCounts, ReactivityTrackerSummary, ViolationKindCounts,
-    ViolationSeverityCounts,
+    BindingStateCounts, ReactiveOriginCounts, ReactivityTrackerDetailedSummary,
+    ReactivityTrackerSummary, ViolationKindCounts, ViolationSeverityCounts,
 };
 pub use tracker::ReactivityTracker;
 

@@ -145,6 +145,14 @@ pub struct ReactivityTrackerSummary {
     pub bindings_by_origin: ReactiveOriginCounts,
     pub bindings_by_state: BindingStateCounts,
     pub violations_by_severity: ViolationSeverityCounts,
+}
+
+/// Reactivity tracker summary plus derived violation-kind counters.
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReactivityTrackerDetailedSummary {
+    #[serde(flatten)]
+    pub summary: ReactivityTrackerSummary,
     pub violations_by_kind: ViolationKindCounts,
 }
 
@@ -172,10 +180,28 @@ impl ReactivityTracker {
 
         for violation in &self.violations {
             summary.violations_by_severity.record(violation.severity);
-            summary.violations_by_kind.record(&violation.kind);
         }
 
         summary
+    }
+
+    /// Count violations by kind without changing the stable summary struct shape.
+    pub fn violation_kind_counts(&self) -> ViolationKindCounts {
+        let mut counts = ViolationKindCounts::default();
+
+        for violation in &self.violations {
+            counts.record(&violation.kind);
+        }
+
+        counts
+    }
+
+    /// Build a detailed summary for serialized reports that need violation kinds.
+    pub fn detailed_summary(&self) -> ReactivityTrackerDetailedSummary {
+        ReactivityTrackerDetailedSummary {
+            summary: self.summary(),
+            violations_by_kind: self.violation_kind_counts(),
+        }
     }
 }
 
@@ -247,11 +273,13 @@ mod tests {
         assert_eq!(summary.violations_by_severity.error, 1);
         assert_eq!(summary.violations_by_severity.warning, 1);
         assert_eq!(summary.violations_by_severity.hint, 1);
-        assert_eq!(summary.violations_by_kind.destructuring_loss, 1);
-        assert_eq!(summary.violations_by_kind.external_mutation, 1);
-        assert_eq!(summary.violations_by_kind.missing_value_access, 1);
 
-        let json = serde_json::to_string(&summary).unwrap();
+        let violations_by_kind = tracker.violation_kind_counts();
+        assert_eq!(violations_by_kind.destructuring_loss, 1);
+        assert_eq!(violations_by_kind.external_mutation, 1);
+        assert_eq!(violations_by_kind.missing_value_access, 1);
+
+        let json = serde_json::to_string(&tracker.detailed_summary()).unwrap();
         assert!(json.contains(r#""bindingsByOrigin""#));
         assert!(json.contains(r#""missingValueAccess":1"#));
     }
