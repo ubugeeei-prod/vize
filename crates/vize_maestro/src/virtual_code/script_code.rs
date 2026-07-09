@@ -4,6 +4,7 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use vize_atelier_sfc::SfcScriptBlock;
+use vize_croquis::{Drawer, DrawerOptions};
 
 use super::{
     MappingFeatures, SourceMap, SourceMapping, SourceRange, VirtualDocument, VirtualLanguage,
@@ -176,180 +177,90 @@ impl Default for ScriptCodeGenerator {
 
 /// Extract binding names from script content.
 ///
-/// This is a simple extraction that looks for common patterns.
-/// For accurate binding extraction, use vize_atelier_sfc's binding analysis.
+/// The compatibility name is retained for downstream callers, but extraction
+/// is backed by Croquis' parsed semantic snapshot rather than source scanning.
 pub fn extract_simple_bindings(content: &str, is_setup: bool) -> Vec<String> {
-    let mut bindings = Vec::new();
-
-    if is_setup {
-        // In script setup, top-level bindings are exposed
-        // Look for: const x, let x, function x, import Foo, import { x }
-        for line in content.lines() {
-            let trimmed = line.trim();
-
-            if trimmed.starts_with("import ") {
-                extract_import_bindings(trimmed, &mut bindings);
-            }
-            // const/let declarations
-            else if trimmed.starts_with("const ") || trimmed.starts_with("let ") {
-                if let Some(rest) = trimmed
-                    .strip_prefix("const ")
-                    .or_else(|| trimmed.strip_prefix("let "))
-                {
-                    // Handle destructuring: const { a, b } = ...
-                    if rest.starts_with('{') {
-                        if let Some(end) = rest.find('}') {
-                            let inner = &rest[1..end];
-                            for part in inner.split(',') {
-                                let name = part.split(':').next().unwrap_or("").trim();
-                                if !name.is_empty() && is_valid_identifier(name) {
-                                    bindings.push(name.to_string());
-                                }
-                            }
-                        }
-                    }
-                    // Handle array destructuring: const [a, b] = ...
-                    else if rest.starts_with('[') {
-                        if let Some(end) = rest.find(']') {
-                            let inner = &rest[1..end];
-                            for part in inner.split(',') {
-                                let name = part.trim();
-                                if !name.is_empty() && is_valid_identifier(name) {
-                                    bindings.push(name.to_string());
-                                }
-                            }
-                        }
-                    }
-                    // Simple declaration: const x = ...
-                    else if let Some(name) = rest.split('=').next() {
-                        let name = name.trim();
-                        if is_valid_identifier(name) {
-                            bindings.push(name.to_string());
-                        }
-                    }
-                }
-            }
-            // Function declarations
-            else if trimmed.starts_with("function ")
-                && let Some(rest) = trimmed.strip_prefix("function ")
-                && let Some(name) = rest.split('(').next()
-            {
-                let name = name.trim();
-                if is_valid_identifier(name) {
-                    bindings.push(name.to_string());
-                }
-            }
-        }
+    if !is_setup {
+        return Vec::new();
     }
 
-    bindings
-}
-
-fn extract_import_bindings(line: &str, bindings: &mut Vec<String>) {
-    let Some(rest) = line.strip_prefix("import ") else {
-        return;
-    };
-    if rest.starts_with("type ") || rest.starts_with('"') || rest.starts_with('\'') {
-        return;
-    }
-
-    let before_from = rest.split(" from ").next().unwrap_or(rest).trim();
-    if before_from.starts_with('{') {
-        extract_named_import_bindings(before_from, bindings);
-        return;
-    }
-
-    if let Some((default_name, named)) = before_from.split_once(',') {
-        let default_name = default_name.trim();
-        if is_valid_identifier(default_name) {
-            bindings.push(default_name.to_string());
-        }
-        extract_named_import_bindings(named.trim(), bindings);
-        return;
-    }
-
-    if before_from.starts_with("* as ") {
-        let name = before_from.trim_start_matches("* as ").trim();
-        if is_valid_identifier(name) {
-            bindings.push(name.to_string());
-        }
-        return;
-    }
-
-    if is_valid_identifier(before_from) {
-        bindings.push(before_from.to_string());
-    }
-}
-
-fn extract_named_import_bindings(specifiers: &str, bindings: &mut Vec<String>) {
-    let Some(inner) = specifiers
-        .trim()
-        .strip_prefix('{')
-        .and_then(|value| value.strip_suffix('}'))
-    else {
-        return;
-    };
-
-    for part in inner.split(',') {
-        let part = part.trim();
-        if part.is_empty() {
-            continue;
-        }
-        let local = part
-            .split_once(" as ")
-            .map(|(_, local)| local.trim())
-            .unwrap_or(part);
-        if is_valid_identifier(local) {
-            bindings.push(local.to_string());
-        }
-    }
-}
-
-/// Check if a string is a valid JavaScript identifier.
-fn is_valid_identifier(s: &str) -> bool {
-    if s.is_empty() {
-        return false;
-    }
-    let mut chars = s.chars();
-    let first = chars.next().unwrap();
-    if !first.is_alphabetic() && first != '_' && first != '$' {
-        return false;
-    }
-    chars.all(|c| c.is_alphanumeric() || c == '_' || c == '$')
+    let mut drawer = Drawer::with_options(DrawerOptions {
+        analyze_script: true,
+        ..DrawerOptions::default()
+    });
+    drawer.analyze_script_setup(content);
+    drawer
+        .croquis()
+        .semantic_snapshot()
+        .bindings
+        .into_iter()
+        .map(|binding| binding.name.to_string())
+        .collect()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{extract_simple_bindings, is_valid_identifier};
+    use std::collections::BTreeSet;
+
+    use super::extract_simple_bindings;
 
     #[test]
-    fn test_extract_simple_bindings() {
+    fn semantic_binding_extraction_handles_complete_binding_patterns() {
         let content = r#"
-const message = ref('hello')
-const count = ref(0)
-let mutable = 'test'
+import DefaultWidget, {
+    helper as importedHelper,
+    type SourceShape,
+} from './source'
+import * as utilities from './utilities'
+import type { TypeOnly } from './types'
+
+const {
+    api: client,
+    label: localLabel = 'fallback',
+    nested: { value: nestedValue },
+    urls: [firstUrl, ...remainingUrls],
+    ...runtimeRest
+} = useRuntimeConfig()
+const [head, , { value: tailValue = 0 }, ...tailItems] = remainingUrls
+const 挨拶 = 'こんにちは'
 function handleClick() {}
-const { a, b } = useData()
+class Controller {}
 "#;
 
-        let bindings = extract_simple_bindings(content, true);
+        let actual = extract_simple_bindings(content, true)
+            .into_iter()
+            .collect::<BTreeSet<_>>();
+        let expected = [
+            "Controller",
+            "DefaultWidget",
+            "client",
+            "firstUrl",
+            "handleClick",
+            "head",
+            "importedHelper",
+            "localLabel",
+            "nestedValue",
+            "remainingUrls",
+            "runtimeRest",
+            "tailItems",
+            "tailValue",
+            "utilities",
+            "挨拶",
+        ]
+        .into_iter()
+        .map(str::to_string)
+        .collect::<BTreeSet<_>>();
 
-        assert!(bindings.contains(&"message".to_string()));
-        assert!(bindings.contains(&"count".to_string()));
-        assert!(bindings.contains(&"mutable".to_string()));
-        assert!(bindings.contains(&"handleClick".to_string()));
-        assert!(bindings.contains(&"a".to_string()));
-        assert!(bindings.contains(&"b".to_string()));
+        assert_eq!(actual, expected);
+        for property_key in ["api", "label", "nested", "urls", "value"] {
+            assert!(!actual.contains(property_key));
+        }
+        assert!(!actual.contains("SourceShape"));
+        assert!(!actual.contains("TypeOnly"));
     }
 
     #[test]
-    fn test_is_valid_identifier() {
-        assert!(is_valid_identifier("foo"));
-        assert!(is_valid_identifier("_foo"));
-        assert!(is_valid_identifier("$foo"));
-        assert!(is_valid_identifier("foo123"));
-        assert!(!is_valid_identifier("123foo"));
-        assert!(!is_valid_identifier(""));
-        assert!(!is_valid_identifier("foo-bar"));
+    fn non_setup_compatibility_path_remains_empty() {
+        assert!(extract_simple_bindings("const value = 1", false).is_empty());
     }
 }

@@ -55,7 +55,12 @@ pub fn extract_identifiers_oxc(expr: &str) -> Vec<CompactString> {
     // - Type assertions: as Type
     // - Arrow functions: () =>
     // - Regex literals and division: /
-    if expr.contains('{') || expr.contains(" as ") || expr.contains("=>") || expr.contains('/') {
+    if !expr.is_ascii()
+        || expr.contains('{')
+        || expr.contains(" as ")
+        || expr.contains("=>")
+        || expr.contains('/')
+    {
         return profile!(
             "croquis.helpers.identifiers.slow",
             extract_identifiers_oxc_slow(expr)
@@ -74,7 +79,12 @@ pub fn extract_identifier_refs_oxc(expr: &str) -> Vec<IdentifierRef> {
     // Use OXC for constructs where a string scanner cannot cheaply preserve
     // semantic identifier spans. Comments contain `/`, so this keeps offsets in
     // the original expression instead of using `strip_js_comments`.
-    if expr.contains('{') || expr.contains(" as ") || expr.contains("=>") || expr.contains('/') {
+    if !expr.is_ascii()
+        || expr.contains('{')
+        || expr.contains(" as ")
+        || expr.contains("=>")
+        || expr.contains('/')
+    {
         return profile!(
             "croquis.helpers.identifier_refs.slow",
             extract_identifier_refs_oxc_slow(expr)

@@ -38,6 +38,33 @@ fn test_extract_identifiers_ignores_comment_words() {
 }
 
 #[test]
+fn test_extract_identifiers_supports_unicode_identifier_references() {
+    let expression = "挨拶 + profile.表示名 + { label: 地域名 }";
+
+    assert_eq!(
+        extract_identifiers_oxc(expression),
+        vec!["挨拶", "profile", "地域名"]
+    );
+    assert_eq!(
+        extract_identifier_refs_oxc(expression),
+        vec![
+            IdentifierRef {
+                name: "挨拶".into(),
+                offset: expression.find("挨拶").unwrap() as u32,
+            },
+            IdentifierRef {
+                name: "profile".into(),
+                offset: expression.find("profile").unwrap() as u32,
+            },
+            IdentifierRef {
+                name: "地域名".into(),
+                offset: expression.find("地域名").unwrap() as u32,
+            },
+        ]
+    );
+}
+
+#[test]
 fn test_strip_js_comments_preserves_non_ascii_literals_after_comments() {
     let expr = "/* hidden */ menu.header === 'アカウント' ? '選択中' : '通常'";
     let stripped = strip_js_comments(expr);

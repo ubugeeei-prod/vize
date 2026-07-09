@@ -10,6 +10,8 @@ mod inline_art;
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_semantic_bindings;
 
 use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::Bump;
