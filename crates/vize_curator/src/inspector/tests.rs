@@ -331,6 +331,9 @@ provide('count', count)
     let report_json = serialize_agent_report(&report).expect("report serializes");
 
     assert!(report_json.contains(r#""semantic": {"#));
+    assert!(report_json.contains(r#""semanticFiles": ["#));
+    assert!(report_json.contains(r#""snapshot": {"#));
+    assert!(report_json.contains(r#""provides": ["#));
     assert!(report_json.contains(r#""analyzedFiles": 1"#));
     assert!(report_json.contains(r#""provideCount": 1"#));
     assert!(report_json.contains(r#""elementIdCount": 1"#));

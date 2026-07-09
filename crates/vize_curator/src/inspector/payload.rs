@@ -8,7 +8,7 @@ use vize_atelier_core::Allocator;
 use vize_atelier_sfc::{
     SfcParseOptions, croquis::SfcCroquisOptions, croquis::analyze_sfc_descriptor, parse_sfc,
 };
-use vize_croquis::CroquisSemanticSummary;
+use vize_croquis::{CroquisSemanticSnapshot, CroquisSemanticSummary};
 
 #[derive(Debug, Clone, Copy, serde::Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -80,6 +80,7 @@ pub struct InspectorAgentReport {
     generated_by: &'static str,
     playground_url: String,
     summary: InspectorAgentSummary,
+    semantic_files: Vec<InspectorSemanticFile>,
     graph: InspectorGraph,
     payload: InspectorPayload,
 }
@@ -127,6 +128,13 @@ struct InspectorSemanticSummary {
     fallthrough_attr_risk_files: usize,
 }
 
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct InspectorSemanticFile {
+    path: String,
+    snapshot: CroquisSemanticSnapshot,
+}
+
 pub fn build_payload(
     target: InspectorTarget,
     options: InspectorOptions,
@@ -165,7 +173,7 @@ pub fn build_agent_report(
         .map(|file| line_count(file.source.as_str()))
         .sum();
     let graph = build_graph(&files);
-    let semantic = build_semantic_summary(&files);
+    let (semantic, semantic_files) = build_semantic_report(&files);
     let summary = InspectorAgentSummary {
         target: payload.target,
         selected_file: payload.selected_file.clone(),
@@ -185,13 +193,17 @@ pub fn build_agent_report(
         generated_by: "vize_curator",
         playground_url,
         summary,
+        semantic_files,
         graph,
         payload,
     }
 }
 
-fn build_semantic_summary(files: &[InspectorSourceFile]) -> InspectorSemanticSummary {
+fn build_semantic_report(
+    files: &[InspectorSourceFile],
+) -> (InspectorSemanticSummary, Vec<InspectorSemanticFile>) {
     let mut summary = InspectorSemanticSummary::default();
+    let mut semantic_files = Vec::new();
     for file in files {
         if !file.path.ends_with(".vue") {
             summary.skipped_files += 1;
@@ -219,10 +231,17 @@ fn build_semantic_summary(files: &[InspectorSourceFile]) -> InspectorSemanticSum
         );
 
         summary.analyzed_files += 1;
-        summary.add_croquis(croquis.semantic_summary());
+        let mut snapshot = croquis.semantic_snapshot();
+        // Keep aggregate scope counts without embedding global scope tables.
+        snapshot.scopes.clear();
+        summary.add_croquis(snapshot.summary);
+        semantic_files.push(InspectorSemanticFile {
+            path: file.path.clone(),
+            snapshot,
+        });
     }
 
-    summary
+    (summary, semantic_files)
 }
 
 impl InspectorSemanticSummary {
