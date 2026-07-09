@@ -19,6 +19,7 @@ test("GitHub workflows opt JavaScript actions into Node 24", () => {
   for (const workflowName of [
     "check.yml",
     "deploy-docs.yml",
+    "miri.yml",
     "native-smoke.yml",
     "pkg-pr-new.yml",
     "release.yml",
@@ -38,6 +39,7 @@ test("GitHub workflows use the current cache action", () => {
     ".github/workflows/check.yml",
     ".github/workflows/deploy-docs.yml",
     ".github/workflows/e2e.yml",
+    ".github/workflows/miri.yml",
     ".github/workflows/native-smoke.yml",
     ".github/workflows/release.yml",
     ".github/workflows/tool-benchmark.yml",
@@ -204,6 +206,7 @@ test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
     "deploy-docs.yml",
     "e2e.yml",
     "fuzz.yml",
+    "miri.yml",
     "tool-benchmark.yml",
   ]) {
     const workflow = readRepoFile(".github", "workflows", workflowName);

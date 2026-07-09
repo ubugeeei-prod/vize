@@ -447,41 +447,36 @@ impl<'a> TransformContext<'a> {
 
     /// Replace current node with a new node
     pub fn replace_node(&mut self, new_node: TemplateChildNode<'a>) {
-        if let Some(parent) = &self.parent {
-            let children = parent.children_mut();
-            if self.child_index < children.len() {
-                children[self.child_index] = new_node;
-                self.current_node = Some(&mut children[self.child_index] as *mut _);
+        if let Some(current) = self.current_node {
+            // SAFETY: `current_node` is created from the active child slot that
+            // traversal is visiting. Replacing through that pointer avoids
+            // borrowing the parent children vector a second time while the
+            // current slot is already mutably borrowed.
+            unsafe {
+                *current = new_node;
             }
         }
     }
 
     /// Take the current node, replacing it with a placeholder
     pub fn take_current_node(&mut self) -> Option<TemplateChildNode<'a>> {
-        if let Some(parent) = &self.parent {
-            let children = parent.children_mut();
-            if self.child_index < children.len() {
-                let placeholder = TemplateChildNode::Comment(Box::new_in(
-                    CommentNode::new("", SourceLocation::STUB),
-                    self.allocator,
-                ));
-                let taken = std::mem::replace(&mut children[self.child_index], placeholder);
-                return Some(taken);
-            }
+        if let Some(current) = self.current_node {
+            let placeholder = TemplateChildNode::Comment(Box::new_in(
+                CommentNode::new("", SourceLocation::STUB),
+                self.allocator,
+            ));
+            // SAFETY: see `replace_node`. The pointer is derived from the
+            // active traversal slot, so this replacement does not create an
+            // independent mutable borrow of the parent children vector.
+            return Some(unsafe { std::mem::replace(&mut *current, placeholder) });
         }
         None
     }
 
     /// Remove current node
     pub fn remove_node(&mut self) {
-        if let Some(parent) = &self.parent {
-            let children = parent.children_mut();
-            if self.child_index < children.len() {
-                children.remove(self.child_index);
-                self.current_node = None;
-                self.node_removed = true;
-            }
-        }
+        self.current_node = None;
+        self.node_removed = true;
     }
 
     /// Remove a specific node
