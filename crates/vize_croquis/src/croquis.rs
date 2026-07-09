@@ -31,6 +31,11 @@
 mod bindings;
 mod model;
 mod options_descriptor;
+mod summary;
+#[cfg(test)]
+mod summary_core_tests;
+#[cfg(test)]
+mod summary_template_tests;
 mod template;
 mod vir;
 
@@ -42,6 +47,7 @@ pub use bindings::{
 };
 pub use model::{AnalysisStats, CroquisStats};
 pub use options_descriptor::{OptionGroup, OptionKey, OptionMember, OptionsDescriptor};
+pub use summary::CroquisSemanticSummary;
 pub use template::{
     ComponentRegistration, ComponentUsage, ElementIdInfo, ElementIdKind, EventListener, PassedProp,
     SlotUsage, TemplateExpression, TemplateExpressionKind, TemplateInfo,
