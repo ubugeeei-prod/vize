@@ -8,6 +8,10 @@ mod payload;
 #[cfg(test)]
 mod tests;
 
+#[cfg(test)]
+#[path = "inspector/tests_semantic.rs"]
+mod tests_semantic;
+
 pub use diff::{
     InspectorDiff, InspectorDiffLine, InspectorDiffStats, build_diff, build_line_diff, diff_stats,
 };

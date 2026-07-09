@@ -95,7 +95,105 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
         "provides": [],
         "reactiveSources": [],
         "reactivityLosses": [],
-        "scopes": [],
+        "scopes": [
+          {
+            "bindingCount": 0,
+            "bindings": [],
+            "id": 0,
+            "kind": "univ",
+            "parentIds": [],
+            "range": {
+              "end": 0,
+              "start": 0
+            }
+          },
+          {
+            "bindingCount": 0,
+            "bindings": [],
+            "id": 1,
+            "kind": "client",
+            "parentIds": [
+              0
+            ],
+            "range": {
+              "end": 0,
+              "start": 0
+            }
+          },
+          {
+            "bindingCount": 0,
+            "bindings": [],
+            "id": 2,
+            "kind": "server",
+            "parentIds": [
+              0
+            ],
+            "range": {
+              "end": 0,
+              "start": 0
+            }
+          },
+          {
+            "bindingCount": 0,
+            "bindings": [],
+            "id": 3,
+            "kind": "vue",
+            "parentIds": [
+              0
+            ],
+            "range": {
+              "end": 0,
+              "start": 0
+            }
+          },
+          {
+            "bindingCount": 0,
+            "bindings": [],
+            "id": 4,
+            "kind": "mod",
+            "parentIds": [
+              0
+            ],
+            "range": {
+              "end": 29,
+              "start": 0
+            }
+          },
+          {
+            "bindingCount": 0,
+            "bindings": [],
+            "id": 5,
+            "kind": "setup",
+            "parentIds": [
+              4
+            ],
+            "range": {
+              "end": 29,
+              "start": 0
+            }
+          },
+          {
+            "bindingCount": 1,
+            "bindings": [
+              {
+                "declarationOffset": 1,
+                "kind": "setupConst",
+                "mutated": false,
+                "name": "Child",
+                "used": false
+              }
+            ],
+            "id": 6,
+            "kind": "extern",
+            "parentIds": [
+              5
+            ],
+            "range": {
+              "end": 28,
+              "start": 1
+            }
+          }
+        ],
         "summary": {
           "bindingSpanCount": 1,
           "bindsAttrsExplicitly": false,
@@ -166,7 +264,19 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
         "provides": [],
         "reactiveSources": [],
         "reactivityLosses": [],
-        "scopes": [],
+        "scopes": [
+          {
+            "bindingCount": 0,
+            "bindings": [],
+            "id": 0,
+            "kind": "univ",
+            "parentIds": [],
+            "range": {
+              "end": 0,
+              "start": 0
+            }
+          }
+        ],
         "summary": {
           "bindingSpanCount": 0,
           "bindsAttrsExplicitly": false,

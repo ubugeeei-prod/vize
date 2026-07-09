@@ -224,16 +224,14 @@ fn build_semantic_report(
             }
             root
         });
-        let croquis = analyze_sfc_descriptor(
-            &descriptor,
-            template_root.as_ref(),
-            SfcCroquisOptions::for_lint(),
-        );
+        let mut croquis_options = SfcCroquisOptions::for_lint();
+        croquis_options
+            .analyzer_options
+            .collect_template_expressions = true;
+        let croquis = analyze_sfc_descriptor(&descriptor, template_root.as_ref(), croquis_options);
 
         summary.analyzed_files += 1;
-        let mut snapshot = croquis.semantic_snapshot();
-        // Keep aggregate scope counts without embedding global scope tables.
-        snapshot.scopes.clear();
+        let snapshot = compact_semantic_snapshot(croquis.semantic_snapshot());
         summary.add_croquis(snapshot.summary);
         semantic_files.push(InspectorSemanticFile {
             path: file.path.clone(),
@@ -242,6 +240,18 @@ fn build_semantic_report(
     }
 
     (summary, semantic_files)
+}
+
+fn compact_semantic_snapshot(mut snapshot: CroquisSemanticSnapshot) -> CroquisSemanticSnapshot {
+    for scope in &mut snapshot.scopes {
+        if matches!(scope.kind, "univ" | "client" | "server" | "vue") {
+            // Preserve the ambient scope topology without serializing the
+            // same static JavaScript/Vue global tables for every SFC.
+            scope.bindings.clear();
+            scope.binding_count = 0;
+        }
+    }
+    snapshot
 }
 
 impl InspectorSemanticSummary {
