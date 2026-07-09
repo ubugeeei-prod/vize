@@ -1,7 +1,9 @@
 use crate::registry::FileId;
+use serde::Serialize;
 use vize_carton::CompactString;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ProvideInjectMatch {
     /// Component providing the value.
     pub provider: FileId,
@@ -22,13 +24,15 @@ pub struct ProvideInjectMatch {
 }
 
 /// Tree representation of provide/inject relationships.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ProvideInjectTree {
     /// Root nodes (components that provide but don't inject from ancestors).
     pub roots: Vec<ProvideNode>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ProvideNode {
     /// File ID of this component.
     pub file_id: FileId,
@@ -43,7 +47,8 @@ pub struct ProvideNode {
 }
 
 /// Information about a provide call.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ProvideInfo {
     /// The provide key.
     pub key: CompactString,
@@ -56,7 +61,8 @@ pub struct ProvideInfo {
 }
 
 /// Information about an inject call.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct InjectInfo {
     /// The inject key.
     pub key: CompactString,

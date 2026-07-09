@@ -124,6 +124,23 @@ const state = inject('state')"#,
     assert_eq!(tree.roots[0].children[0].children.len(), 1);
     assert_eq!(tree.roots[0].children[0].children[0].injects.len(), 1);
 
+    let tree_json = serde_json::to_value(tree).expect("tree should serialize");
+    assert_eq!(tree_json["roots"][0]["componentName"], "App");
+    assert_eq!(tree_json["roots"][0]["provides"][0]["key"], "state");
+    assert_eq!(tree_json["roots"][0]["provides"][0]["consumerCount"], 1);
+    assert_eq!(
+        tree_json["roots"][0]["children"][0]["componentName"],
+        "Middle"
+    );
+    assert_eq!(
+        tree_json["roots"][0]["children"][0]["children"][0]["componentName"],
+        "Leaf"
+    );
+    assert_eq!(
+        tree_json["roots"][0]["children"][0]["children"][0]["injects"][0]["key"],
+        "state"
+    );
+
     let summary = result
         .provide_inject_tree_summary
         .expect("tree summary should be built");
