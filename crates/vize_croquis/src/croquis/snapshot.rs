@@ -12,7 +12,7 @@ use crate::provide::{InjectEntry, InjectPattern, ProvideEntry, ProvideKey};
 use crate::reactivity::{ReactiveKind, ReactiveSource, ReactivityLoss, ReactivityLossKind};
 use crate::scope::ScopeBinding;
 use serde::Serialize;
-use vize_carton::CompactString;
+use vize_carton::{CompactString, String, appends};
 use vize_relief::BindingType;
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
@@ -551,7 +551,9 @@ fn reactivity_loss_snapshot(loss: &ReactivityLoss) -> SemanticReactivityLossSnap
 }
 
 fn semantic_id(kind: &str, name: &str, offset: u32) -> CompactString {
-    CompactString::new(format!("{kind}:{name}@{offset}"))
+    let mut id = String::default();
+    appends!(id, kind, #':', name, #'@', @offset);
+    CompactString::new(id.as_str())
 }
 
 fn provide_key_value(key: &ProvideKey) -> CompactString {
