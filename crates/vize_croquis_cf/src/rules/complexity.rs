@@ -220,11 +220,7 @@ pub fn summarize_complexity_with_graph(
 
 fn complexity_input(registry: &ModuleRegistry, result: &CrossFileResult) -> ComplexityInput {
     let mut input = ComplexityInput {
-        fallthrough_risk_count: result
-            .fallthrough_info
-            .iter()
-            .filter(|info| info.has_potential_issues())
-            .count(),
+        fallthrough_risk_count: fallthrough_risk_count(result),
         reactive_edge_count: result
             .reactivity_issues
             .len()
@@ -308,6 +304,20 @@ fn complexity_input(registry: &ModuleRegistry, result: &CrossFileResult) -> Comp
     }
 
     input
+}
+
+fn fallthrough_risk_count(result: &CrossFileResult) -> usize {
+    if let Some(summary) = result.fallthrough_summary {
+        return summary
+            .components_with_potential_issues
+            .saturating_add(summary.risky_unconsumed_fallthrough_attr_count);
+    }
+
+    result
+        .fallthrough_info
+        .iter()
+        .filter(|info| info.has_potential_issues())
+        .count()
 }
 
 fn weighted(count: usize, weight: u32) -> u32 {

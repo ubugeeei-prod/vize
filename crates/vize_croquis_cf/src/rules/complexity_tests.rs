@@ -1,7 +1,7 @@
 use super::complexity::summarize_complexity;
 use super::{
     ComplexityBand, ComplexityDimension, ComplexityInput, ComplexityReport, FallthroughInfo,
-    ProvideInjectTreeSummary, ReactivityIssue, ReactivityIssueKind,
+    FallthroughSummary, ProvideInjectTreeSummary, ReactivityIssue, ReactivityIssueKind,
     summarize_complexity_with_graph,
 };
 use crate::analyzer::CrossFileResult;
@@ -135,6 +135,11 @@ fn summarizes_complexity_from_registry_and_result() {
             template_start: 0,
             template_end: 10,
         }],
+        fallthrough_summary: Some(FallthroughSummary {
+            components_with_potential_issues: 1,
+            risky_unconsumed_fallthrough_attr_count: 0,
+            ..FallthroughSummary::default()
+        }),
         provide_inject_tree_summary: Some(ProvideInjectTreeSummary {
             max_depth: 3,
             provide_count: 1,
@@ -169,6 +174,48 @@ fn summarizes_complexity_from_registry_and_result() {
     assert_eq!(report.input.reactive_edge_count, 1);
     assert_eq!(report.total_score, 25);
     assert_eq!(report.band, ComplexityBand::Moderate);
+}
+
+#[test]
+fn summarizes_fallthrough_risk_from_detailed_summary() {
+    let registry = ModuleRegistry::new();
+    let result = CrossFileResult {
+        fallthrough_summary: Some(FallthroughSummary {
+            components_with_potential_issues: 2,
+            risky_unconsumed_fallthrough_attr_count: 3,
+            ..FallthroughSummary::default()
+        }),
+        ..CrossFileResult::default()
+    };
+
+    let report = summarize_complexity(&registry, &result);
+
+    assert_eq!(report.input.fallthrough_risk_count, 5);
+    assert_eq!(report.dimensions.fallthrough_attrs, 20);
+}
+
+#[test]
+fn summarizes_fallthrough_risk_from_infos_when_summary_is_absent() {
+    let registry = ModuleRegistry::new();
+    let result = CrossFileResult {
+        fallthrough_info: vec![FallthroughInfo {
+            file_id: crate::FileId::new(1),
+            inherit_attrs_disabled: false,
+            uses_attrs: false,
+            binds_attrs: false,
+            root_element_count: 2,
+            passed_attrs: FxHashSet::from_iter([CompactString::new("tracking-id")]),
+            declared_props: FxHashSet::default(),
+            template_start: 0,
+            template_end: 10,
+        }],
+        ..CrossFileResult::default()
+    };
+
+    let report = summarize_complexity(&registry, &result);
+
+    assert_eq!(report.input.fallthrough_risk_count, 1);
+    assert_eq!(report.dimensions.fallthrough_attrs, 4);
 }
 
 #[test]
