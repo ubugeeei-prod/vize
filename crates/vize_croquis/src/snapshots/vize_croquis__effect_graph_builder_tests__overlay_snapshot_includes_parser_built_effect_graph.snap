@@ -1,0 +1,51 @@
+---
+source: crates/vize_croquis/src/effect_graph_builder_tests.rs
+expression: json
+---
+{
+  "summary": {
+    "sourceCount": 2,
+    "refSourceCount": 1,
+    "reactiveSourceCount": 0,
+    "computedSourceCount": 1,
+    "readonlySourceCount": 0,
+    "needsValueAccessCount": 2,
+    "lossCount": 0,
+    "effectEdgeCount": 2,
+    "effectCycleCount": 0
+  },
+  "sources": [
+    {
+      "id": 0,
+      "name": "count",
+      "kind": "ref",
+      "category": "ref",
+      "needsValueAccess": true,
+      "declarationOffset": 0
+    },
+    {
+      "id": 1,
+      "name": "doubled",
+      "kind": "computed",
+      "category": "computed",
+      "needsValueAccess": true,
+      "declarationOffset": 0
+    }
+  ],
+  "losses": [],
+  "effectGraph": {
+    "edges": [
+      {
+        "from": "doubled",
+        "to": "count",
+        "category": "effectEdge"
+      },
+      {
+        "from": "watchEffect@119",
+        "to": "doubled",
+        "category": "effectEdge"
+      }
+    ],
+    "cycle": null
+  }
+}

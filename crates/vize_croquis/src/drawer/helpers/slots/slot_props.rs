@@ -104,29 +104,33 @@ fn extract_slot_binding_names(
 #[cfg(test)]
 mod tests {
     use super::extract_slot_props;
+    use vize_carton::{CompactString, SmallVec, cstr};
 
-    fn names(pattern: &str) -> Vec<String> {
+    fn names(pattern: &str) -> SmallVec<[CompactString; 4]> {
         extract_slot_props(pattern)
-            .iter()
-            .map(|name| name.to_string())
-            .collect()
     }
 
     #[test]
     fn extracts_simple_object_rest_with_default() {
-        assert_eq!(names("{ open = false, ...rest }"), vec!["open", "rest"]);
+        assert_eq!(
+            names("{ open = false, ...rest }"),
+            [cstr!("open"), cstr!("rest")].into()
+        );
     }
 
     #[test]
     fn falls_back_for_nested_object_patterns() {
-        assert_eq!(names("{ item: { id }, ...rest }"), vec!["id", "rest"]);
+        assert_eq!(
+            names("{ item: { id }, ...rest }"),
+            [cstr!("id"), cstr!("rest")].into()
+        );
     }
 
     #[test]
     fn falls_back_for_default_calls_with_commas() {
         assert_eq!(
             names("{ value = getDefault(a, b), rest }"),
-            vec!["value", "rest"]
+            [cstr!("value"), cstr!("rest")].into()
         );
     }
 }

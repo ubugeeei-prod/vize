@@ -65,6 +65,9 @@ pub mod types;
 pub mod virtual_ts;
 
 #[cfg(test)]
+mod effect_graph_builder_tests;
+
+#[cfg(test)]
 mod reactivity_overlay_tests;
 
 // Re-export commonly used utilities from vize_carton for convenience
@@ -98,7 +101,10 @@ pub use croquis::{
     UnusedVarContext,
 };
 pub use drawer::{Drawer, DrawerOptions};
-pub use effect_graph::EffectGraphSummary;
+pub use effect_graph::{
+    EffectGraph, EffectGraphSummary, build_effect_graph_from_script,
+    build_effect_graph_from_script_setup,
+};
 pub use reactivity_overlay::{
     ReactivityEffectEdgeOverlay, ReactivityEffectGraphOverlay, ReactivityLossOverlay,
     ReactivityOverlay, ReactivityOverlaySummary, ReactivitySourceOverlay,

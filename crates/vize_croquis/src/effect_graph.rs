@@ -8,6 +8,10 @@
 //! follow-ups. The intent of landing the model now is so the analyzer and
 //! the lint rule can be developed against a stable shape.
 
+mod builder;
+
+pub use builder::{build_effect_graph_from_script, build_effect_graph_from_script_setup};
+
 use serde::Serialize;
 use vize_carton::CompactString;
 
