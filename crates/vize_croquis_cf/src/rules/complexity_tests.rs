@@ -48,12 +48,23 @@ fn scores_each_complexity_dimension() {
     assert_eq!(report.total_score, 90);
     assert_eq!(report.band, ComplexityBand::Extreme);
 
+    let json = serde_json::to_value(report).expect("complexity report should serialize");
+    assert_eq!(json["input"]["templateIfCount"], 2);
+    assert_eq!(json["input"]["fallthroughRiskCount"], 2);
+    assert_eq!(json["dimensions"]["reactiveGraph"], 30);
+    assert_eq!(json["cyclomaticScore"], 6);
+    assert_eq!(json["band"], "extreme");
+
     let dominant = report
         .dominant_dimension()
         .expect("non-zero report should expose a dominant dimension");
     assert_eq!(dominant.dimension, ComplexityDimension::ReactiveGraph);
     assert_eq!(dominant.dimension.as_str(), "reactive-graph");
     assert_eq!(dominant.score, 30);
+
+    let dominant_json = serde_json::to_value(dominant).unwrap();
+    assert_eq!(dominant_json["dimension"], "reactive-graph");
+    assert_eq!(dominant_json["score"], 30);
 }
 
 #[test]

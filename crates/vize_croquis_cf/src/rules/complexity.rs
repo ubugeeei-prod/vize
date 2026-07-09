@@ -1,8 +1,4 @@
 //! Cross-file complexity scoring.
-//!
-//! The model is intentionally explainable: callers can inspect both raw input
-//! counts and weighted dimension scores before deciding how to surface the
-//! result in reports or diagnostics.
 
 mod nesting;
 
@@ -12,8 +8,8 @@ use crate::registry::ModuleRegistry;
 use crate::rules::cross_file_reactivity::CrossFileReactivityIssueKind;
 use vize_croquis::{ScopeKind, TemplateExpressionKind};
 
-/// Raw cross-file signals used to score Vue component complexity.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ComplexityInput {
     pub component_count: usize,
     pub template_if_count: usize,
@@ -34,8 +30,8 @@ pub struct ComplexityInput {
     pub reactive_cycle_count: usize,
 }
 
-/// Per-dimension complexity score.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ComplexityDimensionScores {
     pub template_control_flow: u32,
     pub slot_usage: u32,
@@ -46,8 +42,8 @@ pub struct ComplexityDimensionScores {
     pub reactive_graph: u32,
 }
 
-/// Named complexity dimension for explainable report output.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "kebab-case")]
 pub enum ComplexityDimension {
     TemplateControlFlow,
     SlotUsage,
@@ -72,8 +68,8 @@ impl ComplexityDimension {
     }
 }
 
-/// One scored dimension in a complexity report.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ComplexityDimensionBreakdown {
     pub dimension: ComplexityDimension,
     pub score: u32,
@@ -131,8 +127,8 @@ impl ComplexityDimensionScores {
     }
 }
 
-/// Human-facing band for the total complexity score.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub enum ComplexityBand {
     #[default]
     Low,
@@ -142,7 +138,8 @@ pub enum ComplexityBand {
 }
 
 /// Explainable complexity score for one cross-file graph or component slice.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ComplexityReport {
     pub input: ComplexityInput,
     pub dimensions: ComplexityDimensionScores,

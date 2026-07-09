@@ -1,7 +1,9 @@
 use super::FallthroughInfo;
+use serde::Serialize;
 
 /// Stable counters for fallthrough attribute analysis.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct FallthroughSummary {
     pub component_count: usize,
     pub components_with_passed_attrs: usize,
@@ -140,6 +142,11 @@ mod tests {
         assert_eq!(summary.risky_unconsumed_fallthrough_attr_count, 0);
         assert_eq!(summary.max_passed_attrs, 2);
         assert_eq!(summary.max_root_element_count, 3);
+
+        let json = serde_json::to_value(summary).unwrap();
+        assert_eq!(json["componentCount"], 3);
+        assert_eq!(json["componentsWithPotentialIssues"], 1);
+        assert_eq!(json["safeStandardFallthroughAttrCount"], 2);
     }
 
     #[test]
