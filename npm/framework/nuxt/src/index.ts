@@ -269,7 +269,9 @@ function normalizeNuxtAutoImportTransformResult(
   if (typeof result === "string") {
     const normalized = preserveExplicitVueImportsFromNuxtAutoImports(code, result);
     const restored = preserveExplicitVueImportsFromVizeModuleSource(id, normalized);
-    return rewriteVueRuntimeImports ? rewriteBareVueImportsToClientRuntime(restored) : restored;
+    return rewriteVueRuntimeImports
+      ? bridgeFastPath.rewriteBareVueImportsToClientRuntime(restored)
+      : restored;
   }
   if (typeof result.code !== "string") {
     return result;
@@ -279,7 +281,7 @@ function normalizeNuxtAutoImportTransformResult(
     preserveExplicitVueImportsFromNuxtAutoImports(code, result.code),
   );
   if (rewriteVueRuntimeImports) {
-    normalized = rewriteBareVueImportsToClientRuntime(normalized);
+    normalized = bridgeFastPath.rewriteBareVueImportsToClientRuntime(normalized);
   }
   return normalized === result.code ? result : { ...result, code: normalized };
 }
