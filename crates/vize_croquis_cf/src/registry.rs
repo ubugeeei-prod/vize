@@ -13,14 +13,13 @@
 use crate::rules::cross_file_reactivity::store_detection::{
     StoreFactories, collect_store_factories,
 };
-use serde::Serialize;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::Croquis;
 
 /// Unique identifier for a file in the registry.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize)]
 #[repr(transparent)]
 pub struct FileId(u32);
 
