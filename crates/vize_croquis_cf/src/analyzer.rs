@@ -14,6 +14,10 @@ pub use types::{CrossFileOptions, CrossFileResult, CrossFileStats};
 mod tests_basic;
 
 #[cfg(test)]
+#[path = "analyzer/tests_fallthrough.rs"]
+mod tests_fallthrough;
+
+#[cfg(test)]
 #[path = "analyzer/tests_element_id.rs"]
 mod tests_element_id;
 

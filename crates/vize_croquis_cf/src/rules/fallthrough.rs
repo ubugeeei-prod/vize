@@ -10,10 +10,12 @@ use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::{CompactString, FxHashMap, FxHashSet, cstr};
 
+mod component;
 mod info;
 mod summary;
 mod usage;
 
+pub use component::{FallthroughComponentFact, collect_fallthrough_component_facts};
 pub use summary::{FallthroughSummary, summarize_fallthrough};
 pub use usage::*;
 
