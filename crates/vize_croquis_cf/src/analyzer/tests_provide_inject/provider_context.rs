@@ -97,6 +97,34 @@ const theme = inject('theme')"#,
     assert_eq!(provider_match.provider, parent);
     assert_eq!(provider_match.consumer, child);
     assert_eq!(provider_match.provide_offset, later_offset);
+    let tree = result
+        .provide_inject_tree
+        .as_ref()
+        .expect("provide/inject tree should be built");
+    let provider_node = tree
+        .roots
+        .iter()
+        .find(|root| root.file_id == parent)
+        .expect("parent provider should be a tree root");
+    assert_eq!(provider_node.provides.len(), 2);
+    assert_eq!(
+        provider_node
+            .provides
+            .iter()
+            .find(|provide| provide.offset == earlier_offset)
+            .expect("earlier provide should remain visible")
+            .consumer_count,
+        0
+    );
+    assert_eq!(
+        provider_node
+            .provides
+            .iter()
+            .find(|provide| provide.offset == later_offset)
+            .expect("selected provide should remain visible")
+            .consumer_count,
+        1
+    );
     assert!(result.diagnostics.iter().any(|diagnostic| {
         diagnostic.primary_file == parent
             && diagnostic.primary_offset == earlier_offset

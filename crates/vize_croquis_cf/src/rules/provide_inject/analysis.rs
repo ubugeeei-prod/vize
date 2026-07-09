@@ -1,11 +1,17 @@
-use super::index::ProvideInjectIndex;
+use super::index::{ProvideInjectIndex, ResolvedProvider, ResolvedProviderBranch};
 use super::keys::{provide_key_display, provide_key_identity};
-use super::types::ProvideInjectMatch;
+use super::types::{ProvideInjectBranch, ProvideInjectMatch};
 use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
 use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::{CompactString, FxHashSet, cstr};
 use vize_croquis::provide::InjectPattern;
+
+mod diagnostics;
+use self::diagnostics::{
+    provider_relateds, type_mismatch_diagnostic, unmatched_inject_diagnostic,
+    with_provider_relateds,
+};
 
 #[allow(dead_code)]
 pub fn analyze_provide_inject(
@@ -13,27 +19,35 @@ pub fn analyze_provide_inject(
     graph: &DependencyGraph,
 ) -> (Vec<ProvideInjectMatch>, Vec<CrossFileDiagnostic>) {
     let index = ProvideInjectIndex::new(registry, graph);
-    analyze_provide_inject_with_index(&index)
+    let (matches, _, diagnostics) = analyze_provide_inject_with_index(&index);
+    (matches, diagnostics)
 }
 
 pub(crate) fn analyze_provide_inject_with_index(
     index: &ProvideInjectIndex,
-) -> (Vec<ProvideInjectMatch>, Vec<CrossFileDiagnostic>) {
+) -> (
+    Vec<ProvideInjectMatch>,
+    Vec<ProvideInjectBranch>,
+    Vec<CrossFileDiagnostic>,
+) {
     let mut matches = Vec::new();
+    let mut branches = Vec::new();
     let mut diagnostics = index.string_key_diagnostics();
 
     // Track which provides are used
     let mut used_provides: FxHashSet<(FileId, u32)> = FxHashSet::default();
+    let mut recorded_matches: FxHashSet<(FileId, u32, FileId, u32)> = FxHashSet::default();
 
     // For each inject, try to find a matching provide in ancestors
-    for (&consumer_id, consumer_injects) in index.injects() {
+    let mut consumer_ids = index.injects().keys().copied().collect::<Vec<_>>();
+    index.sort_file_ids(&mut consumer_ids);
+    for consumer_id in consumer_ids {
+        let consumer_injects = &index.injects()[&consumer_id];
         for inject in consumer_injects {
             let key_str = provide_key_display(&inject.key);
-            let provider_matches = index.resolve_providers(consumer_id, &inject.key);
-            let provider_related: Vec<_> = provider_matches
-                .iter()
-                .map(|provider| (provider.provider_id, provider.provide.start))
-                .collect();
+            let key_identity = provide_key_identity(&inject.key);
+            let provider_branches = index.resolve_provider_branches(consumer_id, &inject.key);
+            let provider_related = provider_relateds(&provider_branches);
 
             // Check for destructured inject - this causes reactivity loss
             match &inject.pattern {
@@ -133,111 +147,79 @@ pub(crate) fn analyze_provide_inject_with_index(
                 }
             }
 
-            if provider_matches.is_empty() {
-                // No provider found
-                if inject.default_value.is_none() {
-                    diagnostics.push(
-                        CrossFileDiagnostic::new(
-                            CrossFileDiagnosticKind::UnmatchedInject {
-                                key: key_str.clone(),
-                            },
-                            DiagnosticSeverity::Error,
-                            consumer_id,
-                            inject.start,
-                            cstr!(
-                                "**Unmatched Inject**: `inject('{}')` has no matching `provide()` in any ancestor component\n\n\
-                                This will return `undefined` at runtime and may cause errors.\n\n\
-                                ### Checklist:\n\
-                                - [ ] Add `provide('{}', value)` in a parent/ancestor component\n\
-                                - [ ] Or provide a default value: `inject('{}', defaultValue)`",
-                                key_str, key_str, key_str
-                            ),
-                        )
-                        .with_end_offset(inject.end)
-                        .with_suggestion(cstr!(
-                            "```typescript\n// In parent component:\nprovide('{}', yourValue)\n\n// Or with default:\nconst {} = inject('{}', defaultValue)\n```",
-                            key_str, inject.local_name, key_str
-                        )),
-                    );
-                } else {
-                    diagnostics.push(
-                        CrossFileDiagnostic::new(
-                            CrossFileDiagnosticKind::UnmatchedInject {
-                                key: key_str.clone(),
-                            },
-                            DiagnosticSeverity::Warning,
-                            consumer_id,
-                            inject.start,
-                            cstr!(
-                                "**Unmatched Inject Default**: `inject('{}')` falls back to its default value because no ancestor provides this key.\n\n\
-                                The runtime fallback is safe, but this can hide broken provider wiring.",
-                                key_str
-                            ),
-                        )
-                        .with_end_offset(inject.end)
-                        .with_suggestion(cstr!(
-                            "Add `provide('{}', value)` in an ancestor, or keep the fallback only if it is intentional",
-                            key_str
-                        )),
-                    );
-                }
-            } else {
-                for provider_match in provider_matches {
-                    // Found a match
-                    used_provides.insert((
-                        provider_match.provider_id,
-                        provider_match.provide.id.as_u32(),
-                    ));
-                    let type_match = provide_inject_type_match(
-                        provider_match.provide.value_type.as_ref(),
-                        inject.expected_type.as_ref(),
-                    );
+            let unmatched_count = provider_branches
+                .iter()
+                .filter(|branch| matches!(branch, ResolvedProviderBranch::Unmatched { .. }))
+                .count();
+            if unmatched_count > 0 {
+                let diagnostic = unmatched_inject_diagnostic(
+                    consumer_id,
+                    inject,
+                    &key_str,
+                    unmatched_count,
+                    provider_branches.len(),
+                );
+                diagnostics.push(with_provider_relateds(
+                    diagnostic,
+                    &provider_related,
+                    &key_str,
+                ));
+            }
 
-                    if let Some(false) = type_match {
-                        let provided_type = provider_match
-                            .provide
-                            .value_type
-                            .clone()
-                            .expect("mismatched type requires provider type");
-                        let injected_type = inject
-                            .expected_type
-                            .clone()
-                            .expect("mismatched type requires inject type");
-                        diagnostics.push(
-                            CrossFileDiagnostic::new(
-                                CrossFileDiagnosticKind::ProvideInjectTypeMismatch {
-                                    key: key_str.clone(),
-                                    provided_type,
-                                    injected_type,
-                                },
-                                DiagnosticSeverity::Warning,
-                                consumer_id,
-                                inject.start,
-                                cstr!(
-                                    "inject('{}') expects a different type than its nearest provide()",
-                                    key_str
-                                ),
-                            )
-                            .with_end_offset(inject.end)
-                            .with_related(
-                                provider_match.provider_id,
-                                provider_match.provide.start,
-                                cstr!("provide('{key_str}') source"),
-                            ),
+            let mismatch_providers =
+                mismatched_providers(&provider_branches, inject.expected_type.as_ref());
+            if !mismatch_providers.is_empty() {
+                diagnostics.push(type_mismatch_diagnostic(
+                    consumer_id,
+                    inject,
+                    &key_str,
+                    &mismatch_providers,
+                ));
+            }
+
+            for provider_branch in provider_branches {
+                let (path, provider) = match provider_branch {
+                    ResolvedProviderBranch::Matched(provider_match) => {
+                        used_provides.insert((
+                            provider_match.provider_id,
+                            provider_match.provide.id.as_u32(),
+                        ));
+                        let type_match = provide_inject_type_match(
+                            provider_match.provide.value_type.as_ref(),
+                            inject.expected_type.as_ref(),
                         );
+                        let path = provider_match.path;
+                        let provider_id = provider_match.provider_id;
+                        let provide_offset = provider_match.provide.start;
+                        if recorded_matches.insert((
+                            provider_id,
+                            provider_match.provide.id.as_u32(),
+                            consumer_id,
+                            inject.start,
+                        )) {
+                            matches.push(ProvideInjectMatch {
+                                provider: provider_id,
+                                consumer: consumer_id,
+                                key: key_str.clone(),
+                                key_identity: key_identity.clone(),
+                                path: path.clone(),
+                                type_match,
+                                provide_offset,
+                                inject_offset: inject.start,
+                            });
+                        }
+                        (path, Some((provider_id, provide_offset)))
                     }
-
-                    matches.push(ProvideInjectMatch {
-                        provider: provider_match.provider_id,
-                        consumer: consumer_id,
-                        key: key_str.clone(),
-                        key_identity: provide_key_identity(&inject.key),
-                        path: provider_match.path,
-                        type_match,
-                        provide_offset: provider_match.provide.start,
-                        inject_offset: inject.start,
-                    });
-                }
+                    ResolvedProviderBranch::Unmatched { path } => (path, None),
+                };
+                branches.push(ProvideInjectBranch {
+                    consumer: consumer_id,
+                    key_identity: key_identity.clone(),
+                    path,
+                    provider: provider.map(|(provider, _)| provider),
+                    provide_offset: provider.map(|(_, offset)| offset),
+                    inject_offset: inject.start,
+                });
             }
         }
     }
@@ -268,7 +250,29 @@ pub(crate) fn analyze_provide_inject_with_index(
         }
     }
 
-    (matches, diagnostics)
+    (matches, branches, diagnostics)
+}
+
+fn mismatched_providers<'a>(
+    branches: &'a [ResolvedProviderBranch],
+    expected_type: Option<&CompactString>,
+) -> Vec<&'a ResolvedProvider> {
+    let mut seen = FxHashSet::default();
+    branches
+        .iter()
+        .filter_map(|branch| match branch {
+            ResolvedProviderBranch::Matched(provider)
+                if provide_inject_type_match(
+                    provider.provide.value_type.as_ref(),
+                    expected_type,
+                ) == Some(false)
+                    && seen.insert((provider.provider_id, provider.provide.id.as_u32())) =>
+            {
+                Some(provider)
+            }
+            _ => None,
+        })
+        .collect()
 }
 
 fn provide_inject_type_match(
@@ -285,19 +289,4 @@ fn types_equal_ignoring_ascii_whitespace(left: &str, right: &str) -> bool {
     left.chars()
         .filter(|ch| !ch.is_ascii_whitespace())
         .eq(right.chars().filter(|ch| !ch.is_ascii_whitespace()))
-}
-
-fn with_provider_relateds(
-    mut diagnostic: CrossFileDiagnostic,
-    provider_related: &[(FileId, u32)],
-    key: &CompactString,
-) -> CrossFileDiagnostic {
-    for (provider_id, provider_offset) in provider_related {
-        diagnostic = diagnostic.with_related(
-            *provider_id,
-            *provider_offset,
-            cstr!("provide('{key}') source"),
-        );
-    }
-    diagnostic
 }

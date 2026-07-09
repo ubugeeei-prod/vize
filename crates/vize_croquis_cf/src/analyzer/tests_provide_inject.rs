@@ -20,3 +20,8 @@ mod playground;
 mod provider_context;
 mod provider_reactivity;
 mod tree;
+mod tree_cycle;
+mod tree_diamond;
+mod tree_partial;
+mod tree_shared;
+mod tree_typed;

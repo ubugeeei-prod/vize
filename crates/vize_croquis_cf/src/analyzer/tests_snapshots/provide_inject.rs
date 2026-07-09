@@ -110,6 +110,154 @@ provide('stale', 1)"#,
     assert_snapshot!(output);
 }
 
+#[test]
+fn test_snapshot_shared_child_branch_provider_context() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+
+    // Deliberately register out of display order so the snapshot also guards
+    // against FileId-based ordering.
+    analyzer.add_file_with_analysis(
+        Path::new("Child.vue"),
+        "",
+        script_analysis(
+            r#"import { inject } from 'vue'
+const theme = inject('theme')"#,
+            &[],
+        ),
+    );
+    analyzer.add_file_with_analysis(
+        Path::new("ParentB.vue"),
+        "",
+        script_analysis(
+            r#"import { provide } from 'vue'
+provide('theme', 'light')"#,
+            &["Child"],
+        ),
+    );
+    analyzer.add_file_with_analysis(
+        Path::new("App.vue"),
+        "",
+        script_analysis("// renders both providers", &["ParentA", "ParentB"]),
+    );
+    analyzer.add_file_with_analysis(
+        Path::new("ParentA.vue"),
+        "",
+        script_analysis(
+            r#"import { provide } from 'vue'
+provide('theme', 'dark')"#,
+            &["Child"],
+        ),
+    );
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+    let tree = result
+        .provide_inject_tree
+        .as_ref()
+        .expect("tree should be built");
+    let summary = result
+        .provide_inject_tree_summary
+        .expect("tree summary should be built");
+
+    let mut output = String::new();
+    output.push_str("=== Shared Child Branch Context ===\n\n");
+    output.push_str("== Summary ==\n");
+    output.push_str(
+        serde_json::to_string_pretty(&summary)
+            .expect("summary should serialize")
+            .as_str(),
+    );
+    output.push_str("\n\n== Tree JSON ==\n");
+    output.push_str(
+        serde_json::to_string_pretty(tree)
+            .expect("tree should serialize")
+            .as_str(),
+    );
+    output.push_str("\n\n== Markdown ==\n");
+    output.push_str(tree.to_markdown(analyzer.registry()).as_str());
+
+    assert_snapshot!(output);
+}
+
+#[test]
+fn test_snapshot_partial_shared_child_branches() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+    analyzer.add_file_with_analysis(
+        Path::new("Child.vue"),
+        "",
+        script_analysis(
+            "import { inject } from 'vue'; const theme = inject('theme'); const locale = inject('locale', 'en')",
+            &[],
+        ),
+    );
+    analyzer.add_file_with_analysis(
+        Path::new("ParentB.vue"),
+        "",
+        script_analysis(
+            "import { provide } from 'vue'; provide('locale', 'ja')",
+            &["Child"],
+        ),
+    );
+    analyzer.add_file_with_analysis(
+        Path::new("App.vue"),
+        "",
+        script_analysis("// renders disjoint providers", &["ParentA", "ParentB"]),
+    );
+    analyzer.add_file_with_analysis(
+        Path::new("ParentA.vue"),
+        "",
+        script_analysis(
+            "import { provide } from 'vue'; provide('theme', 'dark')",
+            &["Child"],
+        ),
+    );
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+    let tree = result
+        .provide_inject_tree
+        .as_ref()
+        .expect("tree should be built");
+    let summary = result
+        .provide_inject_tree_summary
+        .expect("tree summary should be built");
+
+    let mut output = String::new();
+    output.push_str("=== Partial Shared Child Branches ===\n\n");
+    output.push_str("== Summary ==\n");
+    output.push_str(
+        serde_json::to_string_pretty(&summary)
+            .expect("summary should serialize")
+            .as_str(),
+    );
+    output.push_str("\n\n== Tree JSON ==\n");
+    output.push_str(
+        serde_json::to_string_pretty(tree)
+            .expect("tree should serialize")
+            .as_str(),
+    );
+    output.push_str("\n\n== Conditional Diagnostics ==\n");
+    for diagnostic in result.diagnostics.iter().filter(|diagnostic| {
+        matches!(
+            diagnostic.kind,
+            crate::diagnostics::CrossFileDiagnosticKind::UnmatchedInject { .. }
+        )
+    }) {
+        append!(
+            output,
+            "{:?}: {}\n",
+            diagnostic.severity,
+            diagnostic.message
+        );
+    }
+    output.push_str("\n== Markdown ==\n");
+    output.push_str(tree.to_markdown(analyzer.registry()).as_str());
+
+    assert_snapshot!(output);
+}
+
 fn script_analysis(script: &str, components: &[&str]) -> vize_croquis::Croquis {
     let mut analyzer = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);

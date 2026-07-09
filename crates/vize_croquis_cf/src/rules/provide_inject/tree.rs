@@ -1,56 +1,67 @@
 use super::index::ProvideInjectIndex;
 use super::keys::provide_key_identity;
-use super::types::{InjectInfo, ProvideInfo, ProvideInjectMatch, ProvideInjectTree, ProvideNode};
+use super::types::{
+    InjectInfo, ProvideInfo, ProvideInjectBranch, ProvideInjectMatch, ProvideInjectTree,
+    ProvideNode,
+};
 use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::provide::{InjectEntry, ProvideEntry, ProvideKey};
 
+type BranchesByInject<'a> = FxHashMap<(FileId, CompactString, u32), Vec<&'a ProvideInjectBranch>>;
+
 #[allow(dead_code)]
 pub fn build_provide_inject_tree(
     registry: &ModuleRegistry,
     graph: &DependencyGraph,
-    matches: &[ProvideInjectMatch],
+    _matches: &[ProvideInjectMatch],
 ) -> ProvideInjectTree {
     let index = ProvideInjectIndex::new(registry, graph);
-    build_provide_inject_tree_with_index(registry, &index, matches)
+    let (_, branches, _) = super::analysis::analyze_provide_inject_with_index(&index);
+    build_provide_inject_tree_with_index(registry, &index, &branches)
 }
 
 pub(crate) fn build_provide_inject_tree_with_index(
     registry: &ModuleRegistry,
     index: &ProvideInjectIndex,
-    matches: &[ProvideInjectMatch],
+    branches: &[ProvideInjectBranch],
 ) -> ProvideInjectTree {
-    let mut consumer_counts: FxHashMap<(FileId, CompactString), usize> = FxHashMap::default();
-    let mut provider_by_consumer_key: FxHashMap<(FileId, CompactString), FileId> =
-        FxHashMap::default();
+    let mut consumer_counts: FxHashMap<(FileId, u32), usize> = FxHashMap::default();
+    let mut branches_by_inject = BranchesByInject::default();
 
-    // Count consumers for each provide
-    for m in matches {
-        *consumer_counts
-            .entry((m.provider, m.key_identity.clone()))
-            .or_insert(0) += 1;
-        provider_by_consumer_key
-            .entry((m.consumer, m.key_identity.clone()))
-            .or_insert(m.provider);
+    for branch in branches {
+        if let (Some(provider), Some(provide_offset)) = (branch.provider, branch.provide_offset) {
+            *consumer_counts
+                .entry((provider, provide_offset))
+                .or_insert(0) += 1;
+        }
+        branches_by_inject
+            .entry((
+                branch.consumer,
+                branch.key_identity.clone(),
+                branch.inject_offset,
+            ))
+            .or_default()
+            .push(branch);
     }
 
-    // Build the displayed tree from resolved provider -> ... -> consumer paths.
+    // Build the displayed tree from both matched and terminal unmatched paths.
     // This keeps pass-through components visible even when they do not provide
     // or inject the key themselves.
     let mut included_nodes = FxHashSet::default();
     let mut child_map: FxHashMap<FileId, Vec<FileId>> = FxHashMap::default();
-    let mut parent_map: FxHashMap<FileId, FileId> = FxHashMap::default();
+    let mut nodes_with_parent = FxHashSet::default();
 
-    for m in matches {
-        for file_id in &m.path {
+    for branch in branches {
+        for file_id in &branch.path {
             included_nodes.insert(*file_id);
         }
-        for pair in m.path.windows(2) {
+        for pair in branch.path.windows(2) {
             let parent = pair[0];
             let child = pair[1];
             child_map.entry(parent).or_default().push(child);
-            parent_map.entry(child).or_insert(parent);
+            nodes_with_parent.insert(child);
         }
     }
 
@@ -62,16 +73,17 @@ pub(crate) fn build_provide_inject_tree_with_index(
     }
 
     for children in child_map.values_mut() {
-        children.sort_by_key(|id| id.as_u32());
+        children.sort_by(|left, right| compare_files(registry, *left, *right));
         children.dedup();
     }
 
-    let mut root_ids: Vec<_> = included_nodes
-        .iter()
-        .copied()
-        .filter(|file_id| !parent_map.contains_key(file_id))
-        .collect();
-    root_ids.sort_by_key(|id| id.as_u32());
+    let root_ids = select_root_ids(
+        registry,
+        &included_nodes,
+        &nodes_with_parent,
+        &child_map,
+        branches,
+    );
 
     let roots = root_ids
         .into_iter()
@@ -84,7 +96,7 @@ pub(crate) fn build_provide_inject_tree_with_index(
                 index.provides(),
                 index.injects(),
                 &consumer_counts,
-                &provider_by_consumer_key,
+                &branches_by_inject,
                 &mut ancestors,
             )
         })
@@ -100,8 +112,8 @@ fn build_node(
     child_map: &FxHashMap<FileId, Vec<FileId>>,
     provides_map: &FxHashMap<FileId, Vec<ProvideEntry>>,
     injects_map: &FxHashMap<FileId, Vec<InjectEntry>>,
-    consumer_counts: &FxHashMap<(FileId, CompactString), usize>,
-    provider_by_consumer_key: &FxHashMap<(FileId, CompactString), FileId>,
+    consumer_counts: &FxHashMap<(FileId, u32), usize>,
+    branches_by_inject: &BranchesByInject<'_>,
     ancestors: &mut Vec<FileId>,
 ) -> ProvideNode {
     ancestors.push(file_id);
@@ -118,8 +130,7 @@ fn build_node(
                         ProvideKey::String(s) => s.clone(),
                         ProvideKey::Symbol(s) => s.clone(),
                     };
-                    let key_identity = provide_key_identity(&p.key);
-                    let count = *consumer_counts.get(&(file_id, key_identity)).unwrap_or(&0);
+                    let count = *consumer_counts.get(&(file_id, p.start)).unwrap_or(&0);
                     ProvideInfo {
                         key,
                         value_type: p.value_type.clone(),
@@ -136,21 +147,24 @@ fn build_node(
         .get(&file_id)
         .map(|is| {
             is.iter()
-                .map(|i| {
+                .filter_map(|i| {
                     let key = match &i.key {
                         ProvideKey::String(s) => s.clone(),
                         ProvideKey::Symbol(s) => s.clone(),
                     };
                     let key_identity = provide_key_identity(&i.key);
-                    let provider = provider_by_consumer_key
-                        .get(&(file_id, key_identity))
-                        .copied();
-                    InjectInfo {
+                    // A reused component can occur below different providers.
+                    // Resolve against this rendered ancestor branch, not only
+                    // the consumer file and key shared by every occurrence.
+                    let provider = branches_by_inject
+                        .get(&(file_id, key_identity, i.start))
+                        .and_then(|branches| provider_for_branch(branches, ancestors))?;
+                    Some(InjectInfo {
                         key,
                         has_default: i.default_value.is_some(),
                         provider,
                         offset: i.start,
-                    }
+                    })
                 })
                 .collect()
         })
@@ -170,7 +184,7 @@ fn build_node(
                 provides_map,
                 injects_map,
                 consumer_counts,
-                provider_by_consumer_key,
+                branches_by_inject,
                 ancestors,
             );
             children.push(child_node);
@@ -185,5 +199,88 @@ fn build_node(
         provides,
         injects,
         children,
+    }
+}
+
+fn provider_for_branch(
+    branches: &[&ProvideInjectBranch],
+    ancestors: &[FileId],
+) -> Option<Option<FileId>> {
+    branches
+        .iter()
+        .filter(|branch| ancestors.ends_with(&branch.path))
+        .max_by_key(|branch| branch.path.len())
+        .map(|branch| branch.provider)
+}
+
+fn select_root_ids(
+    registry: &ModuleRegistry,
+    included_nodes: &FxHashSet<FileId>,
+    nodes_with_parent: &FxHashSet<FileId>,
+    child_map: &FxHashMap<FileId, Vec<FileId>>,
+    branches: &[ProvideInjectBranch],
+) -> Vec<FileId> {
+    let mut roots = included_nodes
+        .iter()
+        .copied()
+        .filter(|file_id| !nodes_with_parent.contains(file_id))
+        .collect::<Vec<_>>();
+    let mut covered = FxHashSet::default();
+    for &root in &roots {
+        mark_reachable(root, child_map, &mut covered);
+    }
+
+    let mut cyclic_starts = branches
+        .iter()
+        .filter_map(|branch| branch.path.first().copied())
+        .filter(|file_id| !covered.contains(file_id))
+        .collect::<Vec<_>>();
+    cyclic_starts.sort_by(|left, right| compare_files(registry, *left, *right));
+    cyclic_starts.dedup();
+    roots.extend(cyclic_starts.iter().copied());
+    for root in cyclic_starts {
+        mark_reachable(root, child_map, &mut covered);
+    }
+
+    while let Some(root) = included_nodes
+        .iter()
+        .copied()
+        .filter(|file_id| !covered.contains(file_id))
+        .min_by(|left, right| compare_files(registry, *left, *right))
+    {
+        roots.push(root);
+        mark_reachable(root, child_map, &mut covered);
+    }
+
+    roots.sort_by(|left, right| compare_files(registry, *left, *right));
+    roots.dedup();
+    roots
+}
+
+fn mark_reachable(
+    root: FileId,
+    child_map: &FxHashMap<FileId, Vec<FileId>>,
+    covered: &mut FxHashSet<FileId>,
+) {
+    let mut pending = vec![root];
+    while let Some(file_id) = pending.pop() {
+        if !covered.insert(file_id) {
+            continue;
+        }
+        if let Some(children) = child_map.get(&file_id) {
+            pending.extend(children.iter().copied());
+        }
+    }
+}
+
+fn compare_files(registry: &ModuleRegistry, left: FileId, right: FileId) -> std::cmp::Ordering {
+    match (registry.get(left), registry.get(right)) {
+        (Some(left_entry), Some(right_entry)) => left_entry
+            .path
+            .cmp(&right_entry.path)
+            .then_with(|| left.as_u32().cmp(&right.as_u32())),
+        (Some(_), None) => std::cmp::Ordering::Less,
+        (None, Some(_)) => std::cmp::Ordering::Greater,
+        (None, None) => left.as_u32().cmp(&right.as_u32()),
     }
 }

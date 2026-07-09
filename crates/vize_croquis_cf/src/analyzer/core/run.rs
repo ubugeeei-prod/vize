@@ -51,8 +51,9 @@ impl CrossFileAnalyzer {
         if self.options.provide_inject
             && let Some(index) = provide_inject_index.as_ref()
         {
-            let (matches, diags) = rules::analyze_provide_inject_with_index(index);
-            let tree = rules::build_provide_inject_tree_with_index(&self.registry, index, &matches);
+            let (matches, branches, diags) = rules::analyze_provide_inject_with_index(index);
+            let tree =
+                rules::build_provide_inject_tree_with_index(&self.registry, index, &branches);
             result.provide_inject_tree_summary = Some(tree.summary());
             result.provide_inject_tree = Some(tree);
             result.provide_inject_matches = matches;

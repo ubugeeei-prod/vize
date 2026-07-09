@@ -1,15 +1,20 @@
 use super::keys::create_string_key_diagnostic;
 use crate::diagnostics::CrossFileDiagnostic;
-use crate::graph::{DependencyEdge, DependencyGraph};
-use crate::registry::{FileId, ModuleEntry, ModuleRegistry};
+use crate::graph::DependencyGraph;
+use crate::registry::{FileId, ModuleRegistry};
+use std::cmp::Ordering;
 use vize_carton::{FxHashMap, FxHashSet};
 use vize_croquis::provide::{InjectEntry, ProvideEntry, ProvideKey};
+
+mod parents;
+use parents::{runtime_component_parents, stable_file_order, stable_rank};
 
 #[derive(Debug)]
 pub(crate) struct ProvideInjectIndex {
     provides: FxHashMap<FileId, Vec<ProvideEntry>>,
     injects: FxHashMap<FileId, Vec<InjectEntry>>,
     component_parents: FxHashMap<FileId, Vec<FileId>>,
+    stable_file_order: FxHashMap<FileId, usize>,
 }
 
 #[derive(Debug, Clone)]
@@ -19,17 +24,25 @@ pub(crate) struct ResolvedProvider {
     pub path: Vec<FileId>,
 }
 
+#[derive(Debug, Clone)]
+pub(crate) enum ResolvedProviderBranch {
+    Matched(ResolvedProvider),
+    Unmatched { path: Vec<FileId> },
+}
+
+impl ResolvedProviderBranch {
+    pub(crate) fn path(&self) -> &[FileId] {
+        match self {
+            Self::Matched(provider) => &provider.path,
+            Self::Unmatched { path } => path,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 struct AncestorFrame {
     current: FileId,
     parent: Option<usize>,
-}
-
-#[derive(Debug, Clone, Copy)]
-struct RuntimeUsage {
-    target_id: FileId,
-    start: u32,
-    renders_slot: bool,
 }
 
 impl ProvideInjectIndex {
@@ -47,12 +60,14 @@ impl ProvideInjectIndex {
             }
         }
 
-        let component_parents = runtime_component_parents(registry, graph);
+        let stable_file_order = stable_file_order(registry);
+        let component_parents = runtime_component_parents(registry, graph, &stable_file_order);
 
         Self {
             provides,
             injects,
             component_parents,
+            stable_file_order,
         }
     }
 
@@ -98,14 +113,36 @@ impl ProvideInjectIndex {
         diagnostics
     }
 
-    /// Find the nearest providers for a given key in every ancestor branch.
+    /// Find one representative match per provider call.
+    ///
+    /// Branch-aware consumers should use [`Self::resolve_provider_branches`].
     pub(crate) fn resolve_providers(
         &self,
         consumer: FileId,
         key: &ProvideKey,
     ) -> Vec<ResolvedProvider> {
-        let mut matches = Vec::new();
         let mut seen_providers = FxHashSet::default();
+        self.resolve_provider_branches(consumer, key)
+            .into_iter()
+            .filter_map(|branch| match branch {
+                ResolvedProviderBranch::Matched(provider)
+                    if seen_providers
+                        .insert((provider.provider_id, provider.provide.id.as_u32())) =>
+                {
+                    Some(provider)
+                }
+                _ => None,
+            })
+            .collect()
+    }
+
+    /// Resolve the nearest provider, or lack of one, for every ancestor branch.
+    pub(crate) fn resolve_provider_branches(
+        &self,
+        consumer: FileId,
+        key: &ProvideKey,
+    ) -> Vec<ResolvedProviderBranch> {
+        let mut branches = Vec::new();
         let mut frames = vec![AncestorFrame {
             current: consumer,
             parent: None,
@@ -122,141 +159,55 @@ impl ProvideInjectIndex {
                 && let Some(component_provides) = self.provides.get(&current)
                 && let Some(provide) = matching_provider(component_provides, key)
             {
-                if seen_providers.insert((current, provide.id.as_u32())) {
-                    matches.push(ResolvedProvider {
-                        provider_id: current,
-                        provide: provide.clone(),
-                        path: path_from_frame(&frames, frame_index),
-                    });
-                }
+                branches.push(ResolvedProviderBranch::Matched(ResolvedProvider {
+                    provider_id: current,
+                    provide: provide.clone(),
+                    path: path_from_frame(&frames, frame_index),
+                }));
                 continue;
             }
 
-            let Some(parents) = self.component_parents.get(&current) else {
-                continue;
-            };
-
-            for &parent_id in parents {
+            let mut explored_parent = false;
+            for &parent_id in self.component_parents.get(&current).into_iter().flatten() {
                 if frame_contains(&frames, frame_index, parent_id) {
                     continue;
                 }
+                explored_parent = true;
                 frames.push(AncestorFrame {
                     current: parent_id,
                     parent: Some(frame_index),
                 });
             }
-        }
 
-        matches.sort_by_key(|provider| {
-            (
-                provider.path.len(),
-                provider.provider_id.as_u32(),
-                provider.provide.id.as_u32(),
-            )
-        });
-        matches
-    }
-}
-
-fn runtime_component_parents(
-    registry: &ModuleRegistry,
-    graph: &DependencyGraph,
-) -> FxHashMap<FileId, Vec<FileId>> {
-    let mut component_parents: FxHashMap<FileId, Vec<FileId>> = FxHashMap::default();
-
-    for entry in registry.vue_components() {
-        if entry.analysis.component_usages.is_empty() {
-            add_graph_component_parents(&mut component_parents, graph, entry.id);
-            continue;
-        }
-
-        let usages = runtime_usages(entry, registry, graph);
-        if usages.is_empty() {
-            add_graph_component_parents(&mut component_parents, graph, entry.id);
-            continue;
-        }
-
-        for (index, usage) in usages.iter().enumerate() {
-            match nearest_containing_usage(&usages, index) {
-                Some(host) if host.renders_slot => {
-                    add_component_parent(&mut component_parents, usage.target_id, host.target_id);
-                }
-                Some(_) => {}
-                None => add_component_parent(&mut component_parents, usage.target_id, entry.id),
+            if !explored_parent {
+                branches.push(ResolvedProviderBranch::Unmatched {
+                    path: path_from_frame(&frames, frame_index),
+                });
             }
         }
+
+        branches.sort_by(|left, right| self.compare_paths(left.path(), right.path()));
+        branches
     }
 
-    for parents in component_parents.values_mut() {
-        parents.sort_by_key(|id| id.as_u32());
-        parents.dedup();
+    pub(crate) fn sort_file_ids(&self, file_ids: &mut [FileId]) {
+        file_ids.sort_by(|left, right| self.compare_files(*left, *right));
     }
 
-    component_parents
-}
-
-fn runtime_usages(
-    entry: &ModuleEntry,
-    registry: &ModuleRegistry,
-    graph: &DependencyGraph,
-) -> Vec<RuntimeUsage> {
-    entry
-        .analysis
-        .component_usages
-        .iter()
-        .filter_map(|usage| {
-            let target_id = graph.find_by_component(usage.name.as_str())?;
-            let renders_slot = registry.renders_slot(target_id);
-            Some(RuntimeUsage {
-                target_id,
-                start: usage.start,
-                renders_slot,
-            })
+    fn compare_paths(&self, left: &[FileId], right: &[FileId]) -> Ordering {
+        left.len().cmp(&right.len()).then_with(|| {
+            left.iter()
+                .zip(right)
+                .map(|(left, right)| self.compare_files(*left, *right))
+                .find(|ordering| !ordering.is_eq())
+                .unwrap_or(Ordering::Equal)
         })
-        .collect()
-}
-
-fn nearest_containing_usage(usages: &[RuntimeUsage], child_index: usize) -> Option<&RuntimeUsage> {
-    let child_start = usages[child_index].start;
-    usages
-        .iter()
-        .enumerate()
-        .filter(|(index, usage)| {
-            // Component usages are collected in postorder: a component is pushed
-            // after all component children in its template subtree. An ancestor
-            // therefore appears later than the child and starts earlier.
-            *index > child_index && usage.start < child_start
-        })
-        .max_by_key(|(_, usage)| usage.start)
-        .map(|(_, usage)| usage)
-}
-
-fn add_graph_component_parents(
-    component_parents: &mut FxHashMap<FileId, Vec<FileId>>,
-    graph: &DependencyGraph,
-    parent_id: FileId,
-) {
-    let Some(node) = graph.get_node(parent_id) else {
-        return;
-    };
-
-    for (child_id, edge_type) in &node.imports {
-        if *edge_type == DependencyEdge::ComponentUsage {
-            add_component_parent(component_parents, *child_id, parent_id);
-        }
     }
-}
 
-fn add_component_parent(
-    component_parents: &mut FxHashMap<FileId, Vec<FileId>>,
-    child_id: FileId,
-    parent_id: FileId,
-) {
-    if child_id != parent_id {
-        component_parents
-            .entry(child_id)
-            .or_default()
-            .push(parent_id);
+    fn compare_files(&self, left: FileId, right: FileId) -> Ordering {
+        stable_rank(&self.stable_file_order, left)
+            .cmp(&stable_rank(&self.stable_file_order, right))
+            .then_with(|| left.as_u32().cmp(&right.as_u32()))
     }
 }
 
