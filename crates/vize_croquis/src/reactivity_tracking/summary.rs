@@ -1,7 +1,11 @@
-use super::{BindingState, ReactiveOrigin, ViolationSeverity, tracker::ReactivityTracker};
+use super::{
+    BindingState, ReactiveOrigin, ViolationKind, ViolationSeverity, tracker::ReactivityTracker,
+};
+use serde::Serialize;
 
 /// Aggregated counts by [`ReactiveOrigin`].
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ReactiveOriginCounts {
     pub ref_binding: usize,
     pub shallow_ref: usize,
@@ -43,7 +47,8 @@ impl ReactiveOriginCounts {
 }
 
 /// Aggregated counts by [`BindingState`].
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BindingStateCounts {
     pub active: usize,
     pub reactivity_lost: usize,
@@ -65,7 +70,8 @@ impl BindingStateCounts {
 }
 
 /// Aggregated counts by [`ViolationSeverity`].
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ViolationSeverityCounts {
     pub error: usize,
     pub warning: usize,
@@ -84,8 +90,52 @@ impl ViolationSeverityCounts {
     }
 }
 
+/// Aggregated counts by [`ViolationKind`].
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ViolationKindCounts {
+    pub destructuring_loss: usize,
+    pub spread_loss: usize,
+    pub reassignment: usize,
+    pub missing_value_access: usize,
+    pub scope_escape: usize,
+    pub unsafe_closure_capture: usize,
+    pub external_mutation: usize,
+    pub wrong_unwrap_context: usize,
+    pub pinia_destructure: usize,
+    pub props_destructure: usize,
+    pub inject_destructure: usize,
+    pub to_refs_on_non_reactive: usize,
+    pub double_unwrap: usize,
+    pub reactive_const: usize,
+    pub shallow_deep_mismatch: usize,
+}
+
+impl ViolationKindCounts {
+    fn record(&mut self, kind: &ViolationKind) {
+        match kind {
+            ViolationKind::DestructuringLoss { .. } => self.destructuring_loss += 1,
+            ViolationKind::SpreadLoss => self.spread_loss += 1,
+            ViolationKind::Reassignment => self.reassignment += 1,
+            ViolationKind::MissingValueAccess => self.missing_value_access += 1,
+            ViolationKind::ScopeEscape { .. } => self.scope_escape += 1,
+            ViolationKind::UnsafeClosureCapture => self.unsafe_closure_capture += 1,
+            ViolationKind::ExternalMutation => self.external_mutation += 1,
+            ViolationKind::WrongUnwrapContext => self.wrong_unwrap_context += 1,
+            ViolationKind::PiniaDestructure => self.pinia_destructure += 1,
+            ViolationKind::PropsDestructure => self.props_destructure += 1,
+            ViolationKind::InjectDestructure => self.inject_destructure += 1,
+            ViolationKind::ToRefsOnNonReactive => self.to_refs_on_non_reactive += 1,
+            ViolationKind::DoubleUnwrap => self.double_unwrap += 1,
+            ViolationKind::ReactiveConst => self.reactive_const += 1,
+            ViolationKind::ShallowDeepMismatch => self.shallow_deep_mismatch += 1,
+        }
+    }
+}
+
 /// Stable, consumer-friendly summary of a [`ReactivityTracker`] run.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ReactivityTrackerSummary {
     pub binding_count: usize,
     pub violation_count: usize,
@@ -95,6 +145,7 @@ pub struct ReactivityTrackerSummary {
     pub bindings_by_origin: ReactiveOriginCounts,
     pub bindings_by_state: BindingStateCounts,
     pub violations_by_severity: ViolationSeverityCounts,
+    pub violations_by_kind: ViolationKindCounts,
 }
 
 impl ReactivityTracker {
@@ -121,6 +172,7 @@ impl ReactivityTracker {
 
         for violation in &self.violations {
             summary.violations_by_severity.record(violation.severity);
+            summary.violations_by_kind.record(&violation.kind);
         }
 
         summary
@@ -195,5 +247,12 @@ mod tests {
         assert_eq!(summary.violations_by_severity.error, 1);
         assert_eq!(summary.violations_by_severity.warning, 1);
         assert_eq!(summary.violations_by_severity.hint, 1);
+        assert_eq!(summary.violations_by_kind.destructuring_loss, 1);
+        assert_eq!(summary.violations_by_kind.external_mutation, 1);
+        assert_eq!(summary.violations_by_kind.missing_value_access, 1);
+
+        let json = serde_json::to_string(&summary).unwrap();
+        assert!(json.contains(r#""bindingsByOrigin""#));
+        assert!(json.contains(r#""missingValueAccess":1"#));
     }
 }
