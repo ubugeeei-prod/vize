@@ -27,6 +27,7 @@ pub struct ComplexityInput {
     pub global_state_reference_count: usize,
     pub provide_inject_max_depth: usize,
     pub provide_inject_reference_count: usize,
+    pub provide_inject_fanout_count: usize,
     pub fallthrough_risk_count: usize,
     pub reactive_node_count: usize,
     pub reactive_edge_count: usize,
@@ -91,35 +92,21 @@ impl ComplexityDimensionScores {
 
     pub fn breakdown(self) -> [ComplexityDimensionBreakdown; 7] {
         [
-            ComplexityDimensionBreakdown {
-                dimension: ComplexityDimension::TemplateControlFlow,
-                score: self.template_control_flow,
-            },
-            ComplexityDimensionBreakdown {
-                dimension: ComplexityDimension::SlotUsage,
-                score: self.slot_usage,
-            },
-            ComplexityDimensionBreakdown {
-                dimension: ComplexityDimension::PropDrilling,
-                score: self.prop_drilling,
-            },
-            ComplexityDimensionBreakdown {
-                dimension: ComplexityDimension::GlobalState,
-                score: self.global_state,
-            },
-            ComplexityDimensionBreakdown {
-                dimension: ComplexityDimension::ProvideInject,
-                score: self.provide_inject,
-            },
-            ComplexityDimensionBreakdown {
-                dimension: ComplexityDimension::FallthroughAttrs,
-                score: self.fallthrough_attrs,
-            },
-            ComplexityDimensionBreakdown {
-                dimension: ComplexityDimension::ReactiveGraph,
-                score: self.reactive_graph,
-            },
+            (
+                ComplexityDimension::TemplateControlFlow,
+                self.template_control_flow,
+            ),
+            (ComplexityDimension::SlotUsage, self.slot_usage),
+            (ComplexityDimension::PropDrilling, self.prop_drilling),
+            (ComplexityDimension::GlobalState, self.global_state),
+            (ComplexityDimension::ProvideInject, self.provide_inject),
+            (
+                ComplexityDimension::FallthroughAttrs,
+                self.fallthrough_attrs,
+            ),
+            (ComplexityDimension::ReactiveGraph, self.reactive_graph),
         ]
+        .map(|(dimension, score)| ComplexityDimensionBreakdown { dimension, score })
     }
 
     pub fn dominant_dimension(self) -> Option<ComplexityDimensionBreakdown> {
@@ -165,7 +152,10 @@ impl ComplexityReport {
             prop_drilling: weighted(input.prop_drilling_edge_count, 3),
             global_state: weighted(input.global_state_reference_count, 2),
             provide_inject: weighted(input.provide_inject_max_depth.saturating_sub(1), 2)
-                .saturating_add(weighted(input.provide_inject_reference_count, 1)),
+                .saturating_add(weighted(input.provide_inject_reference_count, 1))
+                .saturating_add(provide_inject_fanout_score(
+                    input.provide_inject_fanout_count,
+                )),
             fallthrough_attrs: weighted(input.fallthrough_risk_count, 4),
             reactive_graph: weighted(input.reactive_node_count, 1)
                 .saturating_add(weighted(input.reactive_edge_count, 2))
@@ -265,6 +255,10 @@ fn complexity_input(registry: &ModuleRegistry, result: &CrossFileResult) -> Comp
         input.provide_inject_max_depth = summary.max_depth;
         input.provide_inject_reference_count =
             summary.provide_count.saturating_add(summary.inject_count);
+        let fanout = summary
+            .max_child_fanout
+            .max(summary.max_provider_consumer_count);
+        input.provide_inject_fanout_count = fanout;
     } else {
         input.provide_inject_reference_count = result.provide_inject_matches.len();
     }
@@ -324,6 +318,10 @@ fn weighted(count: usize, weight: u32) -> u32 {
     u32::try_from(count)
         .unwrap_or(u32::MAX)
         .saturating_mul(weight)
+}
+
+fn provide_inject_fanout_score(count: usize) -> u32 {
+    weighted(count.saturating_sub(1), 2)
 }
 
 fn cyclomatic_score(input: ComplexityInput) -> u32 {

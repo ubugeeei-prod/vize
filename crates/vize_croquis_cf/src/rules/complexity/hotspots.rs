@@ -129,10 +129,9 @@ fn add_provide_inject_inputs(
     result: &CrossFileResult,
 ) {
     for matched in &result.provide_inject_matches {
-        inputs
-            .entry(matched.provider)
-            .or_default()
-            .provide_inject_reference_count += 1;
+        let provider = inputs.entry(matched.provider).or_default();
+        provider.provide_inject_reference_count += 1;
+        provider.provide_inject_fanout_count += 1;
 
         let consumer = inputs.entry(matched.consumer).or_default();
         consumer.provide_inject_reference_count += 1;

@@ -7,6 +7,7 @@ fn complexity_markdown_explains_dimensions_and_hotspots() {
         component_count: 1,
         template_if_count: 2,
         prop_drilling_edge_count: 3,
+        provide_inject_fanout_count: 3,
         reactive_cycle_count: 1,
         ..ComplexityInput::default()
     };
@@ -24,10 +25,12 @@ fn complexity_markdown_explains_dimensions_and_hotspots() {
     let markdown = render_complexity_markdown(&report, &[hotspot]);
 
     assert!(markdown.contains("## Cross-file Complexity"));
-    assert!(markdown.contains("| Total score | 22 |"));
+    assert!(markdown.contains("| Total score | 26 |"));
     assert!(markdown.contains("| reactive-graph | 10 |"));
     assert!(markdown.contains("Feature\\|Panel.vue"));
-    assert!(markdown.contains("reactive-graph (10) via v-if=2, prop edges=3, reactive cycles=1"));
+    assert!(markdown.contains(
+        "reactive-graph (10) via v-if=2, prop edges=3, provide fanout=3, reactive cycles=1"
+    ));
 }
 
 #[test]

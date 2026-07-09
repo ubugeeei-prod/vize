@@ -151,6 +151,11 @@ fn input_drivers(input: ComplexityInput) -> String {
     );
     push_driver(
         &mut drivers,
+        "provide fanout",
+        input.provide_inject_fanout_count,
+    );
+    push_driver(
+        &mut drivers,
         "fallthrough risks",
         input.fallthrough_risk_count,
     );

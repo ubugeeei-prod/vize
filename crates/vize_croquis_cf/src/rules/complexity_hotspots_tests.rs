@@ -132,6 +132,7 @@ fn ranks_hotspots_with_dimension_inputs_and_json_shape() {
     assert_eq!(hotspots[1].input.template_logical_operator_count, 1);
     assert_eq!(hotspots[1].input.slot_count, 1);
     assert_eq!(hotspots[1].input.prop_drilling_edge_count, 1);
+    assert_eq!(hotspots[1].input.provide_inject_fanout_count, 1);
     assert_eq!(hotspots[1].dimensions.template_control_flow, 4);
     assert_eq!(hotspots[1].total_score, 17);
 

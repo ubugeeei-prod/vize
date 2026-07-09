@@ -30,6 +30,7 @@ fn scores_each_complexity_dimension() {
         global_state_reference_count: 4,
         provide_inject_max_depth: 3,
         provide_inject_reference_count: 5,
+        provide_inject_fanout_count: 4,
         fallthrough_risk_count: 2,
         reactive_node_count: 6,
         reactive_edge_count: 7,
@@ -42,14 +43,15 @@ fn scores_each_complexity_dimension() {
     assert_eq!(report.dimensions.slot_usage, 14);
     assert_eq!(report.dimensions.prop_drilling, 6);
     assert_eq!(report.dimensions.global_state, 8);
-    assert_eq!(report.dimensions.provide_inject, 9);
+    assert_eq!(report.dimensions.provide_inject, 15);
     assert_eq!(report.dimensions.fallthrough_attrs, 8);
     assert_eq!(report.dimensions.reactive_graph, 30);
-    assert_eq!(report.total_score, 90);
+    assert_eq!(report.total_score, 96);
     assert_eq!(report.band, ComplexityBand::Extreme);
 
     let json = serde_json::to_value(report).expect("complexity report should serialize");
     assert_eq!(json["input"]["templateIfCount"], 2);
+    assert_eq!(json["input"]["provideInjectFanoutCount"], 4);
     assert_eq!(json["input"]["fallthroughRiskCount"], 2);
     assert_eq!(json["dimensions"]["reactiveGraph"], 30);
     assert_eq!(json["cyclomaticScore"], 6);
@@ -153,6 +155,7 @@ fn summarizes_complexity_from_registry_and_result() {
         }),
         provide_inject_tree_summary: Some(ProvideInjectTreeSummary {
             max_depth: 3,
+            max_child_fanout: 2,
             provide_count: 1,
             inject_count: 2,
             ..ProvideInjectTreeSummary::default()
@@ -180,10 +183,11 @@ fn summarizes_complexity_from_registry_and_result() {
     assert_eq!(report.input.global_state_reference_count, 1);
     assert_eq!(report.input.provide_inject_max_depth, 3);
     assert_eq!(report.input.provide_inject_reference_count, 3);
+    assert_eq!(report.input.provide_inject_fanout_count, 2);
     assert_eq!(report.input.fallthrough_risk_count, 1);
     assert_eq!(report.input.reactive_node_count, 1);
     assert_eq!(report.input.reactive_edge_count, 1);
-    assert_eq!(report.total_score, 25);
+    assert_eq!(report.total_score, 27);
     assert_eq!(report.band, ComplexityBand::Moderate);
 }
 
