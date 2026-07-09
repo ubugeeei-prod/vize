@@ -115,12 +115,13 @@ fn ranks_hotspots_with_dimension_inputs_and_json_shape() {
     assert_eq!(hotspots[0].file_name, "Child.vue");
     assert_eq!(hotspots[0].component_name.as_deref(), Some("Child"));
     assert_eq!(hotspots[0].input.fallthrough_risk_count, 2);
-    assert_eq!(hotspots[0].input.reactive_edge_count, 3);
+    assert_eq!(hotspots[0].input.reactive_edge_count, 2);
     assert_eq!(hotspots[0].input.reactive_cycle_count, 1);
     assert_eq!(hotspots[0].input.provide_inject_max_depth, 2);
+    assert_eq!(hotspots[0].input.provide_inject_reference_count, 1);
     assert_eq!(hotspots[0].dimensions.fallthrough_attrs, 8);
-    assert_eq!(hotspots[0].dimensions.reactive_graph, 16);
-    assert_eq!(hotspots[0].total_score, 30);
+    assert_eq!(hotspots[0].dimensions.reactive_graph, 14);
+    assert_eq!(hotspots[0].total_score, 28);
     assert_eq!(
         hotspots[0].dominant_dimension.unwrap().dimension,
         ComplexityDimension::ReactiveGraph
@@ -132,6 +133,7 @@ fn ranks_hotspots_with_dimension_inputs_and_json_shape() {
     assert_eq!(hotspots[1].input.template_logical_operator_count, 1);
     assert_eq!(hotspots[1].input.slot_count, 1);
     assert_eq!(hotspots[1].input.prop_drilling_edge_count, 1);
+    assert_eq!(hotspots[1].input.provide_inject_reference_count, 1);
     assert_eq!(hotspots[1].input.provide_inject_fanout_count, 1);
     assert_eq!(hotspots[1].dimensions.template_control_flow, 4);
     assert_eq!(hotspots[1].total_score, 17);

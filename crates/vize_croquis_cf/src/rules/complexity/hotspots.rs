@@ -133,9 +133,9 @@ fn add_provide_inject_inputs(
         provider.provide_inject_reference_count += 1;
         provider.provide_inject_fanout_count += 1;
 
+        // A dependency injection edge is not inherently a reactive edge.
         let consumer = inputs.entry(matched.consumer).or_default();
         consumer.provide_inject_reference_count += 1;
-        consumer.reactive_edge_count += 1;
 
         let depth = matched.path.len();
         for file_id in &matched.path {

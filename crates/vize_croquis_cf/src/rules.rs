@@ -15,6 +15,8 @@ mod complexity;
 #[cfg(test)]
 mod complexity_hotspots_tests;
 #[cfg(test)]
+mod complexity_injection_tests;
+#[cfg(test)]
 mod complexity_tests;
 mod component_resolution;
 pub(crate) mod cross_file_reactivity;

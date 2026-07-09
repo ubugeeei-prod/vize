@@ -211,11 +211,12 @@ pub fn summarize_complexity_with_graph(
 fn complexity_input(registry: &ModuleRegistry, result: &CrossFileResult) -> ComplexityInput {
     let mut input = ComplexityInput {
         fallthrough_risk_count: fallthrough_risk_count(result),
+        // Provide/inject references have their own dimension and are not
+        // necessarily reactive. Only tracker-produced issues contribute here.
         reactive_edge_count: result
             .reactivity_issues
             .len()
-            .saturating_add(result.cross_file_reactivity_issues.len())
-            .saturating_add(result.provide_inject_matches.len()),
+            .saturating_add(result.cross_file_reactivity_issues.len()),
         reactive_cycle_count: result
             .cross_file_reactivity_issues
             .iter()
