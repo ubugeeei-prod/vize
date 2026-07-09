@@ -666,8 +666,6 @@ const vizeNuxtModule = Object.assign(
 );
 
 export default vizeNuxtModule;
-
-// Re-export types for convenience
 export type { MuseaOptions } from "@vizejs/vite-plugin-musea";
 export type {
   NuxtMuseaOptions,
