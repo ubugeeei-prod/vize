@@ -17,6 +17,7 @@ orchestration layer for running `@vue/compiler-sfc` and formatting output.
 - `inspector::build_agent_report`
 - `inspector::build_graph`
 - `inspector::build_diff`
+- `complexity::ComplexityReport::from_input`
 - `profile::render_profile_report`
 - `profile::print_profile_report`
 
