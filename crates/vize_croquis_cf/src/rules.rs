@@ -29,7 +29,9 @@ pub use component_resolution::{ComponentResolutionIssue, analyze_component_resol
 pub use element_id::{UniqueIdIssue, analyze_element_ids};
 pub use emit::{EmitFlow, analyze_emits};
 pub use event_bubbling::{EventBubble, analyze_event_bubbling};
-pub use fallthrough::{FallthroughInfo, analyze_fallthrough};
+pub use fallthrough::{
+    FallthroughInfo, FallthroughSummary, analyze_fallthrough, summarize_fallthrough,
+};
 pub use props_validation::{
     PropsValidationIssue, PropsValidationIssueKind, analyze_props_validation,
 };

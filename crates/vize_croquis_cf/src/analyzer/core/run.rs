@@ -27,6 +27,7 @@ impl CrossFileAnalyzer {
         // Run enabled rules
         if self.options.fallthrough_attrs {
             let (info, diags) = rules::analyze_fallthrough(&self.registry, &self.graph);
+            result.fallthrough_summary = Some(rules::summarize_fallthrough(&info));
             result.fallthrough_info = info;
             result.diagnostics.extend(diags);
         }

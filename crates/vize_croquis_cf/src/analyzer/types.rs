@@ -186,6 +186,9 @@ pub struct CrossFileResult {
     /// Fallthrough attribute information per component.
     pub fallthrough_info: Vec<rules::FallthroughInfo>,
 
+    /// Fallthrough attribute summary, populated when fallthrough analysis is enabled.
+    pub fallthrough_summary: Option<rules::FallthroughSummary>,
+
     /// Emit flow information.
     pub emit_flows: Vec<rules::EmitFlow>,
 

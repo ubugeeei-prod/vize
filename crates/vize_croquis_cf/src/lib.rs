@@ -65,7 +65,7 @@ pub use suppression::{SuppressionDirective, SuppressionError, SuppressionMap};
 
 // Re-export rule result types
 pub use rules::{
-    BoundaryInfo, BoundaryKind, EmitFlow, EventBubble, FallthroughInfo, PropsValidationIssue,
-    PropsValidationIssueKind, ProvideInjectMatch, ProvideInjectTreeSummary, ReactivityIssue,
-    ReactivityIssueKind, UniqueIdIssue,
+    BoundaryInfo, BoundaryKind, EmitFlow, EventBubble, FallthroughInfo, FallthroughSummary,
+    PropsValidationIssue, PropsValidationIssueKind, ProvideInjectMatch, ProvideInjectTreeSummary,
+    ReactivityIssue, ReactivityIssueKind, UniqueIdIssue,
 };

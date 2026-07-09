@@ -10,6 +10,10 @@ use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::{CompactString, FxHashMap, FxHashSet, cstr};
 
+mod summary;
+
+pub use summary::{FallthroughSummary, summarize_fallthrough};
+
 /// Information about fallthrough attributes for a component.
 #[derive(Debug, Clone)]
 pub struct FallthroughInfo {

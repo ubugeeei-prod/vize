@@ -1,4 +1,4 @@
-use super::{FallthroughInfo, analyze_fallthrough};
+use super::{FallthroughInfo, analyze_fallthrough, summarize_fallthrough};
 use crate::graph::{DependencyEdge, DependencyGraph, ModuleNode};
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::{CompactString, FxHashSet, smallvec};
@@ -77,6 +77,14 @@ fn passed_attrs_are_attributed_per_child() {
     // Each child only sees the prop passed to its own usage site.
     assert_eq!(attrs_for(child_a), vec!["foo"]);
     assert_eq!(attrs_for(child_b), vec!["bar"]);
+
+    let summary = summarize_fallthrough(&infos);
+    assert_eq!(summary.component_count, 3);
+    assert_eq!(summary.components_with_passed_attrs, 2);
+    assert_eq!(summary.passed_attr_count, 2);
+    assert_eq!(summary.undeclared_passed_attr_count, 2);
+    assert_eq!(summary.unconsumed_fallthrough_attr_count, 2);
+    assert_eq!(summary.max_passed_attrs, 1);
 }
 
 /// The same child component used at two sites with different props must not
