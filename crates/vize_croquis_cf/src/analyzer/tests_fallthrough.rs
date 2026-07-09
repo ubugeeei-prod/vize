@@ -1,9 +1,24 @@
 use super::{CrossFileAnalyzer, CrossFileOptions};
+use crate::diagnostics::CrossFileDiagnosticKind;
 use std::path::Path;
-use vize_carton::{CompactString, smallvec};
+use vize_armature::parse;
+use vize_carton::{Bump, CompactString, smallvec};
 use vize_croquis::analysis::{ComponentUsage, EventListener, PassedProp};
 use vize_croquis::macros::PropDefinition;
-use vize_croquis::{Croquis, ScopeId};
+use vize_croquis::{Analyzer, AnalyzerOptions, Croquis, ScopeId};
+
+fn analyze_template(template: &str) -> Croquis {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, template);
+    assert!(
+        errors.is_empty(),
+        "template should parse cleanly: {errors:?}"
+    );
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_template(&root);
+    analyzer.finish()
+}
 
 #[test]
 fn fallthrough_component_facts_are_populated_from_analyzer() {
@@ -70,4 +85,72 @@ fn fallthrough_component_facts_are_populated_from_analyzer() {
     assert_eq!(fact.fallthrough_attr_count, 2);
     assert_eq!(fact.risky_unconsumed_fallthrough_attr_count, 1);
     assert!(fact.has_potential_issues);
+}
+
+#[test]
+fn parsed_spread_attrs_report_multi_root_child() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_fallthrough_attrs(true));
+    let child_id = analyzer.add_file_with_analysis(
+        Path::new("Child.vue"),
+        "",
+        analyze_template("<main></main><aside></aside>"),
+    );
+    let parent_id = analyzer.add_file_with_analysis(
+        Path::new("Parent.vue"),
+        "",
+        analyze_template(r#"<Child v-bind="attrs" />"#),
+    );
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+    let usage = result
+        .fallthrough_usage_facts
+        .iter()
+        .find(|fact| fact.child_file_id == child_id)
+        .expect("parsed component usage should be retained");
+    assert_eq!(usage.parent_file_id, parent_id);
+    assert!(usage.has_spread_attrs);
+    assert!(usage.attrs.is_empty());
+
+    let diagnostic = result
+        .diagnostics
+        .iter()
+        .find(|diagnostic| {
+            matches!(
+                diagnostic.kind,
+                CrossFileDiagnosticKind::MultiRootMissingAttrs
+            )
+        })
+        .expect("spread attrs should report the multi-root child");
+    assert_eq!(diagnostic.primary_file, child_id);
+    assert_eq!(diagnostic.related_files.len(), 1);
+    assert_eq!(diagnostic.related_files[0].0, parent_id);
+    assert_eq!(diagnostic.related_files[0].1, usage.usage_start);
+}
+
+#[test]
+fn parsed_spread_attrs_allow_explicit_attrs_binding() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_fallthrough_attrs(true));
+    analyzer.add_file_with_analysis(
+        Path::new("Child.vue"),
+        "",
+        analyze_template(r#"<main v-bind="$attrs"></main><aside></aside>"#),
+    );
+    analyzer.add_file_with_analysis(
+        Path::new("Parent.vue"),
+        "",
+        analyze_template(r#"<Child v-bind="attrs" />"#),
+    );
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+
+    assert_eq!(result.fallthrough_usage_facts.len(), 1);
+    assert!(result.fallthrough_usage_facts[0].has_spread_attrs);
+    assert!(result.diagnostics.iter().all(|diagnostic| !matches!(
+        diagnostic.kind,
+        CrossFileDiagnosticKind::MultiRootMissingAttrs
+    )));
 }

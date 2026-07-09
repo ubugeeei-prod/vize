@@ -228,6 +228,6 @@ expression: output
 
 == Diagnostics ==
 [
-  "MultiRootMissingAttrs@0:0:120 related=[(FileId(2), 34, \"trackingId passed to <Panel>\"), (FileId(2), 59, \"class passed to <Panel>\"), (FileId(2), 73, \"onClose passed to <Panel>\"), (FileId(3), 28, \"telemetryKey passed to <Panel>\")]",
+  "MultiRootMissingAttrs@0:0:120 related=[(FileId(2), 10, \"v-bind spread passed to <Panel>\"), (FileId(2), 34, \"trackingId passed to <Panel>\"), (FileId(2), 59, \"class passed to <Panel>\"), (FileId(2), 73, \"onClose passed to <Panel>\"), (FileId(3), 28, \"telemetryKey passed to <Panel>\")]",
   "UnusedFallthroughAttrs { passed_attrs: [\"telemetryKey\", \"trackingId\"] }@0:0:120 related=[(FileId(2), 34, \"trackingId passed to <Panel>\"), (FileId(3), 28, \"telemetryKey passed to <Panel>\")]"
 ]

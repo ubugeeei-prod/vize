@@ -139,6 +139,14 @@ pub fn analyze_fallthrough(
                     component_name: fact.component_name.clone(),
                 }),
         );
+        if fact.has_spread_attrs {
+            related.push(FallthroughUsageRelated {
+                parent_file_id: fact.parent_file_id,
+                attr_name: cstr!("v-bind spread"),
+                source_start: fact.usage_start,
+                component_name: fact.component_name.clone(),
+            });
+        }
     }
 
     // Merge passed attrs into infos
@@ -154,10 +162,9 @@ pub fn analyze_fallthrough(
     for info in &infos {
         // Check for multiple root elements without explicit $attrs binding
         if info.root_element_count > 1 && !info.binds_attrs {
-            let has_fallthrough = info
-                .passed_attrs
-                .iter()
-                .any(|attr| !info.declared_props.contains(attr));
+            let has_fallthrough = fallthrough_related_map
+                .get(&info.file_id)
+                .is_some_and(|related| !related.is_empty());
 
             if has_fallthrough {
                 // Use offset 0 to point to <template> tag start (wasm.rs adds tag_start offset)
