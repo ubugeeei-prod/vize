@@ -37,7 +37,9 @@ pub use element_id::{UniqueIdIssue, analyze_element_ids};
 pub use emit::{EmitFlow, analyze_emits};
 pub use event_bubbling::{EventBubble, analyze_event_bubbling};
 pub use fallthrough::{
-    FallthroughInfo, FallthroughSummary, analyze_fallthrough, summarize_fallthrough,
+    FallthroughInfo, FallthroughSummary, FallthroughUsageAttrFact, FallthroughUsageAttrKind,
+    FallthroughUsageFact, analyze_fallthrough, collect_fallthrough_usage_facts,
+    summarize_fallthrough,
 };
 pub use props_validation::{
     PropsValidationIssue, PropsValidationIssueKind, analyze_props_validation,

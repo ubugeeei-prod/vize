@@ -12,8 +12,10 @@ use vize_carton::{CompactString, FxHashMap, FxHashSet, cstr};
 
 mod info;
 mod summary;
+mod usage;
 
 pub use summary::{FallthroughSummary, summarize_fallthrough};
+pub use usage::*;
 
 /// Information about fallthrough attributes for a component.
 #[derive(Debug, Clone)]
@@ -74,10 +76,6 @@ pub fn analyze_fallthrough(
     let mut infos = Vec::new();
     let mut diagnostics = Vec::new();
 
-    // Build a map of what attributes each component passes to its children
-    let mut passed_attrs_map: FxHashMap<FileId, FxHashMap<FileId, FxHashSet<CompactString>>> =
-        FxHashMap::default();
-
     // First pass: collect information from each component
     for entry in registry.vue_components() {
         let analysis = &entry.analysis;
@@ -111,29 +109,17 @@ pub fn analyze_fallthrough(
         infos.push(info);
     }
 
-    // Second pass: track attribute passing through component usage
-    for node in graph.nodes() {
-        // Look at component usage edges
-        for (child_id, edge_type) in &node.imports {
-            if *edge_type != crate::graph::DependencyEdge::ComponentUsage {
-                continue;
-            }
-
-            // Get the parent's analysis to find what attrs are passed
-            if let Some(parent_entry) = registry.get(node.file_id) {
-                // Only collect the attributes from the usages that actually
-                // target this specific child component, so two distinct usage
-                // sites of different children are not conflated.
-                let attrs = extract_passed_attrs(&parent_entry.analysis, *child_id, graph);
-
-                passed_attrs_map
-                    .entry(*child_id)
-                    .or_default()
-                    .entry(node.file_id)
-                    .or_default()
-                    .extend(attrs);
-            }
-        }
+    // Second pass: track attribute passing through each component usage.
+    let usage_facts = collect_fallthrough_usage_facts(registry, graph);
+    let mut passed_attrs_map: FxHashMap<FileId, FxHashMap<FileId, FxHashSet<CompactString>>> =
+        FxHashMap::default();
+    for fact in &usage_facts {
+        let attrs = passed_attrs_map
+            .entry(fact.child_file_id)
+            .or_default()
+            .entry(fact.parent_file_id)
+            .or_default();
+        attrs.extend(fact.attrs.iter().map(|attr| attr.name.clone()));
     }
 
     // Merge passed attrs into infos
@@ -240,34 +226,12 @@ fn check_inherit_attrs_disabled(analysis: &vize_croquis::Croquis) -> bool {
     })
 }
 
-/// Extract attributes passed to a specific child component.
-///
-/// Uses `component_usages` for precise static analysis. Each usage carries the
-/// component name as written in the template; we resolve that name to a
-/// `FileId` through the dependency graph and only keep the props from usages
-/// that target `child_id`. This ensures distinct usage sites of different
-/// children are attributed independently, rather than merging every prop the
-/// parent passes to any child onto a single component.
-fn extract_passed_attrs(
-    analysis: &vize_croquis::Croquis,
-    child_id: FileId,
+/// Collect durable per-usage fallthrough facts with parent-side source ranges.
+pub fn collect_fallthrough_usage_facts(
+    registry: &ModuleRegistry,
     graph: &DependencyGraph,
-) -> FxHashSet<CompactString> {
-    let mut attrs = FxHashSet::default();
-
-    for usage in &analysis.component_usages {
-        // Resolve the usage's component name to the file it refers to and skip
-        // usages that target a different child component.
-        if graph.find_by_component(usage.name.as_str()) != Some(child_id) {
-            continue;
-        }
-
-        for prop in &usage.props {
-            attrs.insert(prop.name.clone());
-        }
-    }
-
-    attrs
+) -> Vec<FallthroughUsageFact> {
+    usage::collect_fallthrough_usage_facts(registry, graph)
 }
 
 /// Check if an attribute is a standard HTML attribute.

@@ -67,7 +67,8 @@ pub use suppression::{SuppressionDirective, SuppressionError, SuppressionMap};
 pub use rules::{
     BoundaryInfo, BoundaryKind, ComplexityBand, ComplexityDimension, ComplexityDimensionBreakdown,
     ComplexityDimensionScores, ComplexityInput, ComplexityReport, EmitFlow, EventBubble,
-    FallthroughInfo, FallthroughSummary, PropsValidationIssue, PropsValidationIssueKind,
-    ProvideInjectMatch, ProvideInjectTreeSummary, ReactivityIssue, ReactivityIssueKind,
-    UniqueIdIssue, band_for_score,
+    FallthroughInfo, FallthroughSummary, FallthroughUsageAttrFact, FallthroughUsageAttrKind,
+    FallthroughUsageFact, PropsValidationIssue, PropsValidationIssueKind, ProvideInjectMatch,
+    ProvideInjectTreeSummary, ReactivityIssue, ReactivityIssueKind, UniqueIdIssue, band_for_score,
+    collect_fallthrough_usage_facts,
 };

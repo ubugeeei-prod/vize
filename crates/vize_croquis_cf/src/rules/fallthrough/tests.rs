@@ -1,17 +1,25 @@
-use super::{FallthroughInfo, analyze_fallthrough, summarize_fallthrough};
+use super::{
+    FallthroughInfo, FallthroughUsageAttrKind, analyze_fallthrough,
+    collect_fallthrough_usage_facts, summarize_fallthrough,
+};
 use crate::graph::{DependencyEdge, DependencyGraph, ModuleNode};
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::{CompactString, FxHashSet, smallvec};
-use vize_croquis::analysis::{ComponentUsage, PassedProp};
+use vize_croquis::analysis::{ComponentUsage, EventListener, PassedProp};
+use vize_croquis::macros::PropDefinition;
 use vize_croquis::{Croquis, ScopeId};
 
 fn passed_prop(name: &str) -> PassedProp {
+    passed_prop_at(name, 0, 0, false)
+}
+
+fn passed_prop_at(name: &str, start: u32, end: u32, is_dynamic: bool) -> PassedProp {
     PassedProp {
         name: CompactString::new(name),
         value: None,
-        start: 0,
-        end: 0,
-        is_dynamic: false,
+        start,
+        end,
+        is_dynamic,
     }
 }
 
@@ -29,10 +37,156 @@ fn usage_with_prop(name: &str, prop: &str) -> ComponentUsage {
     }
 }
 
+fn event_listener_at(name: &str, start: u32, end: u32) -> EventListener {
+    EventListener {
+        name: CompactString::new(name),
+        handler: None,
+        modifiers: smallvec![],
+        start,
+        end,
+    }
+}
+
+fn declare_prop(analysis: &mut Croquis, name: &str) {
+    analysis.macros.add_prop(PropDefinition {
+        name: CompactString::new(name),
+        prop_type: None,
+        required: false,
+        default_value: None,
+    });
+}
+
 fn graph_node(id: FileId, path: &str, component: &str) -> ModuleNode {
     let mut node = ModuleNode::new(id, path);
     node.component_name = Some(CompactString::new(component));
     node
+}
+
+#[test]
+fn usage_facts_keep_parent_source_ranges_and_attr_classification() {
+    let mut registry = ModuleRegistry::new();
+
+    let parent_analysis = {
+        let mut analysis = Croquis::new();
+        analysis.component_usages.push(ComponentUsage {
+            name: CompactString::new("Child"),
+            start: 10,
+            end: 90,
+            props: smallvec![
+                passed_prop_at("kind", 18, 29, false),
+                passed_prop_at("trackingId", 34, 58, true)
+            ],
+            events: smallvec![event_listener_at("click", 60, 76)],
+            slots: smallvec![],
+            has_spread_attrs: true,
+            scope_id: ScopeId::ROOT,
+            vif_guard: None,
+        });
+        analysis
+    };
+    let mut child_analysis = Croquis::new();
+    declare_prop(&mut child_analysis, "kind");
+
+    let (parent_id, _) = registry.register("Parent.vue", "", parent_analysis);
+    let (child_id, _) = registry.register("Child.vue", "", child_analysis);
+
+    let mut graph = DependencyGraph::new();
+    graph.add_node(graph_node(parent_id, "Parent.vue", "Parent"));
+    graph.add_node(graph_node(child_id, "Child.vue", "Child"));
+    graph.add_edge(parent_id, child_id, DependencyEdge::ComponentUsage);
+
+    let facts = collect_fallthrough_usage_facts(&registry, &graph);
+    assert_eq!(facts.len(), 1);
+
+    let fact = &facts[0];
+    assert_eq!(fact.parent_file_id, parent_id);
+    assert_eq!(fact.child_file_id, child_id);
+    assert_eq!(fact.component_name, "Child");
+    assert_eq!(fact.usage_start, 10);
+    assert_eq!(fact.usage_end, 90);
+    assert!(fact.has_spread_attrs);
+    assert_eq!(fact.attrs.len(), 3);
+
+    let kind = fact.attrs.iter().find(|attr| attr.name == "kind").unwrap();
+    assert_eq!(kind.kind, FallthroughUsageAttrKind::Prop);
+    assert_eq!((kind.source_start, kind.source_end), (18, 29));
+    assert!(kind.declared_prop);
+    assert!(!kind.fallthrough);
+
+    let tracking = fact
+        .attrs
+        .iter()
+        .find(|attr| attr.name == "trackingId")
+        .unwrap();
+    assert!(tracking.dynamic);
+    assert!(tracking.fallthrough);
+    assert!(!tracking.standard_html_attr);
+
+    let listener = fact
+        .attrs
+        .iter()
+        .find(|attr| attr.name == "onClick")
+        .unwrap();
+    assert_eq!(listener.kind, FallthroughUsageAttrKind::Listener);
+    assert_eq!((listener.source_start, listener.source_end), (60, 76));
+    assert!(listener.dynamic);
+    assert!(listener.fallthrough);
+    assert!(listener.standard_html_attr);
+
+    let json = serde_json::to_value(fact).unwrap();
+    assert_eq!(json["componentName"], "Child");
+    assert_eq!(json["attrs"][0]["sourceStart"], 18);
+    assert_eq!(json["attrs"][2]["kind"], "listener");
+}
+
+#[test]
+fn usage_facts_feed_listener_attrs_into_component_aggregates() {
+    let mut registry = ModuleRegistry::new();
+
+    let parent_analysis = {
+        let mut analysis = Croquis::new();
+        analysis.component_usages.push(ComponentUsage {
+            name: CompactString::new("Dialog"),
+            start: 5,
+            end: 40,
+            props: smallvec![],
+            events: smallvec![event_listener_at("close", 12, 28)],
+            slots: smallvec![],
+            has_spread_attrs: false,
+            scope_id: ScopeId::ROOT,
+            vif_guard: None,
+        });
+        analysis
+    };
+    let mut child_analysis = Croquis::new();
+    child_analysis.template_info.root_element_count = 2;
+
+    let (parent_id, _) = registry.register("Parent.vue", "", parent_analysis);
+    let (dialog_id, _) = registry.register("Dialog.vue", "", child_analysis);
+
+    let mut graph = DependencyGraph::new();
+    graph.add_node(graph_node(parent_id, "Parent.vue", "Parent"));
+    graph.add_node(graph_node(dialog_id, "Dialog.vue", "Dialog"));
+    graph.add_edge(parent_id, dialog_id, DependencyEdge::ComponentUsage);
+
+    let (infos, diagnostics) = analyze_fallthrough(&registry, &graph);
+    let dialog = infos.iter().find(|info| info.file_id == dialog_id).unwrap();
+    assert!(dialog.passed_attrs.contains("onClose"));
+    assert_eq!(dialog.fallthrough_attr_count(), 1);
+    assert_eq!(dialog.safe_standard_fallthrough_attr_count(), 1);
+    assert_eq!(dialog.risky_unconsumed_fallthrough_attr_count(), 0);
+
+    let summary = summarize_fallthrough(&infos);
+    assert_eq!(summary.passed_attr_count, 1);
+    assert_eq!(summary.safe_standard_fallthrough_attr_count, 1);
+    assert_eq!(summary.risky_unconsumed_fallthrough_attr_count, 0);
+
+    assert!(diagnostics.iter().any(|diagnostic| {
+        matches!(
+            diagnostic.kind,
+            crate::diagnostics::CrossFileDiagnosticKind::MultiRootMissingAttrs
+        )
+    }));
 }
 
 /// A parent that uses two distinct child components, each receiving a
