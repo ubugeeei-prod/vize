@@ -493,9 +493,7 @@ export async function transformHook(
       : (request.vizeVirtualPath ?? pluginVisibleVirtualPath ?? "");
     const needsTsTransform = request.isMacroVirtualId || needsVirtualTypeScriptTransform(code);
     try {
-      const result = needsTsTransform
-        ? await transformVirtualTypeScript(code, realPath)
-        : { code };
+      const result = needsTsTransform ? await transformVirtualTypeScript(code, realPath) : { code };
       let transformed = result.code;
       if (transformed.includes("import.meta.")) {
         const defines = getVirtualModuleDefines(state, options?.ssr ?? false);

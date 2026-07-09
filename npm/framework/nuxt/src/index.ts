@@ -33,11 +33,9 @@ const VUE_RUNTIME_DEDUPE = [
   "@vue/shared",
 ];
 const VUE_CLIENT_RUNTIME_IMPORT = "vue/dist/vue.runtime.esm-bundler.js";
-const NUXT_COMPONENT_BRIDGE_RE =
-  /(?:_?resolveComponent\s*\(|from\s+(["'])#components\1)/;
+const NUXT_COMPONENT_BRIDGE_RE = /(?:_?resolveComponent\s*\(|from\s+(["'])#components\1)/;
 const NUXT_I18N_BRIDGE_RE = /\b(?:\$t|\$rt|\$d|\$n|\$tm|\$te)\s*\(/;
-const NUXT_STABLE_KEY_BRIDGE_RE =
-  /\b(?:useFetch|useLazyFetch)\s*\(|\/\*\s*nuxt-injected\s*\*\//;
+const NUXT_STABLE_KEY_BRIDGE_RE = /\b(?:useFetch|useLazyFetch)\s*\(|\/\*\s*nuxt-injected\s*\*\//;
 type VitePluginWithTransform = {
   name?: string;
   transform?: unknown;
