@@ -107,6 +107,7 @@ export interface CrossFileComplexityInput {
   globalStateReferenceCount: number;
   provideInjectMaxDepth: number;
   provideInjectReferenceCount: number;
+  provideInjectFanoutCount: number;
   fallthroughRiskCount: number;
   reactiveNodeCount: number;
   reactiveEdgeCount: number;
@@ -132,10 +133,35 @@ export interface CrossFileComplexityReport {
   band: "low" | "moderate" | "high" | "extreme";
 }
 
+export type CrossFileComplexityDimension =
+  | "template-control-flow"
+  | "slot-usage"
+  | "prop-drilling"
+  | "global-state"
+  | "provide-inject"
+  | "fallthrough-attrs"
+  | "reactive-graph";
+
+export interface CrossFileComplexityDimensionBreakdown {
+  dimension: CrossFileComplexityDimension;
+  score: number;
+}
+
+export interface CrossFileComplexityHotspot {
+  fileId: number;
+  fileName: string;
+  componentName: string | null;
+  input: CrossFileComplexityInput;
+  dimensions: CrossFileComplexityDimensions;
+  totalScore: number;
+  dominantDimension: CrossFileComplexityDimensionBreakdown | null;
+}
+
 export interface CrossFileResult {
   diagnostics: CrossFileDiagnostic[];
   circularDependencies: string[][];
   complexityReport: CrossFileComplexityReport;
+  complexityHotspots: CrossFileComplexityHotspot[];
   stats: CrossFileStats;
   filePaths: string[];
 }

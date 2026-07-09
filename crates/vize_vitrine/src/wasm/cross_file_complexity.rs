@@ -27,6 +27,7 @@ mod tests {
                 component_count: 1,
                 template_if_count: 2,
                 prop_drilling_edge_count: 1,
+                provide_inject_fanout_count: 4,
                 ..ComplexityInput::default()
             },
             dimensions: ComplexityDimensionScores {
@@ -62,6 +63,7 @@ mod tests {
                         "globalStateReferenceCount": 0,
                         "provideInjectMaxDepth": 0,
                         "provideInjectReferenceCount": 0,
+                        "provideInjectFanoutCount": 4,
                         "fallthroughRiskCount": 0,
                         "reactiveNodeCount": 0,
                         "reactiveEdgeCount": 0,

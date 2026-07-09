@@ -396,7 +396,7 @@ jobs:
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Test
-        run: cargo test --workspace
+        run: cargo test --workspace && cargo test -p vize_vitrine --no-default-features --features wasm
 
   coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
