@@ -11,6 +11,9 @@
 //! ```
 
 mod boundary;
+mod complexity;
+#[cfg(test)]
+mod complexity_tests;
 mod component_resolution;
 pub(crate) mod cross_file_reactivity;
 mod element_id;
@@ -25,6 +28,10 @@ mod setup_context;
 
 // Re-export rule result types
 pub use boundary::{BoundaryInfo, BoundaryKind, analyze_boundaries};
+pub use complexity::{
+    ComplexityBand, ComplexityDimensionScores, ComplexityInput, ComplexityReport, band_for_score,
+    summarize_complexity,
+};
 pub use component_resolution::{ComponentResolutionIssue, analyze_component_resolution};
 pub use element_id::{UniqueIdIssue, analyze_element_ids};
 pub use emit::{EmitFlow, analyze_emits};

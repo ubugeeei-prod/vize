@@ -231,6 +231,9 @@ pub struct CrossFileResult {
     /// Props validation issues.
     pub props_validation_issues: Vec<rules::PropsValidationIssue>,
 
+    /// Explainable complexity score derived from the enabled cross-file facts.
+    pub complexity_report: rules::ComplexityReport,
+
     /// Statistics.
     pub stats: CrossFileStats,
 }
