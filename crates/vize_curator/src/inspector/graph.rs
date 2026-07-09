@@ -68,8 +68,8 @@ pub fn build_graph(files: &[InspectorSourceFile]) -> InspectorGraph {
                     },
                 );
 
-                if to.ends_with(".vue")
-                    && import.kind == "import"
+                if import.kind == "import"
+                    && is_component_module_path(to.as_str())
                     && component_is_used(&analysis.template_used_ids, &import.locals)
                 {
                     push_graph_edge(
@@ -135,13 +135,25 @@ fn import_candidates(from: &str, specifier: &str) -> Vec<String> {
     let mut candidates = vec![base.clone()];
 
     if !has_known_extension(base.as_str()) {
-        for extension in [".vue", ".ts", ".tsx", ".js", ".jsx"] {
+        for extension in [
+            ".vue", ".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs",
+        ] {
             let mut candidate = base.clone();
             candidate.push_str(extension);
             candidates.push(candidate);
         }
 
-        for extension in ["/index.vue", "/index.ts", "/index.js"] {
+        for extension in [
+            "/index.vue",
+            "/index.ts",
+            "/index.tsx",
+            "/index.mts",
+            "/index.cts",
+            "/index.js",
+            "/index.jsx",
+            "/index.mjs",
+            "/index.cjs",
+        ] {
             let mut candidate = base.clone();
             candidate.push_str(extension);
             candidates.push(candidate);
@@ -183,15 +195,24 @@ fn normalize_path(path: &str) -> String {
 }
 
 fn has_known_extension(path: &str) -> bool {
+    path.rsplit_once('.').is_some_and(|(_, extension)| {
+        matches!(
+            extension,
+            "vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs"
+        )
+    })
+}
+
+fn is_component_module_path(path: &str) -> bool {
     path.rsplit_once('.')
-        .is_some_and(|(_, extension)| matches!(extension, "vue" | "ts" | "tsx" | "js" | "jsx"))
+        .is_some_and(|(_, extension)| matches!(extension, "vue" | "tsx" | "jsx"))
 }
 
 fn file_kind(path: &str) -> &'static str {
     match path.rsplit_once('.').map(|(_, extension)| extension) {
         Some("vue") => "vue",
-        Some("ts") | Some("tsx") => "typescript",
-        Some("js") | Some("jsx") => "javascript",
+        Some("ts") | Some("tsx") | Some("mts") | Some("cts") => "typescript",
+        Some("js") | Some("jsx") | Some("mjs") | Some("cjs") => "javascript",
         _ => "other",
     }
 }

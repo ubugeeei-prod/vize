@@ -186,6 +186,48 @@ const Lazy = () => import('./Lazy.vue');
 }
 
 #[test]
+fn graph_resolves_modern_script_module_extensions() {
+    let files = vec![
+        InspectorSourceFile {
+            path: cstr!("src/App.vue"),
+            source: cstr!(
+                r#"<script setup>
+import EntryPanel from './entry';
+import config from './config.cts';
+const loadServer = () => import('./server');
+</script>
+<template><EntryPanel /></template>"#
+            ),
+        },
+        InspectorSourceFile {
+            path: cstr!("src/entry/index.tsx"),
+            source: cstr!("export default null;\n"),
+        },
+        InspectorSourceFile {
+            path: cstr!("src/config.cts"),
+            source: cstr!("export default true;\n"),
+        },
+        InspectorSourceFile {
+            path: cstr!("src/server/index.mjs"),
+            source: cstr!("export default true;\n"),
+        },
+    ];
+
+    let graph = build_graph(&files);
+    let mut edges: Vec<_> = graph
+        .edges
+        .iter()
+        .map(|edge| (edge.kind, edge.to.as_str()))
+        .collect();
+    edges.sort_unstable();
+
+    assert!(edges.contains(&("component", "src/entry/index.tsx")));
+    assert!(edges.contains(&("dynamic-import", "src/server/index.mjs")));
+    assert!(edges.contains(&("import", "src/config.cts")));
+    assert!(edges.contains(&("import", "src/entry/index.tsx")));
+}
+
+#[test]
 fn builds_line_diff_and_stats() {
     let diff = build_diff("one\ntwo\nthree", "one\nTWO\nthree\nfour");
 
