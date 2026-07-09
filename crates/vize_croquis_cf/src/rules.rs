@@ -30,7 +30,7 @@ mod setup_context;
 pub use boundary::{BoundaryInfo, BoundaryKind, analyze_boundaries};
 pub use complexity::{
     ComplexityBand, ComplexityDimensionScores, ComplexityInput, ComplexityReport, band_for_score,
-    summarize_complexity,
+    summarize_complexity_with_graph,
 };
 pub use component_resolution::{ComponentResolutionIssue, analyze_component_resolution};
 pub use element_id::{UniqueIdIssue, analyze_element_ids};

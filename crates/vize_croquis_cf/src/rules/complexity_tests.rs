@@ -1,21 +1,26 @@
+use super::complexity::summarize_complexity;
 use super::{
     ComplexityBand, ComplexityInput, ComplexityReport, FallthroughInfo, ProvideInjectTreeSummary,
-    ReactivityIssue, ReactivityIssueKind, summarize_complexity,
+    ReactivityIssue, ReactivityIssueKind, summarize_complexity_with_graph,
 };
 use crate::analyzer::CrossFileResult;
+use crate::graph::{DependencyEdge, DependencyGraph, ModuleNode};
 use crate::registry::ModuleRegistry;
 use vize_carton::{CompactString, FxHashSet, smallvec};
 use vize_croquis::croquis::{
     ComponentUsage, EventListener, PassedProp, SlotUsage, TemplateExpression,
     TemplateExpressionKind,
 };
-use vize_croquis::{Croquis, ScopeId};
+use vize_croquis::{Croquis, ScopeId, VForScopeData, VSlotScopeData};
 
 #[test]
 fn scores_each_complexity_dimension() {
     let report = ComplexityReport::from_input(ComplexityInput {
         template_if_count: 2,
         template_for_count: 1,
+        component_tree_v_if_max_depth: 3,
+        component_tree_v_for_max_depth: 2,
+        component_tree_scoped_slot_max_depth: 3,
         slot_count: 3,
         prop_drilling_edge_count: 2,
         global_state_reference_count: 4,
@@ -27,14 +32,14 @@ fn scores_each_complexity_dimension() {
         reactive_cycle_count: 1,
     });
 
-    assert_eq!(report.dimensions.template_control_flow, 7);
-    assert_eq!(report.dimensions.slot_usage, 6);
+    assert_eq!(report.dimensions.template_control_flow, 20);
+    assert_eq!(report.dimensions.slot_usage, 14);
     assert_eq!(report.dimensions.prop_drilling, 6);
     assert_eq!(report.dimensions.global_state, 8);
     assert_eq!(report.dimensions.provide_inject, 9);
     assert_eq!(report.dimensions.fallthrough_attrs, 8);
     assert_eq!(report.dimensions.reactive_graph, 30);
-    assert_eq!(report.total_score, 74);
+    assert_eq!(report.total_score, 95);
     assert_eq!(report.band, ComplexityBand::Extreme);
 }
 
@@ -144,6 +149,74 @@ fn summarizes_complexity_from_registry_and_result() {
 }
 
 #[test]
+fn summarizes_component_tree_template_nesting() {
+    let mut parent = Croquis::new();
+    let parent_loop = parent
+        .scopes
+        .enter_v_for_scope(v_for_data("row", "rows"), 0, 20);
+    parent.component_usages.push(ComponentUsage {
+        name: CompactString::new("Child"),
+        start: 21,
+        end: 60,
+        props: smallvec![],
+        events: smallvec![],
+        slots: smallvec![SlotUsage {
+            name: CompactString::new("default"),
+            scope_vars: smallvec![CompactString::new("slotProps")],
+            start: 35,
+            end: 55,
+            has_scope: true,
+        }],
+        has_spread_attrs: false,
+        scope_id: parent_loop,
+        vif_guard: Some(CompactString::new("ready")),
+    });
+
+    let mut child = Croquis::new();
+    child.template_expressions.push(TemplateExpression {
+        content: CompactString::new("expanded"),
+        kind: TemplateExpressionKind::VIf,
+        start: 0,
+        end: 8,
+        scope_id: ScopeId::ROOT,
+        vif_guard: None,
+    });
+    child
+        .scopes
+        .enter_v_for_scope(v_for_data("item", "items"), 9, 30);
+    child.scopes.exit_scope();
+    child.scopes.enter_v_slot_scope(
+        VSlotScopeData {
+            name: CompactString::new("default"),
+            props_pattern: None,
+            prop_names: smallvec![CompactString::new("item")],
+            component: Some(CompactString::new("GrandChild")),
+        },
+        31,
+        50,
+    );
+
+    let mut registry = ModuleRegistry::new();
+    let (parent_id, _) = registry.register("Parent.vue", "", parent);
+    let (child_id, _) = registry.register("Child.vue", "", child);
+    let mut graph = DependencyGraph::new();
+    graph.add_node(component_node(parent_id, "Parent.vue", "Parent"));
+    graph.add_node(component_node(child_id, "Child.vue", "Child"));
+    graph.add_edge(parent_id, child_id, DependencyEdge::ComponentUsage);
+
+    let report = summarize_complexity_with_graph(&registry, &graph, &CrossFileResult::default());
+
+    assert_eq!(report.input.template_if_count, 1);
+    assert_eq!(report.input.template_for_count, 2);
+    assert_eq!(report.input.slot_count, 1);
+    assert_eq!(report.input.component_tree_v_if_max_depth, 2);
+    assert_eq!(report.input.component_tree_v_for_max_depth, 2);
+    assert_eq!(report.input.component_tree_scoped_slot_max_depth, 2);
+    assert_eq!(report.dimensions.template_control_flow, 17);
+    assert_eq!(report.dimensions.slot_usage, 6);
+}
+
+#[test]
 fn score_saturates_instead_of_overflowing() {
     let report = ComplexityReport::from_input(ComplexityInput {
         reactive_cycle_count: usize::MAX,
@@ -153,4 +226,21 @@ fn score_saturates_instead_of_overflowing() {
     assert_eq!(report.dimensions.reactive_graph, u32::MAX);
     assert_eq!(report.total_score, u32::MAX);
     assert_eq!(report.band, ComplexityBand::Extreme);
+}
+
+fn v_for_data(value_alias: &str, source: &str) -> VForScopeData {
+    VForScopeData {
+        value_alias: CompactString::new(value_alias),
+        value_bindings: smallvec![CompactString::new(value_alias)],
+        key_alias: None,
+        index_alias: None,
+        source: CompactString::new(source),
+        key_expression: None,
+    }
+}
+
+fn component_node(id: crate::FileId, path: &str, name: &str) -> ModuleNode {
+    let mut node = ModuleNode::new(id, path);
+    node.component_name = Some(CompactString::new(name));
+    node
 }

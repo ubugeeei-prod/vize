@@ -4,7 +4,10 @@
 //! counts and weighted dimension scores before deciding how to surface the
 //! result in reports or diagnostics.
 
+mod nesting;
+
 use crate::analyzer::CrossFileResult;
+use crate::graph::DependencyGraph;
 use crate::registry::ModuleRegistry;
 use crate::rules::cross_file_reactivity::CrossFileReactivityIssueKind;
 use vize_croquis::{ScopeKind, TemplateExpressionKind};
@@ -14,6 +17,9 @@ use vize_croquis::{ScopeKind, TemplateExpressionKind};
 pub struct ComplexityInput {
     pub template_if_count: usize,
     pub template_for_count: usize,
+    pub component_tree_v_if_max_depth: usize,
+    pub component_tree_v_for_max_depth: usize,
+    pub component_tree_scoped_slot_max_depth: usize,
     pub slot_count: usize,
     pub prop_drilling_edge_count: usize,
     pub global_state_reference_count: usize,
@@ -72,8 +78,19 @@ impl ComplexityReport {
     pub fn from_input(input: ComplexityInput) -> Self {
         let dimensions = ComplexityDimensionScores {
             template_control_flow: weighted(input.template_if_count, 2)
-                .saturating_add(weighted(input.template_for_count, 3)),
-            slot_usage: weighted(input.slot_count, 2),
+                .saturating_add(weighted(input.template_for_count, 3))
+                .saturating_add(weighted(
+                    input.component_tree_v_if_max_depth.saturating_sub(1),
+                    4,
+                ))
+                .saturating_add(weighted(
+                    input.component_tree_v_for_max_depth.saturating_sub(1),
+                    5,
+                )),
+            slot_usage: weighted(input.slot_count, 2).saturating_add(weighted(
+                input.component_tree_scoped_slot_max_depth.saturating_sub(1),
+                4,
+            )),
             prop_drilling: weighted(input.prop_drilling_edge_count, 3),
             global_state: weighted(input.global_state_reference_count, 2),
             provide_inject: weighted(input.provide_inject_max_depth.saturating_sub(1), 2)
@@ -105,11 +122,23 @@ pub fn band_for_score(score: u32) -> ComplexityBand {
 }
 
 /// Summarize complexity from the analyzer's existing cross-file facts.
-pub fn summarize_complexity(
+#[cfg(test)]
+pub(super) fn summarize_complexity(
     registry: &ModuleRegistry,
     result: &CrossFileResult,
 ) -> ComplexityReport {
     ComplexityReport::from_input(complexity_input(registry, result))
+}
+
+/// Summarize complexity with component-tree template nesting signals.
+pub fn summarize_complexity_with_graph(
+    registry: &ModuleRegistry,
+    graph: &DependencyGraph,
+    result: &CrossFileResult,
+) -> ComplexityReport {
+    let mut input = complexity_input(registry, result);
+    nesting::add_component_tree_template_nesting(&mut input, registry, graph);
+    ComplexityReport::from_input(input)
 }
 
 fn complexity_input(registry: &ModuleRegistry, result: &CrossFileResult) -> ComplexityInput {

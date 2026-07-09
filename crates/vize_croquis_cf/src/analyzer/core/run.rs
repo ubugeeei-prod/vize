@@ -110,7 +110,8 @@ impl CrossFileAnalyzer {
             result.diagnostics.extend(diags);
         }
 
-        result.complexity_report = rules::summarize_complexity(&self.registry, &result);
+        result.complexity_report =
+            rules::summarize_complexity_with_graph(&self.registry, &self.graph, &result);
 
         dedupe_diagnostics(&mut result.diagnostics);
         sort_diagnostics(&mut result.diagnostics);
