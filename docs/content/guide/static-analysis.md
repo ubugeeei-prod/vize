@@ -88,6 +88,12 @@ Cross-file linting analyzes relationships such as provide/inject and reactivity 
 Vue files. `--strict-reactivity` enables the native checker-backed reactivity-loss rule, so expect it
 to be slower than ordinary template and script lint rules.
 
+## Reactivity Overlay
+
+Croquis exposes a stable reactivity overlay for each analyzed SFC: reactive sources, `.value`
+requirements, reactivity-loss sites, and effect-graph edges with source mappings. The same compact
+JSON model feeds diagnostics, reports, editor surfaces, and the Playground's **Reactivity** tab.
+
 ## Patina Rule Model
 
 Patina is the lint rule layer. Rules are small visitors over the SFC source, template root,

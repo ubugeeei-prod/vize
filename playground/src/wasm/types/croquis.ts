@@ -155,6 +155,86 @@ export interface CssDisplay {
   is_scoped: boolean;
 }
 
+export type ReactivitySourceKind =
+  | "ref"
+  | "shallowRef"
+  | "reactive"
+  | "shallowReactive"
+  | "computed"
+  | "readonly"
+  | "shallowReadonly"
+  | "toRef"
+  | "toRefs";
+
+export type ReactivitySourceCategory = "ref" | "reactive" | "computed" | "readonly";
+
+export interface ReactivityOverlaySummary {
+  sourceCount: number;
+  refSourceCount: number;
+  reactiveSourceCount: number;
+  computedSourceCount: number;
+  readonlySourceCount: number;
+  needsValueAccessCount: number;
+  lossCount: number;
+  effectEdgeCount: number;
+  effectCycleCount: number;
+}
+
+export interface ReactivityOverlaySource {
+  id: number;
+  name: string;
+  kind: ReactivitySourceKind;
+  category: ReactivitySourceCategory;
+  needsValueAccess: boolean;
+  declarationOffset: number;
+  declarationEndOffset: number;
+}
+
+export type ReactivityLossKind =
+  | "reactiveDestructure"
+  | "refValueDestructure"
+  | "refValueExtract"
+  | "reactivePropertyExtract"
+  | "propsDestructure"
+  | "functionArgumentExtract"
+  | "getterCallExtract"
+  | "plainValueAlias"
+  | "reactiveSpread"
+  | "reactiveReassign";
+
+export interface ReactivityOverlayLoss {
+  kind: ReactivityLossKind;
+  category: "loss";
+  sourceName?: string;
+  targetName?: string;
+  propertyName?: string;
+  argumentName?: string;
+  calleeName?: string;
+  getterName?: string;
+  aliasName?: string;
+  extractedProps: string[];
+  start: number;
+  end: number;
+}
+
+export interface ReactivityEffectEdge {
+  from: string;
+  to: string;
+  category: "effectEdge";
+}
+
+export interface ReactivityEffectGraphOverlay {
+  edges: ReactivityEffectEdge[];
+  cycle?: string[] | null;
+}
+
+export interface ReactivityOverlay {
+  summary: ReactivityOverlaySummary;
+  sources: ReactivityOverlaySource[];
+  losses: ReactivityOverlayLoss[];
+  effectGraph: ReactivityEffectGraphOverlay;
+}
+
 export interface CroquisStats {
   binding_count: number;
   unused_binding_count: number;
@@ -185,6 +265,7 @@ export interface Croquis {
   emits: EmitDisplay[];
   provides: ProvideDisplay[];
   injects: InjectDisplay[];
+  reactivityOverlay: ReactivityOverlay;
   typeExports: TypeExportDisplay[];
   invalidExports: InvalidExportDisplay[];
   css?: CssDisplay;

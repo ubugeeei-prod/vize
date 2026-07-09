@@ -2,6 +2,7 @@
 !.gitignore
 !index.ts
 !types.ts
+!wasm-transform.test.ts
 !wasm-transform.ts
 !types/
 !types/*.ts

@@ -56,12 +56,16 @@ pub mod optimization;
 pub mod provide;
 pub mod race;
 pub mod reactivity;
+pub mod reactivity_overlay;
 pub mod reactivity_tracking;
 pub mod render_tree;
 pub mod script_parser;
 pub mod setup_context;
 pub mod types;
 pub mod virtual_ts;
+
+#[cfg(test)]
+mod reactivity_overlay_tests;
 
 // Re-export commonly used utilities from vize_carton for convenience
 pub use vize_carton::{
@@ -89,6 +93,10 @@ pub use croquis::{
     UnusedVarContext,
 };
 pub use drawer::{Drawer, DrawerOptions};
+pub use reactivity_overlay::{
+    ReactivityEffectEdgeOverlay, ReactivityEffectGraphOverlay, ReactivityLossOverlay,
+    ReactivityOverlay, ReactivityOverlaySummary, ReactivitySourceOverlay,
+};
 
 // Re-export common types
 pub use vize_relief::BindingType;

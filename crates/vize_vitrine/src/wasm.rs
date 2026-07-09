@@ -26,8 +26,10 @@ mod jsx;
 mod lint;
 mod musea;
 mod options;
+mod reactivity_overlay;
 mod serde;
 mod sfc_types;
+mod source_offsets;
 
 #[cfg(test)]
 mod tests;

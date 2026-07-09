@@ -25,7 +25,9 @@ export function useCroquisAnalysis(getCompilerProp: () => WasmModule | null) {
   const source = ref(ANALYSIS_PRESET);
   const analysisResult = ref<CroquisResult | null>(null);
   const error = ref<string | null>(null);
-  const activeTab = ref<"vir" | "stats" | "bindings" | "scopes" | "diagnostics">("vir");
+  const activeTab = ref<"vir" | "stats" | "reactivity" | "bindings" | "scopes" | "diagnostics">(
+    "vir",
+  );
   const showScopeVisualization = ref(true);
   const editorRef = ref<EditorRef | null>(null);
   const analysisTime = ref<number | null>(null);
@@ -134,6 +136,7 @@ export function useCroquisAnalysis(getCompilerProp: () => WasmModule | null) {
   const css = computed(() => summary.value?.css);
   const typeExports = computed(() => summary.value?.typeExports || []);
   const invalidExports = computed(() => summary.value?.invalidExports || []);
+  const reactivityOverlay = computed(() => summary.value?.reactivityOverlay);
   const diagnostics = computed(() => analysisResult.value?.diagnostics || []);
   const stats = computed(() => summary.value?.stats);
 
@@ -190,6 +193,7 @@ export function useCroquisAnalysis(getCompilerProp: () => WasmModule | null) {
     css,
     typeExports,
     invalidExports,
+    reactivityOverlay,
     diagnostics,
     stats,
     monacoDiagnostics,
