@@ -53,6 +53,10 @@ pub struct LintArgs {
     #[arg(long)]
     pub cross_file_tree: bool,
 
+    /// Print cross-file complexity score and top hotspots when cross-file lint is enabled.
+    #[arg(long)]
+    pub cross_file_complexity: bool,
+
     /// Enable native type-aware lint rules from the active lint configuration.
     #[arg(long)]
     pub type_aware: bool,

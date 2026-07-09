@@ -106,6 +106,7 @@ pub fn run(args: ReadyArgs) {
         preset: None,
         cross_file: false,
         cross_file_tree: false,
+        cross_file_complexity: false,
         type_aware: false,
         strict_reactivity: false,
         profile: false,

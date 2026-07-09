@@ -13,11 +13,13 @@ use vize_croquis_cf::{
     CrossFileAnalyzer, CrossFileDiagnostic, CrossFileDiagnosticKind, CrossFileOptions,
     DiagnosticSeverity, FileId,
 };
+use vize_curator::complexity::render_complexity_markdown;
 use vize_patina::{HelpLevel, LintDiagnostic, LintResult};
 
 pub(super) struct CrossFileLintOutput {
     pub(super) results: Vec<LintResult>,
     pub(super) provide_inject_tree: Option<String>,
+    pub(super) complexity_report: Option<String>,
 }
 
 pub(super) type CliLintFileResult = (PathBuf, String, String, LintResult);
@@ -32,6 +34,7 @@ pub(super) fn apply_sfc_cross_file_lint(
     results: &mut [CliLintFileResult],
     help_level: HelpLevel,
     include_tree: bool,
+    include_complexity: bool,
 ) -> Option<String> {
     let targets: Vec<_> = results
         .iter()
@@ -46,8 +49,16 @@ pub(super) fn apply_sfc_cross_file_lint(
             (path.clone(), source.clone())
         })
         .collect();
-    let output = build_cross_file_lint_output(&inputs, help_level, include_tree);
-    let tree = output.provide_inject_tree;
+    let output = build_cross_file_lint_output_with_report(
+        &inputs,
+        help_level,
+        include_tree,
+        include_complexity,
+    );
+    let report = combine_cross_file_report(
+        output.provide_inject_tree.as_deref(),
+        output.complexity_report.as_deref(),
+    );
 
     for (target_index, cross_result) in targets.into_iter().zip(output.results) {
         if let Some((_, _, _, result)) = results.get_mut(target_index) {
@@ -55,13 +66,23 @@ pub(super) fn apply_sfc_cross_file_lint(
         }
     }
 
-    tree
+    report
 }
 
+#[cfg(test)]
 pub(super) fn build_cross_file_lint_output<S: AsRef<str>>(
     files: &[(PathBuf, S)],
     help_level: HelpLevel,
     include_tree: bool,
+) -> CrossFileLintOutput {
+    build_cross_file_lint_output_with_report(files, help_level, include_tree, false)
+}
+
+pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
+    files: &[(PathBuf, S)],
+    help_level: HelpLevel,
+    include_tree: bool,
+    include_complexity: bool,
 ) -> CrossFileLintOutput {
     let root = std::env::current_dir().unwrap_or_default();
     let mut analyzer = CrossFileAnalyzer::with_project_root(patina_cross_file_options(), root);
@@ -127,11 +148,32 @@ pub(super) fn build_cross_file_lint_output<S: AsRef<str>>(
                 .map(|tree| tree.to_markdown(analyzer.registry()))
         })
         .flatten();
+    let complexity_report = include_complexity.then(|| {
+        render_complexity_markdown(
+            &cross_file_result.complexity_report,
+            &cross_file_result.complexity_hotspots,
+        )
+    });
 
     CrossFileLintOutput {
         results,
         provide_inject_tree,
+        complexity_report,
     }
+}
+
+fn combine_cross_file_report(tree: Option<&str>, complexity: Option<&str>) -> Option<String> {
+    let mut report = String::default();
+    if let Some(tree) = tree {
+        report.push_str(tree);
+    }
+    if let Some(complexity) = complexity {
+        if !report.is_empty() {
+            report.push('\n');
+        }
+        report.push_str(complexity);
+    }
+    (!report.is_empty()).then_some(report)
 }
 
 fn patina_cross_file_options() -> CrossFileOptions {
@@ -249,4 +291,60 @@ pub(super) fn merge_lint_result(target: &mut LintResult, mut extra: LintResult) 
     target
         .diagnostics
         .sort_unstable_by_key(|diagnostic| (diagnostic.start, diagnostic.end));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    #[test]
+    fn cross_file_complexity_report_mentions_hotspot_reason() {
+        let dir = tempfile::tempdir().unwrap();
+        let app = dir.path().join("App.vue");
+        let child = dir.path().join("Child.vue");
+
+        fs::write(&app, r#"<script setup lang="ts">
+import { reactive } from 'vue'
+import Child from './Child.vue'
+const ready = true
+const enabled = true
+const fallback = false
+const state = reactive({ count: 0 })
+</script>
+<template><Child v-if="ready && enabled" :item="state" /><Child v-if="fallback" :item="state" /></template>
+"#).unwrap();
+        fs::write(
+            &child,
+            r#"<script setup lang="ts">
+defineProps<{ item: { count: number } }>()
+</script>
+"#,
+        )
+        .unwrap();
+
+        let files = [&app, &child]
+            .into_iter()
+            .map(|path| (path.to_path_buf(), fs::read_to_string(path).unwrap()))
+            .collect::<Vec<_>>();
+        let output =
+            build_cross_file_lint_output_with_report(&files, HelpLevel::Short, false, true);
+        let report = output
+            .complexity_report
+            .as_deref()
+            .expect("complexity report should be rendered");
+
+        assert!(report.contains("## Cross-file Complexity"));
+        assert!(report.contains("App.vue"));
+        assert!(report.contains("template-control-flow"));
+        assert!(report.contains("v-if=2"));
+        assert!(report.contains("prop edges=2"));
+    }
+
+    #[test]
+    fn combined_cross_file_report_keeps_tree_before_complexity() {
+        let report = combine_cross_file_report(Some("tree"), Some("complexity")).unwrap();
+
+        assert_eq!(report, "tree\ncomplexity");
+    }
 }

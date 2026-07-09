@@ -47,6 +47,9 @@ Options:
       --cross-file-tree
           Print the provide/inject tree when cross-file lint is enabled
 
+      --cross-file-complexity
+          Print cross-file complexity score and top hotspots when cross-file lint is enabled
+
       --type-aware
           Enable native type-aware lint rules from the active lint configuration
 

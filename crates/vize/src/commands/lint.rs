@@ -134,7 +134,6 @@ pub fn run(args: LintArgs) {
         profiler.enable();
     }
 
-    // Lint all files in parallel and collect results
     let lint_start = Instant::now();
     let mut results: Vec<_> = files
         .par_iter()
@@ -202,13 +201,18 @@ pub fn run(args: LintArgs) {
         .collect();
     let lint_time = lint_start.elapsed();
 
-    let mut cross_file_tree = None;
-    let cross_file_enabled = args.cross_file || args.cross_file_tree;
+    let mut cross_file_report = None;
+    let cross_file_enabled = args.cross_file || args.cross_file_tree || args.cross_file_complexity;
     let cross_file_start = args.profile.then(Instant::now);
     if cross_file_enabled {
-        cross_file_tree = profile!(
+        cross_file_report = profile!(
             "cli.lint.cross_file.build",
-            apply_sfc_cross_file_lint(&mut results, help_level, args.cross_file_tree)
+            apply_sfc_cross_file_lint(
+                &mut results,
+                help_level,
+                args.cross_file_tree,
+                args.cross_file_complexity
+            )
         );
     }
     let cross_file_time = cross_file_start
@@ -258,7 +262,6 @@ pub fn run(args: LintArgs) {
         (None, None, None)
     };
 
-    // Print summary
     let elapsed = start.elapsed();
     if format == OutputFormat::Text {
         stdout::write_text_summary(
@@ -266,9 +269,7 @@ pub fn run(args: LintArgs) {
             total_warnings,
             files.len(),
             elapsed,
-            args.cross_file_tree
-                .then_some(cross_file_tree.as_deref())
-                .flatten(),
+            cross_file_report.as_deref(),
         );
     }
 
@@ -380,7 +381,6 @@ pub fn run(args: LintArgs) {
     // `process::exit` below bypasses normal stdout teardown, so flush report output first.
     let _ = std::io::stdout().flush();
 
-    // Exit with appropriate code
     if total_errors > 0 {
         std::process::exit(1);
     }
