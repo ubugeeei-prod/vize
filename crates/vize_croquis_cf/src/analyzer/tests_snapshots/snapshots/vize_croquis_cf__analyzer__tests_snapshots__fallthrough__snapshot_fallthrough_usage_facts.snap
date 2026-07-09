@@ -17,10 +17,11 @@ expression: output
   "multiRootWithoutAttrsCount": 1,
   "passedAttrCount": 7,
   "declaredPropCount": 1,
-  "undeclaredPassedAttrCount": 6,
+  "declaredEventCount": 1,
+  "undeclaredPassedAttrCount": 5,
   "consumedFallthroughAttrCount": 2,
-  "unconsumedFallthroughAttrCount": 4,
-  "safeStandardFallthroughAttrCount": 4,
+  "unconsumedFallthroughAttrCount": 3,
+  "safeStandardFallthroughAttrCount": 3,
   "riskyUnconsumedFallthroughAttrCount": 2,
   "maxPassedAttrs": 5,
   "maxRootElementCount": 2
@@ -43,6 +44,7 @@ expression: output
         "sourceEnd": 29,
         "dynamic": false,
         "declaredProp": true,
+        "declaredEvent": false,
         "standardHtmlAttr": false,
         "fallthrough": false
       },
@@ -53,6 +55,7 @@ expression: output
         "sourceEnd": 58,
         "dynamic": true,
         "declaredProp": false,
+        "declaredEvent": false,
         "standardHtmlAttr": false,
         "fallthrough": true
       },
@@ -63,6 +66,7 @@ expression: output
         "sourceEnd": 72,
         "dynamic": false,
         "declaredProp": false,
+        "declaredEvent": false,
         "standardHtmlAttr": true,
         "fallthrough": true
       },
@@ -73,8 +77,9 @@ expression: output
         "sourceEnd": 88,
         "dynamic": true,
         "declaredProp": false,
+        "declaredEvent": true,
         "standardHtmlAttr": true,
-        "fallthrough": true
+        "fallthrough": false
       }
     ]
   },
@@ -93,6 +98,7 @@ expression: output
         "sourceEnd": 48,
         "dynamic": false,
         "declaredProp": false,
+        "declaredEvent": false,
         "standardHtmlAttr": false,
         "fallthrough": true
       }
@@ -113,6 +119,7 @@ expression: output
         "sourceEnd": 135,
         "dynamic": false,
         "declaredProp": false,
+        "declaredEvent": false,
         "standardHtmlAttr": true,
         "fallthrough": true
       },
@@ -123,6 +130,7 @@ expression: output
         "sourceEnd": 148,
         "dynamic": true,
         "declaredProp": false,
+        "declaredEvent": false,
         "standardHtmlAttr": true,
         "fallthrough": true
       }
@@ -143,12 +151,14 @@ expression: output
     "listenerAttrCount": 1,
     "dynamicAttrCount": 2,
     "declaredPropAttrCount": 1,
-    "fallthroughAttrCount": 4,
+    "declaredEventAttrCount": 1,
+    "fallthroughAttrCount": 3,
     "consumedFallthroughAttrCount": 0,
-    "unconsumedFallthroughAttrCount": 4,
-    "safeStandardFallthroughAttrCount": 2,
+    "unconsumedFallthroughAttrCount": 3,
+    "safeStandardFallthroughAttrCount": 1,
     "riskyUnconsumedFallthroughAttrCount": 2,
     "declaredPropCount": 1,
+    "declaredEventCount": 1,
     "rootElementCount": 2,
     "inheritAttrsDisabled": false,
     "usesAttrs": false,
@@ -166,12 +176,14 @@ expression: output
     "listenerAttrCount": 1,
     "dynamicAttrCount": 1,
     "declaredPropAttrCount": 0,
+    "declaredEventAttrCount": 0,
     "fallthroughAttrCount": 2,
     "consumedFallthroughAttrCount": 2,
     "unconsumedFallthroughAttrCount": 0,
     "safeStandardFallthroughAttrCount": 2,
     "riskyUnconsumedFallthroughAttrCount": 0,
     "declaredPropCount": 0,
+    "declaredEventCount": 0,
     "rootElementCount": 1,
     "inheritAttrsDisabled": false,
     "usesAttrs": true,
@@ -189,12 +201,14 @@ expression: output
     "listenerAttrCount": 0,
     "dynamicAttrCount": 0,
     "declaredPropAttrCount": 0,
+    "declaredEventAttrCount": 0,
     "fallthroughAttrCount": 0,
     "consumedFallthroughAttrCount": 0,
     "unconsumedFallthroughAttrCount": 0,
     "safeStandardFallthroughAttrCount": 0,
     "riskyUnconsumedFallthroughAttrCount": 0,
     "declaredPropCount": 0,
+    "declaredEventCount": 0,
     "rootElementCount": 0,
     "inheritAttrsDisabled": false,
     "usesAttrs": false,
@@ -212,12 +226,14 @@ expression: output
     "listenerAttrCount": 0,
     "dynamicAttrCount": 0,
     "declaredPropAttrCount": 0,
+    "declaredEventAttrCount": 0,
     "fallthroughAttrCount": 0,
     "consumedFallthroughAttrCount": 0,
     "unconsumedFallthroughAttrCount": 0,
     "safeStandardFallthroughAttrCount": 0,
     "riskyUnconsumedFallthroughAttrCount": 0,
     "declaredPropCount": 0,
+    "declaredEventCount": 0,
     "rootElementCount": 0,
     "inheritAttrsDisabled": false,
     "usesAttrs": false,
@@ -228,6 +244,6 @@ expression: output
 
 == Diagnostics ==
 [
-  "MultiRootMissingAttrs@0:0:120 related=[(FileId(2), 10, \"v-bind spread passed to <Panel>\"), (FileId(2), 34, \"trackingId passed to <Panel>\"), (FileId(2), 59, \"class passed to <Panel>\"), (FileId(2), 73, \"onClose passed to <Panel>\"), (FileId(3), 28, \"telemetryKey passed to <Panel>\")]",
+  "MultiRootMissingAttrs@0:0:120 related=[(FileId(2), 10, \"v-bind spread passed to <Panel>\"), (FileId(2), 34, \"trackingId passed to <Panel>\"), (FileId(2), 59, \"class passed to <Panel>\"), (FileId(3), 28, \"telemetryKey passed to <Panel>\")]",
   "UnusedFallthroughAttrs { passed_attrs: [\"telemetryKey\", \"trackingId\"] }@0:0:120 related=[(FileId(2), 34, \"trackingId passed to <Panel>\"), (FileId(3), 28, \"telemetryKey passed to <Panel>\")]"
 ]

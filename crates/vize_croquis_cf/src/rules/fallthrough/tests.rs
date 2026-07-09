@@ -6,7 +6,7 @@ use crate::graph::{DependencyEdge, DependencyGraph, ModuleNode};
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::{CompactString, FxHashSet, smallvec};
 use vize_croquis::analysis::{ComponentUsage, EventListener, PassedProp};
-use vize_croquis::macros::PropDefinition;
+use vize_croquis::macros::{EmitDefinition, PropDefinition};
 use vize_croquis::{Croquis, ScopeId};
 
 fn passed_prop(name: &str) -> PassedProp {
@@ -56,6 +56,13 @@ fn declare_prop(analysis: &mut Croquis, name: &str) {
     });
 }
 
+fn declare_event(analysis: &mut Croquis, name: &str) {
+    analysis.macros.add_emit(EmitDefinition {
+        name: CompactString::new(name),
+        payload_type: None,
+    });
+}
+
 fn graph_node(id: FileId, path: &str, component: &str) -> ModuleNode {
     let mut node = ModuleNode::new(id, path);
     node.component_name = Some(CompactString::new(component));
@@ -86,6 +93,7 @@ fn usage_facts_keep_parent_source_ranges_and_attr_classification() {
     };
     let mut child_analysis = Croquis::new();
     declare_prop(&mut child_analysis, "kind");
+    declare_event(&mut child_analysis, "click");
 
     let (parent_id, _) = registry.register("Parent.vue", "", parent_analysis);
     let (child_id, _) = registry.register("Child.vue", "", child_analysis);
@@ -130,13 +138,15 @@ fn usage_facts_keep_parent_source_ranges_and_attr_classification() {
     assert_eq!(listener.kind, FallthroughUsageAttrKind::Listener);
     assert_eq!((listener.source_start, listener.source_end), (60, 76));
     assert!(listener.dynamic);
-    assert!(listener.fallthrough);
+    assert!(listener.declared_event);
+    assert!(!listener.fallthrough);
     assert!(listener.standard_html_attr);
 
     let json = serde_json::to_value(fact).unwrap();
     assert_eq!(json["componentName"], "Child");
     assert_eq!(json["attrs"][0]["sourceStart"], 18);
     assert_eq!(json["attrs"][2]["kind"], "listener");
+    assert_eq!(json["attrs"][2]["declaredEvent"], true);
 }
 
 #[test]
@@ -299,7 +309,9 @@ fn test_fallthrough_info_issues() {
         binds_attrs: false,
         root_element_count: 1,
         passed_attrs: FxHashSet::default(),
+        fallthrough_attrs: FxHashSet::default(),
         declared_props: FxHashSet::default(),
+        declared_events: FxHashSet::default(),
         template_start: 0,
         template_end: 0,
     };

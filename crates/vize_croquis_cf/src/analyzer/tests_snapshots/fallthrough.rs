@@ -1,7 +1,7 @@
 use super::*;
 use vize_carton::{CompactString, smallvec};
 use vize_croquis::analysis::{ComponentUsage, EventListener, PassedProp};
-use vize_croquis::macros::PropDefinition;
+use vize_croquis::macros::{EmitDefinition, PropDefinition};
 use vize_croquis::{Croquis, ScopeId};
 
 fn prop(name: &str, start: u32, end: u32, dynamic: bool) -> PassedProp {
@@ -54,6 +54,13 @@ fn declare_prop(analysis: &mut Croquis, name: &str) {
     });
 }
 
+fn declare_event(analysis: &mut Croquis, name: &str) {
+    analysis.macros.add_emit(EmitDefinition {
+        name: CompactString::new(name),
+        payload_type: None,
+    });
+}
+
 fn sorted_diagnostics(result: &crate::analyzer::CrossFileResult) -> Vec<String> {
     let mut diagnostics = result
         .diagnostics
@@ -84,6 +91,7 @@ fn test_snapshot_fallthrough_usage_facts() {
     panel.template_info.root_element_count = 2;
     panel.template_info.content_end = 120;
     declare_prop(&mut panel, "kind");
+    declare_event(&mut panel, "close");
 
     let mut forwarder = Croquis::new();
     forwarder.template_info.root_element_count = 1;

@@ -16,6 +16,7 @@ pub struct FallthroughSummary {
     pub multi_root_without_attrs_count: usize,
     pub passed_attr_count: usize,
     pub declared_prop_count: usize,
+    pub declared_event_count: usize,
     pub undeclared_passed_attr_count: usize,
     pub consumed_fallthrough_attr_count: usize,
     pub unconsumed_fallthrough_attr_count: usize,
@@ -60,6 +61,7 @@ pub fn summarize_fallthrough(infos: &[FallthroughInfo]) -> FallthroughSummary {
 
         summary.passed_attr_count += info.passed_attrs.len();
         summary.declared_prop_count += info.declared_props.len();
+        summary.declared_event_count += info.declared_events.len();
         summary.undeclared_passed_attr_count += info.fallthrough_attr_count();
         summary.consumed_fallthrough_attr_count += info.consumed_fallthrough_attr_count();
         summary.unconsumed_fallthrough_attr_count += info.unconsumed_fallthrough_attr_count();
@@ -94,7 +96,9 @@ mod tests {
                 binds_attrs: false,
                 root_element_count: 2,
                 passed_attrs: set(&["title", "kind"]),
+                fallthrough_attrs: set(&["title"]),
                 declared_props: set(&["kind"]),
+                declared_events: FxHashSet::default(),
                 template_start: 0,
                 template_end: 10,
             },
@@ -105,7 +109,9 @@ mod tests {
                 binds_attrs: false,
                 root_element_count: 1,
                 passed_attrs: set(&["class"]),
+                fallthrough_attrs: set(&["class"]),
                 declared_props: FxHashSet::default(),
+                declared_events: FxHashSet::default(),
                 template_start: 0,
                 template_end: 10,
             },
@@ -116,7 +122,9 @@ mod tests {
                 binds_attrs: true,
                 root_element_count: 3,
                 passed_attrs: FxHashSet::default(),
+                fallthrough_attrs: FxHashSet::default(),
                 declared_props: FxHashSet::default(),
+                declared_events: FxHashSet::default(),
                 template_start: 0,
                 template_end: 10,
             },
@@ -135,6 +143,7 @@ mod tests {
         assert_eq!(summary.multi_root_without_attrs_count, 1);
         assert_eq!(summary.passed_attr_count, 3);
         assert_eq!(summary.declared_prop_count, 1);
+        assert_eq!(summary.declared_event_count, 0);
         assert_eq!(summary.undeclared_passed_attr_count, 2);
         assert_eq!(summary.consumed_fallthrough_attr_count, 1);
         assert_eq!(summary.unconsumed_fallthrough_attr_count, 1);
@@ -146,6 +155,7 @@ mod tests {
         let json = serde_json::to_value(summary).unwrap();
         assert_eq!(json["componentCount"], 3);
         assert_eq!(json["componentsWithPotentialIssues"], 1);
+        assert_eq!(json["declaredEventCount"], 0);
         assert_eq!(json["safeStandardFallthroughAttrCount"], 2);
     }
 
@@ -159,7 +169,9 @@ mod tests {
                 binds_attrs: false,
                 root_element_count: 1,
                 passed_attrs: set(&["class", "data-testid", "onClick"]),
+                fallthrough_attrs: set(&["class", "data-testid", "onClick"]),
                 declared_props: FxHashSet::default(),
+                declared_events: FxHashSet::default(),
                 template_start: 0,
                 template_end: 10,
             },
@@ -170,7 +182,9 @@ mod tests {
                 binds_attrs: false,
                 root_element_count: 2,
                 passed_attrs: set(&["aria-label", "trackingId"]),
+                fallthrough_attrs: set(&["aria-label", "trackingId"]),
                 declared_props: FxHashSet::default(),
+                declared_events: FxHashSet::default(),
                 template_start: 0,
                 template_end: 10,
             },
@@ -184,5 +198,31 @@ mod tests {
         assert_eq!(summary.unconsumed_fallthrough_attr_count, 2);
         assert_eq!(summary.safe_standard_fallthrough_attr_count, 4);
         assert_eq!(summary.risky_unconsumed_fallthrough_attr_count, 1);
+    }
+
+    #[test]
+    fn summary_excludes_declared_event_listeners_from_fallthrough_counts() {
+        let infos = vec![FallthroughInfo {
+            file_id: FileId::new(1),
+            inherit_attrs_disabled: false,
+            uses_attrs: false,
+            binds_attrs: false,
+            root_element_count: 2,
+            passed_attrs: set(&["onSaveItem", "onClick"]),
+            fallthrough_attrs: set(&["onClick"]),
+            declared_props: FxHashSet::default(),
+            declared_events: set(&["save-item"]),
+            template_start: 0,
+            template_end: 10,
+        }];
+
+        let summary = summarize_fallthrough(&infos);
+
+        assert_eq!(summary.passed_attr_count, 2);
+        assert_eq!(summary.declared_event_count, 1);
+        assert_eq!(summary.undeclared_passed_attr_count, 1);
+        assert_eq!(summary.unconsumed_fallthrough_attr_count, 1);
+        assert_eq!(summary.safe_standard_fallthrough_attr_count, 1);
+        assert_eq!(summary.risky_unconsumed_fallthrough_attr_count, 0);
     }
 }

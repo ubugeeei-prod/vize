@@ -3,7 +3,8 @@ use crate::diagnostics::CrossFileDiagnosticKind;
 use crate::graph::{DependencyEdge, DependencyGraph, ModuleNode};
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::{CompactString, smallvec};
-use vize_croquis::analysis::{ComponentUsage, PassedProp};
+use vize_croquis::analysis::{ComponentUsage, EventListener, PassedProp};
+use vize_croquis::macros::EmitDefinition;
 use vize_croquis::{Croquis, ScopeId};
 
 fn passed_prop_at(name: &str, start: u32, end: u32, is_dynamic: bool) -> PassedProp {
@@ -174,5 +175,56 @@ fn spread_attrs_are_safe_when_multi_root_component_binds_attrs() {
     assert!(diagnostics.iter().all(|diagnostic| !matches!(
         diagnostic.kind,
         CrossFileDiagnosticKind::MultiRootMissingAttrs
+    )));
+}
+
+#[test]
+fn declared_emit_listener_does_not_create_fallthrough_diagnostics() {
+    let mut registry = ModuleRegistry::new();
+
+    let mut parent_analysis = Croquis::new();
+    parent_analysis.component_usages.push(ComponentUsage {
+        name: CompactString::new("Panel"),
+        start: 10,
+        end: 40,
+        props: smallvec![],
+        events: smallvec![EventListener {
+            name: CompactString::new("close-dialog"),
+            handler: None,
+            modifiers: smallvec![],
+            start: 17,
+            end: 35,
+        }],
+        slots: smallvec![],
+        has_spread_attrs: false,
+        scope_id: ScopeId::ROOT,
+        vif_guard: None,
+    });
+    let mut panel_analysis = Croquis::new();
+    panel_analysis.template_info.root_element_count = 2;
+    panel_analysis.macros.add_emit(EmitDefinition {
+        name: CompactString::new("closeDialog"),
+        payload_type: None,
+    });
+
+    let (parent_id, _) = registry.register("Parent.vue", "", parent_analysis);
+    let (panel_id, _) = registry.register("Panel.vue", "", panel_analysis);
+
+    let mut graph = DependencyGraph::new();
+    graph.add_node(graph_node(parent_id, "Parent.vue", "Parent"));
+    graph.add_node(graph_node(panel_id, "Panel.vue", "Panel"));
+    graph.add_edge(parent_id, panel_id, DependencyEdge::ComponentUsage);
+
+    let (infos, diagnostics) = analyze_fallthrough(&registry, &graph);
+    let panel = infos
+        .iter()
+        .find(|info| info.file_id == panel_id)
+        .expect("panel info should be retained");
+    assert_eq!(panel.passed_attrs.len(), 1);
+    assert_eq!(panel.fallthrough_attr_count(), 0);
+    assert!(diagnostics.iter().all(|diagnostic| !matches!(
+        diagnostic.kind,
+        CrossFileDiagnosticKind::MultiRootMissingAttrs
+            | CrossFileDiagnosticKind::UnusedFallthroughAttrs { .. }
     )));
 }

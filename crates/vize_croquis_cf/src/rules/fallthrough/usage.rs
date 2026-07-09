@@ -1,9 +1,9 @@
 use crate::graph::{DependencyEdge, DependencyGraph};
 use crate::registry::{FileId, ModuleRegistry};
 use serde::Serialize;
-use vize_carton::{CompactString, FxHashSet, cstr};
+use vize_carton::{CompactString, FxHashSet, camelize, cstr};
 
-use super::is_standard_html_attr;
+use super::{is_declared_event, is_standard_html_attr};
 
 /// One parent template usage of a child component and the attrs it passes.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -28,6 +28,7 @@ pub struct FallthroughUsageAttrFact {
     pub source_end: u32,
     pub dynamic: bool,
     pub declared_prop: bool,
+    pub declared_event: bool,
     pub standard_html_attr: bool,
     pub fallthrough: bool,
 }
@@ -55,6 +56,7 @@ pub(super) fn collect_fallthrough_usage_facts(
                 continue;
             };
             let declared_props = declared_props_for(registry, *child_id);
+            let declared_events = declared_events_for(registry, *child_id);
 
             for usage in &parent_entry.analysis.component_usages {
                 if graph.find_by_component(usage.name.as_str()) != Some(*child_id) {
@@ -71,9 +73,11 @@ pub(super) fn collect_fallthrough_usage_facts(
                         prop.end,
                         prop.is_dynamic,
                         &declared_props,
+                        false,
                     )
                 }));
                 attrs.extend(usage.events.iter().map(|event| {
+                    let declared_event = is_declared_event(&declared_events, event.name.as_str());
                     usage_attr_fact(
                         listener_attr_name(event.name.as_str()),
                         FallthroughUsageAttrKind::Listener,
@@ -81,6 +85,7 @@ pub(super) fn collect_fallthrough_usage_facts(
                         event.end,
                         true,
                         &declared_props,
+                        declared_event,
                     )
                 }));
 
@@ -115,17 +120,19 @@ fn usage_attr_fact(
     source_end: u32,
     dynamic: bool,
     declared_props: &FxHashSet<CompactString>,
+    declared_event: bool,
 ) -> FallthroughUsageAttrFact {
     let declared_prop = declared_props.contains(&name);
     FallthroughUsageAttrFact {
         standard_html_attr: is_standard_html_attr(name.as_str()),
-        fallthrough: !declared_prop,
+        fallthrough: !declared_prop && !declared_event,
         name,
         kind,
         source_start,
         source_end,
         dynamic,
         declared_prop,
+        declared_event,
     }
 }
 
@@ -144,7 +151,23 @@ fn declared_props_for(registry: &ModuleRegistry, child_id: FileId) -> FxHashSet<
         .unwrap_or_default()
 }
 
+fn declared_events_for(registry: &ModuleRegistry, child_id: FileId) -> FxHashSet<CompactString> {
+    registry
+        .get(child_id)
+        .map(|entry| {
+            entry
+                .analysis
+                .macros
+                .emits()
+                .iter()
+                .map(|event| event.name.clone())
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 fn listener_attr_name(event_name: &str) -> CompactString {
+    let event_name = camelize(event_name);
     let mut chars = event_name.chars();
     let Some(first) = chars.next() else {
         return cstr!("on");

@@ -8,7 +8,7 @@
 use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
 use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleRegistry};
-use vize_carton::{CompactString, FxHashMap, FxHashSet, cstr};
+use vize_carton::{CompactString, FxHashMap, FxHashSet, camelize, cstr};
 
 mod component;
 mod info;
@@ -16,59 +16,9 @@ mod summary;
 mod usage;
 
 pub use component::{FallthroughComponentFact, collect_fallthrough_component_facts};
+pub use info::FallthroughInfo;
 pub use summary::{FallthroughSummary, summarize_fallthrough};
 pub use usage::*;
-
-/// Information about fallthrough attributes for a component.
-#[derive(Debug, Clone)]
-pub struct FallthroughInfo {
-    /// File ID of the component.
-    pub file_id: FileId,
-    /// Whether `inheritAttrs: false` is set.
-    pub inherit_attrs_disabled: bool,
-    /// Whether $attrs is used in template.
-    pub uses_attrs: bool,
-    /// Whether $attrs is explicitly bound (v-bind="$attrs").
-    pub binds_attrs: bool,
-    /// Number of root elements in template.
-    pub root_element_count: usize,
-    /// Attributes passed by parent components.
-    pub passed_attrs: FxHashSet<CompactString>,
-    /// Props declared by this component.
-    pub declared_props: FxHashSet<CompactString>,
-    /// Template content start offset (relative to template block).
-    pub template_start: u32,
-    /// Template content end offset (relative to template block).
-    pub template_end: u32,
-}
-
-impl FallthroughInfo {
-    /// Check if fallthrough may cause issues.
-    pub fn has_potential_issues(&self) -> bool {
-        // Multiple roots without explicit $attrs
-        if self.root_element_count > 1 && !self.binds_attrs {
-            return true;
-        }
-
-        // inheritAttrs: false but $attrs not used
-        if self.inherit_attrs_disabled && !self.uses_attrs && !self.binds_attrs {
-            return true;
-        }
-
-        // Attributes passed that aren't props
-        let fallthrough_attrs: Vec<_> = self
-            .passed_attrs
-            .iter()
-            .filter(|attr| !self.declared_props.contains(*attr))
-            .collect();
-
-        if !fallthrough_attrs.is_empty() && !self.uses_attrs && self.root_element_count > 1 {
-            return true;
-        }
-
-        false
-    }
-}
 
 /// Analyze fallthrough attributes across the component graph.
 pub fn analyze_fallthrough(
@@ -95,6 +45,12 @@ pub fn analyze_fallthrough(
             .iter()
             .map(|p| p.name.clone())
             .collect();
+        let declared_events: FxHashSet<_> = analysis
+            .macros
+            .emits()
+            .iter()
+            .map(|event| event.name.clone())
+            .collect();
 
         let info = FallthroughInfo {
             file_id: entry.id,
@@ -103,7 +59,9 @@ pub fn analyze_fallthrough(
             binds_attrs: template_info.binds_attrs_explicitly,
             root_element_count: template_info.root_element_count,
             passed_attrs: FxHashSet::default(), // Will be filled later
+            fallthrough_attrs: FxHashSet::default(), // Will be filled later
             declared_props,
+            declared_events,
             template_start: template_info.content_start,
             template_end: template_info.content_end,
         };
@@ -115,6 +73,8 @@ pub fn analyze_fallthrough(
     let usage_facts = collect_fallthrough_usage_facts(registry, graph);
     let mut passed_attrs_map: FxHashMap<FileId, FxHashMap<FileId, FxHashSet<CompactString>>> =
         FxHashMap::default();
+    let mut fallthrough_attrs_map: FxHashMap<FileId, FxHashSet<CompactString>> =
+        FxHashMap::default();
     let mut fallthrough_related_map: FxHashMap<FileId, Vec<FallthroughUsageRelated>> =
         FxHashMap::default();
     for fact in &usage_facts {
@@ -124,6 +84,15 @@ pub fn analyze_fallthrough(
             .entry(fact.parent_file_id)
             .or_default();
         attrs.extend(fact.attrs.iter().map(|attr| attr.name.clone()));
+        fallthrough_attrs_map
+            .entry(fact.child_file_id)
+            .or_default()
+            .extend(
+                fact.attrs
+                    .iter()
+                    .filter(|attr| attr.fallthrough)
+                    .map(|attr| attr.name.clone()),
+            );
 
         let related = fallthrough_related_map
             .entry(fact.child_file_id)
@@ -155,6 +124,9 @@ pub fn analyze_fallthrough(
             for attrs in parent_attrs.values() {
                 info.passed_attrs.extend(attrs.iter().cloned());
             }
+        }
+        if let Some(attrs) = fallthrough_attrs_map.get(&info.file_id) {
+            info.fallthrough_attrs.extend(attrs.iter().cloned());
         }
     }
 
@@ -209,16 +181,13 @@ pub fn analyze_fallthrough(
         }
 
         // Check for unused fallthrough attributes
-        let unused_attrs: Vec<_> = info
-            .passed_attrs
+        let mut unused_attrs: Vec<_> = info
+            .fallthrough_attrs
             .iter()
-            .filter(|attr| {
-                !info.declared_props.contains(*attr)
-                    && !is_standard_html_attr(attr)
-                    && !info.uses_attrs
-            })
+            .filter(|attr| !is_standard_html_attr(attr) && !info.uses_attrs)
             .cloned()
             .collect();
+        unused_attrs.sort_unstable();
 
         if !unused_attrs.is_empty() && !info.binds_attrs && info.root_element_count > 1 {
             // Use offset 0 to point to <template> tag start (wasm.rs adds tag_start offset)
@@ -297,6 +266,13 @@ fn is_listener_attr(attr: &str) -> bool {
     attr.strip_prefix("on")
         .and_then(|suffix| suffix.chars().next())
         .is_some_and(|first| first.is_ascii_uppercase())
+}
+
+fn is_declared_event(declared_events: &FxHashSet<CompactString>, event_name: &str) -> bool {
+    let normalized = camelize(event_name);
+    declared_events.iter().any(|declared| {
+        declared.as_str() == event_name || camelize(declared.as_str()) == normalized
+    })
 }
 
 struct FallthroughUsageRelated {

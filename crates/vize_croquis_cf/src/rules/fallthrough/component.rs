@@ -17,12 +17,14 @@ pub struct FallthroughComponentFact {
     pub listener_attr_count: usize,
     pub dynamic_attr_count: usize,
     pub declared_prop_attr_count: usize,
+    pub declared_event_attr_count: usize,
     pub fallthrough_attr_count: usize,
     pub consumed_fallthrough_attr_count: usize,
     pub unconsumed_fallthrough_attr_count: usize,
     pub safe_standard_fallthrough_attr_count: usize,
     pub risky_unconsumed_fallthrough_attr_count: usize,
     pub declared_prop_count: usize,
+    pub declared_event_count: usize,
     pub root_element_count: usize,
     pub inherit_attrs_disabled: bool,
     pub uses_attrs: bool,
@@ -43,12 +45,14 @@ impl Default for FallthroughComponentFact {
             listener_attr_count: 0,
             dynamic_attr_count: 0,
             declared_prop_attr_count: 0,
+            declared_event_attr_count: 0,
             fallthrough_attr_count: 0,
             consumed_fallthrough_attr_count: 0,
             unconsumed_fallthrough_attr_count: 0,
             safe_standard_fallthrough_attr_count: 0,
             risky_unconsumed_fallthrough_attr_count: 0,
             declared_prop_count: 0,
+            declared_event_count: 0,
             root_element_count: 0,
             inherit_attrs_disabled: false,
             uses_attrs: false,
@@ -86,6 +90,7 @@ pub fn collect_fallthrough_component_facts(
             fact.usage_attr_count += 1;
             fact.dynamic_attr_count += usize::from(attr.dynamic);
             fact.declared_prop_attr_count += usize::from(attr.declared_prop);
+            fact.declared_event_attr_count += usize::from(attr.declared_event);
             match attr.kind {
                 FallthroughUsageAttrKind::Prop => fact.prop_attr_count += 1,
                 FallthroughUsageAttrKind::Listener => fact.listener_attr_count += 1,
@@ -111,6 +116,7 @@ impl FallthroughComponentFact {
             safe_standard_fallthrough_attr_count: info.safe_standard_fallthrough_attr_count(),
             risky_unconsumed_fallthrough_attr_count: info.risky_unconsumed_fallthrough_attr_count(),
             declared_prop_count: info.declared_props.len(),
+            declared_event_count: info.declared_events.len(),
             root_element_count: info.root_element_count,
             inherit_attrs_disabled: info.inherit_attrs_disabled,
             uses_attrs: info.uses_attrs,
@@ -136,6 +142,7 @@ mod tests {
         kind: FallthroughUsageAttrKind,
         dynamic: bool,
         declared_prop: bool,
+        declared_event: bool,
         standard_html_attr: bool,
     ) -> FallthroughUsageAttrFact {
         FallthroughUsageAttrFact {
@@ -145,8 +152,9 @@ mod tests {
             source_end: 0,
             dynamic,
             declared_prop,
+            declared_event,
             standard_html_attr,
-            fallthrough: !declared_prop,
+            fallthrough: !declared_prop && !declared_event,
         }
     }
 
@@ -160,7 +168,9 @@ mod tests {
             binds_attrs: false,
             root_element_count: 2,
             passed_attrs: set(&["kind", "trackingId", "onClose"]),
+            fallthrough_attrs: set(&["trackingId"]),
             declared_props: set(&["kind"]),
+            declared_events: set(&["close"]),
             template_start: 0,
             template_end: 10,
         }];
@@ -173,11 +183,19 @@ mod tests {
                 usage_end: 0,
                 has_spread_attrs: true,
                 attrs: vec![
-                    attr("kind", FallthroughUsageAttrKind::Prop, false, true, false),
+                    attr(
+                        "kind",
+                        FallthroughUsageAttrKind::Prop,
+                        false,
+                        true,
+                        false,
+                        false,
+                    ),
                     attr(
                         "trackingId",
                         FallthroughUsageAttrKind::Prop,
                         true,
+                        false,
                         false,
                         false,
                     ),
@@ -196,6 +214,7 @@ mod tests {
                     true,
                     false,
                     true,
+                    true,
                 )],
             },
         ];
@@ -212,14 +231,18 @@ mod tests {
         assert_eq!(fact.listener_attr_count, 1);
         assert_eq!(fact.dynamic_attr_count, 2);
         assert_eq!(fact.declared_prop_attr_count, 1);
-        assert_eq!(fact.fallthrough_attr_count, 2);
-        assert_eq!(fact.safe_standard_fallthrough_attr_count, 1);
+        assert_eq!(fact.declared_event_attr_count, 1);
+        assert_eq!(fact.declared_event_count, 1);
+        assert_eq!(fact.fallthrough_attr_count, 1);
+        assert_eq!(fact.safe_standard_fallthrough_attr_count, 0);
         assert_eq!(fact.risky_unconsumed_fallthrough_attr_count, 1);
         assert!(fact.has_potential_issues);
 
         let json = serde_json::to_value(fact).unwrap();
         assert_eq!(json["spreadUsageCount"], 1);
         assert_eq!(json["listenerAttrCount"], 1);
+        assert_eq!(json["declaredEventAttrCount"], 1);
+        assert_eq!(json["declaredEventCount"], 1);
     }
 
     #[test]
@@ -231,7 +254,9 @@ mod tests {
             binds_attrs: false,
             root_element_count: 1,
             passed_attrs: FxHashSet::default(),
+            fallthrough_attrs: FxHashSet::default(),
             declared_props: set(&["kind"]),
+            declared_events: FxHashSet::default(),
             template_start: 0,
             template_end: 10,
         }];
