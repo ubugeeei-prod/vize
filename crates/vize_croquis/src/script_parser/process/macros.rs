@@ -22,8 +22,9 @@ use super::super::extract::{
     check_getter_call_extraction, check_reactive_plain_alias_extraction,
     check_reactive_property_extraction, check_ref_value_extraction, detect_reactivity_call,
     detect_setup_context_violation, extract_argument_source, extract_call_expression,
-    extract_provide_key, get_binding_type_from_kind, process_call_expression,
-    record_getter_context_from_call, record_static_runtime_object_literal,
+    extract_inject_expected_type_from_init as inject_type, extract_provide_key,
+    get_binding_type_from_kind, process_call_expression, record_getter_context_from_call,
+    record_static_runtime_object_literal,
 };
 use super::super::walk::{walk_call_arguments, walk_expression};
 use super::super::{ReactiveValueOrigin, ScriptParseResult};
@@ -111,13 +112,12 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             .get(1)
                             .map(|arg| CompactString::new(extract_argument_source(arg, source)));
                         let local_name = CompactString::new(name);
-                        // Track inject variable name for indirect destructure detection
                         result.inject_var_names.insert(local_name.clone());
                         result.provide_inject.add_inject(
                             key,
                             local_name, // local_name is the binding name
                             default_value,
-                            None, // expected_type
+                            inject_type(declarator.init.as_ref(), call, source),
                             InjectPattern::Simple,
                             None, // from_composable
                             call.span.start,
@@ -332,7 +332,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         call.arguments
                             .get(1)
                             .map(|arg| CompactString::new(extract_argument_source(arg, source))),
-                        None,
+                        inject_type(declarator.init.as_ref(), call, source),
                         InjectPattern::ObjectDestructure(destructured_props.clone()),
                         None,
                         call.span.start,
@@ -351,7 +351,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         call.arguments
                             .get(1)
                             .map(|arg| CompactString::new(extract_argument_source(arg, source))),
-                        None,
+                        inject_type(None, call, source),
                         InjectPattern::Simple,
                         None,
                         call.span.start,
@@ -565,7 +565,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         call.arguments
                             .get(1)
                             .map(|arg| CompactString::new(extract_argument_source(arg, source))),
-                        None,
+                        inject_type(declarator.init.as_ref(), call, source),
                         InjectPattern::ArrayDestructure(destructured_items),
                         None,
                         call.span.start,
@@ -584,7 +584,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         call.arguments
                             .get(1)
                             .map(|arg| CompactString::new(extract_argument_source(arg, source))),
-                        None,
+                        inject_type(None, call, source),
                         InjectPattern::Simple,
                         None,
                         call.span.start,

@@ -26,6 +26,7 @@ pub use plain_values::{
     check_ref_value_extraction, detect_call_argument_reactivity_loss,
     record_getter_context_from_call,
 };
+pub(in crate::script_parser) use provide::extract_inject_expected_type_from_init;
 pub use provide::{detect_provide_inject_call, extract_argument_source, extract_provide_key};
 pub use race::detect_race_condition_call;
 pub use reactivity::{detect_reactivity_call, detect_setup_context_violation};

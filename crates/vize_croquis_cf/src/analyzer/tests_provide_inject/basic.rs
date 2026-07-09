@@ -100,6 +100,139 @@ provide(ThemeKey, 'dark')"#,
 }
 
 #[test]
+fn test_provide_inject_records_explicit_types() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+
+    analyzer.add_file(
+        Path::new("Typed.ts"),
+        r#"import { inject, provide } from 'vue'
+type Theme = { mode: 'dark' | 'light' }
+const ThemeKey = Symbol('theme')
+provide(ThemeKey, ({ mode: 'dark' } as Theme))
+const theme = inject<Theme>(ThemeKey)"#,
+    );
+
+    let _result = analyzer.analyze();
+    let analysis = analyzer
+        .get_analysis(analyzer.registry().iter().next().unwrap().id)
+        .unwrap();
+
+    assert_eq!(
+        analysis.provide_inject.provides()[0].value_type.as_deref(),
+        Some("Theme")
+    );
+    assert_eq!(
+        analysis.provide_inject.injects()[0]
+            .expected_type
+            .as_deref(),
+        Some("Theme")
+    );
+}
+
+#[test]
+fn test_provide_inject_type_match_uses_explicit_types() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+
+    analyzer.add_file_with_analysis(
+        Path::new("Parent.vue"),
+        "",
+        script_analysis(
+            r#"import { provide } from 'vue'
+type Theme = { mode: string }
+const ThemeKey = Symbol('theme')
+provide(ThemeKey, ({ mode: 'dark' } as Theme))"#,
+            &["Child"],
+        ),
+    );
+    analyzer.add_file_with_analysis(
+        Path::new("Child.vue"),
+        "",
+        script_analysis(
+            r#"import { inject } from 'vue'
+type Theme = { mode: string }
+const ThemeKey = Symbol('theme')
+const theme = inject<Theme>(ThemeKey)"#,
+            &[],
+        ),
+    );
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+
+    assert_eq!(result.provide_inject_matches.len(), 1);
+    assert_eq!(result.provide_inject_matches[0].type_match, Some(true));
+    assert!(result.diagnostics.iter().all(|diagnostic| !matches!(
+        diagnostic.kind,
+        crate::diagnostics::CrossFileDiagnosticKind::ProvideInjectTypeMismatch { .. }
+    )));
+}
+
+#[test]
+fn test_provide_inject_type_mismatch_reports_related_provider() {
+    use crate::diagnostics::CrossFileDiagnosticKind;
+
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+
+    let provider = analyzer.add_file_with_analysis(
+        Path::new("Parent.vue"),
+        "",
+        script_analysis(
+            r#"import { provide } from 'vue'
+type Theme = { mode: string }
+const ThemeKey = Symbol('theme')
+provide(ThemeKey, ({ mode: 'dark' } as Theme))"#,
+            &["Child"],
+        ),
+    );
+    analyzer.add_file_with_analysis(
+        Path::new("Child.vue"),
+        "",
+        script_analysis(
+            r#"import { inject } from 'vue'
+type ThemeRef = { mode: string }
+const ThemeKey = Symbol('theme')
+const theme = inject<ThemeRef>(ThemeKey)"#,
+            &[],
+        ),
+    );
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+
+    assert_eq!(result.provide_inject_matches.len(), 1);
+    assert_eq!(result.provide_inject_matches[0].type_match, Some(false));
+
+    let diagnostic = result
+        .diagnostics
+        .iter()
+        .find(|diagnostic| {
+            matches!(
+                diagnostic.kind,
+                CrossFileDiagnosticKind::ProvideInjectTypeMismatch { .. }
+            )
+        })
+        .expect("type mismatch diagnostic");
+
+    match &diagnostic.kind {
+        CrossFileDiagnosticKind::ProvideInjectTypeMismatch {
+            key,
+            provided_type,
+            injected_type,
+        } => {
+            assert_eq!(key.as_str(), "ThemeKey");
+            assert_eq!(provided_type.as_str(), "Theme");
+            assert_eq!(injected_type.as_str(), "ThemeRef");
+        }
+        other => panic!("unexpected diagnostic: {other:?}"),
+    }
+    assert_eq!(diagnostic.related_files.len(), 1);
+    assert_eq!(diagnostic.related_files[0].0, provider);
+}
+
+#[test]
 fn test_inject_with_default_value() {
     let mut analyzer =
         CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));

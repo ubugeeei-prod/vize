@@ -188,6 +188,44 @@ pub(crate) fn analyze_provide_inject_with_index(
                         provider_match.provider_id,
                         provider_match.provide.id.as_u32(),
                     ));
+                    let type_match = provide_inject_type_match(
+                        provider_match.provide.value_type.as_ref(),
+                        inject.expected_type.as_ref(),
+                    );
+
+                    if let Some(false) = type_match {
+                        let provided_type = provider_match
+                            .provide
+                            .value_type
+                            .clone()
+                            .expect("mismatched type requires provider type");
+                        let injected_type = inject
+                            .expected_type
+                            .clone()
+                            .expect("mismatched type requires inject type");
+                        diagnostics.push(
+                            CrossFileDiagnostic::new(
+                                CrossFileDiagnosticKind::ProvideInjectTypeMismatch {
+                                    key: key_str.clone(),
+                                    provided_type,
+                                    injected_type,
+                                },
+                                DiagnosticSeverity::Warning,
+                                consumer_id,
+                                inject.start,
+                                cstr!(
+                                    "inject('{}') expects a different type than its nearest provide()",
+                                    key_str
+                                ),
+                            )
+                            .with_end_offset(inject.end)
+                            .with_related(
+                                provider_match.provider_id,
+                                provider_match.provide.start,
+                                cstr!("provide('{key_str}') source"),
+                            ),
+                        );
+                    }
 
                     matches.push(ProvideInjectMatch {
                         provider: provider_match.provider_id,
@@ -195,7 +233,7 @@ pub(crate) fn analyze_provide_inject_with_index(
                         key: key_str.clone(),
                         key_identity: provide_key_identity(&inject.key),
                         path: provider_match.path,
-                        type_match: None, // Would need type analysis
+                        type_match,
                         provide_offset: provider_match.provide.start,
                         inject_offset: inject.start,
                     });
@@ -231,6 +269,22 @@ pub(crate) fn analyze_provide_inject_with_index(
     }
 
     (matches, diagnostics)
+}
+
+fn provide_inject_type_match(
+    provided_type: Option<&CompactString>,
+    injected_type: Option<&CompactString>,
+) -> Option<bool> {
+    Some(types_equal_ignoring_ascii_whitespace(
+        provided_type?.as_str(),
+        injected_type?.as_str(),
+    ))
+}
+
+fn types_equal_ignoring_ascii_whitespace(left: &str, right: &str) -> bool {
+    left.chars()
+        .filter(|ch| !ch.is_ascii_whitespace())
+        .eq(right.chars().filter(|ch| !ch.is_ascii_whitespace()))
 }
 
 fn with_provider_relateds(
