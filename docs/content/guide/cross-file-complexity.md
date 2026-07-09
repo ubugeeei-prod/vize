@@ -50,8 +50,16 @@ This means a shallow-looking component can still produce a high score when it fo
 drills props, or depends on a deep provide/inject path. The Playground's Cross-file mode shows the
 score beside diagnostics so those signals are visible while editing fixtures.
 
+## Hotspots
+
+The report also exposes ranked hotspots so tools can point to the files/components that create the
+score instead of showing only one project-level number. Each hotspot carries the local score input,
+dimension scores, total score, and dominant dimension. Use `dominantDimension` to explain why the
+entry is high, then use `input` to show the raw signal that drove it.
+
 ## Current Surface
 
 The public JSON shape is available from the WASM cross-file binding as
-`CrossFileResult.complexityReport`. The CLI does not fail builds on this score yet. Use the report as
-an exploratory signal, then promote stable thresholds only after project-specific baselines exist.
+`CrossFileResult.complexityReport` and `CrossFileResult.complexityHotspots`. The CLI does not fail
+builds on this score yet. Use the report as an exploratory signal, then promote stable thresholds
+only after project-specific baselines exist.
