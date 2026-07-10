@@ -8,9 +8,9 @@
 //! DOM/SSR/Vapor/SFC assembly can grow onto so structure is registered while
 //! emitting instead of recovered by scanning generated code later.
 
-use crate::rendu::{RenduModuleSections, RenduPlate};
-use crate::source_atlas::{SourceAtlasFallback, SourceAtlasFallbackSet, SourceAtlasTarget};
+use vize_atlas::{SourceAtlasFallback, SourceAtlasFallbackSet, SourceAtlasTarget};
 use vize_carton::String;
+use vize_rendu::{RenduModuleSections, RenduPlate};
 
 /// Structured target output before it is flattened to a single module string.
 #[derive(Debug, Clone, Default, Eq, PartialEq)]

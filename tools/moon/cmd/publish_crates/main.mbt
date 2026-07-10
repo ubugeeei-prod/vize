@@ -17,18 +17,14 @@ let published_crates : Array[String] = [
   "vize_relief",
   "vize_armature",
   "vize_croquis",
-  "vize_atelier_core",
-  "vize_atelier_dom",
-  "vize_atelier_vapor",
-  "vize_atelier_ssr",
-  "vize_atelier_sfc",
-  "vize_musea",
   "vize_fresco",
 ]
 
 /// Publishable crates that need one manual owner-token publish before GitHub
 /// Trusted Publishing can take over subsequent versions.
 let pending_first_publish_crates : Array[String] = [
+  "vize_atlas",
+  "vize_rendu",
   "vize_croquis_cf",
   "vize_atelier_jsx",
 ]
@@ -36,6 +32,12 @@ let pending_first_publish_crates : Array[String] = [
 /// Existing crates whose current version depends on a crate that still needs
 /// its manual first publish.
 let blocked_by_pending_first_publish_crates : Array[String] = [
+  "vize_atelier_core",
+  "vize_atelier_dom",
+  "vize_atelier_vapor",
+  "vize_atelier_ssr",
+  "vize_atelier_sfc",
+  "vize_musea",
   "vize_canon",
   "vize_patina",
 ]

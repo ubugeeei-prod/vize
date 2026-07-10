@@ -9,7 +9,8 @@ mod item_props;
 mod item_props_merge;
 
 use crate::steps::v_memo::{get_memo_exp, has_v_memo};
-use crate::{ForNode, RuntimeHelper, TemplateChildNode, rendu::RenduOp};
+use crate::{ForNode, RuntimeHelper, TemplateChildNode};
+use vize_rendu::RenduOp;
 
 use super::{
     children::generate_children, context::CodegenContext, expression::generate_expression,

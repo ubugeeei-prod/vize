@@ -1,4 +1,4 @@
-//! Cheap Source Atlas request notes.
+//! Cheap, cross-tool Source Atlas request notes.
 
 use super::{
     PlateFamily, PlateFamilySet, SourceAtlasCoordinate, SourceAtlasFallback,

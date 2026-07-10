@@ -1,11 +1,15 @@
-//! Internal Source Atlas vocabulary.
+//! # vize_atlas
+//!
+//! Source Atlas is the neutral request ledger for Vize's multi-input,
+//! multi-output toolchain. It names source kinds, product lanes, compatibility
+//! coordinates, requested plate families, targets, and fallbacks without
+//! owning syntax, semantic analysis, or render lowering.
 //!
 //! These types name the plates and coordinates that Vize tools can request
 //! without implying that every plate must be built. Keep this layer `Copy`,
 //! allocation-free, and cheap enough to thread through profile/fallback facts.
 
 mod coordinate;
-mod croquis;
 mod fallback;
 mod family;
 mod registry;
@@ -13,7 +17,6 @@ mod report;
 mod route;
 
 pub use coordinate::SourceAtlasCoordinate;
-pub use croquis::{CroquisFact, CroquisFactSet};
 pub use fallback::{SourceAtlasFallback, SourceAtlasFallbackSet};
 pub use family::{PlateFamily, PlateFamilySet};
 pub use registry::{SourceAtlasLane, SourceAtlasRegistry};

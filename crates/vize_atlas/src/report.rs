@@ -1,4 +1,4 @@
-//! Human-facing fallback and plate-request reports.
+//! Human-facing Source Atlas fallback and plate-request reports.
 //!
 //! Fallback and plate facts are recorded as cheap profile counters on the hot
 //! path. This module turns a recorded [`SourceAtlasFallbackSet`] or
@@ -116,7 +116,7 @@ mod tests {
 
     #[test]
     fn compiler_registry_report_lists_requests_and_fallbacks() {
-        use crate::source_atlas::{
+        use crate::{
             SourceAtlasCoordinate, SourceAtlasPlate, SourceAtlasSource, SourceAtlasTarget,
         };
         use vize_carton::config::VueVersion;
@@ -144,7 +144,7 @@ mod tests {
 
     #[test]
     fn each_lane_report_names_its_lane_and_a_clean_run_has_no_fallbacks() {
-        use crate::source_atlas::{SourceAtlasLane, SourceAtlasPlate};
+        use crate::{SourceAtlasLane, SourceAtlasPlate};
 
         let lanes = [
             (SourceAtlasLane::Compiler, "atelier.profile.lane.compiler"),

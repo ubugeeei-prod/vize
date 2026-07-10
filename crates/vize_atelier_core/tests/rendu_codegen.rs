@@ -3,8 +3,8 @@ use vize_atelier_core::{
     codegen::{CodegenResult, generate},
     lane::transform,
     parse,
-    rendu::{RenduElementKind, RenduOp, walk_rendu_ops},
 };
+use vize_rendu::{RenduElementKind, RenduOp, walk_rendu_ops};
 
 #[derive(Default)]
 struct ObservedOps {
@@ -115,4 +115,44 @@ fn control_flow_and_slot_prop_emitters_record_rendu_attribute_names() {
             "source={source}\nmap={map}"
         );
     }
+}
+
+#[test]
+fn transformed_control_flow_preserves_structure_and_for_aliases_in_rendu() {
+    let allocator = Allocator::default();
+    let source = concat!(
+        "<div v-if=\"ok\">A</div><p v-else>B</p>",
+        "<li v-for=\"(item, key, index) in items\">{{ item }}</li>",
+    );
+    let (mut root, errors) = parse(&allocator, source);
+    assert!(errors.is_empty(), "parse errors: {errors:?}");
+    let transformed = transform(&allocator, &mut root, TransformOptions::default(), None);
+    assert!(transformed.errors.is_empty());
+
+    let mut if_branches = 0;
+    let mut for_aliases = None;
+    walk_rendu_ops(&root, |op| match op {
+        RenduOp::IfBranch { .. } => if_branches += 1,
+        RenduOp::For {
+            source,
+            value,
+            key,
+            index,
+            ..
+        } => {
+            for_aliases = Some((
+                source.text(),
+                value.map(|expression| expression.text()),
+                key.map(|expression| expression.text()),
+                index.map(|expression| expression.text()),
+            ));
+        }
+        _ => {}
+    });
+
+    assert_eq!(if_branches, 2);
+    assert_eq!(
+        for_aliases,
+        Some(("items", Some("item"), Some("key"), Some("index")))
+    );
 }

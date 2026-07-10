@@ -1,4 +1,4 @@
-//! Source Atlas fallback facts.
+//! Typed Source Atlas fallback facts.
 
 /// A reason Vize could not project one requested atlas plate directly.
 #[non_exhaustive]

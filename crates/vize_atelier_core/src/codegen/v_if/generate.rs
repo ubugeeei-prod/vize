@@ -3,7 +3,8 @@
 //! Contains prop object generation, static class/style extraction,
 //! dynamic binding checks, event key deduplication, and spread detection.
 
-use crate::{DirectiveNode, ElementNode, ExpressionNode, IfBranchNode, PropNode, rendu::RenduOp};
+use crate::{DirectiveNode, ElementNode, ExpressionNode, IfBranchNode, PropNode};
+use vize_rendu::RenduOp;
 
 use super::super::{
     context::CodegenContext,
@@ -12,9 +13,7 @@ use super::super::{
     props::{StaticMerge, generate_directive_prop_with_static, is_supported_directive},
 };
 use super::generate_if_branch_key;
-use vize_carton::FxHashSet;
-use vize_carton::String;
-use vize_carton::ToCompactString;
+use vize_carton::{FxHashSet, String, ToCompactString};
 
 /// Check if prop should be skipped for v-if branch element.
 pub(super) fn should_skip_prop_for_if(

@@ -1,13 +1,11 @@
-//! Demand-shaped Croquis semantic facts.
+//! Demand-shaped facts owned by the Croquis semantic layer.
 //!
 //! Croquis is the semantic study tools *ask for*, not a pipeline checkpoint
 //! every consumer must finish. These types name the individual facts a lane can
 //! request so Patina, Canon, and the Ateliers each pay only for what they need
 //! — e.g. a lint rule asks for bindings and directives without forcing scope or
-//! dependency-edge collection. This is the atlas-side request shape; it stays
-//! lighter than a query engine and never builds render semantics.
-
-use super::PlateFamily;
+//! dependency-edge collection. Atlas may record that Croquis was requested,
+//! while this crate owns the precise semantic fact vocabulary.
 
 /// A single semantic fact a lane can demand from Croquis.
 #[non_exhaustive]
@@ -40,12 +38,6 @@ impl CroquisFact {
         Self::DependencyEdges,
         Self::Dialect,
     ];
-
-    /// Every Croquis fact is a [`PlateFamily::Semantic`] product, so requesting
-    /// one never pulls a render plate.
-    pub const fn family(self) -> PlateFamily {
-        PlateFamily::Semantic
-    }
 
     /// Counter used when a lane requests this fact.
     pub const fn profile_counter(self) -> &'static str {
@@ -111,13 +103,6 @@ impl CroquisFactSet {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn every_croquis_fact_is_a_semantic_product() {
-        for fact in CroquisFact::KNOWN {
-            assert_eq!(fact.family(), PlateFamily::Semantic);
-        }
-    }
 
     #[test]
     fn fact_sets_deduplicate_and_iterate_in_known_order() {

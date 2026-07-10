@@ -11,8 +11,9 @@
 //!
 //! ## Purpose
 //!
-//! This crate bridges the gap between parsing (vize_armature) and transformation
-//! (vize_atelier_core) by providing:
+//! Relief records what syntax was written and where. Croquis derives what that
+//! syntax means and how it relates: identity, scopes, dependencies, and graphs.
+//! It provides:
 //!
 //! - **Scope Analysis**: Track variable scopes across templates and scripts
 //! - **Binding Resolution**: Resolve identifiers to their declarations
@@ -48,6 +49,7 @@ pub mod declaration_ts;
 pub mod display;
 pub mod drawer;
 pub mod effect_graph;
+pub mod facts;
 pub mod hoist;
 pub mod import_resolver;
 pub mod macros;
@@ -105,6 +107,7 @@ pub use effect_graph::{
     EffectGraph, EffectGraphScript, EffectGraphSummary, build_effect_graph_from_script,
     build_effect_graph_from_script_setup, build_effect_graph_from_sfc_scripts,
 };
+pub use facts::{CroquisFact, CroquisFactSet};
 pub use reactivity_overlay::{
     ReactivityEffectEdgeOverlay, ReactivityEffectGraphOverlay, ReactivityLossOverlay,
     ReactivityOverlay, ReactivityOverlaySummary, ReactivitySourceOverlay,

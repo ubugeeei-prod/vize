@@ -1,7 +1,7 @@
 use super::*;
 use vize_atelier_core::codegen::{CodegenResult, CodegenSections};
-use vize_atelier_core::rendu::RenduChunk;
-use vize_atelier_core::source_atlas::SourceAtlasTarget;
+use vize_atlas::SourceAtlasTarget;
+use vize_rendu::RenduChunk;
 
 #[test]
 fn dom_codegen_sections_are_ranges_into_flattened_output() {

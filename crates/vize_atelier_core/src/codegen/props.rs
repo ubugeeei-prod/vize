@@ -8,7 +8,8 @@ mod scan;
 mod vbind;
 mod von_vmodel;
 
-use crate::{PropNode, RuntimeHelper, rendu::RenduOp};
+use crate::{PropNode, RuntimeHelper};
+use vize_rendu::RenduOp;
 
 use super::{context::CodegenContext, expression::generate_expression};
 

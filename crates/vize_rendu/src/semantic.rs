@@ -1,10 +1,10 @@
 //! Borrowed render-semantic Rendu vocabulary.
 
 use super::model::{RenduElementKind, RenduExprRef, RenduModifiers, RenduSource, RenduSpan};
-use crate::{
+use vize_atlas::{SourceAtlasCoordinate, SourceAtlasTarget, SourceAtlasTargetSet};
+use vize_relief::{
     AttributeNode, DirectiveNode, ElementNode, ForNode, IfBranchNode, IfNode, PropNode,
     TemplateChildNode, TextCallContent, TextNode,
-    source_atlas::{SourceAtlasCoordinate, SourceAtlasTarget, SourceAtlasTargetSet},
 };
 
 /// Render-semantic operation.

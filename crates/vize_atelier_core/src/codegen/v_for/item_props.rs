@@ -4,7 +4,8 @@
 //! (`_mergeProps`) and single-prop cases to `item_props_merge`. Split out of
 //! `v_for/generate` to keep that file focused on item/block generation.
 
-use crate::{ElementNode, ExpressionNode, rendu::RenduOp};
+use crate::{ElementNode, ExpressionNode};
+use vize_rendu::RenduOp;
 
 use super::super::{
     context::CodegenContext, element::helpers::is_is_prop, expression::generate_expression,

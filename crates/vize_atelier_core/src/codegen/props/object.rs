@@ -3,9 +3,9 @@
 //! Split out of `generate.rs` to keep each props-codegen file under the
 //! source-length guard so render-semantic (Rendu) reroutes have room to land.
 
-use crate::rendu::RenduOp;
 use crate::{ExpressionNode, PropNode};
 use vize_relief::options::BindingType;
+use vize_rendu::RenduOp;
 
 use super::{
     super::{

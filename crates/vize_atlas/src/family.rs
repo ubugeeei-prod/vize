@@ -1,4 +1,4 @@
-//! Source Atlas plate families.
+//! Neutral Source Atlas plate families.
 //!
 //! Families group plates by the job they do in the toolchain, matching the
 //! `Plate Families` table in `docs/content/architecture/source-atlas.md`.
@@ -136,7 +136,7 @@ mod tests {
 
     #[test]
     fn each_request_kind_reports_its_plate_family() {
-        use crate::source_atlas::{
+        use crate::{
             SourceAtlasCoordinate, SourceAtlasPlate, SourceAtlasRequest, SourceAtlasSource,
             SourceAtlasTarget,
         };

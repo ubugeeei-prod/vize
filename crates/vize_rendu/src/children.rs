@@ -1,6 +1,7 @@
 //! A borrowed view of a node's children as Rendu ops.
 
-use crate::{TemplateChildNode, rendu::RenduOp};
+use crate::RenduOp;
+use vize_relief::TemplateChildNode;
 
 /// A borrowed, allocation-free view of a node's children as Rendu ops.
 ///

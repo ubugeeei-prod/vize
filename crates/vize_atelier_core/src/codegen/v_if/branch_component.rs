@@ -4,10 +4,9 @@
 //! component. Split out of `branch` to keep that file focused on branch
 //! dispatch and the element/fragment shapes.
 
-use crate::{
-    ElementNode, ExpressionNode, IfBranchNode, PropNode, RuntimeHelper, rendu::RenduChildren,
-};
+use crate::{ElementNode, ExpressionNode, IfBranchNode, PropNode, RuntimeHelper};
 use vize_carton::ToCompactString;
+use vize_rendu::RenduChildren;
 
 use super::{
     super::{

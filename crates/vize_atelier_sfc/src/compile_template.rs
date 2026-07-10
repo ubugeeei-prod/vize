@@ -20,10 +20,10 @@ pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_atelier_core::{
     TemplateSyntaxMode,
-    rendu::RenduRange,
     source_map::{SourceMapRegistration, SourceMapRegistrationState},
 };
 use vize_carton::Bump;
+use vize_rendu::RenduRange;
 
 use crate::compile::output_module::{
     AtelierModuleSections, AtelierOutputMaps, AtelierOutputSections, OutputModule,

@@ -4,7 +4,8 @@
 //! `createElementBlock()` / `createBlock()` for efficient patching.
 
 use crate::steps::v_memo::{get_memo_exp, has_v_memo};
-use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper, rendu::RenduElementKind};
+use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper};
+use vize_rendu::RenduElementKind;
 
 use super::{
     super::{

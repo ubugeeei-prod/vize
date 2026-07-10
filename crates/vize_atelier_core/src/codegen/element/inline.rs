@@ -5,9 +5,9 @@
 
 use crate::{
     ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
-    rendu::{RenduChildren, RenduElementKind},
     steps::v_memo::{get_memo_exp, has_v_memo},
 };
+use vize_rendu::{RenduChildren, RenduElementKind};
 
 use super::{
     super::{

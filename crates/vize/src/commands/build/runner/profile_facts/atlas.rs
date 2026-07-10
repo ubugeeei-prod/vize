@@ -1,6 +1,6 @@
 //! Profile facts recorded around per-file SFC compilation.
 
-use vize_atelier_core::source_atlas::{
+use vize_atlas::{
     SourceAtlasCoordinate, SourceAtlasFallback, SourceAtlasPlate, SourceAtlasRegistry,
     SourceAtlasSource, SourceAtlasTarget,
 };

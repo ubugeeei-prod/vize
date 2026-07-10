@@ -5,13 +5,10 @@
 //! maps here, so consumers can observe source-map readiness without paying for
 //! an extra output pass.
 
-use crate::{
-    rendu::RenduRange,
-    source_atlas::{
-        SourceAtlasFallback, SourceAtlasPlate, SourceAtlasRoute, SourceAtlasSource,
-        SourceAtlasTarget,
-    },
+use vize_atlas::{
+    SourceAtlasFallback, SourceAtlasPlate, SourceAtlasRoute, SourceAtlasSource, SourceAtlasTarget,
 };
+use vize_rendu::RenduRange;
 
 /// The generated section covered by a source-map registration.
 #[non_exhaustive]

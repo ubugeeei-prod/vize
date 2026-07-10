@@ -6,7 +6,7 @@ title: Crates
 
 > **⚠️ Work in Progress:** Vize is under active development. Crate APIs are still changing.
 
-Vize's Rust workspace is organized around 18 primary crates. Each crate owns one reusable lane so
+Vize's Rust workspace is organized as focused crates. Each crate owns one reusable lane so
 parsing, semantic analysis, code generation, linting, formatting, type checking, and
 editor tooling can share the same syntax model.
 
@@ -15,9 +15,11 @@ editor tooling can share the same syntax model.
 | Crate           | Role                                                                                      |
 | --------------- | ----------------------------------------------------------------------------------------- |
 | `vize_carton`   | Shared allocator, strings, hash collections, flags, profiler, i18n, and DOM/tag utilities |
-| `vize_relief`   | Shared Vue template AST, compiler errors, and compiler options                            |
 | `vize_armature` | Vue template tokenizer and parser                                                         |
-| `vize_croquis`  | Semantic analysis, scope tracking, binding metadata, reactivity, and virtual TS helpers   |
+| `vize_atlas`    | Neutral source/product/target request ledger and observable fallback facts                |
+| `vize_relief`   | Source syntax nodes and locations, compiler errors, and compiler options                  |
+| `vize_croquis`  | Derived scopes, symbols, bindings, dependencies, reactivity, and analysis graphs          |
+| `vize_rendu`    | Borrowed output-facing render operations, capabilities, and emitted section views         |
 
 ## Compilation
 

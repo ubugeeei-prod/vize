@@ -1,7 +1,7 @@
 //! Children, text, comment, and interpolation generation functions.
 
-use crate::rendu::{RenduChildren, RenduOp};
 use crate::{Position, RuntimeHelper, TemplateChildNode, TextNode};
+use vize_rendu::{RenduChildren, RenduOp};
 
 use super::children_static::{
     generate_cached_static_children_array, generate_cached_static_element,

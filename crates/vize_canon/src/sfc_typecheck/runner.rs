@@ -1,4 +1,4 @@
-use vize_atelier_core::source_atlas::SourceAtlasFallback;
+use vize_atlas::SourceAtlasFallback;
 use vize_carton::Bump;
 use vize_carton::cstr;
 use vize_carton::profiler::global_profiler;

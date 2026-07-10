@@ -3,7 +3,8 @@
 //! Split out of `v_for/generate` to keep that file focused on item/block
 //! generation. `generate_for_item_props` (still in `generate`) calls these.
 
-use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper, rendu::RenduOp};
+use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper};
+use vize_rendu::RenduOp;
 
 use super::super::{
     context::CodegenContext, element::helpers::is_is_prop, expression::generate_expression,

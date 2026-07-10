@@ -1,7 +1,8 @@
 //! Event-related props generation (v-on merging and handler generation).
 
 use crate::options::BindingType;
-use crate::{DirectiveNode, ExpressionNode, PropNode, RuntimeHelper, rendu::RenduOp};
+use crate::{DirectiveNode, ExpressionNode, PropNode, RuntimeHelper};
+use vize_rendu::RenduOp;
 
 use super::super::{
     context::CodegenContext,

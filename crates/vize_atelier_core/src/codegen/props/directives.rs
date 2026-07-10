@@ -1,6 +1,7 @@
 //! Directive-to-prop generation (v-bind, v-on, v-model, v-html, v-text).
 
-use crate::{DirectiveNode, ExpressionNode, RuntimeHelper, rendu::RenduOp};
+use crate::{DirectiveNode, ExpressionNode, RuntimeHelper};
+use vize_rendu::RenduOp;
 
 use super::super::{
     context::CodegenContext, expression::generate_expression,

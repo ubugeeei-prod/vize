@@ -1,4 +1,4 @@
-//! Multi-source and multi-target Source Atlas routes.
+//! Neutral multi-source and multi-target Source Atlas routes.
 
 use super::{SourceAtlasCoordinate, SourceAtlasPlate, SourceAtlasPlateSet, SourceAtlasTarget};
 

@@ -3418,6 +3418,7 @@ dependencies = [
  "vize_atelier_dom",
  "vize_atelier_sfc",
  "vize_atelier_vapor",
+ "vize_atlas",
  "vize_canon",
  "vize_carton",
  "vize_croquis",
@@ -3466,9 +3467,11 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.18",
  "vize_armature",
+ "vize_atlas",
  "vize_carton",
  "vize_croquis",
  "vize_relief",
+ "vize_rendu",
 ]
 
 [[package]]
@@ -3536,8 +3539,10 @@ dependencies = [
  "vize_atelier_dom",
  "vize_atelier_ssr",
  "vize_atelier_vapor",
+ "vize_atlas",
  "vize_carton",
  "vize_croquis",
+ "vize_rendu",
 ]
 
 [[package]]
@@ -3572,6 +3577,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_atlas"
+version = "0.290.0"
+dependencies = [
+ "vize_carton",
+]
+
+[[package]]
 name = "vize_canon"
 version = "0.290.0"
 dependencies = [
@@ -3597,6 +3609,7 @@ dependencies = [
  "vize_atelier_core",
  "vize_atelier_jsx",
  "vize_atelier_sfc",
+ "vize_atlas",
  "vize_carton",
  "vize_croquis",
  "vize_relief",
@@ -3812,6 +3825,16 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.18",
  "vize_carton",
+]
+
+[[package]]
+name = "vize_rendu"
+version = "0.290.0"
+dependencies = [
+ "vize_armature",
+ "vize_atlas",
+ "vize_carton",
+ "vize_relief",
 ]
 
 [[package]]

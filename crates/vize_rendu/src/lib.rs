@@ -1,4 +1,6 @@
-//! Internal Rendu plate vocabulary.
+//! # vize_rendu
+//!
+//! Borrowed render projection shared by Vize emitters and tools.
 //!
 //! Rendu is the rendered plate of an atelier: render-semantic operations first,
 //! then output registration marks and optional source-map material. All views
@@ -17,7 +19,7 @@ pub use model::{RenduElementKind, RenduExprRef, RenduModifiers, RenduSource, Ren
 pub use semantic::{RenduBlock, RenduCapabilities, RenduOp, RenduRoot};
 pub use walk::{RenduWalkSummary, summarize_rendu_ops, walk_rendu_ops};
 
-use crate::source_atlas::SourceAtlasTarget;
+use vize_atlas::SourceAtlasTarget;
 
 /// Byte range in a flattened Rendu plate.
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq)]

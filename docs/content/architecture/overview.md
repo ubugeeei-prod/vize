@@ -41,7 +41,9 @@ graph TD
     Core --> Armature["vize_armature<br/>parser"]
     Armature --> Relief["vize_relief<br/>AST"]
     Relief --> Croquis["vize_croquis<br/>semantic sketch"]
-    Croquis --> Rendu["Rendu<br/>render semantics"]
+    Relief --> Rendu["vize_rendu<br/>render projection"]
+    Croquis --> Rendu
+    Core --> Atlas["vize_atlas<br/>request ledger"]
     Rendu --> Atelier["Atelier compilers"]
     Atelier --> Dom["vize_atelier_dom"]
     Atelier --> Vapor["vize_atelier_vapor"]
@@ -71,7 +73,8 @@ graph LR
     A[Source .vue] --> B[Armature<br/>Parser]
     B --> C[Relief<br/>AST]
     C --> D[Croquis<br/>Semantic Analysis]
-    D --> R[Rendu<br/>Render Semantics]
+    C --> R[vize_rendu<br/>Render Projection]
+    D --> R
     R --> E{Atelier}
     E --> F[VDOM Compiler]
     E --> G[Vapor Compiler]
@@ -86,9 +89,9 @@ graph LR
 
 1. **Source** — A `.vue` file containing `<template>`, `<script>`, and `<style>` blocks
 2. **Armature** (Parser) — Tokenizes the raw source into a stream of tokens, then parses them into a structured AST. The tokenizer handles Vue-specific syntax: directives (`v-if`, `v-for`, `v-bind`), expression interpolation (`{{ }}`), and SFC block boundaries.
-3. **Relief** (AST) — The intermediate representation. All downstream stages operate on this shared AST, eliminating redundant parsing.
-4. **Croquis** (Semantic Analysis) — Resolves template expressions, tracks variable scopes, detects binding types (setup, data, props, inject), and validates expression correctness. Uses OXC for JavaScript/TypeScript AST parsing.
-5. **Rendu** (Render Semantics) — An internal render-semantic layer that borrows from Relief and Croquis. The canary implementation starts with allocation-free Relief walking plus borrowed semantic/output views. It should describe only what render backends need: structure, control flow, props, events, slots, hoists, scope IDs, and target capabilities. It is not a public Vitrine API.
+3. **Relief** (AST) — Records what syntax was written, its node shape, and its source location. It does not assign symbol identity or derive scope/dependency graphs.
+4. **Croquis** (Semantic Analysis) — Derives what Relief/OXC syntax means and how it relates: resolved bindings, lexical scopes, component/directive usage, reactivity, dependencies, and analysis graphs.
+5. **Rendu** (Render Projection) — `vize_rendu` borrows transformed Relief and selected Croquis facts as the output-facing operations needed by render backends. It is not the source AST, the semantic database, or a public Vitrine API.
 6. **Atelier** (Compilation) — Transforms the analyzed AST or Rendu into JavaScript output. Three backends serve different targets:
    - **VDOM** (`vize_atelier_dom`) — `createVNode`/`h` calls with patch flag optimization and static hoisting
    - **Vapor** (`vize_atelier_vapor`) — Fine-grained reactive code with direct DOM manipulation (no VDOM)
@@ -151,9 +154,11 @@ parity, benchmark, and readiness evidence expected for review.
 | Layer         | Crate                | Role                                                   |
 | ------------- | -------------------- | ------------------------------------------------------ |
 | Foundation    | `vize_carton`        | Shared utilities, arena allocator, string interning    |
+| Coordination  | `vize_atlas`         | Neutral request, capability, and fallback ledger       |
 | AST           | `vize_relief`        | AST node definitions, error types, compiler options    |
 | Parsing       | `vize_armature`      | Tokenizer + recursive descent parser                   |
 | Analysis      | `vize_croquis`       | Semantic analysis, scope tracking, binding detection   |
+| Render        | `vize_rendu`         | Borrowed output-facing render projection               |
 | Compilation   | `vize_atelier_core`  | Shared transform lane, codegen utilities, source maps  |
 | Compilation   | `vize_atelier_dom`   | VDOM code generation                                   |
 | Compilation   | `vize_atelier_vapor` | Vapor mode code generation                             |

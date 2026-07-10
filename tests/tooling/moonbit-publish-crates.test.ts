@@ -107,11 +107,25 @@ test("publish_crates includes every publishable crate package after first publis
 });
 
 test("publish_crates only defers crates that have not been created on crates.io", () => {
-  assert.deepEqual(getPendingFirstPublishCrates(), ["vize_croquis_cf", "vize_atelier_jsx"]);
+  assert.deepEqual(getPendingFirstPublishCrates(), [
+    "vize_atlas",
+    "vize_rendu",
+    "vize_croquis_cf",
+    "vize_atelier_jsx",
+  ]);
 });
 
 test("publish_crates only blocks crates that depend on first-publish exclusions", () => {
-  assert.deepEqual(getBlockedByPendingFirstPublishCrates(), ["vize_canon", "vize_patina"]);
+  assert.deepEqual(getBlockedByPendingFirstPublishCrates(), [
+    "vize_atelier_core",
+    "vize_atelier_dom",
+    "vize_atelier_vapor",
+    "vize_atelier_ssr",
+    "vize_atelier_sfc",
+    "vize_musea",
+    "vize_canon",
+    "vize_patina",
+  ]);
 });
 
 test("publish_crates runs as a native MoonBit script", () => {

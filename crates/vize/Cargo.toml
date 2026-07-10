@@ -30,6 +30,7 @@ legacy = ["vize_canon/legacy", "vize_maestro?/legacy"]
 vize_carton = { workspace = true }
 vize_relief = { workspace = true }
 vize_armature = { workspace = true }
+vize_atlas = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_dom = { workspace = true }
 vize_atelier_vapor = { workspace = true }

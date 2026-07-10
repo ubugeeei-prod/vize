@@ -9,7 +9,8 @@ mod branch_component;
 mod branch_fragment;
 mod generate;
 
-use crate::{ExpressionNode, IfBranchNode, IfNode, PropNode, RuntimeHelper, rendu::RenduOp};
+use crate::{ExpressionNode, IfBranchNode, IfNode, PropNode, RuntimeHelper};
+use vize_rendu::RenduOp;
 
 use super::{context::CodegenContext, expression::generate_expression, helpers::escape_js_string};
 

@@ -1,7 +1,8 @@
 //! Single-pass prop metadata collection for code generation.
 
 use crate::options::BindingType;
-use crate::{DirectiveNode, ExpressionNode, PropNode, rendu::RenduOp};
+use crate::{DirectiveNode, ExpressionNode, PropNode};
+use vize_rendu::RenduOp;
 
 use super::super::{context::CodegenContext, element::helpers::is_is_rendu_op};
 use super::directives::is_supported_directive;

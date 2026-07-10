@@ -14,6 +14,8 @@ native = ["dep:lightningcss", "lightningcss/serde"]
 [dependencies]
 vize_carton = { workspace = true }
 vize_croquis = { workspace = true }
+vize_atlas = { workspace = true }
+vize_rendu = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_dom = { workspace = true }
 vize_atelier_ssr = { workspace = true }

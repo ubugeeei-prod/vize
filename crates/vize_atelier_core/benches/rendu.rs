@@ -8,8 +8,8 @@
 
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 
-use vize_atelier_core::rendu::summarize_rendu_ops;
 use vize_atelier_core::{Allocator, TransformOptions, parse, transform};
+use vize_rendu::summarize_rendu_ops;
 
 const FLAT: &str = "<div><span>a</span><span>b</span><span>c</span><p>{{ msg }}</p></div>";
 const NESTED: &str = "<ul><li><a><span><b><i>{{ deep }}</i></b></span></a></li></ul>";

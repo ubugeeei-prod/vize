@@ -1,7 +1,7 @@
 //! Node generation functions.
 
 use crate::TemplateChildNode;
-use crate::rendu::RenduOp;
+use vize_rendu::RenduOp;
 
 use super::children::{generate_comment, generate_text};
 use super::context::CodegenContext;

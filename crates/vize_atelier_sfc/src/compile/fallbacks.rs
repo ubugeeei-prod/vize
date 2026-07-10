@@ -1,9 +1,9 @@
 //! Fallback diagnostics emitted by the SFC compiler.
 
 use crate::types::{SfcCompileOptions, SfcDescriptor, SfcError};
-use vize_atelier_core::rendu::RenduCapabilities;
-use vize_atelier_core::source_atlas::{SourceAtlasFallback, SourceAtlasTarget};
+use vize_atlas::{SourceAtlasFallback, SourceAtlasTarget};
 use vize_carton::{ToCompactString, profiler::global_profiler};
+use vize_rendu::RenduCapabilities;
 
 /// Push the Vapor SSR fallback warning when the requested render route mixes
 /// Vapor and SSR. The decision goes through the shared Rendu capability facts

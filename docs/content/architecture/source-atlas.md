@@ -12,10 +12,11 @@ every path through one expensive transform pipeline.
 
 The goal is to keep Vize shaped like a studio:
 
-- `Armature` keeps the source ledger: files, blocks, spans, parser events, and
-  source-map registration marks.
-- `Relief` keeps the source-faithful syntax surface.
-- `Croquis` keeps semantic studies that tools can reuse: scopes, bindings,
+- `Source Atlas` keeps the neutral request ledger: sources, requested products,
+  targets, version coordinates, and fallback marks.
+- `Armature` tokenizes and parses Vue template source into Relief nodes.
+- `Relief` keeps source syntax: what was written, its shape, and its location.
+- `Croquis` derives meaning and relationships tools can reuse: scopes, bindings,
   components, directives, CSS variables, dialect facts, and dependency edges.
 - `Virtual TS` is a projection for Canon, Maestro, and editor interop.
 - `Rendu` is the render-semantic plate for DOM, SSR, Vapor, and related
@@ -107,7 +108,7 @@ needs them.
 | Syntax     | Relief templates, OXC AST refs, CSS AST refs, parser diagnostics                                    | Armature, Relief, OXC, Lightning CSS      | Borrowed or arena-backed; no duplicate parsing                   |
 | Semantic   | Croquis bindings, scopes, components, directives, CSS vars, dependency edges, dialect/version facts | Croquis, Patina, Canon, Maestro, Ateliers | Demandable by tools; reusable across lanes                       |
 | Projection | Virtual TS, lint facade, editor facts, Musea art facts, inspector views                             | Canon, Maestro, Patina, Musea, Playground | Built only for the requesting surface                            |
-| Render     | Rendu roots, blocks, operations, expression refs, capability facts                                  | Atelier core, DOM, SSR, Vapor, JSX/TSX    | Built only for render lanes                                      |
+| Render     | Rendu roots, blocks, operations, expression refs, capability facts                                  | Rendu, DOM, SSR, Vapor, JSX/TSX           | Built only for render lanes                                      |
 | Target     | DOM/VDOM, SSR, Vapor, inclusion Vapor, JSX/TSX emit, diagnostics, source maps                       | Ateliers, Vitrine packages                | Target-specific work stays in its Atelier                        |
 | Finish     | AtelierOutput, diagnostics, maps, profile artifacts, Vitrine payloads                               | SFC, Vitrine, packages, CLI               | Structured before flattening; no string rescans when data exists |
 
@@ -171,7 +172,8 @@ The important property is negative as much as positive:
 
 ## Rendu
 
-`Rendu` is the render-semantic plate. It is not the whole toolchain IR. The
+`Rendu` is the output-facing render projection owned by the `vize_rendu` crate.
+It is not Relief syntax, Croquis's semantic database, or the whole toolchain IR. The
 implementation track is
 [#1695](https://github.com/ubugeeei-prod/vize/issues/1695).
 

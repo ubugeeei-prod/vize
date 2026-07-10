@@ -6,8 +6,8 @@
 //! plates that script-setup inline mode moves around: imports, hoists, the full
 //! render function, and exports.
 
-use vize_atelier_core::rendu::RenduRange;
 use vize_carton::{String, ToCompactString};
+use vize_rendu::RenduRange;
 
 use crate::compile::output_module::AtelierModuleSections;
 

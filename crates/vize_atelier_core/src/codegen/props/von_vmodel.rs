@@ -4,7 +4,8 @@
 //! `v-model` on a component. Split out of `directives` to keep that file focused
 //! on `v-bind` and directive dispatch.
 
-use crate::{DirectiveNode, ExpressionNode, RuntimeHelper, rendu::RenduOp};
+use crate::{DirectiveNode, ExpressionNode, RuntimeHelper};
+use vize_rendu::RenduOp;
 
 use super::super::{
     context::CodegenContext, expression::generate_simple_expression,

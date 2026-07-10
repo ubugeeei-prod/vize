@@ -6,7 +6,7 @@
 //! custom-renderer flag directly.
 
 use super::RenduCapabilities;
-use crate::source_atlas::{SourceAtlasCoordinate, SourceAtlasFallback, SourceAtlasTarget};
+use vize_atlas::{SourceAtlasCoordinate, SourceAtlasFallback, SourceAtlasTarget};
 
 /// A single render capability fact.
 #[non_exhaustive]

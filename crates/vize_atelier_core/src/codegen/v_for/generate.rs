@@ -5,9 +5,9 @@
 
 use crate::{
     ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode,
-    rendu::RenduChildren,
     steps::v_memo::{get_memo_exp, has_v_memo},
 };
+use vize_rendu::RenduChildren;
 
 use super::super::{
     children::{emit_children_array_body, generate_children, generate_children_force_array},

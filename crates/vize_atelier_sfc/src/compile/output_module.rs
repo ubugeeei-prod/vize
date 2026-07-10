@@ -1,14 +1,11 @@
 //! Shared SFC render output assembly.
 
 use crate::types::{CssModuleMapping, css_modules_object_literal};
-use vize_atelier_core::{
-    atelier_output::AtelierOutput,
-    codegen::CodegenResultWithSections,
-    rendu::{RenduModuleSections, RenduPlate, RenduRange, RenduRenderSections},
-    source_atlas::SourceAtlasTarget,
-};
+use vize_atelier_core::{atelier_output::AtelierOutput, codegen::CodegenResultWithSections};
 use vize_atelier_ssr::SsrCodegenResult;
+use vize_atlas::SourceAtlasTarget;
 use vize_carton::{String, ToCompactString};
+use vize_rendu::{RenduModuleSections, RenduPlate, RenduRange, RenduRenderSections};
 
 pub(crate) type OutputRange = RenduRange;
 

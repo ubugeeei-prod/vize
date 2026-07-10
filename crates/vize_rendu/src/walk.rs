@@ -1,9 +1,7 @@
 //! Allocation-free Rendu views over Relief trees.
 
-use crate::{
-    ForNode, IfBranchNode, RootNode, TemplateChildNode,
-    rendu::{RenduExprRef, RenduOp, RenduSpan},
-};
+use crate::{RenduExprRef, RenduOp, RenduSpan};
+use vize_relief::{ForNode, IfBranchNode, RootNode, TemplateChildNode};
 
 /// Cheap summary collected while walking a Relief tree as Rendu operations.
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash)]
@@ -135,7 +133,9 @@ fn child_depth(child: &TemplateChildNode<'_>, depth: usize) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Allocator, TransformOptions, lane::transform, parse, rendu::RenduElementKind};
+    use crate::RenduElementKind;
+    use vize_armature::parse;
+    use vize_carton::Allocator;
 
     #[test]
     fn walks_nested_relief_nodes_as_rendu_operations() {
@@ -203,71 +203,6 @@ mod tests {
             assert_eq!(arg.map(RenduExprRef::text), Some("class"));
             assert_eq!(exp.map(RenduExprRef::text), Some("cls"));
         }
-    }
-
-    #[test]
-    fn for_walk_preserves_value_key_and_index_aliases_from_parsed_source() {
-        let allocator = Allocator::default();
-        let bump = allocator.as_bump();
-        let (mut root, errors) = parse(
-            bump,
-            "<li v-for=\"(item, key, index) in items\">{{ item }}</li>",
-        );
-        assert!(errors.is_empty());
-        let diagnostics = transform(bump, &mut root, TransformOptions::default(), None);
-        assert!(diagnostics.errors.is_empty());
-
-        let mut for_aliases = None;
-        walk_rendu_ops(&root, |op| {
-            if let RenduOp::For {
-                source,
-                value,
-                key,
-                index,
-                ..
-            } = op
-            {
-                for_aliases = Some((
-                    source.text(),
-                    value.map(RenduExprRef::text),
-                    key.map(RenduExprRef::text),
-                    index.map(RenduExprRef::text),
-                ));
-            }
-        });
-
-        assert_eq!(
-            for_aliases,
-            Some(("items", Some("item"), Some("key"), Some("index"))),
-            "v-for aliases should survive parse -> transform -> Rendu walk"
-        );
-    }
-
-    #[test]
-    fn walks_transformed_control_flow_as_structured_rendu() {
-        let allocator = Allocator::default();
-        let bump = allocator.as_bump();
-        let (mut root, errors) = parse(bump, "<div v-if=\"ok\">A</div><p v-else>B</p>");
-        assert!(errors.is_empty());
-        let diagnostics = transform(bump, &mut root, TransformOptions::default(), None);
-        assert!(diagnostics.errors.is_empty());
-
-        let mut has_if = false;
-        let mut branches = 0;
-        let mut elements = 0;
-        walk_rendu_ops(&root, |op| match op {
-            RenduOp::If { .. } => has_if = true,
-            RenduOp::IfBranch { .. } => branches += 1,
-            RenduOp::Element {
-                kind: RenduElementKind::Element,
-                ..
-            } => elements += 1,
-            _ => {}
-        });
-
-        assert!(has_if);
-        assert_eq!(branches, 2);
-        assert_eq!(elements, 2);
     }
 
     #[test]

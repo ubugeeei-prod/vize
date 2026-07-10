@@ -1,3 +1,5 @@
+//! Source Atlas contract tests.
+
 use super::*;
 use vize_carton::config::VueVersion;
 

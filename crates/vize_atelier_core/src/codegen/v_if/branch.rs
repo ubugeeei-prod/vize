@@ -3,11 +3,9 @@
 //! Generates code for individual v-if/v-else-if/v-else branches including
 //! component, element, template fragment, and regular fragment rendering.
 
-use crate::{
-    ElementNode, ForNode, IfBranchNode, PropNode, RuntimeHelper, TemplateChildNode,
-    rendu::{RenduChildren, RenduElementKind},
-};
+use crate::{ElementNode, ForNode, IfBranchNode, PropNode, RuntimeHelper, TemplateChildNode};
 use vize_carton::ToCompactString;
+use vize_rendu::{RenduChildren, RenduElementKind};
 
 use super::{
     super::{

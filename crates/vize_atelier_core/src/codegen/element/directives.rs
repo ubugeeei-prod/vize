@@ -4,9 +4,9 @@
 //! v-model, v-show, and custom directives on elements.
 
 use crate::{
-    ElementNode, ExpressionNode, PropNode, RuntimeHelper, rendu::RenduOp,
-    steps::v_model::get_vmodel_helper,
+    ElementNode, ExpressionNode, PropNode, RuntimeHelper, steps::v_model::get_vmodel_helper,
 };
+use vize_rendu::RenduOp;
 
 use super::super::{context::CodegenContext, expression::generate_expression};
 use super::helpers::{

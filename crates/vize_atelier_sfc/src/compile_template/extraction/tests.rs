@@ -1,7 +1,7 @@
 use super::slice_template_parts_full;
 use crate::compile::output_module::{AtelierOutputSections, OutputModule};
-use vize_atelier_core::rendu::RenduRange;
 use vize_atelier_ssr::SsrCodegenResult;
+use vize_rendu::RenduRange;
 
 #[test]
 fn slice_template_parts_full_uses_module_sections() {

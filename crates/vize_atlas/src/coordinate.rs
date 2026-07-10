@@ -1,4 +1,4 @@
-//! Vue-era compatibility coordinates.
+//! Vue-era compatibility coordinates for Source Atlas.
 //!
 //! A coordinate is the single capability fact a lane resolves once near the
 //! source/semantic layer and then borrows. Tracks `v0`/`v1`/`v2`/`v2.7`/`v3`

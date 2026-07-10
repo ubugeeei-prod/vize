@@ -1,12 +1,10 @@
 //! Source-map bookkeeping for SFC output assembly.
 
 use crate::compile_template::TemplateBlockCompileResult;
-use vize_atelier_core::{
-    source_atlas::{
-        SourceAtlasFallback, SourceAtlasPlate, SourceAtlasRegistry, SourceAtlasRoute,
-        SourceAtlasSource, SourceAtlasTarget,
-    },
-    source_map::{SourceMapRegistration, SourceMapRegistrationState},
+use vize_atelier_core::source_map::{SourceMapRegistration, SourceMapRegistrationState};
+use vize_atlas::{
+    SourceAtlasFallback, SourceAtlasPlate, SourceAtlasRegistry, SourceAtlasRoute,
+    SourceAtlasSource, SourceAtlasTarget,
 };
 use vize_carton::profiler::global_profiler;
 
@@ -115,7 +113,7 @@ fn usize_to_counter(value: usize) -> u64 {
 mod tests {
     use super::*;
     use crate::compile::output_module::{AtelierModuleSections, AtelierOutputMaps};
-    use vize_atelier_core::source_atlas::{SourceAtlasSource, SourceAtlasTarget};
+    use vize_atlas::{SourceAtlasSource, SourceAtlasTarget};
     use vize_carton::String;
 
     fn template_result_without_map() -> TemplateBlockCompileResult {

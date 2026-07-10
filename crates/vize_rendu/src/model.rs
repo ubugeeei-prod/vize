@@ -2,7 +2,7 @@
 //! refs, and element classification. Kept separate from the operation vocabulary
 //! in `semantic.rs` so each file stays focused and under the source-length guard.
 
-use crate::{ElementType, ExpressionNode, Position, SimpleExpressionNode, SourceLocation};
+use vize_relief::{ElementType, ExpressionNode, Position, SimpleExpressionNode, SourceLocation};
 
 /// Source span carried by Rendu operations.
 ///

@@ -1,0 +1,19 @@
+[package]
+name = "vize_rendu"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Rendu - Borrowed render projection shared by Vize emitters and tools"
+
+[features]
+legacy = ["vize_relief/_legacy"]
+
+[dependencies]
+vize_atlas.workspace = true
+vize_relief.workspace = true
+
+[dev-dependencies]
+vize_armature.workspace = true
+vize_carton.workspace = true

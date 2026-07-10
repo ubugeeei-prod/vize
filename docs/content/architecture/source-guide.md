@@ -35,7 +35,9 @@ graph LR
     Source[".vue source"] --> Armature["vize_armature<br/>tokenize and parse"]
     Armature --> Relief["vize_relief<br/>AST and options"]
     Relief --> Croquis["vize_croquis<br/>semantic analysis"]
-    Croquis --> Atelier["atelier crates<br/>compile output"]
+    Relief --> Rendu["vize_rendu<br/>render projection"]
+    Croquis --> Rendu
+    Rendu --> Atelier["atelier crates<br/>compile output"]
     Croquis --> Tools["patina / canon / maestro<br/>tool features"]
     Atelier --> Vitrine["vize_vitrine<br/>NAPI and WASM"]
     Vitrine --> Packages["npm packages"]
@@ -49,8 +51,10 @@ add only the behavior it owns.
 | Change area                    | Start here                             | Then check                                                         |
 | ------------------------------ | -------------------------------------- | ------------------------------------------------------------------ |
 | Template parsing               | `crates/vize_armature/src/lib.rs`      | parser fixtures and expected AST snapshots                         |
+| Product/target request ledger  | `crates/vize_atlas/src/lib.rs`         | lane registration and fallback reporting                           |
 | AST shape and compiler options | `crates/vize_relief/src/lib.rs`        | downstream compiler, lint, and formatter callers                   |
 | Template semantics             | `crates/vize_croquis/src/lib.rs`       | scope, binding, reactivity, and virtual TypeScript helpers         |
+| Render projection              | `crates/vize_rendu/src/lib.rs`         | DOM, SSR, Vapor, inspector, and profiling consumers                |
 | Shared compiler behavior       | `crates/vize_atelier_core/src/lib.rs`  | backend-specific atelier crates                                    |
 | Client template output         | `crates/vize_atelier_dom/src/lib.rs`   | generated code snapshots and runtime fixture tests                 |
 | Vapor output                   | `crates/vize_atelier_vapor/src/lib.rs` | Vapor-specific rules and real-world fixture output                 |

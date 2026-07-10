@@ -1,7 +1,7 @@
 //! Main props generation logic.
 
-use crate::rendu::RenduOp;
 use crate::{ExpressionNode, PropNode, RuntimeHelper};
+use vize_rendu::RenduOp;
 
 use super::{
     super::expression::generate_expression,

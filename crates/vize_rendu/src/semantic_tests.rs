@@ -1,5 +1,5 @@
 use super::*;
-use crate::{
+use vize_relief::{
     AllocBox, AllocVec, Allocator, ElementNode, ExpressionNode, ForNode, ForParseResult, Position,
     SimpleExpressionNode, SourceLocation, TextNode,
 };

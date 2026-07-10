@@ -2,6 +2,9 @@
 //!
 //! Relief - The sculptured AST surface for Vize.
 //! Vue template Abstract Syntax Tree definitions, errors, and compiler options.
+//! Relief answers what source syntax was written and where. It does not resolve
+//! symbol identity, scopes, dependencies, or control flow; Croquis owns those
+//! derived semantic relationships.
 //!
 //! ## Name Origin
 //!
