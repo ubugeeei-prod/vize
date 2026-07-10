@@ -102,8 +102,8 @@ pub use croquis::{
 };
 pub use drawer::{Drawer, DrawerOptions};
 pub use effect_graph::{
-    EffectGraph, EffectGraphSummary, build_effect_graph_from_script,
-    build_effect_graph_from_script_setup,
+    EffectGraph, EffectGraphScript, EffectGraphSummary, build_effect_graph_from_script,
+    build_effect_graph_from_script_setup, build_effect_graph_from_sfc_scripts,
 };
 pub use reactivity_overlay::{
     ReactivityEffectEdgeOverlay, ReactivityEffectGraphOverlay, ReactivityLossOverlay,

@@ -1,4 +1,7 @@
-use crate::effect_graph::{EffectGraph, build_effect_graph_from_script_setup};
+use crate::effect_graph::{
+    EffectGraph, EffectGraphScript, EffectGraphSummary, build_effect_graph_from_script_setup,
+    build_effect_graph_from_sfc_scripts,
+};
 use crate::script_parser::parse_script_setup;
 use vize_carton::{CompactString, cstr};
 
@@ -86,6 +89,40 @@ const right = computed(() => left.value)
 }
 
 #[test]
+fn parser_built_summary_counts_self_loop_and_disconnected_cycles() {
+    let source = r#"
+import { computed } from 'vue'
+const selfCycle = computed(() => selfCycle.value)
+const leftA = computed(() => rightA.value)
+const rightA = computed(() => leftA.value)
+const leftB = computed(() => rightB.value)
+const rightB = computed(() => leftB.value)
+"#;
+    let graph =
+        build_effect_graph_from_sfc_scripts(None, Some(EffectGraphScript::new(source, Some("ts"))));
+
+    assert_eq!(
+        edge_pairs(&graph),
+        [
+            (cstr!("setup:leftA"), cstr!("setup:rightA")),
+            (cstr!("setup:leftB"), cstr!("setup:rightB")),
+            (cstr!("setup:rightA"), cstr!("setup:leftA")),
+            (cstr!("setup:rightB"), cstr!("setup:leftB")),
+            (cstr!("setup:selfCycle"), cstr!("setup:selfCycle")),
+        ]
+    );
+    assert_eq!(
+        graph.summary(),
+        EffectGraphSummary {
+            node_count: 5,
+            edge_count: 5,
+            cycle_count: 3,
+            cycle_node_count: 5,
+        }
+    );
+}
+
+#[test]
 fn ignores_shadowed_callback_parameters_when_collecting_deps() {
     let graph = build_effect_graph_from_script_setup(
         r#"
@@ -115,4 +152,170 @@ watchEffect(() => {
         serde_json::to_string_pretty(&parsed.reactivity.overlay_with_effect_graph(&graph)).unwrap();
 
     insta::assert_snapshot!(json);
+}
+
+#[test]
+fn sfc_source_languages_preserve_effect_cycles() {
+    for (lang, jsx) in [
+        (None, ""),
+        (Some("js"), ""),
+        (Some("ts"), "const typed: number = 1"),
+        (Some("jsx"), "const render = () => <strong>ready</strong>"),
+        (
+            Some("tsx"),
+            "const render = (): JSX.Element => <strong>ready</strong>",
+        ),
+    ] {
+        let source = format!(
+            r#"
+import {{ computed }} from 'vue'
+{jsx}
+const left = computed(() => right.value)
+const right = computed(() => left.value)
+"#
+        );
+        let graph = build_effect_graph_from_sfc_scripts(
+            None,
+            Some(EffectGraphScript::new(source.as_str(), lang)),
+        );
+
+        assert_eq!(
+            graph.summary(),
+            EffectGraphSummary {
+                node_count: 2,
+                edge_count: 2,
+                cycle_count: 1,
+                cycle_node_count: 2,
+            },
+            "lang={lang:?}"
+        );
+    }
+}
+
+#[test]
+fn split_sfc_scripts_share_outer_sources_and_keep_scoped_cycles_distinct() {
+    let script = r#"
+import { computed, ref } from 'vue'
+export const shared = ref(0)
+const left = computed(() => right.value)
+const right = computed(() => left.value)
+"#;
+    let setup = r#"
+import { computed, watch } from 'vue'
+watch(shared, () => console.log(shared.value))
+const left = computed(() => right.value)
+const right = computed(() => left.value)
+"#;
+    let graph = build_effect_graph_from_sfc_scripts(
+        Some(EffectGraphScript::new(script, Some("ts"))),
+        Some(EffectGraphScript::new(setup, Some("ts"))),
+    );
+
+    assert_eq!(
+        graph.summary(),
+        EffectGraphSummary {
+            node_count: 6,
+            edge_count: 5,
+            cycle_count: 2,
+            cycle_node_count: 4,
+        }
+    );
+    assert!(
+        graph
+            .edges()
+            .any(|edge| edge.from.starts_with("setup:watch@") && edge.to == "script:shared")
+    );
+}
+
+#[test]
+fn malformed_sfc_block_does_not_discard_a_valid_sibling_summary() {
+    let script = r#"
+import { computed } from 'vue'
+const left = computed(() => right.value)
+const right = computed(() => left.value)
+"#;
+    let malformed_setup = r#"
+import { computed } from 'vue'
+const setupLeft = computed(() => setupRight.value)
+const setupRight = computed(() => setupLeft.value)
+const broken = (
+"#;
+    let graph = build_effect_graph_from_sfc_scripts(
+        Some(EffectGraphScript::new(script, Some("js"))),
+        Some(EffectGraphScript::new(malformed_setup, Some("js"))),
+    );
+
+    assert_eq!(
+        graph.summary(),
+        EffectGraphSummary {
+            node_count: 2,
+            edge_count: 2,
+            cycle_count: 1,
+            cycle_node_count: 2,
+        }
+    );
+}
+
+#[test]
+fn setup_declarations_shadow_normal_script_reactive_sources() {
+    let script = r#"
+import { ref } from 'vue'
+const shared = ref(0)
+"#;
+    let setup = r#"
+import { watch } from 'vue'
+function shared() { return 1 }
+watch(shared, () => {})
+"#;
+    let graph = build_effect_graph_from_sfc_scripts(
+        Some(EffectGraphScript::new(script, Some("js"))),
+        Some(EffectGraphScript::new(setup, Some("js"))),
+    );
+
+    assert_eq!(graph.summary(), EffectGraphSummary::default());
+}
+
+#[test]
+fn setup_local_bindings_block_inherited_api_names_without_leaking_other_aliases() {
+    let script = r#"
+import {
+  ref as vueRef,
+  computed,
+  watch as observe,
+  watchEffect as fx,
+} from 'vue'
+export const outer = vueRef(0)
+"#;
+    let setup = r#"
+const ref = (value) => ({ value })
+const computed = (getter) => getter()
+const observe = (source, callback) => callback(source)
+const fakeSource = ref(1)
+const fakeComputed = computed(() => outer.value)
+observe(outer, () => {})
+fx(() => fakeSource.value)
+fx(() => outer.value)
+"#;
+    let graph = build_effect_graph_from_sfc_scripts(
+        Some(EffectGraphScript::new(script, Some("js"))),
+        Some(EffectGraphScript::new(setup, Some("js"))),
+    );
+    let fx_offset = setup.find("fx(() => outer.value)").unwrap();
+
+    assert_eq!(
+        edge_pairs(&graph),
+        [(
+            cstr!("setup:watchEffect@{fx_offset}"),
+            cstr!("script:outer"),
+        )]
+    );
+    assert_eq!(
+        graph.summary(),
+        EffectGraphSummary {
+            node_count: 2,
+            edge_count: 1,
+            cycle_count: 0,
+            cycle_node_count: 0,
+        }
+    );
 }

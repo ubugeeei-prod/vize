@@ -256,7 +256,7 @@ fn collect_binding_pattern_names_from_params(
     }
 }
 
-fn collect_binding_pattern_names(
+pub(super) fn collect_binding_pattern_names(
     pattern: &BindingPattern<'_>,
     names: &mut FxHashSet<CompactString>,
 ) {
