@@ -1,4 +1,4 @@
-use crate::{Drawer, DrawerOptions, TemplateExpressionKind};
+use crate::{Drawer, DrawerOptions, ScopeKind, TemplateExpressionKind};
 use serde_json::{Value, json};
 use vize_armature::parse;
 use vize_carton::Bump;
@@ -29,6 +29,7 @@ fn directive_argument_dynamics_have_an_exact_semantic_contract() {
         "v-model:[modelName]=\"dynamicModel\" ",
         "@click=\"onClick\" @[eventName].once=\"onEvent\">",
         "<template #[slotName]=\"{ row }\">{{ row }}</template>",
+        "<span>fallback</span>",
         "</Child>",
     );
     let component_start = source.find("<Child").unwrap() as u32;
@@ -142,6 +143,12 @@ fn directive_argument_dynamics_have_an_exact_semantic_contract() {
             "scopeVars": ["row"],
             "range": range(source, "#[slotName]=\"{ row }\""),
             "scoped": true
+        }, {
+            "name": "default",
+            "nameIsDynamic": false,
+            "scopeVars": [],
+            "range": range(source, "<span>"),
+            "scoped": false
         }]
     }]);
 
@@ -224,4 +231,52 @@ fn runtime_directive_arguments_are_checked_as_expressions() {
             ("missingSlot", source.find("missingSlot").unwrap() as u32,),
         ]
     );
+}
+
+#[test]
+fn dynamic_slot_name_sees_v_for_alias_but_not_its_own_slot_props() {
+    let source = concat!(
+        "<Child>",
+        "<template v-for=\"(_, slotName) in $slots\" #[slotName]=\"{ row }\">{{ row }}</template>",
+        "<template #[localOnly]=\"{ localOnly }\">{{ localOnly }}</template>",
+        "<template #[emptySlot]><span></span></template>",
+        "</Child>",
+        "<Other :[after] />",
+    );
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, source);
+    assert!(errors.is_empty(), "template errors: {errors:?}");
+
+    let mut drawer = Drawer::with_options(DrawerOptions::full());
+    drawer.draw_script_setup("const emptySlot = 'empty'; const after = 'title';");
+    drawer.draw_template(&root);
+    let croquis = drawer.finish();
+
+    let arguments = croquis
+        .template_expressions
+        .iter()
+        .filter(|expression| expression.kind == TemplateExpressionKind::DynamicDirectiveArgument)
+        .map(|expression| {
+            (
+                expression.content.as_str(),
+                croquis.scopes.get_scope(expression.scope_id).unwrap().kind,
+            )
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        arguments,
+        [
+            ("slotName", ScopeKind::VFor),
+            ("localOnly", ScopeKind::ScriptSetup),
+            ("emptySlot", ScopeKind::ScriptSetup),
+            ("after", ScopeKind::ScriptSetup),
+        ]
+    );
+
+    let undefined = croquis
+        .undefined_refs
+        .iter()
+        .map(|reference| reference.name.as_str())
+        .collect::<Vec<_>>();
+    assert_eq!(undefined, ["localOnly"]);
 }

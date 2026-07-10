@@ -5,14 +5,17 @@ use super::{
     summarize_complexity_with_effect_graphs,
 };
 use crate::analyzer::CrossFileResult;
-use crate::graph::{DependencyEdge, DependencyGraph, ModuleNode};
+use crate::graph::{DependencyEdge, DependencyGraph};
 use crate::registry::ModuleRegistry;
 use vize_carton::{CompactString, FxHashSet, smallvec};
 use vize_croquis::croquis::{
     ComponentUsage, EventListener, PassedProp, SlotUsage, TemplateExpression,
     TemplateExpressionKind,
 };
-use vize_croquis::{Croquis, EffectGraphSummary, ScopeId, VForScopeData, VSlotScopeData};
+use vize_croquis::{Croquis, EffectGraphSummary, ScopeId, VSlotScopeData};
+
+mod helpers;
+use helpers::{component_node, v_for_data};
 
 #[test]
 fn scores_each_complexity_dimension() {
@@ -142,6 +145,7 @@ fn summarizes_complexity_from_registry_and_result() {
             root_element_count: 2,
             passed_attrs: FxHashSet::from_iter([CompactString::new("class")]),
             fallthrough_attrs: FxHashSet::from_iter([CompactString::new("class")]),
+            static_name_fallthrough_attrs: FxHashSet::from_iter([CompactString::new("class")]),
             dynamic_name_fallthrough_attrs: FxHashSet::default(),
             declared_props: FxHashSet::default(),
             declared_events: FxHashSet::default(),
@@ -228,6 +232,9 @@ fn summarizes_fallthrough_risk_from_infos_when_summary_is_absent() {
             root_element_count: 2,
             passed_attrs: FxHashSet::from_iter([CompactString::new("tracking-id")]),
             fallthrough_attrs: FxHashSet::from_iter([CompactString::new("tracking-id")]),
+            static_name_fallthrough_attrs: FxHashSet::from_iter([CompactString::new(
+                "tracking-id",
+            )]),
             dynamic_name_fallthrough_attrs: FxHashSet::default(),
             declared_props: FxHashSet::default(),
             declared_events: FxHashSet::default(),
@@ -330,21 +337,4 @@ fn score_saturates_instead_of_overflowing() {
     assert_eq!(report.dimensions.reactive_graph, u32::MAX);
     assert_eq!(report.total_score, u32::MAX);
     assert_eq!(report.band, ComplexityBand::Extreme);
-}
-
-fn v_for_data(value_alias: &str, source: &str) -> VForScopeData {
-    VForScopeData {
-        value_alias: CompactString::new(value_alias),
-        value_bindings: smallvec![CompactString::new(value_alias)],
-        key_alias: None,
-        index_alias: None,
-        source: CompactString::new(source),
-        key_expression: None,
-    }
-}
-
-fn component_node(id: crate::FileId, path: &str, name: &str) -> ModuleNode {
-    let mut node = ModuleNode::new(id, path);
-    node.component_name = Some(CompactString::new(name));
-    node
 }

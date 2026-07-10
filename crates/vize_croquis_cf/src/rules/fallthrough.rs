@@ -12,11 +12,13 @@ use vize_carton::{CompactString, FxHashMap, FxHashSet, camelize, cstr};
 
 mod component;
 mod info;
+mod related;
 mod summary;
 mod usage;
 
 pub use component::{FallthroughComponentFact, collect_fallthrough_component_facts};
 pub use info::FallthroughInfo;
+use related::{FallthroughUsageRelated, with_fallthrough_relateds};
 pub use summary::{FallthroughSummary, summarize_fallthrough};
 pub use usage::*;
 
@@ -60,6 +62,7 @@ pub fn analyze_fallthrough(
             root_element_count: template_info.root_element_count,
             passed_attrs: FxHashSet::default(), // Will be filled later
             fallthrough_attrs: FxHashSet::default(), // Will be filled later
+            static_name_fallthrough_attrs: FxHashSet::default(),
             dynamic_name_fallthrough_attrs: FxHashSet::default(),
             declared_props,
             declared_events,
@@ -75,6 +78,8 @@ pub fn analyze_fallthrough(
     let mut passed_attrs_map: FxHashMap<FileId, FxHashMap<FileId, FxHashSet<CompactString>>> =
         FxHashMap::default();
     let mut fallthrough_attrs_map: FxHashMap<FileId, FxHashSet<CompactString>> =
+        FxHashMap::default();
+    let mut static_name_attrs_map: FxHashMap<FileId, FxHashSet<CompactString>> =
         FxHashMap::default();
     let mut dynamic_name_attrs_map: FxHashMap<FileId, FxHashSet<CompactString>> =
         FxHashMap::default();
@@ -105,6 +110,15 @@ pub fn analyze_fallthrough(
                     .filter(|attr| attr.fallthrough && attr.name_is_dynamic)
                     .map(|attr| attr.name.clone()),
             );
+        static_name_attrs_map
+            .entry(fact.child_file_id)
+            .or_default()
+            .extend(
+                fact.attrs
+                    .iter()
+                    .filter(|attr| attr.fallthrough && !attr.name_is_dynamic)
+                    .map(|attr| attr.name.clone()),
+            );
 
         let related = fallthrough_related_map
             .entry(fact.child_file_id)
@@ -116,6 +130,9 @@ pub fn analyze_fallthrough(
                 .map(|attr| FallthroughUsageRelated {
                     parent_file_id: fact.parent_file_id,
                     attr_name: attr.name.clone(),
+                    name_is_dynamic: attr.name_is_dynamic,
+                    standard_html_attr: attr.standard_html_attr,
+                    report_as_unused: true,
                     source_start: attr.source_start,
                     component_name: fact.component_name.clone(),
                 }),
@@ -124,6 +141,9 @@ pub fn analyze_fallthrough(
             related.push(FallthroughUsageRelated {
                 parent_file_id: fact.parent_file_id,
                 attr_name: cstr!("v-bind spread"),
+                name_is_dynamic: false,
+                standard_html_attr: false,
+                report_as_unused: false,
                 source_start: fact.usage_start,
                 component_name: fact.component_name.clone(),
             });
@@ -139,6 +159,10 @@ pub fn analyze_fallthrough(
         }
         if let Some(attrs) = fallthrough_attrs_map.get(&info.file_id) {
             info.fallthrough_attrs.extend(attrs.iter().cloned());
+        }
+        if let Some(attrs) = static_name_attrs_map.get(&info.file_id) {
+            info.static_name_fallthrough_attrs
+                .extend(attrs.iter().cloned());
         }
         if let Some(attrs) = dynamic_name_attrs_map.get(&info.file_id) {
             info.dynamic_name_fallthrough_attrs
@@ -197,17 +221,19 @@ pub fn analyze_fallthrough(
         }
 
         // Check for unused fallthrough attributes
-        let mut unused_attrs: Vec<_> = info
-            .fallthrough_attrs
-            .iter()
-            .filter(|attr| {
+        let mut unused_attrs = fallthrough_related_map
+            .get(&info.file_id)
+            .into_iter()
+            .flatten()
+            .filter(|related| {
                 !info.uses_attrs
-                    && (info.dynamic_name_fallthrough_attrs.contains(*attr)
-                        || !is_standard_html_attr(attr))
+                    && related.report_as_unused
+                    && (related.name_is_dynamic || !related.standard_html_attr)
             })
-            .cloned()
-            .collect();
+            .map(FallthroughUsageRelated::display_name)
+            .collect::<Vec<_>>();
         unused_attrs.sort_unstable();
+        unused_attrs.dedup();
 
         if !unused_attrs.is_empty() && !info.binds_attrs && info.root_element_count > 1 {
             // Use offset 0 to point to <template> tag start (wasm.rs adds tag_start offset)
@@ -293,45 +319,6 @@ fn is_declared_event(declared_events: &FxHashSet<CompactString>, event_name: &st
     declared_events.iter().any(|declared| {
         declared.as_str() == event_name || camelize(declared.as_str()) == normalized
     })
-}
-
-struct FallthroughUsageRelated {
-    parent_file_id: FileId,
-    attr_name: CompactString,
-    source_start: u32,
-    component_name: CompactString,
-}
-
-fn with_fallthrough_relateds(
-    mut diagnostic: CrossFileDiagnostic,
-    relateds: Option<&[FallthroughUsageRelated]>,
-    attrs_filter: Option<&[CompactString]>,
-) -> CrossFileDiagnostic {
-    let Some(relateds) = relateds else {
-        return diagnostic;
-    };
-
-    for related in relateds {
-        if attrs_filter.is_some_and(|attrs| {
-            !attrs
-                .iter()
-                .any(|attr| attr.as_str() == related.attr_name.as_str())
-        }) {
-            continue;
-        }
-
-        diagnostic = diagnostic.with_related(
-            related.parent_file_id,
-            related.source_start,
-            cstr!(
-                "{} passed to <{}>",
-                related.attr_name,
-                related.component_name
-            ),
-        );
-    }
-
-    diagnostic
 }
 
 #[cfg(test)]

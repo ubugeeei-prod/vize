@@ -66,6 +66,7 @@ fn ranks_hotspots_with_dimension_inputs_and_json_shape() {
             root_element_count: 2,
             passed_attrs: FxHashSet::from_iter([CompactString::new("trackingId")]),
             fallthrough_attrs: FxHashSet::from_iter([CompactString::new("trackingId")]),
+            static_name_fallthrough_attrs: FxHashSet::from_iter([CompactString::new("trackingId")]),
             dynamic_name_fallthrough_attrs: FxHashSet::default(),
             declared_props: FxHashSet::default(),
             declared_events: FxHashSet::default(),

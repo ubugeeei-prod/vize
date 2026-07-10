@@ -140,7 +140,10 @@ impl Drawer {
             }
         }
 
-        if !usage.slots.iter().any(|slot| slot.name == "default")
+        if !usage
+            .slots
+            .iter()
+            .any(|slot| slot.name == "default" && !slot.name_is_dynamic)
             && let Some((start, end)) = default_slot_child_span(el)
         {
             usage.slots.push(SlotUsage {

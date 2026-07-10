@@ -19,6 +19,8 @@ pub struct FallthroughInfo {
     pub passed_attrs: FxHashSet<CompactString>,
     /// Passed attributes that are neither declared props nor declared event listeners.
     pub fallthrough_attrs: FxHashSet<CompactString>,
+    /// Fallthrough names written as static attribute or listener names.
+    pub static_name_fallthrough_attrs: FxHashSet<CompactString>,
     /// Fallthrough names represented by runtime directive argument expressions.
     pub dynamic_name_fallthrough_attrs: FxHashSet<CompactString>,
     /// Props declared by this component.
@@ -56,7 +58,9 @@ impl FallthroughInfo {
 impl FallthroughInfo {
     /// Count passed attributes that are neither declared props nor declared listeners.
     pub fn fallthrough_attr_count(&self) -> usize {
-        self.fallthrough_attrs.len()
+        self.static_name_fallthrough_attrs
+            .len()
+            .saturating_add(self.dynamic_name_fallthrough_attrs.len())
     }
 
     /// Single-root components inherit fallthrough attrs automatically unless disabled.
@@ -89,11 +93,9 @@ impl FallthroughInfo {
 
     /// Count undeclared passed attrs that Vue commonly forwards safely.
     pub fn safe_standard_fallthrough_attr_count(&self) -> usize {
-        self.fallthrough_attrs
+        self.static_name_fallthrough_attrs
             .iter()
-            .filter(|attr| {
-                !self.dynamic_name_fallthrough_attrs.contains(*attr) && is_standard_html_attr(attr)
-            })
+            .filter(|attr| is_standard_html_attr(attr))
             .count()
     }
 
@@ -103,11 +105,10 @@ impl FallthroughInfo {
             return 0;
         }
 
-        self.fallthrough_attrs
+        self.static_name_fallthrough_attrs
             .iter()
-            .filter(|attr| {
-                self.dynamic_name_fallthrough_attrs.contains(*attr) || !is_standard_html_attr(attr)
-            })
+            .filter(|attr| !is_standard_html_attr(attr))
             .count()
+            .saturating_add(self.dynamic_name_fallthrough_attrs.len())
     }
 }

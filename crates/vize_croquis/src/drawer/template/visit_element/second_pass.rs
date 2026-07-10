@@ -22,7 +22,9 @@ impl Drawer {
                     continue;
                 };
 
-                self.collect_dynamic_directive_argument(dir, scope_vars);
+                if dir.name != "slot" {
+                    self.collect_dynamic_directive_argument(dir, scope_vars);
+                }
 
                 if dir.name == "bind" {
                     profile!(
@@ -52,6 +54,20 @@ impl Drawer {
                 }
             }
         });
+    }
+
+    pub(super) fn process_dynamic_slot_argument(
+        &mut self,
+        el: &ElementNode<'_>,
+        scope_vars: &[CompactString],
+    ) {
+        for prop in &el.props {
+            if let PropNode::Directive(dir) = prop
+                && dir.name == "slot"
+            {
+                self.collect_dynamic_directive_argument(dir, scope_vars);
+            }
+        }
     }
 
     pub(super) fn check_element_directive_refs(

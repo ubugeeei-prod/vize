@@ -312,6 +312,7 @@ fn test_fallthrough_info_issues() {
         root_element_count: 1,
         passed_attrs: FxHashSet::default(),
         fallthrough_attrs: FxHashSet::default(),
+        static_name_fallthrough_attrs: FxHashSet::default(),
         dynamic_name_fallthrough_attrs: FxHashSet::default(),
         declared_props: FxHashSet::default(),
         declared_events: FxHashSet::default(),

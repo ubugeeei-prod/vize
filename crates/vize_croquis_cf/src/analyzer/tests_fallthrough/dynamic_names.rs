@@ -2,6 +2,9 @@ use super::*;
 use crate::analyzer::CrossFileResult;
 use serde_json::{Value, json};
 
+#[path = "dynamic_names/mixed.rs"]
+mod mixed;
+
 const CHILD_SCRIPT: &str = concat!(
     "defineProps<{ kind?: string; class?: string; modelValue?: string }>();\n",
     "defineEmits(['save', 'click', 'update:modelValue']);",
@@ -188,7 +191,7 @@ fn parsed_dynamic_names_never_match_static_contracts() {
     assert!(multi_root.related_files.iter().any(|related| {
         related.0 == parent_id
             && related.1 == source_range(":[class]=\"maybeClass\"").0
-            && related.2 == "class passed to <Child>"
+            && related.2 == "[class] passed to <Child>"
     }));
 }
 

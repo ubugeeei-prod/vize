@@ -44,40 +44,39 @@ impl Drawer {
         el: &ElementNode<'_>,
         subtree_end: &mut Option<u32>,
         scope_vars: &mut Vec<CompactString>,
-    ) -> usize {
-        let Some((slot_name, name_is_static, prop_names, props_pattern, offset)) = slot_scope
-        else {
-            return 0;
-        };
+    ) -> Option<usize> {
+        let (slot_name, name_is_static, prop_names, props_pattern, offset) = slot_scope?;
 
         let count = prop_names.len();
-        if count > 0 || self.options.analyze_template_scopes {
-            let component = if is_component {
-                Some(CompactString::new(tag))
-            } else if tag == "template" {
-                self.parent_component_stack.last().cloned()
-            } else {
-                None
-            };
-
-            self.croquis.scopes.enter_v_slot_scope_with_name_kind(
-                VSlotScopeData {
-                    name: slot_name,
-                    props_pattern,
-                    prop_names: prop_names.iter().cloned().collect(),
-                    component,
-                },
-                name_is_static,
-                offset,
-                *subtree_end.get_or_insert_with(|| element_subtree_end(el)),
-            );
-
-            for name in prop_names {
-                scope_vars.push(name);
-            }
+        if count == 0 && !self.options.analyze_template_scopes {
+            return None;
         }
 
-        count
+        let component = if is_component {
+            Some(CompactString::new(tag))
+        } else if tag == "template" {
+            self.parent_component_stack.last().cloned()
+        } else {
+            None
+        };
+
+        self.croquis.scopes.enter_v_slot_scope_with_name_kind(
+            VSlotScopeData {
+                name: slot_name,
+                props_pattern,
+                prop_names: prop_names.iter().cloned().collect(),
+                component,
+            },
+            name_is_static,
+            offset,
+            *subtree_end.get_or_insert_with(|| element_subtree_end(el)),
+        );
+
+        for name in prop_names {
+            scope_vars.push(name);
+        }
+
+        Some(count)
     }
 
     pub(super) fn enter_element_for_scope(
@@ -157,12 +156,12 @@ impl Drawer {
 
     pub(super) fn exit_element_slot_scope(
         &mut self,
-        slot_vars_count: usize,
+        slot_vars_count: Option<usize>,
         scope_vars: &mut Vec<CompactString>,
     ) {
-        if slot_vars_count == 0 {
+        let Some(slot_vars_count) = slot_vars_count else {
             return;
-        }
+        };
 
         for _ in 0..slot_vars_count {
             scope_vars.pop();
