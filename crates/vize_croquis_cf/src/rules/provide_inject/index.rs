@@ -204,7 +204,7 @@ impl ProvideInjectIndex {
         })
     }
 
-    fn compare_files(&self, left: FileId, right: FileId) -> Ordering {
+    pub(crate) fn compare_files(&self, left: FileId, right: FileId) -> Ordering {
         stable_rank(&self.stable_file_order, left)
             .cmp(&stable_rank(&self.stable_file_order, right))
             .then_with(|| left.as_u32().cmp(&right.as_u32()))
@@ -257,4 +257,33 @@ fn extract_provide_inject(
     let provides = analysis.provide_inject.provides().to_vec();
     let injects = analysis.provide_inject.injects().to_vec();
     (provides, injects)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ProvideInjectIndex;
+    use crate::registry::FileId;
+    use std::cmp::Ordering;
+    use vize_carton::FxHashMap;
+
+    #[test]
+    fn shared_file_order_places_known_paths_before_missing_entries() {
+        let first = FileId::new(7);
+        let second = FileId::new(3);
+        let missing_low = FileId::new(1);
+        let missing_high = FileId::new(9);
+        let index = ProvideInjectIndex {
+            provides: FxHashMap::default(),
+            injects: FxHashMap::default(),
+            component_parents: FxHashMap::default(),
+            stable_file_order: FxHashMap::from_iter([(first, 0), (second, 1)]),
+        };
+
+        assert_eq!(index.compare_files(first, second), Ordering::Less);
+        assert_eq!(index.compare_files(second, missing_low), Ordering::Less);
+        assert_eq!(
+            index.compare_files(missing_low, missing_high),
+            Ordering::Less
+        );
+    }
 }

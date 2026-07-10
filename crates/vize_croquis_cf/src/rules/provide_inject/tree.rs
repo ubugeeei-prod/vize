@@ -73,12 +73,12 @@ pub(crate) fn build_provide_inject_tree_with_index(
     }
 
     for children in child_map.values_mut() {
-        children.sort_by(|left, right| compare_files(registry, *left, *right));
+        children.sort_by(|left, right| index.compare_files(*left, *right));
         children.dedup();
     }
 
     let root_ids = select_root_ids(
-        registry,
+        index,
         &included_nodes,
         &nodes_with_parent,
         &child_map,
@@ -214,7 +214,7 @@ fn provider_for_branch(
 }
 
 fn select_root_ids(
-    registry: &ModuleRegistry,
+    index: &ProvideInjectIndex,
     included_nodes: &FxHashSet<FileId>,
     nodes_with_parent: &FxHashSet<FileId>,
     child_map: &FxHashMap<FileId, Vec<FileId>>,
@@ -235,7 +235,7 @@ fn select_root_ids(
         .filter_map(|branch| branch.path.first().copied())
         .filter(|file_id| !covered.contains(file_id))
         .collect::<Vec<_>>();
-    cyclic_starts.sort_by(|left, right| compare_files(registry, *left, *right));
+    cyclic_starts.sort_by(|left, right| index.compare_files(*left, *right));
     cyclic_starts.dedup();
     roots.extend(cyclic_starts.iter().copied());
     for root in cyclic_starts {
@@ -246,13 +246,13 @@ fn select_root_ids(
         .iter()
         .copied()
         .filter(|file_id| !covered.contains(file_id))
-        .min_by(|left, right| compare_files(registry, *left, *right))
+        .min_by(|left, right| index.compare_files(*left, *right))
     {
         roots.push(root);
         mark_reachable(root, child_map, &mut covered);
     }
 
-    roots.sort_by(|left, right| compare_files(registry, *left, *right));
+    roots.sort_by(|left, right| index.compare_files(*left, *right));
     roots.dedup();
     roots
 }
@@ -270,17 +270,5 @@ fn mark_reachable(
         if let Some(children) = child_map.get(&file_id) {
             pending.extend(children.iter().copied());
         }
-    }
-}
-
-fn compare_files(registry: &ModuleRegistry, left: FileId, right: FileId) -> std::cmp::Ordering {
-    match (registry.get(left), registry.get(right)) {
-        (Some(left_entry), Some(right_entry)) => left_entry
-            .path
-            .cmp(&right_entry.path)
-            .then_with(|| left.as_u32().cmp(&right.as_u32())),
-        (Some(_), None) => std::cmp::Ordering::Less,
-        (None, Some(_)) => std::cmp::Ordering::Greater,
-        (None, None) => left.as_u32().cmp(&right.as_u32()),
     }
 }
