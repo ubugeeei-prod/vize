@@ -26,6 +26,11 @@ test("compiler foundation ownership is split across physical crates", () => {
     "vize_carton",
     "vize_relief",
   ]);
+  assert.deepEqual(internalDependencies("vize_croquis_cf"), [
+    "vize_armature",
+    "vize_carton",
+    "vize_croquis",
+  ]);
   assert.deepEqual(internalDependencies("vize_rendu"), [
     "vize_armature",
     "vize_atlas",
@@ -62,4 +67,5 @@ test("architecture docs distinguish Relief syntax from Croquis semantics", () =>
   );
   assert.match(glossary, /Transforming or normalizing a Relief node does not make it Croquis/);
   assert.match(glossary, /`vize_atelier_core` \| Shared transforms and JavaScript emission/);
+  assert.match(glossary, /`vize_croquis_cf`\s+\| Opt-in cross-file aggregation/);
 });

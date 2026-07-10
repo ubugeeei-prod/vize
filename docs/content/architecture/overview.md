@@ -158,6 +158,7 @@ parity, benchmark, and readiness evidence expected for review.
 | AST           | `vize_relief`        | AST node definitions, error types, compiler options    |
 | Parsing       | `vize_armature`      | Tokenizer + recursive descent parser                   |
 | Analysis      | `vize_croquis`       | Semantic analysis, scope tracking, binding detection   |
+| Analysis      | `vize_croquis_cf`    | Opt-in cross-file semantic and dependency aggregation  |
 | Render        | `vize_rendu`         | Borrowed output-facing render projection               |
 | Compilation   | `vize_atelier_core`  | Shared transform lane, codegen utilities, source maps  |
 | Compilation   | `vize_atelier_dom`   | VDOM code generation                                   |

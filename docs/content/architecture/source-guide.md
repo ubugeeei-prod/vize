@@ -54,6 +54,7 @@ add only the behavior it owns.
 | Product/target request ledger  | `crates/vize_atlas/src/lib.rs`         | lane registration and fallback reporting                           |
 | AST shape and compiler options | `crates/vize_relief/src/lib.rs`        | downstream compiler, lint, and formatter callers                   |
 | Template semantics             | `crates/vize_croquis/src/lib.rs`       | scope, binding, reactivity, and virtual TypeScript helpers         |
+| Cross-file semantics           | `crates/vize_croquis_cf/src/lib.rs`    | dependency, component, effect, and project-level graph consumers   |
 | Render projection              | `crates/vize_rendu/src/lib.rs`         | DOM, SSR, Vapor, inspector, and profiling consumers                |
 | Shared compiler behavior       | `crates/vize_atelier_core/src/lib.rs`  | backend-specific atelier crates                                    |
 | Client template output         | `crates/vize_atelier_dom/src/lib.rs`   | generated code snapshots and runtime fixture tests                 |

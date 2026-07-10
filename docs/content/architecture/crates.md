@@ -12,14 +12,15 @@ editor tooling can share the same syntax model.
 
 ## Foundation
 
-| Crate           | Role                                                                                      |
-| --------------- | ----------------------------------------------------------------------------------------- |
-| `vize_carton`   | Shared allocator, strings, hash collections, flags, profiler, i18n, and DOM/tag utilities |
-| `vize_armature` | Vue template tokenizer and parser                                                         |
-| `vize_atlas`    | Neutral source/product/target request ledger and observable fallback facts                |
-| `vize_relief`   | Source syntax nodes and locations, compiler errors, and compiler options                  |
-| `vize_croquis`  | Derived scopes, symbols, bindings, dependencies, reactivity, and analysis graphs          |
-| `vize_rendu`    | Borrowed output-facing render operations, capabilities, and emitted section views         |
+| Crate             | Role                                                                                      |
+| ----------------- | ----------------------------------------------------------------------------------------- |
+| `vize_carton`     | Shared allocator, strings, hash collections, flags, profiler, i18n, and DOM/tag utilities |
+| `vize_armature`   | Vue template tokenizer and parser                                                         |
+| `vize_atlas`      | Neutral source/product/target request ledger and observable fallback facts                |
+| `vize_relief`     | Source syntax nodes and locations, compiler errors, and compiler options                  |
+| `vize_croquis`    | Derived scopes, symbols, bindings, dependencies, reactivity, and analysis graphs          |
+| `vize_croquis_cf` | Opt-in cross-file registry, dependency graph, and project semantic aggregation            |
+| `vize_rendu`      | Borrowed output-facing render operations, capabilities, and emitted section views         |
 
 ## Compilation
 

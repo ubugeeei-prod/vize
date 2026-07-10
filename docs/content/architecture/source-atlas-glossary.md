@@ -54,13 +54,14 @@ explicitly represented by the source syntax.
 
 ## Physical crate boundaries
 
-| Crate               | Owns                                                             | Must not become                      |
-| ------------------- | ---------------------------------------------------------------- | ------------------------------------ |
-| `vize_atlas`        | Neutral request/capability/fallback ledger                       | AST, semantic engine, or emitter     |
-| `vize_relief`       | Source syntax, locations, errors, options                        | Symbol table or dependency graph     |
-| `vize_croquis`      | Semantic facts, scopes, symbols, call/effect/control-flow graphs | Render IR or code generator          |
-| `vize_rendu`        | Borrowed output-facing render operations and sections            | General-purpose toolchain IR         |
-| `vize_atelier_core` | Shared transforms and JavaScript emission                        | Owner of all compiler infrastructure |
+| Crate               | Owns                                                             | Must not become                       |
+| ------------------- | ---------------------------------------------------------------- | ------------------------------------- |
+| `vize_atlas`        | Neutral request/capability/fallback ledger                       | AST, semantic engine, or emitter      |
+| `vize_relief`       | Source syntax, locations, errors, options                        | Symbol table or dependency graph      |
+| `vize_croquis`      | Semantic facts, scopes, symbols, call/effect/control-flow graphs | Render IR or code generator           |
+| `vize_croquis_cf`   | Opt-in cross-file aggregation and project graph facts            | Source AST or mandatory compiler pass |
+| `vize_rendu`        | Borrowed output-facing render operations and sections            | General-purpose toolchain IR          |
+| `vize_atelier_core` | Shared transforms and JavaScript emission                        | Owner of all compiler infrastructure  |
 
 ## Plate-request matrix
 
