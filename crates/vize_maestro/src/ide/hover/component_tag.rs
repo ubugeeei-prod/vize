@@ -1,12 +1,15 @@
 use tower_lsp::lsp_types::Hover;
-use vize_croquis::croquis::{ComponentUsage, PassedProp, SlotUsage};
+use vize_croquis::croquis::{ComponentUsage, PassedProp};
 use vize_croquis::{Drawer, DrawerOptions};
+
+mod items;
 
 use super::{HoverBuilder, HoverService};
 use crate::ide::completion::template::component_metadata;
 use crate::ide::definition::helpers;
 use crate::ide::{IdeContext, is_component_tag};
 use crate::virtual_code::{ArtCursorPosition, BlockType};
+use items::{event_items, prop_items, slot_items};
 
 impl HoverService {
     pub(super) fn hover_component_tag(ctx: &IdeContext<'_>) -> Option<Hover> {
@@ -47,6 +50,7 @@ impl HoverService {
         }
 
         if let Some(metadata) = metadata {
+            let has_dynamic_prop_name = usage.props.iter().any(|prop| prop.name_is_dynamic);
             let missing_required = metadata
                 .props
                 .iter()
@@ -60,13 +64,13 @@ impl HoverService {
                 .map(|prop| prop.name.clone())
                 .collect::<Vec<_>>();
             if !missing_required.is_empty() {
-                let heading = if usage.has_spread_attrs {
+                let heading = if usage.has_spread_attrs || has_dynamic_prop_name {
                     "Required props not statically visible"
                 } else {
                     "Required props not passed"
                 };
                 builder = section_from_items(builder, heading, &missing_required);
-                if !usage.has_spread_attrs {
+                if !usage.has_spread_attrs && !has_dynamic_prop_name {
                     builder = builder.code(
                         "vue",
                         &missing_required_example(tag_name.as_str(), &missing_required),
@@ -152,67 +156,15 @@ fn template_view<'a>(ctx: &'a IdeContext<'_>) -> Option<TemplateView<'a>> {
     }
 }
 
-fn prop_items(usage: &ComponentUsage) -> Vec<String> {
-    usage
-        .props
-        .iter()
-        .filter(|prop| prop.name != "key" && prop.name != "ref")
-        .map(format_prop)
-        .collect()
-}
-
-fn format_prop(prop: &PassedProp) -> String {
-    match (prop.is_dynamic, prop.value.as_ref()) {
-        (true, Some(value)) => format!("`:{}=\"{}\"`", prop.name, value),
-        (true, None) => format!("`:{}=\"{}\"`", prop.name, prop.name),
-        (false, Some(value)) => format!("`{}=\"{}\"`", prop.name, value),
-        (false, None) => format!("`{}`", prop.name),
-    }
-}
-
-fn event_items(usage: &ComponentUsage) -> Vec<String> {
-    usage
-        .events
-        .iter()
-        .map(|event| {
-            let modifiers = event
-                .modifiers
-                .iter()
-                .map(|modifier| format!(".{modifier}"))
-                .collect::<String>();
-            match event.handler.as_ref() {
-                Some(handler) => format!("`@{}{modifiers}=\"{}\"`", event.name, handler),
-                None => format!("`@{}{modifiers}`", event.name),
-            }
-        })
-        .collect()
-}
-
-fn slot_items(usage: &ComponentUsage) -> Vec<String> {
-    usage.slots.iter().map(format_slot).collect()
-}
-
-fn format_slot(slot: &SlotUsage) -> String {
-    if slot.scope_vars.is_empty() {
-        return format!("`#{}`", slot.name);
-    }
-
-    let vars = slot
-        .scope_vars
-        .iter()
-        .map(|name| name.as_str())
-        .collect::<Vec<_>>()
-        .join(", ");
-    format!("`#{} {{ {} }}`", slot.name, vars)
-}
-
 fn section_from_items(builder: HoverBuilder, heading: &str, items: &[String]) -> HoverBuilder {
     let refs = items.iter().map(String::as_str).collect::<Vec<_>>();
     builder.bullets(heading, &refs)
 }
 
 fn prop_names_match(passed: &PassedProp, declared_name: &str) -> bool {
-    passed.name == declared_name || helpers::kebab_to_camel(passed.name.as_str()) == declared_name
+    !passed.name_is_dynamic
+        && (passed.name == declared_name
+            || helpers::kebab_to_camel(passed.name.as_str()) == declared_name)
 }
 
 fn missing_required_example(tag_name: &str, missing_required: &[String]) -> String {

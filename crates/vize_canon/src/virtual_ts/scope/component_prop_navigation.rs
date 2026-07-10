@@ -10,7 +10,8 @@ use super::context::ComponentPropsContext;
 
 pub(super) fn has_navigable_props(ctx: &ComponentPropsContext<'_>, usage: &ComponentUsage) -> bool {
     usage.props.iter().any(|prop| {
-        prop.name.as_str() != "key"
+        !prop.name_is_dynamic
+            && prop.name.as_str() != "key"
             && prop.name.as_str() != "ref"
             && prop_navigation_source_range(ctx.template_source, prop).is_some()
     })
@@ -55,7 +56,7 @@ fn emit_prop_references(
     let props_ref = cstr!("__vize_props_nav_{idx}");
     let mut emitted_props_ref = false;
     for prop in &usage.props {
-        if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
+        if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
             continue;
         }
         let Some(source_range) = prop_navigation_source_range(ctx.template_source, prop) else {
@@ -97,6 +98,9 @@ fn prop_navigation_source_range(
     template_source: Option<&str>,
     prop: &PassedProp,
 ) -> Option<Range<usize>> {
+    if prop.name_is_dynamic {
+        return None;
+    }
     let name = prop.name.as_str();
     if name.is_empty() {
         return None;

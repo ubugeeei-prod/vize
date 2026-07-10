@@ -138,6 +138,7 @@ fn component_usage_snapshot(usage: &ComponentUsage) -> snapshot::SemanticCompone
 fn passed_prop_snapshot(prop: &PassedProp) -> snapshot::SemanticPassedPropSnapshot {
     snapshot::SemanticPassedPropSnapshot {
         name: prop.name.clone(),
+        name_is_dynamic: prop.name_is_dynamic,
         value: prop.value.clone(),
         range: snapshot::SemanticSourceRange::new(prop.start, prop.end),
         dynamic: prop.is_dynamic,
@@ -147,6 +148,7 @@ fn passed_prop_snapshot(prop: &PassedProp) -> snapshot::SemanticPassedPropSnapsh
 fn event_listener_snapshot(event: &EventListener) -> snapshot::SemanticEventListenerSnapshot {
     snapshot::SemanticEventListenerSnapshot {
         name: event.name.clone(),
+        name_is_dynamic: event.name_is_dynamic,
         handler: event.handler.clone(),
         modifiers: event.modifiers.iter().cloned().collect(),
         range: snapshot::SemanticSourceRange::new(event.start, event.end),
@@ -156,6 +158,7 @@ fn event_listener_snapshot(event: &EventListener) -> snapshot::SemanticEventList
 fn slot_usage_snapshot(slot: &SlotUsage) -> snapshot::SemanticSlotUsageSnapshot {
     snapshot::SemanticSlotUsageSnapshot {
         name: slot.name.clone(),
+        name_is_dynamic: slot.name_is_dynamic,
         scope_vars: slot.scope_vars.iter().cloned().collect(),
         range: snapshot::SemanticSourceRange::new(slot.start, slot.end),
         scoped: slot.has_scope,

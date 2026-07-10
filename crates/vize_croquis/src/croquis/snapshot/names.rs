@@ -92,6 +92,9 @@ pub(super) fn template_expression_kind(kind: super::super::TemplateExpressionKin
         super::super::TemplateExpressionKind::VIf => "vIf",
         super::super::TemplateExpressionKind::VShow => "vShow",
         super::super::TemplateExpressionKind::VModel => "vModel",
+        super::super::TemplateExpressionKind::DynamicDirectiveArgument => {
+            "dynamicDirectiveArgument"
+        }
     }
 }
 

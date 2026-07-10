@@ -13,6 +13,7 @@ pub(super) struct PassedComponentUsage<'a> {
 
 pub(super) struct PassedPropInfo<'a> {
     pub(super) name: &'a str,
+    pub(super) name_is_dynamic: bool,
     pub(super) value: Option<&'a str>,
     pub(super) start: u32,
     pub(super) end: u32,
@@ -41,6 +42,7 @@ pub(super) fn extract_passed_props_for_component<'a>(
                 .iter()
                 .map(|prop| PassedPropInfo {
                     name: prop.name.as_str(),
+                    name_is_dynamic: prop.name_is_dynamic,
                     value: prop.value.as_deref(),
                     start: prop.start,
                     end: prop.end,
@@ -83,7 +85,11 @@ pub(super) fn has_passed_prop(usage: &PassedComponentUsage<'_>, name: &str) -> b
     usage
         .props
         .iter()
-        .any(|prop| prop_names_match(prop.name, name))
+        .any(|prop| !prop.name_is_dynamic && prop_names_match(prop.name, name))
+}
+
+pub(super) fn has_dynamic_prop_name(usage: &PassedComponentUsage<'_>) -> bool {
+    usage.props.iter().any(|prop| prop.name_is_dynamic)
 }
 
 pub(super) fn declared_prop<'a>(

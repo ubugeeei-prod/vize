@@ -33,6 +33,7 @@ fn semantic_summary_collects_template_and_export_counts() {
         end: 20,
         props: smallvec![PassedProp {
             name: CompactString::new("title"),
+            name_is_dynamic: false,
             value: Some(CompactString::new("message")),
             start: 1,
             end: 8,
@@ -40,6 +41,7 @@ fn semantic_summary_collects_template_and_export_counts() {
         }],
         events: smallvec![EventListener {
             name: CompactString::new("save"),
+            name_is_dynamic: false,
             handler: Some(CompactString::new("save")),
             modifiers: smallvec![],
             start: 9,
@@ -47,6 +49,7 @@ fn semantic_summary_collects_template_and_export_counts() {
         }],
         slots: smallvec![SlotUsage {
             name: CompactString::new("default"),
+            name_is_dynamic: false,
             scope_vars: smallvec![CompactString::new("row")],
             start: 15,
             end: 20,

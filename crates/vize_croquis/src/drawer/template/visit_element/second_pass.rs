@@ -22,6 +22,8 @@ impl Drawer {
                     continue;
                 };
 
+                self.collect_dynamic_directive_argument(dir, scope_vars);
+
                 if dir.name == "bind" {
                     profile!(
                         "croquis.template.directive.v_bind",
@@ -99,6 +101,35 @@ impl Drawer {
             scope_id,
             vif_guard: self.current_vif_guard(),
         });
+    }
+
+    fn collect_dynamic_directive_argument(
+        &mut self,
+        dir: &DirectiveNode<'_>,
+        scope_vars: &[CompactString],
+    ) {
+        let Some(arg) = dir.arg.as_ref().filter(|arg| match arg {
+            ExpressionNode::Simple(simple) => !simple.is_static,
+            ExpressionNode::Compound(_) => true,
+        }) else {
+            return;
+        };
+
+        if self.options.collect_template_expressions {
+            let loc = arg.loc();
+            self.croquis.template_expressions.push(TemplateExpression {
+                content: CompactString::new(expression_content(arg)),
+                kind: TemplateExpressionKind::DynamicDirectiveArgument,
+                start: loc.start.offset,
+                end: loc.end.offset,
+                scope_id: self.croquis.scopes.current_id(),
+                vif_guard: self.current_vif_guard(),
+            });
+        }
+
+        if self.options.detect_undefined {
+            self.check_expression_refs(arg, scope_vars);
+        }
     }
 }
 

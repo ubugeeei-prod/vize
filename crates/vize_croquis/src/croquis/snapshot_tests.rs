@@ -133,6 +133,7 @@ fn semantic_snapshot_is_deterministic_for_manual_croquis_facts() {
         end: 80,
         props: smallvec![PassedProp {
             name: CompactString::new("title"),
+            name_is_dynamic: false,
             value: Some(CompactString::new("alpha")),
             start: 45,
             end: 60,
@@ -140,6 +141,7 @@ fn semantic_snapshot_is_deterministic_for_manual_croquis_facts() {
         }],
         events: smallvec![EventListener {
             name: CompactString::new("close"),
+            name_is_dynamic: false,
             handler: Some(CompactString::new("zeta")),
             modifiers: smallvec![CompactString::new("stop")],
             start: 61,
@@ -147,6 +149,7 @@ fn semantic_snapshot_is_deterministic_for_manual_croquis_facts() {
         }],
         slots: smallvec![SlotUsage {
             name: CompactString::new("default"),
+            name_is_dynamic: false,
             scope_vars: smallvec![],
             start: 71,
             end: 79,

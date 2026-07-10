@@ -69,7 +69,7 @@ impl DiagnosticService {
         let mut diagnostics = Vec::new();
 
         for usage in croquis.component_usages {
-            if usage.has_spread_attrs {
+            if usage.has_spread_attrs || usage.props.iter().any(|prop| prop.name_is_dynamic) {
                 continue;
             }
 
@@ -81,10 +81,10 @@ impl DiagnosticService {
                 .iter()
                 .filter(|prop| prop.required)
                 .filter(|prop| {
-                    !usage
-                        .props
-                        .iter()
-                        .any(|passed| prop_names_match(passed.name.as_str(), prop.name.as_str()))
+                    !usage.props.iter().any(|passed| {
+                        !passed.name_is_dynamic
+                            && prop_names_match(passed.name.as_str(), prop.name.as_str())
+                    })
                 })
                 .map(|prop| prop.name.clone())
                 .collect::<Vec<_>>();

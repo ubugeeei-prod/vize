@@ -36,6 +36,9 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
 
                     // Check each prop passed
                     for prop in &usage.props {
+                        if prop.name_is_dynamic {
+                            continue;
+                        }
                         // Skip if no value
                         let Some(value) = &prop.value else {
                             continue;

@@ -35,7 +35,8 @@ pub(crate) fn collect_template_prop_names(summary: &Croquis) -> FxHashSet<String
 
     for usage in &summary.component_usages {
         for prop in &usage.props {
-            if prop.is_dynamic
+            if !prop.name_is_dynamic
+                && prop.is_dynamic
                 && prop
                     .value
                     .as_ref()

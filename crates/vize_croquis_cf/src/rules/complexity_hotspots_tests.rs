@@ -29,6 +29,7 @@ fn ranks_hotspots_with_dimension_inputs_and_json_shape() {
         end: 90,
         props: smallvec![PassedProp {
             name: CompactString::new("model"),
+            name_is_dynamic: false,
             value: Some(CompactString::new("state")),
             start: 45,
             end: 60,
@@ -37,6 +38,7 @@ fn ranks_hotspots_with_dimension_inputs_and_json_shape() {
         events: smallvec![],
         slots: smallvec![SlotUsage {
             name: CompactString::new("default"),
+            name_is_dynamic: false,
             scope_vars: smallvec![CompactString::new("slotProps")],
             start: 61,
             end: 89,
@@ -64,6 +66,7 @@ fn ranks_hotspots_with_dimension_inputs_and_json_shape() {
             root_element_count: 2,
             passed_attrs: FxHashSet::from_iter([CompactString::new("trackingId")]),
             fallthrough_attrs: FxHashSet::from_iter([CompactString::new("trackingId")]),
+            dynamic_name_fallthrough_attrs: FxHashSet::default(),
             declared_props: FxHashSet::default(),
             declared_events: FxHashSet::default(),
             template_start: 0,
@@ -185,6 +188,7 @@ fn analyzer_result_stores_complexity_hotspots() {
         end: 30,
         props: smallvec![PassedProp {
             name: CompactString::new("trackingId"),
+            name_is_dynamic: false,
             value: Some(CompactString::new("id")),
             start: 8,
             end: 24,

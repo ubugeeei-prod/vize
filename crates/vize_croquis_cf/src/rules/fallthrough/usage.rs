@@ -26,6 +26,9 @@ pub struct FallthroughUsageAttrFact {
     pub kind: FallthroughUsageAttrKind,
     pub source_start: u32,
     pub source_end: u32,
+    /// Whether the attribute name is only known at runtime.
+    pub name_is_dynamic: bool,
+    /// Whether the attribute value or listener handler is dynamic.
     pub dynamic: bool,
     pub declared_prop: bool,
     pub declared_event: bool,
@@ -69,20 +72,21 @@ pub(super) fn collect_fallthrough_usage_facts(
                     usage_attr_fact(
                         name,
                         FallthroughUsageAttrKind::Prop,
-                        prop.start,
-                        prop.end,
+                        (prop.start, prop.end),
+                        prop.name_is_dynamic,
                         prop.is_dynamic,
                         &declared_props,
                         false,
                     )
                 }));
                 attrs.extend(usage.events.iter().map(|event| {
-                    let declared_event = is_declared_event(&declared_events, event.name.as_str());
+                    let declared_event = !event.name_is_dynamic
+                        && is_declared_event(&declared_events, event.name.as_str());
                     usage_attr_fact(
                         listener_attr_name(event.name.as_str()),
                         FallthroughUsageAttrKind::Listener,
-                        event.start,
-                        event.end,
+                        (event.start, event.end),
+                        event.name_is_dynamic,
                         true,
                         &declared_props,
                         declared_event,
@@ -116,20 +120,22 @@ pub(super) fn collect_fallthrough_usage_facts(
 fn usage_attr_fact(
     name: CompactString,
     kind: FallthroughUsageAttrKind,
-    source_start: u32,
-    source_end: u32,
+    source_range: (u32, u32),
+    name_is_dynamic: bool,
     dynamic: bool,
     declared_props: &FxHashSet<CompactString>,
     declared_event: bool,
 ) -> FallthroughUsageAttrFact {
-    let declared_prop = declared_props.contains(&name);
+    let declared_prop = !name_is_dynamic && declared_props.contains(&name);
+    let (source_start, source_end) = source_range;
     FallthroughUsageAttrFact {
-        standard_html_attr: is_standard_html_attr(name.as_str()),
+        standard_html_attr: !name_is_dynamic && is_standard_html_attr(name.as_str()),
         fallthrough: !declared_prop && !declared_event,
         name,
         kind,
         source_start,
         source_end,
+        name_is_dynamic,
         dynamic,
         declared_prop,
         declared_event,

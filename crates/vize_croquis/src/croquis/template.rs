@@ -135,6 +135,8 @@ pub enum TemplateExpressionKind {
     VShow,
     /// v-model: v-model="value"
     VModel,
+    /// Runtime directive argument: `:[name]`, `@[name]`, or `#[name]`.
+    DynamicDirectiveArgument,
 }
 
 impl TemplateExpressionKind {
@@ -148,6 +150,7 @@ impl TemplateExpressionKind {
             Self::VIf => "VIf",
             Self::VShow => "VShow",
             Self::VModel => "VModel",
+            Self::DynamicDirectiveArgument => "DynamicDirectiveArgument",
         }
     }
 }
@@ -183,6 +186,8 @@ pub struct ComponentUsage {
 pub struct PassedProp {
     /// Prop name (kebab-case or camelCase as written)
     pub name: CompactString,
+    /// Whether the prop name is a runtime directive argument (`v-bind:[name]`).
+    pub name_is_dynamic: bool,
     /// The expression if dynamic, or literal value if static
     pub value: Option<CompactString>,
     /// Start offset
@@ -198,6 +203,8 @@ pub struct PassedProp {
 pub struct EventListener {
     /// Event name (e.g., "click", "update:modelValue")
     pub name: CompactString,
+    /// Whether the event name is a runtime directive argument (`v-on:[name]`).
+    pub name_is_dynamic: bool,
     /// Handler expression
     pub handler: Option<CompactString>,
     /// Modifiers (stack-allocated for ≤4 modifiers)
@@ -213,6 +220,8 @@ pub struct EventListener {
 pub struct SlotUsage {
     /// Slot name ("default" if unnamed)
     pub name: CompactString,
+    /// Whether the slot name is a runtime directive argument (`v-slot:[name]`).
+    pub name_is_dynamic: bool,
     /// Scope variable names if any (stack-allocated for ≤4 vars)
     pub scope_vars: SmallVec<[CompactString; 4]>,
     /// Start offset

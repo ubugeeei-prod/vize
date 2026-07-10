@@ -55,14 +55,11 @@ fn generated_prop_value(
 }
 
 fn has_inference_props(usage: &ComponentUsage) -> bool {
-    usage
-        .props
-        .iter()
-        .any(|prop| prop.name.as_str() != "key" && prop.name.as_str() != "ref")
+    usage.props.iter().any(is_checkable_prop)
 }
 
 fn is_checkable_prop(prop: &PassedProp) -> bool {
-    prop.name.as_str() != "key" && prop.name.as_str() != "ref"
+    !prop.name_is_dynamic && prop.name.as_str() != "key" && prop.name.as_str() != "ref"
 }
 
 fn collect_generated_class_bindings<'a>(
@@ -110,7 +107,7 @@ pub(crate) fn generate_component_prop_checks(
 ) {
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
     for prop in &usage.props {
-        if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
+        if !is_checkable_prop(prop) {
             continue;
         }
         if prop.value.is_some() && prop.is_dynamic {

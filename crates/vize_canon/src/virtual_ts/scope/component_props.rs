@@ -105,7 +105,7 @@ pub(super) fn generate_component_props(
         );
 
         for prop in &usage.props {
-            if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
+            if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
                 continue;
             }
             if prop.value.is_some() && prop.is_dynamic {

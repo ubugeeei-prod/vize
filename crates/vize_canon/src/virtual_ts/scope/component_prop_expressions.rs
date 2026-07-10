@@ -33,6 +33,9 @@ pub(super) fn collect_component_prop_expression_ranges(
             continue;
         }
         for prop in &usage.props {
+            if prop.name_is_dynamic {
+                continue;
+            }
             let Some(value) = prop.value.as_ref() else {
                 continue;
             };

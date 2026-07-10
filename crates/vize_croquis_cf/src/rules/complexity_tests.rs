@@ -36,7 +36,6 @@ fn scores_each_complexity_dimension() {
         reactive_edge_count: 7,
         reactive_cycle_count: 1,
     });
-
     assert_eq!(report.cyclomatic_score, 6);
     assert_eq!(report.cognitive_score, 9);
     assert_eq!(report.dimensions.template_control_flow, 15);
@@ -48,7 +47,6 @@ fn scores_each_complexity_dimension() {
     assert_eq!(report.dimensions.reactive_graph, 30);
     assert_eq!(report.total_score, 96);
     assert_eq!(report.band, ComplexityBand::Extreme);
-
     let json = serde_json::to_value(report).expect("complexity report should serialize");
     assert_eq!(json["input"]["templateIfCount"], 2);
     assert_eq!(json["input"]["provideInjectFanoutCount"], 4);
@@ -56,14 +54,12 @@ fn scores_each_complexity_dimension() {
     assert_eq!(json["dimensions"]["reactiveGraph"], 30);
     assert_eq!(json["cyclomaticScore"], 6);
     assert_eq!(json["band"], "extreme");
-
     let dominant = report
         .dominant_dimension()
         .expect("non-zero report should expose a dominant dimension");
     assert_eq!(dominant.dimension, ComplexityDimension::ReactiveGraph);
     assert_eq!(dominant.dimension.as_str(), "reactive-graph");
     assert_eq!(dominant.score, 30);
-
     let dominant_json = serde_json::to_value(dominant).unwrap();
     assert_eq!(dominant_json["dimension"], "reactive-graph");
     assert_eq!(dominant_json["score"], 30);
@@ -72,7 +68,6 @@ fn scores_each_complexity_dimension() {
 #[test]
 fn dominant_dimension_is_none_for_zero_score() {
     let report = ComplexityReport::from_input(ComplexityInput::default());
-
     assert!(report.dominant_dimension().is_none());
 }
 
@@ -105,6 +100,7 @@ fn summarizes_complexity_from_registry_and_result() {
         end: 40,
         props: smallvec![PassedProp {
             name: CompactString::new("value"),
+            name_is_dynamic: false,
             value: Some(CompactString::new("item")),
             start: 22,
             end: 30,
@@ -112,6 +108,7 @@ fn summarizes_complexity_from_registry_and_result() {
         }],
         events: smallvec![EventListener {
             name: CompactString::new("save"),
+            name_is_dynamic: false,
             handler: None,
             modifiers: smallvec![],
             start: 31,
@@ -119,6 +116,7 @@ fn summarizes_complexity_from_registry_and_result() {
         }],
         slots: smallvec![SlotUsage {
             name: CompactString::new("default"),
+            name_is_dynamic: false,
             scope_vars: smallvec![CompactString::new("row")],
             start: 36,
             end: 40,
@@ -133,7 +131,6 @@ fn summarizes_complexity_from_registry_and_result() {
         vize_croquis::reactivity::ReactiveKind::Ref,
         0,
     );
-
     let mut registry = ModuleRegistry::new();
     let (file_id, _) = registry.register("Parent.vue", "", analysis);
     let result = CrossFileResult {
@@ -145,6 +142,7 @@ fn summarizes_complexity_from_registry_and_result() {
             root_element_count: 2,
             passed_attrs: FxHashSet::from_iter([CompactString::new("class")]),
             fallthrough_attrs: FxHashSet::from_iter([CompactString::new("class")]),
+            dynamic_name_fallthrough_attrs: FxHashSet::default(),
             declared_props: FxHashSet::default(),
             declared_events: FxHashSet::default(),
             template_start: 0,
@@ -230,6 +228,7 @@ fn summarizes_fallthrough_risk_from_infos_when_summary_is_absent() {
             root_element_count: 2,
             passed_attrs: FxHashSet::from_iter([CompactString::new("tracking-id")]),
             fallthrough_attrs: FxHashSet::from_iter([CompactString::new("tracking-id")]),
+            dynamic_name_fallthrough_attrs: FxHashSet::default(),
             declared_props: FxHashSet::default(),
             declared_events: FxHashSet::default(),
             template_start: 0,
@@ -258,6 +257,7 @@ fn summarizes_component_tree_template_nesting() {
         events: smallvec![],
         slots: smallvec![SlotUsage {
             name: CompactString::new("default"),
+            name_is_dynamic: false,
             scope_vars: smallvec![CompactString::new("slotProps")],
             start: 35,
             end: 55,

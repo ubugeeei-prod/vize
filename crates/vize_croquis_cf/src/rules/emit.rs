@@ -219,6 +219,9 @@ fn extract_event_listeners(
         let events = result.entry(component_name).or_default();
 
         for event in &usage.events {
+            if event.name_is_dynamic {
+                continue;
+            }
             events.insert(event.name.to_compact_string(), event.start);
         }
     }

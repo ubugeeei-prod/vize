@@ -33,6 +33,7 @@ fn component_usage(component: &str, props: &[(&str, &str)]) -> ComponentUsage {
             .enumerate()
             .map(|(index, (name, value))| PassedProp {
                 name: CompactString::new(*name),
+                name_is_dynamic: false,
                 value: Some(CompactString::new(*value)),
                 start: index as u32,
                 end: index as u32 + name.len() as u32,

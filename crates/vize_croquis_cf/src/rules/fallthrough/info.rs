@@ -19,6 +19,8 @@ pub struct FallthroughInfo {
     pub passed_attrs: FxHashSet<CompactString>,
     /// Passed attributes that are neither declared props nor declared event listeners.
     pub fallthrough_attrs: FxHashSet<CompactString>,
+    /// Fallthrough names represented by runtime directive argument expressions.
+    pub dynamic_name_fallthrough_attrs: FxHashSet<CompactString>,
     /// Props declared by this component.
     pub declared_props: FxHashSet<CompactString>,
     /// Events declared by this component.
@@ -89,7 +91,9 @@ impl FallthroughInfo {
     pub fn safe_standard_fallthrough_attr_count(&self) -> usize {
         self.fallthrough_attrs
             .iter()
-            .filter(|attr| is_standard_html_attr(attr))
+            .filter(|attr| {
+                !self.dynamic_name_fallthrough_attrs.contains(*attr) && is_standard_html_attr(attr)
+            })
             .count()
     }
 
@@ -101,7 +105,9 @@ impl FallthroughInfo {
 
         self.fallthrough_attrs
             .iter()
-            .filter(|attr| !is_standard_html_attr(attr))
+            .filter(|attr| {
+                self.dynamic_name_fallthrough_attrs.contains(*attr) || !is_standard_html_attr(attr)
+            })
             .count()
     }
 }

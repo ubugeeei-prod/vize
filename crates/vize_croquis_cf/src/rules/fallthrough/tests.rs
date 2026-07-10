@@ -16,6 +16,7 @@ fn passed_prop(name: &str) -> PassedProp {
 fn passed_prop_at(name: &str, start: u32, end: u32, is_dynamic: bool) -> PassedProp {
     PassedProp {
         name: CompactString::new(name),
+        name_is_dynamic: false,
         value: None,
         start,
         end,
@@ -40,6 +41,7 @@ fn usage_with_prop(name: &str, prop: &str) -> ComponentUsage {
 fn event_listener_at(name: &str, start: u32, end: u32) -> EventListener {
     EventListener {
         name: CompactString::new(name),
+        name_is_dynamic: false,
         handler: None,
         modifiers: smallvec![],
         start,
@@ -310,6 +312,7 @@ fn test_fallthrough_info_issues() {
         root_element_count: 1,
         passed_attrs: FxHashSet::default(),
         fallthrough_attrs: FxHashSet::default(),
+        dynamic_name_fallthrough_attrs: FxHashSet::default(),
         declared_props: FxHashSet::default(),
         declared_events: FxHashSet::default(),
         template_start: 0,

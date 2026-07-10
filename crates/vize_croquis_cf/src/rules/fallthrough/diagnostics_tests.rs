@@ -10,6 +10,7 @@ use vize_croquis::{Croquis, ScopeId};
 fn passed_prop_at(name: &str, start: u32, end: u32, is_dynamic: bool) -> PassedProp {
     PassedProp {
         name: CompactString::new(name),
+        name_is_dynamic: false,
         value: None,
         start,
         end,
@@ -190,6 +191,7 @@ fn declared_emit_listener_does_not_create_fallthrough_diagnostics() {
         props: smallvec![],
         events: smallvec![EventListener {
             name: CompactString::new("close-dialog"),
+            name_is_dynamic: false,
             handler: None,
             modifiers: smallvec![],
             start: 17,

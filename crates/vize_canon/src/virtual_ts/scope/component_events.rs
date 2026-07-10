@@ -208,7 +208,8 @@ fn generate_inferred_emit_args(ts: &mut String, ctx: &EmitInferenceContext<'_>) 
     let (usage_idx, usage) =
         find_component_usage_for_event(ctx.summary, ctx.component_name, ctx.data, ctx.scope)?;
     if !usage.props.iter().any(|prop| {
-        prop.name.as_str() != "key"
+        !prop.name_is_dynamic
+            && prop.name.as_str() != "key"
             && prop.name.as_str() != "ref"
             && prop.value.is_some()
             && prop.is_dynamic
@@ -247,7 +248,7 @@ fn generate_inferred_emit_args(ts: &mut String, ctx: &EmitInferenceContext<'_>) 
         ctx.indent,
     );
     for prop in &usage.props {
-        if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
+        if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
             continue;
         }
         let Some(generated_value) = generated_prop_value(prop, ctx.template_prop_names) else {
@@ -300,7 +301,8 @@ fn find_component_usage_for_event<'a>(
         .find(|(_, usage)| {
             usage.name.as_str() == component_name
                 && usage.events.iter().any(|event| {
-                    event.name.as_str() == data.event_name.as_str()
+                    !event.name_is_dynamic
+                        && event.name.as_str() == data.event_name.as_str()
                         && event_matches_scope(usage, event.start, event.end, data, scope)
                 })
         })

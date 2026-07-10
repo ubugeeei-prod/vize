@@ -100,6 +100,7 @@ pub struct SemanticComponentUsageSnapshot {
 #[non_exhaustive]
 pub struct SemanticPassedPropSnapshot {
     pub name: CompactString,
+    pub name_is_dynamic: bool,
     pub value: Option<CompactString>,
     pub range: SemanticSourceRange,
     pub dynamic: bool,
@@ -110,6 +111,7 @@ pub struct SemanticPassedPropSnapshot {
 #[non_exhaustive]
 pub struct SemanticEventListenerSnapshot {
     pub name: CompactString,
+    pub name_is_dynamic: bool,
     pub handler: Option<CompactString>,
     pub modifiers: Vec<CompactString>,
     pub range: SemanticSourceRange,
@@ -120,6 +122,7 @@ pub struct SemanticEventListenerSnapshot {
 #[non_exhaustive]
 pub struct SemanticSlotUsageSnapshot {
     pub name: CompactString,
+    pub name_is_dynamic: bool,
     pub scope_vars: Vec<CompactString>,
     pub range: SemanticSourceRange,
     pub scoped: bool,

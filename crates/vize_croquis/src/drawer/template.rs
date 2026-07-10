@@ -9,6 +9,8 @@
 
 mod components;
 mod directives;
+#[cfg(test)]
+mod dynamic_names_tests;
 mod ids;
 mod visit_element;
 

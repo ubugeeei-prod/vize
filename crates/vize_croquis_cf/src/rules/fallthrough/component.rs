@@ -15,6 +15,7 @@ pub struct FallthroughComponentFact {
     pub usage_attr_count: usize,
     pub prop_attr_count: usize,
     pub listener_attr_count: usize,
+    pub dynamic_name_attr_count: usize,
     pub dynamic_attr_count: usize,
     pub declared_prop_attr_count: usize,
     pub declared_event_attr_count: usize,
@@ -43,6 +44,7 @@ impl Default for FallthroughComponentFact {
             usage_attr_count: 0,
             prop_attr_count: 0,
             listener_attr_count: 0,
+            dynamic_name_attr_count: 0,
             dynamic_attr_count: 0,
             declared_prop_attr_count: 0,
             declared_event_attr_count: 0,
@@ -88,6 +90,7 @@ pub fn collect_fallthrough_component_facts(
 
         for attr in &usage.attrs {
             fact.usage_attr_count += 1;
+            fact.dynamic_name_attr_count += usize::from(attr.name_is_dynamic);
             fact.dynamic_attr_count += usize::from(attr.dynamic);
             fact.declared_prop_attr_count += usize::from(attr.declared_prop);
             fact.declared_event_attr_count += usize::from(attr.declared_event);
@@ -150,6 +153,7 @@ mod tests {
             kind,
             source_start: 0,
             source_end: 0,
+            name_is_dynamic: false,
             dynamic,
             declared_prop,
             declared_event,
@@ -169,6 +173,7 @@ mod tests {
             root_element_count: 2,
             passed_attrs: set(&["kind", "trackingId", "onClose"]),
             fallthrough_attrs: set(&["trackingId"]),
+            dynamic_name_fallthrough_attrs: FxHashSet::default(),
             declared_props: set(&["kind"]),
             declared_events: set(&["close"]),
             template_start: 0,
@@ -255,6 +260,7 @@ mod tests {
             root_element_count: 1,
             passed_attrs: FxHashSet::default(),
             fallthrough_attrs: FxHashSet::default(),
+            dynamic_name_fallthrough_attrs: FxHashSet::default(),
             declared_props: set(&["kind"]),
             declared_events: FxHashSet::default(),
             template_start: 0,

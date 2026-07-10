@@ -27,6 +27,7 @@ fn fallthrough_component_facts_are_populated_from_analyzer() {
         props: smallvec![
             PassedProp {
                 name: CompactString::new("kind"),
+                name_is_dynamic: false,
                 value: None,
                 start: 8,
                 end: 20,
@@ -34,6 +35,7 @@ fn fallthrough_component_facts_are_populated_from_analyzer() {
             },
             PassedProp {
                 name: CompactString::new("trackingId"),
+                name_is_dynamic: false,
                 value: None,
                 start: 21,
                 end: 40,
@@ -42,6 +44,7 @@ fn fallthrough_component_facts_are_populated_from_analyzer() {
         ],
         events: smallvec![EventListener {
             name: CompactString::new("close"),
+            name_is_dynamic: false,
             handler: None,
             modifiers: smallvec![],
             start: 41,

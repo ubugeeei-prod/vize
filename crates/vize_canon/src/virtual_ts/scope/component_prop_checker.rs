@@ -10,7 +10,8 @@ pub(super) fn is_inline_function_prop_value(value: &str) -> bool {
 
 pub(super) fn has_dynamic_props(usage: &ComponentUsage) -> bool {
     usage.props.iter().any(|prop| {
-        prop.name.as_str() != "key"
+        !prop.name_is_dynamic
+            && prop.name.as_str() != "key"
             && prop.name.as_str() != "ref"
             && prop.value.is_some()
             && prop.is_dynamic
@@ -18,10 +19,9 @@ pub(super) fn has_dynamic_props(usage: &ComponentUsage) -> bool {
 }
 
 pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
-    usage
-        .props
-        .iter()
-        .any(|prop| prop.name.as_str() != "key" && prop.name.as_str() != "ref")
+    usage.props.iter().any(|prop| {
+        !prop.name_is_dynamic && prop.name.as_str() != "key" && prop.name.as_str() != "ref"
+    })
 }
 
 pub(super) fn append_prop_checker_alias(
@@ -36,7 +36,7 @@ pub(super) fn append_prop_checker_alias(
         "  type __{component_type_name}_CheckProps_{idx} = {{\n",
     );
     for prop in &usage.props {
-        if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
+        if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
             continue;
         }
         if let Some(value) = prop.value.as_ref()

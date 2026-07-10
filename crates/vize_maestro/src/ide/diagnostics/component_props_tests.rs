@@ -123,3 +123,44 @@ const attrs = {}
         "spread attrs may satisfy required props at runtime; got {diagnostics:#?}"
     );
 }
+
+#[test]
+fn skips_required_component_prop_diagnostic_for_runtime_prop_name() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(
+        dir.path().join("Child.vue"),
+        r#"<script setup lang="ts">
+defineProps<{ someMessage: string }>()
+</script>
+"#,
+    )
+    .unwrap();
+
+    let source = r#"<script setup lang="ts">
+import Child from './Child.vue'
+const propName = 'someMessage'
+const value = 'hello'
+</script>
+
+<template>
+  <Child :[propName]="value" />
+</template>
+"#;
+    let parent_path = dir.path().join("Parent.vue");
+    fs::write(&parent_path, source).unwrap();
+
+    let state = state_with_lsp_diagnostics(false, true);
+    let uri = Url::from_file_path(&parent_path).unwrap();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    let diagnostics = DiagnosticService::collect(&state, &uri);
+    assert!(
+        diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.source.as_deref() != Some(sources::COMPONENTS)),
+        "a runtime prop name may satisfy a required prop; got {diagnostics:#?}"
+    );
+}

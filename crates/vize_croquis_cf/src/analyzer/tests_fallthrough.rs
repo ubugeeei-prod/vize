@@ -7,6 +7,8 @@ use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
 
 #[path = "tests_fallthrough/base.rs"]
 mod base;
+#[path = "tests_fallthrough/dynamic_names.rs"]
+mod dynamic_names;
 
 fn analyze_template(template: &str) -> Croquis {
     let allocator = Bump::new();

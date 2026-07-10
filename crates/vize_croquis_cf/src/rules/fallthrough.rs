@@ -60,6 +60,7 @@ pub fn analyze_fallthrough(
             root_element_count: template_info.root_element_count,
             passed_attrs: FxHashSet::default(), // Will be filled later
             fallthrough_attrs: FxHashSet::default(), // Will be filled later
+            dynamic_name_fallthrough_attrs: FxHashSet::default(),
             declared_props,
             declared_events,
             template_start: template_info.content_start,
@@ -74,6 +75,8 @@ pub fn analyze_fallthrough(
     let mut passed_attrs_map: FxHashMap<FileId, FxHashMap<FileId, FxHashSet<CompactString>>> =
         FxHashMap::default();
     let mut fallthrough_attrs_map: FxHashMap<FileId, FxHashSet<CompactString>> =
+        FxHashMap::default();
+    let mut dynamic_name_attrs_map: FxHashMap<FileId, FxHashSet<CompactString>> =
         FxHashMap::default();
     let mut fallthrough_related_map: FxHashMap<FileId, Vec<FallthroughUsageRelated>> =
         FxHashMap::default();
@@ -91,6 +94,15 @@ pub fn analyze_fallthrough(
                 fact.attrs
                     .iter()
                     .filter(|attr| attr.fallthrough)
+                    .map(|attr| attr.name.clone()),
+            );
+        dynamic_name_attrs_map
+            .entry(fact.child_file_id)
+            .or_default()
+            .extend(
+                fact.attrs
+                    .iter()
+                    .filter(|attr| attr.fallthrough && attr.name_is_dynamic)
                     .map(|attr| attr.name.clone()),
             );
 
@@ -127,6 +139,10 @@ pub fn analyze_fallthrough(
         }
         if let Some(attrs) = fallthrough_attrs_map.get(&info.file_id) {
             info.fallthrough_attrs.extend(attrs.iter().cloned());
+        }
+        if let Some(attrs) = dynamic_name_attrs_map.get(&info.file_id) {
+            info.dynamic_name_fallthrough_attrs
+                .extend(attrs.iter().cloned());
         }
     }
 
@@ -184,7 +200,11 @@ pub fn analyze_fallthrough(
         let mut unused_attrs: Vec<_> = info
             .fallthrough_attrs
             .iter()
-            .filter(|attr| !is_standard_html_attr(attr) && !info.uses_attrs)
+            .filter(|attr| {
+                !info.uses_attrs
+                    && (info.dynamic_name_fallthrough_attrs.contains(*attr)
+                        || !is_standard_html_attr(attr))
+            })
             .cloned()
             .collect();
         unused_attrs.sort_unstable();

@@ -7,6 +7,7 @@ use vize_croquis::{Croquis, ScopeId};
 fn prop(name: &str, start: u32, end: u32, dynamic: bool) -> PassedProp {
     PassedProp {
         name: CompactString::new(name),
+        name_is_dynamic: false,
         value: None,
         start,
         end,
@@ -17,6 +18,7 @@ fn prop(name: &str, start: u32, end: u32, dynamic: bool) -> PassedProp {
 fn event(name: &str, start: u32, end: u32) -> EventListener {
     EventListener {
         name: CompactString::new(name),
+        name_is_dynamic: false,
         handler: None,
         modifiers: smallvec![],
         start,

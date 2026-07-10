@@ -7,6 +7,8 @@
 //! Key design: Uses closures from Croquis scope information instead of
 //! `declare const` to properly model Vue's template scoping.
 
+#[cfg(test)]
+mod dynamic_component_names_tests;
 mod expressions;
 mod generator;
 mod helpers;
