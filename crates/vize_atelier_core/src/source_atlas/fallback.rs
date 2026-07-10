@@ -10,8 +10,8 @@ pub enum SourceAtlasFallback {
     /// A valid fragment exists, but full SFC map composition has not happened
     /// at the current assembly boundary.
     SourceMapCompositionSkipped,
-    /// A typecheck or editor lane did not need, or could not produce, Virtual
-    /// TS for the requested source shape.
+    /// A typecheck or editor lane requested Virtual TS but could not produce it
+    /// for the requested source shape.
     VirtualTsSkipped,
     /// Vapor was requested for a render shape outside the current Vapor Atelier
     /// capability set.
@@ -71,7 +71,7 @@ impl SourceAtlasFallback {
             Self::SourceMapCompositionSkipped => {
                 "a valid map fragment exists but full SFC composition was deferred"
             }
-            Self::VirtualTsSkipped => "Virtual TS was not needed or not produced for this source",
+            Self::VirtualTsSkipped => "requested Virtual TS was not produced for this source",
             Self::UnsupportedVaporShape => {
                 "the template shape is outside the current Vapor capability set"
             }

@@ -1,5 +1,7 @@
+use vize_atelier_core::source_atlas::SourceAtlasFallback;
 use vize_carton::Bump;
 use vize_carton::cstr;
+use vize_carton::profiler::global_profiler;
 
 use crate::script_parse::collect_script_parse_diagnostics;
 use crate::virtual_ts::generate_virtual_ts_with_offsets_legacy_vue2;
@@ -64,6 +66,7 @@ fn type_check_sfc_impl(
                 help: None,
                 related: Vec::new(),
             });
+            record_virtual_ts_projection(options, false);
             return result;
         }
     };
@@ -201,7 +204,8 @@ fn type_check_sfc_impl(
     }
 
     // Generate virtual TypeScript with scope information if requested
-    if options.include_virtual_ts && !has_template_parse_errors && !has_script_parse_errors {
+    let virtual_ts_available = !has_template_parse_errors && !has_script_parse_errors;
+    if options.include_virtual_ts && virtual_ts_available {
         result.virtual_ts = Some(if legacy_vue2 {
             generate_virtual_ts_with_offsets_legacy_vue2(
                 &summary,
@@ -232,6 +236,7 @@ fn type_check_sfc_impl(
             )
         });
     }
+    record_virtual_ts_projection(options, virtual_ts_available);
 
     // Record analysis time on native only
     #[cfg(not(target_arch = "wasm32"))]
@@ -240,6 +245,35 @@ fn type_check_sfc_impl(
     }
 
     result
+}
+
+fn record_virtual_ts_projection(options: &SfcTypeCheckOptions, available: bool) {
+    if let Some(fallback) = virtual_ts_fallback(options.include_virtual_ts, available) {
+        global_profiler().record_counter(fallback.profile_counter(), 1);
+    }
+}
+
+const fn virtual_ts_fallback(requested: bool, available: bool) -> Option<SourceAtlasFallback> {
+    if requested && !available {
+        Some(SourceAtlasFallback::VirtualTsSkipped)
+    } else {
+        None
+    }
+}
+
+#[cfg(test)]
+mod atlas_tests {
+    use super::*;
+
+    #[test]
+    fn virtual_ts_skip_is_only_a_fallback_for_an_unserved_request() {
+        assert_eq!(
+            virtual_ts_fallback(true, false),
+            Some(SourceAtlasFallback::VirtualTsSkipped)
+        );
+        assert_eq!(virtual_ts_fallback(true, true), None);
+        assert_eq!(virtual_ts_fallback(false, false), None);
+    }
 }
 
 fn add_script_parse_diagnostics(

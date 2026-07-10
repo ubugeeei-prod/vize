@@ -1,8 +1,8 @@
 //! Profile facts recorded around per-file SFC compilation.
 
 use vize_atelier_core::source_atlas::{
-    SourceAtlasCoordinate, SourceAtlasPlate, SourceAtlasRegistry, SourceAtlasSource,
-    SourceAtlasTarget,
+    SourceAtlasCoordinate, SourceAtlasFallback, SourceAtlasPlate, SourceAtlasRegistry,
+    SourceAtlasSource, SourceAtlasTarget,
 };
 use vize_carton::profiler::global_profiler;
 
@@ -67,16 +67,22 @@ pub(crate) fn record_atelier_cache_decision(
         return;
     }
 
-    let name = match decision {
-        StatsCompileCacheDecision::Cacheable => "atelier.cache.stats_compile.eligible",
-        StatsCompileCacheDecision::BypassSelfComponentExact => {
-            "atelier.cache.stats_compile.bypass.self_exact"
-        }
-        StatsCompileCacheDecision::BypassSelfComponentKebab => {
-            "atelier.cache.stats_compile.bypass.self_kebab"
-        }
+    let (name, fallback) = match decision {
+        StatsCompileCacheDecision::Cacheable => ("atelier.cache.stats_compile.eligible", None),
+        StatsCompileCacheDecision::BypassSelfComponentExact => (
+            "atelier.cache.stats_compile.bypass.self_exact",
+            Some(SourceAtlasFallback::CacheBypass),
+        ),
+        StatsCompileCacheDecision::BypassSelfComponentKebab => (
+            "atelier.cache.stats_compile.bypass.self_kebab",
+            Some(SourceAtlasFallback::CacheBypass),
+        ),
     };
-    global_profiler().record_counter(name, 1);
+    let profiler = global_profiler();
+    profiler.record_counter(name, 1);
+    if let Some(fallback) = fallback {
+        profiler.record_counter(fallback.profile_counter(), 1);
+    }
 }
 
 fn usize_to_counter(value: usize) -> u64 {
