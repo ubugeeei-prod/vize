@@ -4,7 +4,6 @@ exports[`vite-plugin vapor options > avoids collisions with local render binding
 "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { template as _template } from 'vue';
 
-
 const t0 = _template("<div>Hello</div>", true)
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
@@ -30,13 +29,15 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})
-"
+})"
 `;
 
 exports[`vite-plugin vapor options > builds scoped single-file options with vapor enabled 1`] = `
 {
   "customRenderer": false,
+  "experimentalInTagComments": false,
+  "experimentalPatternedTemplate": false,
+  "experimentalServerScript": false,
   "filename": "/src/App.vue",
   "scopeId": "data-v-c0cc6f12",
   "sourceMap": true,
@@ -49,7 +50,6 @@ exports[`vite-plugin vapor options > compiles script setup SFCs to a full Vapor 
 "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
 
-
 const t0 = _template("<div> </div>", true)
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
@@ -59,7 +59,9 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n0
 }
 const __vaporRender = render
-import { ref } from 'vue'
+
+import { ref } from "vue";
+
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'App',
@@ -76,18 +78,16 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})
-"
+})"
 `;
 
 exports[`vite-plugin vapor options > compiles the playground app itself to Vapor output 1`] = `
 "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { createComponentWithFallback as _createComponentWithFallback, child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setProp as _setProp, createInvoker as _createInvoker, delegateEvents as _delegateEvents, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
 
-
 const t0 = _template("<svg viewBox=\\"0 0 24 24\\" width=\\"18\\" height=\\"18\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><circle cx=\\"12\\" cy=\\"12\\" r=\\"5\\"></circle><line x1=\\"12\\" y1=\\"1\\" x2=\\"12\\" y2=\\"3\\"></line><line x1=\\"12\\" y1=\\"21\\" x2=\\"12\\" y2=\\"23\\"></line><line x1=\\"4.22\\" y1=\\"4.22\\" x2=\\"5.64\\" y2=\\"5.64\\"></line><line x1=\\"18.36\\" y1=\\"18.36\\" x2=\\"19.78\\" y2=\\"19.78\\"></line><line x1=\\"1\\" y1=\\"12\\" x2=\\"3\\" y2=\\"12\\"></line><line x1=\\"21\\" y1=\\"12\\" x2=\\"23\\" y2=\\"12\\"></line><line x1=\\"4.22\\" y1=\\"19.78\\" x2=\\"5.64\\" y2=\\"18.36\\"></line><line x1=\\"18.36\\" y1=\\"5.64\\" x2=\\"19.78\\" y2=\\"4.22\\"></line></svg>", true, 1)
 const t1 = _template("<svg viewBox=\\"0 0 24 24\\" width=\\"18\\" height=\\"18\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><path d=\\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\\"></path></svg>", true, 1)
-const t2 = _template("<div class=\\"app\\"><header class=\\"header\\"><div class=\\"logo\\"><div class=\\"logo-icon\\"><svg viewBox=\\"0 0 100 100\\" fill=\\"none\\" xmlns=\\"http://www.w3.org/2000/svg\\"><g transform=\\"translate(15, 10) skewX(-15)\\"><path d=\\"M 65 0 L 40 60 L 70 20 L 65 0 Z\\" fill=\\"currentColor\\"></path><path d=\\"M 20 0 L 40 60 L 53 13 L 20 0 Z\\" fill=\\"currentColor\\"></path></g></svg></div><div class=\\"logo-text\\"><h1>Vize</h1><span class=\\"version\\">\\n            Playground\\n            <span> </span><span id=\\"vize-playground-version\\" class=\\"version-number\\"></span></span></div></div><div class=\\"main-tabs\\"><button><span class=\\"tab-name\\">Atelier</span><span class=\\"tab-desc\\">compiler</span></button><button><span class=\\"tab-name\\">Inspector</span><span class=\\"tab-desc\\">diff</span></button><button><span class=\\"tab-name\\">Patina</span><span class=\\"tab-desc\\">linter</span></button><button><span class=\\"tab-name\\">Glyph</span><span class=\\"tab-desc\\">formatter</span></button><button><span class=\\"tab-name\\">Canon</span><span class=\\"tab-desc\\">typecheck</span></button><button><span class=\\"tab-name\\">Croquis</span><span class=\\"tab-desc\\">analyzer</span></button><button><span class=\\"tab-name\\">Cross</span><span class=\\"tab-desc\\">xfile</span></button><button><span class=\\"tab-name\\">Musea</span><span class=\\"tab-desc\\">story</span></button></div><div class=\\"options\\"><button class=\\"theme-toggle\\" title=\\"Copy environment information\\" aria-label=\\"Copy environment information\\"><svg viewBox=\\"0 0 24 24\\" width=\\"18\\" height=\\"18\\" aria-hidden=\\"true\\"><path fill=\\"currentColor\\"></path></svg></button><button class=\\"theme-toggle\\"></button><a href=\\"https://github.com/ubugeeei-prod/vize\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\" class=\\"github-link\\" aria-label=\\"GitHub repository\\"><svg viewBox=\\"0 0 24 24\\" width=\\"24\\" height=\\"24\\" fill=\\"currentColor\\"><path d=\\"M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z\\"></path></svg></a></div></header><main class=\\"main\\"></main><footer class=\\"footer\\"><span>Built with Rust + WASM</span><span class=\\"separator\\">|</span><span>by\\n        <a href=\\"https://github.com/ubugeeei\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">@ubugeeei</a></span></footer></div>", true)
+const t2 = _template("<div class=\\"app\\"><header class=\\"header\\"><div class=\\"logo\\"><div class=\\"logo-icon\\"><svg viewBox=\\"0 0 100 100\\" fill=\\"none\\" xmlns=\\"http://www.w3.org/2000/svg\\"><g transform=\\"translate(15, 10) skewX(-15)\\"><path d=\\"M 65 0 L 40 60 L 70 20 L 65 0 Z\\" fill=\\"currentColor\\"></path><path d=\\"M 20 0 L 40 60 L 53 13 L 20 0 Z\\" fill=\\"currentColor\\"></path></g></svg></div><div class=\\"logo-text\\"><h1>Vize</h1><span class=\\"version\\"> Playground <span> </span><span id=\\"vize-playground-version\\" class=\\"version-number\\"></span></span></div></div><div class=\\"main-tabs\\"><button><span class=\\"tab-name\\">Atelier</span><span class=\\"tab-desc\\">compiler</span></button><button><span class=\\"tab-name\\">Inspector</span><span class=\\"tab-desc\\">diff</span></button><button><span class=\\"tab-name\\">Patina</span><span class=\\"tab-desc\\">linter</span></button><button><span class=\\"tab-name\\">Glyph</span><span class=\\"tab-desc\\">formatter</span></button><button><span class=\\"tab-name\\">Canon</span><span class=\\"tab-desc\\">typecheck</span></button><button><span class=\\"tab-name\\">Croquis</span><span class=\\"tab-desc\\">analyzer</span></button><button><span class=\\"tab-name\\">Cross</span><span class=\\"tab-desc\\">xfile</span></button><button><span class=\\"tab-name\\">Musea</span><span class=\\"tab-desc\\">story</span></button></div><div class=\\"options\\"><button class=\\"theme-toggle\\" title=\\"Copy environment information\\" aria-label=\\"Copy environment information\\"><svg viewBox=\\"0 0 24 24\\" width=\\"18\\" height=\\"18\\" aria-hidden=\\"true\\"><path fill=\\"currentColor\\"></path></svg></button><button class=\\"theme-toggle\\"></button><a href=\\"https://github.com/ubugeeei-prod/vize\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\" class=\\"github-link\\" aria-label=\\"GitHub repository\\"><svg viewBox=\\"0 0 24 24\\" width=\\"24\\" height=\\"24\\" fill=\\"currentColor\\"><path d=\\"M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z\\"></path></svg></a></div></header><main class=\\"main\\"></main><footer class=\\"footer\\"><span>Built with Rust + WASM</span><span class=\\"separator\\">|</span><span>by <a href=\\"https://github.com/ubugeeei\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">@ubugeeei</a></span></footer></div>", true)
 _delegateEvents("click")
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
@@ -212,19 +212,20 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n2
 }
 const __vaporRender = render
-import { ref, computed, watch, onMounted, shallowRef, provide } from 'vue'
-import { mdiClipboardTextOutline } from '@mdi/js'
-import { loadWasm } from './wasm/index'
-import AtelierPlayground from './features/atelier/AtelierPlayground.vue'
-import MuseaPlayground from './features/musea/MuseaPlayground.vue'
-import PatinaPlayground from './features/patina/PatinaPlayground.vue'
-import GlyphPlayground from './features/glyph/GlyphPlayground.vue'
-import CroquisPlayground from './features/croquis/CroquisPlayground.vue'
-import CrossFilePlayground from './features/cross-file/CrossFilePlayground.vue'
-import TypeCheckPlayground from './features/canon/TypeCheckPlayground.vue'
-import InspectorPlayground from './features/inspector/InspectorPlayground.vue'
-import { getPlaygroundEnvironmentInfo } from './utils/environment'
-import { useClipboard } from './utils/useClipboard'
+
+import { ref, computed, watch, onMounted, shallowRef, provide } from "vue";
+import { mdiClipboardTextOutline } from "@mdi/js";
+import { loadWasm } from "./wasm/index";
+import AtelierPlayground from "./features/atelier/AtelierPlayground.vue";
+import MuseaPlayground from "./features/musea/MuseaPlayground.vue";
+import PatinaPlayground from "./features/patina/PatinaPlayground.vue";
+import GlyphPlayground from "./features/glyph/GlyphPlayground.vue";
+import CroquisPlayground from "./features/croquis/CroquisPlayground.vue";
+import CrossFilePlayground from "./features/cross-file/CrossFilePlayground.vue";
+import TypeCheckPlayground from "./features/canon/TypeCheckPlayground.vue";
+import InspectorPlayground from "./features/inspector/InspectorPlayground.vue";
+import { getPlaygroundEnvironmentInfo } from "./utils/environment";
+import { useClipboard } from "./utils/useClipboard";
 
 // Main tab
 type MainTab =
@@ -236,6 +237,7 @@ type MainTab =
   | "cross-file"
   | "musea"
   | "glyph";
+
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'App',
@@ -309,15 +311,13 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})
-"
+})"
 `;
 
 exports[`vite-plugin vapor options > emits Vapor template ref setters for DOM refs used by playground components 1`] = `
 {
   "highlight": "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { child as _child, createTemplateRefSetter as _createTemplateRefSetter, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
-
 
 const t0 = _template("<div data-v-2bad5e65 class=\\"line-numbers\\"></div>", true)
 const t1 = _template("<div data-v-2bad5e65><div class=\\"code-content\\"></div></div>", true)
@@ -337,8 +337,14 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n1
 }
 const __vaporRender = render
-import { useTemplateRef, watch } from 'vue'
-import { codeToThemedHtmlLines, normalizePlainHtmlLines, type CodeHighlightLanguage } from './codeHighlighting'
+
+import { useTemplateRef, watch } from "vue";
+import {
+  codeToThemedHtmlLines,
+  normalizePlainHtmlLines,
+  type CodeHighlightLanguage,
+} from "./codeHighlighting";
+
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'CodeHighlight',
@@ -351,7 +357,7 @@ export default /*@__PURE__*/_defineVaporComponent({
   render: __vaporRender,
   setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
 
-const props = __props
+const props = __props;
 const codeContentEl = useTemplateRef<HTMLDivElement>("codeContentEl");
 const lineNumbersEl = useTemplateRef<HTMLDivElement>("lineNumbersEl");
 let latestRenderId = 0;
@@ -422,11 +428,9 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})
-",
+})",
   "monaco": "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { createTemplateRefSetter as _createTemplateRefSetter, template as _template } from 'vue';
-
 
 const t0 = _template("<div data-v-3a9d3f90 class=\\"monaco-container\\"></div>", true)
 
@@ -437,11 +441,18 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n0
 }
 const __vaporRender = render
-import './MonacoEditor.css'
-import { useTemplateRef, watch, onUnmounted, shallowRef, inject, type ComputedRef } from 'vue'
-import * as monaco from 'monaco-editor'
-import { configureMonaco, addVueCommentAction } from './monacoConfig'
-import { getScopeDecorationClass, offsetToPosition, getOverviewRulerColor, getScopeDecorationHoverMessage, type ScopeDecorationInfo } from './scopeDecorations'
+
+import "./MonacoEditor.css";
+import { useTemplateRef, watch, onUnmounted, shallowRef, inject, type ComputedRef } from "vue";
+import * as monaco from "monaco-editor";
+import { configureMonaco, addVueCommentAction } from "./monacoConfig";
+import {
+  getScopeDecorationClass,
+  offsetToPosition,
+  getOverviewRulerColor,
+  getScopeDecorationHoverMessage,
+  type ScopeDecorationInfo,
+} from "./scopeDecorations";
 
 export interface Diagnostic {
   message: string;
@@ -453,6 +464,7 @@ export interface Diagnostic {
 }
 export interface ScopeDecoration extends ScopeDecorationInfo {}
 
+
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'MonacoEditor',
   props: {
@@ -463,12 +475,13 @@ export default /*@__PURE__*/_defineVaporComponent({
     readOnly: { type: Boolean, required: false },
     theme: { type: String, required: false }
   },
-  emits: ["update"],
+  emits: ["update:modelValue"],
   render: __vaporRender,
   setup(__props: any, { expose: __expose, emit: __emit, attrs: __attrs, slots: __slots }) {
 
 const emit = __emit
-const props = __props
+
+const props = __props;
 const containerRef = useTemplateRef<HTMLDivElement>("containerRef");
 const editorInstance = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme", undefined as any);
@@ -640,8 +653,7 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})
-",
+})",
 }
 `;
 
@@ -649,35 +661,34 @@ exports[`vite-plugin vapor options > keeps Atelier output tabs reactive even whe
 "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { createComponentWithFallback as _createComponentWithFallback, child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setProp as _setProp, setStyle as _setStyle, applyCheckboxModel as _applyCheckboxModel, createInvoker as _createInvoker, delegateEvents as _delegateEvents, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
 
-
 const t0 = _template("<div class=\\"panel input-panel\\"><div class=\\"panel-header\\"><h2> </h2><div class=\\"panel-actions\\"><button class=\\"btn-ghost\\">Reset</button><button class=\\"btn-ghost\\">Copy</button></div></div><div class=\\"editor-container\\"></div></div>")
-const t1 = _template("<span class=\\"compile-time\\"> </span>", true)
-const t2 = _template("<button>\\n          Bindings\\n        </button>", true)
-const t3 = _template("<button>\\n            SFC\\n          </button>")
-const t4 = _template("<button>\\n            CSS\\n          </button>")
+const t1 = _template("<span class=\\"compile-time\\"> ms</span>", true)
+const t2 = _template("<button> Bindings </button>", true)
+const t3 = _template("<button> SFC </button>")
+const t4 = _template("<button> CSS </button>")
 const t5 = _template("<div class=\\"compiling\\"><div class=\\"spinner\\"></div><span>Compiling...</span></div>", true)
 const t6 = _template("<div class=\\"wasm-error\\"><h3>Compilation Error</h3><pre> </pre></div>", true)
 const t7 = _template("<button> </button>")
-const t8 = _template("<div class=\\"wasm-error\\"><h3> </h3><pre> </pre></div>")
+const t8 = _template("<div class=\\"wasm-error\\"><h3>  Compilation Error</h3><pre> </pre></div>")
 const t9 = _template("<pre> </pre>")
-const t10 = _template("<div class=\\"wasm-warning\\"><h3> </h3></div>")
-const t11 = _template("<div class=\\"style-block\\"><span class=\\"style-meta\\"><span class=\\"badge\\"> </span></span></div>")
-const t12 = _template("<div class=\\"sfc-block\\"><p class=\\"section-label\\"> </p></div>")
-const t13 = _template("<div class=\\"code-output\\"><div class=\\"code-header\\"><h4> </h4><div class=\\"code-header-actions\\"><div class=\\"code-mode-toggle\\"></div><div class=\\"code-mode-toggle code-view-toggle\\"><button>\\n                  TS\\n                </button><button>\\n                  JS\\n                </button></div><button class=\\"btn-ghost\\">Copy</button></div></div></div>")
+const t10 = _template("<div class=\\"wasm-warning\\"><h3>  Warnings ( ) </h3></div>")
+const t11 = _template("<div class=\\"style-block\\"><span class=\\"style-meta\\"><span class=\\"badge\\">template  </span></span></div>")
+const t12 = _template("<div class=\\"sfc-block\\"><p class=\\"section-label\\"> Template Fragments ( ) </p></div>")
+const t13 = _template("<div class=\\"code-output\\"><div class=\\"code-header\\"><h4>  Output</h4><div class=\\"code-header-actions\\"><div class=\\"code-mode-toggle\\"></div><div class=\\"code-mode-toggle code-view-toggle\\"><button> TS </button><button> JS </button></div><button class=\\"btn-ghost\\">Copy</button></div></div></div>")
 const t14 = _template("<div class=\\"ast-output\\"><div class=\\"ast-header\\"><h4>Abstract Syntax Tree</h4><div class=\\"ast-options\\"><label class=\\"ast-option\\"><input type=\\"checkbox\\"><span>Hide loc</span></label><label class=\\"ast-option\\"><input type=\\"checkbox\\"><span>Hide source</span></label><label class=\\"ast-option\\"><input type=\\"checkbox\\"><span>Compact</span></label><button class=\\"btn-ghost btn-small\\">Copy</button></div></div></div>")
 const t15 = _template("<li class=\\"helper-item\\"><span class=\\"helper-name\\"> </span></li>")
 const t16 = _template("<ul class=\\"helpers-list\\"></ul>")
 const t17 = _template("<p class=\\"no-helpers\\">No runtime helpers needed</p>")
-const t18 = _template("<div class=\\"helpers-output\\"><h4> </h4></div>")
-const t19 = _template("<div class=\\"sfc-block\\"><h5> </h5></div>")
-const t20 = _template("<div class=\\"sfc-block\\"><h5> </h5></div>")
-const t21 = _template("<div class=\\"sfc-block\\"><h5> </h5></div>")
+const t18 = _template("<div class=\\"helpers-output\\"><h4>Runtime Helpers Used ( )</h4></div>")
+const t19 = _template("<div class=\\"sfc-block\\"><h5> Template  </h5></div>")
+const t20 = _template("<div class=\\"sfc-block\\"><h5> Script Setup  </h5></div>")
+const t21 = _template("<div class=\\"sfc-block\\"><h5> Script  </h5></div>")
 const t22 = _template("<span class=\\"badge\\">scoped</span>")
 const t23 = _template("<span class=\\"badge\\"> </span>")
 const t24 = _template("<div class=\\"style-block\\"><span class=\\"style-meta\\"></span></div>")
-const t25 = _template("<div class=\\"sfc-block\\"><h5> </h5></div>")
+const t25 = _template("<div class=\\"sfc-block\\"><h5>Styles ( )</h5></div>")
 const t26 = _template("<div class=\\"sfc-output\\"><h4>SFC Descriptor</h4></div>")
-const t27 = _template("<div class=\\"css-compiled\\"><h5>Compiled CSS</h5><div class=\\"code-actions\\"><button class=\\"btn-ghost\\">\\n                  Copy\\n                </button></div></div>")
+const t27 = _template("<div class=\\"css-compiled\\"><h5>Compiled CSS</h5><div class=\\"code-actions\\"><button class=\\"btn-ghost\\"> Copy </button></div></div>")
 const t28 = _template("<li class=\\"helper-item\\"><span class=\\"helper-name\\"> </span></li>")
 const t29 = _template("<div class=\\"css-vars\\"><h5>CSS Variables (v-bind)</h5><ul class=\\"helpers-list\\"></ul></div>")
 const t30 = _template("<pre class=\\"error-message\\"> </pre>")
@@ -691,12 +702,12 @@ const t37 = _template("<div class=\\"bindings-output\\"><h4>Script Setup Binding
 const t38 = _template("<div class=\\"bindings-output\\"><p class=\\"no-bindings\\">No bindings information available</p></div>")
 const t39 = _template("<span class=\\"token-name\\"> </span>")
 const t40 = _template("<span class=\\"token-value-text\\"> </span>")
-const t41 = _template("<div class=\\"token-item\\"><span class=\\"token-badge\\"> </span><div class=\\"token-content\\"><div class=\\"token-main\\"></div><span class=\\"token-location\\"> </span></div></div>")
+const t41 = _template("<div class=\\"token-item\\"><span class=\\"token-badge\\"> </span><div class=\\"token-content\\"><div class=\\"token-main\\"></div><span class=\\"token-location\\"> : </span></div></div>")
 const t42 = _template("<span class=\\"group-token-chip\\"> </span>")
-const t43 = _template("<span class=\\"more-indicator\\"> </span>")
+const t43 = _template("<span class=\\"more-indicator\\"> +  more </span>")
 const t44 = _template("<div class=\\"token-group\\"><div class=\\"group-header\\"><span class=\\"group-icon\\"> </span><span class=\\"group-title\\"> </span><span class=\\"group-count\\"> </span></div><div class=\\"group-tokens\\"></div></div>")
 const t45 = _template("<div class=\\"tokens-output\\"><div class=\\"token-stats\\"><div class=\\"stat-card\\"><span class=\\"stat-value\\"> </span><span class=\\"stat-label\\">Total</span></div><div class=\\"stat-card\\"><span class=\\"stat-value\\"> </span><span class=\\"stat-label\\">Tags</span></div><div class=\\"stat-card\\"><span class=\\"stat-value\\"> </span><span class=\\"stat-label\\">Directives</span></div><div class=\\"stat-card\\"><span class=\\"stat-value\\"> </span><span class=\\"stat-label\\">Interpolations</span></div></div><h4>Token Stream</h4><div class=\\"token-stream\\"></div><h4>By Type</h4><div class=\\"token-groups\\"></div></div>")
-const t46 = _template("<div class=\\"panel output-panel\\"><div class=\\"panel-header\\"><h2>\\n        Output\\n        </h2><div class=\\"tabs\\"><button>\\n          Code\\n        </button><button>\\n          AST\\n        </button><button> </button><button>\\n          Helpers\\n        </button></div></div><div class=\\"output-content\\"></div></div>")
+const t46 = _template("<div class=\\"panel output-panel\\"><div class=\\"panel-header\\"><h2> Output </h2><div class=\\"tabs\\"><button> Code </button><button> AST </button><button> Tokens ( ) </button><button> Helpers </button></div></div><div class=\\"output-content\\"></div></div>")
 _delegateEvents("click")
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
@@ -824,7 +835,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
                 _renderEffect(() => _setText(x61, _toDisplayString(_for_item0.value)))
                 return n61
               }, (warning, index) => (\`\${_ctx.codeOutputTarget}-warning-\${index}\`), 1)
-              _renderEffect(() => _setText(x57, _toDisplayString(_ctx.CODE_OUTPUT_LABELS[_ctx.codeOutputTarget]) + " Warnings (" + _toDisplayString(_ctx.activeCodeOutput.warnings.length) + ")\\n              "))
+              _renderEffect(() => _setText(x57, _toDisplayString(_ctx.CODE_OUTPUT_LABELS[_ctx.codeOutputTarget]) + " Warnings (" + _toDisplayString(_ctx.activeCodeOutput.warnings.length) + ") "))
               return n58
             })
             const n62 = _createIf(() => (_ctx.activeCodeOutput.isTypeScript && _ctx.codeViewMode === 'js'), () => {
@@ -869,7 +880,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
                 _renderEffect(() => _setText(x76, "template " + _toDisplayString(_for_key0.value + 1)))
                 return n75
               }, (template, index) => (\`\${_ctx.codeOutputTarget}-\${index}\`), 1)
-              _renderEffect(() => _setText(x69, "\\n                Template Fragments (" + _toDisplayString(_ctx.activeCodeOutput.templates.length) + ")\\n              "))
+              _renderEffect(() => _setText(x69, " Template Fragments (" + _toDisplayString(_ctx.activeCodeOutput.templates.length) + ") "))
               return n70
             })
             return [n55, n62, n67]
@@ -942,7 +953,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
     language: () => ("html"),
     theme: () => (_ctx.theme)
   }, null, true)
-            _renderEffect(() => _setText(x106, "\\n              Template\\n              " + _toDisplayString(_ctx.sfcResult.descriptor.template.lang ? \`(\${_ctx.sfcResult.descriptor.template.lang})\` : "")))
+            _renderEffect(() => _setText(x106, " Template " + _toDisplayString(_ctx.sfcResult.descriptor.template.lang ? \`(\${_ctx.sfcResult.descriptor.template.lang})\` : "")))
             return n108
           })
           _setInsertionState(n134, null, true)
@@ -957,7 +968,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
     language: () => ("typescript"),
     theme: () => (_ctx.theme)
   }, null, true)
-            _renderEffect(() => _setText(x111, "\\n              Script Setup\\n              " + _toDisplayString(_ctx.sfcResult.descriptor.scriptSetup.lang
+            _renderEffect(() => _setText(x111, " Script Setup " + _toDisplayString(_ctx.sfcResult.descriptor.scriptSetup.lang
                   ? \`(\${_ctx.sfcResult.descriptor.scriptSetup.lang})\`
                   : "")))
             return n113
@@ -974,7 +985,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
     language: () => ("typescript"),
     theme: () => (_ctx.theme)
   }, null, true)
-            _renderEffect(() => _setText(x116, "\\n              Script\\n              " + _toDisplayString(_ctx.sfcResult.descriptor.script.lang ? \`(\${_ctx.sfcResult.descriptor.script.lang})\` : "")))
+            _renderEffect(() => _setText(x116, " Script " + _toDisplayString(_ctx.sfcResult.descriptor.script.lang ? \`(\${_ctx.sfcResult.descriptor.script.lang})\` : "")))
             return n118
           })
           _setInsertionState(n134, null, true)
@@ -1193,7 +1204,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
               const n229 = _createIf(() => (_for_item0.value.length > 12), () => {
                 const n231 = t43()
                 const x231 = _txt(n231)
-                _renderEffect(() => _setText(x231, "\\n                    +" + _toDisplayString(_for_item0.value.length - 12) + " more\\n                  "))
+                _renderEffect(() => _setText(x231, " +" + _toDisplayString(_for_item0.value.length - 12) + " more "))
                 return n231
               })
               _renderEffect(() => {
@@ -1210,7 +1221,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
               return n222
             })
             return n218
-          })
+          }, (tokens, type) => (type), 1)
           _renderEffect(() => {
             _setText(x199, _toDisplayString(_ctx.tokenStats.total))
             _setText(x200, _toDisplayString(_ctx.tokenStats.tags))
@@ -1228,22 +1239,29 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
     _setClass(n16, ['tab', { active: _ctx.activeTab === 'code' }])
     _setClass(n17, ['tab', { active: _ctx.activeTab === 'ast' }])
     _setClass(n18, ['tab', { active: _ctx.activeTab === 'tokens' }])
-    _setText(x18, "\\n          Tokens (" + _toDisplayString(_ctx.tokenStats.total) + ")\\n        ")
+    _setText(x18, " Tokens (" + _toDisplayString(_ctx.tokenStats.total) + ") ")
     _setClass(n19, ['tab', { active: _ctx.activeTab === 'helpers' }])
   })
   return [n2, n10]
 }
 const __vaporRender = render
-import { computed, watch, onMounted, onUnmounted } from 'vue'
-import MonacoEditor from '../../shared/MonacoEditor.vue'
-import CodeHighlight from '../../shared/CodeHighlight.vue'
-import { useTheme } from '../../utils/useTheme'
-import { useClipboard } from '../../utils/useClipboard'
-import { useAtelierCompiler } from './useAtelierCompiler'
-import { CODE_OUTPUT_LABELS } from './codeOutputs'
-import { useTokenAnalysis, getTokenTypeIcon, getTokenTypeLabel, getTokenTypeColor } from './useTokenAnalysis'
-import { getBindingIcon, getBindingLabel } from './bindingHelpers'
-import { type loadWasm, getWasm } from '../../wasm/index'
+
+import { computed, watch, onMounted, onUnmounted } from "vue";
+import MonacoEditor from "../../shared/MonacoEditor.vue";
+import CodeHighlight from "../../shared/CodeHighlight.vue";
+import { useTheme } from "../../utils/useTheme";
+import { useClipboard } from "../../utils/useClipboard";
+import { useAtelierCompiler } from "./useAtelierCompiler";
+import { CODE_OUTPUT_LABELS } from "./codeOutputs";
+import {
+  useTokenAnalysis,
+  getTokenTypeIcon,
+  getTokenTypeLabel,
+  getTokenTypeColor,
+} from "./useTokenAnalysis";
+import { getBindingIcon, getBindingLabel } from "./bindingHelpers";
+import { type loadWasm, getWasm } from "../../wasm/index";
+
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'AtelierPlayground',
@@ -1253,7 +1271,7 @@ export default /*@__PURE__*/_defineVaporComponent({
   render: __vaporRender,
   setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
 
-const props = __props
+const props = __props;
 const { theme } = useTheme();
 const { copyToClipboard } = useClipboard();
 const {
@@ -1343,14 +1361,12 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})
-"
+})"
 `;
 
 exports[`vite-plugin vapor options > keeps Tres-style custom renderer intrinsics as elements around imported lowercase components 1`] = `
 "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
-
 
 const t0 = _template("<group></group>", true)
 const t1 = _template("<mesh></mesh>", true)
@@ -1368,7 +1384,9 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n4
 }
 const __vaporRender = render
-import { Primitive } from '@tresjs/core'
+
+import { Primitive } from "@tresjs/core";
+
 const visible = true;
 
 export default /*@__PURE__*/_defineVaporComponent({
@@ -1385,16 +1403,14 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})
-"
+})"
 `;
 
 exports[`vite-plugin vapor options > keeps v-for aliases inside Vapor v-html expressions 1`] = `
 "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { createComponentWithFallback as _createComponentWithFallback, child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setProp as _setProp, applyTextModel as _applyTextModel, applySelectModel as _applySelectModel, createInvoker as _createInvoker, delegateEvents as _delegateEvents, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
 
-
-const t0 = _template("<span class=\\"perf-badge\\"> </span>", true)
+const t0 = _template("<span class=\\"perf-badge\\"> ms </span>", true)
 const t1 = _template("<span class=\\"count-badge errors\\"> </span>")
 const t2 = _template("<span class=\\"count-badge warnings\\"> </span>")
 const t3 = _template("<span class=\\"tab-badge\\"> </span>", true)
@@ -1402,17 +1418,17 @@ const t4 = _template("<div class=\\"error-panel\\"><div class=\\"error-header\\"
 const t5 = _template("<option> </option>")
 const t6 = _template("<div class=\\"success-state\\"><svg class=\\"success-icon\\" viewBox=\\"0 0 24 24\\"><path fill=\\"currentColor\\"></path></svg><span>No issues found</span></div>")
 const t7 = _template("<div class=\\"diagnostic-help\\"><div class=\\"help-header\\"><span class=\\"help-icon\\">?</span><span class=\\"help-label\\">Hint</span></div><div class=\\"help-content\\"></div></div>")
-const t8 = _template("<div><div class=\\"diagnostic-header\\"><svg class=\\"severity-icon\\" viewBox=\\"0 0 24 24\\"><path fill=\\"currentColor\\"></path></svg><code class=\\"rule-id\\"> </code><span class=\\"location-badge\\"> </span></div><div class=\\"diagnostic-message\\"> </div></div>")
+const t8 = _template("<div><div class=\\"diagnostic-header\\"><svg class=\\"severity-icon\\" viewBox=\\"0 0 24 24\\"><path fill=\\"currentColor\\"></path></svg><code class=\\"rule-id\\"> </code><span class=\\"location-badge\\"> : </span></div><div class=\\"diagnostic-message\\"> </div></div>")
 const t9 = _template("<div class=\\"diagnostics-list\\"></div>")
 const t10 = _template("<div class=\\"diagnostics-output\\"><div class=\\"output-header-bar\\"><span class=\\"output-title\\">Issues</span><div class=\\"locale-selector\\"><select aria-label=\\"Locale\\"></select></div></div></div>")
 const t11 = _template("<option> </option>")
 const t12 = _template("<span class=\\"badge fixable-badge\\">fix</span>")
 const t13 = _template("<div><div class=\\"rule-main\\"><label class=\\"rule-toggle\\"><input type=\\"checkbox\\" class=\\"rule-checkbox\\"><code class=\\"rule-id\\"> </code></label><div class=\\"rule-badges\\"><span class=\\"badge category-badge\\"> </span><span> </span></div></div><div class=\\"rule-description\\"> </div></div>")
-const t14 = _template("<div class=\\"empty-state\\">\\n                No rules match your search\\n              </div>")
-const t15 = _template("<div class=\\"category-toggle\\"><label class=\\"toggle-label\\"><input type=\\"checkbox\\" class=\\"rule-checkbox\\"><span class=\\"category-label\\"> </span><span class=\\"category-count\\"> </span></label></div>")
-const t16 = _template("<div class=\\"rules-output\\"><div class=\\"output-header-bar\\"><span class=\\"output-title\\">Rule Configuration</span><div class=\\"rules-actions\\"><div class=\\"preset-actions\\" role=\\"group\\" aria-label=\\"Lint preset\\"><button>\\n                    General Recommended\\n                  </button><button>\\n                    Opinionated\\n                  </button></div><button class=\\"btn-action\\">Enable All</button><button class=\\"btn-action\\">Disable All</button></div></div><div class=\\"rules-toolbar\\"><input type=\\"text\\" placeholder=\\"Search rules...\\" aria-label=\\"Search rules\\" class=\\"search-input\\"><select aria-label=\\"Category filter\\" class=\\"category-select\\"></select></div><div class=\\"rules-list\\"></div></div>")
+const t14 = _template("<div class=\\"empty-state\\"> No rules match your search </div>")
+const t15 = _template("<div class=\\"category-toggle\\"><label class=\\"toggle-label\\"><input type=\\"checkbox\\" class=\\"rule-checkbox\\"><span class=\\"category-label\\"> </span><span class=\\"category-count\\">  rules</span></label></div>")
+const t16 = _template("<div class=\\"rules-output\\"><div class=\\"output-header-bar\\"><span class=\\"output-title\\">Rule Configuration</span><div class=\\"rules-actions\\"><div class=\\"preset-actions\\" role=\\"group\\" aria-label=\\"Lint preset\\"><button> General Recommended </button><button> Opinionated </button></div><button class=\\"btn-action\\">Enable All</button><button class=\\"btn-action\\">Disable All</button></div></div><div class=\\"rules-toolbar\\"><input type=\\"text\\" placeholder=\\"Search rules...\\" aria-label=\\"Search rules\\" class=\\"search-input\\"><select aria-label=\\"Category filter\\" class=\\"category-select\\"></select></div><div class=\\"rules-list\\"></div></div>")
 const t17 = _template("<div class=\\"loading-state\\"><span>Enter Vue code to see lint results</span></div>", true)
-const t18 = _template("<div class=\\"patina-playground\\"><div class=\\"panel input-panel\\"><div class=\\"panel-header\\"><div class=\\"header-title\\"><svg class=\\"icon\\" viewBox=\\"0 0 24 24\\"><path fill=\\"currentColor\\"></path></svg><h2>Source</h2></div><div class=\\"panel-actions\\"><button class=\\"btn-ghost\\">Reset</button></div></div><div class=\\"editor-container\\"></div></div><div class=\\"panel output-panel\\"><div class=\\"panel-header\\"><div class=\\"header-title\\"><svg class=\\"icon\\" viewBox=\\"0 0 24 24\\"><path fill=\\"currentColor\\"></path></svg><h2>Lint Analysis</h2></div><div class=\\"tabs\\"><button>\\n            Diagnostics\\n            </button><button>\\n            Rules\\n            <span class=\\"tab-count\\"> </span></button></div></div><div class=\\"output-content\\"></div></div></div>", true)
+const t18 = _template("<div class=\\"patina-playground\\"><div class=\\"panel input-panel\\"><div class=\\"panel-header\\"><div class=\\"header-title\\"><svg class=\\"icon\\" viewBox=\\"0 0 24 24\\"><path fill=\\"currentColor\\"></path></svg><h2>Source</h2></div><div class=\\"panel-actions\\"><button class=\\"btn-ghost\\">Reset</button></div></div><div class=\\"editor-container\\"></div></div><div class=\\"panel output-panel\\"><div class=\\"panel-header\\"><div class=\\"header-title\\"><svg class=\\"icon\\" viewBox=\\"0 0 24 24\\"><path fill=\\"currentColor\\"></path></svg><h2>Lint Analysis</h2></div><div class=\\"tabs\\"><button> Diagnostics </button><button> Rules <span class=\\"tab-count\\"> / </span></button></div></div><div class=\\"output-content\\"></div></div></div>", true)
 _delegateEvents("click")
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
@@ -1664,17 +1680,19 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n2
 }
 const __vaporRender = render
-import './PatinaPlayground.css'
-import { ref, watch, computed, onMounted, onUnmounted, inject, type ComputedRef } from 'vue'
-import MonacoEditor from '../../shared/MonacoEditor.vue'
-import type { WasmModule, LintResult, LintRule } from '../../wasm/index'
-import { getWasm } from '../../wasm/index'
-import { LINT_PRESET } from '../../shared/presets/patina'
-import { mdiAlert, mdiCheckCircle, mdiCheck } from '@mdi/js'
-import { formatHelp } from '../../utils/highlightCode'
-import { useLocale } from './useLocale'
-import { useRuleManagement } from './useRuleManagement'
-import { useLinting } from './useLinting'
+
+import "./PatinaPlayground.css";
+import { ref, watch, computed, onMounted, onUnmounted, inject, type ComputedRef } from "vue";
+import MonacoEditor from "../../shared/MonacoEditor.vue";
+import type { WasmModule, LintResult, LintRule } from "../../wasm/index";
+import { getWasm } from "../../wasm/index";
+import { LINT_PRESET } from "../../shared/presets/patina";
+import { mdiAlert, mdiCheckCircle, mdiCheck } from "@mdi/js";
+import { formatHelp } from "../../utils/highlightCode";
+import { useLocale } from "./useLocale";
+import { useRuleManagement } from "./useRuleManagement";
+import { useLinting } from "./useLinting";
+
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'PatinaPlayground',
@@ -1684,7 +1702,7 @@ export default /*@__PURE__*/_defineVaporComponent({
   render: __vaporRender,
   setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
 
-const props = __props
+const props = __props;
 const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");
 const theme = computed<"dark" | "light">(() => _injectedTheme?.value ?? "light");
 const source = ref(LINT_PRESET);
@@ -1800,8 +1818,7 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})
-"
+})"
 `;
 
 exports[`vite-plugin vapor options > treats lowercase imported Tres-style components as Vapor components 1`] = `
@@ -1815,7 +1832,8 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n0
 }
 const __vaporRender = render
-import { Primitive } from '@tresjs/core'
+import { Primitive } from "@tresjs/core";
+
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'TresPrimitive',
@@ -1831,8 +1849,7 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})
-"
+})"
 `;
 
 exports[`vite-plugin vapor options > warns and falls back to standard SSR when Vapor is requested for SFCs 1`] = `
@@ -1843,6 +1860,7 @@ import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } 
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
   _push(\`<div\${_ssrRenderAttrs(_attrs)}>\${_ssrInterpolate($setup.count)}</div>\`)
 }
+
 const count = 1;
 
 export default /*@__PURE__*/_defineComponent({
@@ -1856,6 +1874,5 @@ Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, valu
 return __returned__
 }
 
-})
-"
+})"
 `;
