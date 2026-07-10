@@ -6,8 +6,10 @@
  *
  * Unlike `compare-pr.mjs` (which times the whole CLI on a generated corpus),
  * this script drives the in-crate criterion suites under the crate `benches`
- * directories. Both sides save a named baseline into the same `--target-dir`,
- * so critcmp can diff `base` against `head` for each benchmark id in one pass.
+ * directories. Base and head compile into isolated Cargo target directories,
+ * while both harnesses save named baselines into one `CRITERION_HOME`. This
+ * prevents same-version workspace crates from being reused across checkouts
+ * while still letting critcmp compare every benchmark id in one pass.
  *
  * The script is dependency-free (besides `cargo`, `critcmp`, and a checkout of
  * each side) so GitHub Actions can run it after checking out both commits.
@@ -109,8 +111,9 @@ function run(command, commandArgs, options = {}) {
 
 /**
  * Build the `cargo bench` argument vector for one side of the comparison.
- * `targetDir` is shared between base and head so critcmp can read both
- * baselines; `baseline` is the criterion baseline name (`base` or `head`).
+ * `targetDir` is isolated per checkout; `baseline` is the criterion baseline
+ * name (`base` or `head`). The shared result location is supplied separately
+ * through `CRITERION_HOME` when the command runs.
  */
 export function cargoBenchArgs({ pkg, benches, baseline, targetDir }) {
   const args = ["bench", "-p", pkg];
@@ -123,7 +126,7 @@ export function cargoBenchArgs({ pkg, benches, baseline, targetDir }) {
   return args;
 }
 
-function benchSide({ side, checkoutDir, baseline, targetDir, suites }) {
+function benchSide({ side, checkoutDir, baseline, targetDir, criterionHome, suites }) {
   for (const suite of suites) {
     const args = cargoBenchArgs({
       pkg: suite.package,
@@ -132,14 +135,15 @@ function benchSide({ side, checkoutDir, baseline, targetDir, suites }) {
       targetDir,
     });
     console.log(`\n==> [${side}] cargo ${args.join(" ")}`);
-    run("cargo", args, { cwd: checkoutDir });
+    run("cargo", args, {
+      cwd: checkoutDir,
+      env: { CRITERION_HOME: criterionHome },
+    });
   }
 }
 
-function critcmpCompare({ targetDir, threshold }) {
-  // `--target-dir` points criterion at <dir>/criterion; critcmp reads the same
-  // location via CRITERION_HOME so both baselines resolve without extra flags.
-  const env = { CRITERION_HOME: resolve(targetDir, "criterion") };
+function critcmpCompare({ criterionHome, threshold }) {
+  const env = { CRITERION_HOME: criterionHome };
   const args = ["base", "head"];
   if (threshold != null) {
     // critcmp's own threshold only colorizes; we still parse the table below to
@@ -219,6 +223,7 @@ export function main(argv = process.argv.slice(2)) {
   const baseDir = resolve(requireArg(args, "base-dir"));
   const headDir = resolve(requireArg(args, "head-dir"));
   const targetDir = resolve(requireArg(args, "target-dir"));
+  const criterionHome = resolve(targetDir, "criterion");
   const threshold = parsePositiveFloat(args.threshold);
 
   if (!existsSync(baseDir)) {
@@ -228,23 +233,28 @@ export function main(argv = process.argv.slice(2)) {
     throw new Error(`Head checkout not found: ${headDir}`);
   }
 
-  // Base first, then head, into the shared target dir so critcmp sees both.
+  // Build outputs must stay isolated: the two checkouts intentionally carry
+  // the same workspace package versions, so one Cargo target directory can
+  // otherwise reuse a base rmeta that does not expose a new head API. Criterion
+  // results remain shared explicitly through CRITERION_HOME.
   benchSide({
     side: "base",
     checkoutDir: baseDir,
     baseline: "base",
-    targetDir,
+    targetDir: resolve(targetDir, "base-build"),
+    criterionHome,
     suites: CRITERION_SUITES,
   });
   benchSide({
     side: "head",
     checkoutDir: headDir,
     baseline: "head",
-    targetDir,
+    targetDir: resolve(targetDir, "head-build"),
+    criterionHome,
     suites: CRITERION_SUITES,
   });
 
-  const table = critcmpCompare({ targetDir, threshold });
+  const table = critcmpCompare({ criterionHome, threshold });
   const regressions = parseCritcmpRegressions(table, threshold);
   const summary = renderSummary({ table, threshold, regressions });
 

@@ -135,6 +135,7 @@ test("tool benchmark workflow publishes scheduled artifacts without pushing to p
 
 test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard", () => {
   const workflow = readRepoFile(".github", "workflows", "criterion-bench.yml");
+  const driver = readRepoFile("bench", "criterion-ab.mjs");
   const abJob = workflowJobBody(workflow, "criterion-ab");
   const guardJob = workflowJobBody(workflow, "dialect-guard");
 
@@ -155,8 +156,8 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
     );
   }
 
-  // A/B: alternating base/head criterion baselines compared with critcmp into a
-  // shared target dir; report-only by default (no threshold blocks the PR).
+  // A/B: base/head build outputs stay isolated while named Criterion baselines
+  // share one CRITERION_HOME for critcmp. It is report-only by default.
   assert.match(abJob, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);
   assert.match(abJob, /contents:\s*read/);
   assert.doesNotMatch(abJob, /contents:\s*write/);
@@ -172,6 +173,10 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
   assert.match(abJob, /cargo install critcmp --version 0\.1\.8 --locked/);
   assert.match(abJob, /node head\/bench\/criterion-ab\.mjs/);
   assert.match(abJob, /--target-dir "\$GITHUB_WORKSPACE\/head\/target"/);
+  assert.match(driver, /const criterionHome = resolve\(targetDir, "criterion"\)/);
+  assert.match(driver, /targetDir: resolve\(targetDir, "base-build"\)/);
+  assert.match(driver, /targetDir: resolve\(targetDir, "head-build"\)/);
+  assert.match(driver, /env: \{ CRITERION_HOME: criterionHome \}/);
 
   // Dialect guard: build vize with legacy OFF and ON, then assert byte-identical
   // Vue 3 codegen plus a small A/B timing budget.
