@@ -1,6 +1,6 @@
 //! Slot outlet (`<slot />`) name and props generation.
 
-use crate::{DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper};
+use crate::{DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, rendu::RenduOp};
 use vize_carton::String;
 
 use super::super::context::CodegenContext;
@@ -17,30 +17,32 @@ pub(crate) enum SlotOutletName<'a> {
 }
 
 fn is_slot_name_bind(dir: &DirectiveNode<'_>) -> bool {
-    if dir.name.as_str() != "bind" {
-        return false;
-    }
-
-    match dir.arg.as_ref() {
-        Some(ExpressionNode::Simple(exp)) => exp.is_static && exp.content.as_str() == "name",
-        _ => false,
-    }
+    matches!(
+        RenduOp::from_directive(dir),
+        RenduOp::Directive { name: "bind", arg: Some(arg), .. }
+            if matches!(arg.node(), Some(ExpressionNode::Simple(exp)) if exp.is_static && exp.content == "name")
+    )
 }
 
 fn is_slot_name_prop(prop: &PropNode<'_>) -> bool {
-    match prop {
-        PropNode::Attribute(attr) => attr.name.as_str() == "name",
-        PropNode::Directive(dir) => is_slot_name_bind(dir),
+    match RenduOp::from_prop(prop) {
+        RenduOp::Attribute { name: "name", .. } => true,
+        RenduOp::Directive { .. } => {
+            matches!(prop, PropNode::Directive(dir) if is_slot_name_bind(dir))
+        }
+        _ => false,
     }
 }
 
 fn is_slot_outlet_object_spread(prop: &PropNode<'_>) -> bool {
     matches!(
-        prop,
-        PropNode::Directive(dir)
-            if (dir.name.as_str() == "bind" || dir.name.as_str() == "on")
-                && dir.arg.is_none()
-                && dir.exp.is_some()
+        RenduOp::from_prop(prop),
+        RenduOp::Directive {
+            name: "bind" | "on",
+            arg: None,
+            exp: Some(_),
+            ..
+        }
     )
 }
 
@@ -49,23 +51,31 @@ fn slot_outlet_prop_generates_output(prop: &PropNode<'_>) -> bool {
         return false;
     }
 
-    match prop {
-        PropNode::Attribute(_) => true,
-        PropNode::Directive(dir) => {
-            if (dir.name.as_str() == "bind" || dir.name.as_str() == "on") && dir.arg.is_none() {
-                return dir.exp.is_some();
+    match RenduOp::from_prop(prop) {
+        RenduOp::Attribute { .. } => true,
+        RenduOp::Directive { name, arg, exp, .. } => {
+            if matches!(name, "bind" | "on") && arg.is_none() {
+                return exp.is_some();
             }
+            let PropNode::Directive(dir) = prop else {
+                unreachable!("Rendu directive must borrow a directive prop");
+            };
             is_supported_directive(dir)
         }
+        _ => false,
     }
 }
 
 fn has_slot_outlet_vbind_object(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| {
         matches!(
-            prop,
-            PropNode::Directive(dir)
-                if dir.name.as_str() == "bind" && dir.arg.is_none() && dir.exp.is_some()
+            RenduOp::from_prop(prop),
+            RenduOp::Directive {
+                name: "bind",
+                arg: None,
+                exp: Some(_),
+                ..
+            }
         )
     })
 }
@@ -73,9 +83,13 @@ fn has_slot_outlet_vbind_object(el: &ElementNode<'_>) -> bool {
 fn has_slot_outlet_von_object(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| {
         matches!(
-            prop,
-            PropNode::Directive(dir)
-                if dir.name.as_str() == "on" && dir.arg.is_none() && dir.exp.is_some()
+            RenduOp::from_prop(prop),
+            RenduOp::Directive {
+                name: "on",
+                arg: None,
+                exp: Some(_),
+                ..
+            }
         )
     })
 }
@@ -88,17 +102,19 @@ fn has_slot_outlet_entry_props(el: &ElementNode<'_>) -> bool {
 
 pub(crate) fn get_slot_outlet_name<'a>(el: &'a ElementNode<'a>) -> SlotOutletName<'a> {
     for prop in &el.props {
-        match prop {
-            PropNode::Attribute(attr) if attr.name.as_str() == "name" => {
-                let name = attr
-                    .value
-                    .as_ref()
-                    .map(|v| v.content.clone())
+        match RenduOp::from_prop(prop) {
+            RenduOp::Attribute {
+                name: "name",
+                value,
+                ..
+            } => {
+                let name = value
+                    .map(String::new)
                     .unwrap_or_else(|| String::new("default"));
                 return SlotOutletName::Static(name);
             }
-            PropNode::Directive(dir) if is_slot_name_bind(dir) => {
-                if let Some(exp) = dir.exp.as_ref() {
+            RenduOp::Directive { exp, .. } if matches!(prop, PropNode::Directive(dir) if is_slot_name_bind(dir)) => {
+                if let Some(exp) = exp.and_then(|exp| exp.node()) {
                     return SlotOutletName::Dynamic(exp);
                 }
             }
@@ -127,24 +143,18 @@ pub(crate) fn has_slot_outlet_props(el: &ElementNode<'_>) -> bool {
 pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let static_merge = crate::codegen::props::StaticMerge::from_props(&el.props);
 
-    let has_dynamic_class = el.props.iter().any(|prop| match prop {
-        PropNode::Directive(dir) if !is_slot_name_bind(dir) && dir.name.as_str() == "bind" => {
-            matches!(
-                dir.arg.as_ref(),
-                Some(ExpressionNode::Simple(exp))
-                    if exp.is_static && exp.content.as_str() == "class"
-            )
+    let has_dynamic_class = el.props.iter().any(|prop| match RenduOp::from_prop(prop) {
+        RenduOp::Directive { name: "bind", arg: Some(arg), .. } => {
+            !is_slot_name_prop(prop)
+                && matches!(arg.node(), Some(ExpressionNode::Simple(exp)) if exp.is_static && exp.content == "class")
         }
         _ => false,
     });
 
-    let has_dynamic_style = el.props.iter().any(|prop| match prop {
-        PropNode::Directive(dir) if !is_slot_name_bind(dir) && dir.name.as_str() == "bind" => {
-            matches!(
-                dir.arg.as_ref(),
-                Some(ExpressionNode::Simple(exp))
-                    if exp.is_static && exp.content.as_str() == "style"
-            )
+    let has_dynamic_style = el.props.iter().any(|prop| match RenduOp::from_prop(prop) {
+        RenduOp::Directive { name: "bind", arg: Some(arg), .. } => {
+            !is_slot_name_prop(prop)
+                && matches!(arg.node(), Some(ExpressionNode::Simple(exp)) if exp.is_static && exp.content == "style")
         }
         _ => false,
     });
@@ -155,10 +165,15 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
             continue;
         }
 
-        match prop {
-            PropNode::Attribute(attr) => {
-                if (attr.name.as_str() == "class" && has_dynamic_class)
-                    || (attr.name.as_str() == "style" && has_dynamic_style)
+        match RenduOp::from_prop(prop) {
+            RenduOp::Attribute {
+                name,
+                name_span,
+                value,
+                value_span,
+                ..
+            } => {
+                if (name == "class" && has_dynamic_class) || (name == "style" && has_dynamic_style)
                 {
                     continue;
                 }
@@ -167,7 +182,8 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
                     ctx.push(", ");
                 }
 
-                let key = camelize(&attr.name);
+                let key = camelize(name);
+                ctx.record_mapping_named(&name_span.start, name);
                 if is_valid_js_identifier(&key) {
                     ctx.push(&key);
                 } else {
@@ -176,19 +192,23 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
                     ctx.push("\"");
                 }
                 ctx.push(": ");
-                if let Some(value) = &attr.value {
+                if let Some(value) = value {
                     ctx.push("\"");
-                    ctx.push(&escape_js_string(value.content.as_str()));
+                    if let Some(span) = value_span {
+                        ctx.record_mapping(&span.start);
+                    }
+                    ctx.push(&escape_js_string(value));
                     ctx.push("\"");
                 } else {
                     ctx.push("\"\"");
                 }
                 first = false;
             }
-            PropNode::Directive(dir) => {
-                if !is_supported_directive(dir)
-                    || (dir.arg.is_none()
-                        && (dir.name.as_str() == "bind" || dir.name.as_str() == "on"))
+            RenduOp::Directive { name, arg, .. } => {
+                let PropNode::Directive(dir) = prop else {
+                    unreachable!("Rendu directive must borrow a directive prop");
+                };
+                if !is_supported_directive(dir) || (arg.is_none() && matches!(name, "bind" | "on"))
                 {
                     continue;
                 }
@@ -199,6 +219,7 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
                 generate_slot_outlet_directive_prop_with_static(ctx, dir, static_merge);
                 first = false;
             }
+            _ => unreachable!("element props lower to attribute or directive Rendu ops"),
         }
     }
 }

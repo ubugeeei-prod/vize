@@ -4,8 +4,8 @@
 //! v-model, v-show, and custom directives on elements.
 
 use crate::{
-    ElementNode, ExpressionNode, PropNode, RuntimeHelper,
-    steps::v_model::{get_vmodel_helper, parse_model_modifiers},
+    ElementNode, ExpressionNode, PropNode, RuntimeHelper, rendu::RenduOp,
+    steps::v_model::get_vmodel_helper,
 };
 
 use super::super::{context::CodegenContext, expression::generate_expression};
@@ -19,12 +19,16 @@ fn generate_vmodel_entry(
     el: &ElementNode<'_>,
     dir: &crate::DirectiveNode<'_>,
 ) {
+    let RenduOp::Directive { exp, modifiers, .. } = RenduOp::from_directive(dir) else {
+        unreachable!("v-model emission requires RenduOp::Directive");
+    };
     let helper = get_vmodel_helper(el);
     ctx.use_helper(helper);
 
-    let modifiers: Vec<_> = dir.modifiers.iter().map(|m| m.content.as_str()).collect();
-    let parsed_mods = parse_model_modifiers(&dir.modifiers);
-    let has_modifiers = parsed_mods.lazy || parsed_mods.number || parsed_mods.trim;
+    let modifiers: Vec<_> = modifiers.names().collect();
+    let has_modifiers = modifiers
+        .iter()
+        .any(|modifier| matches!(*modifier, "lazy" | "number" | "trim"));
 
     if has_modifiers {
         let active_modifiers: Vec<_> = modifiers
@@ -40,7 +44,7 @@ fn generate_vmodel_entry(
         ctx.push(",");
         ctx.newline();
         ctx.push("    ");
-        if let Some(exp) = &dir.exp {
+        if let Some(exp) = exp.and_then(|exp| exp.node()) {
             generate_expression(ctx, exp);
         }
         ctx.push(",");
@@ -72,7 +76,7 @@ fn generate_vmodel_entry(
         ctx.push("  [");
         ctx.push(ctx.helper(helper));
         ctx.push(", ");
-        if let Some(exp) = &dir.exp {
+        if let Some(exp) = exp.and_then(|exp| exp.node()) {
             generate_expression(ctx, exp);
         }
         ctx.push("]");
@@ -80,7 +84,10 @@ fn generate_vmodel_entry(
 }
 
 fn generate_vshow_entry(ctx: &mut CodegenContext, dir: &crate::DirectiveNode<'_>) -> bool {
-    let Some(exp) = &dir.exp else {
+    let RenduOp::Directive { exp, .. } = RenduOp::from_directive(dir) else {
+        unreachable!("v-show emission requires RenduOp::Directive");
+    };
+    let Some(exp) = exp.and_then(|exp| exp.node()) else {
         return false;
     };
 
@@ -94,21 +101,31 @@ fn generate_vshow_entry(ctx: &mut CodegenContext, dir: &crate::DirectiveNode<'_>
 }
 
 fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::DirectiveNode<'_>) {
+    let RenduOp::Directive {
+        name,
+        arg,
+        exp,
+        modifiers,
+        ..
+    } = RenduOp::from_directive(dir)
+    else {
+        unreachable!("custom directive emission requires RenduOp::Directive");
+    };
     ctx.push("  [");
-    ctx.push(&to_valid_asset_identifier("directive", &dir.name));
+    ctx.push(&to_valid_asset_identifier("directive", name));
 
-    if let Some(exp) = &dir.exp {
+    if let Some(exp) = exp.and_then(|exp| exp.node()) {
         ctx.push(", ");
         generate_expression(ctx, exp);
     }
 
-    if let Some(arg) = &dir.arg {
-        if dir.exp.is_none() {
+    if let Some(arg) = arg {
+        if exp.is_none() {
             ctx.push(", void 0");
         }
         ctx.push(", ");
-        match arg {
-            ExpressionNode::Simple(simple) => {
+        match arg.node() {
+            Some(ExpressionNode::Simple(simple)) => {
                 if simple.is_static {
                     ctx.push("\"");
                     ctx.push(&simple.content);
@@ -117,24 +134,25 @@ fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::Direct
                     ctx.push(&simple.content);
                 }
             }
-            ExpressionNode::Compound(compound) => {
+            Some(ExpressionNode::Compound(compound)) => {
                 ctx.push(&compound.loc.source);
             }
+            None => ctx.push(arg.text()),
         }
     }
 
-    if !dir.modifiers.is_empty() {
-        if dir.exp.is_none() && dir.arg.is_none() {
+    if !modifiers.is_empty() {
+        if exp.is_none() && arg.is_none() {
             ctx.push(", void 0, void 0");
-        } else if dir.arg.is_none() {
+        } else if arg.is_none() {
             ctx.push(", void 0");
         }
         ctx.push(", { ");
-        for (j, modifier) in dir.modifiers.iter().enumerate() {
+        for (j, modifier) in modifiers.names().enumerate() {
             if j > 0 {
                 ctx.push(", ");
             }
-            ctx.push(&modifier.content);
+            ctx.push(modifier);
             ctx.push(": true");
         }
         ctx.push(" }");
@@ -154,9 +172,14 @@ pub fn generate_vmodel_closing(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     generate_vmodel_entry(ctx, el, dir);
 
     for prop in &el.props {
-        if let PropNode::Directive(show_dir) = prop
-            && show_dir.name.as_str() == "show"
-            && show_dir.exp.is_some()
+        if matches!(
+            RenduOp::from_prop(prop),
+            RenduOp::Directive {
+                name: "show",
+                exp: Some(_),
+                ..
+            }
+        ) && let PropNode::Directive(show_dir) = prop
         {
             ctx.push(",");
             ctx.newline();
@@ -172,9 +195,14 @@ pub fn generate_vmodel_closing(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 /// Generate v-show directive closing if present
 pub fn generate_vshow_closing(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     for prop in &el.props {
-        if let PropNode::Directive(dir) = prop
-            && dir.name.as_str() == "show"
-            && dir.exp.is_some()
+        if matches!(
+            RenduOp::from_prop(prop),
+            RenduOp::Directive {
+                name: "show",
+                exp: Some(_),
+                ..
+            }
+        ) && let PropNode::Directive(dir) = prop
         {
             ctx.push(", [");
             ctx.newline();
@@ -215,9 +243,14 @@ pub fn generate_custom_directives_closing(ctx: &mut CodegenContext, el: &Element
 
     if has_vshow_directive(el) {
         for prop in &el.props {
-            if let PropNode::Directive(dir) = prop
-                && dir.name.as_str() == "show"
-                && dir.exp.is_some()
+            if matches!(
+                RenduOp::from_prop(prop),
+                RenduOp::Directive {
+                    name: "show",
+                    exp: Some(_),
+                    ..
+                }
+            ) && let PropNode::Directive(dir) = prop
             {
                 if emitted {
                     ctx.push(",");

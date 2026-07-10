@@ -9,7 +9,7 @@ mod branch_component;
 mod branch_fragment;
 mod generate;
 
-use crate::{IfBranchNode, IfNode, PropNode, RuntimeHelper};
+use crate::{ExpressionNode, IfBranchNode, IfNode, PropNode, RuntimeHelper, rendu::RenduOp};
 
 use super::{context::CodegenContext, expression::generate_expression, helpers::escape_js_string};
 
@@ -24,6 +24,7 @@ pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
     ctx.use_helper(RuntimeHelper::CreateComment);
 
     for (i, branch) in if_node.branches.iter().enumerate() {
+        let condition = rendu_branch_condition(branch);
         // Allocate a key from the per-scope counter so sibling conditional
         // blocks at the same level get unique keys (Vue parity: 0,1,2,3 —
         // not the per-chain 0,1,0,1 vize used to emit). The counter is
@@ -31,7 +32,7 @@ pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
         // v-if inside this branch starts at 0 again, matching Vue's
         // recursive transform. (#961)
         let branch_key = ctx.next_v_if_branch_key();
-        if let Some(condition) = &branch.condition {
+        if let Some(condition) = condition {
             if i == 0 {
                 // First branch: output condition with parentheses
                 ctx.push("(");
@@ -63,13 +64,17 @@ pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
         generate_if_branch(ctx, branch, branch_key);
         ctx.v_if_branch_counter = saved_counter;
 
-        if branch.condition.is_some() && i > 0 {
+        if condition.is_some() && i > 0 {
             ctx.deindent();
         }
     }
 
     // Else branch (comment node) - only if all branches have conditions
-    if if_node.branches.iter().all(|b| b.condition.is_some()) {
+    if if_node
+        .branches
+        .iter()
+        .all(|branch| rendu_branch_condition(branch).is_some())
+    {
         ctx.newline();
         ctx.push(": ");
         ctx.push(ctx.helper(RuntimeHelper::CreateComment));
@@ -77,6 +82,13 @@ pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
     }
 
     ctx.deindent();
+}
+
+fn rendu_branch_condition<'a>(branch: &'a IfBranchNode<'a>) -> Option<&'a ExpressionNode<'a>> {
+    let RenduOp::IfBranch { condition, .. } = RenduOp::from_if_branch(branch) else {
+        unreachable!("v-if branch emission requires RenduOp::IfBranch");
+    };
+    condition.and_then(|condition| condition.node())
 }
 
 /// Generate key for if branch.

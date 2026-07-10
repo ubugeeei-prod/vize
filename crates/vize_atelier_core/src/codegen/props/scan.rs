@@ -1,9 +1,9 @@
 //! Single-pass prop metadata collection for code generation.
 
 use crate::options::BindingType;
-use crate::{DirectiveNode, ExpressionNode, PropNode};
+use crate::{DirectiveNode, ExpressionNode, PropNode, rendu::RenduOp};
 
-use super::super::context::CodegenContext;
+use super::super::{context::CodegenContext, element::helpers::is_is_rendu_op};
 use super::directives::is_supported_directive;
 use super::events::get_von_event_key;
 use vize_carton::{FxHashMap, String};
@@ -118,7 +118,8 @@ impl<'props> PropsScan<'props> {
         };
 
         for (index, prop) in props.iter().enumerate() {
-            let visible = !skip_is || !is_is_prop(prop);
+            let op = RenduOp::from_prop(prop);
+            let visible = !skip_is || !is_is_rendu_op(op);
 
             // The `is` binding of a dynamic `<component :is>` is consumed by
             // resolveDynamicComponent, not emitted as a prop. Skipping it here
@@ -126,22 +127,22 @@ impl<'props> PropsScan<'props> {
             // normalizeProps(guardReactiveProps()) fast path instead of forcing
             // mergeProps (matching @vue/compiler-dom).
             if visible {
-                scan.observe_other_prop(prop);
+                scan.observe_other_prop(op, prop);
             }
 
-            match prop {
-                PropNode::Attribute(attr) => {
-                    if attr.name == "class" {
+            match op {
+                RenduOp::Attribute { name, value, .. } => {
+                    if name == "class" {
                         if scan.static_class.is_none() {
-                            scan.static_class = attr.value.as_ref().map(|v| v.content.as_str());
+                            scan.static_class = value;
                             scan.static_class_index = Some(index);
                         }
                         if visible {
                             scan.visible_class_attrs += 1;
                         }
-                    } else if attr.name == "style" {
+                    } else if name == "style" {
                         if scan.static_style.is_none() {
-                            scan.static_style = attr.value.as_ref().map(|v| v.content.as_str());
+                            scan.static_style = value;
                             scan.static_style_index = Some(index);
                         }
                         if visible {
@@ -153,11 +154,14 @@ impl<'props> PropsScan<'props> {
                         scan.visible_prop_count += 1;
                     }
                 }
-                PropNode::Directive(dir) => {
+                RenduOp::Directive { name, arg, .. } => {
+                    let PropNode::Directive(dir) = prop else {
+                        unreachable!("Rendu directive must borrow a directive prop");
+                    };
                     // Record source ordering of the first dynamic :class/:style
                     // relative to the static class/style attribute.
-                    if let Some(ExpressionNode::Simple(exp)) = &dir.arg
-                        && dir.name == "bind"
+                    if let Some(ExpressionNode::Simple(exp)) = arg.and_then(|arg| arg.node())
+                        && name == "bind"
                         && exp.is_static
                     {
                         if exp.content == "class" && !scan.has_dynamic_class {
@@ -173,6 +177,7 @@ impl<'props> PropsScan<'props> {
                         scan.visible_prop_count += 1;
                     }
                 }
+                _ => unreachable!("element props lower to attribute or directive Rendu ops"),
             }
         }
 
@@ -214,32 +219,39 @@ impl<'props> PropsScan<'props> {
         self.visible_count(has_scope_id) > 1 || self.has_normalizer || self.has_inline_handler
     }
 
-    fn observe_other_prop<'ast>(&mut self, prop: &PropNode<'ast>) {
+    fn observe_other_prop<'ast>(&mut self, op: RenduOp<'ast>, prop: &PropNode<'ast>) {
         if self.has_other {
             return;
         }
 
-        self.has_other = match prop {
-            PropNode::Attribute(_) => true,
-            PropNode::Directive(dir) => {
-                if (dir.name == "bind" || dir.name == "on") && dir.arg.is_none() {
+        self.has_other = match op {
+            RenduOp::Attribute { .. } => true,
+            RenduOp::Directive { name, arg, .. } => {
+                let PropNode::Directive(dir) = prop else {
+                    unreachable!("Rendu directive must borrow a directive prop");
+                };
+                if matches!(name, "bind" | "on") && arg.is_none() {
                     false
                 } else {
                     is_supported_directive(dir)
                 }
             }
+            _ => unreachable!("element props lower to attribute or directive Rendu ops"),
         };
     }
 
     fn observe_directive(&mut self, ctx: &CodegenContext, dir: &DirectiveNode<'_>) {
-        match dir.name.as_str() {
+        let RenduOp::Directive { name, arg, .. } = RenduOp::from_directive(dir) else {
+            unreachable!("prop scan requires RenduOp::Directive");
+        };
+        match name {
             "bind" => {
-                if dir.arg.is_none() {
+                if arg.is_none() {
                     self.has_vbind_obj = true;
                     return;
                 }
 
-                if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
+                if let Some(ExpressionNode::Simple(exp)) = arg.and_then(|arg| arg.node()) {
                     if !exp.is_static {
                         self.has_dynamic_key = true;
                     }
@@ -254,7 +266,7 @@ impl<'props> PropsScan<'props> {
                 }
             }
             "on" => {
-                if dir.arg.is_none() {
+                if arg.is_none() {
                     self.has_von_obj = true;
                 }
                 if !self.has_inline_handler && has_inline_handler(ctx, dir) {
@@ -265,10 +277,11 @@ impl<'props> PropsScan<'props> {
                 }
             }
             "model" => {
-                self.has_dynamic_vmodel |= dir.arg.as_ref().is_some_and(|arg| match arg {
-                    ExpressionNode::Simple(exp) => !exp.is_static,
-                    ExpressionNode::Compound(_) => true,
-                });
+                self.has_dynamic_vmodel |=
+                    arg.and_then(|arg| arg.node()).is_some_and(|arg| match arg {
+                        ExpressionNode::Simple(exp) => !exp.is_static,
+                        ExpressionNode::Compound(_) => true,
+                    });
             }
             "text" => {
                 self.has_normalizer = true;
@@ -278,32 +291,22 @@ impl<'props> PropsScan<'props> {
     }
 }
 
-fn is_is_prop(prop: &PropNode<'_>) -> bool {
-    match prop {
-        PropNode::Attribute(attr) => attr.name == "is",
-        PropNode::Directive(dir) => {
-            dir.name == "bind"
-                && matches!(&dir.arg, Some(ExpressionNode::Simple(exp)) if exp.content == "is")
-        }
-    }
-}
-
 fn has_inline_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
-    if ctx.cache_handlers_in_current_scope()
-        && dir.exp.is_some()
-        && !is_setup_const_handler(ctx, dir)
+    let RenduOp::Directive { exp, modifiers, .. } = RenduOp::from_directive(dir) else {
+        unreachable!("handler scan requires RenduOp::Directive");
+    };
+    if ctx.cache_handlers_in_current_scope() && exp.is_some() && !is_setup_const_handler(ctx, dir) {
+        return true;
+    }
+
+    if modifiers
+        .names()
+        .any(|name| !matches!(name, "capture" | "once" | "passive"))
     {
         return true;
     }
 
-    if dir.modifiers.iter().any(|m| {
-        let name = m.content.as_str();
-        !matches!(name, "capture" | "once" | "passive")
-    }) {
-        return true;
-    }
-
-    dir.exp.as_ref().is_some_and(|exp| {
+    exp.and_then(|exp| exp.node()).is_some_and(|exp| {
         if let ExpressionNode::Simple(simple) = exp {
             let content = simple.content.as_str();
             content.contains('(')

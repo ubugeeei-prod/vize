@@ -32,11 +32,10 @@ pub(super) fn emit_element_tag(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 /// Check if element has v-once directive
 pub fn has_v_once(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| {
-        if let PropNode::Directive(dir) = prop {
-            dir.name.as_str() == "once"
-        } else {
-            false
-        }
+        matches!(
+            RenduOp::from_prop(prop),
+            RenduOp::Directive { name: "once", .. }
+        )
     })
 }
 
@@ -53,22 +52,21 @@ pub(crate) fn is_whitespace_or_comment(child: &TemplateChildNode<'_>) -> bool {
 /// Check if element has v-show directive
 pub fn has_vshow_directive(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| {
-        if let PropNode::Directive(dir) = prop {
-            dir.name.as_str() == "show" && dir.exp.is_some()
-        } else {
-            false
-        }
+        matches!(
+            RenduOp::from_prop(prop),
+            RenduOp::Directive {
+                name: "show",
+                exp: Some(_),
+                ..
+            }
+        )
     })
 }
 
 /// Check if element has custom directives
 pub fn has_custom_directives(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| {
-        if let PropNode::Directive(dir) = prop {
-            !is_builtin_directive(&dir.name)
-        } else {
-            false
-        }
+        matches!(RenduOp::from_prop(prop), RenduOp::Directive { name, .. } if !is_builtin_directive(name))
     })
 }
 
@@ -77,8 +75,9 @@ pub fn get_custom_directives<'a, 'b>(el: &'b ElementNode<'a>) -> Vec<&'b Directi
     el.props
         .iter()
         .filter_map(|prop| {
-            if let PropNode::Directive(dir) = prop
-                && !is_builtin_directive(&dir.name)
+            if let RenduOp::Directive { name, .. } = RenduOp::from_prop(prop)
+                && !is_builtin_directive(name)
+                && let PropNode::Directive(dir) = prop
             {
                 return Some(dir.as_ref());
             }
@@ -98,11 +97,10 @@ pub fn has_vmodel_directive(el: &ElementNode<'_>) -> bool {
         return false;
     }
     el.props.iter().any(|prop| {
-        if let PropNode::Directive(dir) = prop {
-            dir.name.as_str() == "model"
-        } else {
-            false
-        }
+        matches!(
+            RenduOp::from_prop(prop),
+            RenduOp::Directive { name: "model", .. }
+        )
     })
 }
 
@@ -111,8 +109,10 @@ pub(crate) fn get_vmodel_directive<'a, 'b>(
     el: &'b ElementNode<'a>,
 ) -> Option<&'b DirectiveNode<'a>> {
     el.props.iter().find_map(|prop| {
-        if let PropNode::Directive(dir) = prop
-            && dir.name.as_str() == "model"
+        if matches!(
+            RenduOp::from_prop(prop),
+            RenduOp::Directive { name: "model", .. }
+        ) && let PropNode::Directive(dir) = prop
         {
             return Some(dir.as_ref());
         }
@@ -122,16 +122,18 @@ pub(crate) fn get_vmodel_directive<'a, 'b>(
 
 /// Check if a prop is the `is` attribute or `:is` binding (used by dynamic components)
 pub(crate) fn is_is_prop(p: &PropNode<'_>) -> bool {
-    match p {
-        PropNode::Attribute(attr) => attr.name == "is",
-        PropNode::Directive(dir) => {
-            if dir.name == "bind"
-                && let Some(ExpressionNode::Simple(arg)) = &dir.arg
-            {
-                return arg.content == "is";
-            }
-            false
-        }
+    is_is_rendu_op(RenduOp::from_prop(p))
+}
+
+pub(crate) fn is_is_rendu_op(op: RenduOp<'_>) -> bool {
+    match op {
+        RenduOp::Attribute { name: "is", .. } => true,
+        RenduOp::Directive {
+            name: "bind",
+            arg: Some(arg),
+            ..
+        } => arg.is_simple("is"),
+        _ => false,
     }
 }
 

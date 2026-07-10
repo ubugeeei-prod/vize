@@ -2,8 +2,8 @@
 
 use super::model::{RenduElementKind, RenduExprRef, RenduModifiers, RenduSource, RenduSpan};
 use crate::{
-    AttributeNode, DirectiveNode, ElementNode, PropNode, TemplateChildNode, TextCallContent,
-    TextNode,
+    AttributeNode, DirectiveNode, ElementNode, ForNode, IfBranchNode, IfNode, PropNode,
+    TemplateChildNode, TextCallContent, TextNode,
     source_atlas::{SourceAtlasCoordinate, SourceAtlasTarget, SourceAtlasTargetSet},
 };
 
@@ -110,6 +110,32 @@ impl<'a> RenduOp<'a> {
         }
     }
 
+    pub fn from_if(node: &'a IfNode<'a>) -> Self {
+        Self::If {
+            span: RenduSpan::from_location(&node.loc),
+        }
+    }
+
+    pub fn from_if_branch(branch: &'a IfBranchNode<'a>) -> Self {
+        Self::IfBranch {
+            condition: branch.condition.as_ref().map(RenduExprRef::from_expression),
+            span: RenduSpan::from_location(&branch.loc),
+        }
+    }
+
+    pub fn from_for(node: &'a ForNode<'a>) -> Self {
+        Self::For {
+            source: RenduExprRef::from_expression(&node.source),
+            value: node.value_alias.as_ref().map(RenduExprRef::from_expression),
+            key: node.key_alias.as_ref().map(RenduExprRef::from_expression),
+            index: node
+                .object_index_alias
+                .as_ref()
+                .map(RenduExprRef::from_expression),
+            span: RenduSpan::from_location(&node.loc),
+        }
+    }
+
     fn from_attribute(attr: &'a AttributeNode) -> Self {
         Self::Attribute {
             name: attr.name.as_str(),
@@ -123,7 +149,7 @@ impl<'a> RenduOp<'a> {
         }
     }
 
-    fn from_directive(directive: &'a DirectiveNode<'a>) -> Self {
+    pub fn from_directive(directive: &'a DirectiveNode<'a>) -> Self {
         Self::Directive {
             name: directive.name.as_str(),
             arg: directive.arg.as_ref().map(RenduExprRef::from_expression),
@@ -157,23 +183,9 @@ impl<'a> RenduOp<'a> {
                 raw: false,
                 span: RenduSpan::from_location(&interpolation.loc),
             },
-            TemplateChildNode::If(node) => Self::If {
-                span: RenduSpan::from_location(&node.loc),
-            },
-            TemplateChildNode::IfBranch(branch) => Self::IfBranch {
-                condition: branch.condition.as_ref().map(RenduExprRef::from_expression),
-                span: RenduSpan::from_location(&branch.loc),
-            },
-            TemplateChildNode::For(node) => Self::For {
-                source: RenduExprRef::from_expression(&node.source),
-                value: node.value_alias.as_ref().map(RenduExprRef::from_expression),
-                key: node.key_alias.as_ref().map(RenduExprRef::from_expression),
-                index: node
-                    .object_index_alias
-                    .as_ref()
-                    .map(RenduExprRef::from_expression),
-                span: RenduSpan::from_location(&node.loc),
-            },
+            TemplateChildNode::If(node) => Self::from_if(node),
+            TemplateChildNode::IfBranch(branch) => Self::from_if_branch(branch),
+            TemplateChildNode::For(node) => Self::from_for(node),
             TemplateChildNode::TextCall(node) => Self::TextCall {
                 content: match &node.content {
                     TextCallContent::Interpolation(interpolation) => {

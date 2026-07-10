@@ -4,7 +4,7 @@
 //! `v-model` on a component. Split out of `directives` to keep that file focused
 //! on `v-bind` and directive dispatch.
 
-use crate::{DirectiveNode, ExpressionNode, RuntimeHelper};
+use crate::{DirectiveNode, ExpressionNode, RuntimeHelper, rendu::RenduOp};
 
 use super::super::{
     context::CodegenContext, expression::generate_simple_expression,
@@ -13,13 +13,17 @@ use super::super::{
 
 /// Generate v-on directive as a prop
 pub(super) fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
-    let is_dynamic_event = if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
+    let RenduOp::Directive { arg, modifiers, .. } = RenduOp::from_directive(dir) else {
+        unreachable!("v-on emission requires RenduOp::Directive");
+    };
+    let is_dynamic_event = if let Some(ExpressionNode::Simple(exp)) = arg.and_then(|arg| arg.node())
+    {
         !exp.is_static
     } else {
         false
     };
 
-    if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
+    if let Some(ExpressionNode::Simple(exp)) = arg.and_then(|arg| arg.node()) {
         if is_dynamic_event {
             // Dynamic event name: [_toHandlerKey(_ctx.event)]:
             ctx.use_helper(RuntimeHelper::ToHandlerKey);
@@ -53,7 +57,7 @@ pub(super) fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_
             let event_name = super::events::von_event_key_for(
                 exp.content.as_str(),
                 on_plain_element,
-                dir.modifiers.iter().map(|m| m.content.as_str()),
+                modifiers.names(),
             );
 
             let needs_quotes = !is_valid_js_identifier(&event_name);
@@ -77,15 +81,23 @@ pub(super) fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_
 
 /// Generate dynamic v-model on component as props
 pub(super) fn generate_vmodel_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
+    let RenduOp::Directive {
+        arg,
+        exp,
+        modifiers,
+        ..
+    } = RenduOp::from_directive(dir)
+    else {
+        unreachable!("v-model emission requires RenduOp::Directive");
+    };
     // Handle dynamic v-model on component
     // Generate: [_ctx.prop]: _ctx.value, ["onUpdate:" + _ctx.prop]: handler
-    if let Some(ExpressionNode::Simple(arg_exp)) = &dir.arg
+    if let Some(ExpressionNode::Simple(arg_exp)) = arg.and_then(|arg| arg.node())
         && !arg_exp.is_static
     {
         let prop_name = &arg_exp.content;
-        let value_exp = dir
-            .exp
-            .as_ref()
+        let value_exp = exp
+            .and_then(|exp| exp.node())
             .map(|e| match e {
                 ExpressionNode::Simple(s) => s.content.as_str(),
                 ExpressionNode::Compound(c) => c.loc.source.as_str(),
@@ -108,18 +120,18 @@ pub(super) fn generate_vmodel_prop(ctx: &mut CodegenContext, dir: &DirectiveNode
         ctx.push(") = $event)");
 
         // Add modifiers if present
-        if !dir.modifiers.is_empty() {
+        if !modifiers.is_empty() {
             ctx.push(",");
             ctx.newline();
             // [_ctx.prop + "Modifiers"]: { modifier: true }
             ctx.push("[_ctx.");
             ctx.push(prop_name);
             ctx.push(" + \"Modifiers\"]: { ");
-            for (i, modifier) in dir.modifiers.iter().enumerate() {
+            for (i, modifier) in modifiers.names().enumerate() {
                 if i > 0 {
                     ctx.push(", ");
                 }
-                ctx.push(&modifier.content);
+                ctx.push(modifier);
                 ctx.push(": true");
             }
             ctx.push(" }");

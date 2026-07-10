@@ -3,7 +3,7 @@
 //! Split out of `v_for/generate` to keep that file focused on item/block
 //! generation. `generate_for_item_props` (still in `generate`) calls these.
 
-use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper};
+use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper, rendu::RenduOp};
 
 use super::super::{
     context::CodegenContext, element::helpers::is_is_prop, expression::generate_expression,
@@ -212,9 +212,18 @@ pub(super) fn generate_single_prop(
     prop: &PropNode<'_>,
     static_merge: super::super::props::StaticMerge<'_>,
 ) {
-    match prop {
-        PropNode::Attribute(attr) => {
-            let ref_value = if attr.name == "ref" && ctx.options.inline {
+    match RenduOp::from_prop(prop) {
+        RenduOp::Attribute {
+            name,
+            name_span,
+            value,
+            value_span,
+            ..
+        } => {
+            let PropNode::Attribute(attr) = prop else {
+                unreachable!("Rendu attribute must borrow an attribute prop");
+            };
+            let ref_value = if name == "ref" && ctx.options.inline {
                 attr.value.as_ref()
             } else {
                 None
@@ -233,7 +242,7 @@ pub(super) fn generate_single_prop(
                         | crate::options::BindingType::SetupMaybeRef
                 )
             );
-            let needs_ref_for = attr.name == "ref" && ctx.in_v_for;
+            let needs_ref_for = name == "ref" && ctx.in_v_for;
 
             if let (true, Some(ref_value)) = (should_ref_runtime_binding, ref_value) {
                 let ref_name = &ref_value.content;
@@ -250,29 +259,37 @@ pub(super) fn generate_single_prop(
             if needs_ref_for {
                 ctx.push("ref_for: true, ");
             }
-            let needs_quotes = !super::super::helpers::is_valid_js_identifier(&attr.name);
+            let needs_quotes = !super::super::helpers::is_valid_js_identifier(name);
             if needs_quotes {
                 ctx.push("\"");
             }
-            ctx.push(&attr.name);
+            ctx.record_mapping_named(&name_span.start, name);
+            ctx.push(name);
             if needs_quotes {
                 ctx.push("\"");
             }
             ctx.push(": ");
-            if let Some(value) = &attr.value {
+            if let Some(value) = value {
                 if should_ref_runtime_binding {
-                    ctx.push(&value.content);
+                    ctx.push(value);
                 } else {
                     ctx.push("\"");
-                    ctx.push(&escape_js_string(&value.content));
+                    if let Some(span) = value_span {
+                        ctx.record_mapping(&span.start);
+                    }
+                    ctx.push(&escape_js_string(value));
                     ctx.push("\"");
                 }
             } else {
                 ctx.push("\"\"");
             }
         }
-        PropNode::Directive(dir) => {
+        RenduOp::Directive { .. } => {
+            let PropNode::Directive(dir) = prop else {
+                unreachable!("Rendu directive must borrow a directive prop");
+            };
             super::super::props::generate_directive_prop_with_static(ctx, dir, static_merge);
         }
+        _ => unreachable!("element props lower to attribute or directive Rendu ops"),
     }
 }

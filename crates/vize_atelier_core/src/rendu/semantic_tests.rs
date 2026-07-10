@@ -87,6 +87,8 @@ fn expression_refs_borrow_relief_expression_text() {
     assert_eq!(RenduExprRef::Oxc("a.b").text(), "a.b");
     // `from_expression` carries the real Relief node, reachable via `node()`.
     assert!(expr_ref.node().is_some());
+    assert!(expr_ref.is_simple("count + 1"));
+    assert!(!RenduExprRef::Relief("count + 1").is_simple("count + 1"));
     assert!(RenduExprRef::Relief("count + 1").node().is_none());
 }
 

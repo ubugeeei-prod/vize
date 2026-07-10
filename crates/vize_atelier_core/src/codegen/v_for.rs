@@ -9,7 +9,7 @@ mod item_props;
 mod item_props_merge;
 
 use crate::steps::v_memo::{get_memo_exp, has_v_memo};
-use crate::{ForNode, RuntimeHelper, TemplateChildNode};
+use crate::{ForNode, RuntimeHelper, TemplateChildNode, rendu::RenduOp};
 
 use super::{
     children::generate_children, context::CodegenContext, expression::generate_expression,
@@ -27,7 +27,15 @@ pub(crate) use helpers::{
 
 /// Generate for node
 pub fn generate_for(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
-    generate_for_inner(ctx, for_node, None)
+    generate_for_from_rendu(ctx, RenduOp::from_for(for_node), for_node)
+}
+
+pub(crate) fn generate_for_from_rendu<'a>(
+    ctx: &mut CodegenContext,
+    op: RenduOp<'a>,
+    for_node: &'a ForNode<'a>,
+) {
+    generate_for_inner(ctx, op, for_node, None)
 }
 
 pub(crate) fn generate_for_with_fragment_key(
@@ -35,21 +43,37 @@ pub(crate) fn generate_for_with_fragment_key(
     for_node: &ForNode<'_>,
     generate_key: &dyn Fn(&mut CodegenContext),
 ) {
-    generate_for_inner(ctx, for_node, Some(generate_key))
+    generate_for_inner(
+        ctx,
+        RenduOp::from_for(for_node),
+        for_node,
+        Some(generate_key),
+    )
 }
 
-fn generate_for_inner(
+fn generate_for_inner<'a>(
     ctx: &mut CodegenContext,
-    for_node: &ForNode<'_>,
+    op: RenduOp<'a>,
+    for_node: &'a ForNode<'a>,
     generate_fragment_key: Option<&dyn Fn(&mut CodegenContext)>,
 ) {
+    let RenduOp::For {
+        source,
+        value,
+        key,
+        index,
+        ..
+    } = op
+    else {
+        unreachable!("v-for emission requires RenduOp::For");
+    };
     ctx.use_helper(RuntimeHelper::OpenBlock);
     ctx.use_helper(RuntimeHelper::CreateElementBlock);
     ctx.use_helper(RuntimeHelper::Fragment);
     ctx.use_helper(RuntimeHelper::RenderList);
 
     // Determine if this is a numeric range (stable) or dynamic list
-    let is_stable = is_numeric_source(&for_node.source);
+    let is_stable = source.node().is_some_and(is_numeric_source);
 
     // Check if children have keys
     let has_key = for_node.children.iter().any(|child| {
@@ -88,14 +112,14 @@ fn generate_for_inner(
     }
     ctx.push(ctx.helper(RuntimeHelper::RenderList));
     ctx.push("(");
-    generate_expression(ctx, &for_node.source);
+    generate_expression(ctx, source.node().expect("Rendu v-for source"));
     ctx.push(", (");
 
     // Collect callback parameter names for scope registration
     let mut callback_params: Vec<String> = Vec::new();
 
     // Value alias
-    if let Some(value) = &for_node.value_alias {
+    if let Some(value) = value.and_then(|value| value.node()) {
         generate_expression(ctx, value);
         extract_for_params(value, &mut callback_params);
     } else {
@@ -103,14 +127,14 @@ fn generate_for_inner(
     }
 
     // Key alias
-    if let Some(key) = &for_node.key_alias {
+    if let Some(key) = key.and_then(|key| key.node()) {
         ctx.push(", ");
         generate_expression(ctx, key);
         extract_for_params(key, &mut callback_params);
     }
 
     // Index alias
-    if let Some(index) = &for_node.object_index_alias {
+    if let Some(index) = index.and_then(|index| index.node()) {
         ctx.push(", ");
         generate_expression(ctx, index);
         extract_for_params(index, &mut callback_params);
@@ -141,10 +165,10 @@ fn generate_for_inner(
 
         // Extra parameters: __, ___, _cached
         // Add placeholder parameters to reach _cached position
-        if for_node.key_alias.is_none() {
+        if key.is_none() {
             ctx.push(", __");
         }
-        if for_node.object_index_alias.is_none() {
+        if index.is_none() {
             ctx.push(", ___");
         }
         ctx.push(", _cached) => {");

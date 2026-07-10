@@ -1,6 +1,6 @@
 //! Directive-to-prop generation (v-bind, v-on, v-model, v-html, v-text).
 
-use crate::{DirectiveNode, ExpressionNode, RuntimeHelper};
+use crate::{DirectiveNode, ExpressionNode, RuntimeHelper, rendu::RenduOp};
 
 use super::super::{
     context::CodegenContext, expression::generate_expression,
@@ -23,15 +23,18 @@ pub(super) fn is_static_expression(exp: &ExpressionNode<'_>, ctx: &CodegenContex
 
 /// Check if a directive will produce valid output
 pub fn is_supported_directive(dir: &DirectiveNode<'_>) -> bool {
+    let RenduOp::Directive { name, arg, .. } = RenduOp::from_directive(dir) else {
+        unreachable!("directive classification requires RenduOp::Directive");
+    };
     // v-model with dynamic arg on components needs special props handling
     // Static v-model is handled via withDirectives for native elements or transformed for components
-    if dir.name == "model" {
-        return dir.arg.as_ref().is_some_and(|arg| match arg {
+    if name == "model" {
+        return arg.and_then(|arg| arg.node()).is_some_and(|arg| match arg {
             ExpressionNode::Simple(exp) => !exp.is_static,
             ExpressionNode::Compound(_) => true,
         });
     }
-    matches!(dir.name.as_str(), "bind" | "on" | "html" | "text")
+    matches!(name, "bind" | "on" | "html" | "text")
 }
 
 /// A static class/style attribute that will be merged with a dynamic
@@ -53,19 +56,19 @@ impl<'a> StaticMerge<'a> {
         let mut class_index = None;
         let mut style_index = None;
         for (index, prop) in props.iter().enumerate() {
-            match prop {
-                crate::PropNode::Attribute(attr) => {
-                    if attr.name == "class" && merge.class.is_none() {
-                        merge.class = attr.value.as_ref().map(|v| v.content.as_str());
+            match RenduOp::from_prop(prop) {
+                RenduOp::Attribute { name, value, .. } => {
+                    if name == "class" && merge.class.is_none() {
+                        merge.class = value;
                         class_index = Some(index);
-                    } else if attr.name == "style" && merge.style.is_none() {
-                        merge.style = attr.value.as_ref().map(|v| v.content.as_str());
+                    } else if name == "style" && merge.style.is_none() {
+                        merge.style = value;
                         style_index = Some(index);
                     }
                 }
-                crate::PropNode::Directive(dir) => {
-                    if dir.name == "bind"
-                        && let Some(ExpressionNode::Simple(exp)) = &dir.arg
+                RenduOp::Directive { name, arg, .. } => {
+                    if name == "bind"
+                        && let Some(ExpressionNode::Simple(exp)) = arg.and_then(|arg| arg.node())
                         && exp.is_static
                     {
                         if exp.content == "class" && class_index.is_some_and(|i| i < index) {
@@ -75,6 +78,7 @@ impl<'a> StaticMerge<'a> {
                         }
                     }
                 }
+                _ => unreachable!("element props lower to attribute or directive Rendu ops"),
             }
         }
         merge
@@ -123,7 +127,10 @@ fn generate_directive_prop_with_static_key_casing(
     static_merge: StaticMerge<'_>,
     static_key_casing: StaticBindKeyCasing,
 ) {
-    match dir.name.as_str() {
+    let RenduOp::Directive { name, exp, .. } = RenduOp::from_directive(dir) else {
+        unreachable!("directive emission requires RenduOp::Directive");
+    };
+    match name {
         "bind" => {
             generate_vbind_prop(ctx, dir, static_merge, static_key_casing);
         }
@@ -136,7 +143,7 @@ fn generate_directive_prop_with_static_key_casing(
         "html" => {
             // v-html="rawHtml" -> innerHTML: _ctx.rawHtml
             ctx.push("innerHTML: ");
-            if let Some(exp) = &dir.exp {
+            if let Some(exp) = exp.and_then(|exp| exp.node()) {
                 generate_expression(ctx, exp);
             } else {
                 ctx.push("undefined");
@@ -148,7 +155,7 @@ fn generate_directive_prop_with_static_key_casing(
             ctx.push("textContent: ");
             ctx.push(ctx.helper(RuntimeHelper::ToDisplayString));
             ctx.push("(");
-            if let Some(exp) = &dir.exp {
+            if let Some(exp) = exp.and_then(|exp| exp.node()) {
                 generate_expression(ctx, exp);
             } else {
                 ctx.push("undefined");

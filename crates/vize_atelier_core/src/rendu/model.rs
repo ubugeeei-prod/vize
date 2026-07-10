@@ -91,6 +91,11 @@ impl<'a> RenduExprRef<'a> {
             _ => None,
         }
     }
+
+    /// Whether this ref carries a simple Relief expression with the given text.
+    pub fn is_simple(self, text: &str) -> bool {
+        matches!(self.node(), Some(ExpressionNode::Simple(simple)) if simple.content == text)
+    }
 }
 
 impl PartialEq for RenduExprRef<'_> {

@@ -66,25 +66,29 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
                 |ctx: &mut CodegenContext, start: usize, end: usize, first: &mut bool| {
                     // Does this range hold any renderable non-spread prop?
                     let segment = &props[start..end];
-                    let has_renderable = segment.iter().any(|p| match p {
-                        PropNode::Attribute(attr) => !(ctx.skip_is_prop && attr.name == "is"),
-                        PropNode::Directive(dir) => {
-                            // A `:is`/`v-bind:is` directive on a dynamic component is consumed
-                            // as the component tag and skipped during generation (mirrors the
-                            // skip_is_prop branch in generate_props_object_inner). It must not
-                            // count as renderable, or an empty `{}` is flushed into mergeProps.
-                            let is_skipped_is = ctx.skip_is_prop
-                                && dir.name == "bind"
-                                && matches!(
-                                    &dir.arg,
-                                    Some(ExpressionNode::Simple(exp)) if exp.content == "is"
-                                );
-                            !is_skipped_is
-                                && !(dir.arg.is_none() && (dir.name == "bind" || dir.name == "on"))
-                                && is_supported_directive(dir)
-                                && dir.name != "slot"
-                        }
-                    });
+                    let has_renderable =
+                        segment.iter().any(|prop| match RenduOp::from_prop(prop) {
+                            RenduOp::Attribute { name, .. } => !(ctx.skip_is_prop && name == "is"),
+                            RenduOp::Directive { name, arg, .. } => {
+                                let PropNode::Directive(dir) = prop else {
+                                    unreachable!("Rendu directive must borrow a directive prop");
+                                };
+                                // A `:is`/`v-bind:is` directive on a dynamic component is consumed
+                                // as the component tag and skipped during generation (mirrors the
+                                // skip_is_prop branch in generate_props_object_inner). It must not
+                                // count as renderable, or an empty `{}` is flushed into mergeProps.
+                                let is_skipped_is = ctx.skip_is_prop
+                                    && name == "bind"
+                                    && matches!(
+                                        arg.and_then(|arg| arg.node()),
+                                        Some(ExpressionNode::Simple(exp)) if exp.content == "is"
+                                    );
+                                !(is_skipped_is || arg.is_none() && matches!(name, "bind" | "on"))
+                                    && is_supported_directive(dir)
+                                    && name != "slot"
+                            }
+                            _ => unreachable!("element props lower to attribute or directive ops"),
+                        });
                     if !has_renderable {
                         return;
                     }
@@ -97,11 +101,11 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
                 };
 
             for (index, prop) in props.iter().enumerate() {
-                let PropNode::Directive(dir) = prop else {
+                let RenduOp::Directive { name, arg, exp, .. } = RenduOp::from_prop(prop) else {
                     continue;
                 };
-                let is_vbind_spread = dir.name == "bind" && dir.arg.is_none();
-                let is_von_spread = dir.name == "on" && dir.arg.is_none();
+                let is_vbind_spread = name == "bind" && arg.is_none();
+                let is_von_spread = name == "on" && arg.is_none();
                 if !is_vbind_spread && !is_von_spread {
                     continue;
                 }
@@ -115,7 +119,7 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
                 }
                 first_merge_arg = false;
                 if is_vbind_spread {
-                    if let Some(exp) = &dir.exp {
+                    if let Some(exp) = exp.and_then(|exp| exp.node()) {
                         generate_expression(ctx, exp);
                     }
                 } else {
@@ -123,7 +127,7 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
                     ctx.use_helper(RuntimeHelper::ToHandlers);
                     ctx.push(ctx.helper(RuntimeHelper::ToHandlers));
                     ctx.push("(");
-                    if let Some(exp) = &dir.exp {
+                    if let Some(exp) = exp.and_then(|exp| exp.node()) {
                         generate_expression(ctx, exp);
                     }
                     ctx.push(", true)");
@@ -223,15 +227,18 @@ fn try_generate_static_attrs(
         return false;
     }
     if ctx.in_v_for
-        && props
-            .iter()
-            .any(|prop| matches!(prop, PropNode::Attribute(attr) if attr.name == "ref"))
+        && props.iter().any(|prop| {
+            matches!(
+                RenduOp::from_prop(prop),
+                RenduOp::Attribute { name: "ref", .. }
+            )
+        })
     {
         return false;
     }
     if !props
         .iter()
-        .all(|prop| matches!(prop, PropNode::Attribute(_)))
+        .all(|prop| matches!(RenduOp::from_prop(prop), RenduOp::Attribute { .. }))
     {
         return false;
     }
@@ -244,11 +251,11 @@ fn try_generate_static_attrs(
     let mut seen: FxHashSet<String> = FxHashSet::default();
     let mut unique_props: Vec<&PropNode<'_>> = Vec::with_capacity(props.len());
     for prop in props {
-        if let PropNode::Attribute(attr) = prop {
-            if seen.contains(attr.name.as_str()) {
+        if let RenduOp::Attribute { name, .. } = RenduOp::from_prop(prop) {
+            if seen.contains(name) {
                 continue;
             }
-            seen.insert(attr.name.clone());
+            seen.insert(name.into());
         }
         unique_props.push(prop);
     }

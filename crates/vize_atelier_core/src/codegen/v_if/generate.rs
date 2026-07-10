@@ -3,7 +3,7 @@
 //! Contains prop object generation, static class/style extraction,
 //! dynamic binding checks, event key deduplication, and spread detection.
 
-use crate::{DirectiveNode, ElementNode, ExpressionNode, IfBranchNode, PropNode};
+use crate::{DirectiveNode, ElementNode, ExpressionNode, IfBranchNode, PropNode, rendu::RenduOp};
 
 use super::super::{
     context::CodegenContext,
@@ -22,31 +22,23 @@ pub(super) fn should_skip_prop_for_if(
     has_dynamic_class: bool,
     has_dynamic_style: bool,
 ) -> bool {
-    match p {
-        PropNode::Attribute(attr) => {
+    match RenduOp::from_prop(p) {
+        RenduOp::Attribute { name, .. } => {
             // Skip static class if there's a dynamic :class (will be merged)
-            if attr.name == "class" && has_dynamic_class {
+            if name == "class" && has_dynamic_class {
                 return true;
             }
             // Skip static style if there's a dynamic :style (will be merged)
-            if attr.name == "style" && has_dynamic_style {
+            if name == "style" && has_dynamic_style {
                 return true;
             }
             false
         }
-        PropNode::Directive(dir) => {
-            if dir.name == "bind"
-                && let Some(ExpressionNode::Simple(arg)) = &dir.arg
-                && arg.content == "key"
-            {
-                return true;
-            }
-            // Skip v-if/v-else-if/v-else directives
-            if matches!(dir.name.as_str(), "if" | "else-if" | "else") {
-                return true;
-            }
-            false
+        RenduOp::Directive { name, arg, .. } => {
+            (name == "bind" && arg.is_some_and(|arg| arg.is_simple("key")))
+                || matches!(name, "if" | "else-if" | "else")
         }
+        _ => unreachable!("element props lower to attribute or directive Rendu ops"),
     }
 }
 
@@ -55,29 +47,21 @@ pub(super) fn extract_static_class_style<'a>(el: &'a ElementNode<'_>) -> StaticM
     StaticMerge::from_props(&el.props)
 }
 
-/// Check if element has dynamic `:class` binding.
 pub(super) fn has_dynamic_class(el: &ElementNode<'_>) -> bool {
-    el.props.iter().any(|p| {
-        if let PropNode::Directive(dir) = p
-            && dir.name == "bind"
-            && let Some(ExpressionNode::Simple(arg)) = &dir.arg
-        {
-            return arg.content == "class";
-        }
-        false
-    })
+    has_dynamic_bind(el, "class")
 }
 
-/// Check if element has dynamic `:style` binding.
 pub(super) fn has_dynamic_style(el: &ElementNode<'_>) -> bool {
-    el.props.iter().any(|p| {
-        if let PropNode::Directive(dir) = p
-            && dir.name == "bind"
-            && let Some(ExpressionNode::Simple(arg)) = &dir.arg
-        {
-            return arg.content == "style";
-        }
-        false
+    has_dynamic_bind(el, "style")
+}
+
+fn has_dynamic_bind(el: &ElementNode<'_>, argument: &str) -> bool {
+    el.props.iter().any(|prop| {
+        matches!(
+            RenduOp::from_prop(prop),
+            RenduOp::Directive { name: "bind", arg: Some(arg), .. }
+                if arg.is_simple(argument)
+        )
     })
 }
 
@@ -87,9 +71,18 @@ pub(super) fn generate_single_prop_for_if(
     prop: &PropNode<'_>,
     static_merge: StaticMerge<'_>,
 ) {
-    match prop {
-        PropNode::Attribute(attr) => {
-            let ref_value = if attr.name == "ref" && ctx.options.inline {
+    match RenduOp::from_prop(prop) {
+        RenduOp::Attribute {
+            name,
+            name_span,
+            value,
+            value_span,
+            ..
+        } => {
+            let PropNode::Attribute(attr) = prop else {
+                unreachable!("Rendu attribute must borrow an attribute prop");
+            };
+            let ref_value = if name == "ref" && ctx.options.inline {
                 attr.value.as_ref()
             } else {
                 None
@@ -108,7 +101,7 @@ pub(super) fn generate_single_prop_for_if(
                         | crate::options::BindingType::SetupMaybeRef
                 )
             );
-            let needs_ref_for = attr.name == "ref" && ctx.in_v_for;
+            let needs_ref_for = name == "ref" && ctx.in_v_for;
 
             if let (true, Some(ref_value)) = (should_ref_runtime_binding, ref_value) {
                 let ref_name = &ref_value.content;
@@ -125,30 +118,38 @@ pub(super) fn generate_single_prop_for_if(
             if needs_ref_for {
                 ctx.push("ref_for: true, ");
             }
-            let needs_quotes = !is_valid_js_identifier(&attr.name);
+            let needs_quotes = !is_valid_js_identifier(name);
             if needs_quotes {
                 ctx.push("\"");
             }
-            ctx.push(&attr.name);
+            ctx.record_mapping_named(&name_span.start, name);
+            ctx.push(name);
             if needs_quotes {
                 ctx.push("\"");
             }
             ctx.push(": ");
-            if let Some(value) = &attr.value {
+            if let Some(value) = value {
                 if should_ref_runtime_binding {
-                    ctx.push(&value.content);
+                    ctx.push(value);
                 } else {
                     ctx.push("\"");
-                    ctx.push(&escape_js_string(value.content.as_str()));
+                    if let Some(span) = value_span {
+                        ctx.record_mapping(&span.start);
+                    }
+                    ctx.push(&escape_js_string(value));
                     ctx.push("\"");
                 }
             } else {
                 ctx.push("\"\"");
             }
         }
-        PropNode::Directive(dir) => {
+        RenduOp::Directive { .. } => {
+            let PropNode::Directive(dir) = prop else {
+                unreachable!("Rendu directive must borrow a directive prop");
+            };
             generate_directive_prop_with_static(ctx, dir, static_merge);
         }
+        _ => unreachable!("element props lower to attribute or directive Rendu ops"),
     }
 }
 

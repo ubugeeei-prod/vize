@@ -69,34 +69,43 @@ pub(super) fn generate_props_object_inner(
     let mut emitted_events: Option<FxHashSet<String>> = None;
 
     for prop in props {
+        let op = RenduOp::from_prop(prop);
         // Skip v-slot directive (handled separately in slots codegen)
-        if let PropNode::Directive(dir) = prop
-            && dir.name == "slot"
-        {
+        if matches!(op, RenduOp::Directive { name: "slot", .. }) {
             continue;
         }
 
         // Skip `is` prop when generating for dynamic components
-        if ctx.skip_is_prop {
-            match prop {
-                PropNode::Attribute(attr) if attr.name == "is" => continue,
-                PropNode::Directive(dir)
-                    if dir.name == "bind"
-                        && matches!(&dir.arg, Some(ExpressionNode::Simple(exp)) if exp.content == "is") =>
-                {
-                    continue;
-                }
-                _ => {}
+        if ctx.skip_is_prop
+            && match op {
+                RenduOp::Attribute { name: "is", .. } => true,
+                RenduOp::Directive {
+                    name: "bind",
+                    arg: Some(arg),
+                    ..
+                } => matches!(arg.node(), Some(ExpressionNode::Simple(exp)) if exp.content == "is"),
+                _ => false,
             }
+        {
+            continue;
         }
 
-        match prop {
-            PropNode::Attribute(attr) => {
+        match op {
+            RenduOp::Attribute {
+                name,
+                name_span,
+                value: attr_value,
+                value_span,
+                ..
+            } => {
+                let PropNode::Attribute(attr) = prop else {
+                    unreachable!("Rendu attribute must borrow an attribute prop");
+                };
                 // Skip static class/style if merging with dynamic
-                if skip_static_class && attr.name == "class" {
+                if skip_static_class && name == "class" {
                     continue;
                 }
-                if skip_static_style && attr.name == "style" {
+                if skip_static_style && name == "style" {
                     continue;
                 }
                 if !first {
@@ -150,16 +159,6 @@ pub(super) fn generate_props_object_inner(
                     // Normal attribute output, lowered through the Rendu op
                     // (#1756): name, value, and their source spans are read from
                     // `RenduOp::Attribute`, not the Relief node.
-                    let RenduOp::Attribute {
-                        name,
-                        name_span,
-                        value: attr_value,
-                        value_span,
-                        ..
-                    } = RenduOp::from_prop(prop)
-                    else {
-                        unreachable!("matched PropNode::Attribute");
-                    };
                     let needs_quotes = !is_valid_js_identifier(name);
                     if needs_quotes {
                         ctx.push("\"");
@@ -191,18 +190,18 @@ pub(super) fn generate_props_object_inner(
                     }
                 }
             }
-            PropNode::Directive(dir) => {
+            RenduOp::Directive { name, arg, .. } => {
+                let PropNode::Directive(dir) = prop else {
+                    unreachable!("Rendu directive must borrow a directive prop");
+                };
                 // Skip v-bind/v-on object spreads (handled separately by generate_props)
-                if skip_object_spreads
-                    && dir.arg.is_none()
-                    && (dir.name == "bind" || dir.name == "on")
-                {
+                if skip_object_spreads && arg.is_none() && matches!(name, "bind" | "on") {
                     continue;
                 }
                 // Only add comma if directive produces valid output
                 if is_supported_directive(dir) {
                     // Check for duplicate v-on events that should be merged into arrays
-                    if dir.name == "on"
+                    if name == "on"
                         && let Some(event_key) = get_von_event_key(dir, ctx.props_is_plain_element)
                     {
                         let count = scan.event_counts.count(&event_key);
@@ -256,6 +255,7 @@ pub(super) fn generate_props_object_inner(
                     );
                 }
             }
+            _ => unreachable!("element props lower to attribute or directive Rendu ops"),
         }
     }
 

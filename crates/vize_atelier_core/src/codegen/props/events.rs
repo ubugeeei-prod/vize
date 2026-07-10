@@ -1,7 +1,7 @@
 //! Event-related props generation (v-on merging and handler generation).
 
 use crate::options::BindingType;
-use crate::{DirectiveNode, ExpressionNode, PropNode, RuntimeHelper};
+use crate::{DirectiveNode, ExpressionNode, PropNode, RuntimeHelper, rendu::RenduOp};
 
 use super::super::{
     context::CodegenContext,
@@ -86,10 +86,19 @@ pub fn von_event_key_for(
 /// differing only by an option modifier (`@click` vs `@click.once`) get
 /// distinct keys and are never merged into one prop.
 pub(super) fn get_von_event_key(dir: &DirectiveNode<'_>, is_plain_element: bool) -> Option<String> {
-    if dir.name != "on" {
+    let RenduOp::Directive {
+        name,
+        arg,
+        modifiers,
+        ..
+    } = RenduOp::from_directive(dir)
+    else {
+        unreachable!("event classification requires RenduOp::Directive");
+    };
+    if name != "on" {
         return None;
     }
-    if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
+    if let Some(ExpressionNode::Simple(exp)) = arg.and_then(|arg| arg.node()) {
         if exp.is_static {
             // The `on:` case-preserving form only applies to user-authored v-on
             // directives (those carry a `raw_name`).
@@ -97,7 +106,7 @@ pub(super) fn get_von_event_key(dir: &DirectiveNode<'_>, is_plain_element: bool)
             Some(von_event_key_for(
                 exp.content.as_str(),
                 on_plain_element,
-                dir.modifiers.iter().map(|m| m.content.as_str()),
+                modifiers.names(),
             ))
         } else {
             None // Dynamic events can't be merged
@@ -147,8 +156,11 @@ pub(super) fn generate_merged_event_handlers(
 
 /// Generate just the handler value part of a v-on directive (without the key name)
 pub(super) fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
+    let RenduOp::Directive { arg, modifiers, .. } = RenduOp::from_directive(dir) else {
+        unreachable!("event emission requires RenduOp::Directive");
+    };
     // Classify modifiers (same logic as in generate_directive_prop_with_static)
-    let event_name = if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
+    let event_name = if let Some(ExpressionNode::Simple(exp)) = arg.and_then(|arg| arg.node()) {
         exp.content.as_str()
     } else {
         ""
@@ -158,8 +170,7 @@ pub(super) fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &Directi
     let mut system_modifiers: Vec<&str> = Vec::new();
     let mut key_modifiers: Vec<&str> = Vec::new();
 
-    for modifier in dir.modifiers.iter() {
-        let mod_name = modifier.content.as_str();
+    for mod_name in modifiers.names() {
         match mod_name {
             "capture" | "once" | "passive" | "native" => {}
             "left" | "right" => {

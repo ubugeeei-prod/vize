@@ -4,7 +4,7 @@
 //! class/style merging, dynamic keys, and binding-type runtime resolution.
 //! Split out of `directives` to keep that file focused on directive dispatch.
 
-use crate::{DirectiveNode, ExpressionNode, RuntimeHelper};
+use crate::{DirectiveNode, ExpressionNode, RuntimeHelper, rendu::RenduOp};
 
 use super::super::{
     context::CodegenContext,
@@ -22,17 +22,26 @@ pub(super) fn generate_vbind_prop(
     static_merge: StaticMerge<'_>,
     static_key_casing: StaticBindKeyCasing,
 ) {
+    let RenduOp::Directive {
+        arg,
+        exp,
+        modifiers,
+        ..
+    } = RenduOp::from_directive(dir)
+    else {
+        unreachable!("v-bind emission requires RenduOp::Directive");
+    };
     let static_class = static_merge.class;
     let static_style = static_merge.style;
     let mut is_class = false;
     let mut is_style = false;
 
     // Check for modifiers
-    let has_camel = dir.modifiers.iter().any(|m| m.content == "camel");
-    let has_prop = dir.modifiers.iter().any(|m| m.content == "prop");
-    let has_attr = dir.modifiers.iter().any(|m| m.content == "attr");
+    let has_camel = modifiers.contains("camel");
+    let has_prop = modifiers.contains("prop");
+    let has_attr = modifiers.contains("attr");
 
-    if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
+    if let Some(ExpressionNode::Simple(exp)) = arg.and_then(|arg| arg.node()) {
         if !exp.is_static {
             // Dynamic attribute name. Modifiers transform the computed key:
             //   (none)  -> [<expr> || ""]
@@ -139,7 +148,7 @@ pub(super) fn generate_vbind_prop(
             ctx.push(": ");
         }
     }
-    if let Some(exp) = &dir.exp {
+    if let Some(exp) = exp.and_then(|exp| exp.node()) {
         if is_class {
             if !ctx.skip_normalize {
                 ctx.use_helper(RuntimeHelper::NormalizeClass);

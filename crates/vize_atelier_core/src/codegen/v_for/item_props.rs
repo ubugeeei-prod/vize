@@ -4,7 +4,7 @@
 //! (`_mergeProps`) and single-prop cases to `item_props_merge`. Split out of
 //! `v_for/generate` to keep that file focused on item/block generation.
 
-use crate::{ElementNode, ExpressionNode, PropNode};
+use crate::{ElementNode, ExpressionNode, rendu::RenduOp};
 
 use super::super::{
     context::CodegenContext, element::helpers::is_is_prop, expression::generate_expression,
@@ -78,42 +78,44 @@ pub(crate) fn generate_for_item_props(
     }
 
     // Detect static class/style that need to be merged with dynamic :class/:style
-    let static_class = el.props.iter().find_map(|p| {
-        if let PropNode::Attribute(attr) = p
-            && attr.name == "class"
-        {
-            return attr.value.as_ref().map(|v| v.content.as_str());
-        }
-        None
+    let static_class = el
+        .props
+        .iter()
+        .find_map(|prop| match RenduOp::from_prop(prop) {
+            RenduOp::Attribute {
+                name: "class",
+                value,
+                ..
+            } => value,
+            _ => None,
+        });
+
+    let static_style = el
+        .props
+        .iter()
+        .find_map(|prop| match RenduOp::from_prop(prop) {
+            RenduOp::Attribute {
+                name: "style",
+                value,
+                ..
+            } => value,
+            _ => None,
+        });
+
+    let has_dynamic_class = el.props.iter().any(|prop| {
+        matches!(
+            RenduOp::from_prop(prop),
+            RenduOp::Directive { name: "bind", arg: Some(arg), .. }
+                if arg.is_simple("class")
+        )
     });
 
-    let static_style = el.props.iter().find_map(|p| {
-        if let PropNode::Attribute(attr) = p
-            && attr.name == "style"
-        {
-            return attr.value.as_ref().map(|v| v.content.as_str());
-        }
-        None
-    });
-
-    let has_dynamic_class = el.props.iter().any(|p| {
-        if let PropNode::Directive(dir) = p
-            && dir.name == "bind"
-            && let Some(ExpressionNode::Simple(exp)) = &dir.arg
-        {
-            return exp.content == "class";
-        }
-        false
-    });
-
-    let has_dynamic_style = el.props.iter().any(|p| {
-        if let PropNode::Directive(dir) = p
-            && dir.name == "bind"
-            && let Some(ExpressionNode::Simple(exp)) = &dir.arg
-        {
-            return exp.content == "style";
-        }
-        false
+    let has_dynamic_style = el.props.iter().any(|prop| {
+        matches!(
+            RenduOp::from_prop(prop),
+            RenduOp::Directive { name: "bind", arg: Some(arg), .. }
+                if arg.is_simple("style")
+        )
     });
 
     let skip_static_class = static_class.is_some() && has_dynamic_class;
@@ -150,14 +152,18 @@ pub(crate) fn generate_for_item_props(
                 continue;
             }
             if skip_static_class
-                && let PropNode::Attribute(attr) = prop
-                && attr.name == "class"
+                && matches!(
+                    RenduOp::from_prop(prop),
+                    RenduOp::Attribute { name: "class", .. }
+                )
             {
                 continue;
             }
             if skip_static_style
-                && let PropNode::Attribute(attr) = prop
-                && attr.name == "style"
+                && matches!(
+                    RenduOp::from_prop(prop),
+                    RenduOp::Attribute { name: "style", .. }
+                )
             {
                 continue;
             }
@@ -186,14 +192,18 @@ pub(crate) fn generate_for_item_props(
                 continue;
             }
             if skip_static_class
-                && let PropNode::Attribute(attr) = prop
-                && attr.name == "class"
+                && matches!(
+                    RenduOp::from_prop(prop),
+                    RenduOp::Attribute { name: "class", .. }
+                )
             {
                 continue;
             }
             if skip_static_style
-                && let PropNode::Attribute(attr) = prop
-                && attr.name == "style"
+                && matches!(
+                    RenduOp::from_prop(prop),
+                    RenduOp::Attribute { name: "style", .. }
+                )
             {
                 continue;
             }

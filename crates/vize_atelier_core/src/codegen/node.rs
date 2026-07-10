@@ -7,7 +7,7 @@ use super::children::{generate_comment, generate_text};
 use super::context::CodegenContext;
 use super::element::generate_element;
 use super::interpolation::emit_interpolation_value;
-use super::v_for::generate_for;
+use super::v_for::generate_for_from_rendu;
 use super::v_if::generate_if;
 use vize_carton::ToCompactString;
 
@@ -68,9 +68,9 @@ pub(crate) fn dispatch_rendu_op<'a>(
                 generate_if(ctx, if_node);
             }
         }
-        RenduOp::For { .. } => {
+        op @ RenduOp::For { .. } => {
             if let TemplateChildNode::For(for_node) = node {
-                generate_for(ctx, for_node);
+                generate_for_from_rendu(ctx, op, for_node);
             }
         }
         RenduOp::HoistRef { index } => {
