@@ -4,8 +4,8 @@
 //! `v-model` on a component. Split out of `directives` to keep that file focused
 //! on `v-bind` and directive dispatch.
 
+use crate::relief_projection::ReliefRenderOp;
 use crate::{DirectiveNode, ExpressionNode, RuntimeHelper};
-use vize_rendu::RenduOp;
 
 use super::super::{
     context::CodegenContext, expression::generate_simple_expression,
@@ -14,8 +14,9 @@ use super::super::{
 
 /// Generate v-on directive as a prop
 pub(super) fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
-    let RenduOp::Directive { arg, modifiers, .. } = RenduOp::from_directive(dir) else {
-        unreachable!("v-on emission requires RenduOp::Directive");
+    let ReliefRenderOp::Directive { arg, modifiers, .. } = ReliefRenderOp::from_directive(dir)
+    else {
+        unreachable!("v-on emission requires ReliefRenderOp::Directive");
     };
     let is_dynamic_event = if let Some(ExpressionNode::Simple(exp)) = arg.and_then(|arg| arg.node())
     {
@@ -82,14 +83,14 @@ pub(super) fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_
 
 /// Generate dynamic v-model on component as props
 pub(super) fn generate_vmodel_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
-    let RenduOp::Directive {
+    let ReliefRenderOp::Directive {
         arg,
         exp,
         modifiers,
         ..
-    } = RenduOp::from_directive(dir)
+    } = ReliefRenderOp::from_directive(dir)
     else {
-        unreachable!("v-model emission requires RenduOp::Directive");
+        unreachable!("v-model emission requires ReliefRenderOp::Directive");
     };
     // Handle dynamic v-model on component
     // Generate: [_ctx.prop]: _ctx.value, ["onUpdate:" + _ctx.prop]: handler

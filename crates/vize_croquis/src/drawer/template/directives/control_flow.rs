@@ -7,8 +7,8 @@ use crate::ScopeBinding;
 use crate::drawer::Drawer;
 use crate::drawer::helpers::build_branch_guard;
 use crate::scope::VForScopeData;
+use vize_carton::BindingType;
 use vize_carton::{CompactString, SmallVec, profile, smallvec};
-use vize_relief::BindingType;
 use vize_relief::{ExpressionNode, ForNode, IfNode, PropNode};
 
 impl Drawer {

@@ -4,8 +4,8 @@ use oxc_ast::ast::{
 use oxc_span::GetSpan;
 
 use crate::macros::PropDefinition;
+use vize_carton::BindingType;
 use vize_carton::{CompactString, String};
-use vize_relief::BindingType;
 
 use super::super::ScriptParseResult;
 use super::props_type::runtime_prop_type_from_ts_type;

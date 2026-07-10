@@ -10,11 +10,11 @@ mod template;
 
 use std::path::Path;
 
+use vize_carton::BindingType;
 use vize_carton::{
     CompactString,
     source_range::{MappingData, SourceMap, SourceMapping, SourceRange},
 };
-use vize_relief::BindingType;
 use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, ForNode, IfNode, InterpolationNode, PropNode,
     RootNode, TemplateChildNode,

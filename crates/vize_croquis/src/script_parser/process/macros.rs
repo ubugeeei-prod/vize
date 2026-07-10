@@ -15,8 +15,8 @@ use oxc_span::GetSpan;
 use crate::macros::{DEFINE_PROPS, MacroKind, PropsDestructuredBindings, WITH_DEFAULTS};
 use crate::provide::InjectPattern;
 use crate::reactivity::ReactiveKind;
+use vize_carton::BindingType;
 use vize_carton::CompactString;
-use vize_relief::BindingType;
 
 use super::super::extract::{
     check_getter_call_extraction, check_reactive_plain_alias_extraction,

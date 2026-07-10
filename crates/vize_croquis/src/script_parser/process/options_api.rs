@@ -15,8 +15,8 @@ use crate::ScopeBinding;
 use crate::croquis::{
     ComponentRegistration, OptionGroup, OptionKey, OptionMember, OptionsDescriptor,
 };
+use vize_carton::BindingType;
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String};
-use vize_relief::BindingType;
 
 use super::super::ScriptParseResult;
 

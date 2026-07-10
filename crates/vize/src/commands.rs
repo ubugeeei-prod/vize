@@ -7,6 +7,7 @@ pub mod curator;
 pub mod env_info;
 #[cfg(feature = "glyph")]
 pub mod fmt;
+pub mod graph;
 #[cfg(feature = "maestro")]
 pub mod ide;
 pub mod inspector;

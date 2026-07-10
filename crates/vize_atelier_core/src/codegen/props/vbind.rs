@@ -4,8 +4,8 @@
 //! class/style merging, dynamic keys, and binding-type runtime resolution.
 //! Split out of `directives` to keep that file focused on directive dispatch.
 
+use crate::relief_projection::ReliefRenderOp;
 use crate::{DirectiveNode, ExpressionNode, RuntimeHelper};
-use vize_rendu::RenduOp;
 
 use super::super::{
     context::CodegenContext,
@@ -23,14 +23,14 @@ pub(super) fn generate_vbind_prop(
     static_merge: StaticMerge<'_>,
     static_key_casing: StaticBindKeyCasing,
 ) {
-    let RenduOp::Directive {
+    let ReliefRenderOp::Directive {
         arg,
         exp,
         modifiers,
         ..
-    } = RenduOp::from_directive(dir)
+    } = ReliefRenderOp::from_directive(dir)
     else {
-        unreachable!("v-bind emission requires RenduOp::Directive");
+        unreachable!("v-bind emission requires ReliefRenderOp::Directive");
     };
     let static_class = static_merge.class;
     let static_style = static_merge.style;

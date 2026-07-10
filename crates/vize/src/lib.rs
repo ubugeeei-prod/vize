@@ -23,6 +23,9 @@ mod commands;
 mod config;
 mod profile_support;
 
+/// Typed artifact-graph assembly for Vize tools.
+pub mod artifact_graph;
+
 /// Shared native CLI entrypoint.
 pub mod cli;
 
@@ -41,11 +44,29 @@ pub use vize_atelier_core as atelier_core;
 /// DOM mode template compiler.
 pub use vize_atelier_dom as atelier_dom;
 
+/// SSR backend over frontend-neutral render HIR.
+pub use vize_atelier_ssr as atelier_ssr;
+
 /// Vapor mode template compiler.
 pub use vize_atelier_vapor as atelier_vapor;
 
 /// Single File Component (SFC) parser and compiler.
 pub use vize_atelier_sfc as atelier_sfc;
+
+/// JSX/TSX graph-native frontend.
+pub use vize_atelier_jsx as atelier_jsx;
+
+/// Frontend-neutral render HIR.
+pub use vize_rendu as rendu;
+
+/// Frontend-neutral single-file control/data/effect graph.
+pub use vize_flow as flow;
+
+/// Frontend-neutral semantic products and facts.
+pub use vize_croquis as croquis;
+
+/// Opt-in cross-file semantic aggregation.
+pub use vize_croquis_cf as croquis_cf;
 
 /// Vue SFC formatter.
 #[cfg(feature = "glyph")]

@@ -16,12 +16,28 @@ separate `vize_croquis_cf` crate.
 
 ## Key Entry Points
 
+- `CroquisSemanticProduct`
+- `CroquisSemanticSnapshot`
+- `CroquisSemanticSnapshotBuilder`
 - `Drawer`
 - `DrawerOptions`
 - `Croquis`
 - `BindingMetadata`
 - `ScopeChain`
 - `SymbolTable`
+
+## Feature Boundary
+
+- `--no-default-features` exposes the owned Atlas product, semantic snapshot,
+  queries, and syntax-independent builder without depending on `vize_relief`.
+- `analysis` adds Croquis script/scope/reactivity analysis while remaining
+  Relief-free. JSX and Croquis CF use this feature explicitly.
+- `relief-compat` is the default compatibility surface. It adds the Vue
+  template `Drawer` adapters and legacy virtual-TS helpers over Relief nodes.
+
+Relief can therefore produce Croquis facts, but it is not part of the cached
+Croquis graph contract and is not required by non-SFC frontends or project
+aggregation.
 
 ## Related Crates
 

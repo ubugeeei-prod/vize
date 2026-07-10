@@ -9,8 +9,10 @@ description = "Atelier Vapor - The Vapor mode compiler workshop for Vize"
 
 [dependencies]
 vize_carton = { workspace = true }
+vize_atlas = { workspace = true }
 vize_atelier_core = { workspace = true }
-vize_croquis = { workspace = true }
+vize_croquis = { workspace = true, features = ["relief-compat"] }
+vize_rendu = { workspace = true }
 
 oxc_allocator = { workspace = true }
 oxc_ast = { workspace = true }

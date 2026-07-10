@@ -1,7 +1,7 @@
 //! Children, text, comment, and interpolation generation functions.
 
+use crate::relief_projection::{ReliefChildren, ReliefRenderOp};
 use crate::{Position, RuntimeHelper, TemplateChildNode, TextNode};
-use vize_rendu::{RenduChildren, RenduOp};
 
 use super::children_static::{
     generate_cached_static_children_array, generate_cached_static_element,
@@ -10,7 +10,7 @@ use super::children_static::{
 use super::context::CodegenContext;
 use super::helpers::escape_js_string;
 use super::interpolation::push_interpolation_value;
-use super::node::{dispatch_rendu_op, generate_node};
+use super::node::{dispatch_relief_op, generate_node};
 
 /// Generate children array
 pub fn generate_children(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
@@ -23,10 +23,10 @@ pub fn generate_children_force_array(ctx: &mut CodegenContext, children: &[Templ
 }
 
 /// Emit `,`-separated, newline-prefixed children into an already-open array,
-/// driven by the Rendu op stream (#1756).
+/// driven by the Relief projection stream (#1756).
 ///
 /// The caller emits the surrounding `[` / `]` and manages indentation; each
-/// child is dispatched via [`dispatch_rendu_op`] from its op. Directive
+/// child is dispatched via [`dispatch_relief_op`] from its op. Directive
 /// comments are skipped, exactly as the previous `is_directive_comment` filter
 /// did, so component/slot fallback bodies emit the same child set in the same
 /// order.
@@ -34,27 +34,27 @@ pub(crate) fn emit_children_array_body(
     ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
 ) {
-    for (i, (op, node)) in RenduChildren::new(children).rendered().enumerate() {
+    for (i, (op, node)) in ReliefChildren::new(children).rendered().enumerate() {
         if i > 0 {
             ctx.push(",");
         }
         ctx.newline();
-        dispatch_rendu_op(ctx, op, node);
+        dispatch_relief_op(ctx, op, node);
     }
 }
 
 /// Check if a child node is a directive comment that should be stripped.
 ///
-/// Classified through the Rendu plate rather than matching the Relief variant
-/// directly: `RenduOp::Comment` already carries the `is_directive` fact, so the
+/// Classified through the Relief projection rather than matching the Relief variant
+/// directly: `ReliefRenderOp::Comment` already carries the `is_directive` fact, so the
 /// children traversal reads the same render-semantic classification DOM node
 /// dispatch uses. Byte-for-byte equivalent — `is_directive` is exactly
 /// `comment.directive.is_some()`.
 #[inline]
 pub(crate) fn is_directive_comment(child: &TemplateChildNode<'_>) -> bool {
     matches!(
-        RenduOp::from_template_child(child),
-        RenduOp::Comment {
+        ReliefRenderOp::from_template_child(child),
+        ReliefRenderOp::Comment {
             is_directive: true,
             ..
         }
@@ -62,24 +62,24 @@ pub(crate) fn is_directive_comment(child: &TemplateChildNode<'_>) -> bool {
 }
 
 /// Check if a child renders as inline text (a text literal or interpolation),
-/// classified through the Rendu plate (#1756) — reads `RenduOp::Text` /
-/// `RenduOp::Interpolation` so text-run grouping uses the same render-semantic
+/// classified through the Relief projection (#1756) — reads `ReliefRenderOp::Text` /
+/// `ReliefRenderOp::Interpolation` so text-run grouping uses the same render-semantic
 /// classification the node dispatch does. Byte-equivalent.
 #[inline]
 fn is_text_like(child: &TemplateChildNode<'_>) -> bool {
     matches!(
-        RenduOp::from_template_child(child),
-        RenduOp::Text { .. } | RenduOp::Interpolation { .. }
+        ReliefRenderOp::from_template_child(child),
+        ReliefRenderOp::Text { .. } | ReliefRenderOp::Interpolation { .. }
     )
 }
 
-/// Emit a quoted text literal through the Rendu plate.
+/// Emit a quoted text literal through the Relief projection.
 ///
-/// The text content and its source anchor are read from `RenduOp::Text`
+/// The text content and its source anchor are read from `ReliefRenderOp::Text`
 /// (#1756) rather than the Relief node. Byte-for-byte equivalent — the op
 /// borrows `text.content` and `text.loc`.
 fn emit_text_literal(ctx: &mut CodegenContext, text: &TextNode) {
-    let RenduOp::Text { content, span } = RenduOp::from_text(text) else {
+    let ReliefRenderOp::Text { content, span } = ReliefRenderOp::from_text(text) else {
         unreachable!("from_text returns a Text op");
     };
     ctx.push("\"");
@@ -93,9 +93,9 @@ fn generate_children_inner(
     children: &[TemplateChildNode<'_>],
     force_array: bool,
 ) {
-    // Source the children from the Rendu stream; `rendered()` skips directive
+    // Source the children from the Relief projection stream; `rendered()` skips directive
     // comments, which are invisible to codegen (#1756).
-    let effective: Vec<&TemplateChildNode<'_>> = RenduChildren::new(children)
+    let effective: Vec<&TemplateChildNode<'_>> = ReliefChildren::new(children)
         .rendered()
         .map(|(_, node)| node)
         .collect();

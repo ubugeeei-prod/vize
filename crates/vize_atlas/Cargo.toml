@@ -5,7 +5,7 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Source Atlas - Neutral request and capability ledger for the Vize toolchain"
+description = "Typed, demand-driven artifact graph for the Vize toolchain"
 
 [dependencies]
 vize_carton.workspace = true

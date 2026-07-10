@@ -110,6 +110,7 @@ test("publish_crates only defers crates that have not been created on crates.io"
   assert.deepEqual(getPendingFirstPublishCrates(), [
     "vize_atlas",
     "vize_rendu",
+    "vize_flow",
     "vize_croquis_cf",
     "vize_atelier_jsx",
   ]);
@@ -117,6 +118,9 @@ test("publish_crates only defers crates that have not been created on crates.io"
 
 test("publish_crates only blocks crates that depend on first-publish exclusions", () => {
   assert.deepEqual(getBlockedByPendingFirstPublishCrates(), [
+    "vize_relief",
+    "vize_armature",
+    "vize_croquis",
     "vize_atelier_core",
     "vize_atelier_dom",
     "vize_atelier_vapor",

@@ -1,8 +1,8 @@
 //! Event-related props generation (v-on merging and handler generation).
 
 use crate::options::BindingType;
+use crate::relief_projection::ReliefRenderOp;
 use crate::{DirectiveNode, ExpressionNode, PropNode, RuntimeHelper};
-use vize_rendu::RenduOp;
 
 use super::super::{
     context::CodegenContext,
@@ -87,14 +87,14 @@ pub fn von_event_key_for(
 /// differing only by an option modifier (`@click` vs `@click.once`) get
 /// distinct keys and are never merged into one prop.
 pub(super) fn get_von_event_key(dir: &DirectiveNode<'_>, is_plain_element: bool) -> Option<String> {
-    let RenduOp::Directive {
+    let ReliefRenderOp::Directive {
         name,
         arg,
         modifiers,
         ..
-    } = RenduOp::from_directive(dir)
+    } = ReliefRenderOp::from_directive(dir)
     else {
-        unreachable!("event classification requires RenduOp::Directive");
+        unreachable!("event classification requires ReliefRenderOp::Directive");
     };
     if name != "on" {
         return None;
@@ -157,8 +157,9 @@ pub(super) fn generate_merged_event_handlers(
 
 /// Generate just the handler value part of a v-on directive (without the key name)
 pub(super) fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
-    let RenduOp::Directive { arg, modifiers, .. } = RenduOp::from_directive(dir) else {
-        unreachable!("event emission requires RenduOp::Directive");
+    let ReliefRenderOp::Directive { arg, modifiers, .. } = ReliefRenderOp::from_directive(dir)
+    else {
+        unreachable!("event emission requires ReliefRenderOp::Directive");
     };
     // Classify modifiers (same logic as in generate_directive_prop_with_static)
     let event_name = if let Some(ExpressionNode::Simple(exp)) = arg.and_then(|arg| arg.node()) {

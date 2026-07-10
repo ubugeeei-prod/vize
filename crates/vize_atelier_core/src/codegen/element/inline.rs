@@ -3,11 +3,11 @@
 //! Generates elements that are not block roots, using `createElementVNode()`
 //! and `createVNode()` instead of their block counterparts.
 
+use crate::relief_projection::{ReliefChildren, ReliefElementKind};
 use crate::{
     ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
     steps::v_memo::{get_memo_exp, has_v_memo},
 };
-use vize_rendu::{RenduChildren, RenduElementKind};
 
 use super::{
     super::{
@@ -15,7 +15,7 @@ use super::{
         context::CodegenContext,
         expression::generate_expression,
         helpers::{is_builtin_component, to_valid_asset_identifier},
-        node::dispatch_rendu_op,
+        node::dispatch_relief_op,
         patch_flag::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
         },
@@ -86,8 +86,8 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         None
     };
 
-    match RenduElementKind::from(el.tag_type) {
-        RenduElementKind::Element => {
+    match ReliefElementKind::from(el.tag_type) {
+        ReliefElementKind::Element => {
             // Check for custom directives.
             // Inline children need the same withDirectives wrapping as block roots.
             let has_custom_dirs = has_custom_directives(el);
@@ -197,7 +197,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 generate_vshow_closing(ctx, el);
             }
         }
-        RenduElementKind::Component => {
+        ReliefElementKind::Component => {
             let has_custom_dirs = has_custom_directives(el);
             if has_custom_dirs {
                 ctx.use_helper(RuntimeHelper::WithDirectives);
@@ -371,7 +371,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 generate_vshow_closing(ctx, el);
             }
         }
-        RenduElementKind::SlotOutlet => {
+        ReliefElementKind::SlotOutlet => {
             let helper = ctx.helper(RuntimeHelper::RenderSlot);
             ctx.use_helper(RuntimeHelper::RenderSlot);
             ctx.push(helper);
@@ -408,20 +408,20 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.push(")");
             }
         }
-        RenduElementKind::Template => {
+        ReliefElementKind::Template => {
             // Template elements render their children directly, driven by the
-            // Rendu op stream rather than the Relief child list (#1756).
-            let rendered: Vec<_> = RenduChildren::new(&el.children).rendered().collect();
+            // Relief projection stream rather than the Relief child list (#1756).
+            let rendered: Vec<_> = ReliefChildren::new(&el.children).rendered().collect();
             if rendered.len() == 1 {
                 let (op, node) = rendered[0];
-                dispatch_rendu_op(ctx, op, node);
+                dispatch_relief_op(ctx, op, node);
             } else {
                 ctx.push("[");
                 for (i, &(op, node)) in rendered.iter().enumerate() {
                     if i > 0 {
                         ctx.push(", ");
                     }
-                    dispatch_rendu_op(ctx, op, node);
+                    dispatch_relief_op(ctx, op, node);
                 }
                 ctx.push("]");
             }

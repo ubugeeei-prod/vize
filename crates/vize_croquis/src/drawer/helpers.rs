@@ -11,6 +11,7 @@ mod identifiers;
 mod keywords;
 mod slots;
 mod v_for;
+#[cfg(feature = "relief-compat")]
 mod v_scope;
 
 pub use identifiers::{
@@ -19,12 +20,15 @@ pub use identifiers::{
 pub use keywords::{is_builtin_directive, is_component_tag, is_keyword};
 pub use slots::{extract_inline_callback_params, extract_slot_props};
 pub use v_for::{VForScopeAliases, parse_v_for_expression, parse_v_for_scope_expression};
+#[cfg(feature = "relief-compat")]
 pub use v_scope::extract_v_scope_bindings;
 
+#[cfg(feature = "relief-compat")]
 use vize_carton::{CompactString, String};
 
 /// Which conditional directive an element carries within a `v-if` chain.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg(feature = "relief-compat")]
 pub enum ConditionalKind {
     If,
     ElseIf,
@@ -38,6 +42,7 @@ pub enum ConditionalKind {
 /// own condition (`None` for `v-else`). The result mirrors the runtime control
 /// flow so that discriminated-union narrowing reaches the branch body, e.g. a
 /// `v-else` after `v-if="x.kind === 'a'"` yields `!(x.kind === 'a')`.
+#[cfg(feature = "relief-compat")]
 pub fn build_branch_guard(
     previous_conditions: &[CompactString],
     current_condition: Option<&str>,

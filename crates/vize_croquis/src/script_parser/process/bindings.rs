@@ -4,8 +4,8 @@
 //! and classifying expressions as literals or functions.
 
 use oxc_ast::ast::{BindingPattern, Expression, VariableDeclarationKind};
+use vize_carton::BindingType;
 use vize_carton::{CompactString, String, ToCompactString};
-use vize_relief::BindingType;
 
 use crate::croquis::BindingMetadata;
 

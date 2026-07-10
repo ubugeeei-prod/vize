@@ -1,7 +1,7 @@
 use crate::provide::{InjectPattern, ProvideKey};
 use crate::reactivity::{ReactiveKind, ReactivityLossKind};
+use vize_carton::BindingType;
 use vize_carton::{CompactString, String, appends};
-use vize_relief::BindingType;
 
 pub(super) fn semantic_id(kind: &str, name: &str, offset: u32) -> CompactString {
     let mut id = String::default();

@@ -2,8 +2,8 @@ use oxc_ast::ast::{CallExpression, Expression};
 
 use crate::reactivity::ReactiveKind;
 use crate::setup_context::SetupContextViolationKind;
+use vize_carton::BindingType;
 use vize_carton::{CompactString, FxHashMap};
-use vize_relief::BindingType;
 
 use super::super::ScriptParseResult;
 

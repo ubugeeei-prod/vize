@@ -3,11 +3,11 @@
 //! Generates code for individual items within a v-for loop,
 //! including props merging, key handling, and block wrapping.
 
+use crate::relief_projection::ReliefChildren;
 use crate::{
     ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode,
     steps::v_memo::{get_memo_exp, has_v_memo},
 };
-use vize_rendu::RenduChildren;
 
 use super::super::{
     children::{emit_children_array_body, generate_children, generate_children_force_array},
@@ -447,7 +447,10 @@ fn generate_for_slot_outlet(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     generate_slot_outlet_name(ctx, el);
 
     let has_slot_props = has_slot_outlet_props(el);
-    let has_rendered_children = RenduChildren::new(&el.children).rendered().next().is_some();
+    let has_rendered_children = ReliefChildren::new(&el.children)
+        .rendered()
+        .next()
+        .is_some();
 
     if has_rendered_children {
         if has_slot_props {

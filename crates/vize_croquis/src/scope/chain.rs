@@ -14,10 +14,10 @@ mod resolution;
 
 use core::fmt;
 
+use vize_carton::BindingType;
 use vize_carton::{
     CompactString, FxHashMap, FxHashSet, SmallVec, String, ToCompactString, smallvec,
 };
-use vize_relief::BindingType;
 
 use super::types::{
     BlockScopeData, CallbackScopeData, ClientOnlyScopeData, ClosureScopeData,

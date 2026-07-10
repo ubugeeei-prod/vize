@@ -23,11 +23,15 @@
 
 pub mod errors;
 pub mod options;
+mod product;
 mod relief;
+mod snapshot;
 
 pub use errors::*;
 pub use options::*;
+pub use product::{ReliefProduct, VueDialectInput};
 pub use relief::*;
+pub use snapshot::*;
 
 /// Re-export allocator types for convenience
 pub use vize_carton::{Allocator, Box as AllocBox, CloneIn, Vec as AllocVec};

@@ -1,350 +1,243 @@
 ---
-title: Source Atlas
+title: Atlas artifact graph
 ---
 
-# Source Atlas
+# Atlas artifact graph
 
-The source atlas is the target architecture for Vize as a toolchain, not only as
-a compiler. It names the shared plates that let the compiler, linter,
-typechecker, language server, formatter, inspector, playground, bundler
-plugins, and source-map machinery agree on one source ledger without forcing
-every path through one expensive transform pipeline.
+Atlas is Vize's typed, demand-driven execution substrate. It is not a registry
+of compiler nouns and it is not a Relief-to-Croquis pipeline.
 
-The goal is to keep Vize shaped like a studio:
+A compilation owns stable source identities, revisions, open products and
+providers, dependency planning, memoized artifacts, selective invalidation,
+provider-attributed observations, execution outcomes, counters, and traces.
+In the target model, compilers, linters, typecheckers, language-server
+features, formatters, inspectors, and bundler adapters are recipes that request
+root products from the same compilation. The current canary executes compiler,
+semantic-lint, and semantic-typecheck roots this way; the other consumers and
+production commands have not been cut over yet.
 
-- `Source Atlas` keeps the neutral request ledger: sources, requested products,
-  targets, version coordinates, and fallback marks.
-- `Armature` tokenizes and parses Vue template source into Relief nodes.
-- `Relief` keeps source syntax: what was written, its shape, and its location.
-- `Croquis` derives meaning and relationships tools can reuse: scopes, bindings,
-  components, directives, CSS variables, dialect facts, and dependency edges.
-- `Virtual TS` is a projection for Canon, Maestro, and editor interop.
-- `Rendu` is the render-semantic plate for DOM, SSR, Vapor, and related
-  Ateliers.
-- `AtelierOutput` is the structured output plate before JavaScript is flattened.
-- `Vitrine` displays stable public payloads without exposing unstable internal
-  plates too early.
+“Zero cost” in this design describes compiler operation:
 
-This page is the review contract for issues
-[#1634](https://github.com/ubugeeei-prod/vize/issues/1634) and
-[#1601](https://github.com/ubugeeei-prod/vize/issues/1601).
+- a provider outside the requested dependency closure is not planned or run;
+- an unrequested product creates no persistent cache entry;
+- two roots share each common dependency execution;
+- a source or typed input change evicts only affected products and transitive
+  consumers.
 
-The canary implementation backlog is split into reviewable plates:
+It does not claim that generated JavaScript has zero runtime cost.
 
-| Track                 | Issue                                                                                                                  | Role                                                               |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Source plate registry | [#1692](https://github.com/ubugeeei-prod/vize/issues/1692)                                                             | Name the atlas ledger, plate requests, and source coordinates.     |
-| Profile facts         | [#1693](https://github.com/ubugeeei-prod/vize/issues/1693)                                                             | Measure requested plates without building unrequested ones.        |
-| Fallback facts        | [#1694](https://github.com/ubugeeei-prod/vize/issues/1694)                                                             | Explain why a lane used a legacy or reduced projection.            |
-| Rendu                 | [#1695](https://github.com/ubugeeei-prod/vize/issues/1695)                                                             | Add the private render-semantic plate.                             |
-| Source maps           | [#1696](https://github.com/ubugeeei-prod/vize/issues/1696)                                                             | Compose maps from registered output sections.                      |
-| Inclusion Vapor       | [#1697](https://github.com/ubugeeei-prod/vize/issues/1697)                                                             | Lower Vapor from shared Rendu capability facts.                    |
-| Version coordinate    | [#1698](https://github.com/ubugeeei-prod/vize/issues/1698)                                                             | Treat v0/v1/v2/v2.7/v3/Vapor compatibility as atlas facts.         |
-| JSX/TSX reuse         | [#1579](https://github.com/ubugeeei-prod/vize/issues/1579), [#1580](https://github.com/ubugeeei-prod/vize/issues/1580) | Reuse Croquis and target SSR without duplicating render semantics. |
+This page is the implementation contract for
+[#1634](https://github.com/ubugeeei-prod/vize/issues/1634).
 
-Current `canary` state:
+## One graph, several representations
 
-- `SourceAtlasRoute` names the multi-source, multi-target request surface, and
-  `SourceAtlasRegistry` attaches that route to a product lane such as compiler,
-  typecheck, or source-map registration:
-  sources such as SFC, template, script, style, JS, TS, JSX, and TSX can be
-  paired with targets such as SFC, DOM/VDOM, SSR, Vapor, Virtual TS,
-  diagnostics, source maps, and Vitrine. Build profile facts now record through
-  the compiler registry while preserving the existing 0/1 samples for legacy
-  SFC profile reports.
-- `RenduRoot`, `RenduBlock`, `RenduOp`, and `RenduExprRef` provide the first
-  borrowed render-semantic plate. `walk_rendu_ops` can stream transformed Relief
-  trees as Rendu operations without allocating a persistent render IR, while
-  `RenduPlate` keeps the structured output chunks and section ranges already
-  emitted by the Ateliers.
-- `TemplateBlockCompileResult` now owns the section-first extraction API used by
-  SFC inline assembly. DOM script-setup assembly slices
-  `AtelierOutputSections`; SSR and Vapor inline assembly slice
-  `AtelierModuleSections`. Missing sections are internal compiler errors, not a
-  compatibility path that scans generated JavaScript.
-- Vapor's SFC adapter now registers module sections for imports, template
-  declarations, and the render function. This keeps Vapor's target-specific IR
-  intact while still letting the shared SFC assembly layer avoid rescanning
-  flattened JavaScript.
-- `SourceMapRegistration` records template map fragments as source-map
-  registration marks with generated Rendu ranges, section identity, and
-  composition state. `TemplateBlockCompileResult` exposes this as a borrowed
-  registration view. Full SFC map composition remains a separate plate, but
-  skipped composition is now observable through the `SourceMap` registry lane
-  instead of implicit.
-- Follow-up tracks #1692-#1698 build on this foundation without new hot-path
-  cost: `PlateFamily`/`PlateFamilySet` keep lint/editor lanes render-free;
-  `SourceAtlasCoordinate::compatibility_fallback` reports pre-v3 lines as
-  `LegacySyntaxCompatibility`; `RenduCapability` / `VaporSupport` let the
-  Vapor lane consume shared facts and record `UnsupportedVaporShape`;
-  fragment-less source maps report `SourceMapFragmentUnavailable`; and
-  `render_fallback_report` / `render_registry_report` make fallbacks and plate
-  requests explainable.
+Atlas is not a universal IR. The representations are peer products with
+different jobs:
 
-## Why An Atlas
+| Product                        | Owner                 | One job                                                                                   |
+| ------------------------------ | --------------------- | ----------------------------------------------------------------------------------------- |
+| SFC descriptor/template source | `vize_atelier_sfc`    | Decompose a container and retain parent ranges.                                           |
+| JSX/TSX syntax snapshot        | `vize_atelier_jsx`    | Own OXC-derived JSX syntax without constructing Relief.                                   |
+| Relief snapshot                | `vize_relief`         | Preserve Vue-template syntax and exact source locations.                                  |
+| Croquis semantic snapshot      | `vize_croquis`        | Preserve derived identity, scope, binding, usage, and reactivity facts.                   |
+| Flow graph                     | `vize_flow`           | Represent single-file control, data, and effect flow.                                     |
+| Croquis project snapshot       | `vize_croquis_cf`     | Aggregate component and provide/inject relationships across explicitly requested sources. |
+| Rendu HIR                      | `vize_rendu`          | Represent frontend-neutral render intent for backends.                                    |
+| DOM/SSR/Vapor output           | target Atelier crates | Emit or plan one target from Rendu without parsing source.                                |
+| Patina diagnostics             | `vize_patina`         | Run semantic rules over the shared Croquis product.                                       |
+| Canon Virtual TS               | `vize_canon`          | Generate mapped typecheck input from shared semantics plus Flow reachability/dominance.   |
 
-Vize currently has a practical but uncomfortable pressure: several tools want
-to share information, so lowering into a convenient AST-like form can become a
-catch-all destination. That makes reuse possible, but the grain is wrong. A lint
-rule, a typechecker projection, a Vapor compile, and a source-map pass do not
-need the same product, and they should not all pay for each other's work.
-
-The atlas model replaces "one pipeline that every tool must finish" with
-"registered plates that a tool may request." A request should be cheap by
-default, borrowed or arena-backed when possible, and measurable when it is not.
-
-The rustc lesson is that each intermediate representation should have one job:
-AST/HIR/THIR/MIR are separate because they serve different analyses and codegen
-needs. Vize should keep the same discipline without copying MIR literally. The
-V8 lesson is to start cheap, observe, then specialize. Vize should not build
-Rendu, Virtual TS, source maps, or heavy profile facts unless the selected lane
-needs them.
-
-## Plate Families
-
-| Family     | Plates                                                                                              | Owners                                    | Normal cost rule                                                 |
-| ---------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------------- |
-| Source     | files, SFC blocks, template, script, setup, style, custom block, JSX/TSX, standalone HTML           | Armature, Vitrine, bundler packages       | Always cheap enough to identify and span-map                     |
-| Syntax     | Relief templates, OXC AST refs, CSS AST refs, parser diagnostics                                    | Armature, Relief, OXC, Lightning CSS      | Borrowed or arena-backed; no duplicate parsing                   |
-| Semantic   | Croquis bindings, scopes, components, directives, CSS vars, dependency edges, dialect/version facts | Croquis, Patina, Canon, Maestro, Ateliers | Demandable by tools; reusable across lanes                       |
-| Projection | Virtual TS, lint facade, editor facts, Musea art facts, inspector views                             | Canon, Maestro, Patina, Musea, Playground | Built only for the requesting surface                            |
-| Render     | Rendu roots, blocks, operations, expression refs, capability facts                                  | Rendu, DOM, SSR, Vapor, JSX/TSX           | Built only for render lanes                                      |
-| Target     | DOM/VDOM, SSR, Vapor, inclusion Vapor, JSX/TSX emit, diagnostics, source maps                       | Ateliers, Vitrine packages                | Target-specific work stays in its Atelier                        |
-| Finish     | AtelierOutput, diagnostics, maps, profile artifacts, Vitrine payloads                               | SFC, Vitrine, packages, CLI               | Structured before flattening; no string rescans when data exists |
-
-## Version Coordinate
-
-Every plate can carry a version coordinate when it matters. Vize should resolve
-Vue-era compatibility once near the source and semantic layers, then let tools
-consume the same capability facts.
-
-| Coordinate | Meaning                                                       | Typical consumers                                           |
-| ---------- | ------------------------------------------------------------- | ----------------------------------------------------------- |
-| `v0`       | Vue 0.x era, including 0.10 and 0.11 distinctions when needed | parser recovery, migration diagnostics, compatibility docs  |
-| `v1`       | Vue 1 era syntax and runtime expectations                     | parser recovery, lint compatibility, migration diagnostics  |
-| `v2`       | Vue 2 syntax and runtime expectations                         | Armature, Relief, Croquis, Patina, Canon, SSR, DOM          |
-| `v2.7`     | Vue 2.7 Composition API bridge behavior                       | Croquis, Virtual TS, linter, editor features                |
-| `v3`       | Modern Vue 3 behavior                                         | all current compiler, linter, typechecker, and editor lanes |
-| `vapor`    | Vapor target capability layer, not a Vue version by itself    | Rendu, Vapor Atelier, fallback reporting                    |
-
-The version coordinate is a capability fact, not a global mode every crate
-rediscovers; `SourceAtlasCoordinate::era()` is the shared era shorthand and
-folds the two Vue 0.x lines into one `v0`. The implementation track is
-[#1698](https://github.com/ubugeeei-prod/vize/issues/1698).
-
-## Demand-Shaped Lanes
-
-The atlas keeps the common source ledger but lets each product request only what
-it needs.
+No product above is “the foundation”. Atlas supplies identity and execution;
+the owning crate supplies the representation and independently applicable
+providers.
 
 ```mermaid
-graph TD
-    Source["Source Ledger<br/>files, blocks, spans"] --> Relief["Relief<br/>source syntax"]
-    Relief --> Croquis["Croquis<br/>semantic facts"]
+flowchart LR
+    C["Compilation / Atlas"]
+    SFC["SFC source"] --> SD["SFC descriptor"]
+    SD --> VT["template source"]
+    VT --> RELIEF["Relief syntax"]
+    JSX["JSX / TSX source"] --> OXC["owned JSX syntax"]
 
-    Croquis --> Lint["Patina lane<br/>lint diagnostics"]
-    Croquis --> Typecheck["Canon/Maestro lane<br/>Virtual TS"]
-    Croquis --> Render["Rendu lane<br/>render semantics"]
-    Relief --> Glyph["Glyph lane<br/>formatting"]
-    Relief --> Musea["Musea lane<br/>art and docs facts"]
+    RELIEF --> SEM["Croquis semantics"]
+    OXC --> SEM
+    RELIEF --> FLOW["Flow graph"]
+    OXC --> FLOW
+    RELIEF --> RENDU["Rendu HIR"]
+    OXC --> RENDU
 
-    Render --> Dom["DOM/VDOM Atelier"]
-    Render --> Ssr["SSR Atelier"]
-    Render --> Vapor["Vapor Atelier"]
-    Vapor --> VaporIr["Vapor IR<br/>target plan"]
+    RENDU --> DOM["DOM module"]
+    RENDU --> SSR["SSR module"]
+    RENDU --> VAPOR["Vapor plan"]
+    SEM --> LINT["Patina diagnostics"]
+    SEM --> VTS["Canon Virtual TS"]
+    FLOW --> VTS
+    SEM --> PROJECT["Croquis project snapshot"]
 
-    Dom --> Output["AtelierOutput"]
-    Ssr --> Output
-    VaporIr --> Output
-    Typecheck --> Maps["Source-map registry"]
-    Output --> Maps
+    C -. "plans, caches, invalidates" .-> SD
+    C -.-> OXC
+    C -.-> RELIEF
+    C -.-> SEM
+    C -.-> FLOW
+    C -.-> RENDU
 ```
 
-The important property is negative as much as positive:
+## Relief, Croquis, Flow, and Rendu
 
-- lint-only runs do not build Rendu;
-- format-only runs do not build Croquis unless a formatter feature needs it;
-- typecheck runs request Virtual TS and diagnostic mappings, not render output;
-- compile runs reuse Croquis and build Rendu only for targets that need render
-  semantics;
-- source-map-heavy runs are explicit and profileable;
-- inspector/debug output is a requested view, not normal-path work.
+These names are deliberately not interchangeable.
 
-## Rendu
+| Question                                   | Relief                                                   | Croquis                                                  | Flow                                                             | Rendu                                                                       |
+| ------------------------------------------ | -------------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| What was written?                          | Yes: tags, directives, expressions, comments, locations. | No.                                                      | No.                                                              | No.                                                                         |
+| What does a name mean?                     | No.                                                      | Yes: identity, bindings, scopes, components, reactivity. | References already identified symbols/values.                    | Only opaque render expressions/bindings.                                    |
+| How can execution branch or effects order? | Retains `v-if`/`v-for` syntax.                           | May supply semantic facts.                               | Yes: blocks, control/data/effect edges, reachability, dominance. | Retains structured render branches/iteration, not an analysis CFG.          |
+| How should a target render it?             | No.                                                      | No.                                                      | No.                                                              | Yes: elements, components, slots, props, directives, text, branches, lists. |
+| Frontend-specific?                         | Vue template.                                            | Value contract is frontend-neutral.                      | Frontend-neutral.                                                | Frontend-neutral.                                                           |
 
-`Rendu` is the output-facing render projection owned by the `vize_rendu` crate.
-It is not Relief syntax, Croquis's semantic database, or the whole toolchain IR. The
-implementation track is
-[#1695](https://github.com/ubugeeei-prod/vize/issues/1695).
+Relief is therefore not “before Croquis” in every recipe. A syntax rule may
+request Relief and stop. JSX can produce Croquis or Rendu directly from its own
+owned syntax and never create Relief. A compiler may request Rendu without
+requesting Flow; a flow-aware tool may request Flow without Rendu.
 
-`Rendu` should initially be structured, not a rustc-style control-flow graph.
-Vue render output is dominated by elements, components, slots, directives,
-fragments, branches, loops, hoists, props, events, text, and HTML. A structured
-form is a better first fit than basic blocks. A CFG can still appear later if a
-real optimization needs it.
+`vize_croquis_cf` is also separate from `vize_flow`: Flow is one compilation
+unit's CFG/data/effect representation, while Croquis CF is opt-in cross-file
+module/component aggregation.
 
-The initial vocabulary should stay small:
+## Open provider selection
 
-- `RenduRoot<'a>`: a render entry with source, operation block, and capability
-  facts.
-- `RenduBlock<'a>`: an ordered render block.
-- `RenduOp<'a>`: element, component, text, comment, interpolation, HTML, prop,
-  event, directive, slot outlet, `if`, `for`, fragment, or hoist reference.
-- `RenduExprRef<'a>`: borrowed expression material from Relief, OXC, or Croquis.
-- `RenduCapabilities`: target facts for DOM, SSR, Vapor, custom renderers, and
-  versioned syntax support.
-- `walk_rendu_ops`: allocation-free traversal for lanes that need render
-  semantics before a persistent arena plate is justified.
+Products and providers are ordinary Rust types. Atlas contains no enum naming
+Relief, Croquis, Rendu, tools, or targets.
 
-Vapor should keep its dedicated IR where it earns its keep. The clean route is
-`Rendu -> Vapor IR -> Vapor output`, not deleting Vapor's target-specific plan.
+`Product::Value` is the owned `'static` storage kept in the cache, not a rule
+that every consumer must use an owned tree. A product can separately implement
+`ProductView` to project that storage into a borrow, an arena/intern-table
+facade, or an iterator-like stream tied to the query outcome's lifetime.
+The storage may itself be a cloned `Shared` handle to compilation-owned source
+or arena bytes, so a provider can expose a lazy view without copying the source
+or materializing an intermediate collection. Products that only need their
+stored value do not implement the view contract.
+`CachePolicy::Transient` keeps an ephemeral or streamed value inside the
+current execution only, so sibling roots can share it without creating a
+persistent artifact entry. If every consumer is a cache hit, Atlas prunes the
+transient dependency instead of recreating it speculatively.
 
-## AtelierOutput
+Multiple crates may register providers for one product. For example, the SFC
+and JSX crates both provide `RenduProduct` and `CroquisSemanticProduct`.
+`Provider::supports` selects exactly one provider for a source during planning.
+No central `match input_kind` must be edited when another frontend is added.
 
-`AtelierOutput` is the finishing plate before generated JavaScript becomes a
-flat string. It should carry:
+Planning fails explicitly when no provider applies or more than one provider
+claims the same product. The immutable plan records the selected provider
+identity, its declared dependencies, and relevant typed-input revisions.
 
-- imports;
-- helper preambles;
-- hoists;
-- render functions;
-- exports;
-- styles and custom block artifacts when owned by SFC assembly;
-- output sections with byte ranges;
-- source-map fragments;
-- fallback and profile marks.
+Providers can attach structured diagnostics, fallback records, or notes to the
+exact `(SourceId, ProductId)` request they are serving. Each observation also
+stores the concrete `ProviderId`, target source/range, code, and message. These
+side outcomes are cached with the product, so a cache hit preserves provenance
+instead of reconstructing telemetry after execution. JSX parser diagnostics
+exercise this path in the canary integration tests.
 
-The purpose is to avoid recovering known structure by scanning generated code.
-New code must register sections and map fragments while emitting.
+## Sources and provenance
 
-The canary rule is now executable in SFC inline assembly:
+`Compilation` assigns stable `SourceId` values and monotonic revisions. An
+embedded source records its parent ID, the exact parent revision, and a
+half-open byte range. SFC template products retain that information, so a
+template, generated projection, diagnostic, and mapping can stay connected
+without scanning generated text to rediscover structure.
 
-- DOM inline mode uses fine render sections for imports, hoists, asset preamble
-  statements, and the returned expression.
-- SSR inline mode uses module sections for imports, hoists, and the full
-  `ssrRender` function.
-- Vapor inline mode uses module sections emitted by the SFC Vapor adapter for
-  imports, template declarations, and the full `render` function.
-- If a future output does not provide these sections, inline SFC assembly
-  returns `TEMPLATE_SECTION_ERROR` instead of recovering by generated-code
-  scanning.
+Updating a parent revises its embedded descendants and evicts only their cache
+entries. Unrelated source trees remain reusable. A plan created for an older
+source, provider registry, or relevant typed-input revision is rejected rather
+than executed against mismatched state.
 
-## Source Maps
+## Cross-source requests and immutable snapshots
 
-Source maps are registration marks between plates. The implementation track is
-[#1696](https://github.com/ubugeeei-prod/vize/issues/1696).
+A request is identified by both `SourceId` and `ProductId`. Providers declare
+complete cross-source dependency requests during planning and can read only
+those declared products during execution. A plan captures every participating
+source revision, so no project result can silently mix old and new documents.
 
-```mermaid
-graph LR
-    A["Source span"] --> B["Relief node"]
-    B --> C["Croquis fact"]
-    C --> D["Rendu operation"]
-    D --> E["AtelierOutput section"]
-    E --> F["Flattened output map"]
-```
+`vize_croquis_cf::CroquisProjectProvider` is the executable proof. It declares
+one `CroquisSemanticProduct` request for every supported SFC or JSX/TSX source,
+then produces a deterministic owned component/provide/inject snapshot. The
+provider is absent from compiler, lint, and typecheck closures unless the
+project product itself is a requested root.
 
-The invariant is that a map fragment should be carried as long as the bridge is
-still correct. If a later stage changes line offsets or concatenates sections
-without composition, Vize must either compose the map or record why the map was
-omitted.
+The cache records the source-revision dependencies of each product. Updating a
+TSX component evicts that component's semantic product and dependent project
+snapshots, while an unchanged SFC semantic product remains reusable. An
+immutable compilation snapshot can be forked for editor or project work
+without sharing later mutations back into the original compilation.
 
-Required registration facts:
+## Versions and targets are context
 
-- source file and block identity;
-- original span;
-- generated section identity;
-- generated byte/line range;
-- map fragment availability;
-- composition or omission reason.
+Vue v1, v2, v2.7, and v3 are values of the open `VueDialectInput`; DOM, SSR,
+Vapor, non-Vapor, and custom-renderer availability are values of
+`RenderCapabilitiesInput`. They shape provider applicability or output but are
+not top-level pipelines and are not Atlas product variants.
 
-The first canary registration is intentionally narrow: template map fragments
-are registered as `SourceMapRegistration` values covering the generated render
-function range through `TemplateBlockCompileResult`. `compose_sfc_source_map`
-is the single authority that turns those registered sections into a composed
-template-only map or a deferred/omitted reason, without rescanning JavaScript.
+Providers declare the inputs that can affect them. Atlas propagates that
+relevance through dependencies. Changing render capabilities can evict a DOM
+output while keeping Relief and Rendu cached; changing the Vue dialect evicts
+Relief and every dependent product while preserving the SFC descriptor and
+template-source product.
 
-Source-map work is allowed to cost more only when `sourceMap` or an explicit
-debug/profile lane requests it. The normal compiler and linter paths must remain
-benchmark-neutral.
+## Recipes
 
-## Feedback And Fallbacks
+A recipe is only a root-product set:
 
-`AtelierProfile` and `AtelierFallback` are the observation layer for the atlas.
-They should be cheap enough to record from facts already computed by the active
-lane. The implementation tracks are
-[#1693](https://github.com/ubugeeei-prod/vize/issues/1693) and
-[#1694](https://github.com/ubugeeei-prod/vize/issues/1694).
+| Recipe                      | Root products                    | Products intentionally absent             |
+| --------------------------- | -------------------------------- | ----------------------------------------- |
+| DOM compiler                | DOM module                       | SSR, Vapor, lint, Virtual TS, Flow        |
+| Multi-backend compiler      | DOM + SSR + Vapor                | lint and Virtual TS unless also requested |
+| Semantic lint               | Patina report                    | Rendu and backend output                  |
+| Typecheck                   | Canon Virtual TS                 | Rendu and backend output                  |
+| Combined editor analysis    | Patina report + Canon Virtual TS | Rendu unless a preview also requests it   |
+| Cross-file project analysis | Croquis project snapshot         | Rendu and backend output                  |
 
-Profile facts should cover:
+Atlas derives the transitive closure and executes it in topological order.
+The canary tests prove that multi-backend SFC and TSX requests execute Rendu
+once, both frontends can produce the same peer Flow product, and combined
+lint/typecheck requests execute Croquis semantics once. Canon's graph-native
+Virtual TS provider also consumes the peer Flow product: it joins expressions
+to Flow nodes by `SourceAnchor` and range, orders reachable expressions in
+reverse postorder, retains unreachable expressions for diagnostics, and stores
+block/immediate-dominator identities in mappings without requesting Rendu. The
+tests prove that the TSX compiler/lint/typecheck/flow closures contain no Relief
+product. A separate multi-source test proves the project provider runs only
+when requested and selectively recomputes one changed source subtree.
 
-- source bytes and block layout;
-- requested plates;
-- dialect/version coordinate;
-- Relief parse/lowering cost when measured;
-- Croquis fact collection and cache reuse;
-- Virtual TS projection cost;
-- Rendu lowering cost;
-- target Atelier emit cost;
-- source-map segment and fragment counts;
-- final output byte count;
-- cache hit, miss, and bypass reasons.
+The hidden canary command `vize graph <sources...>` is the executable outer
+consumer. It registers every source in one immutable compilation snapshot,
+then requests a compiler backend, Patina diagnostics, and Canon Virtual TS as
+roots. Its JSON report records the selected provider and executed/cache status
+for every request. This is the integration route for the architecture proof;
+production `build`, `lint`, and `check` cutover remains a sequence of smaller
+landing changes rather than shadow execution or double work.
 
-Fallback facts should cover:
+## Physical dependency rules
 
-- source-map fragment unavailable;
-- map composition skipped;
-- Virtual TS projection skipped;
-- unsupported Vapor shape;
-- SSR/Vapor capability mismatch;
-- custom renderer capability mismatch;
-- legacy syntax compatibility fallback;
-- cache bypass.
+- `vize_atlas` depends only on lower-level source/utility primitives and names
+  no domain product.
+- `vize_rendu` has no Relief, Croquis, SFC, JSX, or backend dependency.
+- `vize_flow` has no syntax, semantic, frontend, Atelier, or cross-file
+  dependency.
+- graph-native DOM, SSR, and Vapor providers consume Rendu and do not parse
+  source; their crates still retain legacy frontend-coupled entry points during
+  production migration.
+- `vize_atelier_core` may contain narrow shared transform/emission helpers, but
+  it does not own or re-export Atlas/Rendu architecture.
+- frontend-specific producers live in frontend crates; stable owned products
+  cross the graph boundary.
 
-Fallback names should stay Vize-native. Use `AtelierFallback`, not deopt, even
-when the engineering idea is inspired by V8.
+Executable dependency-boundary tests enforce the Atlas, Rendu, Flow, Croquis
+contract, and Atelier Core ownership rules. Integration tests enforce the
+Rendu-only dependency closure of the graph-native backend providers; they do
+not claim that the legacy backend surfaces have already been removed.
 
-## Performance Guardrails
+## Measurements
 
-Compiler and linter performance regressions are blockers.
-
-- A new plate must remove duplicate work or unlock a proven product, not add an
-  elegant extra pass on top of the old path.
-- New structures should borrow from source, Relief, OXC, CSS, or Croquis data by
-  default.
-- Owned cloning on hot paths needs benchmark evidence.
-- Patina should not pay for Rendu unless a rule explicitly requests render
-  semantics.
-- Virtual TS should be built for typecheck/editor lanes, not compiler-only lanes.
-- Source-map finalization should be measured separately from basic compilation.
-- Debug dumps and inspector views stay off the normal path.
-- Every implementation slice must pass the PR benchmark budget and the relevant
-  compiler/linter checks in GitHub Actions.
-
-## Implementation Order
-
-The issue-backed tracks above are the implementation order. Each slice must
-preserve byte-equivalent output and pass benchmark gates before another risky
-plate is stacked.
-
-## Review Rules
-
-- Research/design changes live in docs and issues.
-- Implementation changes land as small conventional commits on `canary`.
-- PR titles stay conventional.
-- No broad snapshot churn without a tight explanation.
-- Source-map behavior needs focused tests for omission, fragment preservation,
-  and composition.
-- Performance-sensitive changes wait for Actions benchmarks before another risky
-  slice is stacked.
-
-## References
-
-- [rustc overview](https://rustc-dev-guide.rust-lang.org/overview.html)
-- [rustc MIR guide](https://rustc-dev-guide.rust-lang.org/mir/index.html)
-- [rustc query system](https://rustc-dev-guide.rust-lang.org/query.html)
-- [rustc compiletest](https://rustc-dev-guide.rust-lang.org/tests/compiletest.html)
-- [Rust compiler proposal process](https://forge.rust-lang.org/compiler/proposals-and-stabilization.html)
-- [v8pedia pipeline overview](https://github.com/ubugeeei/v8pedia/blob/main/content/pipeline/overview.md)
-- [v8pedia feedback and tiering](https://github.com/ubugeeei/v8pedia/blob/main/content/pipeline/feedback.md)
-- [v8pedia parser notes](https://github.com/ubugeeei/v8pedia/blob/main/content/frontend/parser.md)
-- [v8pedia Maglev notes](https://github.com/ubugeeei/v8pedia/blob/main/content/pipeline/maglev.md)
+The initial compiler/lint/typecheck/combined allocation, peak-live-byte,
+wall-time, query, execution, and cache-entry measurements are recorded in
+[Artifact graph cost baseline](./artifact-graph-cost-baseline.md). They are a
+canary baseline, not a cross-machine speed claim.

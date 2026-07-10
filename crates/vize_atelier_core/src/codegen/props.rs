@@ -8,8 +8,8 @@ mod scan;
 mod vbind;
 mod von_vmodel;
 
+use crate::relief_projection::ReliefRenderOp;
 use crate::{PropNode, RuntimeHelper};
-use vize_rendu::RenduOp;
 
 use super::{context::CodegenContext, expression::generate_expression};
 
@@ -24,8 +24,8 @@ pub use generate::generate_props;
 pub(crate) fn has_vbind_object(props: &[PropNode<'_>]) -> bool {
     props.iter().any(|prop| {
         matches!(
-            RenduOp::from_prop(prop),
-            RenduOp::Directive {
+            ReliefRenderOp::from_prop(prop),
+            ReliefRenderOp::Directive {
                 name: "bind",
                 arg: None,
                 ..
@@ -38,8 +38,8 @@ pub(crate) fn has_vbind_object(props: &[PropNode<'_>]) -> bool {
 pub(crate) fn has_von_object(props: &[PropNode<'_>]) -> bool {
     props.iter().any(|prop| {
         matches!(
-            RenduOp::from_prop(prop),
-            RenduOp::Directive {
+            ReliefRenderOp::from_prop(prop),
+            ReliefRenderOp::Directive {
                 name: "on",
                 arg: None,
                 ..
@@ -51,12 +51,12 @@ pub(crate) fn has_von_object(props: &[PropNode<'_>]) -> bool {
 /// Generate the v-bind object expression
 pub(crate) fn generate_vbind_object_exp(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
     for prop in props {
-        if let RenduOp::Directive {
+        if let ReliefRenderOp::Directive {
             name: "bind",
             arg: None,
             exp: Some(exp),
             ..
-        } = RenduOp::from_prop(prop)
+        } = ReliefRenderOp::from_prop(prop)
             && let Some(exp) = exp.node()
         {
             generate_expression(ctx, exp);
@@ -71,12 +71,12 @@ pub(crate) fn generate_von_object_exp(ctx: &mut CodegenContext, props: &[PropNod
     ctx.push(ctx.helper(RuntimeHelper::ToHandlers));
     ctx.push("(");
     for prop in props {
-        if let RenduOp::Directive {
+        if let ReliefRenderOp::Directive {
             name: "on",
             arg: None,
             exp: Some(exp),
             ..
-        } = RenduOp::from_prop(prop)
+        } = ReliefRenderOp::from_prop(prop)
             && let Some(exp) = exp.node()
         {
             generate_expression(ctx, exp);

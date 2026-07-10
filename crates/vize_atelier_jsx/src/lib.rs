@@ -1,33 +1,29 @@
-//! Shared JSX/TSX lowering layer for Vize.
+//! JSX/TSX frontends for Vize.
 //!
-//! This crate turns OXC-parsed JSX/TSX into Vize's shared template IR
-//! ([`vize_relief::RootNode`]) exactly once, so the VDOM
-//! ([`vize_atelier_dom`](https://docs.rs/vize_atelier_dom)) and Vapor
-//! (`vize_atelier_vapor`) backends, the type checker, the LSP, and Patina all
-//! consume the same lowered representation instead of forking JSX-only logic.
+//! The graph-native path parses OXC into an owned [`JsxSyntaxSnapshot`], then
+//! lowers that snapshot directly into frontend-neutral [`vize_rendu`] and
+//! [`vize_flow`] products without constructing a Relief tree. The snapshot has
+//! no parser-arena lifetime and is `Send + Sync + 'static`, so Atlas can cache
+//! or schedule it as a product.
 //!
-//! The lowering layer is intentionally backend-neutral: it does **not** invoke
-//! VDOM or Vapor codegen. It only:
-//!
-//! 1. parses `.jsx`/`.tsx` with OXC ([`parse`]),
-//! 2. maps OXC byte spans to Vize [`SourceLocation`](vize_relief::SourceLocation)s
-//!    ([`span`]), and
-//! 3. lowers JSX elements, fragments, text, expressions, spreads, attributes,
-//!    directives, and component references into [`vize_relief`] structures
-//!    ([`lower`]).
+//! The existing [`lower_source`] JSX-to-Relief API remains available for the
+//! legacy VDOM/Vapor codegen migration. New graph consumers should use
+//! [`snapshot_jsx`] or [`lower_source_to_rendu`].
 //!
 //! # Example
 //!
 //! ```
-//! use vize_atelier_jsx::{lower_source, JsxLang};
-//! use vize_carton::Bump;
+//! use vize_atelier_jsx::{lower_source_to_rendu, JsxLang};
 //!
-//! let bump = Bump::new();
-//! let out = lower_source(&bump, "const App = () => <div class=\"a\">{count}</div>;", JsxLang::Jsx);
-//! assert_eq!(out.roots.len(), 1);
-//! assert!(out.diagnostics.is_empty());
+//! let out = lower_source_to_rendu(
+//!     "const App = () => <div class=\"a\">{count}</div>;",
+//!     JsxLang::Jsx,
+//! ).expect("valid render HIR");
+//! assert_eq!(out.root.entry().len(), 1);
+//! assert!(out.snapshot.diagnostics.is_empty());
 //! ```
 
+pub mod atlas;
 pub mod compile;
 pub mod diagnostics;
 pub mod lang;
@@ -37,13 +33,21 @@ pub mod parse;
 pub mod scoped;
 pub mod span;
 pub mod ssr;
+pub mod syntax;
 pub mod vapor;
 pub mod vdom;
+
+mod flow;
+mod rendu;
 
 mod analyze;
 mod finder;
 
 pub use analyze::analyze_program as analyze_jsx_program;
+pub use atlas::{
+    JsxFlowProvider, JsxRenduProvider, JsxSemanticProvider, JsxSyntaxProduct, JsxSyntaxProvider,
+    register_atlas_providers,
+};
 
 use vize_carton::{Bump, String};
 use vize_croquis::Croquis;
@@ -52,13 +56,20 @@ use vize_relief::RootNode;
 
 pub use compile::{JsxCompileConfig, JsxCompileOutput, JsxComponent, compile_jsx, resolve_mode};
 pub use diagnostics::{JsxDiagnostic, Severity};
+pub use flow::project_jsx_syntax_to_flow;
 pub use lang::JsxLang;
 pub use lower::Lowerer;
 pub use mode::JsxOutputMode;
 pub use parse::{ParsedModule, parse_module};
+pub use rendu::{JsxRenduOutput, lower_source_to_rendu};
 pub use scoped::ScopedStyle;
 pub use span::SpanMapper;
 pub use ssr::{SsrCompileOptions, SsrComponent, SsrOutput, compile_to_ssr};
+pub use syntax::{
+    JsxSyntaxAttribute, JsxSyntaxAttributeValue, JsxSyntaxBinding, JsxSyntaxBranch,
+    JsxSyntaxElement, JsxSyntaxExpression, JsxSyntaxNode, JsxSyntaxSnapshot, JsxSyntaxSpan,
+    snapshot_jsx, snapshot_jsx_named,
+};
 pub use vapor::{VaporCompileOptions, VaporComponent, VaporOutput, compile_to_vapor};
 pub use vdom::{VdomCompileOptions, VdomComponent, VdomOutput, compile_to_vdom};
 

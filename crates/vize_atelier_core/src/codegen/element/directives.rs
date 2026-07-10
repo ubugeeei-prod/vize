@@ -3,10 +3,10 @@
 //! Generates the closing portions of `withDirectives()` calls for
 //! v-model, v-show, and custom directives on elements.
 
+use crate::relief_projection::ReliefRenderOp;
 use crate::{
     ElementNode, ExpressionNode, PropNode, RuntimeHelper, steps::v_model::get_vmodel_helper,
 };
-use vize_rendu::RenduOp;
 
 use super::super::{context::CodegenContext, expression::generate_expression};
 use super::helpers::{
@@ -19,8 +19,9 @@ fn generate_vmodel_entry(
     el: &ElementNode<'_>,
     dir: &crate::DirectiveNode<'_>,
 ) {
-    let RenduOp::Directive { exp, modifiers, .. } = RenduOp::from_directive(dir) else {
-        unreachable!("v-model emission requires RenduOp::Directive");
+    let ReliefRenderOp::Directive { exp, modifiers, .. } = ReliefRenderOp::from_directive(dir)
+    else {
+        unreachable!("v-model emission requires ReliefRenderOp::Directive");
     };
     let helper = get_vmodel_helper(el);
     ctx.use_helper(helper);
@@ -84,8 +85,8 @@ fn generate_vmodel_entry(
 }
 
 fn generate_vshow_entry(ctx: &mut CodegenContext, dir: &crate::DirectiveNode<'_>) -> bool {
-    let RenduOp::Directive { exp, .. } = RenduOp::from_directive(dir) else {
-        unreachable!("v-show emission requires RenduOp::Directive");
+    let ReliefRenderOp::Directive { exp, .. } = ReliefRenderOp::from_directive(dir) else {
+        unreachable!("v-show emission requires ReliefRenderOp::Directive");
     };
     let Some(exp) = exp.and_then(|exp| exp.node()) else {
         return false;
@@ -101,15 +102,15 @@ fn generate_vshow_entry(ctx: &mut CodegenContext, dir: &crate::DirectiveNode<'_>
 }
 
 fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::DirectiveNode<'_>) {
-    let RenduOp::Directive {
+    let ReliefRenderOp::Directive {
         name,
         arg,
         exp,
         modifiers,
         ..
-    } = RenduOp::from_directive(dir)
+    } = ReliefRenderOp::from_directive(dir)
     else {
-        unreachable!("custom directive emission requires RenduOp::Directive");
+        unreachable!("custom directive emission requires ReliefRenderOp::Directive");
     };
     ctx.push("  [");
     ctx.push(&to_valid_asset_identifier("directive", name));
@@ -173,8 +174,8 @@ pub fn generate_vmodel_closing(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
     for prop in &el.props {
         if matches!(
-            RenduOp::from_prop(prop),
-            RenduOp::Directive {
+            ReliefRenderOp::from_prop(prop),
+            ReliefRenderOp::Directive {
                 name: "show",
                 exp: Some(_),
                 ..
@@ -196,8 +197,8 @@ pub fn generate_vmodel_closing(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 pub fn generate_vshow_closing(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     for prop in &el.props {
         if matches!(
-            RenduOp::from_prop(prop),
-            RenduOp::Directive {
+            ReliefRenderOp::from_prop(prop),
+            ReliefRenderOp::Directive {
                 name: "show",
                 exp: Some(_),
                 ..
@@ -244,8 +245,8 @@ pub fn generate_custom_directives_closing(ctx: &mut CodegenContext, el: &Element
     if has_vshow_directive(el) {
         for prop in &el.props {
             if matches!(
-                RenduOp::from_prop(prop),
-                RenduOp::Directive {
+                ReliefRenderOp::from_prop(prop),
+                ReliefRenderOp::Directive {
                     name: "show",
                     exp: Some(_),
                     ..

@@ -1,0 +1,12 @@
+[package]
+name = "vize_flow"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Frontend-neutral single-file control-flow, data-flow, and effect graphs for Vize"
+
+[dependencies]
+vize_carton.workspace = true
+vize_atlas.workspace = true

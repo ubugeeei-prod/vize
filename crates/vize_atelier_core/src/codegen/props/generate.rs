@@ -1,7 +1,7 @@
 //! Main props generation logic.
 
+use crate::relief_projection::ReliefRenderOp;
 use crate::{ExpressionNode, PropNode, RuntimeHelper};
-use vize_rendu::RenduOp;
 
 use super::{
     super::expression::generate_expression,
@@ -66,12 +66,16 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
                 |ctx: &mut CodegenContext, start: usize, end: usize, first: &mut bool| {
                     // Does this range hold any renderable non-spread prop?
                     let segment = &props[start..end];
-                    let has_renderable =
-                        segment.iter().any(|prop| match RenduOp::from_prop(prop) {
-                            RenduOp::Attribute { name, .. } => !(ctx.skip_is_prop && name == "is"),
-                            RenduOp::Directive { name, arg, .. } => {
+                    let has_renderable = segment.iter().any(
+                        |prop| match ReliefRenderOp::from_prop(prop) {
+                            ReliefRenderOp::Attribute { name, .. } => {
+                                !(ctx.skip_is_prop && name == "is")
+                            }
+                            ReliefRenderOp::Directive { name, arg, .. } => {
                                 let PropNode::Directive(dir) = prop else {
-                                    unreachable!("Rendu directive must borrow a directive prop");
+                                    unreachable!(
+                                        "Relief projection directive must borrow a directive prop"
+                                    );
                                 };
                                 // A `:is`/`v-bind:is` directive on a dynamic component is consumed
                                 // as the component tag and skipped during generation (mirrors the
@@ -88,7 +92,8 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
                                     && name != "slot"
                             }
                             _ => unreachable!("element props lower to attribute or directive ops"),
-                        });
+                        },
+                    );
                     if !has_renderable {
                         return;
                     }
@@ -101,7 +106,9 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
                 };
 
             for (index, prop) in props.iter().enumerate() {
-                let RenduOp::Directive { name, arg, exp, .. } = RenduOp::from_prop(prop) else {
+                let ReliefRenderOp::Directive { name, arg, exp, .. } =
+                    ReliefRenderOp::from_prop(prop)
+                else {
                     continue;
                 };
                 let is_vbind_spread = name == "bind" && arg.is_none();
@@ -229,17 +236,19 @@ fn try_generate_static_attrs(
     if ctx.in_v_for
         && props.iter().any(|prop| {
             matches!(
-                RenduOp::from_prop(prop),
-                RenduOp::Attribute { name: "ref", .. }
+                ReliefRenderOp::from_prop(prop),
+                ReliefRenderOp::Attribute { name: "ref", .. }
             )
         })
     {
         return false;
     }
-    if !props
-        .iter()
-        .all(|prop| matches!(RenduOp::from_prop(prop), RenduOp::Attribute { .. }))
-    {
+    if !props.iter().all(|prop| {
+        matches!(
+            ReliefRenderOp::from_prop(prop),
+            ReliefRenderOp::Attribute { .. }
+        )
+    }) {
         return false;
     }
 
@@ -251,7 +260,7 @@ fn try_generate_static_attrs(
     let mut seen: FxHashSet<String> = FxHashSet::default();
     let mut unique_props: Vec<&PropNode<'_>> = Vec::with_capacity(props.len());
     for prop in props {
-        if let RenduOp::Attribute { name, .. } = RenduOp::from_prop(prop) {
+        if let ReliefRenderOp::Attribute { name, .. } = ReliefRenderOp::from_prop(prop) {
             if seen.contains(name) {
                 continue;
             }
@@ -270,15 +279,15 @@ fn try_generate_static_attrs(
 
     let mut first = true;
     for prop in unique_props {
-        // Lower static-prop emission through the Rendu plate (#1756): name,
-        // value, and source spans come from `RenduOp::Attribute`, not Relief.
-        let RenduOp::Attribute {
+        // Lower static-prop emission through the Relief projection (#1756): name,
+        // value, and source spans come from `ReliefRenderOp::Attribute`, not Relief.
+        let ReliefRenderOp::Attribute {
             name,
             name_span,
             value,
             value_span,
             ..
-        } = RenduOp::from_prop(prop)
+        } = ReliefRenderOp::from_prop(prop)
         else {
             unreachable!("checked above: all props are attributes");
         };

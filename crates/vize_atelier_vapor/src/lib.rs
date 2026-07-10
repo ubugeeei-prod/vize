@@ -5,11 +5,13 @@
 
 #![allow(clippy::collapsible_match)]
 
+mod atlas;
 pub mod compile;
 pub mod generate;
 pub mod generators;
 pub mod ir;
 pub mod lower;
+pub mod rendu;
 pub mod steps;
 
 #[cfg(test)]
@@ -19,6 +21,7 @@ mod tests_dotted_slots;
 #[cfg(test)]
 mod tests_setup_components;
 
+pub use atlas::{VaporPlanProduct, VaporProvider, register_atlas_provider};
 pub use compile::{
     VaporCompileResult, VaporCompilerOptions, compile_vapor, compile_vapor_with_diagnostics,
     compile_vapor_with_template_syntax, compile_vapor_with_template_syntax_and_diagnostics,
@@ -52,6 +55,11 @@ pub use ir::{
     SetPropIRNode, SetTemplateRefIRNode, SetTextIRNode, SlotOutletIRNode,
 };
 pub use lower::transform_to_ir;
+pub use rendu::{
+    VaporAttributeValue, VaporBinding, VaporBlock, VaporBlockId, VaporBranch, VaporDirective,
+    VaporExpression, VaporExpressionId, VaporName, VaporOperation, VaporPlan, VaporProperty,
+    lower_rendu, plan_rendu,
+};
 pub use steps::{
     collect_component_slots, generate_element_template, generate_event_handler,
     generate_model_handler, generate_text_expression, generate_v_show_effect, get_model_arg,

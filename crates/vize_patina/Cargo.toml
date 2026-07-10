@@ -11,8 +11,9 @@ description = "Patina - The quality checker for Vize code linting"
 # Internal crates
 vize_relief.workspace = true
 vize_armature.workspace = true
+vize_atlas.workspace = true
 vize_carton.workspace = true
-vize_croquis.workspace = true
+vize_croquis = { workspace = true, features = ["relief-compat"] }
 vize_atelier_sfc.workspace = true
 vize_atelier_jsx.workspace = true
 

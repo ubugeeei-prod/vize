@@ -11,7 +11,7 @@ description = "Musea - Component gallery and documentation for Vize Vue componen
 vize_carton.workspace = true
 vize_relief.workspace = true
 vize_atelier_sfc.workspace = true
-vize_croquis.workspace = true
+vize_croquis = { workspace = true, features = ["relief-compat"] }
 
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true

@@ -1,13 +1,17 @@
 //! Shared SFC render output assembly.
 
 use crate::types::{CssModuleMapping, css_modules_object_literal};
-use vize_atelier_core::{atelier_output::AtelierOutput, codegen::CodegenResultWithSections};
+use vize_atelier_core::{
+    atelier_output::{
+        AtelierModuleSections as CoreAtelierModuleSections, AtelierOutput, AtelierOutputView,
+        AtelierRange, AtelierRenderSections, AtelierTarget,
+    },
+    codegen::CodegenResultWithSections,
+};
 use vize_atelier_ssr::SsrCodegenResult;
-use vize_atlas::SourceAtlasTarget;
 use vize_carton::{String, ToCompactString};
-use vize_rendu::{RenduModuleSections, RenduPlate, RenduRange, RenduRenderSections};
 
-pub(crate) type OutputRange = RenduRange;
+pub(crate) type OutputRange = AtelierRange;
 
 /// Structural sections of a rendered Atelier module before inline SFC assembly.
 ///
@@ -15,7 +19,7 @@ pub(crate) type OutputRange = RenduRange;
 /// [`OutputModule::into_code`]. This is the first SFC-side shape of the
 /// proposed `AtelierOutput`: consumers can slice known sections without
 /// scanning generated JavaScript again.
-pub(crate) type AtelierOutputSections = RenduRenderSections;
+pub(crate) type AtelierOutputSections = AtelierRenderSections;
 
 /// Source maps carried with structured Atelier output.
 ///
@@ -41,7 +45,7 @@ impl AtelierOutputMaps {
 /// These ranges describe the chunks owned by [`OutputModule`] itself. Target
 /// Ateliers can layer finer sections, such as DOM render assets and return
 /// expressions, on top of these chunk boundaries.
-pub(crate) type AtelierModuleSections = RenduModuleSections;
+pub(crate) type AtelierModuleSections = CoreAtelierModuleSections;
 
 /// The render function a generated SFC component should expose.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -150,8 +154,8 @@ impl OutputModule {
     }
 
     #[allow(dead_code)]
-    pub(crate) fn as_rendu_plate(&self, target: SourceAtlasTarget) -> RenduPlate<'_> {
-        RenduPlate::new(
+    pub(crate) fn as_output_view(&self, target: AtelierTarget) -> AtelierOutputView<'_> {
+        AtelierOutputView::new(
             target,
             self.imports.as_str(),
             self.hoists.as_str(),

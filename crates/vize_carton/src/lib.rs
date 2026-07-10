@@ -34,6 +34,7 @@
 
 // Allocator modules
 mod allocator;
+mod binding;
 mod boxed;
 mod clone_in;
 mod vec;
@@ -56,12 +57,14 @@ pub mod line_index;
 pub mod lsp;
 pub mod path;
 pub mod profiler;
+pub mod source_anchor;
 pub mod source_range;
 pub mod string_builder;
 pub mod telegraph;
 
 // Re-export allocator types
 pub use allocator::Allocator;
+pub use binding::{BindingMetadata, BindingType};
 pub use boxed::Box;
 pub use clone_in::CloneIn;
 pub use vec::Vec;

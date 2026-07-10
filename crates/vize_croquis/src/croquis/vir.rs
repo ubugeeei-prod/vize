@@ -5,8 +5,8 @@
 
 use super::{Croquis, TypeExportKind};
 use std::fmt::Write;
+use vize_carton::BindingType;
 use vize_carton::{FxHashMap, String};
-use vize_relief::BindingType;
 
 mod scopes;
 mod surface;

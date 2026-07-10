@@ -1,10 +1,11 @@
 use super::super::{
     ComponentUsage, Croquis, EventListener, PassedProp, SlotUsage, TemplateExpression,
 };
-use super::{names, types as snapshot};
+use super::names;
 use crate::provide::{InjectEntry, ProvideEntry};
 use crate::reactivity::ReactiveSource;
 use crate::scope::ScopeBinding;
+use crate::semantic as snapshot;
 use vize_carton::CompactString;
 
 pub(super) fn binding_snapshots(croquis: &Croquis) -> Vec<snapshot::SemanticBindingSnapshot> {

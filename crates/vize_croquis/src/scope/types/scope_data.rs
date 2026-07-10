@@ -12,8 +12,8 @@
 //! - `ClosureScopeData` - function/arrow parameters and flags
 //! - `BlockScopeData` - block statement kind
 
+use vize_carton::BindingType;
 use vize_carton::CompactString;
-use vize_relief::BindingType;
 
 use super::{ParamNames, ScopeKind};
 

@@ -1,5 +1,5 @@
 //! Interpolation value codegen, shared by the Relief child paths and the
-//! Rendu-driven node dispatcher.
+//! Relief-projection-driven node dispatcher.
 
 use crate::{ExpressionNode, InterpolationNode, RuntimeHelper};
 
@@ -19,7 +19,7 @@ pub fn push_interpolation_value(ctx: &mut CodegenContext, interp: &Interpolation
     emit_interpolation_value(ctx, &interp.content, raw);
 }
 
-/// Emit an interpolation from its expression and raw flag (the Rendu-facing
+/// Emit an interpolation from its expression and raw flag (the Relief-projection-facing
 /// core of [`push_interpolation_value`]).
 pub(crate) fn emit_interpolation_value(
     ctx: &mut CodegenContext,

@@ -3,24 +3,24 @@
 //! Utility functions for checking element properties like directives,
 //! renderable props, and special element types.
 
+use crate::relief_projection::ReliefRenderOp;
 use crate::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode,
 };
 use vize_carton::is_builtin_directive;
-use vize_rendu::RenduOp;
 
 use super::super::{
     context::CodegenContext, node::generate_node, props::is_supported_directive,
     v_for::generate_for, v_if::generate_if,
 };
 
-/// Emit a plain element's tag name through the Rendu plate.
+/// Emit a plain element's tag name through the Relief projection.
 ///
-/// The tag string and its source anchor are read from `RenduOp::Element`
+/// The tag string and its source anchor are read from `ReliefRenderOp::Element`
 /// (#1756) rather than the Relief node, so DOM tag emission shares the
 /// render-semantic op. Byte-equivalent — the op borrows `el.tag` and `el.loc`.
 pub(super) fn emit_element_tag(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
-    let RenduOp::Element { tag, span, .. } = RenduOp::from_element(el) else {
+    let ReliefRenderOp::Element { tag, span, .. } = ReliefRenderOp::from_element(el) else {
         unreachable!("from_element returns an Element op");
     };
     // Anchor the tag-name string back to the element's source position (the `<`
@@ -33,8 +33,8 @@ pub(super) fn emit_element_tag(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 pub fn has_v_once(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| {
         matches!(
-            RenduOp::from_prop(prop),
-            RenduOp::Directive { name: "once", .. }
+            ReliefRenderOp::from_prop(prop),
+            ReliefRenderOp::Directive { name: "once", .. }
         )
     })
 }
@@ -53,8 +53,8 @@ pub(crate) fn is_whitespace_or_comment(child: &TemplateChildNode<'_>) -> bool {
 pub fn has_vshow_directive(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| {
         matches!(
-            RenduOp::from_prop(prop),
-            RenduOp::Directive {
+            ReliefRenderOp::from_prop(prop),
+            ReliefRenderOp::Directive {
                 name: "show",
                 exp: Some(_),
                 ..
@@ -66,7 +66,7 @@ pub fn has_vshow_directive(el: &ElementNode<'_>) -> bool {
 /// Check if element has custom directives
 pub fn has_custom_directives(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| {
-        matches!(RenduOp::from_prop(prop), RenduOp::Directive { name, .. } if !is_builtin_directive(name))
+        matches!(ReliefRenderOp::from_prop(prop), ReliefRenderOp::Directive { name, .. } if !is_builtin_directive(name))
     })
 }
 
@@ -75,7 +75,7 @@ pub fn get_custom_directives<'a, 'b>(el: &'b ElementNode<'a>) -> Vec<&'b Directi
     el.props
         .iter()
         .filter_map(|prop| {
-            if let RenduOp::Directive { name, .. } = RenduOp::from_prop(prop)
+            if let ReliefRenderOp::Directive { name, .. } = ReliefRenderOp::from_prop(prop)
                 && !is_builtin_directive(name)
                 && let PropNode::Directive(dir) = prop
             {
@@ -98,8 +98,8 @@ pub fn has_vmodel_directive(el: &ElementNode<'_>) -> bool {
     }
     el.props.iter().any(|prop| {
         matches!(
-            RenduOp::from_prop(prop),
-            RenduOp::Directive { name: "model", .. }
+            ReliefRenderOp::from_prop(prop),
+            ReliefRenderOp::Directive { name: "model", .. }
         )
     })
 }
@@ -110,8 +110,8 @@ pub(crate) fn get_vmodel_directive<'a, 'b>(
 ) -> Option<&'b DirectiveNode<'a>> {
     el.props.iter().find_map(|prop| {
         if matches!(
-            RenduOp::from_prop(prop),
-            RenduOp::Directive { name: "model", .. }
+            ReliefRenderOp::from_prop(prop),
+            ReliefRenderOp::Directive { name: "model", .. }
         ) && let PropNode::Directive(dir) = prop
         {
             return Some(dir.as_ref());
@@ -122,13 +122,13 @@ pub(crate) fn get_vmodel_directive<'a, 'b>(
 
 /// Check if a prop is the `is` attribute or `:is` binding (used by dynamic components)
 pub(crate) fn is_is_prop(p: &PropNode<'_>) -> bool {
-    is_is_rendu_op(RenduOp::from_prop(p))
+    is_is_relief_op(ReliefRenderOp::from_prop(p))
 }
 
-pub(crate) fn is_is_rendu_op(op: RenduOp<'_>) -> bool {
+pub(crate) fn is_is_relief_op(op: ReliefRenderOp<'_>) -> bool {
     match op {
-        RenduOp::Attribute { name: "is", .. } => true,
-        RenduOp::Directive {
+        ReliefRenderOp::Attribute { name: "is", .. } => true,
+        ReliefRenderOp::Directive {
             name: "bind",
             arg: Some(arg),
             ..

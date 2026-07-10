@@ -1,33 +1,38 @@
 //! Fallback diagnostics emitted by the SFC compiler.
 
 use crate::types::{SfcCompileOptions, SfcDescriptor, SfcError};
-use vize_atlas::{SourceAtlasFallback, SourceAtlasTarget};
 use vize_carton::{ToCompactString, profiler::global_profiler};
-use vize_rendu::RenduCapabilities;
 
-/// Push the Vapor SSR fallback warning when the requested render route mixes
-/// Vapor and SSR. The decision goes through the shared Rendu capability facts
-/// so the Vapor lane consumes the same rule the atlas reports.
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub(crate) enum SfcFallback {
+    VaporSsr,
+    UnsupportedVaporShape,
+}
+
+impl SfcFallback {
+    const fn profile_counter(self) -> &'static str {
+        match self {
+            Self::VaporSsr => "atelier.profile.fallback.vapor_ssr",
+            Self::UnsupportedVaporShape => "atelier.profile.fallback.vapor_unsupported_shape",
+        }
+    }
+}
+
+/// Push the legacy-pipeline warning when one compile request mixes Vapor and SSR.
+/// The graph-native pipeline records this as a provider outcome instead.
 pub(super) fn apply_vapor_ssr_fallback(
     descriptor: &SfcDescriptor,
     options: &SfcCompileOptions,
     vapor_requested: bool,
     warnings: &mut Vec<SfcError>,
 ) {
-    let mut route = RenduCapabilities::empty();
-    if vapor_requested {
-        route = route.with_target(SourceAtlasTarget::Vapor);
-    }
-    if options.template.ssr {
-        route = route.with_target(SourceAtlasTarget::Ssr);
-    }
-    if route.vapor_route_fallback() == Some(SourceAtlasFallback::VaporSsr) {
+    if vapor_requested && options.template.ssr {
         push_vapor_ssr_fallback_warning(descriptor, warnings);
     }
 }
 
 fn push_vapor_ssr_fallback_warning(descriptor: &SfcDescriptor, warnings: &mut Vec<SfcError>) {
-    record_atelier_fallback(SourceAtlasFallback::VaporSsr);
+    record_atelier_fallback(SfcFallback::VaporSsr);
     warnings.push(create_vapor_ssr_fallback_warning(descriptor));
 }
 
@@ -38,20 +43,14 @@ fn push_vapor_ssr_fallback_warning(descriptor: &SfcDescriptor, warnings: &mut Ve
 /// should emit a user-facing warning only when the fallback changes semantics or
 /// target support, such as Vapor SSR. Missing `AtelierOutput` sections are no
 /// longer profile fallbacks; they are internal contract errors.
-pub(crate) fn record_atelier_fallback(fallback: SourceAtlasFallback) {
+pub(crate) fn record_atelier_fallback(fallback: SfcFallback) {
     global_profiler().record_counter(fallback.profile_counter(), 1);
 }
 
 /// Record that the Vapor Atelier could not lower a template shape.
 ///
-/// Routes the decision through the shared `RenduCapabilities::vapor_support`
-/// gate so the unsupported-shape fallback is reported the same way every Vapor
-/// lane reports it, instead of naming the fallback variant inline.
 pub(crate) fn record_unsupported_vapor_shape() {
-    let vapor = RenduCapabilities::empty().with_target(SourceAtlasTarget::Vapor);
-    if let Some(fallback) = vapor.vapor_support(false).fallback() {
-        record_atelier_fallback(fallback);
-    }
+    record_atelier_fallback(SfcFallback::UnsupportedVaporShape);
 }
 
 fn create_vapor_ssr_fallback_warning(descriptor: &SfcDescriptor) -> SfcError {

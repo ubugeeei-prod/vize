@@ -9,8 +9,8 @@ mod branch_component;
 mod branch_fragment;
 mod generate;
 
+use crate::relief_projection::ReliefRenderOp;
 use crate::{ExpressionNode, IfBranchNode, IfNode, PropNode, RuntimeHelper};
-use vize_rendu::RenduOp;
 
 use super::{context::CodegenContext, expression::generate_expression, helpers::escape_js_string};
 
@@ -25,7 +25,7 @@ pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
     ctx.use_helper(RuntimeHelper::CreateComment);
 
     for (i, branch) in if_node.branches.iter().enumerate() {
-        let condition = rendu_branch_condition(branch);
+        let condition = relief_branch_condition(branch);
         // Allocate a key from the per-scope counter so sibling conditional
         // blocks at the same level get unique keys (Vue parity: 0,1,2,3 —
         // not the per-chain 0,1,0,1 vize used to emit). The counter is
@@ -74,7 +74,7 @@ pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
     if if_node
         .branches
         .iter()
-        .all(|branch| rendu_branch_condition(branch).is_some())
+        .all(|branch| relief_branch_condition(branch).is_some())
     {
         ctx.newline();
         ctx.push(": ");
@@ -85,9 +85,9 @@ pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
     ctx.deindent();
 }
 
-fn rendu_branch_condition<'a>(branch: &'a IfBranchNode<'a>) -> Option<&'a ExpressionNode<'a>> {
-    let RenduOp::IfBranch { condition, .. } = RenduOp::from_if_branch(branch) else {
-        unreachable!("v-if branch emission requires RenduOp::IfBranch");
+fn relief_branch_condition<'a>(branch: &'a IfBranchNode<'a>) -> Option<&'a ExpressionNode<'a>> {
+    let ReliefRenderOp::IfBranch { condition, .. } = ReliefRenderOp::from_if_branch(branch) else {
+        unreachable!("v-if branch emission requires ReliefRenderOp::IfBranch");
     };
     condition.and_then(|condition| condition.node())
 }

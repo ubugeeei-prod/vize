@@ -3,8 +3,8 @@
 //! Provides efficient lookup and tracking of symbols across
 //! the entire compilation unit.
 
+use vize_carton::BindingType;
 use vize_carton::{FxHashMap, String, bitflags};
-use vize_relief::BindingType;
 
 use crate::{ScopeBinding, ScopeId};
 
@@ -210,8 +210,8 @@ impl From<&ScopeBinding> for SymbolFlags {
 mod tests {
     use super::SymbolTable;
     use crate::ScopeId;
+    use vize_carton::BindingType;
     use vize_carton::ToCompactString;
-    use vize_relief::BindingType;
 
     #[test]
     fn test_symbol_table() {

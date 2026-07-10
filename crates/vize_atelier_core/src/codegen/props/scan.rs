@@ -1,10 +1,10 @@
 //! Single-pass prop metadata collection for code generation.
 
 use crate::options::BindingType;
+use crate::relief_projection::ReliefRenderOp;
 use crate::{DirectiveNode, ExpressionNode, PropNode};
-use vize_rendu::RenduOp;
 
-use super::super::{context::CodegenContext, element::helpers::is_is_rendu_op};
+use super::super::{context::CodegenContext, element::helpers::is_is_relief_op};
 use super::directives::is_supported_directive;
 use super::events::get_von_event_key;
 use vize_carton::{FxHashMap, String};
@@ -119,8 +119,8 @@ impl<'props> PropsScan<'props> {
         };
 
         for (index, prop) in props.iter().enumerate() {
-            let op = RenduOp::from_prop(prop);
-            let visible = !skip_is || !is_is_rendu_op(op);
+            let op = ReliefRenderOp::from_prop(prop);
+            let visible = !skip_is || !is_is_relief_op(op);
 
             // The `is` binding of a dynamic `<component :is>` is consumed by
             // resolveDynamicComponent, not emitted as a prop. Skipping it here
@@ -132,7 +132,7 @@ impl<'props> PropsScan<'props> {
             }
 
             match op {
-                RenduOp::Attribute { name, value, .. } => {
+                ReliefRenderOp::Attribute { name, value, .. } => {
                     if name == "class" {
                         if scan.static_class.is_none() {
                             scan.static_class = value;
@@ -155,9 +155,9 @@ impl<'props> PropsScan<'props> {
                         scan.visible_prop_count += 1;
                     }
                 }
-                RenduOp::Directive { name, arg, .. } => {
+                ReliefRenderOp::Directive { name, arg, .. } => {
                     let PropNode::Directive(dir) = prop else {
-                        unreachable!("Rendu directive must borrow a directive prop");
+                        unreachable!("Relief projection directive must borrow a directive prop");
                     };
                     // Record source ordering of the first dynamic :class/:style
                     // relative to the static class/style attribute.
@@ -178,7 +178,9 @@ impl<'props> PropsScan<'props> {
                         scan.visible_prop_count += 1;
                     }
                 }
-                _ => unreachable!("element props lower to attribute or directive Rendu ops"),
+                _ => unreachable!(
+                    "element props lower to attribute or directive Relief projection operations"
+                ),
             }
         }
 
@@ -220,16 +222,16 @@ impl<'props> PropsScan<'props> {
         self.visible_count(has_scope_id) > 1 || self.has_normalizer || self.has_inline_handler
     }
 
-    fn observe_other_prop<'ast>(&mut self, op: RenduOp<'ast>, prop: &PropNode<'ast>) {
+    fn observe_other_prop<'ast>(&mut self, op: ReliefRenderOp<'ast>, prop: &PropNode<'ast>) {
         if self.has_other {
             return;
         }
 
         self.has_other = match op {
-            RenduOp::Attribute { .. } => true,
-            RenduOp::Directive { name, arg, .. } => {
+            ReliefRenderOp::Attribute { .. } => true,
+            ReliefRenderOp::Directive { name, arg, .. } => {
                 let PropNode::Directive(dir) = prop else {
-                    unreachable!("Rendu directive must borrow a directive prop");
+                    unreachable!("Relief projection directive must borrow a directive prop");
                 };
                 if matches!(name, "bind" | "on") && arg.is_none() {
                     false
@@ -237,13 +239,16 @@ impl<'props> PropsScan<'props> {
                     is_supported_directive(dir)
                 }
             }
-            _ => unreachable!("element props lower to attribute or directive Rendu ops"),
+            _ => unreachable!(
+                "element props lower to attribute or directive Relief projection operations"
+            ),
         };
     }
 
     fn observe_directive(&mut self, ctx: &CodegenContext, dir: &DirectiveNode<'_>) {
-        let RenduOp::Directive { name, arg, .. } = RenduOp::from_directive(dir) else {
-            unreachable!("prop scan requires RenduOp::Directive");
+        let ReliefRenderOp::Directive { name, arg, .. } = ReliefRenderOp::from_directive(dir)
+        else {
+            unreachable!("prop scan requires ReliefRenderOp::Directive");
         };
         match name {
             "bind" => {
@@ -293,8 +298,9 @@ impl<'props> PropsScan<'props> {
 }
 
 fn has_inline_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
-    let RenduOp::Directive { exp, modifiers, .. } = RenduOp::from_directive(dir) else {
-        unreachable!("handler scan requires RenduOp::Directive");
+    let ReliefRenderOp::Directive { exp, modifiers, .. } = ReliefRenderOp::from_directive(dir)
+    else {
+        unreachable!("handler scan requires ReliefRenderOp::Directive");
     };
     if ctx.cache_handlers_in_current_scope() && exp.is_some() && !is_setup_const_handler(ctx, dir) {
         return true;

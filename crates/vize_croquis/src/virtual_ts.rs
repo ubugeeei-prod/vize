@@ -149,8 +149,8 @@ mod tests {
     use super::{VirtualTsConfig, VirtualTsGenerator};
     use crate::croquis::BindingMetadata;
     use crate::script_parser::parse_script_setup;
+    use vize_carton::BindingType;
     use vize_carton::CompactString;
-    use vize_relief::BindingType;
 
     #[test]
     fn test_generate_script_setup() {

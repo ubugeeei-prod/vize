@@ -13,15 +13,13 @@ description = "Atelier Core - Shared Vue template transform lanes and code gener
 # steps such as Vue 2 pipe filters and the Vue 2 template-sugar pre-step
 # (`.sync`, `slot-scope`/`scope`). Forwards to the `legacy` features of the AST
 # (`vize_relief`) and dialect-capability (`vize_armature`) crates.
-legacy = ["vize_relief/_legacy", "vize_armature/legacy", "vize_rendu/legacy"]
+legacy = ["vize_relief/_legacy", "vize_armature/legacy"]
 
 [dependencies]
 vize_carton = { workspace = true }
-vize_croquis = { workspace = true }
+vize_croquis = { workspace = true, features = ["relief-compat"] }
 vize_relief = { workspace = true }
 vize_armature = { workspace = true }
-vize_atlas = { workspace = true }
-vize_rendu = { workspace = true }
 
 memoffset = { workspace = true }
 bumpalo = { workspace = true }
@@ -47,7 +45,3 @@ thiserror = { workspace = true }
 [dev-dependencies]
 insta = { workspace = true }
 criterion = { workspace = true }
-
-[[bench]]
-name = "rendu"
-harness = false

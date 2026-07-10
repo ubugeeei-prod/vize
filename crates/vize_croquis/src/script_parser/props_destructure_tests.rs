@@ -1,5 +1,5 @@
 use super::parse_script_setup;
-use vize_relief::BindingType;
+use vize_carton::BindingType;
 
 #[test]
 fn test_parse_define_props_destructure_tracks_aliased_defaults() {

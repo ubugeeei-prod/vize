@@ -1,6 +1,6 @@
 use oxc_ast::ast::VariableDeclarationKind;
+use vize_carton::BindingType;
 use vize_carton::{CompactString, String, cstr};
-use vize_relief::BindingType;
 
 pub(in crate::script_parser::extract) fn component_name_from_source(source: &str) -> CompactString {
     let without_query = source.split(['?', '#']).next().unwrap_or(source);

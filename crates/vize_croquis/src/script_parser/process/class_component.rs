@@ -52,8 +52,8 @@ use oxc_ast::ast::{
 };
 use oxc_span::GetSpan;
 
+use vize_carton::BindingType;
 use vize_carton::{CompactString, FxHashMap, hyphenate};
-use vize_relief::BindingType;
 
 use super::super::ScriptParseResult;
 use super::options_api::{

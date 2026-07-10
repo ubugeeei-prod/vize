@@ -6,70 +6,7 @@
 use super::Croquis;
 use super::template::TemplateExpressionKind;
 use crate::scope::ScopeKind;
-use serde::Serialize;
-
-/// Aggregate counts for the semantic facts stored in a [`Croquis`].
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
-#[non_exhaustive]
-pub struct CroquisSemanticSummary {
-    pub scope_count: usize,
-    pub scope_binding_count: usize,
-    pub template_scope_count: usize,
-    pub v_for_scope_count: usize,
-    pub v_slot_scope_count: usize,
-    pub event_handler_scope_count: usize,
-    pub callback_scope_count: usize,
-    pub symbol_count: usize,
-    pub symbol_reference_count: usize,
-    pub unused_symbol_count: usize,
-    pub script_binding_count: usize,
-    pub prop_alias_count: usize,
-    pub macro_call_count: usize,
-    pub prop_definition_count: usize,
-    pub emit_definition_count: usize,
-    pub emit_call_count: usize,
-    pub model_definition_count: usize,
-    pub exposed_binding_count: usize,
-    pub slot_definition_count: usize,
-    pub top_level_await_count: usize,
-    pub hoist_count: usize,
-    pub reactive_source_count: usize,
-    pub reactivity_loss_count: usize,
-    pub race_condition_count: usize,
-    pub provide_count: usize,
-    pub inject_count: usize,
-    pub destructured_inject_count: usize,
-    pub composable_count: usize,
-    pub setup_context_violation_count: usize,
-    pub used_component_count: usize,
-    pub component_registration_count: usize,
-    pub component_usage_count: usize,
-    pub passed_prop_count: usize,
-    pub event_listener_count: usize,
-    pub slot_usage_count: usize,
-    pub spread_attr_component_count: usize,
-    pub used_directive_count: usize,
-    pub template_expression_count: usize,
-    pub v_if_expression_count: usize,
-    pub v_model_expression_count: usize,
-    pub element_id_count: usize,
-    pub static_element_id_count: usize,
-    pub dynamic_element_id_count: usize,
-    pub id_definition_count: usize,
-    pub id_reference_count: usize,
-    pub undefined_ref_count: usize,
-    pub unused_binding_count: usize,
-    pub type_export_count: usize,
-    pub invalid_export_count: usize,
-    pub import_statement_count: usize,
-    pub re_export_count: usize,
-    pub binding_span_count: usize,
-    pub has_multiple_roots: bool,
-    pub uses_attrs: bool,
-    pub binds_attrs_explicitly: bool,
-    pub inherit_attrs_disabled: bool,
-}
+pub use crate::semantic::CroquisSemanticSummary;
 
 impl CroquisSemanticSummary {
     /// Build a summary from the current croquis facts.
@@ -174,12 +111,6 @@ impl CroquisSemanticSummary {
         }
 
         summary
-    }
-
-    /// Whether fallthrough attributes may be dropped by a fragment root.
-    #[inline]
-    pub const fn may_lose_fallthrough_attrs(self) -> bool {
-        self.has_multiple_roots && !self.binds_attrs_explicitly
     }
 }
 

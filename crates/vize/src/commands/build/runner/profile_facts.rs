@@ -1,7 +1,7 @@
-//! Build-profile facts for Source Atlas and per-file source plates.
+//! Compatibility build-profile facts for the legacy per-file entrypoint.
 
-mod atlas;
+mod observations;
 mod source;
 
-pub(super) use atlas::{record_atelier_cache_decision, record_atelier_profile_facts};
+pub(super) use observations::{record_atelier_cache_decision, record_atelier_profile_facts};
 pub(super) use source::{FileProfileFacts, StatsCacheStatus, file_profile};

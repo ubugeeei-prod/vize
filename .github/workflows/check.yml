@@ -88,17 +88,8 @@ jobs:
       fail-fast: false
       matrix:
         crate:
-          - vize_armature
-          - vize_atelier_core
-          - vize_atelier_dom
-          - vize_atelier_sfc
-          - vize_atelier_ssr
-          - vize_atelier_vapor
           - vize_carton
-          - vize_croquis
           - vize_fresco
-          - vize_musea
-          - vize_relief
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:

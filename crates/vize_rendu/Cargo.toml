@@ -5,15 +5,20 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Rendu - Borrowed render projection shared by Vize emitters and tools"
+description = "Rendu - Frontend-neutral owned render HIR for Vize"
 
 [features]
-legacy = ["vize_relief/_legacy"]
+# Transitional feature name retained for workspace feature resolution. Rendu's
+# production model has no legacy-frontend dependency or conditional shape.
+legacy = []
 
 [dependencies]
 vize_atlas.workspace = true
-vize_relief.workspace = true
+vize_carton.workspace = true
 
 [dev-dependencies]
-vize_armature.workspace = true
-vize_carton.workspace = true
+criterion.workspace = true
+
+[[bench]]
+name = "rendu"
+harness = false

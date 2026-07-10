@@ -1,14 +1,21 @@
-//! Source-map registration marks for the Source Atlas.
+//! Source-map artifact registration marks.
 //!
-//! A registration names already-produced map material and the generated Rendu
+//! A registration names already-produced map material and the generated output
 //! range it covers. It intentionally borrows the fragment instead of composing
 //! maps here, so consumers can observe source-map readiness without paying for
 //! an extra output pass.
 
-use vize_atlas::{
-    SourceAtlasFallback, SourceAtlasPlate, SourceAtlasRoute, SourceAtlasSource, SourceAtlasTarget,
-};
-use vize_rendu::RenduRange;
+use crate::atelier_output::{AtelierFallback, AtelierRange};
+
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub enum SourceMapSource {
+    Module,
+    VueTemplate,
+    Script,
+    Style,
+    CustomBlock,
+}
 
 /// The generated section covered by a source-map registration.
 #[non_exhaustive]
@@ -39,8 +46,8 @@ impl SourceMapRegistrationSection {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum SourceMapRegistrationState {
     Composed,
-    Deferred(SourceAtlasFallback),
-    Omitted(SourceAtlasFallback),
+    Deferred(AtelierFallback),
+    Omitted(AtelierFallback),
 }
 
 impl SourceMapRegistrationState {
@@ -48,7 +55,7 @@ impl SourceMapRegistrationState {
         matches!(self, Self::Composed)
     }
 
-    pub const fn fallback(self) -> Option<SourceAtlasFallback> {
+    pub const fn fallback(self) -> Option<AtelierFallback> {
         match self {
             Self::Composed => None,
             Self::Deferred(reason) | Self::Omitted(reason) => Some(reason),
@@ -56,27 +63,27 @@ impl SourceMapRegistrationState {
     }
 }
 
-/// Borrowed source-map material attached to a generated Rendu range.
+/// Borrowed source-map material attached to a generated output range.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub struct SourceMapRegistration<'a> {
-    pub route: SourceAtlasRoute,
+    pub source: SourceMapSource,
     pub section: SourceMapRegistrationSection,
     pub source_name: Option<&'a str>,
-    pub generated: RenduRange,
+    pub generated: AtelierRange,
     pub fragment: Option<&'a str>,
     pub state: SourceMapRegistrationState,
 }
 
 impl<'a> SourceMapRegistration<'a> {
     pub const fn new(
-        route: SourceAtlasRoute,
+        source: SourceMapSource,
         section: SourceMapRegistrationSection,
-        generated: RenduRange,
+        generated: AtelierRange,
         fragment: Option<&'a str>,
         state: SourceMapRegistrationState,
     ) -> Self {
         Self {
-            route,
+            source,
             section,
             source_name: None,
             generated,
@@ -86,15 +93,12 @@ impl<'a> SourceMapRegistration<'a> {
     }
 
     pub const fn for_template_fragment(
-        generated: RenduRange,
+        generated: AtelierRange,
         fragment: &'a str,
         state: SourceMapRegistrationState,
     ) -> Self {
         Self::new(
-            SourceAtlasRoute::empty()
-                .with_source(SourceAtlasSource::VueTemplate)
-                .with_target(SourceAtlasTarget::SourceMap)
-                .with_plate(SourceAtlasPlate::SourceMap),
+            SourceMapSource::VueTemplate,
             SourceMapRegistrationSection::TemplateRender,
             generated,
             Some(fragment),
@@ -115,7 +119,7 @@ impl<'a> SourceMapRegistration<'a> {
         self.state.is_composed()
     }
 
-    pub const fn fallback(self) -> Option<SourceAtlasFallback> {
+    pub const fn fallback(self) -> Option<AtelierFallback> {
         self.state.fallback()
     }
 
@@ -133,9 +137,9 @@ pub enum SfcMapComposition<'a> {
     Composed(&'a str),
     /// Composition is valid but deferred to a later script/template/style
     /// assembly plate.
-    Deferred(SourceAtlasFallback),
+    Deferred(AtelierFallback),
     /// No registered fragment was available to compose.
-    Omitted(SourceAtlasFallback),
+    Omitted(AtelierFallback),
 }
 
 impl<'a> SfcMapComposition<'a> {
@@ -148,7 +152,7 @@ impl<'a> SfcMapComposition<'a> {
     }
 
     /// The fallback reason recorded for a deferred or omitted composition.
-    pub const fn fallback(self) -> Option<SourceAtlasFallback> {
+    pub const fn fallback(self) -> Option<AtelierFallback> {
         match self {
             Self::Composed(_) => None,
             Self::Deferred(reason) | Self::Omitted(reason) => Some(reason),
@@ -171,7 +175,7 @@ pub fn compose_sfc_source_map<'a>(
 ) -> SfcMapComposition<'a> {
     let mut with_fragment = registrations.iter().filter(|reg| reg.has_fragment());
     let Some(first) = with_fragment.next() else {
-        return SfcMapComposition::Omitted(SourceAtlasFallback::SourceMapFragmentUnavailable);
+        return SfcMapComposition::Omitted(AtelierFallback::SourceMapFragmentUnavailable);
     };
     // A lone template-render fragment is the entire module map.
     if with_fragment.next().is_none()
@@ -180,7 +184,7 @@ pub fn compose_sfc_source_map<'a>(
     {
         return SfcMapComposition::Composed(fragment);
     }
-    SfcMapComposition::Deferred(SourceAtlasFallback::SourceMapCompositionSkipped)
+    SfcMapComposition::Deferred(AtelierFallback::SourceMapCompositionSkipped)
 }
 
 #[cfg(test)]
@@ -188,9 +192,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn template_registrations_carry_route_and_range() {
+    fn template_registrations_carry_source_and_range() {
         let registration = SourceMapRegistration::for_template_fragment(
-            RenduRange::new(12, 48),
+            AtelierRange::new(12, 48),
             "{\"version\":3}",
             SourceMapRegistrationState::Composed,
         )
@@ -200,44 +204,27 @@ mod tests {
         assert!(registration.is_composed());
         assert_eq!(registration.generated_len(), 36);
         assert_eq!(registration.source_name, Some("template.vue"));
-        assert!(
-            registration
-                .route
-                .sources
-                .contains(SourceAtlasSource::VueTemplate)
-        );
-        assert!(
-            registration
-                .route
-                .targets
-                .contains(SourceAtlasTarget::SourceMap)
-        );
-        assert!(
-            registration
-                .route
-                .plates
-                .contains(SourceAtlasPlate::SourceMap)
-        );
+        assert_eq!(registration.source, SourceMapSource::VueTemplate);
     }
 
     #[test]
     fn deferred_registrations_report_their_fallback() {
         let registration = SourceMapRegistration::for_template_fragment(
-            RenduRange::new(0, 10),
+            AtelierRange::new(0, 10),
             "{}",
-            SourceMapRegistrationState::Deferred(SourceAtlasFallback::SourceMapCompositionSkipped),
+            SourceMapRegistrationState::Deferred(AtelierFallback::SourceMapCompositionSkipped),
         );
 
         assert!(!registration.is_composed());
         assert_eq!(
             registration.fallback(),
-            Some(SourceAtlasFallback::SourceMapCompositionSkipped)
+            Some(AtelierFallback::SourceMapCompositionSkipped)
         );
     }
 
     fn template_fragment(fragment: &str) -> SourceMapRegistration<'_> {
         SourceMapRegistration::for_template_fragment(
-            RenduRange::new(0, 20),
+            AtelierRange::new(0, 20),
             fragment,
             SourceMapRegistrationState::Composed,
         )
@@ -245,9 +232,9 @@ mod tests {
 
     fn script_fragment(fragment: &str) -> SourceMapRegistration<'_> {
         SourceMapRegistration::new(
-            SourceAtlasRoute::empty().with_source(SourceAtlasSource::Script),
+            SourceMapSource::Script,
             SourceMapRegistrationSection::Script,
-            RenduRange::new(0, 10),
+            AtelierRange::new(0, 10),
             Some(fragment),
             SourceMapRegistrationState::Composed,
         )
@@ -267,7 +254,7 @@ mod tests {
         assert_eq!(composition.composed_map(), None);
         assert_eq!(
             composition.fallback(),
-            Some(SourceAtlasFallback::SourceMapFragmentUnavailable)
+            Some(AtelierFallback::SourceMapFragmentUnavailable)
         );
     }
 
@@ -283,7 +270,7 @@ mod tests {
         assert_eq!(composition.composed_map(), None);
         assert_eq!(
             composition.fallback(),
-            Some(SourceAtlasFallback::SourceMapCompositionSkipped)
+            Some(AtelierFallback::SourceMapCompositionSkipped)
         );
     }
 }

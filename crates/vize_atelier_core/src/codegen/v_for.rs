@@ -8,9 +8,9 @@ pub(crate) mod helpers;
 mod item_props;
 mod item_props_merge;
 
+use crate::relief_projection::ReliefRenderOp;
 use crate::steps::v_memo::{get_memo_exp, has_v_memo};
 use crate::{ForNode, RuntimeHelper, TemplateChildNode};
-use vize_rendu::RenduOp;
 
 use super::{
     children::generate_children, context::CodegenContext, expression::generate_expression,
@@ -28,12 +28,12 @@ pub(crate) use helpers::{
 
 /// Generate for node
 pub fn generate_for(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
-    generate_for_from_rendu(ctx, RenduOp::from_for(for_node), for_node)
+    generate_for_from_relief_op(ctx, ReliefRenderOp::from_for(for_node), for_node)
 }
 
-pub(crate) fn generate_for_from_rendu<'a>(
+pub(crate) fn generate_for_from_relief_op<'a>(
     ctx: &mut CodegenContext,
-    op: RenduOp<'a>,
+    op: ReliefRenderOp<'a>,
     for_node: &'a ForNode<'a>,
 ) {
     generate_for_inner(ctx, op, for_node, None)
@@ -46,7 +46,7 @@ pub(crate) fn generate_for_with_fragment_key(
 ) {
     generate_for_inner(
         ctx,
-        RenduOp::from_for(for_node),
+        ReliefRenderOp::from_for(for_node),
         for_node,
         Some(generate_key),
     )
@@ -54,11 +54,11 @@ pub(crate) fn generate_for_with_fragment_key(
 
 fn generate_for_inner<'a>(
     ctx: &mut CodegenContext,
-    op: RenduOp<'a>,
+    op: ReliefRenderOp<'a>,
     for_node: &'a ForNode<'a>,
     generate_fragment_key: Option<&dyn Fn(&mut CodegenContext)>,
 ) {
-    let RenduOp::For {
+    let ReliefRenderOp::For {
         source,
         value,
         key,
@@ -66,7 +66,7 @@ fn generate_for_inner<'a>(
         ..
     } = op
     else {
-        unreachable!("v-for emission requires RenduOp::For");
+        unreachable!("v-for emission requires ReliefRenderOp::For");
     };
     ctx.use_helper(RuntimeHelper::OpenBlock);
     ctx.use_helper(RuntimeHelper::CreateElementBlock);
@@ -113,7 +113,7 @@ fn generate_for_inner<'a>(
     }
     ctx.push(ctx.helper(RuntimeHelper::RenderList));
     ctx.push("(");
-    generate_expression(ctx, source.node().expect("Rendu v-for source"));
+    generate_expression(ctx, source.node().expect("Relief projection v-for source"));
     ctx.push(", (");
 
     // Collect callback parameter names for scope registration

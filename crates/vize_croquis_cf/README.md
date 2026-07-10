@@ -10,3 +10,9 @@ single-file semantic identities and relationships this crate consumes.
 
 Cross-file analysis is kept separate because it has different caching,
 invalidation, and cost characteristics from ordinary single-file analysis.
+
+Its Atlas `CroquisProjectProduct` is produced only when a project recipe asks
+for it. The provider declares one cross-source `CroquisSemanticProduct` request
+per supported `.vue`, `.jsx`, or `.tsx` source before execution, then builds an
+owned deterministic project snapshot. Ordinary compiler, lint, and typecheck
+recipes create neither the project product nor project-level cache state.

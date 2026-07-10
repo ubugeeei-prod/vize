@@ -92,6 +92,7 @@ pub mod output;
 mod preset;
 mod rule;
 pub mod rules;
+mod semantic_recipe;
 pub mod style;
 pub mod telegraph;
 mod visitor;
@@ -114,6 +115,10 @@ pub use markup::{
 pub use output::{OutputFormat, format_results, format_summary, rule_docs_path};
 pub use preset::LintPreset;
 pub use rule::{Rule, RuleCategory, RuleMeta, RuleRegistry};
+pub use semantic_recipe::{
+    PatinaSemanticRecipe, PatinaSemanticReport, PatinaSemanticReportProduct,
+    PatinaSemanticReportProvider, lint_semantic_snapshot, register_semantic_lint_recipe,
+};
 pub use style::{ParsedStyleSheet, StyleDocument, StyleSyntax};
 pub use telegraph::{
     Emitter, FormatEmitter, JsonEmitter, LintTransmission, LspDiagnostic, LspEmitter, Telegraph,

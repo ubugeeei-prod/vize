@@ -1,27 +1,25 @@
-//! Vue SSR compiler for Vize.
+//! Vue server-rendering backend.
 //!
-//! This module provides SSR-specific compilation including:
-//! - SSR code generation with template literals and `_push()` calls
-//! - SSR-specific directive transforms (v-model, v-show)
-//! - SSR slot rendering
-//! - SSR component rendering
-//! - SSR teleport and suspense handling
-//!
-//! **Atelier** (/ˌætəlˈjeɪ/) is an artist's workshop or studio. The "ssr" atelier
-//! specializes in server-side rendering output, producing HTML strings instead of
-//! VNode trees.
+//! Exposes both the legacy template compiler and the graph-native Rendu backend.
 
 #![allow(clippy::collapsible_match)]
 #![cfg_attr(test, allow(clippy::disallowed_macros))]
 
+mod atlas;
 pub mod codegen;
 pub mod errors;
 pub mod options;
 mod output_plate;
+pub mod rendu;
 pub mod steps;
+pub use atlas::{SsrOutputProduct, SsrProvider, register_atlas_provider};
 pub use codegen::{SsrCodegenContext, SsrCodegenResult};
 pub use errors::SsrErrorCode;
 pub use options::SsrCompilerOptions;
+pub use rendu::{
+    RenduSsrMapping, RenduSsrMappingKind, RenduSsrOutput, compile_rendu,
+    compile_rendu as compile_rendu_ssr,
+};
 pub use steps::{
     get_v_html_exp, get_v_model_exp, get_v_show_exp, get_v_text_exp, has_v_html, has_v_model,
     has_v_show, has_v_text,

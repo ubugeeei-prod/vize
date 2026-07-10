@@ -1,6 +1,7 @@
 use super::super::Croquis;
-use super::{names, types as snapshot};
+use super::names;
 use crate::reactivity::{ReactivityLoss, ReactivityLossKind};
+use crate::semantic as snapshot;
 
 pub(super) fn reactivity_loss_snapshots(
     croquis: &Croquis,

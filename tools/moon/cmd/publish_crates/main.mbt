@@ -14,9 +14,6 @@
 /// but it cannot create a crate on its first release.
 let published_crates : Array[String] = [
   "vize_carton",
-  "vize_relief",
-  "vize_armature",
-  "vize_croquis",
   "vize_fresco",
 ]
 
@@ -25,6 +22,7 @@ let published_crates : Array[String] = [
 let pending_first_publish_crates : Array[String] = [
   "vize_atlas",
   "vize_rendu",
+  "vize_flow",
   "vize_croquis_cf",
   "vize_atelier_jsx",
 ]
@@ -32,6 +30,9 @@ let pending_first_publish_crates : Array[String] = [
 /// Existing crates whose current version depends on a crate that still needs
 /// its manual first publish.
 let blocked_by_pending_first_publish_crates : Array[String] = [
+  "vize_relief",
+  "vize_armature",
+  "vize_croquis",
   "vize_atelier_core",
   "vize_atelier_dom",
   "vize_atelier_vapor",

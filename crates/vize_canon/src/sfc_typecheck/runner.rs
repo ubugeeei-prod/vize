@@ -1,4 +1,4 @@
-use vize_atlas::SourceAtlasFallback;
+use vize_atelier_core::atelier_output::AtelierFallback;
 use vize_carton::Bump;
 use vize_carton::cstr;
 use vize_carton::profiler::global_profiler;
@@ -253,9 +253,9 @@ fn record_virtual_ts_projection(options: &SfcTypeCheckOptions, available: bool) 
     }
 }
 
-const fn virtual_ts_fallback(requested: bool, available: bool) -> Option<SourceAtlasFallback> {
+const fn virtual_ts_fallback(requested: bool, available: bool) -> Option<AtelierFallback> {
     if requested && !available {
-        Some(SourceAtlasFallback::VirtualTsSkipped)
+        Some(AtelierFallback::VirtualTsSkipped)
     } else {
         None
     }
@@ -269,7 +269,7 @@ mod atlas_tests {
     fn virtual_ts_skip_is_only_a_fallback_for_an_unserved_request() {
         assert_eq!(
             virtual_ts_fallback(true, false),
-            Some(SourceAtlasFallback::VirtualTsSkipped)
+            Some(AtelierFallback::VirtualTsSkipped)
         );
         assert_eq!(virtual_ts_fallback(true, true), None);
         assert_eq!(virtual_ts_fallback(false, false), None);

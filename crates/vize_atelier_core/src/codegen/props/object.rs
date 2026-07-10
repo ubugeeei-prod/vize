@@ -1,11 +1,11 @@
 //! Props object emission (`{ key: value, ... }` and mergeProps segments).
 //!
 //! Split out of `generate.rs` to keep each props-codegen file under the
-//! source-length guard so render-semantic (Rendu) reroutes have room to land.
+//! source-length guard so Relief classification reroutes have room to land.
 
+use crate::relief_projection::ReliefRenderOp;
 use crate::{ExpressionNode, PropNode};
 use vize_relief::options::BindingType;
-use vize_rendu::RenduOp;
 
 use super::{
     super::{
@@ -69,17 +69,17 @@ pub(super) fn generate_props_object_inner(
     let mut emitted_events: Option<FxHashSet<String>> = None;
 
     for prop in props {
-        let op = RenduOp::from_prop(prop);
+        let op = ReliefRenderOp::from_prop(prop);
         // Skip v-slot directive (handled separately in slots codegen)
-        if matches!(op, RenduOp::Directive { name: "slot", .. }) {
+        if matches!(op, ReliefRenderOp::Directive { name: "slot", .. }) {
             continue;
         }
 
         // Skip `is` prop when generating for dynamic components
         if ctx.skip_is_prop
             && match op {
-                RenduOp::Attribute { name: "is", .. } => true,
-                RenduOp::Directive {
+                ReliefRenderOp::Attribute { name: "is", .. } => true,
+                ReliefRenderOp::Directive {
                     name: "bind",
                     arg: Some(arg),
                     ..
@@ -91,7 +91,7 @@ pub(super) fn generate_props_object_inner(
         }
 
         match op {
-            RenduOp::Attribute {
+            ReliefRenderOp::Attribute {
                 name,
                 name_span,
                 value: attr_value,
@@ -99,7 +99,7 @@ pub(super) fn generate_props_object_inner(
                 ..
             } => {
                 let PropNode::Attribute(attr) = prop else {
-                    unreachable!("Rendu attribute must borrow an attribute prop");
+                    unreachable!("Relief projection attribute must borrow an attribute prop");
                 };
                 // Skip static class/style if merging with dynamic
                 if skip_static_class && name == "class" {
@@ -156,9 +156,9 @@ pub(super) fn generate_props_object_inner(
                     if needs_ref_for {
                         ctx.push("ref_for: true, ");
                     }
-                    // Normal attribute output, lowered through the Rendu op
+                    // Normal attribute output, lowered through the Relief projection operation
                     // (#1756): name, value, and their source spans are read from
-                    // `RenduOp::Attribute`, not the Relief node.
+                    // `ReliefRenderOp::Attribute`, not the Relief node.
                     let needs_quotes = !is_valid_js_identifier(name);
                     if needs_quotes {
                         ctx.push("\"");
@@ -190,9 +190,9 @@ pub(super) fn generate_props_object_inner(
                     }
                 }
             }
-            RenduOp::Directive { name, arg, .. } => {
+            ReliefRenderOp::Directive { name, arg, .. } => {
                 let PropNode::Directive(dir) = prop else {
-                    unreachable!("Rendu directive must borrow a directive prop");
+                    unreachable!("Relief projection directive must borrow a directive prop");
                 };
                 // Skip v-bind/v-on object spreads (handled separately by generate_props)
                 if skip_object_spreads && arg.is_none() && matches!(name, "bind" | "on") {
@@ -255,7 +255,9 @@ pub(super) fn generate_props_object_inner(
                     );
                 }
             }
-            _ => unreachable!("element props lower to attribute or directive Rendu ops"),
+            _ => unreachable!(
+                "element props lower to attribute or directive Relief projection operations"
+            ),
         }
     }
 

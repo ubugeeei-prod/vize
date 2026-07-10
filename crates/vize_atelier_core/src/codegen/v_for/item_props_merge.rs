@@ -3,8 +3,8 @@
 //! Split out of `v_for/generate` to keep that file focused on item/block
 //! generation. `generate_for_item_props` (still in `generate`) calls these.
 
+use crate::relief_projection::ReliefRenderOp;
 use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper};
-use vize_rendu::RenduOp;
 
 use super::super::{
     context::CodegenContext, element::helpers::is_is_prop, expression::generate_expression,
@@ -213,8 +213,8 @@ pub(super) fn generate_single_prop(
     prop: &PropNode<'_>,
     static_merge: super::super::props::StaticMerge<'_>,
 ) {
-    match RenduOp::from_prop(prop) {
-        RenduOp::Attribute {
+    match ReliefRenderOp::from_prop(prop) {
+        ReliefRenderOp::Attribute {
             name,
             name_span,
             value,
@@ -222,7 +222,7 @@ pub(super) fn generate_single_prop(
             ..
         } => {
             let PropNode::Attribute(attr) = prop else {
-                unreachable!("Rendu attribute must borrow an attribute prop");
+                unreachable!("Relief projection attribute must borrow an attribute prop");
             };
             let ref_value = if name == "ref" && ctx.options.inline {
                 attr.value.as_ref()
@@ -285,12 +285,14 @@ pub(super) fn generate_single_prop(
                 ctx.push("\"\"");
             }
         }
-        RenduOp::Directive { .. } => {
+        ReliefRenderOp::Directive { .. } => {
             let PropNode::Directive(dir) = prop else {
-                unreachable!("Rendu directive must borrow a directive prop");
+                unreachable!("Relief projection directive must borrow a directive prop");
             };
             super::super::props::generate_directive_prop_with_static(ctx, dir, static_merge);
         }
-        _ => unreachable!("element props lower to attribute or directive Rendu ops"),
+        _ => unreachable!(
+            "element props lower to attribute or directive Relief projection operations"
+        ),
     }
 }

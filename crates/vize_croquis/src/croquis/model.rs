@@ -7,8 +7,8 @@ use super::Croquis;
 use super::bindings::UnusedTemplateVar;
 use super::bindings::UnusedVarContext;
 use crate::scope::{ScopeData, ScopeKind};
+use vize_carton::BindingType;
 use vize_carton::CompactString;
-use vize_relief::BindingType;
 
 impl Croquis {
     /// Create a new empty croquis.

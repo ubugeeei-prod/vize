@@ -1,8 +1,8 @@
 //! Slot outlet (`<slot />`) name and props generation.
 
+use crate::relief_projection::ReliefRenderOp;
 use crate::{DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper};
 use vize_carton::String;
-use vize_rendu::RenduOp;
 
 use super::super::context::CodegenContext;
 use super::super::expression::generate_expression;
@@ -19,16 +19,16 @@ pub(crate) enum SlotOutletName<'a> {
 
 fn is_slot_name_bind(dir: &DirectiveNode<'_>) -> bool {
     matches!(
-        RenduOp::from_directive(dir),
-        RenduOp::Directive { name: "bind", arg: Some(arg), .. }
+        ReliefRenderOp::from_directive(dir),
+        ReliefRenderOp::Directive { name: "bind", arg: Some(arg), .. }
             if matches!(arg.node(), Some(ExpressionNode::Simple(exp)) if exp.is_static && exp.content == "name")
     )
 }
 
 fn is_slot_name_prop(prop: &PropNode<'_>) -> bool {
-    match RenduOp::from_prop(prop) {
-        RenduOp::Attribute { name: "name", .. } => true,
-        RenduOp::Directive { .. } => {
+    match ReliefRenderOp::from_prop(prop) {
+        ReliefRenderOp::Attribute { name: "name", .. } => true,
+        ReliefRenderOp::Directive { .. } => {
             matches!(prop, PropNode::Directive(dir) if is_slot_name_bind(dir))
         }
         _ => false,
@@ -37,8 +37,8 @@ fn is_slot_name_prop(prop: &PropNode<'_>) -> bool {
 
 fn is_slot_outlet_object_spread(prop: &PropNode<'_>) -> bool {
     matches!(
-        RenduOp::from_prop(prop),
-        RenduOp::Directive {
+        ReliefRenderOp::from_prop(prop),
+        ReliefRenderOp::Directive {
             name: "bind" | "on",
             arg: None,
             exp: Some(_),
@@ -52,14 +52,14 @@ fn slot_outlet_prop_generates_output(prop: &PropNode<'_>) -> bool {
         return false;
     }
 
-    match RenduOp::from_prop(prop) {
-        RenduOp::Attribute { .. } => true,
-        RenduOp::Directive { name, arg, exp, .. } => {
+    match ReliefRenderOp::from_prop(prop) {
+        ReliefRenderOp::Attribute { .. } => true,
+        ReliefRenderOp::Directive { name, arg, exp, .. } => {
             if matches!(name, "bind" | "on") && arg.is_none() {
                 return exp.is_some();
             }
             let PropNode::Directive(dir) = prop else {
-                unreachable!("Rendu directive must borrow a directive prop");
+                unreachable!("Relief projection directive must borrow a directive prop");
             };
             is_supported_directive(dir)
         }
@@ -70,8 +70,8 @@ fn slot_outlet_prop_generates_output(prop: &PropNode<'_>) -> bool {
 fn has_slot_outlet_vbind_object(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| {
         matches!(
-            RenduOp::from_prop(prop),
-            RenduOp::Directive {
+            ReliefRenderOp::from_prop(prop),
+            ReliefRenderOp::Directive {
                 name: "bind",
                 arg: None,
                 exp: Some(_),
@@ -84,8 +84,8 @@ fn has_slot_outlet_vbind_object(el: &ElementNode<'_>) -> bool {
 fn has_slot_outlet_von_object(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| {
         matches!(
-            RenduOp::from_prop(prop),
-            RenduOp::Directive {
+            ReliefRenderOp::from_prop(prop),
+            ReliefRenderOp::Directive {
                 name: "on",
                 arg: None,
                 exp: Some(_),
@@ -103,8 +103,8 @@ fn has_slot_outlet_entry_props(el: &ElementNode<'_>) -> bool {
 
 pub(crate) fn get_slot_outlet_name<'a>(el: &'a ElementNode<'a>) -> SlotOutletName<'a> {
     for prop in &el.props {
-        match RenduOp::from_prop(prop) {
-            RenduOp::Attribute {
+        match ReliefRenderOp::from_prop(prop) {
+            ReliefRenderOp::Attribute {
                 name: "name",
                 value,
                 ..
@@ -114,7 +114,7 @@ pub(crate) fn get_slot_outlet_name<'a>(el: &'a ElementNode<'a>) -> SlotOutletNam
                     .unwrap_or_else(|| String::new("default"));
                 return SlotOutletName::Static(name);
             }
-            RenduOp::Directive { exp, .. } if matches!(prop, PropNode::Directive(dir) if is_slot_name_bind(dir)) => {
+            ReliefRenderOp::Directive { exp, .. } if matches!(prop, PropNode::Directive(dir) if is_slot_name_bind(dir)) => {
                 if let Some(exp) = exp.and_then(|exp| exp.node()) {
                     return SlotOutletName::Dynamic(exp);
                 }
@@ -144,16 +144,16 @@ pub(crate) fn has_slot_outlet_props(el: &ElementNode<'_>) -> bool {
 pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let static_merge = crate::codegen::props::StaticMerge::from_props(&el.props);
 
-    let has_dynamic_class = el.props.iter().any(|prop| match RenduOp::from_prop(prop) {
-        RenduOp::Directive { name: "bind", arg: Some(arg), .. } => {
+    let has_dynamic_class = el.props.iter().any(|prop| match ReliefRenderOp::from_prop(prop) {
+        ReliefRenderOp::Directive { name: "bind", arg: Some(arg), .. } => {
             !is_slot_name_prop(prop)
                 && matches!(arg.node(), Some(ExpressionNode::Simple(exp)) if exp.is_static && exp.content == "class")
         }
         _ => false,
     });
 
-    let has_dynamic_style = el.props.iter().any(|prop| match RenduOp::from_prop(prop) {
-        RenduOp::Directive { name: "bind", arg: Some(arg), .. } => {
+    let has_dynamic_style = el.props.iter().any(|prop| match ReliefRenderOp::from_prop(prop) {
+        ReliefRenderOp::Directive { name: "bind", arg: Some(arg), .. } => {
             !is_slot_name_prop(prop)
                 && matches!(arg.node(), Some(ExpressionNode::Simple(exp)) if exp.is_static && exp.content == "style")
         }
@@ -166,8 +166,8 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
             continue;
         }
 
-        match RenduOp::from_prop(prop) {
-            RenduOp::Attribute {
+        match ReliefRenderOp::from_prop(prop) {
+            ReliefRenderOp::Attribute {
                 name,
                 name_span,
                 value,
@@ -205,9 +205,9 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
                 }
                 first = false;
             }
-            RenduOp::Directive { name, arg, .. } => {
+            ReliefRenderOp::Directive { name, arg, .. } => {
                 let PropNode::Directive(dir) = prop else {
-                    unreachable!("Rendu directive must borrow a directive prop");
+                    unreachable!("Relief projection directive must borrow a directive prop");
                 };
                 if !is_supported_directive(dir) || (arg.is_none() && matches!(name, "bind" | "on"))
                 {
@@ -220,7 +220,9 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
                 generate_slot_outlet_directive_prop_with_static(ctx, dir, static_merge);
                 first = false;
             }
-            _ => unreachable!("element props lower to attribute or directive Rendu ops"),
+            _ => unreachable!(
+                "element props lower to attribute or directive Relief projection operations"
+            ),
         }
     }
 }

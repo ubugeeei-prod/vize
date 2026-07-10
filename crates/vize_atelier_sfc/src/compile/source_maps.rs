@@ -1,10 +1,9 @@
 //! Source-map bookkeeping for SFC output assembly.
 
 use crate::compile_template::TemplateBlockCompileResult;
-use vize_atelier_core::source_map::{SourceMapRegistration, SourceMapRegistrationState};
-use vize_atlas::{
-    SourceAtlasFallback, SourceAtlasPlate, SourceAtlasRegistry, SourceAtlasRoute,
-    SourceAtlasSource, SourceAtlasTarget,
+use vize_atelier_core::{
+    atelier_output::AtelierFallback,
+    source_map::{SourceMapRegistration, SourceMapRegistrationState},
 };
 use vize_carton::profiler::global_profiler;
 
@@ -18,11 +17,11 @@ pub(crate) enum SourceMapComposition {
     Skipped,
 }
 
-/// Record the template source-map plate requested by SFC output assembly.
+/// Record the template source-map artifact requested by SFC output assembly.
 ///
 /// This function does not compose maps. It observes the map fragment and the
-/// generated Rendu range already attached to `TemplateBlockCompileResult`,
-/// then records that registration through the Source Atlas `SourceMap` lane.
+/// generated output range already attached to `TemplateBlockCompileResult`,
+/// then records the provider observation directly.
 /// That makes both skipped composition and unavailable fragments visible
 /// without forcing normal compile or lint paths to pay for a full source-map
 /// composition pass.
@@ -40,11 +39,7 @@ pub(crate) fn record_template_source_map_fact(
 
     let profiler = global_profiler();
     profiler.record_counter("atelier.profile.template_source_map_fragments", 1);
-    let mut registry = SourceAtlasRegistry::source_map().with_route(registration.route);
-    if let Some(fallback) = registration.fallback() {
-        registry = registry.with_fallback(fallback);
-    }
-    record_source_map_registry(registry);
+    record_source_map_observation(registration.fallback());
     profiler.record_counter("atelier.profile.source_map.registrations", 1);
     profiler.record_counter(
         "atelier.profile.source_map.generated_bytes",
@@ -59,32 +54,21 @@ pub(crate) fn record_template_source_map_fact(
 /// observable `SourceMapFragmentUnavailable` fact on the `SourceMap` lane
 /// rather than a silent gap.
 fn record_missing_template_fragment() {
-    record_source_map_registry(missing_template_fragment_registry());
+    record_source_map_observation(Some(AtelierFallback::SourceMapFragmentUnavailable));
 }
 
-fn missing_template_fragment_registry() -> SourceAtlasRegistry {
-    let route = SourceAtlasRoute::empty()
-        .with_source(SourceAtlasSource::VueTemplate)
-        .with_target(SourceAtlasTarget::SourceMap)
-        .with_plate(SourceAtlasPlate::SourceMap);
-    SourceAtlasRegistry::source_map()
-        .with_route(route)
-        .with_fallback(SourceAtlasFallback::SourceMapFragmentUnavailable)
-}
-
-/// Emit the common Source Atlas counters for a source-map registration.
+/// Emit the compatibility profile counters for a source-map registration.
 ///
 /// Keeping this helper lane-shaped matters for #1634: source maps are not a
-/// codegen afterthought. They are a requested plate with the same source,
-/// target, coordinate, and fallback vocabulary as compiler, linter, and
-/// typechecker lanes.
-fn record_source_map_registry(registry: SourceAtlasRegistry) {
+/// codegen afterthought. The graph-native path records the same information on
+/// its source-map product outcome and execution trace.
+fn record_source_map_observation(fallback: Option<AtelierFallback>) {
     let profiler = global_profiler();
-    profiler.record_counter(registry.lane.profile_counter(), 1);
-    registry.visit_requests(|request| {
-        profiler.record_counter(request.profile_counter(), 1);
-    });
-    for fallback in registry.fallbacks.iter() {
+    profiler.record_counter("atelier.profile.lane.source_map", 1);
+    profiler.record_counter("atelier.profile.input.vue_template", 1);
+    profiler.record_counter("atelier.profile.target.source_map", 1);
+    profiler.record_counter("atelier.profile.plate.source_map", 1);
+    if let Some(fallback) = fallback {
         profiler.record_counter(fallback.profile_counter(), 1);
     }
 }
@@ -100,7 +84,7 @@ fn source_map_registration_state(composition: SourceMapComposition) -> SourceMap
     match composition {
         SourceMapComposition::Composed => SourceMapRegistrationState::Composed,
         SourceMapComposition::Skipped => {
-            SourceMapRegistrationState::Deferred(SourceAtlasFallback::SourceMapCompositionSkipped)
+            SourceMapRegistrationState::Deferred(AtelierFallback::SourceMapCompositionSkipped)
         }
     }
 }
@@ -113,7 +97,6 @@ fn usize_to_counter(value: usize) -> u64 {
 mod tests {
     use super::*;
     use crate::compile::output_module::{AtelierModuleSections, AtelierOutputMaps};
-    use vize_atlas::{SourceAtlasSource, SourceAtlasTarget};
     use vize_carton::String;
 
     fn template_result_without_map() -> TemplateBlockCompileResult {
@@ -149,17 +132,9 @@ mod tests {
         );
         assert_eq!(registration.source_name, Some("template.vue"));
         assert!(registration.is_composed());
-        assert!(
-            registration
-                .route
-                .sources
-                .contains(SourceAtlasSource::VueTemplate)
-        );
-        assert!(
-            registration
-                .route
-                .targets
-                .contains(SourceAtlasTarget::SourceMap)
+        assert_eq!(
+            registration.source,
+            vize_atelier_core::source_map::SourceMapSource::VueTemplate
         );
     }
 
@@ -173,28 +148,10 @@ mod tests {
     }
 
     #[test]
-    fn missing_fragment_is_reported_as_an_unavailable_fallback() {
-        let registry = missing_template_fragment_registry();
+    fn missing_fragment_uses_the_output_owned_fallback_reason() {
         assert_eq!(
-            registry.lane.profile_counter(),
-            "atelier.profile.lane.source_map"
-        );
-        assert!(
-            registry
-                .fallbacks
-                .contains(SourceAtlasFallback::SourceMapFragmentUnavailable)
-        );
-        assert!(
-            registry
-                .route
-                .sources
-                .contains(SourceAtlasSource::VueTemplate)
-        );
-        assert!(
-            registry
-                .route
-                .targets
-                .contains(SourceAtlasTarget::SourceMap)
+            AtelierFallback::SourceMapFragmentUnavailable.profile_counter(),
+            "atelier.profile.fallback.source_map_fragment_unavailable"
         );
     }
 
@@ -206,7 +163,7 @@ mod tests {
 
         assert_eq!(
             registration.fallback(),
-            Some(SourceAtlasFallback::SourceMapCompositionSkipped)
+            Some(AtelierFallback::SourceMapCompositionSkipped)
         );
     }
 
@@ -239,7 +196,7 @@ mod tests {
         assert_eq!(composition.composed_map(), None);
         assert_eq!(
             composition.fallback(),
-            Some(SourceAtlasFallback::SourceMapFragmentUnavailable)
+            Some(AtelierFallback::SourceMapFragmentUnavailable)
         );
     }
 }

@@ -6,13 +6,14 @@
 //!
 //! **Atelier** (/ˌætəlˈjeɪ/) is an artist's workshop or studio where creative work
 //! is produced. This crate owns the shared transformation and emission machinery.
-//! The neutral request ledger (`vize_atlas`), source syntax (`vize_relief`),
-//! derived semantics (`vize_croquis`), and render projection (`vize_rendu`) are
-//! deliberately separate crates.
+//! The typed artifact graph (`vize_atlas`), source syntax (`vize_relief`),
+//! derived semantics (`vize_croquis`), Flow, and render HIR (`vize_rendu`) are
+//! deliberately owned outside this shared-helper crate.
 
 #[doc(hidden)]
 pub mod atelier_output;
 pub mod codegen;
+mod relief_projection;
 #[doc(hidden)]
 pub mod render_ir;
 #[doc(hidden)]
@@ -24,13 +25,6 @@ pub mod source_map;
 pub mod test_macros;
 pub mod lane;
 pub mod steps;
-
-// Compatibility paths for downstreams that used the original experimental
-// modules. Internal workspace code depends on the owning crates directly.
-#[doc(hidden)]
-pub use vize_atlas as source_atlas;
-#[doc(hidden)]
-pub use vize_rendu as rendu;
 
 // Re-export from vize_relief (AST, errors, options)
 pub use vize_relief::errors::{CompilerError, CompilerResult, ErrorCode};

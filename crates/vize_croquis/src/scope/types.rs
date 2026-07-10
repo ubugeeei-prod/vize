@@ -187,7 +187,7 @@ impl ScopeKind {
 mod tests {
     use super::{BlockKind, JsRuntime, ScopeBinding, ScopeData, ScopeId, ScopeKind, Span};
     use insta::assert_snapshot;
-    use vize_relief::BindingType;
+    use vize_carton::BindingType;
 
     #[test]
     fn test_scope_id_constants() {

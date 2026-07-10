@@ -1,34 +1,7 @@
-//! Vue Single File Component (.vue) compiler.
+//! Vue Single File Component frontend.
 //!
-//! This module provides parsing and compilation of Vue SFCs, following the
-//! Vue.js core structure:
-//!
-//! - `parse` - SFC parsing into descriptor blocks
-//! - `compile_script` - Script/script setup compilation
-//! - `compile_template` - Template block compilation (DOM and Vapor)
-//! - `compile` - Main SFC compilation orchestration
-//! - `style` - Style block compilation with scoped CSS
-//! - `css` - Low-level CSS compilation with LightningCSS
-//!
-//! # Example
-//!
-//! ```ignore
-//! use vize_atelier_sfc::{parse_sfc, compile_sfc, SfcParseOptions, SfcCompileOptions};
-//!
-//! let source = r#"
-//! <script setup>
-//! import { ref } from 'vue'
-//! const count = ref(0)
-//! </script>
-//! <template>
-//!   <button @click="count++">{{ count }}</button>
-//! </template>
-//! "#;
-//!
-//! let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
-//! let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
-//! println!("{}", result.code);
-//! ```
+//! Exposes the legacy SFC compiler and equal Atlas providers for descriptor,
+//! Relief, Croquis, Flow, and Rendu products.
 
 #![allow(clippy::collapsible_match)]
 #![allow(clippy::type_complexity)]
@@ -38,12 +11,14 @@
 #![allow(clippy::only_used_in_recursion)]
 
 // Core modules - following Vue.js compiler-sfc structure
+pub mod atlas;
 pub mod bundler;
 pub mod compile;
 pub mod compile_script;
 pub mod compile_template;
 pub mod croquis;
 pub mod css;
+pub mod graph_frontend;
 pub mod parse;
 pub mod rewrite_default;
 pub mod script;
@@ -52,6 +27,11 @@ pub mod types;
 pub mod vite_plugin;
 
 // Re-exports for public API
+pub use atlas::{
+    SfcDescriptorProduct, SfcDescriptorProvider, SfcFlowProvider, SfcReliefProvider,
+    SfcRenduProvider, SfcSemanticProvider, SfcTemplateProduct, SfcTemplateProvider,
+    SfcTemplateSource, register_atlas_providers,
+};
 pub use bundler::{
     BundlerCustomBlock, BundlerStyleBlock, SfcBlockAttribute, SfcSrcInfo, TemplateAssetTagRule,
     TemplateAssetUrl, collect_template_asset_urls, extract_custom_blocks, extract_src_info,
@@ -67,6 +47,10 @@ pub use compile_script::props::{
 pub use css::{
     CssAstResult, CssCompileOptions, CssCompileResult, CssTargets, bundle_css, compile_css,
     compile_style_block, parse_css_ast, print_css_ast,
+};
+pub use graph_frontend::{
+    SfcGraphAdapterError, SfcTemplateGraphAdapter, lower_relief_snapshot_to_rendu,
+    project_relief_snapshot_to_flow,
 };
 pub use parse::parse_sfc;
 pub use script::begin_type_resolution_batch;

@@ -13,16 +13,19 @@
     allow(clippy::disallowed_macros, clippy::field_reassign_with_default)
 )]
 
+mod atlas;
 mod compile;
 #[cfg(test)]
 mod experimental_tests;
 mod namespace;
 pub mod options;
+mod rendu;
 pub mod steps;
 
 #[cfg(test)]
 mod tests;
 
+pub use atlas::{DomOutputProduct, DomProvider, register_atlas_provider};
 pub use compile::{
     compile_template, compile_template_with_options,
     compile_template_with_options_and_hoisted_scope_id, compile_template_with_template_syntax,
@@ -35,6 +38,7 @@ pub use compile::{
     compile_template_with_vue_parser_quirks_and_hoisted_scope_id,
 };
 pub use options::{DomCompilerOptions, element_checks, event_modifiers};
+pub use rendu::{RenduDomMapping, RenduDomOutput, compile_rendu};
 pub use steps::{
     EventModifiers, EventOptions, MouseModifiers, PropagationModifiers, SystemModifiers, V_SHOW,
     V_TEXT, VModelModifiers, generate_html_prop, generate_html_warning, generate_key_guard,

@@ -32,9 +32,9 @@ mod bindings;
 mod model;
 mod options_descriptor;
 mod snapshot;
-#[cfg(test)]
+#[cfg(all(test, feature = "relief-compat"))]
 mod snapshot_options_tests;
-#[cfg(test)]
+#[cfg(all(test, feature = "relief-compat"))]
 mod snapshot_tests;
 mod summary;
 #[cfg(test)]
@@ -45,6 +45,13 @@ mod template;
 mod vir;
 
 // Re-export all public croquis data types from their focused modules.
+pub use crate::semantic::{
+    CroquisSemanticSnapshot, CroquisSemanticSnapshotBuilder, SemanticBindingSnapshot,
+    SemanticComponentUsageSnapshot, SemanticEventListenerSnapshot, SemanticInjectSnapshot,
+    SemanticPassedPropSnapshot, SemanticProvideSnapshot, SemanticReactiveSourceSnapshot,
+    SemanticReactivityLossSnapshot, SemanticScopeBindingSnapshot, SemanticScopeSnapshot,
+    SemanticSlotUsageSnapshot, SemanticSourceRange, SemanticTemplateExpressionSnapshot,
+};
 pub use bindings::{
     BindingMetadata, COMPILER_MACRO_NAMES, ComponentShape, ImportStatementInfo, InvalidExport,
     InvalidExportKind, ReExportInfo, TypeExport, TypeExportKind, UndefinedRef, UnusedTemplateVar,
@@ -52,13 +59,6 @@ pub use bindings::{
 };
 pub use model::{AnalysisStats, CroquisStats};
 pub use options_descriptor::{OptionGroup, OptionKey, OptionMember, OptionsDescriptor};
-pub use snapshot::{
-    CroquisSemanticSnapshot, SemanticBindingSnapshot, SemanticComponentUsageSnapshot,
-    SemanticEventListenerSnapshot, SemanticInjectSnapshot, SemanticPassedPropSnapshot,
-    SemanticProvideSnapshot, SemanticReactiveSourceSnapshot, SemanticReactivityLossSnapshot,
-    SemanticScopeBindingSnapshot, SemanticScopeSnapshot, SemanticSlotUsageSnapshot,
-    SemanticSourceRange, SemanticTemplateExpressionSnapshot,
-};
 pub use summary::CroquisSemanticSummary;
 pub use template::{
     ComponentRegistration, ComponentUsage, ElementIdInfo, ElementIdKind, EventListener, PassedProp,

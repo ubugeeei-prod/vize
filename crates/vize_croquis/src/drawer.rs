@@ -7,9 +7,10 @@ mod core;
 mod helpers;
 mod options;
 mod script;
+#[cfg(feature = "relief-compat")]
 mod template;
 
-#[cfg(test)]
+#[cfg(all(test, feature = "relief-compat"))]
 mod tests;
 
 pub use core::Drawer;

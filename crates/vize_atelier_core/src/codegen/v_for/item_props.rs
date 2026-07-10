@@ -4,8 +4,8 @@
 //! (`_mergeProps`) and single-prop cases to `item_props_merge`. Split out of
 //! `v_for/generate` to keep that file focused on item/block generation.
 
+use crate::relief_projection::ReliefRenderOp;
 use crate::{ElementNode, ExpressionNode};
-use vize_rendu::RenduOp;
 
 use super::super::{
     context::CodegenContext, element::helpers::is_is_prop, expression::generate_expression,
@@ -82,8 +82,8 @@ pub(crate) fn generate_for_item_props(
     let static_class = el
         .props
         .iter()
-        .find_map(|prop| match RenduOp::from_prop(prop) {
-            RenduOp::Attribute {
+        .find_map(|prop| match ReliefRenderOp::from_prop(prop) {
+            ReliefRenderOp::Attribute {
                 name: "class",
                 value,
                 ..
@@ -94,8 +94,8 @@ pub(crate) fn generate_for_item_props(
     let static_style = el
         .props
         .iter()
-        .find_map(|prop| match RenduOp::from_prop(prop) {
-            RenduOp::Attribute {
+        .find_map(|prop| match ReliefRenderOp::from_prop(prop) {
+            ReliefRenderOp::Attribute {
                 name: "style",
                 value,
                 ..
@@ -105,16 +105,16 @@ pub(crate) fn generate_for_item_props(
 
     let has_dynamic_class = el.props.iter().any(|prop| {
         matches!(
-            RenduOp::from_prop(prop),
-            RenduOp::Directive { name: "bind", arg: Some(arg), .. }
+            ReliefRenderOp::from_prop(prop),
+            ReliefRenderOp::Directive { name: "bind", arg: Some(arg), .. }
                 if arg.is_simple("class")
         )
     });
 
     let has_dynamic_style = el.props.iter().any(|prop| {
         matches!(
-            RenduOp::from_prop(prop),
-            RenduOp::Directive { name: "bind", arg: Some(arg), .. }
+            ReliefRenderOp::from_prop(prop),
+            ReliefRenderOp::Directive { name: "bind", arg: Some(arg), .. }
                 if arg.is_simple("style")
         )
     });
@@ -154,16 +154,16 @@ pub(crate) fn generate_for_item_props(
             }
             if skip_static_class
                 && matches!(
-                    RenduOp::from_prop(prop),
-                    RenduOp::Attribute { name: "class", .. }
+                    ReliefRenderOp::from_prop(prop),
+                    ReliefRenderOp::Attribute { name: "class", .. }
                 )
             {
                 continue;
             }
             if skip_static_style
                 && matches!(
-                    RenduOp::from_prop(prop),
-                    RenduOp::Attribute { name: "style", .. }
+                    ReliefRenderOp::from_prop(prop),
+                    ReliefRenderOp::Attribute { name: "style", .. }
                 )
             {
                 continue;
@@ -194,16 +194,16 @@ pub(crate) fn generate_for_item_props(
             }
             if skip_static_class
                 && matches!(
-                    RenduOp::from_prop(prop),
-                    RenduOp::Attribute { name: "class", .. }
+                    ReliefRenderOp::from_prop(prop),
+                    ReliefRenderOp::Attribute { name: "class", .. }
                 )
             {
                 continue;
             }
             if skip_static_style
                 && matches!(
-                    RenduOp::from_prop(prop),
-                    RenduOp::Attribute { name: "style", .. }
+                    ReliefRenderOp::from_prop(prop),
+                    ReliefRenderOp::Attribute { name: "style", .. }
                 )
             {
                 continue;

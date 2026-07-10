@@ -16,21 +16,23 @@ editor tooling can share the same syntax model.
 | ----------------- | ----------------------------------------------------------------------------------------- |
 | `vize_carton`     | Shared allocator, strings, hash collections, flags, profiler, i18n, and DOM/tag utilities |
 | `vize_armature`   | Vue template tokenizer and parser                                                         |
-| `vize_atlas`      | Neutral source/product/target request ledger and observable fallback facts                |
+| `vize_atlas`      | Typed product/provider graph, source revisions, planning, cache, invalidation, and traces |
 | `vize_relief`     | Source syntax nodes and locations, compiler errors, and compiler options                  |
-| `vize_croquis`    | Derived scopes, symbols, bindings, dependencies, reactivity, and analysis graphs          |
+| `vize_croquis`    | Owned semantic contracts plus derived scopes, bindings, usage, and reactivity             |
 | `vize_croquis_cf` | Opt-in cross-file registry, dependency graph, and project semantic aggregation            |
-| `vize_rendu`      | Borrowed output-facing render operations, capabilities, and emitted section views         |
+| `vize_flow`       | Frontend-neutral single-file control, data, effect graphs, and graph analyses             |
+| `vize_rendu`      | Owned, indexed, frontend-neutral render HIR and capabilities                              |
 
 ## Compilation
 
-| Crate                | Role                                                          |
-| -------------------- | ------------------------------------------------------------- |
-| `vize_atelier_core`  | Shared transform lane and code generation infrastructure      |
-| `vize_atelier_dom`   | VDOM-oriented template compilation                            |
-| `vize_atelier_vapor` | Vapor-mode template compilation                               |
-| `vize_atelier_ssr`   | Server-side rendering template compilation                    |
-| `vize_atelier_sfc`   | `.vue` parsing plus script, template, and style orchestration |
+| Crate                | Role                                                                      |
+| -------------------- | ------------------------------------------------------------------------- |
+| `vize_atelier_core`  | Shared transform lane and code generation infrastructure                  |
+| `vize_atelier_dom`   | VDOM-oriented template compilation                                        |
+| `vize_atelier_vapor` | Vapor-mode template compilation                                           |
+| `vize_atelier_ssr`   | Server-side rendering template compilation                                |
+| `vize_atelier_sfc`   | `.vue` parsing plus script, template, and style orchestration             |
+| `vize_atelier_jsx`   | Equal JSX/TSX frontend producing owned syntax, semantics, Flow, and Rendu |
 
 ## Developer Tools
 

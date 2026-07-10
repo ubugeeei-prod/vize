@@ -56,7 +56,7 @@ vize_atelier_jsx.workspace = true
 vize_glyph = { workspace = true, optional = true }
 vize_patina.workspace = true
 vize_canon = { workspace = true }
-vize_croquis.workspace = true
+vize_croquis = { workspace = true, features = ["relief-compat"] }
 vize_musea.workspace = true
 
 [dev-dependencies]

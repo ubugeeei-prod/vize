@@ -33,12 +33,16 @@ vize_armature = { workspace = true }
 vize_atlas = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_dom = { workspace = true }
+vize_atelier_ssr = { workspace = true }
 vize_atelier_vapor = { workspace = true }
 vize_atelier_sfc = { workspace = true, features = ["native"] }
+vize_atelier_jsx = { workspace = true }
+vize_rendu = { workspace = true }
+vize_flow = { workspace = true }
 vize_glyph = { workspace = true, optional = true }
 vize_patina = { workspace = true }
 vize_canon = { workspace = true, features = ["native"] }
-vize_croquis = { workspace = true }
+vize_croquis = { workspace = true, features = ["relief-compat"] }
 vize_croquis_cf = { workspace = true }
 vize_musea = { workspace = true }
 vize_curator = { workspace = true }
@@ -83,3 +87,8 @@ mimalloc.workspace = true
 [dev-dependencies]
 tempfile.workspace = true
 insta.workspace = true
+criterion.workspace = true
+
+[[bench]]
+name = "artifact_graph"
+harness = false

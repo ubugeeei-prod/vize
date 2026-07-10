@@ -52,6 +52,7 @@ mod file_uri;
 pub mod intelligence;
 mod options_api_setup_spread;
 mod script_parse;
+mod semantic_recipe;
 pub mod sfc_typecheck;
 pub mod source_map;
 mod types;
@@ -89,6 +90,12 @@ mod type_only_import_anchors;
 pub use checker::TypeChecker;
 pub use context::{Binding, BindingKind, Import, Prop, TypeContext};
 pub use diagnostic::{TypeDiagnostic, TypeErrorCode, TypeSeverity};
+pub use semantic_recipe::{
+    CanonSemanticVirtualTsProduct, CanonSemanticVirtualTsProvider, CanonSemanticVirtualTsRecipe,
+    SemanticVirtualTsMapping, SemanticVirtualTsMappingKind, SemanticVirtualTsOutput,
+    generate_semantic_virtual_ts, generate_semantic_virtual_ts_with_flow,
+    register_semantic_virtual_ts_recipe,
+};
 
 // Re-export Locale for i18n support
 pub use intelligence::{

@@ -23,7 +23,7 @@ pub enum CroquisFact {
     CssVars,
     /// Cross-block / cross-file dependency edges.
     DependencyEdges,
-    /// Dialect/version facts (which `SourceAtlasCoordinate` applies).
+    /// Dialect and language-capability facts relevant to semantic analysis.
     Dialect,
 }
 

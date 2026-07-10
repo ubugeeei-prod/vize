@@ -2,7 +2,7 @@
 //!
 //! Emits hoisted `_cache[...]` static vnodes for subtrees the static-hoist pass
 //! marked cacheable. Split out of `children` so the children dispatch stays
-//! focused on grouping and the Rendu op stream.
+//! focused on grouping and the Relief projection stream.
 
 use crate::steps::hoist_static::is_static_node;
 use crate::{ElementNode, RuntimeHelper, TemplateChildNode};

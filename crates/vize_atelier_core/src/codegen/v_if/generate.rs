@@ -3,8 +3,8 @@
 //! Contains prop object generation, static class/style extraction,
 //! dynamic binding checks, event key deduplication, and spread detection.
 
+use crate::relief_projection::ReliefRenderOp;
 use crate::{DirectiveNode, ElementNode, ExpressionNode, IfBranchNode, PropNode};
-use vize_rendu::RenduOp;
 
 use super::super::{
     context::CodegenContext,
@@ -21,8 +21,8 @@ pub(super) fn should_skip_prop_for_if(
     has_dynamic_class: bool,
     has_dynamic_style: bool,
 ) -> bool {
-    match RenduOp::from_prop(p) {
-        RenduOp::Attribute { name, .. } => {
+    match ReliefRenderOp::from_prop(p) {
+        ReliefRenderOp::Attribute { name, .. } => {
             // Skip static class if there's a dynamic :class (will be merged)
             if name == "class" && has_dynamic_class {
                 return true;
@@ -33,11 +33,11 @@ pub(super) fn should_skip_prop_for_if(
             }
             false
         }
-        RenduOp::Directive { name, arg, .. } => {
+        ReliefRenderOp::Directive { name, arg, .. } => {
             (name == "bind" && arg.is_some_and(|arg| arg.is_simple("key")))
                 || matches!(name, "if" | "else-if" | "else")
         }
-        _ => unreachable!("element props lower to attribute or directive Rendu ops"),
+        _ => unreachable!("unexpected Relief projection operation"),
     }
 }
 
@@ -57,8 +57,8 @@ pub(super) fn has_dynamic_style(el: &ElementNode<'_>) -> bool {
 fn has_dynamic_bind(el: &ElementNode<'_>, argument: &str) -> bool {
     el.props.iter().any(|prop| {
         matches!(
-            RenduOp::from_prop(prop),
-            RenduOp::Directive { name: "bind", arg: Some(arg), .. }
+            ReliefRenderOp::from_prop(prop),
+            ReliefRenderOp::Directive { name: "bind", arg: Some(arg), .. }
                 if arg.is_simple(argument)
         )
     })
@@ -70,8 +70,8 @@ pub(super) fn generate_single_prop_for_if(
     prop: &PropNode<'_>,
     static_merge: StaticMerge<'_>,
 ) {
-    match RenduOp::from_prop(prop) {
-        RenduOp::Attribute {
+    match ReliefRenderOp::from_prop(prop) {
+        ReliefRenderOp::Attribute {
             name,
             name_span,
             value,
@@ -79,7 +79,7 @@ pub(super) fn generate_single_prop_for_if(
             ..
         } => {
             let PropNode::Attribute(attr) = prop else {
-                unreachable!("Rendu attribute must borrow an attribute prop");
+                unreachable!("Relief projection attribute must borrow an attribute prop");
             };
             let ref_value = if name == "ref" && ctx.options.inline {
                 attr.value.as_ref()
@@ -142,13 +142,13 @@ pub(super) fn generate_single_prop_for_if(
                 ctx.push("\"\"");
             }
         }
-        RenduOp::Directive { .. } => {
+        ReliefRenderOp::Directive { .. } => {
             let PropNode::Directive(dir) = prop else {
-                unreachable!("Rendu directive must borrow a directive prop");
+                unreachable!("Relief projection directive must borrow a directive prop");
             };
             generate_directive_prop_with_static(ctx, dir, static_merge);
         }
-        _ => unreachable!("element props lower to attribute or directive Rendu ops"),
+        _ => unreachable!("unexpected Relief projection operation"),
     }
 }
 

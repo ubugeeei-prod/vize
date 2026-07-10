@@ -1,7 +1,7 @@
 use super::slice_template_parts_full;
 use crate::compile::output_module::{AtelierOutputSections, OutputModule};
+use vize_atelier_core::atelier_output::AtelierRange;
 use vize_atelier_ssr::SsrCodegenResult;
-use vize_rendu::RenduRange;
 
 #[test]
 fn slice_template_parts_full_uses_module_sections() {
@@ -54,10 +54,10 @@ export function render(_ctx, _cache) {
     let return_expr = "_createVNode(_component_Foo, _hoisted_1, \"Hello\")";
     let return_end = return_start + return_expr.len();
     let sections = AtelierOutputSections {
-        imports: RenduRange::new(0, imports_end),
-        hoisted: RenduRange::new(hoisted_start, hoisted_end),
-        assets: RenduRange::new(assets_start, assets_end),
-        return_expr: RenduRange::new(return_start, return_end),
+        imports: AtelierRange::new(0, imports_end),
+        hoisted: AtelierRange::new(hoisted_start, hoisted_end),
+        assets: AtelierRange::new(assets_start, assets_end),
+        return_expr: AtelierRange::new(return_start, return_end),
     };
 
     let (imports, hoisted, preamble, render_body, render_fn_name) =

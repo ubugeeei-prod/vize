@@ -23,6 +23,7 @@ _legacy = []
 
 [dependencies]
 vize_carton = { workspace = true }
+vize_atlas = { workspace = true }
 
 serde = { workspace = true }
 thiserror = { workspace = true }

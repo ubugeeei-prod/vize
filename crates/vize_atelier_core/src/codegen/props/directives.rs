@@ -1,7 +1,7 @@
 //! Directive-to-prop generation (v-bind, v-on, v-model, v-html, v-text).
 
+use crate::relief_projection::ReliefRenderOp;
 use crate::{DirectiveNode, ExpressionNode, RuntimeHelper};
-use vize_rendu::RenduOp;
 
 use super::super::{
     context::CodegenContext, expression::generate_expression,
@@ -24,8 +24,8 @@ pub(super) fn is_static_expression(exp: &ExpressionNode<'_>, ctx: &CodegenContex
 
 /// Check if a directive will produce valid output
 pub fn is_supported_directive(dir: &DirectiveNode<'_>) -> bool {
-    let RenduOp::Directive { name, arg, .. } = RenduOp::from_directive(dir) else {
-        unreachable!("directive classification requires RenduOp::Directive");
+    let ReliefRenderOp::Directive { name, arg, .. } = ReliefRenderOp::from_directive(dir) else {
+        unreachable!("directive classification requires ReliefRenderOp::Directive");
     };
     // v-model with dynamic arg on components needs special props handling
     // Static v-model is handled via withDirectives for native elements or transformed for components
@@ -57,8 +57,8 @@ impl<'a> StaticMerge<'a> {
         let mut class_index = None;
         let mut style_index = None;
         for (index, prop) in props.iter().enumerate() {
-            match RenduOp::from_prop(prop) {
-                RenduOp::Attribute { name, value, .. } => {
+            match ReliefRenderOp::from_prop(prop) {
+                ReliefRenderOp::Attribute { name, value, .. } => {
                     if name == "class" && merge.class.is_none() {
                         merge.class = value;
                         class_index = Some(index);
@@ -67,7 +67,7 @@ impl<'a> StaticMerge<'a> {
                         style_index = Some(index);
                     }
                 }
-                RenduOp::Directive { name, arg, .. } => {
+                ReliefRenderOp::Directive { name, arg, .. } => {
                     if name == "bind"
                         && let Some(ExpressionNode::Simple(exp)) = arg.and_then(|arg| arg.node())
                         && exp.is_static
@@ -79,7 +79,9 @@ impl<'a> StaticMerge<'a> {
                         }
                     }
                 }
-                _ => unreachable!("element props lower to attribute or directive Rendu ops"),
+                _ => unreachable!(
+                    "element props lower to attribute or directive Relief projection operations"
+                ),
             }
         }
         merge
@@ -128,8 +130,8 @@ fn generate_directive_prop_with_static_key_casing(
     static_merge: StaticMerge<'_>,
     static_key_casing: StaticBindKeyCasing,
 ) {
-    let RenduOp::Directive { name, exp, .. } = RenduOp::from_directive(dir) else {
-        unreachable!("directive emission requires RenduOp::Directive");
+    let ReliefRenderOp::Directive { name, exp, .. } = ReliefRenderOp::from_directive(dir) else {
+        unreachable!("directive emission requires ReliefRenderOp::Directive");
     };
     match name {
         "bind" => {

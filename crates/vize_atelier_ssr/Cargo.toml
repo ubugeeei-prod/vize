@@ -9,10 +9,12 @@ description = "Vue SSR compiler for Vize"
 
 [dependencies]
 vize_carton = { workspace = true }
+vize_atlas = { workspace = true }
 vize_relief = { workspace = true }
 vize_armature = { workspace = true }
 vize_atelier_core = { workspace = true }
-vize_croquis = { workspace = true }
+vize_croquis = { workspace = true, features = ["relief-compat"] }
+vize_rendu = { workspace = true }
 
 serde = { workspace = true }
 

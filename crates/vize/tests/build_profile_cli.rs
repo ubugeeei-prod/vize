@@ -69,8 +69,8 @@ fn build_stats_profile_reports_source_plate_facts() {
         "cache.stats_compile.bypass.self_component",
         "Atelier cache decisions",
         "atelier.cache.stats_compile.eligible",
-        "Atelier fallbacks",
-        "atelier.fallback.cache_bypass",
+        "Atelier profile facts",
+        "atelier.profile.fallback.cache_bypass",
         "Source facts",
         "source.plate.sfc.requests",
         "source.block.template.bytes",
@@ -129,8 +129,11 @@ const count = 1
     );
 
     let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("Atelier fallbacks"), "{stderr}");
-    assert!(stderr.contains("atelier.fallback.vapor_ssr"), "{stderr}");
+    assert!(stderr.contains("Atelier profile facts"), "{stderr}");
+    assert!(
+        stderr.contains("atelier.profile.fallback.vapor_ssr"),
+        "{stderr}"
+    );
 
     let _ = fs::remove_dir_all(project_root);
 }

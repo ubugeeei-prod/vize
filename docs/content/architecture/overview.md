@@ -6,141 +6,104 @@ title: Architecture
 
 > **⚠️ Work in Progress:** Vize is under active development and is not yet ready for production use. Internal architecture may change as the project evolves.
 
-Vize is built as a modular Rust workspace where each crate handles a specific concern. The architecture is organized into reusable lanes that carry Vue SFC source through parsing, analysis, and compilation stages.
+Vize is a modular Rust workspace where each crate owns one representation,
+frontend, backend, or tool concern. A typed artifact graph composes those
+pieces on demand instead of forcing every source through one fixed pipeline.
 
 For the new multi-source / multi-target architecture, see the
-[Source Atlas](./source-atlas.md). That page is the design contract for treating
-SFC blocks, templates, JSX/TSX, Virtual TS, DOM/VDOM, SSR, Vapor, linting,
-typechecking, editor features, and source maps as demand-shaped plates rather
-than one mandatory transform pipeline.
+[Atlas artifact graph](./source-atlas.md). That page is the design contract for
+treating SFC blocks, templates, JSX/TSX, semantics, Flow, Rendu, Virtual TS,
+DOM/VDOM, SSR, Vapor, linting, and typechecking as peer typed products.
 
-## Project Relationship Map
+## Canary Graph Relationship Map
 
-The repository is organized like a studio: user-facing surfaces enter through JavaScript packages,
-the shared Rust core shapes Vue source, and specialized tools reuse the same parser and semantic
-model rather than each keeping a private copy of the language.
+The graph-native canary enters through the hidden `vize graph` command. Existing
+`build`, `lint`, `check`, Vite, Nuxt, editor, NAPI, and WASM entry points remain
+on their production paths until their incremental cutover.
 
 ```mermaid
 graph TD
-    App["Vue apps<br/>real projects"] --> Vite["@vizejs/vite-plugin"]
-    App --> Nuxt["@vizejs/nuxt"]
-    App --> Cli["vize CLI"]
-    Editor["Editors"] --> Maestro["vize_maestro<br/>LSP"]
-    Browser["Playground & docs"] --> Wasm["@vizejs/wasm"]
-    MuseaUi["Musea gallery"] --> MuseaPkg["@vizejs/vite-plugin-musea"]
-    Oxlint["Oxlint"] --> OxlintPkg["oxlint-plugin-vize"]
+    Canary["vize graph<br/>hidden canary command"] --> Atlas["vize_atlas<br/>typed compilation graph"]
 
-    Vite --> Vitrine["vize_vitrine<br/>NAPI bridge"]
-    Nuxt --> Vitrine
-    Wasm --> Vitrine
-    MuseaPkg --> Vitrine
-    OxlintPkg --> Vitrine
-    Cli --> Core["Rust workspace"]
-    Vitrine --> Core
+    Atlas --> Sfc["vize_atelier_sfc<br/>SFC providers"]
+    Atlas --> Jsx["vize_atelier_jsx<br/>JSX / TSX providers"]
+    Sfc --> Relief["vize_relief<br/>Vue-template syntax"]
+    Sfc --> Croquis["vize_croquis<br/>semantic snapshot"]
+    Jsx --> Croquis
+    Sfc --> Flow["vize_flow<br/>CFG / data / effects"]
+    Jsx --> Flow
+    Sfc --> Rendu["vize_rendu<br/>render HIR"]
+    Jsx --> Rendu
 
-    Core --> Armature["vize_armature<br/>parser"]
-    Armature --> Relief["vize_relief<br/>AST"]
-    Relief --> Croquis["vize_croquis<br/>semantic sketch"]
-    Relief --> Rendu["vize_rendu<br/>render projection"]
-    Croquis --> Rendu
-    Core --> Atlas["vize_atlas<br/>request ledger"]
-    Rendu --> Atelier["Atelier compilers"]
-    Atelier --> Dom["vize_atelier_dom"]
-    Atelier --> Vapor["vize_atelier_vapor"]
-    Atelier --> Ssr["vize_atelier_ssr"]
-    Atelier --> Sfc["vize_atelier_sfc"]
-
-    Croquis --> Canon["vize_canon<br/>type checking"]
-    Croquis --> Patina["vize_patina<br/>linting"]
-    Relief --> Glyph["vize_glyph<br/>formatting"]
-    Croquis --> Maestro
-    Relief --> Musea["vize_musea<br/>gallery core"]
-
-    Oxc["OXC"] --> Croquis
-    Corsa["corsa-bind"] --> Canon
-    Corsa --> Maestro
-    Lightning["Lightning CSS"] --> Sfc
+    Rendu --> Dom["vize_atelier_dom"]
+    Rendu --> Ssr["vize_atelier_ssr"]
+    Rendu --> Vapor["vize_atelier_vapor"]
+    Croquis --> Patina["vize_patina"]
+    Croquis --> Canon["vize_canon"]
+    Flow --> Canon
 ```
 
-This relationship map is about ownership and reuse, not every call edge. The important invariant is
-that parser, AST, and semantic analysis stay shared, while the compiler backends and developer tools
-remain replaceable workshops around that shared language model.
+This map shows the implemented canary provider graph, not every workspace call
+edge. Atlas plans only the products reachable from these recipe roots and
+caches common upstream work once.
 
 ## Lanes
 
 ```mermaid
-graph LR
-    A[Source .vue] --> B[Armature<br/>Parser]
-    B --> C[Relief<br/>AST]
-    C --> D[Croquis<br/>Semantic Analysis]
-    C --> R[vize_rendu<br/>Render Projection]
-    D --> R
-    R --> E{Atelier}
-    E --> F[VDOM Compiler]
-    E --> G[Vapor Compiler]
-    E --> H[SSR Compiler]
-    F --> O[AtelierOutput]
-    G --> O
-    H --> O
-    O --> I[Output JS]
+flowchart LR
+    SFC[".vue"] --> Relief["Relief"] --> Rendu["Rendu"]
+    JSX[".jsx / .tsx"] --> JsxSyntax["owned JSX syntax"] --> Rendu
+    Relief --> Semantics["Croquis"]
+    JsxSyntax --> Semantics
+    Relief --> Flow["Flow"]
+    JsxSyntax --> Flow
+    Rendu --> DOM["DOM output"]
+    Rendu --> SSR["SSR output"]
+    Rendu --> Vapor["Vapor plan"]
+    Semantics --> Lint["Patina report"]
+    Semantics --> VTS["Canon Virtual TS"]
+    Flow --> VTS
 ```
 
 ### Stage Details
 
-1. **Source** — A `.vue` file containing `<template>`, `<script>`, and `<style>` blocks
-2. **Armature** (Parser) — Tokenizes the raw source into a stream of tokens, then parses them into a structured AST. The tokenizer handles Vue-specific syntax: directives (`v-if`, `v-for`, `v-bind`), expression interpolation (`{{ }}`), and SFC block boundaries.
-3. **Relief** (AST) — Records what syntax was written, its node shape, and its source location. It does not assign symbol identity or derive scope/dependency graphs.
-4. **Croquis** (Semantic Analysis) — Derives what Relief/OXC syntax means and how it relates: resolved bindings, lexical scopes, component/directive usage, reactivity, dependencies, and analysis graphs.
-5. **Rendu** (Render Projection) — `vize_rendu` borrows transformed Relief and selected Croquis facts as the output-facing operations needed by render backends. It is not the source AST, the semantic database, or a public Vitrine API.
-6. **Atelier** (Compilation) — Transforms the analyzed AST or Rendu into JavaScript output. Three backends serve different targets:
+1. **Compilation / Atlas** — Owns source identity, typed inputs, provider
+   selection, planning, cache/invalidation, outcomes, counters, and traces.
+2. **Frontend products** — SFC decomposition, Vue-template syntax, and owned
+   JSX/TSX syntax retain their source-specific facts.
+3. **Relief** — Records authored Vue-template syntax and source locations. It
+   does not assign symbol identity or own render decisions.
+4. **Croquis** — Records derived semantic identity, scopes, bindings, usage,
+   and reactivity. Relief and JSX providers can produce the same owned contract.
+5. **Flow** — Owns single-file control/data/effect edges and graph analyses;
+   it is not Croquis or cross-file aggregation.
+6. **Rendu** — Owns indexed, frontend-neutral render HIR. It has no Relief,
+   Croquis, SFC, JSX, or backend dependency.
+7. **Graph-native Atelier providers** — Consume Rendu without parsing source:
    - **VDOM** (`vize_atelier_dom`) — `createVNode`/`h` calls with patch flag optimization and static hoisting
    - **Vapor** (`vize_atelier_vapor`) — Fine-grained reactive code with direct DOM manipulation (no VDOM)
    - **SSR** (`vize_atelier_ssr`) — String concatenation with hydration markers
-7. **AtelierOutput** (Structured Output) — Imports, hoists, functions, exports, section ranges, and source maps before the final JavaScript string is flattened.
-8. **Output** — Generated JavaScript code with source maps
+8. **Tool products** — Patina diagnostics and Canon Virtual TS request the
+   shared semantic product; they do not build Rendu unless another root needs it.
 
-`Rendu` and `AtelierOutput` are performance-sensitive layers. They must remove repeated work, such
-as rescanning generated JavaScript for known sections, rather than adding another expensive pass.
-Patina and other linting paths should not pay to build render-only structures unless a rule
-explicitly needs render semantics.
+The backend crates also retain legacy frontend-coupled compilation entry points;
+those paths are not represented by this graph and will be removed or migrated
+incrementally. Within the canary, the executable contract is negative as well
+as positive: TSX render/lint/type closures never construct Relief,
+lint/typecheck closures never construct Rendu, and multi-root requests execute
+shared upstream products once.
 
-The current canary wiring applies that rule inside SFC inline assembly. DOM output carries fine
-render sections for script-setup render-body insertion, while SSR and Vapor output carry coarser
-module sections for imports, hoists, and full render functions. A successful template output that
-lacks the required section plate is now an internal compiler error, so SFC inline assembly no longer
-recovers structure by scanning generated JavaScript.
-
-`AtelierProfile` is the observation layer around this work. It records cheap facts that an Atelier
-already knows while compiling: template and script size, style block count, target Atelier, stats
-cache decisions, requested Source Atlas lane, and fallback reasons. These facts are reported through
-`--profile` and `vize_curator`; they are not public API and must not add measurable overhead to
-normal compiler or linter paths.
-
-`AtelierFallback` names cases where the preferred workshop cannot finish the piece and Vize uses a
-different path. The first tracked fallback is Vapor SSR, which currently records
-`atelier.fallback.vapor_ssr` when an SSR build requests Vapor and the SFC compiler falls back to
-standard SSR output.
-
-The broader atlas design is documented in [Source Atlas](./source-atlas.md).
+The broader design and measurements are documented in
+[Atlas artifact graph](./source-atlas.md).
 
 ## Tool Lanes
 
-Beyond compilation, Vize provides additional tools that reuse the same parsing and analysis infrastructure:
-
-```mermaid
-graph TD
-    A[Source .vue] --> B[Armature<br/>Parser]
-    B --> C[Relief<br/>AST]
-    C --> D[Croquis<br/>Analysis]
-    D --> E[Atelier<br/>Compiler]
-    C --> F[Patina<br/>Linter]
-    C --> G[Glyph<br/>Formatter]
-    D --> H[Canon<br/>Type Checker]
-    C --> I[Musea<br/>Art & Docs Core]
-    D --> J[Maestro<br/>LSP]
-```
-
-Because all tools share the same parser and AST, they have a consistent understanding of your code. A lint rule in Patina operates on the same AST nodes as the compiler in Atelier — there's no risk of parser disagreement.
+Beyond compilation, Vize provides additional tools that reuse parsing and
+analysis infrastructure. In the current canary, the graph-native Patina
+semantic report and Canon Virtual TS recipe share Croquis, Flow, and Atlas
+source identity without sharing one frontend parser AST. Maestro, Glyph,
+editor integrations, and other production tool entry points have not yet been
+migrated to Atlas recipes.
 
 For type checking, `vize_canon` adds one more step: it generates virtual TypeScript from Vue SFCs and asks Corsa project sessions from [`corsa-bind`](https://github.com/ubugeeei/corsa-bind) for native diagnostics, then maps those results back onto the original files.
 
@@ -151,28 +114,28 @@ parity, benchmark, and readiness evidence expected for review.
 
 ## Crate Responsibilities
 
-| Layer         | Crate                | Role                                                   |
-| ------------- | -------------------- | ------------------------------------------------------ |
-| Foundation    | `vize_carton`        | Shared utilities, arena allocator, string interning    |
-| Coordination  | `vize_atlas`         | Neutral request, capability, and fallback ledger       |
-| AST           | `vize_relief`        | AST node definitions, error types, compiler options    |
-| Parsing       | `vize_armature`      | Tokenizer + recursive descent parser                   |
-| Analysis      | `vize_croquis`       | Semantic analysis, scope tracking, binding detection   |
-| Analysis      | `vize_croquis_cf`    | Opt-in cross-file semantic and dependency aggregation  |
-| Render        | `vize_rendu`         | Borrowed output-facing render projection               |
-| Compilation   | `vize_atelier_core`  | Shared transform lane, codegen utilities, source maps  |
-| Compilation   | `vize_atelier_dom`   | VDOM code generation                                   |
-| Compilation   | `vize_atelier_vapor` | Vapor mode code generation                             |
-| Compilation   | `vize_atelier_sfc`   | SFC orchestration (script + template + style + HMR)    |
-| Compilation   | `vize_atelier_ssr`   | Server-side rendering compilation                      |
-| Bindings      | `vize_vitrine`       | Node.js (NAPI) + WASM bindings                         |
-| CLI           | `vize`               | Command-line interface (clap + rayon)                  |
-| Type Checking | `vize_canon`         | Native TypeScript and Vue diagnostics via `corsa-bind` |
-| Linting       | `vize_patina`        | Vue.js linter with i18n (en/ja/zh)                     |
-| Formatting    | `vize_glyph`         | Vue.js formatter (template + script + style)           |
-| LSP           | `vize_maestro`       | Language Server Protocol (tower-lsp)                   |
-| Musea         | `vize_musea`         | Art parsing, docs, palette, autogen, and VRT core      |
-| TUI           | `vize_fresco`        | Terminal UI framework (crossterm + taffy)              |
+| Layer         | Crate                | Role                                                     |
+| ------------- | -------------------- | -------------------------------------------------------- |
+| Foundation    | `vize_carton`        | Shared utilities, arena allocator, string interning      |
+| Coordination  | `vize_atlas`         | Typed product graph, provider planning, cache, snapshots |
+| AST           | `vize_relief`        | AST node definitions, error types, compiler options      |
+| Parsing       | `vize_armature`      | Tokenizer + recursive descent parser                     |
+| Analysis      | `vize_croquis`       | Semantic analysis, scope tracking, binding detection     |
+| Analysis      | `vize_croquis_cf`    | Opt-in cross-file semantic and dependency aggregation    |
+| Render        | `vize_rendu`         | Owned, indexed, frontend-neutral render HIR              |
+| Compilation   | `vize_atelier_core`  | Shared transform lane, codegen utilities, source maps    |
+| Compilation   | `vize_atelier_dom`   | VDOM code generation                                     |
+| Compilation   | `vize_atelier_vapor` | Vapor mode code generation                               |
+| Compilation   | `vize_atelier_sfc`   | SFC orchestration (script + template + style + HMR)      |
+| Compilation   | `vize_atelier_ssr`   | Server-side rendering compilation                        |
+| Bindings      | `vize_vitrine`       | Node.js (NAPI) + WASM bindings                           |
+| CLI           | `vize`               | Command-line interface (clap + rayon)                    |
+| Type Checking | `vize_canon`         | Native TypeScript and Vue diagnostics via `corsa-bind`   |
+| Linting       | `vize_patina`        | Vue.js linter with i18n (en/ja/zh)                       |
+| Formatting    | `vize_glyph`         | Vue.js formatter (template + script + style)             |
+| LSP           | `vize_maestro`       | Language Server Protocol (tower-lsp)                     |
+| Musea         | `vize_musea`         | Art parsing, docs, palette, autogen, and VRT core        |
+| TUI           | `vize_fresco`        | Terminal UI framework (crossterm + taffy)                |
 
 The gallery UI and dev-server integration for Musea live in the JavaScript package
 `@vizejs/vite-plugin-musea`; the Rust crate focuses on the parsing and generation core.

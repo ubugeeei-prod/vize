@@ -17,6 +17,10 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Execute compiler and analysis recipes through the canary artifact graph
+    #[command(hide = true)]
+    Graph(crate::commands::graph::GraphArgs),
+
     /// Compile Vue SFC files (default command)
     #[command(visible_alias = "atelier")]
     Build(crate::commands::build::BuildArgs),
@@ -79,6 +83,7 @@ pub fn run_from_args(args: Vec<String>) {
 
 fn run(cli: Cli) {
     match cli.command {
+        Some(Commands::Graph(args)) => crate::commands::graph::run(args),
         Some(Commands::Build(args)) => crate::commands::build::run(args),
         #[cfg(feature = "glyph")]
         Some(Commands::Fmt(args)) => crate::commands::fmt::run(args),

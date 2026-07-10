@@ -5,8 +5,8 @@
 //! - `ScopeBinding` - A binding within a scope with its type, location, and flags
 //! - `Span` - Source location span
 
+use vize_carton::BindingType;
 use vize_carton::bitflags;
-use vize_relief::BindingType;
 
 /// Source span
 #[derive(Debug, Clone, Copy, Default)]

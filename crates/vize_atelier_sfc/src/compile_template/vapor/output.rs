@@ -6,8 +6,8 @@
 //! plates that script-setup inline mode moves around: imports, hoists, the full
 //! render function, and exports.
 
+use vize_atelier_core::atelier_output::AtelierRange;
 use vize_carton::{String, ToCompactString};
-use vize_rendu::RenduRange;
 
 use crate::compile::output_module::AtelierModuleSections;
 
@@ -33,11 +33,11 @@ pub(super) fn vapor_module_sections(
     separator_len: usize,
     functions_len: usize,
 ) -> AtelierModuleSections {
-    let imports = RenduRange::new(0, imports_len);
-    let hoists = RenduRange::new(imports.end, imports.end + hoists_len);
+    let imports = AtelierRange::new(0, imports_len);
+    let hoists = AtelierRange::new(imports.end, imports.end + hoists_len);
     let functions_start = hoists.end + separator_len;
-    let functions = RenduRange::new(functions_start, functions_start + functions_len);
-    let exports = RenduRange::empty(functions.end);
+    let functions = AtelierRange::new(functions_start, functions_start + functions_len);
+    let exports = AtelierRange::empty(functions.end);
 
     AtelierModuleSections {
         imports,

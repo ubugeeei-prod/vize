@@ -18,8 +18,8 @@ use oxc_span::GetSpan;
 
 use crate::ScopeBinding;
 use crate::scope::{BlockKind, BlockScopeData, ClientOnlyScopeData, ClosureScopeData};
+use vize_carton::BindingType;
 use vize_carton::CompactString;
-use vize_relief::BindingType;
 
 use super::ScriptParseResult;
 use super::extract::{

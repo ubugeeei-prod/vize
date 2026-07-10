@@ -4,9 +4,9 @@
 //! component. Split out of `branch` to keep that file focused on branch
 //! dispatch and the element/fragment shapes.
 
+use crate::relief_projection::ReliefChildren;
 use crate::{ElementNode, ExpressionNode, IfBranchNode, PropNode, RuntimeHelper};
 use vize_carton::ToCompactString;
-use vize_rendu::RenduChildren;
 
 use super::{
     super::{
@@ -18,7 +18,7 @@ use super::{
         element::{helpers::is_dynamic_component, is_whitespace_or_comment},
         expression::generate_expression,
         helpers::{is_builtin_component, to_valid_asset_identifier},
-        node::dispatch_rendu_op,
+        node::dispatch_relief_op,
         patch_flag::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
         },
@@ -222,11 +222,11 @@ pub(super) fn generate_if_branch_component(
     } else if el.children.iter().any(|c| !is_whitespace_or_comment(c)) {
         // Teleport passes children as an array, not a slot object.
         ctx.push(", [");
-        for (i, (op, node)) in RenduChildren::new(&el.children).rendered().enumerate() {
+        for (i, (op, node)) in ReliefChildren::new(&el.children).rendered().enumerate() {
             if i > 0 {
                 ctx.push(",");
             }
-            dispatch_rendu_op(ctx, op, node);
+            dispatch_relief_op(ctx, op, node);
         }
         ctx.push("]");
     } else if has_patch_info {

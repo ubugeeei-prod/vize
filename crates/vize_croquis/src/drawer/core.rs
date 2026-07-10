@@ -1,5 +1,7 @@
 use crate::croquis::Croquis;
-use vize_carton::{CompactString, FxHashMap, profile};
+use vize_carton::profile;
+#[cfg(feature = "relief-compat")]
+use vize_carton::{CompactString, FxHashMap};
 
 use super::DrawerOptions;
 
@@ -16,24 +18,29 @@ pub struct Drawer {
     /// Track if script was analyzed (for undefined detection)
     pub(crate) script_drawn: bool,
     /// Current v-if guard stack (for type narrowing in templates)
+    #[cfg(feature = "relief-compat")]
     pub(crate) vif_guard_stack: Vec<CompactString>,
     /// Memoized join of `vif_guard_stack` (` && `-separated). `None` when the
     /// stack is empty. Recomputed eagerly whenever `vif_guard_stack` is pushed
     /// to or popped (both happen behind `&mut self`), so the read path
     /// (`current_vif_guard`) is a cheap `&self` clone. A plain `Option` (rather
     /// than interior mutability) keeps `Drawer: Sync`.
+    #[cfg(feature = "relief-compat")]
     pub(crate) vif_guard_cache: Option<CompactString>,
     /// Conditions of the preceding `v-if` / `v-else-if` siblings in the current
     /// sibling group. Used to build the negated guard for a flat `v-else` /
     /// `v-else-if` element when the parser keeps branches as sibling elements
     /// (rather than grouping them into an `IfNode`).
+    #[cfg(feature = "relief-compat")]
     pub(crate) vif_branch_conditions: Vec<CompactString>,
     /// Number of v-for scopes currently entered. `is_in_vfor_scope` reads this
     /// instead of walking the parent scope chain. Incremented on v-for scope
     /// enter, decremented on exit (paired with `vif_guard_stack` discipline).
+    #[cfg(feature = "relief-compat")]
     pub(crate) vfor_depth: u32,
     /// Component tag stack for the current element ancestry. Used by
     /// `<template #name>` slot hosts to recover the owning child component.
+    #[cfg(feature = "relief-compat")]
     pub(crate) parent_component_stack: Vec<CompactString>,
     /// Memoized identifier extraction keyed by expression text. Template
     /// expressions repeat heavily (e.g. the same `:to`/`@click`/`{{ }}` across
@@ -42,6 +49,7 @@ pub struct Drawer {
     /// once per distinct expression instead of once per occurrence. The cached
     /// `Vec` is read by reference (disjoint field borrow), so cache hits avoid
     /// both the parse and any clone.
+    #[cfg(feature = "relief-compat")]
     pub(crate) ident_cache: FxHashMap<CompactString, Vec<CompactString>>,
 }
 
@@ -61,11 +69,17 @@ impl Drawer {
             legacy_vue2: false,
             croquis: Croquis::new(),
             script_drawn: false,
+            #[cfg(feature = "relief-compat")]
             vif_guard_stack: Vec::new(),
+            #[cfg(feature = "relief-compat")]
             vif_guard_cache: None,
+            #[cfg(feature = "relief-compat")]
             vif_branch_conditions: Vec::new(),
+            #[cfg(feature = "relief-compat")]
             vfor_depth: 0,
+            #[cfg(feature = "relief-compat")]
             parent_component_stack: Vec::new(),
+            #[cfg(feature = "relief-compat")]
             ident_cache: FxHashMap::default(),
         }
     }
@@ -82,11 +96,17 @@ impl Drawer {
             legacy_vue2: false,
             croquis,
             script_drawn,
+            #[cfg(feature = "relief-compat")]
             vif_guard_stack: Vec::new(),
+            #[cfg(feature = "relief-compat")]
             vif_guard_cache: None,
+            #[cfg(feature = "relief-compat")]
             vif_branch_conditions: Vec::new(),
+            #[cfg(feature = "relief-compat")]
             vfor_depth: 0,
+            #[cfg(feature = "relief-compat")]
             parent_component_stack: Vec::new(),
+            #[cfg(feature = "relief-compat")]
             ident_cache: FxHashMap::default(),
         }
     }
@@ -116,12 +136,14 @@ impl Drawer {
     /// The joined string is invariant for a given `vif_guard_stack` state, so it
     /// is memoized in `vif_guard_cache` (recomputed by `refresh_vif_guard_cache`
     /// on every push/pop) and this read path is a cheap clone.
+    #[cfg(feature = "relief-compat")]
     pub(crate) fn current_vif_guard(&self) -> Option<CompactString> {
         self.vif_guard_cache.clone()
     }
 
     /// Recompute the memoized joined v-if guard. Call after every push/pop of
     /// `vif_guard_stack` (both behind `&mut self`) to keep the cache current.
+    #[cfg(feature = "relief-compat")]
     pub(crate) fn refresh_vif_guard_cache(&mut self) {
         self.vif_guard_cache = if self.vif_guard_stack.is_empty() {
             None

@@ -5,8 +5,8 @@ use super::{ScriptParserOptions, parse_script, parse_script_setup, parse_script_
 use crate::croquis::ComponentShape;
 use crate::reactivity::ReactiveKind;
 use crate::scope::{ScopeData, ScopeKind};
+use vize_carton::BindingType;
 use vize_carton::{CompactString, append, cstr};
-use vize_relief::BindingType;
 
 fn script_setup_is_async(source: &str) -> bool {
     let result = parse_script_setup(source);

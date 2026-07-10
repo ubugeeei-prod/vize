@@ -8,8 +8,9 @@ repository.workspace = true
 description = "Cross-file semantic analysis for Vize Croquis"
 
 [dependencies]
+vize_atlas.workspace = true
 vize_carton.workspace = true
-vize_croquis.workspace = true
+vize_croquis = { workspace = true, default-features = false, features = ["analysis"] }
 rustc-hash.workspace = true
 oxc_allocator.workspace = true
 oxc_ast.workspace = true
@@ -19,6 +20,7 @@ serde.workspace = true
 
 [dev-dependencies]
 vize_armature.workspace = true
+vize_croquis = { workspace = true, features = ["relief-compat"] }
 insta.workspace = true
 criterion.workspace = true
 serde_json.workspace = true

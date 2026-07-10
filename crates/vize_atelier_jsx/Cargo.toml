@@ -5,13 +5,16 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Atelier JSX - Shared JSX/TSX lowering layer for Vize"
+description = "Atelier JSX - Graph-native JSX/TSX frontend for Vize"
 
 [dependencies]
 # Internal crates
 vize_carton = { workspace = true }
+vize_atlas = { workspace = true }
 vize_relief = { workspace = true }
-vize_croquis = { workspace = true }
+vize_croquis = { workspace = true, default-features = false, features = ["analysis"] }
+vize_flow = { workspace = true }
+vize_rendu = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_vapor = { workspace = true }
 # Reused for the first-cut JSX Vapor SSR render path (#1533): the lowered

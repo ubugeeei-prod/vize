@@ -24,7 +24,7 @@ pub const COMPILER_MACRO_NAMES: &[&str] = &[
     WITH_DEFAULTS,
     DEFINE_ART,
 ];
-use vize_relief::BindingType;
+use vize_carton::BindingType;
 
 /// Binding metadata extracted from script analysis.
 ///

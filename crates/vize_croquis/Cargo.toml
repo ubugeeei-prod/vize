@@ -7,24 +7,45 @@ license.workspace = true
 repository.workspace = true
 description = "Croquis - Semantic analysis layer for Vize. Quick sketches of meaning from Vue templates"
 
+[features]
+default = ["relief-compat"]
+analysis = [
+  "dep:phf",
+  "dep:once_cell",
+  "dep:rustc-hash",
+  "dep:serde_json",
+  "dep:dashmap",
+  "dep:regex",
+  "dep:oxc_parser",
+  "dep:oxc_ast",
+  "dep:oxc_ast_visit",
+  "dep:oxc_syntax",
+  "dep:oxc_span",
+  "dep:oxc_allocator",
+]
+# Legacy Vue-template adapters. The graph-facing semantic product and owned
+# model compile without this feature and therefore without vize_relief.
+relief-compat = ["analysis", "dep:vize_relief"]
+
 [dependencies]
 vize_carton.workspace = true
-vize_relief.workspace = true
-phf.workspace = true
-once_cell.workspace = true
-rustc-hash.workspace = true
+vize_atlas.workspace = true
+vize_relief = { workspace = true, optional = true }
+phf = { workspace = true, optional = true }
+once_cell = { workspace = true, optional = true }
+rustc-hash = { workspace = true, optional = true }
 serde.workspace = true
-serde_json.workspace = true
-dashmap.workspace = true
-regex.workspace = true
+serde_json = { workspace = true, optional = true }
+dashmap = { workspace = true, optional = true }
+regex = { workspace = true, optional = true }
 
 # OXC for high-performance AST parsing
-oxc_parser.workspace = true
-oxc_ast.workspace = true
-oxc_ast_visit.workspace = true
-oxc_syntax.workspace = true
-oxc_span.workspace = true
-oxc_allocator.workspace = true
+oxc_parser = { workspace = true, optional = true }
+oxc_ast = { workspace = true, optional = true }
+oxc_ast_visit = { workspace = true, optional = true }
+oxc_syntax = { workspace = true, optional = true }
+oxc_span = { workspace = true, optional = true }
+oxc_allocator = { workspace = true, optional = true }
 
 [dev-dependencies]
 tempfile.workspace = true

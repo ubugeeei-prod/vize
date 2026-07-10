@@ -4,13 +4,148 @@
 //! its generated JavaScript becomes a flat string: imports, hoists, render
 //! functions, exports, the section ranges that describe them, an optional
 //! source-map fragment, and any fallback marks observed while emitting. It is
-//! the owned counterpart to the borrowed [`RenduPlate`], and the shared shape
+//! the owner of a borrowed [`AtelierOutputView`], and the shared shape
 //! DOM/SSR/Vapor/SFC assembly can grow onto so structure is registered while
 //! emitting instead of recovered by scanning generated code later.
 
-use vize_atlas::{SourceAtlasFallback, SourceAtlasFallbackSet, SourceAtlasTarget};
 use vize_carton::String;
-use vize_rendu::{RenduModuleSections, RenduPlate};
+
+#[path = "atelier_output/sections.rs"]
+mod sections;
+
+pub use sections::{AtelierModuleSections, AtelierRange, AtelierRenderSections};
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub enum AtelierTarget {
+    Dom,
+    Vdom,
+    Sfc,
+    Ssr,
+    Vapor,
+    Jsx,
+    Tsx,
+    VirtualTs,
+    Diagnostics,
+    SourceMap,
+    Vitrine,
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub enum AtelierFallback {
+    SourceMapCompositionSkipped,
+    SourceMapFragmentUnavailable,
+    VaporSsr,
+    UnsupportedVaporShape,
+    CacheBypass,
+    VirtualTsSkipped,
+    LegacyCompatibility,
+}
+
+impl AtelierFallback {
+    pub const fn profile_counter(self) -> &'static str {
+        match self {
+            Self::SourceMapCompositionSkipped => {
+                "atelier.profile.fallback.source_map_composition_skipped"
+            }
+            Self::SourceMapFragmentUnavailable => {
+                "atelier.profile.fallback.source_map_fragment_unavailable"
+            }
+            Self::VaporSsr => "atelier.profile.fallback.vapor_ssr",
+            Self::UnsupportedVaporShape => "atelier.profile.fallback.vapor_unsupported_shape",
+            Self::CacheBypass => "atelier.profile.fallback.cache_bypass",
+            Self::VirtualTsSkipped => "atelier.profile.fallback.virtual_ts_skipped",
+            Self::LegacyCompatibility => "atelier.profile.fallback.legacy_compatibility",
+        }
+    }
+
+    const fn bit(self) -> u16 {
+        1 << self as u8
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash)]
+pub struct AtelierFallbackSet(u16);
+
+impl AtelierFallbackSet {
+    pub const fn empty() -> Self {
+        Self(0)
+    }
+
+    pub const fn with(mut self, fallback: AtelierFallback) -> Self {
+        self.0 |= fallback.bit();
+        self
+    }
+
+    pub const fn contains(self, fallback: AtelierFallback) -> bool {
+        self.0 & fallback.bit() != 0
+    }
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum AtelierOutputChunk {
+    Imports,
+    Hoists,
+    Functions,
+    Exports,
+}
+
+/// Borrowed view of a structured emitted module.
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub struct AtelierOutputView<'a> {
+    pub target: AtelierTarget,
+    pub imports: &'a str,
+    pub hoists: &'a str,
+    pub functions: &'a str,
+    pub exports: &'a str,
+    pub module_sections: AtelierModuleSections,
+    pub render_sections: Option<AtelierRenderSections>,
+    pub source_map: Option<&'a str>,
+}
+
+impl<'a> AtelierOutputView<'a> {
+    pub const fn new(
+        target: AtelierTarget,
+        imports: &'a str,
+        hoists: &'a str,
+        functions: &'a str,
+        exports: &'a str,
+    ) -> Self {
+        Self {
+            target,
+            imports,
+            hoists,
+            functions,
+            exports,
+            module_sections: AtelierModuleSections::from_chunk_lengths(
+                imports.len(),
+                hoists.len(),
+                functions.len(),
+                exports.len(),
+            ),
+            render_sections: None,
+            source_map: None,
+        }
+    }
+
+    pub const fn with_render_sections(mut self, sections: Option<AtelierRenderSections>) -> Self {
+        self.render_sections = sections;
+        self
+    }
+
+    pub const fn with_source_map(mut self, source_map: Option<&'a str>) -> Self {
+        self.source_map = source_map;
+        self
+    }
+
+    pub const fn chunk(self, chunk: AtelierOutputChunk) -> &'a str {
+        match chunk {
+            AtelierOutputChunk::Imports => self.imports,
+            AtelierOutputChunk::Hoists => self.hoists,
+            AtelierOutputChunk::Functions => self.functions,
+            AtelierOutputChunk::Exports => self.exports,
+        }
+    }
+}
 
 /// Structured target output before it is flattened to a single module string.
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
@@ -20,7 +155,7 @@ pub struct AtelierOutput {
     pub functions: String,
     pub exports: String,
     source_map: Option<String>,
-    fallbacks: SourceAtlasFallbackSet,
+    fallbacks: AtelierFallbackSet,
 }
 
 impl AtelierOutput {
@@ -32,7 +167,7 @@ impl AtelierOutput {
             functions,
             exports,
             source_map: None,
-            fallbacks: SourceAtlasFallbackSet::empty(),
+            fallbacks: AtelierFallbackSet::empty(),
         }
     }
 
@@ -43,7 +178,7 @@ impl AtelierOutput {
     }
 
     /// Record a fallback observed while emitting this output.
-    pub fn with_fallback(mut self, fallback: SourceAtlasFallback) -> Self {
+    pub fn with_fallback(mut self, fallback: AtelierFallback) -> Self {
         self.fallbacks = self.fallbacks.with(fallback);
         self
     }
@@ -54,7 +189,7 @@ impl AtelierOutput {
     }
 
     /// The fallback marks recorded for this output.
-    pub fn fallbacks(&self) -> SourceAtlasFallbackSet {
+    pub fn fallbacks(&self) -> AtelierFallbackSet {
         self.fallbacks
     }
 
@@ -62,8 +197,8 @@ impl AtelierOutput {
     ///
     /// Matches [`flatten`](Self::flatten)'s layout, so a consumer can slice the
     /// flat string by section without rescanning it.
-    pub fn sections(&self) -> RenduModuleSections {
-        RenduModuleSections::from_chunk_lengths(
+    pub fn sections(&self) -> AtelierModuleSections {
+        AtelierModuleSections::from_chunk_lengths(
             self.imports.len(),
             self.hoists.len(),
             self.functions.len(),
@@ -75,7 +210,7 @@ impl AtelierOutput {
     ///
     /// `imports` and `hoists` are adjacent; a single newline separates the
     /// hoists from the functions and the functions from the exports, matching
-    /// the marks [`RenduModuleSections::from_chunk_lengths`] records.
+    /// the marks [`AtelierModuleSections::from_chunk_lengths`] records.
     pub fn flatten(&self) -> String {
         let mut code = String::with_capacity(
             self.imports.len() + self.hoists.len() + self.functions.len() + self.exports.len() + 2,
@@ -89,9 +224,9 @@ impl AtelierOutput {
         code
     }
 
-    /// A borrowed [`RenduPlate`] view of this output for a target lane.
-    pub fn borrowed_plate(&self, target: SourceAtlasTarget) -> RenduPlate<'_> {
-        RenduPlate::new(
+    /// A borrowed module view of this output for a target lane.
+    pub fn view(&self, target: AtelierTarget) -> AtelierOutputView<'_> {
+        AtelierOutputView::new(
             target,
             &self.imports,
             &self.hoists,
@@ -143,15 +278,15 @@ mod tests {
     fn carries_source_map_and_fallback_marks() {
         let output = sample()
             .with_source_map(String::from("{\"version\":3}"))
-            .with_fallback(SourceAtlasFallback::SourceMapCompositionSkipped);
+            .with_fallback(AtelierFallback::SourceMapCompositionSkipped);
 
         assert_eq!(output.source_map(), Some("{\"version\":3}"));
         let fallbacks = output.fallbacks();
-        assert!(fallbacks.contains(SourceAtlasFallback::SourceMapCompositionSkipped));
+        assert!(fallbacks.contains(AtelierFallback::SourceMapCompositionSkipped));
 
         // The borrowed plate exposes the same chunks and map for a target lane.
-        let plate = output.borrowed_plate(SourceAtlasTarget::Ssr);
-        assert_eq!(plate.functions, "function render() {}");
-        assert!(plate.has_source_map());
+        let view = output.view(AtelierTarget::Ssr);
+        assert_eq!(view.functions, "function render() {}");
+        assert_eq!(view.source_map, Some("{\"version\":3}"));
     }
 }

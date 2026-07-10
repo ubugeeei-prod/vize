@@ -3,9 +3,9 @@
 //! Generates code for individual v-if/v-else-if/v-else branches including
 //! component, element, template fragment, and regular fragment rendering.
 
+use crate::relief_projection::{ReliefChildren, ReliefElementKind};
 use crate::{ElementNode, ForNode, IfBranchNode, PropNode, RuntimeHelper, TemplateChildNode};
 use vize_carton::ToCompactString;
-use vize_rendu::{RenduChildren, RenduElementKind};
 
 use super::{
     super::{
@@ -17,7 +17,7 @@ use super::{
         },
         expression::generate_expression,
         helpers::escape_js_string,
-        node::dispatch_rendu_op,
+        node::dispatch_relief_op,
         patch_flag::{calculate_element_patch_info, patch_flag_name},
         slots::{generate_slot_outlet_name, generate_slot_outlet_props_with_key},
     },
@@ -44,14 +44,14 @@ pub(super) fn generate_if_branch(
         match &branch.children[0] {
             TemplateChildNode::Element(el) => {
                 // Check if it's a template element - treat as fragment
-                if RenduElementKind::from(el.tag_type).is_template() {
+                if ReliefElementKind::from(el.tag_type).is_template() {
                     // Template with single child -> unwrap to single element
                     if el.children.len() == 1 {
                         match &el.children[0] {
                             TemplateChildNode::Element(inner) => {
-                                if RenduElementKind::from(inner.tag_type).is_component() {
+                                if ReliefElementKind::from(inner.tag_type).is_component() {
                                     generate_if_branch_component(ctx, inner, branch, branch_index);
-                                } else if RenduElementKind::from(inner.tag_type).is_slot_outlet() {
+                                } else if ReliefElementKind::from(inner.tag_type).is_slot_outlet() {
                                     generate_if_branch_slot(ctx, inner, branch, branch_index);
                                 } else {
                                     generate_if_branch_element(ctx, inner, branch, branch_index);
@@ -67,10 +67,10 @@ pub(super) fn generate_if_branch(
                     }
                     // Template with multiple children -> fragment
                     generate_if_branch_template_fragment(ctx, &el.children, branch, branch_index);
-                } else if RenduElementKind::from(el.tag_type).is_component() {
+                } else if ReliefElementKind::from(el.tag_type).is_component() {
                     // Component
                     generate_if_branch_component(ctx, el, branch, branch_index);
-                } else if RenduElementKind::from(el.tag_type).is_slot_outlet() {
+                } else if ReliefElementKind::from(el.tag_type).is_slot_outlet() {
                     generate_if_branch_slot(ctx, el, branch, branch_index);
                 } else {
                     // Regular element
@@ -121,11 +121,11 @@ fn generate_if_branch_slot(
 
     if !el.children.is_empty() {
         ctx.push(", () => [");
-        for (i, (op, node)) in RenduChildren::new(&el.children).rendered().enumerate() {
+        for (i, (op, node)) in ReliefChildren::new(&el.children).rendered().enumerate() {
             if i > 0 {
                 ctx.push(",");
             }
-            dispatch_rendu_op(ctx, op, node);
+            dispatch_relief_op(ctx, op, node);
         }
         ctx.push("]");
     }

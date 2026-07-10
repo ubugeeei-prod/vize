@@ -20,10 +20,10 @@ pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_atelier_core::{
     TemplateSyntaxMode,
+    atelier_output::AtelierRange,
     source_map::{SourceMapRegistration, SourceMapRegistrationState},
 };
 use vize_carton::Bump;
-use vize_rendu::RenduRange;
 
 use crate::compile::output_module::{
     AtelierModuleSections, AtelierOutputMaps, AtelierOutputSections, OutputModule,
@@ -108,10 +108,10 @@ impl TemplateBlockCompileResult {
             .and_then(|fragment| serde_json::from_str(fragment).ok())
     }
 
-    fn source_map_generated_range(&self) -> RenduRange {
+    fn source_map_generated_range(&self) -> AtelierRange {
         self.module_sections
             .map(|sections| sections.functions)
-            .unwrap_or_else(|| RenduRange::new(0, self.code.len()))
+            .unwrap_or_else(|| AtelierRange::new(0, self.code.len()))
     }
 }
 

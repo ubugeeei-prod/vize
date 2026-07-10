@@ -14,8 +14,8 @@ use crate::croquis::{
     ImportStatementInfo, InvalidExport, InvalidExportKind, ReExportInfo, TypeExport, TypeExportKind,
 };
 use crate::scope::{BlockKind, BlockScopeData, ClosureScopeData, ExternalModuleScopeData};
+use vize_carton::BindingType;
 use vize_carton::CompactString;
-use vize_relief::BindingType;
 
 use super::super::ScriptParseResult;
 use super::super::extract::{

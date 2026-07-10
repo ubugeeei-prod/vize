@@ -9,8 +9,8 @@
 mod formatters;
 
 use crate::hoist::PatchFlags;
+use vize_carton::BindingType;
 use vize_carton::String;
-use vize_relief::BindingType;
 
 pub use formatters::SummaryBuilder;
 

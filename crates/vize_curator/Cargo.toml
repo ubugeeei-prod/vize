@@ -19,7 +19,7 @@ serde_json = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_sfc = { workspace = true }
 vize_carton = { workspace = true }
-vize_croquis = { workspace = true }
+vize_croquis = { workspace = true, default-features = false }
 vize_croquis_cf = { workspace = true }
 
 [dev-dependencies]
