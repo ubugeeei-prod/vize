@@ -81,7 +81,10 @@ export type CompileOptionsForRequest = {
 } & Partial<
   Pick<
     VizeOptions,
-    "experimentalInTagComments" | "experimentalPatternedTemplate" | "experimentalServerScript"
+    | "experimentalInTagComments"
+    | "experimentalPatternedTemplate"
+    | "experimentalServerScript"
+    | "experimentalSelfReference"
   >
 >;
 
@@ -118,6 +121,9 @@ export function getCompileOptionsForRequest(
   }
   if (state.mergedOptions?.experimentalServerScript) {
     options.experimentalServerScript = true;
+  }
+  if (state.mergedOptions?.experimentalSelfReference) {
+    options.experimentalSelfReference = true;
   }
 
   return options;
@@ -271,6 +277,7 @@ export async function compileAll(state: VizePluginState): Promise<void> {
       experimentalInTagComments: state.mergedOptions.experimentalInTagComments ?? false,
       experimentalPatternedTemplate: state.mergedOptions.experimentalPatternedTemplate ?? false,
       experimentalServerScript: state.mergedOptions.experimentalServerScript ?? false,
+      experimentalSelfReference: state.mergedOptions.experimentalSelfReference ?? false,
       runtimeModuleName: state.mergedOptions.runtimeModuleName,
       runtimeGlobalName: state.mergedOptions.runtimeGlobalName,
       vueVersion: state.mergedOptions.vueVersion,

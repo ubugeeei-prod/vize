@@ -54,18 +54,13 @@ pub(crate) struct GenerateContext<'a> {
     /// Counter for slot scope variable names
     #[allow(dead_code)]
     pub(crate) slot_scope_count: usize,
-    /// Components that have already been resolved (to avoid duplicate resolveComponent calls)
     pub(crate) resolved_components: FxHashSet<String>,
-    /// Component resolutions created inside callback scopes and removed on exit.
     resolved_component_scopes: std::vec::Vec<std::vec::Vec<String>>,
     /// Element IDs that are standalone text nodes (no _txt needed)
     pub(crate) standalone_text_elements: &'a FxHashSet<usize>,
-    /// Binding metadata from script setup imports.
     pub(crate) binding_metadata: Option<&'a BindingMetadata>,
-    /// JSX closure mode: the render code runs inside the component function's
-    /// closure (JSX/TSX authoring), so free identifiers resolve to enclosing
-    /// scope variables and must stay bare instead of being `_ctx.`-prefixed.
     pub(crate) jsx_closure: bool,
+    pub(crate) experimental_self_reference: bool,
 }
 
 impl<'a> GenerateContext<'a> {
@@ -91,6 +86,7 @@ impl<'a> GenerateContext<'a> {
             standalone_text_elements,
             binding_metadata,
             jsx_closure: false,
+            experimental_self_reference: false,
         }
     }
 
@@ -327,6 +323,10 @@ impl<'a> GenerateContext<'a> {
     }
 
     pub(crate) fn resolve_component_binding_expr(&self, component: &str) -> Option<String> {
+        if self.experimental_self_reference && component == "Self" {
+            return None;
+        }
+
         let bindings = self.binding_metadata?;
 
         let resolve_base = |name: &str| {

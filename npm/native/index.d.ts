@@ -69,6 +69,7 @@ export interface BatchCompileOptionsNapi {
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
   experimentalServerScript?: boolean;
+  experimentalSelfReference?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string;
@@ -242,6 +243,8 @@ export interface CompilerOptions {
   experimentalPatternedTemplate?: boolean;
   /** Enable experimental server-script related RFC surface. */
   experimentalServerScript?: boolean;
+  /** Enable experimental compiler-reserved `<Self>` component resolution. */
+  experimentalSelfReference?: boolean;
   /** Module name for runtime imports. */
   runtimeModuleName?: string;
   /** Global variable name for standalone/function mode. */
@@ -905,6 +908,7 @@ export interface SfcCompileOptionsNapi {
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
   experimentalServerScript?: boolean;
+  experimentalSelfReference?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string;

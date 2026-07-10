@@ -9,6 +9,7 @@ void test("defaults from an empty options object", (t) => {
   t.assert.equal(options.experimentalInTagComments, false);
   t.assert.equal(options.experimentalPatternedTemplate, false);
   t.assert.equal(options.experimentalServerScript, false);
+  t.assert.equal(options.experimentalSelfReference, false);
   t.assert.equal(options.customRenderer, false);
   t.assert.equal(options.templateSyntax, "standard");
   t.assert.equal(options.runtimeModuleName, "vue");
@@ -129,11 +130,13 @@ void test("experimental options pass through", (t) => {
     experimentalInTagComments: true,
     experimentalPatternedTemplate: true,
     experimentalServerScript: true,
+    experimentalSelfReference: true,
   });
 
   t.assert.equal(options.experimentalInTagComments, true);
   t.assert.equal(options.experimentalPatternedTemplate, true);
   t.assert.equal(options.experimentalServerScript, true);
+  t.assert.equal(options.experimentalSelfReference, true);
 });
 
 void test("runtime module and global names can be overridden", (t) => {

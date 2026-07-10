@@ -12,6 +12,8 @@ pub(crate) struct RawExperimentalsConfig {
     pub(crate) pattened_template: Option<Value>,
     #[serde(alias = "server script", alias = "server_script")]
     pub(crate) server_script: Option<Value>,
+    #[serde(alias = "self reference", alias = "self_reference")]
+    pub(crate) self_reference: Option<Value>,
 }
 
 impl RawExperimentalsConfig {
@@ -33,6 +35,10 @@ impl RawExperimentalsConfig {
 
     pub(crate) fn server_script_enabled(&self) -> bool {
         experimental_switch_enabled(&self.server_script)
+    }
+
+    pub(crate) fn self_reference_enabled(&self) -> bool {
+        experimental_switch_enabled(&self.self_reference)
     }
 }
 

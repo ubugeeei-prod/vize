@@ -1,6 +1,4 @@
 //! Check command execution logic.
-//! The direct runner delegates to `vize_canon`'s project-backed Corsa type checker so Vue SFCs,
-//! TypeScript sources, ambient declarations, and emitted declarations share one virtual project.
 
 #![allow(clippy::disallowed_macros)]
 use std::{
@@ -245,6 +243,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         program_tsconfig_path
     };
     let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
+    virtual_ts_options.experimental_self_reference =
+        loaded_config.features.experimental_self_reference;
     let tsconfig = program_tsconfig_path.as_deref();
     let nuxt_root = &nuxt_project_root;
     let nuxt_path_aliases = nuxt::detect(

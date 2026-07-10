@@ -1,6 +1,3 @@
-//! The `Compiler` WASM class, its free-function aliases, and the internal
-//! template/SFC compilation pipeline.
-
 use vize_carton::Bump;
 use wasm_bindgen::prelude::*;
 
@@ -302,7 +299,11 @@ fn compile_internal(
 ) -> Result<CompileResult, String> {
     let allocator = Bump::new();
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())?;
-    let (experimental_in_tag_comments, experimental_patterned_template) = experimental_flags(opts);
+    let (
+        experimental_in_tag_comments,
+        experimental_patterned_template,
+        experimental_self_reference,
+    ) = experimental_flags(opts);
 
     if opts.ssr.unwrap_or(false) && !vapor && binding_metadata.is_none() {
         let ssr_opts = SsrCompilerOptions {
@@ -310,6 +311,7 @@ fn compile_internal(
             custom_renderer: opts.custom_renderer.unwrap_or(false),
             experimental_in_tag_comments,
             experimental_patterned_template,
+            experimental_self_reference,
             ..Default::default()
         };
         let (root, errors, result) =
@@ -323,10 +325,8 @@ fn compile_internal(
             return Err(format!("SSR compile errors: {:?}", fatal));
         }
 
-        // Collect helpers
         let helpers: Vec<String> = root.helpers.iter().map(|h| h.name().to_string()).collect();
 
-        // Build AST JSON
         let ast = build_ast_json(&root);
 
         return Ok(CompileResult {
@@ -340,13 +340,13 @@ fn compile_internal(
     }
 
     if vapor {
-        // Use actual Vapor compiler
         let vapor_opts = VaporCompilerOptions {
             prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
             ssr: opts.ssr.unwrap_or(false),
             custom_renderer: opts.custom_renderer.unwrap_or(false),
             experimental_in_tag_comments,
             experimental_patterned_template,
+            experimental_self_reference,
             binding_metadata,
             ..Default::default()
         };
@@ -409,10 +409,8 @@ fn compile_internal(
         return Err(format!("Compile errors: {:?}", fatal));
     }
 
-    // Collect helpers
     let helpers: Vec<String> = root.helpers.iter().map(|h| h.name().to_string()).collect();
 
-    // Build AST JSON
     let ast = build_ast_json(&root);
 
     Ok(CompileResult {

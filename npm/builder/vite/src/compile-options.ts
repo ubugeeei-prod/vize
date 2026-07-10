@@ -11,6 +11,7 @@ export interface CompileFileOptions {
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
   experimentalServerScript?: boolean;
+  experimentalSelfReference?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string | number;
@@ -25,6 +26,7 @@ export interface CompileBatchOptions {
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
   experimentalServerScript?: boolean;
+  experimentalSelfReference?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string | number;
@@ -43,6 +45,7 @@ export function buildCompileFileOptions(
     experimentalInTagComments: options.experimentalInTagComments ?? false,
     experimentalPatternedTemplate: options.experimentalPatternedTemplate ?? false,
     experimentalServerScript: options.experimentalServerScript ?? false,
+    experimentalSelfReference: options.experimentalSelfReference ?? false,
     scopeId: `data-v-${generateScopeId(filePath)}`,
     ...(options.mode === undefined ? {} : { mode: options.mode }),
     ...(options.templateSyntax === undefined ? {} : { templateSyntax: options.templateSyntax }),
@@ -64,6 +67,7 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
     experimentalInTagComments: options.experimentalInTagComments ?? false,
     experimentalPatternedTemplate: options.experimentalPatternedTemplate ?? false,
     experimentalServerScript: options.experimentalServerScript ?? false,
+    experimentalSelfReference: options.experimentalSelfReference ?? false,
     // Opt into exactly the optional payloads the bundler pipeline consumes:
     // per-block style metadata, macro artifacts, and HMR content hashes.
     // Custom blocks are not used in the batch path, so they stay omitted.

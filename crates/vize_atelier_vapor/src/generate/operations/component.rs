@@ -26,10 +26,16 @@ pub(super) fn emit_component_resolution(ctx: &mut GenerateContext, component_var
     }
 
     ctx.use_helper("resolveComponent");
+    let maybe_self = if ctx.experimental_self_reference && tag == "Self" {
+        ", true"
+    } else {
+        ""
+    };
     ctx.push_line(&cstr!(
-        "const {} = _resolveComponent(\"{}\")",
+        "const {} = _resolveComponent(\"{}\"{})",
         component_var,
-        tag
+        tag,
+        maybe_self
     ));
 }
 

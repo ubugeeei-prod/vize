@@ -73,6 +73,7 @@ export function normalizeOptions(
     experimentalInTagComments: rawOptions.experimentalInTagComments ?? false,
     experimentalPatternedTemplate: rawOptions.experimentalPatternedTemplate ?? false,
     experimentalServerScript: rawOptions.experimentalServerScript ?? false,
+    experimentalSelfReference: rawOptions.experimentalSelfReference ?? false,
     jsxMode: rawOptions.jsxMode,
     customRenderer: rawOptions.customRenderer ?? false,
     templateSyntax,

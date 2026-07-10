@@ -4,7 +4,7 @@ use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 
-use crate::virtual_ts::helpers::to_safe_identifier;
+use crate::virtual_ts::self_reference::component_ref_name;
 
 /// Type annotation for a `v-slot` scope's props. When the slot is on a child
 /// component (`component` is `Some`), the props are inferred from that child's
@@ -18,10 +18,11 @@ pub(super) fn slot_props_type(
     component: Option<&str>,
     slot_name: &str,
     slot_name_is_static: bool,
+    experimental_self_reference: bool,
 ) -> String {
     match component {
         Some(component) => {
-            let component_ref = to_safe_identifier(component);
+            let component_ref = component_ref_name(component, experimental_self_reference);
             if slot_name_is_static {
                 cstr!(
                     "typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? (\"{slot_name}\" extends keyof __S ? (NonNullable<__S[\"{slot_name}\"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any"

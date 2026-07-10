@@ -1,6 +1,3 @@
-//! Top-level orchestration of scope-closure generation and the recursive
-//! v-for/v-slot/event-handler scope-node walker.
-
 use vize_carton::FxHashMap;
 use vize_carton::FxHashSet;
 use vize_carton::String;
@@ -27,9 +24,6 @@ use super::event_handler::generate_event_handler_expressions;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
 use super::vif_guard::common_vif_guard_prefix_outside_v_for_scope;
 
-/// Generate scope closures from Croquis scope chain.
-/// Uses recursive tree-based generation so nested v-for/v-slot scopes
-/// are properly contained within their parent closures.
 pub(crate) fn generate_scope_closures(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
@@ -171,6 +165,7 @@ pub(crate) fn generate_scope_closures(
             template_offset,
             check_options,
             legacy_vue2: options.legacy_vue2,
+            experimental_self_reference: options.virtual_ts_options.experimental_self_reference,
         };
         profile!(
             "canon.virtual_ts.scope_node",
@@ -314,6 +309,7 @@ fn generate_scope_node(
                 data.component.as_deref(),
                 data.name.as_str(),
                 ctx.summary.scopes.is_v_slot_name_static(scope.id),
+                ctx.experimental_self_reference,
             );
             emit_slot_function_open(
                 ts,
@@ -367,6 +363,7 @@ fn generate_scope_node(
                     scope,
                     ctx.template_prop_names,
                     ctx.legacy_vue2,
+                    ctx.experimental_self_reference,
                     indent,
                 )
                 .expect("component event handler should have a target component");

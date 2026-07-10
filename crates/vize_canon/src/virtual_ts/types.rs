@@ -68,6 +68,8 @@ pub struct VirtualTsOptions {
     /// shadowing them with local `any` fallbacks, so their real props remain
     /// type-checkable.
     pub external_template_bindings: Vec<String>,
+    /// Enable experimental compiler-reserved `<Self>` component resolution.
+    pub experimental_self_reference: bool,
 }
 
 impl Default for VirtualTsOptions {
@@ -77,6 +79,7 @@ impl Default for VirtualTsOptions {
             css_modules: Vec::new(),
             auto_import_stubs: Vec::new(),
             external_template_bindings: Vec::new(),
+            experimental_self_reference: false,
         }
     }
 }

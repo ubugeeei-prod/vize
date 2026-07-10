@@ -19,6 +19,9 @@ mod interface_extends_tests;
 mod legacy_vue2_vuetify_tests;
 mod props;
 mod scope;
+mod self_reference;
+#[cfg(test)]
+mod self_reference_tests;
 #[cfg(test)]
 mod tests;
 mod types;

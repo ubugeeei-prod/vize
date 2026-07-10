@@ -1,6 +1,3 @@
-//! Scope-aware component props type checks, including recursion into nested
-//! v-for/v-slot closure scopes.
-
 use vize_carton::FxHashMap;
 use vize_carton::FxHashSet;
 use vize_carton::String;
@@ -11,7 +8,8 @@ use vize_carton::profile;
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind, analysis::ComponentUsage};
 
 use crate::virtual_ts::expressions::generate_component_prop_checks;
-use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier, to_safe_identifier_fragment};
+use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier_fragment};
+use crate::virtual_ts::self_reference::{component_ref_name, is_reserved_self_reference};
 use crate::virtual_ts::types::VizeMapping;
 
 use super::component_prop_checker::{
@@ -24,8 +22,6 @@ use super::emit::{
 };
 use super::vif_guard::common_vif_guard_prefix_for_guards_outside_v_for;
 
-/// Generate component props type checks (scope-aware).
-/// Type declarations are at template level, value checks are in their scope.
 pub(super) fn generate_component_props(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
@@ -53,6 +49,7 @@ pub(super) fn generate_component_props(
                 &external_template_bindings,
                 ctx.check_unresolved_global_components,
                 ctx.legacy_vue2,
+                ctx.options.experimental_self_reference,
             )
         })
         .collect();
@@ -71,8 +68,6 @@ pub(super) fn generate_component_props(
 
     ts.push_str("\n  // Component props type declarations\n");
 
-    // Generic children expose `__vizeCheck<T>(props)`; fallback contextual
-    // typing is limited to inline function props to avoid duplicate errors.
     let any_inference_props = checkable_usages
         .iter()
         .any(|(_, usage)| has_inference_props(usage));
@@ -87,7 +82,8 @@ pub(super) fn generate_component_props(
     }
 
     for &(idx, usage) in &checkable_usages {
-        let component_ref = to_safe_identifier(usage.name.as_str());
+        let component_ref =
+            component_ref_name(usage.name.as_str(), ctx.options.experimental_self_reference);
         let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
 
         let has_dynamic_props = has_dynamic_props(usage);
@@ -217,6 +213,7 @@ pub(super) fn generate_component_props(
             vfor_enclosing_guards: &vfor_enclosing_guards,
             template_prop_names: ctx.template_prop_names,
             template_offset: ctx.template_offset,
+            experimental_self_reference: ctx.options.experimental_self_reference,
         };
         profile!(
             "canon.virtual_ts.closure_component_props",
@@ -231,9 +228,11 @@ pub(super) fn component_usage_has_checkable_binding(
     external_template_bindings: &FxHashSet<&str>,
     check_unresolved_global_components: bool,
     legacy_vue2: bool,
+    experimental_self_reference: bool,
 ) -> bool {
     let name = usage.name.as_str();
     summary.bindings.bindings.contains_key(name)
+        || is_reserved_self_reference(name, experimental_self_reference)
         || (!legacy_vue2
             && (external_template_bindings.contains(name)
                 || (check_unresolved_global_components && !name.is_empty())))
@@ -344,6 +343,7 @@ fn generate_closure_component_props_recursive(
                 data.component.as_deref(),
                 data.name.as_str(),
                 ctx.summary.scopes.is_v_slot_name_static(scope.id),
+                ctx.experimental_self_reference,
             );
             emit_slot_function_open(
                 ts,

@@ -60,6 +60,7 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         scope_id: opts.scope_id.clone().map(|s| s.into()),
         ssr: opts.ssr.unwrap_or(false),
         experimental_patterned_template: opts.experimental_patterned_template.unwrap_or(false),
+        experimental_self_reference: opts.experimental_self_reference.unwrap_or(false),
         ..Default::default()
     };
     if template_syntax.is_quirks() {
@@ -87,6 +88,7 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
             .clone()
             .unwrap_or_else(|| "Vue".to_string())
             .into(),
+        experimental_self_reference: opts.experimental_self_reference.unwrap_or(false),
         ..Default::default()
     };
     let result = generate(&root, codegen_opts);
@@ -121,6 +123,7 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
         ssr: opts.ssr.unwrap_or(false),
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         experimental_patterned_template: opts.experimental_patterned_template.unwrap_or(false),
+        experimental_self_reference: opts.experimental_self_reference.unwrap_or(false),
         ..Default::default()
     };
     let result =

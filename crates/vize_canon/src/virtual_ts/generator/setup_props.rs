@@ -6,6 +6,7 @@ use crate::virtual_ts::props::{
     OptionsApiPropsSource, PropsTypeEmission, add_generic_defaults, extract_generic_names,
     generate_props_type, generate_props_variables, generate_setup_scoped_props_artifact,
 };
+use crate::virtual_ts::self_reference::{SELF_REFERENCE_COMPONENT, SELF_REFERENCE_COMPONENT_REF};
 
 fn is_identifier_start_byte(b: u8) -> bool {
     b == b'_' || b == b'$' || b.is_ascii_alphabetic()
@@ -215,6 +216,32 @@ impl SetupPropsPlan {
         if self.defer {
             generate_setup_scoped_props_artifact(ts, summary);
         }
+    }
+
+    pub(super) fn emit_self_reference_component(
+        &self,
+        mut ts: &mut String,
+        summary: &Croquis,
+        enabled: bool,
+        generic_param: Option<&str>,
+    ) {
+        if !enabled
+            || !summary
+                .used_components
+                .iter()
+                .any(|component| component.as_str() == SELF_REFERENCE_COMPONENT)
+        {
+            return;
+        }
+        let generic_names = generic_param.map(extract_generic_names);
+        let props_type_ref = generic_names
+            .as_deref()
+            .map(|names| self.generic_fallback_component_props_type_ref(names))
+            .unwrap_or_else(|| self.component_props_type_ref().into());
+        append!(
+            ts,
+            "  const {SELF_REFERENCE_COMPONENT_REF}: {{ new (): {{ $props: __VizeComponentProps<{props_type_ref}> }} }} = undefined as any;\n"
+        );
     }
 
     pub(super) fn push_return_field(&self, fields: &mut Vec<&'static str>) {

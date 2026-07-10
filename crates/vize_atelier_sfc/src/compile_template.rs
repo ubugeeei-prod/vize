@@ -99,6 +99,8 @@ pub(crate) fn compile_template_block(
                 .is_some_and(|opts| opts.experimental_in_tag_comments),
             experimental_patterned_template: compiler_options
                 .is_some_and(|opts| opts.experimental_patterned_template),
+            experimental_self_reference: compiler_options
+                .is_some_and(|opts| opts.experimental_self_reference),
             inline: false,
             is_ts,
             custom_renderer: options.custom_renderer,

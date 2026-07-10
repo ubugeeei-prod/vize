@@ -18,6 +18,7 @@ pub(crate) struct ScopeGenContext<'a> {
     pub(crate) template_offset: u32,
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) legacy_vue2: bool,
+    pub(crate) experimental_self_reference: bool,
 }
 
 pub(crate) struct ScopeGenerationOptions<'a> {
@@ -36,6 +37,7 @@ pub(crate) struct VForPropsContext<'a> {
     pub(crate) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
     pub(crate) template_prop_names: &'a FxHashSet<String>,
     pub(crate) template_offset: u32,
+    pub(crate) experimental_self_reference: bool,
 }
 
 pub(super) struct EventHandlerExprContext<'a> {

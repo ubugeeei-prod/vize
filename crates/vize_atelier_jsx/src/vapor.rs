@@ -149,8 +149,14 @@ pub(crate) fn compile_root_to_vapor(
     transform(bump, &mut root, transform_opts, Some(analysis));
 
     let ir = transform_to_ir(bump, &root);
-    let generated =
-        generate_vapor_with_options(&ir, None, VaporGenerateOptions { jsx_closure: true });
+    let generated = generate_vapor_with_options(
+        &ir,
+        None,
+        VaporGenerateOptions {
+            jsx_closure: true,
+            ..Default::default()
+        },
+    );
 
     let (code, templates) = if let Some(style) = scoped_style.as_ref() {
         inject_scope_id(&generated.code, &generated.templates, &style.scope_id)

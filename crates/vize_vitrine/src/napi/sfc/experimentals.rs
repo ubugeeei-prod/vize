@@ -4,6 +4,7 @@ use super::types::{BatchCompileOptionsNapi, SfcCompileOptionsNapi};
 pub(super) struct ExperimentalTemplateOptions {
     pub(super) in_tag_comments: bool,
     pub(super) patterned_template: bool,
+    pub(super) self_reference: bool,
 }
 
 impl ExperimentalTemplateOptions {
@@ -11,6 +12,7 @@ impl ExperimentalTemplateOptions {
         Self {
             in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
             patterned_template: opts.experimental_patterned_template.unwrap_or(false),
+            self_reference: opts.experimental_self_reference.unwrap_or(false),
         }
     }
 
@@ -18,17 +20,21 @@ impl ExperimentalTemplateOptions {
         Self {
             in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
             patterned_template: opts.experimental_patterned_template.unwrap_or(false),
+            self_reference: opts.experimental_self_reference.unwrap_or(false),
         }
     }
 
     pub(super) fn bits(self) -> u16 {
-        (u16::from(self.in_tag_comments) << 6) | (u16::from(self.patterned_template) << 7)
+        (u16::from(self.in_tag_comments) << 6)
+            | (u16::from(self.patterned_template) << 7)
+            | (u16::from(self.self_reference) << 8)
     }
 
     pub(super) fn dom_options(self) -> vize_atelier_dom::DomCompilerOptions {
         vize_atelier_dom::DomCompilerOptions {
             experimental_in_tag_comments: self.in_tag_comments,
             experimental_patterned_template: self.patterned_template,
+            experimental_self_reference: self.self_reference,
             ..Default::default()
         }
     }

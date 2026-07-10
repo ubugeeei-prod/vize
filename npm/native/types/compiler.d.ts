@@ -48,6 +48,8 @@ export interface CompilerOptions {
   experimentalPatternedTemplate?: boolean;
   /** Enable experimental server-script related RFC surface. */
   experimentalServerScript?: boolean;
+  /** Enable experimental compiler-reserved `<Self>` component resolution. */
+  experimentalSelfReference?: boolean;
   /**
    * Script extension handling: "preserve" (keep TypeScript) or "downcompile" (transpile to JS)
    * Defaults to "downcompile"

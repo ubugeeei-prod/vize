@@ -80,12 +80,7 @@ pub struct ParserOptions {
     pub on_warn: Option<fn(crate::CompilerError)>,
     pub comments: bool,
     pub experimental_in_tag_comments: bool,
-    /// Vue dialect the source is written in, resolved once per file from
-    /// `vue.version`. Defaults to [`VueVersion::V3`]; any legacy line is opt-in
-    /// behind the `legacy` cargo feature. Parsing/tokenizing only consults this
-    /// at cold decision points, and the Vue 3 default keeps the hot path
-    /// byte-identical (see `vize_armature::legacy`). This PR threads the signal;
-    /// it does not yet branch any behavior on it.
+    /// Vue dialect the source is written in, resolved once per file from `vue.version`.
     pub dialect: VueVersion,
 }
 
@@ -147,12 +142,8 @@ pub struct TransformOptions {
     pub vapor: bool,
     pub custom_renderer: bool,
     pub experimental_patterned_template: bool,
-    /// Vue dialect the source is written in, resolved once per file from
-    /// `vue.version`. Defaults to [`VueVersion::V3`]; any legacy line is opt-in
-    /// behind the `legacy` cargo feature. Transforms only consult this at cold
-    /// decision points, and the Vue 3 default keeps the hot path byte-identical
-    /// (see `vize_armature::legacy`). This PR threads the signal; it does not
-    /// yet branch any behavior on it.
+    pub experimental_self_reference: bool,
+    /// Vue dialect the source is written in, resolved once per file from `vue.version`.
     pub dialect: VueVersion,
 }
 
@@ -172,6 +163,7 @@ impl Default for TransformOptions {
             vapor: false,
             custom_renderer: false,
             experimental_patterned_template: false,
+            experimental_self_reference: false,
             dialect: VueVersion::V3,
         }
     }
@@ -337,6 +329,8 @@ pub struct CodegenOptions {
     pub binding_metadata: Option<BindingMetadata>,
     /// Whether to cache inline event handlers
     pub cache_handlers: bool,
+    /// Enable experimental compiler-reserved `<Self>` component resolution.
+    pub experimental_self_reference: bool,
 }
 
 impl Default for CodegenOptions {
@@ -356,6 +350,7 @@ impl Default for CodegenOptions {
             inline: false,
             binding_metadata: None,
             cache_handlers: false,
+            experimental_self_reference: false,
         }
     }
 }

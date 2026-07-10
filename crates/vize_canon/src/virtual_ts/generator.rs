@@ -53,8 +53,6 @@ use super::{
 use vize_carton::{FxHashMap, FxHashSet, String, append, cstr, profile};
 use vize_croquis::{Croquis, ScopeData, ScopeKind};
 /// Generate virtual TypeScript from Vue SFC analysis.
-///
-/// This ensures compiler macros like defineProps are ONLY valid in setup scope.
 pub fn generate_virtual_ts(
     summary: &Croquis,
     script_content: Option<&str>,
@@ -71,11 +69,6 @@ pub fn generate_virtual_ts(
     )
 }
 /// Generate virtual TypeScript with explicit script and template offsets.
-///
-/// `script_offset` is the byte offset of the script content within the SFC file.
-/// `template_offset` is the byte offset of the template content within the SFC file.
-/// When these are provided, source mappings point to SFC-absolute positions.
-/// `options` controls template globals and other generation settings.
 pub fn generate_virtual_ts_with_offsets(
     summary: &Croquis,
     script_content: Option<&str>,
@@ -772,6 +765,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     check_props && !legacy_vue2,
                 )
             });
+            setup_props_plan.emit_self_reference_component(
+                &mut ts,
+                summary,
+                options.experimental_self_reference,
+                generic_param,
+            );
             if options_api {
                 profile!(
                     "canon.virtual_ts.generate_options_api_variables",

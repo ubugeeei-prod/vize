@@ -35,11 +35,8 @@ pub struct SsrCodegenContext<'a> {
     #[allow(dead_code)]
     pub(crate) allocator: &'a Bump,
     pub(crate) options: &'a SsrCompilerOptions,
-    /// Output buffer
     pub(crate) code: Vec<u8>,
-    /// Indent level
     pub(crate) indent_level: u32,
-    /// Used SSR helpers
     pub(crate) ssr_helpers: FxHashSet<RuntimeHelper>,
     /// Used core helpers (from vue)
     pub(crate) core_helpers: FxHashSet<RuntimeHelper>,
@@ -228,6 +225,9 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     pub(crate) fn is_self_component_reference(&self, component: &str) -> bool {
+        if self.options.experimental_self_reference && component == "Self" {
+            return true;
+        }
         let Some(component_name) = self.options.component_name.as_deref() else {
             return false;
         };

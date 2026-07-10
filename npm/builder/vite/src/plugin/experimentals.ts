@@ -32,6 +32,14 @@ export function resolveExperimentalOptions(
       config?.serverScript,
       config?.["server script"],
     ),
+    selfReference: enabled(
+      options?.selfReference,
+      options?.["self reference"],
+      options?.self_reference,
+      config?.selfReference,
+      config?.["self reference"],
+      config?.self_reference,
+    ),
   };
 }
 
@@ -48,5 +56,6 @@ export function resolveExperimentalCompilerOptions(
     experimentalInTagComments: experimentals.inTagComments,
     experimentalPatternedTemplate: experimentals.patternedTemplate,
     experimentalServerScript: experimentals.serverScript,
+    experimentalSelfReference: experimentals.selfReference,
   };
 }

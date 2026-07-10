@@ -42,6 +42,7 @@ pub(super) struct CompileFileSettings {
     pub(super) template_syntax: TemplateSyntaxMode,
     pub(super) experimental_in_tag_comments: bool,
     pub(super) experimental_patterned_template: bool,
+    pub(super) experimental_self_reference: bool,
     /// Vue dialect from `vue.version`; defaults to [`VueVersion::V3`] and is
     /// threaded into each file's compile options.
     pub(super) dialect: VueVersion,
@@ -68,6 +69,7 @@ impl CompileFileSettings {
             | (u16::from(dialect_bits(self.dialect)) << 6)
             | (u16::from(self.experimental_in_tag_comments) << 9)
             | (u16::from(self.experimental_patterned_template) << 10)
+            | (u16::from(self.experimental_self_reference) << 11)
     }
 }
 

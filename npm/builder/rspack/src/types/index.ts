@@ -13,6 +13,7 @@ export interface SfcCompileOptionsNapi {
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
   experimentalServerScript?: boolean;
+  experimentalSelfReference?: boolean;
   /** Preserve TypeScript in output when true */
   isTs?: boolean;
   /** Scope ID for scoped CSS (e.g., "data-v-abc123") */

@@ -10,6 +10,7 @@ use vize_croquis::{
 use crate::virtual_ts::{
     expressions::rewrite_reserved_template_prop,
     helpers::{to_camel_case, to_safe_identifier, to_safe_identifier_fragment},
+    self_reference::component_ref_name,
 };
 
 pub(super) struct ComponentEventTypes {
@@ -25,12 +26,13 @@ pub(super) fn generate_component_event_types(
     scope: &Scope,
     template_prop_names: &FxHashSet<String>,
     legacy_vue2: bool,
+    experimental_self_reference: bool,
     indent: &str,
 ) -> Option<ComponentEventTypes> {
     let component_name = data.target_component.as_ref()?;
     let scope_id = scope.id.as_u32();
     let safe_event_name = to_safe_identifier(data.event_name.as_str());
-    let component_ref = to_safe_identifier(component_name.as_str());
+    let component_ref = component_ref_name(component_name.as_str(), experimental_self_reference);
     let component_type_name = to_safe_identifier_fragment(component_name.as_str());
     let pascal_event = to_pascal_case(data.event_name.as_str());
     let on_handler = cstr!("on{pascal_event}");

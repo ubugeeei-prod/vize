@@ -50,6 +50,7 @@ pub(crate) fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions
             experimental_in_tag_comments: get_bool("experimentalInTagComments"),
             experimental_patterned_template: get_bool("experimentalPatternedTemplate"),
             experimental_server_script: get_bool("experimentalServerScript"),
+            experimental_self_reference: get_bool("experimentalSelfReference"),
             runtime_module_name: get_string("runtimeModuleName"),
             runtime_global_name: get_string("runtimeGlobalName"),
             script_ext: get_string("scriptExt"),

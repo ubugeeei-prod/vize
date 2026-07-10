@@ -9,11 +9,13 @@ const fileOptions = buildCompileFileOptions("/src/App.vue", {
   experimentalInTagComments: true,
   experimentalPatternedTemplate: true,
   experimentalServerScript: true,
+  experimentalSelfReference: true,
 });
 
 assert.equal(fileOptions.experimentalInTagComments, true);
 assert.equal(fileOptions.experimentalPatternedTemplate, true);
 assert.equal(fileOptions.experimentalServerScript, true);
+assert.equal(fileOptions.experimentalSelfReference, true);
 
 const batchOptions = buildCompileBatchOptions({
   ssr: false,
@@ -21,10 +23,12 @@ const batchOptions = buildCompileBatchOptions({
   experimentalInTagComments: true,
   experimentalPatternedTemplate: true,
   experimentalServerScript: true,
+  experimentalSelfReference: true,
 });
 
 assert.equal(batchOptions.experimentalInTagComments, true);
 assert.equal(batchOptions.experimentalPatternedTemplate, true);
 assert.equal(batchOptions.experimentalServerScript, true);
+assert.equal(batchOptions.experimentalSelfReference, true);
 
 console.log("vite-plugin-vize compile option tests passed!");

@@ -105,6 +105,7 @@ pub struct ConfigFeatureFlags {
     pub experimental_in_tag_comments: bool,
     pub experimental_patterned_template: bool,
     pub experimental_server_script: bool,
+    pub experimental_self_reference: bool,
 }
 
 impl Default for ConfigFeatureFlags {
@@ -122,6 +123,7 @@ impl Default for ConfigFeatureFlags {
             experimental_in_tag_comments: false,
             experimental_patterned_template: false,
             experimental_server_script: false,
+            experimental_self_reference: false,
         }
     }
 }
@@ -302,6 +304,7 @@ impl RawVizeConfig {
             experimental_in_tag_comments: experimentals.in_tag_comments_enabled(),
             experimental_patterned_template: experimentals.patterned_template_enabled(),
             experimental_server_script: experimentals.server_script_enabled(),
+            experimental_self_reference: experimentals.self_reference_enabled(),
         };
 
         let config = VizeConfig {

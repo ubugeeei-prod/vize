@@ -28,12 +28,10 @@ pub struct VaporGenerateResult {
     pub templates: Vec<String>,
 }
 
-/// Options for Vapor code generation.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct VaporGenerateOptions {
-    /// JSX closure mode: the render code runs inside the authoring component
-    /// function, so free identifiers stay bare instead of `_ctx.`-prefixed.
     pub jsx_closure: bool,
+    pub experimental_self_reference: bool,
 }
 
 /// Generate Vapor code from IR
@@ -56,6 +54,7 @@ pub fn generate_vapor_with_options(
         binding_metadata,
     );
     ctx.jsx_closure = options.jsx_closure;
+    ctx.experimental_self_reference = options.experimental_self_reference;
 
     // Template helper is always used if we have templates
     if !ir.templates.is_empty() {

@@ -13,7 +13,8 @@ fn load_config_reads_experimentals() {
             "jsxVapor": {},
             "intagComment": {},
             "pattenedTemplate": {},
-            "serverScript": {}
+            "serverScript": {},
+            "selfReference": {}
           }
         }"#,
     )
@@ -25,6 +26,7 @@ fn load_config_reads_experimentals() {
     assert!(loaded.features.experimental_in_tag_comments);
     assert!(loaded.features.experimental_patterned_template);
     assert!(loaded.features.experimental_server_script);
+    assert!(loaded.features.experimental_self_reference);
     assert!(loaded.features.type_checker_jsx_typecheck);
     assert_eq!(loaded.features.jsx_mode, Some(JsxMode::Vapor));
     assert_eq!(load_compiler_vapor(Some(&config_path)), Some(true));
@@ -43,7 +45,8 @@ fn load_config_accepts_experimental_aliases_and_false_switches() {
             "jsxVapor": {},
             "inTagComment": true,
             "patternedTemplate": false,
-            "server script": null
+            "server script": null,
+            "self reference": false
           }
         }"#,
     )
@@ -53,6 +56,7 @@ fn load_config_accepts_experimental_aliases_and_false_switches() {
     assert!(loaded.features.experimental_in_tag_comments);
     assert!(!loaded.features.experimental_patterned_template);
     assert!(!loaded.features.experimental_server_script);
+    assert!(!loaded.features.experimental_self_reference);
     assert!(loaded.features.type_checker_jsx_typecheck);
     assert_eq!(loaded.features.jsx_mode, Some(JsxMode::Vdom));
     assert_eq!(load_compiler_vapor(Some(&config_path)), Some(false));

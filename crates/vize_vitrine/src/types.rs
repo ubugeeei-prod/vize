@@ -60,6 +60,9 @@ pub struct CompilerOptions {
     /// Enable experimental server-script related RFC surface.
     #[serde(default)]
     pub experimental_server_script: Option<bool>,
+    /// Enable experimental compiler-reserved `<Self>` component resolution.
+    #[serde(default)]
+    pub experimental_self_reference: Option<bool>,
     /// Module name for runtime imports.
     #[serde(default)]
     pub runtime_module_name: Option<String>,

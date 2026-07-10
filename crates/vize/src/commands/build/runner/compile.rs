@@ -121,6 +121,7 @@ pub(super) fn compile_file_with_profile(
             compiler_options: Some(vize_atelier_dom::DomCompilerOptions {
                 experimental_in_tag_comments: settings.experimental_in_tag_comments,
                 experimental_patterned_template: settings.experimental_patterned_template,
+                experimental_self_reference: settings.experimental_self_reference,
                 ..Default::default()
             }),
             dialect: settings.dialect,

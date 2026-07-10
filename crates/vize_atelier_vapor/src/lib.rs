@@ -17,6 +17,8 @@ mod tests;
 #[cfg(test)]
 mod tests_dotted_slots;
 #[cfg(test)]
+mod tests_self_reference;
+#[cfg(test)]
 mod tests_setup_components;
 
 pub use compile::{

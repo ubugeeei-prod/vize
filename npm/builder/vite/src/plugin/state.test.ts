@@ -200,6 +200,7 @@ assert.deepEqual(
         experimentalInTagComments: true,
         experimentalPatternedTemplate: true,
         experimentalServerScript: true,
+        experimentalSelfReference: true,
       },
     },
     false,
@@ -213,6 +214,7 @@ assert.deepEqual(
     experimentalInTagComments: true,
     experimentalPatternedTemplate: true,
     experimentalServerScript: true,
+    experimentalSelfReference: true,
   },
   "Request compile options should pass experimental flags to native compilation",
 );

@@ -212,6 +212,7 @@ fn compile_template_inner_with_sections<'a>(
         inline: options.inline,
         custom_renderer: options.custom_renderer,
         experimental_patterned_template: options.experimental_patterned_template,
+        experimental_self_reference: options.experimental_self_reference,
         binding_metadata: options.binding_metadata.clone(),
         dialect: options.dialect,
         ..Default::default()
@@ -267,6 +268,7 @@ fn compile_template_inner_with_sections<'a>(
         is_ts: options.is_ts,
         inline: options.inline,
         cache_handlers: options.cache_handlers,
+        experimental_self_reference: options.experimental_self_reference,
         binding_metadata: options.binding_metadata,
         ..Default::default()
     };

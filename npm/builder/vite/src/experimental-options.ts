@@ -9,12 +9,16 @@ export interface ExperimentalOptions {
   patternedTemplate?: ExperimentalSwitch;
   serverScript?: ExperimentalSwitch;
   "server script"?: ExperimentalSwitch;
+  selfReference?: ExperimentalSwitch;
+  "self reference"?: ExperimentalSwitch;
+  self_reference?: ExperimentalSwitch;
 }
 
 export interface ExperimentalCompileFlags {
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
   experimentalServerScript?: boolean;
+  experimentalSelfReference?: boolean;
 }
 
 export interface ExperimentalPluginOptions extends ExperimentalCompileFlags {

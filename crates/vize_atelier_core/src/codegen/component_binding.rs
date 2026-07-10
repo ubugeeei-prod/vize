@@ -16,6 +16,10 @@ impl CodegenContext {
 
     /// Resolve the binding name for a component tag.
     pub fn resolve_component_binding_name(&self, component: &str) -> Option<String> {
+        if self.is_reserved_self_reference(component) {
+            return None;
+        }
+
         self.resolve_component_binding(component).map(|binding| {
             if let Some(suffix) = binding.suffix {
                 let mut name = String::with_capacity(binding.name.len() + suffix.len() + 1);
@@ -31,6 +35,10 @@ impl CodegenContext {
 
     /// Push a component tag that resolves to a setup binding.
     pub fn push_component_binding_tag(&mut self, component: &str) -> bool {
+        if self.is_reserved_self_reference(component) {
+            return false;
+        }
+
         let Some(binding) = self.resolve_component_binding(component) else {
             return false;
         };
@@ -95,5 +103,9 @@ impl CodegenContext {
             binding_type,
             suffix: None,
         })
+    }
+
+    pub fn is_reserved_self_reference(&self, component: &str) -> bool {
+        self.options.experimental_self_reference && component == "Self"
     }
 }

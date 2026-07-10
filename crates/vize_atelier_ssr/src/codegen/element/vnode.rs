@@ -1,5 +1,3 @@
-//! VNode fallback expression generation used by slot fallback paths.
-
 use super::super::helpers::collect_for_scoped_params;
 use super::component::{has_slot_directive, slot_template_in_children, template_slot_is_dynamic};
 use super::props::{
@@ -194,6 +192,9 @@ impl<'a> SsrCodegenContext<'a> {
         self.use_core_helper(RuntimeHelper::ResolveComponent);
         let mut out = String::from("_resolveComponent(");
         out.push_str(&quoted_js_string(&el.tag));
+        if self.is_self_component_reference(&el.tag) {
+            out.push_str(", true");
+        }
         out.push(')');
         out
     }
@@ -240,10 +241,7 @@ impl<'a> SsrCodegenContext<'a> {
 
         self.use_core_helper(RuntimeHelper::WithCtx);
 
-        // Named `<template #...>` slots must keep their own entry so their
-        // slot-props pattern (e.g. `#header="{ collapsed }"`) stays bound;
-        // collapsing them into `default:` compiles the body against the
-        // instance and breaks scoped slots at runtime.
+        // Named `<template #...>` slots keep their own entry so slot props stay bound.
         let mut default_children: std::vec::Vec<&'node TemplateChildNode<'a>> =
             std::vec::Vec::new();
         let mut named_slots: std::vec::Vec<&'node ElementNode<'a>> = std::vec::Vec::new();

@@ -50,6 +50,10 @@ pub struct DomCompilerOptions {
     #[serde(default)]
     pub experimental_patterned_template: bool,
 
+    /// Enable experimental compiler-reserved `<Self>` component resolution.
+    #[serde(default)]
+    pub experimental_self_reference: bool,
+
     /// Current SFC component name for self-reference resolution
     #[serde(default)]
     pub component_name: Option<String>,
@@ -98,6 +102,7 @@ impl Clone for DomCompilerOptions {
             comments: self.comments,
             experimental_in_tag_comments: self.experimental_in_tag_comments,
             experimental_patterned_template: self.experimental_patterned_template,
+            experimental_self_reference: self.experimental_self_reference,
             component_name: self.component_name.clone(),
             inline: self.inline,
             custom_renderer: self.custom_renderer,
@@ -123,6 +128,7 @@ impl Default for DomCompilerOptions {
             comments: false,
             experimental_in_tag_comments: false,
             experimental_patterned_template: false,
+            experimental_self_reference: false,
             component_name: None,
             inline: false,
             custom_renderer: false,

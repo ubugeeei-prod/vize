@@ -182,6 +182,7 @@ pub(super) fn compile_file_stats_with_cache(
             compiler_options: Some(vize_atelier_dom::DomCompilerOptions {
                 experimental_in_tag_comments: settings.experimental_in_tag_comments,
                 experimental_patterned_template: settings.experimental_patterned_template,
+                experimental_self_reference: settings.experimental_self_reference,
                 ..Default::default()
             }),
             dialect: settings.dialect,

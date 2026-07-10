@@ -28,6 +28,7 @@ pub(super) fn collect_component_prop_expression_ranges(
             &external_template_bindings,
             options.check_unresolved_global_components,
             options.legacy_vue2,
+            virtual_ts_options.experimental_self_reference,
         );
         if !has_checkable_binding && !options.legacy_vue2 {
             continue;

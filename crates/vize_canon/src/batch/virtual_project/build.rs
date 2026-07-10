@@ -227,8 +227,7 @@ pub(super) fn virtual_ts_options_for_descriptor(
 ) -> VirtualTsOptions {
     // Per-file generation never re-emits the global auto-import stubs inline:
     // they are written once to a shared ambient `.d.ts` (see
-    // `write_auto_import_stubs`). Build the per-file options with an empty
-    // `auto_import_stubs` instead of deep-cloning the (potentially large,
+    // `write_auto_import_stubs`). Use an empty `auto_import_stubs` instead of deep-cloning the
     // Nuxt/auto-import) global Vec only to clear it again at the call site.
     let css_modules: Vec<CompactString> = descriptor
         .styles
@@ -252,6 +251,7 @@ pub(super) fn virtual_ts_options_for_descriptor(
         css_modules,
         auto_import_stubs: Vec::new(),
         external_template_bindings: base.external_template_bindings.clone(),
+        experimental_self_reference: base.experimental_self_reference,
     }
 }
 

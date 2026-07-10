@@ -10,6 +10,10 @@ struct ComponentBinding {
 
 impl<'a> SsrCodegenContext<'a> {
     pub(crate) fn resolve_component_binding_expr(&mut self, component: &str) -> Option<String> {
+        if self.options.experimental_self_reference && component == "Self" {
+            return None;
+        }
+
         let binding = self.resolve_component_binding(component)?;
         let needs_unref = self.options.inline
             && matches!(

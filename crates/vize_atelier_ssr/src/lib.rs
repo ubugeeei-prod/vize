@@ -2,10 +2,7 @@
 //!
 //! This module provides SSR-specific compilation including:
 //! - SSR code generation with template literals and `_push()` calls
-//! - SSR-specific directive transforms (v-model, v-show)
-//! - SSR slot rendering
-//! - SSR component rendering
-//! - SSR teleport and suspense handling
+//! - SSR-specific directive transforms, slots, components, Teleport, and Suspense
 //!
 //! **Atelier** (/ˌætəlˈjeɪ/) is an artist's workshop or studio. The "ssr" atelier
 //! specializes in server-side rendering output, producing HTML strings instead of
@@ -130,6 +127,7 @@ fn compile_ssr_inner<'a>(
         inline: codegen_options.inline,
         custom_renderer: codegen_options.custom_renderer,
         experimental_patterned_template: codegen_options.experimental_patterned_template,
+        experimental_self_reference: codegen_options.experimental_self_reference,
         binding_metadata: codegen_options.binding_metadata.clone(),
         dialect: codegen_options.dialect,
         ..Default::default()

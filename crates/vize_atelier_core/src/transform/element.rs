@@ -37,17 +37,17 @@ pub fn transform_element<'a>(
                 return None;
             }
 
-            // Only add ResolveComponent if component is not in binding metadata
-            let is_in_bindings = ctx
-                .options
-                .binding_metadata
-                .as_ref()
-                .map(|m| m.bindings.contains_key(el.tag.as_str()))
-                .unwrap_or(false);
+            let is_reserved_self = ctx.options.experimental_self_reference && el.tag == "Self";
+            let is_in_bindings = !is_reserved_self
+                && ctx
+                    .options
+                    .binding_metadata
+                    .as_ref()
+                    .map(|m| m.bindings.contains_key(el.tag.as_str()))
+                    .unwrap_or(false);
             if !is_in_bindings {
                 ctx.helper(RuntimeHelper::ResolveComponent);
             }
-            // Defer add_component to exit phase so inner components resolve before outer ones
             let tag = el.tag.clone();
             let mut exits = ExitFns::new();
             exits.push(std::boxed::Box::new(move |ctx| {

@@ -34,6 +34,8 @@ pub(crate) fn compile_template_block_vapor(
             .is_some_and(|opts| opts.experimental_in_tag_comments),
         experimental_patterned_template: compiler_options
             .is_some_and(|opts| opts.experimental_patterned_template),
+        experimental_self_reference: compiler_options
+            .is_some_and(|opts| opts.experimental_self_reference),
         ..Default::default()
     };
 

@@ -148,13 +148,14 @@ export function compileFile(
   const experimentalPatternedTemplate =
     options.compilerOptions?.experimentalPatternedTemplate ?? false;
   const experimentalServerScript = options.compilerOptions?.experimentalServerScript ?? false;
+  const experimentalSelfReference = options.compilerOptions?.experimentalSelfReference ?? false;
   const tauKey =
     transformAssetUrls === false
       ? "tau=false"
       : transformAssetUrls === true
         ? "tau=true"
         : `tau=${JSON.stringify(transformAssetUrls)}`;
-  const cacheKey = `${filePath}:ssr=${ssr}:vapor=${vapor}:ts=${autoIsTs}:map=${sourceMap}:ce=${isCustomElement}:syntax=${templateSyntax}:xic=${experimentalInTagComments}:xpt=${experimentalPatternedTemplate}:xss=${experimentalServerScript}:root=${rootCtx}:prod=${isProd}:${tauKey}`;
+  const cacheKey = `${filePath}:ssr=${ssr}:vapor=${vapor}:ts=${autoIsTs}:map=${sourceMap}:ce=${isCustomElement}:syntax=${templateSyntax}:xic=${experimentalInTagComments}:xpt=${experimentalPatternedTemplate}:xss=${experimentalServerScript}:xsr=${experimentalSelfReference}:root=${rootCtx}:prod=${isProd}:${tauKey}`;
 
   const contentHash = computeContentHash(source);
   const cached = compilationCache.get(cacheKey);

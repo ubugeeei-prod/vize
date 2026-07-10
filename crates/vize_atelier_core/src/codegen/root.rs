@@ -143,6 +143,7 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
             .component_name
             .as_deref()
             .is_some_and(|name| is_self_component_reference(component, name))
+            || ctx.is_reserved_self_reference(component)
         {
             ctx.push(", true");
         }

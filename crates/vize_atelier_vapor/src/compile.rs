@@ -3,7 +3,6 @@
 //! Wires together parsing, the core transform lane, Vapor IR lowering, and
 //! code generation behind the public `compile_vapor*` functions.
 
-use crate::generate::generate_vapor;
 use crate::lower as vapor_lower;
 use vize_atelier_core::{
     CompilerError, Namespace,
@@ -30,6 +29,8 @@ pub struct VaporCompilerOptions {
     pub experimental_in_tag_comments: bool,
     /// Enable experimental `v-match` / `v-case` patterned template desugaring.
     pub experimental_patterned_template: bool,
+    /// Enable experimental compiler-reserved `<Self>` component resolution.
+    pub experimental_self_reference: bool,
 }
 
 /// Vapor compilation result
@@ -147,6 +148,7 @@ fn compile_vapor_inner<'a>(
         vapor: true,
         custom_renderer: options.custom_renderer,
         experimental_patterned_template: options.experimental_patterned_template,
+        experimental_self_reference: options.experimental_self_reference,
         ..Default::default()
     };
     if template_syntax.is_quirks() {
@@ -160,7 +162,14 @@ fn compile_vapor_inner<'a>(
         vapor_lower::transform_to_ir_with_diagnostics(allocator, &root);
 
     // Generate Vapor code
-    let result = generate_vapor(&ir, binding_metadata.as_ref());
+    let result = crate::generate::generate_vapor_with_options(
+        &ir,
+        binding_metadata.as_ref(),
+        crate::generate::VaporGenerateOptions {
+            experimental_self_reference: options.experimental_self_reference,
+            ..Default::default()
+        },
+    );
 
     (
         VaporCompileResult {

@@ -110,6 +110,7 @@ pub(crate) fn run(args: BuildArgs) {
             .unwrap_or_else(|| template_syntax_mode(build_config.compiler_template_syntax)),
         experimental_in_tag_comments: build_config.features.experimental_in_tag_comments,
         experimental_patterned_template: build_config.features.experimental_patterned_template,
+        experimental_self_reference: build_config.features.experimental_self_reference,
         dialect: build_config.dialect.unwrap_or_default(),
         script_ext: args.script_ext,
         record_profile_totals: args.profile,
