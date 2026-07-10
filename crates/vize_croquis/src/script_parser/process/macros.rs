@@ -22,14 +22,15 @@ use super::super::extract::{
     check_getter_call_extraction, check_reactive_plain_alias_extraction,
     check_reactive_property_extraction, check_ref_value_extraction, detect_reactivity_call,
     detect_setup_context_violation, extract_argument_source, extract_call_expression,
-    extract_provide_key, get_binding_type_from_kind, process_call_expression,
-    record_getter_context_from_call, record_static_runtime_object_literal,
+    extract_inject_expected_type_from_init as inject_type, extract_provide_key,
+    get_binding_type_from_kind, process_call_expression, record_getter_context_from_call,
+    record_static_runtime_object_literal,
 };
 use super::super::walk::{walk_call_arguments, walk_expression};
 use super::super::{ReactiveValueOrigin, ScriptParseResult};
 use super::bindings::{
-    get_binding_pattern_name, infer_destructure_binding_type, is_function_expression,
-    is_literal_expression,
+    add_binding_pattern_names, get_binding_pattern_name, infer_destructure_binding_type,
+    is_function_expression, is_literal_expression, push_binding_pattern_names,
 };
 
 /// Process a variable declarator
@@ -43,7 +44,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
     match &declarator.id {
         BindingPattern::BindingIdentifier(id) => {
             let name = id.name.as_str();
-
+            let at = id.span.start;
             // Record definition span for Go-to-Definition
             result
                 .binding_spans
@@ -68,7 +69,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     if macro_kind == MacroKind::DefineModel {
                         result
                             .reactivity
-                            .register(CompactString::new(name), ReactiveKind::Ref, 0);
+                            .register(CompactString::new(name), ReactiveKind::Ref, at);
                     }
                     if matches!(macro_kind, MacroKind::DefineProps | MacroKind::WithDefaults) {
                         result.reactivity.register(
@@ -92,7 +93,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
 
                     result
                         .reactivity
-                        .register(CompactString::new(name), reactive_kind, 0);
+                        .register(CompactString::new(name), reactive_kind, at);
                     result.bindings.add(name, binding_type);
                     // Walk into the call's callback arguments to track nested scopes
                     walk_call_arguments(result, call, source);
@@ -111,13 +112,12 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             .get(1)
                             .map(|arg| CompactString::new(extract_argument_source(arg, source)));
                         let local_name = CompactString::new(name);
-                        // Track inject variable name for indirect destructure detection
                         result.inject_var_names.insert(local_name.clone());
                         result.provide_inject.add_inject(
                             key,
                             local_name, // local_name is the binding name
                             default_value,
-                            None, // expected_type
+                            inject_type(declarator.init.as_ref(), call, source),
                             InjectPattern::Simple,
                             None, // from_composable
                             call.span.start,
@@ -332,7 +332,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         call.arguments
                             .get(1)
                             .map(|arg| CompactString::new(extract_argument_source(arg, source))),
-                        None,
+                        inject_type(declarator.init.as_ref(), call, source),
                         InjectPattern::ObjectDestructure(destructured_props.clone()),
                         None,
                         call.span.start,
@@ -351,7 +351,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         call.arguments
                             .get(1)
                             .map(|arg| CompactString::new(extract_argument_source(arg, source))),
-                        None,
+                        inject_type(None, call, source),
                         InjectPattern::Simple,
                         None,
                         call.span.start,
@@ -430,40 +430,38 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     _ => None,
                 };
 
-                if let Some(local_name) = get_binding_pattern_name(&prop.value) {
-                    // If destructuring from defineProps, use Props binding type
-                    let binding_type = if is_define_props {
-                        BindingType::Props
-                    } else {
-                        infer_destructure_binding_type(kind, declarator.init.as_ref())
-                    };
-                    result.bindings.add(local_name.as_str(), binding_type);
+                // If destructuring from defineProps, use Props binding type
+                let binding_type = if is_define_props {
+                    BindingType::Props
+                } else {
+                    infer_destructure_binding_type(kind, declarator.init.as_ref())
+                };
 
-                    // Track destructure binding
-                    if let Some(ref mut destructure) = props_destructure {
-                        let key = key_name
-                            .map(CompactString::new)
-                            .unwrap_or_else(|| CompactString::new(&local_name));
+                if is_define_props {
+                    if let Some(local_name) = get_binding_pattern_name(&prop.value) {
+                        result.bindings.add(local_name.as_str(), binding_type);
 
-                        // Extract default value if present (assignment pattern)
-                        let default_value = if prop.shorthand {
-                            // Check if the value is an assignment pattern with default
-                            if let BindingPattern::AssignmentPattern(assign) = &prop.value {
-                                Some(CompactString::new(
-                                    &source[assign.right.span().start as usize
-                                        ..assign.right.span().end as usize],
-                                ))
-                            } else {
-                                None
-                            }
-                        } else {
-                            None
-                        };
+                        // Track destructure binding
+                        if let Some(ref mut destructure) = props_destructure {
+                            let key = key_name
+                                .map(CompactString::new)
+                                .unwrap_or_else(|| CompactString::new(&local_name));
 
-                        destructure.insert(key, CompactString::new(&local_name), default_value);
-                    }
+                            // Extract default value if present (assignment pattern), including
+                            // renamed destructures such as `{ source: local = fallback }`.
+                            let default_value =
+                                if let BindingPattern::AssignmentPattern(assign) = &prop.value {
+                                    Some(CompactString::new(
+                                        &source[assign.right.span().start as usize
+                                            ..assign.right.span().end as usize],
+                                    ))
+                                } else {
+                                    None
+                                };
 
-                    if is_define_props {
+                            destructure.insert(key, CompactString::new(&local_name), default_value);
+                        }
+
                         let key = key_name
                             .map(CompactString::new)
                             .unwrap_or_else(|| CompactString::new(&local_name));
@@ -474,32 +472,37 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             },
                         );
                     }
+                } else {
+                    add_binding_pattern_names(&mut result.bindings, &prop.value, binding_type);
                 }
             }
 
             // Handle rest element
-            if let Some(rest) = &obj.rest
-                && let Some(name) = get_binding_pattern_name(&rest.argument)
-            {
+            if let Some(rest) = &obj.rest {
                 let binding_type = if is_define_props {
                     BindingType::Props
                 } else {
                     infer_destructure_binding_type(kind, declarator.init.as_ref())
                 };
-                result.bindings.add(name.as_str(), binding_type);
-
-                // Track rest binding
-                if let Some(ref mut destructure) = props_destructure {
-                    destructure.rest_id = Some(CompactString::new(&name));
-                }
 
                 if is_define_props {
-                    result.reactive_value_origins.insert(
-                        CompactString::new(&name),
-                        ReactiveValueOrigin::PropsDestructure {
-                            prop_name: CompactString::new("(rest)"),
-                        },
-                    );
+                    if let Some(name) = get_binding_pattern_name(&rest.argument) {
+                        result.bindings.add(name.as_str(), binding_type);
+
+                        // Track rest binding
+                        if let Some(ref mut destructure) = props_destructure {
+                            destructure.rest_id = Some(CompactString::new(&name));
+                        }
+
+                        result.reactive_value_origins.insert(
+                            CompactString::new(&name),
+                            ReactiveValueOrigin::PropsDestructure {
+                                prop_name: CompactString::new("(rest)"),
+                            },
+                        );
+                    }
+                } else {
+                    add_binding_pattern_names(&mut result.bindings, &rest.argument, binding_type);
                 }
             }
 
@@ -545,14 +548,10 @@ pub(in crate::script_parser) fn process_variable_declarator(
             if let Some(call) = inject_call {
                 let mut destructured_items: Vec<CompactString> = Vec::new();
                 for elem in arr.elements.iter().flatten() {
-                    if let Some(name) = get_binding_pattern_name(elem) {
-                        destructured_items.push(CompactString::new(&name));
-                    }
+                    push_binding_pattern_names(elem, &mut destructured_items);
                 }
-                if let Some(rest) = &arr.rest
-                    && let Some(name) = get_binding_pattern_name(&rest.argument)
-                {
-                    destructured_items.push(CompactString::new(&name));
+                if let Some(rest) = &arr.rest {
+                    push_binding_pattern_names(&rest.argument, &mut destructured_items);
                 }
 
                 if let Some(key) = call
@@ -566,7 +565,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         call.arguments
                             .get(1)
                             .map(|arg| CompactString::new(extract_argument_source(arg, source))),
-                        None,
+                        inject_type(declarator.init.as_ref(), call, source),
                         InjectPattern::ArrayDestructure(destructured_items),
                         None,
                         call.span.start,
@@ -585,7 +584,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         call.arguments
                             .get(1)
                             .map(|arg| CompactString::new(extract_argument_source(arg, source))),
-                        None,
+                        inject_type(None, call, source),
                         InjectPattern::Simple,
                         None,
                         call.span.start,
@@ -595,14 +594,10 @@ pub(in crate::script_parser) fn process_variable_declarator(
             } else if let Some((inject_var, offset)) = indirect_inject_var {
                 let mut destructured_items: Vec<CompactString> = Vec::new();
                 for elem in arr.elements.iter().flatten() {
-                    if let Some(name) = get_binding_pattern_name(elem) {
-                        destructured_items.push(CompactString::new(&name));
-                    }
+                    push_binding_pattern_names(elem, &mut destructured_items);
                 }
-                if let Some(rest) = &arr.rest
-                    && let Some(name) = get_binding_pattern_name(&rest.argument)
-                {
-                    destructured_items.push(CompactString::new(&name));
+                if let Some(rest) = &arr.rest {
+                    push_binding_pattern_names(&rest.argument, &mut destructured_items);
                 }
 
                 result.provide_inject.add_indirect_destructure(
@@ -615,22 +610,16 @@ pub(in crate::script_parser) fn process_variable_declarator(
             // Handle array destructuring
             let arr_binding_type = infer_destructure_binding_type(kind, declarator.init.as_ref());
             for elem in arr.elements.iter().flatten() {
-                if let Some(name) = get_binding_pattern_name(elem) {
-                    result.bindings.add(name.as_str(), arr_binding_type);
-                }
+                add_binding_pattern_names(&mut result.bindings, elem, arr_binding_type);
             }
-            if let Some(rest) = &arr.rest
-                && let Some(name) = get_binding_pattern_name(&rest.argument)
-            {
-                result.bindings.add(name.as_str(), arr_binding_type);
+            if let Some(rest) = &arr.rest {
+                add_binding_pattern_names(&mut result.bindings, &rest.argument, arr_binding_type);
             }
         }
 
         BindingPattern::AssignmentPattern(assign) => {
-            if let Some(name) = get_binding_pattern_name(&assign.left) {
-                let binding_type = get_binding_type_from_kind(kind);
-                result.bindings.add(name.as_str(), binding_type);
-            }
+            let binding_type = get_binding_type_from_kind(kind);
+            add_binding_pattern_names(&mut result.bindings, &assign.left, binding_type);
         }
     }
 }

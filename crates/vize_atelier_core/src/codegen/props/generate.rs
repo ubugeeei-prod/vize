@@ -265,8 +265,13 @@ fn try_generate_static_attrs(
     for prop in unique_props {
         // Lower static-prop emission through the Rendu plate (#1756): name,
         // value, and source spans come from `RenduOp::Attribute`, not Relief.
-        let RenduOp::Attribute { name, name_span, value, value_span, .. } =
-            RenduOp::from_prop(prop)
+        let RenduOp::Attribute {
+            name,
+            name_span,
+            value,
+            value_span,
+            ..
+        } = RenduOp::from_prop(prop)
         else {
             unreachable!("checked above: all props are attributes");
         };

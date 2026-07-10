@@ -3,8 +3,10 @@
 //! SSR code generation produces JavaScript that uses template literals and `_push()` calls
 //! to build HTML strings on the server side.
 
+mod component_binding;
 mod element;
 pub(crate) mod helpers;
+mod scope_prefix;
 
 use crate::options::SsrCompilerOptions;
 use vize_atelier_core::{RootNode, RuntimeHelper, TemplateChildNode};
@@ -225,39 +227,6 @@ impl<'a> SsrCodegenContext<'a> {
         self.core_helpers.insert(helper);
     }
 
-    pub(crate) fn resolve_component_binding_name(&self, component: &str) -> Option<String> {
-        let metadata = self.options.binding_metadata.as_ref()?;
-
-        let resolve_base = |name: &str| {
-            if metadata.bindings.contains_key(name) {
-                return Some(name.to_compact_string());
-            }
-
-            let camel = camelize(name);
-            if metadata.bindings.contains_key(camel.as_str()) {
-                return Some(camel);
-            }
-
-            let pascal = capitalize(camel.as_str());
-            if metadata.bindings.contains_key(pascal.as_str()) {
-                return Some(pascal);
-            }
-
-            None
-        };
-
-        if let Some((base, suffix)) = component.split_once('.') {
-            let resolved_base = resolve_base(base)?;
-            let mut resolved = String::with_capacity(resolved_base.len() + suffix.len() + 1);
-            resolved.push_str(resolved_base.as_str());
-            resolved.push('.');
-            resolved.push_str(suffix);
-            return Some(resolved);
-        }
-
-        resolve_base(component)
-    }
-
     pub(crate) fn is_self_component_reference(&self, component: &str) -> bool {
         let Some(component_name) = self.options.component_name.as_deref() else {
             return false;
@@ -280,51 +249,8 @@ impl<'a> SsrCodegenContext<'a> {
         self.scoped_params.pop();
     }
 
-    pub(crate) fn is_scoped_param(&self, name: &str) -> bool {
-        self.scoped_params
-            .iter()
-            .rev()
-            .any(|params| params.contains(name))
-    }
-
     pub(crate) fn strip_ctx_for_scoped_params(&self, content: &str) -> String {
-        if self.scoped_params.is_empty() || !content.contains("_ctx.") {
-            return content.to_compact_string();
-        }
-
-        let mut result = String::with_capacity(content.len());
-        let bytes = content.as_bytes();
-        let prefix = b"_ctx.";
-        let mut index = 0;
-
-        while index < bytes.len() {
-            if index + prefix.len() <= bytes.len() && &bytes[index..index + prefix.len()] == prefix
-            {
-                let start = index + prefix.len();
-                let mut end = start;
-                while end < bytes.len()
-                    && (bytes[end].is_ascii_alphanumeric()
-                        || bytes[end] == b'_'
-                        || bytes[end] == b'$')
-                {
-                    end += 1;
-                }
-
-                let ident = &content[start..end];
-                if !ident.is_empty() && self.is_scoped_param(ident) {
-                    result.push_str(ident);
-                    index = end;
-                } else {
-                    result.push_str("_ctx.");
-                    index = start;
-                }
-            } else {
-                result.push(bytes[index] as char);
-                index += 1;
-            }
-        }
-
-        result
+        scope_prefix::strip_scope_prefixes_for_scoped_params(&self.scoped_params, content)
     }
 
     /// Push raw code to the buffer

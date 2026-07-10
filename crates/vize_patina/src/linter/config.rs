@@ -3,10 +3,11 @@
 //! Defines the `LintResult` output type and the `Linter` struct with its
 //! builder-pattern configuration methods.
 
+use super::category_rules::rule_matches_config_category;
 #[cfg(not(target_arch = "wasm32"))]
 use super::corsa_session::CorsaTypeAwareSession;
 use crate::{
-    diagnostic::{HelpLevel, LintDiagnostic},
+    diagnostic::{HelpLevel, LintDiagnostic, Severity},
     preset::{
         LintPreset, builtin_css_rule_names, builtin_script_rule_names,
         ecosystem_builtin_script_rule_names,
@@ -17,7 +18,7 @@ use crate::{
 use std::path::PathBuf;
 #[cfg(not(target_arch = "wasm32"))]
 use std::sync::Mutex;
-use vize_carton::{FxHashSet, String, i18n::Locale};
+use vize_carton::{FxHashMap, FxHashSet, String, i18n::Locale};
 
 /// Lint result for a single file.
 #[derive(Debug, Clone)]
@@ -64,10 +65,18 @@ pub struct Linter {
     pub(crate) enabled_rules: Option<FxHashSet<String>>,
     /// Rule names disabled by host configuration.
     pub(crate) disabled_rules: FxHashSet<String>,
+    /// Rule-level severity overrides from host configuration.
+    pub(crate) severity_overrides: FxHashMap<String, Severity>,
     /// Help display level.
     pub(crate) help_level: HelpLevel,
     /// Built-in script rules enabled for this linter.
     pub(crate) script_rules: &'static [&'static str],
+    /// Project-configured replacements for configurable built-in script rules,
+    /// keyed by rule name. When present, the configured instance runs in place
+    /// of the static registry singleton (see `script/no-restricted-globals` and
+    /// `script/no-restricted-members`, #1891).
+    pub(crate) script_rule_overrides:
+        FxHashMap<&'static str, Box<dyn crate::rules::script::ScriptRule>>,
     /// Built-in `css/*` rules enabled for this linter.
     pub(crate) css_rules: &'static [&'static str],
     /// Whether native type-aware lint rules may run.
@@ -95,9 +104,11 @@ impl Linter {
             locale: Locale::default(),
             enabled_rules: None,
             disabled_rules: FxHashSet::default(),
+            severity_overrides: FxHashMap::default(),
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
             css_rules: builtin_css_rule_names(preset),
+            script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
@@ -116,9 +127,11 @@ impl Linter {
             locale: Locale::default(),
             enabled_rules: None,
             disabled_rules: FxHashSet::default(),
+            severity_overrides: FxHashMap::default(),
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
             css_rules: builtin_css_rule_names(preset),
+            script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
@@ -137,9 +150,11 @@ impl Linter {
             locale: Locale::default(),
             enabled_rules: None,
             disabled_rules: FxHashSet::default(),
+            severity_overrides: FxHashMap::default(),
             help_level: HelpLevel::default(),
             script_rules: ecosystem_builtin_script_rule_names(),
             css_rules: builtin_css_rule_names(LintPreset::Ecosystem),
+            script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
@@ -158,9 +173,11 @@ impl Linter {
             locale: Locale::default(),
             enabled_rules: None,
             disabled_rules: FxHashSet::default(),
+            severity_overrides: FxHashMap::default(),
             help_level: HelpLevel::default(),
             script_rules: &[],
             css_rules: &[],
+            script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
@@ -241,6 +258,55 @@ impl Linter {
     #[inline]
     pub fn with_disabled_rules(mut self, rules: Vec<String>) -> Self {
         self.disabled_rules = rules.into_iter().collect();
+        self
+    }
+
+    /// Disable every registered rule that belongs to one of the configured categories.
+    #[inline]
+    pub fn with_disabled_categories(mut self, categories: Vec<String>) -> Self {
+        if categories.is_empty() {
+            return self;
+        }
+
+        for category in categories {
+            let disabled = self
+                .registry
+                .rules()
+                .iter()
+                .filter(|rule| {
+                    rule_matches_config_category(rule.meta().name, rule.meta().category, &category)
+                })
+                .map(|rule| String::from(rule.meta().name));
+            self.disabled_rules.extend(disabled);
+        }
+        self
+    }
+
+    /// Apply rule-level severity overrides from host configuration.
+    #[inline]
+    pub fn with_rule_severity_overrides(mut self, rules: Vec<(String, Severity)>) -> Self {
+        self.severity_overrides.extend(rules);
+        self
+    }
+
+    /// Apply category-level severity overrides to every registered matching rule.
+    #[inline]
+    pub fn with_category_severity_overrides(mut self, categories: Vec<(String, Severity)>) -> Self {
+        if categories.is_empty() {
+            return self;
+        }
+
+        for (category, severity) in categories {
+            let overrides = self
+                .registry
+                .rules()
+                .iter()
+                .filter(|rule| {
+                    rule_matches_config_category(rule.meta().name, rule.meta().category, &category)
+                })
+                .map(|rule| (String::from(rule.meta().name), severity));
+            self.severity_overrides.extend(overrides);
+        }
         self
     }
 

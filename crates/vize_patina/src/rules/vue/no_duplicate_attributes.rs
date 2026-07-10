@@ -76,23 +76,14 @@ impl Rule for NoDuplicateAttributes {
                         seen_attrs.insert(name.clone().into());
                     }
 
-                    // Check for coexistence with directives (unless allowed)
-                    if !self.allow_coexist_class
-                        && name == "class"
-                        && seen_directives.contains("class")
+                    if seen_directives.contains(name.as_str())
+                        && !self.can_coexist_with_bound_attribute(name.as_str())
                     {
                         ctx.error_with_help(
-                            ctx.t_fmt("vue/no-duplicate-attributes.message", &[("attr", "class")]),
-                            &attr.loc,
-                            ctx.t("vue/no-duplicate-attributes.help"),
-                        );
-                    }
-                    if !self.allow_coexist_style
-                        && name == "style"
-                        && seen_directives.contains("style")
-                    {
-                        ctx.error_with_help(
-                            ctx.t_fmt("vue/no-duplicate-attributes.message", &[("attr", "style")]),
+                            ctx.t_fmt(
+                                "vue/no-duplicate-attributes.message",
+                                &[("attr", name.as_str())],
+                            ),
                             &attr.loc,
                             ctx.t("vue/no-duplicate-attributes.help"),
                         );
@@ -102,7 +93,10 @@ impl Rule for NoDuplicateAttributes {
                     // Handle v-bind directives
                     if dir.name.as_str() == "bind" {
                         if let Some(ref arg) = dir.arg {
-                            let arg_name = get_expression_content(arg).to_lowercase();
+                            let Some(arg_name) = get_static_expression_content(arg) else {
+                                continue;
+                            };
+                            let arg_name = arg_name.to_lowercase();
                             let arg_name_str = arg_name.as_str();
 
                             // Check for duplicate directives
@@ -119,28 +113,13 @@ impl Rule for NoDuplicateAttributes {
                                 seen_directives.insert(arg_name_str.into());
                             }
 
-                            // Check for coexistence with static attributes (unless allowed)
-                            if !self.allow_coexist_class
-                                && arg_name == "class"
-                                && seen_attrs.contains("class")
+                            if seen_attrs.contains(arg_name_str)
+                                && !self.can_coexist_with_bound_attribute(arg_name_str)
                             {
                                 ctx.error_with_help(
                                     ctx.t_fmt(
                                         "vue/no-duplicate-attributes.message",
-                                        &[("attr", "v-bind:class")],
-                                    ),
-                                    &dir.loc,
-                                    ctx.t("vue/no-duplicate-attributes.help"),
-                                );
-                            }
-                            if !self.allow_coexist_style
-                                && arg_name == "style"
-                                && seen_attrs.contains("style")
-                            {
-                                ctx.error_with_help(
-                                    ctx.t_fmt(
-                                        "vue/no-duplicate-attributes.message",
-                                        &[("attr", "v-bind:style")],
+                                        &[("attr", &format!("v-bind:{}", arg_name))],
                                     ),
                                     &dir.loc,
                                     ctx.t("vue/no-duplicate-attributes.help"),
@@ -151,7 +130,9 @@ impl Rule for NoDuplicateAttributes {
                     // Handle v-on directives
                     else if dir.name.as_str() == "on" {
                         if let Some(ref arg) = dir.arg {
-                            let event_name = get_expression_content(arg);
+                            let Some(event_name) = get_static_expression_content(arg) else {
+                                continue;
+                            };
                             // Include modifiers in the key to allow @keydown.left and @keydown.right
                             let modifiers: Vec<&str> =
                                 dir.modifiers.iter().map(|m| m.content.as_str()).collect();
@@ -182,7 +163,10 @@ impl Rule for NoDuplicateAttributes {
                     // Handle v-model
                     else if dir.name.as_str() == "model" {
                         let model_key = if let Some(ref arg) = dir.arg {
-                            format!("model:{}", get_expression_content(arg))
+                            let Some(arg_name) = get_static_expression_content(arg) else {
+                                continue;
+                            };
+                            format!("model:{arg_name}")
                         } else {
                             "model:modelValue".to_owned()
                         };
@@ -205,11 +189,20 @@ impl Rule for NoDuplicateAttributes {
     }
 }
 
-/// Get content from ExpressionNode
-fn get_expression_content(expr: &vize_relief::ExpressionNode) -> String {
+impl NoDuplicateAttributes {
+    fn can_coexist_with_bound_attribute(&self, name: &str) -> bool {
+        (name == "class" && self.allow_coexist_class)
+            || (name == "style" && self.allow_coexist_style)
+    }
+}
+
+/// Get content from a static directive argument.
+fn get_static_expression_content(expr: &vize_relief::ExpressionNode) -> Option<String> {
     match expr {
-        vize_relief::ExpressionNode::Simple(s) => s.content.to_compact_string(),
-        vize_relief::ExpressionNode::Compound(_) => "<dynamic>".to_compact_string(),
+        vize_relief::ExpressionNode::Simple(s) if s.is_static => {
+            Some(s.content.to_compact_string())
+        }
+        _ => None,
     }
 }
 
@@ -256,6 +249,30 @@ mod tests {
         let linter = create_linter();
         let result =
             linter.lint_template_rules_only(r#"<div :id="foo" :id="bar"></div>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_valid_dynamic_v_bind_argument() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template_rules_only(r#"<div :[id]="foo" :id="bar"></div>"#, "test.vue");
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_static_and_bound_attribute() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template_rules_only(r#"<div id="foo" :id="bar"></div>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_bound_and_static_attribute() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template_rules_only(r#"<div :id="foo" id="bar"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
 

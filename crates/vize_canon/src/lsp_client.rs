@@ -16,10 +16,12 @@ mod bootstrap;
 mod diagnostics;
 mod diagnostics_api;
 mod lifecycle;
+mod lifecycle_setup;
 pub(crate) mod paths;
 mod queries;
 mod session;
 mod utils;
+mod virtual_overlay;
 
 #[cfg(test)]
 mod tests;
@@ -30,6 +32,7 @@ pub struct CorsaProjectClient {
     cwd: PathBuf,
     session: ProjectSession,
     capabilities: Arc<CapabilitiesResponse>,
+    overlay_api_disabled: bool,
     project_root: PathBuf,
     /// Cached diagnostics keyed by document URI.
     pub(crate) diagnostics: FxHashMap<String, Vec<Diagnostic>>,

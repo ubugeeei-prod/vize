@@ -11,6 +11,22 @@ project shape that TypeScript reads from `tsconfig.json`, so shared ambient name
 Script rules are Patina rules for Composition API and Vapor-oriented code. They focus on patterns
 that are hard to compile efficiently or hard to reason about in Vapor mode.
 
+Type-aware linting is opt-in. Enable it with `linter.typeAware: true`, `vize lint --type-aware`, or
+by explicitly enabling a `type/*` rule. `type/no-reactivity-loss` can be enabled directly with
+`vize lint --strict-reactivity`. If Corsa cannot be started, Patina reports `type/corsa-runtime` and
+skips the checker-backed rule pass instead of silently dropping the configured rules.
+
+`--type-aware` uses the same Corsa executable resolution as `vize check`; configure
+`typeChecker.corsaPath` when the project needs an explicit `tsgo` or Corsa binary. Defaults stay
+zero-cost: Patina does not parse SFCs for checker-backed linting or start Corsa unless the flag,
+`linter.typeAware`, or an explicitly enabled `type/*` rule opts in.
+
+```ts
+export default defineConfig({
+  linter: { typeAware: true },
+});
+```
+
 ## `type/require-typed-props`
 
 Requires `defineProps` to be typed instead of using a runtime array declaration.

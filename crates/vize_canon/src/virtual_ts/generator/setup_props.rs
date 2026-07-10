@@ -1,0 +1,280 @@
+use vize_carton::{String, append, cstr};
+use vize_croquis::Croquis;
+
+use super::generics::{is_ident_byte, references_any_identifier, skip_ascii_ws};
+use crate::virtual_ts::props::{
+    OptionsApiPropsSource, PropsTypeEmission, add_generic_defaults, extract_generic_names,
+    generate_props_type, generate_props_variables, generate_setup_scoped_props_artifact,
+};
+
+fn is_identifier_start_byte(b: u8) -> bool {
+    b == b'_' || b == b'$' || b.is_ascii_alphabetic()
+}
+
+fn collect_typeof_root_identifiers(source: &str) -> Vec<&str> {
+    let bytes = source.as_bytes();
+    let mut idents = Vec::new();
+    let mut from = 0usize;
+
+    while let Some(rel) = source[from..].find("typeof") {
+        let at = from + rel;
+        let before_ok = at == 0 || !is_ident_byte(bytes[at - 1]);
+        let after_keyword = at + "typeof".len();
+        let after_ok = after_keyword >= bytes.len() || !is_ident_byte(bytes[after_keyword]);
+        if !before_ok || !after_ok {
+            from = after_keyword;
+            continue;
+        }
+
+        let ident_start = skip_ascii_ws(bytes, after_keyword);
+        if ident_start >= bytes.len() || !is_identifier_start_byte(bytes[ident_start]) {
+            from = after_keyword;
+            continue;
+        }
+
+        let mut ident_end = ident_start + 1;
+        while ident_end < bytes.len() && is_ident_byte(bytes[ident_end]) {
+            ident_end += 1;
+        }
+
+        let ident = &source[ident_start..ident_end];
+        if ident != "import" {
+            idents.push(ident);
+        }
+        from = ident_end;
+    }
+
+    idents
+}
+
+fn binding_is_import(summary: &Croquis, name: &str) -> bool {
+    summary.binding_spans.get(name).is_some_and(|(start, end)| {
+        summary
+            .import_statements
+            .iter()
+            .any(|imp| *start >= imp.start && *end <= imp.end)
+    })
+}
+
+fn is_setup_value_binding(summary: &Croquis, name: &str) -> bool {
+    summary.bindings.bindings.contains_key(name) && !binding_is_import(summary, name)
+}
+
+pub(super) fn define_props_type_requires_setup_scope(summary: &Croquis) -> bool {
+    let Some(type_args) = summary
+        .macros
+        .define_props()
+        .and_then(|m| m.type_args.as_ref())
+    else {
+        return false;
+    };
+    let inner_type = type_args
+        .strip_prefix('<')
+        .and_then(|s| s.strip_suffix('>'))
+        .unwrap_or(type_args.as_str());
+
+    if collect_typeof_root_identifiers(inner_type)
+        .into_iter()
+        .any(|name| is_setup_value_binding(summary, name))
+    {
+        return true;
+    }
+
+    let non_hoisted_type_names: Vec<String> = summary
+        .type_exports
+        .iter()
+        .filter(|te| !te.hoisted)
+        .map(|te| te.name.as_str().into())
+        .collect();
+    !non_hoisted_type_names.is_empty()
+        && references_any_identifier(inner_type, &non_hoisted_type_names)
+}
+
+pub(super) struct SetupPropsPlan {
+    defer: bool,
+    defer_options_api_props: bool,
+    module_scope_declares_props: bool,
+}
+
+impl SetupPropsPlan {
+    pub(super) fn new(
+        summary: &Croquis,
+        options_api_props: Option<&OptionsApiPropsSource>,
+    ) -> Self {
+        let module_scope_declares_props = summary
+            .type_exports
+            .iter()
+            .any(|te| te.hoisted && te.name.as_str() == "Props");
+        Self {
+            defer: define_props_type_requires_setup_scope(summary),
+            defer_options_api_props: !module_scope_declares_props
+                && options_api_props.is_some_and(|source| {
+                    matches!(source, OptionsApiPropsSource::DeferredObject(_))
+                }),
+            module_scope_declares_props,
+        }
+    }
+
+    pub(super) fn props_type_emission(&self) -> PropsTypeEmission {
+        if self.defer {
+            PropsTypeEmission::DeferredToSetup
+        } else {
+            PropsTypeEmission::Module
+        }
+    }
+
+    pub(super) fn generate_props_type(
+        &self,
+        ts: &mut String,
+        summary: &Croquis,
+        generic_param: Option<&str>,
+        options_api_props: Option<&OptionsApiPropsSource>,
+    ) {
+        generate_props_type(
+            ts,
+            summary,
+            generic_param,
+            options_api_props,
+            self.props_type_emission(),
+        );
+    }
+
+    pub(super) fn generate_props_variables(
+        &self,
+        ts: &mut String,
+        summary: &Croquis,
+        generic_param: Option<&str>,
+        check_props: bool,
+    ) {
+        generate_props_variables(
+            ts,
+            summary,
+            generic_param,
+            self.template_props_type_ref(),
+            check_props,
+        );
+    }
+
+    pub(super) fn template_props_type_ref(&self) -> Option<&'static str> {
+        self.defer.then_some("__VizeSetupProps")
+    }
+
+    pub(super) fn component_props_type_ref(&self) -> &'static str {
+        if self.defer && self.module_scope_declares_props {
+            "__VizeResolvedProps"
+        } else {
+            "Props"
+        }
+    }
+
+    pub(super) fn generic_fallback_component_props_type_ref(&self, generic_names: &str) -> String {
+        let props_type_ref = self.component_props_type_ref();
+        if props_type_ref != "Props" {
+            return props_type_ref.into();
+        }
+
+        let mut unknown_args = String::default();
+        for _ in generic_names
+            .split(',')
+            .map(str::trim)
+            .filter(|name| !name.is_empty())
+        {
+            if !unknown_args.is_empty() {
+                unknown_args.push_str(", ");
+            }
+            unknown_args.push_str("unknown");
+        }
+
+        if unknown_args.is_empty() {
+            props_type_ref.into()
+        } else {
+            cstr!("{props_type_ref}<{unknown_args}>")
+        }
+    }
+
+    pub(super) fn emit_component_props_field(
+        &self,
+        mut ts: &mut String,
+        has_emits_for_props: bool,
+        generic_names: Option<&str>,
+    ) {
+        let props_type_ref = generic_names
+            .map(|names| self.generic_fallback_component_props_type_ref(names))
+            .unwrap_or_else(|| self.component_props_type_ref().into());
+        if has_emits_for_props {
+            append!(
+                ts,
+                "  $props: __VizeComponentProps<{props_type_ref}> & __EmitProps<Emits>;\n"
+            );
+        } else {
+            append!(ts, "  $props: __VizeComponentProps<{props_type_ref}>;\n");
+        }
+    }
+
+    pub(super) fn emit_artifact(&self, ts: &mut String, summary: &Croquis) {
+        if self.defer {
+            generate_setup_scoped_props_artifact(ts, summary);
+        }
+    }
+
+    pub(super) fn push_return_field(&self, fields: &mut Vec<&'static str>) {
+        if self.defer {
+            fields.push("__vize_setup_props");
+        }
+        if self.defer_options_api_props {
+            fields.push("__vize_options_props");
+        }
+    }
+
+    pub(super) fn emit_options_api_artifact(
+        &self,
+        mut ts: &mut String,
+        options_api_props: Option<&OptionsApiPropsSource>,
+    ) {
+        let Some(OptionsApiPropsSource::DeferredObject(source)) = options_api_props else {
+            return;
+        };
+        if self.module_scope_declares_props {
+            return;
+        }
+        append!(ts, "\n  const __vize_options_props = ({source});\n");
+    }
+
+    pub(super) fn emit_module_export(
+        &self,
+        ts: &mut String,
+        options_api_props: Option<&OptionsApiPropsSource>,
+    ) {
+        if self.defer {
+            if self.module_scope_declares_props {
+                ts.push_str(
+                    "type __VizeResolvedProps = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];\n\n",
+                );
+            } else {
+                ts.push_str(
+                    "export type Props = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];\n\n",
+                );
+            }
+        } else if matches!(
+            options_api_props,
+            Some(OptionsApiPropsSource::DeferredObject(_))
+        ) && !self.module_scope_declares_props
+        {
+            ts.push_str(
+                "export type Props = __RuntimePropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;\n\n",
+            );
+        }
+    }
+
+    pub(super) fn generic_component_params(
+        &self,
+        generic_param: Option<&str>,
+    ) -> Option<(String, String)> {
+        generic_param.filter(|_| !self.defer).map(|generic| {
+            (
+                add_generic_defaults(generic),
+                extract_generic_names(generic),
+            )
+        })
+    }
+}

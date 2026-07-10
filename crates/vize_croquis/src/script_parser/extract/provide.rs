@@ -1,4 +1,5 @@
-use oxc_ast::ast::{Argument, CallExpression, Expression};
+use oxc_ast::ast::{Argument, CallExpression, Expression, TSType};
+use oxc_span::GetSpan;
 
 use crate::provide::ProvideKey;
 use vize_carton::{CompactString, String};
@@ -31,12 +32,16 @@ pub fn detect_provide_inject_call(
                 .get(1)
                 .map(|arg| extract_argument_source(arg, source))
                 .unwrap_or_default();
+            let value_type = call
+                .arguments
+                .get(1)
+                .and_then(|arg| extract_argument_type_annotation(arg, source));
 
             if let Some(key) = key {
                 result.provide_inject.add_provide(
                     key,
                     CompactString::new(&value),
-                    None, // value_type
+                    value_type,
                     None, // from_composable
                     call.span.start,
                     call.span.end,
@@ -50,6 +55,68 @@ pub fn detect_provide_inject_call(
         // it's handled in process_variable_declarator. This handles bare inject calls
         // like `a('key')` that appear in expression statements.
     }
+}
+
+pub fn extract_inject_expected_type(
+    call: &CallExpression<'_>,
+    source: &str,
+) -> Option<CompactString> {
+    call.type_arguments
+        .as_ref()
+        .and_then(|type_params| type_params.params.first())
+        .and_then(|ty| type_source(ty, source))
+}
+
+pub fn extract_inject_expected_type_from_init(
+    init: Option<&Expression<'_>>,
+    call: &CallExpression<'_>,
+    source: &str,
+) -> Option<CompactString> {
+    init.and_then(|init| extract_expression_type_annotation(init, source))
+        .or_else(|| extract_inject_expected_type(call, source))
+}
+
+pub fn extract_expression_type_annotation(
+    expression: &Expression<'_>,
+    source: &str,
+) -> Option<CompactString> {
+    match expression {
+        Expression::TSAsExpression(ts_as) => type_source(&ts_as.type_annotation, source),
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            type_source(&ts_satisfies.type_annotation, source)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            extract_expression_type_annotation(&ts_non_null.expression, source)
+        }
+        Expression::ParenthesizedExpression(parenthesized) => {
+            extract_expression_type_annotation(&parenthesized.expression, source)
+        }
+        _ => None,
+    }
+}
+
+pub fn extract_argument_type_annotation(arg: &Argument<'_>, source: &str) -> Option<CompactString> {
+    match arg {
+        Argument::TSAsExpression(ts_as) => type_source(&ts_as.type_annotation, source),
+        Argument::TSSatisfiesExpression(ts_satisfies) => {
+            type_source(&ts_satisfies.type_annotation, source)
+        }
+        Argument::TSNonNullExpression(ts_non_null) => {
+            extract_expression_type_annotation(&ts_non_null.expression, source)
+        }
+        Argument::ParenthesizedExpression(parenthesized) => {
+            extract_expression_type_annotation(&parenthesized.expression, source)
+        }
+        _ => None,
+    }
+}
+
+fn type_source(ty: &TSType<'_>, source: &str) -> Option<CompactString> {
+    source
+        .get(ty.span().start as usize..ty.span().end as usize)
+        .map(str::trim)
+        .filter(|text| !text.is_empty())
+        .map(CompactString::new)
 }
 
 pub fn extract_provide_key(arg: &Argument<'_>, source: &str) -> Option<ProvideKey> {
@@ -87,6 +154,10 @@ pub fn extract_argument_source(arg: &Argument<'_>, source: &str) -> String {
         Argument::FunctionExpression(f) => f.span,
         Argument::ArrowFunctionExpression(a) => a.span,
         Argument::CallExpression(c) => c.span,
+        Argument::TSAsExpression(ts_as) => ts_as.span,
+        Argument::TSSatisfiesExpression(ts_satisfies) => ts_satisfies.span,
+        Argument::TSNonNullExpression(ts_non_null) => ts_non_null.span,
+        Argument::ParenthesizedExpression(parenthesized) => parenthesized.span,
         _ => return String::default(),
     };
     String::from(

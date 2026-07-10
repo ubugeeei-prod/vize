@@ -16,5 +16,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.art.vue"],
+  "vueCompilerOptions": {
+    "extensions": [".vue", ".art.vue"]
+  }
 }

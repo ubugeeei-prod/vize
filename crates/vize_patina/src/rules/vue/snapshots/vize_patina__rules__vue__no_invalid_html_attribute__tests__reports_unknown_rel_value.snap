@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_invalid_html_attribute.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-invalid-html-attribute",
+        severity: Warning,
+        message: "`friend` is not a valid `rel` value",
+        start: 0,
+        end: 25,
+        help: Some(
+            "Use only standard `rel` tokens that are allowed for this element, such as `noopener noreferrer` on links or `stylesheet` on link elements.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

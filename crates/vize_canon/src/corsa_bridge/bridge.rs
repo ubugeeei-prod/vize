@@ -439,7 +439,7 @@ impl CorsaBridge {
         Ok(Vec::new())
     }
 
-    async fn with_client<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
+    pub(super) async fn with_client<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
     where
         F: FnOnce(&mut CorsaProjectClient) -> Result<R, CorsaBridgeError>,
     {
@@ -529,11 +529,11 @@ impl BatchTypeChecker {
     }
 }
 
-fn normalize_document_uri(name: &str) -> String {
+pub(super) fn normalize_document_uri(name: &str) -> String {
     if name.starts_with("file://") {
         name.into()
     } else if name.starts_with('/') {
-        cstr!("file://{name}")
+        crate::file_uri::path_to_file_uri(std::path::Path::new(name))
     } else {
         cstr!("{VIRTUAL_URI_SCHEME}://{name}")
     }

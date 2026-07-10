@@ -1,3 +1,5 @@
+#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+
 use vize_atelier_core::TemplateSyntaxMode;
 
 pub(crate) fn resolve_template_syntax(

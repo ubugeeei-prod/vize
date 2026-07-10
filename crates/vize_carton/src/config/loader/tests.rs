@@ -1,7 +1,8 @@
 use super::{
-    load_compiler_jsx_mode, load_compiler_template_syntax, load_compiler_vue_version,
-    load_config_and_linter_with_source, load_config_with_source, load_linter_config,
-    validate_explicit_config_path,
+    load_compiler_host_compiler, load_compiler_jsx_mode, load_compiler_template_syntax,
+    load_compiler_vue_version, load_config_and_linter_with_source,
+    load_config_entry_files_with_source, load_config_entry_ignores_with_source,
+    load_config_with_source, load_linter_config, validate_explicit_config_path,
 };
 use crate::config::{JsxMode, VueVersion};
 
@@ -9,7 +10,6 @@ use crate::config::{JsxMode, VueVersion};
 fn validate_explicit_config_path_missing_errors() {
     let dir = tempfile::tempdir().unwrap();
     let missing = dir.path().join("does-not-exist.toml");
-
     let result = validate_explicit_config_path(&missing);
     assert!(result.is_err());
     assert_eq!(
@@ -127,6 +127,35 @@ fn load_compiler_vue_version_reads_vue_version_key() {
 }
 
 #[test]
+fn load_compiler_vue_version_reads_compiler_compatibility_key() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{ "compiler": { "compatibility": { "vueVersion": "2.7" } } }"#,
+    )
+    .unwrap();
+
+    assert_eq!(
+        load_compiler_vue_version(Some(&config_path)),
+        Some(VueVersion::V2_7)
+    );
+}
+
+#[test]
+fn load_compiler_host_compiler_reads_compiler_compatibility_key() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{ "compiler": { "compatibility": { "hostCompiler": false } } }"#,
+    )
+    .unwrap();
+
+    assert_eq!(load_compiler_host_compiler(Some(&config_path)), Some(false));
+}
+
+#[test]
 fn load_compiler_vue_version_defaults_to_unset_for_vue3() {
     let dir = tempfile::tempdir().unwrap();
     let config_path = dir.path().join("vize.config.json");
@@ -187,6 +216,10 @@ export default {
       "vue/prop-name-casing": "off",
       "script/no-options-api": "error",
     },
+    categories: {
+      "style": "off",
+      "a11y": "warn",
+    },
   },
 }
 "#,
@@ -207,6 +240,113 @@ export default {
     );
     assert_eq!(linter.disabled_rules(), ["vue/prop-name-casing"]);
     assert_eq!(linter.enabled_rules(), ["script/no-options-api"]);
+    assert_eq!(linter.disabled_categories(), ["style"]);
+    assert_eq!(
+        linter.category_severity_overrides(),
+        [("a11y".into(), crate::config::LintRuleSeverity::Warn)]
+    );
+}
+
+#[test]
+fn load_linter_config_uses_common_entry_preset() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{
+  "entries": [
+    { "name": "app", "files": ["components/**/*.vue"], "linter": { "preset": "incremental" } },
+    { "name": "design-system", "basePath": "design-system", "files": ["src/**/*.vue"], "linter": { "preset": "incremental" } }
+  ]
+}"#,
+    )
+    .unwrap();
+
+    let (_, loaded_linter) = load_config_and_linter_with_source(Some(&config_path));
+    let linter = load_linter_config(Some(&config_path));
+
+    assert_eq!(loaded_linter.preset.as_deref(), Some("incremental"));
+    assert_eq!(linter.preset.as_deref(), Some("incremental"));
+}
+
+#[test]
+fn load_linter_config_keeps_root_preset_over_entry_preset() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{
+  "linter": { "preset": "nuxt" },
+  "entries": [
+    { "files": ["components/**/*.vue"], "linter": { "preset": "incremental" } }
+  ]
+}"#,
+    )
+    .unwrap();
+
+    let linter = load_linter_config(Some(&config_path));
+
+    assert_eq!(linter.preset.as_deref(), Some("nuxt"));
+}
+
+#[test]
+fn load_config_entry_ignores_preserves_base_paths() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{
+  "ignores": ["src/generated.ts"],
+  "entries": [
+    { "name": "app", "ignores": ["components/Legacy.vue"] },
+    { "name": "design", "basePath": "design-system", "ignores": ["src/Fixture.vue"] }
+  ]
+}"#,
+    )
+    .unwrap();
+
+    let loaded = load_config_entry_ignores_with_source(Some(&config_path));
+
+    assert_eq!(loaded.source_path.as_deref(), Some(config_path.as_path()));
+    assert_eq!(loaded.ignores.len(), 3);
+    assert_eq!(loaded.ignores[0].base_path, None);
+    assert_eq!(loaded.ignores[0].pattern.as_str(), "src/generated.ts");
+    assert_eq!(loaded.ignores[1].base_path, None);
+    assert_eq!(loaded.ignores[1].pattern.as_str(), "components/Legacy.vue");
+    assert_eq!(
+        loaded.ignores[2].base_path.as_deref(),
+        Some("design-system")
+    );
+    assert_eq!(loaded.ignores[2].pattern.as_str(), "src/Fixture.vue");
+}
+
+#[test]
+fn load_config_entry_files_preserves_base_paths() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{
+  "basePath": "app",
+  "files": ["src/**/*.vue"],
+  "entries": [
+    { "name": "design", "basePath": "design-system", "files": ["src/**/*.art.vue"] }
+  ]
+}"#,
+    )
+    .unwrap();
+
+    let loaded = load_config_entry_files_with_source(Some(&config_path));
+
+    assert_eq!(loaded.source_path.as_deref(), Some(config_path.as_path()));
+    assert_eq!(loaded.entries.len(), 2);
+    assert_eq!(loaded.entries[0].base_path.as_deref(), Some("app"));
+    assert_eq!(loaded.entries[0].files, vec!["src/**/*.vue"]);
+    assert_eq!(
+        loaded.entries[1].base_path.as_deref(),
+        Some("design-system")
+    );
+    assert_eq!(loaded.entries[1].files, vec!["src/**/*.art.vue"]);
 }
 
 #[test]

@@ -73,6 +73,7 @@ pub static BOOLEAN_ATTRS: phf::Set<&'static str> = phf_set! {
     "controls",
     "default",
     "defer",
+    "declare",
     "disabled",
     "formnovalidate",
     "hidden",
@@ -84,12 +85,14 @@ pub static BOOLEAN_ATTRS: phf::Set<&'static str> = phf_set! {
     "muted",
     "nomodule",
     "novalidate",
+    "nowrap",
     "open",
     "playsinline",
     "readonly",
     "required",
     "reversed",
-    "selected"
+    "selected",
+    "webkitdirectory"
 };
 
 /// Check if tag is a valid HTML tag
@@ -182,7 +185,10 @@ mod tests {
     #[test]
     fn test_boolean_attrs() {
         assert!(is_boolean_attr("checked"));
+        assert!(is_boolean_attr("declare"));
         assert!(is_boolean_attr("disabled"));
+        assert!(is_boolean_attr("nowrap"));
+        assert!(is_boolean_attr("webkitdirectory"));
         assert!(!is_boolean_attr("aria-label"));
     }
 

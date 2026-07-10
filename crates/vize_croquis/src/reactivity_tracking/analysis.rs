@@ -12,31 +12,18 @@ impl ReactivityTracker {
     /// Generate markdown report.
     pub fn to_markdown(&self) -> String {
         let mut md = String::default();
+        let summary = self.summary();
 
         md.push_str("# Reactivity Analysis Report\n\n");
 
-        // Summary
-        let error_count = self
-            .violations
-            .iter()
-            .filter(|v| v.severity == ViolationSeverity::Error)
-            .count();
-        let warning_count = self
-            .violations
-            .iter()
-            .filter(|v| v.severity == ViolationSeverity::Warning)
-            .count();
-        let info_count = self
-            .violations
-            .iter()
-            .filter(|v| v.severity == ViolationSeverity::Info)
-            .count();
-
         md.push_str("## Summary\n\n");
-        append!(md, "- **Tracked Bindings**: {}\n", self.bindings.len());
+        append!(md, "- **Tracked Bindings**: {}\n", summary.binding_count);
         append!(
             md,
             "- **Violations**: {error_count} errors, {warning_count} warnings, {info_count} info\n\n",
+            error_count = summary.violations_by_severity.error,
+            warning_count = summary.violations_by_severity.warning,
+            info_count = summary.violations_by_severity.info,
         );
 
         // Bindings table

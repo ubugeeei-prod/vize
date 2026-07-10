@@ -5,9 +5,7 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_carton::Bump;
-use vize_carton::FxHashMap;
 
 fn normalize_code(code: &str) -> String {
     code.lines()
@@ -845,37 +843,6 @@ fn test_compile_v_cloak_uses_builtin_lowering() {
 
     let code = normalize_code(&result.code);
     insta::assert_snapshot!(code.as_str());
-}
-
-#[test]
-fn test_compile_custom_renderer_intrinsics_with_bound_lowercase_component() {
-    let allocator = Bump::new();
-    let mut bindings = FxHashMap::default();
-    bindings.insert("Primitive".into(), BindingType::SetupConst);
-    let result = compile_vapor(
-        &allocator,
-        r#"<mesh><group v-if="visible"><primitive></primitive></group></mesh>"#,
-        super::VaporCompilerOptions {
-            custom_renderer: true,
-            binding_metadata: Some(BindingMetadata {
-                bindings,
-                props_aliases: FxHashMap::default(),
-                is_script_setup: true,
-            }),
-            ..Default::default()
-        },
-    );
-
-    assert!(
-        result.error_messages.is_empty(),
-        "Expected no errors: {:?}",
-        result.error_messages
-    );
-
-    let code = normalize_code(&result.code);
-    assert!(code.contains("const _component_primitive = _ctx.Primitive"));
-    assert!(!code.contains(r#"_resolveComponent("group")"#));
-    assert!(!code.contains(r#"_resolveComponent("primitive")"#));
 }
 
 #[test]

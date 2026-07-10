@@ -44,7 +44,7 @@ The real question is: **which layer does each project want to own?**
 
 The official stack matters first.
 
-[Vue Language Tools](https://github.com/vuejs/language-tools), `vue-tsc`, the Vue compiler packages, and the official editor integrations are the production baseline. When Vize disagrees with official behavior, that disagreement is not automatically a bold new idea. Most of the time it is a bug, an incomplete implementation, or a place where Vize needs a clearer compatibility story.
+[Vue Language Tools](https://github.com/vuejs/language-tools), `vue-tsc`, the Vue compiler packages, and the official editor integrations are the production baseline. When Vize disagrees with official behavior, that disagreement is not automatically a bold new idea. Most of the time it is a needed fix, an incomplete implementation, or a place where Vize needs a clearer compatibility story.
 
 That does not make Vize pointless.
 

@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/require_default_prop/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/require-default-prop",
+        severity: Error,
+        message: "Prop 'name' requires a default value.",
+        start: 33,
+        end: 37,
+        help: Some(
+            "Add a `default` to this prop (e.g. `{ type: String, default: '' }`), or mark it `required: true`. Boolean props are exempt because they default to false.",
+        ),
+        labels: [
+            Label {
+                message: "optional prop without a default",
+                start: 33,
+                end: 37,
+            },
+        ],
+        fix: None,
+    },
+]

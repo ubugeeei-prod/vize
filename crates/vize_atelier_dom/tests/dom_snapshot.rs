@@ -227,4 +227,12 @@ mod component {
     fn simple_component() {
         insta::assert_snapshot!(get_compiled("<MyComponent></MyComponent>"));
     }
+
+    #[test]
+    fn pascal_html_element_name_compiles_as_component() {
+        let code = get_compiled(r#"<Table><span class="x">hello</span></Table>"#);
+
+        assert!(code.contains(r#"_resolveComponent("Table")"#), "{code}");
+        assert!(code.contains(r#"_createElementVNode("span""#), "{code}");
+    }
 }

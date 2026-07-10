@@ -423,17 +423,6 @@
     "file": "app/components/command/CommandPanel.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 217,
-        "column": 34,
-        "endLine": 217,
-        "endColumn": 39,
-        "help": "If the variable is intentionally unused, prefix it with underscore: _item"
-      },
-      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -455,7 +444,7 @@
       }
     ],
     "errorCount": 2,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/common/AnimateNumber.vue",
@@ -864,6 +853,17 @@
     "file": "app/components/common/dropdown/DropdownItem.vue",
     "messages": [
       {
+        "ruleId": "type/require-typed-emits",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
+        "line": 62,
+        "column": 14,
+        "endLine": 64,
+        "endColumn": 7,
+        "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -873,17 +873,6 @@
         "endLine": 54,
         "endColumn": 13,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "type/require-typed-emits",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
-        "severity": 1,
-        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
-        "line": 17,
-        "column": 14,
-        "endLine": 17,
-        "endColumn": 36,
-        "help": "Use defineEmits<...>() or a validator object with typed payload parameters."
       }
     ],
     "errorCount": 0,
@@ -1122,6 +1111,17 @@
     "file": "app/components/magickeys/MagickeysKeyboardShortcuts.vue",
     "messages": [
       {
+        "ruleId": "type/require-typed-emits",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
+        "line": 134,
+        "column": 14,
+        "endLine": 134,
+        "endColumn": 36,
+        "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
+      },
+      {
         "ruleId": "html/deprecated-attr",
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
@@ -1131,17 +1131,6 @@
         "endLine": 163,
         "endColumn": 112,
         "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "type/require-typed-emits",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
-        "severity": 1,
-        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
-        "line": 2,
-        "column": 14,
-        "endLine": 2,
-        "endColumn": 36,
-        "help": "Use defineEmits<...>() or a validator object with typed payload parameters."
       }
     ],
     "errorCount": 0,
@@ -1285,6 +1274,17 @@
     "file": "app/components/modal/ModalMediaPreview.vue",
     "messages": [
       {
+        "ruleId": "type/require-typed-emits",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
+        "line": 40,
+        "column": 14,
+        "endLine": 40,
+        "endColumn": 36,
+        "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
+      },
+      {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -1305,17 +1305,6 @@
         "endLine": 40,
         "endColumn": 59,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      },
-      {
-        "ruleId": "type/require-typed-emits",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
-        "severity": 1,
-        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
-        "line": 2,
-        "column": 14,
-        "endLine": 2,
-        "endColumn": 36,
-        "help": "Use defineEmits<...>() or a validator object with typed payload parameters."
       }
     ],
     "errorCount": 0,
@@ -1774,17 +1763,6 @@
     "file": "app/components/nav/button/Search.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Search' is a reserved HTML element name and cannot be used as a component name",
-        "line": 7,
-        "column": 11,
-        "endLine": 7,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "ecosystem/vue-router-prefer-named-link",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 1,
@@ -1796,7 +1774,7 @@
         "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -1825,11 +1803,11 @@
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
-        "line": 10,
-        "column": 1,
-        "endLine": 10,
-        "endColumn": 35,
-        "help": "Use defineEmits<...>() or a validator object with typed payload parameters."
+        "line": 27,
+        "column": 35,
+        "endLine": 28,
+        "endColumn": 3,
+        "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
       }
     ],
     "errorCount": 0,
@@ -1888,8 +1866,31 @@
   },
   {
     "file": "app/components/notification/NotificationGroupedLikes.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/valid-v-for",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/valid-v-for] v-for key should use variables defined by v-for",
+        "line": 25,
+        "column": 47,
+        "endLine": 25,
+        "endColumn": 57,
+        "help": "Valid v-for syntax:\n  <!-- Array iteration -->\n  <li v-for=\"item in items\">{{ item }}</li>\n  <li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n  \n  <!-- Object iteration -->\n  <li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n  <li v-for=\"(value, key, index) in object\">{{ index }}</li>\n  \n  <!-- Range -->\n  <span v-for=\"n in 10\">{{ n }}</span>"
+      },
+      {
+        "ruleId": "vue/valid-v-for",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/valid-v-for] v-for key should use variables defined by v-for",
+        "line": 41,
+        "column": 45,
+        "endLine": 41,
+        "endColumn": 55,
+        "help": "Valid v-for syntax:\n  <!-- Array iteration -->\n  <li v-for=\"item in items\">{{ item }}</li>\n  <li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n  \n  <!-- Object iteration -->\n  <li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n  <li v-for=\"(value, key, index) in object\">{{ index }}</li>\n  \n  <!-- Range -->\n  <span v-for=\"n in 10\">{{ n }}</span>"
+      }
+    ],
+    "errorCount": 2,
     "warningCount": 0
   },
   {
@@ -2198,6 +2199,17 @@
         "help": "Use CSS border instead."
       },
       {
+        "ruleId": "vue/valid-v-for",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/valid-v-for] v-for key should use variables defined by v-for",
+        "line": 420,
+        "column": 48,
+        "endLine": 420,
+        "endColumn": 56,
+        "help": "Valid v-for syntax:\n  <!-- Array iteration -->\n  <li v-for=\"item in items\">{{ item }}</li>\n  <li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n  \n  <!-- Object iteration -->\n  <li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n  <li v-for=\"(value, key, index) in object\">{{ index }}</li>\n  \n  <!-- Range -->\n  <span v-for=\"n in 10\">{{ n }}</span>"
+      },
+      {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2327,7 +2339,7 @@
         "endColumn": 59
       }
     ],
-    "errorCount": 4,
+    "errorCount": 5,
     "warningCount": 11
   },
   {
@@ -4375,20 +4387,8 @@
   },
   {
     "file": "app/pages/[[server]]/search.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'search' is a reserved HTML element name and cannot be used as a component name",
-        "line": 25,
-        "column": 11,
-        "endLine": 25,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {

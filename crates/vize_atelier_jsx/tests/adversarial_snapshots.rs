@@ -599,33 +599,29 @@ fn compile_output_summary<'a>(
         components: output
             .components
             .iter()
-            .map(|component| match component {
-                JsxComponent::Vdom(component) => RenderComponentSummary {
-                    name: component.component_name.as_ref().map(|name| name.as_str()),
-                    mode: "Vdom".to_string(),
-                    preamble: Some(component.preamble.as_str()),
-                    code: component.code.as_str(),
-                    templates: Vec::new(),
-                    scoped_style: component
-                        .scoped_style
-                        .as_ref()
-                        .map(ScopedStyleSummary::from),
-                },
-                JsxComponent::Vapor(component) => RenderComponentSummary {
-                    name: component.component_name.as_ref().map(|name| name.as_str()),
-                    mode: "Vapor".to_string(),
-                    preamble: None,
-                    code: component.code.as_str(),
-                    templates: component
+            .map(|component| {
+                let templates = match component {
+                    JsxComponent::Vapor(component) => component
                         .templates
                         .iter()
                         .map(|template| template.as_str())
                         .collect(),
-                    scoped_style: component
-                        .scoped_style
-                        .as_ref()
-                        .map(ScopedStyleSummary::from),
-                },
+                    JsxComponent::Vdom(_) | JsxComponent::Ssr(_) => Vec::new(),
+                };
+                let mode = match component {
+                    JsxComponent::Vdom(_) => "Vdom",
+                    JsxComponent::Vapor(_) => "Vapor",
+                    JsxComponent::Ssr(_) => "Ssr",
+                };
+                RenderComponentSummary {
+                    name: component.component_name(),
+                    mode: mode.to_string(),
+                    preamble: matches!(component, JsxComponent::Vdom(_))
+                        .then(|| component.preamble()),
+                    code: component.code(),
+                    templates,
+                    scoped_style: component.scoped_style().map(ScopedStyleSummary::from),
+                }
             })
             .collect(),
     }

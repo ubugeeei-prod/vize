@@ -1,4 +1,4 @@
-use super::{BatchTypeChecker, DeclarationEmitOptions, Diagnostic, TypeCheckResult};
+use super::{BatchTypeChecker, DeclarationEmitOptions};
 use crate::batch::TypeChecker;
 use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
 use corsa::{
@@ -8,56 +8,18 @@ use corsa::{
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use vize_carton::{String, cstr};
-
-#[test]
-fn test_type_check_result() {
-    let mut result = TypeCheckResult::default();
-    assert!(!result.has_errors());
-    assert_eq!(result.error_count(), 0);
-
-    result.diagnostics.push(Diagnostic {
-        file: PathBuf::from("test.vue"),
-        line: 0,
-        column: 0,
-        message: "error".into(),
-        code: Some(2304),
-        severity: 1,
-        block_type: None,
-    });
-
-    assert!(result.has_errors());
-    assert_eq!(result.error_count(), 1);
-}
-
-#[test]
-fn test_batch_type_checker_scan() {
-    let project_root = unique_case_dir("scan");
-    let _ = std::fs::remove_dir_all(&project_root);
-    let src_dir = project_root.join("src");
-    std::fs::create_dir_all(&src_dir).unwrap();
-
-    let vue_content = r#"<template>
-  <div>{{ message }}</div>
-</template>
-
-<script setup lang="ts">
-const message = 'Hello'
-</script>
-"#;
-    std::fs::write(src_dir.join("App.vue"), vue_content).unwrap();
-    std::fs::write(src_dir.join("utils.ts"), "export const foo = 'bar';").unwrap();
-
-    let mut checker = match BatchTypeChecker::new(&project_root) {
-        Ok(checker) => checker,
-        Err(_) => return,
-    };
-
-    checker.scan_project().unwrap();
-    assert_eq!(checker.file_count(), 2);
-
-    let _ = std::fs::remove_dir_all(&project_root);
-}
-
+mod camel_case_component_props;
+mod emit_object_recursion;
+mod generic_component_listener_payload;
+mod generic_props;
+mod no_check_props;
+mod no_unused;
+mod options_api_required_props;
+mod package_exports_types;
+mod recent_issues;
+mod scan;
+mod template_block;
+mod tsx_sfc;
 #[test]
 fn batch_type_checker_snapshots_vue_diagnostics() {
     if resolve_test_tsgo_binary().is_none() {
@@ -74,14 +36,12 @@ const count: number = 'oops'
     .virtual_ts
     .expect("virtual ts should be generated");
     let snapshot = corsa_type_mismatch_snapshot(&virtual_ts, "count: number", "'oops'");
-
     insta::with_settings!({
         snapshot_path => "../../snapshots"
     }, {
         insta::assert_debug_snapshot!("batch_type_checker_vue_diagnostics", snapshot);
     });
 }
-
 #[test]
 fn batch_type_checker_snapshots_script_setup_type_error() {
     if resolve_test_tsgo_binary().is_none() {
@@ -97,7 +57,6 @@ const count: string = 0;
     .virtual_ts
     .expect("virtual ts should be generated");
     let relevant = corsa_type_mismatch_snapshot(&virtual_ts, "count: string", "= 0");
-
     assert_eq!(
         relevant.len(),
         2,
@@ -109,7 +68,6 @@ const count: string = 0;
         insta::assert_debug_snapshot!("batch_type_checker_script_setup_type_error", relevant);
     });
 }
-
 #[test]
 fn corsa_bridge_completion_returns_inner_members_for_chained_ref_value() {
     // Guards the wired Corsa completion path (see #751): when the bridge is
@@ -1261,63 +1219,6 @@ import Child from './Child.vue'
 }
 
 #[test]
-fn batch_type_checker_accepts_forwarded_optional_component_props() {
-    if resolve_test_tsgo_binary().is_none() {
-        return;
-    }
-    let project_root = create_project_case(
-        "optional-component-props",
-        &[
-            (
-                "src/Provider.vue",
-                r#"<script lang="ts">
-export type LinkBehavior = "window" | "browser" | null;
-</script>
-
-<script setup lang="ts">
-defineProps<{
-  behavior?: LinkBehavior;
-}>();
-</script>
-
-<template>
-  <a><slot /></a>
-</template>
-"#,
-            ),
-            (
-                "src/Consumer.vue",
-                r#"<script setup lang="ts">
-import Provider from "./Provider.vue";
-import type { LinkBehavior } from "./Provider.vue";
-
-defineProps<{
-  behavior?: LinkBehavior;
-}>();
-</script>
-
-<template>
-  <Provider :behavior="behavior" />
-</template>
-"#,
-            ),
-        ],
-    );
-
-    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
-        let _ = std::fs::remove_dir_all(&project_root);
-        return;
-    };
-
-    assert!(
-        snapshot.is_empty(),
-        "forwarded optional component prop should type-check, got: {snapshot:?}"
-    );
-
-    let _ = std::fs::remove_dir_all(&project_root);
-}
-
-#[test]
 fn batch_type_checker_snapshots_generic_component_prop_error() {
     // #775: a wrongly-typed prop passed to a `<script setup generic="T">` child
     // must raise TS2322. The child's construct-signature `$props` collapses
@@ -1626,10 +1527,7 @@ export interface BaseProps {
 <template><div></div></template>
 "#,
             ),
-            (
-                "src/index.ts",
-                r#"export { type BaseProps } from "./Base.vue";"#,
-            ),
+            ("src/index.ts", r#"export * from "./Base.vue";"#),
             (
                 "src/Child.vue",
                 r#"<script setup lang="ts">
@@ -2361,7 +2259,7 @@ fn link_or_stub_package(
 
 fn package_link_source(source: &Path, package: &str) -> PathBuf {
     if package == "vue" {
-        std::fs::canonicalize(source).unwrap_or_else(|_| source.to_path_buf())
+        vize_carton::path::canonicalize_non_verbatim(source)
     } else {
         source.to_path_buf()
     }
@@ -2563,9 +2461,8 @@ export declare function inject<T>(key: InjectionKey<T> | string | symbol): T | u
 export declare function inject<T>(key: InjectionKey<T> | string | symbol, defaultValue: T): T;
 export declare function markRaw<T extends object>(value: T): T;
 export declare function createApp(root: any): {
-  config: {
-    globalProperties: { [key: string]: any };
-  };
+  config: { globalProperties: { [key: string]: any }; };
+  mount(container: string | Element): ComponentPublicInstance; unmount(): void; use(plugin: any, ...options: any[]): any;
 };
 "#,
     )?;

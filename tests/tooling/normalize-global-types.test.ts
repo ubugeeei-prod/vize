@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { normalizeGlobalTypes } from "../../npm/vize/src/config.ts";
+import { normalizeGlobalTypes } from "../../npm/cli/src/config.ts";
 
 /**
  * `normalizeGlobalTypes` is a pure, IO-free helper exported from
- * npm/vize/src/config.ts. It expands shorthand string declarations into
+ * npm/cli/src/config.ts. It expands shorthand string declarations into
  * `{ type }` objects and, when the input is a single-key `{ types: {...} }`
  * wrapper (plain non-array object), unwraps that nested map before expanding.
  *

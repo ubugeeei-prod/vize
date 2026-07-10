@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_reserved_props/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-reserved-props",
+        severity: Error,
+        message: "Prop name 'ref' is reserved.",
+        start: 33,
+        end: 36,
+        help: Some(
+            "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, `is`, and any `$`-prefixed name. Rename this prop to something else.",
+        ),
+        labels: [
+            Label {
+                message: "reserved prop name",
+                start: 33,
+                end: 36,
+            },
+        ],
+        fix: None,
+    },
+]

@@ -22,7 +22,7 @@ export const runPackageScriptDirectly = (taskName: string, packages: readonly Pa
  * package-local tasks.
  */
 export const installVscodeExtensionDependencies = runInDirectory(
-  "npm/vscode-vize",
+  "editors/vscode",
   "if [ -x node_modules/.bin/vp ]; then exit 0; fi && mkdir -p node_modules/.bin && pnpm install --ignore-workspace --no-lockfile --prefer-offline",
 );
 
@@ -35,7 +35,7 @@ export const installVscodeExtensionDependencies = runInDirectory(
  * install pay for VS Code extension dependencies.
  */
 export const runInVscodeExtension = (...commands: string[]) =>
-  `${installVscodeExtensionDependencies} && ${runInDirectory("npm/vscode-vize", commands.join(" && "))}`;
+  `${installVscodeExtensionDependencies} && ${runInDirectory("editors/vscode", commands.join(" && "))}`;
 
 /**
  * Builds a filtered `vp run` command for package groups.
@@ -66,6 +66,7 @@ export const runTasks = (...taskNames: string[]) => taskNames.map(runTask).join(
 const workspaceMoonHome = ".cache/moonbit";
 const workspaceMoonBin = `${workspaceMoonHome}/bin/moon`;
 const workspaceMoonRegistryIndex = `${workspaceMoonHome}/registry/index/.git`;
+const moonToolsModule = "tools/moon";
 
 export const moonCommandForEnvironment = (
   env: NodeJS.ProcessEnv = process.env,
@@ -91,19 +92,19 @@ export const moonRegistryUpdateGuardForEnvironment = (
     return null;
   }
 
-  return `( [ -d ${workspaceMoonRegistryIndex} ] || ${moonCommandForEnvironment(env, pathExists)} update )`;
+  return `( [ -d ${workspaceMoonRegistryIndex} ] || (cd ${moonToolsModule} && ${moonCommandForEnvironment(env, pathExists)} update) )`;
 };
 
 const moonCommand = moonCommandForEnvironment();
 const moonRegistryUpdateGuard = moonRegistryUpdateGuardForEnvironment();
 
 /**
- * Executes a repository MoonBit script through native script mode.
+ * Executes a repository MoonBit command package.
  *
  * The root task catalog treats MoonBit scripts as first-class automation. This
  * helper keeps the invocation uniform, prefers the workspace-local MoonBit
- * toolchain installed by the Nix shell, and forwards script arguments after
- * `--` so each script owns its own CLI parsing.
+ * toolchain installed by the Nix shell, and forwards command arguments after
+ * `--` so each package owns its own CLI parsing.
  */
 export const moonScript = (name: string, ...args: string[]) =>
   [
@@ -113,11 +114,9 @@ export const moonScript = (name: string, ...args: string[]) =>
     "-q",
     "--target",
     "native",
-    "-",
+    `${moonToolsModule}/cmd/${name}`,
     "--",
     ...args,
-    "<",
-    `tools/moon/scripts/${name}.mbtx`,
   ].join(" ");
 
 export const devApp = (target?: string) =>

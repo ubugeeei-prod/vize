@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
+import { moonScriptPath, repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
 
 function writeTempFile(contents: string): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-test-"));
@@ -119,7 +119,7 @@ test("release script rewrites only the native-binaries catalog block in pnpm-loc
     "      specifier: 0.130.0",
     "      version: 0.130.0",
     "importers:",
-    "  npm/vize-native:",
+    "  npm/native:",
     "    optionalDependencies:",
     "      '@vizejs/native-darwin-arm64':",
     "        specifier: catalog:native-binaries",
@@ -161,4 +161,40 @@ test("release script rewrites only the native-binaries catalog block in pnpm-loc
     "packages section key preserved",
   );
   assert.ok(out.includes("resolution: {integrity: sha512-AAA==}"), "integrity hash preserved");
+});
+
+test("release script includes nested release packages in extra synced manifests", () => {
+  const result = runMoonScript("release", ["--print-extra-package-json-paths"]);
+
+  assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
+  const paths = result.stdout.split("\n");
+
+  for (const manifestPath of [
+    "editors/vscode/package.json",
+    "editors/vscode-art/package.json",
+    "npm/builder/rspack/package.json",
+    "npm/builder/unplugin/package.json",
+    "npm/builder/vite/package.json",
+    "npm/builder/vite-musea/package.json",
+    "npm/framework/musea-nuxt/package.json",
+    "npm/framework/nuxt/package.json",
+  ]) {
+    assert.ok(
+      paths.includes(manifestPath),
+      `${manifestPath} version must be bumped with release commits`,
+    );
+  }
+});
+
+test("release script bypasses local git hooks when committing", () => {
+  const script = fs.readFileSync(moonScriptPath("release"), "utf8");
+
+  assert.ok(
+    script.includes('["commit", "--allow-empty", "--no-verify", "-m", "chore: release \\{tag}"]'),
+    "force-tag release commits must bypass local hooks",
+  );
+  assert.ok(
+    script.includes('["commit", "--no-verify", "-m", "chore: release \\{tag}"]'),
+    "normal release commits must bypass local hooks",
+  );
 });

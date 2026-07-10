@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/props_emits/require_explicit_emits/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/require-explicit-emits",
+        severity: Warning,
+        message: "The emitted event 'input' is not declared in defineEmits or the emits option.",
+        start: 43,
+        end: 50,
+        help: Some(
+            "Add this event to the defineEmits declaration (or the Options API `emits` option) so the component's event surface is explicit.",
+        ),
+        labels: [
+            Label {
+                message: "undeclared emitted event",
+                start: 43,
+                end: 50,
+            },
+        ],
+        fix: None,
+    },
+]

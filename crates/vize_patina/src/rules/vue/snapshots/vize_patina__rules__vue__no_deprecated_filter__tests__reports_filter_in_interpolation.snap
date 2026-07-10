@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_deprecated_filter_tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-deprecated-filter",
+        severity: Error,
+        message: "Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        start: 5,
+        end: 31,
+        help: Some(
+            "Replace the filter with a method call or computed property (e.g. {{ capitalize(message) }} instead of {{ message | capitalize }}).",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

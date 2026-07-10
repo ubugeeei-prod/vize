@@ -8,6 +8,15 @@
 //! follow-ups. The intent of landing the model now is so the analyzer and
 //! the lint rule can be developed against a stable shape.
 
+mod builder;
+mod cycles;
+
+pub use builder::{
+    EffectGraphScript, build_effect_graph_from_script, build_effect_graph_from_script_setup,
+    build_effect_graph_from_sfc_scripts,
+};
+
+use serde::Serialize;
 use vize_carton::CompactString;
 
 /// A node in the effect graph — usually a reactive binding name.
@@ -28,6 +37,32 @@ pub struct EffectGraph {
     edges: Vec<EffectEdge>,
 }
 
+/// Stable counters for one reactive effect graph.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EffectGraphSummary {
+    pub node_count: usize,
+    pub edge_count: usize,
+    pub cycle_count: usize,
+    pub cycle_node_count: usize,
+}
+
+impl EffectGraphSummary {
+    /// Combine summaries for effect graphs known to be independent.
+    ///
+    /// Counts use saturating addition so aggregation remains conservative for
+    /// arbitrarily large generated inputs. The operation is deterministic and
+    /// order-independent.
+    pub fn merged(self, other: Self) -> Self {
+        Self {
+            node_count: self.node_count.saturating_add(other.node_count),
+            edge_count: self.edge_count.saturating_add(other.edge_count),
+            cycle_count: self.cycle_count.saturating_add(other.cycle_count),
+            cycle_node_count: self.cycle_node_count.saturating_add(other.cycle_node_count),
+        }
+    }
+}
+
 impl EffectGraph {
     /// Add a `from → to` dependency edge.
     pub fn add_edge(&mut self, from: impl Into<EffectNodeId>, to: impl Into<EffectNodeId>) {
@@ -43,6 +78,28 @@ impl EffectGraph {
     /// Iterate over all dependency edges.
     pub fn edges(&self) -> impl Iterator<Item = &EffectEdge> {
         self.edges.iter()
+    }
+
+    /// Count unique nodes that appear in dependency edges.
+    pub fn node_count(&self) -> usize {
+        let mut nodes = std::collections::BTreeSet::new();
+        for edge in &self.edges {
+            nodes.insert(&edge.from);
+            nodes.insert(&edge.to);
+        }
+        nodes.len()
+    }
+
+    /// Summarize edge and cycle counts for reports and diagnostics.
+    pub fn summary(&self) -> EffectGraphSummary {
+        let (cycle_count, cycle_node_count) = cycles::cycle_summary(&self.edges);
+
+        EffectGraphSummary {
+            node_count: self.node_count(),
+            edge_count: self.edges.len(),
+            cycle_count,
+            cycle_node_count,
+        }
     }
 
     /// Detect the first cycle reachable from any node, returned as the chain
@@ -109,7 +166,7 @@ impl EffectGraph {
 
 #[cfg(test)]
 mod tests {
-    use super::EffectGraph;
+    use super::{EffectGraph, EffectGraphSummary};
 
     #[test]
     fn detects_two_node_cycle() {
@@ -121,6 +178,18 @@ mod tests {
         assert_eq!(cycle.first(), cycle.last());
         assert!(cycle.contains(&"a".into()));
         assert!(cycle.contains(&"b".into()));
+
+        let summary = g.summary();
+        assert_eq!(summary.node_count, 2);
+        assert_eq!(summary.edge_count, 2);
+        assert_eq!(summary.cycle_count, 1);
+        assert_eq!(summary.cycle_node_count, 2);
+
+        let json = serde_json::to_string(&summary).unwrap();
+        assert_eq!(
+            json,
+            r#"{"nodeCount":2,"edgeCount":2,"cycleCount":1,"cycleNodeCount":2}"#
+        );
     }
 
     #[test]
@@ -130,6 +199,8 @@ mod tests {
         g.add_edge("b", "c");
         g.add_edge("a", "c");
         assert!(g.find_cycle().is_none());
+        assert_eq!(g.summary().node_count, 3);
+        assert_eq!(g.summary().cycle_count, 0);
     }
 
     #[test]
@@ -138,5 +209,71 @@ mod tests {
         g.add_edge("a", "b");
         g.add_edge("a", "b");
         assert_eq!(g.edges().count(), 1);
+    }
+
+    #[test]
+    fn summary_counts_each_cyclic_component_and_self_loop() {
+        let mut g = EffectGraph::default();
+        for (from, to) in [("a", "b"), ("b", "a"), ("b", "c"), ("c", "d"), ("d", "c")] {
+            g.add_edge(from, to);
+        }
+        assert_eq!(g.summary().cycle_count, 2);
+        assert_eq!(g.summary().cycle_node_count, 4);
+
+        let mut self_loop = EffectGraph::default();
+        self_loop.add_edge("self", "self");
+        assert_eq!(self_loop.summary().cycle_count, 1);
+        assert_eq!(self_loop.summary().cycle_node_count, 1);
+    }
+
+    #[test]
+    fn summary_merge_is_order_independent_and_saturating() {
+        let script = EffectGraphSummary {
+            node_count: 2,
+            edge_count: 3,
+            cycle_count: 1,
+            cycle_node_count: 2,
+        };
+        let setup = EffectGraphSummary {
+            node_count: 4,
+            edge_count: 5,
+            cycle_count: 1,
+            cycle_node_count: 3,
+        };
+        let expected = EffectGraphSummary {
+            node_count: 6,
+            edge_count: 8,
+            cycle_count: 2,
+            cycle_node_count: 5,
+        };
+
+        assert_eq!(script.merged(setup), expected);
+        assert_eq!(setup.merged(script), expected);
+        assert_eq!(script.merged(EffectGraphSummary::default()), script);
+        assert_eq!(EffectGraphSummary::default().merged(script), script);
+        assert_eq!(
+            script.merged(setup).merged(EffectGraphSummary {
+                node_count: 1,
+                ..EffectGraphSummary::default()
+            }),
+            script.merged(setup.merged(EffectGraphSummary {
+                node_count: 1,
+                ..EffectGraphSummary::default()
+            }))
+        );
+        assert_eq!(
+            expected.merged(EffectGraphSummary {
+                node_count: usize::MAX,
+                edge_count: usize::MAX,
+                cycle_count: usize::MAX,
+                cycle_node_count: usize::MAX,
+            }),
+            EffectGraphSummary {
+                node_count: usize::MAX,
+                edge_count: usize::MAX,
+                cycle_count: usize::MAX,
+                cycle_node_count: usize::MAX,
+            }
+        );
     }
 }

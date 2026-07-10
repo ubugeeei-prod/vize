@@ -4,9 +4,16 @@
 //! Can connect to a running check-server via Unix socket for faster repeated checks.
 
 mod dts;
+mod dts_ast;
+#[cfg(test)]
+mod dts_ast_tests;
+mod dts_import_aliases;
+mod dts_rewrite;
 mod imports;
+mod imports_aliases;
 mod nuxt;
 mod path_cache;
+mod patterns;
 mod reporting;
 mod runner;
 mod tsconfig_inputs;
@@ -17,7 +24,7 @@ use std::path::PathBuf;
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
 pub struct CheckArgs {
-    /// Files or directories to type-check (`.vue`, `.ts`, `.tsx`, `.jsx`, `.d.ts`).
+    /// Files or directories to type-check (`.vue`, `.ts`, `.tsx`, `.mts`, `.cts`, `.jsx`, `.d.ts`, `.d.mts`, `.d.cts`).
     /// When omitted, `tsconfig.json` include/exclude/files are used if available.
     pub patterns: Vec<String>,
 

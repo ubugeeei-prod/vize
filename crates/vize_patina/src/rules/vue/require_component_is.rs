@@ -48,6 +48,7 @@ impl RequireComponentIs {
                     // Check for :is or v-bind:is
                     if dir.name == "bind"
                         && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                        && arg.is_static
                         && arg.content == "is"
                     {
                         return true;
@@ -109,6 +110,13 @@ mod tests {
     fn test_invalid_no_is() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<component />"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_dynamic_is_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<component :[is]="currentComponent" />"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
 

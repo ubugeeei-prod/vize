@@ -1,21 +1,20 @@
 //! Definition provider for Vue SFC files.
 //!
-//! Provides go-to-definition for:
-//! - Template expressions -> script bindings
-//! - Component usages -> component definitions
-//! - Import statements -> imported files
-//! - Real definitions from Corsa (when available)
-
+//! Provides go-to-definition for template bindings, components, imports, and Corsa.
 pub mod bindings;
+#[cfg(all(test, feature = "native"))]
+mod corsa_tests;
 pub(crate) mod helpers;
+mod html;
+#[cfg(all(test, feature = "native"))]
+mod html_tests;
+mod inline_art;
 pub(crate) mod script;
 mod service;
 mod template;
 
-pub use bindings::{BindingKind, BindingLocation, extract_bindings_with_locations};
-
 use super::IdeContext;
-
+pub use bindings::{BindingKind, BindingLocation, extract_bindings_with_locations};
 /// Definition service for providing go-to-definition functionality.
 pub struct DefinitionService;
 

@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/prefer_define_options.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/prefer-define-options",
+        severity: Warning,
+        message: "Prefer defineOptions() over a separate <script> block that only sets name/inheritAttrs.",
+        start: 15,
+        end: 59,
+        help: Some(
+            "Move these options into a `defineOptions({ ... })` call in <script setup> and remove this plain <script> block.",
+        ),
+        labels: [
+            Label {
+                message: "only sets name/inheritAttrs",
+                start: 15,
+                end: 59,
+            },
+        ],
+        fix: None,
+    },
+]

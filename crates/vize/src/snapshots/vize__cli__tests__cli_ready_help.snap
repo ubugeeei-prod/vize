@@ -1,0 +1,51 @@
+---
+source: crates/vize/src/cli.rs
+assertion_line: 137
+expression: "command_help(\"ready\")"
+---
+Run fmt, lint, check, and build
+
+Usage: ready [OPTIONS] [PATTERNS]...
+
+Arguments:
+  [PATTERNS]...
+          Files or directories to process
+
+Options:
+  -o, --output <OUTPUT>
+          Output directory for the build step
+
+          [default: ./dist]
+
+  -c, --config <CONFIG>
+          Config file path
+
+      --no-config
+          Do not load a config file
+
+      --ssr
+          Enable SSR mode for the build step
+
+      --script-ext <SCRIPT_EXT>
+          Script extension handling for the build step
+
+          Possible values:
+          - preserve:    Preserve original script language extension (.ts -> .ts, .tsx -> .tsx, .jsx -> .jsx)
+          - downcompile: Downcompile all scripts to JavaScript (.ts -> .js, .tsx -> .js, .jsx -> .js)
+
+          [default: downcompile]
+
+      --tsconfig <TSCONFIG>
+          tsconfig.json path for the check step
+
+      --no-check-props
+          Disable prop type checks where supported
+
+      --no-check-emits
+          Disable emit type checks where supported
+
+      --no-check-template-bindings
+          Disable template binding checks where supported
+
+  -h, --help
+          Print help (see a summary with '-h')

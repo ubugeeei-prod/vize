@@ -73,6 +73,46 @@ fn test_lint_sfc_default_preset_keeps_css_rules_opt_in() {
 }
 
 #[test]
+fn test_lint_sfc_respects_disabled_sfc_level_rule() {
+    let linter = Linter::new().with_disabled_rules(vec!["vue/require-scoped-style".into()]);
+    let sfc = r#"<template><div/></template>
+<style>
+.a { color: red; }
+</style>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "vue/require-scoped-style"),
+        "disabled SFC-level rule should not report: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn test_lint_sfc_respects_disabled_style_category_for_sfc_level_rule() {
+    let linter = Linter::new().with_disabled_categories(vec!["style".into()]);
+    let sfc = r#"<template><div/></template>
+<style>
+.a { color: red; }
+</style>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "vue/require-scoped-style"),
+        "style category should disable require-scoped-style: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 fn test_lint_sfc_css_diagnostic_uses_file_offsets() {
     // The css diagnostic must be reported in original-file coordinates, not
     // style-block-local coordinates.
@@ -97,20 +137,20 @@ fn test_lint_sfc_css_diagnostic_uses_file_offsets() {
 }
 
 #[test]
-fn test_lint_sfc_opinionated_reports_no_next_tick() {
-    let linter = Linter::with_preset(LintPreset::Opinionated);
+fn test_lint_sfc_opinionated_allows_next_tick_by_default() {
     let sfc = r#"<script setup lang="ts">
 import { nextTick } from 'vue'
 
 await nextTick()
 </script>
 "#;
-    let result = linter.lint_sfc(sfc, "test.vue");
+    let result = Linter::with_preset(LintPreset::Opinionated).lint_sfc(sfc, "test.vue");
     assert!(
-        result
+        !result
             .diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.rule_name == "script/no-next-tick")
+            .any(|d| d.rule_name == "script/no-next-tick"),
+        "opinionated preset must not report script/no-next-tick without explicit opt-in"
     );
 }
 

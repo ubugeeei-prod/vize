@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { loadConfig } from "../../npm/vize/src/config.ts";
+import { loadConfig } from "../../npm/cli/src/config.ts";
 
 async function withTempConfig<T>(
   fileName: string,

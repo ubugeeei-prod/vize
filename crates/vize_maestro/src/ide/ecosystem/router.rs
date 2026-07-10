@@ -170,7 +170,7 @@ fn route_params_for_context(uri: &Url, descriptor: &SfcDescriptor<'_>) -> Vec<Ro
     params
 }
 
-fn route_params_for_file(uri: &Url) -> Vec<RouteParam> {
+pub(super) fn route_params_for_file(uri: &Url) -> Vec<RouteParam> {
     let Ok(file_path) = uri.to_file_path() else {
         return Vec::new();
     };
@@ -234,13 +234,12 @@ fn find_pages_dir_for_file(file_path: &Path) -> Option<PathBuf> {
 }
 
 fn page_segment_stem(segment: &str) -> Option<&str> {
-    segment
-        .strip_suffix(".vue")
-        .or_else(|| segment.strip_suffix(".tsx"))
-        .or_else(|| segment.strip_suffix(".ts"))
-        .or_else(|| segment.strip_suffix(".jsx"))
-        .or_else(|| segment.strip_suffix(".js"))
-        .map(|stem| stem.split('@').next().unwrap_or(stem))
+    [
+        ".vue", ".tsx", ".ts", ".jsx", ".js", ".mts", ".cts", ".mjs", ".cjs",
+    ]
+    .into_iter()
+    .find_map(|extension| segment.strip_suffix(extension))
+    .map(|stem| stem.split('@').next().unwrap_or(stem))
 }
 
 fn collect_segment_params(

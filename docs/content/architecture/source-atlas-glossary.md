@@ -38,18 +38,18 @@ Which lane may request which plate, and whether the request is cheap on the
 normal path or built only on demand. "—" means the lane does not request that
 family.
 
-| Lane            | Source | Syntax | Semantic | Projection  | Render      | Target  | Finish  |
-| --------------- | ------ | ------ | -------- | ----------- | ----------- | ------- | ------- |
-| Compiler        | cheap  | cheap  | reuse    | —           | on demand   | yes     | yes     |
-| Linter (Patina) | cheap  | cheap  | reuse    | rule-gated  | —           | —       | —       |
-| Typecheck       | cheap  | cheap  | reuse    | on demand   | —           | —       | maps    |
-| Language server | cheap  | cheap  | reuse    | on demand   | —           | —       | maps    |
-| Formatter       | cheap  | cheap  | feature  | —           | —           | —       | —       |
-| Inspector       | cheap  | reuse  | reuse    | on demand   | on demand   | view    | view    |
-| Playground      | cheap  | reuse  | reuse    | on demand   | on demand   | yes     | yes     |
-| Source map      | cheap  | —      | —        | —           | range marks | —       | yes     |
-| Bundler         | cheap  | —      | reuse    | —           | on demand   | yes     | yes     |
-| Vitrine         | —      | —      | —        | —           | —           | —       | payload |
+| Lane            | Source | Syntax | Semantic | Projection | Render      | Target | Finish  |
+| --------------- | ------ | ------ | -------- | ---------- | ----------- | ------ | ------- |
+| Compiler        | cheap  | cheap  | reuse    | —          | on demand   | yes    | yes     |
+| Linter (Patina) | cheap  | cheap  | reuse    | rule-gated | —           | —      | —       |
+| Typecheck       | cheap  | cheap  | reuse    | on demand  | —           | —      | maps    |
+| Language server | cheap  | cheap  | reuse    | on demand  | —           | —      | maps    |
+| Formatter       | cheap  | cheap  | feature  | —          | —           | —      | —       |
+| Inspector       | cheap  | reuse  | reuse    | on demand  | on demand   | view   | view    |
+| Playground      | cheap  | reuse  | reuse    | on demand  | on demand   | yes    | yes     |
+| Source map      | cheap  | —      | —        | —          | range marks | —      | yes     |
+| Bundler         | cheap  | —      | reuse    | —          | on demand   | yes    | yes     |
+| Vitrine         | —      | —      | —        | —          | —           | —      | payload |
 
 The negative entries are the point: lint, format, and editor lanes stay
 render-free, and only render lanes build `Rendu`. The cheap checks behind this

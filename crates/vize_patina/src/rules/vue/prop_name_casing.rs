@@ -20,6 +20,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_carton::is_html_tag;
 use vize_croquis::naming::{hyphenate, is_camel_case};
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
@@ -42,7 +43,7 @@ impl Rule for PropNameCasing {
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Only check props on components (native HTML elements use kebab-case attributes)
-        if element.tag_type != ElementType::Component {
+        if !is_component_like_tag(element) {
             return;
         }
 
@@ -74,6 +75,7 @@ impl Rule for PropNameCasing {
                 PropNode::Directive(dir) => {
                     if dir.name == "bind"
                         && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                        && arg.is_static
                     {
                         let name = arg.content.as_ref();
                         // Skip standard bindings
@@ -101,6 +103,15 @@ impl Rule for PropNameCasing {
             }
         }
     }
+}
+
+fn is_component_like_tag(element: &ElementNode<'_>) -> bool {
+    if element.tag_type == ElementType::Component {
+        return true;
+    }
+
+    let tag = element.tag.as_str();
+    tag == "component" || (tag.contains('-') && !is_html_tag(tag))
 }
 
 #[cfg(test)]
@@ -138,9 +149,39 @@ mod tests {
     }
 
     #[test]
+    fn test_invalid_camel_case_prop_on_kebab_case_component() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<my-component myProp="value" />"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_camel_case_prop_on_dynamic_component() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template(r#"<component :is="tagName" myProp="value" />"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
     fn test_invalid_camel_case_binding() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<MyComponent :myProp="value" />"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_dynamic_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<MyComponent :[myProp]="value" />"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_camel_case_binding_on_dynamic_component() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template(r#"<component :is="tagName" :myProp="value" />"#, "test.vue");
         assert_eq!(result.warning_count, 1);
     }
 

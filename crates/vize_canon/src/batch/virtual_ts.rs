@@ -28,17 +28,21 @@ pub struct VirtualTsResult {
 
 /// Vue setup-scope helpers - defined with parameters marked as used.
 const VUE_SETUP_HELPERS: &str = r#"// Compiler macros (transformed at compile time by Vue)
-type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;
+type __RuntimePropValue<T> = T extends abstract new (...args: any[]) => infer V ? V : T extends (...args: any[]) => infer V ? V : never;
+type __RuntimePropCtorInner<T> = T extends null | undefined ? never : T extends readonly (infer U)[] ? __RuntimePropCtorInner<U> : T extends { type: infer U } ? __RuntimePropCtorInner<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : __RuntimePropValue<T>;
+type __RuntimePropCtor<T> = [__RuntimePropCtorInner<T>] extends [never] ? unknown : __RuntimePropCtorInner<T>;
 type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : false;
 type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
 type __BatchEmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
 type __BatchEmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
-type __BatchEmitFn<T> = __BatchEmitShape<T> extends (...args: any[]) => any ? __BatchEmitShape<T> : (<K extends keyof __BatchEmitShape<T>>(event: K, ...args: __BatchEmitArgs<__BatchEmitShape<T>, K>) => void);
+type __BatchEmitFn<T, __S = __BatchEmitShape<T>, __K extends keyof __S & string = keyof __S & string, __U = { [K in __K]: (event: K, ...args: __BatchEmitArgs<__S, K>) => void }[__K]> = __S extends (...args: any[]) => any ? __S : [__K] extends [never] ? (event: never, ...args: any[]) => void : (__U extends unknown ? (fn: __U) => void : never) extends (fn: infer __I) => void ? __I : never;
 type __DefaultFactory<T> = (props: any) => T;
 type __WithDefaultValue<T> = T | __DefaultFactory<T>;
+type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
+type __DefineProps<T> = __LooseRequired<T>;
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;
-function defineProps<T>(): T;
+type __WithDefaultsResult<T, D> = Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof __LooseRequired<T>]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__LooseRequired<T>[K], undefined> };
+function defineProps<T>(): __DefineProps<T>;
 function defineProps<const T extends readonly string[]>(_props: T): { [K in T[number]]?: any };
 function defineProps<const T extends Record<string, any>>(_props: T): __RuntimePropShape<T>;
 function defineProps(_props?: any) { void _props; return undefined as any; }
@@ -50,7 +54,7 @@ function defineModel<T>(): $Vue['Ref']<T | undefined> { return undefined as unkn
 function defineModel<T>(_options: any): $Vue['Ref']<T> { void _options; return undefined as unknown as $Vue['Ref']<T>; }
 function defineModel<T>(_name: string, _options?: any): $Vue['Ref']<T> { void _name; void _options; return undefined as unknown as $Vue['Ref']<T>; }
 function defineSlots<T>(): T { return undefined as unknown as T; }
-function withDefaults<T, D extends __WithDefaultsArgs<T>>(_props: T, _defaults: D): __WithDefaultsResult<T, D> { void _props; void _defaults; return undefined as unknown as __WithDefaultsResult<T, D>; }
+function withDefaults<T, D extends __WithDefaultsArgs<T>>(_props: T, _defaults: D): __WithDefaultsResult<T, D>; function withDefaults<T, D extends Record<string, any>>(_props: T, _defaults: D): __WithDefaultsResult<T, D>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
 function useTemplateRef<T = any>(_key: string): $Vue['ShallowRef']<T | null> { void _key; return undefined as unknown as $Vue['ShallowRef']<T | null>; }
 void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 "#;

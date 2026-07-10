@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { testOutputRoot } from "./support/lsp/paths.ts";
-import type { LspInitializationOptions } from "./support/lsp/protocol.ts";
+import type { LspInitializationOptions, ServerCapabilities } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
 
 // Capability-advertisement suite for `vize lsp`.
@@ -16,50 +16,9 @@ import { LspSession } from "./support/lsp/session.ts";
 // "."); here we pin the full provider set and the per-feature gating shapes for
 // distinct option bundles, which the smoke suite does not cover.
 
-/**
- * Granular initialization options accepted by the server's camelCase config
- * section. The shared `LspInitializationOptions` type only models the common
- * bundle flags, so this test widens it with the per-feature toggles it needs.
- */
-type GranularInitOptions = LspInitializationOptions & {
-  inlayHints?: boolean;
-  foldingRanges?: boolean;
-  documentSymbols?: boolean;
-  codeLens?: boolean;
-};
-
-type ServerCapabilities = {
-  documentSymbolProvider?: unknown;
-  foldingRangeProvider?: unknown;
-  inlayHintProvider?: unknown;
-  documentHighlightProvider?: unknown;
-  workspaceSymbolProvider?: unknown;
-  semanticTokensProvider?: unknown;
-  completionProvider?: {
-    triggerCharacters?: string[];
-    resolveProvider?: boolean;
-  };
-  codeLensProvider?: { resolveProvider?: boolean };
-  documentLinkProvider?: { resolveProvider?: boolean };
-  renameProvider?: { prepareProvider?: boolean };
-  codeActionProvider?: {
-    codeActionKinds?: string[];
-    resolveProvider?: boolean;
-  };
-  hoverProvider?: unknown;
-  textDocumentSync?: {
-    change?: number;
-    openClose?: boolean;
-    save?: { includeText?: boolean };
-  };
-  signatureHelpProvider?: unknown;
-  selectionRangeProvider?: unknown;
-  documentRangeFormattingProvider?: unknown;
-};
-
 async function withCapabilities(
   label: string,
-  initializationOptions: GranularInitOptions,
+  initializationOptions: LspInitializationOptions,
   run: (capabilities: ServerCapabilities) => void,
 ): Promise<void> {
   const testRootDir = path.join(testOutputRoot, `lsp-capabilities-${label}`);
@@ -68,10 +27,9 @@ async function withCapabilities(
   const session = new LspSession();
 
   try {
-    const init = (await session.initialize(
-      workspaceDir,
-      initializationOptions as LspInitializationOptions,
-    )) as { capabilities?: ServerCapabilities };
+    const init = (await session.initialize(workspaceDir, initializationOptions)) as {
+      capabilities?: ServerCapabilities;
+    };
     assert.ok(init.capabilities, "initialize result should advertise capabilities");
     run(init.capabilities);
   } finally {
@@ -89,6 +47,9 @@ test("vize lsp advertises the full editor-feature provider set with exact shapes
     assert.equal(capabilities.inlayHintProvider, true);
     assert.equal(capabilities.documentHighlightProvider, true);
     assert.equal(capabilities.workspaceSymbolProvider, true);
+    assert.equal(capabilities.hoverProvider, true);
+    assert.equal(capabilities.definitionProvider, true);
+    assert.equal(capabilities.referencesProvider, true);
 
     // Resolve-provider shapes.
     assert.equal(capabilities.codeLensProvider?.resolveProvider, false);
@@ -145,6 +106,9 @@ test("vize lsp editor:false strips editor providers but keeps lint-driven codeAc
       assert.equal(capabilities.documentLinkProvider, undefined);
       assert.equal(capabilities.workspaceSymbolProvider, undefined);
       assert.equal(capabilities.hoverProvider, undefined);
+      assert.equal(capabilities.definitionProvider, undefined);
+      assert.equal(capabilities.referencesProvider, undefined);
+      assert.equal(capabilities.documentHighlightProvider, undefined);
 
       // Lint code actions survive without the editor bundle.
       assert.ok(capabilities.codeActionProvider, "codeActionProvider should remain present");
@@ -174,6 +138,26 @@ test("vize lsp per-feature init flags toggle individual providers independently"
       assert.equal(capabilities.semanticTokensProvider, undefined);
       // A sibling editor provider is untouched.
       assert.equal(capabilities.hoverProvider, true);
+    },
+  );
+
+  await withCapabilities(
+    "granular-authoring-off",
+    {
+      editor: true,
+      completion: false,
+      hover: false,
+      definition: false,
+      references: false,
+    },
+    (capabilities) => {
+      assert.equal(capabilities.completionProvider, undefined);
+      assert.equal(capabilities.hoverProvider, undefined);
+      assert.equal(capabilities.definitionProvider, undefined);
+      assert.equal(capabilities.referencesProvider, undefined);
+      assert.equal(capabilities.documentHighlightProvider, undefined);
+      // A sibling editor provider is untouched.
+      assert.equal(capabilities.documentSymbolProvider, true);
     },
   );
 

@@ -23,76 +23,10 @@
         "endLine": 108,
         "endColumn": 24,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 108,
-        "column": 7,
-        "endLine": 108,
-        "endColumn": 24,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 117,
-        "column": 60,
-        "endLine": 117,
-        "endColumn": 72,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 122,
-        "column": 47,
-        "endLine": 122,
-        "endColumn": 59,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 125,
-        "column": 61,
-        "endLine": 125,
-        "endColumn": 73,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 132,
-        "column": 140,
-        "endLine": 132,
-        "endColumn": 152,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 134,
-        "column": 161,
-        "endLine": 134,
-        "endColumn": 173,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 8
+    "warningCount": 2
   },
   {
     "file": "src/runtime/components/Alert.vue",
@@ -240,17 +174,6 @@
     "file": "src/runtime/components/Button.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Button' is a reserved HTML element name and cannot be used as a component name",
-        "line": 119,
-        "column": 11,
-        "endLine": 119,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -262,7 +185,7 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -426,32 +349,10 @@
         "endLine": 52,
         "endColumn": 37,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 52,
-        "column": 20,
-        "endLine": 52,
-        "endColumn": 37,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 54,
-        "column": 13,
-        "endLine": 54,
-        "endColumn": 25,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/ColorPicker.vue",
@@ -570,17 +471,6 @@
     "file": "src/runtime/components/ContextMenuContent.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 122,
-        "column": 36,
-        "endLine": 122,
-        "endColumn": 41,
-        "help": "If the variable is intentionally unused, prefix it with underscore: _item"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -604,7 +494,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/runtime/components/DashboardGroup.vue",
@@ -709,47 +599,14 @@
         "endLine": 156,
         "endColumn": 38,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 156,
-        "column": 21,
-        "endLine": 156,
-        "endColumn": 38,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 158,
-        "column": 13,
-        "endLine": 158,
-        "endColumn": 25,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/DropdownMenuContent.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 134,
-        "column": 37,
-        "endLine": 134,
-        "endColumn": 42,
-        "help": "If the variable is intentionally unused, prefix it with underscore: _item"
-      },
       {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -774,7 +631,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/runtime/components/Editor.vue",
@@ -808,21 +665,9 @@
   },
   {
     "file": "src/runtime/components/EditorToolbar.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 326,
-        "column": 25,
-        "endLine": 326,
-        "endColumn": 30,
-        "help": "If the variable is intentionally unused, prefix it with underscore: _item"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/Empty.vue",
@@ -873,20 +718,8 @@
   },
   {
     "file": "src/runtime/components/Footer.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Footer' is a reserved HTML element name and cannot be used as a component name",
-        "line": 48,
-        "column": 11,
-        "endLine": 48,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -911,17 +744,6 @@
     "file": "src/runtime/components/Form.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Form' is a reserved HTML element name and cannot be used as a component name",
-        "line": 457,
-        "column": 11,
-        "endLine": 457,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -933,7 +755,7 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -944,20 +766,8 @@
   },
   {
     "file": "src/runtime/components/Header.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Header' is a reserved HTML element name and cannot be used as a component name",
-        "line": 134,
-        "column": 11,
-        "endLine": 134,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -970,17 +780,6 @@
     "file": "src/runtime/components/Input.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Input' is a reserved HTML element name and cannot be used as a component name",
-        "line": 184,
-        "column": 11,
-        "endLine": 184,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -992,7 +791,7 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -1039,17 +838,6 @@
     "file": "src/runtime/components/InputMenu.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 702,
-        "column": 36,
-        "endLine": 702,
-        "endColumn": 41,
-        "help": "If the variable is intentionally unused, prefix it with underscore: _item"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1070,17 +858,6 @@
         "endLine": 576,
         "endColumn": 34,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 576,
-        "column": 5,
-        "endLine": 576,
-        "endColumn": 34,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       },
       {
         "ruleId": "vue/v-slot-style",
@@ -1116,28 +893,6 @@
         "help": "Reorder attributes to follow the recommended order"
       },
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 643,
-        "column": 119,
-        "endLine": 643,
-        "endColumn": 131,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 650,
-        "column": 120,
-        "endLine": 650,
-        "endColumn": 132,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1150,7 +905,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 10
+    "warningCount": 6
   },
   {
     "file": "src/runtime/components/InputNumber.vue",
@@ -1230,36 +985,13 @@
   },
   {
     "file": "src/runtime/components/Kbd.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Kbd' is a reserved HTML element name and cannot be used as a component name",
-        "line": 59,
-        "column": 11,
-        "endLine": 59,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/Link.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Link' is a reserved HTML element name and cannot be used as a component name",
-        "line": 186,
-        "column": 11,
-        "endLine": 186,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -1272,7 +1004,7 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -1283,20 +1015,8 @@
   },
   {
     "file": "src/runtime/components/Main.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Main' is a reserved HTML element name and cannot be used as a component name",
-        "line": 43,
-        "column": 11,
-        "endLine": 43,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -1318,87 +1038,10 @@
         "endLine": 142,
         "endColumn": 39,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 142,
-        "column": 15,
-        "endLine": 142,
-        "endColumn": 39,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 142,
-        "column": 15,
-        "endLine": 142,
-        "endColumn": 39,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 166,
-        "column": 30,
-        "endLine": 166,
-        "endColumn": 44,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 168,
-        "column": 33,
-        "endLine": 168,
-        "endColumn": 47,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 203,
-        "column": 31,
-        "endLine": 203,
-        "endColumn": 45,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 207,
-        "column": 33,
-        "endLine": 207,
-        "endColumn": 47,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 214,
-        "column": 13,
-        "endLine": 214,
-        "endColumn": 25,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 8
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/NavigationMenu.vue",
@@ -1448,28 +1091,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 415,
-        "column": 23,
-        "endLine": 415,
-        "endColumn": 43,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 422,
-        "column": 17,
-        "endLine": 422,
-        "endColumn": 31,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1504,7 +1125,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 7
   },
   {
     "file": "src/runtime/components/OverlayProvider.vue",
@@ -1703,17 +1324,6 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 119,
-        "column": 19,
-        "endLine": 119,
-        "endColumn": 82,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 119,
         "column": 19,
@@ -1730,17 +1340,6 @@
         "column": 19,
         "endLine": 119,
         "endColumn": 82,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 121,
-        "column": 13,
-        "endLine": 121,
-        "endColumn": 25,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       },
       {
@@ -1789,7 +1388,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 7
   },
   {
     "file": "src/runtime/components/PricingPlan.vue",
@@ -1856,20 +1455,8 @@
   },
   {
     "file": "src/runtime/components/Progress.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Progress' is a reserved HTML element name and cannot be used as a component name",
-        "line": 171,
-        "column": 11,
-        "endLine": 171,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -1888,28 +1475,6 @@
     "file": "src/runtime/components/Select.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 346,
-        "column": 32,
-        "endLine": 346,
-        "endColumn": 37,
-        "help": "If the variable is intentionally unused, prefix it with underscore: _item"
-      },
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Select' is a reserved HTML element name and cannot be used as a component name",
-        "line": 297,
-        "column": 11,
-        "endLine": 297,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1921,17 +1486,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 299,
-        "column": 5,
-        "endLine": 299,
-        "endColumn": 34,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1941,58 +1495,14 @@
         "endLine": 311,
         "endColumn": 23,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 317,
-        "column": 119,
-        "endLine": 317,
-        "endColumn": 131,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 323,
-        "column": 102,
-        "endLine": 323,
-        "endColumn": 114,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 335,
-        "column": 120,
-        "endLine": 335,
-        "endColumn": 132,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
-    "errorCount": 1,
-    "warningCount": 7
+    "errorCount": 0,
+    "warningCount": 2
   },
   {
     "file": "src/runtime/components/SelectMenu.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 667,
-        "column": 38,
-        "endLine": 667,
-        "endColumn": 43,
-        "help": "If the variable is intentionally unused, prefix it with underscore: _item"
-      },
       {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -2027,50 +1537,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 568,
-        "column": 5,
-        "endLine": 568,
-        "endColumn": 34,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 580,
-        "column": 121,
-        "endLine": 580,
-        "endColumn": 133,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 586,
-        "column": 104,
-        "endLine": 586,
-        "endColumn": 116,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 598,
-        "column": 122,
-        "endLine": 598,
-        "endColumn": 134,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2083,7 +1549,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 4
   },
   {
     "file": "src/runtime/components/Separator.vue",
@@ -2110,87 +1576,10 @@
         "endLine": 140,
         "endColumn": 39,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 140,
-        "column": 15,
-        "endLine": 140,
-        "endColumn": 39,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 140,
-        "column": 15,
-        "endLine": 140,
-        "endColumn": 39,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 142,
-        "column": 13,
-        "endLine": 142,
-        "endColumn": 25,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 171,
-        "column": 30,
-        "endLine": 171,
-        "endColumn": 44,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 173,
-        "column": 33,
-        "endLine": 173,
-        "endColumn": 47,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 208,
-        "column": 31,
-        "endLine": 208,
-        "endColumn": 45,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 212,
-        "column": 33,
-        "endLine": 212,
-        "endColumn": 47,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 8
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/Slider.vue",
@@ -2250,17 +1639,6 @@
     "file": "src/runtime/components/Table.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Table' is a reserved HTML element name and cannot be used as a component name",
-        "line": 525,
-        "column": 11,
-        "endLine": 525,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2294,7 +1672,7 @@
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 3
   },
   {
@@ -2307,17 +1685,6 @@
     "file": "src/runtime/components/Textarea.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Textarea' is a reserved HTML element name and cannot be used as a component name",
-        "line": 213,
-        "column": 11,
-        "endLine": 213,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2329,7 +1696,7 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -2385,17 +1752,6 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 126,
-        "column": 5,
-        "endLine": 126,
-        "endColumn": 43,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 167,
         "column": 10,
@@ -2424,21 +1780,10 @@
         "endLine": 179,
         "endColumn": 25,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 194,
-        "column": 7,
-        "endLine": 194,
-        "endColumn": 59,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 4
   },
   {
     "file": "src/runtime/components/Toaster.vue",
@@ -2459,32 +1804,10 @@
         "endLine": 83,
         "endColumn": 33,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 83,
-        "column": 16,
-        "endLine": 83,
-        "endColumn": 33,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 85,
-        "column": 13,
-        "endLine": 85,
-        "endColumn": 25,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/Tree.vue",
@@ -2510,16 +1833,6 @@
         "endLine": 261,
         "endColumn": 89,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <ReuseTreeTemplate> is not allowed as a direct child of <ul>",
-        "line": 353,
-        "column": 11,
-        "endLine": 353,
-        "endColumn": 74
       },
       {
         "ruleId": "vue/v-slot-style",
@@ -2555,7 +1868,7 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 5
   },
   {
@@ -2725,50 +2038,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 165,
-        "column": 26,
-        "endLine": 165,
-        "endColumn": 43,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 166,
-        "column": 26,
-        "endLine": 166,
-        "endColumn": 38,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 169,
-        "column": 13,
-        "endLine": 169,
-        "endColumn": 25,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 173,
-        "column": 29,
-        "endLine": 173,
-        "endColumn": 41,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2778,43 +2047,10 @@
         "endLine": 179,
         "endColumn": 37,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 179,
-        "column": 20,
-        "endLine": 179,
-        "endColumn": 37,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 187,
-        "column": 33,
-        "endLine": 187,
-        "endColumn": 45,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 199,
-        "column": 33,
-        "endLine": 199,
-        "endColumn": 45,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 10
+    "warningCount": 3
   },
   {
     "file": "src/runtime/components/locale/LocaleSelect.vue",
@@ -2825,17 +2061,6 @@
   {
     "file": "src/runtime/components/prose/A.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'A' is a reserved HTML element name and cannot be used as a component name",
-        "line": 38,
-        "column": 11,
-        "endLine": 38,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -2859,7 +2084,7 @@
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 2
   },
   {
@@ -2882,20 +2107,8 @@
   },
   {
     "file": "src/runtime/components/prose/Blockquote.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Blockquote' is a reserved HTML element name and cannot be used as a component name",
-        "line": 35,
-        "column": 11,
-        "endLine": 35,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -2918,20 +2131,8 @@
   },
   {
     "file": "src/runtime/components/prose/Code.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Code' is a reserved HTML element name and cannot be used as a component name",
-        "line": 40,
-        "column": 11,
-        "endLine": 40,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -2982,66 +2183,21 @@
         "endLine": 206,
         "endColumn": 44,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <ReuseTreeTemplate> is not allowed as a direct child of <ul>",
-        "line": 243,
-        "column": 11,
-        "endLine": 243,
-        "endColumn": 74
-      }
-    ],
-    "errorCount": 1,
-    "warningCount": 2
-  },
-  {
-    "file": "src/runtime/components/prose/Collapsible.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 63,
-        "column": 15,
-        "endLine": 63,
-        "endColumn": 34,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 68,
-        "column": 11,
-        "endLine": 68,
-        "endColumn": 131,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
     "warningCount": 2
   },
   {
+    "file": "src/runtime/components/prose/Collapsible.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
     "file": "src/runtime/components/prose/Em.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Em' is a reserved HTML element name and cannot be used as a component name",
-        "line": 35,
-        "column": 11,
-        "endLine": 35,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -3060,17 +2216,6 @@
     "file": "src/runtime/components/prose/H1.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'H1' is a reserved HTML element name and cannot be used as a component name",
-        "line": 39,
-        "column": 11,
-        "endLine": 39,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3082,23 +2227,12 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
     "file": "src/runtime/components/prose/H2.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'H2' is a reserved HTML element name and cannot be used as a component name",
-        "line": 40,
-        "column": 11,
-        "endLine": 40,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -3111,23 +2245,12 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
     "file": "src/runtime/components/prose/H3.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'H3' is a reserved HTML element name and cannot be used as a component name",
-        "line": 40,
-        "column": 11,
-        "endLine": 40,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -3140,23 +2263,12 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
     "file": "src/runtime/components/prose/H4.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'H4' is a reserved HTML element name and cannot be used as a component name",
-        "line": 39,
-        "column": 11,
-        "endLine": 39,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -3169,25 +2281,13 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
     "file": "src/runtime/components/prose/Hr.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Hr' is a reserved HTML element name and cannot be used as a component name",
-        "line": 29,
-        "column": 11,
-        "endLine": 29,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -3199,17 +2299,6 @@
   {
     "file": "src/runtime/components/prose/Img.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Img' is a reserved HTML element name and cannot be used as a component name",
-        "line": 64,
-        "column": 11,
-        "endLine": 64,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -3255,17 +2344,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 87,
-        "column": 27,
-        "endLine": 87,
-        "endColumn": 45,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -3286,90 +2364,32 @@
         "endLine": 98,
         "endColumn": 91,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 98,
-        "column": 76,
-        "endLine": 98,
-        "endColumn": 90,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
-    "errorCount": 1,
-    "warningCount": 8
+    "errorCount": 0,
+    "warningCount": 6
   },
   {
     "file": "src/runtime/components/prose/Kbd.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Kbd' is a reserved HTML element name and cannot be used as a component name",
-        "line": 31,
-        "column": 11,
-        "endLine": 31,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/prose/Li.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Li' is a reserved HTML element name and cannot be used as a component name",
-        "line": 35,
-        "column": 11,
-        "endLine": 35,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/prose/Ol.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Ol' is a reserved HTML element name and cannot be used as a component name",
-        "line": 35,
-        "column": 11,
-        "endLine": 35,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/prose/P.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'P' is a reserved HTML element name and cannot be used as a component name",
-        "line": 35,
-        "column": 11,
-        "endLine": 35,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -3382,23 +2402,12 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
     "file": "src/runtime/components/prose/Pre.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Pre' is a reserved HTML element name and cannot be used as a component name",
-        "line": 49,
-        "column": 11,
-        "endLine": 49,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -3411,25 +2420,13 @@
         "help": "Add scoped attribute: <style scoped>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
     "file": "src/runtime/components/prose/Script.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Script' is a reserved HTML element name and cannot be used as a component name",
-        "line": 9,
-        "column": 11,
-        "endLine": 9,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -3440,38 +2437,14 @@
   },
   {
     "file": "src/runtime/components/prose/Strong.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Strong' is a reserved HTML element name and cannot be used as a component name",
-        "line": 35,
-        "column": 11,
-        "endLine": 35,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/prose/Table.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Table' is a reserved HTML element name and cannot be used as a component name",
-        "line": 35,
-        "column": 11,
-        "endLine": 35,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -3488,110 +2461,38 @@
   },
   {
     "file": "src/runtime/components/prose/Tbody.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Tbody' is a reserved HTML element name and cannot be used as a component name",
-        "line": 35,
-        "column": 11,
-        "endLine": 35,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/prose/Td.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Td' is a reserved HTML element name and cannot be used as a component name",
-        "line": 36,
-        "column": 11,
-        "endLine": 36,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/prose/Th.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Th' is a reserved HTML element name and cannot be used as a component name",
-        "line": 36,
-        "column": 11,
-        "endLine": 36,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/prose/Thead.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Thead' is a reserved HTML element name and cannot be used as a component name",
-        "line": 35,
-        "column": 11,
-        "endLine": 35,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/prose/Tr.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Tr' is a reserved HTML element name and cannot be used as a component name",
-        "line": 35,
-        "column": 11,
-        "endLine": 35,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
     "file": "src/runtime/components/prose/Ul.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Ul' is a reserved HTML element name and cannot be used as a component name",
-        "line": 35,
-        "column": 11,
-        "endLine": 35,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -3638,20 +2539,8 @@
   },
   {
     "file": "src/runtime/vue/overrides/inertia/Link.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Link' is a reserved HTML element name and cannot be used as a component name",
-        "line": 181,
-        "column": 11,
-        "endLine": 181,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -3674,36 +2563,13 @@
   },
   {
     "file": "src/runtime/vue/overrides/none/Link.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Link' is a reserved HTML element name and cannot be used as a component name",
-        "line": 171,
-        "column": 11,
-        "endLine": 171,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
     "file": "src/runtime/vue/overrides/vue-router/Link.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Link' is a reserved HTML element name and cannot be used as a component name",
-        "line": 183,
-        "column": 11,
-        "endLine": 183,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -3716,7 +2582,7 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   }
 ]

@@ -9,8 +9,15 @@
 
 mod builder;
 mod collectors;
+mod component_props;
+#[cfg(test)]
+mod component_props_tests;
 #[cfg(feature = "native")]
-mod corsa;
+pub(in crate::ide) mod corsa;
+#[cfg(all(test, feature = "native"))]
+mod editor_typecheck_fixture;
+#[cfg(all(test, feature = "native"))]
+mod editor_typecheck_tests;
 mod line_index;
 mod service;
 mod severity;
@@ -36,5 +43,6 @@ pub mod sources {
     pub const JSX_COMPILER: &str = "vize/jsx";
     pub const LINTER: &str = "vize/lint";
     pub const TYPE_CHECKER: &str = "vize/types";
+    pub const COMPONENTS: &str = "vize/components";
     pub const MUSEA: &str = "vize/musea";
 }

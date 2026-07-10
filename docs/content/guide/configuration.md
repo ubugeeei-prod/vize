@@ -64,6 +64,18 @@ export default defineConfig(({ command, mode, isSsrBuild }) => ({
 }));
 ```
 
+## Vue Type Resolution
+
+Vize does not pin Vue's type surface from the published `vize` package: `vize check`, the language
+server, and package commands resolve `vue`, `@vue/compiler-sfc`, and related ambient types from the
+analyzed project, so Vue 3 patch, minor, and prerelease choices stay under that project's control
+rather than the version used to build Vize. For predictable results, declare the supported Vue
+version in the user project (not via Vize internals), keep `vue`, `@vue/compiler-sfc`, and
+integrations such as Nuxt aligned there, and run `vize check` from the project root or point
+`typeChecker.tsconfig` at the target package; use `typeChecker.corsaPath` only to pick the checker
+binary, never to override Vue type versions. When a project supports multiple Vue ranges, test each
+in its own package matrix so Vize follows the active dependency graph, not a hard-coded type path.
+
 ## Experimental Flat Entries
 
 Monorepos can describe root defaults and package-scoped overrides with `entries`. Plain object
@@ -337,11 +349,10 @@ diagnosed. Unrelated prologues such as `"use strict"` are left untouched.
   [petite-vue](https://github.com/vuejs/petite-vue) dialect (`v-scope`/`v-effect`
   completions and petite-vue-aware IDE features).
 
-When the key is absent, the dialect is detected structurally per document: a
-`<script src>` resolving to the petite-vue package, an inline ES import of
-`petite-vue`, or a `PetiteVue.createApp` call. Mentions of petite-vue in
-comments or prose never switch the dialect. Single-file components always use
-the standard Vue dialect.
+When the key is absent, the dialect is detected structurally per document: a `<script src>`
+resolving to the petite-vue package, an inline ES import of `petite-vue`, or a `PetiteVue.createApp`
+call. Mentions of petite-vue in comments or prose never switch the dialect, and single-file
+components always use the standard Vue dialect.
 
 ## Static Analysis Options
 
@@ -370,44 +381,32 @@ export default defineConfig({
     checkProps: true,
     checkEmits: true,
     checkTemplateBindings: true,
-    // Resolve Vue 3 Options API template bindings (data/computed/methods/
-    // inject/setup/props). Officially supported in Vue 3 and default-on
-    // (matches vue-tsc). Set to `false` to opt out.
+    // Vue 3 Options API template bindings; default-on (matches vue-tsc).
     optionsApi: true,
   },
 });
 ```
 
-`typeChecker.optionsApi` opts the type checker into resolving Vue 3 Options API
-template bindings (`data`/`computed`/`methods`/`inject`/`setup`/`props` declared
-on a normal `<script> export default { ... }`). Options API is officially
-supported in Vue 3, so this lives in the standard build (it is **not** the
-`legacy` feature). It is **on by default** (matching `vue-tsc`); set
-`optionsApi: false` to opt out. The bridge only runs for non-`<script setup>`
-components, so the common `<script setup>` path stays zero-cost. Legacy Vue 2.7 /
-Nuxt 2 support — `typeChecker.legacyVue2`,
-which additionally adds the Nuxt 2 template globals — remains a separate opt-in
-that requires a `legacy` build.
+`typeChecker.optionsApi` resolves Vue 3 Options API template bindings
+(`data`/`computed`/`methods`/`inject`/`setup`/`props` on a plain `<script> export default { ... }`).
+It ships in the standard build (not the `legacy` feature), is **on by default** (matching `vue-tsc`),
+and runs only for non-`<script setup>` components, so that common path stays zero-cost; set
+`optionsApi: false` to opt out. Legacy Vue 2.7 / Nuxt 2 support (`typeChecker.legacyVue2`, which adds
+the Nuxt 2 template globals) is a separate `legacy`-build opt-in.
 
 `typeChecker.tsconfig` and `typeChecker.corsaPath` are part of the shared schema, but the
-project-backed Corsa path is the Rust CLI surface today. `typeChecker.corsaPath` is shared by
-`vize check`, type-aware `vize lint`, and `vize lsp`; `typeChecker.tsgoPath` is a deprecated alias
-for older configs. Use package scripts such as `vize:check:app` or `vize:check:corsa` when you need
-command-line overrides for `--tsconfig` or `--corsa-path`.
-
-The runtime stack is `@typescript/native-preview`, the Corsa/corsa-bind API layer, and the installed
-`tsgo` executable name. Keep ambient declarations, generated auto-import files, path aliases, and
-Vue `ComponentCustomProperties` declarations in your project `tsconfig.json`; use a package script
-that runs `vize check --tsconfig ...` to select that project file.
+project-backed Corsa path is the Rust CLI surface today. `corsaPath` is shared by `vize check`,
+type-aware `vize lint`, and `vize lsp` (`typeChecker.tsgoPath` is a deprecated alias); the runtime
+stack is `@typescript/native-preview`, the Corsa/corsa-bind API layer, and the installed `tsgo`
+executable. Keep ambient declarations, generated auto-import files, path aliases, and Vue
+`ComponentCustomProperties` declarations in your project `tsconfig.json`, and use a package script
+such as `vize:check:app` for `--tsconfig` or `--corsa-path` overrides.
 
 ```json
 {
   "typeChecker": {
     "corsaPath": "./node_modules/.bin/tsgo",
     "servers": 1
-  },
-  "lsp": {
-    "typecheck": false
   }
 }
 ```

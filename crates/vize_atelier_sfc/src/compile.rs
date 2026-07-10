@@ -5,6 +5,7 @@
 //! is delegated to specialized modules.
 
 mod bindings;
+mod empty_component;
 pub(crate) mod fallbacks;
 mod helpers;
 mod normal_script;
@@ -334,7 +335,7 @@ fn compile_sfc_inner(
                     &scope_id,
                     has_scoped,
                     None,
-                    options.template.custom_renderer,
+                    &options.template,
                     template_syntax,
                 )
             )
@@ -431,10 +432,7 @@ fn compile_sfc_inner(
             .unwrap_or_else(|| script_source.to_compact_string());
 
         // Check if source script is TypeScript
-        let source_is_ts = script
-            .lang
-            .as_ref()
-            .is_some_and(|l| l == "ts" || l == "tsx");
+        let source_is_ts = is_ts_lang(script.lang.as_deref());
 
         // Rewrite `export default` to `const _sfc_main = ...`
         // Parse as TypeScript if source is TypeScript
@@ -477,12 +475,16 @@ fn compile_sfc_inner(
             // template/reactivity Croquis analysis the `<script setup>` path runs.
             let parsed = profile!(
                 "atelier.sfc.normal_script.options_api_bindings",
-                vize_croquis::script_parser::parse_script_with_options(
+                vize_croquis::script_parser::parse_script_with_options_and_jsx(
                     &script_content,
                     vize_croquis::script_parser::ScriptParserOptions {
                         options_api: true,
                         legacy_vue2: false,
                     },
+                    script
+                        .lang
+                        .as_deref()
+                        .is_some_and(|lang| matches!(lang.trim(), "tsx" | "jsx")),
                 )
             );
             let mut bindings = BindingMetadata::default();
@@ -525,7 +527,7 @@ fn compile_sfc_inner(
                         &scope_id,
                         has_scoped,
                         None,
-                        options.template.custom_renderer,
+                        &options.template,
                         template_syntax,
                     )
                 )
@@ -643,18 +645,16 @@ fn compile_sfc_inner(
     }
 
     // Case 3: Script setup with inline template
-    // If we reach here without script_setup, it means the SFC has no content
-    let script_setup = match descriptor.script_setup.as_ref() {
-        Some(s) => s,
-        None => {
-            return Err(SfcError {
-                message:
-                    "At least one <template> or <script> is required in a single file component."
-                        .to_compact_string(),
-                code: None,
-                loc: None,
-            });
-        }
+    let Some(script_setup) = descriptor.script_setup.as_ref() else {
+        return Ok(empty_component::compile_empty_component(
+            is_vapor,
+            &compiled_styles,
+            css,
+            errors,
+            warnings,
+            macro_artifacts,
+            &options,
+        ));
     };
 
     // Extract normal script content if present (for type definitions, imports, etc.)
@@ -663,10 +663,7 @@ fn compile_sfc_inner(
     let normal_script_content = if has_script {
         let script = descriptor.script.as_ref().unwrap();
         // Check if source is TypeScript
-        let source_is_ts = script
-            .lang
-            .as_ref()
-            .is_some_and(|l| l == "ts" || l == "tsx");
+        let source_is_ts = is_ts_lang(script.lang.as_deref());
         Some(profile!(
             "atelier.sfc.normal_script.extract",
             extract_normal_script_content(&script.content, source_is_ts, is_ts)
@@ -676,10 +673,12 @@ fn compile_sfc_inner(
     };
 
     let lazy_hydration_transform = transform_lazy_hydration_macros(&script_setup.content);
-    let script_setup_content = lazy_hydration_transform
+    let script_setup_source = lazy_hydration_transform
         .as_ref()
         .map(|result| result.code.clone())
         .unwrap_or_else(|| script_setup.content.to_compact_string());
+    let script_setup_content = erase_artifact_macro_statements(&script_setup_source)
+        .unwrap_or_else(|| script_setup_source);
 
     // Parse the script setup once. Croquis binding analysis, the macro
     // context analysis, and (unless v-model demotion rewrites the content
@@ -848,7 +847,7 @@ fn compile_sfc_inner(
                     &scope_id,
                     has_scoped,
                     Some(&script_bindings),
-                    options.template.custom_renderer,
+                    &options.template,
                     template_syntax,
                 )
             ))

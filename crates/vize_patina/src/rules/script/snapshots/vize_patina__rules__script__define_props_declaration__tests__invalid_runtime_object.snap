@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/define_props_declaration.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/define-props-declaration",
+        severity: Warning,
+        message: "Prefer the type-based `defineProps<{ ... }>()` declaration over the runtime form",
+        start: 14,
+        end: 90,
+        help: Some(
+            "Move the props to a type argument, e.g. `defineProps<{ count?: number }>()`, instead of passing a runtime object/array.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

@@ -81,8 +81,9 @@ jobs:
     # Matrix legs run in parallel and keep breaking changes attributed per crate.
     # PRs compare against base; pushes compare against the previous main commit.
     # Conventional breaking markers (`type(scope)!:` / `BREAKING CHANGE:`) are major.
-    # Keep this list in sync with publishable crates. `vize_croquis_cf` is omitted
-    # until first publish so registry fallback cannot hit "not found in registry".
+    # Keep this list in sync with crates published by tools/moon/cmd/publish_crates.
+    # New crates are omitted until first publish so registry fallback cannot hit
+    # "not found in registry"; dependents of those crates are omitted with them.
     strategy:
       fail-fast: false
       matrix:
@@ -93,12 +94,10 @@ jobs:
           - vize_atelier_sfc
           - vize_atelier_ssr
           - vize_atelier_vapor
-          - vize_canon
           - vize_carton
           - vize_croquis
           - vize_fresco
           - vize_musea
-          - vize_patina
           - vize_relief
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -325,18 +324,18 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build native package
-        run: vp run --filter './npm/vize-native' build:ci
+        run: vp run --filter './npm/native' build:ci
       - name: Build JS packages
         run: vp run --workspace-root build:packages
       - name: Stage shared JS build artifacts
         run: |
-          mkdir -p .artifacts/shared-js-build/npm/vize-native
-          mkdir -p .artifacts/shared-js-build/npm/vize
-          mkdir -p .artifacts/shared-js-build/npm/vite-plugin-vize
-          cp npm/vize-native/*.node .artifacts/shared-js-build/npm/vize-native/
-          cp npm/vize-native/index.js npm/vize-native/index.d.ts .artifacts/shared-js-build/npm/vize-native/
-          cp -R npm/vize/dist .artifacts/shared-js-build/npm/vize/
-          cp -R npm/vite-plugin-vize/dist .artifacts/shared-js-build/npm/vite-plugin-vize/
+          mkdir -p .artifacts/shared-js-build/npm/native
+          mkdir -p .artifacts/shared-js-build/npm/cli
+          mkdir -p .artifacts/shared-js-build/npm/builder/vite
+          cp npm/native/*.node .artifacts/shared-js-build/npm/native/
+          cp npm/native/index.js npm/native/index.d.ts .artifacts/shared-js-build/npm/native/
+          cp -R npm/cli/dist .artifacts/shared-js-build/npm/cli/
+          cp -R npm/builder/vite/dist .artifacts/shared-js-build/npm/builder/vite/
       - name: Upload shared JS build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -397,7 +396,7 @@ jobs:
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Test
-        run: cargo test --workspace
+        run: cargo test --workspace && cargo test -p vize_vitrine --no-default-features --features wasm
 
   coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -424,17 +423,15 @@ jobs:
         run: npm install --global @pkl-community/pkl@0.27.2
 
       - name: Coverage report
-        run: moon run --target native - -- < tools/moon/scripts/github/write_coverage_summary.mbtx
+        run: moon run --target native tools/moon/cmd/github/write_coverage_summary --
 
   source-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
-    # cargo llvm-cov against the whole workspace consistently runs in the
-    # 4–6 minute range. Coverage is a trend metric, not a per-PR signal —
-    # a single PR rarely meaningfully changes workspace-wide percentages.
-    # Run on push-to-main (so regressions surface within minutes of merge)
-    # and on the daily schedule. The fixture-coverage job (`coverage`) and
-    # the compiler/lint suites still run on every PR.
+    # cargo llvm-cov against the whole workspace runs ~4–6 minutes. Coverage is
+    # a trend metric, not a per-PR signal: one PR rarely moves workspace-wide
+    # percentages. Run on push-to-main and on the daily schedule; the
+    # fixture-coverage job (`coverage`) and compiler/lint suites still run per-PR.
     if: ${{ github.event_name != 'pull_request' }}
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -455,6 +452,8 @@ jobs:
         with:
           wild-version: "0.9.0"
 
+      - uses: ./.github/actions/setup-moonbit
+
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: coverage-source
@@ -474,7 +473,11 @@ jobs:
       - name: Source coverage report
         run: vp run --workspace-root coverage:source
 
+      - name: Verify source coverage summary
+        run: test -s target/llvm-cov/source-summary.json
+
       - name: Upload source coverage summary
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: rust-source-coverage-summary
@@ -485,10 +488,8 @@ jobs:
   branch-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
-    # Nightly Rust branch coverage on the core compiler crates. Same
-    # rationale as source-coverage: a single PR does not move branch
-    # coverage in a way that needs gating per-PR. Push-to-main + schedule
-    # keeps the trend honest without paying ~2 minutes on every PR.
+    # Nightly Rust branch coverage on the core compiler crates. Same trend
+    # rationale as source-coverage, so push-to-main + schedule, never per-PR.
     if: ${{ github.event_name != 'pull_request' }}
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -510,6 +511,8 @@ jobs:
         with:
           wild-version: "0.9.0"
 
+      - uses: ./.github/actions/setup-moonbit
+
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: coverage-branch
@@ -529,7 +532,11 @@ jobs:
       - name: Branch coverage report
         run: vp run --workspace-root coverage:source:branch
 
+      - name: Verify branch coverage summary
+        run: test -s target/llvm-cov/source-branch-summary.json
+
       - name: Upload branch coverage summary
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: rust-branch-coverage-summary
@@ -575,7 +582,7 @@ jobs:
 
       - name: Build WASM
         if: steps.cache-wasm.outputs.cache-hit != 'true'
-        run: moon run --target native - -- playground/src/wasm < tools/moon/scripts/github/build_vitrine_wasm.mbtx
+        run: moon run --target native tools/moon/cmd/github/build_vitrine_wasm -- playground/src/wasm
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -585,7 +592,7 @@ jobs:
           run-install: false
 
       - name: Install JS dependencies
-        run: moon run --target native - -- --filter './playground...' --filter './npm/vite-plugin-vize...' --filter './npm/vize...' --filter './npm/vize-native...' < tools/moon/scripts/github/vp_install.mbtx
+        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './playground...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
 
       - name: Download shared JS build artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -602,7 +609,7 @@ jobs:
 
       - name: Install Playwright browsers
         if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: moon run --target native - -- < tools/moon/scripts/github/install_playwright_browsers.mbtx
+        run: moon run --target native tools/moon/cmd/github/install_playwright_browsers --
 
       - name: Run playground tests
         run: vp run --filter './playground' test:browser

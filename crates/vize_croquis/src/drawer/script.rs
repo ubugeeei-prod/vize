@@ -1,3 +1,4 @@
+use oxc_ast::ast::Program;
 use vize_carton::profile;
 
 use super::Drawer;
@@ -29,6 +30,16 @@ impl Drawer {
         source: &str,
         generic: Option<&str>,
     ) -> &mut Self {
+        self.draw_script_setup_with_generic_and_jsx(source, generic, false)
+    }
+
+    /// Draw script setup source code with an optional generic parameter and JSX parser dialect.
+    pub fn draw_script_setup_with_generic_and_jsx(
+        &mut self,
+        source: &str,
+        generic: Option<&str>,
+        jsx: bool,
+    ) -> &mut Self {
         if !self.options.analyze_script {
             return self;
         }
@@ -38,7 +49,34 @@ impl Drawer {
         // Use OXC-based parser for accurate AST drawing
         let result = profile!(
             "croquis.drawer.script_setup",
-            crate::script_parser::parse_script_setup_with_generic(source, generic)
+            crate::script_parser::parse_script_setup_with_generic_and_jsx(source, generic, jsx)
+        );
+
+        result.apply_to_croquis(&mut self.croquis);
+
+        self
+    }
+
+    /// Draw an already-parsed script setup program.
+    ///
+    /// This is the parse-free equivalent of [`Self::draw_script_setup_with_generic`]
+    /// for callers that already parsed the source with a dialect Croquis should
+    /// not reparse, such as JSX/TSX.
+    pub fn draw_script_setup_program(
+        &mut self,
+        program: &Program<'_>,
+        source: &str,
+        generic: Option<&str>,
+    ) -> &mut Self {
+        if !self.options.analyze_script {
+            return self;
+        }
+
+        self.script_drawn = true;
+
+        let result = profile!(
+            "croquis.drawer.script_setup_program",
+            crate::script_parser::analyze_script_setup_program(program, source, generic)
         );
 
         result.apply_to_croquis(&mut self.croquis);
@@ -48,6 +86,12 @@ impl Drawer {
 
     /// Draw non-script-setup (Options API) source code.
     pub fn draw_script_plain(&mut self, source: &str) -> &mut Self {
+        self.draw_script_plain_with_jsx(source, false)
+    }
+
+    /// Draw non-script-setup (Options API) source code with an explicit JSX
+    /// parser dialect.
+    pub fn draw_script_plain_with_jsx(&mut self, source: &str, jsx: bool) -> &mut Self {
         if !self.options.analyze_script {
             return self;
         }
@@ -57,12 +101,13 @@ impl Drawer {
         // Use OXC-based parser for non-script-setup
         let result = profile!(
             "croquis.drawer.script_plain",
-            crate::script_parser::parse_script_with_options(
+            crate::script_parser::parse_script_with_options_and_jsx(
                 source,
                 crate::script_parser::ScriptParserOptions {
                     options_api: self.options_api,
                     legacy_vue2: self.legacy_vue2,
-                }
+                },
+                jsx,
             )
         );
 
@@ -95,9 +140,37 @@ impl Drawer {
         self.draw_script_setup_with_generic(source, generic)
     }
 
+    /// Compatibility wrapper for callers that already know script setup needs JSX.
+    #[inline]
+    pub fn analyze_script_setup_with_generic_jsx(
+        &mut self,
+        source: &str,
+        generic: Option<&str>,
+    ) -> &mut Self {
+        self.draw_script_setup_with_generic_and_jsx(source, generic, true)
+    }
+
+    /// Compatibility wrapper for the old Analyzer naming.
+    #[inline]
+    pub fn analyze_script_setup_program(
+        &mut self,
+        program: &Program<'_>,
+        source: &str,
+        generic: Option<&str>,
+    ) -> &mut Self {
+        self.draw_script_setup_program(program, source, generic)
+    }
+
     /// Compatibility wrapper for the old Analyzer naming.
     #[inline]
     pub fn analyze_script_plain(&mut self, source: &str) -> &mut Self {
         self.draw_script_plain(source)
+    }
+
+    /// Compatibility wrapper for callers that already know the plain script
+    /// should be parsed with JSX enabled.
+    #[inline]
+    pub fn analyze_script_plain_jsx(&mut self, source: &str) -> &mut Self {
+        self.draw_script_plain_with_jsx(source, true)
     }
 }

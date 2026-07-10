@@ -12,12 +12,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use serde_json::Value;
 use vize_carton::{FxHashSet, String, cstr};
 
 use super::resolve::resolve_from_config_dir;
 use crate::commands::check::tsconfig_inputs::{
-    parse_jsonc_value, read_extends_entries, resolve_extended_tsconfig,
+    collect_tsconfig_type_packages, reference_type_packages, resolve_type_package_declaration_files,
 };
 
 pub(super) fn build_virtual_ts_options(
@@ -66,9 +65,8 @@ pub(super) fn build_virtual_ts_options(
 /// Resolve the configured Vue dialect for canon's virtual-TS generation.
 ///
 /// `vue.version` is optional in `vize.config`; an unset value means the default
-/// Vue 3 dialect. Plumbing only today (issue #1392): the resolved dialect is
-/// threaded into canon so it can later emit dialect-aware instance types, but it
-/// does not change generated output yet.
+/// Vue 3 dialect. The resolved dialect is threaded into canon so generated
+/// virtual TS can use dialect-aware instance and helper types.
 pub(super) fn dialect_from_features(
     vue_version: Option<crate::config::VueVersion>,
 ) -> crate::config::VueVersion {
@@ -116,8 +114,11 @@ pub(super) fn collect_project_global_component_stubs(
         })
         .collect::<Vec<_>>();
 
+    let type_package_search_start = tsconfig_path.unwrap_or(project_root);
     for package in collect_global_component_type_packages(files, tsconfig_path) {
-        for path in resolve_type_package_declaration_files(project_root, package.as_str()) {
+        for path in
+            resolve_type_package_declaration_files(type_package_search_start, package.as_str())
+        {
             declaration_sources.push(GlobalComponentDeclarationSource {
                 path,
                 type_package: Some(package.clone()),
@@ -182,7 +183,9 @@ struct GlobalComponentDeclarationSource {
 fn is_declaration_path(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts"))
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
 }
 
 fn collect_global_component_type_packages(
@@ -193,15 +196,15 @@ fn collect_global_component_type_packages(
     let mut seen = FxHashSet::default();
 
     for package in collect_tsconfig_type_packages(tsconfig_path) {
-        push_unique_type_package(&mut packages, &mut seen, package);
+        push_unique_type_package(&mut packages, &mut seen, package.into());
     }
 
-    for path in files.iter().filter(|path| is_declaration_path(path)) {
+    for path in files {
         let Ok(content) = fs::read_to_string(path) else {
             continue;
         };
         for package in reference_type_packages(&content) {
-            push_unique_type_package(&mut packages, &mut seen, package);
+            push_unique_type_package(&mut packages, &mut seen, package.into());
         }
     }
 
@@ -216,238 +219,6 @@ fn push_unique_type_package(
     if seen.insert(package.clone()) {
         packages.push(package);
     }
-}
-
-fn collect_tsconfig_type_packages(tsconfig_path: Option<&Path>) -> Vec<String> {
-    let Some(tsconfig_path) = tsconfig_path else {
-        return Vec::new();
-    };
-
-    let mut seen = FxHashSet::default();
-    load_tsconfig_type_packages(tsconfig_path, &mut seen).unwrap_or_default()
-}
-
-fn load_tsconfig_type_packages(
-    tsconfig_path: &Path,
-    seen: &mut FxHashSet<PathBuf>,
-) -> Option<Vec<String>> {
-    let resolved = tsconfig_path
-        .canonicalize()
-        .unwrap_or_else(|_| tsconfig_path.to_path_buf());
-    if !seen.insert(resolved.clone()) {
-        return None;
-    }
-
-    let content = fs::read_to_string(&resolved).ok()?;
-    let value = parse_jsonc_value(&content).ok()?;
-
-    let mut inherited = Vec::new();
-    for extends in read_extends_entries(&value) {
-        let Some(extends_path) = resolve_extended_tsconfig(&resolved, &extends) else {
-            continue;
-        };
-        if let Some(parent_types) = load_tsconfig_type_packages(&extends_path, seen) {
-            inherited.extend(parent_types);
-        }
-    }
-
-    if let Some(types) = value
-        .get("compilerOptions")
-        .and_then(Value::as_object)
-        .and_then(|compiler_options| compiler_options.get("types"))
-        .and_then(Value::as_array)
-    {
-        return Some(
-            types
-                .iter()
-                .filter_map(Value::as_str)
-                .map(String::from)
-                .collect(),
-        );
-    }
-
-    (!inherited.is_empty()).then_some(inherited)
-}
-
-fn reference_type_packages(content: &str) -> Vec<String> {
-    content
-        .lines()
-        .filter_map(reference_types_attribute)
-        .map(String::from)
-        .collect()
-}
-
-fn reference_types_attribute(line: &str) -> Option<&str> {
-    let line = line.trim_start();
-    if !line.starts_with("///") || !line.contains("<reference") {
-        return None;
-    }
-    attribute_value(line, "types")
-}
-
-fn reference_path_attribute(line: &str) -> Option<&str> {
-    let line = line.trim_start();
-    if !line.starts_with("///") || !line.contains("<reference") {
-        return None;
-    }
-    attribute_value(line, "path")
-}
-
-fn attribute_value<'a>(line: &'a str, name: &str) -> Option<&'a str> {
-    let needle = cstr!("{name}=");
-    let start = line.find(needle.as_str())? + needle.len();
-    let quote = line[start..].chars().next()?;
-    if quote != '"' && quote != '\'' {
-        return None;
-    }
-    let value_start = start + quote.len_utf8();
-    let value_end = line[value_start..].find(quote)? + value_start;
-    line.get(value_start..value_end)
-}
-
-fn resolve_type_package_declaration_files(project_root: &Path, package: &str) -> Vec<PathBuf> {
-    let Some(package_root) = resolve_type_package_root(project_root, package) else {
-        return Vec::new();
-    };
-
-    for entry in package_declaration_entry_candidates(&package_root) {
-        if is_declaration_path(&entry) && entry.is_file() {
-            return collect_package_declaration_graph(&entry, &package_root);
-        }
-    }
-
-    Vec::new()
-}
-
-fn resolve_type_package_root(project_root: &Path, package: &str) -> Option<PathBuf> {
-    let mut current = Some(project_root);
-    while let Some(dir) = current {
-        let node_modules = dir.join("node_modules");
-        let direct = node_modules.join(package);
-        if direct.is_dir() {
-            return Some(direct);
-        }
-
-        if let Some(types_package) = fallback_types_package_name(package) {
-            let fallback = node_modules.join(types_package);
-            if fallback.is_dir() {
-                return Some(fallback);
-            }
-        }
-
-        current = dir.parent();
-    }
-
-    None
-}
-
-fn fallback_types_package_name(package: &str) -> Option<String> {
-    if package.starts_with("@types/") {
-        return None;
-    }
-    if let Some(scoped) = package.strip_prefix('@') {
-        let mut parts = scoped.split('/');
-        let scope = parts.next()?;
-        let name = parts.next()?;
-        return Some(cstr!("@types/{scope}__{name}"));
-    }
-    Some(cstr!("@types/{package}"))
-}
-
-fn package_declaration_entry_candidates(package_root: &Path) -> Vec<PathBuf> {
-    let mut candidates = Vec::new();
-    let package_json_path = package_root.join("package.json");
-    if let Ok(content) = fs::read_to_string(&package_json_path)
-        && let Ok(package_json) = parse_jsonc_value(&content)
-    {
-        for field in ["types", "typings"] {
-            if let Some(types) = package_json.get(field).and_then(Value::as_str) {
-                push_declaration_entry_candidate(&mut candidates, package_root.join(types));
-            }
-        }
-
-        if let Some(exports) = package_json.get("exports") {
-            let root_export = exports.get(".").unwrap_or(exports);
-            collect_export_type_entries(root_export, package_root, &mut candidates);
-        }
-    }
-
-    push_declaration_entry_candidate(&mut candidates, package_root.join("index.d.ts"));
-    candidates
-}
-
-fn collect_export_type_entries(value: &Value, package_root: &Path, candidates: &mut Vec<PathBuf>) {
-    match value {
-        Value::String(path) => {
-            push_declaration_entry_candidate(candidates, package_root.join(path))
-        }
-        Value::Array(values) => {
-            for value in values {
-                collect_export_type_entries(value, package_root, candidates);
-            }
-        }
-        Value::Object(map) => {
-            if let Some(types) = map.get("types").and_then(Value::as_str) {
-                push_declaration_entry_candidate(candidates, package_root.join(types));
-            }
-            for value in map.values() {
-                collect_export_type_entries(value, package_root, candidates);
-            }
-        }
-        _ => {}
-    }
-}
-
-fn push_declaration_entry_candidate(candidates: &mut Vec<PathBuf>, path: PathBuf) {
-    if !candidates.contains(&path) {
-        candidates.push(path.clone());
-    }
-    if path.extension().is_none() {
-        let with_extension = path.with_extension("d.ts");
-        if !candidates.contains(&with_extension) {
-            candidates.push(with_extension);
-        }
-    }
-    let index = path.join("index.d.ts");
-    if !candidates.contains(&index) {
-        candidates.push(index);
-    }
-}
-
-fn collect_package_declaration_graph(entry: &Path, package_root: &Path) -> Vec<PathBuf> {
-    let package_root = package_root
-        .canonicalize()
-        .unwrap_or_else(|_| package_root.to_path_buf());
-    let mut files = Vec::new();
-    let mut seen = FxHashSet::default();
-    let mut queue = vec![entry.to_path_buf()];
-
-    while let Some(path) = queue.pop() {
-        let path = path.canonicalize().unwrap_or(path);
-        if !seen.insert(path.clone()) {
-            continue;
-        }
-        files.push(path.clone());
-
-        let Ok(content) = fs::read_to_string(&path) else {
-            continue;
-        };
-        let Some(base_dir) = path.parent() else {
-            continue;
-        };
-        for reference in content.lines().filter_map(reference_path_attribute) {
-            let referenced = base_dir.join(reference);
-            let referenced = referenced.canonicalize().unwrap_or(referenced);
-            if referenced.starts_with(&package_root)
-                && is_declaration_path(&referenced)
-                && referenced.is_file()
-            {
-                queue.push(referenced);
-            }
-        }
-    }
-
-    files
 }
 
 fn declared_stub_name(stub: &str) -> Option<&str> {
@@ -570,3 +341,6 @@ fn parse_dts_globals(
             .collect(),
     )
 }
+
+#[cfg(test)]
+mod tests;

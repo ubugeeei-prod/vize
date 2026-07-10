@@ -1,6 +1,6 @@
 #![allow(clippy::disallowed_types)]
 
-use super::{CorsaProjectClient, utils::remap_serialized_uris};
+use super::{CorsaProjectClient, utils::remap_serialized_uris, virtual_overlay};
 use crate::file_uri::{file_uri_to_path, path_to_file_uri};
 use corsa::{
     CorsaError,
@@ -135,16 +135,9 @@ impl CorsaProjectClient {
     }
 
     pub(super) fn supports_overlay_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.overlay.update_snapshot_overlay_changes
-    }
-
-    /// True only when the runtime has positively advertised in-memory overlay
-    /// support. `supports_overlay_api` is optimistic for runtimes without a
-    /// capability endpoint; routing a document through the overlay path on
-    /// such a runtime fails at request time, so path-keeping decisions must
-    /// use this confirmed variant.
-    fn overlay_api_confirmed(&self) -> bool {
-        self.trusts_capabilities() && self.capabilities.overlay.update_snapshot_overlay_changes
+        !self.overlay_api_disabled
+            && (!self.trusts_capabilities()
+                || self.capabilities.overlay.update_snapshot_overlay_changes)
     }
 
     pub(super) fn supports_project_diagnostics_api(&self) -> bool {
@@ -187,16 +180,24 @@ impl CorsaProjectClient {
             return Ok(());
         }
 
-        let file_changes = materialize_session_document(uri, document_uri.as_str(), content);
+        if document_uri == uri && !self.supports_overlay_api() {
+            return self.sync_materialized_overlay_document(uri, content);
+        }
+
+        let file_changes = materialize_session_document(uri, document_uri.as_str(), content)
+            .or_else(|| {
+                virtual_overlay::upsert_file_changes(
+                    uri,
+                    document_uri.as_str(),
+                    &self.project_root,
+                    previous.is_some(),
+                )
+            });
         if document_uri != uri {
             // Remapped documents are materialized to disk; no overlay API is
             // required, so runtimes without overlay support stay functional.
             return block_on(self.session.refresh(file_changes))
                 .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"));
-        }
-
-        if !self.supports_overlay_api() {
-            return self.sync_materialized_overlay_document(uri, content);
         }
 
         let version = next_overlay_version(&mut self.overlay_versions, uri);
@@ -214,6 +215,7 @@ impl CorsaProjectClient {
         )) {
             Ok(()) => Ok(()),
             Err(error) if overlay_changes_error_is_unsupported(&error) => {
+                self.overlay_api_disabled = true;
                 self.sync_materialized_overlay_document(uri, content)
             }
             Err(error) => Err(cstr!("Failed to sync Corsa overlay: {error}")),
@@ -241,7 +243,9 @@ impl CorsaProjectClient {
             .remove(uri)
             .unwrap_or_else(|| self.session_document_uri(uri));
         self.external_document_uris.remove(document_uri.as_str());
-        let file_changes = remove_session_document(uri, document_uri.as_str());
+        let file_changes = remove_session_document(uri, document_uri.as_str()).or_else(|| {
+            virtual_overlay::delete_file_changes(uri, document_uri.as_str(), &self.project_root)
+        });
         if document_uri != uri {
             return block_on(self.session.refresh(file_changes))
                 .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"));
@@ -278,7 +282,7 @@ impl CorsaProjectClient {
         }
 
         let mapped =
-            build_session_document_uri(uri, &self.project_root, self.overlay_api_confirmed());
+            build_session_document_uri(uri, &self.project_root, self.supports_overlay_api());
         self.remember_session_document_uri(uri, mapped)
     }
 
@@ -329,13 +333,13 @@ pub(super) fn build_session_document_uri(
         return uri.into();
     };
 
-    // A virtual overlay (`.vue.ts`) may only keep its real path when the
-    // runtime positively supports in-memory overlays: the file never exists
-    // on disk, so without overlay support it must be materialized into the
-    // session mirror instead.
+    // Keep real in-project files at real paths. Virtual mirrors (`*.vue.ts`,
+    // `*.html.ts`) can also stay there when Corsa overlay support is confirmed;
+    // otherwise materialize them under the session overlay root so imports
+    // never point at non-existent workspace files.
     if external_path.starts_with(project_root)
         && (external_path.exists()
-            || (overlay_confirmed && virtual_overlay_target_exists(&external_path)))
+            || (overlay_confirmed && virtual_overlay::target_exists(&external_path)))
     {
         return path_to_file_uri(&external_path);
     }
@@ -365,26 +369,6 @@ fn materialized_session_path(external_path: &Path, project_root: &Path) -> PathB
     session_path
 }
 
-/// A virtual document like `Button.vue.ts` has no on-disk counterpart, but
-/// its underlying source (`Button.vue`) does. Keeping such overlays at their
-/// real path lets the session resolve their relative imports against the
-/// real project tree (in-memory, via `refresh_with_overlay_changes` —
-/// nothing is written next to the user's sources). Remapping them into the
-/// overlay mirror instead made every relative `<script>` import report
-/// "Cannot find module" in the editor while `vize check` was clean.
-fn virtual_overlay_target_exists(external_path: &Path) -> bool {
-    let Some(name) = external_path.file_name().and_then(|name| name.to_str()) else {
-        return false;
-    };
-    let Some(real_name) = name.strip_suffix(".ts") else {
-        return false;
-    };
-    if !real_name.ends_with(".vue") && !real_name.ends_with(".html") {
-        return false;
-    }
-    external_path.with_file_name(real_name).is_file()
-}
-
 fn overlay_root_for_project(project_root: &Path) -> PathBuf {
     if is_under_node_modules_vize(project_root) {
         return project_root.join("overlays");
@@ -411,7 +395,7 @@ fn is_under_node_modules_vize(path: &Path) -> bool {
     false
 }
 
-fn external_document_path(uri: &str) -> Option<PathBuf> {
+pub(super) fn external_document_path(uri: &str) -> Option<PathBuf> {
     if let Some(path) = file_uri_to_path(uri) {
         return Some(path);
     }
@@ -512,11 +496,8 @@ mod tests {
     use corsa::CorsaError;
     use corsa::api::{ApiMode, DocumentIdentifier};
 
-    // Regression: a `.vue.ts` virtual overlay has no on-disk counterpart, but
-    // remapping it into the overlay mirror broke relative `<script>` import
-    // resolution in the editor ("Cannot find module" while `vize check` was
-    // clean). When the underlying `.vue` exists inside the project, the
-    // overlay must keep its real path.
+    // Keep in-project virtual `.vue.ts` overlays at real paths so relative
+    // script imports resolve against the source tree.
     #[test]
     fn keeps_vue_virtual_overlay_at_real_path_inside_project() {
         let nonce = std::time::SystemTime::now()
@@ -537,10 +518,12 @@ mod tests {
         let mapped = build_session_document_uri(&uri, &project, true);
         assert_eq!(mapped, uri, "in-project .vue.ts overlay must keep its path");
 
-        // Without confirmed overlay support the overlay must be materialized
-        // into the session mirror instead (the file never exists on disk).
         let mapped_no_overlay = build_session_document_uri(&uri, &project, false);
         assert_ne!(mapped_no_overlay, uri);
+        assert!(
+            mapped_no_overlay.contains("/node_modules/.vize/corsa-overlay/"),
+            "in-project .vue.ts overlay must materialize under the session overlay root without overlay support: {mapped_no_overlay}"
+        );
 
         // A path outside the project is still remapped into the overlay tree.
         let outside = std::env::temp_dir().join(format!("vize-outside-{nonce}/Other.vue.ts"));

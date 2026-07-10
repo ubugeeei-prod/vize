@@ -56,12 +56,19 @@ pub mod optimization;
 pub mod provide;
 pub mod race;
 pub mod reactivity;
+pub mod reactivity_overlay;
 pub mod reactivity_tracking;
 pub mod render_tree;
 pub mod script_parser;
 pub mod setup_context;
 pub mod types;
 pub mod virtual_ts;
+
+#[cfg(test)]
+mod effect_graph_builder_tests;
+
+#[cfg(test)]
+mod reactivity_overlay_tests;
 
 // Re-export commonly used utilities from vize_carton for convenience
 pub use vize_carton::{
@@ -82,12 +89,26 @@ pub use symbol::{Symbol, SymbolFlags, SymbolId, SymbolTable};
 // Re-export analysis types
 pub use analyzer::{Analyzer, AnalyzerOptions};
 pub use croquis::{
-    AnalysisStats, BindingMetadata, COMPILER_MACRO_NAMES, ComponentShape, Croquis, CroquisStats,
-    ImportStatementInfo, InvalidExport, InvalidExportKind, OptionGroup, OptionKey, OptionMember,
-    OptionsDescriptor, ReExportInfo, TemplateExpression, TemplateExpressionKind, TypeExport,
-    TypeExportKind, UndefinedRef, UnusedTemplateVar, UnusedVarContext,
+    AnalysisStats, BindingMetadata, COMPILER_MACRO_NAMES, ComponentShape, Croquis,
+    CroquisSemanticSnapshot, CroquisSemanticSummary, CroquisStats, ImportStatementInfo,
+    InvalidExport, InvalidExportKind, OptionGroup, OptionKey, OptionMember, OptionsDescriptor,
+    ReExportInfo, SemanticBindingSnapshot, SemanticComponentUsageSnapshot,
+    SemanticEventListenerSnapshot, SemanticInjectSnapshot, SemanticPassedPropSnapshot,
+    SemanticProvideSnapshot, SemanticReactiveSourceSnapshot, SemanticReactivityLossSnapshot,
+    SemanticScopeBindingSnapshot, SemanticScopeSnapshot, SemanticSlotUsageSnapshot,
+    SemanticSourceRange, SemanticTemplateExpressionSnapshot, TemplateExpression,
+    TemplateExpressionKind, TypeExport, TypeExportKind, UndefinedRef, UnusedTemplateVar,
+    UnusedVarContext,
 };
 pub use drawer::{Drawer, DrawerOptions};
+pub use effect_graph::{
+    EffectGraph, EffectGraphScript, EffectGraphSummary, build_effect_graph_from_script,
+    build_effect_graph_from_script_setup, build_effect_graph_from_sfc_scripts,
+};
+pub use reactivity_overlay::{
+    ReactivityEffectEdgeOverlay, ReactivityEffectGraphOverlay, ReactivityLossOverlay,
+    ReactivityOverlay, ReactivityOverlaySummary, ReactivitySourceOverlay,
+};
 
 // Re-export common types
 pub use vize_relief::BindingType;

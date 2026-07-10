@@ -249,7 +249,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
 const A = () => <List>{(rows) => rows.map((r) => <li>{r}</li>)}</List>;
 ### output
 import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderList as _ssrRenderList } from "@vue/server-renderer"
-import { createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, renderList as _renderList, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue"
+import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, renderList as _renderList, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue"
 
 function ssrRender(_ctx, _push, _parent, _attrs) {
   _push(_ssrRenderComponent(_resolveComponent("List"), _attrs, {
@@ -261,7 +261,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
         })
         _push(`<!--]-->`)
       } else {
-        return _renderList(rows, (r) => _createElementVNode("li", null, [_createTextVNode(_toDisplayString(r))])).flat()
+        return [(_openBlock(true), _createBlock(_Fragment, null, _renderList(rows, (r) => { return _createElementVNode("li", null, [_createTextVNode(_toDisplayString(r))]) }), 256 /* UNKEYED_FRAGMENT */))]
       }
     }),
     _: 1

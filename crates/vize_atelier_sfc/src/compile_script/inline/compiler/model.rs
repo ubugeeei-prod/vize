@@ -1,6 +1,6 @@
 use vize_carton::{String, ToCompactString, cstr};
 
-use crate::script::{ScriptCompileContext, model_modifiers_binding_name};
+use crate::script::{ScriptCompileContext, define_model_metadata, model_modifiers_binding_name};
 
 use super::super::super::props::{
     extract_emit_names_from_type, resolve_prop_js_type, ts_type_to_js_type,
@@ -44,160 +44,6 @@ pub(super) fn model_value_prop(
         (None, Some(options)) => options.trim().to_compact_string(),
         (None, None) => "{}".to_compact_string(),
     }
-}
-
-/// Find the matching `}` for the first `{` in `opts`, returning `(open, close)`
-/// byte indices.
-fn find_object_close(opts: &str) -> Option<(usize, usize)> {
-    let bytes = opts.as_bytes();
-    let open = opts.find('{')?;
-    let mut depth = 0i32;
-    let mut i = open;
-    let mut in_str: Option<u8> = None;
-    while i < bytes.len() {
-        let c = bytes[i];
-        if let Some(q) = in_str {
-            if c == b'\\' {
-                i += 2;
-                continue;
-            }
-            if c == q {
-                in_str = None;
-            }
-            i += 1;
-            continue;
-        }
-        match c {
-            b'"' | b'\'' | b'`' => in_str = Some(c),
-            b'{' | b'[' | b'(' => depth += 1,
-            b'}' | b']' | b')' => {
-                depth -= 1;
-                if depth == 0 {
-                    return Some((open, i));
-                }
-            }
-            _ => {}
-        }
-        i += 1;
-    }
-    None
-}
-
-/// A parsed top-level property of a defineModel options object.
-struct OptionProp {
-    /// byte offset of the property start within the options string
-    start: usize,
-    /// property key (e.g. `set`, `default`, `type`)
-    key: String,
-}
-
-/// Parse the top-level members of an object-literal options string `{ ... }`.
-/// Returns `None` if it contains a spread/computed key (Vue keeps such options
-/// verbatim).
-fn parse_option_props(opts: &str, open: usize, close: usize) -> Option<Vec<OptionProp>> {
-    let bytes = opts.as_bytes();
-    let mut props: Vec<OptionProp> = Vec::new();
-    let mut j = open + 1;
-    let mut depth = 0i32;
-    let mut in_str: Option<u8> = None;
-    let mut member_start: Option<usize> = None;
-    let mut key_buf = String::default();
-    let mut key_done = false;
-    while j < close {
-        let c = bytes[j];
-        if let Some(q) = in_str {
-            if c == b'\\' {
-                j += 2;
-                continue;
-            }
-            // collect quoted key characters while still reading the key
-            if member_start.is_some() && !key_done && depth == 0 && c != q {
-                key_buf.push(c as char);
-            }
-            if c == q {
-                in_str = None;
-            }
-            j += 1;
-            continue;
-        }
-        match c {
-            b'.' if depth == 0 && member_start.is_none() => {
-                // spread element (`...x`) -> bail
-                return None;
-            }
-            b'"' | b'\'' | b'`' => {
-                if member_start.is_none() {
-                    member_start = Some(j);
-                }
-                in_str = Some(c);
-            }
-            b'[' if depth == 0 && member_start.is_none() => {
-                // computed key -> bail
-                return None;
-            }
-            b'{' | b'[' | b'(' => {
-                if member_start.is_none() {
-                    member_start = Some(j);
-                }
-                depth += 1;
-            }
-            b'}' | b']' | b')' => depth -= 1,
-            b',' if depth == 0 => {
-                if let Some(ms) = member_start.take() {
-                    props.push(OptionProp {
-                        start: ms,
-                        key: clean_key(&key_buf),
-                    });
-                }
-                key_buf.clear();
-                key_done = false;
-            }
-            b':' if depth == 0 && !key_done && member_start.is_some() => {
-                key_done = true;
-            }
-            _ => {
-                if member_start.is_none() && !c.is_ascii_whitespace() {
-                    member_start = Some(j);
-                }
-                if member_start.is_some() && !key_done && depth == 0 && !c.is_ascii_whitespace() {
-                    key_buf.push(c as char);
-                }
-            }
-        }
-        j += 1;
-    }
-    if let Some(ms) = member_start.take() {
-        props.push(OptionProp {
-            start: ms,
-            key: clean_key(&key_buf),
-        });
-    }
-    Some(props)
-}
-
-fn clean_key(raw: &str) -> String {
-    raw.trim()
-        .trim_matches(['\'', '"', '`'])
-        .to_compact_string()
-}
-
-/// Produce the prop-options string for a single defineModel, stripping the
-/// runtime-only `get`/`set` accessors (which belong only on the `useModel`
-/// runtime argument), matching `@vue/compiler-sfc`'s `genModelProps`.
-fn strip_runtime_accessors(opts: &str) -> Option<String> {
-    let (open, close) = find_object_close(opts)?;
-    let props = parse_option_props(opts, open, close)?;
-    // Build result by removing get/set spans from last to first, mirroring Vue's
-    // `slice(0, start) + slice(end)` where `end = next ? next.start : close`.
-    let mut result = opts.to_compact_string();
-    for idx in (0..props.len()).rev() {
-        let p = &props[idx];
-        if p.key == "get" || p.key == "set" {
-            let end = props.get(idx + 1).map(|n| n.start).unwrap_or(close);
-            result.replace_range(p.start..end, "");
-        }
-    }
-    Some(result)
 }
 
 /// Build model props (and combine props/emits) when defineModel is used.
@@ -341,46 +187,19 @@ pub(super) fn collect_model_infos(
         .define_models
         .iter()
         .map(|m| {
-            let args = m.args.trim();
-            let has_name = args.starts_with(['\'', '"', '`']);
-            let model_name = if has_name {
-                args.trim_start_matches(['\'', '"', '`'])
-                    .split(['\'', '"', '`'])
-                    .next()
-                    .unwrap_or("modelValue")
-                    .to_compact_string()
-            } else {
-                "modelValue".to_compact_string()
-            };
+            let metadata = define_model_metadata(ctx.source.as_str(), m);
+            let model_name = metadata.name;
             let binding_name = m
                 .binding_name
                 .as_deref()
                 .map(String::from)
                 .unwrap_or_else(|| model_name.clone());
             let modifiers_binding_name = model_modifiers_binding_name(ctx.source.as_str(), m);
-
-            // Locate the options argument (second arg if named, first arg otherwise).
-            let raw_options: Option<&str> = if args.is_empty() {
-                None
-            } else if has_name {
-                // skip the string literal, then the comma
-                args.split_once(',').map(|(_, rest)| rest.trim())
-            } else {
-                Some(args)
-            };
-            let options = raw_options.and_then(|opts| {
-                if opts.starts_with('{') {
-                    // strip runtime-only get/set accessors for the prop options
-                    Some(strip_runtime_accessors(opts).unwrap_or_else(|| opts.to_compact_string()))
-                } else {
-                    None
-                }
-            });
             (
                 model_name,
                 binding_name,
                 modifiers_binding_name,
-                options,
+                metadata.options,
                 m.type_args.clone(),
             )
         })

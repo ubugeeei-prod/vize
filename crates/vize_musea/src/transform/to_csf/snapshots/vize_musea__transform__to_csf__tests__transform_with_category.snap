@@ -1,0 +1,8 @@
+---
+source: crates/vize_musea/src/transform/to_csf/tests.rs
+expression: csf
+---
+CsfOutput {
+    code: "import type { Meta, StoryObj } from '@storybook/vue3';\nimport __museaComponent from './Button.vue';\n\nconst __museaMeta: Meta<typeof __museaComponent> = {\n  title: 'atoms/Button',\n  component: __museaComponent,\n  tags: ['autodocs'],\n};\n\nexport default __museaMeta;\ntype __MuseaStory = StoryObj<typeof __museaMeta>;\n\nexport const Default: __MuseaStory = {\n  render: (args) => ({\n    components: { __museaComponent, Component: __museaComponent, Button: __museaComponent },\n    setup() {\n      return { args };\n    },\n    template: `<Button>Click</Button>`,\n  }),\n};\n\n",
+    filename: ".stories.ts",
+}

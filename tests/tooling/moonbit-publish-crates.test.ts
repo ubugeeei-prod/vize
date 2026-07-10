@@ -25,15 +25,30 @@ type CargoDependency = {
   name: string;
 };
 
-function getPublishedCrates(): string[] {
-  const scriptPath = path.join(repoRoot, "tools", "moon", "scripts", "publish_crates.mbtx");
+function getScriptCrateArray(variableName: string): string[] {
+  const scriptPath = path.join(repoRoot, "tools", "moon", "cmd", "publish_crates", "main.mbt");
   const script = fs.readFileSync(scriptPath, "utf8");
   const arrayBody = script.match(
-    /let published_crates\s*:\s*Array\[String\]\s*=\s*\[(?<body>[\s\S]*?)\n\]/m,
+    new RegExp(
+      `let ${variableName}\\s*:\\s*Array\\[String\\]\\s*=\\s*\\[(?<body>[\\s\\S]*?)\\n\\]`,
+      "m",
+    ),
   )?.groups?.body;
 
-  assert.ok(arrayBody, "Failed to locate publishedCrates in publish_crates.mbtx");
+  assert.ok(arrayBody, `Failed to locate ${variableName} in publish_crates`);
   return Array.from(arrayBody.matchAll(/"([^"]+)"/g), ([, crateName]) => crateName);
+}
+
+function getPublishedCrates(): string[] {
+  return getScriptCrateArray("published_crates");
+}
+
+function getPendingFirstPublishCrates(): string[] {
+  return getScriptCrateArray("pending_first_publish_crates");
+}
+
+function getBlockedByPendingFirstPublishCrates(): string[] {
+  return getScriptCrateArray("blocked_by_pending_first_publish_crates");
 }
 
 function getMetadata(): CargoMetadata {
@@ -74,17 +89,29 @@ test("publish_crates script keeps publishable workspace dependencies ordered", (
   }
 });
 
-test("publish_crates includes every publishable crate package", () => {
+test("publish_crates includes every publishable crate package after first publish exclusions", () => {
   const publishedCrates = new Set(getPublishedCrates());
+  const pendingFirstPublishCrates = new Set(getPendingFirstPublishCrates());
+  const blockedByPendingFirstPublishCrates = new Set(getBlockedByPendingFirstPublishCrates());
   const missingCrates = getMetadata()
     .packages.filter((pkg) =>
       path.relative(repoRoot, pkg.manifest_path).startsWith(`crates${path.sep}`),
     )
     .filter((pkg) => pkg.publish === null || pkg.publish.length > 0)
     .map((pkg) => pkg.name)
-    .filter((crateName) => !publishedCrates.has(crateName));
+    .filter((crateName) => !publishedCrates.has(crateName))
+    .filter((crateName) => !pendingFirstPublishCrates.has(crateName))
+    .filter((crateName) => !blockedByPendingFirstPublishCrates.has(crateName));
 
   assert.deepEqual(missingCrates, []);
+});
+
+test("publish_crates only defers crates that have not been created on crates.io", () => {
+  assert.deepEqual(getPendingFirstPublishCrates(), ["vize_croquis_cf", "vize_atelier_jsx"]);
+});
+
+test("publish_crates only blocks crates that depend on first-publish exclusions", () => {
+  assert.deepEqual(getBlockedByPendingFirstPublishCrates(), ["vize_canon", "vize_patina"]);
 });
 
 test("publish_crates runs as a native MoonBit script", () => {
@@ -124,9 +151,9 @@ test("publish_crates runs as a native MoonBit script", () => {
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     const logLines = fs.readFileSync(cargoLogPath, "utf8").trim().split("\n");
     assert.match(logLines[0] ?? "", /^publish -p vize_carton$/);
-    assert.match(logLines[1] ?? "", /^info vize_carton@/);
+    assert.match(logLines[1] ?? "", /^info --registry crates-io vize_carton@/);
     assert.match(logLines.at(-2) ?? "", /^publish -p vize_fresco$/);
-    assert.match(logLines.at(-1) ?? "", /^info vize_fresco@/);
+    assert.match(logLines.at(-1) ?? "", /^info --registry crates-io vize_fresco@/);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
@@ -171,7 +198,7 @@ test("publish_crates treats a non-zero cargo publish exit as success when the cr
     assert.match(result.stdout, /already resolvable despite a non-zero cargo publish exit/i);
     const logLines = fs.readFileSync(cargoLogPath, "utf8").trim().split("\n");
     assert.equal(logLines[0], "publish -p vize_carton");
-    assert.match(logLines[1] ?? "", /^info vize_carton@/);
+    assert.match(logLines[1] ?? "", /^info --registry crates-io vize_carton@/);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }

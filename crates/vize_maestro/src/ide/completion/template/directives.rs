@@ -1,15 +1,16 @@
 //! Vue / petite-vue / Vize directive completions.
 
 use tower_lsp::lsp_types::{
-    CompletionItem, CompletionItemKind, Documentation, InsertTextFormat, MarkupContent, MarkupKind,
+    CompletionItem, CompletionItemKind, CompletionItemLabelDetails, InsertTextFormat,
 };
 
 use crate::ide::IdeContext;
 use crate::ide::completion::items;
+use crate::ide::markup::{self, Markdown};
 
 /// Vue directive completions.
 pub(crate) fn directive_completions() -> Vec<CompletionItem> {
-    vec![
+    let mut items = vec![
         items::directive_item("v-if", "Conditional rendering", "v-if=\"$1\""),
         items::directive_item("v-else-if", "Else-if block", "v-else-if=\"$1\""),
         items::directive_item("v-else", "Else block", "v-else"),
@@ -28,7 +29,58 @@ pub(crate) fn directive_completions() -> Vec<CompletionItem> {
         items::directive_item("@", "Event shorthand", "@$1=\"$2\""),
         items::directive_item(":", "Bind shorthand", ":$1=\"$2\""),
         items::directive_item("#", "Slot shorthand", "#$1"),
+    ];
+    items.extend(event_shorthand_completions());
+    items
+}
+
+fn event_shorthand_completions() -> Vec<CompletionItem> {
+    [
+        ("@click", "Click event"),
+        ("@input", "Input event"),
+        ("@change", "Change event"),
+        ("@submit", "Submit event"),
+        ("@keydown", "Key down event"),
+        ("@keyup", "Key up event"),
+        ("@focus", "Focus event"),
+        ("@blur", "Blur event"),
+        ("@mouseenter", "Mouse enter event"),
+        ("@mouseleave", "Mouse leave event"),
     ]
+    .into_iter()
+    .map(|(label, detail)| event_item(label, detail))
+    .collect()
+}
+
+#[allow(clippy::disallowed_macros)]
+fn event_item(label: &str, detail: &str) -> CompletionItem {
+    CompletionItem {
+        label: label.to_string(),
+        kind: Some(CompletionItemKind::EVENT),
+        detail: Some(detail.to_string()),
+        label_details: Some(CompletionItemLabelDetails {
+            detail: None,
+            description: Some("Vue event".to_string()),
+        }),
+        insert_text: Some(format!("{label}=\"$1\"")),
+        insert_text_format: Some(InsertTextFormat::SNIPPET),
+        documentation: Some(
+            Markdown::new()
+                .title(&format!("`{label}`"))
+                .meta("Vue event listener")
+                .paragraph("Shorthand for `v-on:event`. The handler runs in component scope.")
+                .example(
+                    "vue",
+                    &format!("<template>\n  <button {label}=\"handler\"></button>\n</template>"),
+                )
+                .docs(
+                    "Vue event handling",
+                    "https://vuejs.org/guide/essentials/event-handling.html",
+                )
+                .into_documentation(),
+        ),
+        ..Default::default()
+    }
 }
 
 /// Vue directive completions, extended with opt-in document-specific directives.
@@ -77,19 +129,22 @@ fn petite_vue_item(
     snippet: &str,
     documentation: &str,
 ) -> CompletionItem {
+    let example = markup::snippet_for_docs(snippet);
     CompletionItem {
         label: label.to_string(),
         kind: Some(CompletionItemKind::KEYWORD),
         detail: Some(detail.to_string()),
         insert_text: Some(snippet.to_string()),
         insert_text_format: Some(InsertTextFormat::SNIPPET),
-        documentation: Some(Documentation::MarkupContent(MarkupContent {
-            kind: MarkupKind::Markdown,
-            value: format!(
-                "**{}**\n\n{}\n\n[petite-vue](https://github.com/vuejs/petite-vue)",
-                label, documentation
-            ),
-        })),
+        documentation: Some(
+            Markdown::new()
+                .title(label)
+                .meta("petite-vue directive")
+                .paragraph(documentation)
+                .example("html", &format!("<div {example}></div>"))
+                .docs("petite-vue", "https://github.com/vuejs/petite-vue")
+                .into_documentation(),
+        ),
         ..Default::default()
     }
 }

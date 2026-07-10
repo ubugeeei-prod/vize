@@ -36,26 +36,33 @@ macro_rules! vue_type_aliases_text {
     () => {
         r#"type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
 type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
-type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);
-type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;
+type __EmitFn<T, __S = __EmitShape<T>, __K extends keyof __S & string = keyof __S & string, __U = { [K in __K]: (event: K, ...args: __EmitArgs<__S, K>) => void }[__K]> = __S extends (...args: any[]) => any ? __S : [__K] extends [never] ? (event: never, ...args: any[]) => void : (__U extends unknown ? (fn: __U) => void : never) extends (fn: infer __I) => void ? __I : never;
+type __RuntimePropValue<T> = T extends abstract new (...args: any[]) => infer V ? V : T extends (...args: any[]) => infer V ? V : never;
+type __RuntimePropCtorInner<T> = T extends null | undefined ? never : T extends readonly (infer U)[] ? __RuntimePropCtorInner<U> : T extends { type: infer U } ? __RuntimePropCtorInner<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : __RuntimePropValue<T>;
+type __RuntimePropCtor<T> = [__RuntimePropCtorInner<T>] extends [never] ? unknown : __RuntimePropCtorInner<T>;
 type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : false;
 type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
 type __DefaultFactory<T> = (props: any) => T;
 type __WithDefaultValue<T> = T | __DefaultFactory<T>;
+type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
+type __VizeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [T[K]] extends [boolean | undefined] ? K : never : never; type __DefineProps<T, __BKeys extends keyof T = __VizeBooleanKey<T>> = __LooseRequired<T> & { [K in __BKeys]-?: boolean };
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;
+type __WithDefaultsResult<T, D> = Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof __LooseRequired<T>]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__LooseRequired<T>[K], undefined> };
 type __Ref<T> = import('vue').Ref<T>;
-type __ShallowRef<T> = import('vue').ShallowRef<T>;"#
+type __ShallowRef<T> = import('vue').ShallowRef<T>;
+type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
+type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
+type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
+type __VizeFallthroughAttrs = { class?: unknown; style?: unknown };
+type __VizeKebabOptionalKeys<T> = { [K in keyof T & string]: __VizeKebabCase<K> extends K ? never : K }[keyof T & string];
+type __VizeComponentProps<T> = T extends unknown ? Omit<T, __VizeKebabOptionalKeys<T>> & Partial<Pick<T, __VizeKebabOptionalKeys<T>>> & Partial<__VizeKebabProps<T>> & __VizeFallthroughAttrs : never;"#
     };
 }
 
 macro_rules! v_for_list_decls_text {
     () => {
-        r#"declare function __vForList<T>(source: readonly T[] | undefined | null): readonly [item: T, key: number, index: number][];
-declare function __vForList(source: number | undefined | null): readonly [item: number, key: number, index: number][];
-declare function __vForList(source: string | undefined | null): readonly [item: string, key: number, index: number][];
-declare function __vForList<T>(source: Iterable<T> | undefined | null): readonly [item: T, key: number, index: number][];
-declare function __vForList<T extends object>(source: T | undefined | null): readonly [item: T[keyof T], key: keyof T, index: number][];"#
+        r#"type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
+declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];"#
     };
 }
 
@@ -68,10 +75,9 @@ macro_rules! vue_type_helpers_text {
 /// Emit-overload helper text shared between the per-file embedded emission and
 /// the hoisted ambient helpers file. Each line ends with `\n`.
 ///
-/// Deliberately excludes `__EmitProps`: that alias dereferences
-/// `import('vue').EmitsToProps`, which only exists on Vue >= 3.3, so it stays
-/// per-file and is only emitted for components that actually declare emits —
-/// exactly as before hoisting.
+/// Deliberately excludes `__EmitProps`: that alias is emitted per-file and only
+/// for components that actually declare emits, so it stays out of the shared
+/// hoisted helper text, exactly as before hoisting.
 macro_rules! emit_overload_helpers_text {
     () => {
         concat!(
@@ -81,7 +87,7 @@ macro_rules! emit_overload_helpers_text {
             "type __VizeOverloadParameters<T extends (...args: any[]) => any> = Parameters<__VizeOverloadUnion<T>>;\n",
             "type __VizeIsStringLiteral<T> = T extends string ? string extends T ? false : true : false;\n",
             "type __VizeParametersToFns<T extends any[]> = { [K in T[0]]: __VizeIsStringLiteral<K> extends true ? (...args: T extends [e: infer E, ...args: infer P] ? K extends E ? P : never : never) => any : never };\n",
-            "type __EmitOptions<T> = { [K in keyof __EmitShape<T> & string]: (...args: __EmitArgs<__EmitShape<T>, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? __VizeParametersToFns<__VizeOverloadParameters<__EmitShape<T>>> : {});\n",
+            "type __EmitOptions<T> = { [K in keyof __EmitShape<T> & string]: (...args: __EmitArgs<__EmitShape<T>, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? __VizeParametersToFns<__VizeOverloadParameters<__EmitShape<T>>> : {});\ntype __VizeCamelize<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Head}${Capitalize<__VizeCamelize<Tail>>}` : S;\ntype __VizeHandlerKey<K extends string> = `on${Capitalize<__VizeCamelize<K>>}`;\n",
         )
     };
 }
@@ -93,17 +99,14 @@ pub(crate) const VUE_TYPE_HELPERS: &str = vue_type_helpers_text!();
 /// hoisted. In hoisted mode the same text lives in the ambient helpers file.
 pub(crate) const EMIT_OVERLOAD_HELPERS: &str = emit_overload_helpers_text!();
 
-/// Per-file `__EmitProps` alias. Stays per-file in both modes because
-/// `EmitsToProps` is only exported by Vue >= 3.3; emitting it only for
-/// components with emits keeps older-Vue programs error-free, as before.
-pub(crate) const EMIT_PROPS_HELPER: &str =
-    "type __EmitProps<T> = import('vue').EmitsToProps<__EmitOptions<T>>;\n";
+/// Per-file `__EmitProps` alias used only by components that declare emits.
+pub(crate) const EMIT_PROPS_HELPER: &str = "type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKey<K>]?: __EmitOptions<T>[K] };\n";
 
 /// Vue setup-scope helpers - these are defined inside setup scope, NOT globally.
 /// Compiler macros stay setup-only, while runtime helper shims model Vue APIs.
 /// Parameters and type parameters are prefixed with _ to avoid "unused" warnings.
 pub(crate) const VUE_SETUP_HELPERS: &str = r#"  // Compiler macros (only valid in setup scope, not global)
-  function defineProps<_T = unknown>(): _T;
+  function defineProps<_T = unknown>(): __DefineProps<_T>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   function defineProps(_props?: any) { void _props; return undefined as any; }
@@ -117,7 +120,7 @@ pub(crate) const VUE_SETUP_HELPERS: &str = r#"  // Compiler macros (only valid i
   function defineModel<_T = unknown>(_name: string, _options?: any): __Ref<_T>;
   function defineModel(_name_or_options?: any, _options?: any) { void _name_or_options; void _options; return undefined as any; }
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
-  function withDefaults<_T, _D extends __WithDefaultsArgs<_T>>(_props: _T, _defaults: _D): __WithDefaultsResult<_T, _D> { void _props; void _defaults; return undefined as unknown as __WithDefaultsResult<_T, _D>; }
+  function withDefaults<_T, _D extends __WithDefaultsArgs<_T>>(_props: _T, _defaults: _D): __WithDefaultsResult<_T, _D>; function withDefaults<_T, _D extends Record<string, any>>(_props: _T, _defaults: _D): __WithDefaultsResult<_T, _D>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
   function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
   // Mark compiler macros as used
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;"#;
@@ -192,7 +195,7 @@ pub const SHARED_PREAMBLE_DTS: &str = concat!(
     "  dev: boolean;\n",
     "  prod: boolean;\n",
     "  ssr: boolean;\n",
-    "}\n",
+    "}\n\ndeclare namespace JSX { interface IntrinsicAttributes { class?: unknown; style?: unknown; } }\n",
     "\n",
     "// Shared type helpers used by generated virtual modules\n",
     vue_type_helpers_text!(),
@@ -201,7 +204,7 @@ pub const SHARED_PREAMBLE_DTS: &str = concat!(
     emit_overload_helpers_text!(),
     "\n",
     "// Compiler-macro signatures (aliased inside each module's __setup() scope)\n",
-    "declare function __vize_defineProps<_T = unknown>(): _T;\n",
+    "declare function __vize_defineProps<_T = unknown>(): __DefineProps<_T>;\n",
     "declare function __vize_defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };\n",
     "declare function __vize_defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;\n",
     "declare function __vize_defineEmits<_T = unknown>(): __EmitFn<_T>;\n",
@@ -212,7 +215,7 @@ pub const SHARED_PREAMBLE_DTS: &str = concat!(
     "declare function __vize_defineModel<_T = unknown>(_options: any): __Ref<_T>;\n",
     "declare function __vize_defineModel<_T = unknown>(_name: string, _options?: any): __Ref<_T>;\n",
     "declare function __vize_defineSlots<_T = unknown>(): _T;\n",
-    "declare function __vize_withDefaults<_T, _D extends __WithDefaultsArgs<_T>>(_props: _T, _defaults: _D): __WithDefaultsResult<_T, _D>;\n",
+    "declare function __vize_withDefaults<_T, _D extends __WithDefaultsArgs<_T>>(_props: _T, _defaults: _D): __WithDefaultsResult<_T, _D>;\ndeclare function __vize_withDefaults<_T, _D extends Record<string, any>>(_props: _T, _defaults: _D): __WithDefaultsResult<_T, _D>;\n",
     "declare function __vize_useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null>;\n",
 );
 
@@ -257,28 +260,25 @@ const VUE2_INSTANCE_MEMBERS: &[&str] = &[
 
 /// Generate Vue template context declarations dynamically.
 ///
-/// Derives `$`-prefixed globals from `ComponentPublicInstance` so that
-/// type resolution is delegated to Corsa via Vue's type system
-/// (including `ComponentCustomProperties` augmentations from plugins).
-///
-/// When `dialect` is a Vue 2 line (`V2` / `V2_7`), the context is additionally
-/// augmented with Vue 2-only public-instance members (see
-/// [`VUE2_INSTANCE_MEMBERS`]) so legacy templates do not false-error. Vue 3
-/// (the default) emits the exact same output as before — byte-identical.
-pub(crate) fn generate_template_context(options: &VirtualTsOptions, dialect: VueVersion) -> String {
+/// Uses Vue's `ComponentPublicInstance` for Vue 3. In legacy Vue 2 mode, emits
+/// a structural fallback because Vue 2.6 does not export that Vue 3 helper type.
+pub(crate) fn generate_template_context(
+    options: &VirtualTsOptions,
+    dialect: VueVersion,
+    legacy_vue2: bool,
+) -> String {
     let mut ctx = String::default();
 
     let needs_global_helper =
         !options.template_globals.is_empty() || !options.css_modules.is_empty();
 
-    // Vue 2 / 2.7 share a template dialect whose public instance still exposes
-    // members removed in Vue 3 (`$listeners`, `$children`, the `$on`/`$off`/
-    // `$once` event emitter, `$set`/`$delete`, `$createElement`, ...).
-    let vue2_dialect = matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
-
     // Instance type + conditional accessor helper
-    ctx.push_str("    // Vue template context (delegates to ComponentPublicInstance)\n");
-    ctx.push_str("    type __Ctx = import('vue').ComponentPublicInstance;\n");
+    let vue2_dialect = legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
+    if vue2_dialect {
+        ctx.push_str("    // Vue template context (Vue 2-compatible structural fallback)\n    type __Ctx = { $attrs: Record<string, unknown>; $slots: Record<string, unknown>; $refs: Record<string, any>; $emit: (...args: any[]) => void; };\n");
+    } else {
+        ctx.push_str("    // Vue template context (delegates to ComponentPublicInstance)\n    type __Ctx = import('vue').ComponentPublicInstance;\n");
+    }
     if needs_global_helper {
         ctx.push_str("    type __Global<K extends string, F = unknown> = K extends keyof __Ctx ? __Ctx[K] : F;\n");
     }
@@ -382,13 +382,11 @@ pub(crate) fn get_dom_event_type(event_name: &str) -> &'static str {
     match event_name {
         // Mouse events
         "dblclick" | "mousedown" | "mouseup" | "mousemove" | "mouseenter" | "mouseleave"
-        | "mouseover" | "mouseout" | "contextmenu" => "MouseEvent",
+        | "mouseover" | "mouseout" => "MouseEvent",
 
-        // Pointer events
-        // `click`/`auxclick` are PointerEvent in current TypeScript DOM maps.
-        "click" | "auxclick" | "pointerdown" | "pointerup" | "pointermove" | "pointerenter"
-        | "pointerleave" | "pointerover" | "pointerout" | "pointercancel" | "gotpointercapture"
-        | "lostpointercapture" => "PointerEvent",
+        "click" | "auxclick" | "contextmenu" | "pointerdown" | "pointerup" | "pointermove"
+        | "pointerenter" | "pointerleave" | "pointerover" | "pointerout" | "pointercancel"
+        | "gotpointercapture" | "lostpointercapture" => "PointerEvent",
 
         // Touch events
         "touchstart" | "touchend" | "touchmove" | "touchcancel" => "TouchEvent",
@@ -472,6 +470,7 @@ mod event_type_tests {
     fn maps_legacy_dom_events() {
         assert_eq!(get_dom_event_type("click"), "PointerEvent");
         assert_eq!(get_dom_event_type("auxclick"), "PointerEvent");
+        assert_eq!(get_dom_event_type("contextmenu"), "PointerEvent");
         assert_eq!(get_dom_event_type("dblclick"), "MouseEvent");
         assert_eq!(get_dom_event_type("keydown"), "KeyboardEvent");
         assert_eq!(get_dom_event_type("submit"), "SubmitEvent");

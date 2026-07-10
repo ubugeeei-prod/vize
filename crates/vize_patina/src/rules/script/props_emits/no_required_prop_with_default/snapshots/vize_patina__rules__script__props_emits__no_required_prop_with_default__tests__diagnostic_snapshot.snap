@@ -1,0 +1,29 @@
+---
+source: crates/vize_patina/src/rules/script/no_required_prop_with_default.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-required-prop-with-default",
+        severity: Error,
+        message: "Prop 'value' is required but also declares a default",
+        start: 33,
+        end: 38,
+        help: Some(
+            "A required prop is always provided, so its default is unreachable; drop `required: true` or remove the default.",
+        ),
+        labels: [
+            Label {
+                message: "marked required here",
+                start: 56,
+                end: 70,
+            },
+            Label {
+                message: "default declared here",
+                start: 72,
+                end: 82,
+            },
+        ],
+        fix: None,
+    },
+]

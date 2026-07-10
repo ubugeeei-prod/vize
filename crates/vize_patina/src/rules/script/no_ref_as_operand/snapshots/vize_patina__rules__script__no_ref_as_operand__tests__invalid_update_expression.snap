@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_ref_as_operand/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-ref-as-operand",
+        severity: Error,
+        message: "'count' is a ref and must be unwrapped with `.value` here.",
+        start: 19,
+        end: 24,
+        help: Some(
+            "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+        ),
+        labels: [
+            Label {
+                message: "ref used directly as an operand",
+                start: 19,
+                end: 24,
+            },
+        ],
+        fix: None,
+    },
+]

@@ -24,4 +24,5 @@ fn normalizes_dev_middleware_x00_urls() {
     );
     assert_eq!(rewrite.fs_path.as_str(), "/Users/app/src/icon.svg");
     assert!(normalize_dev_middleware_url("/@id/__x00__/Users/app/src/App.vue.ts").is_none());
+    assert!(normalize_dev_middleware_url("/@id/__x00__/Users/app/src/App.vue.tsx").is_none());
 }

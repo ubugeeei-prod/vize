@@ -3,13 +3,12 @@
 
 use crate::ide::is_component_tag;
 
-use super::ts_parse::skip_ws;
-
 #[derive(Debug)]
 pub(super) struct OpenTagContext {
     pub tag_name: String,
     pub tag_start: usize,
     pub current_token: String,
+    pub current_token_start: usize,
     pub inside_attribute_value: bool,
 }
 
@@ -45,12 +44,13 @@ pub(super) fn opening_tag_context_at_offset(
 
     let tag_name = content[name_start..name_end].to_string();
     let inside_attribute_value = is_inside_open_tag_attribute_value(content, tag_start, cursor);
-    let current_token = current_open_tag_token(content, tag_start, cursor);
+    let (current_token_start, current_token) = current_open_tag_token(content, tag_start, cursor);
 
     Some(OpenTagContext {
         tag_name,
         tag_start,
         current_token,
+        current_token_start,
         inside_attribute_value,
     })
 }
@@ -76,7 +76,7 @@ fn is_inside_open_tag_attribute_value(content: &str, tag_start: usize, cursor: u
     quote.is_some()
 }
 
-fn current_open_tag_token(content: &str, tag_start: usize, cursor: usize) -> String {
+fn current_open_tag_token(content: &str, tag_start: usize, cursor: usize) -> (usize, String) {
     let slice = &content[tag_start..cursor];
     let mut token_start = tag_start;
 
@@ -86,7 +86,10 @@ fn current_open_tag_token(content: &str, tag_start: usize, cursor: usize) -> Str
         }
     }
 
-    content[token_start..cursor].trim_start().to_string()
+    (
+        token_start,
+        content[token_start..cursor].trim_start().to_string(),
+    )
 }
 
 pub(super) fn is_prop_completion_prefix(prefix: &str) -> bool {
@@ -187,41 +190,4 @@ fn read_tag_name_end(content: &str, mut pos: usize) -> usize {
 
 fn is_self_closing_tag(tag: &str) -> bool {
     tag.trim_end_matches('>').trim_end().ends_with('/')
-}
-
-pub(super) fn find_attr_value(tag: &str, attr: &str) -> Option<String> {
-    let mut pos = 0usize;
-    while let Some(relative) = tag[pos..].find(attr) {
-        let start = pos + relative;
-        let end = start + attr.len();
-        let boundary_before = start == 0
-            || tag
-                .as_bytes()
-                .get(start - 1)
-                .is_none_or(|byte| !byte.is_ascii_alphanumeric() && *byte != b'-' && *byte != b'_');
-        let boundary_after = tag
-            .as_bytes()
-            .get(end)
-            .is_none_or(|byte| !byte.is_ascii_alphanumeric() && *byte != b'-' && *byte != b'_');
-        if !boundary_before || !boundary_after {
-            pos = end;
-            continue;
-        }
-
-        let mut value_start = skip_ws(tag, end);
-        if tag.as_bytes().get(value_start) != Some(&b'=') {
-            pos = end;
-            continue;
-        }
-        value_start = skip_ws(tag, value_start + 1);
-        let quote = tag.as_bytes().get(value_start).copied()?;
-        if quote != b'"' && quote != b'\'' {
-            return None;
-        }
-        let value_content_start = value_start + 1;
-        let value_end = tag[value_content_start..].find(quote as char)? + value_content_start;
-        return Some(tag[value_content_start..value_end].to_string());
-    }
-
-    None
 }

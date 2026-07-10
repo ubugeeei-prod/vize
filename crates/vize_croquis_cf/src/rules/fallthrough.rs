@@ -8,58 +8,19 @@
 use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
 use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleRegistry};
-use vize_carton::{CompactString, FxHashMap, FxHashSet, cstr};
+use vize_carton::{CompactString, FxHashMap, FxHashSet, camelize, cstr};
 
-/// Information about fallthrough attributes for a component.
-#[derive(Debug, Clone)]
-pub struct FallthroughInfo {
-    /// File ID of the component.
-    pub file_id: FileId,
-    /// Whether `inheritAttrs: false` is set.
-    pub inherit_attrs_disabled: bool,
-    /// Whether $attrs is used in template.
-    pub uses_attrs: bool,
-    /// Whether $attrs is explicitly bound (v-bind="$attrs").
-    pub binds_attrs: bool,
-    /// Number of root elements in template.
-    pub root_element_count: usize,
-    /// Attributes passed by parent components.
-    pub passed_attrs: FxHashSet<CompactString>,
-    /// Props declared by this component.
-    pub declared_props: FxHashSet<CompactString>,
-    /// Template content start offset (relative to template block).
-    pub template_start: u32,
-    /// Template content end offset (relative to template block).
-    pub template_end: u32,
-}
+mod component;
+mod info;
+mod related;
+mod summary;
+mod usage;
 
-impl FallthroughInfo {
-    /// Check if fallthrough may cause issues.
-    pub fn has_potential_issues(&self) -> bool {
-        // Multiple roots without explicit $attrs
-        if self.root_element_count > 1 && !self.binds_attrs {
-            return true;
-        }
-
-        // inheritAttrs: false but $attrs not used
-        if self.inherit_attrs_disabled && !self.uses_attrs && !self.binds_attrs {
-            return true;
-        }
-
-        // Attributes passed that aren't props
-        let fallthrough_attrs: Vec<_> = self
-            .passed_attrs
-            .iter()
-            .filter(|attr| !self.declared_props.contains(*attr))
-            .collect();
-
-        if !fallthrough_attrs.is_empty() && !self.uses_attrs && self.root_element_count > 1 {
-            return true;
-        }
-
-        false
-    }
-}
+pub use component::{FallthroughComponentFact, collect_fallthrough_component_facts};
+pub use info::FallthroughInfo;
+use related::{FallthroughUsageRelated, with_fallthrough_relateds};
+pub use summary::{FallthroughSummary, summarize_fallthrough};
+pub use usage::*;
 
 /// Analyze fallthrough attributes across the component graph.
 pub fn analyze_fallthrough(
@@ -68,10 +29,6 @@ pub fn analyze_fallthrough(
 ) -> (Vec<FallthroughInfo>, Vec<CrossFileDiagnostic>) {
     let mut infos = Vec::new();
     let mut diagnostics = Vec::new();
-
-    // Build a map of what attributes each component passes to its children
-    let mut passed_attrs_map: FxHashMap<FileId, FxHashMap<FileId, FxHashSet<CompactString>>> =
-        FxHashMap::default();
 
     // First pass: collect information from each component
     for entry in registry.vue_components() {
@@ -90,6 +47,12 @@ pub fn analyze_fallthrough(
             .iter()
             .map(|p| p.name.clone())
             .collect();
+        let declared_events: FxHashSet<_> = analysis
+            .macros
+            .emits()
+            .iter()
+            .map(|event| event.name.clone())
+            .collect();
 
         let info = FallthroughInfo {
             file_id: entry.id,
@@ -98,7 +61,11 @@ pub fn analyze_fallthrough(
             binds_attrs: template_info.binds_attrs_explicitly,
             root_element_count: template_info.root_element_count,
             passed_attrs: FxHashSet::default(), // Will be filled later
+            fallthrough_attrs: FxHashSet::default(), // Will be filled later
+            static_name_fallthrough_attrs: FxHashSet::default(),
+            dynamic_name_fallthrough_attrs: FxHashSet::default(),
             declared_props,
+            declared_events,
             template_start: template_info.content_start,
             template_end: template_info.content_end,
         };
@@ -106,28 +73,80 @@ pub fn analyze_fallthrough(
         infos.push(info);
     }
 
-    // Second pass: track attribute passing through component usage
-    for node in graph.nodes() {
-        // Look at component usage edges
-        for (child_id, edge_type) in &node.imports {
-            if *edge_type != crate::graph::DependencyEdge::ComponentUsage {
-                continue;
-            }
+    // Second pass: track attribute passing through each component usage.
+    let usage_facts = collect_fallthrough_usage_facts(registry, graph);
+    let mut passed_attrs_map: FxHashMap<FileId, FxHashMap<FileId, FxHashSet<CompactString>>> =
+        FxHashMap::default();
+    let mut fallthrough_attrs_map: FxHashMap<FileId, FxHashSet<CompactString>> =
+        FxHashMap::default();
+    let mut static_name_attrs_map: FxHashMap<FileId, FxHashSet<CompactString>> =
+        FxHashMap::default();
+    let mut dynamic_name_attrs_map: FxHashMap<FileId, FxHashSet<CompactString>> =
+        FxHashMap::default();
+    let mut fallthrough_related_map: FxHashMap<FileId, Vec<FallthroughUsageRelated>> =
+        FxHashMap::default();
+    for fact in &usage_facts {
+        let attrs = passed_attrs_map
+            .entry(fact.child_file_id)
+            .or_default()
+            .entry(fact.parent_file_id)
+            .or_default();
+        attrs.extend(fact.attrs.iter().map(|attr| attr.name.clone()));
+        fallthrough_attrs_map
+            .entry(fact.child_file_id)
+            .or_default()
+            .extend(
+                fact.attrs
+                    .iter()
+                    .filter(|attr| attr.fallthrough)
+                    .map(|attr| attr.name.clone()),
+            );
+        dynamic_name_attrs_map
+            .entry(fact.child_file_id)
+            .or_default()
+            .extend(
+                fact.attrs
+                    .iter()
+                    .filter(|attr| attr.fallthrough && attr.name_is_dynamic)
+                    .map(|attr| attr.name.clone()),
+            );
+        static_name_attrs_map
+            .entry(fact.child_file_id)
+            .or_default()
+            .extend(
+                fact.attrs
+                    .iter()
+                    .filter(|attr| attr.fallthrough && !attr.name_is_dynamic)
+                    .map(|attr| attr.name.clone()),
+            );
 
-            // Get the parent's analysis to find what attrs are passed
-            if let Some(parent_entry) = registry.get(node.file_id) {
-                // Only collect the attributes from the usages that actually
-                // target this specific child component, so two distinct usage
-                // sites of different children are not conflated.
-                let attrs = extract_passed_attrs(&parent_entry.analysis, *child_id, graph);
-
-                passed_attrs_map
-                    .entry(*child_id)
-                    .or_default()
-                    .entry(node.file_id)
-                    .or_default()
-                    .extend(attrs);
-            }
+        let related = fallthrough_related_map
+            .entry(fact.child_file_id)
+            .or_default();
+        related.extend(
+            fact.attrs
+                .iter()
+                .filter(|attr| attr.fallthrough)
+                .map(|attr| FallthroughUsageRelated {
+                    parent_file_id: fact.parent_file_id,
+                    attr_name: attr.name.clone(),
+                    name_is_dynamic: attr.name_is_dynamic,
+                    standard_html_attr: attr.standard_html_attr,
+                    report_as_unused: true,
+                    source_start: attr.source_start,
+                    component_name: fact.component_name.clone(),
+                }),
+        );
+        if fact.has_spread_attrs {
+            related.push(FallthroughUsageRelated {
+                parent_file_id: fact.parent_file_id,
+                attr_name: cstr!("v-bind spread"),
+                name_is_dynamic: false,
+                standard_html_attr: false,
+                report_as_unused: false,
+                source_start: fact.usage_start,
+                component_name: fact.component_name.clone(),
+            });
         }
     }
 
@@ -138,20 +157,30 @@ pub fn analyze_fallthrough(
                 info.passed_attrs.extend(attrs.iter().cloned());
             }
         }
+        if let Some(attrs) = fallthrough_attrs_map.get(&info.file_id) {
+            info.fallthrough_attrs.extend(attrs.iter().cloned());
+        }
+        if let Some(attrs) = static_name_attrs_map.get(&info.file_id) {
+            info.static_name_fallthrough_attrs
+                .extend(attrs.iter().cloned());
+        }
+        if let Some(attrs) = dynamic_name_attrs_map.get(&info.file_id) {
+            info.dynamic_name_fallthrough_attrs
+                .extend(attrs.iter().cloned());
+        }
     }
 
     // Generate diagnostics
     for info in &infos {
         // Check for multiple root elements without explicit $attrs binding
         if info.root_element_count > 1 && !info.binds_attrs {
-            let has_fallthrough = info
-                .passed_attrs
-                .iter()
-                .any(|attr| !info.declared_props.contains(attr));
+            let has_fallthrough = fallthrough_related_map
+                .get(&info.file_id)
+                .is_some_and(|related| !related.is_empty());
 
             if has_fallthrough {
                 // Use offset 0 to point to <template> tag start (wasm.rs adds tag_start offset)
-                diagnostics.push(
+                diagnostics.push(with_fallthrough_relateds(
                     CrossFileDiagnostic::with_span(
                         CrossFileDiagnosticKind::MultiRootMissingAttrs,
                         DiagnosticSeverity::Warning,
@@ -163,14 +192,18 @@ pub fn analyze_fallthrough(
                     .with_suggestion(
                         "Add v-bind=\"$attrs\" to the intended root element or wrap in single root",
                     ),
-                );
+                    fallthrough_related_map
+                        .get(&info.file_id)
+                        .map(Vec::as_slice),
+                    None,
+                ));
             }
         }
 
         // Check for inheritAttrs: false without $attrs usage
         if info.inherit_attrs_disabled && !info.uses_attrs && !info.binds_attrs {
             // Use offset 0 to point to <template> tag start (wasm.rs adds tag_start offset)
-            diagnostics.push(
+            diagnostics.push(with_fallthrough_relateds(
                 CrossFileDiagnostic::with_span(
                     CrossFileDiagnosticKind::InheritAttrsDisabledUnused,
                     DiagnosticSeverity::Warning,
@@ -180,24 +213,31 @@ pub fn analyze_fallthrough(
                     "inheritAttrs is disabled but $attrs is not used anywhere",
                 )
                 .with_suggestion("Use v-bind=\"$attrs\" or $attrs.class/$attrs.style in template"),
-            );
+                fallthrough_related_map
+                    .get(&info.file_id)
+                    .map(Vec::as_slice),
+                None,
+            ));
         }
 
         // Check for unused fallthrough attributes
-        let unused_attrs: Vec<_> = info
-            .passed_attrs
-            .iter()
-            .filter(|attr| {
-                !info.declared_props.contains(*attr)
-                    && !is_standard_html_attr(attr)
-                    && !info.uses_attrs
+        let mut unused_attrs = fallthrough_related_map
+            .get(&info.file_id)
+            .into_iter()
+            .flatten()
+            .filter(|related| {
+                !info.uses_attrs
+                    && related.report_as_unused
+                    && (related.name_is_dynamic || !related.standard_html_attr)
             })
-            .cloned()
-            .collect();
+            .map(FallthroughUsageRelated::display_name)
+            .collect::<Vec<_>>();
+        unused_attrs.sort_unstable();
+        unused_attrs.dedup();
 
         if !unused_attrs.is_empty() && !info.binds_attrs && info.root_element_count > 1 {
             // Use offset 0 to point to <template> tag start (wasm.rs adds tag_start offset)
-            diagnostics.push(
+            diagnostics.push(with_fallthrough_relateds(
                 CrossFileDiagnostic::with_span(
                     CrossFileDiagnosticKind::UnusedFallthroughAttrs {
                         passed_attrs: unused_attrs.clone(),
@@ -212,7 +252,11 @@ pub fn analyze_fallthrough(
                     ),
                 )
                 .with_suggestion("Bind $attrs explicitly or declare as props"),
-            );
+                fallthrough_related_map
+                    .get(&info.file_id)
+                    .map(Vec::as_slice),
+                Some(&unused_attrs),
+            ));
         }
     }
 
@@ -235,38 +279,20 @@ fn check_inherit_attrs_disabled(analysis: &vize_croquis::Croquis) -> bool {
     })
 }
 
-/// Extract attributes passed to a specific child component.
-///
-/// Uses `component_usages` for precise static analysis. Each usage carries the
-/// component name as written in the template; we resolve that name to a
-/// `FileId` through the dependency graph and only keep the props from usages
-/// that target `child_id`. This ensures distinct usage sites of different
-/// children are attributed independently, rather than merging every prop the
-/// parent passes to any child onto a single component.
-fn extract_passed_attrs(
-    analysis: &vize_croquis::Croquis,
-    child_id: FileId,
+/// Collect durable per-usage fallthrough facts with parent-side source ranges.
+pub fn collect_fallthrough_usage_facts(
+    registry: &ModuleRegistry,
     graph: &DependencyGraph,
-) -> FxHashSet<CompactString> {
-    let mut attrs = FxHashSet::default();
-
-    for usage in &analysis.component_usages {
-        // Resolve the usage's component name to the file it refers to and skip
-        // usages that target a different child component.
-        if graph.find_by_component(usage.name.as_str()) != Some(child_id) {
-            continue;
-        }
-
-        for prop in &usage.props {
-            attrs.insert(prop.name.clone());
-        }
-    }
-
-    attrs
+) -> Vec<FallthroughUsageFact> {
+    usage::collect_fallthrough_usage_facts(registry, graph)
 }
 
 /// Check if an attribute is a standard HTML attribute.
 fn is_standard_html_attr(attr: &str) -> bool {
+    if attr.starts_with("data-") || attr.starts_with("aria-") || is_listener_attr(attr) {
+        return true;
+    }
+
     matches!(
         attr,
         "class"
@@ -274,8 +300,6 @@ fn is_standard_html_attr(attr: &str) -> bool {
             | "id"
             | "key"
             | "ref"
-            | "data-*"
-            | "aria-*"
             | "role"
             | "tabindex"
             | "title"
@@ -283,6 +307,22 @@ fn is_standard_html_attr(attr: &str) -> bool {
             | "hidden"
     )
 }
+
+fn is_listener_attr(attr: &str) -> bool {
+    attr.strip_prefix("on")
+        .and_then(|suffix| suffix.chars().next())
+        .is_some_and(|first| first.is_ascii_uppercase())
+}
+
+fn is_declared_event(declared_events: &FxHashSet<CompactString>, event_name: &str) -> bool {
+    let normalized = camelize(event_name);
+    declared_events.iter().any(|declared| {
+        declared.as_str() == event_name || camelize(declared.as_str()) == normalized
+    })
+}
+
+#[cfg(test)]
+mod diagnostics_tests;
 
 #[cfg(test)]
 mod tests;

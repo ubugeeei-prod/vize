@@ -1,8 +1,7 @@
 //! Type definitions for virtual TypeScript generation.
 
 use std::ops::Range;
-use vize_carton::String;
-use vize_carton::config::VueVersion;
+use vize_carton::{FxHashSet, String, config::VueVersion};
 
 /// A mapping from generated virtual TS position to SFC source position.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -82,6 +81,25 @@ impl Default for VirtualTsOptions {
     }
 }
 
+pub(crate) const DEFAULT_LIB_REFERENCES: &[&str] = &["es2022", "dom", "dom.iterable"];
+
+pub(crate) fn emit_lib_reference_directives(output: &mut String, lib_references: &[&str]) {
+    for lib in lib_references {
+        let lib = lib.trim();
+        if lib.is_empty() || !is_safe_ts_lib_reference(lib) {
+            continue;
+        }
+        output.push_str("/// <reference lib=\"");
+        output.push_str(lib);
+        output.push_str("\" />\n");
+    }
+}
+
+pub(crate) fn is_safe_ts_lib_reference(lib: &str) -> bool {
+    lib.bytes()
+        .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'-' | b'_'))
+}
+
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct VirtualTsCheckOptions {
     pub(crate) check_props: bool,
@@ -106,14 +124,13 @@ impl Default for VirtualTsCheckOptions {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-pub(crate) struct VirtualTsGenerationOptions {
+pub(crate) struct VirtualTsGenerationOptions<'a> {
     pub(crate) check_options: VirtualTsCheckOptions,
     /// Configured Vue dialect for this project (default [`VueVersion::V3`]).
     ///
     /// Threaded from `vue.version` in `vize.config` through the check runner so
-    /// canon can later emit dialect-aware instance types (e.g. a Vue 2 `this`
-    /// shape). Plumbing only today: the generator carries it but does not branch
-    /// on it yet, so default-V3 output stays byte-identical.
+    /// canon can emit dialect-aware virtual TypeScript while keeping default-V3
+    /// output byte-identical.
     pub(crate) dialect: VueVersion,
     /// Resolve Vue 3 Options API template bindings (opt-in, standard build).
     pub(crate) options_api: bool,
@@ -125,6 +142,10 @@ pub(crate) struct VirtualTsGenerationOptions {
     /// Preserve TypeScript's user-authored unused local/import diagnostics by
     /// avoiding broad synthetic setup-binding references.
     pub(crate) preserve_unused_diagnostics: bool,
+    /// Extra names referenced by template-like custom blocks. Used only by
+    /// unused-local preservation so non-template blocks can mark setup
+    /// bindings as read without opting into full template type checks.
+    pub(crate) extra_template_referenced_names: Option<&'a FxHashSet<String>>,
     /// Hoist the shared preamble (ImportMeta augmentation, type helpers, and
     /// compiler-macro signatures) out of the generated module. Callers that
     /// enable this must make the shared ambient helpers file
@@ -132,6 +153,8 @@ pub(crate) struct VirtualTsGenerationOptions {
     /// TypeScript program. Off by default so standalone single-document
     /// consumers keep self-contained output.
     pub(crate) hoist_shared_preamble: bool,
+    /// Override standard library triple-slash references for this generation.
+    pub(crate) lib_references: Option<&'a [&'a str]>,
 }
 
 /// Default plugin globals.
@@ -139,6 +162,23 @@ pub(crate) struct VirtualTsGenerationOptions {
 /// or `typeChecker.globalsFile`.
 fn default_plugin_globals() -> Vec<TemplateGlobal> {
     vec![]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::emit_lib_reference_directives;
+    use vize_carton::String;
+
+    #[test]
+    fn virtual_ts_lib_references_are_pluggable() {
+        let mut output = String::default();
+        emit_lib_reference_directives(&mut output, &["es2021", "webworker", "bad\" />"]);
+
+        assert_eq!(
+            output.as_str(),
+            "/// <reference lib=\"es2021\" />\n/// <reference lib=\"webworker\" />\n"
+        );
+    }
 }
 
 /// Output of virtual TypeScript generation.

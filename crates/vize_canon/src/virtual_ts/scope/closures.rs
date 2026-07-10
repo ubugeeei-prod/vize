@@ -8,14 +8,14 @@ use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
 
-use vize_croquis::{Croquis, Scope, ScopeData, ScopeId, ScopeKind, naming::to_pascal_case};
+use vize_croquis::{Croquis, Scope, ScopeData, ScopeId, ScopeKind};
 
 use crate::virtual_ts::expressions::generate_expressions;
-use crate::virtual_ts::helpers::{
-    get_dom_event_type, to_safe_identifier, to_safe_identifier_fragment,
-};
+use crate::virtual_ts::helpers::{get_dom_event_type, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;
 
+use super::component_events::generate_component_event_types;
+use super::component_prop_expressions::collect_component_prop_expression_ranges;
 use super::component_props::generate_component_props;
 use super::context::{
     ComponentPropsContext, EventHandlerExprContext, ScopeGenContext, ScopeGenerationOptions,
@@ -25,6 +25,7 @@ use super::emit::{
 };
 use super::event_handler::generate_event_handler_expressions;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
+use super::vif_guard::common_vif_guard_prefix_outside_v_for_scope;
 
 /// Generate scope closures from Croquis scope chain.
 /// Uses recursive tree-based generation so nested v-for/v-slot scopes
@@ -51,6 +52,10 @@ pub(crate) fn generate_scope_closures(
                     .push(expr);
             }
             expressions_by_scope
+        });
+    let skipped_expression_ranges =
+        profile!("canon.virtual_ts.component_prop_expression_ranges", {
+            collect_component_prop_expression_ranges(summary, virtual_ts_options, &options)
         });
 
     // Build scope tree: parent_scope_id -> Vec<child ScopeId>
@@ -81,7 +86,9 @@ pub(crate) fn generate_scope_closures(
                         let scope_id = scope.id.as_u32();
                         expressions_by_scope
                             .get(&scope_id)
-                            .and_then(|exprs| common_vif_guard_prefix(exprs))
+                            .and_then(|exprs| {
+                                common_vif_guard_prefix_outside_v_for_scope(exprs, scope)
+                            })
                             .map(|guard| (scope_id, guard))
                     })
                     .collect()
@@ -147,6 +154,7 @@ pub(crate) fn generate_scope_closures(
                     mappings,
                     exprs,
                     template_prop_names,
+                    &skipped_expression_ranges,
                     template_offset,
                     "  ",
                 );
@@ -157,11 +165,12 @@ pub(crate) fn generate_scope_closures(
         let ctx = ScopeGenContext {
             summary,
             expressions_by_scope: &expressions_by_scope,
+            skipped_expression_ranges: &skipped_expression_ranges,
             children_map: &children_map,
             template_prop_names,
             template_offset,
             check_options,
-            template_syntax_quirks: options.template_syntax_quirks,
+            legacy_vue2: options.legacy_vue2,
         };
         profile!(
             "canon.virtual_ts.scope_node",
@@ -176,8 +185,6 @@ pub(crate) fn generate_scope_closures(
             generate_undefined_refs(ts, mappings, summary, template_offset)
         );
     }
-
-    // Generate component props type checks (scope-aware)
     if check_options.check_props {
         profile!(
             "canon.virtual_ts.component_props",
@@ -186,12 +193,14 @@ pub(crate) fn generate_scope_closures(
                 mappings,
                 &ComponentPropsContext {
                     summary,
+                    template_source: options.template_source,
                     children_map: &children_map,
                     vfor_enclosing_guards: &vfor_enclosing_guards,
                     template_prop_names,
                     template_offset,
                     options: virtual_ts_options,
                     check_unresolved_global_components: options.check_unresolved_global_components,
+                    legacy_vue2: options.legacy_vue2,
                 },
             )
         );
@@ -229,7 +238,7 @@ fn generate_scope_node(
                 .expressions_by_scope
                 .get(&scope_id)
                 .filter(|_| ctx.check_options.check_template_bindings)
-                .and_then(|exprs| common_vif_guard_prefix(exprs));
+                .and_then(|exprs| common_vif_guard_prefix_outside_v_for_scope(exprs, scope));
             let enclosing_guard = enclosing_guard.as_deref();
             let (loop_indent, vfor_inner_indent) = if enclosing_guard.is_some() {
                 (cstr!("{indent}  "), cstr!("{inner_indent}  "))
@@ -277,6 +286,7 @@ fn generate_scope_node(
                     mappings,
                     exprs,
                     ctx.template_prop_names,
+                    ctx.skipped_expression_ranges,
                     ctx.template_offset,
                     &vfor_inner_indent,
                 );
@@ -308,7 +318,7 @@ fn generate_scope_node(
             emit_slot_function_open(
                 ts,
                 indent,
-                cstr!("_slot_{safe_slot_name}").as_str(),
+                cstr!("_slot_{safe_slot_name}_{scope_id}").as_str(),
                 props_pattern,
                 &props_type,
             );
@@ -331,6 +341,7 @@ fn generate_scope_node(
                     mappings,
                     exprs,
                     ctx.template_prop_names,
+                    ctx.skipped_expression_ranges,
                     ctx.template_offset,
                     &inner_indent,
                 );
@@ -348,78 +359,28 @@ fn generate_scope_node(
         ScopeData::EventHandler(data) if ctx.check_options.check_emits => {
             append!(*ts, "\n{indent}// @{} handler\n", data.event_name);
 
-            let safe_event_name = to_safe_identifier(data.event_name.as_str());
-
-            if let Some(ref component_name) = data.target_component {
-                let component_ref = to_safe_identifier(component_name.as_str());
-                let component_type_name = to_safe_identifier_fragment(component_name.as_str());
-                let pascal_event = to_pascal_case(data.event_name.as_str());
-                let on_handler = cstr!("on{pascal_event}");
-
-                let prop_key = if on_handler.contains(':') {
-                    cstr!("\"{}\"", on_handler.as_str())
-                } else {
-                    on_handler
-                };
-
-                // Type alias (block-scoped in TypeScript)
-                // Include scope_id to deduplicate when same component+event appears multiple times
-                append!(
-                    *ts,
-                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_prop_args = typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }}\n",
-                );
-                append!(
-                    *ts,
-                    "{indent}  ? __P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[]\n",
-                );
-                append!(
-                    *ts,
-                    "{indent}  : typeof {component_ref} extends (props: infer __P) => any\n",
-                );
-                append!(
-                    *ts,
-                    "{indent}    ? __P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[]\n",
-                );
-                append!(*ts, "{indent}    : unknown[];\n");
-                append!(
-                    *ts,
-                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_emit_args = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }}\n",
-                );
-                append!(
-                    *ts,
-                    "{indent}  ? __EP extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[]\n",
-                );
-                append!(*ts, "{indent}  : unknown[];\n");
-                append!(
-                    *ts,
-                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_args = unknown[] extends __{component_type_name}_{scope_id}_{safe_event_name}_prop_args ? __{component_type_name}_{scope_id}_{safe_event_name}_emit_args : __{component_type_name}_{scope_id}_{safe_event_name}_prop_args;\n",
-                );
-                if ctx.template_syntax_quirks {
-                    let fallback_event = get_dom_event_type(data.event_name.as_str());
-                    append!(
-                        *ts,
-                        "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_event = __{component_type_name}_{scope_id}_{safe_event_name}_args extends [] ? any : unknown[] extends __{component_type_name}_{scope_id}_{safe_event_name}_args ? {fallback_event} : __{component_type_name}_{scope_id}_{safe_event_name}_args[0];\n",
-                    );
-                } else {
-                    append!(
-                        *ts,
-                        "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_event = __{component_type_name}_{scope_id}_{safe_event_name}_args extends [] ? any : __{component_type_name}_{scope_id}_{safe_event_name}_args[0];\n",
-                    );
-                }
-
-                let event_type =
-                    cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");
-                let args_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_args");
-                let listener_type =
-                    cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_listener");
+            if data.target_component.is_some() {
+                let event_types = generate_component_event_types(
+                    ts,
+                    ctx.summary,
+                    data,
+                    scope,
+                    ctx.template_prop_names,
+                    ctx.legacy_vue2,
+                    indent,
+                )
+                .expect("component event handler should have a target component");
+                let event_type = event_types.event_type;
+                let listener_type = event_types.listener_type;
+                let listener_type_expr = event_types.listener_type_expr;
                 // Type the listener against the FULL emit argument tuple so
                 // multi-arg emits keep every parameter (#1512). When the emit
                 // signature stays unresolved (`unknown[]`, e.g. a fallthrough
-                // DOM event on a component), fall back to the single `$event`
-                // parameter so those handlers keep type-checking.
+                // DOM event on a component), standard mode falls back to one
+                // `$event`; legacy Vue 2 keeps custom event args variadic.
                 append!(
                     *ts,
-                    "{indent}type {listener_type} = unknown[] extends {args_type} ? (($event: {event_type}) => unknown) : ((...args: {args_type}) => unknown);\n",
+                    "{indent}type {listener_type} = {listener_type_expr};\n",
                 );
                 // Receive every listener argument via a rest parameter typed by
                 // `Parameters<listener>` (always a tuple, so the spread targets a
@@ -490,6 +451,7 @@ fn generate_scope_node(
                     mappings,
                     exprs,
                     ctx.template_prop_names,
+                    ctx.skipped_expression_ranges,
                     ctx.template_offset,
                     indent,
                 );
@@ -521,77 +483,4 @@ fn generate_child_scopes(
             }
         }
     }
-}
-
-/// Compute the v-if guard active for a v-for *element* from the template
-/// expressions recorded in its scope.
-///
-/// Every expression carries the joined `v-if` guard (`(a) && (b) && ...`)
-/// active where it appears. For a v-for element, its own bindings/interpolations
-/// share the element's enclosing guard, while expressions under a `v-if` nested
-/// *inside* the loop body extend that guard with further `&& (...)` terms. The
-/// enclosing guard is therefore the longest `&&`-separated prefix common to
-/// every expression in the scope: it can never include a nested branch's
-/// condition, and is `None` when any expression is unguarded (i.e. the v-for is
-/// not inside a `v-if`). Returns the re-joined guard string when non-empty.
-fn common_vif_guard_prefix(exprs: &[&vize_croquis::TemplateExpression]) -> Option<String> {
-    let mut iter = exprs.iter();
-    // Seed the common prefix with the first expression's guard terms; an
-    // unguarded expression immediately rules out any common guard.
-    let first = iter.next()?.vif_guard.as_ref()?;
-    let mut common: Vec<&str> = split_guard_terms(first.as_str());
-
-    for expr in iter {
-        let guard = expr.vif_guard.as_ref()?;
-        let terms = split_guard_terms(guard.as_str());
-        let shared = common
-            .iter()
-            .zip(terms.iter())
-            .take_while(|(a, b)| a == b)
-            .count();
-        common.truncate(shared);
-        if common.is_empty() {
-            return None;
-        }
-    }
-
-    (!common.is_empty()).then(|| String::from(common.join(" && ").as_str()))
-}
-
-/// Split a joined v-if guard into its top-level ` && `-separated terms.
-///
-/// The drawer joins each branch condition — already wrapped as `(cond)` or
-/// `!(cond)` — with ` && `, so a single condition may itself contain ` && `
-/// inside its parentheses (`v-if="a && b"` becomes the term `(a && b)`). The
-/// split must therefore only break on the ` && ` joiner at paren depth zero so
-/// such conditions stay intact.
-fn split_guard_terms(guard: &str) -> Vec<&str> {
-    let bytes = guard.as_bytes();
-    let mut terms = Vec::new();
-    let mut depth = 0i32;
-    let mut start = 0usize;
-    let mut index = 0usize;
-
-    while index < bytes.len() {
-        match bytes[index] {
-            b'(' | b'[' | b'{' => depth += 1,
-            b')' | b']' | b'}' => depth -= 1,
-            b'&' if depth == 0
-                && bytes.get(index + 1) == Some(&b'&')
-                && index >= 1
-                && bytes[index - 1] == b' '
-                && bytes.get(index + 2) == Some(&b' ') =>
-            {
-                terms.push(guard[start..index - 1].trim());
-                index += 3;
-                start = index;
-                continue;
-            }
-            _ => {}
-        }
-        index += 1;
-    }
-
-    terms.push(guard[start..].trim());
-    terms
 }

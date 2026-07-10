@@ -14,10 +14,15 @@ use crate::virtual_ts::expressions::generate_component_prop_checks;
 use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;
 
+use super::component_prop_checker::{
+    append_prop_checker_alias, has_dynamic_props, has_inference_props,
+};
+use super::component_prop_navigation;
 use super::context::{ComponentPropsContext, VForPropsContext};
 use super::emit::{
     append_v_for_comment, emit_slot_function_open, emit_v_for_loop_open, slot_props_type,
 };
+use super::vif_guard::common_vif_guard_prefix_for_guards_outside_v_for;
 
 /// Generate component props type checks (scope-aware).
 /// Type declarations are at template level, value checks are in their scope.
@@ -47,6 +52,7 @@ pub(super) fn generate_component_props(
                 usage,
                 &external_template_bindings,
                 ctx.check_unresolved_global_components,
+                ctx.legacy_vue2,
             )
         })
         .collect();
@@ -54,7 +60,6 @@ pub(super) fn generate_component_props(
         return;
     }
 
-    // Group component usages by scope_id
     let mut components_by_scope: FxHashMap<u32, Vec<(usize, &ComponentUsage)>> =
         FxHashMap::default();
     for &(idx, usage) in &checkable_usages {
@@ -64,33 +69,20 @@ pub(super) fn generate_component_props(
             .push((idx, usage));
     }
 
-    // Emit type declarations only for components with dynamic props
-    // (TypeScript type aliases cannot be inside function bodies)
     ts.push_str("\n  // Component props type declarations\n");
 
-    // Helper types for the generic functional prop-check path (#775). A
-    // `<script setup generic="T">` child exposes `__vizeCheck<T>(props)` on its
-    // default export; `__VizePropChecker<C>` extracts that generic signature so
-    // the parent can call it and let TS infer `T` from the passed props. When
-    // the child is non-generic (plain construct signature), a built-in / library
-    // component, or `any`, it falls back to `(props: any) => void`, a no-op that
-    // never reports, so only generic components take the new path and the
-    // well-tested `typeof Comp extends { $props }` extraction below is preserved.
-    let any_dynamic_props = checkable_usages.iter().any(|(_, usage)| {
-        usage.props.iter().any(|p| {
-            p.name.as_str() != "key"
-                && p.name.as_str() != "ref"
-                && p.value.is_some()
-                && p.is_dynamic
-        })
-    });
-    if any_dynamic_props {
+    // Generic children expose `__vizeCheck<T>(props)`; fallback contextual
+    // typing is limited to inline function props to avoid duplicate errors.
+    let any_inference_props = checkable_usages
+        .iter()
+        .any(|(_, usage)| has_inference_props(usage));
+    if any_inference_props {
         ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
         ts.push_str(
-            "  type __VizePropChecker<C> = __VizeIsAny<C> extends true ? (props: any) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => void) : (props: any) => void;\n",
+            "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;\n",
         );
         ts.push_str(
-            "  type __VizePropValue<P, K extends PropertyKey> = K extends keyof P ? P[K] : unknown;\n",
+            "  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;\n",
         );
     }
 
@@ -98,28 +90,22 @@ pub(super) fn generate_component_props(
         let component_ref = to_safe_identifier(usage.name.as_str());
         let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
 
-        // Only emit type when there are dynamic props to check
-        let has_dynamic_props = usage.props.iter().any(|p| {
-            p.name.as_str() != "key"
-                && p.name.as_str() != "ref"
-                && p.value.is_some()
-                && p.is_dynamic
-        });
-        if !has_dynamic_props {
+        let has_dynamic_props = has_dynamic_props(usage);
+        let has_navigable_props = component_prop_navigation::has_navigable_props(ctx, usage);
+        if !has_dynamic_props && !has_navigable_props {
             continue;
         }
 
         let src_start = (ctx.template_offset + usage.start) as usize;
         let src_end = (ctx.template_offset + usage.end) as usize;
-
         append!(*ts, "  // @vize-map: component -> {src_start}:{src_end}\n",);
         append!(
             *ts,
-            "  type __{component_type_name}_Props_{idx} = typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }} ? __P : (typeof {component_ref} extends (props: infer __P) => any ? __P : {{}});\n",
+            "  type __{component_type_name}_Props_{idx} = typeof {component_ref} extends {{ __vizeCheck: any }} ? Record<string, unknown> : (typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }} ? __P : (typeof {component_ref} extends (props: infer __P) => any ? __P : {{}}));\n",
         );
 
         for prop in &usage.props {
-            if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
+            if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
                 continue;
             }
             if prop.value.is_some() && prop.is_dynamic {
@@ -132,13 +118,19 @@ pub(super) fn generate_component_props(
             }
         }
 
-        // Generic functional prop-checker for this component (#775). Resolves to
-        // the child's `__vizeCheck` when generic, else a `(props: any)` no-op.
-        append!(
-            *ts,
-            "  type __{component_type_name}_Check_{idx} = __VizePropChecker<typeof {component_ref}>;\n",
-        );
+        if has_inference_props(usage) {
+            // Generic functional prop-checker for this component (#775).
+            append_prop_checker_alias(
+                ts,
+                usage,
+                component_type_name.as_str(),
+                component_ref.as_str(),
+                idx,
+            );
+        }
     }
+
+    component_prop_navigation::emit_references(ts, mappings, ctx, &checkable_usages);
 
     // Collect all closure scope IDs (v-for and v-slot)
     let closure_scope_ids: FxHashSet<u32> = summary
@@ -164,6 +156,30 @@ pub(super) fn generate_component_props(
                 })
         })
         .map(|s| s.id.as_u32())
+        .collect();
+
+    let vfor_enclosing_guards: FxHashMap<u32, String> = summary
+        .scopes
+        .iter()
+        .filter(|scope| matches!(scope.kind, ScopeKind::VFor))
+        .filter_map(|scope| {
+            let scope_id = scope.id.as_u32();
+            let ScopeData::VFor(data) = scope.data() else {
+                return None;
+            };
+            ctx.vfor_enclosing_guards
+                .get(&scope_id)
+                .map(|guard| (scope_id, guard.clone()))
+                .or_else(|| {
+                    let usages = components_by_scope.get(&scope_id)?;
+                    let mut guards = Vec::new();
+                    for (_, usage) in usages {
+                        guards.push(usage.vif_guard.as_ref()?.as_str());
+                    }
+                    common_vif_guard_prefix_for_guards_outside_v_for(guards.as_slice(), data)
+                        .map(|guard| (scope_id, guard))
+                })
+        })
         .collect();
 
     ts.push_str("\n  // Component props value checks (template scope)\n");
@@ -198,7 +214,7 @@ pub(super) fn generate_component_props(
             summary,
             components_by_scope: &components_by_scope,
             children_map: ctx.children_map,
-            vfor_enclosing_guards: ctx.vfor_enclosing_guards,
+            vfor_enclosing_guards: &vfor_enclosing_guards,
             template_prop_names: ctx.template_prop_names,
             template_offset: ctx.template_offset,
         };
@@ -209,19 +225,20 @@ pub(super) fn generate_component_props(
     }
 }
 
-fn component_usage_has_checkable_binding(
+pub(super) fn component_usage_has_checkable_binding(
     summary: &Croquis,
     usage: &ComponentUsage,
     external_template_bindings: &FxHashSet<&str>,
     check_unresolved_global_components: bool,
+    legacy_vue2: bool,
 ) -> bool {
     let name = usage.name.as_str();
     summary.bindings.bindings.contains_key(name)
-        || external_template_bindings.contains(name)
-        || (check_unresolved_global_components && !name.is_empty())
+        || (!legacy_vue2
+            && (external_template_bindings.contains(name)
+                || (check_unresolved_global_components && !name.is_empty())))
 }
 
-/// Recursively generate component prop checks inside nested closure scopes (v-for and v-slot).
 fn generate_closure_component_props_recursive(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
@@ -331,7 +348,7 @@ fn generate_closure_component_props_recursive(
             emit_slot_function_open(
                 ts,
                 indent,
-                cstr!("_slot_props_{safe_slot_name}").as_str(),
+                cstr!("_slot_props_{safe_slot_name}_{}", scope.id.as_u32()).as_str(),
                 props_pattern,
                 &props_type,
             );

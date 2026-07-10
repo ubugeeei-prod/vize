@@ -28,6 +28,9 @@ pub(crate) const RULE_NO_DEEP_DESTRUCTURE_IN_PROPS: &str = "script/no-deep-destr
 pub(crate) const RULE_NO_INTERNAL_IMPORTS: &str = "script/no-internal-imports";
 pub(crate) const RULE_NO_IMPORT_COMPILER_MACROS: &str = "script/no-import-compiler-macros";
 pub(crate) const RULE_NO_RESERVED_IDENTIFIERS: &str = "script/no-reserved-identifiers";
+pub(crate) const RULE_NO_RESTRICTED_GLOBALS: &str = "script/no-restricted-globals";
+pub(crate) const RULE_NO_RESTRICTED_MEMBERS: &str = "script/no-restricted-members";
+pub(crate) const RULE_NO_RESERVED_KEYS: &str = "script/no-reserved-keys";
 pub(crate) const RULE_REQUIRE_SYMBOL_PROVIDE: &str = "script/require-symbol-provide";
 pub(crate) const RULE_REQUIRE_FUNCTION_RETURN_TYPE: &str = "script/require-function-return-type";
 pub(crate) const RULE_NO_DUPE_KEYS: &str = "script/no-dupe-keys";
@@ -42,6 +45,41 @@ pub(crate) const RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO: &str =
 pub(crate) const RULE_RETURN_IN_COMPUTED_PROPERTY: &str = "script/return-in-computed-property";
 pub(crate) const RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API: &str =
     "script/no-deprecated-dollar-scopedslots-api";
+pub(crate) const RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION: &str =
+    "script/no-deprecated-data-object-declaration";
+pub(crate) const RULE_NO_DEPRECATED_EVENTS_API: &str = "script/no-deprecated-events-api";
+pub(crate) const RULE_COMPONENT_OPTIONS_NAME_CASING: &str = "script/component-options-name-casing";
+pub(crate) const RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR: &str = "script/require-prop-type-constructor";
+pub(crate) const RULE_DEFINE_MACROS_ORDER: &str = "script/define-macros-order";
+pub(crate) const RULE_DEFINE_EMITS_DECLARATION: &str = "script/define-emits-declaration";
+pub(crate) const RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD: &str =
+    "script/no-use-computed-property-like-method";
+pub(crate) const RULE_DEFINE_PROPS_DECLARATION: &str = "script/define-props-declaration";
+pub(crate) const RULE_NO_REQUIRED_PROP_WITH_DEFAULT: &str = "script/no-required-prop-with-default";
+pub(crate) const RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS: &str =
+    "script/no-deprecated-props-default-this";
+pub(crate) const RULE_NO_BOOLEAN_DEFAULT: &str = "script/no-boolean-default";
+pub(crate) const RULE_VALID_NEXT_TICK: &str = "script/valid-next-tick";
+pub(crate) const RULE_VALID_DEFINE_OPTIONS: &str = "script/valid-define-options";
+pub(crate) const RULE_DEFINE_PROPS_DESTRUCTURING: &str = "script/define-props-destructuring";
+pub(crate) const RULE_REQUIRE_TYPED_REF: &str = "script/require-typed-ref";
+pub(crate) const RULE_PREFER_DEFINE_OPTIONS: &str = "script/prefer-define-options";
+pub(crate) const RULE_REQUIRE_DEFAULT_PROP: &str = "script/require-default-prop";
+pub(crate) const RULE_REQUIRE_PROP_TYPES: &str = "script/require-prop-types";
+pub(crate) const RULE_NO_RESERVED_PROPS: &str = "script/no-reserved-props";
+pub(crate) const RULE_NO_UNUSED_EMIT_DECLARATIONS: &str = "script/no-unused-emit-declarations";
+pub(crate) const RULE_RETURN_IN_EMITS_VALIDATOR: &str = "script/return-in-emits-validator";
+pub(crate) const RULE_VALID_DEFINE_PROPS: &str = "script/valid-define-props";
+pub(crate) const RULE_VALID_DEFINE_EMITS: &str = "script/valid-define-emits";
+pub(crate) const RULE_REQUIRE_VALID_DEFAULT_PROP: &str = "script/require-valid-default-prop";
+pub(crate) const RULE_REQUIRE_TYPED_OBJECT_PROP: &str = "script/require-typed-object-prop";
+pub(crate) const RULE_CUSTOM_EVENT_NAME_CASING: &str = "script/custom-event-name-casing";
+pub(crate) const RULE_NO_REF_AS_OPERAND: &str = "script/no-ref-as-operand";
+pub(crate) const RULE_REQUIRE_EXPLICIT_SLOTS: &str = "script/require-explicit-slots";
+pub(crate) const RULE_NO_DUPLICATE_ATTR_INHERITANCE: &str = "script/no-duplicate-attr-inheritance";
+pub(crate) const RULE_NO_MULTIPLE_SLOT_ARGS: &str = "script/no-multiple-slot-args";
+pub(crate) const RULE_REQUIRE_EXPLICIT_EMITS: &str = "script/require-explicit-emits";
+pub(crate) const RULE_NO_UNSTABLE_NESTED_COMPONENTS: &str = "script/no-unstable-nested-components";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_OPTIONS_API,
@@ -65,6 +103,9 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_INTERNAL_IMPORTS,
     RULE_NO_IMPORT_COMPILER_MACROS,
     RULE_NO_RESERVED_IDENTIFIERS,
+    RULE_NO_RESTRICTED_GLOBALS,
+    RULE_NO_RESTRICTED_MEMBERS,
+    RULE_NO_RESERVED_KEYS,
     RULE_REQUIRE_SYMBOL_PROVIDE,
     RULE_REQUIRE_FUNCTION_RETURN_TYPE,
     RULE_NO_DUPE_KEYS,
@@ -75,6 +116,38 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO,
     RULE_RETURN_IN_COMPUTED_PROPERTY,
     RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
+    RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,
+    RULE_NO_DEPRECATED_EVENTS_API,
+    RULE_COMPONENT_OPTIONS_NAME_CASING,
+    RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
+    RULE_DEFINE_MACROS_ORDER,
+    RULE_DEFINE_EMITS_DECLARATION,
+    RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD,
+    RULE_DEFINE_PROPS_DECLARATION,
+    RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
+    RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS,
+    RULE_NO_BOOLEAN_DEFAULT,
+    RULE_VALID_NEXT_TICK,
+    RULE_VALID_DEFINE_OPTIONS,
+    RULE_DEFINE_PROPS_DESTRUCTURING,
+    RULE_REQUIRE_TYPED_REF,
+    RULE_PREFER_DEFINE_OPTIONS,
+    RULE_REQUIRE_DEFAULT_PROP,
+    RULE_REQUIRE_PROP_TYPES,
+    RULE_NO_RESERVED_PROPS,
+    RULE_NO_UNUSED_EMIT_DECLARATIONS,
+    RULE_RETURN_IN_EMITS_VALIDATOR,
+    RULE_VALID_DEFINE_PROPS,
+    RULE_VALID_DEFINE_EMITS,
+    RULE_REQUIRE_VALID_DEFAULT_PROP,
+    RULE_REQUIRE_TYPED_OBJECT_PROP,
+    RULE_CUSTOM_EVENT_NAME_CASING,
+    RULE_NO_REF_AS_OPERAND,
+    RULE_REQUIRE_EXPLICIT_SLOTS,
+    RULE_NO_DUPLICATE_ATTR_INHERITANCE,
+    RULE_NO_MULTIPLE_SLOT_ARGS,
+    RULE_REQUIRE_EXPLICIT_EMITS,
+    RULE_NO_UNSTABLE_NESTED_COMPONENTS,
 ];
 
 #[cfg(test)]
@@ -97,6 +170,9 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_INTERNAL_IMPORTS,
     RULE_NO_IMPORT_COMPILER_MACROS,
     RULE_NO_RESERVED_IDENTIFIERS,
+    RULE_NO_RESTRICTED_GLOBALS,
+    RULE_NO_RESTRICTED_MEMBERS,
+    RULE_NO_RESERVED_KEYS,
     RULE_REQUIRE_SYMBOL_PROVIDE,
     RULE_REQUIRE_FUNCTION_RETURN_TYPE,
     RULE_NO_DUPE_KEYS,
@@ -107,4 +183,36 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO,
     RULE_RETURN_IN_COMPUTED_PROPERTY,
     RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
+    RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,
+    RULE_NO_DEPRECATED_EVENTS_API,
+    RULE_COMPONENT_OPTIONS_NAME_CASING,
+    RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
+    RULE_DEFINE_MACROS_ORDER,
+    RULE_DEFINE_EMITS_DECLARATION,
+    RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD,
+    RULE_DEFINE_PROPS_DECLARATION,
+    RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
+    RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS,
+    RULE_NO_BOOLEAN_DEFAULT,
+    RULE_VALID_NEXT_TICK,
+    RULE_VALID_DEFINE_OPTIONS,
+    RULE_DEFINE_PROPS_DESTRUCTURING,
+    RULE_REQUIRE_TYPED_REF,
+    RULE_PREFER_DEFINE_OPTIONS,
+    RULE_REQUIRE_DEFAULT_PROP,
+    RULE_REQUIRE_PROP_TYPES,
+    RULE_NO_RESERVED_PROPS,
+    RULE_NO_UNUSED_EMIT_DECLARATIONS,
+    RULE_RETURN_IN_EMITS_VALIDATOR,
+    RULE_VALID_DEFINE_PROPS,
+    RULE_VALID_DEFINE_EMITS,
+    RULE_REQUIRE_VALID_DEFAULT_PROP,
+    RULE_REQUIRE_TYPED_OBJECT_PROP,
+    RULE_CUSTOM_EVENT_NAME_CASING,
+    RULE_NO_REF_AS_OPERAND,
+    RULE_REQUIRE_EXPLICIT_SLOTS,
+    RULE_NO_DUPLICATE_ATTR_INHERITANCE,
+    RULE_NO_MULTIPLE_SLOT_ARGS,
+    RULE_REQUIRE_EXPLICIT_EMITS,
+    RULE_NO_UNSTABLE_NESTED_COMPONENTS,
 ];

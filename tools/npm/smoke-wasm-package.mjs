@@ -33,7 +33,7 @@ const REQUIRED_EXPORTS = [
 function requireArg(argv) {
   const packageDir = argv[0];
   if (!packageDir) {
-    throw new Error("Usage: smoke-wasm-package.mjs <npm/vize-wasm>");
+    throw new Error("Usage: smoke-wasm-package.mjs <npm/wasm>");
   }
   return path.resolve(packageDir);
 }

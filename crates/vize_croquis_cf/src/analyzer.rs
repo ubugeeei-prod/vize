@@ -14,19 +14,28 @@ pub use types::{CrossFileOptions, CrossFileResult, CrossFileStats};
 mod tests_basic;
 
 #[cfg(test)]
+#[path = "analyzer/tests_fallthrough.rs"]
+mod tests_fallthrough;
+
+#[cfg(test)]
 #[path = "analyzer/tests_element_id.rs"]
 mod tests_element_id;
 
 #[cfg(test)]
-#[path = "analyzer/tests_provide_inject/mod.rs"]
+#[path = "analyzer/tests_complexity_effect_graph.rs"]
+mod tests_complexity_effect_graph;
+
+#[cfg(test)]
+#[path = "analyzer/tests_complexity_effect_graph_overflow.rs"]
+mod tests_complexity_effect_graph_overflow;
+
+#[cfg(test)]
 mod tests_provide_inject;
 
 #[cfg(test)]
-#[path = "analyzer/tests_reactivity_props/mod.rs"]
 mod tests_reactivity_props;
 
 #[cfg(test)]
-#[path = "analyzer/tests_race_conditions/mod.rs"]
 mod tests_race_conditions;
 
 #[cfg(test)]
@@ -34,5 +43,4 @@ mod tests_race_conditions;
 mod tests_single_file;
 
 #[cfg(test)]
-#[path = "analyzer/tests_snapshots/mod.rs"]
 mod tests_snapshots;

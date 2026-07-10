@@ -1,10 +1,11 @@
 //! Tests for the lint command.
 
-use super::{
-    build_cross_file_lint_output, collect::collect_lint_files, should_render_lint_details,
-};
+mod fix_regressions;
+mod format_output;
+
+use super::cross_file::build_cross_file_lint_output;
 use std::{fs, path::Path};
-use vize_patina::{LintPreset, LintResult, Linter, OutputFormat};
+use vize_patina::{LintPreset, LintResult, Linter};
 
 fn result_for_file<'a>(results: &'a [LintResult], file_name: &str) -> &'a LintResult {
     results
@@ -33,47 +34,6 @@ fn diagnostic_summary(result: &LintResult) -> Vec<String> {
 
 fn all_diagnostic_summary(results: &[LintResult]) -> Vec<String> {
     results.iter().flat_map(diagnostic_summary).collect()
-}
-
-#[test]
-fn quiet_text_output_skips_detailed_diagnostics() {
-    assert!(!should_render_lint_details(OutputFormat::Text, true));
-}
-
-#[test]
-fn json_output_remains_machine_readable_in_quiet_mode() {
-    assert!(should_render_lint_details(OutputFormat::Json, true));
-}
-
-#[test]
-fn report_formats_render_in_quiet_mode() {
-    assert!(should_render_lint_details(OutputFormat::Ansi, true));
-    assert!(should_render_lint_details(OutputFormat::Plain, true));
-    assert!(should_render_lint_details(OutputFormat::Markdown, true));
-    assert!(should_render_lint_details(OutputFormat::Html, true));
-    assert!(should_render_lint_details(OutputFormat::Agent, true));
-}
-
-#[test]
-fn lint_collection_includes_jsx_and_tsx() {
-    let dir = tempfile::tempdir().unwrap();
-    let src = dir.path().join("src");
-    fs::create_dir_all(&src).unwrap();
-    fs::write(src.join("App.vue"), "").unwrap();
-    fs::write(src.join("Panel.jsx"), "").unwrap();
-    fs::write(src.join("Widget.tsx"), "").unwrap();
-    fs::write(src.join("skip.ts"), "").unwrap();
-
-    let files = collect_lint_files(&[src.display().to_string().into()]);
-
-    assert_eq!(
-        files,
-        vec![
-            src.join("App.vue"),
-            src.join("Panel.jsx"),
-            src.join("Widget.tsx"),
-        ]
-    );
 }
 
 #[cfg(not(target_arch = "wasm32"))]

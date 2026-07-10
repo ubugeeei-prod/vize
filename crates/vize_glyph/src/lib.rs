@@ -40,6 +40,7 @@
 
 mod error;
 mod formatter;
+mod json;
 mod options;
 mod script;
 mod style;
@@ -47,9 +48,8 @@ mod template;
 
 pub use error::*;
 pub use formatter::*;
+pub use json::{format_json_source as format_json, format_jsonc_source as format_jsonc};
 pub use options::*;
-
-// Re-export allocator for external use
 pub use vize_carton::Allocator;
 use vize_carton::String;
 
@@ -80,7 +80,7 @@ pub fn format_sfc_with_allocator(
 #[inline]
 pub fn format_script(source: &str, options: &FormatOptions) -> Result<String, FormatError> {
     let allocator = Allocator::with_capacity(source.len() * 2);
-    script::format_script_content(source, options, &allocator)
+    script::format_ts_script_content_stable(source, options, &allocator)
 }
 
 /// Format only script content with an explicit JavaScript/TypeScript source type.
@@ -91,7 +91,7 @@ pub fn format_script_with_source_type(
     allocator: &Allocator,
     source_type: oxc_span::SourceType,
 ) -> Result<String, FormatError> {
-    script::format_script_content_with_source_type(source, options, allocator, source_type)
+    script::format_script_content_stable(source, options, allocator, source_type)
 }
 
 /// Format only the template content
@@ -254,6 +254,34 @@ const message = 'hello';
         let third = format_sfc(&second.code, &options).unwrap();
         assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
         assert_eq!(second.code, third.code, "fmt must stay at its fixed point");
+    }
+
+    #[test]
+    fn test_format_sfc_musea_art_block_uses_template_indentation() {
+        let source = r#"<art category="Accordion" title="Accordion/Single">
+  <variant name="Uncontrolled" default>
+    <AccordionRoot type="single" class="w-[300px] rounded-md bg-[--line-color] shadow-lg"><AccordionItem class="accordion-item" value="item-1"><AccordionHeader class="flex"><AccordionTrigger class="accordion-trigger">Is it accessible?</AccordionTrigger></AccordionHeader></AccordionItem></AccordionRoot>
+  </variant>
+</art>
+"#;
+        let mut options = FormatOptions::default();
+        options.single_attribute_per_line = true;
+        let result = format_sfc(source, &options).unwrap();
+
+        assert!(
+            result.code.contains(
+                r#"<AccordionRoot
+      class="w-[300px] rounded-md bg-[--line-color] shadow-lg"
+      type="single"
+    >"#
+            ),
+            "{}",
+            result.code
+        );
+        assert!(result.code.contains("  </variant>\n</art>"));
+
+        let second = format_sfc(&result.code, &options).unwrap();
+        assert_eq!(result.code, second.code, "fmt; fmt must be a no-op");
     }
 
     #[test]

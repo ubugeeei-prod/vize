@@ -1,14 +1,14 @@
 //! Tests for SFC type checking.
-
 #![cfg(test)]
-
+mod emit_props;
+mod optional_chain_props;
 #[cfg(feature = "legacy")]
-use super::type_check_sfc_with_legacy_vue2;
+mod options_api_required_props;
+mod options_api_setup_spread;
 use super::{
     SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity, type_check_sfc,
     type_check_sfc_with_options_api,
 };
-
 fn stable_snapshot_result(mut result: SfcTypeCheckResult) -> SfcTypeCheckResult {
     if result.analysis_time_ms.is_some() {
         result.analysis_time_ms = Some(0.0);
@@ -150,13 +150,13 @@ const { thickness, label } = props;
 
     assert!(
             virtual_ts.contains(
-                r#"type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;"#
+                r#"type __WithDefaultsResult<T, D> = Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof __LooseRequired<T>]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__LooseRequired<T>[K], undefined> };"#
             ),
             "{virtual_ts}"
         );
     assert!(
         virtual_ts.contains(
-            r#"const props: __WithDefaultsResult<Props, Pick<Props, "label" | "thickness">>"#
+            r#"const props: __WithDefaultsResult<__DefineProps<Props>, Pick<__DefineProps<Props>, "label" | "thickness">>"#
         ),
         "{virtual_ts}"
     );
@@ -260,7 +260,7 @@ void props;
 
     assert!(
             virtual_ts.contains(
-                r#"const count = props["count"] as Exclude<__WithDefaultsResult<Props, Pick<Props, "count">>["count"], undefined>;"#
+                r#"const count = props["count"] as Exclude<__WithDefaultsResult<__DefineProps<Props>, Pick<__DefineProps<Props>, "count">>["count"], undefined>;"#
             ),
             "{virtual_ts}"
         );
@@ -391,7 +391,7 @@ const emit = defineEmits({
         "{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("$props: Props & __EmitProps<Emits>;"),
+        virtual_ts.contains("$props: __VizeComponentProps<Props> & __EmitProps<Emits>;"),
         "{virtual_ts}"
     );
 }
@@ -691,7 +691,7 @@ export default {
     );
 
     let options = SfcTypeCheckOptions::new("Legacy.vue");
-    let legacy_result = type_check_sfc_with_legacy_vue2(source, &options);
+    let legacy_result = super::type_check_sfc_with_legacy_vue2(source, &options);
     assert!(
         !legacy_result
             .diagnostics

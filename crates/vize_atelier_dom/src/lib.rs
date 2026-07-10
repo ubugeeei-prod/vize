@@ -14,6 +14,8 @@
 )]
 
 mod compile;
+#[cfg(test)]
+mod experimental_tests;
 mod namespace;
 pub mod options;
 pub mod steps;

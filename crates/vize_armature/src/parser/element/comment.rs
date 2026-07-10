@@ -28,6 +28,18 @@ impl<'a> Parser<'a> {
         self.add_child(TemplateChildNode::Comment(boxed));
     }
 
+    /// Process experimental in-tag `//` comments.
+    pub(in crate::parser) fn on_in_tag_comment_impl(&mut self, start: usize, end: usize) {
+        let content_start = start.saturating_add(2).min(end);
+        let comment = CommentNode::new_in_tag(
+            self.get_source(content_start, end),
+            self.create_loc(start, end),
+        );
+        if let Some(root) = self.root.as_mut() {
+            root.comments.push(comment);
+        }
+    }
+
     fn comment_loc_end(&self, start: usize, end: usize) -> usize {
         let end = self.clamp_to_char_boundary(end);
         let rest = &self.source[end..];

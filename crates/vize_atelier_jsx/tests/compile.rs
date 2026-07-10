@@ -34,6 +34,7 @@ fn component_variant(component: &JsxComponent) -> &'static str {
     match component {
         JsxComponent::Vdom(_) => "vdom",
         JsxComponent::Vapor(_) => "vapor",
+        JsxComponent::Ssr(_) => "ssr",
     }
 }
 
@@ -103,6 +104,91 @@ fn one_module_can_mix_vdom_and_vapor_components() {
     let out = compile(src, &JsxCompileConfig::default());
 
     assert_eq!(out.components.len(), 2);
+    insta::assert_snapshot!(component_matrix(&out));
+}
+
+#[test]
+fn module_code_renames_multiple_render_exports_to_component_names() {
+    let bump = Bump::new();
+    let out = compile_jsx(
+        &bump,
+        r#"
+        export const InspectTable = () => <table>{rows}</table>;
+        const LabelContent = () => <span>{label}</span>;
+        export const InspectTableRow = () => <tr>{row}</tr>;
+        "#,
+        JsxLang::Tsx,
+        &JsxCompileConfig::default(),
+    );
+    let module = out.module_code();
+
+    assert!(module.contains("export function InspectTable("));
+    assert!(module.contains("export function LabelContent("));
+    assert!(module.contains("export function InspectTableRow("));
+    assert!(!module.contains("export function render("));
+}
+
+#[test]
+fn module_code_wraps_block_body_component_setup_state() {
+    let bump = Bump::new();
+    let out = compile_jsx(
+        &bump,
+        r#"
+        import { computed, ref } from "vue";
+
+        export const App = () => {
+          const count = ref(0);
+          const doubled = computed(() => count.value * 2);
+          const increment = () => {
+            count.value += 1;
+          };
+
+          return (
+            <section>
+              <button onClick={increment}>Increment</button>
+              <p>{count.value}</p>
+              <p>{doubled.value}</p>
+            </section>
+          );
+        };
+        "#,
+        JsxLang::Jsx,
+        &JsxCompileConfig::default(),
+    );
+    assert!(
+        out.components[0].component_setup().is_some(),
+        "component setup metadata missing"
+    );
+    assert_eq!(out.components[0].component_name(), Some("App"));
+    let module = out.module_code();
+
+    assert!(
+        module.contains("import { defineComponent as _defineComponent } from \"vue\""),
+        "{module}"
+    );
+    assert!(module.contains("export const App = _defineComponent({"));
+    assert!(module.contains("const count = ref(0);"));
+    assert!(module.contains("const doubled = computed(() => count.value * 2);"));
+    assert!(module.contains("count.value += 1;"));
+    assert!(module.contains("function render(_ctx, _cache)"));
+    assert!(module.contains("return render"));
+    assert!(!module.contains("export function render("));
+    assert!(out.source_map().is_none());
+}
+
+#[test]
+fn ssr_config_routes_components_to_ssr_and_preserves_client_mode_metadata() {
+    let config = JsxCompileConfig {
+        ssr: true,
+        ..Default::default()
+    };
+    let src = "const A = () => <a>{msg}</a>;\n\
+               const B = () => { \"use vue:vapor\"; return <b/>; };";
+    let out = compile(src, &config);
+
+    assert_eq!(out.components.len(), 2);
+    assert_eq!(out.components[0].mode(), JsxOutputMode::Vdom);
+    assert_eq!(out.components[1].mode(), JsxOutputMode::Vapor);
     insta::assert_snapshot!(component_matrix(&out));
 }
 

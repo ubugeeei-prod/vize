@@ -99,8 +99,8 @@ const JSX_EXPR_SINK: &str = "__vize_jsx_expr__";
 ///
 /// `emit` reuses the very same emits-as-tuple convention as the `.vue` path's
 /// `defineEmits<E>()` (see `crate::virtual_ts::helpers`): the `__EmitFn<E>`
-/// alias resolves `E = { change: [value: number] }` to a callable
-/// `<K extends keyof E>(event: K, ...args: E[K]) => void`, so `emit('change', 1)`
+/// alias resolves `E = { change: [value: number] }` to an event overload, so
+/// `emit('change', 1)`
 /// checks the payload against the declared tuple and an unknown event name or a
 /// wrong payload is reported at the `emit(...)` call site. `slots` is typed as
 /// the second type argument so slot access/usage type-checks. Both fall back to
@@ -112,7 +112,7 @@ const JSX_EXPR_SINK: &str = "__vize_jsx_expr__";
 /// `vue` module, matching the minimal, fully-erased intent of this path.
 const CTX_HELPER: &str = "type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;\n\
 type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];\n\
-type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);\n\
+type __EmitFn<T, __S = __EmitShape<T>, __K extends keyof __S & string = keyof __S & string, __U = { [K in __K]: (event: K, ...args: __EmitArgs<__S, K>) => void }[__K]> = __S extends (...args: any[]) => any ? __S : [__K] extends [never] ? (event: never, ...args: any[]) => void : (__U extends unknown ? (fn: __U) => void : never) extends (fn: infer __I) => void ? __I : never;\n\
 type Ctx<Emits = {}, Slots = {}> = { emit: __EmitFn<Emits>; slots: Slots; attrs: Record<string, unknown>; };\n";
 
 /// A dynamic JSX expression recovered from the lowered tree: its original source

@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-use-computed-property-like-method",
+        severity: Error,
+        message: "'fullName' is a computed property and must not be called like a method.",
+        start: 89,
+        end: 104,
+        help: Some(
+            "A computed property exposes a value, not a function. Read it as `this.<name>` (drop the call parentheses), or move the logic into a `method` if you need to invoke it.",
+        ),
+        labels: [
+            Label {
+                message: "computed value called as a function",
+                start: 89,
+                end: 104,
+            },
+        ],
+        fix: None,
+    },
+]

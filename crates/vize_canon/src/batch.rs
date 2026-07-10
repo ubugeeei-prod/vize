@@ -5,10 +5,20 @@
 //! project in `node_modules/.vize/canon/`, and requests diagnostics from
 //! Corsa's LSP instead of parsing CLI text output.
 
+mod declaration_path;
 mod error;
 mod executor;
 mod import_rewriter;
+#[cfg(test)]
+mod import_rewriter_dts_tests;
+#[cfg(test)]
+mod import_rewriter_tests;
+#[cfg(test)]
+mod import_rewriter_type_tests;
+#[cfg(test)]
+mod import_rewriter_virtual_tests;
 mod materialize_fs;
+mod materialize_lock;
 mod runtime_deps;
 mod source_map;
 mod type_checker;
@@ -25,7 +35,8 @@ pub use type_checker::{
 };
 pub use virtual_project::{
     OriginalPosition, VirtualFile, VirtualProject, VueDocumentVirtualTs,
-    generate_vue_document_virtual_ts,
+    VueDocumentVirtualTsOptions, generate_vue_document_virtual_ts,
+    generate_vue_document_virtual_ts_with_options,
 };
 pub use virtual_ts::VirtualTsGenerator;
 

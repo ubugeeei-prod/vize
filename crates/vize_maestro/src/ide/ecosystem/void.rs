@@ -11,6 +11,8 @@ use crate::ide::IdeContext;
 
 const ROUTE_COMPLETION_LIMIT: usize = 200;
 const VOID_NAVIGATION_CALLS: &[&str] = &["useForm", "action", "visit", "prefetch"];
+const PAGE_ROUTE_EXTENSIONS: &[&str] =
+    &["vue", "ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs"];
 
 pub(crate) fn completions(ctx: &IdeContext<'_>) -> Vec<CompletionItem> {
     if !imports_void_vue(&ctx.content) || !is_void_route_context(&ctx.content, ctx.offset) {
@@ -222,17 +224,14 @@ fn is_page_route_file(path: &Path) -> bool {
 
     matches!(
         path.extension().and_then(|ext| ext.to_str()),
-        Some("vue" | "ts" | "tsx" | "js" | "jsx")
+        Some(extension) if PAGE_ROUTE_EXTENSIONS.contains(&extension)
     )
 }
 
 fn page_stem(filename: &str) -> Option<String> {
-    let stem = filename
-        .strip_suffix(".vue")
-        .or_else(|| filename.strip_suffix(".tsx"))
-        .or_else(|| filename.strip_suffix(".ts"))
-        .or_else(|| filename.strip_suffix(".jsx"))
-        .or_else(|| filename.strip_suffix(".js"))?;
+    let stem = PAGE_ROUTE_EXTENSIONS
+        .iter()
+        .find_map(|extension| filename.strip_suffix(cstr!(".{extension}").as_str()))?;
 
     let stem = stem.strip_suffix(".server").unwrap_or(stem);
     if matches!(stem, "layout" | "middleware" | "error") {
@@ -308,6 +307,11 @@ mod tests {
         assert_eq!(
             route_from_page_file(root, Path::new("/app/pages/docs/[...slug].server.ts")).as_deref(),
             Some("/docs/:slug*")
+        );
+        assert_eq!(
+            route_from_page_file(root, Path::new("/app/pages/admin/[section].server.cts"))
+                .as_deref(),
+            Some("/admin/:section")
         );
     }
 }

@@ -13,6 +13,7 @@ import type {
   EmitDisplay,
   ProvideDisplay,
   InjectDisplay,
+  ReactivityOverlay,
 } from "./types";
 
 // Raw WASM scope type
@@ -26,6 +27,28 @@ interface RawWasmScope {
   bindings: string[];
   depth?: number;
   isTemplateScope?: boolean;
+}
+
+function emptyReactivityOverlay(): ReactivityOverlay {
+  return {
+    summary: {
+      sourceCount: 0,
+      refSourceCount: 0,
+      reactiveSourceCount: 0,
+      computedSourceCount: 0,
+      readonlySourceCount: 0,
+      needsValueAccessCount: 0,
+      lossCount: 0,
+      effectEdgeCount: 0,
+      effectCycleCount: 0,
+    },
+    sources: [],
+    losses: [],
+    effectGraph: {
+      edges: [],
+      cycle: null,
+    },
+  };
 }
 
 // Create a transformAnalyzeSfc wrapper for WASM output
@@ -139,6 +162,7 @@ export function createTransformAnalyzeSfc(
         emits,
         provides,
         injects,
+        reactivityOverlay: croquis.reactivityOverlay || emptyReactivityOverlay(),
         typeExports: croquis.typeExports || [],
         invalidExports: croquis.invalidExports || [],
         diagnostics: croquis.diagnostics || [],

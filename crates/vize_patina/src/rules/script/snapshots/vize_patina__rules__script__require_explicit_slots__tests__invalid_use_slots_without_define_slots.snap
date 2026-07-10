@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/require_explicit_slots.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/require-explicit-slots",
+        severity: Warning,
+        message: "Slots consumed via useSlots() must be explicitly typed with defineSlots<...>().",
+        start: 58,
+        end: 68,
+        help: Some(
+            "Declare the slots with the type-only macro, e.g. `defineSlots<{ default(props: {}): unknown }>()`.",
+        ),
+        labels: [
+            Label {
+                message: "slots consumed here without defineSlots",
+                start: 58,
+                end: 68,
+            },
+        ],
+        fix: None,
+    },
+]

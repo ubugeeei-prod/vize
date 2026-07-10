@@ -188,7 +188,7 @@ Vize crates are named after **art and sculpture terminology**, reflecting how ea
 | **AtelierFallback** | —            | A change of workshop when the preferred treatment cannot finish | Recorded reason for using a fallback compiler path                             |
 | **Vitrine**         | /vɪˈtriːn/   | Glass display case in a museum                                  | Bindings — a transparent layer that exposes the compiler to external consumers |
 | **Canon**           | /ˈkænən/     | Standard of ideal proportions in classical sculpture            | Type checker — ensures code conforms to the standard of correctness            |
-| **Patina**          | /ˈpætɪnə/    | Aged surface finish that indicates quality and care             | Linter — polishes code by identifying issues that affect quality               |
+| **Patina**          | /ˈpætɪnə/    | Aged surface finish that indicates quality and care             | Linter — polishes code by identifying problems that affect quality             |
 | **Glyph**           | /ɡlɪf/       | Carved symbol or letterform with precise proportions            | Formatter — shapes code into consistent, readable letterforms                  |
 | **Maestro**         | /ˈmaɪstroʊ/  | Master conductor who orchestrates an ensemble                   | LSP — orchestrates all language features into a unified editor experience      |
 | **Musea**           | /mjuːˈziːə/  | Plural of museum — a space for exhibiting art                   | Component gallery — a space for exhibiting and exploring components            |

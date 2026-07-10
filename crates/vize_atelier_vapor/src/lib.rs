@@ -14,6 +14,10 @@ pub mod steps;
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_dotted_slots;
+#[cfg(test)]
+mod tests_setup_components;
 
 pub use compile::{
     VaporCompileResult, VaporCompilerOptions, compile_vapor, compile_vapor_with_diagnostics,

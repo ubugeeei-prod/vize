@@ -304,20 +304,8 @@
   },
   {
     "file": "app/components/Button/Base.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
-        "line": 37,
-        "column": 11,
-        "endLine": 37,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -521,21 +509,10 @@
         "endLine": 100,
         "endColumn": 23,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "vue/no-v-html",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 118,
-        "column": 51,
-        "endLine": 118,
-        "endColumn": 64,
-        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/CollapsibleSection.vue",
@@ -1063,6 +1040,17 @@
     "file": "app/components/Header/SearchBox.vue",
     "messages": [
       {
+        "ruleId": "type/require-typed-emits",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
+        "line": 34,
+        "column": 47,
+        "endLine": 34,
+        "endColumn": 77,
+        "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1072,17 +1060,6 @@
         "endLine": 58,
         "endColumn": 25,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "type/require-typed-emits",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
-        "severity": 1,
-        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
-        "line": 11,
-        "column": 14,
-        "endLine": 11,
-        "endColumn": 44,
-        "help": "Use defineEmits<...>() or a validator object with typed payload parameters."
       }
     ],
     "errorCount": 0,
@@ -1091,17 +1068,6 @@
   {
     "file": "app/components/Input/Base.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
-        "line": 37,
-        "column": 11,
-        "endLine": 37,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -1125,7 +1091,7 @@
         "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 2
   },
   {
@@ -1150,17 +1116,6 @@
     "file": "app/components/Link/Base.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
-        "line": 72,
-        "column": 11,
-        "endLine": 72,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1172,7 +1127,7 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -1576,21 +1531,10 @@
         "endLine": 160,
         "endColumn": 41,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :data binding may be vulnerable to XSS via javascript: protocol",
-        "line": 172,
-        "column": 11,
-        "endLine": 172,
-        "endColumn": 26,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/Package/ListControls.vue",
@@ -1886,17 +1830,6 @@
     "file": "app/components/Package/Table.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Table' is a reserved HTML element name and cannot be used as a component name",
-        "line": 112,
-        "column": 11,
-        "endLine": 112,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "a11y/no-redundant-roles",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -1963,7 +1896,7 @@
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 6
   },
   {
@@ -2688,17 +2621,6 @@
     "file": "app/components/Select/Base.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
-        "line": 12,
-        "column": 11,
-        "endLine": 12,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2710,7 +2632,7 @@
         "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -2983,20 +2905,8 @@
   },
   {
     "file": "app/components/Tooltip/Base.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
-        "line": 47,
-        "column": 11,
-        "endLine": 47,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -3244,20 +3154,8 @@
   },
   {
     "file": "app/components/diff/Table.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Table' is a reserved HTML element name and cannot be used as a component name",
-        "line": 18,
-        "column": 11,
-        "endLine": 18,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -3368,17 +3266,6 @@
     "file": "app/pages/compare.vue",
     "messages": [
       {
-        "ruleId": "html/id-duplication",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 2,
-        "message": "[vize:html/id-duplication] Duplicate id=\"comparison-heading\" found in template",
-        "line": 264,
-        "column": 11,
-        "endLine": 264,
-        "endColumn": 34,
-        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3390,7 +3277,7 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -3494,17 +3381,6 @@
   {
     "file": "app/pages/package/[[org]]/[name].vue",
     "messages": [
-      {
-        "ruleId": "html/id-duplication",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 2,
-        "message": "[vize:html/id-duplication] Duplicate id=\"package-article\" found in template",
-        "line": 762,
-        "column": 30,
-        "endLine": 762,
-        "endColumn": 50,
-        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
-      },
       {
         "ruleId": "vue/no-v-html",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -3693,7 +3569,7 @@
         "help": "Use kebab-case for attribute names"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 17
   },
   {
@@ -3729,28 +3605,6 @@
     "file": "app/pages/package-docs/[...path].vue",
     "messages": [
       {
-        "ruleId": "vue/no-v-html",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 177,
-        "column": 36,
-        "endLine": 177,
-        "endColumn": 57,
-        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
-      },
-      {
-        "ruleId": "vue/no-v-html",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 209,
-        "column": 61,
-        "endLine": 209,
-        "endColumn": 84,
-        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
-      },
-      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3763,7 +3617,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "app/pages/privacy.vue",
@@ -3933,17 +3787,6 @@
     "file": "app/pages/search.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'search' is a reserved HTML element name and cannot be used as a component name",
-        "line": 560,
-        "column": 11,
-        "endLine": 560,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3977,7 +3820,7 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 3
   },
   {

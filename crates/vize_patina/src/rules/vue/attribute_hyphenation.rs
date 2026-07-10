@@ -115,7 +115,7 @@ impl Rule for AttributeHyphenation {
                     if dir.name.as_str() == "bind" {
                         if let Some(arg) = &dir.arg {
                             match arg {
-                                vize_relief::ExpressionNode::Simple(s) => {
+                                vize_relief::ExpressionNode::Simple(s) if s.is_static => {
                                     (s.content.as_str(), &dir.loc)
                                 }
                                 _ => continue,
@@ -186,6 +186,13 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<MyComponent myProp="value" />"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_dynamic_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<MyComponent :[myProp]="value" />"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]

@@ -15,11 +15,13 @@ oxc_allocator.workspace = true
 oxc_ast.workspace = true
 oxc_parser.workspace = true
 oxc_span.workspace = true
+serde.workspace = true
 
 [dev-dependencies]
 vize_armature.workspace = true
 insta.workspace = true
 criterion.workspace = true
+serde_json.workspace = true
 
 [[bench]]
 name = "cross_file"

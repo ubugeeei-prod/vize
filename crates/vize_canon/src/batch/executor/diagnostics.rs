@@ -5,7 +5,14 @@ use serde_json::Value;
 use super::super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
 use crate::corsa_client::LspDiagnostic;
 use crate::file_uri::file_uri_to_path;
-use vize_carton::{FxHashMap, FxHashSet, String, cstr};
+use vize_carton::{FxHashMap, FxHashSet, String};
+
+mod keyof_indexed_assignment;
+mod line_index;
+mod module_resolution;
+
+use line_index::LineIndex;
+pub(super) use module_resolution::relative_module_resolves_on_disk;
 
 pub(super) fn map_batch_diagnostics(
     results: Vec<(String, Vec<LspDiagnostic>)>,
@@ -98,6 +105,15 @@ impl<'a> DiagnosticMapper<'a> {
         if code == Some(6133) && !self.preserve_unused_diagnostics {
             return None;
         }
+        if code == Some(2322)
+            && self.is_keyof_indexed_assignment(
+                virtual_path,
+                diagnostic.range.start.line,
+                diagnostic.range.start.character,
+            )
+        {
+            return None;
+        }
 
         let original = self.map_to_original(
             virtual_path,
@@ -187,93 +203,26 @@ impl<'a> DiagnosticMapper<'a> {
 
         self.original_sources.get(path)
     }
+
+    pub(super) fn is_keyof_indexed_assignment(
+        &mut self,
+        virtual_path: &Path,
+        line: u32,
+        column: u32,
+    ) -> bool {
+        let Some(file) = self.project.find_by_virtual(virtual_path) else {
+            return false;
+        };
+        let Some(offset) = self.virtual_offset(file, line, column) else {
+            return false;
+        };
+        keyof_indexed_assignment::matches_at(&file.content, &file.virtual_path, offset)
+    }
 }
 
 struct CachedSource {
     content: String,
     line_index: LineIndex,
-}
-
-struct LineIndex {
-    starts: Vec<usize>,
-    len: usize,
-}
-
-impl LineIndex {
-    fn new(content: &str) -> Self {
-        let mut starts = vec![0];
-        for (index, byte) in content.bytes().enumerate() {
-            if byte == b'\n' {
-                starts.push(index + 1);
-            }
-        }
-
-        Self {
-            starts,
-            len: content.len(),
-        }
-    }
-
-    /// Convert an LSP (line, character) — where character is in UTF-16 code
-    /// units — back to a byte offset into `content`. (#965)
-    fn line_col_to_offset(&self, content: &str, line: u32, col: u32) -> Option<u32> {
-        let line = usize::try_from(line).ok()?;
-        let start = *self.starts.get(line)?;
-        let end = self.line_end(line);
-        let mut current_col = 0u32;
-        let mut offset = start;
-
-        if col == 0 {
-            return u32::try_from(offset).ok();
-        }
-
-        for ch in content[start..end].chars() {
-            offset += ch.len_utf8();
-            current_col += ch.len_utf16() as u32;
-            if current_col >= col {
-                return u32::try_from(offset).ok();
-            }
-        }
-
-        if current_col == col {
-            u32::try_from(offset).ok()
-        } else {
-            None
-        }
-    }
-
-    /// Convert a byte offset to LSP (line, character). `character` is in
-    /// UTF-16 code units — astral characters (`len_utf16() == 2`) count as
-    /// two so the column matches what `vue-tsc` / `@vue/language-tools`
-    /// report. (#965)
-    fn offset_to_line_col(&self, content: &str, offset: u32) -> Option<(u32, u32)> {
-        let offset = usize::try_from(offset).ok()?;
-        if offset > self.len {
-            return None;
-        }
-
-        let line = self.starts.partition_point(|start| *start <= offset);
-        let line = line.saturating_sub(1);
-        let start = *self.starts.get(line)?;
-        let end = self.line_end(line);
-        let mut col = 0u32;
-        let mut cursor = start;
-        for ch in content[start..end].chars() {
-            if cursor >= offset {
-                break;
-            }
-            col += ch.len_utf16() as u32;
-            cursor += ch.len_utf8();
-        }
-        Some((u32::try_from(line).ok()?, col))
-    }
-
-    fn line_end(&self, line: usize) -> usize {
-        self.starts
-            .get(line + 1)
-            .map(|next_start| next_start.saturating_sub(1))
-            .unwrap_or(self.len)
-    }
 }
 
 fn uri_to_path(uri: &str) -> PathBuf {
@@ -299,16 +248,28 @@ fn parse_severity(severity: Option<i32>) -> u8 {
     }
 }
 
-pub(super) fn should_skip_diagnostic(code: Option<u32>, _message: &str) -> bool {
+pub(super) fn should_skip_diagnostic(code: Option<u32>, message: &str) -> bool {
     match code {
         // TS2666: virtual-TS generation injects helper bindings that can trip
         // this code outside the user's source — suppress to match vue-tsc.
         Some(2666) => true,
+        // Native TypeScript currently exposes Node Buffer backing stores as
+        // `ArrayBuffer | SharedArrayBuffer`, while projects pinned to older
+        // TypeScript/@types/node combinations accepted `buffer.slice(...)` as
+        // `ArrayBuffer`. Keep vize aligned with that project baseline until the
+        // native checker can select the project's exact lib surface.
+        Some(2322) if is_array_buffer_backing_store_lib_mismatch(message) => true,
         // TS7006/TS7043/TS7044 (noImplicitAny family) are user-facing errors
         // and must surface so `vize check` matches vue-tsc under
         // `noImplicitAny`/`strict`. They were previously suppressed (#966).
         _ => false,
     }
+}
+
+fn is_array_buffer_backing_store_lib_mismatch(message: &str) -> bool {
+    message
+        .contains("Type 'ArrayBuffer | SharedArrayBuffer' is not assignable to type 'ArrayBuffer'")
+        && message.contains("SharedArrayBuffer")
 }
 
 pub(super) fn should_skip_original_diagnostic(
@@ -320,87 +281,6 @@ pub(super) fn should_skip_original_diagnostic(
 
 fn is_vue_source(path: &Path) -> bool {
     path.extension().is_some_and(|extension| extension == "vue")
-}
-
-/// Extract the specifier from the first `Cannot find module "<spec>"` in
-/// `message`, handling straight and smart quotes.
-fn module_not_found_specifier(message: &str) -> Option<&str> {
-    let rest = message.split_once("Cannot find module ")?.1;
-    let open = rest.chars().next()?;
-    let close = match open {
-        '\'' => '\'',
-        '"' => '"',
-        '\u{2018}' => '\u{2019}',
-        _ => return None,
-    };
-    let after_open = &rest[open.len_utf8()..];
-    let end = after_open.find(close)?;
-    Some(&after_open[..end])
-}
-
-/// Whether the unresolved module in a `TS2307` `message` is a relative
-/// specifier that resolves to a real source file next to `importer`. Such a
-/// diagnostic is a false positive from checking a partial file subset, since
-/// the sibling exists but was not registered in the virtual project.
-pub(super) fn relative_module_resolves_on_disk(message: &str, importer: &Path) -> bool {
-    let Some(specifier) = module_not_found_specifier(message) else {
-        return false;
-    };
-    if !(specifier.starts_with("./") || specifier.starts_with("../")) {
-        return false;
-    }
-    let Some(dir) = importer.parent() else {
-        return false;
-    };
-    relative_specifier_resolves(dir, specifier)
-}
-
-/// Source extensions a relative specifier may resolve to.
-const SOURCE_EXTENSIONS: &[&str] = &["ts", "tsx", "d.ts", "mts", "cts", "vue"];
-
-/// Resolve `specifier` against `dir` the way TypeScript would for a Vue/TS
-/// project: an explicit supported extension, an extension appended to the
-/// stem, a `.js`->`.ts` rewrite, or an `index` directory module.
-fn relative_specifier_resolves(dir: &Path, specifier: &str) -> bool {
-    if specifier_has_source_extension(specifier) && dir.join(specifier).is_file() {
-        return true;
-    }
-    if let Some(stem) = specifier.strip_suffix(".vue.ts")
-        && dir.join(cstr!("{stem}.vue").as_str()).is_file()
-    {
-        return true;
-    }
-    for (js, ts) in [(".js", ".ts"), (".mjs", ".mts"), (".cjs", ".cts")] {
-        if let Some(stem) = specifier.strip_suffix(js)
-            && dir.join(cstr!("{stem}{ts}").as_str()).is_file()
-        {
-            return true;
-        }
-    }
-    for extension in SOURCE_EXTENSIONS {
-        if dir
-            .join(cstr!("{specifier}.{extension}").as_str())
-            .is_file()
-        {
-            return true;
-        }
-    }
-    let base = dir.join(specifier);
-    for extension in SOURCE_EXTENSIONS {
-        if base.join(cstr!("index.{extension}").as_str()).is_file() {
-            return true;
-        }
-    }
-    false
-}
-
-fn specifier_has_source_extension(specifier: &str) -> bool {
-    specifier.ends_with(".vue")
-        || specifier.ends_with(".d.ts")
-        || specifier.ends_with(".ts")
-        || specifier.ends_with(".tsx")
-        || specifier.ends_with(".mts")
-        || specifier.ends_with(".cts")
 }
 
 #[cfg(test)]
@@ -565,39 +445,6 @@ mod tests {
     }
 
     #[test]
-    fn line_index_matches_source_map_boundaries() {
-        let content = "a\nbeta\n";
-        let index = LineIndex::new(content);
-
-        assert_eq!(index.line_col_to_offset(content, 0, 1), Some(1));
-        assert_eq!(index.line_col_to_offset(content, 1, 4), Some(6));
-        assert_eq!(index.line_col_to_offset(content, 2, 0), Some(7));
-        assert_eq!(index.line_col_to_offset(content, 1, 5), None);
-        assert_eq!(index.offset_to_line_col(content, 7), Some((2, 0)));
-
-        let content = "é\n";
-        let index = LineIndex::new(content);
-        assert_eq!(index.offset_to_line_col(content, 1), Some((0, 1)));
-    }
-
-    #[test]
-    fn line_index_counts_astral_chars_as_two_utf16_units() {
-        // Regression for #965: LSP `Position.character` is in UTF-16 code
-        // units. An emoji (`U+1F600`) is one Unicode scalar but TWO UTF-16
-        // units (encoded as a surrogate pair) — `vue-tsc` /
-        // `@vue/language-tools` report the post-emoji column as `+2`, so
-        // vize must too.
-        let content = "\u{1F600}x\n";
-        let index = LineIndex::new(content);
-
-        // Byte offset 4 is right after the emoji + `x`. The emoji is 4
-        // UTF-8 bytes and counts as 2 UTF-16 units; `x` is 1 of each.
-        assert_eq!(index.offset_to_line_col(content, 5), Some((0, 3)));
-        // The reverse direction must round-trip.
-        assert_eq!(index.line_col_to_offset(content, 0, 3), Some(5));
-    }
-
-    #[test]
     fn ts2307_module_not_found_diagnostics_are_not_skipped_globally() {
         let vue_msg = "Cannot find module './app.vue' or its corresponding type declarations.";
         let vue_ts_msg =
@@ -619,6 +466,10 @@ mod tests {
         assert!(!should_skip_diagnostic(Some(7043), "any message"));
         assert!(!should_skip_diagnostic(Some(7044), "any message"));
         assert!(!should_skip_diagnostic(Some(2322), "any message"));
+        assert!(should_skip_diagnostic(
+            Some(2322),
+            "Type 'ArrayBuffer | SharedArrayBuffer' is not assignable to type 'ArrayBuffer'."
+        ));
         assert!(!should_skip_diagnostic(None, "any message"));
     }
 
@@ -647,49 +498,6 @@ mod tests {
         assert!(!should_skip_original_diagnostic(Some(6133), &mapped_vue));
         assert!(!should_skip_original_diagnostic(Some(6133), &plain_ts));
         assert!(!should_skip_original_diagnostic(Some(2322), &unmapped_vue));
-    }
-
-    #[test]
-    fn ts2307_for_resolvable_relative_siblings_is_suppressed() {
-        use super::relative_module_resolves_on_disk;
-
-        let dir = TempDir::new().unwrap();
-        let importer = dir.path().join("App.vue");
-        std::fs::write(&importer, "").unwrap();
-        std::fs::write(dir.path().join("types.ts"), "").unwrap();
-        std::fs::write(dir.path().join("Panel.vue"), "<template />").unwrap();
-        std::fs::create_dir_all(dir.path().join("util")).unwrap();
-        std::fs::write(dir.path().join("util").join("index.ts"), "").unwrap();
-
-        let resolvable_ts = "Cannot find module './types' or its corresponding type declarations.";
-        let resolvable_vue_ts =
-            "Cannot find module './Panel.vue.ts' or its corresponding type declarations.";
-        let resolvable_index =
-            "Cannot find module './util' or its corresponding type declarations.";
-        let resolvable_js_to_ts =
-            "Cannot find module './types.js' or its corresponding type declarations.";
-        let missing_relative =
-            "Cannot find module './nope' or its corresponding type declarations.";
-        let bare_package = "Cannot find module 'lodash-es' or its corresponding type declarations.";
-
-        assert!(relative_module_resolves_on_disk(resolvable_ts, &importer));
-        assert!(relative_module_resolves_on_disk(
-            resolvable_vue_ts,
-            &importer
-        ));
-        assert!(relative_module_resolves_on_disk(
-            resolvable_index,
-            &importer
-        ));
-        assert!(relative_module_resolves_on_disk(
-            resolvable_js_to_ts,
-            &importer
-        ));
-        assert!(!relative_module_resolves_on_disk(
-            missing_relative,
-            &importer
-        ));
-        assert!(!relative_module_resolves_on_disk(bare_package, &importer));
     }
 
     #[test]

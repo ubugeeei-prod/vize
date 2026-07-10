@@ -6,7 +6,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
 use vize_atelier_core::options::CodegenMode;
-use vize_atelier_core::parser::parse;
+use vize_atelier_core::parser::parse_with_options;
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
 use vize_atelier_sfc::compile_script::typescript::transform_typescript_to_js;
 use vize_atelier_sfc::{
@@ -17,6 +17,9 @@ use vize_atelier_sfc::{
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_template_syntax};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor_with_template_syntax};
 
+use super::experimentals::{
+    experimental_dom_options, experimental_flags, experimental_parser_options,
+};
 use super::options::{parse_compiler_options, parse_css_options};
 use super::serde::{to_js_value, to_json_js_value};
 use super::sfc_types::{
@@ -58,10 +61,15 @@ impl Compiler {
 
     /// Parse template to AST
     #[wasm_bindgen]
-    pub fn parse(&self, template: &str, _options: JsValue) -> Result<JsValue, JsValue> {
+    pub fn parse(&self, template: &str, options: JsValue) -> Result<JsValue, JsValue> {
+        let parsed = parse_compiler_options(&options);
         let allocator = Bump::new();
 
-        let (root, errors) = parse(&allocator, template);
+        let (root, errors) = parse_with_options(
+            &allocator,
+            template,
+            experimental_parser_options(&parsed.options),
+        );
 
         if !errors.is_empty() {
             return Err(JsValue::from_str(&format!("Parse errors: {:?}", errors)));
@@ -138,13 +146,11 @@ impl Compiler {
             ..Default::default()
         };
 
-        // Parse SFC
         let descriptor = match parse_sfc(source, parse_opts) {
             Ok(d) => d,
             Err(e) => return Err(JsValue::from_str(&e.message)),
         };
 
-        // Detect vapor mode from script setup attrs or options
         let has_vapor_attr = descriptor
             .script_setup
             .as_ref()
@@ -157,7 +163,6 @@ impl Compiler {
                 .unwrap_or(false);
         let use_vapor = has_vapor_attr || opts.output_mode.as_deref() == Some("vapor");
 
-        // Detect TypeScript from script lang attribute (for source detection)
         let source_is_ts = descriptor
             .script_setup
             .as_ref()
@@ -171,21 +176,17 @@ impl Compiler {
                 .map(|l| l == "ts" || l == "tsx")
                 .unwrap_or(false);
 
-        // Determine output format: preserve TypeScript or downcompile to JavaScript
-        // script_ext option: "preserve" keeps TypeScript, "downcompile" (default) transpiles to JS
         let output_is_ts = opts
             .script_ext
             .as_deref()
             .map(|ext| ext == "preserve")
-            .unwrap_or(false); // Default to downcompile (transpile to JS)
+            .unwrap_or(false);
 
-        // Update opts with source detection for backwards compatibility
         let mut opts = opts;
         if source_is_ts {
             opts.is_ts = Some(true);
         }
 
-        // Compile template if present
         let mut template_result = if let Some(template) = &descriptor.template {
             match compile_internal(&template.content, &opts, use_vapor, None) {
                 Ok(r) => Some(r),
@@ -195,8 +196,6 @@ impl Compiler {
             None
         };
 
-        // Full SFC compilation using sfc_compile
-        // Use output_is_ts to control whether TypeScript is preserved or transpiled
         let standalone = opts.mode.as_deref() == Some("function");
         let sfc_opts = SfcCompileOptions {
             parse: SfcParseOptions {
@@ -215,7 +214,7 @@ impl Compiler {
                 ssr: opts.ssr.unwrap_or(false),
                 is_ts: output_is_ts,
                 custom_renderer: opts.custom_renderer.unwrap_or(false),
-                compiler_options: Some(DomCompilerOptions::default()),
+                compiler_options: Some(experimental_dom_options(&opts)),
                 ..Default::default()
             },
             style: StyleCompileOptions {
@@ -230,7 +229,6 @@ impl Compiler {
         let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
             .map_err(|message| JsValue::from_str(&message))?;
 
-        // Compile the full SFC
         let compile_result =
             sfc_compile_with_template_syntax(&descriptor, sfc_opts, template_syntax);
         let sfc_result = match compile_result {
@@ -251,8 +249,6 @@ impl Compiler {
             template_result.code = transform_typescript_to_js(&template_result.code).to_string();
         }
 
-        // Build result with compiled script code
-        // Convert descriptor to owned for serialization
         let binding_metadata = sfc_result
             .bindings
             .as_ref()
@@ -306,12 +302,14 @@ fn compile_internal(
 ) -> Result<CompileResult, String> {
     let allocator = Bump::new();
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())?;
+    let (experimental_in_tag_comments, experimental_patterned_template) = experimental_flags(opts);
 
-    // SSR mode - use dedicated SSR compiler
     if opts.ssr.unwrap_or(false) && !vapor && binding_metadata.is_none() {
         let ssr_opts = SsrCompilerOptions {
             is_ts: opts.is_ts.unwrap_or(false),
             custom_renderer: opts.custom_renderer.unwrap_or(false),
+            experimental_in_tag_comments,
+            experimental_patterned_template,
             ..Default::default()
         };
         let (root, errors, result) =
@@ -347,6 +345,8 @@ fn compile_internal(
             prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
             ssr: opts.ssr.unwrap_or(false),
             custom_renderer: opts.custom_renderer.unwrap_or(false),
+            experimental_in_tag_comments,
+            experimental_patterned_template,
             binding_metadata,
             ..Default::default()
         };
@@ -395,7 +395,7 @@ fn compile_internal(
         custom_renderer: opts.custom_renderer.unwrap_or(false),
         binding_metadata,
         inline: has_binding_metadata,
-        ..Default::default()
+        ..experimental_dom_options(opts)
     };
 
     let (root, errors, result) =

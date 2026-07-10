@@ -49,16 +49,13 @@ pub fn has_dynamic_slots_flag(el: &ElementNode<'_>) -> bool {
     if collected_slots.iter().any(|s| s.is_dynamic) {
         return true;
     }
-    if has_forwarded_slot_outlet(el) {
-        return true;
-    }
     // Also check for v-if/v-for on slot templates (they become IfNode/ForNode children)
     has_conditional_or_loop_slots(el)
 }
 
 /// Check whether this component forwards an incoming slot to another component,
 /// e.g. `<Inner><slot /></Inner>`.
-pub(super) fn has_forwarded_slot_outlet(el: &ElementNode<'_>) -> bool {
+pub fn has_forwarded_slot_outlet(el: &ElementNode<'_>) -> bool {
     el.children.iter().any(child_contains_slot_outlet)
 }
 

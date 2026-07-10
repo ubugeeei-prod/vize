@@ -1,8 +1,3 @@
-//! Main SFC type checking runner.
-//!
-//! Orchestrates parsing, analysis, and virtual TypeScript generation
-//! for a Vue Single File Component.
-
 use vize_carton::Bump;
 use vize_carton::cstr;
 
@@ -18,15 +13,6 @@ use super::{
     virtual_ts::generate_virtual_ts_with_scopes,
 };
 
-/// Perform type checking on a Vue SFC.
-///
-/// This performs AST-based type analysis using croquis for semantic analysis.
-/// It checks:
-/// - Props typing (defineProps)
-/// - Emits typing (defineEmits)
-/// - Template binding references
-///
-/// For full TypeScript type checking with Corsa, use `TypeCheckService`.
 pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeCheckResult {
     type_check_sfc_impl(source, options, false, false)
 }
@@ -57,13 +43,10 @@ fn type_check_sfc_impl(
     use vize_atelier_core::parser::parse;
     use vize_atelier_sfc::{SfcParseOptions, croquis::SfcCroquisOptions, parse_sfc};
 
-    // Use Instant for timing on native, skip on WASM
     #[cfg(not(target_arch = "wasm32"))]
     let start_time = std::time::Instant::now();
 
     let mut result = SfcTypeCheckResult::empty();
-
-    // Parse SFC
     let parse_opts = SfcParseOptions {
         filename: options.filename.clone(),
         ..Default::default()
@@ -183,7 +166,18 @@ fn type_check_sfc_impl(
 
     // Check template bindings
     if options.check_template_bindings && !has_template_parse_errors && !has_script_parse_errors {
-        check_template_bindings(&summary, template_offset, &mut result, options.strict);
+        let suppress_options_api_setup_spread_refs =
+            crate::options_api_setup_spread::suppresses_template_undefined_refs(
+                options_api || legacy_vue2,
+                script_content.as_deref(),
+            );
+        check_template_bindings(
+            &summary,
+            template_offset,
+            &mut result,
+            options.strict,
+            suppress_options_api_setup_spread_refs,
+        );
     }
 
     // Check reactivity loss

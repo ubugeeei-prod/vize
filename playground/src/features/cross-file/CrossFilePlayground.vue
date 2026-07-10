@@ -2,8 +2,9 @@
 import "./CrossFilePlayground.css";
 import { ref, computed, watch, onMounted, onUnmounted, inject, type ComputedRef } from "vue";
 import MonacoEditor from "../../shared/MonacoEditor.vue";
+import ComplexityPanel from "./ComplexityPanel.vue";
 import type { Diagnostic } from "../../shared/MonacoEditor.vue";
-import type { WasmModule } from "../../wasm/index";
+import type { CrossFileComplexityReport, WasmModule } from "../../wasm/index";
 import { getWasm } from "../../wasm/index";
 import {
   mdiClose,
@@ -71,8 +72,8 @@ const PROFILE_OPTIONS: Record<AnalysisProfile, CrossFileAnalyzerOptions> = {
 
 const analysisProfile = ref<AnalysisProfile>("all");
 const severityFilter = ref<SeverityFilter>("all");
+const complexityReport = ref<CrossFileComplexityReport | null>(null);
 
-// Options
 const options = ref<CrossFileAnalyzerOptions>({
   provideInject: true,
   componentEmits: true,
@@ -86,7 +87,6 @@ const options = ref<CrossFileAnalyzerOptions>({
   propsValidation: true,
 });
 
-// Composables
 const {
   containerRef,
   isResizingSidebar,
@@ -125,10 +125,10 @@ const { analyzeAll } = useCrossFileAnalysis({
   analysisTime,
   isAnalyzing,
   dependencyGraph,
+  complexityReport,
   options,
 });
 
-// Computed display properties
 const visibleIssues = computed(() => {
   if (severityFilter.value === "all") {
     return crossFileIssues.value;
@@ -206,7 +206,6 @@ function optionsEqual(left: CrossFileAnalyzerOptions, right: CrossFileAnalyzerOp
   );
 }
 
-// Debounced auto-analysis
 let analyzeTimeout: ReturnType<typeof setTimeout> | null = null;
 
 function debouncedAnalyze() {
@@ -224,8 +223,6 @@ watch(
   { deep: true },
 );
 
-// Workaround for vite-plugin-vize: v-for scoped variables are not correctly
-// passed to event handlers. We read the filename from DOM instead.
 function setEditorValue(source: string) {
   const el = document.querySelector(".editor-content .monaco-container") as any;
   if (el?.__monacoEditor) {
@@ -250,8 +247,6 @@ function handleSelectIssue(issue: (typeof crossFileIssues.value)[0]) {
   setEditorValue(files.value[issue.file] ?? "");
 }
 
-// Workaround for vite-plugin-vize: v-for scoped variables are not correctly
-// passed to event handlers. We read the preset name from DOM instead.
 function handleSelectPreset(event: Event) {
   const el = event.currentTarget as HTMLElement;
   const name = el.querySelector(".preset-name")?.textContent?.trim();
@@ -262,8 +257,6 @@ function handleSelectPreset(event: Event) {
   }
 }
 
-// Workaround for vite-plugin-vize prop reactivity issue
-// Use getWasm() directly with polling instead of props.compiler
 let hasCompilerInitialized = false;
 let pollInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -539,6 +532,7 @@ onUnmounted(() => {
 
     <!-- Right Panel: Diagnostics -->
     <aside class="diagnostics-pane" aria-label="Diagnostics">
+      <ComplexityPanel :report="complexityReport" />
       <div class="diagnostics-header">
         <h3>Diagnostics</h3>
         <div class="diagnostics-stats">

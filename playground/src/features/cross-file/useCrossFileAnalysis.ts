@@ -1,5 +1,6 @@
 import type {
   CroquisResult,
+  CrossFileComplexityReport,
   CrossFileResult,
   CrossFileInput,
   CrossFileOptions as WasmCrossFileOptions,
@@ -33,6 +34,7 @@ interface UseCrossFileAnalysisOptions {
   crossFileIssues: Ref<CrossFileIssue[]>;
   analysisTime: Ref<number>;
   isAnalyzing: Ref<boolean>;
+  complexityReport: Ref<CrossFileComplexityReport | null>;
   dependencyGraph: ComputedRef<Record<string, string[]>>;
   options: Ref<CrossFileAnalyzerOptions>;
 }
@@ -43,13 +45,17 @@ export function useCrossFileAnalysis({
   crossFileIssues,
   analysisTime,
   isAnalyzing,
+  complexityReport,
   options,
 }: UseCrossFileAnalysisOptions) {
   let issueIdCounter = 0;
 
   async function analyzeAll() {
     const compiler = getWasm();
-    if (!compiler) return;
+    if (!compiler) {
+      complexityReport.value = null;
+      return;
+    }
 
     isAnalyzing.value = true;
     resetIssueIdCounter();
@@ -90,6 +96,7 @@ export function useCrossFileAnalysis({
       crossFileInputs,
       wasmOptions,
     );
+    complexityReport.value = crossFileResult.complexityReport ?? null;
 
     for (const diag of crossFileResult.diagnostics) {
       const source = files.value[diag.file] || "";

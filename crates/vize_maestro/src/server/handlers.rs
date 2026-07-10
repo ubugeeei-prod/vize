@@ -98,7 +98,6 @@ impl LanguageServer for MaestroServer {
             .documents
             .open(uri.clone(), content.clone(), version, language_id);
 
-        // Generate virtual documents for the SFC
         self.state.update_virtual_docs(&uri, &content);
 
         self.publish_diagnostics(&uri).await;
@@ -112,7 +111,6 @@ impl LanguageServer for MaestroServer {
             .documents
             .apply_changes(&uri, params.content_changes, version);
 
-        // Regenerate virtual documents with updated content
         if let Some(doc) = self.state.documents.get(&uri) {
             let content = doc.text();
             self.state.update_virtual_docs(&uri, &content);
@@ -218,23 +216,22 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         }
 
+        #[cfg(feature = "native")]
         {
-            #[cfg(feature = "native")]
+            let corsa_bridge = self.state.get_corsa_bridge().await;
+            if let Some(response) = CompletionService::complete_with_corsa(&ctx, corsa_bridge).await
             {
-                let corsa_bridge = self.state.get_corsa_bridge().await;
-                if let Some(response) =
-                    CompletionService::complete_with_corsa(&ctx, corsa_bridge).await
-                {
-                    return Ok(Some(response));
-                }
+                return Ok(Some(response));
             }
+        }
 
-            #[cfg(not(feature = "native"))]
-            {
-                if let Some(response) = CompletionService::complete(&ctx) {
-                    return Ok(Some(response));
-                }
-            }
+        #[cfg(not(feature = "native"))]
+        if let Some(response) = CompletionService::complete(&ctx) {
+            return Ok(Some(response));
+        }
+
+        if ctx.block_type.is_some() {
+            return Ok(None);
         }
 
         let items = self.get_block_snippets();
@@ -988,6 +985,13 @@ impl LanguageServer for MaestroServer {
         };
 
         let _content = doc.text();
+        let valid_position =
+            |position: Position| position_to_offset(&_content, position.line, position.character);
+        if valid_position(params.range.start).is_none()
+            || valid_position(params.range.end).is_none()
+        {
+            return Ok(None);
+        }
         #[cfg(feature = "glyph")]
         {
             let options = self.state.get_format_options();
@@ -1065,13 +1069,8 @@ mod tests {
         }
     }
 
-    // ----------------------------------------------------------------------
-    // JSX/TSX LSP routing (#1498). These exercise the request handlers
-    // end-to-end for a standalone `.tsx` document: the structural features
-    // (document symbols, semantic tokens, code actions, embedded CSS) answer
-    // without a Corsa bridge, and the type-aware features (references, rename)
-    // stay gated on `typeChecker.jsxTypecheck`.
-    // ----------------------------------------------------------------------
+    mod lifecycle;
+    mod requests;
 
     use tower_lsp::lsp_types::{
         CodeActionContext, CodeActionParams, DocumentSymbolParams, PartialResultParams,

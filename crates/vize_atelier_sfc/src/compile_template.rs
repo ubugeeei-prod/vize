@@ -80,7 +80,7 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
     pub(crate) inline: bool,
     pub(crate) component_name: Option<&'a str>,
     pub(crate) bindings: Option<&'a BindingMetadata>,
-    pub(crate) croquis: Option<vize_croquis::analysis::Croquis>,
+    pub(crate) croquis: Option<vize_croquis::croquis::Croquis>,
 }
 
 impl TemplateBlockCompileResult {
@@ -133,6 +133,7 @@ pub(crate) fn compile_template_block(
         croquis,
     } = ctx;
     let allocator = Bump::new();
+    let compiler_options = options.compiler_options.as_ref();
     let scope_attr = if apply_scope_id {
         let mut attr = String::with_capacity(scope_id.len() + 7);
         attr.push_str("data-v-");
@@ -146,10 +147,11 @@ pub(crate) fn compile_template_block(
         let ssr_opts = vize_atelier_ssr::SsrCompilerOptions {
             scope_id: scope_attr,
             component_name: component_name.map(|name| name.to_compact_string()),
-            comments: options
-                .compiler_options
-                .as_ref()
-                .is_some_and(|opts| opts.comments),
+            comments: compiler_options.is_some_and(|opts| opts.comments),
+            experimental_in_tag_comments: compiler_options
+                .is_some_and(|opts| opts.experimental_in_tag_comments),
+            experimental_patterned_template: compiler_options
+                .is_some_and(|opts| opts.experimental_patterned_template),
             inline: false,
             is_ts,
             custom_renderer: options.custom_renderer,

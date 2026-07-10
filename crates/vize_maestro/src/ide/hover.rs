@@ -13,23 +13,29 @@
     clippy::disallowed_macros
 )]
 
+mod builder;
+mod component_prop;
+mod component_tag;
 #[cfg(feature = "native")]
 mod corsa;
+#[cfg(all(test, feature = "native"))]
+mod corsa_tests;
+#[cfg(feature = "native")]
+mod html;
+mod petite_vue;
 mod script;
 mod template;
 
+pub use builder::HoverBuilder;
 #[cfg(feature = "native")]
 use std::sync::Arc;
-
-use tower_lsp::lsp_types::{Hover, HoverContents, MarkupContent, MarkupKind, Range};
+use tower_lsp::lsp_types::Hover;
 use vize_relief::BindingType;
-
-#[cfg(feature = "native")]
-use vize_canon::CorsaBridge;
 
 use super::IdeContext;
 use crate::virtual_code::{ArtCursorPosition, BlockType};
-
+#[cfg(feature = "native")]
+use vize_canon::CorsaBridge;
 /// Hover service for providing contextual information.
 pub struct HoverService;
 
@@ -66,10 +72,6 @@ impl HoverService {
             BlockType::Art(_) => None,
         }
     }
-
-    // =========================================================================
-    // Style hover
-    // =========================================================================
 
     /// Get hover for style context.
     fn hover_style(ctx: &IdeContext, _index: usize) -> Option<Hover> {
@@ -449,113 +451,13 @@ impl HoverService {
     }
 }
 
-/// Hover content builder for creating rich hover information.
-pub struct HoverBuilder {
-    sections: Vec<String>,
-}
-
-impl HoverBuilder {
-    /// Create a new hover builder.
-    pub fn new() -> Self {
-        Self {
-            sections: Vec::new(),
-        }
-    }
-
-    /// Add a title.
-    #[allow(clippy::disallowed_macros)]
-    pub fn title(mut self, title: &str) -> Self {
-        self.sections.push(format!("**{}**", title));
-        self
-    }
-
-    /// Add compact metadata under the title.
-    #[allow(clippy::disallowed_macros)]
-    pub fn meta(mut self, text: &str) -> Self {
-        self.sections.push(format!("_{}_", text));
-        self
-    }
-
-    /// Add a code block.
-    #[allow(clippy::disallowed_macros)]
-    pub fn code(mut self, language: &str, code: &str) -> Self {
-        self.sections
-            .push(format!("```{}\n{}\n```", language, code));
-        self
-    }
-
-    /// Add a named text section.
-    #[allow(clippy::disallowed_macros)]
-    pub fn section(mut self, heading: &str, text: &str) -> Self {
-        self.sections.push(format!("**{}**\n\n{}", heading, text));
-        self
-    }
-
-    /// Add a named bullet list.
-    #[allow(clippy::disallowed_macros)]
-    pub fn bullets(mut self, heading: &str, items: &[&str]) -> Self {
-        if items.is_empty() {
-            return self;
-        }
-
-        let body = items
-            .iter()
-            .map(|item| format!("- {}", item))
-            .collect::<Vec<_>>()
-            .join("\n");
-        self.sections.push(format!("**{}**\n{}", heading, body));
-        self
-    }
-
-    /// Add a description.
-    pub fn description(mut self, text: &str) -> Self {
-        self.sections.push(text.to_string());
-        self
-    }
-
-    /// Add a documentation link.
-    #[allow(clippy::disallowed_macros)]
-    pub fn link(mut self, text: &str, url: &str) -> Self {
-        self.sections.push(format!("[{}]({})", text, url));
-        self
-    }
-
-    /// Build the hover.
-    pub fn build(self) -> Hover {
-        Hover {
-            contents: HoverContents::Markup(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value: self.sections.join("\n\n"),
-            }),
-            range: None,
-        }
-    }
-
-    /// Build the hover with a range.
-    pub fn build_with_range(self, range: Range) -> Hover {
-        Hover {
-            contents: HoverContents::Markup(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value: self.sections.join("\n\n"),
-            }),
-            range: Some(range),
-        }
-    }
-}
-
-impl Default for HoverBuilder {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use std::fs;
 
-    use super::{HoverBuilder, HoverContents, HoverService};
+    use super::{HoverBuilder, HoverService};
     use crate::{ide::IdeContext, server::ServerState};
-    use tower_lsp::lsp_types::Url;
+    use tower_lsp::lsp_types::{HoverContents, Url};
     use vize_relief::BindingType;
 
     #[test]

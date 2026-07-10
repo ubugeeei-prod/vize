@@ -173,6 +173,7 @@ impl Drawer {
                 .insert(CompactString::new(content), computed);
         }
         let idents = &self.ident_cache[content];
+        let report_undefined = self.options.detect_undefined && self.script_drawn;
 
         for ident in idents {
             let ident_str = ident.as_str();
@@ -190,7 +191,7 @@ impl Drawer {
 
             if is_defined && !is_builtin {
                 self.croquis.scopes.mark_used(ident_str);
-            } else if !is_defined {
+            } else if !is_defined && report_undefined {
                 let ident_offset_in_content = find_identifier_offset(content, ident_str, 0)
                     .or_else(|| content.find(ident_str))
                     .unwrap_or(0);

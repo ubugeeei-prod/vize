@@ -31,7 +31,7 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::ToCompactString;
-use vize_croquis::analysis::ElementIdKind;
+use vize_croquis::croquis::ElementIdKind;
 use vize_relief::RootNode;
 
 static META: RuleMeta = RuleMeta {

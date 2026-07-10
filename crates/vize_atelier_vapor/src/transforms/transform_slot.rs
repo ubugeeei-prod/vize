@@ -2,7 +2,7 @@
 //!
 //! Transforms slot-related nodes (slot outlets and slot content).
 
-use vize_carton::{Box, Bump, Vec};
+use vize_carton::{Box, Bump, String, Vec};
 
 use crate::ir::{BlockIRNode, IRSlot, OperationNode, SlotOutletIRNode};
 use vize_atelier_core::{
@@ -178,12 +178,28 @@ fn get_slot_name<'a>(
     allocator: &'a Bump,
     dir: &DirectiveNode<'a>,
 ) -> Box<'a, SimpleExpressionNode<'a>> {
-    if let Some(ref arg) = dir.arg {
-        extract_expression(allocator, arg)
-    } else {
-        let node = SimpleExpressionNode::new("default", true, SourceLocation::STUB);
-        Box::new_in(node, allocator)
+    let node = match dir.arg.as_ref() {
+        Some(ExpressionNode::Simple(simple)) if simple.is_static => SimpleExpressionNode::new(
+            static_slot_name_with_modifiers(simple.content.clone(), dir),
+            true,
+            simple.loc.clone(),
+        ),
+        Some(arg) => return extract_expression(allocator, arg),
+        None => SimpleExpressionNode::new(
+            static_slot_name_with_modifiers(String::new("default"), dir),
+            true,
+            SourceLocation::STUB,
+        ),
+    };
+    Box::new_in(node, allocator)
+}
+
+fn static_slot_name_with_modifiers(mut name: String, dir: &DirectiveNode<'_>) -> String {
+    for modifier in dir.modifiers.iter() {
+        name.push('.');
+        name.push_str(modifier.content.as_str());
     }
+    name
 }
 
 /// Get slot params from v-slot directive

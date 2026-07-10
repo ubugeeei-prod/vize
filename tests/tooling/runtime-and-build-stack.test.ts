@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -24,30 +25,60 @@ function readWorkspaceYaml(): string {
   return fs.readFileSync(path.join(root, "pnpm-workspace.yaml"), "utf-8");
 }
 
-// Directory names that pnpm-workspace.yaml explicitly excludes via "!npm/<name>"
+function isGitIgnored(relativePath: string): boolean {
+  return spawnSync("git", ["check-ignore", "-q", "--", relativePath], { cwd: root }).status === 0;
+}
+
+// Package paths that pnpm-workspace.yaml explicitly excludes via "!<dir>"
 // (e.g. the VS Code extensions which carry an engines.vscode field instead of node).
-function workspaceIgnoredNpmDirs(workspaceYaml: string): Set<string> {
+function workspaceIgnoredPackageDirs(workspaceYaml: string): Set<string> {
   const ignored = new Set<string>();
   for (const line of workspaceYaml.split("\n")) {
-    const match = line.match(/^\s*-\s*"!npm\/([^"/]+)"\s*$/);
+    const match = line.match(/^\s*-\s*"!(npm|editors)\/([^"]+)"\s*$/);
     if (match) {
-      ignored.add(match[1]);
+      ignored.add(`${match[1]}/${match[2]}`);
     }
   }
   return ignored;
 }
 
+// Directory names under npm/ that pnpm-workspace.yaml explicitly excludes.
+function workspaceIgnoredNpmDirs(workspaceYaml: string): Set<string> {
+  return new Set(
+    [...workspaceIgnoredPackageDirs(workspaceYaml)]
+      .filter((dir) => dir.startsWith("npm/"))
+      .map((dir) => dir.slice("npm/".length)),
+  );
+}
+
 function readNpmPackages(): NpmPackage[] {
-  return fs
-    .readdirSync(npmDir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .filter((entry) => fs.existsSync(path.join(npmDir, entry.name, "package.json")))
-    .map((entry) => {
-      const json = JSON.parse(
-        fs.readFileSync(path.join(npmDir, entry.name, "package.json"), "utf-8"),
-      ) as PackageJson;
-      return { dir: entry.name, json, name: json.name ?? entry.name };
-    });
+  const packages: NpmPackage[] = [];
+  const visit = (relativeDir: string) => {
+    const absoluteDir = path.join(npmDir, relativeDir);
+    const packagePath = path.join(absoluteDir, "package.json");
+    const relativePackagePath = path
+      .join("npm", relativeDir, "package.json")
+      .split(path.sep)
+      .join("/");
+    if (fs.existsSync(packagePath) && !isGitIgnored(relativePackagePath)) {
+      const json = JSON.parse(fs.readFileSync(packagePath, "utf-8")) as PackageJson;
+      packages.push({ dir: relativeDir, json, name: json.name ?? relativeDir });
+    }
+
+    for (const entry of fs.readdirSync(absoluteDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      if (entry.name === "node_modules" || entry.name === "dist") continue;
+      visit(path.join(relativeDir, entry.name));
+    }
+  };
+
+  for (const entry of fs.readdirSync(npmDir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      visit(entry.name);
+    }
+  }
+
+  return packages;
 }
 
 // The set of packages whose runtime portability invariants we lock down:
@@ -126,15 +157,15 @@ test("no published npm package declares a bun or deno engine key", () => {
 });
 
 test("workspace-ignored editor extensions are correctly excluded from the portable set", () => {
-  const ignoredDirs = workspaceIgnoredNpmDirs(readWorkspaceYaml());
+  const ignoredDirs = workspaceIgnoredPackageDirs(readWorkspaceYaml());
   // pnpm-workspace.yaml ignores the VS Code extension dirs; confirm they exist on disk,
   // carry an engines.vscode field, and are therefore not in the portable published set.
-  assert.ok(ignoredDirs.size >= 1, "expected at least one workspace-ignored npm dir");
+  assert.ok(ignoredDirs.size >= 1, "expected at least one workspace-ignored package dir");
 
-  const portableDirs = new Set(publishedPortablePackages().map((pkg) => pkg.dir));
+  const portableDirs = new Set(publishedPortablePackages().map((pkg) => `npm/${pkg.dir}`));
   for (const dir of ignoredDirs) {
-    const pkgPath = path.join(npmDir, dir, "package.json");
-    if (!fs.existsSync(pkgPath)) continue;
+    const pkgPath = path.join(root, dir, "package.json");
+    assert.ok(fs.existsSync(pkgPath), `${dir}: ignored extension package should exist`);
     const json = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as PackageJson;
     assert.ok(json.engines?.vscode != null, `${dir}: ignored extension should be vscode-keyed`);
     assert.ok(!portableDirs.has(dir), `${dir}: must not be in the portable published set`);
@@ -143,8 +174,8 @@ test("workspace-ignored editor extensions are correctly excluded from the portab
 
 test("CLI bin entry files use the portable env-node shebang", () => {
   const binPackages = [
-    { dir: "vize", binName: "vize" },
-    { dir: "oxlint-plugin-vize", binName: "oxlint-vize" },
+    { dir: "cli", binName: "vize" },
+    { dir: "oxint", binName: "oxlint-vize" },
   ] as const;
 
   const checked: string[] = [];
@@ -178,7 +209,7 @@ test("CLI bin entry files use the portable env-node shebang", () => {
 
   // At least the flagship CLI bin must have been verified.
   assert.ok(
-    checked.some((entry) => entry.startsWith("vize/")),
+    checked.some((entry) => entry.startsWith("cli/")),
     "the vize CLI bin must exist and be verified",
   );
 });

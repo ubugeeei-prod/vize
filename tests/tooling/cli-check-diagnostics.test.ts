@@ -67,7 +67,7 @@ function runCheck(args: string[], cwd: string): CheckResult {
 }
 
 type ParsedCheck = {
-  files: Array<{ file: string; virtualTs: string; diagnostics: string[] }>;
+  files: Array<{ file: string; virtualTs?: string; diagnostics: string[] }>;
   errorCount: number;
   warningCount: number;
   fileCount: number;
@@ -102,6 +102,17 @@ function stripAnsi(input: string): string {
 }
 
 const corsaSkip = CHECKER == null ? { skip: "no corsa/tsgo checker in node_modules/.bin" } : {};
+
+const ANT_DESIGN_VUE_FIXTURE = path.join(root, "tests/_fixtures/_git/ant-design-vue");
+const ANT_DESIGN_VUE_COMPONENTS = path.join(ANT_DESIGN_VUE_FIXTURE, "components");
+const ANT_DESIGN_VUE_SEMANTIC_ERROR =
+  '<script setup lang="ts">\nconst value: string = 1;\n</script>\n\n<template>\n  <div>{{ value }}</div>\n</template>\n';
+const antDesignVueSkip =
+  CHECKER == null
+    ? corsaSkip
+    : fs.existsSync(ANT_DESIGN_VUE_COMPONENTS)
+      ? {}
+      : { skip: "ant-design-vue fixture checkout unavailable" };
 
 test(
   "SFC template parse errors reported with stable 1-based position and message",
@@ -155,7 +166,7 @@ test("diagnostic line/col stays 1-based and stable under CRLF", corsaSkip, () =>
   });
 });
 
-test("empty .ts type-checks cleanly with verbatim virtualTs (exit 0)", corsaSkip, () => {
+test("empty .ts type-checks cleanly without virtualTs by default (exit 0)", corsaSkip, () => {
   withWorkspace((dir) => {
     fs.writeFileSync(path.join(dir, "empty.ts"), "", "utf8");
     const { result, parsed } = runJsonCheck(["empty.ts"], dir);
@@ -164,6 +175,18 @@ test("empty .ts type-checks cleanly with verbatim virtualTs (exit 0)", corsaSkip
     assert.equal(parsed.errorCount, 0);
     assert.equal(parsed.files.length, 1);
     assert.equal(parsed.files[0]?.diagnostics.length, 0);
+    assert.ok(!("virtualTs" in (parsed.files[0] ?? {})));
+  });
+});
+
+test("json output includes virtualTs when --show-virtual-ts is set", corsaSkip, () => {
+  withWorkspace((dir) => {
+    fs.writeFileSync(path.join(dir, "empty.ts"), "", "utf8");
+    const { result, parsed } = runJsonCheck(["empty.ts", "--show-virtual-ts"], dir);
+
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+    assert.equal(parsed.errorCount, 0);
+    assert.equal(parsed.files.length, 1);
     assert.equal(parsed.files[0]?.virtualTs, "");
   });
 });
@@ -182,7 +205,7 @@ test("empty .vue type-checks cleanly with no diagnostics (exit 0)", corsaSkip, (
   });
 });
 
-test("TS2322 in plain .ts: exit 1 with verbatim virtualTs passthrough", corsaSkip, () => {
+test("TS2322 in plain .ts: exit 1 without virtualTs by default", corsaSkip, () => {
   withWorkspace((dir) => {
     fs.writeFileSync(path.join(dir, "bad.ts"), "export const x: string = 123;\n", "utf8");
     const { result, parsed } = runJsonCheck(["bad.ts"], dir);
@@ -193,10 +216,36 @@ test("TS2322 in plain .ts: exit 1 with verbatim virtualTs passthrough", corsaSki
       parsed.files[0]?.diagnostics[0],
       "error:1:14 [TS2322] Type 'number' is not assignable to type 'string'.",
     );
-    // Plain .ts inputs are passed through to the checker verbatim.
-    assert.equal(parsed.files[0]?.virtualTs, "export const x: string = 123;\n");
+    assert.ok(!("virtualTs" in (parsed.files[0] ?? {})));
   });
 });
+
+test(
+  "explicit ant-design-vue SFC checks report semantic TypeScript diagnostics",
+  antDesignVueSkip,
+  () => {
+    const probeName = `__vize_semantic_probe_${process.pid}.vue`;
+    const probeRelativePath = path.join("components", probeName);
+    const probePath = path.join(ANT_DESIGN_VUE_FIXTURE, probeRelativePath);
+    try {
+      fs.writeFileSync(probePath, ANT_DESIGN_VUE_SEMANTIC_ERROR, "utf8");
+      const { result, parsed } = runJsonCheck(
+        [probeRelativePath, "--servers", "1"],
+        ANT_DESIGN_VUE_FIXTURE,
+      );
+
+      assert.equal(result.status, 1, `${result.stdout}\n${result.stderr}`);
+      assert.ok(parsed.errorCount > 0, result.stdout);
+      const diagnostics = parsed.files[0]?.diagnostics ?? [];
+      assert.ok(
+        diagnostics.some((d) => d.includes("[TS2322]")),
+        `expected semantic TS2322 diagnostic, got ${JSON.stringify(diagnostics)}`,
+      );
+    } finally {
+      fs.rmSync(probePath, { force: true });
+    }
+  },
+);
 
 test("--quiet suppresses per-file diagnostics but keeps summary and exit code", corsaSkip, () => {
   withWorkspace((dir) => {

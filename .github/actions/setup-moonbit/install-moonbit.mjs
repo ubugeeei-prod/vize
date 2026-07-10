@@ -125,14 +125,12 @@ function smokeTestMoon() {
       MOON_HOME: moonHome,
       PATH: `${shimDir}${path.delimiter}${moonBin}${path.delimiter}${process.env.PATH ?? ""}`,
     },
-    input: `///|
-import {
-  "moonbitlang/async@0.19.0",
-  "moonbitlang/async@0.19.0/process",
-  "moonbitlang/x@0.4.43/sys",
+    input: `import {
+  "moonbitlang/async@0.20.1",
+  "moonbitlang/async@0.20.1/process",
+  "moonbitlang/x@0.4.46/sys",
 }
 
-///|
 async fn main {
   let exit_code = @process.run(${JSON.stringify(smokeTestCommand.command)}, [${smokeTestCommand.args
     .map((arg) => JSON.stringify(arg))

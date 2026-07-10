@@ -1,38 +1,16 @@
-//! Props type generation for virtual TypeScript.
-//!
-//! Generates `Props` type definitions and template-level prop variable
-//! declarations from Vue SFC macro analysis.
-
-use oxc_allocator::Allocator;
-use oxc_ast::ast::{Argument, Expression, ObjectPropertyKind, PropertyKey};
-use oxc_parser::Parser;
-use oxc_span::SourceType;
-use vize_carton::FxHashSet;
-use vize_carton::String;
-use vize_carton::append;
-use vize_carton::cstr;
-use vize_croquis::BindingType;
+mod setup_scoped;
+mod template_bindings;
+mod template_names;
+mod with_defaults;
+use super::helpers::{is_reserved_identifier, to_safe_identifier};
+use setup_scoped::props_type_ref;
+pub(crate) use setup_scoped::{PropsTypeEmission, generate_setup_scoped_props_artifact};
+use template_bindings::{emit_macro_template_prop_bindings, should_skip_template_prop_binding};
+pub(crate) use template_names::collect_template_prop_names;
+use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 use vize_croquis::macros::{MacroKind, ModelDefinition};
-
-use super::helpers::{is_reserved_identifier, to_safe_identifier};
-
-#[inline]
-fn should_skip_template_prop_binding(summary: &Croquis, prop_name: &str) -> bool {
-    if summary
-        .macros
-        .props_destructure()
-        .and_then(|destructure| destructure.get(prop_name))
-        .is_some()
-    {
-        return true;
-    }
-
-    summary
-        .bindings
-        .get(prop_name)
-        .is_some_and(|binding_type| !matches!(binding_type, BindingType::Props))
-}
+use with_defaults::collect_with_defaults_default_names_from_source;
 
 fn emit_template_prop_binding(
     ts: &mut String,
@@ -51,10 +29,10 @@ fn emit_template_prop_binding(
     }
     append!(*ts, "  void {binding_name};\n");
 }
-
 fn emit_keyed_template_prop_binding(
     ts: &mut String,
     props_type_ref: &str,
+    key_type_ref: &str,
     prop_name: &str,
     has_default: bool,
 ) {
@@ -62,14 +40,22 @@ fn emit_keyed_template_prop_binding(
     if has_default {
         append!(
             *ts,
-            "  const {binding_name} = props[(\"{prop_name}\" satisfies keyof {props_type_ref})] as Exclude<{props_type_ref}[\"{prop_name}\"], undefined>;\n"
+            "  const {binding_name} = props[(\"{prop_name}\" satisfies keyof {key_type_ref})] as Exclude<{props_type_ref}[\"{prop_name}\"], undefined>;\n"
         );
     } else {
         append!(
             *ts,
-            "  const {binding_name} = props[(\"{prop_name}\" satisfies keyof {props_type_ref})];\n"
+            "  const {binding_name} = props[(\"{prop_name}\" satisfies keyof {key_type_ref})];\n"
         );
     }
+    append!(*ts, "  void {binding_name};\n");
+}
+fn emit_unchecked_template_prop_binding(ts: &mut String, prop_name: &str) {
+    let binding_name = to_safe_identifier(prop_name);
+    append!(
+        *ts,
+        "  const {binding_name} = (props as Record<string, unknown>)[\"{prop_name}\"];\n"
+    );
     append!(*ts, "  void {binding_name};\n");
 }
 
@@ -83,7 +69,6 @@ fn can_emit_keyed_template_prop_binding(prop_name: &str) -> bool {
         && !prop_name.starts_with('$')
         && !is_reserved_identifier(prop_name)
 }
-
 fn collect_keyed_template_prop_names(
     summary: &Croquis,
     emitted_names: &FxHashSet<String>,
@@ -99,12 +84,10 @@ fn collect_keyed_template_prop_names(
         }
         names.insert(name.into());
     }
-
     let mut names: Vec<String> = names.into_iter().collect();
     names.sort_unstable();
     names
 }
-
 fn should_emit_keyed_template_prop_bindings(
     summary: &Croquis,
     type_name: &str,
@@ -116,16 +99,16 @@ fn should_emit_keyed_template_prop_bindings(
     if is_plain_inline_type_literal(type_name) {
         return false;
     }
-
     let base_name = strip_generic_params(type_name).trim();
+    if summary.types.definitions().has_interface_extends(base_name) {
+        return true;
+    }
     if let Some(body) = summary.types.definitions().resolve(base_name) {
         return has_top_level_type_operator(body.as_str())
-            || (emitted_names.is_empty() && !is_plain_inline_type_literal(body.as_str()));
+            || !is_plain_inline_type_literal(body.as_str());
     }
-
     emitted_names.is_empty() && !summary.types.definitions().is_defined(base_name)
 }
-
 fn is_plain_inline_type_literal(type_name: &str) -> bool {
     let type_name = type_name.trim();
     if !type_name.starts_with('{') {
@@ -192,53 +175,6 @@ fn collect_with_defaults_default_names(summary: &Croquis) -> FxHashSet<String> {
     names
 }
 
-fn collect_with_defaults_default_names_from_source(source: &str, names: &mut FxHashSet<String>) {
-    let source = source.trim();
-    let expression_source = if source.starts_with("withDefaults") {
-        String::from(source)
-    } else {
-        cstr!("withDefaults({source})")
-    };
-
-    let allocator = Allocator::default();
-    let source_type = SourceType::ts();
-    let Ok(Expression::CallExpression(call)) =
-        Parser::new(&allocator, expression_source.as_str(), source_type).parse_expression()
-    else {
-        return;
-    };
-    let Expression::Identifier(callee) = &call.callee else {
-        return;
-    };
-    if callee.name.as_str() != "withDefaults" {
-        return;
-    }
-    let Some(Argument::ObjectExpression(defaults)) = call.arguments.get(1) else {
-        return;
-    };
-
-    for prop in &defaults.properties {
-        let ObjectPropertyKind::ObjectProperty(prop) = prop else {
-            continue;
-        };
-        if prop.computed {
-            continue;
-        }
-        let Some(name) = property_key_name(&prop.key) else {
-            continue;
-        };
-        names.insert(name.into());
-    }
-}
-
-fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
-    match key {
-        PropertyKey::StaticIdentifier(id) => Some(id.name.as_str()),
-        PropertyKey::StringLiteral(s) => Some(s.value.as_str()),
-        _ => None,
-    }
-}
-
 fn template_props_type_ref(
     base_type_ref: &str,
     defaulted_prop_names: &FxHashSet<String>,
@@ -283,13 +219,11 @@ fn append_model_props_type_literal(ts: &mut String, models: &[ModelDefinition]) 
     ts.push('}');
 }
 
-/// Source of an Options API `props:` option, used to emit a real `export type
-/// Props` for plain `<script>` (Options API) components. `Object` is a raw
-/// runtime props object literal (`{ initial: Number, ... }`) fed to
-/// `__RuntimePropShape<...>`; `Names` is the array form (`['a', 'b']`) which
-/// carries no runtime type info and is emitted as optional `unknown` members.
+/// Runtime `props:` source for Options API `export type Props` emission.
+/// `DeferredObject` is routed through setup scope for value-only object syntax.
 pub(crate) enum OptionsApiPropsSource {
     Object(String),
+    DeferredObject(String),
     Names(Vec<String>),
 }
 
@@ -306,6 +240,7 @@ pub(crate) fn generate_props_type(
     summary: &Croquis,
     generic_param: Option<&str>,
     options_api_props: Option<&OptionsApiPropsSource>,
+    emission: PropsTypeEmission,
 ) {
     let props = summary.macros.props();
     let has_props = !props.is_empty();
@@ -331,7 +266,8 @@ pub(crate) fn generate_props_type(
 
     ts.push_str("// ========== Exported Types ==========\n");
 
-    if props_already_defined {
+    if emission == PropsTypeEmission::DeferredToSetup && define_props_type_args.is_some() {
+    } else if props_already_defined {
         // User defined Props, no need to re-export
     } else if let Some(type_args) = define_props_type_args {
         let inner_type = type_args
@@ -388,6 +324,7 @@ fn emit_options_api_props_type(
                 "export type Props{generic_decl} = __RuntimePropShape<{source}>;\n"
             );
         }
+        OptionsApiPropsSource::DeferredObject(_) => {}
         OptionsApiPropsSource::Names(names) => {
             append!(*ts, "export type Props{generic_decl} = {{\n");
             for name in names {
@@ -398,12 +335,12 @@ fn emit_options_api_props_type(
     }
 }
 
-/// Generate props variables inside template closure.
-/// When `generic_param` is present, uses `Props<T, P>` instead of `Props`.
 pub(crate) fn generate_props_variables(
     ts: &mut String,
     summary: &Croquis,
     generic_param: Option<&str>,
+    props_type_ref_override: Option<&str>,
+    check_props: bool,
 ) {
     let props = summary.macros.props();
     let has_props = !props.is_empty();
@@ -414,21 +351,20 @@ pub(crate) fn generate_props_variables(
         .define_props()
         .and_then(|m| m.type_args.as_ref());
 
-    // Build Props type reference with generic names (strip constraints)
-    let props_type_ref = generic_param
-        .map(|g| {
-            let names = extract_generic_names(g);
-            cstr!("Props<{names}>")
-        })
-        .unwrap_or_else(|| "Props".into());
+    let props_type_ref = props_type_ref(generic_param, props_type_ref_override);
     let mut defaulted_prop_names = collect_with_defaults_default_names(summary);
     for model in models {
         if model.default_value.is_some() {
             defaulted_prop_names.insert(model.name.as_str().into());
         }
     }
+    let template_base_props_type_ref = if define_props_type_args.is_some() {
+        cstr!("__DefineProps<{props_type_ref}>")
+    } else {
+        props_type_ref.clone()
+    };
     let template_props_type_ref =
-        template_props_type_ref(props_type_ref.as_str(), &defaulted_prop_names);
+        template_props_type_ref(template_base_props_type_ref.as_str(), &defaulted_prop_names);
 
     if has_props || define_props_type_args.is_some() || has_models {
         ts.push_str("  // Props are available in template as variables\n");
@@ -440,30 +376,9 @@ pub(crate) fn generate_props_variables(
         ts.push_str("  void props; // Mark as used to avoid TS6133\n");
 
         let mut emitted_names = FxHashSet::default();
-        if has_props {
-            // Runtime-declared props: generate individual variables
-            for prop in props {
-                if should_skip_template_prop_binding(summary, prop.name.as_str()) {
-                    continue;
-                }
-                emit_template_prop_binding(
-                    ts,
-                    template_props_type_ref.as_str(),
-                    prop.name.as_str(),
-                    prop.default_value.is_some() || defaulted_prop_names.contains(&prop.name),
-                );
-                emitted_names.insert(prop.name.as_str().into());
-            }
-        } else if let Some(type_args) = define_props_type_args {
-            // Type-only defineProps<TypeName>(): extract fields
-            // type_args may include angle brackets (e.g., "<Props>", "<Foo<T>>"), strip outer pair
+        if let Some(type_args) = define_props_type_args {
             let type_name = strip_outer_angle_brackets(type_args.trim());
 
-            // Resolve the named type's fields through the croquis TypeResolver,
-            // which the script analysis populates from the OXC AST (local
-            // interfaces/type literals included). This handles inline object
-            // types, registered local types, nested braces, generics, and
-            // comments — no raw-text scanning.
             let type_properties = summary
                 .types
                 .extract_properties(type_reference_lookup_key(type_name));
@@ -479,17 +394,42 @@ pub(crate) fn generate_props_variables(
                 );
                 emitted_names.insert(prop.name.as_str().into());
             }
+            if has_props {
+                emit_macro_template_prop_bindings(
+                    ts,
+                    summary,
+                    template_props_type_ref.as_str(),
+                    props,
+                    &defaulted_prop_names,
+                    &mut emitted_names,
+                );
+            }
 
             if should_emit_keyed_template_prop_bindings(summary, type_name, &emitted_names) {
                 for name in collect_keyed_template_prop_names(summary, &emitted_names) {
-                    emit_keyed_template_prop_binding(
-                        ts,
-                        template_props_type_ref.as_str(),
-                        name.as_str(),
-                        defaulted_prop_names.contains(&name),
-                    );
+                    if check_props {
+                        emit_keyed_template_prop_binding(
+                            ts,
+                            template_props_type_ref.as_str(),
+                            props_type_ref.as_str(),
+                            name.as_str(),
+                            defaulted_prop_names.contains(&name),
+                        );
+                    } else {
+                        emit_unchecked_template_prop_binding(ts, name.as_str());
+                    }
                 }
             }
+        } else if has_props {
+            // Runtime-declared props: generate individual variables
+            emit_macro_template_prop_bindings(
+                ts,
+                summary,
+                template_props_type_ref.as_str(),
+                props,
+                &defaulted_prop_names,
+                &mut emitted_names,
+            );
         }
         for model in models {
             if emitted_names.contains(model.name.as_str())
@@ -509,55 +449,6 @@ pub(crate) fn generate_props_variables(
     }
 }
 
-pub(crate) fn collect_template_prop_names(summary: &Croquis) -> FxHashSet<String> {
-    let mut names = FxHashSet::default();
-    let props = summary.macros.props();
-    if !props.is_empty() {
-        for prop in props {
-            if should_skip_template_prop_binding(summary, prop.name.as_str()) {
-                continue;
-            }
-            if !is_reserved_identifier(prop.name.as_str()) {
-                continue;
-            }
-            names.insert(prop.name.as_str().into());
-        }
-        return names;
-    }
-
-    for model in summary.macros.models() {
-        if should_skip_template_prop_binding(summary, model.name.as_str()) {
-            continue;
-        }
-        if !is_reserved_identifier(model.name.as_str()) {
-            continue;
-        }
-        names.insert(model.name.as_str().into());
-    }
-
-    let Some(type_args) = summary
-        .macros
-        .define_props()
-        .and_then(|m| m.type_args.as_ref())
-    else {
-        return names;
-    };
-    let type_name = strip_outer_angle_brackets(type_args.trim());
-    let type_properties = summary
-        .types
-        .extract_properties(type_reference_lookup_key(type_name));
-    for prop in &type_properties {
-        if should_skip_template_prop_binding(summary, prop.name.as_str()) {
-            continue;
-        }
-        if !is_reserved_identifier(prop.name.as_str()) {
-            continue;
-        }
-        names.insert(prop.name.as_str().into());
-    }
-    names
-}
-
 /// Lookup key for a `defineProps<...>` type argument when resolving its fields
 /// through the croquis `TypeResolver`.
 ///
@@ -565,7 +456,7 @@ pub(crate) fn collect_template_prop_names(summary: &Croquis) -> FxHashSet<String
 /// resolver parses them directly. A type *reference* may carry a generic
 /// instantiation (`Foo<T>`); the resolver registers local types under their
 /// bare declaration name, so strip the arguments to recover `Foo`.
-fn type_reference_lookup_key(type_name: &str) -> &str {
+pub(crate) fn type_reference_lookup_key(type_name: &str) -> &str {
     if type_name.trim_start().starts_with('{') {
         type_name
     } else {
@@ -575,7 +466,7 @@ fn type_reference_lookup_key(type_name: &str) -> &str {
 
 /// Strip the outermost `<...>` pair from a type_args string, handling nested generics.
 /// e.g., `"<Props>"` → `"Props"`, `"<Foo<T>>"` → `"Foo<T>"`, `"Props"` → `"Props"`
-fn strip_outer_angle_brackets(s: &str) -> &str {
+pub(crate) fn strip_outer_angle_brackets(s: &str) -> &str {
     let s = s.trim();
     if !s.starts_with('<') {
         return s;
@@ -771,9 +662,8 @@ fn append_param_with_default(result: &mut String, param: &str) {
 #[cfg(test)]
 mod tests {
     use super::{
-        add_generic_defaults, collect_with_defaults_default_names_from_source,
-        extract_generic_names, strip_const_modifiers, template_props_type_ref,
-        type_reference_lookup_key,
+        add_generic_defaults, extract_generic_names, strip_const_modifiers,
+        template_props_type_ref, type_reference_lookup_key,
     };
     use vize_carton::{FxHashSet, String};
 
@@ -814,38 +704,6 @@ mod tests {
             strip_const_modifiers(add_generic_defaults("const T extends Tab").as_str()).as_str(),
             "T extends Tab = any"
         );
-    }
-
-    #[test]
-    fn collects_with_defaults_object_keys() {
-        let mut names = FxHashSet::default();
-        collect_with_defaults_default_names_from_source(
-            r#"withDefaults(defineProps<Props>(), {
-  thickness: 0.1,
-  "label": "ok",
-  ...moreDefaults,
-  [dynamicKey]: 1,
-})"#,
-            &mut names,
-        );
-
-        assert!(names.contains("thickness"));
-        assert!(names.contains("label"));
-        assert!(!names.contains("dynamicKey"));
-        assert_eq!(names.len(), 2);
-
-        let mut arg_names = FxHashSet::default();
-        collect_with_defaults_default_names_from_source(
-            r#"defineProps<Props>(), {
-  count: 0,
-  "title": "Counter",
-}"#,
-            &mut arg_names,
-        );
-
-        assert!(arg_names.contains("count"));
-        assert!(arg_names.contains("title"));
-        assert_eq!(arg_names.len(), 2);
     }
 
     #[test]

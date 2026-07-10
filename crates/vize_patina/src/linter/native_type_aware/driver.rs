@@ -1,9 +1,17 @@
+use super::super::engine::{SfcTemplateLintInput, TemplateAnalysis};
 use super::{
     LintResult, Linter, RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS,
     RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
     has_promise_like_return, has_unsafe_template_type, push_warning,
     should_warn_for_emit_validator, should_warn_for_prop_access, should_warn_for_reactivity_loss,
     with_corsa_session,
+};
+use super::{
+    markers::{QueryKind, push_promise_marker},
+    parsing::{collect_floating_candidates, is_runtime_array_macro},
+    reactivity_loss::collect_reactivity_loss_queries,
+    rule_queries::{MacroWarning, collect_emit_queries, collect_prop_queries, push_macro_warning},
+    template_queries::{TemplateQueryKind, collect_template_query_sets},
 };
 use crate::diagnostic::LintDiagnostic;
 use std::path::Path;
@@ -13,16 +21,6 @@ use vize_croquis::{
     Croquis, script_parser,
     virtual_ts::{VirtualTsConfig, generate_virtual_ts_with_croquis},
 };
-
-use super::super::engine::{SfcTemplateLintInput, TemplateAnalysis};
-use super::{
-    markers::{QueryKind, push_promise_marker},
-    parsing::{collect_floating_candidates, is_runtime_array_macro},
-    reactivity_loss::collect_reactivity_loss_queries,
-    rule_queries::{MacroWarning, collect_emit_queries, collect_prop_queries, push_macro_warning},
-    template_queries::{TemplateQueryKind, collect_template_query_sets},
-};
-
 pub(super) fn lint_with_descriptor<'a>(
     linter: &Linter,
     source: &str,
@@ -75,7 +73,7 @@ pub(super) fn lint_with_descriptor<'a>(
         );
         let mut parse_result =
             Linter::template_parse_lint_result(filename, template.content.len(), parse_errors);
-        Linter::offset_result(&mut parse_result, template.loc.start as u32);
+        super::super::engine::offset_result(&mut parse_result, template.loc.start as u32);
         Linter::merge_lint_results(parse_result, lint_result)
     } else {
         LintResult {
@@ -135,9 +133,11 @@ pub(super) fn lint_with_descriptor<'a>(
                 .attrs
                 .get("generic")
                 .map(|value| value.as_ref());
-            script_parser::parse_script_setup_with_generic(script_content, generic)
+            let lang = script_setup.lang.as_deref().map(str::trim);
+            let jsx = matches!(lang, Some("tsx" | "jsx"));
+            script_parser::parse_script_setup_with_generic_and_jsx(script_content, generic, jsx)
         } else {
-            script_parser::parse_script(script_content)
+            super::script_options::parse_plain_script_for_type_aware(script_content)
         }
     });
     let config = VirtualTsConfig {

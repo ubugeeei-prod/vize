@@ -59,6 +59,18 @@ fn leaves_literals_and_regexes_alone() {
 }
 
 #[test]
+fn preserves_non_ascii_literals_when_rewriting_reserved_props() {
+    assert_eq!(
+        rewrite_reserved_template_prop(
+            "static ? 'アカウント' : `コンテンツ管理`",
+            &reserved_props(),
+        )
+        .as_deref(),
+        Some("props[\"static\"] ? 'アカウント' : `コンテンツ管理`")
+    );
+}
+
+#[test]
 fn ignores_non_reserved_props() {
     let props = ["count"].into_iter().map(Into::into).collect();
     assert_eq!(rewrite_reserved_template_prop("count + 1", &props), None);

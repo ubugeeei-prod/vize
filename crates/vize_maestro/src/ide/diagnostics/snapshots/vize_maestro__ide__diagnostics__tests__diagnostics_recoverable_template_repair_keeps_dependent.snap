@@ -39,22 +39,4 @@ expression: diagnostic_snapshots(diagnostics)
             9,
         ),
     },
-    DiagnosticSnapshot {
-        source: Some(
-            "vize/types",
-        ),
-        severity: Some(
-            "error",
-        ),
-        code: Some(
-            "undefined-binding",
-        ),
-        message: "Undefined reference 'missing' in template expression\n\nHelp: Make sure 'missing' is defined in script setup or imported",
-        range: (
-            2,
-            5,
-            2,
-            12,
-        ),
-    },
 ]

@@ -27,6 +27,11 @@ impl CrossFileAnalyzer {
         // Run enabled rules
         if self.options.fallthrough_attrs {
             let (info, diags) = rules::analyze_fallthrough(&self.registry, &self.graph);
+            let usage_facts = rules::collect_fallthrough_usage_facts(&self.registry, &self.graph);
+            result.fallthrough_component_facts =
+                rules::collect_fallthrough_component_facts(&info, &usage_facts);
+            result.fallthrough_usage_facts = usage_facts;
+            result.fallthrough_summary = Some(rules::summarize_fallthrough(&info));
             result.fallthrough_info = info;
             result.diagnostics.extend(diags);
         }
@@ -46,12 +51,11 @@ impl CrossFileAnalyzer {
         if self.options.provide_inject
             && let Some(index) = provide_inject_index.as_ref()
         {
-            let (matches, diags) = rules::analyze_provide_inject_with_index(index);
-            result.provide_inject_tree = Some(rules::build_provide_inject_tree_with_index(
-                &self.registry,
-                index,
-                &matches,
-            ));
+            let (matches, branches, diags) = rules::analyze_provide_inject_with_index(index);
+            let tree =
+                rules::build_provide_inject_tree_with_index(&self.registry, index, &branches);
+            result.provide_inject_tree_summary = Some(tree.summary());
+            result.provide_inject_tree = Some(tree);
             result.provide_inject_matches = matches;
             result.diagnostics.extend(diags);
         }
@@ -110,6 +114,18 @@ impl CrossFileAnalyzer {
             result.props_validation_issues = issues;
             result.diagnostics.extend(diags);
         }
+
+        result.complexity_report = rules::summarize_complexity_with_effect_graphs(
+            &self.registry,
+            &self.graph,
+            &self.effect_graph_summaries,
+            &result,
+        );
+        result.complexity_hotspots = rules::summarize_complexity_hotspots_with_effect_graphs(
+            &self.registry,
+            &self.effect_graph_summaries,
+            &result,
+        );
 
         dedupe_diagnostics(&mut result.diagnostics);
         sort_diagnostics(&mut result.diagnostics);

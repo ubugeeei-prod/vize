@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/valid_define_props.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/valid-define-props",
+        severity: Error,
+        message: "defineProps() is referencing locally declared variables.",
+        start: 43,
+        end: 46,
+        help: Some(
+            "Inline the value or move the declaration out of <script setup>; defineProps() is hoisted and cannot reference module-local bindings.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

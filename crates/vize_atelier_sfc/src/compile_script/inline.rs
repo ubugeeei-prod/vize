@@ -4,6 +4,8 @@
 //! where the render function is inlined into the setup function.
 
 mod compiler;
+#[cfg(test)]
+mod define_model_tests;
 pub(crate) mod helpers;
 #[cfg(test)]
 mod tests;

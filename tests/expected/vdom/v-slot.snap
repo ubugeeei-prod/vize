@@ -129,6 +129,30 @@ export function render(_ctx, _cache) {
   }))
 }
 ===
+name: dotted named slots
+options: vdom
+--- INPUT ---
+<MyComponent><template #item.alpha="{ value }">{{ value }}</template><template #item.beta="{ value }">{{ value }}</template><template #item.gamma="{ item }">{{ item }}</template></MyComponent>
+--- OUTPUT ---
+import { toDisplayString as _toDisplayString, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, withCtx as _withCtx, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _component_MyComponent = _resolveComponent("MyComponent")
+
+  return (_openBlock(), _createBlock(_component_MyComponent, null, {
+    "item.alpha": _withCtx(({ value }) => [
+      _createTextVNode(_toDisplayString(value), 1 /* TEXT */)
+    ]),
+    "item.beta": _withCtx(({ value }) => [
+      _createTextVNode(_toDisplayString(value), 1 /* TEXT */)
+    ]),
+    "item.gamma": _withCtx(({ item }) => [
+      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+===
 name: named slot with default
 options: vdom
 --- INPUT ---

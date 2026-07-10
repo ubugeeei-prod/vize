@@ -53,6 +53,7 @@ Use `essential` for correctness-only CI, `happy-path` for the default recommende
   "scripts": {
     "vize:lint:ci": "vize lint --preset essential --max-warnings 0 src",
     "vize:lint:opinionated": "vize lint --preset opinionated --help-level short src",
+    "vize:lint:fix": "vize lint --fix src",
     "vize:lint:json": "vize lint --format json src"
   }
 }
@@ -61,6 +62,7 @@ Use `essential` for correctness-only CI, `happy-path` for the default recommende
 ```bash
 vp run vize:lint:ci
 vp run vize:lint:opinionated
+vp run vize:lint:fix
 vp run vize:lint:json
 ```
 
@@ -85,6 +87,12 @@ vp run vize:lint:strict-reactivity
 Cross-file linting analyzes relationships such as provide/inject and reactivity flow across a set of
 Vue files. `--strict-reactivity` enables the native checker-backed reactivity-loss rule, so expect it
 to be slower than ordinary template and script lint rules.
+
+## Reactivity Overlay
+
+Croquis exposes a stable reactivity overlay for each analyzed SFC: reactive sources, `.value`
+requirements, reactivity-loss sites, and effect-graph edges with source mappings. The same compact
+JSON model feeds diagnostics, reports, editor surfaces, and the Playground's **Reactivity** tab.
 
 ## Patina Rule Model
 
@@ -116,6 +124,55 @@ The built-in presets are meant to support adoption in stages:
 | `opinionated` | `happy-path` plus stronger conventions, script rules, and type rules |
 | `nuxt`        | Opinionated rules adjusted for Nuxt auto-import assumptions          |
 | `incremental` | Empty starting point for host-driven, rule-by-rule adoption          |
+
+## Migration Pragmas and Custom Rules
+
+Patina accepts existing ESLint disable pragmas for matching rule names, including
+`eslint-disable`, `eslint-enable`, `eslint-disable-next-line`, and `eslint-disable-line`. This lets
+projects migrate rules such as `vue/require-v-for-key` without rewriting every suppression comment
+up front.
+
+Project-local JavaScript rule modules are not a stable Vize runtime API yet. During migration, keep
+those rules in ESLint or Oxlint and run them beside `vize lint`, or use the `incremental` preset to
+enable only built-in Vize rules that already match your policy. The `rules` config object controls
+built-in Vize rule severities by name.
+
+For the common case of forbidding a runtime-environment global (typical sidecar ESLint rules such as
+`no-access-process`, `no-access-local-storage`, or `no-restricted-globals` against `localStorage` /
+`sessionStorage`), enable the opt-in built-in `script/no-restricted-globals` rule instead of keeping
+ESLint installed for those alone. Its default deny list is `process`, `localStorage`, and
+`sessionStorage`, reported on each bare reference.
+
+Two script rules also accept project-local configuration under `linter.ruleOptions` (#1891), so teams
+can enforce their own architecture conventions through `vize lint`. `script/no-restricted-globals`
+takes a `globals` list that **replaces** the built-in default list; `script/no-restricted-members` is
+off until configured and flags `<object>.<property>` accesses from a `members` list. Options are typed
+(`name` / `object` / `property` plus an optional `message`, with unknown keys rejected); a missing
+`message` falls back to a generic advisory.
+
+```json
+{
+  "linter": {
+    "rules": {
+      "script/no-restricted-globals": "error",
+      "script/no-restricted-members": "error"
+    },
+    "ruleOptions": {
+      "script/no-restricted-globals": {
+        "globals": [
+          { "name": "process", "message": "Read env via a typed helper." },
+          { "name": "alert" }
+        ]
+      },
+      "script/no-restricted-members": {
+        "members": [
+          { "object": "window", "property": "localStorage", "message": "Use authStorage." }
+        ]
+      }
+    }
+  }
+}
+```
 
 ## Cross-File Rules
 

@@ -29,10 +29,12 @@ pub mod file_rename;
 pub mod hover;
 pub mod inlay_hint;
 pub mod jsx;
+pub(crate) mod markup;
 pub(crate) mod musea;
 pub mod references;
 pub mod rename;
 pub mod semantic_tokens;
+mod template_expression;
 pub mod type_service;
 pub mod workspace_symbols;
 
@@ -56,6 +58,7 @@ pub use jsx::{JsxReferencesService, JsxRenameService, JsxService};
 pub use references::ReferencesService;
 pub use rename::RenameService;
 pub use semantic_tokens::{SemanticTokensService, TokenModifier, TokenType};
+pub(crate) use template_expression::is_in_vue_template_expression;
 pub use type_service::{LspTypeCheckOptions, TypeService};
 pub use workspace_symbols::WorkspaceSymbolsService;
 
@@ -67,7 +70,6 @@ use crate::virtual_code::{
     ArtCursorPosition, BlockType, VirtualDocuments, find_art_block_at_offset, find_block_at_offset,
 };
 
-// =============================================================================
 // Position conversion utilities
 // =============================================================================
 
@@ -169,7 +171,7 @@ pub fn pascal_to_kebab(name: &str) -> String {
 /// Check if a tag name is a component (starts with uppercase or contains hyphen).
 #[inline]
 pub fn is_component_tag(name: &str) -> bool {
-    if name.is_empty() {
+    if name.is_empty() || vize_carton::is_native_tag(name) {
         return false;
     }
     let Some(first) = name.chars().next() else {
@@ -230,99 +232,6 @@ where
     Some(content[start..end].to_string())
 }
 
-/// Check if a cursor offset is inside a Vue template expression.
-///
-/// This covers mustache interpolations and Vue directive attribute values, but
-/// deliberately excludes plain text nodes and static attribute values.
-pub(crate) fn is_in_vue_template_expression(content: &str, offset: usize) -> bool {
-    if content.is_empty() {
-        return false;
-    }
-
-    let mut offset = offset.min(content.len());
-    while offset > 0 && !content.is_char_boundary(offset) {
-        offset -= 1;
-    }
-
-    if is_in_mustache_expression(content, offset) {
-        return true;
-    }
-
-    is_in_vue_directive_attribute_value(content, offset)
-}
-
-fn is_in_mustache_expression(content: &str, offset: usize) -> bool {
-    let before = &content[..offset];
-    let Some(mustache_start) = before.rfind("{{") else {
-        return false;
-    };
-
-    let closed_before_cursor = before
-        .rfind("}}")
-        .is_some_and(|mustache_end| mustache_end > mustache_start);
-    if closed_before_cursor {
-        return false;
-    }
-
-    content[offset..].contains("}}")
-}
-
-fn is_in_vue_directive_attribute_value(content: &str, offset: usize) -> bool {
-    let bytes = content.as_bytes();
-    let mut pos = offset;
-    let mut quote_start = None;
-
-    while pos > 0 {
-        let byte = bytes[pos - 1];
-        match byte {
-            b'"' | b'\'' => {
-                quote_start = Some((pos - 1, byte));
-                break;
-            }
-            b'<' | b'>' | b'\n' | b'\r' => return false,
-            _ => pos -= 1,
-        }
-    }
-
-    let Some((quote_start, quote)) = quote_start else {
-        return false;
-    };
-    let Some(relative_quote_end) = content[quote_start + 1..].find(quote as char) else {
-        return false;
-    };
-    let quote_end = quote_start + 1 + relative_quote_end;
-    if offset > quote_end {
-        return false;
-    }
-
-    let mut pos = quote_start;
-    while pos > 0 && bytes[pos - 1].is_ascii_whitespace() {
-        pos -= 1;
-    }
-    if pos == 0 || bytes[pos - 1] != b'=' {
-        return false;
-    }
-    pos -= 1;
-
-    while pos > 0 && bytes[pos - 1].is_ascii_whitespace() {
-        pos -= 1;
-    }
-    let attr_end = pos;
-    while pos > 0 {
-        let byte = bytes[pos - 1];
-        if byte.is_ascii_whitespace() || matches!(byte, b'<' | b'>' | b'/') {
-            break;
-        }
-        pos -= 1;
-    }
-
-    let attr_name = &content[pos..attr_end];
-    attr_name.starts_with(':')
-        || attr_name.starts_with('@')
-        || attr_name.starts_with('#')
-        || attr_name.starts_with("v-")
-}
-
 fn standalone_html_block_at_offset(content: &str, offset: usize) -> BlockType {
     if is_inside_raw_html_element(content, offset, "script") {
         BlockType::Script
@@ -368,11 +277,12 @@ fn last_start_tag(content: &str, tag_name: &str) -> Option<usize> {
     while let Some(relative) = content[search_start..].find(needle) {
         let start = search_start + relative;
         let after_name = start + needle.len();
-        if after_name == bytes.len()
+        if (after_name == bytes.len()
             || matches!(
                 bytes[after_name],
                 b'>' | b'/' | b' ' | b'\t' | b'\n' | b'\r'
-            )
+            ))
+            && !is_inside_html_comment_at(content, start)
         {
             last = Some(start);
         }
@@ -380,6 +290,15 @@ fn last_start_tag(content: &str, tag_name: &str) -> Option<usize> {
     }
 
     last
+}
+
+fn is_inside_html_comment_at(content: &str, offset: usize) -> bool {
+    let before = &content[..offset.min(content.len())];
+    let last_open = before.rfind("<!--");
+    let last_close = before.rfind("-->");
+
+    matches!((last_open, last_close), (Some(open), Some(close)) if open > close)
+        || matches!((last_open, last_close), (Some(_), None))
 }
 
 /// Context for IDE operations.
@@ -500,122 +419,4 @@ impl<'a> IdeContext<'a> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{
-        is_component_tag, kebab_to_pascal, offset_to_position, pascal_to_kebab, position_to_offset,
-        token_at_offset, token_span_at_offset,
-    };
-
-    #[test]
-    fn test_offset_to_position() {
-        let content = "line1\nline2\nline3";
-
-        assert_eq!(offset_to_position(content, 0), (0, 0));
-        assert_eq!(offset_to_position(content, 5), (0, 5));
-        assert_eq!(offset_to_position(content, 6), (1, 0));
-        assert_eq!(offset_to_position(content, 8), (1, 2));
-        assert_eq!(offset_to_position(content, 12), (2, 0));
-    }
-
-    #[test]
-    fn test_offset_to_position_counts_utf16_code_units() {
-        let content = "const icon = \"😀\";\nconst message = icon";
-
-        assert_eq!(
-            offset_to_position(content, "const icon = \"😀".len()),
-            (0, 16)
-        );
-        assert_eq!(
-            offset_to_position(content, content.find("message").unwrap()),
-            (1, 6)
-        );
-    }
-
-    #[test]
-    fn test_position_to_offset() {
-        let content = "line1\nline2\nline3";
-
-        assert_eq!(position_to_offset(content, 0, 0), Some(0));
-        assert_eq!(position_to_offset(content, 0, 5), Some(5));
-        assert_eq!(position_to_offset(content, 1, 0), Some(6));
-        assert_eq!(position_to_offset(content, 1, 2), Some(8));
-        assert_eq!(position_to_offset(content, 2, 0), Some(12));
-    }
-
-    #[test]
-    fn test_position_to_offset_counts_utf16_code_units() {
-        let content = "a😀b\nc";
-
-        assert_eq!(position_to_offset(content, 0, 3), Some("a😀".len()));
-        assert_eq!(position_to_offset(content, 0, 4), Some("a😀b".len()));
-        assert_eq!(position_to_offset(content, 1, 1), Some(content.len()));
-    }
-
-    #[test]
-    fn test_position_to_offset_rejects_utf16_surrogate_pair_interior() {
-        let content = "a😀b";
-
-        assert_eq!(position_to_offset(content, 0, 2), None);
-    }
-
-    #[test]
-    fn test_kebab_to_pascal() {
-        assert_eq!(kebab_to_pascal("my-component"), "MyComponent");
-        assert_eq!(kebab_to_pascal("button"), "Button");
-        assert_eq!(kebab_to_pascal("v-for-item"), "VForItem");
-        assert_eq!(kebab_to_pascal("a-b-c"), "ABC");
-    }
-
-    #[test]
-    fn test_pascal_to_kebab() {
-        assert_eq!(pascal_to_kebab("MyComponent"), "my-component");
-        assert_eq!(pascal_to_kebab("Button"), "button");
-        assert_eq!(pascal_to_kebab("VForItem"), "v-for-item");
-        assert_eq!(pascal_to_kebab("ABC"), "a-b-c");
-    }
-
-    #[test]
-    fn test_is_component_tag() {
-        // PascalCase components
-        assert!(is_component_tag("MyComponent"));
-        assert!(is_component_tag("Button"));
-
-        // kebab-case components
-        assert!(is_component_tag("my-component"));
-        assert!(is_component_tag("v-button"));
-
-        // HTML elements (not components)
-        assert!(!is_component_tag("div"));
-        assert!(!is_component_tag("span"));
-        assert!(!is_component_tag("button"));
-    }
-
-    #[test]
-    fn test_token_span_at_offset_allows_identifier_boundaries() {
-        let content = "const message = ref(0)";
-
-        assert_eq!(
-            token_span_at_offset(content, 5, |c| c.is_ascii_alphanumeric() || c == b'_'),
-            Some((0, 5))
-        );
-        assert_eq!(
-            token_span_at_offset(content, 13, |c| c.is_ascii_alphanumeric() || c == b'_'),
-            Some((6, 13))
-        );
-        assert_eq!(
-            token_span_at_offset(content, 15, |c| c.is_ascii_alphanumeric() || c == b'_'),
-            None
-        );
-    }
-
-    #[test]
-    fn test_token_at_offset_supports_end_of_file_boundaries() {
-        let content = "message";
-
-        assert_eq!(
-            token_at_offset(content, content.len(), |c| c.is_ascii_alphanumeric()
-                || c == b'_'),
-            Some("message".to_string())
-        );
-    }
-}
+mod tests;

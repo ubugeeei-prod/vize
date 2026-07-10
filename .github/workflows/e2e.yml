@@ -135,15 +135,15 @@ jobs:
         run: |
           vp install --frozen-lockfile --prefer-offline \
             --filter './tests...' \
-            --filter './npm/vize-native...' \
-            --filter './npm/vize...' \
-            --filter './npm/vite-plugin-vize...' \
-            --filter './npm/nuxt...' \
-            --filter './npm/vite-plugin-musea...' \
-            --filter './npm/musea-nuxt...'
+            --filter './npm/native...' \
+            --filter './npm/cli...' \
+            --filter './npm/builder/vite...' \
+            --filter './npm/framework/nuxt...' \
+            --filter './npm/builder/vite-musea...' \
+            --filter './npm/framework/musea-nuxt...'
 
       - name: Build native package
-        run: vp run --filter './npm/vize-native' build:ci
+        run: vp run --filter './npm/native' build:ci
 
       - name: Build vize CLI
         run: cargo build --profile ci -p vize

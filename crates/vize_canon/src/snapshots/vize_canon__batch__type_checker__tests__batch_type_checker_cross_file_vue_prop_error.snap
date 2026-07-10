@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/batch/type_checker/tests.rs
-assertion_line: 218
 expression: snapshot
 ---
 [

@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/opinionated/vue/no_unused_refs/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-unused-refs",
+        severity: Warning,
+        message: "Template ref 'unused' is never referenced in <script>",
+        start: 17,
+        end: 29,
+        help: Some(
+            "Remove the unused ref=\"unused\" attribute, or reference it in <script> (e.g. a ref named unused, useTemplateRef('unused'), or this.$refs.unused).",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

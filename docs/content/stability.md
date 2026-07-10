@@ -26,7 +26,7 @@ The v1 alpha line uses these rules:
 | Published package names              | Should remain available or ship with migration notes                               |
 | Documented CLI commands and flags    | Should avoid silent behavior changes                                               |
 | Documented config fields             | Should keep names and value shapes stable unless release notes call out a change   |
-| Diagnostic codes listed in docs      | Should remain recognizable so suppressions and issue reports stay useful           |
+| Diagnostic codes listed in docs      | Should remain recognizable so suppressions and fix reports stay useful             |
 | Rust crate internals                 | May change without migration support before v1 stable                              |
 | Generated code and virtual TS output | May change when needed for correctness, compatibility, performance, or diagnostics |
 
@@ -95,5 +95,5 @@ explicitly documents a different behavior. The release-blocking compiler, type-c
 and Vite build surfaces are named in the
 [Vue parity matrix](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/vue-parity-matrix.md).
 
-For security handling, see the repository `SECURITY.md`. For contribution and issue workflow, see
+For security handling, see the repository `SECURITY.md`. For contribution and fix workflow, see
 `CONTRIBUTING.md`.

@@ -66,7 +66,7 @@
 //! - `vapor/prefer-static-class` - Prefer static class over dynamic binding
 //! - `vapor/no-inline-template` - Disallow deprecated inline-template
 //!
-//! Script rules (enabled by opinionated / nuxt presets, or opt-in manually):
+//! Script rules (enabled by opinionated presets, or opt-in manually):
 //! - `script/no-options-api` - Disallow Options API patterns (Vapor is Composition-only)
 //! - `script/no-get-current-instance` - Disallow getCurrentInstance() (returns null in Vapor)
 //! - `script/no-next-tick` - Disallow nextTick() scheduling in Vapor-oriented code
@@ -95,6 +95,7 @@ pub mod rules;
 pub mod style;
 pub mod telegraph;
 mod visitor;
+mod visitor_scope;
 
 pub use context::LintContext;
 pub use diagnostic::{
@@ -137,6 +138,11 @@ pub fn lint(source: &str, filename: &str) -> LintResult {
 /// markup IR fall back to a lowering pass. See [`Linter::lint_jsx`].
 pub fn lint_jsx(source: &str, filename: &str, lang: JsxLang) -> LintResult {
     Linter::new().lint_jsx(source, filename, lang)
+}
+
+/// Lint plain JavaScript/TypeScript source with default script rules.
+pub fn lint_script(source: &str, filename: &str) -> LintResult {
+    Linter::new().lint_script(source, filename)
 }
 
 #[cfg(test)]

@@ -41,7 +41,7 @@ impl Drawer {
                         });
                 }
 
-                if self.options.detect_undefined && self.script_drawn {
+                if self.options.detect_undefined {
                     profile!(
                         "croquis.template.v_on.refs",
                         self.check_expression_refs(exp, scope_vars)
@@ -105,7 +105,7 @@ impl Drawer {
                     scope_vars.push(param.clone());
                 }
 
-                if self.options.detect_undefined && self.script_drawn {
+                if self.options.detect_undefined {
                     profile!(
                         "croquis.template.v_on.refs",
                         self.check_expression_refs(exp, scope_vars)
@@ -122,7 +122,7 @@ impl Drawer {
                 let has_implicit_event = content.contains("$event") || !content.contains('(');
                 let is_statement_list = is_inline_statement_list(content);
 
-                if (has_implicit_event || is_statement_list) && !content.contains("=>") {
+                if has_implicit_event || (is_statement_list && !content.contains("=>")) {
                     self.croquis.scopes.enter_event_handler_scope(
                         EventHandlerScopeData {
                             event_name: dir
@@ -163,7 +163,7 @@ impl Drawer {
 
                     scope_vars.push(CompactString::const_new("$event"));
 
-                    if self.options.detect_undefined && self.script_drawn {
+                    if self.options.detect_undefined {
                         profile!(
                             "croquis.template.v_on.refs",
                             self.check_expression_refs(exp, scope_vars)
@@ -188,7 +188,7 @@ impl Drawer {
                         );
                     }
 
-                    if self.options.detect_undefined && self.script_drawn {
+                    if self.options.detect_undefined {
                         profile!(
                             "croquis.template.v_on.refs",
                             self.check_expression_refs(exp, scope_vars)

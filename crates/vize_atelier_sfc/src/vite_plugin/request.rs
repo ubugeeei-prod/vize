@@ -18,7 +18,7 @@ pub struct VitePluginRequest {
     pub path: String,
     /// Query suffix including the leading `?`, or an empty string.
     pub query_suffix: String,
-    /// Path normalized for macro virtual modules (`.vue.ts` -> `.vue`).
+    /// Path normalized for macro virtual modules (`.vue.ts[x]` -> `.vue`).
     pub normalized_vue_path: String,
     /// For `\0...` virtual macro IDs, the real path without the virtual prefix.
     pub stripped_virtual_path: Option<String>,
@@ -140,6 +140,7 @@ pub fn normalize_fs_id_for_build(id: &str) -> String {
 
 fn normalize_vue_path(path: &str) -> &str {
     path.strip_suffix(".ts")
+        .or_else(|| path.strip_suffix(".tsx"))
         .filter(|normalized| normalized.ends_with(".vue"))
         .unwrap_or(path)
 }
@@ -152,7 +153,7 @@ fn stripped_virtual_query_path(id: &str) -> Option<String> {
 }
 
 fn is_vize_virtual_vue_module_id(id: &str, path: &str) -> bool {
-    id.starts_with('\0') && path.ends_with(".vue.ts")
+    id.starts_with('\0') && (path.ends_with(".vue.ts") || path.ends_with(".vue.tsx"))
 }
 
 fn vize_virtual_path(id: &str) -> String {

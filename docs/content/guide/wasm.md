@@ -153,7 +153,7 @@ cargo build --release -p vize_vitrine \
 # Generate JS bindings
 wasm-bindgen \
   target/wasm32-unknown-unknown/release/vize_vitrine.wasm \
-  --out-dir npm/vize-wasm \
+  --out-dir npm/wasm \
   --target web
 ```
 

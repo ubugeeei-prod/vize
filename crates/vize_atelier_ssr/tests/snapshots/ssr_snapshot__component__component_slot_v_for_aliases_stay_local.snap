@@ -12,7 +12,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
         })
         _push(`<!--]-->`)
       } else {
-        return _renderList(_ctx.deps, ([dep, version]) => _createElementVNode("div", { key: dep }, [_createTextVNode(_toDisplayString(dep)), _createTextVNode(" "), _createTextVNode(_toDisplayString(version))])).flat()
+        return [(_openBlock(true), _createBlock(_Fragment, null, _renderList(_ctx.deps, ([dep, version]) => { return _createElementVNode("div", { key: dep }, [_createTextVNode(_toDisplayString(dep)), _createTextVNode(" "), _createTextVNode(_toDisplayString(version))]) }), 128 /* KEYED_FRAGMENT */))]
       }
     }),
     _: 1

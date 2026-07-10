@@ -11,7 +11,8 @@ mod helpers;
 
 use helpers::{
     actual_literal_type, declared_prop, define_props_offset, extract_passed_props_for_component,
-    has_passed_prop, imported_aliases_for_child, is_builtin_attr, prop_type_accepts_actual,
+    has_dynamic_prop_name, has_passed_prop, imported_aliases_for_child, is_builtin_attr,
+    prop_type_accepts_actual,
 };
 
 /// Information about a props validation issue.
@@ -128,7 +129,7 @@ pub fn analyze_props_validation(
         for passed_usage in passed_usages {
             // Check for missing required props. A spread v-bind can provide any
             // required prop, so only validate required props for non-spread usages.
-            if !passed_usage.has_spread_attrs {
+            if !passed_usage.has_spread_attrs && !has_dynamic_prop_name(&passed_usage) {
                 for (prop_name, prop_info) in &child_props_info.props {
                     if prop_info.required && !has_passed_prop(&passed_usage, prop_name.as_str()) {
                         let issue = PropsValidationIssue {
@@ -171,6 +172,10 @@ pub fn analyze_props_validation(
 
             // Check for undeclared props (explicit props passed but not in defineProps)
             for passed_prop in &passed_usage.props {
+                // A runtime argument cannot be validated against any one declared prop.
+                if passed_prop.name_is_dynamic {
+                    continue;
+                }
                 // Skip built-in attributes
                 if is_builtin_attr(passed_prop.name) {
                     continue;

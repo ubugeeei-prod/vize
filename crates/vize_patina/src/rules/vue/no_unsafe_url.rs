@@ -57,21 +57,32 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct NoUnsafeUrl;
 
-/// Attributes that can be exploited with unsafe URLs
-const UNSAFE_URL_ATTRS: &[&str] = &[
-    "href",
-    "xlink:href",
-    "src",
-    "srcset",
-    "action",
-    "formaction",
-    "data",
-];
+/// Attributes that are URL-bearing on any element (the name implies a URL even
+/// on a custom component).
+const GLOBAL_URL_ATTRS: &[&str] = &["href", "xlink:href", "src", "srcset"];
 
-fn is_url_attr(name: &str) -> bool {
-    UNSAFE_URL_ATTRS
+/// Attributes that are URL-bearing only on specific HTML elements. On any other
+/// element — a `<div>`, or a custom component — they are ordinary props (for
+/// example `<MyComponent :data="rows" />`), so treating them as URLs there is a
+/// false positive.
+fn is_element_scoped_url_attr(name: &str, tag: &str) -> bool {
+    if name.eq_ignore_ascii_case("data") {
+        // `<object data="…">` is the only element where `data` is a URL.
+        tag.eq_ignore_ascii_case("object")
+    } else if name.eq_ignore_ascii_case("action") {
+        tag.eq_ignore_ascii_case("form")
+    } else if name.eq_ignore_ascii_case("formaction") {
+        tag.eq_ignore_ascii_case("button") || tag.eq_ignore_ascii_case("input")
+    } else {
+        false
+    }
+}
+
+fn is_url_attr_on(name: &str, tag: &str) -> bool {
+    GLOBAL_URL_ATTRS
         .iter()
         .any(|attr| name.eq_ignore_ascii_case(attr))
+        || is_element_scoped_url_attr(name, tag)
 }
 
 fn is_router_link_tag(tag: &str) -> bool {
@@ -164,7 +175,7 @@ impl Rule for NoUnsafeUrl {
             };
 
             let attr_name = attr.name.as_str();
-            if !is_url_attr(attr_name) {
+            if !is_url_attr_on(attr_name, element.tag.as_str()) {
                 continue;
             }
 
@@ -202,12 +213,12 @@ impl Rule for NoUnsafeUrl {
 
         // Get the attribute name
         let attr_name = match &directive.arg {
-            Some(ExpressionNode::Simple(s)) => s.content.as_str(),
+            Some(ExpressionNode::Simple(s)) if s.is_static => s.content.as_str(),
             _ => return,
         };
 
         // Check if this is a potentially unsafe attribute
-        if !is_url_attr(attr_name) {
+        if !is_url_attr_on(attr_name, element.tag.as_str()) {
             return;
         }
 
@@ -235,155 +246,5 @@ impl Rule for NoUnsafeUrl {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::NoUnsafeUrl;
-    use crate::linter::Linter;
-    use crate::rule::RuleRegistry;
-
-    fn create_linter() -> Linter {
-        let mut registry = RuleRegistry::new();
-        registry.register(Box::new(NoUnsafeUrl));
-        Linter::with_registry(registry)
-    }
-
-    #[test]
-    fn test_valid_static_href() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<a href="/about">About</a>"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_warns_static_javascript_src() {
-        let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<iframe src="javascript:alert(1)"></iframe>"#, "test.vue");
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_warns_static_obfuscated_javascript_href() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<a href="java&#x0A;script:alert(1)">Link</a>"#,
-            "test.vue",
-        );
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_warns_static_vbscript_formaction() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<button formaction="vbscript:msgbox(1)">Submit</button>"#,
-            "test.vue",
-        );
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_warns_static_executable_data_url() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<iframe src="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=="></iframe>"#,
-            "test.vue",
-        );
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_allows_static_image_data_url() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<img src="data:image/png;base64,iVBORw0KGgo=">"#,
-            "test.vue",
-        );
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_warns_static_unsafe_srcset_candidate() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<img srcset="/safe.png 1x, javascript:alert(1) 2x">"#,
-            "test.vue",
-        );
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_valid_router_link() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<router-link :to="{ name: 'profile' }">Profile</router-link>"#,
-            "test.vue",
-        );
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_warns_dynamic_href() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<a :href="userUrl">Link</a>"#, "test.vue");
-        assert_eq!(result.warning_count, 1);
-        assert_eq!(
-            result.diagnostics[0].message,
-            "Dynamic :href binding may be vulnerable to XSS via javascript: protocol"
-        );
-    }
-
-    #[test]
-    fn test_allows_hash_template_href_binding() {
-        let linter = create_linter();
-        let result = linter.lint_template(r##"<a :href="`#${props.id}`">Link</a>"##, "test.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_allows_hash_concat_href_binding() {
-        let linter = create_linter();
-        let result = linter.lint_template(r##"<a :href="'#' + props.id">Link</a>"##, "test.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_warns_non_hash_template_href_binding() {
-        let linter = create_linter();
-        let result =
-            linter.lint_template(r##"<a :href="`${scheme}:${path}`">Link</a>"##, "test.vue");
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_hash_template_only_skips_href() {
-        let linter = create_linter();
-        let result =
-            linter.lint_template(r##"<iframe :src="`#${props.id}`"></iframe>"##, "test.vue");
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_warns_dynamic_src() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<iframe :src="url"></iframe>"#, "test.vue");
-        assert_eq!(result.warning_count, 1);
-        assert_eq!(
-            result.diagnostics[0].message,
-            "Dynamic :src binding may be vulnerable to XSS via javascript: protocol"
-        );
-    }
-
-    #[test]
-    fn test_allows_slot_prop_bindings() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<slot name="item" :data="item" />"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_valid_class_binding() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div :class="classes"></div>"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-}
+#[path = "no_unsafe_url_tests.rs"]
+mod tests;

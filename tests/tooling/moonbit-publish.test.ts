@@ -66,15 +66,15 @@ test("inject_native_optional_deps updates only native optional dependency pins",
 test("publish_npm_package normalizes workspace and catalog dependency specs before publishing", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-normalize-"));
   const repoDir = path.join(tempDir, "repo");
-  const packageDir = path.join(repoDir, "npm", "vite-plugin-vize");
+  const packageDir = path.join(repoDir, "npm", "builder/vite");
   const binDir = path.join(tempDir, "bin");
   const statePath = path.join(tempDir, "vp-state.json");
   const manifestLogPath = path.join(tempDir, "manifest.json");
 
   try {
     fs.mkdirSync(packageDir, { recursive: true });
-    fs.mkdirSync(path.join(repoDir, "npm", "vize-native"), { recursive: true });
-    fs.mkdirSync(path.join(repoDir, "npm", "vize"), { recursive: true });
+    fs.mkdirSync(path.join(repoDir, "npm", "native"), { recursive: true });
+    fs.mkdirSync(path.join(repoDir, "npm", "cli"), { recursive: true });
     fs.mkdirSync(binDir, { recursive: true });
     writeFileSync(
       path.join(repoDir, "pnpm-workspace.yaml"),
@@ -91,11 +91,11 @@ test("publish_npm_package normalizes workspace and catalog dependency specs befo
       ].join("\n"),
     );
     writeFileSync(
-      path.join(repoDir, "npm", "vize-native", "package.json"),
+      path.join(repoDir, "npm", "native", "package.json"),
       `${JSON.stringify({ name: "@vizejs/native", version: "0.57.0" }, null, 2)}\n`,
     );
     writeFileSync(
-      path.join(repoDir, "npm", "vize", "package.json"),
+      path.join(repoDir, "npm", "cli", "package.json"),
       `${JSON.stringify({ name: "vize", version: "0.57.0" }, null, 2)}\n`,
     );
     writeFileSync(
@@ -184,7 +184,7 @@ test("publish_npm_package normalizes workspace and catalog dependency specs befo
 test("prepare_npm_publish_manifest pins native binary catalog deps to the release version", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-prepare-native-"));
   const repoDir = path.join(tempDir, "repo");
-  const nativeDir = path.join(repoDir, "npm", "vize-native");
+  const nativeDir = path.join(repoDir, "npm", "native");
 
   try {
     fs.mkdirSync(nativeDir, { recursive: true });

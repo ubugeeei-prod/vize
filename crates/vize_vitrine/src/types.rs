@@ -51,6 +51,15 @@ pub struct CompilerOptions {
     /// Template syntax compatibility mode: "standard", "strict", or "quirks".
     #[serde(default)]
     pub template_syntax: Option<String>,
+    /// Enable experimental Vue in-tag comments (`// ...`) inside opening tags.
+    #[serde(default)]
+    pub experimental_in_tag_comments: Option<bool>,
+    /// Enable experimental `v-match` / `v-case` patterned template desugaring.
+    #[serde(default)]
+    pub experimental_patterned_template: Option<bool>,
+    /// Enable experimental server-script related RFC surface.
+    #[serde(default)]
+    pub experimental_server_script: Option<bool>,
     /// Module name for runtime imports.
     #[serde(default)]
     pub runtime_module_name: Option<String>,

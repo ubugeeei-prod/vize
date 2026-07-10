@@ -12,5 +12,5 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       _renderSlot(_ctx.$slots, "default")
     ]),
     _: 3 /* FORWARDED */
-  }, 1024 /* DYNAMIC_SLOTS */))
+  }))
 }

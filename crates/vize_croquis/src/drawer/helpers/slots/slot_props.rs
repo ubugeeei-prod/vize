@@ -2,9 +2,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::BindingPattern;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{CompactString, SmallVec, profile, smallvec};
-
-use crate::drawer::helpers::is_valid_identifier_fast;
+use vize_carton::{CompactString, SmallVec, profile};
 
 /// Extract prop names from v-slot expression pattern
 #[inline]
@@ -14,37 +12,6 @@ pub fn extract_slot_props(pattern: &str) -> SmallVec<[CompactString; 4]> {
         return SmallVec::new();
     }
 
-    let bytes = pattern.as_bytes();
-
-    // Fast path: simple identifier
-    if bytes[0] != b'{' && bytes[0] != b'[' {
-        if is_valid_identifier_fast(bytes) {
-            return smallvec![CompactString::new(pattern)];
-        }
-        return SmallVec::new();
-    }
-
-    // Fast path: simple object destructuring
-    if bytes[0] == b'{' && !pattern.contains(':') && !pattern.contains('{') {
-        let inner = &pattern[1..pattern.len().saturating_sub(1)];
-        let mut props = SmallVec::new();
-        for part in inner.split(',') {
-            let part = part.trim();
-            let name = if let Some(eq_pos) = part.find('=') {
-                part[..eq_pos].trim()
-            } else {
-                part
-            };
-            if !name.is_empty() && is_valid_identifier_fast(name.as_bytes()) {
-                props.push(CompactString::new(name));
-            }
-        }
-        if !props.is_empty() {
-            return props;
-        }
-    }
-
-    // Complex case: use OXC parser
     profile!(
         "croquis.helpers.slot_props.oxc",
         extract_slot_props_with_oxc(pattern)
@@ -52,7 +19,6 @@ pub fn extract_slot_props(pattern: &str) -> SmallVec<[CompactString; 4]> {
 }
 
 /// Parse complex slot props using OXC
-#[cold]
 fn extract_slot_props_with_oxc(pattern: &str) -> SmallVec<[CompactString; 4]> {
     let mut buffer = [0u8; 256];
     let prefix = b"let ";
@@ -89,6 +55,9 @@ fn parse_slot_pattern(pattern_str: &str) -> SmallVec<[CompactString; 4]> {
         "croquis.helpers.slot_props.oxc_parse",
         Parser::new(&allocator, pattern_str, source_type).parse()
     );
+    if !ret.errors.is_empty() {
+        return SmallVec::new();
+    }
 
     let mut props = SmallVec::new();
 
@@ -129,5 +98,39 @@ fn extract_slot_binding_names(
         BindingPattern::AssignmentPattern(assign) => {
             extract_slot_binding_names(&assign.left, names);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::extract_slot_props;
+    use vize_carton::{CompactString, SmallVec, cstr};
+
+    fn names(pattern: &str) -> SmallVec<[CompactString; 4]> {
+        extract_slot_props(pattern)
+    }
+
+    #[test]
+    fn extracts_simple_object_rest_with_default() {
+        assert_eq!(
+            names("{ open = false, ...rest }"),
+            [cstr!("open"), cstr!("rest")].into()
+        );
+    }
+
+    #[test]
+    fn falls_back_for_nested_object_patterns() {
+        assert_eq!(
+            names("{ item: { id }, ...rest }"),
+            [cstr!("id"), cstr!("rest")].into()
+        );
+    }
+
+    #[test]
+    fn falls_back_for_default_calls_with_commas() {
+        assert_eq!(
+            names("{ value = getDefault(a, b), rest }"),
+            [cstr!("value"), cstr!("rest")].into()
+        );
     }
 }

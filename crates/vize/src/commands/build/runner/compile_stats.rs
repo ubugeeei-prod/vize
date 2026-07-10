@@ -1,4 +1,4 @@
-//! Stats-only per-file compilation with content-addressed reuse.
+//! Stats-only per-file compilation with content-addressed cache reuse.
 
 use std::{
     fs,
@@ -23,15 +23,18 @@ use crate::commands::build::config::{CompileError, CompileStats, ErrorPhase, Fil
 use super::cache::{
     StatsCompileCache, StatsCompileCacheEntry, StatsCompileCacheKey, classify_stats_compile_cache,
 };
-use super::profile_facts::{record_atelier_cache_decision, record_atelier_profile_facts};
+use super::profile_facts::{
+    self, FileProfileFacts, StatsCacheStatus, record_atelier_cache_decision,
+    record_atelier_profile_facts,
+};
 use super::settings::CompileFileSettings;
 
 /// Compiles one file for `--format stats`, using content-addressed reuse.
 ///
-/// The normal build path returns full generated output because JavaScript/JSON
-/// output must preserve per-file code. The stats path only needs aggregate
-/// counters, so repeated source bodies can skip parse/compile and reuse the
-/// cached output length and block-size metadata.
+/// The stats path only needs aggregate counters, so repeated source bodies can
+/// skip parse/compile and reuse the cached output length and block metadata.
+/// Every file is still read and counted. Cache hits get zero parse/compile time
+/// so profile totals represent actual compiler work.
 pub(super) fn compile_file_stats_with_cache(
     path: &PathBuf,
     settings: CompileFileSettings,
@@ -67,6 +70,10 @@ pub(super) fn compile_file_stats_with_cache(
     let component_name = path.file_stem().and_then(|n| n.to_str()).unwrap_or("");
     let cache_decision = classify_stats_compile_cache(&source, component_name);
     record_atelier_cache_decision(settings, cache_decision);
+    if !cache_decision.is_cacheable() {
+        global_profiler().record_counter("cache.stats_compile.bypasses", 1);
+        global_profiler().record_counter("cache.stats_compile.bypass.self_component", 1);
+    }
     let cache_key = cache_decision.is_cacheable().then(|| StatsCompileCacheKey {
         source_hash: hash_str(&source),
         source_len: file_size,
@@ -90,16 +97,20 @@ pub(super) fn compile_file_stats_with_cache(
                 style_count,
             } => Ok((
                 output_bytes,
-                FileProfile {
-                    path: path.clone(),
-                    file_size,
-                    parse_time: Duration::ZERO,
-                    compile_time: Duration::ZERO,
-                    total_time: file_start.elapsed(),
-                    template_size,
-                    script_size,
-                    style_count,
-                },
+                profile_facts::file_profile(
+                    path,
+                    FileProfileFacts {
+                        file_size,
+                        parse_time: Duration::ZERO,
+                        compile_time: Duration::ZERO,
+                        total_time: file_start.elapsed(),
+                        template_size,
+                        script_size,
+                        style_count,
+                    },
+                    settings,
+                    StatsCacheStatus::Hit,
+                ),
             )),
             StatsCompileCacheEntry::Failure { phase, message } => Err(CompileError {
                 path: path.clone(),
@@ -120,17 +131,7 @@ pub(super) fn compile_file_stats_with_cache(
     let descriptor = match profile!("atelier.sfc.parse", parse_sfc(&source, parse_opts)) {
         Ok(descriptor) => descriptor,
         Err(error) => {
-            if let Some(key) = cache_key
-                && let Ok(mut entries) = cache.entries.lock()
-            {
-                entries.entry(key).or_insert_with(|| {
-                    global_profiler().record_counter("cache.stats_compile.stores", 1);
-                    StatsCompileCacheEntry::Failure {
-                        phase: ErrorPhase::Parse,
-                        message: error.message.clone(),
-                    }
-                });
-            }
+            cache_failure(cache, cache_key, ErrorPhase::Parse, error.message.clone());
             return Err(CompileError {
                 path: path.clone(),
                 error: error.message,
@@ -187,6 +188,11 @@ pub(super) fn compile_file_stats_with_cache(
             ssr: settings.ssr,
             is_ts,
             custom_renderer: settings.custom_renderer,
+            compiler_options: Some(vize_atelier_dom::DomCompilerOptions {
+                experimental_in_tag_comments: settings.experimental_in_tag_comments,
+                experimental_patterned_template: settings.experimental_patterned_template,
+                ..Default::default()
+            }),
             dialect: settings.dialect,
             ..Default::default()
         },
@@ -205,17 +211,7 @@ pub(super) fn compile_file_stats_with_cache(
     ) {
         Ok(result) => result,
         Err(error) => {
-            if let Some(key) = cache_key
-                && let Ok(mut entries) = cache.entries.lock()
-            {
-                entries.entry(key).or_insert_with(|| {
-                    global_profiler().record_counter("cache.stats_compile.stores", 1);
-                    StatsCompileCacheEntry::Failure {
-                        phase: ErrorPhase::Compile,
-                        message: error.message.clone(),
-                    }
-                });
-            }
+            cache_failure(cache, cache_key, ErrorPhase::Compile, error.message.clone());
             return Err(CompileError {
                 path: path.clone(),
                 error: error.message,
@@ -229,6 +225,11 @@ pub(super) fn compile_file_stats_with_cache(
     }
 
     let output_bytes = result.code.len();
+    let cache_status = if cache_key.is_some() {
+        StatsCacheStatus::Miss
+    } else {
+        StatsCacheStatus::BypassSelfComponent
+    };
     if let Some(key) = cache_key
         && let Ok(mut entries) = cache.entries.lock()
     {
@@ -245,15 +246,35 @@ pub(super) fn compile_file_stats_with_cache(
 
     Ok((
         output_bytes,
-        FileProfile {
-            path: path.clone(),
-            file_size,
-            parse_time,
-            compile_time,
-            total_time: file_start.elapsed(),
-            template_size,
-            script_size,
-            style_count,
-        },
+        profile_facts::file_profile(
+            path,
+            FileProfileFacts {
+                file_size,
+                parse_time,
+                compile_time,
+                total_time: file_start.elapsed(),
+                template_size,
+                script_size,
+                style_count,
+            },
+            settings,
+            cache_status,
+        ),
     ))
+}
+
+fn cache_failure(
+    cache: &StatsCompileCache,
+    key: Option<StatsCompileCacheKey>,
+    phase: ErrorPhase,
+    message: String,
+) {
+    if let Some(key) = key
+        && let Ok(mut entries) = cache.entries.lock()
+    {
+        entries.entry(key).or_insert_with(|| {
+            global_profiler().record_counter("cache.stats_compile.stores", 1);
+            StatsCompileCacheEntry::Failure { phase, message }
+        });
+    }
 }

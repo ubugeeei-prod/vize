@@ -1,10 +1,13 @@
 packages:
   - "playground"
   - "npm/*"
-  - "!npm/vscode-art"
-  - "!npm/vscode-vize"
-  - "npm/vite-plugin-vize/example"
-  - "npm/rspack-vize-plugin/example"
+  - "npm/builder/*"
+  - "editors/*"
+  - "npm/framework/*"
+  - "!editors/vscode-art"
+  - "!editors/vscode"
+  - "npm/builder/vite/example"
+  - "npm/builder/rspack/example"
   - "npm/fresco/examples/*"
   - "examples/vite-musea"
   - "examples/oxlint-vize"
@@ -46,6 +49,7 @@ catalogs:
   # Stable Vue ecosystem packages used by shipping examples and integrations.
   vue-stable:
     vue: "3.5.35"
+    "@vue/compiler-dom": "3.5.35"
     "@vue/runtime-core": "3.5.35"
     "@vue/test-utils": "2.4.10"
     vue-router: "4.5.1"
@@ -82,6 +86,11 @@ catalogs:
     "@nuxt/kit": "4.4.8"
     "@ox-content/vite-plugin": "2.68.0"
 
+  # Runtime kit loaded by @vizejs/nuxt. Keep this aligned with Nuxt 2 Bridge's
+  # kit line so Nuxt 2's module loader does not pull in Nuxt 4-only syntax.
+  nuxt-module:
+    "@nuxt/kit": "3.11.2"
+
   # Rendering / content tooling used by docs, playgrounds, and galleries.
   content:
     "@mdi/js": "7.4.47"
@@ -97,18 +106,19 @@ catalogs:
 
   # JS-side OXC transform bridge.
   oxc:
+    oxc-parser: "0.133.0"
     oxc-transform: "0.130.0"
 
   # Published native binary packages that are installed optionally at runtime.
   native-binaries:
-    "@vizejs/native-darwin-arm64": "0.212.0"
-    "@vizejs/native-darwin-x64": "0.212.0"
-    "@vizejs/native-linux-arm64-gnu": "0.212.0"
-    "@vizejs/native-linux-arm64-musl": "0.212.0"
-    "@vizejs/native-linux-x64-gnu": "0.212.0"
-    "@vizejs/native-linux-x64-musl": "0.212.0"
-    "@vizejs/native-win32-arm64-msvc": "0.212.0"
-    "@vizejs/native-win32-x64-msvc": "0.212.0"
+    "@vizejs/native-darwin-arm64": "0.290.0"
+    "@vizejs/native-darwin-x64": "0.290.0"
+    "@vizejs/native-linux-arm64-gnu": "0.290.0"
+    "@vizejs/native-linux-arm64-musl": "0.290.0"
+    "@vizejs/native-linux-x64-gnu": "0.290.0"
+    "@vizejs/native-linux-x64-musl": "0.290.0"
+    "@vizejs/native-win32-arm64-msvc": "0.290.0"
+    "@vizejs/native-win32-x64-msvc": "0.290.0"
 
 peerDependencyRules:
   allowAny:

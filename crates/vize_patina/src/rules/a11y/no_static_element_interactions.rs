@@ -52,6 +52,7 @@ fn has_interactive_event(element: &ElementNode) -> bool {
         if let PropNode::Directive(dir) = prop
             && dir.name == "on"
             && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+            && arg.is_static
             && INTERACTIVE_EVENTS.contains(&arg.content.as_ref())
         {
             return true;
@@ -135,6 +136,13 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div @click="handle">Click</div>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_dynamic_event_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div @[click]="handle">Click</div>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]

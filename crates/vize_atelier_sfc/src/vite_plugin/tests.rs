@@ -139,6 +139,22 @@ fn classifies_virtual_vue_ts_with_query_consistently() {
 }
 
 #[test]
+fn classifies_virtual_vue_tsx_modules() {
+    let request = classify_vite_plugin_request("\0/src/App.vue.tsx?macro=true");
+
+    assert!(request.is_vize_virtual);
+    assert!(!request.is_vize_ssr_virtual);
+    assert!(request.is_macro_virtual_id);
+    assert!(request.is_vue_sfc_path);
+    assert_eq!(request.normalized_vue_path.as_str(), "\0/src/App.vue");
+    assert_eq!(request.vize_virtual_path.as_deref(), Some("/src/App.vue"));
+    assert_eq!(
+        normalize_virtual_vue_module_id("\0/src/App.vue.tsx?macro=true").as_str(),
+        "/src/App.vue?macro=true"
+    );
+}
+
+#[test]
 fn classifies_fs_prefixed_vue_request() {
     // A /@fs path that is also a .vue request: normalized_fs_id strips the
     // prefix and keeps the query, while the .vue (not .vue.ts) path is not a

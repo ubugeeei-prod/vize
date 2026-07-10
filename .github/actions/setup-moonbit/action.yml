@@ -11,7 +11,7 @@ runs:
         path: |
           ${{ runner.temp }}/moonbit
           ${{ runner.temp }}/moonbit-shims
-        key: moonbit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.github/actions/setup-moonbit/action.yml', '.github/actions/setup-moonbit/install-moonbit.mjs') }}
+        key: moonbit-20260703-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.github/actions/setup-moonbit/action.yml', '.github/actions/setup-moonbit/install-moonbit.mjs') }}
 
     - name: Setup MSVC toolchain (Windows)
       if: runner.os == 'Windows'

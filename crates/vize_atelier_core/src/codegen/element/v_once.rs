@@ -42,10 +42,12 @@ pub fn generate_v_once_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Generate the element content
     if el.tag_type == ElementType::Component {
         ctx.use_helper(RuntimeHelper::CreateVNode);
-        ctx.use_helper(RuntimeHelper::ResolveComponent);
         ctx.push(ctx.helper(RuntimeHelper::CreateVNode));
         ctx.push("(");
-        ctx.push(&to_valid_asset_identifier("component", &el.tag));
+        if !ctx.push_component_binding_tag(&el.tag) {
+            ctx.use_helper(RuntimeHelper::ResolveComponent);
+            ctx.push(&to_valid_asset_identifier("component", &el.tag));
+        }
         ctx.push(")");
     } else {
         ctx.use_helper(RuntimeHelper::CreateElementVNode);

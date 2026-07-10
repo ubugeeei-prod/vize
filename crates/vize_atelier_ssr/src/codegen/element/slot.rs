@@ -48,7 +48,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.push(", _push, _parent");
 
         // Scope ID
-        if self.options.scope_id.is_some() {
+        if self.with_slot_scope_id || self.options.scope_id.is_some() {
             self.push(", _scopeId");
         }
 

@@ -29,7 +29,7 @@ pub fn normalize_dev_middleware_url(req_url: &str) -> Option<ViteDevMiddlewareRe
     }
 
     let fs_path = &cleaned_path[4..];
-    if !fs_path.starts_with('/') || fs_path.ends_with(".vue.ts") {
+    if !fs_path.starts_with('/') || is_vue_virtual_ts_path(fs_path) {
         return None;
     }
 
@@ -40,6 +40,10 @@ pub fn normalize_dev_middleware_url(req_url: &str) -> Option<ViteDevMiddlewareRe
         cleaned_url,
         fs_path: String::from(fs_path),
     })
+}
+
+fn is_vue_virtual_ts_path(path: &str) -> bool {
+    path.ends_with(".vue.ts") || path.ends_with(".vue.tsx")
 }
 
 fn strip_style_virtual_suffix(path: &str) -> &str {

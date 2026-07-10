@@ -1,0 +1,13 @@
+node_modules/
+typescript-vue-plugin/
+src/
+.vscode-test/
+.vscode/
+test/
+test-fixtures/
+*.vsix
+**/*.vsix
+tsconfig.json
+vite.config.ts
+pnpm-lock.yaml
+packageManager

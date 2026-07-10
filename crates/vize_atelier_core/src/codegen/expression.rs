@@ -6,12 +6,14 @@
 
 mod generate;
 pub(crate) mod helpers;
+pub(crate) mod scope_prefix;
 
 use crate::{CompoundExpressionChild, ExpressionNode, SimpleExpressionNode};
 
 use super::{context::CodegenContext, helpers::escape_js_string};
 
-use helpers::{convert_line_comments_to_block, strip_ctx_for_slot_params};
+use helpers::convert_line_comments_to_block;
+use scope_prefix::{contains_slot_param_scope_prefix, strip_scope_prefixes_for_slot_params};
 use vize_carton::String;
 use vize_carton::ToCompactString;
 
@@ -76,11 +78,11 @@ pub fn generate_simple_expression(ctx: &mut CodegenContext, exp: &SimpleExpressi
         // the `source_map` flag is on.
         ctx.record_mapping(&exp.loc.start);
 
-        // Replace _ctx.X with X when X is a known slot/v-for parameter.
+        // Replace generated scope prefixes when X is a known slot/v-for parameter.
         // This handles destructured variables that the transform phase
-        // incorrectly prefixed with _ctx. because it didn't know the scope.
-        if ctx.has_slot_params() && content.contains("_ctx.") {
-            ctx.push(&strip_ctx_for_slot_params(ctx, &content));
+        // incorrectly prefixed because it didn't know the scope.
+        if ctx.has_slot_params() && contains_slot_param_scope_prefix(&content) {
+            ctx.push(&strip_scope_prefixes_for_slot_params(ctx, &content));
         } else {
             ctx.push(&content);
         }

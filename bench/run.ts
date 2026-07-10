@@ -5,7 +5,7 @@
  *
  * Usage:
  *   1. Generate test files: node generate.mjs [count]
- *   2. Build native bindings: vp run --filter './npm/vize-native' build
+ *   2. Build native bindings: vp run --filter './npm/native' build
  *   3. Run benchmark: node run.ts
  */
 
@@ -51,7 +51,7 @@ interface TestFile {
 
 // Load Native (NAPI) bindings
 let native: NativeBindings | null = null;
-const nativePath = join(__dirname, "..", "npm", "vize-native");
+const nativePath = join(__dirname, "..", "npm", "native");
 const compilerSfcPath = require.resolve("@vue/compiler-sfc");
 if (existsSync(nativePath)) {
   try {

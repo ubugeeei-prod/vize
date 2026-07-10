@@ -274,7 +274,6 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
         })
         .collect();
 
-    // Convert circular dependencies
     let circular_deps: Vec<Vec<String>> = result
         .circular_deps
         .iter()
@@ -286,10 +285,11 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
         })
         .collect();
 
-    // Build result JSON
     let output = serde_json::json!({
         "diagnostics": diagnostics,
         "circularDependencies": circular_deps,
+        "complexityReport": super::cross_file_complexity::complexity_report_json(&result.complexity_report),
+        "complexityHotspots": super::cross_file_complexity::complexity_hotspots_json(&result.complexity_hotspots),
         "stats": {
             "filesAnalyzed": result.stats.files_analyzed,
             "vueComponents": result.stats.vue_components,

@@ -3,29 +3,24 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  onigurumaModulePath,
+  onigurumaWasmPath,
+  textmateModulePath,
+} from "./support/textmate-deps.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const textmateModulePath = path.join(
-  root,
-  "node_modules/.pnpm/@shikijs+vscode-textmate@10.0.2/node_modules/@shikijs/vscode-textmate/dist/index.js",
-);
-const onigurumaModulePath = path.join(
-  root,
-  "node_modules/.pnpm/@shikijs+engine-oniguruma@4.0.2/node_modules/@shikijs/engine-oniguruma/dist/index.mjs",
-);
-const onigurumaWasmPath = path.join(
-  root,
-  "node_modules/.pnpm/shiki@4.0.2/node_modules/shiki/dist/onig.wasm",
-);
+
+function readText(relativePath: string): string {
+  return fs.readFileSync(path.join(root, relativePath), "utf-8");
+}
 
 function readJson<T>(relativePath: string): T {
-  return JSON.parse(fs.readFileSync(path.join(root, relativePath), "utf-8")) as T;
+  return JSON.parse(readText(relativePath)) as T;
 }
 
 function workspaceVersion(): string {
-  const version = fs
-    .readFileSync(path.join(root, "Cargo.toml"), "utf-8")
-    .match(/^version = "(.+)"$/m)?.[1];
+  const version = readText("Cargo.toml").match(/^version = "(.+)"$/m)?.[1];
 
   assert.ok(version);
   return version;
@@ -62,8 +57,8 @@ async function loadVueTextMateGrammar() {
   ]);
   const engine = await createOnigurumaEngine(fs.readFileSync(onigurumaWasmPath));
   const grammars = new Map<string, unknown>([
-    ["source.vue", readJson("npm/vscode-vize/syntaxes/vue.tmLanguage.json")],
-    ["source.art-vue", readJson("npm/vscode-vize/syntaxes/art-vue.tmLanguage.json")],
+    ["source.vue", readJson("editors/vscode/syntaxes/vue.tmLanguage.json")],
+    ["source.art-vue", readJson("editors/vscode/syntaxes/art-vue.tmLanguage.json")],
   ]);
   const registry = new Registry({
     onigLib: {
@@ -168,7 +163,7 @@ test("vscode-vize wires art-vue documents into editor features", () => {
         commandPalette?: Array<{ command?: string; when?: string }>;
       };
     };
-  }>("npm/vscode-vize/package.json");
+  }>("editors/vscode/package.json");
 
   assert.equal(manifest.activationEvents?.includes("onLanguage:art-vue"), true);
   assert.equal(
@@ -201,14 +196,13 @@ test("vscode-vize wires art-vue documents into editor features", () => {
     }
   }
 
-  const extensionSource = fs.readFileSync(
-    path.join(root, "npm/vscode-vize/src/extension.ts"),
-    "utf-8",
-  );
+  const extensionSource = readText("editors/vscode/src/extension.ts");
+  const extensionCoreSource = readText("editors/vscode/src/extension-core.ts");
 
-  assert.match(extensionSource, /SUPPORTED_LANGUAGE_IDS\s*=\s*\["vue", "art-vue", "html"\]/);
-  assert.match(extensionSource, /SUPPORTED_URI_SCHEMES\s*=\s*\["file", "untitled"\]/);
-  assert.match(extensionSource, /documentSelector:\s*SUPPORTED_URI_SCHEMES\.flatMap/);
+  assert.match(extensionCoreSource, /SUPPORTED_LANGUAGE_IDS\s*=\s*\["vue", "art-vue", "html"\]/);
+  assert.match(extensionCoreSource, /SUPPORTED_URI_SCHEMES\s*=\s*\["file", "untitled"\]/);
+  assert.match(extensionCoreSource, /function createDocumentSelector/);
+  assert.match(extensionSource, /documentSelector:\s*createDocumentSelector\(\)/);
   assert.match(extensionSource, /onDidChangeConfiguration/);
   assert.match(extensionSource, /scheduleClientSync\(context,\s*"configuration changed"\)/);
   assert.match(extensionSource, /function scheduleClientSync/);
@@ -236,7 +230,7 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
       string,
       { begin?: string; contentName?: string; patterns?: GrammarPattern[] }
     >;
-  }>("npm/vscode-vize/syntaxes/vue.tmLanguage.json");
+  }>("editors/vscode/syntaxes/vue.tmLanguage.json");
 
   const repository = grammar.repository ?? {};
 
@@ -272,35 +266,35 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
   );
   assert.match(
     ' :[activeKey as keyof Props].prop="makeValue<User>() as User"',
-    new RegExp(directivePatterns[2]?.begin ?? ""),
+    new RegExp(directivePatterns[1]?.begin ?? ""),
   );
   assert.match(
     ' @[eventName as keyof Emits].stop="handler($event as MouseEvent)"',
-    new RegExp(directivePatterns[4]?.begin ?? ""),
+    new RegExp(directivePatterns[2]?.begin ?? ""),
   );
   assert.match(
     ' #[slotName as keyof Slots]="slotProps as SlotProps"',
-    new RegExp(directivePatterns[6]?.begin ?? ""),
+    new RegExp(directivePatterns[3]?.begin ?? ""),
   );
   for (const pattern of directivePatterns) {
     assert.equal(pattern.contentName, "meta.embedded.expression.vue");
-    assert.equal(pattern.patterns?.[0]?.include, "source.ts#expression");
+    assert.equal(pattern.patterns?.[0]?.include, "#vue-ts-expression");
   }
   assert.equal(
     directivePatterns[0]?.beginCaptures?.["5"]?.patterns?.[0]?.include,
-    "source.ts#expression",
+    "#vue-ts-expression",
+  );
+  assert.equal(
+    directivePatterns[1]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
+    "#vue-ts-expression",
   );
   assert.equal(
     directivePatterns[2]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
-    "source.ts#expression",
+    "#vue-ts-expression",
   );
   assert.equal(
-    directivePatterns[4]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
-    "source.ts#expression",
-  );
-  assert.equal(
-    directivePatterns[6]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
-    "source.ts#expression",
+    directivePatterns[3]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
+    "#vue-ts-expression",
   );
   assert.equal(repository["vue-interpolation"]?.patterns?.[0]?.include, "source.ts#expression");
   assert.equal(repository["vue-template-pug"]?.patterns?.[1]?.patterns?.[0]?.include, "text.pug");
@@ -311,7 +305,7 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
   );
   assert.equal(
     repository["vue-generic-attribute"]?.patterns?.[0]?.patterns?.[0]?.include,
-    "source.ts#type-inner",
+    "#vue-ts-type",
   );
   assert.match(
     'generic="T extends Record<string, unknown> = Foo<User>"',
@@ -324,11 +318,11 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
   );
   assert.equal(
     valueLessDirectivePatterns[1]?.captures?.["5"]?.patterns?.[0]?.include,
-    "source.ts#expression",
+    "#vue-ts-expression",
   );
   assert.equal(
     valueLessDirectivePatterns[2]?.captures?.["4"]?.patterns?.[0]?.include,
-    "source.ts#expression",
+    "#vue-ts-expression",
   );
   assert.match(
     '<i18n message="a > b" lang="json">',
@@ -340,7 +334,7 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
   const artGrammar = readJson<{
     patterns?: Array<{ include?: string }>;
     scopeName?: string;
-  }>("npm/vscode-vize/syntaxes/art-vue.tmLanguage.json");
+  }>("editors/vscode/syntaxes/art-vue.tmLanguage.json");
   assert.equal(artGrammar.scopeName, "source.art-vue");
   assert.deepEqual(artGrammar.patterns, [
     { include: "#art-comments" },
@@ -389,7 +383,7 @@ test("vscode-art grammar stays aligned with vue-aware editor support", () => {
     license?: string;
     scripts?: Record<string, string>;
     version?: string;
-  }>("npm/vscode-art/package.json");
+  }>("editors/vscode-art/package.json");
 
   assert.equal(manifest.version, workspaceVersion());
   assert.equal(manifest.license, "MIT");
@@ -404,7 +398,7 @@ test("vscode-art grammar stays aligned with vue-aware editor support", () => {
   const grammar = readJson<{
     patterns?: Array<{ include?: string }>;
     repository?: Record<string, { begin?: string; patterns?: Array<{ include?: string }> }>;
-  }>("npm/vscode-art/syntaxes/art.tmLanguage.json");
+  }>("editors/vscode-art/syntaxes/art.tmLanguage.json");
 
   assert.deepEqual(
     (grammar.patterns ?? []).map((pattern) => pattern.include),
@@ -436,16 +430,13 @@ test("vscode-art grammar stays aligned with vue-aware editor support", () => {
 });
 
 test("zed-vize registers art-vue as a first-party language", () => {
-  const manifest = fs.readFileSync(path.join(root, "npm/zed-vize/extension.toml"), "utf-8");
+  const manifest = readText("editors/zed/extension.toml");
   assert.match(manifest, /^languages = \["Vue", "Art Vue"\]$/m);
   assert.match(manifest, /^"Vue" = "vue"$/m);
   assert.match(manifest, /^"Art Vue" = "art-vue"$/m);
   assert.match(manifest, /^\[grammars\.art-vue\]$/m);
 
-  const artConfig = fs.readFileSync(
-    path.join(root, "npm/zed-vize/languages/art-vue/config.toml"),
-    "utf-8",
-  );
+  const artConfig = readText("editors/zed/languages/art-vue/config.toml");
   assert.match(artConfig, /^name = "Art Vue"$/m);
   assert.match(artConfig, /^grammar = "art-vue"$/m);
   assert.match(artConfig, /^path_suffixes = \["art\.vue"\]$/m);
@@ -460,28 +451,22 @@ test("zed-vize registers art-vue as a first-party language", () => {
     "overrides.scm",
   ]) {
     assert.equal(
-      fs.existsSync(path.join(root, "npm/zed-vize/languages/art-vue", filename)),
+      fs.existsSync(path.join(root, "editors/zed/languages/art-vue", filename)),
       true,
       `missing zed art-vue language file: ${filename}`,
     );
   }
 
-  const injections = fs.readFileSync(
-    path.join(root, "npm/zed-vize/languages/art-vue/injections.scm"),
-    "utf-8",
-  );
+  const injections = readText("editors/zed/languages/art-vue/injections.scm");
   assert.match(injections, /directive_attribute/);
   assert.match(injections, /style_element/);
   assert.match(injections, /template_element/);
 });
 
 test("CI packages editor extension artifacts", () => {
-  const workflow = fs.readFileSync(path.join(root, ".github/workflows/check.yml"), "utf-8");
-  const buildTasks = fs.readFileSync(path.join(root, "tools/vite-plus/tasks/build.ts"), "utf-8");
-  const testTasks = fs.readFileSync(
-    path.join(root, "tools/vite-plus/tasks/test-benchmark.ts"),
-    "utf-8",
-  );
+  const workflow = readText(".github/workflows/check.yml");
+  const buildTasks = readText("tools/vite-plus/tasks/build.ts");
+  const testTasks = readText("tools/vite-plus/tasks/test-benchmark.ts");
 
   assert.match(
     workflow,

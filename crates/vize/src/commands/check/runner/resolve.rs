@@ -52,13 +52,14 @@ pub(super) fn resolve_project_root(
         } else {
             cwd.join(tsconfig)
         };
-        let tsconfig_dir = tsconfig_path
-            .canonicalize()
-            .unwrap_or(tsconfig_path)
+        let tsconfig_dir = vize_carton::path::canonicalize_non_verbatim(&tsconfig_path)
             .parent()
             .map(|parent| parent.to_path_buf())
             .unwrap_or_else(|| cwd.to_path_buf());
-        if files.is_empty() {
+        if files.is_empty()
+            || (project_root_has_package_boundary(&tsconfig_dir)
+                && !has_source_input_outside_root(&tsconfig_dir, files))
+        {
             return tsconfig_dir;
         }
 
@@ -88,7 +89,7 @@ pub(super) fn resolve_tsconfig_path(
         } else {
             cwd.join(tsconfig)
         };
-        return Some(tsconfig_path.canonicalize().unwrap_or(tsconfig_path));
+        return Some(vize_carton::path::canonicalize_non_verbatim(&tsconfig_path));
     }
 
     let candidate = project_root.join("tsconfig.json");
@@ -107,6 +108,61 @@ pub(super) fn resolve_tsconfig_path(
     }
 
     None
+}
+
+pub(super) fn explicit_input_root(project_root: &Path, cwd: &Path) -> PathBuf {
+    let cwd = vize_carton::path::canonicalize_non_verbatim(cwd);
+    if project_root.starts_with(&cwd) {
+        cwd
+    } else {
+        project_root.to_path_buf()
+    }
+}
+
+pub(super) fn project_root_has_package_boundary(project_root: &Path) -> bool {
+    project_root.join("package.json").is_file()
+}
+
+fn has_source_input_outside_root(root: &Path, files: &[PathBuf]) -> bool {
+    files.iter().any(|file| {
+        !path_has_component(file, "node_modules")
+            && !is_declaration_file(file)
+            && !file.starts_with(root)
+    })
+}
+
+fn is_declaration_file(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
+}
+
+pub(super) fn exit_if_inputs_outside_root(root: &Path, files: &[PathBuf], enabled: bool) {
+    if !enabled {
+        return;
+    }
+    if let Err(error) = validate_explicit_inputs_in_root(root, files) {
+        eprintln!("\x1b[31mError:\x1b[0m {error}");
+        std::process::exit(1);
+    }
+}
+
+fn validate_explicit_inputs_in_root(root: &Path, files: &[PathBuf]) -> Result<(), String> {
+    let root = vize_carton::path::canonicalize_non_verbatim(root);
+    for file in files {
+        let path = vize_carton::path::canonicalize_non_verbatim(file);
+        if !path.starts_with(&root) {
+            return Err(format!(
+                "explicit check input `{}` is outside project root `{}`.",
+                path.display(),
+                root.display()
+            )
+            .into());
+        }
+    }
+    Ok(())
 }
 
 pub(super) fn find_nearest_tsconfig_dir(path: &Path) -> Option<PathBuf> {
@@ -151,6 +207,9 @@ fn common_file_parent(files: &[PathBuf]) -> Option<PathBuf> {
 
 fn common_project_root(mut common: PathBuf, files: &[PathBuf]) -> PathBuf {
     for file in files {
+        if path_has_component(file, "node_modules") {
+            continue;
+        }
         let parent = file.parent().unwrap_or(file.as_path());
         while !parent.starts_with(&common) {
             if !common.pop() {
@@ -160,6 +219,11 @@ fn common_project_root(mut common: PathBuf, files: &[PathBuf]) -> PathBuf {
     }
 
     common
+}
+
+fn path_has_component(path: &Path, component: &str) -> bool {
+    path.components()
+        .any(|part| part.as_os_str().to_str() == Some(component))
 }
 
 pub(super) fn display_path(base: &Path, path: &Path) -> vize_carton::String {
@@ -198,4 +262,75 @@ pub(super) fn validate_corsa_server_count(servers: Option<usize>) -> Result<(), 
         .into());
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::resolve_project_root;
+    use std::path::{Path, PathBuf};
+
+    fn unique_case_dir(name: &str) -> PathBuf {
+        static NEXT_CASE_ID: std::sync::atomic::AtomicUsize =
+            std::sync::atomic::AtomicUsize::new(0);
+        let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .and_then(Path::parent)
+            .expect("workspace root should exist")
+            .join("target")
+            .join("vize-tests")
+            .join("resolve")
+            .join(name)
+            .join(std::process::id().to_string())
+            .join(case_id.to_string())
+    }
+
+    #[test]
+    fn explicit_tsconfig_with_package_boundary_does_not_widen_to_workspace_root() {
+        let workspace = unique_case_dir("package-boundary");
+        let _ = std::fs::remove_dir_all(&workspace);
+        let package_root = workspace.join("test/e2e/onepass/sign-in");
+        std::fs::create_dir_all(package_root.join("src")).unwrap();
+        std::fs::create_dir_all(workspace.join("types")).unwrap();
+        std::fs::write(package_root.join("package.json"), "{}").unwrap();
+        std::fs::write(package_root.join("tsconfig.json"), "{}").unwrap();
+        let app = package_root.join("src/main.ts");
+        let ambient = workspace.join("types/root.d.ts");
+        std::fs::write(&app, "").unwrap();
+        std::fs::write(&ambient, "declare const rootOnly: string;\n").unwrap();
+
+        let resolved = resolve_project_root(
+            Some(Path::new("tsconfig.json")),
+            &package_root,
+            &[app, ambient],
+        );
+
+        assert_eq!(resolved, package_root);
+        let _ = std::fs::remove_dir_all(&workspace);
+    }
+
+    #[test]
+    fn explicit_tsconfig_with_package_boundary_widens_for_source_inputs_outside_package() {
+        let workspace = unique_case_dir("package-boundary-source-outside");
+        let _ = std::fs::remove_dir_all(&workspace);
+        let package_root = workspace.join("packages/primevue");
+        let sibling_root = workspace.join("packages/icons");
+        std::fs::create_dir_all(package_root.join("src")).unwrap();
+        std::fs::create_dir_all(sibling_root.join("src")).unwrap();
+        std::fs::write(package_root.join("package.json"), "{}").unwrap();
+        std::fs::write(package_root.join("tsconfig.json"), "{}").unwrap();
+        let app = package_root.join("src/Button.vue");
+        let sibling = sibling_root.join("src/Icon.vue");
+        std::fs::write(&app, "").unwrap();
+        std::fs::write(&sibling, "").unwrap();
+
+        let resolved = resolve_project_root(
+            Some(Path::new("packages/primevue/tsconfig.json")),
+            &workspace,
+            &[app, sibling],
+        );
+
+        assert_eq!(resolved, workspace.join("packages"));
+        let _ = std::fs::remove_dir_all(&workspace);
+    }
 }

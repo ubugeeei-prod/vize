@@ -50,19 +50,27 @@ fn enter_v_slot_scope_if_needed<'a>(ctx: &mut TransformContext<'a>, el: &Element
 
 /// Traverse children of a parent node
 pub fn traverse_children<'a>(ctx: &mut TransformContext<'a>, parent: ParentNode<'a>) {
-    let children = parent.children_mut();
     let mut i = 0;
 
-    while i < children.len() {
+    while i < parent.children_mut().len() {
         ctx.grandparent = ctx.parent;
         ctx.parent = Some(parent);
         ctx.child_index = i;
         ctx.reset_node_removed();
 
-        traverse_node(ctx, &mut children[i]);
+        {
+            let children = parent.children_mut();
+            traverse_node(ctx, &mut children[i]);
+        }
 
-        if ctx.was_node_removed() {
-            // Node was removed, don't increment i
+        let node_removed = ctx.was_node_removed();
+        ctx.reset_node_removed();
+
+        if node_removed {
+            let children = parent.children_mut();
+            if i < children.len() {
+                children.remove(i);
+            }
         } else {
             i += 1;
         }
@@ -71,225 +79,225 @@ pub fn traverse_children<'a>(ctx: &mut TransformContext<'a>, parent: ParentNode<
 
 /// Traverse a single node
 pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChildNode<'a>) {
-    ctx.current_node = Some(node as *mut _);
-
     // Collect exit functions from transforms
     let mut exit_fns = ExitFns::new();
 
-    // Apply node transforms based on node type
-    match node {
-        TemplateChildNode::Element(el) => {
-            // Check for structural directives first
-            let structural_result = profile!(
-                "atelier.transform.check_structural",
-                take_structural_directive(el)
-            );
+    // Check structural directives before storing the current-node pointer so
+    // the `Element` borrow ends before structural transforms replace the slot.
+    let structural_result = if let TemplateChildNode::Element(el) = node {
+        profile!(
+            "atelier.transform.check_structural",
+            take_structural_directive(el)
+        )
+    } else {
+        None
+    };
 
-            if let Some((directive_kind, exp, directive_loc)) = structural_result {
-                // Handle the structural directive
-                match directive_kind {
-                    StructuralDirectiveKind::If => {
-                        if let Some(exits) = profile!(
-                            "atelier.transform.v_if",
-                            transform_v_if_with_directive(
-                                ctx,
-                                directive_kind,
-                                exp.as_ref(),
-                                &directive_loc,
-                                true
-                            )
-                        ) {
-                            exit_fns.extend(exits);
-                        }
-                    }
-                    StructuralDirectiveKind::ElseIf | StructuralDirectiveKind::Else => {
-                        if let Some(exits) = profile!(
-                            "atelier.transform.v_if",
-                            transform_v_if_with_directive(
-                                ctx,
-                                directive_kind,
-                                exp.as_ref(),
-                                &directive_loc,
-                                false
-                            )
-                        ) {
-                            exit_fns.extend(exits);
-                        }
-                    }
-                    StructuralDirectiveKind::For => {
-                        if let Some(exits) = profile!(
-                            "atelier.transform.v_for",
-                            transform_v_for(ctx, exp.as_ref())
-                        ) {
-                            exit_fns.extend(exits);
-                        }
-                    }
+    ctx.current_node = Some(node as *mut _);
+
+    if let Some((directive_kind, exp, directive_loc)) = structural_result {
+        // Handle the structural directive
+        match directive_kind {
+            StructuralDirectiveKind::If => {
+                if let Some(exits) = profile!(
+                    "atelier.transform.v_if",
+                    transform_v_if_with_directive(
+                        ctx,
+                        directive_kind,
+                        exp.as_ref(),
+                        &directive_loc,
+                        true
+                    )
+                ) {
+                    exit_fns.extend(exits);
                 }
+            }
+            StructuralDirectiveKind::ElseIf | StructuralDirectiveKind::Else => {
+                if let Some(exits) = profile!(
+                    "atelier.transform.v_if",
+                    transform_v_if_with_directive(
+                        ctx,
+                        directive_kind,
+                        exp.as_ref(),
+                        &directive_loc,
+                        false
+                    )
+                ) {
+                    exit_fns.extend(exits);
+                }
+            }
+            StructuralDirectiveKind::For => {
+                if let Some(exits) = profile!(
+                    "atelier.transform.v_for",
+                    transform_v_for(ctx, exp.as_ref())
+                ) {
+                    exit_fns.extend(exits);
+                }
+            }
+        }
 
-                // If node was replaced (e.g., by v-if transform), we need to traverse the new node
-                if let Some(current_ptr) = ctx.current_node {
-                    // SAFETY: `ctx.current_node` is written immediately before
-                    // transforms run and points at the child slot currently owned
-                    // by the traversal loop. Structural transforms may replace
-                    // that slot, but they do not free the bump-allocated storage
-                    // or retain another mutable reference to it. We reborrow here
-                    // only after the transform call returns so we can inspect the
-                    // replacement without cloning the AST node.
-                    let current = unsafe { &mut *current_ptr };
-                    match current {
-                        TemplateChildNode::If(if_node) => {
-                            // Traverse if branches that were just created
-                            for i in 0..if_node.branches.len() {
-                                let branch_ptr = &mut if_node.branches[i] as *mut IfBranchNode<'a>;
-                                profile!(
-                                    "atelier.transform.traverse_v_if_branch",
-                                    traverse_children(ctx, ParentNode::IfBranch(branch_ptr))
-                                );
-                            }
-                            // Run exit functions and return early
-                            for exit_fn in exit_fns.into_iter().rev() {
-                                profile!("atelier.transform.exit_fn", exit_fn(ctx));
-                            }
-                            return;
-                        }
-                        TemplateChildNode::For(for_node) => {
-                            // Enter v-for scope with aliases
-                            let value = for_node.value_alias.as_ref().and_then(|e| {
-                                if let ExpressionNode::Simple(exp) = e {
-                                    Some(exp.content.as_str())
-                                } else {
-                                    None
-                                }
-                            });
-                            let key = for_node.key_alias.as_ref().and_then(|e| {
-                                if let ExpressionNode::Simple(exp) = e {
-                                    Some(exp.content.as_str())
-                                } else {
-                                    None
-                                }
-                            });
-                            let index = for_node.object_index_alias.as_ref().and_then(|e| {
-                                if let ExpressionNode::Simple(exp) = e {
-                                    Some(exp.content.as_str())
-                                } else {
-                                    None
-                                }
-                            });
-                            let source = match &for_node.source {
-                                ExpressionNode::Simple(exp) => exp.content.as_str(),
-                                ExpressionNode::Compound(c) => c.loc.source.as_str(),
-                            };
-                            ctx.enter_v_for_scope(value, key, index, source);
-
-                            // Traverse for children
-                            let for_ptr = for_node.as_mut() as *mut ForNode<'a>;
-                            profile!(
-                                "atelier.transform.traverse_v_for_children",
-                                traverse_children(ctx, ParentNode::For(for_ptr))
-                            );
-
-                            // Exit v-for scope
-                            ctx.exit_scope();
-
-                            // Add helpers
-                            ctx.helper(RuntimeHelper::RenderList);
-                            ctx.helper(RuntimeHelper::Fragment);
-
-                            // Run exit functions and return early
-                            for exit_fn in exit_fns.into_iter().rev() {
-                                profile!("atelier.transform.exit_fn", exit_fn(ctx));
-                            }
-                            return;
-                        }
-                        TemplateChildNode::Element(el) => {
-                            // Still an element, process it
-                            if let Some(exits) =
-                                profile!("atelier.transform.element", transform_element(ctx, el))
-                            {
-                                exit_fns.extend(exits);
-                            }
-                        }
-                        _ => {}
+        // If node was replaced (e.g., by v-if transform), we need to traverse the new node
+        if let Some(current_ptr) = ctx.current_node {
+            // SAFETY: `ctx.current_node` points at the child slot currently owned
+            // by the traversal loop. Structural transforms may replace that slot,
+            // but they do not retain another mutable reference to it.
+            let current = unsafe { &mut *current_ptr };
+            match current {
+                TemplateChildNode::If(if_node) => {
+                    // Traverse if branches that were just created
+                    for i in 0..if_node.branches.len() {
+                        let branch_ptr = &mut if_node.branches[i] as *mut IfBranchNode<'a>;
+                        profile!(
+                            "atelier.transform.traverse_v_if_branch",
+                            traverse_children(ctx, ParentNode::IfBranch(branch_ptr))
+                        );
                     }
-                } else {
-                    // Node was removed, return early
+                    // Run exit functions and return early
+                    for exit_fn in exit_fns.into_iter().rev() {
+                        profile!("atelier.transform.exit_fn", exit_fn(ctx));
+                    }
                     return;
                 }
-            } else {
-                // No structural directive, process element normally
+                TemplateChildNode::For(for_node) => {
+                    // Enter v-for scope with aliases
+                    let value = for_node.value_alias.as_ref().and_then(|e| {
+                        if let ExpressionNode::Simple(exp) = e {
+                            Some(exp.content.as_str())
+                        } else {
+                            None
+                        }
+                    });
+                    let key = for_node.key_alias.as_ref().and_then(|e| {
+                        if let ExpressionNode::Simple(exp) = e {
+                            Some(exp.content.as_str())
+                        } else {
+                            None
+                        }
+                    });
+                    let index = for_node.object_index_alias.as_ref().and_then(|e| {
+                        if let ExpressionNode::Simple(exp) = e {
+                            Some(exp.content.as_str())
+                        } else {
+                            None
+                        }
+                    });
+                    let source = match &for_node.source {
+                        ExpressionNode::Simple(exp) => exp.content.as_str(),
+                        ExpressionNode::Compound(c) => c.loc.source.as_str(),
+                    };
+                    ctx.enter_v_for_scope(value, key, index, source);
+
+                    // Traverse for children
+                    let for_ptr = for_node.as_mut() as *mut ForNode<'a>;
+                    profile!(
+                        "atelier.transform.traverse_v_for_children",
+                        traverse_children(ctx, ParentNode::For(for_ptr))
+                    );
+
+                    // Exit v-for scope
+                    ctx.exit_scope();
+
+                    // Add helpers
+                    ctx.helper(RuntimeHelper::RenderList);
+                    ctx.helper(RuntimeHelper::Fragment);
+
+                    // Run exit functions and return early
+                    for exit_fn in exit_fns.into_iter().rev() {
+                        profile!("atelier.transform.exit_fn", exit_fn(ctx));
+                    }
+                    return;
+                }
+                TemplateChildNode::Element(el) => {
+                    // Still an element, process it
+                    if let Some(exits) =
+                        profile!("atelier.transform.element", transform_element(ctx, el))
+                    {
+                        exit_fns.extend(exits);
+                    }
+                }
+                _ => {}
+            }
+        } else {
+            // Node was removed, return early
+            return;
+        }
+    } else {
+        // Apply node transforms based on node type
+        match node {
+            TemplateChildNode::Element(el) => {
                 if let Some(exits) =
                     profile!("atelier.transform.element", transform_element(ctx, el))
                 {
                     exit_fns.extend(exits);
                 }
             }
-        }
-        TemplateChildNode::Interpolation(interp) => {
-            profile!(
-                "atelier.transform.interpolation",
-                transform_interpolation(ctx, interp)
-            );
-        }
-        TemplateChildNode::Text(_) => {
-            ctx.helper(RuntimeHelper::CreateText);
-        }
-        TemplateChildNode::Comment(_) => {
-            ctx.helper(RuntimeHelper::CreateComment);
-        }
-        TemplateChildNode::If(if_node) => {
-            // Traverse if branches
-            for i in 0..if_node.branches.len() {
-                let branch_ptr = &mut if_node.branches[i] as *mut IfBranchNode<'a>;
+            TemplateChildNode::Interpolation(interp) => {
                 profile!(
-                    "atelier.transform.traverse_v_if_branch",
-                    traverse_children(ctx, ParentNode::IfBranch(branch_ptr))
+                    "atelier.transform.interpolation",
+                    transform_interpolation(ctx, interp)
                 );
             }
+            TemplateChildNode::Text(_) => {
+                ctx.helper(RuntimeHelper::CreateText);
+            }
+            TemplateChildNode::Comment(_) => {
+                ctx.helper(RuntimeHelper::CreateComment);
+            }
+            TemplateChildNode::If(if_node) => {
+                // Traverse if branches
+                for i in 0..if_node.branches.len() {
+                    let branch_ptr = &mut if_node.branches[i] as *mut IfBranchNode<'a>;
+                    profile!(
+                        "atelier.transform.traverse_v_if_branch",
+                        traverse_children(ctx, ParentNode::IfBranch(branch_ptr))
+                    );
+                }
+            }
+            TemplateChildNode::For(for_node) => {
+                // Enter v-for scope with aliases
+                let value = for_node.value_alias.as_ref().and_then(|e| {
+                    if let ExpressionNode::Simple(exp) = e {
+                        Some(exp.content.as_str())
+                    } else {
+                        None
+                    }
+                });
+                let key = for_node.key_alias.as_ref().and_then(|e| {
+                    if let ExpressionNode::Simple(exp) = e {
+                        Some(exp.content.as_str())
+                    } else {
+                        None
+                    }
+                });
+                let index = for_node.object_index_alias.as_ref().and_then(|e| {
+                    if let ExpressionNode::Simple(exp) = e {
+                        Some(exp.content.as_str())
+                    } else {
+                        None
+                    }
+                });
+                let source = match &for_node.source {
+                    ExpressionNode::Simple(exp) => exp.content.as_str(),
+                    ExpressionNode::Compound(c) => c.loc.source.as_str(),
+                };
+                ctx.enter_v_for_scope(value, key, index, source);
+
+                // Traverse for children
+                let for_ptr = for_node.as_mut() as *mut ForNode<'a>;
+                profile!(
+                    "atelier.transform.traverse_v_for_children",
+                    traverse_children(ctx, ParentNode::For(for_ptr))
+                );
+
+                // Exit v-for scope
+                ctx.exit_scope();
+
+                // Add helpers
+                ctx.helper(RuntimeHelper::RenderList);
+                ctx.helper(RuntimeHelper::Fragment);
+            }
+            _ => {}
         }
-        TemplateChildNode::For(for_node) => {
-            // Enter v-for scope with aliases
-            let value = for_node.value_alias.as_ref().and_then(|e| {
-                if let ExpressionNode::Simple(exp) = e {
-                    Some(exp.content.as_str())
-                } else {
-                    None
-                }
-            });
-            let key = for_node.key_alias.as_ref().and_then(|e| {
-                if let ExpressionNode::Simple(exp) = e {
-                    Some(exp.content.as_str())
-                } else {
-                    None
-                }
-            });
-            let index = for_node.object_index_alias.as_ref().and_then(|e| {
-                if let ExpressionNode::Simple(exp) = e {
-                    Some(exp.content.as_str())
-                } else {
-                    None
-                }
-            });
-            let source = match &for_node.source {
-                ExpressionNode::Simple(exp) => exp.content.as_str(),
-                ExpressionNode::Compound(c) => c.loc.source.as_str(),
-            };
-            ctx.enter_v_for_scope(value, key, index, source);
-
-            // Traverse for children
-            let for_ptr = for_node.as_mut() as *mut ForNode<'a>;
-            profile!(
-                "atelier.transform.traverse_v_for_children",
-                traverse_children(ctx, ParentNode::For(for_ptr))
-            );
-
-            // Exit v-for scope
-            ctx.exit_scope();
-
-            // Add helpers
-            ctx.helper(RuntimeHelper::RenderList);
-            ctx.helper(RuntimeHelper::Fragment);
-        }
-        _ => {}
     }
 
     // Traverse children for element nodes

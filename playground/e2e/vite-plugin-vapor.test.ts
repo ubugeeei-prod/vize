@@ -1,11 +1,11 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vite-plus/test";
-import native from "../../npm/vize-native/index.js";
+import native from "../../npm/native/index.js";
 
 import {
   buildCompileBatchOptions,
   buildCompileFileOptions,
-} from "../../npm/vite-plugin-vize/src/compile-options.ts";
+} from "../../npm/builder/vite/src/compile-options.ts";
 
 const { compileSfc } = native;
 
@@ -34,6 +34,9 @@ describe("vite-plugin vapor options", () => {
       vapor: true,
       customRenderer: false,
       scopeId: "data-v-c0cc6f12",
+      experimentalInTagComments: false,
+      experimentalPatternedTemplate: false,
+      experimentalServerScript: false,
     });
   });
 
@@ -42,6 +45,12 @@ describe("vite-plugin vapor options", () => {
       ssr: false,
       vapor: true,
       customRenderer: false,
+      experimentalInTagComments: false,
+      experimentalPatternedTemplate: false,
+      experimentalServerScript: false,
+      includeHashes: true,
+      includeMacroArtifacts: true,
+      includeStyles: true,
     });
   });
 

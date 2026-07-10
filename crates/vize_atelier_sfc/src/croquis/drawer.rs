@@ -33,7 +33,10 @@ pub(super) fn analyze_scripts(
             let mut plain_drawer = apply_options_api_mode(plain_drawer, options_api, legacy_vue2);
             profile!(
                 "atelier.sfc.croquis.script_plain",
-                plain_drawer.draw_script_plain(script.content.as_ref())
+                plain_drawer.draw_script_plain_with_jsx(
+                    script.content.as_ref(),
+                    script_lang_is_jsx(script.lang.as_deref()),
+                )
             );
             let plain = plain_drawer.finish();
 
@@ -45,7 +48,11 @@ pub(super) fn analyze_scripts(
                 .map(|value| value.as_ref());
             profile!(
                 "atelier.sfc.croquis.script_setup",
-                setup_drawer.draw_script_setup_with_generic(script_setup.content.as_ref(), generic)
+                setup_drawer.draw_script_setup_with_generic_and_jsx(
+                    script_setup.content.as_ref(),
+                    generic,
+                    script_lang_is_jsx(script_setup.lang.as_deref()),
+                )
             );
 
             let mut summary = setup_drawer.finish();
@@ -63,7 +70,11 @@ pub(super) fn analyze_scripts(
                 .map(|value| value.as_ref());
             profile!(
                 "atelier.sfc.croquis.script_setup",
-                drawer.draw_script_setup_with_generic(script_setup.content.as_ref(), generic)
+                drawer.draw_script_setup_with_generic_and_jsx(
+                    script_setup.content.as_ref(),
+                    generic,
+                    script_lang_is_jsx(script_setup.lang.as_deref()),
+                )
             );
             drawer.finish()
         }
@@ -72,10 +83,17 @@ pub(super) fn analyze_scripts(
             let mut drawer = apply_options_api_mode(drawer, options_api, legacy_vue2);
             profile!(
                 "atelier.sfc.croquis.script_plain",
-                drawer.draw_script_plain(script.content.as_ref())
+                drawer.draw_script_plain_with_jsx(
+                    script.content.as_ref(),
+                    script_lang_is_jsx(script.lang.as_deref()),
+                )
             );
             drawer.finish()
         }
         (None, None) => Croquis::new(),
     }
+}
+
+fn script_lang_is_jsx(lang: Option<&str>) -> bool {
+    matches!(lang.map(str::trim), Some("tsx" | "jsx"))
 }

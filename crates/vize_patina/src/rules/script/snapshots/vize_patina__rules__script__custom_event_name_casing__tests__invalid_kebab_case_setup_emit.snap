@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/custom_event_name_casing.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/custom-event-name-casing",
+        severity: Error,
+        message: "Custom event name 'my-event' is not camelCase.",
+        start: 45,
+        end: 55,
+        help: Some(
+            "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. `myEvent`).",
+        ),
+        labels: [
+            Label {
+                message: "expected camelCase",
+                start: 45,
+                end: 55,
+            },
+        ],
+        fix: None,
+    },
+]

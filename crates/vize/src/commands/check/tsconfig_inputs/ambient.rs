@@ -1,4 +1,4 @@
-//! Ambient declaration (`.d.ts`) collection for partial `vize check` runs.
+//! Ambient declaration collection for partial `vize check` runs.
 
 use std::{
     fs,
@@ -11,9 +11,17 @@ use super::NODE_MODULES_DIR;
 use super::collect_default_check_files_inner;
 use super::glob::normalize_input_path;
 use super::loader::TsconfigInputCache;
-use super::matching::path_has_component;
+use super::matching::{is_nuxt_import_manifest_path, path_has_component};
+use super::type_references::{
+    collect_tsconfig_type_packages, reference_type_packages,
+    resolve_type_package_declaration_files, resolve_type_reference_declaration_files,
+};
 
-/// Collect ambient declaration (`.d.ts`) files that belong to the tsconfig
+mod top_level;
+
+use top_level::has_top_level_import_or_export;
+
+/// Collect ambient declaration files that belong to the tsconfig
 /// "program" so their global types stay in scope when only a subset of files is
 /// checked explicitly (e.g. `vize check src/App.vue`).
 ///
@@ -36,6 +44,45 @@ pub(crate) fn collect_ambient_declaration_files(
     let project_root = normalize_input_path(project_root);
     let mut files =
         collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache);
+    let explicit_type_declarations =
+        collect_tsconfig_type_declaration_files(&project_root, tsconfig_path);
+    files.extend(explicit_type_declarations.iter().cloned());
+    collect_ambient_declaration_files_from(project_root, files, explicit_type_declarations)
+}
+
+pub(crate) fn collect_hidden_ambient_declaration_files(
+    project_root: &Path,
+    tsconfig_path: Option<&Path>,
+    cache: &mut TsconfigInputCache,
+) -> Vec<PathBuf> {
+    let project_root = normalize_input_path(project_root);
+    let visible =
+        collect_default_check_files_inner(&project_root, tsconfig_path, false, false, cache)
+            .into_iter()
+            .collect::<FxHashSet<_>>();
+    let hidden =
+        collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache)
+            .into_iter()
+            .filter(|path| !visible.contains(path))
+            .collect();
+    let explicit_type_declarations =
+        collect_tsconfig_type_declaration_files(&project_root, tsconfig_path);
+    collect_ambient_declaration_files_from(project_root, hidden, explicit_type_declarations)
+}
+
+fn collect_ambient_declaration_files_from(
+    project_root: PathBuf,
+    mut files: Vec<PathBuf>,
+    explicit_type_declarations: Vec<PathBuf>,
+) -> Vec<PathBuf> {
+    let explicit_type_declarations = explicit_type_declarations
+        .into_iter()
+        .collect::<FxHashSet<_>>();
+    for path in &explicit_type_declarations {
+        if !files.contains(path) {
+            files.push(path.clone());
+        }
+    }
     let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
     let mut index = 0;
     while index < files.len() {
@@ -52,6 +99,11 @@ pub(crate) fn collect_ambient_declaration_files(
                 files.push(referenced);
             }
         }
+        for referenced in reference_type_declaration_files(&path, &content) {
+            if seen.insert(referenced.clone()) {
+                files.push(referenced);
+            }
+        }
     }
 
     files
@@ -59,18 +111,36 @@ pub(crate) fn collect_ambient_declaration_files(
         .filter(|path| is_declaration_file(path))
         .filter(|path| match fs::read_to_string(path) {
             Ok(content) => {
-                !is_reference_manifest_declaration(&content)
-                    && !declares_shadowing_ambient_module(&content)
+                if is_nuxt_import_manifest_path(path) || declares_shadowing_ambient_module(&content)
+                {
+                    return false;
+                }
+                explicit_type_declarations.contains(path)
+                    || (!is_reference_manifest_declaration(&content)
+                        && contributes_ambient_declarations(&content))
             }
             Err(_) => false,
         })
         .collect()
 }
 
+fn collect_tsconfig_type_declaration_files(
+    project_root: &Path,
+    tsconfig_path: Option<&Path>,
+) -> Vec<PathBuf> {
+    let search_start = tsconfig_path.unwrap_or(project_root);
+    collect_tsconfig_type_packages(tsconfig_path)
+        .into_iter()
+        .flat_map(|package| resolve_type_package_declaration_files(search_start, package.as_str()))
+        .collect()
+}
+
 pub(super) fn is_declaration_file(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts"))
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
 }
 
 /// Returns `true` when a declaration file would replace real Vue package types
@@ -86,6 +156,21 @@ fn declares_shadowing_ambient_module(content: &str) -> bool {
     ambient_module_specifiers(content)
         .iter()
         .any(|specifier| is_shadowed_vue_package_specifier(specifier))
+}
+
+fn contributes_ambient_declarations(content: &str) -> bool {
+    !has_top_level_import_or_export(content)
+        || contains_declare_scope(content, "declare global")
+        || contains_declare_scope(content, "declare module")
+}
+
+fn contains_declare_scope(content: &str, needle: &str) -> bool {
+    content.match_indices(&needle).any(|(index, _)| {
+        content[..index]
+            .chars()
+            .next_back()
+            .is_none_or(|ch| !ch.is_alphanumeric() && ch != '_' && ch != '$')
+    })
 }
 
 fn ambient_module_specifiers(content: &str) -> Vec<std::string::String> {
@@ -147,6 +232,18 @@ fn reference_path_declaration_files(
         .collect()
 }
 
+fn reference_type_declaration_files(path: &Path, content: &str) -> Vec<PathBuf> {
+    let Some(base_dir) = path.parent() else {
+        return Vec::new();
+    };
+    reference_type_packages(content)
+        .into_iter()
+        .flat_map(|reference| {
+            resolve_type_reference_declaration_files(base_dir, reference.as_str())
+        })
+        .collect()
+}
+
 fn reference_path_attribute(line: &str) -> Option<&str> {
     let line = line.trim_start();
     if !line.starts_with("///") || !line.contains("<reference") {
@@ -186,19 +283,12 @@ fn is_reference_manifest_declaration(content: &str) -> bool {
     has_reference
 }
 
-fn has_top_level_import_or_export(content: &str) -> bool {
-    content.lines().any(|line| {
-        line.starts_with("import ")
-            || line.starts_with("import{")
-            || line.starts_with("export ")
-            || line.starts_with("export{")
-            || line.starts_with("export {}")
-    })
-}
-
 fn is_shadowed_vue_package_specifier(specifier: &str) -> bool {
     matches!(
         specifier,
         "vue" | "@vue/runtime-core" | "@vue/runtime-dom" | "vue-router"
     )
 }
+
+#[cfg(test)]
+mod tests;

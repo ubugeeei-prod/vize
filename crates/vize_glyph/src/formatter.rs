@@ -2,11 +2,15 @@
 //!
 //! Uses arena allocation and zero-copy techniques for maximum performance.
 
+mod custom_block;
+mod raw_mask;
+
 use crate::error::FormatError;
 use crate::options::FormatOptions;
 use crate::script;
 use crate::style;
 use crate::template;
+use raw_mask::compute_raw_line_mask;
 use std::borrow::Cow;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_carton::{Allocator, FxHashMap, String, ToCompactString};
@@ -123,9 +127,7 @@ impl<'a> GlyphFormatter<'a> {
                 Block::Style(style) => {
                     self.format_style_block_fast(&mut output, style)?;
                 }
-                Block::Custom(block) => {
-                    self.format_custom_block_fast(&mut output, block)?;
-                }
+                Block::Custom(block) => custom_block::format(&mut output, block, self.options)?,
             }
         }
 
@@ -186,7 +188,7 @@ impl<'a> GlyphFormatter<'a> {
         let trimmed = block.content.trim();
         let source_type =
             script::source_type_for_script_lang(block.lang.as_ref().map(|lang| lang.as_ref()));
-        let formatted_content = script::format_script_content_with_source_type(
+        let formatted_content = script::format_script_content_stable(
             trimmed,
             self.options,
             self.allocator,
@@ -327,27 +329,6 @@ impl<'a> GlyphFormatter<'a> {
 
         Ok(())
     }
-
-    /// Format a custom block using byte operations
-    #[inline]
-    fn format_custom_block_fast(
-        &self,
-        output: &mut Vec<u8>,
-        block: &vize_atelier_sfc::SfcCustomBlock<'_>,
-    ) -> Result<(), FormatError> {
-        output.push(b'<');
-        output.extend_from_slice(block.block_type.as_bytes());
-        write_remaining_attrs(output, &block.attrs, &[]);
-        output.push(b'>');
-        output.extend_from_slice(self.options.newline_bytes());
-        output.extend_from_slice(block.content.trim().as_bytes());
-        output.extend_from_slice(self.options.newline_bytes());
-        output.extend_from_slice(b"</");
-        output.extend_from_slice(block.block_type.as_bytes());
-        output.push(b'>');
-
-        Ok(())
-    }
 }
 
 fn document_prologue<'a>(source: &'a str, blocks: &[(usize, Block<'_>)]) -> Option<&'a str> {
@@ -384,138 +365,6 @@ fn write_remaining_attrs(
         };
         write_attr(output, name, value);
     }
-}
-
-/// Per-line "this line is inside a whitespace-significant block" mask.
-///
-/// We walk the already-formatted template body line by line. A line that
-/// opens `<pre>`, `<textarea>`, or any element with `v-pre` is itself
-/// indented as a normal opening tag (mask = false), but every subsequent
-/// line until the matching close tag is marked raw (mask = true) so the
-/// SFC layer leaves it byte-for-byte. (#963)
-fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
-    let mut mask = vec![false; lines.len()];
-    let mut depth_stack: Vec<&'static str> = Vec::new();
-    // Attribute values may span lines (e.g. multi-line `class` strings). The
-    // template formatter emits those value lines byte-for-byte, so the SFC
-    // layer must not stack an extra indent on them each pass — otherwise
-    // `fmt` never reaches a fixed point. Track open-tag/quote state across
-    // lines and mark every line that starts inside an open attribute quote.
-    let mut in_tag = false;
-    let mut open_quote: Option<u8> = None;
-    // A `<pre`/`<textarea` whose opening tag wraps across lines (multi-line
-    // attribute layout) only becomes a raw region once its `>` is consumed;
-    // the attribute lines themselves are normal formatter output.
-    let mut pending_raw_tag: Option<&'static str> = None;
-    // Multi-line HTML comments are also emitted verbatim by the template
-    // formatter, so their inner lines must skip the SFC indent as well.
-    let mut in_comment = false;
-    const TAGS: [(&str, &str, &str); 2] = [
-        ("pre", "<pre", "</pre>"),
-        ("textarea", "<textarea", "</textarea>"),
-    ];
-    for (i, line) in lines.iter().enumerate() {
-        if !depth_stack.is_empty() || open_quote.is_some() || in_comment {
-            mask[i] = true;
-        }
-        // Walk the line bytes and bump the depth stack on every open/close
-        // marker we find. Case-insensitive byte compare avoids allocating
-        // a lowercase copy (the disallowed-types lint forbids std::String
-        // here anyway).
-        let bytes = line;
-        let mut cursor = 0;
-        while cursor < bytes.len() {
-            if in_comment {
-                if bytes[cursor..].starts_with(b"-->") {
-                    in_comment = false;
-                    cursor += 3;
-                } else {
-                    cursor += 1;
-                }
-                continue;
-            }
-            if let Some(quote) = open_quote {
-                if bytes[cursor] == quote {
-                    open_quote = None;
-                }
-                cursor += 1;
-                continue;
-            }
-            if in_tag {
-                match bytes[cursor] {
-                    b'"' | b'\'' => open_quote = Some(bytes[cursor]),
-                    b'>' => {
-                        in_tag = false;
-                        if let Some(tag) = pending_raw_tag.take() {
-                            depth_stack.push(tag);
-                        }
-                    }
-                    _ => {}
-                }
-                cursor += 1;
-                continue;
-            }
-            if bytes[cursor] != b'<' {
-                cursor += 1;
-                continue;
-            }
-            if bytes[cursor..].starts_with(b"<!--") {
-                in_comment = true;
-                cursor += 4;
-                continue;
-            }
-            let mut matched = false;
-            for (tag, open_needle, close_needle) in &TAGS {
-                if starts_with_ascii_ci(&bytes[cursor..], close_needle.as_bytes()) {
-                    if let Some(idx) = depth_stack.iter().rposition(|t| t == tag) {
-                        depth_stack.remove(idx);
-                    }
-                    cursor += close_needle.len();
-                    matched = true;
-                    break;
-                }
-                if starts_with_ascii_ci(&bytes[cursor..], open_needle.as_bytes())
-                    && bytes
-                        .get(cursor + open_needle.len())
-                        .copied()
-                        // End of line means the opening tag wraps its
-                        // attributes onto the following lines.
-                        .is_none_or(|after| matches!(after, b'>' | b' ' | b'\t' | b'\r' | b'/'))
-                {
-                    // The raw region starts after the opening tag's `>`;
-                    // scan the rest of the tag (possibly multi-line) as a
-                    // normal tag so quoted attributes are tracked too.
-                    pending_raw_tag = Some(tag);
-                    in_tag = true;
-                    cursor += open_needle.len();
-                    matched = true;
-                    break;
-                }
-            }
-            if matched {
-                continue;
-            }
-            // Generic opening/closing tag: only track quote state outside
-            // whitespace-significant regions (their content is arbitrary and
-            // already masked verbatim above).
-            if depth_stack.is_empty()
-                && let Some(after) = bytes.get(cursor + 1).copied()
-                && (after.is_ascii_alphabetic() || after == b'/')
-            {
-                in_tag = true;
-            }
-            cursor += 1;
-        }
-    }
-    mask
-}
-
-fn starts_with_ascii_ci(haystack: &[u8], needle: &[u8]) -> bool {
-    haystack.len() >= needle.len()
-        && haystack[..needle.len()]
-            .iter()
-            .zip(needle.iter())
-            .all(|(a, b)| a.eq_ignore_ascii_case(b))
 }
 
 fn write_attr(output: &mut Vec<u8>, name: &str, value: Option<&str>) {

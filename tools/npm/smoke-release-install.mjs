@@ -7,6 +7,8 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { preparePublishManifest } from "./prepare-publish-manifest.mjs";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const dependencySections = [
   "dependencies",
@@ -81,15 +83,6 @@ function run(command, args, options = {}) {
   }
 
   return result.stdout;
-}
-
-function preparePublishManifest(packageDir) {
-  const scriptPath = path.join(root, "tools/moon/scripts/prepare_npm_publish_manifest.mbtx");
-  const moonBin = process.env.MOON_BIN || "moon";
-  run(moonBin, ["run", "-q", "--target", "native", "-", "--", packageDir], {
-    cwd: root,
-    input: fs.readFileSync(scriptPath, "utf8"),
-  });
 }
 
 function readPackageJson(packageDir) {
@@ -262,12 +255,12 @@ function assertInstalledPackage(nodeModules, packageInfo) {
 }
 
 // The fresh-install smoke must mirror what an actual `@vizejs/vite-plugin`
-// consumer would install. That plugin declares `vite: ^8.0.0` as its peer
-// dependency, so we install upstream vite directly. (An earlier iteration
-// aliased vite to `@voidzero-dev/vite-plus-core` to mimic the workspace's
-// own vp tooling, but vite-plus-core ships only the JS API — it has no
-// `vite` bin and its rolldown bindings expect a separate `vite-plus`
-// metapackage at runtime, which together broke `vite build` in CI.)
+// consumer would install. Vite 8 is one supported peer range, so we install
+// upstream vite directly. (An earlier iteration aliased vite to
+// `@voidzero-dev/vite-plus-core` to mimic the workspace's own vp tooling, but
+// vite-plus-core ships only the JS API — it has no `vite` bin and its rolldown
+// bindings expect a separate `vite-plus` metapackage at runtime, which together
+// broke `vite build` in CI.)
 const RUNTIME_PEER_DEPENDENCIES = {
   typescript: "6.0.3",
   vite: "^8.0.0",

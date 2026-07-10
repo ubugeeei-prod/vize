@@ -15,11 +15,16 @@ use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use serde_json::{Value, json};
-use std::{
-    fs,
-    sync::atomic::{AtomicUsize, Ordering},
-};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use vize_carton::append;
+
+use super::lint_fix::{is_lintable_extension, lint_file_with_optional_fix, lint_source};
+mod lint_options;
+use lint_options::{
+    LintOptionsNapi, LintResultNapi, PatinaLintOptionsNapi, configure_type_aware_lint,
+    create_patina_linter, patina_help_level_from_option, patina_locale_from_option,
+    patina_preset_from_option,
+};
 
 struct PatinaRuleMetaNapi<'a> {
     name: &'a str,
@@ -28,102 +33,6 @@ struct PatinaRuleMetaNapi<'a> {
     fixable: bool,
     default_severity: &'a str,
     presets: Vec<&'static str>,
-}
-
-/// Lint options for NAPI
-#[napi(object)]
-#[derive(Default)]
-pub struct LintOptionsNapi {
-    /// Output format: "text", "ansi", "plain", "json", "stylish", "markdown", "html", or "agent"
-    pub format: Option<String>,
-    /// Maximum number of warnings before failing
-    pub max_warnings: Option<u32>,
-    /// Quiet mode - only show summary
-    pub quiet: Option<bool>,
-    /// Automatically fix problems (not yet implemented)
-    pub fix: Option<bool>,
-    /// Help display level: "full", "short", "none"
-    pub help_level: Option<String>,
-    /// Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt"
-    pub preset: Option<String>,
-}
-
-/// Lint result for NAPI
-#[napi(object)]
-pub struct LintResultNapi {
-    /// Formatted output string
-    pub output: String,
-    /// Total number of errors
-    pub error_count: u32,
-    /// Total number of warnings
-    pub warning_count: u32,
-    /// Number of files linted
-    pub file_count: u32,
-    /// Time in milliseconds
-    pub time_ms: f64,
-}
-
-/// Single-file Patina lint options for NAPI
-#[napi(object)]
-#[derive(Default)]
-pub struct PatinaLintOptionsNapi {
-    /// Filename used for diagnostics
-    pub filename: Option<String>,
-    /// Locale code: "en", "ja", or "zh"
-    pub locale: Option<String>,
-    /// Help display level: "full", "short", or "none"
-    pub help_level: Option<String>,
-    /// Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt"
-    pub preset: Option<String>,
-    /// Optional list of Patina rule names to enable
-    pub enabled_rules: Option<Vec<String>>,
-}
-
-fn patina_locale_from_option(locale: Option<&str>) -> vize_patina::Locale {
-    locale
-        .and_then(vize_patina::Locale::parse)
-        .unwrap_or_default()
-}
-
-fn patina_help_level_from_option(help_level: Option<&str>) -> vize_patina::HelpLevel {
-    match help_level {
-        Some("none") => vize_patina::HelpLevel::None,
-        Some("short") => vize_patina::HelpLevel::Short,
-        _ => vize_patina::HelpLevel::Full,
-    }
-}
-
-enum PatinaPresetSelection {
-    Builtin(vize_patina::LintPreset),
-    Ecosystem,
-}
-
-fn patina_preset_from_option(preset: Option<&str>) -> PatinaPresetSelection {
-    match preset {
-        Some("general-recommended" | "GeneralRecommended" | "generalRecommended")
-        | Some("happy-path" | "happy_path" | "happy" | "default" | "recommended") => {
-            PatinaPresetSelection::Builtin(vize_patina::LintPreset::HappyPath)
-        }
-        Some("essential" | "Essential") => {
-            PatinaPresetSelection::Builtin(vize_patina::LintPreset::Essential)
-        }
-        Some("incremental" | "Incremental") => {
-            PatinaPresetSelection::Builtin(vize_patina::LintPreset::Incremental)
-        }
-        Some("ecosystem" | "Ecosystem" | "eco" | "Eco") => PatinaPresetSelection::Ecosystem,
-        Some("opinionated" | "Opinionated" | "Opnionated" | "opnionated" | "strict" | "all") => {
-            PatinaPresetSelection::Builtin(vize_patina::LintPreset::Opinionated)
-        }
-        Some("nuxt" | "Nuxt") => PatinaPresetSelection::Builtin(vize_patina::LintPreset::Nuxt),
-        _ => PatinaPresetSelection::Builtin(vize_patina::LintPreset::default()),
-    }
-}
-
-fn create_patina_linter(preset: PatinaPresetSelection) -> vize_patina::Linter {
-    match preset {
-        PatinaPresetSelection::Builtin(preset) => vize_patina::Linter::with_preset(preset),
-        PatinaPresetSelection::Ecosystem => vize_patina::Linter::with_ecosystem(),
-    }
 }
 
 #[inline]
@@ -303,15 +212,15 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
     let enabled_rules = opts
         .enabled_rules
         .map(|rules| rules.into_iter().map(Into::into).collect());
-    let linter = create_patina_linter(preset)
-        .with_locale(locale)
-        .with_help_level(help_level)
-        .with_enabled_rules(enabled_rules);
-    let result = if is_standalone_html_filename(&filename) {
-        linter.lint_standalone_html(&source, &filename)
-    } else {
-        linter.lint_sfc(&source, &filename)
-    };
+    let linter = configure_type_aware_lint(
+        create_patina_linter(preset)
+            .with_locale(locale)
+            .with_help_level(help_level),
+        opts.type_aware,
+        opts.corsa_path,
+    )
+    .with_enabled_rules(enabled_rules);
+    let result = lint_source(&linter, &source, &filename);
     let lsp_diagnostics = LspEmitter::to_lsp_diagnostics_with_source(&result, &source);
 
     if result.diagnostics.len() != lsp_diagnostics.len() {
@@ -443,30 +352,23 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
         _ => HelpLevel::Full,
     };
     let preset = patina_preset_from_option(opts.preset.as_deref());
-    let linter = create_patina_linter(preset).with_help_level(help_level);
+    let linter = configure_type_aware_lint(
+        create_patina_linter(preset).with_help_level(help_level),
+        opts.type_aware,
+        opts.corsa_path,
+    );
     let error_count = AtomicUsize::new(0);
     let warning_count = AtomicUsize::new(0);
 
     // Lint all files in parallel and collect results
+    let should_fix = opts.fix.unwrap_or(false);
     let results: Vec<_> = files
         .par_iter()
         .filter_map(|path| {
-            let source = match fs::read_to_string(path) {
-                Ok(s) => s,
-                Err(_) => return None,
-            };
-
-            let filename = path.to_string_lossy().to_string();
-            let result = if is_standalone_html_filename(&filename) {
-                linter.lint_standalone_html(&source, &filename)
-            } else {
-                linter.lint_sfc(&source, &filename)
-            };
-
-            error_count.fetch_add(result.error_count, Ordering::Relaxed);
-            warning_count.fetch_add(result.warning_count, Ordering::Relaxed);
-
-            Some((filename, source, result))
+            let item = lint_file_with_optional_fix(&linter, path, should_fix)?;
+            error_count.fetch_add(item.2.error_count, Ordering::Relaxed);
+            warning_count.fetch_add(item.2.warning_count, Ordering::Relaxed);
+            Some(item)
         })
         .collect();
 
@@ -520,14 +422,6 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
     })
 }
 
-fn is_standalone_html_filename(filename: &str) -> bool {
-    filename.ends_with(".html") || filename.ends_with(".htm")
-}
-
-fn is_lintable_extension(extension: &str) -> bool {
-    matches!(extension, "vue" | "html" | "htm")
-}
-
 #[cfg(test)]
 mod tests {
     use super::collect_patina_rule_metadata;
@@ -554,7 +448,7 @@ mod tests {
             .find(|rule| rule.name == "script/no-options-api")
             .expect("script/no-options-api should be exposed");
 
-        assert_eq!(no_options_api.presets, vec!["opinionated", "nuxt"]);
+        assert_eq!(no_options_api.presets, vec!["opinionated"]);
         assert_eq!(no_options_api.default_severity, "error");
     }
 

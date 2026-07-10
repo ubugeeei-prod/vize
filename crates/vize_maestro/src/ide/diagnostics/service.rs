@@ -30,10 +30,6 @@ pub(in crate::ide) struct VirtualTsResult {
     /// Byte-offset mapping from post-rewrite to pre-rewrite virtual TS.
     /// Empty when no `.vue` import specifiers were rewritten.
     pub(in crate::ide) import_source_map: vize_canon::ImportSourceMap,
-    /// Relative `.vue` import specifiers found in the SFC's script. The
-    /// editor session overlays each sibling's virtual TS so relative
-    /// imports resolve under the temp-dir Corsa session (issue #752).
-    pub(in crate::ide) relative_vue_imports: Vec<std::string::String>,
     /// Line number where user code starts in virtual TS (0-indexed)
     pub(in crate::ide) user_code_start_line: u32,
     /// Line number where script starts in original SFC (1-indexed)
@@ -66,30 +62,23 @@ impl DiagnosticService {
             return diagnostics;
         }
 
-        // Build the line index once for this document. Every collector below
-        // maps byte offsets in `content` to (line, utf16_col) against it, so
-        // sharing one index avoids re-scanning the whole document per offset.
         let line_index = LineIndex::new(&content);
 
-        // Check if this is an Art file (*.art.vue)
         let path = uri.path();
         if path.ends_with(".art.vue") {
-            // Musea-specific diagnostics for Art files
             if features.lint {
                 diagnostics.extend(Self::collect_musea_diagnostics(uri, &content, &line_index));
             }
-            // Don't return early here; async collection still adds Corsa diagnostics.
             return diagnostics;
         }
 
         if is_standalone_html_path(path) {
             if features.lint {
-                let linter_config = state.get_linter_config();
                 let lint_diags = Self::collect_lint_diagnostics(
+                    state,
                     uri,
                     &content,
                     features.ecosystem,
-                    &linter_config,
                     &line_index,
                 );
                 tracing::info!(
@@ -101,10 +90,6 @@ impl DiagnosticService {
             return diagnostics;
         }
 
-        // JSX/TSX files (*.jsx, *.tsx): surface JSX compiler/lowering
-        // diagnostics (parse errors, lowering warnings) as LSP squiggles. This
-        // is diagnostics-only — no virtual TypeScript document is generated for
-        // JSX/TSX (type-aware features are deferred to #1497).
         if is_jsx_path(path) {
             let jsx_diags = Self::collect_jsx_diagnostics(uri, &content, &line_index);
             tracing::info!("collect: jsx compiler diagnostics: {}", jsx_diags.len());
@@ -112,8 +97,6 @@ impl DiagnosticService {
             return diagnostics;
         }
 
-        // Standard SFC processing — parse once and share the descriptor with
-        // every block-level collector below.
         let descriptor = match Self::parse_sfc_for_collect(uri, &content) {
             Ok(descriptor) => descriptor,
             Err(parse_diagnostic) => {
@@ -156,14 +139,22 @@ impl DiagnosticService {
         );
         diagnostics.extend(sfc_compile_diags);
 
+        Self::extend_component_required_prop_diagnostics(
+            state,
+            uri,
+            &content,
+            &descriptor,
+            &line_index,
+            features.typecheck,
+            &mut diagnostics,
+        );
         if features.lint {
             // Collect linter diagnostics (vize_patina)
-            let linter_config = state.get_linter_config();
             let lint_diags = Self::collect_lint_diagnostics(
+                state,
                 uri,
                 &content,
                 features.ecosystem,
-                &linter_config,
                 &line_index,
             );
             tracing::info!("collect: patina lint diagnostics: {}", lint_diags.len());
@@ -193,12 +184,11 @@ impl DiagnosticService {
             diagnostics.extend(ecosystem_diags);
         }
 
-        if state.is_lsp_typecheck_enabled() {
-            // Collect type checker diagnostics (vize_canon)
+        if state.is_lsp_typecheck_enabled() && !cfg!(feature = "native") {
             let type_diags = crate::ide::TypeService::collect_diagnostics(state, uri);
             tracing::info!("collect: type checker diagnostics: {}", type_diags.len());
             diagnostics.extend(type_diags);
-        } else {
+        } else if !state.is_lsp_typecheck_enabled() {
             tracing::info!("collect: type checker diagnostics skipped (disabled by config)");
         }
 
@@ -253,12 +243,11 @@ impl DiagnosticService {
 
         // Standalone HTML: patina lint only.
         if is_standalone_html_path(path) {
-            let linter_config = state.get_linter_config();
             diagnostics.extend(Self::collect_lint_diagnostics(
+                state,
                 uri,
                 &content,
                 features.ecosystem,
-                &linter_config,
                 &line_index,
             ));
             return diagnostics;
@@ -280,12 +269,11 @@ impl DiagnosticService {
             return diagnostics;
         }
 
-        let linter_config = state.get_linter_config();
         diagnostics.extend(Self::collect_lint_diagnostics(
+            state,
             uri,
             &content,
             features.ecosystem,
-            &linter_config,
             &line_index,
         ));
         diagnostics.extend(Self::collect_inline_art_diagnostics(

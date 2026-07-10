@@ -346,12 +346,18 @@ impl Dimension {
 }
 
 /// Edge values for margin, padding, border.
-#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct Edges {
     pub top: LengthPercentageAuto,
     pub right: LengthPercentageAuto,
     pub bottom: LengthPercentageAuto,
     pub left: LengthPercentageAuto,
+}
+
+impl Default for Edges {
+    fn default() -> Self {
+        Self::all(0.0)
+    }
 }
 
 impl Edges {
@@ -464,34 +470,5 @@ impl Inset {
             bottom: self.bottom.to_taffy(),
             left: self.left.to_taffy(),
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{Dimension, Display, Edges, FlexDirection, FlexStyle, LengthPercentageAuto};
-
-    #[test]
-    fn test_flex_style_default() {
-        let style = FlexStyle::new();
-        assert_eq!(style.flex_direction, FlexDirection::Row);
-        assert_eq!(style.display, Display::Flex);
-    }
-
-    #[test]
-    fn test_flex_style_to_taffy() {
-        let mut style = FlexStyle::new();
-        style.flex_direction = FlexDirection::Column;
-        style.width = Dimension::Points(100.0);
-
-        let taffy_style = style.to_taffy();
-        assert_eq!(taffy_style.flex_direction, taffy::FlexDirection::Column);
-    }
-
-    #[test]
-    fn test_edges_all() {
-        let edges = Edges::all(10.0);
-        assert_eq!(edges.top, LengthPercentageAuto::Points(10.0));
-        assert_eq!(edges.right, LengthPercentageAuto::Points(10.0));
     }
 }

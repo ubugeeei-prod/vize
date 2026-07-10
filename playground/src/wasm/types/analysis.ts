@@ -93,9 +93,75 @@ export interface CrossFileStats {
   analysisTimeMs: number;
 }
 
+export interface CrossFileComplexityInput {
+  componentCount: number;
+  templateIfCount: number;
+  templateForCount: number;
+  templateLogicalOperatorCount: number;
+  componentTreeVIfMaxDepth: number;
+  componentTreeVForMaxDepth: number;
+  componentTreeScopedSlotMaxDepth: number;
+  componentTreeTemplateNestingScore: number;
+  slotCount: number;
+  propDrillingEdgeCount: number;
+  globalStateReferenceCount: number;
+  provideInjectMaxDepth: number;
+  provideInjectReferenceCount: number;
+  provideInjectFanoutCount: number;
+  fallthroughRiskCount: number;
+  reactiveNodeCount: number;
+  reactiveEdgeCount: number;
+  reactiveCycleCount: number;
+}
+
+export interface CrossFileComplexityDimensions {
+  templateControlFlow: number;
+  slotUsage: number;
+  propDrilling: number;
+  globalState: number;
+  provideInject: number;
+  fallthroughAttrs: number;
+  reactiveGraph: number;
+}
+
+export interface CrossFileComplexityReport {
+  input: CrossFileComplexityInput;
+  dimensions: CrossFileComplexityDimensions;
+  cyclomaticScore: number;
+  cognitiveScore: number;
+  totalScore: number;
+  band: "low" | "moderate" | "high" | "extreme";
+}
+
+export type CrossFileComplexityDimension =
+  | "template-control-flow"
+  | "slot-usage"
+  | "prop-drilling"
+  | "global-state"
+  | "provide-inject"
+  | "fallthrough-attrs"
+  | "reactive-graph";
+
+export interface CrossFileComplexityDimensionBreakdown {
+  dimension: CrossFileComplexityDimension;
+  score: number;
+}
+
+export interface CrossFileComplexityHotspot {
+  fileId: number;
+  fileName: string;
+  componentName: string | null;
+  input: CrossFileComplexityInput;
+  dimensions: CrossFileComplexityDimensions;
+  totalScore: number;
+  dominantDimension: CrossFileComplexityDimensionBreakdown | null;
+}
+
 export interface CrossFileResult {
   diagnostics: CrossFileDiagnostic[];
   circularDependencies: string[][];
+  complexityReport: CrossFileComplexityReport;
+  complexityHotspots: CrossFileComplexityHotspot[];
   stats: CrossFileStats;
   filePaths: string[];
 }

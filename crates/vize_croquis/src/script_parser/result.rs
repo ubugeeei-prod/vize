@@ -4,7 +4,7 @@
 //! [`ScriptParserOptions`], and the small metadata enums/structs that back
 //! plain-value and runtime-object tracking.
 
-use oxc_ast::ast::Declaration;
+use oxc_ast::ast::{Declaration, TSInterfaceDeclaration, TSTypeAliasDeclaration};
 use oxc_span::GetSpan;
 
 use crate::croquis::{BindingMetadata, ComponentRegistration, ComponentShape, Croquis};
@@ -16,6 +16,7 @@ use crate::provide::ProvideInjectTracker;
 use crate::race::RaceConditionTracker;
 use crate::reactivity::ReactivityTracker;
 use crate::scope::ScopeChain;
+use crate::script_parser::typeof_refs::TypeDependencyRefs;
 use crate::setup_context::SetupContextTracker;
 use crate::types::TypeResolver;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
@@ -104,12 +105,21 @@ pub struct ScriptParseResult {
     pub binding_spans: FxHashMap<CompactString, (u32, u32)>,
     /// Value import source by local binding name.
     pub import_sources: FxHashMap<CompactString, CompactString>,
+    /// Normal `<script>` value exports that canon re-emits at module scope.
+    /// Type exports may reference these through `typeof` without being
+    /// demoted into `__setup()`.
+    pub(crate) module_value_bindings: FxHashSet<CompactString>,
     /// Names referenced via `typeof X` in the body of each `type_exports`
     /// entry, indexed in parallel with `type_exports`. Used by
     /// `resolve_type_export_hoisting` to keep types adjacent to the
     /// setup-scope values they depend on. Pushed to in lockstep with
     /// `type_exports` via `record_type_export`.
     pub(crate) type_export_typeof_refs: Vec<FxHashSet<CompactString>>,
+    /// Local type/interface identifiers referenced by each `type_exports`
+    /// entry, indexed in parallel with `type_exports`. Used with
+    /// `type_export_typeof_refs` to propagate setup-scope demotion through
+    /// aliases such as `Props -> FormViewState -> typeof FormViewStateEnum`.
+    pub(crate) type_export_type_refs: Vec<FxHashSet<CompactString>>,
     /// Static runtime object literal metadata available to macro spread args.
     pub(crate) runtime_object_literals: FxHashMap<CompactString, RuntimeObjectLiteral>,
     /// Authoritative Options API options-object descriptor, when resolved.
@@ -140,32 +150,51 @@ impl ScriptParseResult {
     pub(crate) fn register_local_type(&mut self, decl: &Declaration<'_>, source: &str) {
         match decl {
             Declaration::TSInterfaceDeclaration(interface) => {
-                self.types.add_interface(
-                    interface.id.name.as_str(),
-                    interface.body.span.source_text(source),
-                );
+                self.register_local_interface(interface, source);
             }
             Declaration::TSTypeAliasDeclaration(alias) => {
-                self.types.add_type_alias(
-                    alias.id.name.as_str(),
-                    alias.type_annotation.span().source_text(source).trim(),
-                );
+                self.register_local_type_alias(alias, source);
             }
             _ => {}
         }
     }
 
-    /// Record a `TypeExport` together with the `typeof` value-identifier
-    /// references found in its body. Must be the only call site that pushes
-    /// to `type_exports` so the two vectors stay in lockstep for
-    /// `resolve_type_export_hoisting`.
-    pub(crate) fn record_type_export(
+    pub(crate) fn register_local_interface(
         &mut self,
-        export: TypeExport,
-        typeof_refs: FxHashSet<CompactString>,
+        interface: &TSInterfaceDeclaration<'_>,
+        source: &str,
     ) {
+        let extends = interface
+            .extends
+            .iter()
+            .filter_map(|heritage| normalize_interface_heritage(heritage.span.source_text(source)))
+            .collect();
+        self.types.add_interface_with_extends(
+            interface.id.name.as_str(),
+            interface.body.span.source_text(source),
+            extends,
+        );
+    }
+
+    pub(crate) fn register_local_type_alias(
+        &mut self,
+        alias: &TSTypeAliasDeclaration<'_>,
+        source: &str,
+    ) {
+        self.types.add_type_alias(
+            alias.id.name.as_str(),
+            alias.type_annotation.span().source_text(source).trim(),
+        );
+    }
+
+    /// Record a `TypeExport` together with type/value dependency references
+    /// found in its body. Must be the only call site that pushes to
+    /// `type_exports` so the parallel dependency vectors stay in lockstep for
+    /// `resolve_type_export_hoisting`.
+    pub(crate) fn record_type_export(&mut self, export: TypeExport, refs: TypeDependencyRefs) {
         self.type_exports.push(export);
-        self.type_export_typeof_refs.push(typeof_refs);
+        self.type_export_typeof_refs.push(refs.typeof_value_refs);
+        self.type_export_type_refs.push(refs.type_refs);
     }
 
     /// Demote `TypeExport::hoisted` to `false` for any type whose body
@@ -174,23 +203,41 @@ impl ScriptParseResult {
     /// stay inside the synthetic `__setup` function alongside the values
     /// they depend on — which is the only place TS can resolve them.
     ///
-    /// Imports add value bindings at module scope, so a `typeof importedName`
-    /// reference is left as hoisted: the import is visible from the module
-    /// scope where the type lands.
+    /// Imports and normal `<script>` named exports add value bindings at
+    /// module scope, so `typeof moduleValue` references are left hoisted: those
+    /// values are visible from the module scope where the type lands.
     pub(crate) fn resolve_type_export_hoisting(&mut self) {
-        if self.type_export_typeof_refs.is_empty() {
+        if self.type_exports.is_empty() {
             return;
         }
 
-        // A `typeof name` ref keeps a type hoisted only when `name` is a
-        // module-scoped import. Rather than materialize the full set of
-        // imported binding names up front (O(imports × bindings)), test each
-        // referenced name's declaration span against the import ranges on
-        // demand — `refs` is tiny, so this is O(refs × imports).
+        let imported_names: FxHashSet<&str> = self
+            .binding_spans
+            .iter()
+            .filter_map(|(name, (start, end))| {
+                self.import_statements
+                    .iter()
+                    .any(|import| *start >= import.start && *end <= import.end)
+                    .then_some(name.as_str())
+            })
+            .collect();
+
+        for type_export in &mut self.type_exports {
+            if imported_names.contains(type_export.name.as_str()) {
+                type_export.hoisted = false;
+            }
+        }
+
+        // A `typeof name` ref keeps a type hoisted only when `name` is visible
+        // at module scope. Rather than materialize all imported binding names
+        // up front (O(imports × bindings)), test each referenced name's
+        // declaration span against the import ranges on demand — `refs` is
+        // tiny, so this is O(refs × imports).
         for idx in 0..self.type_export_typeof_refs.len() {
             let touches_setup_value = self.type_export_typeof_refs[idx].iter().any(|name| {
                 let key = name.as_str();
                 self.bindings.bindings.contains_key(key)
+                    && !self.module_value_bindings.contains(key)
                     && !self.binding_spans.get(key).is_some_and(|(start, end)| {
                         // Bindings whose declaration site falls inside an import
                         // statement are module-scoped imports, not setup values.
@@ -201,6 +248,31 @@ impl ScriptParseResult {
             });
             if touches_setup_value && let Some(te) = self.type_exports.get_mut(idx) {
                 te.hoisted = false;
+            }
+        }
+
+        let mut non_hoisted_type_names: FxHashSet<CompactString> = self
+            .type_exports
+            .iter()
+            .filter(|te| !te.hoisted)
+            .map(|te| te.name.clone())
+            .collect();
+        let mut changed = true;
+        while changed {
+            changed = false;
+            for idx in 0..self.type_exports.len() {
+                if !self.type_exports[idx].hoisted {
+                    continue;
+                }
+
+                let refs_non_hoisted_type = self.type_export_type_refs[idx]
+                    .iter()
+                    .any(|name| non_hoisted_type_names.contains(name));
+                if refs_non_hoisted_type {
+                    non_hoisted_type_names.insert(self.type_exports[idx].name.clone());
+                    self.type_exports[idx].hoisted = false;
+                    changed = true;
+                }
             }
         }
     }
@@ -233,5 +305,25 @@ impl ScriptParseResult {
         let mut summary = Croquis::new();
         self.apply_to_croquis(&mut summary);
         summary
+    }
+}
+
+fn normalize_interface_heritage(raw: &str) -> Option<vize_carton::CompactString> {
+    let mut heritage = raw.trim();
+    if let Some(rest) = heritage.strip_prefix("extends") {
+        let starts_like_keyword = rest
+            .chars()
+            .next()
+            .map(|c| c.is_whitespace())
+            .unwrap_or(true);
+        if starts_like_keyword {
+            heritage = rest.trim_start();
+        }
+    }
+    heritage = heritage.trim_start_matches(',').trim();
+    if heritage.is_empty() {
+        None
+    } else {
+        Some(vize_carton::CompactString::new(heritage))
     }
 }

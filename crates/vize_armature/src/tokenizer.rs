@@ -5,6 +5,7 @@
 
 pub mod char_codes;
 mod entity_decode;
+mod in_tag_comment;
 mod sequences;
 mod states;
 mod types;
@@ -80,6 +81,10 @@ pub struct Tokenizer<'a, C: Callbacks> {
     /// one. Reset when the interpolation closes; meaningless (always `false`)
     /// unless [`Tokenizer::triple_mustache`] is set.
     in_raw_interpolation: bool,
+
+    /// Whether to recognize experimental Vue `//` in-tag comments in opening
+    /// tag attribute lists.
+    in_tag_comments: bool,
 }
 
 impl<'a, C: Callbacks> Tokenizer<'a, C> {
@@ -115,6 +120,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             tolerate_declarations: false,
             triple_mustache: false,
             in_raw_interpolation: false,
+            in_tag_comments: false,
         }
     }
 
@@ -130,6 +136,11 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     /// delimiter configuration is unaffected.
     pub fn set_triple_mustache(&mut self, enabled: bool) {
         self.triple_mustache = enabled && self.delimiter_open == b"{{";
+    }
+
+    /// Enable experimental Vue `//` in-tag comments in opening tag attribute lists.
+    pub fn set_in_tag_comments(&mut self, enabled: bool) {
+        self.in_tag_comments = enabled;
     }
 
     /// Get the position for a given index
@@ -191,6 +202,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                 State::InClosingTagName => self.state_in_closing_tag_name(c),
                 State::AfterClosingTagName => self.state_after_closing_tag_name(c),
                 State::BeforeAttrName => self.state_before_attr_name(c),
+                State::InTagComment => self.state_in_tag_comment(c),
                 State::InAttrName => self.state_in_attr_name(c),
                 State::InDirName => self.state_in_dir_name(c),
                 State::InDirArg => self.state_in_dir_arg(c),

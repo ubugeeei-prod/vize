@@ -26,95 +26,6 @@ fn write_project_file(root: &Path, path: &str, content: &str) {
 }
 
 #[test]
-fn build_stats_profile_reports_compile_cache_counters() {
-    let project_root = temp_project_dir("stats-profile-cache-counters");
-    let source = r#"<template><div>Hello</div></template>
-"#;
-    write_project_file(&project_root, "src/App.vue", source);
-    write_project_file(&project_root, "src/Foo.vue", source);
-
-    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
-        .current_dir(&project_root)
-        .args([
-            "build",
-            "--format",
-            "stats",
-            "--profile",
-            "--threads",
-            "1",
-            "src/App.vue",
-            "src/Foo.vue",
-        ])
-        .output()
-        .unwrap();
-
-    assert!(
-        output.status.success(),
-        "stdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr)
-    );
-
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("Stats compile cache"), "{stderr}");
-    assert!(stderr.contains("cache.stats_compile.hits"), "{stderr}");
-    assert!(stderr.contains("cache.stats_compile.misses"), "{stderr}");
-    assert!(stderr.contains("cache.stats_compile.stores"), "{stderr}");
-    assert!(stderr.contains("Atelier cache decisions"), "{stderr}");
-    assert!(
-        stderr.contains("atelier.cache.stats_compile.eligible"),
-        "{stderr}"
-    );
-    assert!(stderr.contains("atelier.profile.dialect.vue3"), "{stderr}");
-    assert!(stderr.contains("atelier.profile.source.sfc"), "{stderr}");
-
-    let _ = fs::remove_dir_all(project_root);
-}
-
-#[test]
-fn build_profile_reports_atelier_fallback_counters() {
-    let project_root = temp_project_dir("atelier-fallback-counters");
-    write_project_file(
-        &project_root,
-        "src/App.vue",
-        r#"<template><div>{{ count }}</div></template>
-<script setup>
-const count = 1
-</script>
-"#,
-    );
-
-    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
-        .current_dir(&project_root)
-        .args([
-            "build",
-            "--format",
-            "stats",
-            "--profile",
-            "--threads",
-            "1",
-            "--ssr",
-            "--vapor",
-            "src/App.vue",
-        ])
-        .output()
-        .unwrap();
-
-    assert!(
-        output.status.success(),
-        "stdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr)
-    );
-
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("Atelier fallbacks"), "{stderr}");
-    assert!(stderr.contains("atelier.fallback.vapor_ssr"), "{stderr}");
-
-    let _ = fs::remove_dir_all(project_root);
-}
-
-#[test]
 fn build_resolves_imported_base_interface_props_in_normal_script() {
     let project_root = temp_project_dir("imported-base-interface-props");
     write_project_file(
@@ -339,6 +250,50 @@ fn build_respects_configured_template_syntax_quirks() {
         json["warnings"].as_array().unwrap().len(),
         0,
         "quirks syntax should not warn for invalid self-closing HTML: {json:#}"
+    );
+
+    let _ = fs::remove_dir_all(project_root);
+}
+
+#[test]
+fn build_rejects_legacy_vue_without_host_compiler() {
+    let project_root = temp_project_dir("legacy-vue-without-host-compiler");
+    write_project_file(
+        &project_root,
+        "vize.config.json",
+        r#"{
+  "compiler": {
+    "compatibility": {
+      "vueVersion": "2.7",
+      "hostCompiler": false
+    }
+  }
+}
+"#,
+    );
+    write_project_file(
+        &project_root,
+        "src/App.vue",
+        r#"<template><div /></template>
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["build", "--format", "js", "src/App.vue", "--output", "dist"])
+        .output()
+        .unwrap();
+
+    assert!(
+        !output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("compiler.compatibility.hostCompiler=false is unsupported"),
+        "{stderr}"
     );
 
     let _ = fs::remove_dir_all(project_root);

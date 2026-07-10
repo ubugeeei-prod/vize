@@ -114,9 +114,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.102"
+version = "1.0.103"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
+checksum = "2a4385e2e34eb35d6b3efe798b9eb88096925d87726c0798709bf56d9ed84af3"
 
 [[package]]
 name = "arrayvec"
@@ -473,9 +473,9 @@ dependencies = [
 
 [[package]]
 name = "corsa"
-version = "0.36.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05cae3e14a400484c06b0578e63cb14f60de01fd33f4e0a143e64c4d96ad2924"
+checksum = "adc9fca16c2d57cc07470efad6ffb1d95df8c56676cb826d17926326ab22dba1"
 dependencies = [
  "base64",
  "corsa_client",
@@ -490,9 +490,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_client"
-version = "0.36.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3acf8c65e85211669765894f4253700de59e8e1e2b6264b1faf6a3aafba901b0"
+checksum = "82d60a7340233d2b1055be3acf4b5ce369e40a522fe1c35d7b07bac715415f2d"
 dependencies = [
  "base64",
  "corsa_core",
@@ -508,9 +508,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_core"
-version = "0.36.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31da616b7b3ee544694fa852a66e92a1656fdcaa99562020f1d3670662c2a1e6"
+checksum = "c1592080fe4254c02f3857f6df89d57689c568cb7fc3ea3d1cc5df9ebeaced1e"
 dependencies = [
  "base64",
  "bumpalo",
@@ -525,9 +525,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_jsonrpc"
-version = "0.36.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9400f1602c4fc0c3b5a66efe30a951f1030cd2c6e0e3cf4984785e4a3b46159"
+checksum = "71b4546e14180a3b9e9298daaca8609a069c2a39390d62aa69a649e523525340"
 dependencies = [
  "corsa_core",
  "corsa_runtime",
@@ -539,9 +539,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_lsp"
-version = "0.36.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ddd75a7c6341921b87108af76c298e2ef0e83312282e78927c5e95387c0730e5"
+checksum = "37b8d52b25f29c2b3660b28589f897f25a15c882ccf85e5dfbd3a49da0b1929e"
 dependencies = [
  "corsa_core",
  "corsa_jsonrpc",
@@ -554,9 +554,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_orchestrator"
-version = "0.36.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb47caeb0f4a355d43e71de4df4a84ba6c2d2ff70ea7420a967c4588f088270c"
+checksum = "0d451fc73c829c839b75b21c83f43bf87747af7bcaa96c00e8aa19647e1a3e78"
 dependencies = [
  "corsa_client",
  "corsa_core",
@@ -571,9 +571,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_runtime"
-version = "0.36.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c88dc8c86f67beee84e4ff5b3ba2398f63db78213a8631d1ed7c3a5f0a96e407"
+checksum = "3f71bfacd4eaafe2f1175d9cfcacb91abc97f31d042a08ea7c777d2f16316a8f"
 dependencies = [
  "smallvec",
 ]
@@ -649,9 +649,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-epoch"
-version = "0.9.18"
+version = "0.9.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b82ac4a3c2ca9c3460964f020e1402edd5753411d7737aa39c3714ad1b5420e"
+checksum = "2d6914041f254d6e9176c01941b21115dcfb7089e55135a35411081bd106ef3f"
 dependencies = [
  "crossbeam-utils",
 ]
@@ -3391,7 +3391,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "vize"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "clap",
  "dirs",
@@ -3402,10 +3402,12 @@ dependencies = [
  "mimalloc",
  "oxc_allocator",
  "oxc_ast",
+ "oxc_ast_visit",
  "oxc_codegen",
  "oxc_parser",
  "oxc_semantic",
  "oxc_span",
+ "oxc_syntax",
  "oxc_transformer",
  "rayon",
  "serde",
@@ -3430,7 +3432,7 @@ dependencies = [
 
 [[package]]
 name = "vize_armature"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "compact_str",
  "htmlize",
@@ -3443,10 +3445,11 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_core"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "bumpalo",
  "compact_str",
+ "criterion",
  "insta",
  "memoffset",
  "oxc_allocator",
@@ -3470,7 +3473,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_dom"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "insta",
  "phf 0.13.1",
@@ -3483,7 +3486,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_jsx"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "criterion",
  "insta",
@@ -3507,7 +3510,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_sfc"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "criterion",
  "insta",
@@ -3539,7 +3542,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_ssr"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "insta",
  "serde",
@@ -3552,7 +3555,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_vapor"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "insta",
  "oxc_allocator",
@@ -3570,7 +3573,7 @@ dependencies = [
 
 [[package]]
 name = "vize_canon"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "corsa",
  "dashmap 6.1.0",
@@ -3602,7 +3605,7 @@ dependencies = [
 
 [[package]]
 name = "vize_carton"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "bitflags 2.11.1",
  "bumpalo",
@@ -3622,7 +3625,7 @@ dependencies = [
 
 [[package]]
 name = "vize_croquis"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "dashmap 6.1.0",
  "insta",
@@ -3646,7 +3649,7 @@ dependencies = [
 
 [[package]]
 name = "vize_croquis_cf"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "criterion",
  "insta",
@@ -3655,6 +3658,8 @@ dependencies = [
  "oxc_parser",
  "oxc_span",
  "rustc-hash",
+ "serde",
+ "serde_json",
  "vize_armature",
  "vize_carton",
  "vize_croquis",
@@ -3662,17 +3667,26 @@ dependencies = [
 
 [[package]]
 name = "vize_curator"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "insta",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_parser",
+ "oxc_span",
  "serde",
  "serde_json",
+ "vize_atelier_core",
+ "vize_atelier_sfc",
  "vize_carton",
+ "vize_croquis",
+ "vize_croquis_cf",
 ]
 
 [[package]]
 name = "vize_fresco"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "compact_str",
  "criterion",
@@ -3694,7 +3708,7 @@ dependencies = [
 
 [[package]]
 name = "vize_glyph"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "criterion",
  "insta",
@@ -3713,7 +3727,7 @@ dependencies = [
 
 [[package]]
 name = "vize_maestro"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "async-trait",
  "dashmap 6.1.0",
@@ -3748,7 +3762,7 @@ dependencies = [
 
 [[package]]
 name = "vize_musea"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "criterion",
  "insta",
@@ -3764,7 +3778,7 @@ dependencies = [
 
 [[package]]
 name = "vize_patina"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "corsa",
  "criterion",
@@ -3792,7 +3806,7 @@ dependencies = [
 
 [[package]]
 name = "vize_relief"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -3802,7 +3816,7 @@ dependencies = [
 
 [[package]]
 name = "vize_test_runner"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "pklrust",
  "serde",
@@ -3815,7 +3829,7 @@ dependencies = [
 
 [[package]]
 name = "vize_vitrine"
-version = "0.212.0"
+version = "0.290.0"
 dependencies = [
  "getrandom 0.3.4",
  "glob",

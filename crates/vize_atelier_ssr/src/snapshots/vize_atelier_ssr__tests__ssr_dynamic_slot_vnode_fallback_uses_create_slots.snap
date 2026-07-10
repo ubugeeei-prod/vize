@@ -21,18 +21,18 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
               name: name,
               fn: _withCtx((slotData, _push, _parent, _scopeId) => {
                 if (_push) {
-                  _ssrRenderSlot(_ctx.$slots, name, _mergeProps(slotData), null, _push, _parent)
+                  _ssrRenderSlot(_ctx.$slots, name, _mergeProps(slotData), null, _push, _parent, _scopeId)
                 } else {
                   return [_renderSlot(_ctx.$slots, name, _mergeProps(slotData))]
                 }
               })
             }
           })
-        ]), _parent))
+        ]), _parent, _scopeId))
       } else {
         return [_createVNode(_resolveComponent("Inner"), null, _createSlots({ trailing: _withCtx((_) => [_createTextVNode("x")]), _: 2 /* DYNAMIC */ }, [_renderList(_ctx.slots, (_, name) => { return { name: name, fn: _withCtx((slotData) => [_renderSlot(_ctx.$slots, name, _mergeProps(slotData))]) } })]))]
       }
     }),
-    _: 1
+    _: 3 /* FORWARDED */
   }, _parent))
 }

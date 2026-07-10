@@ -1,3 +1,4 @@
+mod asset_rewrite;
 mod assets;
 mod blocks;
 mod css;
@@ -6,6 +7,7 @@ mod scope;
 #[cfg(test)]
 mod tests;
 
+pub use asset_rewrite::rewrite_template_asset_references;
 pub use assets::{
     TemplateAssetTagRule, TemplateAssetUrl, collect_template_asset_urls, is_importable_asset_url,
 };

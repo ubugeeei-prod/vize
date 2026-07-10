@@ -41,6 +41,12 @@ impl ServerState {
         self.linter_config.read().clone()
     }
 
+    /// Get a clone of the current per-rule lint options.
+    #[inline]
+    pub fn get_linter_rule_options(&self) -> vize_carton::config::LintRuleOptions {
+        self.linter_rule_options.read().clone()
+    }
+
     /// Get the configured Vue dialect override, if any.
     #[inline]
     pub fn get_dialect_config(&self) -> Option<vize_carton::dialect::VueDialect> {
@@ -62,10 +68,13 @@ impl ServerState {
         *self.type_checker_options_api.write() = features.type_checker_options_api;
         *self.type_checker_legacy_vue2.write() = features.type_checker_legacy_vue2;
         *self.type_checker_jsx_typecheck.write() = features.type_checker_jsx_typecheck;
+
+        let mut lsp_features = self.lsp_features.write();
+        lsp_features.options_api = features.type_checker_options_api;
         if let Some(enabled) = features.language_server_legacy_vue2 {
-            let mut lsp_features = self.lsp_features.write();
             lsp_features.legacy_vue2 = enabled;
         }
+        lsp_features.apply_effective_compatibility();
     }
 
     fn apply_linter_config(&self, config: LinterConfig, source: &str) {
@@ -76,6 +85,7 @@ impl ServerState {
     fn apply_lsp_config(&self, config: LspConfigSection, source: &str) {
         let mut features = self.lsp_features.write();
         config.apply_to(&mut features);
+        features.apply_effective_compatibility();
         self.lsp_typecheck_enabled
             .store(features.typecheck, Ordering::SeqCst);
         tracing::info!("Loaded LSP config from {}: {:?}", source, *features);
@@ -94,9 +104,11 @@ impl ServerState {
                 tracing::info!("Loaded format config from {}", source);
             }
             self.apply_linter_config(linter_config, &source);
+            *self.linter_rule_options.write() =
+                vize_carton::config::load_linter_rule_options(Some(dir));
             self.apply_type_checker_config(config.type_checker, &source);
-            self.apply_lsp_config(config.language_server.into(), &source);
             self.apply_config_features(loaded.features);
+            self.apply_lsp_config(config.language_server.into(), &source);
             self.set_dialect_config(config.dialect);
         }
     }
@@ -108,9 +120,11 @@ impl ServerState {
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
             self.apply_linter_config(linter_config, &source);
+            *self.linter_rule_options.write() =
+                vize_carton::config::load_linter_rule_options(Some(dir));
             self.apply_type_checker_config(loaded.config.type_checker, &source);
-            self.apply_lsp_config(loaded.config.language_server.into(), &source);
             self.apply_config_features(loaded.features);
+            self.apply_lsp_config(loaded.config.language_server.into(), &source);
             self.set_dialect_config(loaded.config.dialect);
         }
     }
@@ -180,5 +194,6 @@ fn format_options_from_config(config: &FormatterConfig) -> vize_glyph::FormatOpt
         attribute_groups: config.attribute_groups.clone(),
         normalize_directive_shorthands: config.normalize_directive_shorthands,
         sort_blocks: config.sort_blocks,
+        skip_script_stabilization: false,
     }
 }

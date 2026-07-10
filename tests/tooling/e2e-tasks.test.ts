@@ -10,6 +10,10 @@ function readRepoFile(...segments: string[]): string {
   return fs.readFileSync(path.join(root, ...segments), "utf8");
 }
 
+function assertExists(...segments: string[]): void {
+  assert.ok(fs.existsSync(path.join(root, ...segments)), segments.join("/"));
+}
+
 test("workspace exposes app e2e task aliases with scoped cache inputs", () => {
   const taskInputs = readRepoFile("tools/vite-plus/task-inputs.ts");
   const taskGroups = readRepoFile("tools/vite-plus/tasks/test-benchmark.ts");
@@ -34,4 +38,33 @@ test("workspace exposes app e2e task aliases with scoped cache inputs", () => {
   assert.match(taskGroups, /"test:e2e:vrt":\s*task\(runInPackages\("test:vrt", \["\.\/tests"\]\)/);
   assert.match(taskGroups, /input:\s*cacheInputs\.e2e/);
   assert.match(testPackage.scripts?.["test:dev:ci"] ?? "", /app\/dev\/nuxt-ui\.spec\.ts/);
+});
+
+test("real-world browser smoke inventory stays wired into app e2e scripts", () => {
+  const testPackage = JSON.parse(readRepoFile("tests", "package.json")) as {
+    scripts?: Record<string, string>;
+  };
+  const devScript = testPackage.scripts?.["test:dev:ci"] ?? "";
+  const previewScript = testPackage.scripts?.["test:preview"] ?? "";
+  const vrtScript = testPackage.scripts?.["test:vrt"] ?? "";
+
+  const devProjects = ["elk", "misskey", "npmx", "nuxt-ui", "vuefes"];
+  for (const project of devProjects) {
+    const spec = `app/dev/${project}.spec.ts`;
+    assertExists("tests", spec);
+    assert.match(devScript, new RegExp(spec.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+
+  const previewProjects = ["elk", "misskey", "npmx", "vuefes"];
+  for (const project of previewProjects) {
+    const script = `app/preview/${project}.ts`;
+    assertExists("tests", script);
+    assert.match(previewScript, new RegExp(script.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+
+  const vrtProjects = ["elk", "frontend-phpcon", "misskey", "npmx", "vuefes"];
+  for (const project of vrtProjects) {
+    assertExists("tests", "app", "vrt", `${project}.spec.ts`);
+  }
+  assert.match(vrtScript, /playwright test --config app\/playwright\.vrt\.config\.ts/);
 });

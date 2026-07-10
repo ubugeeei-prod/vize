@@ -97,5 +97,5 @@ once a maintained verification surface exists for those registries.
 If `cosign verify-blob` fails for an artifact you downloaded from
 [GitHub Releases](https://github.com/ubugeeei-prod/vize/releases), follow the
 disclosure process in [`SECURITY.md`](../../SECURITY.md). Do not open a public
-issue with the failure details until the maintainers have confirmed whether
+tracker entry with the failure details until the maintainers have confirmed whether
 the artifact set should be revoked.

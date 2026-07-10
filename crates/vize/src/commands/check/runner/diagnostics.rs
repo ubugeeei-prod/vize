@@ -8,6 +8,10 @@ use vize_carton::{FxHashSet, String as CompactString, cstr, profile, profiler::g
 use crate::commands::check::path_cache::CanonicalPathCache;
 use crate::commands::check::reporting::JsonOutput;
 
+mod suppressions;
+
+pub(super) use suppressions::is_suppressed_false_positive;
+
 pub(super) fn emit_json_output(json_output: JsonOutput) {
     match serde_json::to_string_pretty(&json_output) {
         Ok(output) => println!("{output}"),
@@ -18,25 +22,21 @@ pub(super) fn emit_json_output(json_output: JsonOutput) {
     }
 }
 
-/// Whether a registered file's diagnostics should be reported. For an explicit
-/// subset (`reported` is `Some`), only the requested files are reported; ambient
-/// and transitively-registered files exist only to resolve cross-file types.
-/// Project-level diagnostics (anchored to a tsconfig or the project root, not
-/// a source file) describe the whole check and are always reported.
+/// Whether a registered file's diagnostics should be reported. Only listed
+/// source files are reported; ambient and transitively-registered files exist
+/// only to resolve cross-file types. Project-level diagnostics (anchored to a
+/// tsconfig or the project root, not a source file) describe the whole check and
+/// are always reported.
 pub(super) fn is_reported(
-    reported: &Option<FxHashSet<PathBuf>>,
+    reported: &FxHashSet<PathBuf>,
     path: &Path,
     canonical_paths: &mut CanonicalPathCache,
 ) -> bool {
-    match reported {
-        None => true,
-        Some(set) => {
-            if !is_source_path(path) {
-                return true;
-            }
-            set.contains(&canonical_paths.canonicalize(path))
-        }
+    if !is_source_path(path) {
+        return true;
     }
+
+    reported.contains(&canonical_paths.canonicalize(path))
 }
 
 fn is_source_path(path: &Path) -> bool {
@@ -48,15 +48,6 @@ fn is_source_path(path: &Path) -> bool {
                 "vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx"
             )
         })
-}
-
-pub(super) fn is_suppressed_false_positive(diagnostic: &vize_canon::BatchDiagnostic) -> bool {
-    diagnostic.code == Some(2320)
-        && diagnostic
-            .message
-            .contains("Interface 'ImportMeta' cannot simultaneously extend types")
-        && diagnostic.message.contains("NitroStaticBuildFlags")
-        && diagnostic.message.contains("NitroImportMeta")
 }
 
 #[allow(clippy::disallowed_types)]
@@ -234,13 +225,11 @@ fn normalize_requested_virtual_ts_path(cwd: &Path, path: &Path) -> PathBuf {
     } else {
         cwd.join(path)
     };
-    absolute.canonicalize().unwrap_or(absolute)
+    vize_carton::path::canonicalize_non_verbatim(&absolute)
 }
 
 fn paths_refer_to_same_file(candidate_path: &Path, requested_path: &Path) -> bool {
-    let candidate_path = candidate_path
-        .canonicalize()
-        .unwrap_or_else(|_| candidate_path.to_path_buf());
+    let candidate_path = vize_carton::path::canonicalize_non_verbatim(candidate_path);
     candidate_path == requested_path
 }
 

@@ -18,10 +18,13 @@
 //! <MyComponent><template v-slot:header>Header</template></MyComponent>
 //! ```
 
-use crate::context::LintContext;
+use crate::context::{ElementContext, LintContext};
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{DirectiveNode, ElementNode, PropNode};
+use vize_carton::{FxHashSet, String, ToCompactString, is_native_tag};
+use vize_relief::{
+    DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode,
+};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-slot",
@@ -36,9 +39,22 @@ static META: RuleMeta = RuleMeta {
 pub struct ValidVSlot;
 
 impl ValidVSlot {
-    fn is_custom_component(tag: &str) -> bool {
-        // Custom components: PascalCase or kebab-case with hyphen
-        tag.chars().next().is_some_and(|c| c.is_uppercase()) || tag.contains('-')
+    fn is_custom_component(element: &ElementNode) -> bool {
+        Self::is_custom_component_tag(element.tag.as_str(), Some(element.tag_type))
+    }
+
+    fn is_custom_component_tag(tag: &str, tag_type: Option<ElementType>) -> bool {
+        if matches!(tag_type, Some(ElementType::Slot | ElementType::Template))
+            || matches!(tag, "slot" | "template")
+        {
+            return false;
+        }
+
+        // Vue treats unknown non-native tags as components, including
+        // lowercase single-word registered components such as <draggable>.
+        matches!(tag_type, Some(ElementType::Component))
+            || tag == "component"
+            || !is_native_tag(tag)
     }
 
     fn count_slot_directives(element: &ElementNode) -> (usize, usize) {
@@ -59,11 +75,25 @@ impl ValidVSlot {
 
         (default_count, named_count)
     }
+
+    fn is_named_slot(directive: &DirectiveNode) -> bool {
+        match &directive.arg {
+            None => false,
+            Some(ExpressionNode::Simple(arg)) => arg.content.as_str() != "default",
+            Some(ExpressionNode::Compound(_)) => true,
+        }
+    }
 }
 
 impl Rule for ValidVSlot {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        if Self::is_custom_component(element) {
+            check_child_slot_templates(ctx, element);
+        }
     }
 
     fn check_directive<'a>(
@@ -79,13 +109,29 @@ impl Rule for ValidVSlot {
         let tag = element.tag.as_str();
 
         // v-slot can only be used on components or <template>
-        if tag != "template" && !Self::is_custom_component(tag) {
+        if tag != "template" && !Self::is_custom_component(element) {
             ctx.error_with_help(
                 ctx.t("vue/valid-v-slot.invalid_location"),
                 &directive.loc,
                 ctx.t("vue/valid-v-slot.help"),
             );
             return;
+        }
+
+        if tag != "template" && Self::is_named_slot(directive) {
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-slot.invalid_location"),
+                &directive.loc,
+                ctx.t("vue/valid-v-slot.help"),
+            );
+        }
+
+        if tag == "template" && !has_component_parent(ctx) {
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-slot.invalid_location"),
+                &directive.loc,
+                ctx.t("vue/valid-v-slot.help"),
+            );
         }
 
         // Check for duplicate v-slot directives
@@ -119,55 +165,127 @@ impl Rule for ValidVSlot {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::ValidVSlot;
-    use crate::linter::Linter;
-    use crate::rule::RuleRegistry;
+fn check_child_slot_templates(ctx: &mut LintContext, owner: &ElementNode) {
+    let owner_default_slot = owner_default_slot_directive(owner);
+    let mut has_child_slot_template = false;
+    let mut seen_slots: FxHashSet<String> = FxHashSet::default();
+    let mut current_group_slots: FxHashSet<String> = FxHashSet::default();
+    let mut in_if_chain = false;
 
-    fn create_linter() -> Linter {
-        let mut registry = RuleRegistry::new();
-        registry.register(Box::new(ValidVSlot));
-        Linter::with_registry(registry)
+    for child in owner.children.iter() {
+        let TemplateChildNode::Element(child) = child else {
+            continue;
+        };
+
+        let Some(slot) = child_slot_directive(child) else {
+            finish_slot_group(&mut seen_slots, &mut current_group_slots);
+            in_if_chain = false;
+            continue;
+        };
+        has_child_slot_template = true;
+
+        let starts_chain = has_directive(child, "if");
+        let continues_chain =
+            in_if_chain && (has_directive(child, "else-if") || has_directive(child, "else"));
+
+        if starts_chain || !continues_chain {
+            finish_slot_group(&mut seen_slots, &mut current_group_slots);
+            in_if_chain = starts_chain;
+        }
+
+        if let Some(name) = static_slot_name(slot) {
+            if !current_group_slots.contains(&name) && seen_slots.contains(&name) {
+                ctx.error_with_help(
+                    ctx.t("vue/valid-v-slot.invalid_location"),
+                    &slot.loc,
+                    ctx.t("vue/valid-v-slot.help"),
+                );
+            }
+            current_group_slots.insert(name);
+        }
+
+        if !starts_chain && !continues_chain {
+            finish_slot_group(&mut seen_slots, &mut current_group_slots);
+            in_if_chain = false;
+        }
     }
 
-    #[test]
-    fn test_valid_default_slot() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<MyComponent v-slot="{ item }">{{ item }}</MyComponent>"#,
-            "test.vue",
+    finish_slot_group(&mut seen_slots, &mut current_group_slots);
+
+    if let Some(default_slot) = owner_default_slot
+        && has_child_slot_template
+    {
+        ctx.error_with_help(
+            ctx.t("vue/valid-v-slot.mixed_default_and_child_slots"),
+            &default_slot.loc,
+            ctx.t("vue/valid-v-slot.help"),
         );
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_named_slot_template() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<MyComponent><template #header>Header</template></MyComponent>"#,
-            "test.vue",
-        );
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_invalid_on_html_element() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div v-slot:header></div>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_valid_multiple_named_slots() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<MyComponent>
-                <template #header>Header</template>
-                <template #footer>Footer</template>
-            </MyComponent>"#,
-            "test.vue",
-        );
-        assert_eq!(result.error_count, 0);
     }
 }
+
+fn finish_slot_group(seen_slots: &mut FxHashSet<String>, group_slots: &mut FxHashSet<String>) {
+    seen_slots.extend(group_slots.drain());
+}
+
+fn owner_default_slot_directive<'a>(element: &'a ElementNode<'a>) -> Option<&'a DirectiveNode<'a>> {
+    element.props.iter().find_map(|prop| match prop {
+        PropNode::Directive(dir)
+            if dir.name.as_str() == "slot" && !ValidVSlot::is_named_slot(dir) =>
+        {
+            Some(dir.as_ref())
+        }
+        _ => None,
+    })
+}
+
+fn child_slot_directive<'a>(element: &'a ElementNode<'a>) -> Option<&'a DirectiveNode<'a>> {
+    if element.tag.as_str() != "template" {
+        return None;
+    }
+
+    element.props.iter().find_map(|prop| match prop {
+        PropNode::Directive(dir) if dir.name.as_str() == "slot" => Some(dir.as_ref()),
+        _ => None,
+    })
+}
+
+fn has_directive(element: &ElementNode, name: &str) -> bool {
+    element
+        .props
+        .iter()
+        .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name.as_str() == name))
+}
+
+fn has_component_parent(ctx: &LintContext) -> bool {
+    ctx.parent_element()
+        .is_some_and(is_component_parent_context)
+}
+
+fn is_component_parent_context(parent: &ElementContext) -> bool {
+    let tag = parent.tag.as_str();
+    !matches!(tag, "slot" | "template") && (tag == "component" || !is_native_tag(tag))
+}
+
+fn static_slot_name(directive: &DirectiveNode) -> Option<String> {
+    match &directive.arg {
+        None => Some("default".into()),
+        Some(ExpressionNode::Simple(arg)) => {
+            let mut name = arg.content.to_compact_string();
+            for modifier in &directive.modifiers {
+                name.push('.');
+                name.push_str(modifier.content.as_str());
+            }
+            Some(name)
+        }
+        Some(ExpressionNode::Compound(_)) => None,
+    }
+}
+
+#[cfg(test)]
+mod location_tests;
+
+#[cfg(test)]
+mod mixed_default_tests;
+
+#[cfg(test)]
+mod tests;

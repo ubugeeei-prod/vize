@@ -1,9 +1,10 @@
 //! Tests for CSS compilation.
 
+mod scoped_regressions;
+
 #[cfg(feature = "native")]
 use std::{fs, path::PathBuf};
-use vize_carton::ToCompactString;
-use vize_carton::{Bump, BumpVec};
+use vize_carton::{Bump, BumpVec, ToCompactString};
 
 #[cfg(feature = "native")]
 use super::CssTargets;
@@ -77,27 +78,6 @@ fn test_compile_scoped_css() {
     );
     assert!(result.errors.is_empty());
     insta::assert_debug_snapshot!(result);
-}
-
-#[test]
-fn test_compile_scoped_css_keeps_functional_pseudo_selector_list_intact() {
-    let code = compile_scoped_css_without_whitespace(".btn:is(.a, .b) { color: red; }");
-
-    assert_eq!(code, ".btn[data-v-123]:is(.a,.b){color:red;}");
-}
-
-#[test]
-fn test_compile_scoped_css_scopes_before_functional_pseudo() {
-    let code = compile_scoped_css_without_whitespace(".foo:not(:hover) { color: red; }");
-
-    assert_eq!(code, ".foo[data-v-123]:not(:hover){color:red;}");
-}
-
-#[test]
-fn test_compile_scoped_css_keeps_functional_pseudo_whitespace_intact() {
-    let code = compile_scoped_css_without_whitespace(".card:has(.icon + .label) { color: red; }");
-
-    assert_eq!(code, ".card[data-v-123]:has(.icon+.label){color:red;}");
 }
 
 #[cfg(feature = "native")]
@@ -218,11 +198,11 @@ fn test_v_bind_extraction_with_scope_id() {
 
 #[test]
 fn test_prod_scoped_v_bind_name_matches_vue_hash_sum() {
-    let id = "npm/rspack-vize-plugin/src/test/fixtures/scoped-v-bind/App.vue";
+    let id = "npm/builder/rspack/src/test/fixtures/scoped-v-bind/App.vue";
 
-    assert_eq!(prod_scoped_v_bind_name(id, "textColor"), "v9531ad58");
-    assert_eq!(prod_scoped_v_bind_name(id, "bgColor"), "v02f640bc");
-    assert_eq!(prod_scoped_v_bind_name(id, "fontSize"), "v27b86bdc");
+    assert_eq!(prod_scoped_v_bind_name(id, "textColor"), "v88a7da96");
+    assert_eq!(prod_scoped_v_bind_name(id, "bgColor"), "v3b0fe346");
+    assert_eq!(prod_scoped_v_bind_name(id, "fontSize"), "v06489ede");
 }
 
 #[test]

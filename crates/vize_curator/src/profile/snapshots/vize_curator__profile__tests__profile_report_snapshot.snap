@@ -57,6 +57,24 @@ expression: render_profile_report(&report)
 [90m  counter                                samples    total        avg         min         max[0m
   atelier.fallback.vapor_ssr                   1           1         1.0           1           1
 
+[1mSource facts[0m
+[90m  counter                                samples    total        avg         min         max[0m
+  source.plate.sfc.requests                    1           1         1.0           1           1
+  source.block.template.bytes                  1       512 B       512.0 B       512 B       512 B
+  source.cache.miss.files                      1           1         1.0           1           1
+
+[1mProduct lanes[0m
+[90m  counter                                samples    total        avg         min         max[0m
+  lane.atelier.dom.requests                    1           1         1.0           1           1
+
+[1mVue dialects[0m
+[90m  counter                                samples    total        avg         min         max[0m
+  dialect.vue3.files                           1           1         1.0           1           1
+
+[1mTemplate syntax[0m
+[90m  counter                                samples    total        avg         min         max[0m
+  template_syntax.standard.files               1           1         1.0           1           1
+
 [1mI/O counters[0m
 [90m  counter                                samples    total        avg         min         max[0m
   io.read.bytes                                1     2.00 KiB        2.00 KiB     2.00 KiB     2.00 KiB

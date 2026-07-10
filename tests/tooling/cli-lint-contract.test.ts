@@ -53,6 +53,8 @@ function withWorkspace<T>(run: (dir: string) => T): T {
 const MULTI_SPACE = '<template>\n  <div  id="x"></div>\n</template>\n';
 const CLEAN = '<template>\n  <div id="x" />\n</template>\n';
 const MULTIBYTE_BEFORE_DIRECTIVE = '<template><div title="café" v-html="x"></div></template>\n';
+const LEVEL_OFF_NEXT_LINE_UNSAFE_URL =
+  '<template>\n  <!-- @vize:level(off) -->\n  <a href="javascript:alert(1)">link</a>\n</template>\n';
 
 test("vize lint --help documents the fix/config/max-warnings surface", () => {
   const result = spawnSync(VIZE.command, [...VIZE.prefix, "lint", "--help"], {
@@ -143,6 +145,17 @@ test("vize lint --format json reports character columns after multibyte text", (
     assert.equal(message.column, 29);
     assert.equal(message.endLine, 1);
     assert.equal(message.endColumn, 39);
+  });
+});
+
+test("vize lint level(off) suppresses next-line template diagnostics", () => {
+  withWorkspace((dir) => {
+    fs.writeFileSync(path.join(dir, "UnsafeUrl.vue"), LEVEL_OFF_NEXT_LINE_UNSAFE_URL, "utf8");
+    const result = runLint(["UnsafeUrl.vue", "--help-level", "short", "--max-warnings", "0"], dir);
+
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+    assert.match(`${result.stdout}${result.stderr}`, /No problems found/);
+    assert.doesNotMatch(`${result.stdout}${result.stderr}`, /vue\/no-unsafe-url/);
   });
 });
 

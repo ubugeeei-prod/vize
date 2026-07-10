@@ -3,6 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use super::Diagnostic;
+use super::declaration_path::is_declaration_file;
 use super::error::{CorsaError, CorsaResult};
 use super::executor::CorsaExecutor;
 use super::virtual_project::VirtualProject;
@@ -135,7 +136,7 @@ impl BatchTypeChecker {
         let mut project = project;
         project.set_tsconfig_path(options.tsconfig_path);
         project.set_virtual_ts_options(options.virtual_ts_options);
-        let executor = CorsaExecutor::with_corsa_path(project_root, corsa_path)?;
+        let executor = CorsaExecutor::with_corsa_path(project.project_root(), corsa_path)?;
 
         Ok(Self {
             project,
@@ -193,13 +194,16 @@ impl BatchTypeChecker {
         self.project.set_template_syntax(template_syntax);
     }
 
+    /// Enable experimental Vue in-tag comments for template parsing.
+    pub fn set_experimental_in_tag_comments(&mut self, enabled: bool) {
+        self.project.set_experimental_in_tag_comments(enabled);
+    }
+
     /// Set the configured Vue dialect (`vue.version`; default
     /// [`VueVersion::V3`](vize_carton::config::VueVersion::V3)).
     ///
-    /// Plumbing only today: the dialect is threaded into virtual-TS generation
-    /// so canon can later emit dialect-aware instance types (e.g. a Vue 2 `this`
-    /// shape). It does not change generated output yet, so the default V3 path
-    /// stays byte-identical.
+    /// Threaded into virtual-TS generation so canon can emit dialect-aware
+    /// instance types.
     pub fn set_dialect(&mut self, dialect: vize_carton::config::VueVersion) {
         self.project.set_dialect(dialect);
     }
@@ -263,6 +267,13 @@ impl BatchTypeChecker {
         self.project.virtual_files_sorted()
     }
 
+    /// Access the shared helpers preamble when this checker generated one.
+    pub fn shared_helpers_preamble(&self) -> Option<&'static str> {
+        self.project
+            .uses_shared_helpers()
+            .then_some(crate::virtual_ts::SHARED_PREAMBLE_DTS)
+    }
+
     /// Emit declaration files for the scanned project.
     pub fn emit_declarations(
         &self,
@@ -320,10 +331,7 @@ fn is_supported_input(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
         .is_some_and(|extension| matches!(extension, "vue" | "ts" | "tsx" | "mts" | "cts"))
-        || path
-            .file_name()
-            .and_then(|name| name.to_str())
-            .is_some_and(|name| name.ends_with(".d.ts"))
+        || is_declaration_file(path)
 }
 
 #[cfg(test)]

@@ -5,7 +5,7 @@
 //! `v-memo` (Vue 3.2+) memoizes a sub-tree of the template. It requires:
 //! - An expression (the dependency array)
 //! - The expression should be an array
-//! - Cannot be used on `v-for` elements (should use on parent)
+//! - When used with `v-for`, it must be placed on the same element
 //!
 //! ## Examples
 //!
@@ -68,6 +68,24 @@ impl Rule for ValidVMemo {
             return;
         }
 
+        if ctx.has_ancestor(|ancestor| ancestor.has_v_for) {
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-memo.inside_v_for"),
+                &directive.loc,
+                ctx.t("vue/valid-v-memo.help"),
+            );
+        }
+
+        if let Some(exp) = &directive.exp
+            && is_definitely_non_array_expression(exp)
+        {
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-memo.expected_array"),
+                &directive.loc,
+                ctx.t("vue/valid-v-memo.help"),
+            );
+        }
+
         // v-memo should not have an argument
         if directive.arg.is_some() {
             ctx.error_with_help(
@@ -86,6 +104,31 @@ impl Rule for ValidVMemo {
             );
         }
     }
+}
+
+fn is_definitely_non_array_expression(exp: &ExpressionNode) -> bool {
+    let ExpressionNode::Simple(simple) = exp else {
+        return false;
+    };
+    let expr = simple.content.trim();
+    if expr.starts_with('[') {
+        return false;
+    }
+    expr.starts_with('"')
+        || expr.starts_with('\'')
+        || expr.starts_with('`')
+        || expr.starts_with('{')
+        || expr.starts_with("function")
+        || expr.starts_with("class")
+        || expr.ends_with("++")
+        || expr.ends_with("--")
+        || contains_binary_operator(expr)
+}
+
+fn contains_binary_operator(expr: &str) -> bool {
+    ["+", "-", "*", "/", "%"]
+        .iter()
+        .any(|operator| expr.contains(operator))
 }
 
 #[cfg(test)]
@@ -114,6 +157,40 @@ mod tests {
     fn test_valid_v_memo_with_expression() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div v-memo="deps">content</div>"#, "test.vue");
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_v_memo_with_binary_expression() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div v-memo="count + 1">content</div>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_v_memo_with_update_expression() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div v-memo="count++">content</div>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_v_memo_inside_v_for() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div v-for="item in items" :key="item.id"><span v-memo="[item]"></span></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_valid_v_memo_on_same_element_as_v_for() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div v-for="item in items" :key="item.id" v-memo="[item]"></div>"#,
+            "test.vue",
+        );
         assert_eq!(result.error_count, 0);
     }
 

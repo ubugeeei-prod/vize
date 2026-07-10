@@ -1,24 +1,24 @@
 use super::{
     CorsaProjectClient,
     bootstrap::resolve_corsa_executable,
-    paths::{find_node_modules_with_vue, resolve_temp_dir_base},
-    session::materialize_session_document,
+    lifecycle_setup::{
+        cleanup_stale_sessions, install_node_modules_link, write_session_meta,
+        write_shared_helper_decls, write_temp_tsconfig, write_vue_module_stubs,
+    },
+    paths::resolve_temp_dir_base,
+    session::{materialize_session_document, uri_document_identifier},
+    virtual_overlay,
 };
 use corsa::{
-    api::{FileChangeSummary, FileChanges},
+    CorsaError,
+    api::{FileChangeSummary, FileChanges, OverlayChanges, OverlayUpdate},
     runtime::block_on,
 };
-use serde_json::json;
 use std::{
     path::{Path, PathBuf},
     sync::atomic::{AtomicUsize, Ordering},
-    time::{SystemTime, UNIX_EPOCH},
 };
-use vize_carton::{String, ToCompactString, cstr};
-
-const SESSION_META_FILE: &str = "meta.json";
-const SESSION_SCHEMA_VERSION: u32 = 1;
-const STALE_SESSION_SECONDS: u64 = 24 * 60 * 60;
+use vize_carton::{String, cstr};
 
 impl CorsaProjectClient {
     /// Start a Corsa project session rooted at an isolated scratch workspace.
@@ -106,10 +106,7 @@ impl CorsaProjectClient {
             return Ok(());
         }
 
-        if documents
-            .iter()
-            .any(|(uri, _)| self.session_document_uri(uri) == *uri)
-        {
+        if !self.supports_overlay_api() {
             for (uri, content) in documents {
                 self.clear_document_state(uri);
                 self.sync_overlay_document(uri, content)?;
@@ -118,23 +115,85 @@ impl CorsaProjectClient {
         }
 
         let mut summary = FileChangeSummary::default();
+        let mut overlay_upserts = Vec::new();
+        let mut changed = false;
         for (uri, content) in documents {
             self.clear_document_state(uri);
-            self.document_texts.insert((*uri).into(), (*content).into());
+            let previous = self.document_texts.insert((*uri).into(), (*content).into());
 
             let document_uri = self.session_document_uri(uri);
+            if previous.as_deref() == Some(*content) {
+                continue;
+            }
+            changed = true;
             merge_materialized_file_changes(
                 &mut summary,
-                materialize_session_document(uri, document_uri.as_str(), content),
+                materialize_session_document(uri, document_uri.as_str(), content).or_else(|| {
+                    virtual_overlay::upsert_file_changes(
+                        uri,
+                        document_uri.as_str(),
+                        &self.project_root,
+                        previous.is_some(),
+                    )
+                }),
             );
+            if document_uri == *uri {
+                let version = self
+                    .overlay_versions
+                    .get(*uri)
+                    .copied()
+                    .unwrap_or(0)
+                    .saturating_add(1);
+                self.overlay_versions.insert((*uri).into(), version);
+                overlay_upserts.push(OverlayUpdate {
+                    document: uri_document_identifier(document_uri.as_str()),
+                    text: (*content).into(),
+                    version: Some(version),
+                    language_id: Some("typescript".into()),
+                });
+            }
         }
 
-        if summary.changed.is_empty() && summary.created.is_empty() {
+        if !changed {
             return Ok(());
         }
 
-        block_on(self.session.refresh(Some(FileChanges::Summary(summary))))
-            .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"))
+        let file_changes = if summary.changed.is_empty()
+            && summary.created.is_empty()
+            && summary.deleted.is_empty()
+        {
+            None
+        } else {
+            Some(FileChanges::Summary(summary))
+        };
+
+        if overlay_upserts.is_empty() {
+            return block_on(self.session.refresh(file_changes))
+                .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"));
+        }
+
+        match block_on(self.session.refresh_with_overlay_changes(
+            file_changes,
+            Some(OverlayChanges {
+                upsert: overlay_upserts,
+                delete: Vec::new(),
+            }),
+        )) {
+            Ok(()) => Ok(()),
+            Err(CorsaError::Unsupported(_)) => {
+                self.overlay_api_disabled = true;
+                for (uri, _) in documents {
+                    self.document_texts.remove(*uri);
+                    self.overlay_versions.remove(*uri);
+                }
+                for (uri, content) in documents {
+                    self.clear_document_state(uri);
+                    self.sync_overlay_document(uri, content)?;
+                }
+                Ok(())
+            }
+            Err(error) => Err(cstr!("Failed to refresh Corsa snapshot: {error}")),
+        }
     }
 
     /// Update an already-open virtual document overlay.
@@ -175,118 +234,6 @@ impl Drop for CorsaProjectClient {
     }
 }
 
-fn install_node_modules_link(project_root: Option<&Path>, temp_dir_path: &Path) {
-    let node_modules_path = project_root.and_then(find_node_modules_with_vue);
-    if let Some(ref node_modules_path) = node_modules_path {
-        let symlink_target = temp_dir_path.join("node_modules");
-        let _ = std::fs::remove_file(&symlink_target);
-        #[cfg(unix)]
-        {
-            let _ = std::os::unix::fs::symlink(node_modules_path, &symlink_target);
-        }
-        #[cfg(windows)]
-        {
-            let _ = std::os::windows::fs::symlink_dir(node_modules_path, &symlink_target);
-        }
-    }
-}
-
-fn write_session_meta(temp_dir_path: &Path) -> Result<(), String> {
-    let created_at = now_unix_seconds();
-    let content = json!({
-        "schemaVersion": SESSION_SCHEMA_VERSION,
-        "tool": "vize-corsa",
-        "pid": std::process::id(),
-        "createdAtUnix": created_at
-    });
-    std::fs::write(
-        temp_dir_path.join(SESSION_META_FILE),
-        serde_json::to_string_pretty(&content)
-            .map_err(|e| cstr!("Failed to serialize Corsa session metadata: {e}"))?,
-    )
-    .map_err(|e| cstr!("Failed to write Corsa session metadata: {e}"))
-}
-
-fn cleanup_stale_sessions(base_dir: &Path) {
-    let Ok(entries) = std::fs::read_dir(base_dir) else {
-        return;
-    };
-
-    for entry in entries.filter_map(Result::ok) {
-        let path = entry.path();
-        if !path.is_dir() || !should_remove_session_dir(&path) {
-            continue;
-        }
-        let _ = std::fs::remove_dir_all(path);
-    }
-}
-
-fn should_remove_session_dir(path: &Path) -> bool {
-    let meta_path = path.join(SESSION_META_FILE);
-    let Ok(content) = std::fs::read_to_string(meta_path) else {
-        return session_dir_is_stale(path);
-    };
-    let Ok(meta) = serde_json::from_str::<serde_json::Value>(&content) else {
-        return true;
-    };
-
-    if meta
-        .get("schemaVersion")
-        .and_then(serde_json::Value::as_u64)
-        != Some(SESSION_SCHEMA_VERSION as u64)
-    {
-        return true;
-    }
-
-    let Some(pid) = meta
-        .get("pid")
-        .and_then(serde_json::Value::as_u64)
-        .and_then(|pid| u32::try_from(pid).ok())
-    else {
-        return true;
-    };
-
-    if !process_is_alive(pid) {
-        return true;
-    }
-
-    meta.get("createdAtUnix")
-        .and_then(serde_json::Value::as_u64)
-        .is_some_and(|created_at| {
-            now_unix_seconds().saturating_sub(created_at) > STALE_SESSION_SECONDS
-        })
-}
-
-fn session_dir_is_stale(path: &Path) -> bool {
-    std::fs::metadata(path)
-        .and_then(|metadata| metadata.modified())
-        .ok()
-        .and_then(|modified| SystemTime::now().duration_since(modified).ok())
-        .is_some_and(|age| age.as_secs() > STALE_SESSION_SECONDS)
-}
-
-fn now_unix_seconds() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|duration| duration.as_secs())
-        .unwrap_or(0)
-}
-
-#[cfg(unix)]
-fn process_is_alive(pid: u32) -> bool {
-    if pid == std::process::id() {
-        return true;
-    }
-    // SAFETY: `kill(pid, 0)` does not send a signal; it only checks whether the
-    // process exists and is visible to the current user.
-    unsafe { libc::kill(pid as libc::pid_t, 0) == 0 }
-}
-
-#[cfg(not(unix))]
-fn process_is_alive(_pid: u32) -> bool {
-    true
-}
-
 fn merge_materialized_file_changes(
     summary: &mut FileChangeSummary,
     file_changes: Option<FileChanges>,
@@ -298,54 +245,6 @@ fn merge_materialized_file_changes(
     summary.changed.extend(file_changes.changed);
     summary.created.extend(file_changes.created);
     summary.deleted.extend(file_changes.deleted);
-}
-
-/// Write a minimal `tsconfig.json` that keeps the native checker in strict mode.
-fn write_temp_tsconfig(temp_dir_path: &Path) -> Result<(), String> {
-    let tsconfig_content = json!({
-        "compilerOptions": {
-            "target": "ES2022",
-            "module": "ESNext",
-            "moduleResolution": "bundler",
-            "lib": ["ES2022", "DOM", "DOM.Iterable"],
-            "strict": true,
-            "noEmit": true,
-            "skipLibCheck": true
-        }
-    });
-    std::fs::write(
-        temp_dir_path.join("tsconfig.json"),
-        tsconfig_content.to_compact_string(),
-    )
-    .map_err(|e| cstr!("Failed to write temp tsconfig.json: {e}"))
-}
-
-fn write_vue_module_stubs(temp_dir_path: &Path) -> Result<(), String> {
-    let content = r#"declare module "*.vue" {
-  const component: import("vue").DefineComponent<any, any, any>;
-  export default component;
-}
-
-declare module "*.vue.ts" {
-  const component: import("vue").DefineComponent<any, any, any>;
-  export default component;
-}
-"#;
-    std::fs::write(temp_dir_path.join("__vize_vue_modules.d.ts"), content)
-        .map_err(|e| cstr!("Failed to write Vue module declarations: {e}"))
-}
-
-/// Write the shared ambient helpers into the scratch session so virtual
-/// documents generated with the hoisted preamble resolve the program-wide
-/// helper declarations. Self-contained (non-hoisted) documents are unaffected:
-/// their module-local helpers shadow these globals and the `ImportMeta`
-/// interface merges with identical members.
-fn write_shared_helper_decls(temp_dir_path: &Path) -> Result<(), String> {
-    std::fs::write(
-        temp_dir_path.join(crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME),
-        crate::virtual_ts::SHARED_PREAMBLE_DTS,
-    )
-    .map_err(|e| cstr!("Failed to write shared helper declarations: {e}"))
 }
 
 #[cfg(test)]

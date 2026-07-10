@@ -1,0 +1,81 @@
+---
+source: crates/vize_atelier_jsx/tests/ssr.rs
+expression: "snapshot_cases(&cases, |source| { ssr_code(source, JsxLang::Jsx) })"
+---
+## element
+### source
+const A = () => <div/>;
+### output
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_attrs)}></div>`)
+}
+
+
+## text
+### source
+const A = () => <p>hello</p>;
+### output
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<p${_ssrRenderAttrs(_attrs)}>hello</p>`)
+}
+
+
+## interpolation
+### source
+const A = () => <div>{msg}</div>;
+### output
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(msg)}</div>`)
+}
+
+
+## dynamic attr
+### source
+const A = () => <div id={id}>{msg}</div>;
+### output
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_mergeProps({ id: id }, _attrs))}>${_ssrInterpolate(msg)}</div>`)
+}
+
+
+## control flow
+### source
+const A = () => <div>{ok ? <span>yes</span> : <em>no</em>}</div>;
+### output
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_attrs)}>`)
+  if (ok) {
+    _push(`<span>yes</span>`)
+  } else {
+    _push(`<em>no</em>`)
+  }
+  _push(`</div>`)
+}
+
+
+## list
+### source
+const A = () => <ul>{items.map((item) => <li>{item}</li>)}</ul>;
+### output
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderList as _ssrRenderList } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<ul${_ssrRenderAttrs(_attrs)}>`)
+  _push(`<!--[-->`)
+  _ssrRenderList(items, (item) => {
+    _push(`<li>${_ssrInterpolate(item)}</li>`)
+  })
+  _push(`<!--]-->`)
+  _push(`</ul>`)
+}

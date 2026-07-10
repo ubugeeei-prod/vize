@@ -42,6 +42,14 @@ pub struct DomCompilerOptions {
     #[serde(default)]
     pub comments: bool,
 
+    /// Enable experimental Vue in-tag comments (`// ...`) inside opening tags.
+    #[serde(default)]
+    pub experimental_in_tag_comments: bool,
+
+    /// Enable experimental `v-match` / `v-case` patterned template desugaring.
+    #[serde(default)]
+    pub experimental_patterned_template: bool,
+
     /// Current SFC component name for self-reference resolution
     #[serde(default)]
     pub component_name: Option<String>,
@@ -88,6 +96,8 @@ impl Clone for DomCompilerOptions {
             ssr: self.ssr,
             source_map: self.source_map,
             comments: self.comments,
+            experimental_in_tag_comments: self.experimental_in_tag_comments,
+            experimental_patterned_template: self.experimental_patterned_template,
             component_name: self.component_name.clone(),
             inline: self.inline,
             custom_renderer: self.custom_renderer,
@@ -111,6 +121,8 @@ impl Default for DomCompilerOptions {
             ssr: false,
             source_map: false,
             comments: false,
+            experimental_in_tag_comments: false,
+            experimental_patterned_template: false,
             component_name: None,
             inline: false,
             custom_renderer: false,

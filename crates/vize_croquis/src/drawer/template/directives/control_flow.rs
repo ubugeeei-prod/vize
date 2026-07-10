@@ -22,7 +22,6 @@ impl Drawer {
 
         for branch in if_node.branches.iter() {
             if self.options.detect_undefined
-                && self.script_drawn
                 && let Some(ref cond) = branch.condition
             {
                 profile!(
@@ -32,7 +31,6 @@ impl Drawer {
             }
 
             if self.options.detect_undefined
-                && self.script_drawn
                 && let Some(PropNode::Directive(dir)) = &branch.user_key
                 && let Some(ref exp) = dir.exp
             {
@@ -126,7 +124,7 @@ impl Drawer {
             scope_vars.push(var);
         }
 
-        if self.options.detect_undefined && self.script_drawn {
+        if self.options.detect_undefined {
             profile!(
                 "croquis.template.v_for.source_refs",
                 self.check_expression_refs(&for_node.source, scope_vars)

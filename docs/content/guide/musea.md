@@ -189,7 +189,8 @@ src/components/Button.vue
 src/components/Button.art.vue
 ```
 
-Use a separate `stories` or `art` directory when a design system owns many cross-cutting examples:
+Use a separate `stories` or `art` directory when a design system owns many cross-cutting examples,
+or when Nuxt component auto-discovery scans the component directory:
 
 ```txt
 src/components/Button.vue
@@ -294,8 +295,17 @@ vp dev --host 0.0.0.0
 vp exec musea-vrt --base-url http://localhost:5173 --ci --json
 ```
 
-Use `--update` locally to refresh baselines, `approve` to accept failed snapshots, and `clean` to
-remove orphaned snapshots after deleting variants.
+The workflow: commit baselines under the snapshot directory, run `musea-vrt --ci --json` against a
+running dev server, then inspect `vrt-report.json`/`vrt-report.html` plus `snapshots/current` and
+`snapshots/diff` on failure. Re-run with `--update` (or `approve` for selected variants) for
+intentional changes, and run `clean` after removing art files so stale baselines do not hide gaps.
+`--ci` exits non-zero for visual diffs and for preview/capture errors (missing route, browser
+failure, selector timeout); new baselines are reported as `new`, so run `--update` locally first.
+
+The example app also wires the Playwright-native VRT path (`examples/vite-musea`, run via
+`vp run test:vrt` / `vp run test:vrt:update`). Snapshots live in `e2e/vrt/__snapshots__`, failure
+artifacts in `e2e/vrt/test-results`, and the HTML report in `playwright-report`; GitHub Actions
+uploads them on failure so reviewers can inspect the baseline, current, and diff images.
 
 ## Generate Art Files
 

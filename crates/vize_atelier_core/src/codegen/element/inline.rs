@@ -22,7 +22,8 @@ use super::{
         props::generate_props,
         slots::{
             generate_slot_outlet_name, generate_slot_outlet_props, generate_slots,
-            has_dynamic_slots_flag, has_slot_children, has_slot_outlet_props,
+            has_dynamic_slots_flag, has_forwarded_slot_outlet, has_slot_children,
+            has_slot_outlet_props,
         },
     },
     directives::{
@@ -261,11 +262,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             } else if let Some(builtin) = is_builtin_component(&el.tag) {
                 ctx.use_helper(builtin);
                 ctx.push(ctx.helper(builtin));
-            } else if let Some(binding_name) = ctx.resolve_component_binding_name(&el.tag) {
-                if !ctx.options.inline {
-                    ctx.push("$setup.");
-                }
-                ctx.push(&binding_name);
+            } else if ctx.push_component_binding_tag(&el.tag) {
             } else {
                 ctx.push(&to_valid_asset_identifier("component", &el.tag));
             }
@@ -297,7 +294,11 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
             // KeepAlive always needs DYNAMIC_SLOTS. Other components need it when
             // slot structure is dynamic.
-            if el.tag == "KeepAlive" || el.tag == "keep-alive" || has_dynamic_slots_flag(el) {
+            if el.tag == "KeepAlive"
+                || el.tag == "keep-alive"
+                || has_dynamic_slots_flag(el)
+                || (ctx.has_slot_params() && has_forwarded_slot_outlet(el))
+            {
                 patch_flag = Some(patch_flag.unwrap_or(0) | 1024);
             }
 

@@ -13,7 +13,6 @@ use std::{
 
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
-
     let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("target")
@@ -24,6 +23,7 @@ fn unique_case_dir(name: &str) -> PathBuf {
         ))
 }
 
+mod nuxt_root;
 #[test]
 fn suppresses_nuxt_nitro_import_meta_conflict_false_positive() {
     let diagnostic = vize_canon::BatchDiagnostic {
@@ -110,7 +110,7 @@ fn resolves_monorepo_root_for_files_spanning_package_tsconfigs() {
 }
 
 #[test]
-fn resolves_package_root_for_files_inside_one_package() {
+fn resolves_package_root_for_relative_tsconfig_inside_one_package() {
     let project_root = unique_case_dir("package-root");
     let _ = std::fs::remove_dir_all(&project_root);
     let app_dir = project_root.join("packages/app");
@@ -121,10 +121,9 @@ fn resolves_package_root_for_files_inside_one_package() {
     for file in &files {
         std::fs::write(file, "").unwrap();
     }
-
-    let resolved_root = resolve_project_root(None, &project_root, &files);
-    let resolved_tsconfig = resolve_tsconfig_path(None, &project_root, &resolved_root, &files);
-
+    let tsconfig = Path::new("tsconfig.json");
+    let resolved_root = resolve_project_root(Some(tsconfig), &app_dir, &files);
+    let resolved_tsconfig = resolve_tsconfig_path(Some(tsconfig), &app_dir, &resolved_root, &files);
     assert_eq!(resolved_root, app_dir);
     assert_eq!(resolved_tsconfig, Some(resolved_root.join("tsconfig.json")));
 
@@ -153,6 +152,30 @@ fn resolves_common_root_when_explicit_tsconfig_is_below_inputs() {
     assert_eq!(resolved_tsconfig, Some(tsconfig));
 
     let _ = std::fs::remove_dir_all(&resolved_root);
+}
+
+#[test]
+fn explicit_tsconfig_root_ignores_node_modules_dependency_roots() {
+    let project_root = unique_case_dir("explicit-tsconfig-node-modules");
+    let _ = std::fs::remove_dir_all(&project_root);
+    let app_dir = project_root.join("packages/app");
+    let src_dir = app_dir.join("src");
+    let dep_dir = project_root.join("node_modules/.pnpm/vue/node_modules/vue");
+    std::fs::create_dir_all(&src_dir).unwrap();
+    std::fs::create_dir_all(&dep_dir).unwrap();
+    let tsconfig = app_dir.join("tsconfig.json");
+    let app = src_dir.join("App.vue");
+    let dep = dep_dir.join("jsx.d.ts");
+    std::fs::write(&tsconfig, "{}").unwrap();
+    std::fs::write(&app, "<template />").unwrap();
+    std::fs::write(&dep, "export {};\n").unwrap();
+    let files = vec![app, dep];
+
+    let resolved_root = resolve_project_root(Some(&tsconfig), &app_dir, &files);
+
+    assert_eq!(resolved_root, app_dir);
+
+    let _ = std::fs::remove_dir_all(&project_root);
 }
 
 #[test]
@@ -308,6 +331,7 @@ fn writes_nuxt_fallback_tsconfig_without_overwriting_existing_paths() {
 
     let wrapper = write_nuxt_fallback_tsconfig(
         Some(&tsconfig),
+        &project_root,
         &project_root,
         &[
             NuxtPathAlias {

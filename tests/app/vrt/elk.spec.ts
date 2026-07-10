@@ -3,6 +3,7 @@ import type { ChildProcess } from "node:child_process";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createElkVisualParityApps, type AppConfig } from "../../_helpers/apps";
+import { disableViteHmrClient } from "../../_helpers/nuxtRuntime";
 import {
   ensurePortFree,
   killProcess,
@@ -162,6 +163,7 @@ async function warmUpApp(browser: Browser, app: AppConfig): Promise<void> {
 }
 
 async function setupPage(page: Page, route: VisualRoute): Promise<void> {
+  await disableViteHmrClient(page);
   await installVisualStabilityHooks(page);
   await page.addInitScript(
     (storage) => {

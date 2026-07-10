@@ -41,21 +41,23 @@
         nixCargoLockContents = builtins.replaceStrings [ cratesIoIndex ] [ cratesIoNixIndex ] (
           builtins.readFile ./Cargo.lock
         );
+        moonbitVersion = "0.10.3+16975d007";
+        moonbitUrlVersion = builtins.replaceStrings [ "+" ] [ "%2B" ] moonbitVersion;
         moonbitArtifacts = {
           aarch64-darwin = {
-            version = "0.1.20260608-2026-06-08";
-            url = "https://cli.moonbitlang.com/binaries/latest/moonbit-darwin-aarch64.tar.gz";
-            hash = "sha256-YAgKPu+uA4e2Z/UXJJpwt2ezdMANIjLuczet2ff3JIc=";
+            version = moonbitVersion;
+            url = "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-darwin-aarch64.tar.gz";
+            hash = "sha256-WDV4V3lmdDNeYL4KJ8/8SbzJ+KJJfgZo7BVNw6LcJOU=";
           };
           x86_64-linux = {
-            version = "0.1.20260608-2026-06-08";
-            url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-x86_64.tar.gz";
-            hash = "sha256-PFAX9WkoSALxoLhCLRSZY6AcpYfFFEURZK75HGXfiqg=";
+            version = moonbitVersion;
+            url = "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-linux-x86_64.tar.gz";
+            hash = "sha256-1F49AgHPOxNhIG6pxybNShx7jN+DLbKuCzX1zfKxwTY=";
           };
           aarch64-linux = {
-            version = "0.1.20260608-2026-06-08";
-            url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-aarch64.tar.gz";
-            hash = "sha256-fw4LyzobPWKaDV/9sattbQzjs2GXdRJ+wLhr/4dtVo4=";
+            version = moonbitVersion;
+            url = "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-linux-aarch64.tar.gz";
+            hash = "sha256-Vf0CZCXEVcLVa160aKZ5cEoxTyBoQ4uslLocPw83Ix4=";
           };
         };
         moonbit =
@@ -70,8 +72,9 @@
                 inherit (artifact) url hash;
               };
               coreSrc = pkgs.fetchurl {
-                url = "https://cli.moonbitlang.com/cores/core-latest.tar.gz";
-                hash = "sha256-LMOHyw9HPsEBp+BnOAAUnIhHgSFkRfBgTtXx4RDPc+o=";
+                name = "core-${moonbitVersion}.tar.gz";
+                url = "https://cli.moonbitlang.com/cores/core-${moonbitUrlVersion}.tar.gz";
+                hash = "sha256-PHPWerElUb0jNNM4nq99AzbxmsCKucOW8R4SfjdbPQY=";
               };
               nativeBuildInputs = lib.optionals pkgs.stdenv.isLinux [ pkgs.patchelf ];
               dontUnpack = true;
@@ -140,7 +143,7 @@
           };
           x86_64-linux = {
             url = "https://clireleases.blacksmith.sh/cli/latest/linux/amd64/blacksmith";
-            hash = "sha256-zzc5MFZaS2xvqSGyG1uuTFYFLQhoIb7FEzxp1c0prvk=";
+            hash = "sha256-ABJrjw+yHuHcjPrEZNmRsCpn229Od87Hxja38i0CNVM=";
           };
           aarch64-linux = {
             url = "https://clireleases.blacksmith.sh/cli/latest/linux/arm64/blacksmith";

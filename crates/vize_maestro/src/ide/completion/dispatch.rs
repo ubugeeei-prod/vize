@@ -9,14 +9,14 @@ pub struct CompletionService;
 
 /// Completion trigger characters for Vue SFC.
 pub const TRIGGER_CHARACTERS: &[char] = &[
-    '<',  // HTML tags
     '.',  // Object property access
     ':',  // v-bind shorthand
     '@',  // v-on shorthand
     '#',  // v-slot shorthand
+    '<',  // HTML tags
+    '/',  // Closing tags
     '"',  // Attribute values
     '\'', // Attribute values
-    '/',  // Closing tags
     ' ',  // Space for attribute completion
 ];
 

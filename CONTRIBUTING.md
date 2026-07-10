@@ -90,13 +90,13 @@ that turns the output into a reviewed contract. Local batches can be packaged wi
 - Keep PRs focused on one behavioral change or one documentation/governance change.
 - Include verification commands in the PR body.
 - Do not refresh large snapshot baselines unless the PR is specifically about those outputs.
-- Do not include secrets, registry tokens, private vulnerability details, or machine-local paths in issues, commits, or PRs.
+- Do not include secrets, registry tokens, private vulnerability details, or machine-local paths in reports, commits, or PRs.
 
-## Issues
+## Fix Requests
 
-Use the bug report template for regressions, crashes, incorrect diagnostics, package installation problems, and release failures. Use the feature request template for new integrations, API changes, or workflow improvements.
+Use the fix report template for regressions, crashes, incorrect diagnostics, package installation problems, and release failures. Use the feature request template for new integrations, API changes, or workflow improvements.
 
-Security issues should follow `SECURITY.md` instead of the public issue templates.
+Security reports should follow `SECURITY.md` instead of the public fix templates.
 
 ## Code of Conduct and Governance
 

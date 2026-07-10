@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_unused_emit_declarations/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-unused-emit-declarations",
+        severity: Warning,
+        message: "The 'unused' event is declared but never emitted.",
+        start: 37,
+        end: 45,
+        help: Some(
+            "Emit this event via the captured emit function, or remove it from the defineEmits declaration.",
+        ),
+        labels: [
+            Label {
+                message: "declared but never emitted",
+                start: 37,
+                end: 45,
+            },
+        ],
+        fix: None,
+    },
+]

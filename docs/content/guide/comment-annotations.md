@@ -201,7 +201,7 @@ const { count } = inject("state");
 | ---------------------------- | ---------------------------------- |
 | `intentionally non-reactive` | Value doesn't need to be reactive  |
 | `read-only access`           | Only reading, not tracking changes |
-| `legacy code`                | Known issue, will refactor later   |
+| `legacy code`                | Known problem, will refactor later |
 | `third-party integration`    | Required by external library       |
 
 ### Invalid Examples

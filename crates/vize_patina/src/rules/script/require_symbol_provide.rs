@@ -29,9 +29,10 @@
 //! const user = inject(UserKey)
 //! ```
 
-use memchr::memmem;
-
 use crate::diagnostic::{LintDiagnostic, Severity};
+use oxc_ast::ast::{Argument, CallExpression, Expression, Program};
+use oxc_ast_visit::{Visit, walk::walk_call_expression};
+use oxc_span::Span;
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 
@@ -49,60 +50,71 @@ impl ScriptRule for RequireSymbolProvide {
         &META
     }
 
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let bytes = source.as_bytes();
+    #[inline]
+    fn uses_ast(&self) -> bool {
+        true
+    }
 
-        // Check for provide() with string literal
-        self.check_call(source, bytes, offset, "provide(", result);
-
-        // Check for inject() with string literal
-        self.check_call(source, bytes, offset, "inject(", result);
+    #[inline]
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        let mut visitor = RequireSymbolProvideVisitor { offset, result };
+        visitor.visit_program(program);
     }
 }
 
-impl RequireSymbolProvide {
-    fn check_call(
-        &self,
-        source: &str,
-        bytes: &[u8],
-        offset: usize,
-        pattern: &str,
-        result: &mut ScriptLintResult,
-    ) {
-        let finder = memmem::Finder::new(pattern.as_bytes());
-        let mut search_start = 0;
+struct RequireSymbolProvideVisitor<'result> {
+    offset: usize,
+    result: &'result mut ScriptLintResult,
+}
 
-        while let Some(pos) = finder.find(&bytes[search_start..]) {
-            let abs_pos = search_start + pos;
-            search_start = abs_pos + pattern.len();
-
-            // Make sure it's not part of another identifier
-            if abs_pos > 0 {
-                let prev_char = bytes[abs_pos - 1];
-                if prev_char.is_ascii_alphanumeric() || prev_char == b'_' {
-                    continue;
-                }
-            }
-
-            // Check if the first argument is a string literal
-            let after = &source[abs_pos + pattern.len()..];
-            let trimmed = after.trim_start();
-
-            if trimmed.starts_with('\'') || trimmed.starts_with('"') || trimmed.starts_with('`') {
-                result.add_diagnostic(
-                    LintDiagnostic::warn(
-                        META.name,
-                        "Consider using a Symbol key instead of a string literal",
-                        (offset + abs_pos) as u32,
-                        (offset + abs_pos + pattern.len()) as u32,
-                    )
-                    .with_help(
-                        "Define an InjectionKey with Symbol: \
-                         `export const MyKey: InjectionKey<MyType> = Symbol('myKey')`",
-                    ),
-                );
-            }
+impl<'a> Visit<'a> for RequireSymbolProvideVisitor<'_> {
+    fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
+        if let Some(span) = string_key_provide_inject_span(it) {
+            let start = self.offset as u32 + span.start;
+            let end = self.offset as u32 + span.end;
+            self.result.add_diagnostic(
+                LintDiagnostic::warn(
+                    META.name,
+                    "Consider using a Symbol key instead of a string literal",
+                    start,
+                    end,
+                )
+                .with_help(
+                    "Define an InjectionKey with Symbol: \
+                     `export const MyKey: InjectionKey<MyType> = Symbol('myKey')`",
+                ),
+            );
         }
+
+        walk_call_expression(self, it);
+    }
+}
+
+fn string_key_provide_inject_span(call: &CallExpression<'_>) -> Option<Span> {
+    if !is_static_string_argument(call.arguments.first()?) {
+        return None;
+    }
+    match &call.callee {
+        Expression::Identifier(identifier)
+            if matches!(identifier.name.as_str(), "provide" | "inject") =>
+        {
+            Some(Span::new(identifier.span.start, identifier.span.end + 1))
+        }
+        _ => None,
+    }
+}
+
+fn is_static_string_argument(argument: &Argument<'_>) -> bool {
+    match argument {
+        Argument::StringLiteral(_) => true,
+        Argument::TemplateLiteral(template) => template.single_quasi().is_some(),
+        _ => false,
     }
 }
 
@@ -157,6 +169,27 @@ mod tests {
     fn test_no_provide_inject() {
         let linter = create_linter();
         let result = linter.lint("const x = ref(0)", 0);
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_ignores_string_literal_source() {
+        let linter = create_linter();
+        let result = linter.lint(r#"const source = "provide('user', userData)""#, 0);
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_ignores_comment_source() {
+        let linter = create_linter();
+        let result = linter.lint("// inject('user')\nconst user = inject(UserKey)", 0);
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_ignores_member_named_provide() {
+        let linter = create_linter();
+        let result = linter.lint("container.provide('user', userData)", 0);
         assert_eq!(result.warning_count, 0);
     }
 }

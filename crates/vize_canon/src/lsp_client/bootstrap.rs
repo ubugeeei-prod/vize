@@ -38,6 +38,7 @@ impl CorsaProjectClient {
             cwd: cwd.clone(),
             session,
             capabilities,
+            overlay_api_disabled: false,
             project_root: project_root.to_path_buf(),
             diagnostics: Default::default(),
             overlay_versions: Default::default(),

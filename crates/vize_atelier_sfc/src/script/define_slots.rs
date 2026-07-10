@@ -22,13 +22,13 @@ pub fn extract_define_slots(content: &str) -> Option<MacroCall> {
         {
             let args = String::from(&after[paren_start + 1..paren_start + paren_end]);
             let type_args = extract_type_args(&after[..paren_start]);
-            return Some(MacroCall {
+            return Some(MacroCall::new(
                 start,
-                end: start + paren_start + paren_end + 1,
+                start + paren_start + paren_end + 1,
                 args,
                 type_args,
-                binding_name: None,
-            });
+                None,
+            ));
         }
     }
     None

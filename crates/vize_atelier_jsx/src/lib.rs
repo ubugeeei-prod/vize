@@ -36,6 +36,7 @@ pub mod mode;
 pub mod parse;
 pub mod scoped;
 pub mod span;
+pub mod ssr;
 pub mod vapor;
 pub mod vdom;
 
@@ -57,6 +58,7 @@ pub use mode::JsxOutputMode;
 pub use parse::{ParsedModule, parse_module};
 pub use scoped::ScopedStyle;
 pub use span::SpanMapper;
+pub use ssr::{SsrCompileOptions, SsrComponent, SsrOutput, compile_to_ssr};
 pub use vapor::{VaporCompileOptions, VaporComponent, VaporOutput, compile_to_vapor};
 pub use vdom::{VdomCompileOptions, VdomComponent, VdomOutput, compile_to_vdom};
 
@@ -72,6 +74,9 @@ pub struct LoweredRoot<'a> {
     /// Name of the enclosing component function (`function App` / `const App =
     /// () => …`), if it could be resolved.
     pub component_name: Option<String>,
+    /// Source spans for a block-body component whose setup statements should be
+    /// preserved around the generated render function.
+    pub component_setup: Option<ComponentSetupSpan>,
     /// Raw (un-rewritten) CSS of the component's `<style scoped>` block(s),
     /// extracted from the markup and removed from the rendered children
     /// (#1495). `None` when the component had no `<style scoped>`. The backends
@@ -90,6 +95,24 @@ pub struct LoweredRoot<'a> {
     /// so a wrong type inside a style interpolation is reported at the
     /// interpolation. Empty when no `<style scoped>` interpolations were present.
     pub scoped_style_exprs: Vec<StyleExprSpan>,
+}
+
+/// Source spans needed to rebuild a JSX component as a stateful Vue component.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ComponentSetupSpan {
+    /// Full variable declaration span to replace, e.g. `const App = () => {}`.
+    pub declaration_start: u32,
+    /// End of the declaration span. A following semicolon may be consumed by the
+    /// module renderer.
+    pub declaration_end: u32,
+    /// Start of setup statements inside the component body.
+    pub setup_start: u32,
+    /// End of setup statements, immediately before the `return <jsx>` statement.
+    pub setup_end: u32,
+    /// Span of the JSX expression returned by the setup body.
+    pub render_start: u32,
+    /// End of the returned JSX expression span.
+    pub render_end: u32,
 }
 
 /// A `<style scoped>` template-literal interpolation expression (`${expr}`)
@@ -138,7 +161,8 @@ impl<'a> LowerOutput<'a> {
 /// borrows `bump`.
 pub fn lower_source<'a>(bump: &'a Bump, source: &str, lang: JsxLang) -> LowerOutput<'a> {
     let allocator = oxc_allocator::Allocator::default();
-    let parsed = parse::parse_module(&allocator, source, lang);
+    let parse_source = parse::prepare_source_for_parse(source, lang);
+    let parsed = parse::parse_module(&allocator, parse_source.as_ref(), lang);
     let mapper = SpanMapper::new(source);
     let mut lowerer = Lowerer::new(bump, &mapper);
     for diagnostic in parsed.diagnostics {

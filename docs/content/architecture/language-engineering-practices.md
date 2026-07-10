@@ -78,7 +78,7 @@ Reach for broader evidence when a change has one of these shapes:
   proves the boundary is still guarded.
 - Parser recovery, arbitrary byte input, CSS/template/expression parsing, or crash fixes: run or
   schedule the matching fuzz target, retain the reproducer, and land a minimized deterministic
-  regression before closing the issue.
+  regression before closing the fix request.
 - LSP, editor, quick-fix, completion, hover, or incremental behavior changes: add scenario-level
   coverage that exercises the user-visible sequence, not just the final diagnostic.
 - A snapshot changes because of paths, hashes, ordering, timing, environment, or host platform:

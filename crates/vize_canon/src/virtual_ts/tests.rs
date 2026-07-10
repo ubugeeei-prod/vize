@@ -1,15 +1,19 @@
-//! Tests for virtual TypeScript generation.
-//!
-//! Extracted from the `virtual_ts` module root; kept as the `tests`
-//! submodule so insta snapshot names remain `virtual_ts::tests::*`.
-
 use super::helpers::{VUE_SETUP_HELPERS, generate_template_context, get_dom_event_type};
 use super::{
     TemplateGlobal, VirtualTsCheckOptions, VirtualTsGenerationOptions, VirtualTsOptions,
     generate_virtual_ts, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_and_checks, generate_virtual_ts_with_offsets_options_api,
 };
-
+use vize_carton::config::VueVersion;
+mod auto_import_shadowing;
+mod component_navigation;
+mod define_props_scope;
+mod legacy_nuxt2_page_context;
+mod no_check_template_bindings;
+mod options_api_props_spread;
+mod options_api_setup_spread;
+mod unused_refs;
+mod vif_chain;
 fn assert_virtual_ts_snapshot(name: &str, value: &str) {
     insta::with_settings!({
         snapshot_path => "../../snapshots"
@@ -25,11 +29,7 @@ fn test_vue_setup_helpers_are_actual_functions() {
 
 #[test]
 fn test_vue_template_context() {
-    // Template context should contain Vue instance properties
-    let ctx = generate_template_context(
-        &VirtualTsOptions::default(),
-        vize_carton::config::VueVersion::V3,
-    );
+    let ctx = generate_template_context(&VirtualTsOptions::default(), VueVersion::V3, false);
     assert_virtual_ts_snapshot("virtual_ts_vue_template_context", ctx.as_str());
 }
 
@@ -37,10 +37,7 @@ fn test_vue_template_context() {
 fn test_vue_template_context_v3_default_is_unchanged() {
     // The default Vue 3 dialect must emit the exact same context as the
     // dialect-unaware default — no Vue 2-only members leak into Vue 3.
-    let v3 = generate_template_context(
-        &VirtualTsOptions::default(),
-        vize_carton::config::VueVersion::V3,
-    );
+    let v3 = generate_template_context(&VirtualTsOptions::default(), VueVersion::V3, false);
     assert!(!v3.contains("$listeners"));
     assert!(!v3.contains("$children"));
     assert!(!v3.contains("$scopedSlots"));
@@ -53,10 +50,8 @@ fn test_vue_template_context_v2_dialect_adds_vue2_members() {
     // A Vue 2 dialect augments the template context with Vue 2-only public
     // instance members so legacy templates ($listeners, $children, the
     // $on/$off/$once emitter, $set/$delete, $createElement, ...) type-check.
-    let v2 = generate_template_context(
-        &VirtualTsOptions::default(),
-        vize_carton::config::VueVersion::V2,
-    );
+    let v2 = generate_template_context(&VirtualTsOptions::default(), VueVersion::V2, false);
+    assert!(!v2.contains("import('vue').ComponentPublicInstance"));
     for member in [
         "$listeners",
         "$children",
@@ -79,17 +74,11 @@ fn test_vue_template_context_v2_dialect_adds_vue2_members() {
         );
     }
     // Vue 2.7 shares the same template-instance shape.
-    let v2_7 = generate_template_context(
-        &VirtualTsOptions::default(),
-        vize_carton::config::VueVersion::V2_7,
-    );
+    let v2_7 = generate_template_context(&VirtualTsOptions::default(), VueVersion::V2_7, false);
     assert!(v2_7.contains("const $listeners = undefined as any;"));
 
     // Vue 3 must NOT contain any of these (byte-identical to before).
-    let v3 = generate_template_context(
-        &VirtualTsOptions::default(),
-        vize_carton::config::VueVersion::V3,
-    );
+    let v3 = generate_template_context(&VirtualTsOptions::default(), VueVersion::V3, false);
     assert!(!v3.contains("$listeners"));
     assert!(!v3.contains("$createElement"));
 }
@@ -112,7 +101,7 @@ fn test_vue_template_context_with_globals() {
         ],
         ..Default::default()
     };
-    let ctx = generate_template_context(&options, vize_carton::config::VueVersion::V3);
+    let ctx = generate_template_context(&options, VueVersion::V3, false);
     assert_virtual_ts_snapshot("virtual_ts_vue_template_context_with_globals", ctx.as_str());
 }
 
@@ -233,6 +222,48 @@ export default defineComponent({
         "expected precise mapped type for mapActions spread keys:\n{}",
         output.code
     );
+}
+
+#[test]
+fn test_options_api_unresolved_extends_exposes_template_refs_as_inherited_any() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"import BaseButton from './BaseButton.vue'
+
+export default {
+    name: 'Button',
+    extends: BaseButton
+}
+"#;
+    let template = r#"<component v-if="!asChild" :is="as" :class="cx('root')">
+  <span v-if="label">{{ label }}</span>
+</component>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_options_api();
+    analyzer.analyze_script_plain(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &Default::default(),
+    );
+
+    for name in ["asChild", "as", "cx", "label"] {
+        assert!(
+            output
+                .code
+                .contains(&format!("const {name}: any = undefined as any;")),
+            "unresolved imported extends should expose inherited `{name}`:\n{}",
+            output.code
+        );
+    }
 }
 
 #[test]
@@ -929,10 +960,10 @@ fn test_define_expose_is_part_of_component_instance() {
         output.code
     );
     assert!(
-            output.code.contains("type __VizeComponentInstance = {\n  $props: Props;\n  $emit: __EmitFn<Emits>;\n  $slots: Slots;\n} & Exposed;"),
-            "component instance should include exposed bindings:\n{}",
-            output.code
-        );
+        output.code.contains("type __VizeComponentInstance = {\n  $props: __VizeComponentProps<Props>;\n  $emit: __EmitFn<Emits>;\n  $slots: Slots;\n} & import('vue').ComponentPublicInstance & __VizeShallowUnwrapRef<Exposed>;"),
+        "component instance should include exposed bindings:\n{}",
+        output.code
+    );
 }
 
 #[test]
@@ -1007,51 +1038,17 @@ const wrong = 'not a number'
 }
 
 #[test]
-fn test_check_template_bindings_option_disables_template_expressions() {
-    use vize_croquis::{Analyzer, AnalyzerOptions};
-
-    let script = "const message = 'hello'\n";
-    let template = r#"<div>{{ message }}</div>"#;
-
-    let allocator = vize_carton::Bump::new();
-    let (root, _) = vize_armature::parse(&allocator, template);
-
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-    analyzer.analyze_script_setup(script);
-    analyzer.analyze_template(&root);
-    let summary = analyzer.finish();
-
-    let output = generate_virtual_ts_with_offsets_and_checks(
-        &summary,
-        Some(script),
-        Some(&root),
-        0,
-        0,
-        &VirtualTsOptions::default(),
-        VirtualTsGenerationOptions {
-            check_options: VirtualTsCheckOptions {
-                check_template_bindings: false,
-                ..Default::default()
-            },
-            ..Default::default()
-        },
-    );
-
-    assert!(!output.code.contains("void (message);"));
-}
-
-#[test]
 fn test_dom_event_type_mapping() {
     // Mouse events
     assert_eq!(get_dom_event_type("dblclick"), "MouseEvent");
     assert_eq!(get_dom_event_type("mousedown"), "MouseEvent");
     assert_eq!(get_dom_event_type("mouseup"), "MouseEvent");
     assert_eq!(get_dom_event_type("mousemove"), "MouseEvent");
-    assert_eq!(get_dom_event_type("contextmenu"), "MouseEvent");
 
     // Pointer events
     assert_eq!(get_dom_event_type("click"), "PointerEvent");
     assert_eq!(get_dom_event_type("auxclick"), "PointerEvent");
+    assert_eq!(get_dom_event_type("contextmenu"), "PointerEvent");
     assert_eq!(get_dom_event_type("pointerdown"), "PointerEvent");
     assert_eq!(get_dom_event_type("pointerup"), "PointerEvent");
 
@@ -1289,6 +1286,66 @@ const items = ['a', 'b']
 }
 
 #[test]
+fn test_repeated_default_slots_use_unique_helper_names() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"import Child from './Child.vue'
+"#;
+    let template = r#"<div>
+  <Child>
+    <template #default="{ item }">
+      {{ item }}
+    </template>
+  </Child>
+  <Child>
+    <template #default="{ other }">
+      {{ other }}
+    </template>
+  </Child>
+</div>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    let slot_helpers: Vec<_> = output
+        .code
+        .lines()
+        .filter_map(|line| {
+            line.trim_start()
+                .strip_prefix("void function _slot_default_")
+                .and_then(|rest| rest.split_once('(').map(|(id, _)| id.to_string()))
+        })
+        .collect();
+    assert_eq!(
+        slot_helpers.len(),
+        2,
+        "expected both default slot scopes to emit helpers:\n{}",
+        output.code
+    );
+    assert_ne!(
+        slot_helpers[0], slot_helpers[1],
+        "default slot helpers must include the scope id:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .matches("void function _slot_props_default_")
+            .count()
+            >= 2,
+        "slot prop helper names should also include the scope id:\n{}",
+        output.code
+    );
+}
+
+#[test]
 fn test_v_if_narrows_nullable_binding() {
     // `<div v-if="user">{{ user.name }}</div>` must produce a virtual TS
     // closure that opens an `if (user) { … }` block so TypeScript narrows
@@ -1448,6 +1505,41 @@ fn test_inline_arrow_event_handler_is_called_with_event() {
 }
 
 #[test]
+fn test_inline_arrow_event_handler_body_can_reference_dollar_event() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    // Repro for #2224: when a user writes an inline arrow handler whose body
+    // references `$event` (e.g. mixing the explicit callback parameter with the
+    // implicit Vue event alias), the generated TS must declare `$event` in the
+    // scope that wraps the inline-callback invocation. Without this inner wrap,
+    // the user's reference to `$event` inside the arrow body can be reported as
+    // `TS2552: Cannot find name '$event'` in nested-scope refactors of the
+    // virtual TS, so pin the binding immediately around the user's callback.
+    let script = r#"function handleInput(_a: Event, _b: Event) { void _a; void _b; }
+"#;
+    let template = r#"<input @input="(e) => handleInput($event, e)" />"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    assert!(
+        output.code.contains(
+            "(($event: InputEvent) => { ((e) => handleInput($event, e))($event); })($event);"
+        ),
+        "inline arrow handler invocation must be wrapped in a closure that \
+         re-declares `$event` (#2224):\n{}",
+        output.code
+    );
+}
+
+#[test]
 fn test_computed_member_event_handler_reference_is_called_with_event() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
@@ -1491,7 +1583,7 @@ const arr = [(event: PointerEvent) => event.preventDefault()]
 }
 
 #[test]
-fn test_component_event_fallback_uses_dom_event_type_only_in_quirks() {
+fn test_component_event_fallback_uses_any_when_args_stay_unknown() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
     let script = r#"import Child from './Child.vue'
@@ -1518,13 +1610,9 @@ function eventHandler(event: Event) {
         &VirtualTsOptions::default(),
     );
     assert!(
-        standard_output.code.contains("? __A : unknown[]"),
-        "standard component event fallback should stay unknown:\n{}",
-        standard_output.code
-    );
-    assert!(
-        !standard_output.code.contains("[KeyboardEvent]"),
-        "standard component event fallback must not use DOM event types:\n{}",
+        standard_output.code.contains("unknown[] extends __Child_")
+            && standard_output.code.contains("? any : __Child_"),
+        "standard component event fallback should stay loose when args stay unknown:\n{}",
         standard_output.code
     );
 
@@ -1542,8 +1630,8 @@ function eventHandler(event: Event) {
     );
     assert!(
         quirks_output.code.contains("unknown[] extends __Child_")
-            && quirks_output.code.contains("? KeyboardEvent : __Child_"),
-        "quirks component event fallback should use the DOM event type when args stay unknown:\n{}",
+            && quirks_output.code.contains("? any : __Child_"),
+        "quirks component event fallback should stay loose when args stay unknown:\n{}",
         quirks_output.code
     );
 }

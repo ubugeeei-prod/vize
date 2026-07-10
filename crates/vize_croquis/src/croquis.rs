@@ -31,6 +31,16 @@
 mod bindings;
 mod model;
 mod options_descriptor;
+mod snapshot;
+#[cfg(test)]
+mod snapshot_options_tests;
+#[cfg(test)]
+mod snapshot_tests;
+mod summary;
+#[cfg(test)]
+mod summary_core_tests;
+#[cfg(test)]
+mod summary_template_tests;
 mod template;
 mod vir;
 
@@ -42,6 +52,14 @@ pub use bindings::{
 };
 pub use model::{AnalysisStats, CroquisStats};
 pub use options_descriptor::{OptionGroup, OptionKey, OptionMember, OptionsDescriptor};
+pub use snapshot::{
+    CroquisSemanticSnapshot, SemanticBindingSnapshot, SemanticComponentUsageSnapshot,
+    SemanticEventListenerSnapshot, SemanticInjectSnapshot, SemanticPassedPropSnapshot,
+    SemanticProvideSnapshot, SemanticReactiveSourceSnapshot, SemanticReactivityLossSnapshot,
+    SemanticScopeBindingSnapshot, SemanticScopeSnapshot, SemanticSlotUsageSnapshot,
+    SemanticSourceRange, SemanticTemplateExpressionSnapshot,
+};
+pub use summary::CroquisSemanticSummary;
 pub use template::{
     ComponentRegistration, ComponentUsage, ElementIdInfo, ElementIdKind, EventListener, PassedProp,
     SlotUsage, TemplateExpression, TemplateExpressionKind, TemplateInfo,

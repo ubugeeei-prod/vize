@@ -43,7 +43,7 @@ impl<'a> SsrCodegenContext<'a> {
         let setup_binding = if is_dynamic_component {
             None
         } else {
-            self.resolve_component_binding_name(tag)
+            self.resolve_component_binding_expr(tag)
         };
         let props = self.build_component_props(el, false, is_dynamic_component);
         let props = self.with_scope_id_prop(props);
@@ -56,11 +56,8 @@ impl<'a> SsrCodegenContext<'a> {
 
         self.push_indent();
         self.push("_push(_ssrRenderComponent(");
-        if let Some(binding_name) = setup_binding.as_deref() {
-            if !self.options.inline {
-                self.push("$setup.");
-            }
-            self.push(binding_name);
+        if let Some(binding_expr) = setup_binding.as_deref() {
+            self.push(binding_expr);
         } else {
             self.use_core_helper(RuntimeHelper::ResolveComponent);
             self.push("_resolveComponent(\"");
@@ -83,7 +80,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         self.push(", _parent");
-        if self.with_slot_scope_id && self.options.scope_id.is_some() {
+        if self.with_slot_scope_id {
             self.push(", _scopeId");
         }
         self.push("))\n");
@@ -108,7 +105,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.push(", ");
         self.push(&slots);
         self.push("), _parent");
-        if self.with_slot_scope_id && self.options.scope_id.is_some() {
+        if self.with_slot_scope_id {
             self.push(", _scopeId");
         }
         self.push(")\n");
@@ -131,7 +128,8 @@ impl<'a> SsrCodegenContext<'a> {
                 ComponentSlotChildren::Slice(slot.children),
             );
             self.push_indent();
-            self.push("_: 1\n");
+            self.push(self.component_slot_flag(el));
+            self.push("\n");
             self.indent_level -= 1;
             self.push_indent();
             self.push("}");
@@ -186,7 +184,8 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         self.push_indent();
-        self.push("_: 1\n");
+        self.push(self.component_slot_flag(el));
+        self.push("\n");
         self.indent_level -= 1;
         self.push_indent();
         self.push("}");
@@ -565,6 +564,35 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         None
+    }
+
+    pub(super) fn component_slot_flag(&self, el: &ElementNode<'a>) -> &'static str {
+        self.component_slot_flag_from_children(&el.children)
+    }
+
+    fn component_slot_flag_from_children(
+        &self,
+        children: &[TemplateChildNode<'a>],
+    ) -> &'static str {
+        let has_forwarded_slot = children.iter().any(child_contains_slot_outlet);
+        if has_forwarded_slot {
+            // Vue marks a slot-forwarding component nested inside another slot
+            // scope as dynamic; only top-level forwarding slots use FORWARDED.
+            return if self.scoped_params.is_empty() {
+                "_: 3 /* FORWARDED */"
+            } else {
+                "_: 2 /* DYNAMIC */"
+            };
+        }
+
+        if children
+            .iter()
+            .any(|child| self.is_dynamic_slot_source(child))
+        {
+            return "_: 2 /* DYNAMIC */";
+        }
+
+        "_: 1"
     }
 
     fn with_fallthrough_attrs(&mut self, props: String, inherit_attrs: bool) -> String {
@@ -1034,4 +1062,24 @@ pub(super) fn template_slot_is_dynamic(el: &ElementNode) -> bool {
         },
         _ => false,
     })
+}
+
+fn child_contains_slot_outlet(child: &TemplateChildNode<'_>) -> bool {
+    match child {
+        TemplateChildNode::Element(el) => {
+            if el.tag_type == ElementType::Slot || el.tag.as_str() == "slot" {
+                return true;
+            }
+            el.children.iter().any(child_contains_slot_outlet)
+        }
+        TemplateChildNode::If(if_node) => if_node
+            .branches
+            .iter()
+            .flat_map(|branch| branch.children.iter())
+            .any(child_contains_slot_outlet),
+        TemplateChildNode::For(for_node) => {
+            for_node.children.iter().any(child_contains_slot_outlet)
+        }
+        _ => false,
+    }
 }

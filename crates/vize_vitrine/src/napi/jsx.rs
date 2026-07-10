@@ -9,6 +9,8 @@
 //! Mode selection follows the project's `compiler.jsxMode` config: the explicit
 //! `jsxMode` string (`"vdom"` / `"vapor"`) wins when present; otherwise the
 //! legacy `vapor` bool applies for back-compat; otherwise the default is VDOM.
+//! When `ssr` is true, that mode is kept as client-hydration metadata while
+//! generated code is routed through JSX SSR output.
 //!
 //! FFI boundary code: uses std types for JavaScript interop.
 #![allow(
@@ -42,6 +44,8 @@ pub struct JsxCompileOptionsNapi {
     /// result's `map` carries the map JSON; when `false` (default), `map` is
     /// `null` and no mapping work is done (#1533).
     pub source_map: Option<bool>,
+    /// Emit SSR render code instead of client render code.
+    pub ssr: Option<bool>,
 }
 
 /// A JSX component's extracted `<style scoped>` block, surfaced to the bundler
@@ -131,9 +135,9 @@ fn compile_jsx_impl(
         default_mode,
         ..Default::default()
     };
-    // Surface a v3 source map when requested. The flag only affects the VDOM
-    // codegen path (the Vapor backend does not emit a map yet); enabling it is a
-    // no-op for Vapor output.
+    config.ssr = opts.ssr.unwrap_or(false);
+    // Surface a v3 source map when requested. The flag only affects client VDOM
+    // codegen; enabling it is a no-op for Vapor and SSR output.
     config.vdom.source_map = opts.source_map.unwrap_or(false);
 
     let bump = Bump::new();
@@ -175,125 +179,4 @@ fn compile_jsx_impl(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn jsx_mode_takes_precedence_over_vapor() {
-        // Explicit `jsxMode` wins even when `vapor` disagrees.
-        assert_eq!(
-            resolve_default_mode(Some("vapor"), Some(false)),
-            JsxOutputMode::Vapor
-        );
-        assert_eq!(
-            resolve_default_mode(Some("vdom"), Some(true)),
-            JsxOutputMode::Vdom
-        );
-    }
-
-    #[test]
-    fn falls_back_to_vapor_bool_then_vdom() {
-        assert_eq!(resolve_default_mode(None, Some(true)), JsxOutputMode::Vapor);
-        assert_eq!(resolve_default_mode(None, Some(false)), JsxOutputMode::Vdom);
-        assert_eq!(resolve_default_mode(None, None), JsxOutputMode::Vdom);
-        // An unrecognized jsxMode string falls through rather than erroring.
-        assert_eq!(
-            resolve_default_mode(Some("react"), Some(true)),
-            JsxOutputMode::Vapor
-        );
-    }
-
-    #[test]
-    fn jsx_compile_result_surfaces_scoped_style_css() {
-        // A `.jsx` component with `<style scoped>` must surface the extracted,
-        // scope-rewritten CSS so the bundler plugins can emit it (#1495, #1533).
-        let source = r#"
-            const App = () => (
-                <div class="box">
-                    <style scoped>{`.box { color: red }`}</style>
-                </div>
-            );
-        "#;
-        let result = compile_jsx_impl(source.to_string(), None);
-
-        assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
-        assert_eq!(
-            result.scoped_styles.len(),
-            1,
-            "exactly one scoped style block is surfaced"
-        );
-        let style = &result.scoped_styles[0];
-        assert!(
-            style.scope_id.starts_with("data-v-"),
-            "scope id is a data-v- attribute: {}",
-            style.scope_id
-        );
-        // The rewritten CSS carries the scope-id attribute selector, and the
-        // scope id matches the one reported alongside it.
-        assert!(
-            style.css.contains(".box") && style.css.contains(&style.scope_id),
-            "rewritten CSS applies the scope id: {}",
-            style.css
-        );
-    }
-
-    #[test]
-    fn jsx_compile_result_has_no_scoped_styles_without_style_block() {
-        let source = "const App = () => <div class=\"box\">hi</div>;";
-        let result = compile_jsx_impl(source.to_string(), None);
-
-        assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
-        assert!(
-            result.scoped_styles.is_empty(),
-            "no scoped styles without a <style scoped> block"
-        );
-    }
-
-    #[test]
-    fn jsx_compile_result_includes_runtime_helper_preamble() {
-        // The result `code` must carry the runtime-helper imports so the emitted
-        // `_createElementBlock` / `_toDisplayString` helpers are actually
-        // imported (previously the preamble was dropped, #1533).
-        let source = "const App = () => <div>{message}</div>;\nexport default App;\n";
-        let result = compile_jsx_impl(source.to_string(), None);
-
-        assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
-        assert!(
-            result.code.contains("from \"vue\""),
-            "code carries the runtime-helper import: {}",
-            result.code
-        );
-        // The import precedes the render code that references the helper.
-        let import_at = result.code.find("from \"vue\"").expect("vue import");
-        let usage_at = result
-            .code
-            .find("_createElementBlock(")
-            .expect("render uses _createElementBlock");
-        assert!(
-            import_at < usage_at,
-            "preamble precedes usage: {}",
-            result.code
-        );
-    }
-
-    #[test]
-    fn jsx_compile_result_surfaces_source_map_when_requested() {
-        let source = "const App = () => <div>{message}</div>;\nexport default App;\n";
-
-        // Off by default: no map.
-        let without = compile_jsx_impl(source.to_string(), None);
-        assert!(without.map.is_none(), "no map unless requested");
-
-        // On request: a non-empty v3 map.
-        let with = compile_jsx_impl(
-            source.to_string(),
-            Some(JsxCompileOptionsNapi {
-                source_map: Some(true),
-                ..Default::default()
-            }),
-        );
-        assert!(with.errors.is_empty(), "errors: {:?}", with.errors);
-        let map = with.map.expect("a map is surfaced when requested");
-        assert!(map.contains("\"version\":3"), "v3 source map: {map}");
-    }
-}
+mod tests;

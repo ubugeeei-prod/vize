@@ -20,12 +20,19 @@ use super::build::{
     build_vue_registered_file, source_type_for_path,
 };
 
+const MUSEA_DEFINE_ART_STUB: &str =
+    "declare function defineArt(source: string, options?: Record<string, any>): void;";
+
+fn is_musea_art_vue_path(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.ends_with(".art.vue"))
+}
+
 impl VirtualProject {
     /// Create a new virtual project.
     pub fn new(project_root: &Path) -> CorsaResult<Self> {
-        let project_root = project_root
-            .canonicalize()
-            .unwrap_or_else(|_| project_root.to_path_buf());
+        let project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
         let virtual_root = project_root
             .join("node_modules")
             .join(".vize")
@@ -43,6 +50,7 @@ impl VirtualProject {
             jsx_typecheck: false,
             dialect: vize_carton::config::VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),
+            experimental_in_tag_comments: false,
             virtual_files: FxHashMap::default(),
             passthrough_files: FxHashMap::default(),
             original_index: FxHashMap::default(),
@@ -57,7 +65,7 @@ impl VirtualProject {
 
     /// Set the tsconfig path to extend.
     pub fn set_tsconfig_path(&mut self, tsconfig_path: Option<PathBuf>) {
-        self.tsconfig_path = tsconfig_path;
+        self.tsconfig_path = tsconfig_path.map(vize_carton::path::normalize_windows_verbatim_path);
         self.preserve_unused_diagnostics = self.resolve_tsconfig_preserves_unused_diagnostics();
     }
 
@@ -85,14 +93,26 @@ impl VirtualProject {
 
     /// Set the configured Vue dialect (default [`VueVersion::V3`]).
     ///
-    /// Plumbing only today: carried into virtual-TS generation for future
-    /// dialect-aware instance typing without changing current output.
+    /// Carried into virtual-TS generation for dialect-aware instance and helper
+    /// typing while keeping default-V3 output stable.
     pub(crate) fn set_dialect(&mut self, dialect: vize_carton::config::VueVersion) {
         self.dialect = dialect;
     }
 
+    pub(crate) fn uses_shared_helpers(&self) -> bool {
+        !self.legacy_vue2
+            && !matches!(
+                self.dialect,
+                vize_carton::config::VueVersion::V2 | vize_carton::config::VueVersion::V2_7
+            )
+    }
+
     pub(crate) fn set_template_syntax(&mut self, template_syntax: TemplateSyntaxMode) {
         self.template_syntax = template_syntax;
+    }
+
+    pub(crate) fn set_experimental_in_tag_comments(&mut self, enabled: bool) {
+        self.experimental_in_tag_comments = enabled;
     }
 
     /// Get the project root.
@@ -127,6 +147,7 @@ impl VirtualProject {
                 jsx_typecheck: self.jsx_typecheck,
                 dialect: self.dialect,
                 template_syntax: self.template_syntax,
+                experimental_in_tag_comments: self.experimental_in_tag_comments,
                 rewriter: &self.rewriter,
             },
         )?;
@@ -174,6 +195,7 @@ impl VirtualProject {
             jsx_typecheck: self.jsx_typecheck,
             dialect: self.dialect,
             template_syntax: self.template_syntax,
+            experimental_in_tag_comments: self.experimental_in_tag_comments,
             rewriter: &self.rewriter,
         };
 
@@ -208,6 +230,7 @@ impl VirtualProject {
                 jsx_typecheck: self.jsx_typecheck,
                 dialect: self.dialect,
                 template_syntax: self.template_syntax,
+                experimental_in_tag_comments: self.experimental_in_tag_comments,
                 rewriter: &self.rewriter,
             },
         )?;
@@ -240,8 +263,7 @@ impl VirtualProject {
             path,
             content,
             source_type,
-            &self.project_root,
-            &self.virtual_root,
+            (&self.project_root, &self.virtual_root),
             &self.rewriter,
         )?;
         self.absorb_registered_file(registered);
@@ -249,6 +271,17 @@ impl VirtualProject {
     }
 
     fn absorb_registered_file(&mut self, registered: RegisteredFile) {
+        if is_musea_art_vue_path(&registered.file.original_path)
+            && !self
+                .virtual_ts_options
+                .auto_import_stubs
+                .iter()
+                .any(|stub| stub.contains("defineArt"))
+        {
+            self.virtual_ts_options
+                .auto_import_stubs
+                .push(MUSEA_DEFINE_ART_STUB.into());
+        }
         self.diagnostics.extend(registered.diagnostics);
         self.original_index.insert(
             registered.file.original_path.clone(),
@@ -260,6 +293,9 @@ impl VirtualProject {
         );
         for (virtual_path, original_path) in registered.passthrough_files {
             self.passthrough_files.insert(virtual_path, original_path);
+        }
+        for file in registered.extra_virtual_files {
+            self.virtual_files.insert(file.virtual_path.clone(), file);
         }
         self.virtual_files
             .insert(registered.file.virtual_path.clone(), registered.file);

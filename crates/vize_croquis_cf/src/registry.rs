@@ -19,7 +19,7 @@ use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::Croquis;
 
 /// Unique identifier for a file in the registry.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize)]
 #[repr(transparent)]
 pub struct FileId(u32);
 

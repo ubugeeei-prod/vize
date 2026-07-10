@@ -46,9 +46,9 @@
 //!
 //! let mut analyzer = CrossFileAnalyzer::new(options);
 //!
-//! // Add files to analyze
-//! analyzer.add_file("src/components/Parent.vue", parent_source);
-//! analyzer.add_file("src/components/Child.vue", child_source);
+//! // Add extracted JS/TS script modules. Parse full SFC containers first.
+//! analyzer.add_file("src/components/Parent.vue", parent_script_setup);
+//! analyzer.add_file("src/components/Child.vue", child_script_setup);
 //!
 //! // Run cross-file analysis
 //! let result = analyzer.analyze();
@@ -82,7 +82,11 @@ pub use suppression::{SuppressionDirective, SuppressionError, SuppressionMap};
 
 // Re-export rule result types
 pub use rules::{
-    BoundaryInfo, BoundaryKind, EmitFlow, EventBubble, FallthroughInfo, PropsValidationIssue,
-    PropsValidationIssueKind, ProvideInjectMatch, ReactivityIssue, ReactivityIssueKind,
-    UniqueIdIssue,
+    BoundaryInfo, BoundaryKind, ComplexityBand, ComplexityDimension, ComplexityDimensionBreakdown,
+    ComplexityDimensionScores, ComplexityHotspot, ComplexityInput, ComplexityReport, EmitFlow,
+    EventBubble, FallthroughComponentFact, FallthroughInfo, FallthroughSummary,
+    FallthroughUsageAttrFact, FallthroughUsageAttrKind, FallthroughUsageFact, PropsValidationIssue,
+    PropsValidationIssueKind, ProvideInjectMatch, ProvideInjectTreeSummary, ReactivityIssue,
+    ReactivityIssueKind, UniqueIdIssue, band_for_score, collect_fallthrough_component_facts,
+    collect_fallthrough_usage_facts,
 };

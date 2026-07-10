@@ -6,6 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { preparePublishManifest } from "../../tools/npm/prepare-publish-manifest.mjs";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const smokeScript = path.join(root, "tools/npm/smoke-release-install.mjs");
 
@@ -58,6 +60,90 @@ test("release install smoke rejects unresolved workspace protocols", () => {
   }
 });
 
+test("release install smoke prepares workspace dependencies without MoonBit", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-test-"));
+  const repoDir = path.join(tempDir, "repo");
+  try {
+    fs.mkdirSync(repoDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(repoDir, "pnpm-workspace.yaml"),
+      ["packages:", '  - "npm/*"', ""].join("\n"),
+    );
+    const dependencyDir = writePackage(repoDir, "npm/dependency", {
+      name: "@vizejs/smoke-dependency",
+      version: "1.2.3",
+    });
+    const packageDir = writePackage(repoDir, "npm/package", {
+      dependencies: {
+        "@vizejs/smoke-dependency": "workspace:*",
+      },
+      name: "@vizejs/smoke-package",
+      version: "1.2.3",
+    });
+
+    const result = runSmokeArgs(["--prepare-manifests", packageDir, dependencyDir]);
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.match(result.stdout, /Prepared npm publish manifest/);
+    assert.match(result.stdout, /smoked 2\/2 package tarballs/);
+    assert.deepEqual(readPackage(packageDir).dependencies, {
+      "@vizejs/smoke-dependency": "1.2.3",
+    });
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true });
+  }
+});
+
+test("prepare publish manifest rewrites workspace and catalog dependencies without MoonBit", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-test-"));
+  const repoDir = path.join(tempDir, "repo");
+  try {
+    fs.mkdirSync(repoDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(repoDir, "pnpm-workspace.yaml"),
+      [
+        "packages:",
+        '  - "npm/*"',
+        "",
+        "catalogs:",
+        "  native-binaries:",
+        '    "@vizejs/native-darwin-x64": "0.57.0"',
+        "  repo-tooling:",
+        '    tinyglobby: "0.2.16"',
+        "",
+      ].join("\n"),
+    );
+    const nativeDir = writePackage(repoDir, "npm/native", {
+      name: "@vizejs/native",
+      optionalDependencies: {
+        "@vizejs/native-darwin-x64": "catalog:native-binaries",
+      },
+      version: "0.58.0",
+    });
+    const pluginDir = writePackage(repoDir, "npm/builder/vite", {
+      dependencies: {
+        "@vizejs/native": "workspace:*",
+        tinyglobby: "catalog:repo-tooling",
+      },
+      name: "@vizejs/vite-plugin",
+      version: "0.58.0",
+    });
+
+    preparePublishManifest(nativeDir);
+    preparePublishManifest(pluginDir);
+
+    assert.deepEqual(readPackage(nativeDir).optionalDependencies, {
+      "@vizejs/native-darwin-x64": "0.58.0",
+    });
+    assert.deepEqual(readPackage(pluginDir).dependencies, {
+      "@vizejs/native": "0.58.0",
+      tinyglobby: "0.2.16",
+    });
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true });
+  }
+});
+
 test("release install smoke skips libc-incompatible tarballs", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-test-"));
   try {
@@ -103,9 +189,9 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   assert.match(script, /vizeBin, "--version"/);
   assert.match(script, /"check"[\s\S]*"src\/App\.vue"/);
   assert.match(script, /"lint"[\s\S]*"src\/App\.vue"/);
-  // vite is installed as upstream vite (^8.0.0), matching the
-  // `@vizejs/vite-plugin` peer dep declaration. Real vite exposes a `vite`
-  // bin entry, so the smoke can use the same resolver as vize.
+  // vite is installed as upstream vite 8, one supported
+  // `@vizejs/vite-plugin` peer range. Real vite exposes a `vite` bin entry, so
+  // the smoke can use the same resolver as vize.
   assert.match(script, /resolveInstalledBin\(installDir, "vite", "vite"\)/);
   assert.match(script, /viteBin, "build"/);
   assert.match(script, /vite:\s*"\^8\.0\.0"/);
@@ -143,18 +229,31 @@ function writePackage(tempDir: string, dirName: string, manifest: Record<string,
   return packageDir;
 }
 
+function readPackage(packageDir: string): Record<string, unknown> {
+  return JSON.parse(fs.readFileSync(path.join(packageDir, "package.json"), "utf8")) as Record<
+    string,
+    unknown
+  >;
+}
+
 function oppositeLibc(): "glibc" | "musl" {
   if (process.platform !== "linux") return "glibc";
   const header = process.report?.getReport?.().header;
   return header != null && typeof header.glibcVersionRuntime === "string" ? "musl" : "glibc";
 }
 
-function runSmoke(...packageDirs: string[]): {
+function runSmoke(...packageDirs: string[]): SmokeResult {
+  return runSmokeArgs(packageDirs);
+}
+
+type SmokeResult = {
   status: number | null;
   stderr: string;
   stdout: string;
-} {
-  const result = spawnSync(process.execPath, [smokeScript, ...packageDirs], {
+};
+
+function runSmokeArgs(args: string[]): SmokeResult {
+  const result = spawnSync(process.execPath, [smokeScript, ...args], {
     cwd: root,
     encoding: "utf8",
   });

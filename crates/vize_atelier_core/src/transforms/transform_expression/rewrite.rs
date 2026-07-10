@@ -145,11 +145,27 @@ fn parses_as_typescript(content: &str) -> bool {
         .is_empty()
 }
 
+fn parse_as_params(content: &str, source_type: SourceType) -> Result<(), String> {
+    let allocator = OxcAllocator::default();
+    let mut wrapped = String::with_capacity(content.len() + 12);
+    wrapped.push('(');
+    wrapped.push_str(content);
+    wrapped.push_str(") => null");
+
+    let parser = Parser::new(&allocator, &wrapped, source_type);
+    parser.parse_expression().map(|_| ()).map_err(|errors| {
+        errors
+            .first()
+            .map(|error| String::new(error.message.as_ref()))
+            .unwrap_or_else(|| String::new("invalid parameters"))
+    })
+}
+
 /// Rewrite an expression string, prefixing identifiers with `_ctx.` where needed
 pub(crate) fn rewrite_expression(
     content: &str,
     ctx: &TransformContext<'_>,
-    _as_params: bool,
+    as_params: bool,
 ) -> RewriteResult {
     // Skip parsing for inputs that would overflow the parser stack — return
     // the original content unchanged so the compile lane emits a normal
@@ -167,6 +183,29 @@ pub(crate) fn rewrite_expression(
     } else {
         String::new(content)
     };
+
+    if as_params {
+        let js_source_type = SourceType::default().with_module(true);
+        if parse_as_params(&js_content, js_source_type).is_ok()
+            || (ctx.options.is_ts
+                && parse_as_params(content, SourceType::ts().with_module(true)).is_ok())
+        {
+            return RewriteResult {
+                code: js_content,
+                used_unref: false,
+                parse_error: None,
+            };
+        }
+
+        let detail = parse_as_params(&js_content, js_source_type)
+            .err()
+            .unwrap_or_else(|| String::new("invalid parameters"));
+        return RewriteResult {
+            code: js_content,
+            used_unref: false,
+            parse_error: Some(detail),
+        };
+    }
 
     // Try to parse as a JavaScript expression
     let oxc_allocator = OxcAllocator::default();

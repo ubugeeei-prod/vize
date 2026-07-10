@@ -1,6 +1,5 @@
 ---
 source: crates/vize_atelier_ssr/src/lib.rs
-assertion_line: 561
 expression: result.code.as_str()
 ---
 function ssrRender(_ctx, _push, _parent, _attrs) {
@@ -17,13 +16,13 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
           }),
           default: _withCtx(({ collapsed }, _push, _parent, _scopeId) => {
             if (_push) {
-              _push(_ssrRenderComponent(_resolveComponent("Leaf"), { collapsed: collapsed }, null, _parent))
+              _push(_ssrRenderComponent(_resolveComponent("Leaf"), { collapsed: collapsed }, null, _parent, _scopeId))
             } else {
               return [_createVNode(_resolveComponent("Leaf"), { collapsed: collapsed }, null)]
             }
           }),
           _: 1
-        }, _parent))
+        }, _parent, _scopeId))
       } else {
         return [_createVNode(_resolveComponent("Inner"), null, { header: _withCtx(({ collapsed }) => [_createElementVNode("span", null, [_createTextVNode(_toDisplayString(collapsed))])]), default: _withCtx(({ collapsed }) => [_createVNode(_resolveComponent("Leaf"), { collapsed: collapsed }, null)]), _: 1 })]
       }

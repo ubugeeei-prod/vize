@@ -20,18 +20,26 @@ use crate::commands::check::tsconfig_inputs::{
 pub(super) fn resolve_checker_tsconfig_path(
     program_tsconfig_path: Option<&Path>,
     project_root: &Path,
+    nuxt_alias_base_dir: &Path,
     nuxt_path_aliases: &[super::super::nuxt::NuxtPathAlias],
 ) -> Result<Option<PathBuf>, std::io::Error> {
     if nuxt_path_aliases.is_empty() {
         return Ok(program_tsconfig_path.map(Path::to_path_buf));
     }
 
-    write_nuxt_fallback_tsconfig(program_tsconfig_path, project_root, nuxt_path_aliases).map(Some)
+    write_nuxt_fallback_tsconfig(
+        program_tsconfig_path,
+        project_root,
+        nuxt_alias_base_dir,
+        nuxt_path_aliases,
+    )
+    .map(Some)
 }
 
 pub(super) fn write_nuxt_fallback_tsconfig(
     program_tsconfig_path: Option<&Path>,
     project_root: &Path,
+    nuxt_alias_base_dir: &Path,
     nuxt_path_aliases: &[super::super::nuxt::NuxtPathAlias],
 ) -> Result<PathBuf, std::io::Error> {
     let wrapper_dir = project_root.join("node_modules/.vize/cli");
@@ -54,7 +62,7 @@ pub(super) fn write_nuxt_fallback_tsconfig(
                             Value::String(
                                 rebase_tsconfig_path_target(
                                     &wrapper_dir,
-                                    project_root,
+                                    nuxt_alias_base_dir,
                                     target.as_str(),
                                 )
                                 .into(),
@@ -97,9 +105,7 @@ fn load_tsconfig_paths_for_wrapper_inner(
     wrapper_dir: &Path,
     seen: &mut FxHashSet<PathBuf>,
 ) -> Result<JsonObject, std::io::Error> {
-    let resolved = tsconfig_path
-        .canonicalize()
-        .unwrap_or_else(|_| tsconfig_path.to_path_buf());
+    let resolved = vize_carton::path::canonicalize_non_verbatim(tsconfig_path);
     if !seen.insert(resolved.clone()) {
         return Ok(Map::new());
     }

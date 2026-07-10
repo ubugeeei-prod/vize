@@ -285,11 +285,7 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::vue::NoUselessTemplateAttributes));
         crate::rules::vue::register_valid_directives(&mut registry);
         registry.register(Box::new(crate::rules::vapor::NoVueLifecycleEvents));
-        // Security rules.
-        registry.register(Box::new(crate::rules::vue::NoVHtml));
-        registry.register(Box::new(crate::rules::vue::NoUnsafeUrl));
-        registry.register(Box::new(crate::rules::vue::NoTemplateTargetBlank));
-        registry.register(Box::new(crate::rules::vue::NoUnsandboxedIframe));
+        crate::rules::vue::register_security(&mut registry);
         // Accessibility rules with broadly applicable guidance.
         registry.register(Box::new(crate::rules::a11y::ImgAlt));
         registry.register(Box::new(crate::rules::a11y::AnchorHasContent));

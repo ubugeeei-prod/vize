@@ -52,25 +52,22 @@ test("task shell commands apply locale before sh starts", () => {
 test("task shell commands can forward Vite+ task arguments", () => {
   assert.equal(
     shellCommandForwardingArguments(
-      'moon run -q --target native - -- "$@" < tools/moon/scripts/release.mbtx',
+      'moon run -q --target native tools/moon/cmd/release -- "$@"',
       [],
     ),
-    "sh -c 'moon run -q --target native - -- \"$@\" < tools/moon/scripts/release.mbtx' --",
+    "sh -c 'moon run -q --target native tools/moon/cmd/release -- \"$@\"' --",
   );
 });
 
 test("Rust task environments preserve forwarded arguments", () => {
   const command = withRustTaskEnvironment(
-    'moon run -q --target native - -- "$@" < tools/moon/scripts/release.mbtx',
+    'moon run -q --target native tools/moon/cmd/release -- "$@"',
     {
       forwardArguments: true,
     },
   );
 
-  assert.match(
-    command,
-    /sh -c .*moon run -q --target native - -- "\$@" < tools\/moon\/scripts\/release\.mbtx/,
-  );
+  assert.match(command, /sh -c .*moon run -q --target native tools\/moon\/cmd\/release -- "\$@"/);
   assert.match(command, / --$/);
 });
 
@@ -94,7 +91,7 @@ test("MoonBit task commands initialize the workspace registry index", () => {
       {},
       (candidate) => candidate === ".cache/moonbit/bin/moon",
     ),
-    "( [ -d .cache/moonbit/registry/index/.git ] || env MOON_HOME=.cache/moonbit MOON_BIN=.cache/moonbit/bin/moon .cache/moonbit/bin/moon update )",
+    "( [ -d .cache/moonbit/registry/index/.git ] || (cd tools/moon && env MOON_HOME=.cache/moonbit MOON_BIN=.cache/moonbit/bin/moon .cache/moonbit/bin/moon update) )",
   );
 });
 
@@ -111,10 +108,7 @@ test("MoonBit task commands leave explicit MoonBit shims untouched", () => {
 test("release task forwards extra vp run arguments into the MoonBit script", () => {
   const command = (releaseTasks.release as { command: string }).command;
 
-  assert.match(
-    command,
-    /moon run -q --target native - -- "\$@" < tools\/moon\/scripts\/release\.mbtx/,
-  );
+  assert.match(command, /moon run -q --target native tools\/moon\/cmd\/release -- "\$@"/);
   assert.doesNotMatch(command, /env -u MOON_HOME/);
   assert.match(command, / --$/);
 });
@@ -124,7 +118,7 @@ test("repository JS check enforces the v1 alpha warning budget", () => {
 
   assert.match(
     command,
-    /moon run -q --target native - -- -- \.\/node_modules\/\.bin\/vp check < tools\/moon\/scripts\/check_warning_budget\.mbtx/,
+    /moon run -q --target native tools\/moon\/cmd\/check_warning_budget -- -- \.\/node_modules\/\.bin\/vp check/,
   );
 });
 

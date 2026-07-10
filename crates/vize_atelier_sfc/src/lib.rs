@@ -314,7 +314,7 @@ import { Child } from "./components";
             result.code
         );
         assert!(
-            result.code.contains("_createBlock(Child"),
+            result.code.contains("_createBlock(_unref(Child)"),
             "numeric component v-for should render the imported component. Got:\n{}",
             result.code
         );

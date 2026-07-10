@@ -53,41 +53,41 @@ export interface AppConfig {
 // --- Setup helpers ---
 
 const VIZE_SYMLINK_TARGETS: Record<string, string> = {
-  native: path.join(NPM_DIR, "vize-native"),
-  "vite-plugin": path.join(NPM_DIR, "vite-plugin-vize"),
-  nuxt: path.join(NPM_DIR, "nuxt"),
-  "vite-plugin-musea": path.join(NPM_DIR, "vite-plugin-musea"),
-  "musea-nuxt": path.join(NPM_DIR, "musea-nuxt"),
+  native: path.join(NPM_DIR, "native"),
+  "vite-plugin": path.join(NPM_DIR, "builder/vite"),
+  nuxt: path.join(NPM_DIR, "framework/nuxt"),
+  "vite-plugin-musea": path.join(NPM_DIR, "builder/vite-musea"),
+  "musea-nuxt": path.join(NPM_DIR, "framework/musea-nuxt"),
 };
 const VIZE_LOCAL_BUILD_TARGETS = [
   {
     name: "vize",
     filter: "vize",
-    dir: path.join(NPM_DIR, "vize"),
+    dir: path.join(NPM_DIR, "cli"),
     outputs: ["dist/index.mjs", "dist/config.mjs"],
   },
   {
     name: "@vizejs/vite-plugin",
     filter: "@vizejs/vite-plugin",
-    dir: path.join(NPM_DIR, "vite-plugin-vize"),
+    dir: path.join(NPM_DIR, "builder/vite"),
     outputs: ["dist/index.mjs"],
   },
   {
     name: "@vizejs/nuxt",
     filter: "@vizejs/nuxt",
-    dir: path.join(NPM_DIR, "nuxt"),
+    dir: path.join(NPM_DIR, "framework/nuxt"),
     outputs: ["dist/index.mjs"],
   },
   {
     name: "@vizejs/vite-plugin-musea",
     filter: "@vizejs/vite-plugin-musea",
-    dir: path.join(NPM_DIR, "vite-plugin-musea"),
+    dir: path.join(NPM_DIR, "builder/vite-musea"),
     outputs: ["dist/index.mjs", "dist/cli/index.mjs"],
   },
   {
     name: "@vizejs/musea-nuxt",
     filter: "@vizejs/musea-nuxt",
-    dir: path.join(NPM_DIR, "musea-nuxt"),
+    dir: path.join(NPM_DIR, "framework/musea-nuxt"),
     outputs: ["dist/index.mjs"],
   },
 ] as const;

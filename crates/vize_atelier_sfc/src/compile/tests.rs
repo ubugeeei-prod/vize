@@ -1,3 +1,5 @@
+mod define_props_regressions;
+mod options_api_events;
 use super::{compile_sfc, helpers, normal_script};
 use crate::types::{
     BindingType, ScriptCompileOptions, SfcCompileOptions, SfcCompileResult, TemplateCompileOptions,
@@ -168,29 +170,6 @@ const msg = ref('')
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
     insta::assert_snapshot!(result.code.as_str());
-}
-
-#[test]
-fn test_define_emits_quoted_update_event_in_sfc() {
-    let source = r#"<script setup lang="ts">
-const emit = defineEmits<{
-  "update:open": [value: boolean]
-}>()
-</script>
-
-<template>
-  <button @click="emit('update:open', false)">close</button>
-</template>"#;
-
-    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
-    let opts = SfcCompileOptions::default();
-    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
-
-    assert!(
-        result.code.contains(r#"emits: ["update:open"]"#),
-        "quoted emits keys containing ':' must be preserved:\n{}",
-        result.code
-    );
 }
 
 #[test]
@@ -770,6 +749,49 @@ const msg = 'ready'
 }
 
 #[test]
+fn test_script_setup_imported_define_page_meta_from_typed_router_is_compile_time_only() {
+    let source = r#"<script setup lang="ts">
+import { definePageMeta } from '@typed-router'
+
+definePageMeta({
+  layout: 'no-header',
+})
+
+const msg = 'ready'
+</script>
+<template>
+  <div>{{ msg }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions::default();
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        !result.code.contains("definePageMeta"),
+        "definePageMeta should be removed from runtime output:\n{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("@typed-router"),
+        "macro-only typed-router import should be removed from runtime output:\n{}",
+        result.code
+    );
+    assert_eq!(result.macro_artifacts.len(), 1);
+
+    let artifact = &result.macro_artifacts[0];
+    assert_eq!(artifact.kind.as_str(), "nuxt.definePageMeta");
+    assert!(artifact.content.contains("no-header"));
+    assert!(
+        artifact
+            .module_code
+            .as_ref()
+            .is_some_and(|code| code.starts_with("const __nuxt_page_meta = {")
+                && code.contains("export default __nuxt_page_meta"))
+    );
+}
+
+#[test]
 fn test_script_setup_define_route_rules_is_compile_time_only() {
     let source = r#"<script setup lang="ts">
 defineRouteRules({
@@ -946,6 +968,41 @@ function handlePresetChange(key: PresetKey) {}
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
     insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_typescript_scoped_slot_props_are_accepted() {
+    let source = r#"<script setup lang="ts">
+const label = 'ready'
+</script>
+
+<template>
+  <Popover v-slot="{ open, close }: { open: boolean, close?: () => void }">
+    {{ label }} {{ open }}
+  </Popover>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result
+            .code
+            .contains("({ open, close }: { open: boolean, close?: () => void }) =>"),
+        "{}",
+        result.code
+    );
 }
 
 #[test]

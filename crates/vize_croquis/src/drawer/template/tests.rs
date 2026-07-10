@@ -4,7 +4,12 @@ use super::super::{Drawer, DrawerOptions};
 
 /// Collect the `vif_guard` attached to each template interpolation, keyed by
 /// expression text. Used to pin sibling-aware `v-if` / `v-else` narrowing.
-fn interpolation_guards(template: &str) -> Vec<(std::string::String, Option<std::string::String>)> {
+fn interpolation_guards(
+    template: &str,
+) -> Vec<(
+    vize_carton::CompactString,
+    Option<vize_carton::CompactString>,
+)> {
     use vize_armature::parse;
     use vize_carton::Bump;
 
@@ -23,12 +28,7 @@ fn interpolation_guards(template: &str) -> Vec<(std::string::String, Option<std:
                 crate::croquis::TemplateExpressionKind::Interpolation
             )
         })
-        .map(|e| {
-            (
-                e.content.to_string(),
-                e.vif_guard.as_ref().map(|g| g.to_string()),
-            )
-        })
+        .map(|e| (e.content.clone(), e.vif_guard.clone()))
         .collect()
 }
 
@@ -90,6 +90,84 @@ fn v_effect_references_resolve_against_v_scope() {
         !undefined.iter().any(|n| n == "count"),
         "v-effect should see v-scope key, got: {undefined:?}"
     );
+}
+
+#[test]
+fn component_v_bind_arg_is_not_an_undefined_template_ref() {
+    let undefined = undefined_refs_with_empty_script(
+        r#"<AfsButton v-if="interaction?.to" :to="interaction.to">{{ interaction.text }}</AfsButton>"#,
+    );
+    assert!(
+        !undefined.iter().any(|n| n == "to"),
+        "component prop names must not be template refs: {undefined:?}"
+    );
+}
+
+#[test]
+fn component_usage_records_slots() {
+    use vize_armature::parse;
+    use vize_carton::Bump;
+
+    let template = r#"<Child :message="msg" @save.once="save">
+  <template #item="{ row, index }">
+    <span>{{ row }}</span>
+  </template>
+  <span>fallback</span>
+</Child>"#;
+
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, template);
+    assert!(errors.is_empty(), "Template should parse without errors");
+
+    let mut drawer = Drawer::with_options(DrawerOptions::full());
+    drawer.draw_template(&root);
+    let summary = drawer.finish();
+    let usage = summary
+        .component_usages
+        .iter()
+        .find(|usage| usage.name == "Child")
+        .expect("Child usage must be collected");
+
+    assert_eq!(usage.props.len(), 1);
+    assert_eq!(usage.events.len(), 1);
+    assert!(usage.slots.iter().any(|slot| {
+        slot.name == "item"
+            && slot.has_scope
+            && slot.scope_vars.iter().any(|var| var == "row")
+            && slot.scope_vars.iter().any(|var| var == "index")
+    }));
+    assert!(
+        usage.slots.iter().any(|slot| {
+            slot.name == "default" && !slot.has_scope && slot.scope_vars.is_empty()
+        })
+    );
+}
+
+#[test]
+fn dynamic_component_v_on_uses_is_binding_as_target_component() {
+    use crate::scope::ScopeData;
+    use vize_armature::parse;
+    use vize_carton::Bump;
+
+    let template = r#"<component :is="Child" @escape-key-down="handleEscape"></component>"#;
+
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, template);
+    assert!(errors.is_empty(), "Template should parse without errors");
+
+    let mut drawer = Drawer::with_options(DrawerOptions::full());
+    drawer.draw_template(&root);
+    let summary = drawer.finish();
+    let event = summary
+        .scopes
+        .iter()
+        .find_map(|scope| match scope.data() {
+            ScopeData::EventHandler(data) => Some(data),
+            _ => None,
+        })
+        .expect("dynamic component listener should create an event scope");
+
+    assert_eq!(event.target_component.as_deref(), Some("Child"));
 }
 
 #[test]

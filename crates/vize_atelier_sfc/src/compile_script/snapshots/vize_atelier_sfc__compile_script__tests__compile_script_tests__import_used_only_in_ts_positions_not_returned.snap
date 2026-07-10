@@ -7,10 +7,13 @@ import { SomeType } from './types'
 
 const __sfc__ = /*@__PURE__*/_defineComponent({
   __name: 'Test',
+  props: {
+    items: { type: Array as PropType<SomeType[]> },
+  },
   setup(__props, { expose: __expose, emit: __emit }) {
   __expose();
   const props = __props
-  const __returned__ = { items }
+  const __returned__ = {  }
   Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
   return __returned__
   }

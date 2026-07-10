@@ -2,9 +2,12 @@ use napi::{Result, Status};
 use napi_derive::napi;
 use vize_carton::cstr;
 
-use super::types::{
-    SfcCompileOptionsNapi, SfcCompileResultNapi, custom_blocks_to_napi, macro_artifacts_to_napi,
-    style_blocks_to_napi,
+use super::{
+    experimentals::ExperimentalTemplateOptions,
+    types::{
+        SfcCompileOptionsNapi, SfcCompileResultNapi, custom_blocks_to_napi,
+        macro_artifacts_to_napi, style_blocks_to_napi,
+    },
 };
 use crate::template_syntax::resolve_template_syntax;
 
@@ -29,10 +32,8 @@ fn compile_sfc_impl(
     };
 
     let opts = options.unwrap_or_default();
-    let filename: vize_carton::CompactString = opts
-        .filename
-        .unwrap_or_else(|| "anonymous.vue".to_string())
-        .into();
+    let filename: vize_carton::CompactString =
+        opts.filename.as_deref().unwrap_or("anonymous.vue").into();
     let parse_opts = SfcParseOptions {
         filename: filename.clone(),
         ..Default::default()
@@ -68,6 +69,7 @@ fn compile_sfc_impl(
     let is_ts = opts.is_ts.unwrap_or(false);
     let source_map = opts.source_map.unwrap_or(false);
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())?;
+    let experimentals = ExperimentalTemplateOptions::from_compile(&opts);
     let standalone = opts.mode.as_deref() == Some("function");
     let external_scope_id: Option<vize_carton::CompactString> = opts
         .scope_id
@@ -84,7 +86,7 @@ fn compile_sfc_impl(
         Some(vize_atelier_dom::DomCompilerOptions {
             scope_id,
             source_map,
-            ..Default::default()
+            ..experimentals.dom_options()
         })
     };
 

@@ -2,11 +2,15 @@
 
 use std::path::Path;
 
+use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    Expression, ModuleExportName, ObjectExpression, ObjectPropertyKind, PropertyKey,
+    Expression, ModuleExportName, ObjectExpression, ObjectPropertyKind, PropertyKey, Statement,
 };
+use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString};
+
+use super::stubs::tracked_read_to_string;
 
 pub(super) fn source_type_for_script_lang(lang: Option<&str>) -> SourceType {
     match lang {
@@ -44,25 +48,6 @@ pub(super) fn module_export_name<'a>(name: &'a ModuleExportName<'a>) -> Option<&
         ModuleExportName::IdentifierName(identifier) => Some(identifier.name.as_str()),
         ModuleExportName::IdentifierReference(identifier) => Some(identifier.name.as_str()),
         ModuleExportName::StringLiteral(literal) => Some(literal.value.as_str()),
-    }
-}
-
-pub(super) fn parse_module_specifier(from_part: &str) -> Option<&str> {
-    let from_part = from_part.trim().trim_end_matches(';').trim();
-    let quote = from_part.chars().next()?;
-    if quote != '\'' && quote != '"' {
-        return None;
-    }
-    let rest = &from_part[1..];
-    let end = rest.find(quote)?;
-    Some(&rest[..end])
-}
-
-pub(super) fn parse_export_names(export_part: &str) -> (&str, &str) {
-    if let Some((local_name, exported_name)) = export_part.split_once(" as ") {
-        (local_name.trim(), exported_name.trim())
-    } else {
-        (export_part, export_part)
     }
 }
 
@@ -170,6 +155,77 @@ pub(super) fn find_object_property<'a>(
             None
         }
     })
+}
+
+/// Finds the config object behind the default export, looking through the
+/// `defineNuxtConfig(...)` wrapper as well as parenthesized/`as`/`satisfies`
+/// wrappers on either form.
+pub(super) fn default_export_config_object<'a>(
+    statements: &'a [Statement<'a>],
+) -> Option<&'a ObjectExpression<'a>> {
+    let export = statements.iter().find_map(|statement| match statement {
+        Statement::ExportDefaultDeclaration(export) => Some(export),
+        _ => None,
+    })?;
+
+    if let Some(call) = extract_call_expression_from_export(&export.declaration) {
+        if !matches!(&call.callee, Expression::Identifier(callee) if callee.name == "defineNuxtConfig")
+        {
+            return None;
+        }
+        return call
+            .arguments
+            .first()
+            .and_then(|argument| argument.as_expression())
+            .and_then(extract_object_expression);
+    }
+
+    export
+        .declaration
+        .as_expression()
+        .and_then(extract_object_expression)
+}
+
+pub(super) fn nuxt_config_source(cwd: &Path) -> String {
+    for file_name in [
+        "nuxt.config.ts",
+        "nuxt.config.js",
+        "nuxt.config.mts",
+        "nuxt.config.mjs",
+    ] {
+        let path = cwd.join(file_name);
+        if let Ok(source) = tracked_read_to_string(path.as_path()) {
+            return source.into();
+        }
+    }
+    String::default()
+}
+
+pub(super) fn nuxt_config_static_string(cwd: &Path, key: &str) -> Option<String> {
+    let source = nuxt_config_source(cwd);
+    if source.is_empty() {
+        return None;
+    }
+
+    let allocator = Allocator::default();
+    let source_type = source_type_for_path(Path::new("nuxt.config.ts"));
+    let ret = Parser::new(&allocator, source.as_str(), source_type).parse();
+    if ret.panicked {
+        return None;
+    }
+
+    let config_object = default_export_config_object(&ret.program.body)?;
+    find_object_property(config_object, key).and_then(static_string_value)
+}
+
+pub(super) fn static_string_value(expression: &Expression<'_>) -> Option<String> {
+    match extract_expression(expression)? {
+        Expression::StringLiteral(literal) => Some(literal.value.as_str().to_compact_string()),
+        Expression::TemplateLiteral(template) => template
+            .single_quasi()
+            .map(|value| value.as_str().to_compact_string()),
+        _ => None,
+    }
 }
 
 pub(super) fn collect_object_keys(object: &ObjectExpression<'_>, keys: &mut Vec<String>) {

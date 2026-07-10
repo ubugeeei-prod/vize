@@ -5,22 +5,23 @@
 //! commented-out entries and module names inside unrelated strings no longer
 //! count as installed modules.
 
+mod fallback_values;
+
 use std::path::Path;
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{ArrayExpressionElement, Expression, ObjectExpression, Statement};
+use oxc_ast::ast::{ArrayExpressionElement, Expression};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String, ToCompactString};
 
 use super::parsing::{
-    extract_call_expression_from_export, extract_expression, extract_object_expression,
-    find_object_property,
+    default_export_config_object, extract_expression, find_object_property, nuxt_config_source,
 };
 use super::stubs::{
     declared_name, push_generic_function_stub, push_named_overload_stubs, push_stub,
-    tracked_read_to_string,
 };
+use fallback_values::fallback_value_stubs;
 
 pub(super) fn collect_fallback_stubs(
     stubs: &mut Vec<String>,
@@ -34,8 +35,13 @@ pub(super) fn collect_fallback_stubs(
         seen_names,
         &mut fallback_names,
     );
+    push_stub(
+        stubs,
+        seen_names,
+        "declare function defineNuxtConfig<T extends Record<string, any>>(config: T): T;".into(),
+    );
     // The hardcoded `any` ladder silently weakens checking, so only inject it
-    // when the project has no generated `.nuxt` import manifest to rely on.
+    // when the project has no generated Nuxt import manifest to rely on.
     if !has_generated_imports {
         push_fallback_stub_group(
             fallback_value_stubs(),
@@ -93,12 +99,22 @@ pub(super) fn collect_module_fallback_stubs(
         push_stub(
             stubs,
             seen_names,
-            "declare function useI18n(): ({ locale: { value: string }; locales: (Array<{ code: string; name?: string; dir?: any }> & { value: Array<{ code: string; name?: string; dir?: any }> }); t: (...args: any[]) => any } & Record<string, any>);"
+            "declare function useI18n(): ({ locale: Ref<string>; locales: Ref<Array<{ code: string; name?: string; dir?: any }>>; setLocale: (locale: string) => any; t: (...args: any[]) => any } & Record<string, any>);"
                 .into(),
         );
         push_generic_function_stub(stubs, seen_names, "useLocalePath");
+        push_generic_function_stub(stubs, seen_names, "useLocaleHead");
         push_generic_function_stub(stubs, seen_names, "$t");
         stubs.push("declare module \"@nuxtjs/i18n\" { export type Directions = any; }".into());
+    }
+
+    if modules.might_include(&["@nuxt/content"]) {
+        push_stub(
+            stubs,
+            seen_names,
+            "declare function queryCollection<T = any>(collection: string): ({ all(): Promise<T[]>; first(): Promise<T | null>; path(path: string): any; where(...args: any[]): any; order(...args: any[]): any; limit(...args: any[]): any } & Record<string, any>);"
+                .into(),
+        );
     }
 
     if modules.might_include(&["@vueuse/nuxt"]) {
@@ -132,6 +148,13 @@ pub(super) fn collect_module_fallback_stubs(
 
     if modules.might_include(&["nuxt-og-image"]) {
         push_generic_function_stub(stubs, seen_names, "defineOgImageComponent");
+    }
+
+    if modules.might_include(&["motion-v/nuxt"]) {
+        stubs.push(
+            "declare module \"motion-v\" { export const motion: Record<string, any>; export const AnimatePresence: any; }"
+                .into(),
+        );
     }
 }
 
@@ -174,7 +197,7 @@ impl NuxtConfigModules {
     }
 }
 
-/// Parses `nuxt.config` source and extracts the `modules` array from the
+/// Parses `nuxt.config` source and extracts module arrays from the
 /// default-exported config object, handling both
 /// `export default defineNuxtConfig({ ... })` and `export default { ... }`.
 pub(super) fn parse_nuxt_config_modules(config_source: &str) -> NuxtConfigModules {
@@ -191,27 +214,37 @@ pub(super) fn parse_nuxt_config_modules(config_source: &str) -> NuxtConfigModule
         return NuxtConfigModules::unresolved();
     };
 
-    let Some(modules_value) = find_object_property(config_object, "modules") else {
-        // A statically-visible config without a `modules` key registers no
+    let mut resolved = NuxtConfigModules::default();
+    let mut found_module_list = false;
+    for key in ["modules", "buildModules"] {
+        let Some(modules_value) = find_object_property(config_object, key) else {
+            continue;
+        };
+        found_module_list = true;
+        collect_nuxt_config_module_list(modules_value, &mut resolved);
+    }
+
+    if !found_module_list {
+        // A statically-visible config without module list keys registers no
         // modules, so nothing needs stubbing.
         return NuxtConfigModules::default();
+    }
+
+    resolved
+}
+
+fn collect_nuxt_config_module_list(value: &Expression<'_>, resolved: &mut NuxtConfigModules) {
+    let Some(Expression::ArrayExpression(modules)) = extract_expression(value) else {
+        resolved.has_unresolved_entries = true;
+        return;
     };
 
-    let Some(Expression::ArrayExpression(modules)) = extract_expression(modules_value) else {
-        return NuxtConfigModules::unresolved();
-    };
-
-    let mut resolved = NuxtConfigModules::default();
     for element in &modules.elements {
         match element {
             ArrayExpressionElement::Elision(_) => {}
             ArrayExpressionElement::SpreadElement(_) => resolved.has_unresolved_entries = true,
             _ => match element.as_expression().and_then(extract_expression) {
-                Some(Expression::StringLiteral(literal)) => resolved.insert(&literal.value),
-                Some(Expression::TemplateLiteral(template)) => match template.single_quasi() {
-                    Some(name) => resolved.insert(&name),
-                    None => resolved.has_unresolved_entries = true,
-                },
+                Some(expression) if static_module_name(expression, resolved) => {}
                 // `['module-name', { ...options }]` tuple form.
                 Some(Expression::ArrayExpression(tuple)) => {
                     match tuple
@@ -220,7 +253,7 @@ pub(super) fn parse_nuxt_config_modules(config_source: &str) -> NuxtConfigModule
                         .and_then(ArrayExpressionElement::as_expression)
                         .and_then(extract_expression)
                     {
-                        Some(Expression::StringLiteral(literal)) => resolved.insert(&literal.value),
+                        Some(expression) if static_module_name(expression, resolved) => {}
                         _ => resolved.has_unresolved_entries = true,
                     }
                 }
@@ -228,48 +261,23 @@ pub(super) fn parse_nuxt_config_modules(config_source: &str) -> NuxtConfigModule
             },
         }
     }
-    resolved
 }
 
-/// Finds the config object behind the default export, looking through the
-/// `defineNuxtConfig(...)` wrapper as well as parenthesized/`as`/`satisfies`
-/// wrappers on either form. Returns `None` for anything else (identifier
-/// references, unknown wrapper calls, missing default export), which callers
-/// treat as an unresolved module list.
-fn default_export_config_object<'a>(
-    statements: &'a [Statement<'a>],
-) -> Option<&'a ObjectExpression<'a>> {
-    let export = statements.iter().find_map(|statement| match statement {
-        Statement::ExportDefaultDeclaration(export) => Some(export),
-        _ => None,
-    })?;
-
-    if let Some(call) = extract_call_expression_from_export(&export.declaration) {
-        if !matches!(&call.callee, Expression::Identifier(callee) if callee.name == "defineNuxtConfig")
-        {
-            return None;
+fn static_module_name(expression: &Expression<'_>, resolved: &mut NuxtConfigModules) -> bool {
+    match expression {
+        Expression::StringLiteral(literal) => {
+            resolved.insert(&literal.value);
+            true
         }
-        return call
-            .arguments
-            .first()
-            .and_then(|argument| argument.as_expression())
-            .and_then(extract_object_expression);
+        Expression::TemplateLiteral(template) => match template.single_quasi() {
+            Some(name) => {
+                resolved.insert(&name);
+                true
+            }
+            None => false,
+        },
+        _ => false,
     }
-
-    export
-        .declaration
-        .as_expression()
-        .and_then(extract_object_expression)
-}
-
-pub(super) fn nuxt_config_source(cwd: &Path) -> String {
-    for file_name in ["nuxt.config.ts", "nuxt.config.js", "nuxt.config.mts"] {
-        let path = cwd.join(file_name);
-        if let Ok(source) = tracked_read_to_string(path.as_path()) {
-            return source.into();
-        }
-    }
-    String::default()
 }
 
 #[cfg(test)]
@@ -295,100 +303,6 @@ fn fallback_type_alias_stubs() -> Vec<String> {
         "type MaybeRef<T = any> = import('vue').MaybeRef<T>;".into(),
         "type MaybeRefOrGetter<T = any> = import('vue').MaybeRefOrGetter<T>;".into(),
         "type Component = import('vue').Component;".into(),
-    ]
-}
-
-/// Hardcoded `any`-typed value stubs. Skipped whenever the project ships a
-/// generated `.nuxt` import manifest, which covers all of these names with
-/// real `typeof import(...)` types.
-fn fallback_value_stubs() -> Vec<String> {
-    vec![
-        "declare function ref<T>(value: T): Ref<UnwrapRef<T>>;".into(),
-        "declare function ref<T = any>(): Ref<T | undefined>;".into(),
-        "declare function computed<T>(getter: () => T): ComputedRef<T>;".into(),
-        "declare function computed<T>(options: { get: () => T; set: (value: T) => void }): WritableComputedRef<T>;".into(),
-        "declare function reactive<T extends object>(target: T): UnwrapNestedRefs<T>;".into(),
-        "declare function readonly<T extends object>(target: T): Readonly<T>;".into(),
-        "declare function watch(source: any, cb: (...args: any[]) => any, options?: any): any;".into(),
-        "declare function watchEffect(effect: () => void, options?: any): any;".into(),
-        "declare function watchPostEffect(effect: () => void): any;".into(),
-        "declare function watchSyncEffect(effect: () => void): any;".into(),
-        "declare function onMounted(hook: () => any): void;".into(),
-        "declare function onUnmounted(hook: () => any): void;".into(),
-        "declare function onBeforeMount(hook: () => any): void;".into(),
-        "declare function onBeforeUnmount(hook: () => any): void;".into(),
-        "declare function onBeforeUpdate(hook: () => any): void;".into(),
-        "declare function onUpdated(hook: () => any): void;".into(),
-        "declare function onActivated(hook: () => any): void;".into(),
-        "declare function onDeactivated(hook: () => any): void;".into(),
-        "declare function onErrorCaptured(hook: (...args: any[]) => any): void;".into(),
-        "declare function nextTick(fn?: () => void): Promise<void>;".into(),
-        "declare function toRef<T extends object, K extends keyof T>(object: T, key: K): Ref<T[K]>;".into(),
-        "declare function toRefs<T extends object>(object: T): { [K in keyof T]: Ref<T[K]> };".into(),
-        "declare function unref<T>(ref: T | Ref<T>): T;".into(),
-        "declare function isRef(value: any): value is Ref;".into(),
-        "declare function shallowRef<T>(value: T): ShallowRef<T>;".into(),
-        "declare function triggerRef(ref: ShallowRef): void;".into(),
-        "declare function provide<T>(key: string | symbol, value: T): void;".into(),
-        "declare function inject<T>(key: string | symbol): T | undefined;".into(),
-        "declare function inject<T>(key: string | symbol, defaultValue: T): T;".into(),
-        "declare function defineAsyncComponent(source: any): any;".into(),
-        "declare function h(type: any, ...args: any[]): any;".into(),
-        "declare function useAttrs(): Record<string, unknown>;".into(),
-        "declare function useSlots(): Record<string, (...args: any[]) => any>;".into(),
-        "declare function toRaw<T>(observed: T): T;".into(),
-        "declare function markRaw<T extends object>(value: T): T;".into(),
-        "declare function effectScope(detached?: boolean): any;".into(),
-        "declare function getCurrentScope(): any;".into(),
-        "declare function onScopeDispose(fn: () => void): void;".into(),
-        "declare function shallowReactive<T extends object>(target: T): T;".into(),
-        "declare function shallowReadonly<T extends object>(target: T): Readonly<T>;".into(),
-        "declare function customRef<T>(factory: any): Ref<T>;".into(),
-        "declare function useRouter(): any;".into(),
-        "declare function useRoute(name?: string): any;".into(),
-        "declare function definePageMeta(meta: any): void;".into(),
-        "declare function defineRouteRules(rules: any): void;".into(),
-        "declare function useSeoMeta(meta: any): void;".into(),
-        "declare function useFetch<T = any>(url: string | (() => string), options?: any): any;".into(),
-        "declare function useAsyncData<T = any>(handler: (...args: any[]) => T | Promise<T>, options?: any): any;".into(),
-        "declare function useAsyncData<T = any>(key: string, handler: (...args: any[]) => T | Promise<T>, options?: any): any;".into(),
-        "declare function useLazyFetch<T = any>(url: string | (() => string), options?: any): any;".into(),
-        "declare function useLazyAsyncData<T = any>(handler: (...args: any[]) => T | Promise<T>, options?: any): any;".into(),
-        "declare function useLazyAsyncData<T = any>(key: string, handler: (...args: any[]) => T | Promise<T>, options?: any): any;".into(),
-        "declare function navigateTo(to: string | any, options?: any): any;".into(),
-        "declare function createError(input: string | { statusCode?: number; statusMessage?: string; message?: string; data?: any; fatal?: boolean }): any;".into(),
-        "declare function showError(error: any): any;".into(),
-        "declare function clearError(options?: { redirect?: string }): Promise<void>;".into(),
-        "declare function useNuxtApp(): any;".into(),
-        "declare function useRuntimeConfig(): any;".into(),
-        "declare function useAppConfig(): any;".into(),
-        "declare function useState<T = any>(key: string, init?: () => T): Ref<T>;".into(),
-        "declare function useCookie<T = any>(name: string, options?: any): Ref<T>;".into(),
-        "declare function useHead(input: { titleTemplate?: (titleChunk?: string) => any; [key: string]: any }): void;".into(),
-        "declare function useHead(input: any): void;".into(),
-        "declare function useRequestHeaders(headers?: string[]): Record<string, string>;".into(),
-        "declare function useRequestURL(): URL;".into(),
-        "declare function defineNuxtComponent(options: any): any;".into(),
-        "declare function defineNuxtRouteMiddleware(middleware: any): any;".into(),
-        "declare function useError(): any;".into(),
-        "declare function abortNavigation(err?: any): any;".into(),
-        "declare function addRouteMiddleware(name: string, middleware: any, options?: any): void;".into(),
-        "declare function defineNuxtPlugin(plugin: any): any;".into(),
-        "declare function setPageLayout(layout: string): void;".into(),
-        "declare function setResponseStatus(code: number, message?: string): void;".into(),
-        "declare function prerenderRoutes(routes: string | string[]): void;".into(),
-        "declare function refreshNuxtData(keys?: string | string[]): Promise<void>;".into(),
-        "declare function clearNuxtData(keys?: string | string[]): void;".into(),
-        "declare function reloadNuxtApp(options?: any): void;".into(),
-        "declare function callOnce(key: string, fn: () => any): Promise<void>;".into(),
-        "declare function callOnce(fn: () => any): Promise<void>;".into(),
-        "declare function onNuxtReady(callback: () => any): void;".into(),
-        "declare function preloadComponents(components: string | string[]): Promise<void>;".into(),
-        "declare function prefetchComponents(components: string | string[]): Promise<void>;".into(),
-        "declare function useRequestEvent(): any;".into(),
-        "declare function useRequestFetch(): typeof globalThis.fetch;".into(),
-        "declare function useResponseHeaders(headers?: Record<string, string>): any;".into(),
-        "declare function $fetch<T = any>(...args: any[]): Promise<T>;".into(),
     ]
 }
 

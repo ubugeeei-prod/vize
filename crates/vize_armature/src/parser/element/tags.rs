@@ -2,13 +2,13 @@
 
 use vize_carton::{Box, Vec};
 use vize_relief::{
-    AttributeNode, ElementNode, ElementType, ExpressionNode, Namespace, PropNode,
-    TemplateChildNode, TextNode,
+    AttributeNode, ElementNode, ExpressionNode, Namespace, PropNode, TemplateChildNode, TextNode,
     errors::{CompilerError, ErrorCode},
     options::TemplateSyntaxMode,
 };
 
 use super::super::{CurrentElement, Parser, ParserStackEntry, StackInsertion};
+use super::is_html_tree_element;
 
 /// Maximum element nesting depth retained by the parser.
 ///
@@ -79,8 +79,11 @@ impl<'a> Parser<'a> {
                 return;
             }
 
-            self.handle_in_body_start_tag(element.tag.as_str(), tag_start);
-            self.handle_in_table_start_tag(element.tag.as_str(), tag_start);
+            let is_html_tree_element = is_html_tree_element(&element);
+            if is_html_tree_element {
+                self.handle_in_body_start_tag(element.tag.as_str(), tag_start);
+                self.handle_in_table_start_tag(element.tag.as_str(), tag_start);
+            }
 
             // Check for pre tags
             let is_pre = (self.options.is_pre_tag)(element.tag.as_str());
@@ -178,10 +181,8 @@ impl<'a> Parser<'a> {
             }
 
             if current.is_self_closing || (self.options.is_void_tag)(element.tag.as_str()) {
-                let should_foster_direct = self.should_foster_start_tag(
-                    element.tag.as_str(),
-                    element.ns == Namespace::Html && element.tag_type == ElementType::Element,
-                );
+                let should_foster_direct =
+                    self.should_foster_start_tag(element.tag.as_str(), is_html_tree_element);
                 // Self-closing or void tag, add directly
                 let boxed = Box::new_in(element, self.allocator);
                 let child = TemplateChildNode::Element(boxed);
@@ -203,15 +204,16 @@ impl<'a> Parser<'a> {
                 let boxed = Box::new_in(element, self.allocator);
                 self.add_child(TemplateChildNode::Element(boxed));
             } else {
-                let insertion = if self.should_foster_start_tag(element.tag.as_str(), true) {
-                    self.report_tree_construction_recovery(
-                        &element.loc,
-                        "Foster parenting moved this element before the nearest open table.",
-                    );
-                    StackInsertion::Fostered
-                } else {
-                    StackInsertion::Normal
-                };
+                let insertion =
+                    if self.should_foster_start_tag(element.tag.as_str(), is_html_tree_element) {
+                        self.report_tree_construction_recovery(
+                            &element.loc,
+                            "Foster parenting moved this element before the nearest open table.",
+                        );
+                        StackInsertion::Fostered
+                    } else {
+                        StackInsertion::Normal
+                    };
                 // Push to stack
                 self.push_stack_entry(ParserStackEntry {
                     element,

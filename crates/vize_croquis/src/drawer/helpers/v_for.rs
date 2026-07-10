@@ -4,8 +4,8 @@
 //! `"(item, index) in items"` into separate variable bindings
 //! and the iterable source expression.
 //!
-//! Uses fast-path string scanning for simple patterns and falls
-//! back to OXC parsing for destructured bindings.
+//! Splits the Vue-specific `in`/`of` boundary, then normalizes aliases into
+//! JavaScript binding patterns and walks the OXC AST for binding names.
 
 use vize_carton::{CompactString, SmallVec, profile, smallvec};
 
@@ -29,179 +29,157 @@ pub struct VForScopeAliases {
 /// Parse v-for expression into variables and source
 #[inline]
 pub fn parse_v_for_expression(expr: &str) -> (SmallVec<[CompactString; 3]>, CompactString) {
-    let Some((alias_part, source_part)) = split_v_for_expression(expr) else {
-        return (smallvec![], CompactString::new(expr.trim()));
-    };
-    let source = CompactString::new(source_part);
-
-    // Fast path: simple identifier
-    if !alias_part.starts_with('(')
-        && !alias_part.contains('{')
-        && is_valid_identifier_fast(alias_part.as_bytes())
-    {
-        return (smallvec![CompactString::new(alias_part)], source);
-    }
-
-    // Fast path: simple tuple (item, index)
-    if alias_part.starts_with('(') && alias_part.ends_with(')') && !alias_part.contains('{') {
-        let inner = &alias_part[1..alias_part.len() - 1];
-        let mut vars = SmallVec::new();
-        for part in inner.split(',') {
-            let part = part.trim();
-            if !part.is_empty() && is_valid_identifier_fast(part.as_bytes()) {
-                vars.push(CompactString::new(part));
-            }
+    let expr = expr.trim();
+    parse_first_v_for_candidate(expr, |alias_part, source_part| {
+        if let Some(bindings) = parse_simple_v_for_bindings(alias_part) {
+            return Some((bindings, CompactString::new(source_part)));
         }
-        if !vars.is_empty() {
-            return (vars, source);
-        }
-    }
 
-    // Complex case: use OXC parser
-    profile!(
-        "croquis.helpers.v_for.oxc",
-        oxc::parse_v_for_with_oxc(alias_part, source)
-    )
+        let source = CompactString::new(source_part);
+        let (bindings, source) = profile!(
+            "croquis.helpers.v_for.oxc",
+            oxc::parse_v_for_with_oxc(alias_part, source)
+        );
+
+        (!bindings.is_empty()).then_some((bindings, source))
+    })
+    .unwrap_or_else(|| (smallvec![], CompactString::new(expr)))
 }
 
 /// Parse v-for expression into structured scope aliases.
 #[inline]
 pub fn parse_v_for_scope_expression(expr: &str) -> Option<VForScopeAliases> {
-    let (alias_part, source_part) = split_v_for_expression(expr)?;
-    let source = CompactString::new(source_part);
+    parse_first_v_for_candidate(expr.trim(), |alias_part, source_part| {
+        if let Some(aliases) = parse_simple_v_for_scope_aliases(alias_part, source_part) {
+            return Some(aliases);
+        }
 
-    let (value_pattern, key_alias, index_alias) =
-        split_v_for_aliases(alias_part.trim_start_matches("const ").trim());
-    let value_pattern = value_pattern.trim();
-    let value_bindings = oxc::extract_binding_names_from_pattern(value_pattern);
-    if value_bindings.is_empty() {
+        let source = CompactString::new(source_part);
+
+        profile!(
+            "croquis.helpers.v_for.scope_oxc",
+            oxc::parse_v_for_scope_aliases(alias_part.trim_start_matches("const ").trim(), source)
+        )
+    })
+}
+
+fn parse_first_v_for_candidate<T>(
+    expr: &str,
+    mut parse: impl FnMut(&str, &str) -> Option<T>,
+) -> Option<T> {
+    let mut previous_char = None;
+
+    for (keyword_start, ch) in expr.char_indices() {
+        let keyword_len = match ch {
+            'i' if expr[keyword_start..].starts_with("in") => 2,
+            'o' if expr[keyword_start..].starts_with("of") => 2,
+            _ => {
+                previous_char = Some(ch);
+                continue;
+            }
+        };
+
+        if !previous_char.is_some_and(char::is_whitespace) {
+            previous_char = Some(ch);
+            continue;
+        }
+
+        let keyword_end = keyword_start + keyword_len;
+        if !expr[keyword_end..]
+            .chars()
+            .next()
+            .is_some_and(char::is_whitespace)
+        {
+            previous_char = Some(ch);
+            continue;
+        }
+
+        let alias_part = expr[..keyword_start].trim();
+        let source_part = expr[keyword_end..].trim();
+        if !alias_part.is_empty()
+            && !source_part.is_empty()
+            && let Some(parsed) = parse(alias_part, source_part)
+        {
+            return Some(parsed);
+        }
+
+        previous_char = Some(ch);
+    }
+
+    None
+}
+
+fn parse_simple_v_for_bindings(alias: &str) -> Option<SmallVec<[CompactString; 3]>> {
+    let alias = alias.trim_start_matches("const ").trim();
+    if is_valid_identifier_fast(alias.as_bytes()) {
+        return Some(smallvec![CompactString::new(alias)]);
+    }
+
+    let inner = simple_tuple_inner(alias)?;
+    let mut bindings = SmallVec::new();
+    for part in inner.split(',') {
+        let part = part.trim();
+        if !is_valid_identifier_fast(part.as_bytes()) {
+            return None;
+        }
+        bindings.push(CompactString::new(part));
+    }
+
+    (!bindings.is_empty()).then_some(bindings)
+}
+
+fn parse_simple_v_for_scope_aliases(alias: &str, source: &str) -> Option<VForScopeAliases> {
+    let alias = alias.trim_start_matches("const ").trim();
+    if is_valid_identifier_fast(alias.as_bytes()) {
+        return Some(VForScopeAliases {
+            value_pattern: CompactString::new(alias),
+            value_bindings: smallvec![CompactString::new(alias)],
+            key_alias: None,
+            index_alias: None,
+            source: CompactString::new(source),
+        });
+    }
+
+    let inner = simple_tuple_inner(alias)?;
+    let mut parts = inner.split(',');
+    let value_pattern = parts.next()?.trim();
+    if !is_valid_identifier_fast(value_pattern.as_bytes()) {
+        return None;
+    }
+
+    let key_alias = simple_tuple_part(parts.next())?;
+    let index_alias = simple_tuple_part(parts.next())?;
+    if parts.any(|part| !part.trim().is_empty()) {
         return None;
     }
 
     Some(VForScopeAliases {
         value_pattern: CompactString::new(value_pattern),
-        value_bindings,
+        value_bindings: smallvec![CompactString::new(value_pattern)],
         key_alias,
         index_alias,
-        source,
+        source: CompactString::new(source),
     })
 }
 
-fn split_v_for_expression(expr: &str) -> Option<(&str, &str)> {
-    let expr = expr.trim();
-    let bytes = expr.as_bytes();
-    let len = bytes.len();
-
-    // Find " in " or " of " separator
-    let mut split_pos = None;
-    let mut i = 0;
-    while i + 4 <= len {
-        if bytes[i] == b' '
-            && ((bytes[i + 1] == b'i' && bytes[i + 2] == b'n')
-                || (bytes[i + 1] == b'o' && bytes[i + 2] == b'f'))
-            && bytes[i + 3] == b' '
-        {
-            split_pos = Some(i);
-            break;
-        }
-        i += 1;
-    }
-
-    let pos = split_pos?;
-
-    let alias_part = expr[..pos].trim();
-    let source_part = expr[pos + 4..].trim();
-    Some((alias_part, source_part))
-}
-
-fn split_v_for_aliases(alias: &str) -> (&str, Option<CompactString>, Option<CompactString>) {
-    let Some(inner) = enclosing_parens_inner(alias) else {
-        return (alias, None, None);
+fn simple_tuple_part(part: Option<&str>) -> Option<Option<CompactString>> {
+    let Some(part) = part else {
+        return Some(None);
     };
-    let parts = split_top_level_commas(inner);
-    if parts.len() <= 1 {
-        return (parts.first().copied().unwrap_or(inner), None, None);
+    let part = part.trim();
+    if part.is_empty() {
+        return Some(None);
     }
-
-    let key_alias = parts.get(1).and_then(|part| simple_alias(part));
-    let index_alias = parts.get(2).and_then(|part| simple_alias(part));
-    (parts[0], key_alias, index_alias)
+    is_valid_identifier_fast(part.as_bytes()).then(|| Some(CompactString::new(part)))
 }
 
-fn simple_alias(part: &str) -> Option<CompactString> {
-    let alias = part.trim();
-    is_valid_identifier_fast(alias.as_bytes()).then(|| CompactString::new(alias))
-}
-
-fn enclosing_parens_inner(text: &str) -> Option<&str> {
-    let text = text.trim();
-    if !text.starts_with('(') || !text.ends_with(')') {
-        return None;
+fn simple_tuple_inner(alias: &str) -> Option<&str> {
+    let alias = alias.trim();
+    if alias.starts_with('(') && alias.ends_with(')') {
+        Some(alias[1..alias.len() - 1].trim())
+    } else {
+        None
     }
-
-    let mut depth = 0usize;
-    let last = text.len() - 1;
-    for (index, ch) in text.char_indices() {
-        match ch {
-            '(' => depth += 1,
-            ')' => {
-                depth = depth.checked_sub(1)?;
-                if depth == 0 && index != last {
-                    return None;
-                }
-            }
-            _ => {}
-        }
-    }
-
-    (depth == 0).then_some(text[1..last].trim())
-}
-
-fn split_top_level_commas(text: &str) -> Vec<&str> {
-    let mut parts = Vec::new();
-    let mut start = 0;
-    let mut paren_depth = 0usize;
-    let mut brace_depth = 0usize;
-    let mut bracket_depth = 0usize;
-    let mut quote = None;
-    let mut escaped = false;
-
-    for (index, ch) in text.char_indices() {
-        if let Some(quote_char) = quote {
-            if escaped {
-                escaped = false;
-            } else if ch == '\\' {
-                escaped = true;
-            } else if ch == quote_char {
-                quote = None;
-            }
-            continue;
-        }
-
-        match ch {
-            '"' | '\'' | '`' => quote = Some(ch),
-            '(' => paren_depth += 1,
-            ')' => paren_depth = paren_depth.saturating_sub(1),
-            '{' => brace_depth += 1,
-            '}' => brace_depth = brace_depth.saturating_sub(1),
-            '[' => bracket_depth += 1,
-            ']' => bracket_depth = bracket_depth.saturating_sub(1),
-            ',' if paren_depth == 0 && brace_depth == 0 && bracket_depth == 0 => {
-                let part = text[start..index].trim();
-                if !part.is_empty() {
-                    parts.push(part);
-                }
-                start = index + ch.len_utf8();
-            }
-            _ => {}
-        }
-    }
-
-    let part = text[start..].trim();
-    if !part.is_empty() {
-        parts.push(part);
-    }
-    parts
 }
 
 mod oxc;

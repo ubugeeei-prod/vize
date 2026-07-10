@@ -94,7 +94,7 @@ fn vapor_compile_records_module_sections_for_inline_full_function_extraction() {
         "abc123",
         true,
         Some(&bindings),
-        false,
+        &TemplateCompileOptions::default(),
         TemplateSyntaxMode::Standard,
     )
     .expect("Vapor template should compile");

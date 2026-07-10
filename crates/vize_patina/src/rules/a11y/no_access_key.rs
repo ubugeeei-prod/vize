@@ -87,7 +87,8 @@ impl Rule for NoAccessKey {
                     if dir.name == "bind"
                         && matches!(
                             &dir.arg,
-                            Some(ExpressionNode::Simple(arg)) if arg.content == "accesskey"
+                            Some(ExpressionNode::Simple(arg))
+                                if arg.is_static && arg.content == "accesskey"
                         ) =>
                 {
                     ctx.warn_with_help(
@@ -133,5 +134,13 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :accesskey="'h'">Content</div>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_dynamic_accesskey_argument() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template(r#"<div :[accesskey]="shortcut">Content</div>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
     }
 }

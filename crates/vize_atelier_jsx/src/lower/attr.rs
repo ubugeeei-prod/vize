@@ -56,7 +56,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             return directive;
         }
 
-        let name = attr_full_name(&attr.name);
+        let name = String::from(self.mapper().slice(attr.name.span()));
         let name_loc = self.mapper().location(attr.name.span());
         match attr.value.as_ref() {
             None => self.boolean_attr(name, name_loc, loc),
@@ -164,14 +164,15 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     ) -> Option<PropNode<'a>> {
         let (raw_name, arg) = match &attr.name {
             JSXAttributeName::NamespacedName(named) => {
-                let raw_name = named.namespace.name.as_str().strip_prefix("v-")?;
-                (
-                    raw_name,
-                    Some((named.name.name.as_str(), named.name.span())),
-                )
+                let raw_name = self
+                    .mapper()
+                    .slice(named.namespace.span())
+                    .strip_prefix("v-")?;
+                let arg_name = self.mapper().slice(named.name.span());
+                (raw_name, Some((arg_name, named.name.span())))
             }
             JSXAttributeName::Identifier(id) => {
-                let raw_name = id.name.as_str().strip_prefix("v-")?;
+                let raw_name = self.mapper().slice(id.span()).strip_prefix("v-")?;
                 (raw_name, None)
             }
         };
@@ -380,16 +381,4 @@ fn split_underscore_model_modifiers(name: &str) -> Option<(&'static str, std::ve
         return None;
     }
     Some(("model", mods))
-}
-
-fn attr_full_name(name: &JSXAttributeName<'_>) -> String {
-    match name {
-        JSXAttributeName::Identifier(id) => String::from(id.name.as_str()),
-        JSXAttributeName::NamespacedName(named) => {
-            let mut full = String::from(named.namespace.name.as_str());
-            full.push(':');
-            full.push_str(named.name.name.as_str());
-            full
-        }
-    }
 }

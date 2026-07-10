@@ -1,8 +1,4 @@
 //! Recognition and emission of v-if / v-else-if / v-else control-flow chains.
-//!
-//! Collapses a run of template expressions that share guard structure into a
-//! single TypeScript `if / else if / else` chain so the type checker narrows
-//! each branch the way Vue's renderer would.
 
 use super::super::types::VizeMapping;
 use super::statements::generate_expression_statement;
@@ -10,8 +6,8 @@ use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
-use vize_croquis::analysis::{TemplateExpression, TemplateExpressionKind};
-use vize_croquis::analyzer::strip_js_comments;
+use vize_croquis::croquis::{TemplateExpression, TemplateExpressionKind};
+use vize_croquis::drawer::strip_js_comments;
 
 #[derive(Clone, Copy)]
 struct GuardTerm<'a> {
@@ -22,6 +18,7 @@ struct GuardTerm<'a> {
 
 struct VifBranch<'a> {
     condition: Option<&'a str>,
+    guard: &'a str,
     start: usize,
     end: usize,
     condition_expr_index: Option<usize>,
@@ -45,6 +42,7 @@ impl<'a> VifControlFlowChain<'a> {
         let mut previous_conditions = vec![first_condition.condition];
         let mut branches = vec![VifBranch {
             condition: Some(first_condition.condition),
+            guard: first.guard,
             start: first.start,
             end: first.end,
             condition_expr_index: find_branch_condition_expr(
@@ -76,6 +74,7 @@ impl<'a> VifControlFlowChain<'a> {
                 previous_conditions.push(current.condition);
                 branches.push(VifBranch {
                     condition: Some(current.condition),
+                    guard: group.guard,
                     start: group.start,
                     end: group.end,
                     condition_expr_index: find_branch_condition_expr(
@@ -94,6 +93,7 @@ impl<'a> VifControlFlowChain<'a> {
             {
                 branches.push(VifBranch {
                     condition: None,
+                    guard: group.guard,
                     start: group.start,
                     end: group.end,
                     condition_expr_index: None,
@@ -248,13 +248,8 @@ pub(super) fn emit_vif_control_flow_chain(
     exprs: &[&TemplateExpression],
     chain: &VifControlFlowChain<'_>,
     template_prop_names: &FxHashSet<String>,
-    template_offset: u32,
-    indent: &str,
+    context: &VifControlFlowEmitContext<'_>,
 ) {
-    let context = VifBranchEmitContext {
-        template_offset,
-        indent,
-    };
     for (branch_index, branch) in chain.branches.iter().enumerate() {
         emit_vif_branch_open(
             ts,
@@ -263,12 +258,18 @@ pub(super) fn emit_vif_control_flow_chain(
             chain,
             branch,
             branch_index == 0,
-            &context,
+            context,
         );
 
-        let body_indent = cstr!("{indent}  ");
+        let body_indent = cstr!("{}  ", context.indent);
         for (expr_index, expr) in exprs.iter().enumerate().take(branch.end).skip(branch.start) {
             if branch.condition_expr_index == Some(expr_index) {
+                continue;
+            }
+            if context
+                .skipped_expression_ranges
+                .contains(&(expr.start, expr.end))
+            {
                 continue;
             }
             generate_expression_statement(
@@ -276,12 +277,12 @@ pub(super) fn emit_vif_control_flow_chain(
                 mappings,
                 expr,
                 template_prop_names,
-                template_offset,
+                context.template_offset,
                 &body_indent,
             );
         }
     }
-    append!(*ts, "{indent}}}\n");
+    append!(*ts, "{}}}\n", context.indent);
 }
 
 fn emit_vif_branch_open(
@@ -291,7 +292,7 @@ fn emit_vif_branch_open(
     chain: &VifControlFlowChain<'_>,
     branch: &VifBranch<'_>,
     first: bool,
-    context: &VifBranchEmitContext<'_>,
+    context: &VifControlFlowEmitContext<'_>,
 ) {
     let prefix_is_empty = chain.prefix.is_empty();
     match (first, branch.condition) {
@@ -326,15 +327,7 @@ fn emit_vif_branch_open(
         }
         (false, None) => {
             append!(*ts, "{}}} else if (", context.indent);
-            append_guard_condition(
-                ts,
-                &chain.prefix,
-                None,
-                mappings,
-                exprs,
-                branch,
-                context.template_offset,
-            );
+            ts.push_str(branch.guard);
             ts.push_str(") {\n");
         }
         (true, None) => {}
@@ -352,9 +345,10 @@ fn emit_vif_branch_open(
     }
 }
 
-struct VifBranchEmitContext<'a> {
-    template_offset: u32,
-    indent: &'a str,
+pub(super) struct VifControlFlowEmitContext<'a> {
+    pub(super) skipped_expression_ranges: &'a FxHashSet<(u32, u32)>,
+    pub(super) template_offset: u32,
+    pub(super) indent: &'a str,
 }
 
 fn append_guard_condition(

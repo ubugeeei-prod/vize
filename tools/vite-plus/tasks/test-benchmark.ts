@@ -11,15 +11,39 @@ import {
 } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
+const stageVscodeTypeScriptPlugin = "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage";
+const injectVscodeTypeScriptPlugin =
+  "node ../../tools/vscode-vize/sync-typescript-plugin.mjs inject dist/vize.vsix";
+const packageVscodeExtension = [
+  stageVscodeTypeScriptPlugin,
+  "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
+  injectVscodeTypeScriptPlugin,
+].join(" && ");
+
 const jsPackageTestCommand = runInPackages("test", testedPackages, {
   concurrencyLimit: 1,
 });
 
 const rustSourceCoverageJson = "target/llvm-cov/source-summary.json";
 const rustBranchCoverageJson = "target/llvm-cov/source-branch-summary.json";
-const rustSourceCoverageMinimums = "--min-lines 70 --min-functions 70 --min-regions 70";
-const rustBranchCoverageMinimums =
-  "--min-lines 55 --min-functions 70 --min-regions 55 --min-branches 40";
+const rustSourceCoverageMinimums = [
+  "--min-lines",
+  "70",
+  "--min-functions",
+  "70",
+  "--min-regions",
+  "70",
+];
+const rustBranchCoverageMinimums = [
+  "--min-lines",
+  "55",
+  "--min-functions",
+  "70",
+  "--min-regions",
+  "55",
+  "--min-branches",
+  "40",
+];
 const rustSourceCoverageCommand = [
   "mkdir -p target/llvm-cov",
   [
@@ -27,11 +51,12 @@ const rustSourceCoverageCommand = [
     `--output-path ${rustSourceCoverageJson}`,
     "--fail-under-lines 70 --fail-under-functions 70 --fail-under-regions 70",
   ].join(" "),
-  [
-    "node tools/coverage/enforce-rust-source-coverage.mjs",
-    `--json ${rustSourceCoverageJson}`,
-    rustSourceCoverageMinimums,
-  ].join(" "),
+  moonScript(
+    "enforce_rust_source_coverage",
+    "--json",
+    rustSourceCoverageJson,
+    ...rustSourceCoverageMinimums,
+  ),
 ].join(" && ");
 const rustBranchCoverageCommand = [
   "mkdir -p target/llvm-cov",
@@ -41,11 +66,12 @@ const rustBranchCoverageCommand = [
     `--output-path ${rustBranchCoverageJson}`,
     "--fail-under-lines 55 --fail-under-functions 70 --fail-under-regions 55",
   ].join(" "),
-  [
-    "node tools/coverage/enforce-rust-source-coverage.mjs",
-    `--json ${rustBranchCoverageJson}`,
-    rustBranchCoverageMinimums,
-  ].join(" "),
+  moonScript(
+    "enforce_rust_source_coverage",
+    "--json",
+    rustBranchCoverageJson,
+    ...rustBranchCoverageMinimums,
+  ),
 ].join(" && ");
 
 /**
@@ -74,23 +100,23 @@ export const testAndBenchmarkTasks = defineTasks({
   ),
   "test:vscode-extension:vsix": noCacheTask(
     runInVscodeExtension(
-      "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
+      packageVscodeExtension,
       "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
     ),
   ),
   "test:vscode-extension:host": noCacheTask(
-    runInVscodeExtension("pnpm exec vp pack", "pnpm run test:host"),
+    runInVscodeExtension(stageVscodeTypeScriptPlugin, "pnpm exec vp pack", "pnpm run test:host"),
   ),
   "test:zed-extension:package": noCacheTask("vp run --workspace-root package:zed-extension"),
-  "test:zed-extension:unit": task("cargo test --manifest-path npm/zed-vize/Cargo.toml", {
-    input: ["npm/zed-vize/**"],
+  "test:zed-extension:unit": task("cargo test --manifest-path editors/zed/Cargo.toml", {
+    input: ["editors/zed/**"],
   }),
   "test:nvim-extension:headless": noCacheTask(
-    "nvim --headless -u NONE --noplugin '+set runtimepath^=npm/nvim-vize' '+luafile npm/nvim-vize/test/vize_spec.lua' '+qa'",
+    "nvim --headless -u NONE --noplugin '+set runtimepath^=editors/nvim' '+luafile editors/nvim/test/vize_spec.lua' '+qa'",
   ),
   "test:nvim-extension:package": noCacheTask("vp run --workspace-root package:nvim-extension"),
   "test:vim-extension:headless": noCacheTask(
-    "vim -Nu NONE -n -es -S npm/vim-vize/test/vize_spec.vim",
+    "vim -Nu NONE -n -es -S editors/vim/test/vize_spec.vim",
   ),
   "test:vim-extension:package": noCacheTask("vp run --workspace-root package:vim-extension"),
   "test:helix-extension:package": noCacheTask("vp run --workspace-root package:helix-extension"),

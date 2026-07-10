@@ -4,11 +4,12 @@
 //! and classifying expressions as literals or functions.
 
 use oxc_ast::ast::{BindingPattern, Expression, VariableDeclarationKind};
+use vize_carton::{CompactString, String, ToCompactString};
 use vize_relief::BindingType;
 
+use crate::croquis::BindingMetadata;
+
 use super::super::extract::get_binding_type_from_kind;
-use vize_carton::String;
-use vize_carton::ToCompactString;
 
 /// Get binding name from binding pattern kind
 pub(in crate::script_parser) fn get_binding_pattern_name(
@@ -18,6 +19,46 @@ pub(in crate::script_parser) fn get_binding_pattern_name(
         BindingPattern::BindingIdentifier(id) => Some(id.name.to_compact_string()),
         BindingPattern::AssignmentPattern(assign) => get_binding_pattern_name(&assign.left),
         _ => None,
+    }
+}
+
+pub(in crate::script_parser) fn add_binding_pattern_names(
+    bindings: &mut BindingMetadata,
+    pattern: &BindingPattern<'_>,
+    binding_type: BindingType,
+) {
+    for_each_binding_pattern_name(pattern, &mut |name| bindings.add(name, binding_type));
+}
+
+pub(in crate::script_parser) fn push_binding_pattern_names(
+    pattern: &BindingPattern<'_>,
+    target: &mut Vec<CompactString>,
+) {
+    for_each_binding_pattern_name(pattern, &mut |name| target.push(CompactString::new(name)));
+}
+
+fn for_each_binding_pattern_name(pattern: &BindingPattern<'_>, visit: &mut impl FnMut(&str)) {
+    match pattern {
+        BindingPattern::BindingIdentifier(id) => visit(id.name.as_str()),
+        BindingPattern::ObjectPattern(object) => {
+            for property in object.properties.iter() {
+                for_each_binding_pattern_name(&property.value, visit);
+            }
+            if let Some(rest) = &object.rest {
+                for_each_binding_pattern_name(&rest.argument, visit);
+            }
+        }
+        BindingPattern::ArrayPattern(array) => {
+            for element in array.elements.iter().flatten() {
+                for_each_binding_pattern_name(element, visit);
+            }
+            if let Some(rest) = &array.rest {
+                for_each_binding_pattern_name(&rest.argument, visit);
+            }
+        }
+        BindingPattern::AssignmentPattern(assign) => {
+            for_each_binding_pattern_name(&assign.left, visit);
+        }
     }
 }
 

@@ -12,6 +12,7 @@ impl CrossFileAnalyzer {
             options,
             registry: ModuleRegistry::new(),
             graph: DependencyGraph::new(),
+            effect_graph_summaries: Default::default(),
             single_file_options: AnalyzerOptions::full(),
         }
     }
@@ -22,6 +23,7 @@ impl CrossFileAnalyzer {
             options,
             registry: ModuleRegistry::with_project_root(root.as_ref()),
             graph: DependencyGraph::new(),
+            effect_graph_summaries: Default::default(),
             single_file_options: AnalyzerOptions::full(),
         }
     }

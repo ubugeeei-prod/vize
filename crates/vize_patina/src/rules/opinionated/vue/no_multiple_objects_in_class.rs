@@ -55,6 +55,9 @@ impl Rule for NoMultipleObjectsInClass {
         let Some(ExpressionNode::Simple(arg)) = &directive.arg else {
             return;
         };
+        if !arg.is_static {
+            return;
+        }
         if arg.content.as_str() != "class" {
             return;
         }
@@ -125,6 +128,13 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :class="[{ a }, { b }]"></div>"#, "App.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn allows_dynamic_class_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div :[class]="[{ a }, { b }]"></div>"#, "App.vue");
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]

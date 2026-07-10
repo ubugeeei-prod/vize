@@ -175,16 +175,17 @@ fn has_inferable_runtime_emits(runtime_args: &str) -> bool {
     let args = runtime_args.trim();
     !matches!(args, "" | "[]" | "{}")
 }
-
-/// Check template bindings for undefined references.
 pub fn check_template_bindings(
     summary: &vize_croquis::Croquis,
     template_offset: u32,
     result: &mut SfcTypeCheckResult,
     _strict: bool,
+    suppress_options_api_setup_spread_refs: bool,
 ) {
-    // Report undefined references using croquis scope analysis
     for undef_ref in &summary.undefined_refs {
+        if suppress_options_api_setup_spread_refs && undef_ref.context == "template expression" {
+            continue;
+        }
         result.add_diagnostic(SfcTypeDiagnostic {
             severity: SfcTypeSeverity::Error,
             message: cstr!(
@@ -204,7 +205,6 @@ pub fn check_template_bindings(
     }
 }
 
-/// Check for reactivity loss patterns.
 pub fn check_reactivity(
     summary: &vize_croquis::Croquis,
     script_offset: u32,

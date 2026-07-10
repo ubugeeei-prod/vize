@@ -28,14 +28,14 @@ for (const name of entryNames) {
   assert.ok(!name.includes("\0"), `Emacs archive entry contains a NUL byte: ${name}`);
   assert.ok(!name.startsWith("/"), `Emacs archive entry must be relative: ${name}`);
   assert.ok(!name.split("/").includes(".."), `Emacs archive entry must not traverse: ${name}`);
-  assert.ok(name === "emacs-vize/" || name.startsWith("emacs-vize/"), `unexpected root: ${name}`);
+  assert.ok(name === "emacs/" || name.startsWith("emacs/"), `unexpected root: ${name}`);
 }
 
 const requiredFiles = [
-  "emacs-vize/LICENSE",
-  "emacs-vize/README.md",
-  "emacs-vize/test/vize-test.el",
-  "emacs-vize/vize.el",
+  "emacs/LICENSE",
+  "emacs/README.md",
+  "emacs/test/vize-test.el",
+  "emacs/vize.el",
 ];
 
 for (const name of requiredFiles) {
@@ -44,12 +44,12 @@ for (const name of requiredFiles) {
 }
 
 const allowedEntries = [
-  /^emacs-vize\/$/,
-  /^emacs-vize\/LICENSE$/,
-  /^emacs-vize\/README\.md$/,
-  /^emacs-vize\/test\/$/,
-  /^emacs-vize\/test\/vize-test\.el$/,
-  /^emacs-vize\/vize\.el$/,
+  /^emacs\/$/,
+  /^emacs\/LICENSE$/,
+  /^emacs\/README\.md$/,
+  /^emacs\/test\/$/,
+  /^emacs\/test\/vize-test\.el$/,
+  /^emacs\/vize\.el$/,
 ];
 
 for (const name of entryNames) {
@@ -60,10 +60,10 @@ for (const name of entryNames) {
 }
 
 const forbiddenEntries = [
-  /^emacs-vize\/\.git/,
-  /^emacs-vize\/\.github\//,
-  /^emacs-vize\/node_modules\//,
-  /^emacs-vize\/target\//,
+  /^emacs\/\.git/,
+  /^emacs\/\.github\//,
+  /^emacs\/node_modules\//,
+  /^emacs\/target\//,
   /\/\.DS_Store$/,
   /\.elc$/,
   /\.tar\.gz$/,
@@ -76,12 +76,12 @@ for (const name of entryNames) {
   }
 }
 
-const vizeEl = readTextEntry(entryMap, "emacs-vize/vize.el");
-const testEl = readTextEntry(entryMap, "emacs-vize/test/vize-test.el");
+const vizeEl = readTextEntry(entryMap, "emacs/vize.el");
+const testEl = readTextEntry(entryMap, "emacs/test/vize-test.el");
 
 assert.match(vizeEl, /lexical-binding: t/);
 assert.match(vizeEl, /defcustom vize-eglot-command '\("vize" "lsp"\)/);
-assert.match(vizeEl, /defcustom vize-eglot-profile 'lint/);
+assert.match(vizeEl, /defcustom vize-eglot-profile 'recommended/);
 assert.match(vizeEl, /recommended \. \(:editor t :ecosystem t :lint t :typecheck t\)/);
 assert.match(vizeEl, /define-derived-mode vize-vue-mode/);
 assert.match(vizeEl, /define-derived-mode vize-art-vue-mode/);
@@ -95,7 +95,7 @@ assert.match(vizeEl, /:initializationOptions options/);
 assert.match(vizeEl, /eglot-server-programs/);
 assert.match(vizeEl, /provide 'vize/);
 assert.match(testEl, /ert-deftest vize-eglot-default-program/);
-assert.match(testEl, /:initializationOptions \(:lint t\)/);
+assert.match(testEl, /:initializationOptions\s*\(:editor t :ecosystem t :lint t :typecheck t\)/);
 assert.match(testEl, /ert-deftest vize-eglot-off-program/);
 
 console.log(

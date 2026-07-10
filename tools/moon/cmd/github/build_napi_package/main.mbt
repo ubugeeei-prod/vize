@@ -1,0 +1,136 @@
+
+fn binary_name(crate_name : String) -> String {
+  crate_name.replace_all(old="_", new="-")
+}
+
+fn napi_features(crate_name : String) -> String {
+  if crate_name == "vize_vitrine" {
+    "napi,legacy"
+  } else {
+    "napi"
+  }
+}
+
+fn is_apple_target(target : String) -> Bool {
+  target.has_suffix("-apple-darwin")
+}
+
+fn apple_platform_tag(target : String) -> String? {
+  match target {
+    "aarch64-apple-darwin" => Some("darwin-arm64")
+    "x86_64-apple-darwin" => Some("darwin-x64")
+    _ => None
+  }
+}
+
+fn built_apple_library_path(package_dir : String, target : String, crate_name : String) -> String {
+  @tool.join_path(
+    @tool.join_path(
+      @tool.join_path(@tool.join_path(package_dir, "../../target"), target),
+      "release",
+    ),
+    "lib\{crate_name}.dylib",
+  )
+}
+
+fn safe_is_file(path : String) -> Bool {
+  try {
+    @xfs.is_file(path)
+  } catch {
+    _ => false
+  }
+}
+
+async fn build_apple_package(
+  package_dir : String,
+  manifest_path : String,
+  crate_name : String,
+  target : String,
+) -> Int {
+  let exit_code = @process.run(
+    "cargo",
+    [
+      "build",
+      "--release",
+      "--manifest-path",
+      manifest_path,
+      "-p",
+      crate_name,
+      "--features",
+      napi_features(crate_name),
+      "--target",
+      target,
+    ],
+    cwd=package_dir,
+  )
+  if exit_code != 0 {
+    return exit_code
+  }
+  guard apple_platform_tag(target) is Some(platform_tag) else {
+    println("Unsupported Apple target: \{target}")
+    return 1
+  }
+  let built_library = built_apple_library_path(package_dir, target, crate_name)
+  if !safe_is_file(built_library) {
+    println("Built library not found: \{built_library}")
+    return 1
+  }
+  let output_path = @tool.join_path(
+    package_dir,
+    "\{binary_name(crate_name)}.\{platform_tag}.node",
+  )
+  @afs.write_file(
+    output_path,
+    @afs.read_file(built_library),
+    create_mode=CreateOrTruncate,
+    permission=0o755,
+  )
+  0
+}
+
+async fn run_app() -> Int {
+  let args = @tool.cli_args()
+  if args.length() < 4 || args.length() > 5 {
+    println(
+      "Usage: moon run --target native tools/moon/cmd/github/build_napi_package -- <package-dir> <manifest-path> <package-name> <target> [--cross-compile]",
+    )
+    return 1
+  }
+  let cross_compile = args.length() == 5 && args[4] == "--cross-compile"
+  if args.length() == 5 && !cross_compile {
+    println("Unknown argument")
+    return 1
+  }
+  if is_apple_target(args[3]) {
+    if cross_compile {
+      println("Apple targets do not support --cross-compile in this helper.")
+      return 1
+    }
+    return build_apple_package(args[0], args[1], args[2], args[3])
+  }
+  let command_args = [
+    "exec",
+    "napi",
+    "build",
+    "--platform",
+    "--release",
+    "--manifest-path",
+    args[1],
+    "-p",
+    args[2],
+    "--features",
+    napi_features(args[2]),
+    "--output-dir",
+    ".",
+    "--target",
+    args[3],
+  ]
+  if cross_compile {
+    command_args.push("--cross-compile")
+  }
+  @process.run("vp", command_args, cwd=args[0])
+}
+
+async fn main {
+  @sys.exit(run_app())
+}

@@ -17,6 +17,7 @@ mod batch_results;
 mod bundler;
 mod compile;
 mod css;
+mod experimentals;
 mod parse;
 mod types;
 

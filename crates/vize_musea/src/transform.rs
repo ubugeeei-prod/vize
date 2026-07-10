@@ -5,6 +5,7 @@
 //! - Executable Vue components
 
 mod to_csf;
+mod to_csf_script;
 mod to_vue;
 
 pub use to_csf::transform_to_csf;

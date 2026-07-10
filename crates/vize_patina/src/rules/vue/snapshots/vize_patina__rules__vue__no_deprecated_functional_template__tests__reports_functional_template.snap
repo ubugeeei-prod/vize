@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-deprecated-functional-template",
+        severity: Error,
+        message: "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+        start: 0,
+        end: 21,
+        help: Some(
+            "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

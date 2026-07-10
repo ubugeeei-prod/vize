@@ -29,27 +29,26 @@ fn find_v_slot<'a, 'b>(el: &'b ElementNode<'a>) -> Option<&'b DirectiveNode<'a>>
     })
 }
 
-/// Get slot name from v-slot directive
-/// For dynamic slots, returns the raw source (without _ctx. prefix)
-/// For static slots, returns the content
+/// Get the v-slot name; dynamic slots return raw source without `_ctx.` prefix.
 pub fn get_slot_name(dir: &DirectiveNode<'_>) -> String {
-    dir.arg
-        .as_ref()
-        .map(|arg| match arg {
-            ExpressionNode::Simple(exp) => {
-                if exp.is_static {
-                    exp.content.clone()
-                } else {
-                    // For dynamic slot names, use raw source to avoid double _ctx. prefix
-                    exp.loc.source.clone()
-                }
-            }
-            ExpressionNode::Compound(exp) => exp.loc.source.clone(),
-        })
-        .unwrap_or_else(|| String::new("default"))
+    match dir.arg.as_ref() {
+        Some(ExpressionNode::Simple(exp)) if exp.is_static => {
+            static_slot_name_with_modifiers(exp.content.clone(), dir)
+        }
+        Some(ExpressionNode::Simple(exp)) => exp.loc.source.clone(),
+        Some(ExpressionNode::Compound(exp)) => exp.loc.source.clone(),
+        None => static_slot_name_with_modifiers(String::new("default"), dir),
+    }
 }
 
-/// Get slot props expression as string from v-slot directive
+fn static_slot_name_with_modifiers(mut name: String, dir: &DirectiveNode<'_>) -> String {
+    for modifier in dir.modifiers.iter() {
+        name.push('.');
+        name.push_str(modifier.content.as_str());
+    }
+    name
+}
+
 pub fn get_slot_props_string(dir: &DirectiveNode<'_>) -> Option<String> {
     dir.exp.as_ref().map(|exp| match exp {
         ExpressionNode::Simple(s) => s.content.clone(),
@@ -57,7 +56,6 @@ pub fn get_slot_props_string(dir: &DirectiveNode<'_>) -> Option<String> {
     })
 }
 
-/// Extract slot prop names from a v-slot expression.
 pub fn get_slot_prop_names(dir: &DirectiveNode<'_>) -> Vec<String> {
     get_slot_props_string(dir)
         .map(|pattern| extract_slot_prop_names(pattern.as_str()))
@@ -147,11 +145,16 @@ fn has_structural_slot_directive(el: &ElementNode<'_>) -> bool {
     })
 }
 
-fn has_meaningful_implicit_default_child(child: &TemplateChildNode<'_>) -> bool {
+fn has_implicit_child(child: &TemplateChildNode<'_>) -> bool {
     match child {
         TemplateChildNode::Comment(_) => false,
         TemplateChildNode::Text(text) => !text.content.trim().is_empty(),
         TemplateChildNode::Element(el) if is_slot_template(el) => false,
+        TemplateChildNode::If(if_node) => if_node
+            .branches
+            .iter()
+            .any(|branch| branch.children.iter().any(has_implicit_child)),
+        TemplateChildNode::For(for_node) => for_node.children.iter().any(has_implicit_child),
         _ => true,
     }
 }
@@ -198,16 +201,14 @@ pub(crate) fn validate_v_slot_usage(ctx: &mut TransformContext<'_>, el: &Element
 
     for child in el.children.iter() {
         let TemplateChildNode::Element(child_el) = child else {
-            if first_implicit_default_loc.is_none() && has_meaningful_implicit_default_child(child)
-            {
+            if first_implicit_default_loc.is_none() && has_implicit_child(child) {
                 first_implicit_default_loc = Some(child.loc().clone());
             }
             continue;
         };
 
         let Some(slot_dir) = find_v_slot(child_el) else {
-            if first_implicit_default_loc.is_none() && has_meaningful_implicit_default_child(child)
-            {
+            if first_implicit_default_loc.is_none() && has_implicit_child(child) {
                 first_implicit_default_loc = Some(child.loc().clone());
             }
             continue;
@@ -372,10 +373,7 @@ pub fn has_dynamic_slots<'a>(el: &ElementNode<'a>) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        DirectiveNode, SourceLocation, TemplateChildNode, collect_slots, extract_slot_prop_names,
-        get_slot_name, get_slot_prop_names, has_v_slot,
-    };
+    use super::*;
     use crate::errors::{CompilerError, ErrorCode};
     use crate::lane::traverse::traverse_children;
     use crate::lane::{ParentNode, TransformContext};

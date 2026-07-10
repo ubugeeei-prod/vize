@@ -5,6 +5,10 @@
 
 use vize_carton::{Bump, BumpVec};
 
+use super::scoped_selector::{
+    find_top_level_pseudo, leading_universal_selector_end,
+    split_before_trailing_universal_or_pseudo,
+};
 use super::transform::find_matching_paren;
 
 /// Apply scoped CSS transformation
@@ -299,6 +303,13 @@ fn scope_single_selector(out: &mut BumpVec<u8>, selector: &str, attr_selector: &
         return;
     }
 
+    if let Some((prefix, boundary, suffix)) = split_before_trailing_universal_or_pseudo(selector) {
+        scope_single_selector(out, prefix.trim_end(), attr_selector);
+        out.extend_from_slice(boundary.as_bytes());
+        out.extend_from_slice(suffix.trim_start().as_bytes());
+        return;
+    }
+
     // Find the last top-level compound selector to append the attribute.
     let parts: Vec<&str> = split_top_level_whitespace(selector);
     if parts.is_empty() {
@@ -363,6 +374,12 @@ fn split_top_level_whitespace(s: &str) -> Vec<&str> {
 
 /// Add scope attribute to an element selector
 pub(super) fn add_scope_to_element(out: &mut BumpVec<u8>, selector: &str, attr_selector: &[u8]) {
+    let selector = if let Some(end) = leading_universal_selector_end(selector) {
+        &selector[end..]
+    } else {
+        selector
+    };
+
     // Find the first top-level pseudo-element or pseudo-class so the scope
     // attribute lands on the compound selector, not inside a functional
     // pseudo-class argument.
@@ -377,24 +394,6 @@ pub(super) fn add_scope_to_element(out: &mut BumpVec<u8>, selector: &str, attr_s
 
     out.extend_from_slice(selector.as_bytes());
     out.extend_from_slice(attr_selector);
-}
-
-fn find_top_level_pseudo(selector: &str) -> Option<usize> {
-    let bytes = selector.as_bytes();
-    let mut depth: i32 = 0;
-    let mut i = 0;
-
-    while i < bytes.len() {
-        match bytes[i] {
-            b'(' | b'[' => depth += 1,
-            b')' | b']' => depth -= 1,
-            b':' if depth == 0 => return Some(i),
-            _ => {}
-        }
-        i += 1;
-    }
-
-    None
 }
 
 /// Transform :deep() to descendant selector

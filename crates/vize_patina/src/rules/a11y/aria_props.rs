@@ -177,6 +177,7 @@ impl Rule for AriaProps {
                     // Check v-bind:aria-* or :aria-*
                     if dir.name == "bind"
                         && let Some(vize_relief::ExpressionNode::Simple(arg)) = &dir.arg
+                        && arg.is_static
                     {
                         let name = arg.content.as_str();
                         if Self::is_aria_attr(name) && !Self::is_valid_aria_attr(name) {
@@ -301,6 +302,13 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<input :aria-labeledby="labelId" />"#, "test.vue");
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_valid_dynamic_aria_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div :[aria-bogus]="value"></div>"#, "test.vue");
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]

@@ -4,6 +4,11 @@ use std::fmt::Write as _;
 use vize_carton::{String, ToCompactString};
 
 use super::graph::{InspectorGraph, build_graph, line_count};
+use vize_atelier_core::Allocator;
+use vize_atelier_sfc::{
+    SfcParseOptions, croquis::SfcCroquisOptions, croquis::analyze_sfc_descriptor, parse_sfc,
+};
+use vize_croquis::{CroquisSemanticSnapshot, CroquisSemanticSummary};
 
 #[derive(Debug, Clone, Copy, serde::Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -75,6 +80,7 @@ pub struct InspectorAgentReport {
     generated_by: &'static str,
     playground_url: String,
     summary: InspectorAgentSummary,
+    semantic_files: Vec<InspectorSemanticFile>,
     graph: InspectorGraph,
     payload: InspectorPayload,
 }
@@ -87,7 +93,46 @@ struct InspectorAgentSummary {
     file_count: usize,
     source_bytes: usize,
     source_lines: usize,
+    semantic: InspectorSemanticSummary,
     options: InspectorPayloadOptions,
+}
+
+#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct InspectorSemanticSummary {
+    analyzed_files: usize,
+    skipped_files: usize,
+    sfc_parse_error_files: usize,
+    template_parse_error_files: usize,
+    scope_count: usize,
+    scope_binding_count: usize,
+    script_binding_count: usize,
+    used_component_count: usize,
+    component_registration_count: usize,
+    component_usage_count: usize,
+    passed_prop_count: usize,
+    event_listener_count: usize,
+    slot_usage_count: usize,
+    used_directive_count: usize,
+    prop_definition_count: usize,
+    emit_definition_count: usize,
+    model_definition_count: usize,
+    provide_count: usize,
+    inject_count: usize,
+    reactivity_loss_count: usize,
+    race_condition_count: usize,
+    element_id_count: usize,
+    undefined_ref_count: usize,
+    import_statement_count: usize,
+    re_export_count: usize,
+    fallthrough_attr_risk_files: usize,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct InspectorSemanticFile {
+    path: String,
+    snapshot: CroquisSemanticSnapshot,
 }
 
 pub fn build_payload(
@@ -128,12 +173,14 @@ pub fn build_agent_report(
         .map(|file| line_count(file.source.as_str()))
         .sum();
     let graph = build_graph(&files);
+    let (semantic, semantic_files) = build_semantic_report(&files);
     let summary = InspectorAgentSummary {
         target: payload.target,
         selected_file: payload.selected_file.clone(),
         file_count: payload.files.len(),
         source_bytes,
         source_lines,
+        semantic,
         options: InspectorPayloadOptions {
             custom_renderer: payload.options.custom_renderer,
             template_syntax: payload.options.template_syntax,
@@ -146,8 +193,93 @@ pub fn build_agent_report(
         generated_by: "vize_curator",
         playground_url,
         summary,
+        semantic_files,
         graph,
         payload,
+    }
+}
+
+fn build_semantic_report(
+    files: &[InspectorSourceFile],
+) -> (InspectorSemanticSummary, Vec<InspectorSemanticFile>) {
+    let mut summary = InspectorSemanticSummary::default();
+    let mut semantic_files = Vec::new();
+    for file in files {
+        if !file.path.ends_with(".vue") {
+            summary.skipped_files += 1;
+            continue;
+        }
+
+        let Ok(descriptor) = parse_sfc(file.source.as_str(), SfcParseOptions::default()) else {
+            summary.sfc_parse_error_files += 1;
+            continue;
+        };
+
+        let template_allocator = Allocator::default();
+        let template_root = descriptor.template.as_ref().map(|template| {
+            let (root, parse_errors) =
+                vize_atelier_core::parser::parse(&template_allocator, template.content.as_ref());
+            if !parse_errors.is_empty() {
+                summary.template_parse_error_files += 1;
+            }
+            root
+        });
+        let mut croquis_options = SfcCroquisOptions::for_lint();
+        croquis_options
+            .analyzer_options
+            .collect_template_expressions = true;
+        let croquis = analyze_sfc_descriptor(&descriptor, template_root.as_ref(), croquis_options);
+
+        summary.analyzed_files += 1;
+        let snapshot = compact_semantic_snapshot(croquis.semantic_snapshot());
+        summary.add_croquis(snapshot.summary);
+        semantic_files.push(InspectorSemanticFile {
+            path: file.path.clone(),
+            snapshot,
+        });
+    }
+
+    (summary, semantic_files)
+}
+
+fn compact_semantic_snapshot(mut snapshot: CroquisSemanticSnapshot) -> CroquisSemanticSnapshot {
+    for scope in &mut snapshot.scopes {
+        if matches!(scope.kind, "univ" | "client" | "server" | "vue") {
+            // Preserve the ambient scope topology without serializing the
+            // same static JavaScript/Vue global tables for every SFC.
+            scope.bindings.clear();
+            scope.binding_count = 0;
+        }
+    }
+    snapshot
+}
+
+impl InspectorSemanticSummary {
+    fn add_croquis(&mut self, summary: CroquisSemanticSummary) {
+        self.scope_count += summary.scope_count;
+        self.scope_binding_count += summary.scope_binding_count;
+        self.script_binding_count += summary.script_binding_count;
+        self.used_component_count += summary.used_component_count;
+        self.component_registration_count += summary.component_registration_count;
+        self.component_usage_count += summary.component_usage_count;
+        self.passed_prop_count += summary.passed_prop_count;
+        self.event_listener_count += summary.event_listener_count;
+        self.slot_usage_count += summary.slot_usage_count;
+        self.used_directive_count += summary.used_directive_count;
+        self.prop_definition_count += summary.prop_definition_count;
+        self.emit_definition_count += summary.emit_definition_count;
+        self.model_definition_count += summary.model_definition_count;
+        self.provide_count += summary.provide_count;
+        self.inject_count += summary.inject_count;
+        self.reactivity_loss_count += summary.reactivity_loss_count;
+        self.race_condition_count += summary.race_condition_count;
+        self.element_id_count += summary.element_id_count;
+        self.undefined_ref_count += summary.undefined_ref_count;
+        self.import_statement_count += summary.import_statement_count;
+        self.re_export_count += summary.re_export_count;
+        if summary.may_lose_fallthrough_attrs() {
+            self.fallthrough_attr_risk_files += 1;
+        }
     }
 }
 

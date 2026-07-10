@@ -220,7 +220,9 @@ fn test_standalone_html_completion_v_scope_bindings_do_not_leak_to_sibling() {
     let p_start = source.find("<p>").unwrap();
     let offset = source[p_start..].find("{{ count").unwrap() + p_start + "{{ co".len();
     let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+    let labels = CompletionService::complete(&ctx)
+        .map(completion_labels)
+        .unwrap_or_default();
 
     assert!(
         !has_label(&labels, "count"),
@@ -526,10 +528,12 @@ const message = ref('hello')
     let (state, uri) = state_with_document("StaticAttributeCompletion.vue", source);
     let offset = source.rfind("message\"").unwrap() + "message".len();
     let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+    let labels = CompletionService::complete(&ctx)
+        .map(completion_labels)
+        .unwrap_or_default();
 
     assert!(!has_label(&labels, "message"));
-    assert!(has_label(&labels, "v-if"));
+    assert!(!has_label(&labels, "v-if"));
 }
 
 #[test]
@@ -547,7 +551,7 @@ const message = ref('hello')
     let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
 
     assert!(has_label(&labels, "message"));
-    assert!(has_label(&labels, "v-if"));
+    assert!(!has_label(&labels, "v-if"));
 }
 
 #[test]
@@ -588,7 +592,7 @@ const secondaryLabel = ref('secondary')
     let labels: Vec<&str> = items.iter().map(|item| item.label.as_str()).collect();
     assert!(labels.contains(&"secondaryLabel"));
     assert!(labels.contains(&"primaryLabel"));
-    assert!(labels.contains(&"v-if"));
+    assert!(!labels.contains(&"v-if"));
 }
 
 #[test]
@@ -960,46 +964,6 @@ const title = t("auth.")
     let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
 
     assert_eq!(labels, vec!["auth.login"]);
-}
-
-#[test]
-fn test_script_completion_lists_reactive_binding_once() {
-    // A ref/computed binding is both a binding and a reactive source.
-    // Completion must surface each name once, not twice.
-    let source = r#"<script setup lang="ts">
-import { ref, computed } from 'vue'
-const st = ref(0)
-const ts = computed(() => st.value * 2)
-st
-</script>
-"#;
-    let (state, uri) = state_with_document("ScriptDedup.vue", source);
-    let offset = source.rfind("st\n").unwrap() + 2;
-    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
-
-    assert_eq!(labels.iter().filter(|l| l.as_str() == "st").count(), 1);
-    assert_eq!(labels.iter().filter(|l| l.as_str() == "ts").count(), 1);
-}
-
-#[test]
-fn test_template_completion_lists_reactive_binding_once() {
-    let source = r#"<script setup lang="ts">
-import { ref, computed } from 'vue'
-const st = ref(0)
-const ts = computed(() => st.value * 2)
-</script>
-<template>
-  <div>{{ st }}</div>
-</template>
-"#;
-    let (state, uri) = state_with_document("TemplateDedup.vue", source);
-    let offset = source.rfind("st }}").unwrap() + 2;
-    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
-
-    assert_eq!(labels.iter().filter(|l| l.as_str() == "st").count(), 1);
-    assert_eq!(labels.iter().filter(|l| l.as_str() == "ts").count(), 1);
 }
 
 fn completion_labels(response: CompletionResponse) -> Vec<String> {

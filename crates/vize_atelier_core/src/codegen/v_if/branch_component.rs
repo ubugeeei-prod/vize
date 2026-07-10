@@ -23,7 +23,9 @@ use super::{
         patch_flag::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
         },
-        slots::{generate_slots, has_dynamic_slots_flag, has_slot_children},
+        slots::{
+            generate_slots, has_dynamic_slots_flag, has_forwarded_slot_outlet, has_slot_children,
+        },
     },
     generate::{
         extract_static_class_style, generate_if_branch_props_object, has_dynamic_class,
@@ -99,13 +101,7 @@ pub(super) fn generate_if_branch_component(
     } else if let Some(builtin) = is_builtin_component(&el.tag) {
         ctx.use_helper(builtin);
         ctx.push(ctx.helper(builtin));
-    } else if let Some(binding_name) = ctx.resolve_component_binding_name(&el.tag) {
-        // In inline mode, components are directly in scope (imported at module level)
-        // In function mode, use $setup.ComponentName to access setup bindings
-        if !ctx.options.inline {
-            ctx.push("$setup.");
-        }
-        ctx.push(binding_name.as_str());
+    } else if ctx.push_component_binding_tag(&el.tag) {
     } else {
         ctx.push(&to_valid_asset_identifier("component", &el.tag));
     }
@@ -131,7 +127,11 @@ pub(super) fn generate_if_branch_component(
         patch_flag = if new_flag > 0 { Some(new_flag) } else { None };
     }
 
-    if el.tag == "KeepAlive" || el.tag == "keep-alive" || has_dynamic_slots_flag(el) {
+    if el.tag == "KeepAlive"
+        || el.tag == "keep-alive"
+        || has_dynamic_slots_flag(el)
+        || (ctx.has_slot_params() && has_forwarded_slot_outlet(el))
+    {
         patch_flag = Some(patch_flag.unwrap_or(0) | 1024);
     }
 

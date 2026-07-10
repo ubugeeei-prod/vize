@@ -1,7 +1,4 @@
 //! Helper utilities for the definition service.
-//!
-//! Provides word extraction, position conversion, import resolution,
-//! and attribute inspection helpers.
 #![allow(
     clippy::disallowed_types,
     clippy::disallowed_methods,
@@ -159,22 +156,46 @@ fn find_tag_name_span(content: &str, offset: usize) -> Option<(usize, usize, usi
     if cursor == bytes.len() {
         cursor = cursor.saturating_sub(1);
     }
-
-    let mut tag_start = None;
-    let mut i = cursor + 1;
-    while i > 0 {
-        i -= 1;
-        match bytes[i] {
-            b'<' => {
-                tag_start = Some(i);
-                break;
-            }
-            b'>' | b'\n' => return None,
-            _ => {}
-        }
+    if cursor > 0 && bytes.get(cursor) == Some(&b'>') {
+        cursor -= 1;
     }
 
-    let tag_start = tag_start?;
+    let mut search_end = cursor.saturating_add(1).min(content.len());
+    while search_end > 0 {
+        let tag_start = content[..search_end].rfind('<')?;
+        let tag_end = find_tag_end_from(content, tag_start)?;
+
+        if cursor > tag_end {
+            return None;
+        }
+
+        let mut name_start = tag_start + 1;
+        if name_start < tag_end && bytes[name_start] == b'/' {
+            name_start += 1;
+        }
+
+        let mut name_end = name_start;
+        while name_end < tag_end {
+            let byte = bytes[name_end];
+            if byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_' {
+                name_end += 1;
+            } else {
+                break;
+            }
+        }
+
+        if name_start != name_end {
+            return Some((tag_start, tag_end, name_start, name_end));
+        }
+
+        search_end = tag_start;
+    }
+
+    None
+}
+
+fn find_tag_end_from(content: &str, tag_start: usize) -> Option<usize> {
+    let bytes = content.as_bytes();
     let mut tag_end = tag_start;
     let mut quote = None;
 
@@ -187,37 +208,12 @@ fn find_tag_name_span(content: &str, offset: usize) -> Option<(usize, usize, usi
         } else if byte == b'"' || byte == b'\'' {
             quote = Some(byte);
         } else if byte == b'>' {
-            break;
-        } else if byte == b'\n' {
-            return None;
+            return Some(tag_end);
         }
         tag_end += 1;
     }
 
-    if tag_end >= bytes.len() || bytes[tag_end] != b'>' {
-        return None;
-    }
-
-    let mut name_start = tag_start + 1;
-    if name_start < tag_end && bytes[name_start] == b'/' {
-        name_start += 1;
-    }
-
-    let mut name_end = name_start;
-    while name_end < tag_end {
-        let byte = bytes[name_end];
-        if byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_' {
-            name_end += 1;
-        } else {
-            break;
-        }
-    }
-
-    if name_start == name_end {
-        return None;
-    }
-
-    Some((tag_start, tag_end, name_start, name_end))
+    None
 }
 
 /// Convert kebab-case to camelCase.

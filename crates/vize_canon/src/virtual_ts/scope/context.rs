@@ -12,18 +12,20 @@ use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions};
 pub(crate) struct ScopeGenContext<'a> {
     pub(crate) summary: &'a Croquis,
     pub(crate) expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
+    pub(crate) skipped_expression_ranges: &'a FxHashSet<(u32, u32)>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(crate) template_prop_names: &'a FxHashSet<String>,
     pub(crate) template_offset: u32,
     pub(crate) check_options: VirtualTsCheckOptions,
-    pub(crate) template_syntax_quirks: bool,
+    pub(crate) legacy_vue2: bool,
 }
 
 pub(crate) struct ScopeGenerationOptions<'a> {
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) virtual_ts_options: &'a VirtualTsOptions,
+    pub(crate) template_source: Option<&'a str>,
     pub(crate) check_unresolved_global_components: bool,
-    pub(crate) template_syntax_quirks: bool,
+    pub(crate) legacy_vue2: bool,
 }
 
 /// Context for recursive component prop checks inside v-for scopes.
@@ -53,10 +55,12 @@ pub(super) struct EventHandlerExprContext<'a> {
 
 pub(super) struct ComponentPropsContext<'a> {
     pub(super) summary: &'a Croquis,
+    pub(super) template_source: Option<&'a str>,
     pub(super) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(super) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
     pub(super) template_prop_names: &'a FxHashSet<String>,
     pub(super) template_offset: u32,
     pub(super) options: &'a VirtualTsOptions,
     pub(super) check_unresolved_global_components: bool,
+    pub(super) legacy_vue2: bool,
 }

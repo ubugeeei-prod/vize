@@ -1,0 +1,11 @@
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs" @afs,
+  "moonbitlang/async/process",
+  "moonbitlang/async/stdio",
+  "moonbitlang/x/sys",
+}
+
+options(
+  "is-main": true,
+)

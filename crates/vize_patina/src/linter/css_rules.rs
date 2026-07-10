@@ -117,8 +117,10 @@ pub(crate) fn append_builtin_css_diagnostics(
             "patina.css_rule.lint_style_block",
             css_linter.lint(source, style.loc.start)
         );
-        result.error_count += css_result.error_count;
-        result.warning_count += css_result.warning_count;
-        result.diagnostics.extend(css_result.diagnostics);
+        super::severity::append_with_rule_overrides(
+            result,
+            css_result.diagnostics,
+            &linter.severity_overrides,
+        );
     }
 }

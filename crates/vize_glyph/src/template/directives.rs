@@ -14,7 +14,7 @@ pub(crate) fn normalize_attribute(
     name: &str,
     value: Option<String>,
     options: &FormatOptions,
-) -> (String, Option<String>, u8) {
+) -> (String, Option<String>, u8, bool) {
     // Normalize directive shorthands (only if enabled)
     let normalized_name: String = if options.normalize_directive_shorthands {
         if let Some(rest) = name.strip_prefix("v-bind:") {
@@ -31,9 +31,12 @@ pub(crate) fn normalize_attribute(
     };
 
     // Format JS expressions in directive values
+    let mut indent_multiline_value = false;
     let formatted_value = value.map(|v| {
         if should_format_expression(&normalized_name) {
-            format_directive_value(&normalized_name, &v, options)
+            let (formatted, should_indent) = format_directive_value(&normalized_name, &v, options);
+            indent_multiline_value = should_indent;
+            formatted
         } else {
             v
         }
@@ -45,7 +48,12 @@ pub(crate) fn normalize_attribute(
         attribute_priority(&normalized_name)
     };
 
-    (normalized_name, formatted_value, priority)
+    (
+        normalized_name,
+        formatted_value,
+        priority,
+        indent_multiline_value,
+    )
 }
 
 /// Determine if an attribute's value should be formatted as a JS expression.
@@ -64,19 +72,78 @@ fn should_format_expression(name: &str) -> bool {
 }
 
 /// Format a directive value expression.
-fn format_directive_value(name: &str, value: &str, options: &FormatOptions) -> String {
+fn format_directive_value(name: &str, value: &str, options: &FormatOptions) -> (String, bool) {
     let trimmed = value.trim();
     if trimmed.is_empty() {
-        return value.to_compact_string();
+        return (value.to_compact_string(), false);
     }
 
     // v-for has special syntax: "(item, index) in items"
     if name == "v-for" {
-        return format_v_for_expression(trimmed);
+        return (format_v_for_expression(trimmed), false);
     }
 
+    let decoded = decode_expression_attribute_entities(trimmed);
+    let expression = decoded.as_deref().unwrap_or(trimmed);
+
     // Try to format as JS expression via oxc_formatter
-    script::format_js_expression(trimmed, options).unwrap_or_else(|| value.to_compact_string())
+    match script::format_js_expression(expression, options) {
+        Some(formatted) => {
+            let indent_multiline_value = formatted.contains('\n');
+            (formatted, indent_multiline_value)
+        }
+        None => (value.to_compact_string(), false),
+    }
+}
+
+fn decode_expression_attribute_entities(value: &str) -> Option<String> {
+    if !value.contains('&') {
+        return None;
+    }
+
+    let mut decoded = String::with_capacity(value.len());
+    let mut changed = false;
+    let mut rest = value;
+    while !rest.is_empty() {
+        if let Some(tail) = rest.strip_prefix("&quot;") {
+            decoded.push('"');
+            rest = tail;
+            changed = true;
+        } else if let Some(tail) = rest
+            .strip_prefix("&#34;")
+            .or_else(|| rest.strip_prefix("&#x22;"))
+            .or_else(|| rest.strip_prefix("&#X22;"))
+        {
+            decoded.push('"');
+            rest = tail;
+            changed = true;
+        } else if let Some(tail) = rest.strip_prefix("&apos;") {
+            decoded.push('\'');
+            rest = tail;
+            changed = true;
+        } else if let Some(tail) = rest
+            .strip_prefix("&#39;")
+            .or_else(|| rest.strip_prefix("&#x27;"))
+            .or_else(|| rest.strip_prefix("&#X27;"))
+        {
+            decoded.push('\'');
+            rest = tail;
+            changed = true;
+        } else if let Some(tail) = rest.strip_prefix("&amp;") {
+            decoded.push('&');
+            rest = tail;
+            changed = true;
+        } else {
+            let ch = rest
+                .chars()
+                .next()
+                .expect("non-empty string must have a next char");
+            decoded.push(ch);
+            rest = &rest[ch.len_utf8()..];
+        }
+    }
+
+    changed.then_some(decoded)
 }
 
 /// Format `v-for` expression: normalize spacing in `(item, index) in items`.

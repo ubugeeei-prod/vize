@@ -60,7 +60,7 @@ test("github/clean_node_binaries removes only top-level .node files", () => {
 
 test("github/clean_node_binaries stays free of async filesystem imports so it works on both native and JS targets", () => {
   const script = fs.readFileSync(
-    path.join(process.cwd(), "tools", "moon", "scripts", "github", "clean_node_binaries.mbtx"),
+    path.join(process.cwd(), "tools", "moon", "cmd", "github", "clean_node_binaries", "main.mbt"),
     "utf8",
   );
 
@@ -302,7 +302,7 @@ test("github/write_coverage_summary preserves failing coverage output before ret
 test("github/build_napi_package builds Apple targets with cargo and writes the expected .node artifact", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-build-napi-apple-"));
   const binDir = path.join(tempDir, "bin");
-  const packageDir = path.join(tempDir, "npm", "vize-native");
+  const packageDir = path.join(tempDir, "npm", "native");
   const artifactPath = path.join(
     tempDir,
     "target",
@@ -351,7 +351,7 @@ test("github/build_napi_package builds Apple targets with cargo and writes the e
         "-p",
         "vize_vitrine",
         "--features",
-        "napi",
+        "napi,legacy",
         "--target",
         "aarch64-apple-darwin",
       ].join("\n"),

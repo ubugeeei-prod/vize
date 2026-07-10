@@ -1,0 +1,94 @@
+---
+source: crates/vize_croquis/src/reactivity_overlay_tests.rs
+expression: json
+---
+{
+  "summary": {
+    "sourceCount": 3,
+    "refSourceCount": 1,
+    "reactiveSourceCount": 1,
+    "computedSourceCount": 1,
+    "readonlySourceCount": 0,
+    "needsValueAccessCount": 2,
+    "lossCount": 2,
+    "effectEdgeCount": 2,
+    "effectCycleCount": 1
+  },
+  "sources": [
+    {
+      "id": 0,
+      "name": "count",
+      "kind": "ref",
+      "category": "ref",
+      "needsValueAccess": true,
+      "declarationOffset": 10
+    },
+    {
+      "id": 1,
+      "name": "state",
+      "kind": "reactive",
+      "category": "reactive",
+      "needsValueAccess": false,
+      "declarationOffset": 30
+    },
+    {
+      "id": 2,
+      "name": "doubled",
+      "kind": "computed",
+      "category": "computed",
+      "needsValueAccess": true,
+      "declarationOffset": 60
+    }
+  ],
+  "losses": [
+    {
+      "kind": "reactiveDestructure",
+      "category": "loss",
+      "sourceName": "state",
+      "targetName": null,
+      "propertyName": null,
+      "argumentName": null,
+      "calleeName": null,
+      "getterName": null,
+      "aliasName": null,
+      "extractedProps": [
+        "user"
+      ],
+      "start": 80,
+      "end": 100
+    },
+    {
+      "kind": "refValueExtract",
+      "category": "loss",
+      "sourceName": "count",
+      "targetName": "plainCount",
+      "propertyName": null,
+      "argumentName": null,
+      "calleeName": null,
+      "getterName": null,
+      "aliasName": null,
+      "extractedProps": [],
+      "start": 110,
+      "end": 130
+    }
+  ],
+  "effectGraph": {
+    "edges": [
+      {
+        "from": "count",
+        "to": "doubled",
+        "category": "effectEdge"
+      },
+      {
+        "from": "doubled",
+        "to": "count",
+        "category": "effectEdge"
+      }
+    ],
+    "cycle": [
+      "count",
+      "doubled",
+      "count"
+    ]
+  }
+}

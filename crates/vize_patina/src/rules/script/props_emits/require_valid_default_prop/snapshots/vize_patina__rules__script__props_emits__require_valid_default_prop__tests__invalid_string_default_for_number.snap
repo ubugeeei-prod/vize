@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/props_emits/require_valid_default_prop/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/require-valid-default-prop",
+        severity: Error,
+        message: "Type of the default value for 'count' prop must be a number.",
+        start: 65,
+        end: 68,
+        help: Some(
+            "Make the default a number (use a factory like `() => ({})` for Object/Array props).",
+        ),
+        labels: [
+            Label {
+                message: "default does not match the declared type",
+                start: 65,
+                end: 68,
+            },
+        ],
+        fix: None,
+    },
+]

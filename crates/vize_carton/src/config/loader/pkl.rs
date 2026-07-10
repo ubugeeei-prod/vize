@@ -5,11 +5,38 @@
 //! failures are reported separately from module evaluation failures because only
 //! the former should let config discovery fall through to lower-priority files.
 
+use std::fmt;
 use std::path::{Path, PathBuf};
-
-use pklrust::{Error as PklError, EvaluatorManager, EvaluatorOptions, ModuleSource};
+use std::process::Command;
 
 use crate::config::model::RawVizeConfig;
+
+#[derive(Debug)]
+enum PklError {
+    Process(std::io::Error),
+    Eval(crate::String),
+    Json(serde_json::Error),
+}
+
+impl fmt::Display for PklError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Process(error) => error.fmt(f),
+            Self::Eval(error) => write!(f, "pkl eval failed: {error}"),
+            Self::Json(error) => write!(f, "pkl eval produced invalid JSON: {error}"),
+        }
+    }
+}
+
+impl std::error::Error for PklError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Process(error) => Some(error),
+            Self::Json(error) => Some(error),
+            Self::Eval(_) => None,
+        }
+    }
+}
 
 /// Evaluate a PKL config and deserialize it into the raw config model.
 pub(super) fn parse_pkl_config(path: &Path) -> Result<RawVizeConfig, Box<dyn std::error::Error>> {
@@ -43,28 +70,38 @@ pub(super) fn is_process_error_box(error: &(dyn std::error::Error + 'static)) ->
 }
 
 fn parse_pkl_config_with_command(path: &Path, command: &Path) -> Result<RawVizeConfig, PklError> {
-    let command = command.to_string_lossy();
-    let mut manager = EvaluatorManager::with_command(command.as_ref())?;
-    let options = pkl_evaluator_options(path);
-    let evaluator = manager.new_evaluator(options)?;
-    let result =
-        manager.evaluate_module_typed::<RawVizeConfig>(&evaluator, ModuleSource::file(path));
-    let _ = manager.close_evaluator(&evaluator);
-
-    result
-}
-
-fn pkl_evaluator_options(path: &Path) -> EvaluatorOptions {
-    let Some(root_dir) = path.parent() else {
-        return EvaluatorOptions::preconfigured();
-    };
-
-    let root_dir = root_dir.to_string_lossy();
-    EvaluatorOptions::preconfigured().root_dir(root_dir.as_ref())
+    let mut process = Command::new(command);
+    process.arg("eval").arg("-f").arg("json").arg(path);
+    if let Some(parent) = path.parent() {
+        process.current_dir(parent);
+    }
+    let output = process.output().map_err(PklError::Process)?;
+    if !output.status.success() {
+        return Err(PklError::Eval(format_pkl_failure(&output)));
+    }
+    serde_json::from_slice::<RawVizeConfig>(&output.stdout).map_err(PklError::Json)
 }
 
 fn is_process_error(error: &PklError) -> bool {
-    matches!(error, PklError::Io(_) | PklError::Process(_))
+    matches!(error, PklError::Process(_))
+}
+
+fn format_pkl_failure(output: &std::process::Output) -> crate::String {
+    let stderr = crate::cstr!("{}", String::from_utf8_lossy(&output.stderr).trim());
+    if stderr.is_empty() {
+        let stdout = crate::cstr!("{}", String::from_utf8_lossy(&output.stdout).trim());
+        if stdout.is_empty() {
+            output
+                .status
+                .code()
+                .map(|code| crate::cstr!("exit code {code}"))
+                .unwrap_or_else(|| "terminated by signal".into())
+        } else {
+            stdout
+        }
+    } else {
+        stderr
+    }
 }
 
 fn pkl_command_candidates(path: &Path) -> Vec<PathBuf> {

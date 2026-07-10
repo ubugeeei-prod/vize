@@ -9,6 +9,6 @@ expression: relevant
     ),
     (
         "initializer",
-        "0",
+        "any",
     ),
 ]

@@ -49,6 +49,7 @@ impl Rule for AriaUnsupportedElements {
                 PropNode::Directive(dir)
                     if dir.name == "bind"
                         && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                        && arg.is_static
                         && Self::is_aria_or_role(arg.content.as_str()) =>
                 {
                     self.report_unsupported_attr(ctx, element, arg.content.as_str(), &dir.loc);
@@ -127,5 +128,12 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<script :role="role"></script>"#, "test.vue");
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_valid_script_with_dynamic_role_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<script :[role]="role"></script>"#, "test.vue");
+        assert_eq!(result.error_count, 0);
     }
 }

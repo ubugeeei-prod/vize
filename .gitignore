@@ -8,9 +8,10 @@ _build/
 
 # npm package build outputs
 npm/*/dist/
-npm/vite-plugin-vize/wasm/
-npm/vscode-vize/.vscode-test/
-npm/zed-vize/target/
+editors/*/dist/
+npm/builder-vite/wasm/
+editors/vscode/.vscode-test/
+editors/zed/target/
 
 # Native (NAPI) build output
 *.node
@@ -20,8 +21,8 @@ npm/cli-*/vize
 npm/cli-*/vize.exe
 
 # Legacy downloaded CLI binary
-npm/vize/bin/vize-cli
-npm/vize/bin/vize-cli.exe
+npm/cli/bin/vize-cli
+npm/cli/bin/vize-cli.exe
 
 # Examples build output
 examples/*/dist/
@@ -65,6 +66,7 @@ tests/_fixtures/_projects/_git-worktrees/
 
 # Vize local data (snapshots, cache, etc.)
 .vize/
+__agent_only/
 *.pending-snap
 
 # cargo-fuzz runtime state — corpora are seeded by tools/fuzz/seed_corpus.mjs

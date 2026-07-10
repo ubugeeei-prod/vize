@@ -1,0 +1,99 @@
+---
+source: crates/vize_croquis_cf/src/analyzer/tests_snapshots/provide_inject.rs
+expression: output
+---
+=== Shared Child Branch Context ===
+
+== Summary ==
+{
+  "rootCount": 2,
+  "nodeCount": 3,
+  "leafComponentCount": 1,
+  "passThroughComponentCount": 0,
+  "providerComponentCount": 2,
+  "injectorComponentCount": 1,
+  "provideCount": 2,
+  "injectCount": 1,
+  "defaultedInjectCount": 0,
+  "matchedInjectCount": 1,
+  "unmatchedInjectCount": 0,
+  "maxDepth": 2,
+  "maxChildFanout": 1,
+  "maxProviderConsumerCount": 1
+}
+
+== Tree JSON ==
+{
+  "roots": [
+    {
+      "fileId": 3,
+      "componentName": "ParentA",
+      "provides": [
+        {
+          "key": "theme",
+          "valueType": null,
+          "offset": 30,
+          "consumerCount": 1
+        }
+      ],
+      "injects": [],
+      "children": [
+        {
+          "fileId": 0,
+          "componentName": "Child",
+          "provides": [],
+          "injects": [
+            {
+              "key": "theme",
+              "hasDefault": false,
+              "provider": 3,
+              "offset": 43
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "fileId": 1,
+      "componentName": "ParentB",
+      "provides": [
+        {
+          "key": "theme",
+          "valueType": null,
+          "offset": 30,
+          "consumerCount": 1
+        }
+      ],
+      "injects": [],
+      "children": [
+        {
+          "fileId": 0,
+          "componentName": "Child",
+          "provides": [],
+          "injects": [
+            {
+              "key": "theme",
+              "hasDefault": false,
+              "provider": 1,
+              "offset": 43
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}
+
+== Markdown ==
+## Provide/Inject Tree
+
+📦 **ParentA**
+  🔹 provide(`"theme"`) → 1 consumer(s)
+  📦 **Child**
+    🔸 inject(`"theme"`) ✅
+📦 **ParentB**
+  🔹 provide(`"theme"`) → 1 consumer(s)
+  📦 **Child**
+    🔸 inject(`"theme"`) ✅

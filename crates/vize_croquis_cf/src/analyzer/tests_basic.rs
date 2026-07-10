@@ -9,7 +9,6 @@ use vize_croquis::{AnalyzerOptions, ScopeId};
 fn test_cross_file_options() {
     let options = CrossFileOptions::default();
     assert!(!options.any_enabled());
-
     let options = CrossFileOptions::all();
     assert!(options.any_enabled());
     assert!(options.fallthrough_attrs);
@@ -32,7 +31,6 @@ fn test_strict_options() {
 #[test]
 fn test_analyzer_basic() {
     let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::minimal());
-
     let id = analyzer.add_file(
         Path::new("Test.vue"),
         "<script setup>\nconst count = ref(0)\n</script>",
@@ -447,6 +445,7 @@ fn passed_prop_at(
 ) -> PassedProp {
     PassedProp {
         name: CompactString::new(name),
+        name_is_dynamic: false,
         value: value.map(CompactString::new),
         start,
         end,
@@ -457,6 +456,7 @@ fn passed_prop_at(
 fn event_listener(name: &str) -> EventListener {
     EventListener {
         name: CompactString::new(name),
+        name_is_dynamic: false,
         handler: None,
         modifiers: smallvec![],
         start: 0,

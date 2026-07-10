@@ -1,16 +1,19 @@
 //! Shared config model.
 
 mod compiler;
+mod experimentals;
 mod formatter;
 mod global_types;
 mod language_server;
 mod linter;
+mod linter_rule_options;
 mod type_checker;
 mod vue;
 
 use serde::{Deserialize, Serialize};
 
 use compiler::RawCompilerConfig;
+use experimentals::RawExperimentalsConfig;
 use vue::RawVueConfig;
 
 pub use compiler::JsxMode;
@@ -25,6 +28,10 @@ pub use language_server::{LanguageServerConfig, LspConfig};
 #[allow(unused_imports)]
 pub(crate) use linter::RawLinterConfig;
 pub use linter::{LintRuleSeverity, LinterConfig};
+pub use linter_rule_options::{
+    LintRuleOptions, NoRestrictedGlobalsOptions, NoRestrictedMembersOptions, RestrictedGlobal,
+    RestrictedMember,
+};
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};
 
@@ -76,9 +83,9 @@ pub struct ConfigFeatureFlags {
     pub type_checker_legacy_vue2: bool,
     /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497). Default-off
     /// so mixed Vue/React repositories do not accidentally route React `.tsx`
-    /// through the Vue JSX checker. Set `typeChecker.jsxTypecheck: true` to route
-    /// `.jsx`/`.tsx` through the Vize JSX virtual-TS path instead of the verbatim
-    /// passthrough.
+    /// through the Vue JSX checker. Set `typeChecker.jsxTypecheck: true` or
+    /// opt into `experimentals.jsxVapor` to route `.jsx`/`.tsx` through the
+    /// Vize JSX virtual-TS path instead of the verbatim passthrough.
     pub type_checker_jsx_typecheck: bool,
     pub language_server_legacy_vue2: Option<bool>,
     /// Dialect selected by `vue.version`; `None` when the key is absent
@@ -93,6 +100,11 @@ pub struct ConfigFeatureFlags {
     /// mode-selection logic so a single module can still mix VDOM and Vapor via
     /// `"use vue:*"` directives.
     pub jsx_mode: Option<JsxMode>,
+    pub experimental_vapor: bool,
+    pub experimental_jsx_vapor: bool,
+    pub experimental_in_tag_comments: bool,
+    pub experimental_patterned_template: bool,
+    pub experimental_server_script: bool,
 }
 
 impl Default for ConfigFeatureFlags {
@@ -105,6 +117,39 @@ impl Default for ConfigFeatureFlags {
             language_server_legacy_vue2: None,
             vue_version: None,
             jsx_mode: None,
+            experimental_vapor: false,
+            experimental_jsx_vapor: false,
+            experimental_in_tag_comments: false,
+            experimental_patterned_template: false,
+            experimental_server_script: false,
+        }
+    }
+}
+
+/// Lint-only feature switches derived from config compatibility keys.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct LinterFeatureFlags {
+    pub vue_version: Option<VueVersion>,
+    pub vapor: Option<bool>,
+}
+
+impl LinterFeatureFlags {
+    pub(crate) fn from_config_features(
+        features: ConfigFeatureFlags,
+        compiler_compatibility_vue_version: Option<VueVersion>,
+        compiler_vapor: Option<bool>,
+    ) -> Self {
+        let vue_version = features
+            .vue_version
+            .or(compiler_compatibility_vue_version)
+            .or_else(|| {
+                (features.type_checker_legacy_vue2
+                    || features.language_server_legacy_vue2 == Some(true))
+                .then_some(VueVersion::V2_7)
+            });
+        Self {
+            vue_version,
+            vapor: compiler_vapor,
         }
     }
 }
@@ -115,9 +160,13 @@ impl Default for ConfigFeatureFlags {
 pub(crate) struct RawVizeConfig {
     #[serde(rename = "$schema")]
     pub schema: Option<String>,
+    #[serde(rename = "basePath")]
+    pub base_path: Option<String>,
+    pub files: Option<Vec<String>>,
     pub dialect: Option<VueDialect>,
     pub formatter: FormatterConfig,
     pub(crate) compiler: RawCompilerConfig,
+    pub(crate) experimentals: RawExperimentalsConfig,
     pub(crate) vue: RawVueConfig,
     pub linter: RawLinterConfig,
     #[serde(rename = "typeChecker")]
@@ -126,12 +175,35 @@ pub(crate) struct RawVizeConfig {
     language_server: RawLanguageServerConfig,
     #[serde(rename = "globalTypes")]
     pub global_types: RawGlobalTypesConfig,
+    pub ignores: Option<Vec<String>>,
+    pub entries: Option<Vec<RawConfigEntry>>,
     #[serde(rename = "check")]
     legacy_check: Option<LegacyCheckConfig>,
     #[serde(rename = "fmt")]
     legacy_formatter: Option<FormatterConfig>,
     #[serde(rename = "lsp")]
     legacy_lsp: Option<RawLanguageServerConfig>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub(crate) struct RawConfigEntry {
+    pub base_path: Option<String>,
+    pub files: Option<Vec<String>>,
+    pub ignores: Option<Vec<String>>,
+    pub linter: RawLinterConfig,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConfigEntryIgnore {
+    pub base_path: Option<String>,
+    pub pattern: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConfigEntryFiles {
+    pub base_path: Option<String>,
+    pub files: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -171,14 +243,19 @@ impl RawVizeConfig {
     pub(crate) fn into_config_and_features(self) -> (VizeConfig, ConfigFeatureFlags) {
         let RawVizeConfig {
             schema,
+            base_path: _,
+            files: _,
             dialect,
             formatter,
             compiler,
+            experimentals,
             vue,
             linter: _,
             type_checker: raw_type_checker,
             language_server: raw_language_server,
             global_types,
+            ignores: _,
+            entries: _,
             legacy_check,
             legacy_formatter,
             legacy_lsp,
@@ -187,7 +264,8 @@ impl RawVizeConfig {
         // Default-on (matches vue-tsc); explicit `false` opts out.
         let type_checker_options_api = raw_type_checker.options_api.unwrap_or(true);
         let type_checker_legacy_vue2 = raw_type_checker.legacy_vue2;
-        let type_checker_jsx_typecheck = raw_type_checker.jsx_typecheck;
+        let experimental_jsx_vapor = experimentals.jsx_vapor_enabled();
+        let type_checker_jsx_typecheck = raw_type_checker.jsx_typecheck || experimental_jsx_vapor;
         let mut type_checker = raw_type_checker.config;
         if let Some(legacy_check) = legacy_check {
             if type_checker.globals_file.is_none() {
@@ -215,8 +293,15 @@ impl RawVizeConfig {
             type_checker_legacy_vue2,
             type_checker_jsx_typecheck,
             language_server_legacy_vue2: language_server_raw.legacy_vue2,
-            vue_version: vue.version,
-            jsx_mode: compiler.jsx_mode,
+            vue_version: vue.version.or(compiler.compatibility.vue_version),
+            jsx_mode: compiler
+                .jsx_mode
+                .or_else(|| experimental_jsx_vapor.then_some(JsxMode::Vapor)),
+            experimental_vapor: experimentals.vapor_enabled(),
+            experimental_jsx_vapor,
+            experimental_in_tag_comments: experimentals.in_tag_comments_enabled(),
+            experimental_patterned_template: experimentals.patterned_template_enabled(),
+            experimental_server_script: experimentals.server_script_enabled(),
         };
 
         let config = VizeConfig {

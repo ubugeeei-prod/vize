@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "paths": { "~/*": ["./*"] },
+    "noEmit": true
+  },
+  "include": ["components/**/*.vue", "pages/**/*.vue", "plugins/**/*.ts", "types/**/*.d.ts"]
+}

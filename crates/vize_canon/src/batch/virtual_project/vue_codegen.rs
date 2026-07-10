@@ -4,8 +4,8 @@
 //! and replaced with a typed fallback module.
 
 use std::path::Path;
-
-use vize_carton::{Bump, FxHashSet, String as CompactString, cstr, profile};
+use vize_carton::config::VueVersion;
+use vize_carton::{Bump, String as CompactString, cstr, profile};
 
 use vize_atelier_core::{
     ParserOptions, TemplateSyntaxMode, parser::parse_with_options_and_template_syntax,
@@ -17,7 +17,6 @@ use vize_atelier_sfc::{
         analyze_sfc_descriptor_with_context_legacy_vue2,
         analyze_sfc_descriptor_with_context_options_api,
     },
-    script::ScriptCompileContext,
 };
 
 use crate::batch::error::CorsaResult;
@@ -30,6 +29,10 @@ use crate::virtual_ts::{
 
 use super::diagnostics::{
     collect_sfc_compile_diagnostic, diagnostic_for_offset, invalid_sfc_fallback_virtual_ts,
+};
+use super::{
+    art_usage::collect_art_template_referenced_names,
+    setup_props::augment_type_based_props_from_script_context,
 };
 
 pub(super) struct GeneratedVueFile {
@@ -44,14 +47,11 @@ pub(super) struct VueCodegenOptions {
     pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
-    /// Configured Vue dialect (default [`VueVersion::V3`]); plumbing only today.
-    pub(super) dialect: vize_carton::config::VueVersion,
+    pub(super) dialect: VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
-    /// Whether the shared preamble (ImportMeta augmentation + helper types) is
-    /// hoisted to a program-wide ambient `.d.ts`. The batch path materializes
-    /// `SHARED_HELPERS_FILE` and lists it in every tsconfig, so it hoists
-    /// (`true`); the single-document Corsa socket session has no such shared
-    /// file and must keep the preamble inline (`false`).
+    pub(super) experimental_in_tag_comments: bool,
+    /// Hoist shared helpers to the batch ambient `.d.ts`; socket sessions keep
+    /// them inline because they do not materialize that file.
     pub(super) hoist_shared_preamble: bool,
 }
 
@@ -120,7 +120,10 @@ pub(super) fn generate_vue_virtual_ts(
             let (root, errors) = parse_with_options_and_template_syntax(
                 &allocator,
                 &template.content,
-                ParserOptions::default(),
+                ParserOptions {
+                    experimental_in_tag_comments: codegen_options.experimental_in_tag_comments,
+                    ..ParserOptions::default()
+                },
                 codegen_options.template_syntax,
             );
             for error in errors {
@@ -158,10 +161,12 @@ pub(super) fn generate_vue_virtual_ts(
     }
 
     let croquis_options = SfcCroquisOptions::full();
+    let vue2_compat = codegen_options.legacy_vue2
+        || matches!(codegen_options.dialect, VueVersion::V2 | VueVersion::V2_7);
 
     let analysis = profile!(
         "canon.croquis.analyze_sfc",
-        if codegen_options.legacy_vue2 {
+        if vue2_compat {
             analyze_sfc_descriptor_with_context_legacy_vue2(
                 descriptor,
                 template_ast.as_ref(),
@@ -186,7 +191,15 @@ pub(super) fn generate_vue_virtual_ts(
         "canon.croquis.augment_type_props",
         augment_type_based_props_from_script_context(&mut croquis, descriptor, path)
     );
+    let extra_template_referenced_names = codegen_options.preserve_unused_diagnostics.then(|| {
+        collect_art_template_referenced_names(
+            descriptor,
+            codegen_options.template_syntax,
+            codegen_options.experimental_in_tag_comments,
+        )
+    });
 
+    let hoist_shared_preamble = codegen_options.hoist_shared_preamble && !vue2_compat;
     let output = profile!(
         "canon.virtual_ts.generate",
         generate_virtual_ts_with_offsets_and_checks(
@@ -200,17 +213,15 @@ pub(super) fn generate_vue_virtual_ts(
                 check_options: codegen_options.check_options,
                 dialect: codegen_options.dialect,
                 preserve_unused_diagnostics: codegen_options.preserve_unused_diagnostics,
-                options_api: codegen_options.options_api,
-                legacy_vue2: codegen_options.legacy_vue2,
+                extra_template_referenced_names: extra_template_referenced_names.as_ref(),
+                options_api: codegen_options.options_api || vue2_compat,
+                legacy_vue2: vue2_compat,
                 template_syntax_quirks: matches!(
                     codegen_options.template_syntax,
                     TemplateSyntaxMode::Quirks
                 ),
-                // The virtual project materializes SHARED_HELPERS_FILE and
-                // lists it in every generated tsconfig, so per-file output
-                // drops the duplicated preamble. The single-document Corsa
-                // socket path has no shared file and keeps it inline.
-                hoist_shared_preamble: codegen_options.hoist_shared_preamble,
+                hoist_shared_preamble,
+                lib_references: None,
             },
         )
     );
@@ -230,126 +241,4 @@ pub(super) fn generate_vue_virtual_ts(
         mappings: output.mappings,
         diagnostics,
     })
-}
-
-fn augment_type_based_props_from_script_context(
-    croquis: &mut vize_croquis::Croquis,
-    descriptor: &SfcDescriptor<'_>,
-    path: &Path,
-) {
-    let Some(script_setup) = descriptor.script_setup.as_ref() else {
-        return;
-    };
-    if croquis
-        .macros
-        .define_props()
-        .is_none_or(|call| call.type_args.is_none())
-    {
-        return;
-    }
-
-    let mut ctx = ScriptCompileContext::new(&script_setup.content);
-    let path_string = path.to_string_lossy();
-
-    if let Some(script) = descriptor.script.as_ref()
-        && !script.content.is_empty()
-    {
-        ctx.collect_types_from(&script.content);
-        ctx.collect_imported_types_from_path(
-            &script.content,
-            path_string.as_ref(),
-            matches!(script.lang.as_deref(), Some("ts" | "tsx")),
-        );
-    }
-    ctx.collect_imported_types_from_path(
-        &script_setup.content,
-        path_string.as_ref(),
-        matches!(script_setup.lang.as_deref(), Some("ts" | "tsx")),
-    );
-    ctx.analyze();
-
-    let known_props = known_type_based_prop_names(croquis);
-    let mut missing_props: Vec<CompactString> = ctx
-        .bindings
-        .bindings
-        .iter()
-        .filter_map(|(name, binding_type)| {
-            matches!(binding_type, vize_relief::BindingType::Props)
-                .then(|| name)
-                .filter(|name| !known_props.contains(*name))
-                .cloned()
-        })
-        .collect();
-    if missing_props.is_empty() {
-        return;
-    }
-    missing_props.sort();
-
-    for name in missing_props {
-        croquis
-            .bindings
-            .bindings
-            .entry(name.clone())
-            .or_insert(vize_relief::BindingType::Props);
-        croquis
-            .macros
-            .add_prop(vize_croquis::macros::PropDefinition {
-                name,
-                prop_type: None,
-                required: false,
-                default_value: None,
-            });
-    }
-}
-
-fn known_type_based_prop_names(croquis: &vize_croquis::Croquis) -> FxHashSet<CompactString> {
-    let mut names: FxHashSet<CompactString> = croquis
-        .macros
-        .props()
-        .iter()
-        .map(|prop| prop.name.clone())
-        .collect();
-
-    let Some(type_args) = croquis
-        .macros
-        .define_props()
-        .and_then(|call| call.type_args.as_ref())
-    else {
-        return names;
-    };
-
-    // Resolve the named type's fields through the croquis TypeResolver, which
-    // script analysis populates from the OXC AST — including local interfaces
-    // and type literals. This replaces the old raw-text interface scanner.
-    let type_name = strip_outer_angle_brackets(type_args.trim());
-    for prop in croquis
-        .types
-        .extract_properties(type_reference_lookup_key(type_name))
-    {
-        names.insert(prop.name);
-    }
-
-    names
-}
-
-fn strip_outer_angle_brackets(value: &str) -> &str {
-    value
-        .strip_prefix('<')
-        .and_then(|value| value.strip_suffix('>'))
-        .unwrap_or(value)
-}
-
-/// Lookup key for a `defineProps<...>` type argument: inline object literals
-/// (`{ ... }`) are passed through, while a type *reference* drops any generic
-/// instantiation (`Foo<T>` -> `Foo`) so the resolver can find the local
-/// declaration registered under its bare name.
-fn type_reference_lookup_key(type_name: &str) -> &str {
-    let trimmed = type_name.trim();
-    if trimmed.starts_with('{') {
-        return type_name;
-    }
-    match trimmed.find('<') {
-        Some(pos) => trimmed[..pos].trim_end(),
-        None => trimmed,
-    }
 }

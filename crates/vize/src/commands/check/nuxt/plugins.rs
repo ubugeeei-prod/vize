@@ -3,24 +3,29 @@
 use std::path::Path;
 
 use ignore::WalkBuilder;
-use oxc_allocator::Allocator;
-use oxc_ast::ast::{Argument, Expression, ObjectExpression, Statement};
-use oxc_parser::Parser;
-use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String, cstr};
 
-use super::parsing::{
-    collect_object_keys, extract_call_expression_from_export, extract_expression,
-    extract_object_expression, find_object_property,
-};
 use super::stubs::{push_stub, tracked_read_to_string};
+
+mod extract;
+#[cfg(test)]
+mod tests;
+
+pub(super) use extract::extract_plugin_provide_keys_from_source;
+
+const MODULE_AUGMENTATION_STUB_PREFIX: &str = "// @vize-module-augmentation\n";
 
 pub(super) fn collect_plugin_injection_stubs(
     cwd: &Path,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
 ) {
-    let plugin_dirs = [cwd.join("app/plugins"), cwd.join("plugins")];
+    let plugin_dirs = [
+        cwd.join("app/plugins"),
+        cwd.join("plugins"),
+        cwd.join("src/app/plugins"),
+        cwd.join("src/plugins"),
+    ];
     let mut plugin_keys = Vec::new();
 
     for dir in plugin_dirs {
@@ -63,6 +68,20 @@ pub(super) fn collect_plugin_injection_stubs(
             .into(),
     );
 
+    stubs.push(render_nuxt_injected_properties_stub(&plugin_keys));
+    if has_nuxt_types_package(cwd) {
+        stubs.push(render_module_augmentation_stub(
+            &render_nuxt_types_augmentation_stub(),
+        ));
+    } else {
+        stubs.push(render_nuxt_types_augmentation_stub());
+    }
+    if has_nuxt_composition_api_package(cwd) {
+        stubs.push(render_module_augmentation_stub(
+            &render_nuxt_composition_api_augmentation_stub(),
+        ));
+    }
+
     for key in plugin_keys {
         let injected_name = if key.starts_with('$') {
             key
@@ -77,87 +96,47 @@ pub(super) fn collect_plugin_injection_stubs(
     }
 }
 
-pub(super) fn extract_plugin_provide_keys_from_source(source: &str) -> Vec<String> {
-    let allocator = Allocator::default();
-    let source_type = SourceType::default()
-        .with_module(true)
-        .with_typescript(true);
-    let ret = Parser::new(&allocator, source, source_type).parse();
-    let mut keys = Vec::new();
-
-    for statement in &ret.program.body {
-        let Statement::ExportDefaultDeclaration(export) = statement else {
-            continue;
+fn render_nuxt_injected_properties_stub(plugin_keys: &[String]) -> String {
+    let mut stub = String::from("interface __VizeNuxtInjectedProperties {\n");
+    for key in plugin_keys {
+        let injected_name = if key.starts_with('$') {
+            key.clone()
+        } else {
+            cstr!("${key}")
         };
-        let Some(call) = extract_call_expression_from_export(&export.declaration) else {
-            continue;
-        };
-        let Expression::Identifier(callee) = &call.callee else {
-            continue;
-        };
-        if callee.name.as_str() != "defineNuxtPlugin" {
-            continue;
-        }
-        let Some(first_arg) = call.arguments.first() else {
-            continue;
-        };
-        collect_plugin_keys_from_argument(first_arg, &mut keys);
+        stub.push_str("  ");
+        stub.push_str(injected_name.as_str());
+        stub.push_str(": __VizeNuxtInjection<'");
+        stub.push_str(injected_name.as_str());
+        stub.push_str("'>;\n");
     }
-
-    keys
+    stub.push_str("}\n");
+    stub
 }
 
-fn collect_plugin_keys_from_argument(arg: &Argument<'_>, keys: &mut Vec<String>) {
-    match arg {
-        Argument::ObjectExpression(object) => collect_plugin_keys_from_object(object, keys),
-        Argument::ArrowFunctionExpression(arrow) => {
-            collect_plugin_keys_from_function_body(&arrow.body.statements, keys)
-        }
-        Argument::FunctionExpression(function) => {
-            if let Some(body) = &function.body {
-                collect_plugin_keys_from_function_body(&body.statements, keys);
-            }
-        }
-        _ => {}
-    }
+fn render_nuxt_types_augmentation_stub() -> String {
+    String::from(
+        "declare module \"@nuxt/types\" {\n  interface Context extends __VizeNuxtInjectedProperties {}\n  interface NuxtAppOptions extends __VizeNuxtInjectedProperties {}\n}\n",
+    )
 }
 
-fn collect_plugin_keys_from_function_body<'a>(
-    statements: &oxc_allocator::Vec<'a, Statement<'a>>,
-    keys: &mut Vec<String>,
-) {
-    for statement in statements {
-        let Statement::ReturnStatement(ret) = statement else {
-            continue;
-        };
-        let Some(argument) = &ret.argument else {
-            continue;
-        };
-        let Some(object) = extract_object_expression(argument) else {
-            continue;
-        };
-        collect_plugin_keys_from_object(object, keys);
-    }
+fn render_nuxt_composition_api_augmentation_stub() -> String {
+    String::from(
+        "declare module \"@nuxtjs/composition-api\" {\n  interface UseContextReturn extends __VizeNuxtInjectedProperties {}\n}\n",
+    )
 }
 
-fn collect_plugin_keys_from_object(object: &ObjectExpression<'_>, keys: &mut Vec<String>) {
-    if let Some(provide_object) =
-        find_object_property(object, "provide").and_then(extract_object_expression)
-    {
-        collect_object_keys(provide_object, keys);
-    }
+fn render_module_augmentation_stub(stub: &str) -> String {
+    let mut rendered = String::from(MODULE_AUGMENTATION_STUB_PREFIX);
+    rendered.push_str(stub);
+    rendered
+}
 
-    if let Some(setup_expression) = find_object_property(object, "setup") {
-        match extract_expression(setup_expression) {
-            Some(Expression::ArrowFunctionExpression(arrow)) => {
-                collect_plugin_keys_from_function_body(&arrow.body.statements, keys);
-            }
-            Some(Expression::FunctionExpression(function)) => {
-                if let Some(body) = &function.body {
-                    collect_plugin_keys_from_function_body(&body.statements, keys);
-                }
-            }
-            _ => {}
-        }
-    }
+fn has_nuxt_types_package(cwd: &Path) -> bool {
+    cwd.join("node_modules/@nuxt/types").exists()
+}
+
+fn has_nuxt_composition_api_package(cwd: &Path) -> bool {
+    cwd.join("node_modules/@nuxtjs/composition-api/dist/runtime/index.d.ts")
+        .is_file()
 }

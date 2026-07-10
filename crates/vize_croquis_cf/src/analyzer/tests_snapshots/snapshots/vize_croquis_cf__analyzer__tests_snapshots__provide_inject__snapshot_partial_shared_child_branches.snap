@@ -1,0 +1,126 @@
+---
+source: crates/vize_croquis_cf/src/analyzer/tests_snapshots/provide_inject.rs
+expression: output
+---
+=== Partial Shared Child Branches ===
+
+== Summary ==
+{
+  "rootCount": 1,
+  "nodeCount": 4,
+  "leafComponentCount": 1,
+  "passThroughComponentCount": 1,
+  "providerComponentCount": 2,
+  "injectorComponentCount": 1,
+  "provideCount": 2,
+  "injectCount": 2,
+  "defaultedInjectCount": 1,
+  "matchedInjectCount": 0,
+  "unmatchedInjectCount": 2,
+  "maxDepth": 3,
+  "maxChildFanout": 2,
+  "maxProviderConsumerCount": 1
+}
+
+== Tree JSON ==
+{
+  "roots": [
+    {
+      "fileId": 2,
+      "componentName": "App",
+      "provides": [],
+      "injects": [],
+      "children": [
+        {
+          "fileId": 3,
+          "componentName": "ParentA",
+          "provides": [
+            {
+              "key": "theme",
+              "valueType": null,
+              "offset": 31,
+              "consumerCount": 1
+            }
+          ],
+          "injects": [],
+          "children": [
+            {
+              "fileId": 0,
+              "componentName": "Child",
+              "provides": [],
+              "injects": [
+                {
+                  "key": "theme",
+                  "hasDefault": false,
+                  "provider": 3,
+                  "offset": 44
+                },
+                {
+                  "key": "locale",
+                  "hasDefault": true,
+                  "provider": null,
+                  "offset": 76
+                }
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "fileId": 1,
+          "componentName": "ParentB",
+          "provides": [
+            {
+              "key": "locale",
+              "valueType": null,
+              "offset": 31,
+              "consumerCount": 1
+            }
+          ],
+          "injects": [],
+          "children": [
+            {
+              "fileId": 0,
+              "componentName": "Child",
+              "provides": [],
+              "injects": [
+                {
+                  "key": "theme",
+                  "hasDefault": false,
+                  "provider": null,
+                  "offset": 44
+                },
+                {
+                  "key": "locale",
+                  "hasDefault": true,
+                  "provider": 1,
+                  "offset": 76
+                }
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+== Conditional Diagnostics ==
+Error: **Conditionally Unmatched Inject**: `inject('theme')` has no matching `provide()` in 1 of 2 ancestor branches. It returns `undefined` in those render contexts.
+Warning: **Conditionally Defaulted Inject**: `inject('locale')` falls back to its default value in 1 of 2 ancestor branches.
+
+== Markdown ==
+## Provide/Inject Tree
+
+📦 **App**
+  📦 **ParentA**
+    🔹 provide(`"theme"`) → 1 consumer(s)
+    📦 **Child**
+      🔸 inject(`"theme"`) ✅
+      🔸 inject(`"locale"`) (has default) ❌ _no provider_
+  📦 **ParentB**
+    🔹 provide(`"locale"`) → 1 consumer(s)
+    📦 **Child**
+      🔸 inject(`"theme"`) ❌ _no provider_
+      🔸 inject(`"locale"`) (has default) ✅

@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { execSync } from "node:child_process";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 import type { AppConfig } from "../../_helpers/apps.ts";
 import { CORSA_BIN, VIZE_BIN } from "../../_helpers/apps.ts";
@@ -13,6 +15,19 @@ export interface VizeCheckSummary {
 export interface VizeLintSummary {
   fileCount: number;
   durationMs: number;
+}
+
+export interface InjectedTypeErrorSummary extends VizeCheckSummary {
+  file: string;
+  diagnostics: string[];
+}
+
+interface InjectedTypeErrorOptions {
+  timeoutMs?: number;
+  tsconfig?: {
+    relativePath: string;
+    content: string;
+  };
 }
 
 function shellQuote(value: string): string {
@@ -47,18 +62,16 @@ function readCommandStdout(cmd: string, cwd: string, timeoutMs: number): string 
   }
 }
 
-export function runCrashFreeVizeCheck(
-  app: AppConfig,
-  options: { timeoutMs?: number } = {},
-): VizeCheckSummary {
-  const checkConfig = app.check!;
-  const timeoutMs = options.timeoutMs ?? 300_000;
-  const patterns = checkConfig.patterns.map(shellQuote).join(" ");
+function buildVizeCheckCommand(
+  checkConfig: NonNullable<AppConfig["check"]>,
+  patterns: string[],
+): string {
+  const patternArgs = patterns.map(shellQuote).join(" ");
   const tsconfig = checkConfig.tsconfig ? ` --tsconfig ${shellQuote(checkConfig.tsconfig)}` : "";
-  const cmd = [
+  return [
     shellQuote(VIZE_BIN),
     "check",
-    patterns,
+    patternArgs,
     "--format json",
     "--quiet",
     "--servers 1",
@@ -68,12 +81,38 @@ export function runCrashFreeVizeCheck(
   ]
     .filter(Boolean)
     .join(" ");
+}
+
+function runVizeCheckJson(
+  checkConfig: NonNullable<AppConfig["check"]>,
+  patterns: string[],
+  timeoutMs: number,
+): {
+  fileCount?: number;
+  errorCount?: number;
+  files?: Array<{ file?: string; diagnostics?: string[] }>;
+} {
+  const cmd = buildVizeCheckCommand(checkConfig, patterns);
   console.log(`Running: ${cmd}`);
 
-  const startedAt = performance.now();
   const stdout = readCommandStdout(cmd, checkConfig.cwd, timeoutMs);
+  return JSON.parse(stdout) as {
+    fileCount?: number;
+    errorCount?: number;
+    files?: Array<{ file?: string; diagnostics?: string[] }>;
+  };
+}
+
+export function runCrashFreeVizeCheck(
+  app: AppConfig,
+  options: { timeoutMs?: number } = {},
+): VizeCheckSummary {
+  const checkConfig = app.check!;
+  const timeoutMs = options.timeoutMs ?? 300_000;
+
+  const startedAt = performance.now();
+  const parsed = runVizeCheckJson(checkConfig, checkConfig.patterns, timeoutMs);
   const durationMs = performance.now() - startedAt;
-  const parsed = JSON.parse(stdout) as { fileCount?: number; errorCount?: number };
 
   assert.ok((parsed.fileCount ?? 0) > 0, "check fileCount should be > 0");
   assert.ok(durationMs < timeoutMs, `check should finish before ${timeoutMs}ms`);
@@ -83,6 +122,94 @@ export function runCrashFreeVizeCheck(
     errorCount: parsed.errorCount ?? 0,
     durationMs,
   };
+}
+
+function firstExistingPatternBase(cwd: string, patterns: string[]): string {
+  for (const pattern of patterns) {
+    const normalized = pattern.replaceAll("\\", "/");
+    const globIndex = normalized.search(/[*?[{]/);
+    const prefix = globIndex === -1 ? path.dirname(normalized) : normalized.slice(0, globIndex);
+    const slashIndex = prefix.lastIndexOf("/");
+    const relativeDir = slashIndex === -1 ? "." : prefix.slice(0, slashIndex);
+    const candidate = path.join(cwd, relativeDir.length > 0 ? relativeDir : ".");
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
+      return relativeDir.length > 0 ? relativeDir : ".";
+    }
+  }
+  return ".";
+}
+
+function injectedTypeErrorFile(app: AppConfig): string {
+  return `__vize_intentional_type_error_${app.name.replace(/[^a-z0-9]+/gi, "_")}__.vue`;
+}
+
+export function runVizeCheckWithInjectedTypeError(
+  app: AppConfig,
+  options: InjectedTypeErrorOptions = {},
+): InjectedTypeErrorSummary {
+  const checkConfig = app.check!;
+  const timeoutMs = options.timeoutMs ?? 300_000;
+  const relativeDir = firstExistingPatternBase(checkConfig.cwd, checkConfig.patterns);
+  const relativeFile = path.posix.join(
+    relativeDir.replaceAll(path.sep, "/"),
+    injectedTypeErrorFile(app),
+  );
+  const absoluteFile = path.join(checkConfig.cwd, relativeFile);
+  const tempTsconfig = options.tsconfig;
+  const absoluteTempTsconfig = tempTsconfig
+    ? path.join(checkConfig.cwd, tempTsconfig.relativePath)
+    : null;
+
+  fs.writeFileSync(
+    absoluteFile,
+    `<script setup lang="ts">
+const __vizeIntentionalTypeError: number = "not-a-number";
+</script>
+
+<template>
+  <div>{{ __vizeIntentionalTypeError }}</div>
+</template>
+`,
+    "utf-8",
+  );
+  if (tempTsconfig && absoluteTempTsconfig) {
+    fs.mkdirSync(path.dirname(absoluteTempTsconfig), { recursive: true });
+    fs.writeFileSync(absoluteTempTsconfig, tempTsconfig.content, "utf-8");
+  }
+
+  try {
+    const startedAt = performance.now();
+    const parsed = runVizeCheckJson(
+      tempTsconfig ? { ...checkConfig, tsconfig: tempTsconfig.relativePath } : checkConfig,
+      [relativeFile],
+      timeoutMs,
+    );
+    const durationMs = performance.now() - startedAt;
+    const files = parsed.files ?? [];
+    const injected = files.find((file) => file.file?.replaceAll("\\", "/") === relativeFile);
+    const diagnostics = injected?.diagnostics ?? [];
+
+    assert.ok((parsed.fileCount ?? 0) > 0, "injected check fileCount should be > 0");
+    assert.ok((parsed.errorCount ?? 0) > 0, "injected check should report at least one error");
+    assert.ok(
+      diagnostics.some((diagnostic) => /\[TS2322\]/.test(diagnostic)),
+      `expected injected TS2322 diagnostic in ${relativeFile}, got ${JSON.stringify(files)}`,
+    );
+    assert.ok(durationMs < timeoutMs, `injected check should finish before ${timeoutMs}ms`);
+
+    return {
+      file: relativeFile,
+      diagnostics,
+      fileCount: parsed.fileCount ?? 0,
+      errorCount: parsed.errorCount ?? 0,
+      durationMs,
+    };
+  } finally {
+    fs.rmSync(absoluteFile, { force: true });
+    if (absoluteTempTsconfig) {
+      fs.rmSync(absoluteTempTsconfig, { force: true });
+    }
+  }
 }
 
 export function runCrashFreeVizeLint(

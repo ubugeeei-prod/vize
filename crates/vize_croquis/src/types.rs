@@ -6,7 +6,11 @@
 //! - Type references: `defineProps<Props>()`
 //! - External imports (future): `import type { Props } from './types'`
 
-use vize_carton::{CompactString, FxHashMap, String};
+mod props;
+
+use vize_carton::{CompactString, FxHashMap, cstr};
+
+const INTERFACE_EXTENDS_PREFIX: &str = "\0vize:interface_extends:";
 
 /// Resolved type information
 #[derive(Debug, Clone)]
@@ -55,7 +59,24 @@ impl TypeDefinitions {
         name: impl Into<CompactString>,
         body: impl Into<CompactString>,
     ) {
-        self.interfaces.insert(name.into(), body.into());
+        self.add_interface_with_extends(name, body, Vec::new());
+    }
+
+    /// Add an interface definition with its heritage clauses.
+    #[inline]
+    pub fn add_interface_with_extends(
+        &mut self,
+        name: impl Into<CompactString>,
+        body: impl Into<CompactString>,
+        extends: Vec<CompactString>,
+    ) {
+        let name = name.into();
+        if !extends.is_empty() {
+            let key = interface_extends_key(&name);
+            self.type_aliases
+                .insert(key, CompactString::new(extends.join("\n")));
+        }
+        self.interfaces.insert(name, body.into());
     }
 
     /// Add a type alias definition
@@ -97,6 +118,12 @@ impl TypeDefinitions {
         self.imported_types.contains_key(type_name)
     }
 
+    /// Check whether a local interface declaration has heritage clauses.
+    #[inline]
+    pub fn has_interface_extends(&self, name: &str) -> bool {
+        !self.interface_extends(name).is_empty()
+    }
+
     /// Merge another set of definitions in, keeping existing entries on a name
     /// clash. Used to fold a plain `<script>`'s local types into a
     /// `<script setup>` summary, which keeps precedence for setup-local data.
@@ -110,6 +137,20 @@ impl TypeDefinitions {
         for (name, source) in other.imported_types {
             self.imported_types.entry(name).or_insert(source);
         }
+    }
+
+    fn interface_extends(&self, name: &str) -> Vec<CompactString> {
+        let key = interface_extends_key(name);
+        self.type_aliases
+            .get(key.as_str())
+            .map(|value| {
+                value
+                    .lines()
+                    .filter(|line| !line.is_empty())
+                    .map(CompactString::new)
+                    .collect()
+            })
+            .unwrap_or_default()
     }
 }
 
@@ -149,6 +190,18 @@ impl TypeResolver {
         self.definitions.add_interface(name, body);
     }
 
+    /// Add an interface definition with its heritage clauses.
+    #[inline]
+    pub fn add_interface_with_extends(
+        &mut self,
+        name: impl Into<CompactString>,
+        body: impl Into<CompactString>,
+        extends: Vec<CompactString>,
+    ) {
+        self.definitions
+            .add_interface_with_extends(name, body, extends);
+    }
+
     /// Add a type alias definition
     #[inline]
     pub fn add_type_alias(
@@ -165,100 +218,6 @@ impl TypeResolver {
     #[inline]
     pub fn merge_keep_existing(&mut self, other: TypeResolver) {
         self.definitions.merge_keep_existing(other.definitions);
-    }
-
-    /// Extract properties from type arguments
-    ///
-    /// Handles:
-    /// - Inline object types: `{ msg: string, count?: number }`
-    /// - Type references: `Props` (resolved via definitions)
-    pub fn extract_properties(&self, type_args: &str) -> Vec<TypeProperty> {
-        let content = type_args.trim();
-
-        // Resolve type reference if not an inline object type
-        let resolved_content = if content.starts_with('{') {
-            // Inline object type - strip braces
-            if content.ends_with('}') {
-                &content[1..content.len() - 1]
-            } else {
-                content
-            }
-        } else {
-            // Type reference - look up in definitions
-            if let Some(body) = self.definitions.resolve(content) {
-                let body = body.trim();
-                if body.starts_with('{') && body.ends_with('}') {
-                    &body[1..body.len() - 1]
-                } else {
-                    body
-                }
-            } else {
-                // Unresolved type reference - return empty
-                return Vec::new();
-            }
-        };
-
-        self.parse_type_members(resolved_content)
-    }
-
-    /// Parse type members from a type body string
-    fn parse_type_members(&self, content: &str) -> Vec<TypeProperty> {
-        let mut properties = Vec::new();
-        let mut depth = 0;
-        let mut current = String::default();
-
-        for c in content.chars() {
-            match c {
-                '{' | '<' | '(' | '[' => {
-                    depth += 1;
-                    current.push(c);
-                }
-                '}' | '>' | ')' | ']' => {
-                    depth -= 1;
-                    current.push(c);
-                }
-                ',' | ';' | '\n' if depth == 0 => {
-                    if let Some(prop) = self.parse_single_property(&current) {
-                        properties.push(prop);
-                    }
-                    current.clear();
-                }
-                _ => current.push(c),
-            }
-        }
-
-        // Process last segment
-        if let Some(prop) = self.parse_single_property(&current) {
-            properties.push(prop);
-        }
-
-        properties
-    }
-
-    /// Parse a single property from a type definition segment
-    fn parse_single_property(&self, segment: &str) -> Option<TypeProperty> {
-        let trimmed = segment.trim();
-        if trimmed.is_empty() {
-            return None;
-        }
-
-        // Parse "name?: Type" or "name: Type"
-        let colon_pos = trimmed.find(':')?;
-        let name_part = &trimmed[..colon_pos];
-        let type_part = &trimmed[colon_pos + 1..];
-
-        let optional = name_part.ends_with('?');
-        let name = name_part.trim().trim_end_matches('?').trim();
-
-        if name.is_empty() || !is_valid_identifier(name) {
-            return None;
-        }
-
-        Some(TypeProperty {
-            name: CompactString::new(name),
-            prop_type: Some(CompactString::new(type_part.trim())),
-            optional,
-        })
     }
 
     /// Extract emit event names from emit type arguments
@@ -319,6 +278,10 @@ impl TypeResolver {
     }
 }
 
+fn interface_extends_key(name: &str) -> CompactString {
+    cstr!("{INTERFACE_EXTENDS_PREFIX}{name}")
+}
+
 /// Extract event name from a call signature like `(e: 'click', payload: number): void`
 fn extract_event_from_call_signature(signature: &str) -> Option<CompactString> {
     // Find the first string literal after the colon
@@ -357,64 +320,4 @@ fn is_valid_identifier(s: &str) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{TypeDefinitions, TypeResolver};
-
-    #[test]
-    fn test_extract_inline_props() {
-        let resolver = TypeResolver::new();
-        let props = resolver.extract_properties("{ msg: string, count?: number }");
-
-        assert_eq!(props.len(), 2);
-        assert_eq!(props[0].name.as_str(), "msg");
-        assert!(!props[0].optional);
-        assert_eq!(props[1].name.as_str(), "count");
-        assert!(props[1].optional);
-    }
-
-    #[test]
-    fn test_extract_props_from_reference() {
-        let mut resolver = TypeResolver::new();
-        resolver.add_interface("Props", "{ foo: string; bar: number }");
-
-        let props = resolver.extract_properties("Props");
-        assert_eq!(props.len(), 2);
-        assert_eq!(props[0].name.as_str(), "foo");
-        assert_eq!(props[1].name.as_str(), "bar");
-    }
-
-    #[test]
-    fn test_extract_emits_call_signature() {
-        let resolver = TypeResolver::new();
-        let emits =
-            resolver.extract_emits("{ (e: 'click'): void; (e: 'update', value: number): void }");
-
-        assert_eq!(emits.len(), 2);
-        assert_eq!(emits[0].as_str(), "click");
-        assert_eq!(emits[1].as_str(), "update");
-    }
-
-    #[test]
-    fn test_extract_emits_object_type() {
-        let resolver = TypeResolver::new();
-        let emits = resolver.extract_emits("{ click: []; update: [value: number] }");
-
-        assert_eq!(emits.len(), 2);
-        assert_eq!(emits[0].as_str(), "click");
-        assert_eq!(emits[1].as_str(), "update");
-    }
-
-    #[test]
-    fn test_type_definitions() {
-        let mut defs = TypeDefinitions::new();
-        defs.add_interface("Props", "{ msg: string }");
-        defs.add_type_alias("Count", "number");
-
-        assert!(defs.is_defined("Props"));
-        assert!(defs.is_defined("Count"));
-        assert!(!defs.is_defined("Unknown"));
-
-        assert!(defs.resolve("Props").is_some());
-        assert!(defs.resolve("Count").is_some());
-    }
-}
+mod tests;

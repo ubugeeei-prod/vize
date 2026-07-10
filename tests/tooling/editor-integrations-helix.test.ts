@@ -11,20 +11,23 @@ function readRepoFile(relativePath: string): string {
 }
 
 test("helix languages.toml registers the vize language server with the lsp command", () => {
-  const config = readRepoFile("npm/helix-vize/languages.toml");
+  const config = readRepoFile("editors/helix/languages.toml");
 
   // Language server registration: command `vize` invoked with the `lsp` subcommand.
   assert.match(config, /^\[language-server\.vize\]$/m);
   assert.match(config, /^command = "vize"$/m);
   assert.match(config, /^args = \["lsp"\]$/m);
 
-  // Server-level config enables linting.
+  // Server-level config enables the recommended editor profile.
   assert.match(config, /^\[language-server\.vize\.config\]$/m);
+  assert.match(config, /^editor = true$/m);
+  assert.match(config, /^ecosystem = true$/m);
   assert.match(config, /^lint = true$/m);
+  assert.match(config, /^typecheck = true$/m);
 });
 
 test("helix languages.toml declares the vue language wired to the vize server", () => {
-  const config = readRepoFile("npm/helix-vize/languages.toml");
+  const config = readRepoFile("editors/helix/languages.toml");
 
   // The plain `vue` language entry: scope, file-types and language-servers.
   const vueEntry = config.match(
@@ -37,7 +40,7 @@ test("helix languages.toml declares the vue language wired to the vize server", 
 });
 
 test("helix languages.toml declares the art-vue language with a glob file-type", () => {
-  const config = readRepoFile("npm/helix-vize/languages.toml");
+  const config = readRepoFile("editors/helix/languages.toml");
 
   // The `art-vue` language entry: language-id, scope, glob file-type and server.
   const artEntry = config.match(
@@ -51,7 +54,7 @@ test("helix languages.toml declares the art-vue language with a glob file-type",
 });
 
 test("helix languages.toml root markers cover vize config, package.json and .git", () => {
-  const config = readRepoFile("npm/helix-vize/languages.toml");
+  const config = readRepoFile("editors/helix/languages.toml");
 
   // Both language entries declare the same set of project root markers via `roots`.
   const rootsLines = config.match(/^roots = \[[^\]]*\]$/gm) ?? [];

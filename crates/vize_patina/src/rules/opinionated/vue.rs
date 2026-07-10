@@ -2,6 +2,7 @@ mod component_name_in_template_casing;
 mod html_button_has_type;
 mod html_self_closing;
 mod multi_word_component_names;
+mod no_array_index_key;
 mod no_boolean_attr_value;
 mod no_empty_component_block;
 mod no_inline_style;
@@ -13,6 +14,7 @@ mod no_script_non_standard_lang;
 mod no_src_attribute;
 mod no_template_lang;
 mod no_template_shadow;
+mod no_unused_refs;
 mod no_useless_mustaches;
 mod no_useless_v_bind;
 mod no_v_text;
@@ -33,9 +35,12 @@ mod warn_custom_directive;
 use crate::rule::RuleRegistry;
 
 pub use component_name_in_template_casing::ComponentNameInTemplateCasing;
+use component_name_in_template_casing::ComponentNameInTemplateCasingNuxt;
 pub use html_button_has_type::HtmlButtonHasType;
 pub use html_self_closing::HtmlSelfClosing;
+use html_self_closing::HtmlSelfClosingNuxt;
 pub use multi_word_component_names::MultiWordComponentNames;
+pub use no_array_index_key::NoArrayIndexKey;
 pub use no_boolean_attr_value::NoBooleanAttrValue;
 pub use no_empty_component_block::NoEmptyComponentBlock;
 pub use no_inline_style::NoInlineStyle;
@@ -47,6 +52,7 @@ pub use no_script_non_standard_lang::NoScriptNonStandardLang;
 pub use no_src_attribute::NoSrcAttribute;
 pub use no_template_lang::NoTemplateLang;
 pub use no_template_shadow::NoTemplateShadow;
+pub use no_unused_refs::NoUnusedRefs;
 pub use no_useless_mustaches::NoUselessMustaches;
 pub use no_useless_v_bind::NoUselessVBind;
 pub use no_v_text::NoVText;
@@ -65,22 +71,31 @@ pub use warn_custom_block::WarnCustomBlock;
 pub use warn_custom_directive::WarnCustomDirective;
 
 pub(crate) fn register(registry: &mut RuleRegistry) {
-    register_shared(registry);
+    register_shared(registry, PresetFlavor::Default);
     registry.register(Box::new(RequireComponentRegistration::default()));
 }
 
 pub(crate) fn register_nuxt(registry: &mut RuleRegistry) {
-    register_shared(registry);
+    register_shared(registry, PresetFlavor::Nuxt);
 }
 
-fn register_shared(registry: &mut RuleRegistry) {
+#[derive(Clone, Copy)]
+enum PresetFlavor {
+    Default,
+    Nuxt,
+}
+
+fn register_shared(registry: &mut RuleRegistry, flavor: PresetFlavor) {
     registry.register(Box::new(MultiWordComponentNames::default()));
     registry.register(Box::new(UseVOnExact));
 
     registry.register(Box::new(NoTemplateShadow));
     registry.register(Box::new(VBindStyle::default()));
     registry.register(Box::new(VOnHandlerStyle));
-    registry.register(Box::new(HtmlSelfClosing));
+    match flavor {
+        PresetFlavor::Default => registry.register(Box::new(HtmlSelfClosing)),
+        PresetFlavor::Nuxt => registry.register(Box::new(HtmlSelfClosingNuxt)),
+    }
     registry.register(Box::new(HtmlButtonHasType));
     registry.register(Box::new(ScopedEventNames));
     registry.register(Box::new(PreferPropsShorthand));
@@ -88,7 +103,14 @@ fn register_shared(registry: &mut RuleRegistry) {
 
     registry.register(Box::new(UseUniqueElementIds::default()));
 
-    registry.register(Box::new(ComponentNameInTemplateCasing::default()));
+    match flavor {
+        PresetFlavor::Default => {
+            registry.register(Box::new(ComponentNameInTemplateCasing::default()))
+        }
+        PresetFlavor::Nuxt => {
+            registry.register(Box::new(ComponentNameInTemplateCasingNuxt::default()))
+        }
+    }
     registry.register(Box::new(NoPreprocessorLang));
     registry.register(Box::new(NoScriptNonStandardLang));
     registry.register(Box::new(NoTemplateLang));
@@ -104,7 +126,9 @@ fn register_shared(registry: &mut RuleRegistry) {
     registry.register(Box::new(NoUselessVBind));
     registry.register(Box::new(NoNegatedVIfCondition));
     registry.register(Box::new(NoVText));
+    registry.register(Box::new(NoUnusedRefs));
     registry.register(Box::new(PreferTrueAttributeShorthand));
     registry.register(Box::new(VOnEventHyphenation));
     registry.register(Box::new(ThisInTemplate));
+    registry.register(Box::new(NoArrayIndexKey));
 }

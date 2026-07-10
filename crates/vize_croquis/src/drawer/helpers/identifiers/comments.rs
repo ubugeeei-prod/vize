@@ -18,26 +18,16 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
         let c = bytes[i];
 
         if c == b'\'' || c == b'"' || c == b'`' {
+            let literal_start = i;
             let quote = c;
-            if changed {
-                out.push(quote as char);
-            }
             i += 1;
 
             while i < len {
                 let current = bytes[i];
-                if changed {
-                    out.push(current as char);
-                }
                 i += 1;
 
                 if current == b'\\' {
-                    if i < len {
-                        if changed {
-                            out.push(bytes[i] as char);
-                        }
-                        i += 1;
-                    }
+                    i = (i + 1).min(len);
                     continue;
                 }
 
@@ -46,6 +36,9 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
                 }
             }
 
+            if changed {
+                out.push_str(&expr[literal_start..i]);
+            }
             continue;
         }
 
@@ -95,9 +88,12 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
         }
 
         if changed {
-            out.push(c as char);
+            let ch = expr[i..].chars().next().expect("valid UTF-8 boundary");
+            out.push(ch);
+            i += ch.len_utf8();
+        } else {
+            i += 1;
         }
-        i += 1;
     }
 
     if changed {

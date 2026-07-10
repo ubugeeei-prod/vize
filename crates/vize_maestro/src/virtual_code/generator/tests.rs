@@ -128,11 +128,15 @@ const x = 1
     assert_eq!(descriptor.custom_blocks.len(), 1);
     assert_eq!(descriptor.custom_blocks[0].block_type, "art");
 
-    // Offset inside <art> content area
+    // Offset inside <art> content area before the first variant
     let art_content_start = descriptor.custom_blocks[0].loc.start;
     assert_eq!(
-        find_block_at_offset(&descriptor, art_content_start + 5),
+        find_block_at_offset(&descriptor, art_content_start + 1),
         Some(BlockType::Art(ArtCursorPosition::ArtContent))
+    );
+    assert_eq!(
+        find_block_at_offset(&descriptor, source.find("<variant").unwrap() + 1),
+        Some(BlockType::Art(ArtCursorPosition::VariantTag(0)))
     );
 
     // In template - should still be Template
@@ -143,6 +147,29 @@ const x = 1
 
     // Outside any block
     assert_eq!(find_block_at_offset(&descriptor, 0), None);
+}
+
+#[test]
+fn test_find_block_at_offset_detects_inline_art_variant_template() {
+    let source = r#"<template><button /></template>
+
+<art>
+  <variant name="Primary">
+    <Self variant="primary" />
+  </variant>
+</art>"#;
+
+    let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+    let offset = source.find("variant=\"primary\"").unwrap();
+
+    let Some(BlockType::Art(ArtCursorPosition::VariantTemplate(info))) =
+        find_block_at_offset(&descriptor, offset)
+    else {
+        panic!("expected inline art variant template");
+    };
+
+    assert_eq!(info.variant_index, 0);
+    assert_eq!(info.template_start, source.find("<Self").unwrap());
 }
 
 #[test]

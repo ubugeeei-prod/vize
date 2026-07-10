@@ -151,12 +151,11 @@ fn collect_keeps_type_diagnostics_for_parseable_sfc() {
     );
 
     let diagnostics = DiagnosticService::collect(&state, &uri);
+    let has_type_diagnostic = diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::TYPE_CHECKER));
 
-    assert!(
-        diagnostics
-            .iter()
-            .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::TYPE_CHECKER))
-    );
+    assert_eq!(has_type_diagnostic, !cfg!(feature = "native"));
     assert!(
         !diagnostics
             .iter()

@@ -17,6 +17,11 @@ impl CrossFileAnalyzer {
             // the WASM bindings which properly parse SFC.
             // For cross-file analysis, we treat Vue SFC source as script setup.
             analyzer.analyze_script_setup(source);
+        } else if path
+            .extension()
+            .is_some_and(|extension| matches!(extension.to_str(), Some("jsx" | "tsx")))
+        {
+            analyzer.analyze_script_plain_jsx(source);
         } else {
             analyzer.analyze_script_plain(source);
         }

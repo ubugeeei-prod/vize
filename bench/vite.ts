@@ -114,9 +114,8 @@ async function buildWithVizePlugin(): Promise<number> {
 
   let vizePlugin: any;
   try {
-    vizePlugin = (
-      await import(join(__dirname, "..", "npm", "vite-plugin-vize", "dist", "index.mjs"))
-    ).default;
+    vizePlugin = (await import(join(__dirname, "..", "npm", "builder/vite", "dist", "index.mjs")))
+      .default;
   } catch {
     return -1;
   }

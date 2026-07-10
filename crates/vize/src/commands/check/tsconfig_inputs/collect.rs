@@ -8,9 +8,9 @@ use vize_carton::FxHashSet;
 use super::glob::{default_exclude_specs, normalize_input_path, normalize_walked_path};
 use super::loader::{TsconfigInputCache, collect_tsconfig_project_paths};
 use super::matching::{
-    SupportedFileOptions, is_generated_path, is_hidden_path_segment,
-    is_supported_check_file_with_options, matches_tsconfig_patterns,
-    should_skip_generated_for_root,
+    SupportedFileOptions, is_generated_codegen_declaration_path, is_generated_path,
+    is_hidden_path_segment, is_nuxt_import_manifest_path, is_supported_check_file_with_options,
+    matches_tsconfig_patterns, should_skip_generated_for_root,
 };
 use super::spec::{FileCollectionOptions, GlobSpec};
 
@@ -45,6 +45,8 @@ pub(super) fn collect_supported_files_with_options(
                         },
                     )
                     && (!skip_generated || !is_generated_path(path))
+                    && !is_nuxt_import_manifest_path(path)
+                    && !is_generated_codegen_declaration_path(path)
                     && matches_tsconfig_patterns(path, includes, excludes)
                     && let Ok(mut collected) = collected.lock()
                 {
@@ -61,6 +63,40 @@ pub(super) fn collect_supported_files_with_options(
     collected.sort();
     collected.dedup();
     collected
+}
+
+pub(super) fn collect_supported_files_for_include_roots(
+    project_root: &Path,
+    includes: &[GlobSpec],
+    excludes: &[GlobSpec],
+    options: FileCollectionOptions,
+) -> Vec<PathBuf> {
+    let normalized_project_root = normalize_input_path(project_root);
+    let mut roots = vec![normalized_project_root.clone()];
+    let mut seen_roots = FxHashSet::default();
+    seen_roots.insert(normalized_project_root.clone());
+
+    for include in includes {
+        let root = normalize_input_path(&include.base_dir);
+        if root.is_dir()
+            && !root.starts_with(&normalized_project_root)
+            && seen_roots.insert(root.clone())
+        {
+            roots.push(root);
+        }
+    }
+
+    let mut files = Vec::new();
+    let mut seen_files = FxHashSet::default();
+    for root in roots {
+        for path in collect_supported_files_with_options(&root, includes, excludes, options) {
+            if seen_files.insert(path.clone()) {
+                files.push(path);
+            }
+        }
+    }
+    files.sort();
+    files
 }
 
 pub(super) fn explicit_hidden_include_roots(
@@ -235,6 +271,9 @@ impl TsconfigOwnershipMatcher {
     /// `normalize_input_path`.
     fn owns(&self, file: &Path) -> bool {
         if !self.loaded {
+            return false;
+        }
+        if is_nuxt_import_manifest_path(file) {
             return false;
         }
         if self.files.contains(file) {

@@ -10,22 +10,22 @@ This page is generated from the Tool Benchmark workflow so published performance
 
 ## Latest Result
 
-Measured: 2026-06-12T10:10:23.793Z
-Commit: `07a1b83f49e4` ([run](https://github.com/ubugeeei-prod/vize/actions/runs/27408931576))
+Measured: 2026-07-09T10:06:01.799Z
+Commit: `27fe77df7c87` ([run](https://github.com/ubugeeei-prod/vize/actions/runs/29010164013))
 Runner: `blacksmith-32vcpu-ubuntu-2404` (32 logical CPU, AMD EPYC, 32 vCPU / 128 GB RAM / 1.5 TB storage)
 Input: 15,000 generated SFC files (58.7 MB). Median of 5 measured run(s) after 1 warmup run(s).
 Large SFC: 900 repeated template blocks (674.9 KB). Nuxt import set: 500 SFC files.
 
 | Surface                     |  Files | Existing tool          | Existing median | Vize 1T | Vize max | Speedup |
 | --------------------------- | -----: | ---------------------- | --------------: | ------: | -------: | ------: |
-| SFC compile                 | 15,000 | @vue/compiler-sfc (1T) |          16.86s |   3.37s |  292.8ms |   57.6x |
-| Large SFC compile           |      1 | @vue/compiler-sfc (1T) |         194.5ms |  62.8ms |   61.2ms |    3.2x |
-| Large SFC type check        |      1 | vue-tsc                |           1.61s | 172.3ms |  182.5ms |    8.8x |
-| Lint                        | 15,000 | eslint-plugin-vue (1T) |          55.54s |   1.85s |  260.7ms |  213.1x |
-| Format                      | 15,000 | Prettier CLI           |         139.17s |   4.34s |    1.43s |   97.5x |
-| Type check                  |    500 | vue-tsc                |           5.37s | 438.5ms |  402.4ms |   13.3x |
-| Vite build (end-to-end)     |  1,000 | @vitejs/plugin-vue     |           1.63s |     n/a |  611.0ms |    2.7x |
-| Nuxt SPA build (end-to-end) |    500 | Nuxt default compiler  |           6.65s |     n/a |    6.04s |    1.1x |
+| SFC compile                 | 15,000 | @vue/compiler-sfc (1T) |          17.54s |   3.23s |  290.8ms |   60.3x |
+| Large SFC compile           |      1 | @vue/compiler-sfc (1T) |         192.6ms |  62.6ms |   56.3ms |    3.4x |
+| Large SFC type check        |      1 | vue-tsc                |           1.69s | 178.7ms |  178.0ms |    9.5x |
+| Lint                        | 15,000 | eslint-plugin-vue (1T) |          54.32s |   1.91s |  279.3ms |  194.5x |
+| Format                      | 15,000 | Prettier CLI           |         143.61s |  10.15s |    1.79s |   80.3x |
+| Type check                  |    500 | vue-tsc                |           5.36s | 500.5ms |  430.1ms |   12.5x |
+| Vite build (end-to-end)     |  1,000 | @vitejs/plugin-vue     |           1.66s |     n/a |  732.5ms |    2.3x |
+| Nuxt SPA build (end-to-end) |    500 | Nuxt default compiler  |           6.79s |     n/a |    6.42s |    1.1x |
 
 Fairness notes:
 
@@ -53,67 +53,67 @@ node bench/compare-tools.mjs --input bench/__in__ --vize-bin target/release/vize
 
 | Variant                                 |  Median |    Throughput | Raw measured runs                           |
 | --------------------------------------- | ------: | ------------: | ------------------------------------------- |
-| @vue/compiler-sfc (1T)                  |  16.86s |   890 files/s | 17.87s, 17.09s, 16.75s, 16.86s, 16.78s      |
-| @vue/compiler-sfc (32 workers)          |   5.96s |  2.5k files/s | 6.05s, 5.66s, 5.96s, 5.79s, 5.98s           |
-| Vize native loop (1T)                   |   3.37s |  4.4k files/s | 3.37s, 3.23s, 3.43s, 3.36s, 3.37s           |
-| Vize native batch results (max)         | 292.8ms | 51.2k files/s | 287.7ms, 281.1ms, 299.5ms, 292.8ms, 295.2ms |
-| Vize native batch stats-only (core max) | 183.5ms | 81.8k files/s | 178.3ms, 179.5ms, 183.5ms, 187.6ms, 188.1ms |
+| @vue/compiler-sfc (1T)                  |  17.54s |   855 files/s | 17.88s, 17.59s, 17.49s, 17.54s, 17.32s      |
+| @vue/compiler-sfc (32 workers)          |   5.90s |  2.5k files/s | 5.89s, 5.90s, 5.86s, 5.95s, 6.09s           |
+| Vize native loop (1T)                   |   3.23s |  4.6k files/s | 3.10s, 3.13s, 3.36s, 3.36s, 3.23s           |
+| Vize native batch results (max)         | 290.8ms | 51.6k files/s | 290.8ms, 272.9ms, 302.8ms, 274.7ms, 302.9ms |
+| Vize native batch stats-only (core max) | 178.8ms | 83.9k files/s | 172.9ms, 174.3ms, 178.8ms, 180.3ms, 180.1ms |
 
 ### Large SFC compile
 
 | Variant                                 |  Median | Throughput | Raw measured runs                           |
 | --------------------------------------- | ------: | ---------: | ------------------------------------------- |
-| @vue/compiler-sfc (1T)                  | 194.5ms |  5 files/s | 194.5ms, 189.4ms, 189.6ms, 200.8ms, 203.6ms |
-| @vue/compiler-sfc (1 workers)           | 473.7ms |  2 files/s | 457.3ms, 473.7ms, 497.9ms, 535.7ms, 439.6ms |
-| Vize native loop (1T)                   |  62.8ms | 16 files/s | 62.8ms, 57.6ms, 68.7ms, 61.8ms, 72.1ms      |
-| Vize native batch results (max)         |  61.2ms | 16 files/s | 57.0ms, 56.5ms, 63.9ms, 61.2ms, 65.0ms      |
-| Vize native batch stats-only (core max) |  62.4ms | 16 files/s | 57.1ms, 55.8ms, 62.8ms, 62.4ms, 63.9ms      |
+| @vue/compiler-sfc (1T)                  | 192.6ms |  5 files/s | 192.6ms, 192.6ms, 197.2ms, 195.9ms, 190.7ms |
+| @vue/compiler-sfc (1 workers)           | 479.8ms |  2 files/s | 468.3ms, 475.4ms, 479.8ms, 555.9ms, 493.1ms |
+| Vize native loop (1T)                   |  62.6ms | 16 files/s | 62.6ms, 55.1ms, 65.2ms, 57.1ms, 65.0ms      |
+| Vize native batch results (max)         |  56.3ms | 18 files/s | 54.8ms, 54.3ms, 56.3ms, 56.4ms, 56.8ms      |
+| Vize native batch stats-only (core max) |  55.7ms | 18 files/s | 56.7ms, 53.4ms, 55.7ms, 55.3ms, 55.8ms      |
 
 ### Large SFC type check
 
 | Variant          |  Median | Throughput | Raw measured runs                           |
 | ---------------- | ------: | ---------: | ------------------------------------------- |
-| vue-tsc          |   1.61s |  1 files/s | 1.62s, 1.61s, 1.61s, 1.67s, 1.58s           |
-| Vize check (1T)  | 172.3ms |  6 files/s | 190.5ms, 173.0ms, 166.2ms, 170.6ms, 172.3ms |
-| Vize check (max) | 182.5ms |  5 files/s | 185.4ms, 189.8ms, 166.9ms, 182.5ms, 170.6ms |
+| vue-tsc          |   1.69s |  1 files/s | 1.70s, 1.72s, 1.68s, 1.62s, 1.69s           |
+| Vize check (1T)  | 178.7ms |  6 files/s | 176.2ms, 178.4ms, 179.1ms, 189.4ms, 178.7ms |
+| Vize check (max) | 178.0ms |  6 files/s | 177.7ms, 178.0ms, 177.5ms, 189.5ms, 194.5ms |
 
 ### Lint
 
 | Variant                        |  Median |    Throughput | Raw measured runs                           |
 | ------------------------------ | ------: | ------------: | ------------------------------------------- |
-| eslint-plugin-vue (1T)         |  55.54s |   270 files/s | 56.24s, 53.69s, 52.88s, 56.12s, 55.54s      |
-| eslint-plugin-vue (32 workers) |  12.91s |  1.2k files/s | 12.99s, 12.78s, 12.91s, 12.78s, 13.11s      |
-| Vize lint (1T)                 |   1.85s |  8.1k files/s | 1.85s, 1.81s, 1.86s, 1.81s, 1.86s           |
-| Vize lint (max)                | 260.7ms | 57.5k files/s | 260.7ms, 259.8ms, 263.6ms, 257.0ms, 266.7ms |
+| eslint-plugin-vue (1T)         |  54.32s |   276 files/s | 54.32s, 54.44s, 53.47s, 54.35s, 54.06s      |
+| eslint-plugin-vue (32 workers) |  13.47s |  1.1k files/s | 13.41s, 13.61s, 13.63s, 13.26s, 13.47s      |
+| Vize lint (1T)                 |   1.91s |  7.9k files/s | 1.88s, 1.84s, 1.91s, 1.91s, 1.97s           |
+| Vize lint (max)                | 279.3ms | 53.7k files/s | 275.8ms, 272.1ms, 287.9ms, 287.1ms, 279.3ms |
 
 ### Format
 
-| Variant        |  Median |    Throughput | Raw measured runs                           |
-| -------------- | ------: | ------------: | ------------------------------------------- |
-| Prettier CLI   | 139.17s |   108 files/s | 142.21s, 146.25s, 139.03s, 138.49s, 139.17s |
-| Vize fmt (1T)  |   4.34s |  3.5k files/s | 4.38s, 4.42s, 4.28s, 4.31s, 4.34s           |
-| Vize fmt (max) |   1.43s | 10.5k files/s | 1.45s, 1.43s, 1.40s, 1.40s, 1.43s           |
+| Variant        |  Median |   Throughput | Raw measured runs                           |
+| -------------- | ------: | -----------: | ------------------------------------------- |
+| Prettier CLI   | 143.61s |  104 files/s | 142.61s, 142.38s, 143.61s, 145.98s, 144.94s |
+| Vize fmt (1T)  |  10.15s | 1.5k files/s | 10.10s, 10.26s, 10.15s, 10.43s, 9.82s       |
+| Vize fmt (max) |   1.79s | 8.4k files/s | 1.78s, 1.79s, 1.82s, 1.82s, 1.78s           |
 
 ### Type check
 
 | Variant          |  Median |   Throughput | Raw measured runs                           |
 | ---------------- | ------: | -----------: | ------------------------------------------- |
-| vue-tsc          |   5.37s |   93 files/s | 5.37s, 5.22s, 5.26s, 5.44s, 5.49s           |
-| Vize check (1T)  | 438.5ms | 1.1k files/s | 437.2ms, 433.7ms, 438.5ms, 443.1ms, 449.5ms |
-| Vize check (max) | 402.4ms | 1.2k files/s | 398.4ms, 398.8ms, 402.4ms, 411.3ms, 403.6ms |
+| vue-tsc          |   5.36s |   93 files/s | 5.46s, 5.36s, 5.50s, 5.34s, 5.36s           |
+| Vize check (1T)  | 500.5ms |  999 files/s | 489.1ms, 513.6ms, 500.5ms, 504.0ms, 491.2ms |
+| Vize check (max) | 430.1ms | 1.2k files/s | 427.4ms, 430.1ms, 421.3ms, 438.8ms, 431.3ms |
 
 ### Vite build (end-to-end)
 
 | Variant             |  Median |   Throughput | Raw measured runs                           |
 | ------------------- | ------: | -----------: | ------------------------------------------- |
-| @vitejs/plugin-vue  |   1.63s |  613 files/s | 1.61s, 1.64s, 1.63s, 1.55s, 1.87s           |
-| @vizejs/vite-plugin | 611.0ms | 1.6k files/s | 611.0ms, 797.4ms, 621.0ms, 605.8ms, 594.4ms |
+| @vitejs/plugin-vue  |   1.66s |  601 files/s | 1.65s, 1.61s, 1.69s, 1.66s, 1.95s           |
+| @vizejs/vite-plugin | 732.5ms | 1.4k files/s | 732.5ms, 713.2ms, 746.2ms, 691.9ms, 752.8ms |
 
 ### Nuxt SPA build (end-to-end)
 
 | Variant               | Median | Throughput | Raw measured runs                 |
 | --------------------- | -----: | ---------: | --------------------------------- |
-| Nuxt default compiler |  6.65s | 75 files/s | 6.65s, 6.44s, 6.64s, 6.71s, 6.70s |
-| @vizejs/nuxt          |  6.04s | 83 files/s | 6.04s, 5.97s, 6.01s, 6.15s, 6.09s |
+| Nuxt default compiler |  6.79s | 74 files/s | 6.74s, 6.73s, 6.86s, 6.89s, 6.79s |
+| @vizejs/nuxt          |  6.42s | 78 files/s | 6.36s, 6.42s, 6.31s, 6.50s, 6.50s |
 
 </details>

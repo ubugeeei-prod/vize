@@ -12,11 +12,11 @@ use vize_carton::ToCompactString;
 use super::{
     super::{
         context::CodegenContext,
+        element::helpers::child_namespace,
         element::{
             generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
             has_custom_directives, has_vmodel_directive, has_vshow_directive,
         },
-        element::helpers::child_namespace,
         expression::generate_expression,
         helpers::escape_js_string,
         node::dispatch_rendu_op,
@@ -48,18 +48,24 @@ pub(super) fn generate_if_branch(
                 // Check if it's a template element - treat as fragment
                 if RenduElementKind::from(el.tag_type).is_template() {
                     // Template with single child -> unwrap to single element
-                    if el.children.len() == 1
-                        && let TemplateChildNode::Element(inner) = &el.children[0]
-                    {
-                        // Check if inner element is a component
-                        if RenduElementKind::from(inner.tag_type).is_component() {
-                            generate_if_branch_component(ctx, inner, branch, branch_index);
-                        } else if RenduElementKind::from(inner.tag_type).is_slot_outlet() {
-                            generate_if_branch_slot(ctx, inner, branch, branch_index);
-                        } else {
-                            generate_if_branch_element(ctx, inner, branch, branch_index);
+                    if el.children.len() == 1 {
+                        match &el.children[0] {
+                            TemplateChildNode::Element(inner) => {
+                                if RenduElementKind::from(inner.tag_type).is_component() {
+                                    generate_if_branch_component(ctx, inner, branch, branch_index);
+                                } else if RenduElementKind::from(inner.tag_type).is_slot_outlet() {
+                                    generate_if_branch_slot(ctx, inner, branch, branch_index);
+                                } else {
+                                    generate_if_branch_element(ctx, inner, branch, branch_index);
+                                }
+                                return;
+                            }
+                            TemplateChildNode::For(for_node) => {
+                                generate_if_branch_for(ctx, for_node, branch, branch_index);
+                                return;
+                            }
+                            _ => {}
                         }
-                        return;
                     }
                     // Template with multiple children -> fragment
                     generate_if_branch_template_fragment(ctx, &el.children, branch, branch_index);

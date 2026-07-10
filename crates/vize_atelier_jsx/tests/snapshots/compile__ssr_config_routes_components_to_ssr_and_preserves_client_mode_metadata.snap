@@ -1,0 +1,26 @@
+---
+source: crates/vize_atelier_jsx/tests/compile.rs
+expression: component_matrix(&out)
+---
+## component 0
+name: Some("A")
+mode: Vdom
+variant: ssr
+code:
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<a${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(msg)}</a>`)
+}
+
+
+## component 1
+name: Some("B")
+mode: Vapor
+variant: ssr
+code:
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<b${_ssrRenderAttrs(_attrs)}></b>`)
+}

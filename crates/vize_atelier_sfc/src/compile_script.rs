@@ -18,6 +18,7 @@ pub mod typescript;
 
 use crate::types::{BindingMetadata, ScriptCompileOptions, SfcDescriptor, SfcError};
 
+use self::artifacts::erase_artifact_macro_statements;
 use self::function_mode::compile_script_setup;
 use self::lazy_hydration::transform_lazy_hydration_macros;
 use self::typescript::transform_typescript_to_js;
@@ -72,6 +73,11 @@ pub fn compile_script(
             .as_ref()
             .map(|result| result.code.as_str())
             .unwrap_or(&script_setup.content);
+        let erased_script_content = erase_artifact_macro_statements(script_content);
+        let script_content = erased_script_content
+            .as_ref()
+            .map(|content| content.as_str())
+            .unwrap_or(script_content);
         let mut result = compile_script_setup(
             script_content,
             component_name,

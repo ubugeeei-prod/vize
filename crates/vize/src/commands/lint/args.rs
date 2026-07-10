@@ -4,14 +4,16 @@ use clap::Args;
 use std::path::PathBuf;
 use vize_carton::String;
 
+use super::patterns::LINT_DEFAULT_PATTERNS;
+
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
 pub struct LintArgs {
-    /// Glob pattern(s) to match .vue, standalone .html, .jsx, or .tsx files
-    #[arg(default_values = ["./**/*.vue", "./**/*.html", "./**/*.htm", "./**/*.jsx", "./**/*.tsx"])]
+    /// Glob pattern(s) to match files supported by vize lint
+    #[arg(default_values = LINT_DEFAULT_PATTERNS)]
     pub patterns: Vec<String>,
 
-    /// Automatically fix problems (not yet implemented)
+    /// Automatically fix problems when diagnostics provide safe text edits
     #[arg(long)]
     pub fix: bool,
 
@@ -39,9 +41,9 @@ pub struct LintArgs {
     #[arg(long, default_value = "full")]
     pub help_level: String,
 
-    /// Lint preset: ecosystem (default), happy-path, opinionated, essential, incremental, nuxt
-    #[arg(long, default_value = "ecosystem")]
-    pub preset: String,
+    /// Override the configured lint preset: ecosystem, happy-path, opinionated, essential, incremental, nuxt
+    #[arg(long)]
+    pub preset: Option<String>,
 
     /// Enable opt-in cross-file lint checks for provide/inject, reactivity flow, and race risks.
     #[arg(long)]
@@ -50,6 +52,10 @@ pub struct LintArgs {
     /// Print the provide/inject tree when cross-file lint is enabled.
     #[arg(long)]
     pub cross_file_tree: bool,
+
+    /// Print cross-file complexity score and top hotspots when cross-file lint is enabled.
+    #[arg(long)]
+    pub cross_file_complexity: bool,
 
     /// Enable native type-aware lint rules from the active lint configuration.
     #[arg(long)]

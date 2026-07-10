@@ -17,7 +17,8 @@ pub(super) fn collect_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
         for entry in Walk::new(&root).flatten() {
             let path = entry.path();
 
-            if path.extension().is_some_and(|ext| ext == "vue")
+            if path.is_file()
+                && path.extension().is_some_and(|ext| ext == "vue")
                 && pattern_matches(path, &glob_pattern)
             {
                 files.push(path.to_path_buf());
@@ -101,4 +102,68 @@ fn pattern_matches(path: &std::path::Path, pattern: &str) -> bool {
     }
 
     path_str.ends_with(".vue")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::collect_files;
+    use std::{
+        fs,
+        path::{Path, PathBuf},
+    };
+    use vize_carton::ToCompactString;
+
+    #[test]
+    fn collect_files_ignores_vue_extension_directories() {
+        let root = unique_case_dir("build-vue-extension-directories");
+        let src = root.join("src");
+        let component_dir = src.join("Directory.vue");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&component_dir).unwrap();
+        fs::write(src.join("App.vue"), "<template><div /></template>").unwrap();
+        fs::write(
+            component_dir.join("Nested.vue"),
+            "<template><div /></template>",
+        )
+        .unwrap();
+
+        let files = collect_files(&vec![root.display().to_string()]);
+        let _ = fs::remove_dir_all(&root);
+
+        let mut expected = vec![component_dir.join("Nested.vue"), src.join("App.vue")];
+        expected.sort();
+        assert_eq!(files, expected);
+    }
+
+    #[test]
+    fn collect_files_keeps_direct_vue_file_patterns() {
+        let root = unique_case_dir("build-direct-vue-file");
+        let src = root.join("src");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&src).unwrap();
+        let app = src.join("App.vue");
+        let sibling = src.join("Sibling.vue");
+        fs::write(&app, "<template><div /></template>").unwrap();
+        fs::write(sibling, "<template><div /></template>").unwrap();
+
+        let files = collect_files(&vec![app.display().to_string()]);
+        let _ = fs::remove_dir_all(&root);
+
+        assert_eq!(files, vec![app]);
+    }
+
+    fn unique_case_dir(name: &str) -> PathBuf {
+        static NEXT_CASE_ID: std::sync::atomic::AtomicUsize =
+            std::sync::atomic::AtomicUsize::new(0);
+        let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("target")
+            .join("vize-tests")
+            .join(format!(
+                "{}-{}-{}",
+                name,
+                std::process::id(),
+                case_id.to_compact_string()
+            ))
+    }
 }

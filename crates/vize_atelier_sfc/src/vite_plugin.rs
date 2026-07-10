@@ -9,7 +9,7 @@ mod boundary;
 mod css;
 mod css_scope;
 mod hmr;
-mod js_string;
+pub(crate) mod js_string;
 mod middleware;
 mod precompile;
 mod query;

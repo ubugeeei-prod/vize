@@ -1,0 +1,32 @@
+
+async fn copy_tree(source : String, destination : String) -> Unit {
+  @afs.mkdir(destination, recursive=true, permission=0o755)
+  for entry in @xfs.read_dir(source) {
+    let entry_name = entry.to_string()
+    let source_path = @tool.join_path(source, entry_name)
+    let destination_path = @tool.join_path(destination, entry_name)
+    if @xfs.is_dir(source_path) {
+      copy_tree(source_path, destination_path)
+    } else {
+      @afs.write_file(
+        destination_path,
+        @afs.read_file(source_path),
+        create_mode=CreateOrTruncate,
+        permission=0o644,
+      )
+    }
+  }
+}
+
+async fn main {
+  copy_tree("artifacts/docs", "site")
+  copy_tree("artifacts/playground", "site/play")
+  copy_tree("artifacts/musea-examples", "site/musea-examples")
+  @afs.write_file(
+    "site/CNAME",
+    @afs.read_file("playground/public/CNAME"),
+    create_mode=CreateOrTruncate,
+    permission=0o644,
+  )
+  @sys.exit(0)
+}

@@ -55,7 +55,7 @@ impl Rule for UseVOnExact {
                 }
 
                 let event_name = match &dir.arg {
-                    Some(ExpressionNode::Simple(arg)) => arg.content.as_str(),
+                    Some(ExpressionNode::Simple(arg)) if arg.is_static => arg.content.as_str(),
                     _ => continue,
                 };
 
@@ -131,6 +131,16 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_dynamic_event_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<button @[click]="handleClick" @click.ctrl="handleCtrlClick">Click</button>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]

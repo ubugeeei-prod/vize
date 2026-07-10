@@ -5,12 +5,11 @@ import { builtinModules } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import zlib from "node:zlib";
+import * as tsVueVsix from "./typescript-vue-plugin-vsix-policy.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const vsixPath = path.resolve(
-  process.cwd(),
-  process.argv[2] ?? path.join(root, "npm/vscode-vize/dist/vize.vsix"),
-);
+const defaultVsixPath = path.join(root, "editors/vscode/dist/vize.vsix");
+const vsixPath = path.resolve(process.cwd(), process.argv[2] ?? defaultVsixPath);
 const builtins = new Set([
   ...builtinModules,
   ...builtinModules.map((moduleName) => `node:${moduleName}`),
@@ -19,7 +18,9 @@ const builtins = new Set([
 assert.ok(fs.existsSync(vsixPath), `VSIX does not exist: ${vsixPath}`);
 
 const archive = readZip(vsixPath);
-const entryNames = archive.entries.map((entry) => entry.name).sort();
+const topLevelEntry = /^(?:extension\/|extension\.vsixmanifest$|\[Content_Types\]\.xml$)/;
+const entryNames = archive.entries.map((entry) => entry.name);
+entryNames.sort((left, right) => left.localeCompare(right));
 const entries = new Set(entryNames);
 const vsixSize = fs.statSync(vsixPath).size;
 
@@ -32,11 +33,7 @@ for (const name of entryNames) {
   assert.ok(!name.includes("\0"), `VSIX entry contains a NUL byte: ${name}`);
   assert.ok(!name.startsWith("/"), `VSIX entry must be relative: ${name}`);
   assert.ok(!name.split("/").includes(".."), `VSIX entry must not traverse: ${name}`);
-  assert.match(
-    name,
-    /^(?:extension\/|extension\.vsixmanifest$|\[Content_Types\]\.xml$)/,
-    `VSIX entry has an unexpected top-level path: ${name}`,
-  );
+  assert.match(name, topLevelEntry, `VSIX entry has an unexpected top-level path: ${name}`);
 }
 
 const requiredFiles = [
@@ -48,6 +45,7 @@ const requiredFiles = [
   "extension/icons/logo.png",
   "extension/icons/vue.svg",
   "extension/language-configuration.json",
+  ...tsVueVsix.typescriptVuePluginRequiredFiles,
   "extension/package.json",
   "extension/readme.md",
   "extension/syntaxes/art-vue.tmLanguage.json",
@@ -65,6 +63,7 @@ const allowedExtensionEntries = [
   /^extension\/dist\/extension\.cjs$/,
   /^extension\/icons\/(?:logo\.png|vue\.svg)$/,
   /^extension\/language-configuration\.json$/,
+  tsVueVsix.typescriptVuePluginAllowedEntry,
   /^extension\/package\.json$/,
   /^extension\/readme\.md$/,
   /^extension\/syntaxes\/(?:art-vue|vue)\.tmLanguage\.json$/,
@@ -82,7 +81,7 @@ const forbiddenEntries = [
   /^extension\/\.vscode-test\//,
   /^extension\/\.vscode\//,
   /^extension\/dist\/.*\.map$/,
-  /^extension\/node_modules\//,
+  tsVueVsix.forbiddenNonPluginNodeModules,
   /^extension\/package-lock\.json$/,
   /^extension\/pnpm-lock\.yaml$/,
   /^extension\/src\//,
@@ -127,6 +126,11 @@ for (const command of packageJson.contributes.commands) {
 
 assert.ok(packageJson.activationEvents.includes("onLanguage:vue"));
 assert.ok(packageJson.activationEvents.includes("onLanguage:art-vue"));
+tsVueVsix.assertTypeScriptVuePluginPackage({
+  packageJson,
+  readJsonEntry: (name) => readJsonEntry(archive, name),
+  readTextEntry: (name) => readTextEntry(archive, name),
+});
 
 const languages = new Map(
   packageJson.contributes.languages.map((language) => [language.id, language]),
@@ -307,6 +311,11 @@ function readZip(filePath) {
     const commentLength = buffer.readUInt16LE(offset + 32);
     const localHeaderOffset = buffer.readUInt32LE(offset + 42);
     const name = buffer.subarray(offset + 46, offset + 46 + fileNameLength).toString("utf-8");
+    const localExtraLength = buffer.readUInt16LE(localHeaderOffset + 28);
+
+    assert.equal(buffer.readUInt32LE(localHeaderOffset), 0x04034b50);
+    assert.equal(extraLength, 0, `VSIX entry has central ZIP extra fields: ${name}`);
+    assert.equal(localExtraLength, 0, `VSIX entry has local ZIP extra fields: ${name}`);
 
     entries.push({
       compressedSize,

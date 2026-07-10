@@ -161,31 +161,30 @@ impl LayoutEngine {
                 .expect("Failed to compute layout");
 
             // Cache all layouts
-            self.cache_layouts(root_id, 0.0, 0.0);
+            self.cache_layouts(root_id, 0.0, 0.0, true);
         }
     }
 
-    /// Cache layout results recursively.
-    /// Uses taffy's computed sizes but computes positions manually (top-left aligned).
-    fn cache_layouts(&mut self, node_id: NodeId, parent_x: f32, parent_y: f32) {
+    /// Cache layout results recursively from Taffy's computed geometry.
+    fn cache_layouts(&mut self, node_id: NodeId, parent_x: f32, parent_y: f32, is_root: bool) {
         // Panic path by compute invariant: `cache_layouts` is called only after
         // `compute_layout` succeeds for `root_id`, and recursive calls use
         // children returned by Taffy itself. Missing layout/style data would mean
         // Taffy accepted an internally inconsistent tree.
         let layout = self.tree.layout(node_id).expect("Failed to get layout");
-        let style = self.tree.style(node_id).expect("Failed to get style");
-
-        let padding_top = layout.padding.top;
-        let padding_left = layout.padding.left;
-        let is_column = style.flex_direction == taffy::FlexDirection::Column;
+        let (absolute_x, absolute_y) = if is_root {
+            (parent_x, parent_y)
+        } else {
+            (parent_x + layout.location.x, parent_y + layout.location.y)
+        };
 
         // Store this node's layout
         if let Some(&id) = self.reverse_map.get(&node_id) {
             self.layout_cache.insert(
                 id,
                 Rect::new(
-                    parent_x.round() as u16,
-                    parent_y.round() as u16,
+                    absolute_x.round() as u16,
+                    absolute_y.round() as u16,
                     layout.size.width.round() as u16,
                     layout.size.height.round() as u16,
                 ),
@@ -195,35 +194,8 @@ impl LayoutEngine {
         // Collect children to release the `&self` borrow before recursing.
         let children: Vec<_> = self.tree.children(node_id).unwrap_or_default();
 
-        // Position children manually based on flex_direction
-        let mut offset_x = parent_x + padding_left;
-        let mut offset_y = parent_y + padding_top;
-
         for child_id in children {
-            // Panic path by child invariant: `child_id` came directly from
-            // `tree.children(node_id)`, so layout/style lookup should be
-            // available after the successful compute pass above.
-            let cl = self.tree.layout(child_id).expect("child layout");
-            let cs = self.tree.style(child_id).expect("child style");
-            // Get margin from style (not layout) to avoid auto-margin issues
-            let mt = resolve_margin(cs.margin.top);
-            let mr = resolve_margin(cs.margin.right);
-            let mb = resolve_margin(cs.margin.bottom);
-            let ml = resolve_margin(cs.margin.left);
-            let child_width = cl.size.width;
-            let child_height = cl.size.height;
-
-            // Apply margin to position
-            let child_x = offset_x + ml;
-            let child_y = offset_y + mt;
-
-            self.cache_layouts(child_id, child_x, child_y);
-
-            if is_column {
-                offset_y += mt + child_height + mb;
-            } else {
-                offset_x += ml + child_width + mr;
-            }
+            self.cache_layouts(child_id, absolute_x, absolute_y, false);
         }
     }
 
@@ -257,11 +229,6 @@ impl Default for LayoutEngine {
     fn default() -> Self {
         Self::new()
     }
-}
-
-/// Resolve margin value (treating auto as 0)
-fn resolve_margin(m: taffy::LengthPercentageAuto) -> f32 {
-    m.resolve_to_option(0.0, |_, _| 0.0).unwrap_or(0.0)
 }
 
 #[cfg(test)]
@@ -324,5 +291,59 @@ mod tests {
         let child_layout = engine.layout(child).unwrap();
         assert_eq!(child_layout.width, 100);
         assert_eq!(child_layout.height, 50);
+    }
+
+    #[test]
+    fn uses_taffy_justify_and_align_positions() {
+        use super::super::flex::{AlignItems, Dimension, JustifyContent};
+
+        let mut engine = LayoutEngine::new();
+
+        let mut root_style = FlexStyle::new();
+        root_style.width = Dimension::Points(100.0);
+        root_style.height = Dimension::Points(40.0);
+        root_style.justify_content = JustifyContent::Center;
+        root_style.align_items = AlignItems::Center;
+        let root = engine.new_node(&root_style);
+
+        let child_style = FlexStyle::new();
+        let child = engine.new_leaf(&child_style, 20.0, 10.0);
+
+        engine.add_child(root, child);
+        engine.set_root(root);
+        engine.compute(100.0, 40.0);
+
+        let child_layout = engine.layout(child).unwrap();
+        assert_eq!(child_layout.x, 40);
+        assert_eq!(child_layout.y, 15);
+        assert_eq!(child_layout.width, 20);
+        assert_eq!(child_layout.height, 10);
+    }
+
+    #[test]
+    fn uses_taffy_gap_positions() {
+        use super::super::flex::{Dimension, Gap};
+
+        let mut engine = LayoutEngine::new();
+
+        let mut root_style = FlexStyle::new();
+        root_style.width = Dimension::Points(100.0);
+        root_style.height = Dimension::Points(20.0);
+        root_style.gap = Gap::all(3.0);
+        let root = engine.new_node(&root_style);
+
+        let child_style = FlexStyle::new();
+        let first = engine.new_leaf(&child_style, 10.0, 4.0);
+        let second = engine.new_leaf(&child_style, 5.0, 4.0);
+
+        engine.add_child(root, first);
+        engine.add_child(root, second);
+        engine.set_root(root);
+        engine.compute(100.0, 20.0);
+
+        let first_layout = engine.layout(first).unwrap();
+        let second_layout = engine.layout(second).unwrap();
+        assert_eq!(first_layout.x, 0);
+        assert_eq!(second_layout.x, 13);
     }
 }

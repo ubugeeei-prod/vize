@@ -35,6 +35,39 @@ const state = reactive({ count: 0 })"#,
 }
 
 #[test]
+fn test_reactive_prop_aliased_default_define_props_destructure_preserves_cross_file_flow() {
+    let (mut analyzer, parent_id, child_id) = analyzer_with_parent_child(
+        r#"import { ref } from 'vue'
+import Child from './Child.vue'
+const selected = ref({ id: 1 })"#,
+        r#"const { item: selectedItem = { id: 0 } } = defineProps<{ item?: { id: number } }>()"#,
+        &[("Child", &[("item", "selected")])],
+    );
+
+    let result = analyzer.analyze();
+    assert!(!result.cross_file_reactivity_issues.iter().any(|issue| {
+        issue.file_id == child_id
+            && issue.related_file == Some(parent_id)
+            && matches!(
+                &issue.kind,
+                CrossFileReactivityIssueKind::ReactivityLostInPropChain { prop_name, .. }
+                    if prop_name == "item"
+            )
+    }));
+    assert!(!result.diagnostics.iter().any(|diagnostic| {
+        diagnostic.primary_file == child_id
+            && diagnostic
+                .related_files
+                .iter()
+                .any(|(file_id, _, _)| *file_id == parent_id)
+            && matches!(
+                &diagnostic.kind,
+                CrossFileDiagnosticKind::DestructuringBreaksReactivity { .. }
+            )
+    }));
+}
+
+#[test]
 fn test_reactive_prop_indirect_props_alias_destructure_is_tracked_by_prop_key() {
     let (mut analyzer, parent_id, child_id) = analyzer_with_parent_child(
         r#"import { ref } from 'vue'

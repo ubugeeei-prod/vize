@@ -17,7 +17,7 @@ function workspaceVersion(): string {
 }
 
 test("zed extension.toml declares vize server, language ids, grammar pin and version", () => {
-  const manifest = readRepoFile("npm/zed-vize/extension.toml");
+  const manifest = readRepoFile("editors/zed/extension.toml");
 
   // Top-level extension identity and schema.
   assert.match(manifest, /^id = "vize"$/m);
@@ -46,8 +46,18 @@ test("zed extension.toml declares vize server, language ids, grammar pin and ver
   assert.equal(declaredVersion, workspaceVersion());
 });
 
+test("zed extension source falls back to the recommended initialization profile", () => {
+  const source = readRepoFile("editors/zed/src/lib.rs");
+
+  assert.match(source, /recommended_initialization_options/);
+  assert.match(source, /"editor": true/);
+  assert.match(source, /"ecosystem": true/);
+  assert.match(source, /"lint": true/);
+  assert.match(source, /"typecheck": true/);
+});
+
 test("zed art-vue config.toml declares comments, brackets, autoclose and tailwind opt-in", () => {
-  const config = readRepoFile("npm/zed-vize/languages/art-vue/config.toml");
+  const config = readRepoFile("editors/zed/languages/art-vue/config.toml");
 
   // Identity already covered by editor-integrations; assert the new behavioral knobs.
   assert.match(config, /^block_comment = \["<!-- ", " -->"\]$/m);
@@ -103,7 +113,7 @@ test("zed art-vue config.toml declares comments, brackets, autoclose and tailwin
 });
 
 test("zed art-vue injections.scm routes every embedded region to the right language", () => {
-  const injections = readRepoFile("npm/zed-vize/languages/art-vue/injections.scm");
+  const injections = readRepoFile("editors/zed/languages/art-vue/injections.scm");
 
   // <script lang="ts"> -> typescript.
   assert.match(injections, /#eq\? @_ts "ts"[\s\S]*"language" "typescript"/);

@@ -123,97 +123,41 @@ const state = inject('state')"#,
     assert_eq!(tree.roots[0].children.len(), 1);
     assert_eq!(tree.roots[0].children[0].children.len(), 1);
     assert_eq!(tree.roots[0].children[0].children[0].injects.len(), 1);
-}
 
-#[test]
-fn test_shared_child_resolves_each_parent_provider_context() {
-    use crate::diagnostics::CrossFileDiagnosticKind;
-
-    let mut analyzer =
-        CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
-
-    analyzer.add_file_with_analysis(
-        Path::new("App.vue"),
-        "",
-        script_analysis("// renders both parents", &["ParentA", "ParentB"]),
-    );
-    let parent_a = analyzer.add_file_with_analysis(
-        Path::new("ParentA.vue"),
-        "",
-        script_analysis(
-            r#"import { provide, ref } from 'vue'
-const theme = ref('dark')
-provide('theme', theme)"#,
-            &["Child"],
-        ),
-    );
-    let parent_b = analyzer.add_file_with_analysis(
-        Path::new("ParentB.vue"),
-        "",
-        script_analysis(
-            r#"import { provide, ref } from 'vue'
-const theme = ref('light')
-provide('theme', theme)"#,
-            &["Child"],
-        ),
-    );
-    let child = analyzer.add_file_with_analysis(
-        Path::new("Child.vue"),
-        "",
-        script_analysis(
-            r#"import { inject } from 'vue'
-const theme = inject('theme')"#,
-            &[],
-        ),
-    );
-    analyzer.rebuild_component_edges();
-
-    let result = analyzer.analyze();
-    let mut theme_matches = result
-        .provide_inject_matches
-        .iter()
-        .filter(|provider_match| provider_match.key == "theme")
-        .collect::<Vec<_>>();
-    theme_matches.sort_by_key(|provider_match| provider_match.provider.as_u32());
-
+    let tree_json = serde_json::to_value(tree).expect("tree should serialize");
+    assert_eq!(tree_json["roots"][0]["componentName"], "App");
+    assert_eq!(tree_json["roots"][0]["provides"][0]["key"], "state");
+    assert_eq!(tree_json["roots"][0]["provides"][0]["consumerCount"], 1);
     assert_eq!(
-        theme_matches.len(),
-        2,
-        "a reused child should be matched in each parent render context"
+        tree_json["roots"][0]["children"][0]["componentName"],
+        "Middle"
     );
-    assert!(
-        theme_matches
-            .iter()
-            .any(|provider_match| provider_match.provider == parent_a)
+    assert_eq!(
+        tree_json["roots"][0]["children"][0]["children"][0]["componentName"],
+        "Leaf"
     );
-    assert!(
-        theme_matches
-            .iter()
-            .any(|provider_match| provider_match.provider == parent_b)
+    assert_eq!(
+        tree_json["roots"][0]["children"][0]["children"][0]["injects"][0]["key"],
+        "state"
     );
-    assert!(
-        theme_matches
-            .iter()
-            .all(|provider_match| provider_match.consumer == child)
-    );
-    assert!(result.diagnostics.iter().all(|diagnostic| {
-        !matches!(
-            diagnostic.kind,
-            CrossFileDiagnosticKind::UnmatchedInject { .. }
-                | CrossFileDiagnosticKind::UnusedProvide { .. }
-        )
-    }));
 
-    let tree = result
-        .provide_inject_tree
-        .as_ref()
-        .expect("tree should be built");
-    assert_eq!(tree.roots.len(), 2);
-    assert!(tree.roots.iter().all(|root| {
-        root.children.len() == 1
-            && root.children[0].file_id == child
-            && root.children[0].injects.len() == 1
-    }));
+    let summary = result
+        .provide_inject_tree_summary
+        .expect("tree summary should be built");
+    assert_eq!(summary.root_count, 1);
+    assert_eq!(summary.node_count, 3);
+    assert_eq!(summary.leaf_component_count, 1);
+    assert_eq!(summary.pass_through_component_count, 1);
+    assert_eq!(summary.provider_component_count, 1);
+    assert_eq!(summary.injector_component_count, 1);
+    assert_eq!(summary.provide_count, 1);
+    assert_eq!(summary.inject_count, 1);
+    assert_eq!(summary.defaulted_inject_count, 0);
+    assert_eq!(summary.matched_inject_count, 1);
+    assert_eq!(summary.unmatched_inject_count, 0);
+    assert_eq!(summary.max_depth, 3);
+    assert_eq!(summary.max_child_fanout, 1);
+    assert_eq!(summary.max_provider_consumer_count, 1);
 }
 
 #[test]

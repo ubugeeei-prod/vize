@@ -22,7 +22,7 @@ enabled, equivalent browser-facing bindings are exported.
 
 ## Related Crates
 
-- `npm/vize-native` and `npm/vize-wasm` publish this crate to JS users
+- `npm/native` and `npm/wasm` publish this crate to JS users
 - `@vizejs/vite-plugin`, `@vizejs/musea-mcp-server`, and other packages consume these bindings
 
 ## License

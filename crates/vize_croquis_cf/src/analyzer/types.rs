@@ -186,6 +186,15 @@ pub struct CrossFileResult {
     /// Fallthrough attribute information per component.
     pub fallthrough_info: Vec<rules::FallthroughInfo>,
 
+    /// Per-usage fallthrough facts with parent-side source ranges.
+    pub fallthrough_usage_facts: Vec<rules::FallthroughUsageFact>,
+
+    /// Fallthrough attribute summary, populated when fallthrough analysis is enabled.
+    pub fallthrough_summary: Option<rules::FallthroughSummary>,
+
+    /// Per-component fallthrough aggregate facts, populated when fallthrough analysis is enabled.
+    pub fallthrough_component_facts: Vec<rules::FallthroughComponentFact>,
+
     /// Emit flow information.
     pub emit_flows: Vec<rules::EmitFlow>,
 
@@ -197,6 +206,9 @@ pub struct CrossFileResult {
 
     /// Provide/inject tree, populated when provide/inject analysis is enabled.
     pub provide_inject_tree: Option<rules::ProvideInjectTree>,
+
+    /// Provide/inject tree summary, populated when provide/inject analysis is enabled.
+    pub provide_inject_tree_summary: Option<rules::ProvideInjectTreeSummary>,
 
     /// Unique ID issues.
     pub unique_id_issues: Vec<rules::UniqueIdIssue>,
@@ -224,6 +236,12 @@ pub struct CrossFileResult {
 
     /// Props validation issues.
     pub props_validation_issues: Vec<rules::PropsValidationIssue>,
+
+    /// Explainable complexity score derived from the enabled cross-file facts.
+    pub complexity_report: rules::ComplexityReport,
+
+    /// Top per-file complexity contributors derived from the same cross-file facts.
+    pub complexity_hotspots: Vec<rules::ComplexityHotspot>,
 
     /// Statistics.
     pub stats: CrossFileStats,

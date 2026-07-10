@@ -28,12 +28,17 @@
 //! - [`analysis`]: Reporting and markdown generation
 
 mod analysis;
+mod summary;
 mod tracker;
 
 use vize_carton::lsp::VueReactiveType;
 use vize_carton::{CompactString, FxHashSet, SmallVec};
 
 // Re-export the tracker (it is the primary public API)
+pub use summary::{
+    BindingStateCounts, ReactiveOriginCounts, ReactivityTrackerDetailedSummary,
+    ReactivityTrackerSummary, ViolationKindCounts, ViolationSeverityCounts,
+};
 pub use tracker::ReactivityTracker;
 
 /// Unique identifier for a reactive binding.

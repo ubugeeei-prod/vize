@@ -3,6 +3,7 @@
 use vize_atelier_sfc::SfcDescriptor;
 
 use super::VirtualLanguage;
+use super::inline_art_variants;
 
 /// Information about cursor position within an art variant template.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -88,13 +89,75 @@ pub fn find_block_at_offset(descriptor: &SfcDescriptor, offset: usize) -> Option
     }
 
     // Check custom blocks (art, i18n, etc.)
+    let mut inline_art_variant_base = 0usize;
     for custom in descriptor.custom_blocks.iter() {
-        if custom.block_type == "art" && offset >= custom.loc.start && offset < custom.loc.end {
-            return Some(BlockType::Art(ArtCursorPosition::ArtContent));
+        if custom.block_type != "art" {
+            continue;
         }
+
+        let variant_count = inline_art_variant_count(descriptor.source.as_ref(), custom);
+        if offset >= custom.loc.tag_start && offset < custom.loc.tag_end {
+            return find_inline_art_block_at_offset(custom, offset, inline_art_variant_base)
+                .or(Some(BlockType::Art(ArtCursorPosition::ArtContent)));
+        }
+
+        inline_art_variant_base += variant_count;
     }
 
     None
+}
+
+fn inline_art_variant_count(_source: &str, custom: &vize_atelier_sfc::SfcCustomBlock<'_>) -> usize {
+    inline_art_variants(custom.content.as_ref(), custom.loc.start).len()
+}
+
+fn find_inline_art_block_at_offset(
+    custom: &vize_atelier_sfc::SfcCustomBlock<'_>,
+    offset: usize,
+    variant_base: usize,
+) -> Option<BlockType> {
+    if offset >= custom.loc.tag_start && offset < custom.loc.start {
+        return Some(BlockType::Art(ArtCursorPosition::ArtTag));
+    }
+
+    for (index, variant) in inline_art_variants(custom.content.as_ref(), custom.loc.start)
+        .into_iter()
+        .enumerate()
+    {
+        if offset < variant.variant_start || offset >= variant.variant_end {
+            continue;
+        }
+
+        if offset >= variant.body_start && offset < variant.body_end {
+            let template_len = variant.template_end.saturating_sub(variant.template_start);
+            let relative_offset = if offset <= variant.template_start {
+                0
+            } else if offset >= variant.template_end {
+                template_len
+            } else {
+                offset - variant.template_start
+            };
+
+            return Some(BlockType::Art(ArtCursorPosition::VariantTemplate(
+                ArtVariantInfo {
+                    variant_index: variant_base + index,
+                    template_start: variant.template_start,
+                    template_end: variant.template_end,
+                    relative_offset,
+                },
+            )));
+        }
+
+        return Some(BlockType::Art(ArtCursorPosition::VariantTag(
+            variant_base + index,
+        )));
+    }
+
+    if offset >= custom.loc.tag_start && offset < custom.loc.tag_end {
+        Some(BlockType::Art(ArtCursorPosition::ArtContent))
+    } else {
+        None
+    }
 }
 
 /// Find which block contains the given offset in an art file (*.art.vue).

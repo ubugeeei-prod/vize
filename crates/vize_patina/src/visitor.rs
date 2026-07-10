@@ -7,8 +7,10 @@ use crate::rule::Rule;
 use vize_carton::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
 use vize_carton::{CompactString, cstr, profile};
 use vize_relief::{
-    CommentNode, ElementNode, ExpressionNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
+    CommentNode, ElementNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
 };
+
+pub use crate::visitor_scope::{parse_slot_scope_variables, parse_v_for_variables};
 
 /// Visit the AST and run all rules
 pub struct LintVisitor<'a, 'ctx, 'rules> {
@@ -368,7 +370,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     }
 
     fn visit_element(&mut self, el: &ElementNode<'a>) {
-        // Check for v-for and v-if directives using iterators (no allocation)
+        // Check for v-for, v-if, and v-slot directives using iterators (no allocation)
         let has_v_for = el
             .props
             .iter()
@@ -377,13 +379,20 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             .props
             .iter()
             .any(|p| matches!(p, PropNode::Directive(d) if d.name.as_str() == "if" || d.name.as_str() == "else-if"));
+        let has_v_slot = el
+            .props
+            .iter()
+            .any(|p| matches!(p, PropNode::Directive(d) if d.name.as_str() == "slot"));
 
-        // Extract v-for variables (only allocates if v-for exists)
-        let v_for_vars = if has_v_for {
+        // Extract scope variables (only allocates if directives exist).
+        let mut v_for_vars = if has_v_for {
             self.extract_v_for_vars(el)
         } else {
             Vec::new()
         };
+        if has_v_slot {
+            v_for_vars.extend(self.extract_slot_scope_vars(el));
+        }
 
         // Build element context with CompactString tag (efficient for small strings)
         let elem_ctx = ElementContext {
@@ -525,182 +534,23 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         }
         Vec::new()
     }
+
+    #[inline]
+    fn extract_slot_scope_vars(&self, el: &ElementNode<'a>) -> Vec<CompactString> {
+        for prop in el.props.iter() {
+            if let PropNode::Directive(dir) = prop
+                && dir.name.as_str() == "slot"
+                && let Some(exp) = &dir.exp
+            {
+                return parse_slot_scope_variables(exp);
+            }
+        }
+        Vec::new()
+    }
 }
 
 fn element_has_directive(el: &ElementNode, name: &str) -> bool {
     el.props
         .iter()
         .any(|p| matches!(p, PropNode::Directive(d) if d.name.as_str() == name))
-}
-
-/// Parse v-for expression to extract variable names.
-///
-/// Uses CompactString for efficient small string storage.
-///
-/// Handles formats like:
-/// - `item in items`
-/// - `(item, index) in items`
-/// - `(value, key, index) in object`
-#[inline]
-pub fn parse_v_for_variables(exp: &ExpressionNode) -> Vec<CompactString> {
-    let content = match exp {
-        ExpressionNode::Simple(s) => s.content.as_str(),
-        ExpressionNode::Compound(_) => return Vec::new(),
-    };
-
-    // Split on " in " or " of " - use byte search for speed
-    let bytes = content.as_bytes();
-    let (alias_part, _) = if let Some(idx) = find_pattern(bytes, b" in ") {
-        (&content[..idx], &content[idx + 4..])
-    } else if let Some(idx) = find_pattern(bytes, b" of ") {
-        (&content[..idx], &content[idx + 4..])
-    } else {
-        return Vec::new();
-    };
-
-    let alias_str = alias_part.trim();
-
-    // Handle destructuring: (item, index), { id, name }, or [first, second]
-    let is_tuple = alias_str.starts_with('(') && alias_str.ends_with(')');
-    let is_object = alias_str.starts_with('{') && alias_str.ends_with('}');
-    let is_array = alias_str.starts_with('[') && alias_str.ends_with(']');
-
-    if is_tuple || is_object || is_array {
-        let inner = &alias_str[1..alias_str.len() - 1];
-        // Pre-allocate with estimated capacity
-        let mut vars = Vec::with_capacity(3);
-        for s in inner.split(',') {
-            let trimmed = s.trim();
-            if trimmed.is_empty() {
-                continue;
-            }
-            // Handle object shorthand: { id } -> id, { id: itemId } -> itemId
-            if is_object {
-                if let Some(colon_idx) = trimmed.find(':') {
-                    // { id: itemId } -> itemId
-                    let value_part = trimmed[colon_idx + 1..].trim();
-                    if !value_part.is_empty() {
-                        vars.push(CompactString::from(value_part));
-                    }
-                } else {
-                    // { id } -> id (shorthand)
-                    vars.push(CompactString::from(trimmed));
-                }
-            } else {
-                vars.push(CompactString::from(trimmed));
-            }
-        }
-        vars
-    } else {
-        // Single variable - avoid allocation if possible
-        vec![CompactString::from(alias_str)]
-    }
-}
-
-/// Fast byte pattern search
-#[inline]
-fn find_pattern(haystack: &[u8], needle: &[u8]) -> Option<usize> {
-    if needle.is_empty() || haystack.len() < needle.len() {
-        return None;
-    }
-
-    haystack
-        .windows(needle.len())
-        .position(|window| window == needle)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{CompactString, ExpressionNode, parse_v_for_variables};
-    use vize_carton::Bump;
-    use vize_relief::SimpleExpressionNode;
-
-    fn make_simple_exp<'a>(allocator: &'a Bump, content: &str) -> ExpressionNode<'a> {
-        ExpressionNode::Simple(vize_carton::Box::new_in(
-            SimpleExpressionNode::new(
-                vize_carton::String::from(content),
-                false,
-                vize_relief::SourceLocation::STUB,
-            ),
-            allocator,
-        ))
-    }
-
-    #[test]
-    fn test_parse_v_for_simple() {
-        let allocator = Bump::new();
-        let exp = make_simple_exp(&allocator, "item in items");
-        let vars = parse_v_for_variables(&exp);
-        assert_eq!(vars, vec![CompactString::from("item")]);
-    }
-
-    #[test]
-    fn test_parse_v_for_with_index() {
-        let allocator = Bump::new();
-        let exp = make_simple_exp(&allocator, "(item, index) in items");
-        let vars = parse_v_for_variables(&exp);
-        assert_eq!(
-            vars,
-            vec![CompactString::from("item"), CompactString::from("index")]
-        );
-    }
-
-    #[test]
-    fn test_parse_v_for_object() {
-        let allocator = Bump::new();
-        let exp = make_simple_exp(&allocator, "(value, key, index) in object");
-        let vars = parse_v_for_variables(&exp);
-        assert_eq!(
-            vars,
-            vec![
-                CompactString::from("value"),
-                CompactString::from("key"),
-                CompactString::from("index"),
-            ]
-        );
-    }
-
-    #[test]
-    fn test_parse_v_for_object_destructuring() {
-        let allocator = Bump::new();
-        let exp = make_simple_exp(&allocator, "{ id } in items");
-        let vars = parse_v_for_variables(&exp);
-        assert_eq!(vars, vec![CompactString::from("id")]);
-    }
-
-    #[test]
-    fn test_parse_v_for_object_destructuring_multiple() {
-        let allocator = Bump::new();
-        let exp = make_simple_exp(&allocator, "{ id, name } in items");
-        let vars = parse_v_for_variables(&exp);
-        assert_eq!(
-            vars,
-            vec![CompactString::from("id"), CompactString::from("name")]
-        );
-    }
-
-    #[test]
-    fn test_parse_v_for_object_destructuring_with_rename() {
-        let allocator = Bump::new();
-        let exp = make_simple_exp(&allocator, "{ id: itemId, name: itemName } in items");
-        let vars = parse_v_for_variables(&exp);
-        assert_eq!(
-            vars,
-            vec![
-                CompactString::from("itemId"),
-                CompactString::from("itemName")
-            ]
-        );
-    }
-
-    #[test]
-    fn test_parse_v_for_array_destructuring() {
-        let allocator = Bump::new();
-        let exp = make_simple_exp(&allocator, "[first, second] in items");
-        let vars = parse_v_for_variables(&exp);
-        assert_eq!(
-            vars,
-            vec![CompactString::from("first"), CompactString::from("second")]
-        );
-    }
 }

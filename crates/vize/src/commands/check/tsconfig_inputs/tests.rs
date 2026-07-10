@@ -5,14 +5,14 @@
 use super::{TsconfigInputCache, load_tsconfig_declaration_options, resolve_extended_tsconfig};
 use std::fs;
 use std::path::{Path, PathBuf};
-use vize_carton::cstr;
-
+use vize_carton::{cstr, path::canonicalize_non_verbatim};
+mod codegen;
+mod tsx_owner;
 // Each call uses a fresh run-scoped cache, mirroring how an actual `vize
 // check` run constructs one `TsconfigInputCache` per invocation.
 fn collect_default_check_files(project_root: &Path, tsconfig_path: Option<&Path>) -> Vec<PathBuf> {
     collect_default_check_files_with_jsx(project_root, tsconfig_path, false)
 }
-
 fn collect_default_check_files_with_jsx(
     project_root: &Path,
     tsconfig_path: Option<&Path>,
@@ -312,6 +312,42 @@ fn extended_config_resolution_uses_package_json_tsconfig_field() {
     let resolved = resolve_extended_tsconfig(&app_dir.join("tsconfig.json"), "@scope/tsconfig");
 
     assert_eq!(resolved, Some(package_dir.join("configs/vue.json")));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn default_collection_skips_nuxt_import_manifest_files_entries() {
+    let case_dir = unique_case_dir("tsconfig-nuxt-import-manifest-files");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join(".nuxt/types")).unwrap();
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/App.vue"), "<template />").unwrap();
+    fs::write(
+        case_dir.join(".nuxt/imports.d.ts"),
+        "export { useVfjsI18n } from '../composables/useVfjsI18n'\n",
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join(".nuxt/types/imports.d.ts"),
+        "declare global { const useVfjsI18n: typeof import('../composables/useVfjsI18n')['useVfjsI18n'] }\nexport {}\n",
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "files": [
+    "src/App.vue",
+    ".nuxt/imports.d.ts",
+    ".nuxt/types/imports.d.ts"
+  ]
+}"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert_eq!(relative_paths(&case_dir, &files), vec!["src/App.vue"]);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -897,21 +933,21 @@ fn files_entry_with_unsupported_extension_is_dropped() {
 }
 
 #[test]
-fn files_entry_outside_project_root_is_dropped() {
-    let case_dir = unique_case_dir("tsconfig-files-outside-root");
+fn parent_relative_tsconfig_entries_are_collected() {
+    let case_dir = unique_case_dir("tsconfig-parent-relative-inputs");
     let _ = fs::remove_dir_all(&case_dir);
-    let app_dir = case_dir.join("app");
-    fs::create_dir_all(&app_dir).unwrap();
-    fs::write(case_dir.join("sibling.ts"), "export const s = true").unwrap();
-    fs::write(
-        app_dir.join("tsconfig.json"),
-        r#"{ "files": ["../sibling.ts"] }"#,
-    )
-    .unwrap();
-
-    let files = collect_default_check_files(&app_dir, Some(&app_dir.join("tsconfig.json")));
-
-    assert_eq!(files, Vec::<PathBuf>::new());
+    let generated_dir = case_dir.join(".generated");
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::create_dir_all(&generated_dir).unwrap();
+    fs::write(case_dir.join("src/bad.ts"), "export const bad = true").unwrap();
+    for (name, json) in [
+        ("files.json", r#"{ "files": ["../src/bad.ts"] }"#),
+        ("include.json", r#"{ "include": ["../src/**/*.ts"] }"#),
+    ] {
+        fs::write(generated_dir.join(name), json).unwrap();
+        let files = collect_default_check_files(&generated_dir, Some(&generated_dir.join(name)));
+        assert_eq!(relative_paths(&case_dir, &files), vec!["src/bad.ts"]);
+    }
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -1017,7 +1053,7 @@ fn owner_resolution_returns_root_for_no_supported_files() {
     let root = case_dir.join("tsconfig.json");
     fs::write(&root, r#"{ "include": ["src/**/*.ts"] }"#).unwrap();
 
-    let normalized_root = root.canonicalize().unwrap_or(root.clone());
+    let normalized_root = canonicalize_non_verbatim(&root);
 
     // Empty file list -> root.
     assert_eq!(
@@ -1055,7 +1091,7 @@ fn owner_resolution_falls_back_to_root_when_files_span_projects() {
 
     let owner = resolve_tsconfig_for_files(Some(&root), &[a_file, b_file]);
 
-    assert_eq!(owner, Some(root.canonicalize().unwrap_or(root.clone())));
+    assert_eq!(owner, Some(canonicalize_non_verbatim(&root)));
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -1077,7 +1113,7 @@ fn owner_resolution_falls_back_to_root_for_an_unowned_file() {
 
     let owner = resolve_tsconfig_for_files(Some(&root), &[unowned]);
 
-    assert_eq!(owner, Some(root.canonicalize().unwrap_or(root.clone())));
+    assert_eq!(owner, Some(canonicalize_non_verbatim(&root)));
 
     let _ = fs::remove_dir_all(&case_dir);
 }

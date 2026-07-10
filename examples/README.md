@@ -11,7 +11,7 @@ nix develop
 vp env install
 vp install
 vp run --workspace-root build:native
-vp run --filter './npm/vize' build
+vp run --filter './npm/cli' build
 ```
 
 Or build directly with Cargo:
@@ -35,6 +35,7 @@ building the local package.
 | `src/App.vue`         | A correctly formatted Vue file                      |
 | `src/Unformatted.vue` | A Vue file that needs formatting                    |
 | `src/HasErrors.vue`   | A Vue file containing lint and security diagnostics |
+| `src/TypeChecked.vue` | A typed props/emits file for `vize check` examples  |
 
 ### Formatter (`vize fmt`)
 
@@ -99,6 +100,20 @@ The SSR rule docs include extra boundary examples for `typeof window`, comments,
 | `--max-warnings` | Warning limit                                                                    | -       |
 | `--quiet`, `-q`  | Show only the summary                                                            | false   |
 | `--fix`          | Auto-fix (not implemented yet)                                                   | false   |
+
+### Type Checker (`vize check`)
+
+```bash
+# Check a typed props/emits example
+vp exec vize check examples/cli/src/TypeChecked.vue
+
+# Emit the generated Virtual TS and diagnostics as JSON
+vp exec vize check examples/cli/src/TypeChecked.vue --format json
+```
+
+`src/TypeChecked.vue` demonstrates typed `defineProps`, `withDefaults`, tuple-style `defineEmits`,
+and template usage of setup bindings. It should type-check cleanly and is a small starting point for
+copying Vize's type-check workflow into an application package script.
 
 ### Rust LSP Server (`vize lsp`)
 
@@ -237,8 +252,8 @@ Run this from the repository root:
 
 ```bash
 vp install
-vp run --filter './npm/vize-native' build
-vp run --filter './npm/oxlint-plugin-vize' build
+vp run --filter './npm/native' build
+vp run --filter './npm/oxint' build
 ```
 
 ### Run
@@ -293,7 +308,7 @@ Current observed behavior in this repository: that probe reports `0` findings on
 ```bash
 # Build the local native binding and npm package
 vp run --workspace-root build:native
-vp run --filter './npm/vize' build
+vp run --filter './npm/cli' build
 
 # Or use the Rust CLI directly for CLI-only debugging
 cargo run --release -- fmt examples/cli/src/*.vue

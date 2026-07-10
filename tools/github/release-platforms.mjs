@@ -26,7 +26,7 @@ export const cliReleasePlatforms = [
     archive: "vize-aarch64-apple-darwin.tar.gz",
   },
   {
-    host: "blacksmith-32vcpu-windows-2025",
+    host: "windows-2025",
     target: "x86_64-pc-windows-msvc",
     archive: "vize-x86_64-pc-windows-msvc.zip",
   },
@@ -42,8 +42,18 @@ export const cliReleasePlatforms = [
   },
   {
     host: "blacksmith-32vcpu-ubuntu-2404",
+    target: "x86_64-unknown-linux-musl",
+    archive: "vize-x86_64-unknown-linux-musl.tar.gz",
+  },
+  {
+    host: "blacksmith-32vcpu-ubuntu-2404",
     target: "aarch64-unknown-linux-gnu",
     archive: "vize-aarch64-unknown-linux-gnu.tar.gz",
+  },
+  {
+    host: "blacksmith-32vcpu-ubuntu-2404",
+    target: "aarch64-unknown-linux-musl",
+    archive: "vize-aarch64-unknown-linux-musl.tar.gz",
   },
 ];
 
@@ -59,7 +69,7 @@ export const nativeReleasePlatforms = [
     cross_compile: false,
   },
   {
-    host: "blacksmith-32vcpu-windows-2025",
+    host: "windows-2025",
     target: "x86_64-pc-windows-msvc",
     cross_compile: false,
   },
@@ -105,15 +115,14 @@ export function parseReleaseVersion(refName) {
 
 export function releasePlatformPlan(refName) {
   const version = parseReleaseVersion(refName);
-  const includeSlowPlatforms = version.minor % 5 === 0;
-  const isEnabled = (platform) => includeSlowPlatforms || !slowReleaseTargets.has(platform.target);
+  const includeSlowPlatforms = true;
 
   return {
     version,
     includeSlowPlatforms,
-    skippedTargets: includeSlowPlatforms ? [] : [...slowReleaseTargets],
-    cliMatrix: cliReleasePlatforms.filter(isEnabled),
-    nativeMatrix: nativeReleasePlatforms.filter(isEnabled),
+    skippedTargets: [],
+    cliMatrix: cliReleasePlatforms,
+    nativeMatrix: nativeReleasePlatforms,
   };
 }
 

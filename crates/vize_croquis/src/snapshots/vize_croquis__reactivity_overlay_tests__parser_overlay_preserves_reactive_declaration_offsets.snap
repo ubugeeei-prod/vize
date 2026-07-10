@@ -1,0 +1,48 @@
+---
+source: crates/vize_croquis/src/reactivity_overlay_tests.rs
+expression: json
+---
+{
+  "summary": {
+    "sourceCount": 3,
+    "refSourceCount": 1,
+    "reactiveSourceCount": 1,
+    "computedSourceCount": 1,
+    "readonlySourceCount": 0,
+    "needsValueAccessCount": 2,
+    "lossCount": 0,
+    "effectEdgeCount": 0,
+    "effectCycleCount": 0
+  },
+  "sources": [
+    {
+      "id": 0,
+      "name": "count",
+      "kind": "ref",
+      "category": "ref",
+      "needsValueAccess": true,
+      "declarationOffset": 82
+    },
+    {
+      "id": 1,
+      "name": "state",
+      "kind": "shallowReactive",
+      "category": "reactive",
+      "needsValueAccess": false,
+      "declarationOffset": 102
+    },
+    {
+      "id": 2,
+      "name": "doubled",
+      "kind": "computed",
+      "category": "computed",
+      "needsValueAccess": true,
+      "declarationOffset": 146
+    }
+  ],
+  "losses": [],
+  "effectGraph": {
+    "edges": [],
+    "cycle": null
+  }
+}

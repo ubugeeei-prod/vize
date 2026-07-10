@@ -9,7 +9,9 @@
 //!
 //! Mode selection mirrors the NAPI binding and the `compiler.jsxMode` config:
 //! the explicit `jsxMode` string (`"vdom"` / `"vapor"`) wins, then the legacy
-//! `vapor` bool, then VDOM.
+//! `vapor` bool, then VDOM. When `ssr` is true, that mode is kept as
+//! client-hydration metadata while generated code is routed through JSX SSR
+//! output.
 
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
@@ -107,11 +109,19 @@ fn resolve_source_map(options: &JsValue) -> bool {
         .unwrap_or(false)
 }
 
+fn resolve_ssr(options: &JsValue) -> bool {
+    js_sys::Reflect::get(options, &JsValue::from_str("ssr"))
+        .ok()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false)
+}
+
 fn compile_jsx_internal(source: &str, options: &JsValue) -> JsxWasmResult {
     let lang = resolve_lang(options);
     let default_mode = resolve_default_mode(options);
     let source_map = resolve_source_map(options);
-    build_jsx_wasm_result(source, lang, default_mode, source_map)
+    let ssr = resolve_ssr(options);
+    build_jsx_wasm_result(source, lang, default_mode, source_map, ssr)
 }
 
 /// Build the JSX compile result from already-resolved options. Kept free of
@@ -122,12 +132,14 @@ fn build_jsx_wasm_result(
     lang: JsxLang,
     default_mode: JsxOutputMode,
     source_map: bool,
+    ssr: bool,
 ) -> JsxWasmResult {
     let mut config = JsxCompileConfig {
         default_mode,
         ..Default::default()
     };
-    // Source maps are emitted by the VDOM codegen path; a no-op for Vapor.
+    config.ssr = ssr;
+    // Source maps are emitted by client VDOM codegen; a no-op for Vapor/SSR.
     config.vdom.source_map = source_map;
 
     let bump = Bump::new();
@@ -189,7 +201,7 @@ mod tests {
                 </div>
             );
         "#;
-        let result = build_jsx_wasm_result(source, JsxLang::Jsx, JsxOutputMode::Vdom, false);
+        let result = build_jsx_wasm_result(source, JsxLang::Jsx, JsxOutputMode::Vdom, false, false);
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
         assert_eq!(
@@ -217,6 +229,7 @@ mod tests {
             JsxLang::Jsx,
             JsxOutputMode::Vdom,
             false,
+            false,
         );
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
         assert!(
@@ -235,6 +248,7 @@ mod tests {
             JsxLang::Jsx,
             JsxOutputMode::Vdom,
             false,
+            false,
         );
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
         assert!(
@@ -248,12 +262,37 @@ mod tests {
     fn wasm_jsx_result_surfaces_source_map_when_requested() {
         let source = "const App = () => <div>{message}</div>;";
 
-        let without = build_jsx_wasm_result(source, JsxLang::Jsx, JsxOutputMode::Vdom, false);
+        let without =
+            build_jsx_wasm_result(source, JsxLang::Jsx, JsxOutputMode::Vdom, false, false);
         assert!(without.map.is_none(), "no map unless requested");
 
-        let with = build_jsx_wasm_result(source, JsxLang::Jsx, JsxOutputMode::Vdom, true);
+        let with = build_jsx_wasm_result(source, JsxLang::Jsx, JsxOutputMode::Vdom, true, false);
         assert!(with.errors.is_empty(), "errors: {:?}", with.errors);
         let map = with.map.expect("a map is surfaced when requested");
         assert!(map.contains("\"version\":3"), "v3 source map: {map}");
+    }
+
+    #[test]
+    fn wasm_jsx_result_supports_ssr_output() {
+        let result = build_jsx_wasm_result(
+            "const App = () => <div>{message}</div>;",
+            JsxLang::Jsx,
+            JsxOutputMode::Vdom,
+            true,
+            true,
+        );
+
+        assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
+        assert!(
+            result.code.contains("function ssrRender"),
+            "{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("@vue/server-renderer"),
+            "{}",
+            result.code
+        );
+        assert!(result.map.is_none(), "SSR output has no source map yet");
     }
 }

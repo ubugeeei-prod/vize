@@ -174,18 +174,72 @@ export default defineNuxtConfig({
 
 When configured, the Musea gallery is available at `/__musea__/` during development.
 
+### Art File Placement
+
+Nuxt component auto-discovery scans `.vue` files inside configured component directories. Because
+Musea art files also end in `.vue`, keep `*.art.vue` files outside those directories in Nuxt
+projects and point Musea at that location:
+
+```txt
+app/components/Tag.vue
+stories/shared/Tag.art.vue
+```
+
+```ts
+export default defineNuxtConfig({
+  modules: ["@vizejs/nuxt"],
+  vize: {
+    musea: {
+      include: ["stories/**/*.art.vue"],
+    },
+  },
+});
+```
+
+When Musea is enabled through `@vizejs/nuxt`, the module also excludes `**/*.art.vue` from Nuxt's
+component scanner so colocated legacy files do not reach Nuxt's webpack or Vite component pipeline.
+
 ### Preview Setup for Nuxt
 
-Nuxt projects often use features that need to be mocked in the Musea preview environment (vue-i18n, NuxtLink, useNuxtApp, etc.):
+Nuxt projects often use features that need to be available in the Musea preview environment
+(`NuxtLink`, `useRoute`, `useNuxtApp`, `useRuntimeConfig`, data composables, and built-in Nuxt
+components). Use `@vizejs/musea-nuxt` in the standalone Musea Vite config and install its preview
+mock layer from `previewSetup`:
+
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import { musea } from "@vizejs/vite-plugin-musea";
+import { nuxtMusea } from "@vizejs/musea-nuxt";
+
+export default defineConfig({
+  plugins: [
+    nuxtMusea({
+      route: { path: "/preview" },
+      runtimeConfig: { public: { apiBase: "/api" } },
+      fetchMocks: {
+        "/api/user": { id: 1, name: "Ada" },
+      },
+    }),
+    musea({
+      previewSetup: "musea.preview.ts",
+    }),
+  ],
+});
+```
 
 ```ts
 // musea.preview.ts
+import { installNuxtMuseaMocks } from "@vizejs/musea-nuxt";
 import { createI18n } from "vue-i18n";
-import { createRouter, createMemoryHistory } from "vue-router";
 import type { MuseaPreviewSetup } from "@vizejs/vite-plugin-musea";
 
 export default ((app) => {
-  // Mock vue-i18n
+  installNuxtMuseaMocks(app, {
+    route: { path: "/preview" },
+    runtimeConfig: { public: { apiBase: "/api" } },
+  });
+
   const i18n = createI18n({
     locale: "ja",
     messages: {
@@ -198,28 +252,6 @@ export default ((app) => {
     },
   });
   app.use(i18n);
-
-  // Mock vue-router (for NuxtLink compatibility)
-  const router = createRouter({
-    history: createMemoryHistory(),
-    routes: [
-      { path: "/", component: { template: "<div />" } },
-      { path: "/about", component: { template: "<div />" } },
-    ],
-  });
-  app.use(router);
-
-  // Register NuxtLink as RouterLink
-  app.component("NuxtLink", app.component("RouterLink"));
-
-  // Mock useNuxtApp if needed
-  app.provide("nuxt-app", {
-    $config: {
-      public: {
-        /* ... */
-      },
-    },
-  });
 }) satisfies MuseaPreviewSetup;
 ```
 

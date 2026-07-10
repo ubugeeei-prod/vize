@@ -49,19 +49,19 @@ const LANGUAGE_DECLARATIONS: LanguageDeclaration[] = [
   // and probed for the canonical id tokens.
   {
     editor: "vscode",
-    file: "npm/vscode-vize/package.json",
+    file: "editors/vscode/package.json",
     extract: collectCanonicalIds,
   },
   // Zed maps display name -> id in [language_servers.vize.language_ids].
   {
     editor: "zed",
-    file: "npm/zed-vize/extension.toml",
+    file: "editors/zed/extension.toml",
     extract: collectCanonicalIds,
   },
   // Neovim lists filetypes = { "vue", "art-vue" }.
   {
     editor: "neovim",
-    file: "npm/nvim-vize/lua/vize/config.lua",
+    file: "editors/nvim/lua/vize/config.lua",
     extract: collectCanonicalIds,
   },
   // Emacs declares auto-mode-alist patterns and derived modes for both variants.
@@ -71,7 +71,7 @@ const LANGUAGE_DECLARATIONS: LanguageDeclaration[] = [
   // those Emacs-native conventions onto the canonical id set.
   {
     editor: "emacs",
-    file: "npm/emacs-vize/vize.el",
+    file: "editors/emacs/vize.el",
     extract: (text) => {
       const found = new Set<string>();
       // vize-vue-mode (vue) requires "vize-vue-mode" with no extra leading "-art".
@@ -88,13 +88,13 @@ const LANGUAGE_DECLARATIONS: LanguageDeclaration[] = [
   // Helix declares [[language]] name = "vue" / "art-vue".
   {
     editor: "helix",
-    file: "npm/helix-vize/languages.toml",
+    file: "editors/helix/languages.toml",
     extract: collectCanonicalIds,
   },
   // Vim's ftdetect sets filetype=vue / filetype=art-vue.
   {
     editor: "vim",
-    file: "npm/vim-vize/ftdetect/vize.vim",
+    file: "editors/vim/ftdetect/vize.vim",
     extract: collectCanonicalIds,
   },
 ];
@@ -113,7 +113,7 @@ const PROFILE_DECLARATIONS: ProfileDeclaration[] = [
   // Neovim: `local profiles = { lint = {...}, off = {}, recommended = {...} }`.
   {
     editor: "neovim",
-    file: "npm/nvim-vize/lua/vize/config.lua",
+    file: "editors/nvim/lua/vize/config.lua",
     extract: (text) => {
       const block = /local profiles = \{([\s\S]*?)\n\}/.exec(text);
       assert.ok(block, "neovim config.lua should declare a `local profiles` table");
@@ -126,7 +126,7 @@ const PROFILE_DECLARATIONS: ProfileDeclaration[] = [
   // Emacs: `(defconst vize--profiles '((lint . ...) (off . nil) (recommended . ...)))`.
   {
     editor: "emacs",
-    file: "npm/emacs-vize/vize.el",
+    file: "editors/emacs/vize.el",
     extract: (text) => {
       const block = /\(defconst vize--profiles\s*'\(([\s\S]*?)\)\s*"Vize/.exec(text);
       assert.ok(block, "emacs vize.el should declare a vize--profiles constant");
@@ -140,7 +140,7 @@ const PROFILE_DECLARATIONS: ProfileDeclaration[] = [
 // carries the profile invariant; include it explicitly here.
 PROFILE_DECLARATIONS.push({
   editor: "vim",
-  file: "npm/vim-vize/autoload/vize.vim",
+  file: "editors/vim/autoload/vize.vim",
   extract: (text) => {
     const block = /let s:profiles = \{([\s\S]*?)\n\s*\\ \}/.exec(text);
     assert.ok(block, "vim autoload/vize.vim should declare an s:profiles dictionary");
@@ -153,8 +153,8 @@ PROFILE_DECLARATIONS.push({
 
 // Editors that legitimately declare NO profile table: VS Code (it exposes
 // per-feature `*.enable` settings plus Recommended/Lint-only *commands*, not a
-// canonical profile table), Zed and Helix (single `lint = true` config, no
-// named profiles).
+// canonical profile table), Zed and Helix (single recommended config, no named
+// profiles).
 const PROFILE_LESS_EDITORS = new Set(["vscode", "zed", "helix"]);
 
 test("every editor that declares Vue languages references both canonical ids", () => {
@@ -248,7 +248,7 @@ test("profile-less editors are intentionally excluded from the profile invariant
   // VS Code exposes the profile *concept* as commands rather than a canonical
   // lint/recommended/off table, so it is excluded from the profile-name check
   // but the recommended & lint-only command surface still exists.
-  const vscode = readText("npm/vscode-vize/package.json");
+  const vscode = readText("editors/vscode/package.json");
   assert.match(vscode, /"command":\s*"vize\.enableRecommendedProfile"/);
   assert.match(vscode, /"command":\s*"vize\.enableLintOnlyProfile"/);
   // VS Code has no "off" profile command — confirming why it is excluded from

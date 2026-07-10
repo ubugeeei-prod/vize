@@ -69,47 +69,28 @@ impl HoverService {
             return Some(hover);
         }
 
-        // Try to get type information from Corsa via virtual TypeScript.
-        if let Some(bridge) = corsa_bridge
-            && let Some(ref virtual_docs) = ctx.virtual_docs
+        // Try to get type information from Corsa via the canonical Vue virtual TS.
+        if let Some(bridge) = corsa_bridge.as_ref()
+            && bridge.is_initialized()
+            && let Some(doc) =
+                crate::ide::corsa_support::open_canonical_virtual_document(ctx, bridge).await
+            && let Some((line, character)) =
+                crate::ide::corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)
+            && let Ok(Some(hover)) = bridge.hover(&doc.request_uri, line, character).await
         {
-            let script_doc = if is_setup {
-                virtual_docs.script_setup.as_ref()
-            } else {
-                virtual_docs.script.as_ref()
-            };
-
-            if let Some(script) = script_doc {
-                // Calculate position in virtual TS
-                if let Some(vts_offset) = Self::sfc_to_virtual_ts_script_offset(ctx, ctx.offset) {
-                    let (line, character) =
-                        crate::ide::offset_to_position(&script.content, vts_offset);
-                    let suffix = if is_setup { "setup.ts" } else { "script.ts" };
-
-                    // Open/update virtual document
-                    if bridge.is_initialized() {
-                        #[allow(clippy::disallowed_macros)]
-                        let doc_path = format!("{}.{suffix}", ctx.uri.path());
-                        let Ok(uri) = bridge
-                            .open_or_update_virtual_document(&doc_path, &script.content)
-                            .await
-                        else {
-                            return Self::hover_script(ctx, is_setup);
-                        };
-
-                        // Request hover from Corsa.
-                        if let Ok(Some(hover)) = bridge.hover(&uri, line, character).await {
-                            let converted = Self::convert_lsp_hover(hover);
-                            if hover_has_unknown_reactive_type(&converted)
-                                && let Some(fallback) = Self::hover_script(ctx, is_setup)
-                            {
-                                return Some(fallback);
-                            }
-                            return Some(converted);
-                        }
-                    }
-                }
+            let mapped_range = hover.range.as_ref().and_then(|range| {
+                crate::ide::corsa_support::map_canonical_lsp_range(ctx, &doc, range)
+            });
+            let mut converted = Self::convert_lsp_hover(hover);
+            if mapped_range.is_some() {
+                converted.range = mapped_range;
             }
+            if hover_has_unknown_reactive_type(&converted)
+                && let Some(fallback) = Self::hover_script(ctx, is_setup)
+            {
+                return Some(fallback);
+            }
+            return Some(converted);
         }
 
         // Fall back to croquis analysis
@@ -134,22 +115,22 @@ impl HoverService {
             .or_else(|| descriptor.script.as_ref().map(|s| s.content.as_ref()));
 
         // Create a drawer and analyze script.
-        let analyzer_options = DrawerOptions::full();
-        let mut analyzer = Drawer::with_options(analyzer_options);
+        let drawer_options = DrawerOptions::full();
+        let mut drawer = Drawer::with_options(drawer_options);
         if ctx.state.lsp_features().legacy_vue2 {
-            analyzer = analyzer.with_legacy_vue2();
+            drawer = drawer.with_legacy_vue2();
         } else if ctx.state.options_api_enabled() {
-            analyzer = analyzer.with_options_api();
+            drawer = drawer.with_options_api();
         }
 
         if let Some(ref script) = descriptor.script {
-            analyzer.analyze_script_plain(&script.content);
+            drawer.analyze_script_plain(&script.content);
         }
         if let Some(ref script_setup) = descriptor.script_setup {
-            analyzer.analyze_script_setup(&script_setup.content);
+            drawer.analyze_script_setup(&script_setup.content);
         }
 
-        let summary = analyzer.finish();
+        let summary = drawer.finish();
 
         // Look up the binding in the analysis summary
         let binding_type = summary.get_binding_type(word)?;

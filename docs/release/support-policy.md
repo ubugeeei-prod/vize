@@ -74,14 +74,14 @@ A breaking change may bypass the deprecation window only when **all** of:
 - The release notes for the emergency release call out the breakage explicitly.
 - A migration note is published in the same release.
 
-Emergency breakage is rare. Most issues should be addressed by a forward-compatible patch and a
+Emergency breakage is rare. Most breakage should be addressed by a forward-compatible patch and a
 proper deprecation window for the long-term fix.
 
 ## Release line support
 
 Vize publishes a single supported release line at a time:
 
-- The **current minor** receives bug fixes, security backports, and accepted feature work.
+- The **current minor** receives fixes, security backports, and accepted feature work.
 - The **previous minor** receives security backports for the duration of one calendar month after
   the next minor ships, then is end-of-life.
 - Older minors are end-of-life and do not receive backports of any kind.

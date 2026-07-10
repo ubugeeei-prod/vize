@@ -76,10 +76,17 @@ pub(super) fn generate_event_handler_expressions(
                     indent = handler_indent,
                 );
             } else if let Some(event_arg) = inline_callback_arg {
+                // Wrap the inline callback invocation in a closure that
+                // re-declares `$event` typed against the handler's event type.
+                // The outer EventHandler closure already binds `$event`, but
+                // this inner wrap pins the binding immediately around the
+                // user's callback so the inline arrow body can reference
+                // `$event` directly (#2224 — `Cannot find name '$event'`).
                 append!(
                     *ts,
-                    "{indent}({content})({event_arg});  // handler expression\n",
-                    indent = ctx.indent,
+                    "{indent}(($event: {event_type}) => {{ ({content})({event_arg}); }})($event);  // handler expression\n",
+                    indent = handler_indent,
+                    event_type = ctx.event_type,
                 );
             } else {
                 append!(
@@ -90,11 +97,11 @@ pub(super) fn generate_event_handler_expressions(
             }
             let gen_stmt_end = ts.len();
             mappings.push(VizeMapping {
-                gen_range: if is_implicit_reference {
-                    gen_stmt_start..gen_stmt_end
-                } else {
-                    generated_text_range(&ts[gen_stmt_start..gen_stmt_end], content, gen_stmt_start)
-                },
+                gen_range: generated_text_range(
+                    &ts[gen_stmt_start..gen_stmt_end],
+                    content,
+                    gen_stmt_start,
+                ),
                 src_range: src_start..src_end,
                 sub_spans: Vec::new(),
             });

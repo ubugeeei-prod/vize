@@ -10,6 +10,8 @@ manual.
 
 ## Pages
 
+- [All Patina rules](./all.md): one-page metadata table for every Patina rule implementation,
+  including GitHub source links.
 - [Vue rules](./vue.md): SFC template structure, Vue directives, component conventions, and
   single-file Vue correctness checks.
 - [Type and script rules](./type-and-script.md): TypeScript checker-backed diagnostics and Vapor
@@ -28,9 +30,10 @@ manual.
 ## Presets
 
 `essential` contains correctness rules that should almost always be enabled. `happy-path` adds
-practical hygiene checks for day-to-day Vue development. `ecosystem` adds Vue Router, Vue I18n,
-Pinia, Vue Test Utils, Nuxt, and Void Vue checks. `nuxt` includes Nuxt-oriented SSR expectations
-and Vapor expectations. `opinionated` is the broadest built-in preset.
+practical hygiene checks for day-to-day Vue development. `ecosystem` starts from the broad default
+bundle and adds Vue Router, Vue I18n, Pinia, Vue Test Utils, Nuxt, and Void Vue checks. `nuxt`
+includes Nuxt-oriented SSR expectations and Vapor expectations. `opinionated` is the broadest
+built-in preset.
 
 `incremental` starts empty. Use it when a host wants to opt into specific rules without inheriting a
 larger preset.

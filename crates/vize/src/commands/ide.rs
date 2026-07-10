@@ -8,6 +8,14 @@ use clap::{Args, Subcommand};
 use std::path::PathBuf;
 use std::process::Command;
 
+mod editor_files;
+
+use crate::commands::lsp::{LspTransport, transport_from_port};
+use editor_files::{copy_dir_all, find_vscode_vsix, find_zed_extension_source};
+
+const VSCODE_EXTENSION_ID: &str = "ubugeeei.vize";
+const LEGACY_VSCODE_EXTENSION_ID: &str = "vize.vize";
+
 #[derive(Args)]
 pub struct IdeArgs {
     #[command(subcommand)]
@@ -49,6 +57,13 @@ pub struct EditorArgs {
     pub status: bool,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum EditorOperation {
+    Install,
+    Status,
+    Uninstall,
+}
+
 pub fn run(args: IdeArgs) {
     match args.command {
         Some(IdeCommands::Vscode(editor_args)) => run_vscode(editor_args),
@@ -59,10 +74,9 @@ pub fn run(args: IdeArgs) {
 
 /// Run LSP server (default behavior)
 fn run_lsp(args: IdeArgs) {
-    let result = if let Some(port) = args.port {
-        vize_maestro::serve_tcp_blocking(port)
-    } else {
-        vize_maestro::serve_blocking()
+    let result = match transport_from_port(args.port) {
+        LspTransport::Stdio => vize_maestro::serve_blocking(),
+        LspTransport::Tcp(port) => vize_maestro::serve_tcp_blocking(port),
     };
 
     if let Err(e) = result {
@@ -73,29 +87,29 @@ fn run_lsp(args: IdeArgs) {
 
 /// Handle VSCode extension operations
 fn run_vscode(args: EditorArgs) {
-    if args.uninstall {
-        vscode_uninstall();
-    } else if args.status {
-        vscode_status();
-    } else if args.install {
-        vscode_install();
-    } else {
-        // Default to install
-        vscode_install();
+    match editor_operation(&args) {
+        EditorOperation::Install => vscode_install(),
+        EditorOperation::Status => vscode_status(),
+        EditorOperation::Uninstall => vscode_uninstall(),
     }
 }
 
 /// Handle Zed extension operations
 fn run_zed(args: EditorArgs) {
+    match editor_operation(&args) {
+        EditorOperation::Install => zed_install(),
+        EditorOperation::Status => zed_status(),
+        EditorOperation::Uninstall => zed_uninstall(),
+    }
+}
+
+fn editor_operation(args: &EditorArgs) -> EditorOperation {
     if args.uninstall {
-        zed_uninstall();
+        EditorOperation::Uninstall
     } else if args.status {
-        zed_status();
-    } else if args.install {
-        zed_install();
+        EditorOperation::Status
     } else {
-        // Default to install
-        zed_install();
+        EditorOperation::Install
     }
 }
 
@@ -125,9 +139,8 @@ fn vscode_install() {
                     std::process::exit(1);
                 }
             } else {
-                eprintln!("Failed to build VSCode extension");
-                eprintln!("Please ensure pnpm is installed and run from the vize repository");
-                std::process::exit(1);
+                println!("Source build unavailable; installing published extension...");
+                install_published_vscode_extension();
             }
         }
     }
@@ -137,7 +150,7 @@ fn vscode_uninstall() {
     println!("Uninstalling Vize VSCode extension...");
 
     let status = Command::new("code")
-        .args(["--uninstall-extension", "vize.vize"])
+        .args(["--uninstall-extension", VSCODE_EXTENSION_ID])
         .status();
 
     match status {
@@ -162,7 +175,7 @@ fn vscode_status() {
         Ok(out) => {
             #[allow(clippy::disallowed_types)]
             let extensions = std::string::String::from_utf8_lossy(&out.stdout);
-            if extensions.contains("vize.vize") {
+            if vscode_extension_is_installed(&extensions) {
                 println!("✓ Vize extension is installed in VSCode");
             } else {
                 println!("✗ Vize extension is not installed in VSCode");
@@ -175,36 +188,17 @@ fn vscode_status() {
     }
 }
 
-fn find_vscode_vsix() -> Option<PathBuf> {
-    // Look for VSIX in common locations
-    let locations = [
-        // Current working directory
-        PathBuf::from("npm/vscode-vize"),
-        // Relative to executable
-        std::env::current_exe()
-            .ok()
-            .and_then(|p| p.parent().map(|p| p.join("../../npm/vscode-vize")))
-            .unwrap_or_default(),
-    ];
-
-    for base in &locations {
-        // Look for any .vsix file
-        if let Ok(entries) = std::fs::read_dir(base) {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.extension().map(|e| e == "vsix").unwrap_or(false) {
-                    return Some(path);
-                }
-            }
-        }
-    }
-
-    None
+fn vscode_extension_is_installed(extensions: &str) -> bool {
+    extensions.lines().any(|line| {
+        let extension = line.trim();
+        extension.eq_ignore_ascii_case(VSCODE_EXTENSION_ID)
+            || extension.eq_ignore_ascii_case(LEGACY_VSCODE_EXTENSION_ID)
+    })
 }
 
 fn build_vscode_extension() -> bool {
     // Try to find the extension source
-    let source_dir = PathBuf::from("npm/vscode-vize");
+    let source_dir = PathBuf::from("editors/vscode");
     if !source_dir.exists() {
         return false;
     }
@@ -254,6 +248,31 @@ fn install_vsix(path: &std::path::Path) {
     }
 }
 
+fn install_published_vscode_extension() {
+    let status = Command::new("code")
+        .args(["--install-extension", VSCODE_EXTENSION_ID])
+        .status();
+
+    match status {
+        Ok(s) if s.success() => {
+            println!("✓ Vize extension installed successfully!");
+            println!("  Restart VSCode to activate the extension.");
+        }
+        Ok(_) => {
+            eprintln!(
+                "Failed to install published extension: {}",
+                VSCODE_EXTENSION_ID
+            );
+            std::process::exit(1);
+        }
+        Err(e) => {
+            eprintln!("Failed to run 'code' command: {}", e);
+            eprintln!("Make sure VSCode is installed and 'code' is in your PATH");
+            std::process::exit(1);
+        }
+    }
+}
+
 // =============================================================================
 // Zed Extension
 // =============================================================================
@@ -267,7 +286,7 @@ fn zed_install() {
         Some(dir) => {
             let vize_dir = dir.join("vize");
             let Some(source_dir) = find_zed_extension_source() else {
-                eprintln!("Could not find npm/zed-vize extension source");
+                eprintln!("Could not find editors/zed extension source");
                 eprintln!(
                     "Please run from the vize repository or install from Zed's extension gallery"
                 );
@@ -305,36 +324,6 @@ fn zed_install() {
             std::process::exit(1);
         }
     }
-}
-
-fn find_zed_extension_source() -> Option<PathBuf> {
-    let locations = [
-        PathBuf::from("npm/zed-vize"),
-        std::env::current_exe()
-            .ok()
-            .and_then(|p| p.parent().map(|p| p.join("../../npm/zed-vize")))
-            .unwrap_or_default(),
-    ];
-
-    locations
-        .into_iter()
-        .find(|path| path.join("extension.toml").exists())
-}
-
-fn copy_dir_all(src: &std::path::Path, dst: &std::path::Path) -> std::io::Result<()> {
-    std::fs::create_dir_all(dst)?;
-    for entry in std::fs::read_dir(src)? {
-        let entry = entry?;
-        let file_type = entry.file_type()?;
-        let from = entry.path();
-        let to = dst.join(entry.file_name());
-        if file_type.is_dir() {
-            copy_dir_all(&from, &to)?;
-        } else if file_type.is_file() {
-            std::fs::copy(&from, &to)?;
-        }
-    }
-    Ok(())
 }
 
 fn zed_uninstall() {
@@ -402,3 +391,6 @@ fn get_zed_extensions_dir() -> Option<PathBuf> {
         None
     }
 }
+
+#[cfg(test)]
+mod tests;

@@ -9,32 +9,13 @@ use vize_carton::cstr;
 
 use super::super::dts::rewrite_relative_specifier;
 use super::detect_nuxt_auto_imports;
-use super::fallback::{fallback_stub_strings, parse_nuxt_config_modules};
-use super::missing_generated_types_warning;
-use super::parsing::{parse_export_names, parse_module_specifier};
+use super::fallback::fallback_stub_strings;
 use super::plugins::extract_plugin_provide_keys_from_source;
 use super::stubs::declared_name;
 
-#[test]
-fn warns_only_when_generated_nuxt_types_are_missing() {
-    // Generated `.nuxt` types present -> accurate checking, no warning.
-    assert!(missing_generated_types_warning(true).is_none());
-    // Missing -> degraded `any`-stub fallback, warn with remediation.
-    let message =
-        missing_generated_types_warning(false).expect("missing generated types must warn");
-    assert!(message.contains("nuxi prepare"));
-    assert!(message.contains("`any`"));
-}
-
-#[test]
-fn parses_module_export_lines() {
-    assert_eq!(
-        parse_module_specifier("'../../app/composables/users';"),
-        Some("../../app/composables/users")
-    );
-    assert_eq!(parse_export_names("foo as bar"), ("foo", "bar"));
-    assert_eq!(parse_export_names("foo"), ("foo", "foo"));
-}
+mod build_dir;
+mod config_modules;
+mod path_aliases;
 
 #[test]
 fn extracts_plugin_provide_keys_from_callback_plugin() {
@@ -209,6 +190,45 @@ export {}
             .any(|global| global.name == "$te"),
         "expected i18n fallback template globals, got: {:#?}",
         options.template_globals
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn generated_imports_fall_back_to_any_for_missing_project_modules() {
+    let project_root = unique_case_dir("nuxt-missing-generated-import");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join(".nuxt/types")).unwrap();
+    std::fs::create_dir_all(project_root.join(".nuxt/composables")).unwrap();
+    std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/composables/useExisting.ts"),
+        "export function useExisting() { return 'ok' }\n",
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/types/imports.d.ts"),
+        r#"declare global {
+  const useVfjsI18n: typeof import('../composables/useVfjsI18n')['useVfjsI18n']
+  const useExisting: typeof import('../composables/useExisting')['useExisting']
+}
+export {}
+"#,
+    )
+    .unwrap();
+
+    let mut options = VirtualTsOptions::default();
+    let _ = detect_nuxt_auto_imports(&mut options, &project_root);
+    let stubs = options.auto_import_stubs.join("\n");
+
+    assert!(
+        stubs.contains("declare const useVfjsI18n: any;"),
+        "missing generated import should fall back to any, got:\n{stubs}"
+    );
+    assert!(
+        stubs.contains("declare const useExisting: typeof import("),
+        "existing generated import should keep its precise type, got:\n{stubs}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
@@ -456,7 +476,6 @@ export {}
         options.auto_import_stubs
     );
 
-    // Without generated artifacts the any-ladder remains the last resort.
     let fallback_root = unique_case_dir("nuxt-fallback-without-generated");
     let _ = std::fs::remove_dir_all(&fallback_root);
     std::fs::create_dir_all(&fallback_root).unwrap();
@@ -488,7 +507,7 @@ fn detects_module_fallbacks_from_nuxt_config() {
         project_root.join("nuxt.config.ts"),
         r#"
 export default defineNuxtConfig({
-  modules: ['@nuxtjs/i18n', '@vueuse/nuxt', '@nuxtjs/color-mode', 'nuxt-og-image'],
+  modules: ['@nuxtjs/i18n', '@nuxt/content', '@vueuse/nuxt', '@nuxtjs/color-mode', 'nuxt-og-image', 'motion-v/nuxt'],
 })
 "#,
     )
@@ -500,10 +519,13 @@ export default defineNuxtConfig({
     for expected in [
         "declare function useI18n():",
         "declare function useLocalePath<T = any",
+        "declare function useLocaleHead<T = any",
+        "declare function queryCollection<T = any",
         "declare function useClipboard<T = any",
         "declare function useScrollLock<T = any",
         "declare function useColorMode():",
         "declare function defineOgImageComponent<T = any",
+        "declare module \"motion-v\"",
     ] {
         assert!(
             options
@@ -524,75 +546,6 @@ export default defineNuxtConfig({
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
-}
-
-#[test]
-fn nuxt_config_modules_ignores_comments_and_unrelated_strings() {
-    let modules = parse_nuxt_config_modules(
-        r#"
-export default defineNuxtConfig({
-  // modules: ['@nuxtjs/i18n'],
-  /* '@vueuse/nuxt' would be nice */
-  modules: [
-    // '@nuxtjs/color-mode',
-    '@nuxtjs/i18n',
-  ],
-  runtimeConfig: { public: { hint: "enable nuxt-og-image later" } },
-})
-"#,
-    );
-
-    assert!(modules.might_include(&["@nuxtjs/i18n", "@nuxt/i18n"]));
-    assert!(!modules.might_include(&["@vueuse/nuxt"]));
-    assert!(!modules.might_include(&["@nuxtjs/color-mode"]));
-    assert!(!modules.might_include(&["nuxt-og-image"]));
-}
-
-#[test]
-fn nuxt_config_modules_parses_tuple_entries_and_plain_object_export() {
-    let modules = parse_nuxt_config_modules(
-        r#"
-export default {
-  modules: [
-    ['@nuxtjs/i18n', { locales: ['en'] }],
-    'nuxt-og-image',
-  ],
-}
-"#,
-    );
-
-    assert!(modules.might_include(&["@nuxtjs/i18n", "@nuxt/i18n"]));
-    assert!(modules.might_include(&["nuxt-og-image"]));
-    assert!(!modules.might_include(&["@vueuse/nuxt"]));
-
-    let empty = parse_nuxt_config_modules("export default defineNuxtConfig({})");
-    assert!(!empty.might_include(&["@nuxtjs/i18n", "@nuxt/i18n"]));
-}
-
-#[test]
-fn nuxt_config_modules_falls_back_conservatively_for_dynamic_entries() {
-    // A spread may contribute any module name, so unmatched candidates stay
-    // conservatively "maybe present" while static entries still resolve.
-    let spread = parse_nuxt_config_modules(
-        r#"
-const extras = ['@vueuse/nuxt']
-export default defineNuxtConfig({
-  modules: ['@nuxtjs/color-mode', ...extras],
-})
-"#,
-    );
-    assert!(spread.might_include(&["@nuxtjs/color-mode"]));
-    assert!(spread.might_include(&["@vueuse/nuxt"]));
-    assert!(spread.might_include(&["@nuxtjs/i18n", "@nuxt/i18n"]));
-
-    // Computed entries and opaque default exports are equally unresolved.
-    let computed =
-        parse_nuxt_config_modules("export default { modules: [resolveModule('nuxt-og-image')] }");
-    assert!(computed.might_include(&["nuxt-og-image"]));
-    assert!(computed.might_include(&["@vueuse/nuxt"]));
-
-    let opaque = parse_nuxt_config_modules("export default buildConfig()");
-    assert!(opaque.might_include(&["nuxt-og-image"]));
 }
 
 #[test]
@@ -637,103 +590,6 @@ export default defineNuxtConfig({
                 .any(|stub| stub.starts_with(absent)),
             "commented-out module must not inject {absent:?}, got: {:#?}",
             options.auto_import_stubs
-        );
-    }
-
-    let _ = std::fs::remove_dir_all(&project_root);
-}
-
-#[test]
-fn path_aliases_come_from_generated_nuxt_tsconfig_when_present() {
-    let project_root = unique_case_dir("nuxt-generated-tsconfig-aliases");
-    let _ = std::fs::remove_dir_all(&project_root);
-    std::fs::create_dir_all(project_root.join(".nuxt")).unwrap();
-    std::fs::create_dir_all(project_root.join("app")).unwrap();
-    std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
-    // `.nuxt/tsconfig.json` is JSON-with-comments and carries the project's REAL
-    // `compilerOptions.paths`. Targets are relative to `.nuxt/`. The custom
-    // `@features/*` alias would never be produced by the hardcoded guesses.
-    std::fs::write(
-        project_root.join(".nuxt/tsconfig.json"),
-        r##"{
-  // generated by nuxi prepare
-  "compilerOptions": {
-    "paths": {
-      "~/*": ["../app/*"],
-      "@features/*": ["../app/features/*"],
-      "#shared/*": ["../shared/*"],
-    },
-  },
-}
-"##,
-    )
-    .unwrap();
-
-    let mut options = VirtualTsOptions::default();
-    let aliases = detect_nuxt_auto_imports(&mut options, &project_root);
-
-    // Aliases come verbatim from the generated config, rebased to project root.
-    assert!(
-        aliases.iter().any(|alias| {
-            alias.pattern.as_str() == "~/*"
-                && alias
-                    .targets
-                    .iter()
-                    .any(|target| target.as_str() == "app/*")
-        }),
-        "expected rebased ~/* alias, got: {aliases:#?}"
-    );
-    assert!(
-        aliases.iter().any(|alias| {
-            alias.pattern.as_str() == "@features/*"
-                && alias
-                    .targets
-                    .iter()
-                    .any(|target| target.as_str() == "app/features/*")
-        }),
-        "expected custom @features/* alias from generated tsconfig, got: {aliases:#?}"
-    );
-    assert!(
-        aliases.iter().any(|alias| {
-            alias.pattern.as_str() == "#shared/*"
-                && alias
-                    .targets
-                    .iter()
-                    .any(|target| target.as_str() == "shared/*")
-        }),
-        "expected #shared/* alias from generated tsconfig, got: {aliases:#?}"
-    );
-    // Hardcoded guesses absent from the generated config must NOT be synthesized.
-    assert!(
-        !aliases.iter().any(|alias| alias.pattern.as_str() == "@/*"),
-        "guessed @/* alias must not be injected when generated tsconfig is present: {aliases:#?}"
-    );
-
-    let _ = std::fs::remove_dir_all(&project_root);
-}
-
-#[test]
-fn path_aliases_fall_back_to_guesses_without_generated_nuxt_tsconfig() {
-    let project_root = unique_case_dir("nuxt-no-generated-tsconfig-aliases");
-    let _ = std::fs::remove_dir_all(&project_root);
-    std::fs::create_dir_all(project_root.join("app")).unwrap();
-    std::fs::create_dir_all(project_root.join("shared")).unwrap();
-    std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
-
-    let mut options = VirtualTsOptions::default();
-    let aliases = detect_nuxt_auto_imports(&mut options, &project_root);
-
-    for (pattern, target) in [
-        ("~/*", "app/*"),
-        ("@/*", "app/*"),
-        ("#shared/*", "shared/*"),
-    ] {
-        assert!(
-            aliases.iter().any(|alias| {
-                alias.pattern.as_str() == pattern
-                    && alias.targets.iter().any(|t| t.as_str() == target)
-            }),
-            "expected hardcoded fallback alias {pattern:?} -> {target:?}, got: {aliases:#?}"
         );
     }
 

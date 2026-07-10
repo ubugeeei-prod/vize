@@ -16,7 +16,9 @@ use crate::commands::build::config::{
     CompileError, CompileOutput, CompileStats, ErrorPhase, FileProfile,
 };
 
-use super::profile_facts::record_atelier_profile_facts;
+use super::profile_facts::{
+    self, FileProfileFacts, StatsCacheStatus, record_atelier_profile_facts,
+};
 use super::settings::CompileFileSettings;
 
 pub(super) fn compile_file_with_profile(
@@ -126,6 +128,11 @@ pub(super) fn compile_file_with_profile(
             ssr: settings.ssr,
             is_ts,
             custom_renderer: settings.custom_renderer,
+            compiler_options: Some(vize_atelier_dom::DomCompilerOptions {
+                experimental_in_tag_comments: settings.experimental_in_tag_comments,
+                experimental_patterned_template: settings.experimental_patterned_template,
+                ..Default::default()
+            }),
             dialect: settings.dialect,
             ..Default::default()
         },
@@ -154,16 +161,20 @@ pub(super) fn compile_file_with_profile(
 
     let total_time = file_start.elapsed();
 
-    let profile = FileProfile {
-        path: path.clone(),
-        file_size,
-        parse_time,
-        compile_time,
-        total_time,
-        template_size,
-        script_size,
-        style_count,
-    };
+    let profile = profile_facts::file_profile(
+        path,
+        FileProfileFacts {
+            file_size,
+            parse_time,
+            compile_time,
+            total_time,
+            template_size,
+            script_size,
+            style_count,
+        },
+        settings,
+        StatsCacheStatus::NotRequested,
+    );
 
     let output = CompileOutput {
         filename,

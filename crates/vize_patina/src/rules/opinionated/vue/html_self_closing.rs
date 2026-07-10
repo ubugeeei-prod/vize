@@ -101,52 +101,113 @@ impl Rule for HtmlSelfClosing {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        let tag = element.tag.as_str();
-        let is_void = VOID_ELEMENTS.contains(&tag);
-        let is_svg = SVG_ELEMENTS.contains(&tag);
-        let is_mathml = MATHML_ELEMENTS.contains(&tag);
-        let is_component =
-            tag.contains('-') || tag.chars().next().is_some_and(|c| c.is_uppercase());
-        let has_children = !element.children.is_empty();
-        let is_self_closing = element.is_self_closing;
-
-        // Void elements should always be self-closing
-        if is_void && !is_self_closing {
-            ctx.warn_with_help(
-                ctx.t("vue/html-self-closing.void"),
-                &element.loc,
-                ctx.t("vue/html-self-closing.help"),
-            );
-            return;
-        }
-
-        // SVG/MathML elements without children should be self-closing
-        if (is_svg || is_mathml) && !has_children && !is_self_closing {
-            ctx.warn_with_help(
-                ctx.t("vue/html-self-closing.empty"),
-                &element.loc,
-                ctx.t("vue/html-self-closing.help"),
-            );
-            return;
-        }
-
-        // Component elements without children should be self-closing
-        if is_component && !has_children && !is_self_closing {
-            ctx.warn_with_help(
-                ctx.t("vue/html-self-closing.component"),
-                &element.loc,
-                ctx.t("vue/html-self-closing.help"),
-            );
-        }
-
-        // Normal HTML elements without children - configurable (default: don't require self-closing)
-        // This is intentionally not enforced for normal HTML elements like <div></div>
+        check_element(ctx, element, false);
     }
+}
+
+/// Nuxt-preset variant of [`HtmlSelfClosing`] that also exempts
+/// framework-registered Vuetify 2 components (`v-*` tags) from
+/// self-closing diagnostics.
+///
+/// Vuetify components are globally registered so the linter cannot determine
+/// their preferred closing style from source. Enabling the exemption in the
+/// Nuxt preset keeps real Nuxt + Vuetify projects out of a self-closing
+/// warning storm without loosening the rule for other presets.
+pub(crate) struct HtmlSelfClosingNuxt;
+
+impl Rule for HtmlSelfClosingNuxt {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        check_element(ctx, element, true);
+    }
+}
+
+fn check_element<'a>(
+    ctx: &mut LintContext<'a>,
+    element: &ElementNode<'a>,
+    allow_vuetify_tags: bool,
+) {
+    let tag = element.tag.as_str();
+    if allow_vuetify_tags && is_vuetify_tag(tag) {
+        return;
+    }
+    let is_void = VOID_ELEMENTS.contains(&tag);
+    let is_svg = SVG_ELEMENTS.contains(&tag);
+    let is_mathml = MATHML_ELEMENTS.contains(&tag);
+    let is_component = (tag.contains('-') || tag.chars().next().is_some_and(|c| c.is_uppercase()))
+        && !is_nuxt_builtin_component(tag);
+    let has_children = !element.children.is_empty();
+    let is_self_closing = element.is_self_closing;
+
+    // Void elements should always be self-closing
+    if is_void && !is_self_closing {
+        ctx.warn_with_help(
+            ctx.t("vue/html-self-closing.void"),
+            &element.loc,
+            ctx.t("vue/html-self-closing.help"),
+        );
+        return;
+    }
+
+    // SVG/MathML elements without children should be self-closing
+    if (is_svg || is_mathml) && !has_children && !is_self_closing {
+        ctx.warn_with_help(
+            ctx.t("vue/html-self-closing.empty"),
+            &element.loc,
+            ctx.t("vue/html-self-closing.help"),
+        );
+        return;
+    }
+
+    // Component elements without children should be self-closing
+    if is_component && !has_children && !is_self_closing {
+        ctx.warn_with_help(
+            ctx.t("vue/html-self-closing.component"),
+            &element.loc,
+            ctx.t("vue/html-self-closing.help"),
+        );
+    }
+
+    // Normal HTML elements without children - configurable (default: don't require self-closing)
+    // This is intentionally not enforced for normal HTML elements like <div></div>
+}
+
+fn is_nuxt_builtin_component(tag: &str) -> bool {
+    matches!(
+        tag,
+        "nuxt"
+            | "nuxt-child"
+            | "nuxt-page"
+            | "nuxt-layout"
+            | "nuxt-link"
+            | "nuxt-loading-indicator"
+            | "nuxt-error-boundary"
+            | "client-only"
+            | "no-ssr"
+            | "Nuxt"
+            | "NuxtChild"
+            | "NuxtPage"
+            | "NuxtLayout"
+            | "NuxtLink"
+            | "NuxtLoadingIndicator"
+            | "NuxtErrorBoundary"
+            | "ClientOnly"
+            | "NoSsr"
+    )
+}
+
+/// Matches the Vuetify `v-*` tag convention (e.g. `v-btn`, `v-dialog`).
+fn is_vuetify_tag(tag: &str) -> bool {
+    let bytes = tag.as_bytes();
+    bytes.len() >= 3 && bytes[0] == b'v' && bytes[1] == b'-' && bytes[2].is_ascii_lowercase()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::HtmlSelfClosing;
+    use super::{HtmlSelfClosing, HtmlSelfClosingNuxt};
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 
@@ -189,5 +250,42 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<MyComponent>content</MyComponent>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_nuxt_child_builtin() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<nuxt-child id="index"></nuxt-child>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    fn create_nuxt_linter() -> Linter {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(HtmlSelfClosingNuxt));
+        Linter::with_registry(registry)
+    }
+
+    #[test]
+    fn test_nuxt_preset_allows_vuetify_tags() {
+        let linter = create_nuxt_linter();
+        let result = linter.lint_template(
+            r#"<v-dialog><v-btn></v-btn><v-icon></v-icon><v-spacer /></v-dialog>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_default_still_flags_empty_vuetify_tags() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<v-btn></v-btn>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_nuxt_preset_still_flags_other_components() {
+        let linter = create_nuxt_linter();
+        let result = linter.lint_template(r#"<MyComponent></MyComponent>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
     }
 }

@@ -50,6 +50,7 @@ mod diagnostic;
 #[cfg(feature = "native")]
 mod file_uri;
 pub mod intelligence;
+mod options_api_setup_spread;
 mod script_parse;
 pub mod sfc_typecheck;
 pub mod source_map;
@@ -64,7 +65,6 @@ pub mod legacy;
 // Batch type checking module (requires native feature)
 #[cfg(feature = "native")]
 pub mod batch;
-
 #[cfg(feature = "native")]
 pub mod corsa_bridge;
 
@@ -82,6 +82,9 @@ pub mod typecheck_service;
 
 #[cfg(all(test, feature = "native"))]
 mod tests;
+
+#[cfg(all(test, feature = "native"))]
+mod type_only_import_anchors;
 
 pub use checker::TypeChecker;
 pub use context::{Binding, BindingKind, Import, Prop, TypeContext};
@@ -106,10 +109,11 @@ pub use vize_carton::i18n::Locale;
 
 #[cfg(feature = "native")]
 pub use corsa_bridge::{
-    CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, LspCompletionItem, LspCompletionList,
-    LspCompletionResponse, LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover,
-    LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspPosition,
-    LspRange, VIRTUAL_URI_SCHEME,
+    CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaVueVirtualDocument,
+    CorsaVueVirtualDocumentOptions, LspCompletionItem, LspCompletionList, LspCompletionResponse,
+    LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover, LspHoverContents,
+    LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspPosition, LspRange,
+    VIRTUAL_URI_SCHEME,
 };
 
 // Re-export batch type checker

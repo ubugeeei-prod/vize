@@ -13,8 +13,87 @@ use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
-use vize_croquis::analysis::ComponentUsage;
-use vize_croquis::analyzer::strip_js_comments;
+use vize_croquis::croquis::{ComponentUsage, PassedProp};
+use vize_croquis::drawer::strip_js_comments;
+
+fn push_ts_string_literal(out: &mut String, value: &str) {
+    out.push('"');
+    for ch in value.chars() {
+        match ch {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            _ => out.push(ch),
+        }
+    }
+    out.push('"');
+}
+
+fn generated_prop_value(
+    prop: &PassedProp,
+    template_prop_names: &FxHashSet<String>,
+) -> Option<String> {
+    if !prop.is_dynamic {
+        let mut value = String::default();
+        if let Some(static_value) = prop.value.as_ref() {
+            push_ts_string_literal(&mut value, static_value.as_str());
+        } else {
+            value.push_str("true");
+        }
+        return Some(value);
+    }
+
+    let value = strip_js_comments(prop.value.as_ref()?.as_str());
+    let trimmed_value = value.as_ref().trim();
+    let rewritten_value = rewrite_reserved_template_prop(trimmed_value, template_prop_names);
+    Some(rewritten_value.as_ref().map_or_else(
+        || String::from(value.as_ref()),
+        |s| String::from(s.as_str()),
+    ))
+}
+
+fn has_inference_props(usage: &ComponentUsage) -> bool {
+    usage.props.iter().any(is_checkable_prop)
+}
+
+fn is_checkable_prop(prop: &PassedProp) -> bool {
+    !prop.name_is_dynamic && prop.name.as_str() != "key" && prop.name.as_str() != "ref"
+}
+
+fn collect_generated_class_bindings<'a>(
+    usage: &'a ComponentUsage,
+    template_prop_names: &FxHashSet<String>,
+) -> Vec<(&'a PassedProp, String)> {
+    usage
+        .props
+        .iter()
+        .filter(|prop| is_checkable_prop(prop) && prop.name.as_str() == "class")
+        .filter_map(|prop| {
+            generated_prop_value(prop, template_prop_names).map(|value| (prop, value))
+        })
+        .collect()
+}
+
+fn merged_class_binding_value(bindings: &[(&PassedProp, String)]) -> Option<String> {
+    match bindings {
+        [] => None,
+        [(_, value)] => Some(value.clone()),
+        _ => {
+            let mut value = String::default();
+            value.push('[');
+            for (index, (_, binding_value)) in bindings.iter().enumerate() {
+                if index > 0 {
+                    value.push_str(", ");
+                }
+                value.push_str(binding_value.as_str());
+            }
+            value.push(']');
+            Some(value)
+        }
+    }
+}
 
 /// Generate component prop value checks at the given indentation level.
 pub(crate) fn generate_component_prop_checks(
@@ -28,24 +107,16 @@ pub(crate) fn generate_component_prop_checks(
 ) {
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
     for prop in &usage.props {
-        if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
+        if !is_checkable_prop(prop) {
             continue;
         }
-        if let Some(ref value) = prop.value
-            && prop.is_dynamic
-        {
+        if prop.value.is_some() && prop.is_dynamic {
             let prop_src_start = (template_offset + prop.start) as usize;
             let prop_src_end = (template_offset + prop.end) as usize;
-            let value = profile!(
-                "canon.virtual_ts.prop_check.strip_comments",
-                strip_js_comments(value.as_str())
+            let generated_value = profile!(
+                "canon.virtual_ts.prop_check.value",
+                generated_prop_value(prop, template_prop_names).unwrap_or_default()
             );
-            let trimmed_value = value.as_ref().trim();
-            let rewritten_value =
-                rewrite_reserved_template_prop(trimmed_value, template_prop_names);
-            let generated_value = rewritten_value
-                .as_ref()
-                .map_or_else(|| value.as_ref(), |s| s.as_str());
             append!(
                 *ts,
                 "{indent}// @vize-map: prop -> {prop_src_start}:{prop_src_end}\n",
@@ -67,7 +138,7 @@ pub(crate) fn generate_component_prop_checks(
             append!(
                 *ts,
                 "{expr_indent}const {check_name}: __{component_type_name}_{idx}_prop_{safe_prop_name} = {};\n",
-                generated_value,
+                generated_value.as_str(),
             );
             let gen_stmt_end = ts.len();
             append!(*ts, "{expr_indent}void {check_name};\n");
@@ -111,10 +182,7 @@ fn generate_generic_props_call(
     template_offset: u32,
     indent: &str,
 ) {
-    let has_dynamic_props = usage.props.iter().any(|p| {
-        p.name.as_str() != "key" && p.name.as_str() != "ref" && p.value.is_some() && p.is_dynamic
-    });
-    if !has_dynamic_props {
+    if !has_inference_props(usage) {
         return;
     }
 
@@ -134,25 +202,49 @@ fn generate_generic_props_call(
         "{expr_indent}(undefined as unknown as __{component_type_name}_Check_{idx})({{\n",
     );
 
+    let class_bindings = collect_generated_class_bindings(usage, template_prop_names);
+    let merge_class_bindings = class_bindings.len() > 1;
+    let mut emitted_merged_class = false;
     for prop in &usage.props {
-        if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
-            continue;
-        }
-        let Some(ref value) = prop.value else {
-            continue;
-        };
-        if !prop.is_dynamic {
+        if !is_checkable_prop(prop) {
             continue;
         }
 
-        let prop_src_start = (template_offset + prop.start) as usize;
-        let prop_src_end = (template_offset + prop.end) as usize;
-        let value = strip_js_comments(value.as_str());
-        let trimmed_value = value.as_ref().trim();
-        let rewritten_value = rewrite_reserved_template_prop(trimmed_value, template_prop_names);
-        let generated_value = rewritten_value
-            .as_ref()
-            .map_or_else(|| value.as_ref(), |s| s.as_str());
+        let generated_value = if merge_class_bindings && prop.name.as_str() == "class" {
+            if emitted_merged_class {
+                continue;
+            }
+            emitted_merged_class = true;
+            merged_class_binding_value(&class_bindings)
+        } else {
+            generated_prop_value(prop, template_prop_names)
+        };
+        let Some(generated_value) = generated_value else {
+            continue;
+        };
+
+        let (prop_src_start, prop_src_end) =
+            if merge_class_bindings && prop.name.as_str() == "class" {
+                let start = class_bindings
+                    .iter()
+                    .map(|(binding, _)| binding.start)
+                    .min()
+                    .unwrap_or(prop.start);
+                let end = class_bindings
+                    .iter()
+                    .map(|(binding, _)| binding.end)
+                    .max()
+                    .unwrap_or(prop.end);
+                (
+                    (template_offset + start) as usize,
+                    (template_offset + end) as usize,
+                )
+            } else {
+                (
+                    (template_offset + prop.start) as usize,
+                    (template_offset + prop.end) as usize,
+                )
+            };
         let camel_prop_name = to_camel_case(prop.name.as_str());
 
         append!(*ts, "{expr_indent}  ");
@@ -161,7 +253,7 @@ fn generate_generic_props_call(
         // object-literal property at the property key, not the value, so a
         // value-only mapping would miss it and the diagnostic would be dropped.
         let entry_gen_start = ts.len();
-        append!(*ts, "\"{camel_prop_name}\": {generated_value}");
+        append!(*ts, "\"{camel_prop_name}\": {}", generated_value.as_str());
         let entry_gen_end = ts.len();
         ts.push_str(",\n");
         mappings.push(VizeMapping {
@@ -175,5 +267,48 @@ fn generate_generic_props_call(
 
     if usage.vif_guard.is_some() {
         append!(*ts, "{indent}}}\n");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    use crate::virtual_ts::generate_virtual_ts;
+
+    #[test]
+    fn generic_props_call_merges_static_and_dynamic_class_bindings() {
+        let script = r#"import TeacherCard from "./TeacherCard.vue"
+const teacher = { name: "Ada" }
+const isLoading = false
+"#;
+        let template = r#"<TeacherCard
+  class="ma-1"
+  :teacher="teacher"
+  :class="{ 'loading-place-holder': isLoading }"
+/>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        assert!(
+            output
+                .code
+                .contains("\"class\": [\"ma-1\", { 'loading-place-holder': isLoading }]"),
+            "expected merged class binding in generic props call:\n{}",
+            output.code
+        );
+        assert_eq!(
+            output.code.matches("\"class\":").count(),
+            1,
+            "class should be emitted once in the props object:\n{}",
+            output.code
+        );
     }
 }

@@ -47,6 +47,13 @@ pub struct IdDuplication;
 struct IdEntry {
     value: String,
     loc: LocInfo,
+    branches: Vec<BranchChoice>,
+}
+
+#[derive(Clone, Copy)]
+struct BranchChoice {
+    if_start: u32,
+    branch_index: usize,
 }
 
 #[derive(Clone)]
@@ -62,14 +69,19 @@ impl Rule for IdDuplication {
 
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         let mut ids: Vec<IdEntry> = Vec::new();
+        let mut branches: Vec<BranchChoice> = Vec::new();
 
-        collect_static_ids(&root.children, &mut ids);
+        collect_static_ids(&root.children, &mut branches, &mut ids);
 
         // Find duplicates
-        let mut seen: FxHashMap<&str, &LocInfo> = FxHashMap::default();
+        let mut seen: FxHashMap<&str, Vec<&IdEntry>> = FxHashMap::default();
 
         for entry in &ids {
-            if let Some(first_loc) = seen.get(entry.value.as_str()) {
+            let duplicate = seen
+                .get(entry.value.as_str())
+                .and_then(|entries| entries.iter().find(|prev| can_coexist(prev, entry)));
+
+            if let Some(first) = duplicate {
                 let message = ctx.t_fmt(
                     "html/id-duplication.message",
                     &[("id", entry.value.as_str())],
@@ -80,38 +92,127 @@ impl Rule for IdDuplication {
                         .with_help(help.into_owned())
                         .with_label(
                             "first defined here".to_compact_string(),
-                            first_loc.start,
-                            first_loc.end,
+                            first.loc.start,
+                            first.loc.end,
                         );
                 ctx.report(diag);
-            } else {
-                seen.insert(&entry.value, &entry.loc);
             }
+            seen.entry(entry.value.as_str()).or_default().push(entry);
         }
     }
 }
 
-fn collect_static_ids<'a>(children: &[TemplateChildNode<'a>], ids: &mut Vec<IdEntry>) {
-    for child in children {
-        match child {
+fn collect_static_ids<'a>(
+    children: &[TemplateChildNode<'a>],
+    branches: &mut Vec<BranchChoice>,
+    ids: &mut Vec<IdEntry>,
+) {
+    let mut index = 0;
+    while index < children.len() {
+        if let TemplateChildNode::Element(el) = &children[index]
+            && element_has_directive(el, "if")
+        {
+            index = collect_conditional_element_chain(children, index, branches, ids);
+            continue;
+        }
+
+        match &children[index] {
             TemplateChildNode::Element(el) => {
-                collect_element_id(el, ids);
-                collect_static_ids(&el.children, ids);
+                collect_element_id(el, branches, ids);
+                collect_static_ids(&el.children, branches, ids);
             }
             TemplateChildNode::If(if_node) => {
-                for branch in if_node.branches.iter() {
-                    collect_static_ids(&branch.children, ids);
+                for (branch_index, branch) in if_node.branches.iter().enumerate() {
+                    branches.push(BranchChoice {
+                        if_start: if_node.loc.start.offset,
+                        branch_index,
+                    });
+                    collect_static_ids(&branch.children, branches, ids);
+                    branches.pop();
                 }
             }
+            TemplateChildNode::IfBranch(branch) => {
+                collect_static_ids(&branch.children, branches, ids)
+            }
             TemplateChildNode::For(for_node) => {
-                collect_static_ids(&for_node.children, ids);
+                collect_static_ids(&for_node.children, branches, ids);
             }
             _ => {}
         }
+        index += 1;
     }
 }
 
-fn collect_element_id(element: &ElementNode, ids: &mut Vec<IdEntry>) {
+fn collect_conditional_element_chain<'a>(
+    children: &[TemplateChildNode<'a>],
+    mut index: usize,
+    branches: &mut Vec<BranchChoice>,
+    ids: &mut Vec<IdEntry>,
+) -> usize {
+    let TemplateChildNode::Element(first) = &children[index] else {
+        return index + 1;
+    };
+    let if_start = first.loc.start.offset;
+    let mut branch_index = 0;
+
+    collect_element_branch(first, if_start, branch_index, branches, ids);
+    index += 1;
+
+    while let Some(next_index) = next_branch_candidate(children, index) {
+        let TemplateChildNode::Element(branch) = &children[next_index] else {
+            break;
+        };
+        let is_else = element_has_directive(branch, "else");
+        if !is_else && !element_has_directive(branch, "else-if") {
+            break;
+        }
+
+        branch_index += 1;
+        collect_element_branch(branch, if_start, branch_index, branches, ids);
+        index = next_index + 1;
+
+        if is_else {
+            break;
+        }
+    }
+
+    index
+}
+
+fn collect_element_branch(
+    element: &ElementNode,
+    if_start: u32,
+    branch_index: usize,
+    branches: &mut Vec<BranchChoice>,
+    ids: &mut Vec<IdEntry>,
+) {
+    branches.push(BranchChoice {
+        if_start,
+        branch_index,
+    });
+    collect_element_id(element, branches, ids);
+    collect_static_ids(&element.children, branches, ids);
+    branches.pop();
+}
+
+fn next_branch_candidate(children: &[TemplateChildNode<'_>], index: usize) -> Option<usize> {
+    children
+        .iter()
+        .enumerate()
+        .skip(index)
+        .find(|(_, child)| !is_ignorable_between_branches(child))
+        .map(|(index, _)| index)
+}
+
+fn is_ignorable_between_branches(child: &TemplateChildNode<'_>) -> bool {
+    match child {
+        TemplateChildNode::Text(text) => text.content.trim().is_empty(),
+        TemplateChildNode::Comment(_) => true,
+        _ => false,
+    }
+}
+
+fn collect_element_id(element: &ElementNode, branches: &[BranchChoice], ids: &mut Vec<IdEntry>) {
     for prop in &element.props {
         if let PropNode::Attribute(attr) = prop
             && attr.name == "id"
@@ -120,9 +221,26 @@ fn collect_element_id(element: &ElementNode, ids: &mut Vec<IdEntry>) {
             ids.push(IdEntry {
                 value: value.content.to_compact_string(),
                 loc: loc_info(&attr.loc),
+                branches: branches.to_vec(),
             });
         }
     }
+}
+
+fn can_coexist(left: &IdEntry, right: &IdEntry) -> bool {
+    left.branches.iter().all(|left_branch| {
+        right
+            .branches
+            .iter()
+            .find(|right_branch| right_branch.if_start == left_branch.if_start)
+            .is_none_or(|right_branch| right_branch.branch_index == left_branch.branch_index)
+    })
+}
+
+fn element_has_directive(element: &ElementNode, name: &str) -> bool {
+    element.props.iter().any(
+        |prop| matches!(prop, PropNode::Directive(directive) if directive.name.as_str() == name),
+    )
 }
 
 fn loc_info(loc: &SourceLocation) -> LocInfo {
@@ -193,6 +311,36 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<div id="foo"><span id="foo">text</span></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_valid_duplicate_ids_across_v_if_branches() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div v-if="show"><input id="radio1"></div><div v-else><input id="radio1"></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_duplicate_ids_inside_same_v_if_branch() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div v-if="show"><input id="radio1"><p id="radio1"></p></div><div v-else><input id="radio1"></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_duplicate_id_after_v_if_branch() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div v-if="show"><input id="radio1"></div><div v-else><input id="other"></div><p id="radio1"></p>"#,
             "test.vue",
         );
         assert_eq!(result.error_count, 1);

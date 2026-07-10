@@ -1,0 +1,1008 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import type { VizePluginState } from "./state.ts";
+import { getBoundaryPlaceholderCode } from "./load.ts";
+import { loadHook } from "./load.ts";
+import { normalizeVueServerRendererImport } from "./load.ts";
+import { transformHook } from "./load.ts";
+import { rewriteImportMetaGlobBase } from "../transform.ts";
+import { toPluginVisibleVirtualId, toVirtualId } from "../virtual.ts";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const workspaceRoot = path.resolve(__dirname, "../../../..");
+const testRoot = path.join(
+  workspaceRoot,
+  "target",
+  "vize-tests",
+  "tests",
+  "vite-plugin-vize",
+  "load",
+);
+fs.mkdirSync(testRoot, { recursive: true });
+
+function createTempRoot(prefix: string): string {
+  return fs.mkdtempSync(path.join(testRoot, prefix + "-"));
+}
+
+const ssrClientPlaceholder = getBoundaryPlaceholderCode("/src/Foo.client.vue", true);
+assert.ok(ssrClientPlaceholder, "SSR should stub .client.vue components");
+assert.match(
+  ssrClientPlaceholder,
+  /createElementBlock\("div"\)/,
+  "SSR .client.vue placeholder should render a simple div",
+);
+
+const clientServerPlaceholder = getBoundaryPlaceholderCode("/src/Foo.server.vue", false);
+assert.ok(clientServerPlaceholder, "Client build should stub .server.vue components");
+assert.match(
+  clientServerPlaceholder,
+  /ServerPlaceholder/,
+  "Client .server.vue placeholder should use the server placeholder component",
+);
+
+assert.equal(
+  getBoundaryPlaceholderCode("/src/Foo.client.vue", false),
+  null,
+  "Client build must not stub .client.vue components",
+);
+assert.equal(
+  getBoundaryPlaceholderCode("/src/Foo.server.vue", true),
+  null,
+  "SSR build must not stub .server.vue components",
+);
+assert.equal(
+  getBoundaryPlaceholderCode("/src/Foo.vue", true),
+  null,
+  "Regular SFCs must not be stubbed",
+);
+
+assert.equal(
+  normalizeVueServerRendererImport(
+    "import { ssrRenderAttrs } from '@vue/server-renderer';\nexport { ssrRenderAttrs };",
+  ),
+  'import { ssrRenderAttrs } from "vue/server-renderer";\nexport { ssrRenderAttrs };',
+  "SSR helper imports should use Vue's public server-renderer entry for Nuxt/Nitro externalization",
+);
+
+assert.equal(
+  rewriteImportMetaGlobBase(
+    `const modules = import.meta.glob("./demos/*.vue", { eager: true });
+const grouped = import.meta.glob(["./demos/*.vue", "../shared/*.vue"]);`,
+    "/project/src/App.vue",
+    "/project",
+  ),
+  `const modules = import.meta.glob("/src/demos/*.vue", { eager: true });
+const grouped = import.meta.glob(["/src/demos/*.vue", "/shared/*.vue"]);`,
+  "Virtual SFC modules should resolve relative import.meta.glob patterns from the original file",
+);
+
+const realPath = "/src/Hmr.vue";
+const hmrState: VizePluginState = {
+  cache: new Map([
+    [
+      realPath,
+      {
+        code: `export function render() { return null }
+const _sfc_main = {}
+_sfc_main.render = render
+export default _sfc_main`,
+        scopeId: "hmr12345",
+        hasScoped: false,
+        styles: [],
+      },
+    ],
+  ]),
+  ssrCache: new Map(),
+  collectedCss: new Map(),
+  precompileMetadata: new Map(),
+  pendingHmrUpdateTypes: new Map([[realPath, "template-only"]]),
+  isProduction: false,
+  root: "/src",
+  clientViteBase: "/",
+  serverViteBase: "/",
+  server: {} as never,
+  filter: () => true,
+  scanPatterns: ["**/*.vue"],
+  precompileBatchSize: 128,
+  ignorePatterns: [],
+  mergedOptions: {},
+  initialized: true,
+  dynamicImportAliasRules: [],
+  cssAliasRules: [],
+  extractCss: false,
+  componentsCssFileName: "assets/vize-components.css",
+  clientViteDefine: {},
+  serverViteDefine: {},
+  logger: {
+    log() {},
+    info() {},
+    warn() {},
+    error() {},
+  } as never,
+};
+
+const virtualDefineState: VizePluginState = {
+  ...hmrState,
+  clientViteDefine: {
+    "import.meta.client": "true",
+    "import.meta.server": "false",
+    "import.meta.dev": "true",
+  },
+};
+
+const virtualDefineTransform = await transformHook(
+  virtualDefineState,
+  `export const flags = [import.meta.client, import.meta.server, import.meta.dev, import.meta.hot];`,
+  toVirtualId("/src/EnvFlags.vue"),
+  { ssr: false },
+);
+
+assert.ok(
+  virtualDefineTransform && typeof virtualDefineTransform === "object",
+  "Virtual module transforms should succeed",
+);
+assert.doesNotMatch(
+  virtualDefineTransform.code,
+  /import\.meta\.(client|server|dev)/,
+  "Virtual module transforms should inline environment flags that Vite skips for \\0 IDs",
+);
+assert.match(
+  virtualDefineTransform.code,
+  /import\.meta\.hot/,
+  "Virtual module transforms must leave import.meta.hot available for Vite HMR",
+);
+assert.equal(
+  virtualDefineTransform.map,
+  null,
+  "Virtual module OXC transforms should not allocate sourcemaps that Vize discards",
+);
+
+const visibleVirtualDefineTransform = await transformHook(
+  virtualDefineState,
+  `export const flags = [import.meta.client, import.meta.server, import.meta.dev, import.meta.hot];`,
+  toPluginVisibleVirtualId("/src/EnvFlags.vue"),
+  { ssr: false },
+);
+
+assert.ok(
+  visibleVirtualDefineTransform && typeof visibleVirtualDefineTransform === "object",
+  "Plugin-visible virtual module transforms should succeed",
+);
+assert.doesNotMatch(
+  visibleVirtualDefineTransform.code,
+  /import\.meta\.(client|server|dev)/,
+  "Plugin-visible virtual module transforms should inline environment flags before post plugins run",
+);
+
+assert.equal(
+  loadHook(
+    hmrState,
+    "/project/node_modules/@sqlite.org/sqlite-wasm/sqlite-wasm/jswasm/sqlite3-bundler-friendly.mjs",
+    { ssr: false },
+  ),
+  null,
+  "Regular dependency modules should bypass Vize load handling",
+);
+
+assert.equal(
+  await transformHook(
+    virtualDefineState,
+    "export default {};",
+    "/project/node_modules/@sqlite.org/sqlite-wasm/sqlite-wasm/jswasm/sqlite3-bundler-friendly.mjs",
+    { ssr: false },
+  ),
+  null,
+  "Regular dependency modules should bypass Vize transform handling",
+);
+
+const failingVirtualTransformRoot = createTempRoot("oxc-fail");
+await assert.rejects(
+  () =>
+    transformHook(
+      { ...virtualDefineState, root: failingVirtualTransformRoot },
+      `export default {`,
+      toVirtualId("/src/BrokenVirtual.vue"),
+      { ssr: false },
+    ),
+  /Virtual module transform failed for \/src\/BrokenVirtual\.vue/,
+  "Virtual transform failures should fail the Vite plugin instead of emitting an empty component",
+);
+
+const definePageDir = createTempRoot("define-page");
+const definePagePath = path.join(definePageDir, "Home.vue");
+fs.writeFileSync(
+  definePagePath,
+  `<script setup lang="ts">
+definePage({
+  name: "home",
+  meta: { requiresAuth: true },
+})
+
+const msg = "ready"
+</script>
+<template><div>{{ msg }}</div></template>`,
+);
+
+const definePageLoad = loadHook(
+  { ...hmrState, cache: new Map(), ssrCache: new Map(), root: definePageDir },
+  `\0${definePagePath}?definePage`,
+  { ssr: false },
+);
+
+assert.ok(
+  definePageLoad && typeof definePageLoad === "object",
+  "Vue Router definePage queries should load as code objects",
+);
+assert.match(
+  definePageLoad.code,
+  /export default \{/,
+  "Vue Router definePage queries should return the extracted route record module",
+);
+assert.doesNotMatch(
+  definePageLoad.code,
+  /const msg/,
+  "Vue Router definePage queries should not return the component setup body",
+);
+
+const definePageMetaDir = createTempRoot("define-page-meta");
+const definePageMetaPath = path.join(definePageMetaDir, "Docs.vue");
+fs.writeFileSync(
+  definePageMetaPath,
+  `<script setup lang="ts">
+definePageMeta({
+  name: "docs",
+  path: "/package-docs/:path+",
+  alias: ["/docs/:path+"],
+  scrollMargin: 180,
+})
+
+const msg = "ready"
+</script>
+<template><div>{{ msg }}</div></template>`,
+);
+
+const definePageMetaLoad = loadHook(
+  { ...hmrState, cache: new Map(), ssrCache: new Map(), root: definePageMetaDir },
+  `\0${definePageMetaPath}?macro=true`,
+  { ssr: false },
+);
+
+assert.ok(
+  definePageMetaLoad && typeof definePageMetaLoad === "object",
+  "Nuxt definePageMeta macro queries should load as code objects",
+);
+assert.match(
+  definePageMetaLoad.code,
+  /const __nuxt_page_meta = \{/,
+  "Nuxt definePageMeta macro queries should return Nuxt-compatible page metadata modules",
+);
+assert.match(
+  definePageMetaLoad.code,
+  /export default __nuxt_page_meta/,
+  "Nuxt definePageMeta macro queries should not be treated as empty by Nuxt's page meta transform",
+);
+assert.match(
+  definePageMetaLoad.code,
+  /scrollMargin/,
+  "Nuxt definePageMeta macro queries should preserve page metadata",
+);
+assert.doesNotMatch(
+  definePageMetaLoad.code,
+  /const msg/,
+  "Nuxt definePageMeta macro queries should not return the component setup body",
+);
+
+const emptyPageMetaDir = createTempRoot("empty-page-meta");
+const emptyPageMetaPath = path.join(emptyPageMetaDir, "Plain.vue");
+fs.writeFileSync(
+  emptyPageMetaPath,
+  `<script setup lang="ts">
+const { t } = useI18n()
+useSeoMeta({ title: () => t("site.name") })
+</script>
+<template><div></div></template>`,
+);
+
+const emptyPageMetaLoad = loadHook(
+  { ...hmrState, cache: new Map(), ssrCache: new Map(), root: emptyPageMetaDir },
+  `\0${emptyPageMetaPath}?macro=true`,
+  { ssr: false },
+);
+
+assert.ok(
+  emptyPageMetaLoad && typeof emptyPageMetaLoad === "object",
+  "Nuxt page macro queries without definePageMeta should still load as code objects",
+);
+assert.equal(
+  emptyPageMetaLoad.code,
+  "export default {}",
+  "Nuxt page macro queries without definePageMeta should return empty metadata",
+);
+assert.doesNotMatch(
+  emptyPageMetaLoad.code,
+  /useI18n|useSeoMeta/,
+  "Nuxt page macro queries must not evaluate setup composables outside setup",
+);
+
+const jsMacroDir = createTempRoot("js-macro");
+const jsMacroPath = path.join(jsMacroDir, "component-stub.js");
+fs.writeFileSync(jsMacroPath, "export default {};");
+
+const jsMacroLoad = loadHook(
+  { ...hmrState, cache: new Map(), ssrCache: new Map(), root: jsMacroDir },
+  `\0${jsMacroPath}?macro=true`,
+  { ssr: false },
+);
+
+assert.equal(
+  typeof jsMacroLoad,
+  "string",
+  "non-Vue macro virtual IDs should be proxied without SFC compilation",
+);
+assert.match(
+  jsMacroLoad as string,
+  /component-stub\.js\?macro=true/,
+  "non-Vue macro proxies should preserve the macro query for Vite",
+);
+
+const firstLoad = loadHook(hmrState, toVirtualId(realPath), { ssr: false });
+assert.ok(firstLoad && typeof firstLoad === "object", "Virtual module should load as code object");
+assert.match(
+  firstLoad.code,
+  /__hmrUpdateType = "template-only"/,
+  "Pending template-only HMR updates must stay granular when render is exposed",
+);
+assert.equal(
+  hmrState.pendingHmrUpdateTypes.has(realPath),
+  false,
+  "Pending HMR updates should be consumed after the client load",
+);
+
+const secondLoad = loadHook(hmrState, toVirtualId(realPath), { ssr: false });
+assert.ok(
+  secondLoad && typeof secondLoad === "object",
+  "Subsequent virtual module loads should still succeed",
+);
+assert.match(
+  secondLoad.code,
+  /__hmrUpdateType = "full-reload"/,
+  "Consumed pending updates must fall back to the default HMR mode",
+);
+
+const watchedDependency = "/src/external.css";
+const watchedPath = "/src/Watched.vue";
+const watchedState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      watchedPath,
+      {
+        code: `export function render() { return null }
+const _sfc_main = {}
+_sfc_main.render = render
+export default _sfc_main`,
+        scopeId: "watch1234",
+        hasScoped: false,
+        styles: [],
+        dependencies: [watchedDependency],
+      },
+    ],
+  ]),
+  pendingHmrUpdateTypes: new Map(),
+};
+const watchedFiles: string[] = [];
+const watchedLoad = loadHook(watchedState, toVirtualId(watchedPath), {
+  ssr: false,
+  addWatchFile: (id) => watchedFiles.push(id),
+});
+assert.ok(watchedLoad && typeof watchedLoad === "object", "Watched SFC should load");
+assert.deepEqual(
+  watchedFiles,
+  [watchedPath, watchedDependency],
+  "Virtual SFC loads should register the real source file and src dependencies with Vite's watcher",
+);
+
+const inlinePath = "/src/InlineHmr.vue";
+const inlineState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      inlinePath,
+      {
+        code: `export default {
+  __name: "InlineHmr",
+  setup() {
+    return (_ctx, _cache) => null
+  },
+}`,
+        scopeId: "inline1234",
+        hasScoped: false,
+        styles: [],
+      },
+    ],
+  ]),
+  ssrCache: new Map(),
+  pendingHmrUpdateTypes: new Map([[inlinePath, "template-only"]]),
+};
+
+const inlineLoad = loadHook(inlineState, toVirtualId(inlinePath), {
+  ssr: false,
+});
+assert.ok(
+  inlineLoad && typeof inlineLoad === "object",
+  "Inline-template virtual modules should load as code objects",
+);
+assert.match(
+  inlineLoad.code,
+  /__hmrUpdateType = "full-reload"/,
+  "Inline-template components must downgrade template-only HMR to full-reload",
+);
+
+const globRoot = createTempRoot("glob-base");
+const globPath = path.join(globRoot, "src", "App.vue");
+const globState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      globPath,
+      {
+        code: `const modules = import.meta.glob("./demos/*.vue", { eager: true });
+const grouped = import.meta.glob(["./demos/*.vue", "../shared/*.vue"]);
+const _sfc_main = {};
+export default _sfc_main`,
+        scopeId: "globbase",
+        hasScoped: false,
+        styles: [],
+      },
+    ],
+  ]),
+  ssrCache: new Map(),
+  pendingHmrUpdateTypes: new Map(),
+  root: globRoot,
+};
+
+const globLoad = loadHook(globState, toVirtualId(globPath), {
+  ssr: false,
+});
+assert.ok(
+  globLoad && typeof globLoad === "object",
+  "Virtual modules with import.meta.glob should load as code objects",
+);
+assert.match(
+  globLoad.code,
+  /import\.meta\.glob\("\/src\/demos\/\*\.vue", \{ eager: true \}\)/,
+  "Virtual modules should rewrite single relative glob patterns to root-relative paths",
+);
+assert.match(
+  globLoad.code,
+  /import\.meta\.glob\(\["\/src\/demos\/\*\.vue", "\/shared\/\*\.vue"\]\)/,
+  "Virtual modules should rewrite array relative glob patterns to root-relative paths",
+);
+assert.doesNotMatch(
+  globLoad.code,
+  /import\.meta\.glob\((?:\.\/|\["\.\/)/,
+  "Virtual modules should not leave relative import.meta.glob patterns for Vite's virtual import-glob transform",
+);
+
+const envPath = "/src/Environment.vue";
+const environmentState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      envPath,
+      {
+        code: `export default { __name: "ClientCompiled" }`,
+        scopeId: "clientenv",
+        hasScoped: false,
+        styles: [],
+      },
+    ],
+  ]),
+  ssrCache: new Map([
+    [
+      envPath,
+      {
+        code: `export default { __name: "ServerCompiled" }`,
+        scopeId: "serverenv",
+        hasScoped: false,
+        styles: [],
+      },
+    ],
+  ]),
+  pendingHmrUpdateTypes: new Map(),
+};
+
+const clientEnvironmentLoad = loadHook(environmentState, toVirtualId(envPath), {
+  ssr: false,
+});
+assert.ok(
+  clientEnvironmentLoad && typeof clientEnvironmentLoad === "object",
+  "Client environment loads should succeed",
+);
+assert.match(
+  clientEnvironmentLoad.code,
+  /ClientCompiled/,
+  "Client loads should read from the client compilation cache",
+);
+
+const visibleClientEnvironmentLoad = loadHook(environmentState, toPluginVisibleVirtualId(envPath), {
+  ssr: false,
+});
+assert.ok(
+  visibleClientEnvironmentLoad && typeof visibleClientEnvironmentLoad === "object",
+  "Plugin-visible client environment loads should succeed",
+);
+assert.match(
+  visibleClientEnvironmentLoad.code,
+  /ClientCompiled/,
+  "Plugin-visible client loads should read from the client compilation cache",
+);
+
+const rawClientEnvironmentLoad = loadHook(environmentState, envPath, { ssr: false });
+assert.ok(
+  rawClientEnvironmentLoad && typeof rawClientEnvironmentLoad === "object",
+  "Raw Vue SFC loads should be claimed when a bundler bypasses resolveId output",
+);
+assert.match(
+  rawClientEnvironmentLoad.code,
+  /ClientCompiled/,
+  "Raw Vue SFC loads should read from the client compilation cache",
+);
+
+const ssrEnvironmentLoad = loadHook(environmentState, toVirtualId(envPath, true), { ssr: true });
+assert.ok(
+  ssrEnvironmentLoad && typeof ssrEnvironmentLoad === "object",
+  "SSR environment loads should succeed",
+);
+assert.match(
+  ssrEnvironmentLoad.code,
+  /ServerCompiled/,
+  "SSR loads should read from the SSR compilation cache",
+);
+
+const cssPath = "/src/SsrStyles.vue";
+const cssState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      cssPath,
+      {
+        code: `export default { __name: "ClientCss" }`,
+        css: ".demo { color: tomato; }",
+        scopeId: "clientcss",
+        hasScoped: false,
+        styles: [],
+      },
+    ],
+  ]),
+  ssrCache: new Map([
+    [
+      cssPath,
+      {
+        code: `export default { __name: "ServerCss" }`,
+        css: ".demo { color: tomato; }",
+        scopeId: "servercss",
+        hasScoped: false,
+        styles: [],
+      },
+    ],
+  ]),
+};
+
+const clientCssLoad = loadHook(cssState, toVirtualId(cssPath), { ssr: false });
+assert.ok(clientCssLoad && typeof clientCssLoad === "object", "Client CSS load should succeed");
+assert.match(
+  clientCssLoad.code,
+  /__vize_css__/,
+  "Client loads should keep inline CSS injection in development",
+);
+
+const ssrCssLoad = loadHook(cssState, toVirtualId(cssPath, true), {
+  ssr: true,
+});
+assert.ok(ssrCssLoad && typeof ssrCssLoad === "object", "SSR CSS load should succeed");
+assert.doesNotMatch(
+  ssrCssLoad.code,
+  /__vize_css__/,
+  "SSR loads should not inject client-only CSS runtime shims",
+);
+assert.doesNotMatch(
+  ssrCssLoad.code,
+  /document\.createElement/,
+  "SSR loads should stay free of document-based side effects",
+);
+
+const cssModulePath = "/src/ModuleButton.vue";
+const cssModuleState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      cssModulePath,
+      {
+        code: `const _sfc_main = { name: "ModuleButton" }
+export default _sfc_main`,
+        scopeId: "modulecss",
+        hasScoped: false,
+        styles: [
+          {
+            content: ".root { color: red; }",
+            lang: "css",
+            scoped: false,
+            module: "buttonStyles",
+            index: 0,
+          },
+        ],
+      },
+    ],
+  ]),
+  ssrCache: new Map(),
+};
+
+const cssModuleLoad = loadHook(cssModuleState, toVirtualId(cssModulePath), {
+  ssr: false,
+});
+assert.ok(
+  cssModuleLoad && typeof cssModuleLoad === "object",
+  "CSS module virtual loads should succeed",
+);
+assert.match(
+  cssModuleLoad.code,
+  /import buttonStyles from "\/src\/ModuleButton\.vue\?vue=&type=style&index=0&lang=css&module=buttonStyles";/,
+  "CSS module virtual loads should emit delegated style imports",
+);
+assert.match(
+  cssModuleLoad.code,
+  /_sfc_main\.__cssModules\["buttonStyles"\] = buttonStyles;/,
+  "CSS module bindings should be attached for normal-script output without relying on semicolons",
+);
+
+const cssModuleFsStyleLoad = loadHook(
+  cssModuleState,
+  "\0/@fs/src/ModuleButton.vue?vue=&type=style&index=0&lang=css&module=.module.css",
+  {
+    ssr: false,
+  },
+);
+assert.ok(
+  cssModuleFsStyleLoad && typeof cssModuleFsStyleLoad === "object",
+  "/@fs CSS module virtual style loads should resolve against the real cache key",
+);
+assert.equal(
+  cssModuleFsStyleLoad.code,
+  ".root { color: red; }",
+  "/@fs CSS module virtual style loads should not fall back to empty CSS",
+);
+
+const applyCssPath = "/src/ApplyStyles.vue";
+const applyCssState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      applyCssPath,
+      {
+        code: `const _sfc_main = { name: "ApplyStyles" }
+export default _sfc_main`,
+        scopeId: "applycss",
+        hasScoped: true,
+        styles: [
+          {
+            content: `.root { @apply text-fg; height: v-bind("height + 'px'"); }`,
+            lang: "css",
+            scoped: true,
+            module: false,
+            index: 0,
+          },
+        ],
+      },
+    ],
+  ]),
+  ssrCache: new Map(),
+};
+
+const applyCssLoad = loadHook(applyCssState, toVirtualId(applyCssPath), {
+  ssr: false,
+});
+assert.ok(
+  applyCssLoad && typeof applyCssLoad === "object",
+  "CSS with @apply should load successfully",
+);
+assert.match(
+  applyCssLoad.code,
+  /import "\/src\/ApplyStyles\.vue\?vue=&type=style&index=0&scoped=data-v-applycss&lang=css";/,
+  "CSS with @apply should be delegated so PostCSS and UnoCSS transformers can run",
+);
+assert.doesNotMatch(
+  applyCssLoad.code,
+  /__vize_css__/,
+  "Delegated @apply CSS should not be injected through the inline CSS runtime path",
+);
+
+const applyCssVirtualLoad = loadHook(
+  applyCssState,
+  "\0/src/ApplyStyles.vue?vue=&type=style&index=0&scoped=data-v-applycss&lang=css.css",
+  { ssr: false },
+);
+assert.ok(
+  applyCssVirtualLoad && typeof applyCssVirtualLoad === "object",
+  "Delegated @apply CSS should load as a virtual style module",
+);
+assert.equal(
+  applyCssVirtualLoad.code,
+  String.raw`.root[data-v-applycss]{@apply text-fg; height: var(--applycss-height\ \+\ \'px\');}`,
+  "Delegated @apply CSS should keep @apply while applying scoped selector and CSS vars",
+);
+
+const applyCssVisibleStyleLoad = loadHook(
+  applyCssState,
+  "/src/ApplyStyles.vue?vue=&type=style&index=0&scoped=data-v-applycss&lang=css.css",
+  { ssr: false },
+);
+assert.ok(
+  applyCssVisibleStyleLoad && typeof applyCssVisibleStyleLoad === "object",
+  "CSS-visible virtual style IDs should load through Vize",
+);
+assert.equal(
+  applyCssVisibleStyleLoad.code,
+  String.raw`.root[data-v-applycss]{@apply text-fg; height: var(--applycss-height\ \+\ \'px\');}`,
+  "CSS-visible delegated styles should keep Vite pipeline semantics",
+);
+
+const nestedCssPath = "/src/NestedStyles.vue";
+const nestedCssState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      nestedCssPath,
+      {
+        code: `const _sfc_main = { name: "NestedStyles" }
+export default _sfc_main`,
+        scopeId: "nestedcss",
+        hasScoped: true,
+        styles: [
+          {
+            content: `#pages-store { row-gap: 1.5rem; @media (--mobile) { row-gap: 1rem; } h1 { margin: 0; } :deep(.divider) { border: 0; } }`,
+            lang: "css",
+            scoped: true,
+            module: false,
+            index: 0,
+          },
+        ],
+      },
+    ],
+  ]),
+  ssrCache: new Map(),
+};
+
+const nestedCssVirtualLoad = loadHook(
+  nestedCssState,
+  "/src/NestedStyles.vue?vue=&type=style&index=0&scoped=data-v-nestedcss&lang=css.css",
+  { ssr: false },
+);
+assert.ok(
+  nestedCssVirtualLoad && typeof nestedCssVirtualLoad === "object",
+  "Nested plain CSS should load through the virtual style pipeline",
+);
+assert.match(nestedCssVirtualLoad.code, /#pages-store\[data-v-nestedcss\]/);
+assert.match(nestedCssVirtualLoad.code, /#pages-store h1\[data-v-nestedcss\]/);
+assert.match(nestedCssVirtualLoad.code, /#pages-store\[data-v-nestedcss\] \.divider/);
+assert.doesNotMatch(nestedCssVirtualLoad.code, /:deep/);
+
+const scssPath = "/src/MkSuperMenu.vue";
+const scssState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      scssPath,
+      {
+        code: `const _sfc_main = { name: "MkSuperMenu" }
+export default _sfc_main`,
+        scopeId: "scssscope",
+        hasScoped: true,
+        styles: [
+          {
+            content: `.rrevdjwu {
+  > .group {
+    & + .group { color: red; }
+  }
+}`,
+            lang: "scss",
+            scoped: true,
+            module: false,
+            index: 0,
+          },
+        ],
+      },
+    ],
+  ]),
+  ssrCache: new Map(),
+};
+
+const scssVirtualLoad = loadHook(
+  scssState,
+  "\0/src/MkSuperMenu.vue?vue=&type=style&index=0&scoped=data-v-scssscope&lang=scss.scss",
+  { ssr: false },
+);
+assert.ok(
+  scssVirtualLoad && typeof scssVirtualLoad === "object",
+  "Delegated SCSS should load as a virtual style module",
+);
+assert.doesNotMatch(
+  scssVirtualLoad.code,
+  /^\[data-v-scssscope\]/,
+  "Scoped preprocessors should not be wrapped before Sass expands nested selectors",
+);
+
+const onDemandProdDir = createTempRoot("load");
+const onDemandProdPath = path.join(onDemandProdDir, "OnDemandProd.vue");
+fs.writeFileSync(
+  onDemandProdPath,
+  `<template><div class="prod">Prod</div></template><style>.prod { color: seagreen; }</style>`,
+);
+
+const onDemandProdState: VizePluginState = {
+  ...hmrState,
+  cache: new Map(),
+  ssrCache: new Map(),
+  collectedCss: new Map(),
+  isProduction: true,
+  extractCss: true,
+};
+
+const onDemandProdLoad = loadHook(onDemandProdState, toVirtualId(onDemandProdPath), {
+  ssr: false,
+});
+assert.ok(
+  onDemandProdLoad && typeof onDemandProdLoad === "object",
+  "Production on-demand loads should still compile successfully",
+);
+assert.doesNotMatch(
+  onDemandProdLoad.code,
+  /__vize_css__/,
+  "Production on-demand loads should not inline CSS when extraction is enabled",
+);
+assert.match(
+  onDemandProdLoad.code,
+  /import ".*OnDemandProd\.vue\?vue=&type=style&index=0&lang=css";/,
+  "Production on-demand loads should emit a Vite-visible plain CSS import",
+);
+assert.equal(
+  onDemandProdState.collectedCss.has(onDemandProdPath),
+  false,
+  "Production on-demand compilation should let Vite collect SFC style imports",
+);
+assert.match(
+  onDemandProdLoad.code,
+  /import ".*OnDemandProd\.vue\?vue=&type=style&index=0&lang=css";/,
+  "Production on-demand loads should emit a virtual style import for CSS extraction",
+);
+
+// A real .jsx file Vize fixture flows through the transform hook and compiles
+// to render code through Vize (the headline acceptance of #1500).
+const jsxFixturePath = path.resolve(__dirname, "..", "test", "fixtures", "jsx", "App.jsx");
+const jsxFixtureSource = fs.readFileSync(jsxFixturePath, "utf8");
+
+const jsxState: VizePluginState = {
+  ...hmrState,
+  cache: new Map(),
+  ssrCache: new Map(),
+  mergedOptions: { vapor: false, include: /\.[jt]sx$/ },
+};
+
+const jsxTransform = await transformHook(jsxState, jsxFixtureSource, jsxFixturePath, {
+  ssr: false,
+});
+assert.ok(
+  jsxTransform && typeof jsxTransform === "object",
+  "Vite should hand .jsx files to Vize and receive a transform result",
+);
+assert.match(
+  jsxTransform.code,
+  /_createElementBlock\("div"/,
+  "VDOM .jsx components should compile to Vize render code through the transform hook",
+);
+// The render code's runtime helpers must be imported (the preamble is no longer
+// dropped, #1533).
+assert.match(
+  jsxTransform.code,
+  /import \{[^}]*createElementBlock[^}]*\} from "vue"/,
+  "VDOM .jsx output should carry the runtime-helper import preamble",
+);
+// Source maps are on in dev (isProduction === false), so a single-component
+// .jsx transform surfaces a v3 map (parsed to the object form Vite expects) for
+// the bundler to consume (#1533).
+assert.ok(
+  jsxTransform.map && typeof jsxTransform.map === "object",
+  "JSX transform should surface a source map object in dev",
+);
+assert.equal(
+  (jsxTransform.map as { version?: number }).version,
+  3,
+  "the surfaced JSX source map should be v3",
+);
+
+const jsxVaporState: VizePluginState = {
+  ...jsxState,
+  mergedOptions: { ...jsxState.mergedOptions, vapor: true },
+};
+
+const jsxVaporTransform = await transformHook(jsxVaporState, jsxFixtureSource, jsxFixturePath, {
+  ssr: false,
+});
+assert.ok(
+  jsxVaporTransform && typeof jsxVaporTransform === "object",
+  "Vapor .jsx transforms should also produce a result",
+);
+assert.match(
+  jsxVaporTransform.code,
+  /_template\(/,
+  "Vapor .jsx components should compile to hoisted templates through the transform hook",
+);
+// The Vapor backend does not emit a source map yet, so the transform reports none.
+assert.equal(
+  jsxVaporTransform.map,
+  null,
+  "Vapor .jsx transform has no source map (Vapor codegen does not emit one yet)",
+);
+
+const tsxFsTransform = await transformHook(
+  jsxState,
+  `const T = () => <span class="t">x</span>;\nexport default T;\n`,
+  "/@fs/abs/src/Widget.tsx",
+  { ssr: false },
+);
+assert.ok(
+  tsxFsTransform && typeof tsxFsTransform === "object",
+  "/@fs-prefixed .tsx requests should be claimed and compiled through Vize",
+);
+assert.match(
+  tsxFsTransform.code,
+  /render|_createElementBlock/,
+  "/@fs .tsx requests should emit Vize render code",
+);
+
+const nonJsxTransform = await transformHook(jsxState, "export default 1;", "/src/plain.ts", {
+  ssr: false,
+});
+assert.equal(
+  nonJsxTransform,
+  null,
+  "Plain non-JSX modules should bypass the Vize JSX transform path",
+);
+
+const rawJsxTransform = await transformHook(jsxState, jsxFixtureSource, `${jsxFixturePath}?raw`, {
+  ssr: false,
+});
+assert.equal(
+  rawJsxTransform,
+  null,
+  "?raw imports of a .jsx file should keep Vite's default asset handling, not Vize compilation",
+);
+
+// A .tsx component's `<style scoped>` becomes emitted CSS through the transform
+// hook, mirroring the SFC plain-CSS inline-injection path (#1495, #1533).
+const scopedTsxTransform = await transformHook(
+  jsxState,
+  `const Scoped = () => (\n  <div class="box">\n    <style scoped>{\`.box { color: red }\`}</style>\n  </div>\n);\nexport default Scoped;\n`,
+  "/src/Scoped.tsx",
+  { ssr: false },
+);
+assert.ok(
+  scopedTsxTransform && typeof scopedTsxTransform === "object",
+  "a .tsx with <style scoped> should produce a transform result",
+);
+assert.match(
+  scopedTsxTransform.code,
+  /__vize_css__/,
+  "the transform hook should emit JSX <style scoped> CSS through the inline-style injection path",
+);
+assert.match(
+  scopedTsxTransform.code,
+  /\.box\[data-v-[0-9a-f]+\]/,
+  "the emitted JSX CSS should apply the scope id to the .box selector",
+);
+
+console.log("✅ vite-plugin-vize load boundary tests passed!");

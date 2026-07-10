@@ -11,8 +11,9 @@ mod single_file;
 
 use super::types::CrossFileOptions;
 use crate::graph::DependencyGraph;
-use crate::registry::ModuleRegistry;
-use vize_croquis::AnalyzerOptions;
+use crate::registry::{FileId, ModuleRegistry};
+use vize_carton::FxHashMap;
+use vize_croquis::{AnalyzerOptions, EffectGraphSummary};
 
 /// Cross-file analyzer for Vue projects.
 pub struct CrossFileAnalyzer {
@@ -22,6 +23,8 @@ pub struct CrossFileAnalyzer {
     registry: ModuleRegistry,
     /// Dependency graph.
     graph: DependencyGraph,
+    /// Parser-built local reactive effect summaries by file.
+    effect_graph_summaries: FxHashMap<FileId, EffectGraphSummary>,
     /// Single-file analyzer options.
     single_file_options: AnalyzerOptions,
 }

@@ -9,6 +9,7 @@
  * - reference-escape: Reference escape patterns
  * - provide-inject: Provide/inject type safety
  * - attrs: $attrs handling patterns
+ * - complexity: Component-tree template complexity
  *
  * Note: This file is separate from the Vue component to avoid
  * linting issues with embedded Vue code in template literals.
@@ -29,6 +30,7 @@ import { SETUP_CONTEXT_PRESET } from "./crossfile-setup-context";
 import { REFERENCE_ESCAPE_PRESET } from "./crossfile-reference-escape";
 import { PROVIDE_INJECT_PRESET } from "./crossfile-provide-inject";
 import { FALLTHROUGH_ATTRS_PRESET } from "./crossfile-attrs";
+import { COMPLEXITY_PRESET } from "./crossfile-complexity";
 
 export interface Preset {
   id: string;
@@ -45,4 +47,5 @@ export const PRESETS: Preset[] = [
   { ...REFERENCE_ESCAPE_PRESET, icon: mdiArrowTopRight },
   { ...PROVIDE_INJECT_PRESET, icon: mdiFileTree },
   { ...FALLTHROUGH_ATTRS_PRESET, icon: mdiArrowDown },
+  { ...COMPLEXITY_PRESET, icon: mdiFileTree },
 ];

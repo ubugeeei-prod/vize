@@ -26,13 +26,13 @@ pub fn extract_define_model(content: &str) -> Vec<MacroCall> {
             if let Some(paren_end) = find_matching_paren(&after[paren_start..]) {
                 let args = String::from(&after[paren_start + 1..paren_start + paren_end]);
                 let type_args = extract_type_args(&after[..paren_start]);
-                calls.push(MacroCall {
+                calls.push(MacroCall::new(
                     start,
-                    end: start + paren_start + paren_end + 1,
+                    start + paren_start + paren_end + 1,
                     args,
                     type_args,
-                    binding_name: None,
-                });
+                    None,
+                ));
                 search_from = start + paren_start + paren_end + 1;
             } else {
                 break;

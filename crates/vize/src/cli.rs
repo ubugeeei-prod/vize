@@ -105,8 +105,9 @@ fn run(cli: Cli) {
 
 #[cfg(test)]
 mod tests {
-    use super::Cli;
-    use clap::CommandFactory;
+    use super::{Cli, Commands};
+    use crate::commands::musea::MuseaCommand;
+    use clap::{CommandFactory, Parser};
 
     #[test]
     fn long_help_snapshot() {
@@ -132,6 +133,17 @@ mod tests {
     }
 
     #[test]
+    fn lint_help_snapshot() {
+        insta::assert_snapshot!("cli_lint_help", command_help("lint"));
+    }
+
+    #[cfg(feature = "glyph")]
+    #[test]
+    fn ready_help_snapshot() {
+        insta::assert_snapshot!("cli_ready_help", command_help("ready"));
+    }
+
+    #[test]
     fn clean_help_snapshot() {
         insta::assert_snapshot!("cli_clean_help", command_help("clean"));
     }
@@ -144,6 +156,30 @@ mod tests {
     #[test]
     fn curator_help_snapshot() {
         insta::assert_snapshot!("cli_curator_help", command_help("curator"));
+    }
+
+    #[test]
+    fn musea_serve_accepts_strict_port_spellings() {
+        for args in [
+            &["vize", "musea", "--strict-port"][..],
+            &["vize", "musea", "--strictPort"][..],
+            &["vize", "musea", "serve", "--strict-port"][..],
+            &["vize", "musea", "serve", "--strictPort"][..],
+        ] {
+            let cli = Cli::try_parse_from(args).unwrap();
+            let Some(Commands::Musea(args)) = cli.command else {
+                panic!("expected musea command");
+            };
+
+            let serve_args = match args.command {
+                Some(MuseaCommand::Serve(serve_args)) => serve_args,
+                None => args.serve,
+                Some(MuseaCommand::New(_)) | Some(MuseaCommand::Migrate(_)) => {
+                    panic!("expected musea serve args")
+                }
+            };
+            assert!(serve_args.strict_port);
+        }
     }
 
     fn command_help(command_name: &str) -> String {

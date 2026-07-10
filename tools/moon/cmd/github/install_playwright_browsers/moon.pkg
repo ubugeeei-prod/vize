@@ -1,0 +1,9 @@
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/process",
+  "moonbitlang/x/sys",
+}
+
+options(
+  "is-main": true,
+)

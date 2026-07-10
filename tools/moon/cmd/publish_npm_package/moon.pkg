@@ -1,0 +1,16 @@
+import {
+  "vizejs/tools/lib" @tool,
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/core/string",
+  "moonbitlang/async",
+  "moonbitlang/async/process",
+  "moonbitlang/async/stdio",
+  "moonbitlang/x/fs" @xfs,
+  "moonbitlang/x/path",
+  "moonbitlang/x/sys",
+}
+
+options(
+  "is-main": true,
+)

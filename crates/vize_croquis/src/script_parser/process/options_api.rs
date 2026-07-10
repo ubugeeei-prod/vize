@@ -1,9 +1,8 @@
-//! Options API component metadata collection.
-//!
-//! Walks `export default { ... }` / `defineComponent({ ... })` options objects
-//! to collect component registrations and template bindings (props, data,
-//! computed, methods, inject, setup, same-file mixins/extends) for the
-//! Options API and legacy Vue 2.7.
+//! Options API component metadata collection for component registrations and template bindings.
+
+mod emits;
+
+use emits::collect_options_api_emits_from_options as collect_emits;
 
 use oxc_ast::ast::{
     Argument, ArrayExpression, ArrayExpressionElement, BindingPattern, CallExpression,
@@ -29,6 +28,7 @@ struct ComponentOptionsRef<'a> {
 pub(in crate::script_parser) fn collect_options_api_component_metadata(
     result: &mut ScriptParseResult,
     program: &Program<'_>,
+    source: &str,
     options_api: bool,
     legacy_vue2: bool,
 ) {
@@ -45,8 +45,7 @@ pub(in crate::script_parser) fn collect_options_api_component_metadata(
 
         // Class components (vue-class-component / vue-property-decorator):
         // in an SFC the default export *is* the component, so a class default
-        // export is unambiguous. Auto-detected by AST shape — no flag, and
-        // this arm never executes for non-class components.
+        // export is unambiguous. Auto-detected by AST shape, no flag needed.
         if let Some(class) = super::class_component::class_from_export(&export.declaration) {
             super::class_component::collect_class_component_metadata(
                 result,
@@ -64,6 +63,7 @@ pub(in crate::script_parser) fn collect_options_api_component_metadata(
         if result.options_descriptor.is_none() {
             result.options_descriptor = Some(build_options_descriptor(options.object));
         }
+        collect_emits(result, options.object, &object_bindings, source);
         collect_component_registrations_from_options(result, options.object, &object_bindings);
         // Options API template bindings are valid in Vue 3 too; legacy Vue 2.7
         // implies them and additionally pulls in the Nuxt 2 globals below.

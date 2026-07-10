@@ -6,14 +6,13 @@
 
 use crate::steps::v_slot::{get_slot_name, has_v_slot};
 use crate::{ElementNode, ForNode, IfNode, PropNode, RuntimeHelper, TemplateChildNode};
-use vize_carton::String;
-use vize_carton::ToCompactString;
+use vize_carton::{String, ToCompactString};
 
 use super::super::context::CodegenContext;
 use super::super::expression::generate_expression;
-use super::super::helpers::escape_js_string;
 use super::children::{generate_slot_child_node, generate_slot_children};
 use super::detect::{child_is_slot_template, slot_children_have_meaningful_content};
+use super::name::generate_slot_entry_name;
 use super::params::{extract_slot_params, get_slot_props, prefix_slot_defaults};
 
 /// Generate slots using createSlots for conditional/looped slot templates
@@ -236,9 +235,9 @@ fn generate_slot_object_entry(
         ctx.newline();
 
         // name
-        ctx.push("name: \"");
-        ctx.push(&escape_js_string(&slot_name));
-        ctx.push("\",");
+        ctx.push("name: ");
+        generate_slot_entry_name(ctx, dir, &slot_name);
+        ctx.push(",");
         ctx.newline();
 
         // fn

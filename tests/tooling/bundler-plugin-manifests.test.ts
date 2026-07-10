@@ -9,6 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 interface ExportEntry {
   default?: string;
   import?: string;
+  require?: string;
   types?: string;
 }
 
@@ -51,8 +52,8 @@ function leadingMajor(pin: string): number {
   return Number(match[1]);
 }
 
-test("@vizejs/unplugin exposes per-bundler subpath entries wired at mjs/d.mts", () => {
-  const manifest = readManifest("unplugin-vize");
+test("@vizejs/unplugin exposes per-bundler subpath entries with jiti-safe webpack", () => {
+  const manifest = readManifest("builder/unplugin");
   assert.equal(manifest.name, "@vizejs/unplugin");
 
   for (const subpath of ["./esbuild", "./rollup", "./rolldown", "./webpack", "./babel"]) {
@@ -61,19 +62,36 @@ test("@vizejs/unplugin exposes per-bundler subpath entries wired at mjs/d.mts", 
     assert.equal(typeof entry, "object", `export subpath ${subpath} must be a conditions object`);
 
     const conditions = entry as ExportEntry;
-    assert.ok(
-      conditions.import?.endsWith(".mjs"),
-      `${subpath} import should point at a .mjs file, got ${conditions.import}`,
-    );
+    if (subpath === "./webpack") {
+      assert.ok(
+        conditions.import?.endsWith(".cjs"),
+        `${subpath} import should point at a .cjs file for Nuxt 2 jiti, got ${conditions.import}`,
+      );
+      assert.ok(
+        conditions.default?.endsWith(".cjs"),
+        `${subpath} default should point at a .cjs file for Nuxt 2 jiti, got ${conditions.default}`,
+      );
+    } else {
+      assert.ok(
+        conditions.import?.endsWith(".mjs"),
+        `${subpath} import should point at a .mjs file, got ${conditions.import}`,
+      );
+    }
     assert.ok(
       conditions.types?.endsWith(".d.mts"),
       `${subpath} types should point at a .d.mts file, got ${conditions.types}`,
     );
+    if (subpath === "./webpack") {
+      assert.ok(
+        conditions.require?.endsWith(".cjs"),
+        `${subpath} require should point at a .cjs file, got ${conditions.require}`,
+      );
+    }
   }
 });
 
 test("@vizejs/unplugin declares the webpack peer range and the workspace pins webpack 5.x", () => {
-  const manifest = readManifest("unplugin-vize");
+  const manifest = readManifest("builder/unplugin");
   assert.equal(manifest.peerDependencies?.webpack, "^4.46.0 || ^5.0.0");
 
   const webpackPin = catalogPin(readWorkspaceYaml(), "bundlers", "webpack");
@@ -82,7 +100,7 @@ test("@vizejs/unplugin declares the webpack peer range and the workspace pins we
 });
 
 test("@vizejs/rspack-plugin peer range matches the catalog @rspack/core major", () => {
-  const manifest = readManifest("rspack-vize-plugin");
+  const manifest = readManifest("builder/rspack");
   assert.equal(manifest.name, "@vizejs/rspack-plugin");
   assert.equal(manifest.peerDependencies?.["@rspack/core"], "^1.0.0 || ^2.0.0");
 
@@ -95,10 +113,20 @@ test("@vizejs/rspack-plugin peer range matches the catalog @rspack/core major", 
   );
 });
 
-test("@vizejs/vite-plugin peers vite ^8 while the workspace resolves vite via the VoidZero proxy", () => {
-  const manifest = readManifest("vite-plugin-vize");
-  assert.equal(manifest.name, "@vizejs/vite-plugin");
-  assert.equal(manifest.peerDependencies?.vite, "^8.0.0");
+test("Vite integrations accept Nuxt 3.19's Vite 7.3 range and Vite 8", () => {
+  for (const packageDir of [
+    "builder/vite",
+    "builder/vite-musea",
+    "framework/musea-nuxt",
+    "framework/nuxt",
+  ]) {
+    const manifest = readManifest(packageDir);
+    assert.equal(
+      manifest.peerDependencies?.vite,
+      "^7.3.0 || ^8.0.0",
+      `${manifest.name ?? packageDir} vite peer range`,
+    );
+  }
 
   const vitePin = catalogPin(readWorkspaceYaml(), "vite-stack", "vite");
   assert.ok(vitePin, "vite catalog pin (vite-stack)");
@@ -109,7 +137,7 @@ test("@vizejs/vite-plugin peers vite ^8 while the workspace resolves vite via th
 });
 
 test("all three bundler-plugin packages require Node >= 22", () => {
-  for (const packageDir of ["unplugin-vize", "rspack-vize-plugin", "vite-plugin-vize"]) {
+  for (const packageDir of ["builder/unplugin", "builder/rspack", "builder/vite"]) {
     const manifest = readManifest(packageDir);
     const nodeEngine = manifest.engines?.node;
     assert.ok(nodeEngine, `${packageDir} engines.node`);

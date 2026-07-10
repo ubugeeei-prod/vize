@@ -7,10 +7,13 @@ import Foo from './foo'
 
 const __sfc__ = /*@__PURE__*/_defineComponent({
   __name: 'Test',
+  props: {
+    value: { type: null as unknown as PropType<Foo> },
+  },
   setup(__props, { expose: __expose, emit: __emit }) {
   __expose();
   const props = __props
-  const __returned__ = { value }
+  const __returned__ = {  }
   Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
   return __returned__
   }

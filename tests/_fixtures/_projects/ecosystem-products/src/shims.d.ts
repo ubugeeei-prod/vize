@@ -10,6 +10,13 @@ declare module "vue-select" {
   export default component;
 }
 
+declare module "vue-i18n" {
+  export function useI18n(options?: Record<string, unknown>): {
+    t: (key: string) => string;
+    locale: import("vue").Ref<string>;
+  };
+}
+
 declare module "vue" {
   export interface GlobalComponents {
     TresAmbientLight: import("vue").DefineComponent<Record<string, unknown>, {}, any>;

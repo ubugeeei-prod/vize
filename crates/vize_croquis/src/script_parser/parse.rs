@@ -22,8 +22,18 @@ use vize_carton::{CompactString, profile};
 /// This is a high-performance alternative to string-based analysis,
 /// providing accurate AST-based detection with proper span tracking.
 pub fn parse_script_setup_with_generic(source: &str, generic: Option<&str>) -> ScriptParseResult {
+    parse_script_setup_with_generic_and_jsx(source, generic, false)
+}
+
+/// Parse script setup source code using OXC parser with optional JSX syntax.
+pub fn parse_script_setup_with_generic_and_jsx(
+    source: &str,
+    generic: Option<&str>,
+    jsx: bool,
+) -> ScriptParseResult {
     let allocator = Allocator::default();
-    let source_type = SourceType::from_path("script.ts").unwrap_or_default();
+    let path = if jsx { "script.tsx" } else { "script.ts" };
+    let source_type = SourceType::from_path(path).unwrap_or_default();
 
     let ret = profile!(
         "croquis.script_setup.oxc_parse",
@@ -154,8 +164,33 @@ pub fn parse_script(source: &str) -> ScriptParseResult {
 
 /// Parse non-script-setup source code using OXC parser with explicit options.
 pub fn parse_script_with_options(source: &str, options: ScriptParserOptions) -> ScriptParseResult {
+    parse_script_with_options_source_type(
+        source,
+        options,
+        SourceType::from_path("script.ts").unwrap_or_default(),
+    )
+}
+
+/// Parse non-script-setup source code using OXC parser with JSX enabled.
+pub fn parse_script_with_options_and_jsx(
+    source: &str,
+    options: ScriptParserOptions,
+    jsx: bool,
+) -> ScriptParseResult {
+    let path = if jsx { "script.tsx" } else { "script.ts" };
+    parse_script_with_options_source_type(
+        source,
+        options,
+        SourceType::from_path(path).unwrap_or_default(),
+    )
+}
+
+pub(crate) fn parse_script_with_options_source_type(
+    source: &str,
+    options: ScriptParserOptions,
+    source_type: SourceType,
+) -> ScriptParseResult {
     let allocator = Allocator::default();
-    let source_type = SourceType::from_path("script.ts").unwrap_or_default();
 
     let ret = profile!(
         "croquis.script_plain.oxc_parse",
@@ -194,6 +229,7 @@ pub fn parse_script_with_options(source: &str, options: ScriptParserOptions) -> 
     process::collect_options_api_component_metadata(
         &mut result,
         &ret.program,
+        source,
         options.options_api,
         options.legacy_vue2,
     );

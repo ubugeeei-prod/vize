@@ -6,20 +6,20 @@ import type { Target } from "./types.ts";
  * fixture that exercises the Vize Vite integration.
  */
 function ensureBuildCommonVite(): void {
-  run("pnpm", ["-C", "npm/vize-native", "build"]);
+  run("pnpm", ["-C", "npm/native", "build"]);
   run("wasm-pack", [
     "build",
     "crates/vize_vitrine",
     "--target",
     "nodejs",
     "--out-dir",
-    "../../npm/vite-plugin-vize/wasm",
+    "../../npm/builder/vite/wasm",
     "--features",
     "wasm",
     "--no-default-features",
   ]);
-  run("pnpm", ["-C", "npm/vize", "build"]);
-  run("pnpm", ["-C", "npm/vite-plugin-vize", "build"]);
+  run("pnpm", ["-C", "npm/cli", "build"]);
+  run("pnpm", ["-C", "npm/builder/vite", "build"]);
 }
 
 /**
@@ -27,9 +27,9 @@ function ensureBuildCommonVite(): void {
  */
 function ensureBuildNuxtStack(): void {
   ensureBuildCommonVite();
-  run("pnpm", ["-C", "npm/vite-plugin-musea", "build"]);
-  run("pnpm", ["-C", "npm/musea-nuxt", "build"]);
-  run("pnpm", ["-C", "npm/nuxt", "build"]);
+  run("pnpm", ["-C", "npm/builder/vite-musea", "build"]);
+  run("pnpm", ["-C", "npm/framework/musea-nuxt", "build"]);
+  run("pnpm", ["-C", "npm/framework/nuxt", "build"]);
 }
 
 function ensureBuildPlayground(): void {

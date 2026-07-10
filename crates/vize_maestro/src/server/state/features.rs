@@ -220,6 +220,12 @@ impl LspFeatureConfig {
         self.lint || self.typecheck || self.ecosystem
     }
 
+    pub(super) fn apply_effective_compatibility(&mut self) {
+        if self.legacy_vue2 {
+            self.options_api = true;
+        }
+    }
+
     fn apply_editor_bundle(&mut self, enabled: bool) {
         self.ecosystem = enabled;
         self.completion = enabled;

@@ -4,6 +4,7 @@
 //! - `script`: Script setup generation, imports, compiler macros
 //! - `template`: Template AST traversal and expression emission
 
+mod options_api;
 mod script;
 mod template;
 

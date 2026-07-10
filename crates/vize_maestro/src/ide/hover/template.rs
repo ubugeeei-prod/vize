@@ -12,27 +12,41 @@ use tower_lsp::lsp_types::Hover;
 use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
 
-#[cfg(feature = "native")]
-use std::sync::Arc;
-
-#[cfg(feature = "native")]
-use vize_canon::CorsaBridge;
-
 use super::{HoverBuilder, HoverService};
 use crate::ide::IdeContext;
 
 impl HoverService {
     /// Get hover for template context.
     pub(super) fn hover_template(ctx: &IdeContext) -> Option<Hover> {
-        // Try to find what's under the cursor
         let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
 
         if word.is_empty() {
             return None;
         }
 
-        // Check for Vue directives
         if let Some(hover) = Self::hover_directive(&word) {
+            return Some(hover);
+        }
+
+        if let Some(hover) = Self::hover_component_tag(ctx) {
+            return Some(hover);
+        }
+
+        if let Some(hover) = super::component_prop::hover_attribute(ctx) {
+            return Some(hover);
+        }
+
+        #[cfg(feature = "native")]
+        if let Some(hover) = Self::hover_native_dom_attribute(ctx) {
+            return Some(hover);
+        }
+
+        #[cfg(feature = "native")]
+        if let Some(hover) = Self::hover_native_dom_tag(ctx) {
+            return Some(hover);
+        }
+
+        if let Some(hover) = Self::hover_template_directive_attribute(ctx) {
             return Some(hover);
         }
 
@@ -47,12 +61,10 @@ impl HoverService {
             return Some(hover);
         }
 
-        // Try to get TypeScript type information from croquis analysis
         if let Some(hover) = Self::hover_ts_binding(ctx, &word) {
             return Some(hover);
         }
 
-        // Try to get type information from vize_canon
         if let Some(type_info) = crate::ide::TypeService::get_type_at(ctx) {
             #[allow(clippy::disallowed_macros)]
             let signature = format!("{word}: {}", type_info.display);
@@ -68,7 +80,6 @@ impl HoverService {
             return Some(builder.build());
         }
 
-        // Check for template bindings from script setup
         if let Some(ref virtual_docs) = ctx.virtual_docs
             && let Some(ref script_setup) = virtual_docs.script_setup
         {
@@ -92,7 +103,6 @@ impl HoverService {
             }
         }
 
-        // Default: show it's a template expression
         Some(
             HoverBuilder::new()
                 .title(&word)
@@ -102,64 +112,89 @@ impl HoverService {
         )
     }
 
-    /// Get hover for template context with Corsa support.
-    #[cfg(feature = "native")]
-    pub(super) async fn hover_template_with_corsa(
-        ctx: &IdeContext<'_>,
-        corsa_bridge: Option<Arc<CorsaBridge>>,
-    ) -> Option<Hover> {
-        let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
+    fn hover_template_directive_attribute(ctx: &IdeContext<'_>) -> Option<Hover> {
+        let attr_name = template_attribute_name_at_offset(&ctx.content, ctx.offset)?;
 
-        if word.is_empty() {
-            return None;
-        }
-
-        // Check for Vue directives first; these do not need Corsa.
-        if let Some(hover) = Self::hover_directive(&word) {
-            return Some(hover);
-        }
-
-        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
-            return None;
-        }
-
-        // petite-vue standalone HTML `v-scope` bindings have no virtual TS
-        // declaration for Corsa to resolve; surface them from the scope chain.
-        if let Some(hover) = Self::hover_petite_vue_scope_binding(ctx, &word) {
-            return Some(hover);
-        }
-
-        // Try to get type information from Corsa via virtual TypeScript.
-        if let Some(bridge) = corsa_bridge
-            && let Some(ref virtual_docs) = ctx.virtual_docs
-            && let Some(ref template) = virtual_docs.template
+        if let Some(event_name) = attr_name
+            .strip_prefix('@')
+            .or_else(|| attr_name.strip_prefix("v-on:"))
         {
-            // Calculate position in virtual TS
-            if let Some(vts_offset) = Self::sfc_to_virtual_ts_offset(ctx, ctx.offset) {
-                let (line, character) =
-                    crate::ide::offset_to_position(&template.content, vts_offset);
+            let event_name = event_name
+                .split_once('.')
+                .map_or(event_name, |(name, _)| name);
+            let title = if event_name.is_empty() {
+                "v-on".to_string()
+            } else {
+                format!("@{event_name}")
+            };
+            let example = if event_name.is_empty() {
+                "v-on:event=\"handler\"".to_string()
+            } else {
+                format!("@{event_name}=\"handler\"")
+            };
 
-                // Open/update virtual document
-                if bridge.is_initialized() {
-                    #[allow(clippy::disallowed_macros)]
-                    let vdoc_uri = format!("{}.template.ts", ctx.uri.path());
-                    let Ok(uri) = bridge
-                        .open_or_update_virtual_document(&vdoc_uri, &template.content)
-                        .await
-                    else {
-                        return Self::hover_template(ctx);
-                    };
-
-                    // Request hover from Corsa.
-                    if let Ok(Some(hover)) = bridge.hover(&uri, line, character).await {
-                        return Some(Self::convert_lsp_hover(hover));
-                    }
-                }
-            }
+            return Some(
+                HoverBuilder::new()
+                    .title(&title)
+                    .meta("Vue event listener")
+                    .example("vue", &example)
+                    .description(
+                        "Attaches a DOM or component event listener. The handler expression is evaluated in component scope.",
+                    )
+                    .bullets(
+                        "Template behavior",
+                        &[
+                            "`$event` is available inside inline handler expressions.",
+                            "Event modifiers such as `.stop`, `.prevent`, and key modifiers are compiled by Vue.",
+                        ],
+                    )
+                    .docs(
+                        "Vue Event Handling",
+                        "https://vuejs.org/guide/essentials/event-handling.html",
+                    )
+                    .build(),
+            );
         }
 
-        // Fall back to croquis analysis
-        Self::hover_template(ctx)
+        if attr_name.starts_with(':') || attr_name.starts_with("v-bind:") || attr_name == "v-bind" {
+            return Some(
+                HoverBuilder::new()
+                    .title("v-bind")
+                    .meta("Vue attribute / prop binding")
+                    .example("vue", ":prop=\"expression\"")
+                    .description(
+                        "Binds an attribute or component prop to a JavaScript expression in template scope.",
+                    )
+                    .bullets(
+                        "Template behavior",
+                        &[
+                            "Native element bindings patch DOM attributes or reflected properties.",
+                            "Component bindings resolve to props when the target is a component.",
+                        ],
+                    )
+                    .docs(
+                        "Vue v-bind",
+                        "https://vuejs.org/api/built-in-directives.html#v-bind",
+                    )
+                    .build(),
+            );
+        }
+
+        if attr_name.starts_with('#') || attr_name.starts_with("v-slot:") || attr_name == "v-slot" {
+            return Self::hover_directive("v-slot");
+        }
+
+        if attr_name.starts_with("v-") {
+            let without_argument = attr_name
+                .split_once(':')
+                .map_or(attr_name, |(name, _)| name);
+            let base = without_argument
+                .split_once('.')
+                .map_or(without_argument, |(name, _)| name);
+            return Self::hover_directive(base);
+        }
+
+        None
     }
 
     /// Get hover for TypeScript binding using croquis analysis.
@@ -180,29 +215,29 @@ impl HoverService {
             .or_else(|| descriptor.script.as_ref().map(|s| s.content.as_ref()));
 
         // Create a drawer and analyze script.
-        let analyzer_options = DrawerOptions::full();
-        let mut analyzer = Drawer::with_options(analyzer_options);
+        let drawer_options = DrawerOptions::full();
+        let mut drawer = Drawer::with_options(drawer_options);
         if ctx.state.lsp_features().legacy_vue2 {
-            analyzer = analyzer.with_legacy_vue2();
+            drawer = drawer.with_legacy_vue2();
         } else if ctx.state.options_api_enabled() {
-            analyzer = analyzer.with_options_api();
+            drawer = drawer.with_options_api();
         }
 
         if let Some(ref script) = descriptor.script {
-            analyzer.analyze_script_plain(&script.content);
+            drawer.analyze_script_plain(&script.content);
         }
         if let Some(ref script_setup) = descriptor.script_setup {
-            analyzer.analyze_script_setup(&script_setup.content);
+            drawer.analyze_script_setup(&script_setup.content);
         }
 
         // Analyze template if present
         if let Some(ref template) = descriptor.template {
             let allocator = vize_carton::Bump::new();
             let (root, _) = vize_armature::parse(&allocator, &template.content);
-            analyzer.analyze_template(&root);
+            drawer.analyze_template(&root);
         }
 
-        let summary = analyzer.finish();
+        let summary = drawer.finish();
 
         // Look up the binding in the analysis summary
         let binding_type = summary.get_binding_type(word)?;
@@ -249,84 +284,6 @@ impl HoverService {
                     &[
                         "Ref values are automatically unwrapped in templates.",
                         resolved_from,
-                    ],
-                )
-                .build(),
-        )
-    }
-
-    /// Get hover for a petite-vue `v-scope` binding in a standalone HTML
-    /// document.
-    ///
-    /// petite-vue documents have no SFC `<template>` block, so the whole
-    /// document is the template. We parse it with the document parser
-    /// (`<!DOCTYPE>`-tolerant, raw-text `<script>`/`<style>`) and run Croquis
-    /// over the resulting AST. `v-scope` keys are modeled as `v-slot`-kind
-    /// scopes, so the identifier under the cursor resolves through the same
-    /// `bindings_visible_at` walk the completion path uses. Offsets are
-    /// document-absolute (no `<template>` block offset to subtract).
-    ///
-    /// Gated on `is_standalone_html_path` + petite-vue dialect, so `.vue` SFC
-    /// hover is unaffected.
-    pub(super) fn hover_petite_vue_scope_binding(ctx: &IdeContext, word: &str) -> Option<Hover> {
-        use vize_croquis::{Drawer, DrawerOptions, ScopeKind};
-
-        if !crate::utils::is_standalone_html_path(ctx.uri.path()) || !ctx.dialect().is_petite_vue()
-        {
-            return None;
-        }
-
-        let allocator = vize_carton::Bump::new();
-        let (root, _errors) = vize_armature::parse_document(&allocator, &ctx.content);
-
-        let mut drawer = Drawer::with_options(DrawerOptions::full());
-        drawer.draw_template(&root);
-        let croquis = drawer.finish();
-
-        let offset = ctx.offset.min(ctx.content.len()) as u32;
-        let (binding, scope_kind) = croquis
-            .scopes
-            .bindings_visible_at(offset)
-            .into_iter()
-            .find(|(name, _, scope_kind)| {
-                *name == word
-                    && matches!(
-                        scope_kind,
-                        ScopeKind::VSlot
-                            | ScopeKind::VFor
-                            | ScopeKind::EventHandler
-                            | ScopeKind::Callback
-                    )
-            })
-            .map(|(_, binding, scope_kind)| (binding, scope_kind))?;
-
-        let inferred_type = Self::binding_type_to_ts_display(binding.binding_type);
-        #[allow(clippy::disallowed_macros)]
-        let signature = format!("{word}: {inferred_type}");
-
-        let scope_note = match scope_kind {
-            ScopeKind::VFor => {
-                "Local binding introduced by a `v-for` inside the `v-scope` subtree."
-            }
-            ScopeKind::EventHandler | ScopeKind::Callback => {
-                "Local binding visible inside the `v-scope` subtree."
-            }
-            _ => "Reactive key declared by the enclosing `v-scope` object.",
-        };
-
-        Some(
-            HoverBuilder::new()
-                .title(word)
-                .meta("petite-vue scope binding")
-                .code("typescript", &signature)
-                .description(
-                    "Resolved from the petite-vue `v-scope` chain of this standalone HTML document.",
-                )
-                .bullets(
-                    "Behavior",
-                    &[
-                        scope_note,
-                        "Visible only inside its `v-scope` subtree's expressions and directives.",
                     ],
                 )
                 .build(),
@@ -405,11 +362,107 @@ impl HoverService {
                         "Directive expressions are evaluated in component scope.",
                     ],
                 )
-                .link(
+                .docs(
                     "Vue Built-in Directives",
                     "https://vuejs.org/api/built-in-directives.html",
                 )
                 .build(),
         )
     }
+}
+
+fn template_attribute_name_at_offset(content: &str, offset: usize) -> Option<&str> {
+    let cursor = offset.min(content.len());
+    let tag_start = content[..cursor].rfind('<')?;
+    let bytes = content.as_bytes();
+    if matches!(bytes.get(tag_start + 1), Some(b'/' | b'!' | b'?')) {
+        return None;
+    }
+
+    let tag_end = find_open_tag_end(content, tag_start)?;
+    if cursor > tag_end {
+        return None;
+    }
+
+    let mut pos = tag_start + 1;
+    while pos < tag_end {
+        let byte = bytes[pos];
+        if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_') {
+            pos += 1;
+        } else {
+            break;
+        }
+    }
+
+    while pos < tag_end {
+        while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+            pos += 1;
+        }
+        if pos >= tag_end || matches!(bytes[pos], b'/' | b'>') {
+            break;
+        }
+
+        let attr_start = pos;
+        while pos < tag_end
+            && !bytes[pos].is_ascii_whitespace()
+            && !matches!(bytes[pos], b'=' | b'/' | b'>')
+        {
+            pos += 1;
+        }
+        let attr_end = pos;
+        if attr_start == attr_end {
+            return None;
+        }
+
+        if cursor >= attr_start && cursor <= attr_end {
+            return Some(&content[attr_start..attr_end]);
+        }
+
+        while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+            pos += 1;
+        }
+        if pos < tag_end && bytes[pos] == b'=' {
+            pos += 1;
+            while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+                pos += 1;
+            }
+            if pos < tag_end && matches!(bytes[pos], b'"' | b'\'') {
+                let quote = bytes[pos];
+                pos += 1;
+                while pos < tag_end && bytes[pos] != quote {
+                    pos += 1;
+                }
+                if pos < tag_end {
+                    pos += 1;
+                }
+            } else {
+                while pos < tag_end && !bytes[pos].is_ascii_whitespace() && bytes[pos] != b'>' {
+                    pos += 1;
+                }
+            }
+        }
+    }
+
+    None
+}
+
+fn find_open_tag_end(content: &str, tag_start: usize) -> Option<usize> {
+    let mut quote = None;
+    let mut pos = tag_start;
+
+    while pos < content.len() {
+        let ch = content[pos..].chars().next()?;
+        if let Some(open_quote) = quote {
+            if ch == open_quote {
+                quote = None;
+            }
+        } else if ch == '"' || ch == '\'' {
+            quote = Some(ch);
+        } else if ch == '>' {
+            return Some(pos);
+        }
+        pos += ch.len_utf8();
+    }
+
+    None
 }

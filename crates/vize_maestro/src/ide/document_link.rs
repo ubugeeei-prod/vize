@@ -31,18 +31,15 @@ impl DocumentLinkService {
 
         let base_path = uri.to_file_path().ok();
 
-        // Collect links from script setup
         if let Some(ref script_setup) = descriptor.script_setup {
-            // src attribute
             if let Some(ref src) = script_setup.src
                 && let Some((start, end)) =
-                    Self::find_src_attr_range(content, script_setup.loc.start)
+                    Self::find_src_attr_range(content, script_setup.loc.tag_start)
                 && let Some(target) = Self::resolve_path(src, base_path.as_deref())
             {
                 links.push(Self::create_link(content, start, end, target));
             }
 
-            // Import statements
             Self::collect_import_links(
                 &script_setup.content,
                 script_setup.loc.start,
@@ -53,17 +50,14 @@ impl DocumentLinkService {
             Self::collect_define_art_source_links(content, uri, &mut links);
         }
 
-        // Collect links from script
         if let Some(ref script) = descriptor.script {
-            // src attribute
             if let Some(ref src) = script.src
-                && let Some((start, end)) = Self::find_src_attr_range(content, script.loc.start)
+                && let Some((start, end)) = Self::find_src_attr_range(content, script.loc.tag_start)
                 && let Some(target) = Self::resolve_path(src, base_path.as_deref())
             {
                 links.push(Self::create_link(content, start, end, target));
             }
 
-            // Import statements
             Self::collect_import_links(
                 &script.content,
                 script.loc.start,
@@ -73,26 +67,22 @@ impl DocumentLinkService {
             );
         }
 
-        // Collect links from template src
         if let Some(ref template) = descriptor.template
             && let Some(ref src) = template.src
-            && let Some((start, end)) = Self::find_src_attr_range(content, template.loc.start)
+            && let Some((start, end)) = Self::find_src_attr_range(content, template.loc.tag_start)
             && let Some(target) = Self::resolve_path(src, base_path.as_deref())
         {
             links.push(Self::create_link(content, start, end, target));
         }
 
-        // Collect links from styles
         for style in &descriptor.styles {
-            // src attribute
             if let Some(ref src) = style.src
-                && let Some((start, end)) = Self::find_src_attr_range(content, style.loc.start)
+                && let Some((start, end)) = Self::find_src_attr_range(content, style.loc.tag_start)
                 && let Some(target) = Self::resolve_path(src, base_path.as_deref())
             {
                 links.push(Self::create_link(content, start, end, target));
             }
 
-            // @import statements
             Self::collect_css_import_links(
                 &style.content,
                 style.loc.start,
@@ -280,10 +270,7 @@ impl DocumentLinkService {
 
     /// Find src attribute range in the opening tag.
     fn find_src_attr_range(content: &str, tag_start: usize) -> Option<(usize, usize)> {
-        // Find the end of opening tag (>)
-        let tag_content = &content[tag_start..];
-        let tag_end = tag_content.find('>')?;
-        let tag = &tag_content[..tag_end];
+        let tag = content.get(tag_start..)?.split_once('>')?.0;
 
         // Find src="..." or src='...'
         let src_pos = tag.find("src=")?;
@@ -295,7 +282,7 @@ impl DocumentLinkService {
         }
 
         let value_start = src_pos + 5; // src=" plus quote
-        let value_end = after_src[1..].find(quote)? + 1; // content length
+        let value_end = after_src[1..].find(quote)?;
 
         Some((tag_start + value_start, tag_start + value_start + value_end))
     }
@@ -324,9 +311,17 @@ impl DocumentLinkService {
             resolved.with_extension("vue"),
             resolved.with_extension("tsx"),
             resolved.with_extension("jsx"),
+            resolved.with_extension("mts"),
+            resolved.with_extension("cts"),
+            resolved.with_extension("mjs"),
+            resolved.with_extension("cjs"),
             resolved.join("index.ts"),
             resolved.join("index.js"),
             resolved.join("index.vue"),
+            resolved.join("index.mts"),
+            resolved.join("index.cts"),
+            resolved.join("index.mjs"),
+            resolved.join("index.cjs"),
         ];
 
         for candidate in &candidates {

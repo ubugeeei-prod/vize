@@ -7,14 +7,16 @@
 use super::super::helpers::generated_text_range;
 use super::super::types::VizeMapping;
 use super::reserved_props::rewrite_reserved_template_prop;
-use super::vif_chain::{VifControlFlowChain, emit_vif_control_flow_chain};
+use super::vif_chain::{
+    VifControlFlowChain, VifControlFlowEmitContext, emit_vif_control_flow_chain,
+};
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
-use vize_croquis::analysis::{TemplateExpression, TemplateExpressionKind};
-use vize_croquis::analyzer::strip_js_comments;
+use vize_croquis::croquis::{TemplateExpression, TemplateExpressionKind};
+use vize_croquis::drawer::strip_js_comments;
 
 /// Generate template expressions, compacting recognized v-if chains into
 /// TypeScript control-flow blocks.
@@ -23,21 +25,23 @@ pub(crate) fn generate_expressions(
     mappings: &mut Vec<VizeMapping>,
     exprs: &[&TemplateExpression],
     template_prop_names: &FxHashSet<String>,
+    skipped_expression_ranges: &FxHashSet<(u32, u32)>,
     template_offset: u32,
     indent: &str,
 ) {
     let mut index = 0;
     while index < exprs.len() {
+        if skipped_expression_ranges.contains(&(exprs[index].start, exprs[index].end)) {
+            index += 1;
+            continue;
+        }
         if let Some(chain) = VifControlFlowChain::collect(exprs, index) {
-            emit_vif_control_flow_chain(
-                ts,
-                mappings,
-                exprs,
-                &chain,
-                template_prop_names,
+            let context = VifControlFlowEmitContext {
+                skipped_expression_ranges,
                 template_offset,
                 indent,
-            );
+            };
+            emit_vif_control_flow_chain(ts, mappings, exprs, &chain, template_prop_names, &context);
             index = chain.end;
             continue;
         }

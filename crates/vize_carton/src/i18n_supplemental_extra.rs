@@ -18,6 +18,7 @@ pub(crate) fn register(messages: &mut [MessageMap; 3]) {
         messages[1].insert(key, ja);
         messages[2].insert(key, zh);
     }
+    crate::i18n_supplemental_extra2::register(messages);
 }
 
 /// Extra supplemental translation entries: `(key, en, ja, zh)`.
@@ -173,5 +174,138 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "Merge the objects into one, e.g. :class=\"[{ a }, { b }]\" becomes :class=\"{ a, b }\".",
         "オブジェクトを1つにまとめてください。例: :class=\"[{ a }, { b }]\" は :class=\"{ a, b }\" になります。",
         "请将这些对象合并为一个，例如 :class=\"[{ a }, { b }]\" 改为 :class=\"{ a, b }\"。",
+    ),
+    // vue/valid-template-root
+    (
+        "vue/valid-template-root.description",
+        "Enforce a valid `<template>` root for Vue 3 fragment semantics",
+        "Vue 3のフラグメントセマンティクスに対して有効な `<template>` ルートを強制する",
+        "强制 `<template>` 根符合 Vue 3 的片段语义",
+    ),
+    (
+        "vue/valid-template-root.disallowed_root",
+        "`<{tag}>` cannot be used as a root node of the template",
+        "`<{tag}>` はテンプレートのルートノードとして使用できません",
+        "`<{tag}>` 不能用作模板的根节点",
+    ),
+    (
+        "vue/valid-template-root.help",
+        "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node.",
+        "<template> や <slot> をルートノードとして使わず、内容を実要素（例: <div>）で囲んでください。",
+        "请用真实的根元素（例如 <div>）包裹内容，而不要把 <template> 或 <slot> 作为根节点。",
+    ),
+    // vue/no-v-for-template-key-on-child
+    (
+        "vue/no-v-for-template-key-on-child.description",
+        "Disallow `key` on the child of a `<template v-for>`",
+        "`<template v-for>`の子要素への`key`を禁止する",
+        "禁止在`<template v-for>`的子元素上使用`key`",
+    ),
+    (
+        "vue/no-v-for-template-key-on-child.message",
+        "the `key` for a `<template v-for>` must be on the `<template>`, not on its child",
+        "`<template v-for>`の`key`は子要素ではなく`<template>`自身に置く必要があります",
+        "`<template v-for>`的`key`必须放在`<template>`上，而不是其子元素上",
+    ),
+    (
+        "vue/no-v-for-template-key-on-child.help",
+        "Move the `:key` up onto the `<template v-for>` element. In Vue 3 the key lives on the template, not the child (the reverse of Vue 2).",
+        "`:key`を`<template v-for>`要素に移動してください。Vue 3ではキーは子要素ではなくtemplateに置きます（Vue 2とは逆）。",
+        "请将`:key`移到`<template v-for>`元素上。在Vue 3中，key位于template而非子元素上（与Vue 2相反）。",
+    ),
+    // vue/require-toggle-inside-transition
+    (
+        "vue/require-toggle-inside-transition.description",
+        "Require a toggle on the element wrapped by `<transition>`",
+        "`<transition>`で囲む要素にトグルを必須にする",
+        "要求`<transition>`包裹的元素具有切换条件",
+    ),
+    (
+        "vue/require-toggle-inside-transition.message",
+        "the element inside `<transition>` is expected to have a toggle such as `v-if`, `v-show`, or a bound `:key`",
+        "`<transition>`内の要素には`v-if`、`v-show`、またはバインドされた`:key`などのトグルが必要です",
+        "`<transition>`内的元素应具有切换条件，例如`v-if`、`v-show`或绑定的`:key`",
+    ),
+    (
+        "vue/require-toggle-inside-transition.help",
+        "Add `v-if`, `v-show`, `v-else`, `v-else-if`, or a bound `:key`, or use a dynamic `<component :is>`; otherwise the element never enters or leaves and the `<transition>` does nothing.",
+        "`v-if`、`v-show`、`v-else`、`v-else-if`、バインドされた`:key`を追加するか、動的な`<component :is>`を使用してください。そうしないと要素が出入りせず、`<transition>`は何もしません。",
+        "请添加`v-if`、`v-show`、`v-else`、`v-else-if`或绑定的`:key`，或使用动态`<component :is>`；否则元素永远不会进入或离开，`<transition>`将不起作用。",
+    ),
+    // vue/no-array-index-key
+    (
+        "vue/no-array-index-key.description",
+        "Disallow using the v-for index variable directly as the :key",
+        "v-forのインデックス変数をそのまま :key に使うことを禁止する",
+        "禁止直接将 v-for 的索引变量用作 :key",
+    ),
+    (
+        "vue/no-array-index-key.message",
+        "Do not use the v-for index as :key; use a stable, unique identifier instead",
+        "v-forのインデックスを :key に使わないでください。安定した一意の識別子を使用してください",
+        "请勿将 v-for 的索引用作 :key；请改用稳定且唯一的标识符",
+    ),
+    (
+        "vue/no-array-index-key.help",
+        "Bind :key to a stable id from the item (e.g. :key=\"item.id\"). The index changes when the list is reordered or filtered, so Vue reuses the wrong element state.",
+        ":key には項目の安定したid（例: :key=\"item.id\"）をバインドしてください。リストの並べ替えやフィルタリングでインデックスは変化するため、Vueが誤った要素の状態を再利用してしまいます。",
+        "请将 :key 绑定到项目中稳定的 id（例如 :key=\"item.id\"）。当列表被重新排序或过滤时索引会变化，导致 Vue 复用错误的元素状态。",
+    ),
+    // vue/no-bare-strings-in-template
+    (
+        "vue/no-bare-strings-in-template.description",
+        "Disallow raw human-readable text in the template that should be internationalized",
+        "国際化すべきテンプレート内の生の人間可読テキストを禁止する",
+        "禁止在模板中使用应当国际化的原始可读文本",
+    ),
+    (
+        "vue/no-bare-strings-in-template.message",
+        "Raw text should be wrapped in a translation function instead of being written directly in the template",
+        "生のテキストはテンプレートに直接書くのではなく、翻訳関数で囲んでください",
+        "原始文本应使用翻译函数包裹，而不是直接写在模板中",
+    ),
+    (
+        "vue/no-bare-strings-in-template.help",
+        "Move the text into a translation function, e.g. {{ $t('key') }} for content or :title=\"$t('key')\" for an attribute.",
+        "テキストを翻訳関数に移してください。例: 内容には {{ $t('key') }}、属性には :title=\"$t('key')\" を使用します。",
+        "请将文本移入翻译函数，例如内容使用 {{ $t('key') }}，属性使用 :title=\"$t('key')\"。",
+    ),
+    // vue/no-deprecated-filter
+    (
+        "vue/no-deprecated-filter.description",
+        "Disallow deprecated Vue 2 filter syntax (the `|` pipe)",
+        "非推奨の Vue 2 フィルター構文（`|` パイプ）を禁止する",
+        "禁止已废弃的 Vue 2 过滤器语法（`|` 管道符）",
+    ),
+    (
+        "vue/no-deprecated-filter.message",
+        "Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "フィルターは Vue 3 で削除されました。'|' フィルターをメソッド呼び出しまたは算出プロパティに置き換えてください",
+        "过滤器已在 Vue 3 中移除；请将 '|' 过滤器替换为方法调用或计算属性",
+    ),
+    (
+        "vue/no-deprecated-filter.help",
+        "Replace the filter with a method call or computed property (e.g. {{ capitalize(message) }} instead of {{ message | capitalize }}).",
+        "フィルターをメソッド呼び出しまたは算出プロパティに置き換えてください（例: {{ message | capitalize }} ではなく {{ capitalize(message) }}）。",
+        "请将过滤器替换为方法调用或计算属性（例如用 {{ capitalize(message) }} 代替 {{ message | capitalize }}）。",
+    ),
+    // vue/no-deprecated-functional-template
+    (
+        "vue/no-deprecated-functional-template.description",
+        "Disallow the `functional` attribute on the SFC `<template>`",
+        "SFCの`<template>`への`functional`属性を禁止する",
+        "禁止在SFC的`<template>`上使用`functional`属性",
+    ),
+    (
+        "vue/no-deprecated-functional-template.message",
+        "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+        "`<template>`の`functional`属性（関数型SFCテンプレート）はVue 3で削除されました",
+        "`<template>`上的`functional`属性（函数式SFC模板）已在Vue 3中移除",
+    ),
+    (
+        "vue/no-deprecated-functional-template.help",
+        "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+        "`functional`を削除してステートフルなコンポーネントにするか、関数型コンポーネントを通常の関数（レンダー関数やJSXなど）として記述してください。",
+        "请移除`functional`并改用有状态组件，或将函数式组件写成普通函数（例如渲染函数或JSX）。",
     ),
 ];

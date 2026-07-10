@@ -4,6 +4,7 @@ use std::path::Path;
 
 use glob::MatchOptions;
 
+use super::super::patterns as check_patterns;
 use super::spec::GlobSpec;
 use super::{NODE_MODULES_DIR, TARGET_DIR, VIZE_CACHE_DIR};
 
@@ -73,24 +74,57 @@ fn is_generated_component(previous: Option<&str>, name: &str) -> bool {
     name == TARGET_DIR || (previous == Some(NODE_MODULES_DIR) && name == VIZE_CACHE_DIR)
 }
 
+pub(super) fn is_nuxt_import_manifest_path(path: &Path) -> bool {
+    let Some(file_name) = path.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    if !matches!(
+        file_name,
+        "imports.d.ts" | "imports.d.mts" | "imports.d.cts"
+    ) {
+        return false;
+    }
+
+    let components = path
+        .components()
+        .filter_map(|component| component.as_os_str().to_str())
+        .collect::<Vec<_>>();
+    components
+        .windows(2)
+        .any(|window| window[0] == ".nuxt" && window[1] == file_name)
+        || components
+            .windows(3)
+            .any(|window| window[0] == ".nuxt" && window[1] == "types" && window[2] == file_name)
+}
+
+pub(super) fn is_generated_codegen_declaration_path(path: &Path) -> bool {
+    if !path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
+    {
+        return false;
+    }
+
+    let mut previous = None;
+    path.components().any(|component| {
+        let Some(name) = component.as_os_str().to_str() else {
+            previous = None;
+            return false;
+        };
+        let is_codegen = previous == Some("types") && name == "codegen";
+        previous = Some(name);
+        is_codegen
+    })
+}
+
 pub(super) fn is_supported_check_file_with_options(
     path: &Path,
     options: SupportedFileOptions,
 ) -> bool {
-    if path
-        .file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts"))
-    {
-        return true;
-    }
-
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| {
-            matches!(extension, "vue" | "ts" | "tsx" | "mts" | "cts")
-                || (options.include_jsx && extension == "jsx")
-        })
+    check_patterns::is_supported_check_file(path, options.include_jsx)
 }
 
 pub(super) fn glob_match_options() -> MatchOptions {

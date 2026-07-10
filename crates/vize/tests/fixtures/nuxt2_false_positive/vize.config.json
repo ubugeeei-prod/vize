@@ -1,0 +1,4 @@
+{
+  "vue": { "version": "2.7" },
+  "typeChecker": { "legacyVue2": true }
+}

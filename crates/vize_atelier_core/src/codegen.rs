@@ -4,6 +4,7 @@
 
 mod children;
 mod children_static;
+mod component_binding;
 mod context;
 mod element;
 mod emit;

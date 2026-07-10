@@ -1,9 +1,10 @@
 ---
 source: crates/vize_atelier_sfc/src/compile/tests.rs
+assertion_line: 2347
 expression: result.code.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
+import { createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, unref as _unref, withCtx as _withCtx } from "vue"
 
 import { Form, Input } from 'ant-design-vue'
 
@@ -14,9 +15,9 @@ export default /*@__PURE__*/_defineComponent({
 
 
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createBlock(Form.Item, { label: "Teacher" }, {
+  return (_openBlock(), _createBlock(_unref(Form).Item, { label: "Teacher" }, {
     default: _withCtx(() => [
-      _createVNode(Input)
+      _createVNode(_unref(Input))
     ]),
     _: 1 /* STABLE */
   }))

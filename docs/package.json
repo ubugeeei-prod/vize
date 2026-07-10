@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "generate:rules": "node ./scripts/generate-patina-rules-page.mjs",
     "dev": "vp build && vp preview",
     "build": "node ./scripts/ensure-browser.mjs && vp build",
     "preview": "vp preview"

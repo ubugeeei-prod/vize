@@ -6,6 +6,11 @@
 
 mod bridge;
 mod types;
+mod vue_dependencies;
+mod vue_dependency_specifiers;
+mod vue_document;
+#[cfg(test)]
+mod vue_document_tests;
 
 pub use bridge::{BatchTypeChecker, CorsaBridge};
 pub use types::{
@@ -14,13 +19,17 @@ pub use types::{
     LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspPosition,
     LspRange, TypeCheckResult, VIRTUAL_URI_SCHEME,
 };
+pub use vue_document::{CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions};
+pub(crate) use vue_document::{CorsaVueVirtualProject, build_vue_virtual_project};
 
 #[cfg(test)]
 mod tests {
     use super::{
         CorsaBridgeConfig, LspDiagnostic, LspPosition, LspRange, TypeCheckResult,
-        VIRTUAL_URI_SCHEME,
+        VIRTUAL_URI_SCHEME, bridge,
     };
+    use crate::file_uri::path_to_file_uri;
+    use std::path::Path;
     use vize_carton::cstr;
 
     #[test]
@@ -66,5 +75,15 @@ mod tests {
         assert!(config.working_dir.is_none());
         assert_eq!(config.timeout_ms, 30000);
         assert!(!config.enable_profiling);
+    }
+
+    #[test]
+    fn normalizes_absolute_paths_with_file_uri_encoding() {
+        let path = Path::new("/workspace/app=demo/src/App.vue.ts");
+
+        assert_eq!(
+            bridge::normalize_document_uri(path.to_str().unwrap()),
+            path_to_file_uri(path)
+        );
     }
 }

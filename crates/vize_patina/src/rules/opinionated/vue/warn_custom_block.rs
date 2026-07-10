@@ -58,6 +58,15 @@ impl Rule for WarnCustomBlock {
     }
 
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
+        // Custom blocks are an SFC concept (`<i18n>`, `<docs>`, etc.).
+        // Standalone HTML files (e.g. `index.html`, `.storybook/preview-head.html`)
+        // are not Vue SFCs, so every top-level non-`script`/`template`/`style`
+        // tag (`<link>`, `<meta>`, `<html>`, ...) would be flagged as a custom
+        // block. Skip the rule on non-SFC files. See issue #2245.
+        if !is_sfc_filename(ctx.filename) {
+            return;
+        }
+
         let source = ctx.source;
 
         // Find all top-level blocks by looking for < at start of line or after >
@@ -123,7 +132,29 @@ impl Rule for WarnCustomBlock {
     }
 }
 
+/// Returns `true` when the file should be treated as a Vue SFC for the purposes
+/// of custom-block detection (i.e. its extension is `.vue`).
+fn is_sfc_filename(filename: &str) -> bool {
+    filename.rsplit('.').next() == Some("vue")
+}
+
 #[cfg(test)]
 mod tests {
-    // Tests would need SFC-level testing infrastructure
+    use super::is_sfc_filename;
+
+    #[test]
+    fn detects_vue_sfc_filenames() {
+        assert!(is_sfc_filename("Foo.vue"));
+        assert!(is_sfc_filename("components/Foo.vue"));
+        assert!(is_sfc_filename("/abs/path/App.vue"));
+    }
+
+    #[test]
+    fn rejects_standalone_html_and_other_filenames() {
+        assert!(!is_sfc_filename("index.html"));
+        assert!(!is_sfc_filename(".storybook/preview-head.html"));
+        assert!(!is_sfc_filename("page.htm"));
+        assert!(!is_sfc_filename("script.ts"));
+        assert!(!is_sfc_filename("noext"));
+    }
 }

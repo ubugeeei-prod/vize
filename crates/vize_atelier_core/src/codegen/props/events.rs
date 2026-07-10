@@ -205,7 +205,9 @@ pub(super) fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &Directi
         ctx.push("_withModifiers(");
     }
 
-    if let Some(exp) = &dir.exp {
+    if let Some(handler_name) = options_api_handler_name(ctx, dir) {
+        generate_options_api_handler_reference(ctx, handler_name);
+    } else if let Some(exp) = &dir.exp {
         generate_event_handler(ctx, exp, needs_cache);
     } else {
         ctx.push("() => {}");
@@ -244,6 +246,35 @@ pub(super) fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &Directi
 
 fn needs_von_handler_cache(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
     ctx.cache_handlers_in_current_scope() && dir.exp.is_some() && !is_setup_const_handler(ctx, dir)
+}
+
+fn generate_options_api_handler_reference(ctx: &mut CodegenContext, name: &str) {
+    ctx.push("(...args) => (_ctx.");
+    ctx.push(name);
+    ctx.push(" && _ctx.");
+    ctx.push(name);
+    ctx.push("(...args))");
+}
+
+fn options_api_handler_name<'a>(
+    ctx: &CodegenContext,
+    dir: &'a DirectiveNode<'_>,
+) -> Option<&'a str> {
+    let ExpressionNode::Simple(simple) = dir.exp.as_ref()? else {
+        return None;
+    };
+
+    let name = simple.loc.source.as_str().trim();
+    if simple.is_static || !crate::steps::is_simple_identifier(name) {
+        return None;
+    }
+
+    ctx.options
+        .binding_metadata
+        .as_ref()
+        .and_then(|metadata| metadata.bindings.get(name))
+        .filter(|binding| **binding == BindingType::Options)
+        .map(|_| name)
 }
 
 fn is_setup_const_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {

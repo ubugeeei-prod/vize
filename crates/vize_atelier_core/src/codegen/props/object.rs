@@ -150,8 +150,13 @@ pub(super) fn generate_props_object_inner(
                     // Normal attribute output, lowered through the Rendu op
                     // (#1756): name, value, and their source spans are read from
                     // `RenduOp::Attribute`, not the Relief node.
-                    let RenduOp::Attribute { name, name_span, value: attr_value, value_span, .. } =
-                        RenduOp::from_prop(prop)
+                    let RenduOp::Attribute {
+                        name,
+                        name_span,
+                        value: attr_value,
+                        value_span,
+                        ..
+                    } = RenduOp::from_prop(prop)
                     else {
                         unreachable!("matched PropNode::Attribute");
                     };

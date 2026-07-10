@@ -6,6 +6,20 @@ import { resolveVizeLaunchCommand } from "./launch.ts";
 import { root } from "./paths.ts";
 import type { JsonRpcId, JsonRpcMessage, LspInitializationOptions } from "./protocol.ts";
 
+export class LspRequestError extends Error {
+  readonly code: number;
+  readonly data: unknown;
+  readonly method: string;
+
+  constructor(method: string, error: { code: number; message: string; data?: unknown }) {
+    super(`${method}: ${error.message}`);
+    this.name = "LspRequestError";
+    this.code = error.code;
+    this.data = error.data;
+    this.method = method;
+  }
+}
+
 /**
  * Minimal JSON-RPC client for production LSP smoke tests.
  *
@@ -222,7 +236,7 @@ export class LspSession {
       this.pending.delete(message.id);
 
       if (message.error) {
-        pending.reject(new Error(`${pending.method}: ${message.error.message}`));
+        pending.reject(new LspRequestError(pending.method, message.error));
         return;
       }
 

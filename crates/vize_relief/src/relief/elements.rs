@@ -150,8 +150,16 @@ impl TextNode {
 pub struct CommentNode {
     pub content: String,
     pub loc: SourceLocation,
+    pub kind: CommentKind,
     /// Parsed `@vize:` directive, if this comment contains one.
     pub directive: Option<DirectiveKind>,
+}
+
+/// Source-level comment forms recognized by the template parser.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CommentKind {
+    Html,
+    InTag,
 }
 
 impl CommentNode {
@@ -159,6 +167,16 @@ impl CommentNode {
         Self {
             content: content.into(),
             loc,
+            kind: CommentKind::Html,
+            directive: None,
+        }
+    }
+
+    pub fn new_in_tag(content: impl Into<String>, loc: SourceLocation) -> Self {
+        Self {
+            content: content.into(),
+            loc,
+            kind: CommentKind::InTag,
             directive: None,
         }
     }

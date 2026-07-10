@@ -1,13 +1,12 @@
 use oxc_allocator::Allocator;
 use oxc_ast::ast::BindingPattern;
 use oxc_parser::Parser;
-use oxc_span::SourceType;
-use vize_carton::{CompactString, SmallVec, String, profile, smallvec};
+use oxc_span::{GetSpan, SourceType};
+use vize_carton::{CompactString, SmallVec, String, profile};
 
-use crate::drawer::helpers::is_valid_identifier_fast;
+use super::VForScopeAliases;
 
 /// Parse complex v-for alias using OXC
-#[cold]
 pub(super) fn parse_v_for_with_oxc(
     alias: &str,
     source: CompactString,
@@ -16,11 +15,7 @@ pub(super) fn parse_v_for_with_oxc(
     let prefix = b"let [";
     let suffix = b"] = x";
 
-    let inner = if alias.starts_with('(') && alias.ends_with(')') {
-        &alias[1..alias.len() - 1]
-    } else {
-        alias
-    };
+    let inner = tuple_alias_inner(alias.trim_start_matches("const ").trim());
 
     let total_len = prefix.len() + inner.len() + suffix.len();
     if total_len > buffer.len() {
@@ -45,6 +40,80 @@ pub(super) fn parse_v_for_with_oxc(
     }
 }
 
+pub(super) fn parse_v_for_scope_aliases(
+    alias: &str,
+    source: CompactString,
+) -> Option<VForScopeAliases> {
+    let inner = tuple_alias_inner(alias);
+    let pattern_str = format_binding_pattern(inner);
+    let allocator = Allocator::default();
+    let source_type = SourceType::default().with_typescript(true);
+    let ret = profile!(
+        "croquis.helpers.v_for.scope_alias_parse",
+        Parser::new(&allocator, &pattern_str, source_type).parse()
+    );
+    if !ret.errors.is_empty() {
+        return None;
+    }
+
+    let declarator = ret.program.body.first().and_then(|statement| {
+        if let oxc_ast::ast::Statement::VariableDeclaration(var_decl) = statement {
+            var_decl.declarations.first()
+        } else {
+            None
+        }
+    })?;
+
+    let BindingPattern::ArrayPattern(root) = &declarator.id else {
+        return None;
+    };
+
+    let value_pattern = root.elements.first().and_then(Option::as_ref)?;
+    let mut value_bindings = SmallVec::new();
+    extract_binding_names4(value_pattern, &mut value_bindings);
+    if value_bindings.is_empty() {
+        return None;
+    }
+
+    Some(VForScopeAliases {
+        value_pattern: binding_pattern_source(value_pattern, &pattern_str),
+        value_bindings,
+        key_alias: root
+            .elements
+            .get(1)
+            .and_then(Option::as_ref)
+            .and_then(binding_identifier_name),
+        index_alias: root
+            .elements
+            .get(2)
+            .and_then(Option::as_ref)
+            .and_then(binding_identifier_name),
+        source,
+    })
+}
+
+fn binding_pattern_source(pattern: &BindingPattern<'_>, source: &str) -> CompactString {
+    let span = pattern.span();
+    CompactString::new(&source[span.start as usize..span.end as usize])
+}
+
+fn binding_identifier_name(pattern: &BindingPattern<'_>) -> Option<CompactString> {
+    if let BindingPattern::BindingIdentifier(id) = pattern {
+        Some(CompactString::new(id.name.as_str()))
+    } else {
+        None
+    }
+}
+
+fn tuple_alias_inner(alias: &str) -> &str {
+    let alias = alias.trim();
+    if alias.starts_with('(') && alias.ends_with(')') {
+        alias[1..alias.len() - 1].trim()
+    } else {
+        alias
+    }
+}
+
 /// Parse v-for pattern using OXC
 fn parse_v_for_pattern(
     pattern_str: &str,
@@ -56,6 +125,9 @@ fn parse_v_for_pattern(
         "croquis.helpers.v_for.oxc_parse",
         Parser::new(&allocator, pattern_str, source_type).parse()
     );
+    if !ret.errors.is_empty() {
+        return (SmallVec::new(), source);
+    }
 
     let mut vars = SmallVec::new();
 
@@ -66,28 +138,6 @@ fn parse_v_for_pattern(
     }
 
     (vars, source)
-}
-
-pub(super) fn extract_binding_names_from_pattern(pattern: &str) -> SmallVec<[CompactString; 4]> {
-    if is_valid_identifier_fast(pattern.as_bytes()) {
-        return smallvec![CompactString::new(pattern)];
-    }
-
-    let pattern_str = format_binding_pattern(pattern);
-    let allocator = Allocator::default();
-    let source_type = SourceType::default().with_typescript(true);
-    let ret = profile!(
-        "croquis.helpers.v_for.oxc_scope_parse",
-        Parser::new(&allocator, &pattern_str, source_type).parse()
-    );
-
-    let mut vars = SmallVec::new();
-    if let Some(oxc_ast::ast::Statement::VariableDeclaration(var_decl)) = ret.program.body.first()
-        && let Some(declarator) = var_decl.declarations.first()
-    {
-        extract_binding_names4(&declarator.id, &mut vars);
-    }
-    vars
 }
 
 fn format_binding_pattern(pattern: &str) -> String {

@@ -1,6 +1,5 @@
 ---
 source: crates/vize_croquis/src/script_parser/tests.rs
-assertion_line: 330
 expression: result
 ---
 ScriptParseResult {
@@ -39,7 +38,7 @@ ScriptParseResult {
                 ),
                 name: "count",
                 kind: Ref,
-                declaration_offset: 0,
+                declaration_offset: 19,
             },
             ReactiveSource {
                 id: ReactiveId(
@@ -47,7 +46,7 @@ ScriptParseResult {
                 ),
                 name: "doubled",
                 kind: Computed,
-                declaration_offset: 0,
+                declaration_offset: 52,
             },
             ReactiveSource {
                 id: ReactiveId(
@@ -55,7 +54,7 @@ ScriptParseResult {
                 ),
                 name: "state",
                 kind: Reactive,
-                declaration_offset: 0,
+                declaration_offset: 112,
             },
         ],
         by_name: {
@@ -1311,7 +1310,9 @@ ScriptParseResult {
         ),
     },
     import_sources: {},
+    module_value_bindings: {},
     type_export_typeof_refs: [],
+    type_export_type_refs: [],
     runtime_object_literals: {},
     options_descriptor: None,
 }

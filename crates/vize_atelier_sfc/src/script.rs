@@ -11,6 +11,7 @@ mod context;
 mod define_emits;
 mod define_expose;
 mod define_model;
+mod define_model_metadata;
 mod define_options;
 mod define_props;
 mod define_props_destructure;
@@ -25,6 +26,7 @@ pub use context::{ScriptCompileContext, begin_type_resolution_batch};
 pub use define_emits::{
     DefineEmitsResult, extract_runtime_emits, gen_runtime_emits, process_define_emits,
 };
+pub(crate) use define_model_metadata::{define_model_metadata, define_model_name};
 pub use define_props_destructure::{
     PropsDestructureBinding, PropsDestructuredBindings, gen_props_access_exp,
     process_props_destructure, transform_destructured_props,
@@ -51,7 +53,7 @@ pub use define_props::{DEFINE_PROPS, WITH_DEFAULTS};
 pub use define_slots::DEFINE_SLOTS;
 
 use crate::types::BindingMetadata;
-use vize_croquis::analysis::Croquis as CroquisSummary;
+use vize_croquis::croquis::Croquis as CroquisSummary;
 use vize_croquis::script_parser::ScriptParseResult;
 
 /// Analyze script setup and extract bindings
