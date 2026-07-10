@@ -8,6 +8,28 @@ use vize_carton::{CompactString, profile};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 impl Drawer {
+    pub(super) fn process_element_conditional_directive(
+        &mut self,
+        el: &ElementNode<'_>,
+        scope_vars: &[CompactString],
+    ) {
+        for prop in &el.props {
+            let PropNode::Directive(dir) = prop else {
+                continue;
+            };
+            if dir.name != "if" && dir.name != "else-if" {
+                continue;
+            }
+
+            self.collect_basic_directive_expression(dir.exp.as_ref(), TemplateExpressionKind::VIf);
+            if self.options.detect_undefined
+                && let Some(exp) = dir.exp.as_ref()
+            {
+                self.check_expression_refs(exp, scope_vars);
+            }
+        }
+    }
+
     pub(super) fn process_element_directives(
         &mut self,
         el: &ElementNode<'_>,
@@ -30,11 +52,6 @@ impl Drawer {
                     profile!(
                         "croquis.template.directive.v_bind",
                         self.handle_v_bind_directive(dir, el, scope_vars)
-                    );
-                } else if dir.name == "if" || dir.name == "else-if" {
-                    self.collect_basic_directive_expression(
-                        dir.exp.as_ref(),
-                        TemplateExpressionKind::VIf,
                     );
                 } else if dir.name == "show" {
                     self.collect_basic_directive_expression(
@@ -84,6 +101,9 @@ impl Drawer {
                 if let PropNode::Directive(dir) = prop
                     && let Some(ref exp) = dir.exp
                     && dir.name != "for"
+                    && dir.name != "if"
+                    && dir.name != "else-if"
+                    && dir.name != "slot"
                     && dir.name != "on"
                     && dir.name != "bind"
                 {

@@ -36,6 +36,10 @@ impl Drawer {
         let mut component_usage = self.start_component_usage(el, tag, is_component);
         let directive_state = self.collect_element_directive_state(el, &mut subtree_end);
         let vif_condition = self.apply_element_conditional(directive_state.conditional);
+        // Vue evaluates v-if before same-element v-for aliases exist. Keep the
+        // conditional expression in the incoming scope and outside its own
+        // guard, while descendants and the component usage receive the guard.
+        self.process_element_conditional_directive(el, scope_vars);
         let vif_guard_pushed = self.push_element_vif_guard(vif_condition.as_ref());
         if let Some(ref mut usage) = component_usage {
             usage.vif_guard = self.current_vif_guard();
@@ -49,6 +53,20 @@ impl Drawer {
         // A dynamic v-slot name can reference a same-element v-for alias, but
         // not the slot props that the v-slot value declares for its children.
         self.process_dynamic_slot_argument(el, scope_vars);
+        let v_scope_vars_count = self.enter_element_v_scope(directive_state.v_scope, scope_vars);
+
+        if let Some(ref mut usage) = component_usage {
+            usage.scope_id = self.croquis.scopes.current_id();
+        }
+
+        // Element attrs execute outside the v-slot props they define. They can
+        // still reference same-element v-for aliases and petite-vue v-scope
+        // bindings.
+        profile!("croquis.template.element_ids", self.collect_element_ids(el));
+
+        self.process_element_directives(el, scope_vars, is_component, tag);
+        self.check_element_directive_refs(el, scope_vars);
+
         let slot_vars_count = self.enter_element_slot_scope(
             directive_state.slot_scope,
             is_component,
@@ -57,17 +75,6 @@ impl Drawer {
             &mut subtree_end,
             scope_vars,
         );
-        let v_scope_vars_count = self.enter_element_v_scope(directive_state.v_scope, scope_vars);
-
-        if let Some(ref mut usage) = component_usage {
-            usage.scope_id = self.croquis.scopes.current_id();
-        }
-
-        // Collect element IDs while same-element v-for/v-slot scopes are active.
-        profile!("croquis.template.element_ids", self.collect_element_ids(el));
-
-        self.process_element_directives(el, scope_vars, is_component, tag);
-        self.check_element_directive_refs(el, scope_vars);
 
         if is_component {
             self.parent_component_stack.push(CompactString::new(tag));
@@ -81,8 +88,8 @@ impl Drawer {
             self.pop_element_vif_guard();
         }
 
-        self.exit_element_v_scope(v_scope_vars_count, scope_vars);
         self.exit_element_slot_scope(slot_vars_count, scope_vars);
+        self.exit_element_v_scope(v_scope_vars_count, scope_vars);
         self.exit_element_for_scope(for_vars_count, scope_vars);
 
         if let Some(ref mut usage) = component_usage {

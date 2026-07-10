@@ -33,6 +33,8 @@ mod model;
 mod options_descriptor;
 mod snapshot;
 #[cfg(test)]
+mod snapshot_options_tests;
+#[cfg(test)]
 mod snapshot_tests;
 mod summary;
 #[cfg(test)]
