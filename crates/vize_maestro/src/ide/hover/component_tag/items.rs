@@ -4,7 +4,9 @@ pub(super) fn prop_items(usage: &ComponentUsage) -> Vec<String> {
     usage
         .props
         .iter()
-        .filter(|prop| prop.name != "key" && prop.name != "ref")
+        .filter(|prop| {
+            prop.name_is_dynamic || (prop.name.as_str() != "key" && prop.name.as_str() != "ref")
+        })
         .map(format_prop)
         .collect()
 }
@@ -69,9 +71,10 @@ fn format_slot(slot: &SlotUsage) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{format_event, format_prop, format_slot};
+    use super::{format_event, format_prop, format_slot, prop_items};
     use vize_carton::{CompactString, smallvec};
-    use vize_croquis::croquis::{EventListener, PassedProp, SlotUsage};
+    use vize_croquis::ScopeId;
+    use vize_croquis::croquis::{ComponentUsage, EventListener, PassedProp, SlotUsage};
 
     #[test]
     fn formats_runtime_directive_names_without_presenting_them_as_static() {
@@ -103,5 +106,38 @@ mod tests {
         assert_eq!(format_prop(&prop), r#"`:[propName]="value"`"#);
         assert_eq!(format_event(&event), r#"`@[eventName].once="handler"`"#);
         assert_eq!(format_slot(&slot), "`#[slotName] { row }`");
+    }
+
+    #[test]
+    fn runtime_key_and_ref_names_are_not_filtered_as_reserved_props() {
+        let prop = |name, name_is_dynamic| PassedProp {
+            name: CompactString::new(name),
+            name_is_dynamic,
+            value: Some(CompactString::new("value")),
+            start: 0,
+            end: 10,
+            is_dynamic: true,
+        };
+        let usage = ComponentUsage {
+            name: CompactString::new("Child"),
+            start: 0,
+            end: 40,
+            props: smallvec![
+                prop("key", false),
+                prop("key", true),
+                prop("ref", false),
+                prop("ref", true),
+            ],
+            events: smallvec![],
+            slots: smallvec![],
+            has_spread_attrs: false,
+            scope_id: ScopeId::ROOT,
+            vif_guard: None,
+        };
+
+        assert_eq!(
+            prop_items(&usage),
+            ["`:[key]=\"value\"`", "`:[ref]=\"value\"`"]
+        );
     }
 }
