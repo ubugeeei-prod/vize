@@ -29,9 +29,9 @@
 //!
 //! let mut analyzer = CrossFileAnalyzer::new(options);
 //!
-//! // Add files to analyze
-//! analyzer.add_file("src/components/Parent.vue", parent_source);
-//! analyzer.add_file("src/components/Child.vue", child_source);
+//! // Add extracted JS/TS script modules. Parse full SFC containers first.
+//! analyzer.add_file("src/components/Parent.vue", parent_script_setup);
+//! analyzer.add_file("src/components/Child.vue", child_script_setup);
 //!
 //! // Run cross-file analysis
 //! let result = analyzer.analyze();

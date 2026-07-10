@@ -26,6 +26,10 @@ mod tests_element_id;
 mod tests_complexity_effect_graph;
 
 #[cfg(test)]
+#[path = "analyzer/tests_complexity_effect_graph_overflow.rs"]
+mod tests_complexity_effect_graph_overflow;
+
+#[cfg(test)]
 mod tests_provide_inject;
 
 #[cfg(test)]

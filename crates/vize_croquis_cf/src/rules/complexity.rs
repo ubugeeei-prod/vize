@@ -1,7 +1,10 @@
 //! Cross-file complexity scoring.
 
+mod counts;
 mod hotspots;
 mod nesting;
+
+use counts::{add_count, fallthrough_risk_count, logical_operator_count};
 
 use crate::analyzer::CrossFileResult;
 use crate::graph::DependencyGraph;
@@ -265,56 +268,57 @@ fn complexity_input(
 
     for entry in registry.vue_components() {
         let analysis = &entry.analysis;
-        input.component_count = input.component_count.saturating_add(1);
+        add_count(&mut input.component_count, 1);
 
-        input.template_if_count += analysis
-            .template_expressions
-            .iter()
-            .filter(|expr| expr.kind == TemplateExpressionKind::VIf)
-            .count();
-        input.template_logical_operator_count += analysis
-            .template_expressions
-            .iter()
-            .filter(|expr| expr.kind == TemplateExpressionKind::VIf)
-            .map(|expr| logical_operator_count(expr.content.as_str()))
-            .sum::<usize>();
-        input.template_for_count += analysis
-            .scopes
-            .iter()
-            .filter(|scope| scope.kind == ScopeKind::VFor)
-            .count();
-        input.slot_count += analysis.macros.slots().len();
-        input.slot_count += analysis
-            .component_usages
-            .iter()
-            .map(|usage| usage.slots.len())
-            .sum::<usize>();
-        input.prop_drilling_edge_count += analysis
-            .component_usages
-            .iter()
-            .map(|usage| usage.props.len())
-            .sum::<usize>();
-        input.reactive_node_count += analysis.reactivity.count();
+        add_count(
+            &mut input.template_if_count,
+            analysis
+                .template_expressions
+                .iter()
+                .filter(|expr| expr.kind == TemplateExpressionKind::VIf)
+                .count(),
+        );
+        add_count(
+            &mut input.template_logical_operator_count,
+            analysis
+                .template_expressions
+                .iter()
+                .filter(|expr| expr.kind == TemplateExpressionKind::VIf)
+                .map(|expr| logical_operator_count(expr.content.as_str()))
+                .fold(0usize, usize::saturating_add),
+        );
+        add_count(
+            &mut input.template_for_count,
+            analysis
+                .scopes
+                .iter()
+                .filter(|scope| scope.kind == ScopeKind::VFor)
+                .count(),
+        );
+        add_count(&mut input.slot_count, analysis.macros.slots().len());
+        add_count(
+            &mut input.slot_count,
+            analysis
+                .component_usages
+                .iter()
+                .map(|usage| usage.slots.len())
+                .fold(0usize, usize::saturating_add),
+        );
+        add_count(
+            &mut input.prop_drilling_edge_count,
+            analysis
+                .component_usages
+                .iter()
+                .map(|usage| usage.props.len())
+                .fold(0usize, usize::saturating_add),
+        );
+        add_count(&mut input.reactive_node_count, analysis.reactivity.count());
         let effect_graph = effect_graphs.get(&entry.id).copied().unwrap_or_default();
-        input.reactive_edge_count += effect_graph.edge_count;
-        input.reactive_cycle_count += effect_graph.cycle_count;
+        add_count(&mut input.reactive_edge_count, effect_graph.edge_count);
+        add_count(&mut input.reactive_cycle_count, effect_graph.cycle_count);
     }
 
     input
-}
-
-fn fallthrough_risk_count(result: &CrossFileResult) -> usize {
-    if let Some(summary) = result.fallthrough_summary {
-        return summary
-            .components_with_potential_issues
-            .saturating_add(summary.risky_unconsumed_fallthrough_attr_count);
-    }
-
-    result
-        .fallthrough_info
-        .iter()
-        .filter(|info| info.has_potential_issues())
-        .count()
 }
 
 fn weighted(count: usize, weight: u32) -> u32 {
@@ -340,11 +344,4 @@ fn cyclomatic_score(input: ComplexityInput) -> u32 {
 
 fn cognitive_score(input: ComplexityInput) -> u32 {
     weighted(input.component_tree_template_nesting_score, 1)
-}
-
-fn logical_operator_count(content: &str) -> usize {
-    content
-        .matches("&&")
-        .count()
-        .saturating_add(content.matches("||").count())
 }

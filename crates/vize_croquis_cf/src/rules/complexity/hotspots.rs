@@ -73,18 +73,19 @@ fn local_input(entry: &ModuleEntry, effect_graph: EffectGraphSummary) -> Complex
             .iter()
             .filter(|expr| expr.kind == TemplateExpressionKind::VIf)
             .map(|expr| logical_operator_count(expr.content.as_str()))
-            .sum(),
-        slot_count: analysis.macros.slots().len()
-            + analysis
+            .fold(0usize, usize::saturating_add),
+        slot_count: analysis.macros.slots().len().saturating_add(
+            analysis
                 .component_usages
                 .iter()
                 .map(|usage| usage.slots.len())
-                .sum::<usize>(),
+                .fold(0usize, usize::saturating_add),
+        ),
         prop_drilling_edge_count: analysis
             .component_usages
             .iter()
             .map(|usage| usage.props.len())
-            .sum(),
+            .fold(0usize, usize::saturating_add),
         reactive_node_count: analysis.reactivity.count(),
         reactive_edge_count: effect_graph.edge_count,
         reactive_cycle_count: effect_graph.cycle_count,
@@ -97,11 +98,11 @@ fn add_fallthrough_inputs(
     result: &CrossFileResult,
 ) {
     for info in &result.fallthrough_info {
-        inputs
-            .entry(info.file_id)
-            .or_default()
-            .fallthrough_risk_count += usize::from(info.has_potential_issues())
-            .saturating_add(info.risky_unconsumed_fallthrough_attr_count());
+        let input = inputs.entry(info.file_id).or_default();
+        input.fallthrough_risk_count = input.fallthrough_risk_count.saturating_add(
+            usize::from(info.has_potential_issues())
+                .saturating_add(info.risky_unconsumed_fallthrough_attr_count()),
+        );
     }
 }
 
@@ -112,14 +113,16 @@ fn add_reactivity_inputs(
     for issue in &result.reactivity_issues {
         let input = inputs.entry(issue.file_id).or_default();
         if matches!(issue.kind, ReactivityIssueKind::ShouldUseStoreToRefs { .. }) {
-            input.global_state_reference_count += 1;
+            input.global_state_reference_count =
+                input.global_state_reference_count.saturating_add(1);
         }
     }
 
     for issue in &result.cross_file_reactivity_issues {
         let input = inputs.entry(issue.file_id).or_default();
         if let CrossFileReactivityIssueKind::StoreDestructured { .. } = issue.kind {
-            input.global_state_reference_count += 1;
+            input.global_state_reference_count =
+                input.global_state_reference_count.saturating_add(1);
         }
     }
 }
@@ -130,12 +133,15 @@ fn add_provide_inject_inputs(
 ) {
     for matched in &result.provide_inject_matches {
         let provider = inputs.entry(matched.provider).or_default();
-        provider.provide_inject_reference_count += 1;
-        provider.provide_inject_fanout_count += 1;
+        provider.provide_inject_reference_count =
+            provider.provide_inject_reference_count.saturating_add(1);
+        provider.provide_inject_fanout_count =
+            provider.provide_inject_fanout_count.saturating_add(1);
 
         // A dependency injection edge is not inherently a reactive edge.
         let consumer = inputs.entry(matched.consumer).or_default();
-        consumer.provide_inject_reference_count += 1;
+        consumer.provide_inject_reference_count =
+            consumer.provide_inject_reference_count.saturating_add(1);
 
         let depth = matched.path.len();
         for file_id in &matched.path {
