@@ -157,10 +157,8 @@ impl<'a> ParentNode<'a> {
 /// The output of a transform pass: collected diagnostics and the hoisted
 /// render-IR nodes.
 ///
-/// `hoists` was previously stored on `RootNode.hoists`; carrying it here keeps
-/// the render/codegen `JsChildNode` type out of the source AST (#1760). The
-/// `#[must_use]` makes callers thread the hoists into codegen rather than
-/// dropping them, which would silently lose hoisted vnodes.
+/// Carries hoists outside the source AST; `#[must_use]` keeps callers from
+/// silently dropping generated hoisted vnodes (#1760).
 #[must_use]
 pub struct TransformResult<'a> {
     /// Diagnostics collected during the transform.

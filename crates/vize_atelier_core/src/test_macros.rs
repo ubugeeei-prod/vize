@@ -272,17 +272,9 @@ macro_rules! assert_codegen {
         let allocator = bumpalo::Bump::new();
         let (mut root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-        let __transformed = $crate::lane::transform(
-            &allocator,
-            &mut root,
-            $crate::options::TransformOptions::default(),
-            None,
-        );
-        let result = $crate::codegen::generate(
-            &root,
-            &__transformed.hoists,
-            $crate::options::CodegenOptions::default(),
-        );
+        let __transformed =
+            $crate::lane::transform(&allocator, &mut root, Default::default(), None);
+        let result = $crate::codegen::generate(&root, &__transformed.hoists, Default::default());
         insta::assert_snapshot!(result.code.as_str());
         result
     }};
@@ -295,29 +287,17 @@ macro_rules! compile {
         let allocator = bumpalo::Bump::new();
         let (mut root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-        let __transformed = $crate::lane::transform(
-            &allocator,
-            &mut root,
-            $crate::options::TransformOptions::default(),
-            None,
-        );
-        $crate::codegen::generate(
-            &root,
-            &__transformed.hoists,
-            $crate::options::CodegenOptions::default(),
-        )
+        let __transformed =
+            $crate::lane::transform(&allocator, &mut root, Default::default(), None);
+        $crate::codegen::generate(&root, &__transformed.hoists, Default::default())
     }};
 
     ($input:expr, $options:expr) => {{
         let allocator = bumpalo::Bump::new();
         let (mut root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-        let __transformed = $crate::lane::transform(
-            &allocator,
-            &mut root,
-            $crate::options::TransformOptions::default(),
-            None,
-        );
+        let __transformed =
+            $crate::lane::transform(&allocator, &mut root, Default::default(), None);
         $crate::codegen::generate(&root, &__transformed.hoists, $options)
     }};
 }

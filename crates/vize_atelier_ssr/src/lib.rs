@@ -19,7 +19,6 @@ pub mod errors;
 pub mod options;
 mod output_plate;
 pub mod steps;
-
 pub use codegen::{SsrCodegenContext, SsrCodegenResult};
 pub use errors::SsrErrorCode;
 pub use options::SsrCompilerOptions;
@@ -150,8 +149,6 @@ fn compile_ssr_inner<'a>(
     // parse errors instead of dropping them — same channel as the DOM
     // compiler.
     let mut errors = errors.to_vec();
-    // SSR runs its own codegen (no shared hoists), so only the diagnostics are
-    // threaded; the transform's hoists are unused here (#1760).
     errors.extend(transform_errors.errors);
 
     // SSR codegen

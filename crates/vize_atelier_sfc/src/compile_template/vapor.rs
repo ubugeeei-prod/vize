@@ -147,9 +147,6 @@ fn transform_vapor_template_module(
     let mut pending_separator = String::default();
     let mut index = 0usize;
 
-    // Import normalization stays in the adapter because Vapor currently emits
-    // from `vue/vapor`, while SFC output expects the runtime surface to be
-    // attached through the same `vue` import family as the other Ateliers.
     while index < lines.len() {
         let line = lines[index];
         let trimmed = line.trim();
@@ -185,9 +182,6 @@ fn transform_vapor_template_module(
         hoists.push_str(&pending_separator);
         pending_separator.clear();
 
-        // Everything before the render signature is module-level material:
-        // template declarations, delegate event calls, and any target-specific
-        // planning statements that must remain outside the render closure.
         if trimmed.starts_with("const t") && trimmed.contains("_template(") {
             if let Some(scope_id) = scope_attr {
                 hoists.push_str(&add_scope_id_to_template(line, scope_id));

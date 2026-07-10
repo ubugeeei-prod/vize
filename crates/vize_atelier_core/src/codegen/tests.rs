@@ -11,6 +11,16 @@ fn result_output(result: &super::CodegenResult) -> vize_carton::String {
     output
 }
 
+fn transform_and_generate<'a>(
+    allocator: &'a bumpalo::Bump,
+    root: &mut crate::RootNode<'a>,
+    transform_options: crate::TransformOptions,
+    codegen_options: super::CodegenOptions,
+) -> super::CodegenResult {
+    let transformed = crate::lane::transform(allocator, root, transform_options, None);
+    super::generate(root, &transformed.hoists, codegen_options)
+}
+
 macro_rules! assert_codegen_snapshot {
     ($result:expr) => {{
         let output = result_output(&$result);
@@ -57,15 +67,10 @@ fn test_codegen_component_name_with_colon_uses_valid_identifier() {
     );
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-    let _t = crate::lane::transform(
+    let output = result_output(&transform_and_generate(
         &allocator,
         &mut root,
         crate::TransformOptions::default(),
-        None,
-    );
-    let output = result_output(&super::generate(
-        &root,
-        &_t.hoists,
         crate::CodegenOptions::default(),
     ));
 
@@ -109,7 +114,7 @@ fn test_codegen_inline_setup_ref_component_prop_uses_value() {
         is_script_setup: true,
     };
 
-    let _t = crate::lane::transform(
+    let output = result_output(&transform_and_generate(
         &allocator,
         &mut root,
         crate::TransformOptions {
@@ -118,12 +123,6 @@ fn test_codegen_inline_setup_ref_component_prop_uses_value() {
             binding_metadata: Some(binding_metadata.clone()),
             ..Default::default()
         },
-        None,
-    );
-
-    let output = result_output(&super::generate(
-        &root,
-        &_t.hoists,
         crate::CodegenOptions {
             prefix_identifiers: true,
             inline: true,
@@ -923,18 +922,13 @@ fn compile_prefixed(source: &str) -> vize_carton::String {
     let allocator = bumpalo::Bump::new();
     let (mut root, errors) = crate::parse(&allocator, source);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-    let _t = crate::lane::transform(
+    result_output(&transform_and_generate(
         &allocator,
         &mut root,
         crate::TransformOptions {
             prefix_identifiers: true,
             ..Default::default()
         },
-        None,
-    );
-    result_output(&super::generate(
-        &root,
-        &_t.hoists,
         crate::CodegenOptions {
             prefix_identifiers: true,
             ..Default::default()
@@ -1158,18 +1152,13 @@ fn compile_with_map(src: &str, filename: &str) -> super::CodegenResult {
     let allocator = bumpalo::Bump::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-    let _t = crate::lane::transform(
+    transform_and_generate(
         &allocator,
         &mut root,
         crate::options::TransformOptions {
             prefix_identifiers: true,
             ..Default::default()
         },
-        None,
-    );
-    super::generate(
-        &root,
-        &_t.hoists,
         crate::options::CodegenOptions {
             prefix_identifiers: true,
             source_map: true,
@@ -1265,18 +1254,13 @@ fn source_map_does_not_alter_generated_code() {
     let allocator = bumpalo::Bump::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-    let _t = crate::lane::transform(
+    let without_map = transform_and_generate(
         &allocator,
         &mut root,
         crate::options::TransformOptions {
             prefix_identifiers: true,
             ..Default::default()
         },
-        None,
-    );
-    let without_map = super::generate(
-        &root,
-        &_t.hoists,
         crate::options::CodegenOptions {
             prefix_identifiers: true,
             source_map: false,
@@ -1475,18 +1459,13 @@ fn source_map_static_attr_and_text_do_not_alter_generated_code() {
     let allocator = bumpalo::Bump::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-    let _t = crate::lane::transform(
+    let without_map = transform_and_generate(
         &allocator,
         &mut root,
         crate::options::TransformOptions {
             prefix_identifiers: true,
             ..Default::default()
         },
-        None,
-    );
-    let without_map = super::generate(
-        &root,
-        &_t.hoists,
         crate::options::CodegenOptions {
             prefix_identifiers: true,
             source_map: false,
