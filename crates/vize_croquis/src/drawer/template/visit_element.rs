@@ -37,10 +37,10 @@ impl Drawer {
         let directive_state = self.collect_element_directive_state(el, &mut subtree_end);
         let vif_condition = self.apply_element_conditional(directive_state.conditional);
         // Vue evaluates v-if before same-element v-for aliases exist. Keep the
-        // conditional expression in the incoming scope and outside its own
-        // guard, while descendants and the component usage receive the guard.
-        self.process_element_conditional_directive(el, scope_vars);
+        // conditional expression in the incoming scope, while retaining its
+        // guard metadata for virtual TypeScript control-flow narrowing.
         let vif_guard_pushed = self.push_element_vif_guard(vif_condition.as_ref());
+        self.process_element_conditional_directive(el, scope_vars);
         if let Some(ref mut usage) = component_usage {
             usage.vif_guard = self.current_vif_guard();
         }

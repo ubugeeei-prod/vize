@@ -118,7 +118,7 @@ export default {
         .expect("v-if expression should be exposed");
     assert_ne!(vif.scope_id, for_scope.id);
     assert_ne!(vif.scope_id, slot_scope.id);
-    assert!(vif.vif_guard.is_none());
+    assert_eq!(vif.vif_guard.as_deref(), Some("(ready && item)"));
     assert!(
         snapshot.template_expressions.iter().any(|expression| {
             expression.kind == "vBind"
