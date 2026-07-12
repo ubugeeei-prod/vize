@@ -48,11 +48,63 @@ export class Compiler {
   compileCss() {}
   free() {}
 }
-export function compile() {}
+export function compile(_template, options = {}) {
+  if (options.templateSyntax === "strict") throw new Error("strict template syntax");
+  return {
+    code: options.runtimeGlobalName ? "const runtime = " + options.runtimeGlobalName : "code",
+    preamble: options.runtimeModuleName ? 'from "' + options.runtimeModuleName + '"' : "",
+    ast: { children: [{ isSelfClosing: options.vueParserQuirks === true }] },
+    map: options.sourceMap
+      ? {
+          version: 3,
+          file: options.filename ?? "template.vue",
+          sources: [options.filename ?? "template.vue"],
+          sourcesContent: [_template],
+          names: [],
+          mappings: "",
+        }
+      : undefined,
+  };
+}
 export function compileVapor() {}
-export function parseTemplate() {}
+export function parseTemplate(_template, options = {}) {
+  if (options.templateSyntax === "standard" && options.vueParserQuirks === true) {
+    throw new Error("standard template syntax");
+  }
+  return { children: [{ isSelfClosing: options.vueParserQuirks === true }] };
+}
 export function parseSfc() {}
-export function compileSfc() {}
+export function compileSfc(_source, options = {}) {
+  const runtime =
+    options.mode === "function"
+      ? options.runtimeGlobalName ?? "Vue"
+      : options.runtimeModuleName ?? "vue";
+  const filename = options.filename ?? "anonymous.vue";
+  return {
+    template: {
+      code: runtime,
+      preamble: runtime,
+      ast: {},
+      map: options.sourceMap
+        ? {
+            version: 3,
+            file: filename,
+            sources: [filename],
+            sourcesContent: [_source],
+            names: [],
+            mappings: "",
+          }
+        : undefined,
+      helpers: [],
+    },
+    script: {
+      code:
+        runtime +
+        "\\n" +
+        (options.scriptExt === "preserve" ? "const count: number = 1" : "const count = 1"),
+    },
+  };
+}
 export function compileJsx() {}
 export function compileCss() {}
 export function lintSfc(_source, options = {}) {
@@ -107,9 +159,46 @@ test("wasm package declarations type-check a strict consumer", (t) => {
 
   fs.writeFileSync(
     path.join(consumerDir, "consumer.ts"),
-    `import init, { formatSfc, lintSfc, type FormatResult, type LintResult } from "@vizejs/wasm";
+    `import init, {
+  compile,
+  formatSfc,
+  lintSfc,
+  type BindingMetadata,
+  type CompilerOptions,
+  type FormatResult,
+  type LintResult,
+} from "@vizejs/wasm";
 
 void init();
+
+const bindingMetadata: BindingMetadata = {
+  bindings: { message: "setup-ref" },
+  propsAliases: {},
+  isScriptSetup: true,
+};
+const compilerOptions: CompilerOptions = {
+  mode: "module",
+  prefixIdentifiers: true,
+  hoistStatic: true,
+  cacheHandlers: true,
+  scopeId: "data-v-smoke",
+  ssr: false,
+  sourceMap: true,
+  filename: "Smoke.vue",
+  outputMode: "vdom",
+  isTs: true,
+  customRenderer: false,
+  templateSyntax: "strict",
+  experimentalInTagComments: true,
+  experimentalPatternedTemplate: true,
+  runtimeModuleName: "@acme/vue-runtime",
+  runtimeGlobalName: "AcmeVue",
+  scriptExt: "preserve",
+  bindingMetadata,
+  vueParserQuirks: false,
+};
+const compiled = compile("<div />", compilerOptions);
+compiled.map?.sources[0]?.toUpperCase();
 
 const lint: LintResult = lintSfc("<template />", {
   enabledRules: ["vue/no-dupe-keys"],
@@ -135,6 +224,10 @@ console.log(formatted.code, formatted.changed);
 lintSfc("<template />", { severityOverrides: {} });
 // @ts-expect-error filename is not a formatter option
 formatSfc("<template />", { filename: "App.vue" });
+// @ts-expect-error this reserved shared option is not implemented by WASM
+compile("<div />", { experimentalServerScript: true });
+// @ts-expect-error scriptExt is a closed compatibility policy
+compile("<div />", { scriptExt: "ts" });
 `,
   );
   fs.writeFileSync(

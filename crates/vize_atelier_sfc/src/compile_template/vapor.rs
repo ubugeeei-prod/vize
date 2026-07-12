@@ -1,7 +1,7 @@
 //! Vapor mode template compilation.
 
 use super::string_tracking::{StringTrackState, count_braces_with_state};
-use vize_atelier_core::TemplateSyntaxMode;
+use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode};
 use vize_atelier_vapor::{
     VaporCompilerOptions, compile_vapor_with_template_syntax_and_diagnostics,
 };
@@ -20,6 +20,7 @@ pub(crate) fn compile_template_block_vapor(
     bindings: Option<&BindingMetadata>,
     options: &TemplateCompileOptions,
     template_syntax: TemplateSyntaxMode,
+    codegen_options: &CodegenOptions,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
     let allocator = Bump::new();
     let compiler_options = options.compiler_options.as_ref();
@@ -71,6 +72,7 @@ pub(crate) fn compile_template_block_vapor(
         has_scoped.then_some(scope_attr.as_str()),
         template,
         bindings,
+        codegen_options.runtime_module_name.as_str(),
     )?;
 
     Ok(TemplateBlockCompileResult {
@@ -111,14 +113,22 @@ pub(super) fn add_scope_id_to_template(template_line: &str, scope_id: &str) -> S
     template_line.to_compact_string()
 }
 
-fn rewrite_vapor_import(line: &str) -> String {
-    if line.contains("'vue/vapor'") {
-        line.replace("'vue/vapor'", "'vue'").into()
+fn rewrite_vapor_import(line: &str, runtime_module_name: &str) -> String {
+    let (source, replacement) = if line.contains("'vue/vapor'") {
+        ("'vue/vapor'", vize_carton::cstr!("'{runtime_module_name}'"))
     } else if line.contains("\"vue/vapor\"") {
-        line.replace("\"vue/vapor\"", "\"vue\"").into()
+        (
+            "\"vue/vapor\"",
+            vize_carton::cstr!("\"{runtime_module_name}\""),
+        )
+    } else if line.contains("'vue'") {
+        ("'vue'", vize_carton::cstr!("'{runtime_module_name}'"))
+    } else if line.contains("\"vue\"") {
+        ("\"vue\"", vize_carton::cstr!("\"{runtime_module_name}\""))
     } else {
-        line.to_compact_string()
-    }
+        return line.to_compact_string();
+    };
+    line.replace(source, replacement.as_str()).into()
 }
 
 fn is_render_signature(line: &str) -> bool {
@@ -133,6 +143,7 @@ pub(super) fn transform_vapor_template_output(
     scope_attr: Option<&str>,
     template: &SfcTemplateBlock,
     bindings: Option<&BindingMetadata>,
+    runtime_module_name: &str,
 ) -> Result<String, SfcError> {
     let lines: Vec<&str> = code.lines().collect();
     let mut output = String::default();
@@ -142,7 +153,7 @@ pub(super) fn transform_vapor_template_output(
         let line = lines[index];
         let trimmed = line.trim();
         if trimmed.starts_with("import ") {
-            output.push_str(&rewrite_vapor_import(line));
+            output.push_str(&rewrite_vapor_import(line, runtime_module_name));
             output.push('\n');
             index += 1;
             continue;

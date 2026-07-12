@@ -5,54 +5,123 @@ use wasm_bindgen::prelude::*;
 use crate::CompilerOptions;
 use vize_atelier_sfc::{CssCompileOptions, CssTargets};
 
+// This is the canonical public `@vizejs/wasm` compiler-option inventory. The
+// declaration drift test reads the same entries and checks both directions:
+// every entry is parsed below and every `CompilerOptions` property is listed.
+macro_rules! define_compiler_option_inventory {
+    ($($variant:ident => ($name:literal, $ts_type:literal),)+) => {
+        #[derive(Clone, Copy)]
+        enum CompilerOption {
+            $($variant,)+
+        }
+
+        impl CompilerOption {
+            #[inline]
+            const fn name(self) -> &'static str {
+                match self {
+                    $(Self::$variant => $name,)+
+                }
+            }
+        }
+    };
+}
+
+define_compiler_option_inventory! {
+    Mode => ("mode", r#""module" | "function""#),
+    PrefixIdentifiers => ("prefixIdentifiers", "boolean"),
+    HoistStatic => ("hoistStatic", "boolean"),
+    CacheHandlers => ("cacheHandlers", "boolean"),
+    ScopeId => ("scopeId", "string"),
+    Ssr => ("ssr", "boolean"),
+    SourceMap => ("sourceMap", "boolean"),
+    Filename => ("filename", "string"),
+    OutputMode => ("outputMode", r#""vdom" | "vapor""#),
+    IsTs => ("isTs", "boolean"),
+    CustomRenderer => ("customRenderer", "boolean"),
+    TemplateSyntax => ("templateSyntax", r#""standard" | "strict" | "quirks""#),
+    ExperimentalInTagComments => ("experimentalInTagComments", "boolean"),
+    ExperimentalPatternedTemplate => ("experimentalPatternedTemplate", "boolean"),
+    RuntimeModuleName => ("runtimeModuleName", "string"),
+    RuntimeGlobalName => ("runtimeGlobalName", "string"),
+    ScriptExt => ("scriptExt", r#""preserve" | "downcompile""#),
+    BindingMetadata => ("bindingMetadata", "BindingMetadata"),
+    VueParserQuirks => ("vueParserQuirks", "boolean"),
+}
+
 pub(crate) struct ParsedCompilerOptions {
     pub(crate) options: CompilerOptions,
     pub(crate) binding_metadata: Option<vize_atelier_core::options::BindingMetadata>,
 }
 
+pub(super) fn resolve_template_syntax_compat(
+    explicit: Option<String>,
+    vue_parser_quirks: Option<bool>,
+) -> Option<String> {
+    explicit.or_else(|| {
+        vue_parser_quirks
+            .filter(|enabled| *enabled)
+            .map(|_| "quirks".to_string())
+    })
+}
+
 pub(crate) fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions {
-    let get_string = |key: &str| {
-        js_sys::Reflect::get(options, &JsValue::from_str(key))
+    let get_string = |option: CompilerOption| {
+        js_sys::Reflect::get(options, &JsValue::from_str(option.name()))
             .ok()
             .and_then(|value| value.as_string())
     };
 
-    let get_bool = |key: &str| {
-        js_sys::Reflect::get(options, &JsValue::from_str(key))
+    let get_bool = |option: CompilerOption| {
+        js_sys::Reflect::get(options, &JsValue::from_str(option.name()))
             .ok()
             .and_then(|value| value.as_bool())
     };
 
-    let binding_metadata = js_sys::Reflect::get(options, &JsValue::from_str("bindingMetadata"))
-        .ok()
-        .and_then(|value| {
-            if value.is_null() || value.is_undefined() {
-                return None;
-            }
-            let json = js_sys::JSON::stringify(&value).ok()?.as_string()?;
-            serde_json::from_str(&json).ok()
-        });
+    let binding_metadata = js_sys::Reflect::get(
+        options,
+        &JsValue::from_str(CompilerOption::BindingMetadata.name()),
+    )
+    .ok()
+    .and_then(|value| {
+        if value.is_null() || value.is_undefined() {
+            return None;
+        }
+        let json = js_sys::JSON::stringify(&value).ok()?.as_string()?;
+        serde_json::from_str(&json).ok()
+    });
+
+    let template_syntax = get_string(CompilerOption::TemplateSyntax);
+    let vue_parser_quirks = if template_syntax.is_none() {
+        get_bool(CompilerOption::VueParserQuirks)
+    } else {
+        None
+    };
+    let template_syntax = resolve_template_syntax_compat(template_syntax, vue_parser_quirks);
 
     ParsedCompilerOptions {
         options: CompilerOptions {
-            mode: get_string("mode"),
-            prefix_identifiers: get_bool("prefixIdentifiers"),
-            hoist_static: get_bool("hoistStatic"),
-            cache_handlers: get_bool("cacheHandlers"),
-            scope_id: get_string("scopeId"),
-            ssr: get_bool("ssr"),
-            source_map: get_bool("sourceMap"),
-            filename: get_string("filename"),
-            output_mode: get_string("outputMode"),
-            is_ts: get_bool("isTs"),
-            custom_renderer: get_bool("customRenderer"),
-            template_syntax: get_string("templateSyntax"),
-            experimental_in_tag_comments: get_bool("experimentalInTagComments"),
-            experimental_patterned_template: get_bool("experimentalPatternedTemplate"),
-            experimental_server_script: get_bool("experimentalServerScript"),
-            runtime_module_name: get_string("runtimeModuleName"),
-            runtime_global_name: get_string("runtimeGlobalName"),
-            script_ext: get_string("scriptExt"),
+            mode: get_string(CompilerOption::Mode),
+            prefix_identifiers: get_bool(CompilerOption::PrefixIdentifiers),
+            hoist_static: get_bool(CompilerOption::HoistStatic),
+            cache_handlers: get_bool(CompilerOption::CacheHandlers),
+            scope_id: get_string(CompilerOption::ScopeId),
+            ssr: get_bool(CompilerOption::Ssr),
+            source_map: get_bool(CompilerOption::SourceMap),
+            filename: get_string(CompilerOption::Filename),
+            output_mode: get_string(CompilerOption::OutputMode),
+            is_ts: get_bool(CompilerOption::IsTs),
+            custom_renderer: get_bool(CompilerOption::CustomRenderer),
+            template_syntax,
+            experimental_in_tag_comments: get_bool(CompilerOption::ExperimentalInTagComments),
+            experimental_patterned_template: get_bool(
+                CompilerOption::ExperimentalPatternedTemplate,
+            ),
+            // Reserved by the shared native type, but no WASM compiler stage
+            // implements it. Keep it out of the public WASM option inventory.
+            experimental_server_script: None,
+            runtime_module_name: get_string(CompilerOption::RuntimeModuleName),
+            runtime_global_name: get_string(CompilerOption::RuntimeGlobalName),
+            script_ext: get_string(CompilerOption::ScriptExt),
         },
         binding_metadata,
     }

@@ -38,6 +38,7 @@ pub fn compile_template_with_options<'a>(
         options,
         TemplateSyntaxMode::Standard,
         None,
+        CodegenOptions::default(),
     )
 }
 
@@ -48,7 +49,14 @@ pub fn compile_template_with_vue_parser_quirks<'a>(
     source: &'a str,
     options: DomCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
-    compile_template_inner(allocator, source, options, TemplateSyntaxMode::Quirks, None)
+    compile_template_inner(
+        allocator,
+        source,
+        options,
+        TemplateSyntaxMode::Quirks,
+        None,
+        CodegenOptions::default(),
+    )
 }
 
 /// Compile a Vue template for DOM with an explicit template syntax mode.
@@ -59,7 +67,38 @@ pub fn compile_template_with_template_syntax<'a>(
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
-    compile_template_inner(allocator, source, options, template_syntax, None)
+    compile_template_inner(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        None,
+        CodegenOptions::default(),
+    )
+}
+
+/// Compile a Vue template with adapter-provided codegen defaults.
+///
+/// DOM-owned settings such as mode, source maps, and binding metadata still
+/// take precedence. This hook lets binding facades provide emission-only
+/// settings (for example runtime names and the source-map filename) without
+/// growing [`DomCompilerOptions`] and breaking downstream struct literals.
+#[doc(hidden)]
+pub fn compile_template_with_template_syntax_and_codegen_options<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    codegen_options: CodegenOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    compile_template_inner(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        None,
+        codegen_options,
+    )
 }
 
 /// Compile a Vue template for DOM with an explicit scope ID for hoisted static VNodes.
@@ -76,6 +115,7 @@ pub fn compile_template_with_options_and_hoisted_scope_id<'a>(
         options,
         TemplateSyntaxMode::Standard,
         hoisted_scope_id,
+        CodegenOptions::default(),
     )
 }
 
@@ -94,6 +134,7 @@ pub fn compile_template_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
         options,
         TemplateSyntaxMode::Quirks,
         hoisted_scope_id,
+        CodegenOptions::default(),
     )
 }
 
@@ -112,6 +153,7 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id<'a>(
         options,
         template_syntax,
         hoisted_scope_id,
+        CodegenOptions::default(),
     )
 }
 
@@ -131,6 +173,30 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections<
         options,
         template_syntax,
         hoisted_scope_id,
+        CodegenOptions::default(),
+    )
+}
+
+/// Compile a Vue template with section metadata and adapter-provided codegen
+/// defaults. See [`compile_template_with_template_syntax_and_codegen_options`].
+#[doc(hidden)]
+pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options<
+    'a,
+>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+    codegen_options: CodegenOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResultWithSections) {
+    compile_template_inner_with_sections(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        hoisted_scope_id,
+        codegen_options,
     )
 }
 
@@ -140,6 +206,7 @@ fn compile_template_inner<'a>(
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,
     hoisted_scope_id: Option<String>,
+    codegen_options: CodegenOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
     let (root, errors, codegen_result) = compile_template_inner_with_sections(
         allocator,
@@ -147,6 +214,7 @@ fn compile_template_inner<'a>(
         options,
         template_syntax,
         hoisted_scope_id,
+        codegen_options,
     );
     (root, errors, codegen_result.into_result())
 }
@@ -157,6 +225,7 @@ fn compile_template_inner_with_sections<'a>(
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,
     hoisted_scope_id: Option<String>,
+    codegen_options: CodegenOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResultWithSections) {
     // Create parser options with DOM-specific settings
     let parser_opts = ParserOptions {
@@ -268,7 +337,7 @@ fn compile_template_inner_with_sections<'a>(
         inline: options.inline,
         cache_handlers: options.cache_handlers,
         binding_metadata: options.binding_metadata,
-        ..Default::default()
+        ..codegen_options
     };
     let codegen_result = profile!(
         "atelier.dom.template.codegen",

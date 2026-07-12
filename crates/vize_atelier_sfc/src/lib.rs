@@ -58,6 +58,7 @@ pub use bundler::{
     extract_style_blocks, generate_bundler_scope_id, has_scoped_style, is_importable_asset_url,
     strip_css_comments_for_scoped, wrap_scoped_preprocessor_style,
 };
+pub use compile::compile_sfc_with_template_syntax_and_codegen_options;
 #[allow(deprecated)]
 pub use compile::compile_sfc_with_vue_parser_quirks;
 pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_template_syntax};
@@ -389,14 +390,8 @@ const isRootSelected = ref(false)
 </script>
 "#;
         let descriptor = parse_sfc(source, Default::default()).unwrap();
-        let script_setup = descriptor
-            .script_setup
-            .as_ref()
-            .expect("expected script setup block");
-        let template = descriptor
-            .template
-            .as_ref()
-            .expect("expected template block");
+        let script_setup = descriptor.script_setup.as_ref().unwrap();
+        let template = descriptor.template.as_ref().unwrap();
         let croquis = crate::script::analyze_script_setup_to_summary(&script_setup.content);
         let mut binding_metadata = crate::BindingMetadata::default();
         binding_metadata.is_script_setup = croquis.bindings.is_script_setup;
@@ -425,6 +420,7 @@ const isRootSelected = ref(false)
                 croquis: Some(croquis),
             },
             vize_atelier_core::TemplateSyntaxMode::Standard,
+            &vize_atelier_core::CodegenOptions::default(),
         )
         .expect("template compile should succeed");
         let template_code = template_output.code;

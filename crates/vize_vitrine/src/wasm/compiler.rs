@@ -5,26 +5,42 @@ use vize_carton::Bump;
 use wasm_bindgen::prelude::*;
 
 use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
-use vize_atelier_core::options::CodegenMode;
-use vize_atelier_core::parser::parse_with_options;
-use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
+use vize_atelier_core::options::{CodegenMode, CodegenOptions};
+use vize_atelier_core::parser::parse_with_options_and_template_syntax;
+use vize_atelier_dom::{
+    DomCompilerOptions, compile_template_with_template_syntax_and_codegen_options,
+};
 use vize_atelier_sfc::compile_script::typescript::transform_typescript_to_js;
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-    TemplateCompileOptions, compile_sfc_with_template_syntax as sfc_compile_with_template_syntax,
+    TemplateCompileOptions,
+    compile_sfc_with_template_syntax_and_codegen_options as sfc_compile_with_template_syntax_and_codegen_options,
     parse_sfc,
 };
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_template_syntax};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor_with_template_syntax};
 
-use super::experimentals::{
-    experimental_dom_options, experimental_flags, experimental_parser_options,
-};
+use super::ast::build_ast_json;
+use super::experimentals::{compiler_parser_options, experimental_dom_options, experimental_flags};
 use super::options::{parse_compiler_options, parse_css_options};
 use super::serde::{to_js_value, to_json_js_value};
 use super::sfc_types::{
     SfcScriptResult, SfcWasmResult, descriptor_to_wasm, macro_artifact_to_wasm,
 };
+
+fn compiler_codegen_options(opts: &CompilerOptions, default_filename: &str) -> CodegenOptions {
+    let mut codegen_options = CodegenOptions {
+        filename: opts.filename.as_deref().unwrap_or(default_filename).into(),
+        ..CodegenOptions::default()
+    };
+    if let Some(runtime_module_name) = opts.runtime_module_name.as_deref() {
+        codegen_options.runtime_module_name = runtime_module_name.into();
+    }
+    if let Some(runtime_global_name) = opts.runtime_global_name.as_deref() {
+        codegen_options.runtime_global_name = runtime_global_name.into();
+    }
+    codegen_options
+}
 
 /// WASM Compiler instance
 #[wasm_bindgen]
@@ -64,11 +80,14 @@ impl Compiler {
     pub fn parse(&self, template: &str, options: JsValue) -> Result<JsValue, JsValue> {
         let parsed = parse_compiler_options(&options);
         let allocator = Bump::new();
+        let template_syntax = resolve_template_syntax(parsed.options.template_syntax.as_deref())
+            .map_err(|message| JsValue::from_str(&message))?;
 
-        let (root, errors) = parse_with_options(
+        let (root, errors) = parse_with_options_and_template_syntax(
             &allocator,
             template,
-            experimental_parser_options(&parsed.options),
+            compiler_parser_options(&parsed.options),
+            template_syntax,
         );
 
         if !errors.is_empty() {
@@ -183,6 +202,11 @@ impl Compiler {
             .unwrap_or(false);
 
         let mut opts = opts;
+        // Keep the template result's source-map identity aligned with the SFC
+        // descriptor even when the caller relies on the facade default.
+        if opts.filename.is_none() {
+            opts.filename = Some(filename.to_string());
+        }
         if source_is_ts {
             opts.is_ts = Some(true);
         }
@@ -197,6 +221,7 @@ impl Compiler {
         };
 
         let standalone = opts.mode.as_deref() == Some("function");
+        let codegen_options = compiler_codegen_options(&opts, filename.as_str());
         let sfc_opts = SfcCompileOptions {
             parse: SfcParseOptions {
                 filename: filename.clone(),
@@ -229,8 +254,12 @@ impl Compiler {
         let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
             .map_err(|message| JsValue::from_str(&message))?;
 
-        let compile_result =
-            sfc_compile_with_template_syntax(&descriptor, sfc_opts, template_syntax);
+        let compile_result = sfc_compile_with_template_syntax_and_codegen_options(
+            &descriptor,
+            sfc_opts,
+            template_syntax,
+            codegen_options,
+        );
         let sfc_result = match compile_result {
             Ok(r) => r,
             Err(e) => return Err(JsValue::from_str(&e.message)),
@@ -294,7 +323,7 @@ impl Default for Compiler {
 }
 
 /// Internal compile function
-fn compile_internal(
+pub(super) fn compile_internal(
     template: &str,
     opts: &CompilerOptions,
     vapor: bool,
@@ -398,8 +427,13 @@ fn compile_internal(
         ..experimental_dom_options(opts)
     };
 
-    let (root, errors, result) =
-        compile_template_with_template_syntax(&allocator, template, dom_opts, template_syntax);
+    let (root, errors, result) = compile_template_with_template_syntax_and_codegen_options(
+        &allocator,
+        template,
+        dom_opts,
+        template_syntax,
+        compiler_codegen_options(opts, "template.vue"),
+    );
 
     let fatal: Vec<_> = errors
         .iter()
@@ -414,94 +448,19 @@ fn compile_internal(
 
     // Build AST JSON
     let ast = build_ast_json(&root);
+    let map = result
+        .map
+        .map(|map| serde_json::from_str(map.as_str()))
+        .transpose()
+        .map_err(|error| format!("Codegen emitted an invalid source map: {error}"))?;
 
     Ok(CompileResult {
         code: result.code.to_string(),
         preamble: result.preamble.to_string(),
         ast,
-        map: None,
+        map,
         helpers,
         templates: None,
-    })
-}
-
-/// Build AST JSON from root node
-fn build_ast_json(root: &vize_atelier_core::RootNode<'_>) -> serde_json::Value {
-    use vize_atelier_core::TemplateChildNode;
-
-    fn build_children(children: &[TemplateChildNode<'_>]) -> Vec<serde_json::Value> {
-        children
-            .iter()
-            .map(|child| build_child_json(child))
-            .collect()
-    }
-
-    fn build_child_json(child: &TemplateChildNode<'_>) -> serde_json::Value {
-        match child {
-            TemplateChildNode::Element(el) => {
-                let props: Vec<serde_json::Value> = el
-                    .props
-                    .iter()
-                    .map(|prop| match prop {
-                        vize_atelier_core::PropNode::Attribute(attr) => serde_json::json!({
-                            "type": "ATTRIBUTE",
-                            "name": attr.name.as_str(),
-                            "value": attr.value.as_ref().map(|v| v.content.as_str()),
-                        }),
-                        vize_atelier_core::PropNode::Directive(dir) => serde_json::json!({
-                            "type": "DIRECTIVE",
-                            "name": dir.name.as_str(),
-                            "arg": dir.arg.as_ref().map(|a| match a {
-                                vize_atelier_core::ExpressionNode::Simple(exp) => exp.content.as_str().to_string(),
-                                _ => "<compound>".to_string(),
-                            }),
-                            "exp": dir.exp.as_ref().map(|e| match e {
-                                vize_atelier_core::ExpressionNode::Simple(exp) => exp.content.as_str().to_string(),
-                                _ => "<compound>".to_string(),
-                            }),
-                            "modifiers": dir.modifiers.iter().map(|m: &vize_atelier_core::SimpleExpressionNode| m.content.as_str()).collect::<Vec<_>>(),
-                        }),
-                    })
-                    .collect();
-
-                serde_json::json!({
-                    "type": "ELEMENT",
-                    "tag": el.tag.as_str(),
-                    "tagType": format!("{:?}", el.tag_type),
-                    "props": props,
-                    "children": build_children(&el.children),
-                    "isSelfClosing": el.is_self_closing,
-                })
-            }
-            TemplateChildNode::Text(text) => serde_json::json!({
-                "type": "TEXT",
-                "content": text.content.as_str(),
-            }),
-            TemplateChildNode::Comment(comment) => serde_json::json!({
-                "type": "COMMENT",
-                "content": comment.content.as_str(),
-            }),
-            TemplateChildNode::Interpolation(interp) => serde_json::json!({
-                "type": "INTERPOLATION",
-                "content": match &interp.content {
-                    vize_atelier_core::ExpressionNode::Simple(exp) => exp.content.as_str(),
-                    _ => "<compound>",
-                }
-            }),
-            _ => serde_json::json!({
-                "type": "UNKNOWN"
-            }),
-        }
-    }
-
-    let children = build_children(&root.children);
-
-    serde_json::json!({
-        "type": "ROOT",
-        "children": children,
-        "helpers": root.helpers.iter().map(|h| h.name()).collect::<Vec<_>>(),
-        "components": root.components.iter().map(|c| c.as_str()).collect::<Vec<_>>(),
-        "directives": root.directives.iter().map(|d| d.as_str()).collect::<Vec<_>>(),
     })
 }
 

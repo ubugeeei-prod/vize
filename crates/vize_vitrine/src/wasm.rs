@@ -15,6 +15,7 @@
 )]
 
 mod analyze;
+mod ast;
 mod compiler;
 mod cross_file;
 mod cross_file_complexity;

@@ -16,6 +16,42 @@ export type {
   LintResult,
 } from "./lint-format.js";
 
+/** Binding classification accepted by template identifier rewriting. */
+export type BindingType =
+  | "setup-let"
+  | "setup-maybe-ref"
+  | "setup-ref"
+  | "setup-reactive-const"
+  | "setup-const"
+  | "props"
+  | "props-aliased"
+  | "data"
+  | "options"
+  | "literal-const"
+  | "js-global-universal"
+  | "js-global-browser"
+  | "js-global-node"
+  | "js-global-deno"
+  | "js-global-bun"
+  | "vue-global"
+  | "external-module";
+
+export interface BindingMetadata {
+  bindings: Record<string, BindingType>;
+  propsAliases: Record<string, string>;
+  isScriptSetup: boolean;
+}
+
+/** Source Map v3 emitted for a directly compiled VDOM template. */
+export interface SourceMap {
+  version: 3;
+  file: string;
+  sources: string[];
+  sourcesContent: string[];
+  names: string[];
+  mappings: string;
+}
+
 /** Compiler options for template compilation */
 export interface CompilerOptions {
   /** Output mode: "module" or "function" */
@@ -30,9 +66,9 @@ export interface CompilerOptions {
   scopeId?: string;
   /** Whether in SSR mode */
   ssr?: boolean;
-  /** Whether to generate source map */
+  /** Whether to generate a source map for direct VDOM template compilation */
   sourceMap?: boolean;
-  /** Filename for source map */
+  /** Filename used for source-map identity, SFC parsing, and generated module IDs */
   filename?: string;
   /** Output mode: "vdom" or "vapor" */
   outputMode?: "vdom" | "vapor";
@@ -40,7 +76,21 @@ export interface CompilerOptions {
   isTs?: boolean;
   /** Whether the template targets a custom renderer instead of the DOM. */
   customRenderer?: boolean;
-  /** Enable Vue parser quirk compatibility for known edge cases. */
+  /** Template syntax compatibility mode. */
+  templateSyntax?: "standard" | "strict" | "quirks";
+  /** Enable Vue in-tag comments (`// ...`) inside opening tags. */
+  experimentalInTagComments?: boolean;
+  /** Enable `v-match` / `v-case` patterned template desugaring. */
+  experimentalPatternedTemplate?: boolean;
+  /** Runtime package imported by generated VDOM modules and SFC client output. */
+  runtimeModuleName?: string;
+  /** Runtime global read by function-mode VDOM and standalone SFC client output. */
+  runtimeGlobalName?: string;
+  /** SFC TypeScript output handling. */
+  scriptExt?: "preserve" | "downcompile";
+  /** Script binding information used by direct template compilation. */
+  bindingMetadata?: BindingMetadata;
+  /** @deprecated Use `templateSyntax: "quirks"`. */
   vueParserQuirks?: boolean;
 }
 
@@ -52,8 +102,8 @@ export interface CompileResult {
   preamble: string;
   /** AST (serialized) */
   ast: object;
-  /** Source map */
-  map?: object | null;
+  /** Source map, present when `sourceMap` is enabled for VDOM output. */
+  map?: SourceMap;
   /** Used helpers */
   helpers: string[];
   /** Template strings for Vapor mode static parts */
@@ -135,10 +185,7 @@ export interface SfcParseOptions {
 }
 
 /** SFC compile options */
-export interface SfcCompileOptions extends CompilerOptions {
-  /** Filename for the SFC */
-  filename?: string;
-}
+export interface SfcCompileOptions extends CompilerOptions {}
 
 /** Result of SFC compilation */
 export interface SfcCompileResult {
@@ -151,7 +198,7 @@ export interface SfcCompileResult {
     /** Generated JavaScript code */
     code: string;
     /** Binding metadata */
-    bindings?: object;
+    bindings?: BindingMetadata;
   };
   /** Generated CSS */
   css?: string;
@@ -161,6 +208,8 @@ export interface SfcCompileResult {
   warnings: string[];
   /** Compile-time macro artifacts */
   macroArtifacts?: MacroArtifact[];
+  /** Flat binding map for feeding a later template-only compile. */
+  bindingMetadata?: Record<string, BindingType>;
 }
 
 /** JSX/TSX compile options */
@@ -260,62 +309,35 @@ export declare class Compiler {
 }
 
 /** Compile template to VDom render function */
-export declare function compile(
-  template: string,
-  options?: CompilerOptions
-): CompileResult;
+export declare function compile(template: string, options?: CompilerOptions): CompileResult;
 
 /** Compile template to Vapor mode */
-export declare function compileVapor(
-  template: string,
-  options?: CompilerOptions
-): CompileResult;
+export declare function compileVapor(template: string, options?: CompilerOptions): CompileResult;
 
 /** Parse template to AST */
-export declare function parseTemplate(
-  template: string,
-  options?: CompilerOptions
-): object;
+export declare function parseTemplate(template: string, options?: CompilerOptions): object;
 
 /** Parse SFC (.vue file) */
-export declare function parseSfc(
-  source: string,
-  options?: SfcParseOptions
-): SfcDescriptor;
+export declare function parseSfc(source: string, options?: SfcParseOptions): SfcDescriptor;
 
 /** Compile SFC (.vue file) */
-export declare function compileSfc(
-  source: string,
-  options?: SfcCompileOptions
-): SfcCompileResult;
+export declare function compileSfc(source: string, options?: SfcCompileOptions): SfcCompileResult;
 
 /** Compile JSX/TSX to render code */
-export declare function compileJsx(
-  source: string,
-  options?: JsxCompileOptions
-): JsxCompileResult;
+export declare function compileJsx(source: string, options?: JsxCompileOptions): JsxCompileResult;
 
 /** Compile CSS with LightningCSS */
-export declare function compileCss(
-  css: string,
-  options?: CssCompileOptions
-): CssCompileResult;
+export declare function compileCss(css: string, options?: CssCompileOptions): CssCompileResult;
 
 /** Lint a Vue SFC */
-export declare function lintSfc(
-  source: string,
-  options?: LintOptions
-): LintResult;
+export declare function lintSfc(source: string, options?: LintOptions): LintResult;
 
 /** Format a Vue SFC */
-export declare function formatSfc(
-  source: string,
-  options?: FormatOptions
-): FormatResult;
+export declare function formatSfc(source: string, options?: FormatOptions): FormatResult;
 
 /** Initialize the WASM module */
 export declare function init(
-  moduleOrPath?: RequestInfo | URL | Response | BufferSource | WebAssembly.Module
+  moduleOrPath?: RequestInfo | URL | Response | BufferSource | WebAssembly.Module,
 ): Promise<void>;
 
 /** Check if the WASM module is initialized */

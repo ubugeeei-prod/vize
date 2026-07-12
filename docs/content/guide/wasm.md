@@ -20,6 +20,18 @@ vp install @vizejs/wasm
 
 ## API
 
+### Compiler option compatibility
+
+The `CompilerOptions` type is the supported option inventory for `compile`, `compileVapor`,
+`parseTemplate`, and `compileSfc`. Unknown object keys are ignored at the JavaScript boundary and
+are not compatibility promises. `vueParserQuirks` remains as a deprecated alias for
+`templateSyntax: "quirks"`; an explicit `templateSyntax` always takes precedence. The shared Rust
+field `experimentalServerScript` is reserved and is not exposed until a WASM compiler stage
+implements it. Each facade ignores supported fields that do not apply to its compiler stage:
+`bindingMetadata` only applies to direct template compilation. Runtime names apply to generated
+VDOM modules and SFC client output (VDOM or Vapor); source maps apply to VDOM output, including the
+template result returned by `compileSfc`. `outputMode` and `scriptExt` only apply to SFC compilation.
+
 ### Compile SFC
 
 Compile a Vue Single File Component into JavaScript:

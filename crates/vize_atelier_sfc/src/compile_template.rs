@@ -16,6 +16,7 @@ pub(crate) use extraction::{
 };
 pub(crate) use vapor::compile_template_block_vapor;
 
+use vize_atelier_core::CodegenOptions;
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::Bump;
 
@@ -68,6 +69,7 @@ pub(crate) fn compile_template_block(
     options: &TemplateCompileOptions,
     ctx: TemplateBlockCompileContext<'_>,
     template_syntax: TemplateSyntaxMode,
+    codegen_options: &CodegenOptions,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
     let TemplateBlockCompileContext {
         scope_id,
@@ -186,12 +188,13 @@ pub(crate) fn compile_template_block(
     // Compile template
     let (_, errors, result) = profile!(
         "atelier.sfc.template.dom",
-        vize_atelier_dom::compile_template_with_template_syntax_and_hoisted_scope_id_with_sections(
+        vize_atelier_dom::compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options(
             &allocator,
             &template.content,
             dom_opts,
             template_syntax,
             hoisted_scope_attr,
+            codegen_options.clone(),
         )
     );
 

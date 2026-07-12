@@ -43,9 +43,8 @@ export function render(_ctx) {
   return n0
 }"#;
 
-    let result = transform_vapor_template_output(vapor_code, None, &template, None)
+    let result = transform_vapor_template_output(vapor_code, None, &template, None, "vue")
         .expect("current Vapor output should be transformed");
-
     insta::assert_snapshot!(result.as_str());
 }
 
@@ -562,6 +561,7 @@ fn test_slice_template_parts_matches_line_scanner() {
                 croquis: None,
             },
             vize_atelier_core::TemplateSyntaxMode::Standard,
+            &vize_atelier_core::CodegenOptions::default(),
         )
         .expect("template should compile");
 
