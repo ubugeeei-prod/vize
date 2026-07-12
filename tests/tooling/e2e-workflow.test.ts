@@ -183,22 +183,29 @@ test("local app readiness action keeps setup, diagnostics, and aggregation bound
   assert.match(installBrowser, /playwright install chromium/);
   assert.doesNotMatch(action, /playwright install --with-deps chromium/);
 
-  for (const [id, script, log] of [
-    ["check", "test:readiness:check", "check.log"],
-    ["lint", "test:readiness:lint", "lint.log"],
-    ["build", "test:readiness:build", "build.log"],
-    ["dev", "test:readiness:dev", "dev.log"],
+  for (const [id, script, log, timeout] of [
+    ["check", "test:readiness:check", "check.log", "2m"],
+    ["lint", "test:readiness:lint", "lint.log", "2m"],
+    ["build", "test:readiness:build", "build.log", "3m"],
+    ["dev", "test:readiness:dev", "dev.log", "3m"],
   ] as const) {
     const step = yamlStepBody(action, { id });
     assert.match(step, /continue-on-error:\s*true/);
     assert.match(step, /shell:\s*bash/);
+    assert.ok(step.includes("set -o pipefail"));
+    assert.ok(step.includes(`timeout --signal=TERM --kill-after=15s ${timeout}`));
     assert.ok(step.includes(script));
     assert.ok(step.includes(`tee target/app-readiness-logs/${log}`));
   }
 
-  assert.match(action, /name:\s*app-readiness-artifacts/);
-  assert.match(action, /target\/app-readiness-logs\//);
-  assert.match(action, /if-no-files-found:\s*ignore/);
+  const upload = yamlStepBody(action, { name: "Upload app readiness artifacts" });
+  assert.match(upload, /if:\s*\$\{\{\s*cancelled\(\)\s*\|\|\s*failure\(\)/);
+  for (const id of ["check", "lint", "build", "dev"]) {
+    assert.match(upload, new RegExp(`steps\\.${id}\\.outcome\\s*==\\s*['"]failure['"]`));
+  }
+  assert.match(upload, /name:\s*app-readiness-artifacts/);
+  assert.match(upload, /target\/app-readiness-logs\//);
+  assert.match(upload, /if-no-files-found:\s*ignore/);
   assert.match(action, /## Fast app readiness/);
   for (const [outcome, step] of [
     ["CHECK_OUTCOME", "check"],
