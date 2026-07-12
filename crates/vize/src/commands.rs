@@ -1,3 +1,4 @@
+mod atomic_write;
 pub mod build;
 pub mod check;
 #[cfg(unix)]

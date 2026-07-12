@@ -16,6 +16,7 @@ use vize_glyph::{
     format_sfc_with_allocator,
 };
 
+use super::atomic_write::atomic_write;
 use crate::{config, profile_support};
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
@@ -504,51 +505,6 @@ struct FormatFileResult {
     profile: Option<FormatFileProfile>,
 }
 
-/// Write `contents` to `path` atomically via a sibling temp file + rename (#970).
-/// The temp file lives in the same directory (same-fs rename, atomic on Unix).
-/// On Windows, remove-then-rename is used as a fallback.
-fn atomic_write(path: &Path, contents: &[u8]) -> std::io::Result<()> {
-    use std::io::Write;
-
-    let dir = path.parent().unwrap_or_else(|| Path::new("."));
-    let file_name = path
-        .file_name()
-        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidInput, "no file name"))?
-        .to_string_lossy();
-    let pid = std::process::id();
-    let mut counter: u64 = 0;
-    let temp_path = loop {
-        counter = counter.wrapping_add(1);
-        let candidate = dir.join(format!(".{}.vize-fmt.{}.{}.tmp", file_name, pid, counter));
-        if !candidate.exists() {
-            break candidate;
-        }
-    };
-
-    let result = (|| -> std::io::Result<()> {
-        let mut file = fs::File::create(&temp_path)?;
-        file.write_all(contents)?;
-        file.sync_all()?;
-        drop(file);
-
-        #[cfg(windows)]
-        {
-            // Windows rename fails if the destination exists; remove it first.
-            // The window between remove and rename is narrow but real; the
-            // source is still recoverable from the temp file on failure.
-            let _ = fs::remove_file(path);
-        }
-
-        fs::rename(&temp_path, path)
-    })();
-
-    if result.is_err() {
-        // Best-effort cleanup; ignore secondary failure.
-        let _ = fs::remove_file(&temp_path);
-    }
-    result
-}
-
 struct FormatFileProfile {
     row: ProfileFileRow,
     read_time: Duration,
@@ -556,13 +512,8 @@ struct FormatFileProfile {
 
 #[cfg(test)]
 mod tests {
-    use super::{atomic_write, format_file_source};
-    use std::{
-        fs,
-        path::{Path, PathBuf},
-        time::{SystemTime, UNIX_EPOCH},
-    };
-    use vize_carton::{String, ToCompactString};
+    use super::format_file_source;
+    use std::path::Path;
 
     #[test]
     fn format_file_source_formats_standalone_tsx() {
@@ -577,59 +528,5 @@ mod tests {
         .unwrap();
 
         insta::assert_snapshot!(result.code.as_str());
-    }
-
-    #[test]
-    fn atomic_write_preserves_source_when_no_changes() {
-        let root = unique_case_dir("atomic-write-noop");
-        fs::create_dir_all(&root).unwrap();
-        let path = root.join("A.vue");
-        fs::write(&path, b"<template>before</template>").unwrap();
-
-        atomic_write(&path, b"<template>after</template>").unwrap();
-
-        assert_eq!(fs::read(&path).unwrap(), b"<template>after</template>");
-        let stray: Vec<_> = fs::read_dir(&root)
-            .unwrap()
-            .filter_map(Result::ok)
-            .filter(|entry| entry.file_name().to_string_lossy().contains("vize-fmt"))
-            .collect();
-        assert!(stray.is_empty(), "temp file should be renamed away");
-        let _ = fs::remove_dir_all(&root);
-    }
-
-    #[test]
-    fn atomic_write_leaves_original_intact_on_failure() {
-        let root = unique_case_dir("atomic-write-failure");
-        fs::create_dir_all(&root).unwrap();
-        // Point the "destination" at a path under a non-existent directory so
-        // rename fails; the original is unaffected because no destination
-        // existed yet — but the temp file must be cleaned up.
-        let parent = root.join("nope-this-does-not-exist");
-        let dest = parent.join("A.vue");
-
-        let result = atomic_write(&dest, b"new contents");
-        assert!(result.is_err());
-        let _ = fs::remove_dir_all(&root);
-    }
-
-    fn unique_case_dir(name: &str) -> PathBuf {
-        let nanos = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let mut dir_name = String::from(name);
-        dir_name.push('-');
-        let pid = std::process::id().to_compact_string();
-        dir_name.push_str(pid.as_str());
-        dir_name.push('-');
-        let nanos = nanos.to_compact_string();
-        dir_name.push_str(nanos.as_str());
-        std::env::current_dir()
-            .unwrap()
-            .join("target")
-            .join("vize-tests")
-            .join("fmt")
-            .join(dir_name.as_str())
     }
 }

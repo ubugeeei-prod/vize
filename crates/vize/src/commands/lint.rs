@@ -87,7 +87,6 @@ pub fn run(args: LintArgs) {
         eprintln!("{}", patterns::no_lint_files_message(&args.patterns));
         return;
     }
-
     let help_level = match args.help_level.as_str() {
         "none" => HelpLevel::None,
         "short" => HelpLevel::Short,
@@ -125,8 +124,7 @@ pub fn run(args: LintArgs) {
             vize_patina::rules::type_aware::NoReactivityLoss::new(),
         ));
     }
-    let error_count = AtomicUsize::new(0);
-    let warning_count = AtomicUsize::new(0);
+    let write_failures = AtomicUsize::new(0);
     let profile_rows = args.profile.then(|| Mutex::new(Vec::new()));
     if args.profile {
         let profiler = global_profiler();
@@ -160,13 +158,14 @@ pub fn run(args: LintArgs) {
             let result = profile!("cli.lint.file.lint", {
                 lint_source_with_optional_fix(&linter, path, source, &filename, args.fix)
             });
-            let (source, result, fixed) = result;
+            let (source, result, fixed) = result
+                .inspect_err(|_| {
+                    write_failures.fetch_add(1, Ordering::Relaxed);
+                })
+                .ok()?;
             let lint_time = lint_file_start
                 .map(|start| start.elapsed())
                 .unwrap_or(Duration::ZERO);
-
-            error_count.fetch_add(result.error_count, Ordering::Relaxed);
-            warning_count.fetch_add(result.warning_count, Ordering::Relaxed);
 
             if let (Some(file_start), Some(profile_rows)) = (file_start, profile_rows.as_ref()) {
                 let note = if fixed {
@@ -222,7 +221,8 @@ pub fn run(args: LintArgs) {
     let total_errors: usize = results
         .iter()
         .map(|(_, _, _, result)| result.error_count)
-        .sum();
+        .sum::<usize>()
+        + write_failures.load(Ordering::Relaxed);
     let total_warnings: usize = results
         .iter()
         .map(|(_, _, _, result)| result.warning_count)

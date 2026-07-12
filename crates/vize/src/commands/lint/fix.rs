@@ -1,8 +1,9 @@
 //! Lint source selection and fix application.
 
-use std::{fs, path::Path};
+use std::path::Path;
 
 use super::collect::{is_plain_script_path, is_standalone_html_path};
+use crate::commands::atomic_write::atomic_write;
 use vize_carton::{String, ToCompactString, profiler::global_profiler};
 use vize_patina::{JsxLang, LintResult, Linter, TextEdit};
 
@@ -12,23 +13,22 @@ pub(super) fn lint_source_with_optional_fix(
     mut source: String,
     filename: &str,
     should_fix: bool,
-) -> (String, LintResult, bool) {
+) -> std::io::Result<(String, LintResult, bool)> {
     let initial_result = lint_source(linter, path, &source, filename);
     if should_fix
         && let Some(fixed_source) = apply_lint_fixes(&source, &initial_result)
         && fixed_source != source
     {
-        if let Err(error) = fs::write(path, fixed_source.as_bytes()) {
+        atomic_write(path, fixed_source.as_bytes()).inspect_err(|error| {
             global_profiler().record_fs_write_failure(fixed_source.len());
             eprintln!("Failed to write {}: {}", path.display(), error);
-        } else {
-            global_profiler().record_fs_write(fixed_source.len());
-            source = fixed_source;
-            let result = lint_source(linter, path, &source, filename);
-            return (source, result, true);
-        }
+        })?;
+        global_profiler().record_fs_write(fixed_source.len());
+        source = fixed_source;
+        let result = lint_source(linter, path, &source, filename);
+        return Ok((source, result, true));
     }
-    (source, initial_result, false)
+    Ok((source, initial_result, false))
 }
 
 fn lint_source(linter: &Linter, path: &Path, source: &str, filename: &str) -> LintResult {

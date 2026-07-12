@@ -79,6 +79,8 @@ dirs.workspace = true
 # Process allocator for native CLI hot paths
 mimalloc.workspace = true
 
-[dev-dependencies]
+# Exclusive same-directory temporary files for atomic source replacement
 tempfile.workspace = true
+
+[dev-dependencies]
 insta.workspace = true
