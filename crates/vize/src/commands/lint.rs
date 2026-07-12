@@ -133,7 +133,9 @@ pub fn run(args: LintArgs) {
     }
 
     let lint_start = Instant::now();
-    let mut results: Vec<_> = files
+    let cross_file_enabled = args.cross_file || args.cross_file_tree || args.cross_file_complexity;
+    let retain_file_results = should_retain_lint_file_results(render_details, cross_file_enabled);
+    let lint_run = files
         .par_iter()
         .filter_map(|path| {
             let file_start = args.profile.then(Instant::now);
@@ -197,11 +199,23 @@ pub fn run(args: LintArgs) {
 
             Some((path.clone(), filename, source, result))
         })
-        .collect();
+        .fold(
+            || LintRunAccumulator::new(retain_file_results),
+            |mut accumulator, file_result| {
+                accumulator.push(file_result);
+                accumulator
+            },
+        )
+        .reduce(
+            || LintRunAccumulator::new(retain_file_results),
+            LintRunAccumulator::merge,
+        );
+    let quiet_totals =
+        (!retain_file_results).then_some((lint_run.error_count, lint_run.warning_count));
+    let mut results = lint_run.results.unwrap_or_default();
     let lint_time = lint_start.elapsed();
 
     let mut cross_file_report = None;
-    let cross_file_enabled = args.cross_file || args.cross_file_tree || args.cross_file_complexity;
     let cross_file_start = args.profile.then(Instant::now);
     if cross_file_enabled {
         cross_file_report = profile!(
@@ -218,15 +232,14 @@ pub fn run(args: LintArgs) {
         .map(|start| start.elapsed())
         .unwrap_or(Duration::ZERO);
 
-    let total_errors: usize = results
-        .iter()
-        .map(|(_, _, _, result)| result.error_count)
-        .sum::<usize>()
-        + write_failures.load(Ordering::Relaxed);
-    let total_warnings: usize = results
-        .iter()
-        .map(|(_, _, _, result)| result.warning_count)
-        .sum();
+    let (lint_error_count, total_warnings) = quiet_totals.unwrap_or_else(|| {
+        results
+            .iter()
+            .fold((0, 0), |(errors, warnings), (_, _, _, result)| {
+                (errors + result.error_count, warnings + result.warning_count)
+            })
+    });
+    let total_errors = lint_error_count + write_failures.load(Ordering::Relaxed);
 
     let output_start = Instant::now();
     if render_details {
@@ -409,4 +422,44 @@ fn severity_overrides(entries: Vec<(String, LintRuleSeverity)>) -> Vec<(String, 
 #[inline]
 fn should_render_lint_details(format: OutputFormat, quiet: bool) -> bool {
     format.renders_details_when_quiet() || !quiet
+}
+
+struct LintRunAccumulator {
+    error_count: usize,
+    warning_count: usize,
+    results: Option<Vec<cross_file::CliLintFileResult>>,
+}
+
+impl LintRunAccumulator {
+    fn new(retain_file_results: bool) -> Self {
+        Self {
+            error_count: 0,
+            warning_count: 0,
+            results: retain_file_results.then(Vec::new),
+        }
+    }
+
+    fn push(&mut self, file_result: cross_file::CliLintFileResult) {
+        self.error_count += file_result.3.error_count;
+        self.warning_count += file_result.3.warning_count;
+        if let Some(results) = self.results.as_mut() {
+            results.push(file_result);
+        }
+    }
+
+    fn merge(mut self, other: Self) -> Self {
+        self.error_count += other.error_count;
+        self.warning_count += other.warning_count;
+        match (self.results.as_mut(), other.results) {
+            (Some(results), Some(other_results)) => results.extend(other_results),
+            (None, None) => {}
+            _ => unreachable!("lint accumulators must use the same retention mode"),
+        }
+        self
+    }
+}
+
+#[inline]
+fn should_retain_lint_file_results(render_details: bool, cross_file_enabled: bool) -> bool {
+    render_details || cross_file_enabled
 }
