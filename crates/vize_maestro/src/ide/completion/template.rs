@@ -10,6 +10,7 @@
 
 mod art;
 mod bindings;
+mod component_cache;
 mod component_docs;
 mod component_meta;
 mod components;
@@ -30,7 +31,8 @@ use bindings::analyzed_template_binding_completions;
 use components::builtin_component_completions;
 
 pub(crate) use art::{complete_art, complete_inline_art};
-pub(crate) use component_meta::{CachedComponentMetadata, component_metadata};
+pub(crate) use component_cache::CachedComponentMetadata;
+pub(crate) use component_meta::component_metadata;
 pub(crate) use directives::{contextual_directive_completions, vize_directive_completions};
 // Consumed via `template::*` by unit tests in the parent completion module; the
 // `allow` keeps non-test builds warning-free while preserving the public path.

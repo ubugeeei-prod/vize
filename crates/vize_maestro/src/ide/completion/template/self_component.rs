@@ -2,7 +2,8 @@
 
 use std::sync::Arc;
 
-use super::component_meta::{ComponentMetadata, cached_component_metadata};
+use super::component_cache::cached_component_metadata;
+use super::component_meta::ComponentMetadata;
 use crate::ide::IdeContext;
 
 pub(super) fn metadata(ctx: &IdeContext, component_name: &str) -> Option<Arc<ComponentMetadata>> {

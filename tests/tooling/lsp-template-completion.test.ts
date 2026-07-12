@@ -21,6 +21,10 @@ test("vize lsp surfaces template completion contexts", async (t) => {
 
   try {
     const childSource = `<script setup lang="ts">
+defineProps<{ diskOnly: string }>()
+</script>
+`;
+    const openChildSource = `<script setup lang="ts">
 defineProps<{ label: string; disabled?: boolean }>()
 </script>
 <template><button /></template>
@@ -111,6 +115,7 @@ const count = ref(0)
     });
 
     const parentUri = pathToFileURL(parentPath).href;
+    const childUri = pathToFileURL(path.join(workspaceDir, "Child.vue")).href;
     const ltUri = pathToFileURL(ltPath).href;
     const commentUri = pathToFileURL(commentPath).href;
     const styleUri = pathToFileURL(stylePath).href;
@@ -129,6 +134,7 @@ const count = ref(0)
       });
     };
 
+    openDocument(childUri, openChildSource);
     openDocument(parentUri, parentSource);
     openDocument(ltUri, ltSource);
     openDocument(commentUri, commentSource);
@@ -153,6 +159,7 @@ const count = ref(0)
         );
         assert.ok(labels.includes("label"), labels.join(", "));
         assert.ok(labels.includes("disabled"), labels.join(", "));
+        assert.ok(!labels.includes("disk-only"), labels.join(", "));
         assert.ok(labels.includes("v-if"), labels.join(", "));
         assert.ok(labels.includes(":"), labels.join(", "));
         assert.ok(!labels.includes("Transition"), labels.join(", "));
