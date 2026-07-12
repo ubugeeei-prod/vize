@@ -116,7 +116,7 @@ impl LanguageServer for MaestroServer {
             self.state.update_virtual_docs(&uri, &content);
         }
 
-        self.publish_diagnostics(&uri).await;
+        self.publish_changed_diagnostics(&uri).await;
     }
 
     async fn did_save(&self, params: DidSaveTextDocumentParams) {
