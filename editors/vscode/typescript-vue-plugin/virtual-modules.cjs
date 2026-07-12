@@ -114,9 +114,6 @@ function installVueVirtualModules(ts, info) {
 
 function loadNative(projectRoot) {
   if (typeof projectRoot !== "string") return undefined;
-  const direct = tryRequire(require, nativePackage, projectRoot);
-  if (direct) return direct;
-
   for (const anchor of nativeAnchors) {
     try {
       const anchorPath = require.resolve(anchor, { paths: [projectRoot] });
@@ -126,7 +123,7 @@ function loadNative(projectRoot) {
       // Try the next package that carries the matching native binding.
     }
   }
-  return undefined;
+  return tryRequire(require, nativePackage, projectRoot);
 }
 
 function tryRequire(loader, specifier, searchRoot) {
