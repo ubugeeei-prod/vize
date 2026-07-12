@@ -9,7 +9,7 @@ use vize_relief::ErrorCode;
 // ========================================================================
 
 #[derive(Debug, PartialEq)]
-enum TokenEvent {
+pub(super) enum TokenEvent {
     Text(usize, usize),
     TextEntity(char, usize, usize),
     Interpolation(usize, usize),
@@ -32,9 +32,9 @@ enum TokenEvent {
 }
 
 #[derive(Debug, Default)]
-struct TestCallbacks {
-    events: Vec<TokenEvent>,
-    errors: Vec<(ErrorCode, usize)>,
+pub(super) struct TestCallbacks {
+    pub(super) events: Vec<TokenEvent>,
+    pub(super) errors: Vec<(ErrorCode, usize)>,
 }
 
 impl Callbacks for TestCallbacks {

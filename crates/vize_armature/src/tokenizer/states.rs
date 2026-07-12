@@ -191,7 +191,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.section_start = self.index;
         } else if c == AMP {
             self.start_entity();
-        } else if !self.callbacks.is_in_v_pre() && c == self.delimiter_open[0] {
+        } else if !self.callbacks.is_in_v_pre() && self.at_opening_delimiter(c) {
             self.state = State::InterpolationOpen;
             self.delimiter_index = 0;
             self.state_interpolation_open(c);
@@ -230,7 +230,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     }
 
     pub(super) fn state_interpolation(&mut self, c: u8) {
-        if c == self.delimiter_close[0] {
+        if self.at_closing_delimiter(c) {
             self.state = State::InterpolationClose;
             self.delimiter_index = 0;
             self.state_interpolation_close(c);
@@ -846,7 +846,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             if matches!(sequence, Sequence::TitleEnd | Sequence::TextareaEnd) {
                 if c == AMP {
                     self.start_entity();
-                } else if !self.callbacks.is_in_v_pre() && c == self.delimiter_open[0] {
+                } else if !self.callbacks.is_in_v_pre() && self.at_opening_delimiter(c) {
                     self.state = State::InterpolationOpen;
                     self.delimiter_index = 0;
                     self.state_interpolation_open(c);
