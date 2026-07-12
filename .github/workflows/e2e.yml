@@ -1,11 +1,11 @@
 name: App E2E
 
 on:
-  # App E2E (dev/preview/build/check/lint) and VRT are slow
-  # workflows that historically gated every PR. They are now run nightly and
-  # on demand so PR review latency is bounded by faster gates (Check,
-  # Benchmark, Native Smoke). Regressions caught by the nightly run still
-  # block release through the readiness gates.
+  # Keep PR feedback scoped to surfaces that can affect compiler/package/app
+  # behavior. The fast lane below uses focused pinned fixtures; the full
+  # App E2E and VRT matrices remain nightly/on-demand release evidence.
+  pull_request:
+    branches: [main]
   schedule:
     # 02:23 UTC daily (~11:23 JST). Covers every suite including vrt.
     - cron: "23 2 * * *"
@@ -37,7 +37,7 @@ on:
         required: false
         type: string
 
-run-name: App E2E ${{ github.event_name == 'workflow_dispatch' && (inputs.testbox_id || inputs.suite) || 'nightly' }} @ ${{ inputs.target_sha || github.sha }}
+run-name: App E2E ${{ github.event_name == 'pull_request' && format('readiness-pr-{0}', github.event.pull_request.number) || (github.event_name == 'workflow_dispatch' && (inputs.testbox_id || inputs.suite) || 'nightly') }} @ ${{ inputs.target_sha || github.sha }}
 
 concurrency:
   group: app-e2e-${{ github.event_name == 'workflow_dispatch' && (inputs.testbox_id || inputs.suite) || github.ref }}-${{ github.event_name == 'workflow_dispatch' && (inputs.target_sha || github.sha) || github.event_name }}
@@ -49,6 +49,74 @@ env:
   E2E_TARGET_SHA: ${{ inputs.target_sha || github.sha }}
 
 jobs:
+  app-readiness:
+    name: app-readiness
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    permissions:
+      contents: read # required by actions/checkout
+      pull-requests: read # required by dorny/paths-filter
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      VIZE_TEST_WORKTREE_ID: ci-readiness
+    steps:
+      # Keep this job present on every PR so it can be a required context.
+      # Irrelevant/docs-only changes stop after this read-only API query.
+      - name: Detect app readiness changes
+        id: changes
+        uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4.0.2
+        with:
+          filters: |
+            readiness:
+              - '.github/actions/app-readiness/**'
+              - '.cargo/**'
+              - '.github/actions/setup-moonbit/**'
+              - '.github/actions/setup-rust-sticky-cache/**'
+              - '.github/workflows/e2e.yml'
+              - '.gitmodules'
+              - '.node-version'
+              - 'Cargo.lock'
+              - 'Cargo.toml'
+              - 'crates/**'
+              - 'npm/native/**'
+              - 'npm/cli/**'
+              - 'npm/builder/vite/**'
+              - 'npm/framework/nuxt/**'
+              - 'npm/builder/vite-musea/**'
+              - 'npm/framework/musea-nuxt/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'rust-toolchain.toml'
+              - 'tests/package.json'
+              - 'tests/tsconfig.json'
+              - 'tests/_fixtures/_git/elk'
+              - 'tests/_fixtures/_git/misskey'
+              - 'tests/_fixtures/_projects/compiler-macros/**'
+              - 'tests/_helpers/**'
+              - 'tests/app/dev/misskey.spec.ts'
+              - 'tests/app/playwright.config.ts'
+              - 'tests/snapshots/check/compiler-macros.ts'
+              - 'tests/snapshots/check/__snapshots__/compiler-macros-check.snap'
+              - 'tests/snapshots/build/elk.ts'
+              - 'tests/tooling/cli-lint-contract.test.ts'
+              - 'tools/moon/**'
+              - 'tools/vite-plus/**'
+              - 'tsconfig.json'
+              - 'tsconfig.node.json'
+              - 'vite.config.ts'
+
+      - name: Checkout readiness source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: steps.changes.outputs.readiness == 'true'
+        with:
+          persist-credentials: false
+
+      - name: Run app readiness
+        if: steps.changes.outputs.readiness == 'true'
+        uses: ./.github/actions/app-readiness
+
   testbox:
     name: Testbox
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.testbox_id != '' }}
@@ -121,7 +189,7 @@ jobs:
 
   app-e2e:
     name: app-e2e (${{ matrix.suite }})
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.testbox_id == '' }}
+    if: ${{ github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.testbox_id == '') }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 90
     permissions:

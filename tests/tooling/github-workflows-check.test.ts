@@ -11,6 +11,7 @@ import { readRepoFile, root, workflowJobBody } from "./support/github-workflows.
 test("PR CI jobs cap runtime with explicit timeouts", () => {
   const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
   const benchmarkWorkflow = readRepoFile(".github", "workflows", "benchmark.yml");
+  const e2eWorkflow = readRepoFile(".github", "workflows", "e2e.yml");
   const toolBenchmarkWorkflow = readRepoFile(".github", "workflows", "tool-benchmark.yml");
 
   for (const [jobName, minutes] of [
@@ -39,6 +40,8 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
       new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
     );
   }
+
+  assert.match(workflowJobBody(e2eWorkflow, "app-readiness"), /timeout-minutes:\s*15\b/);
 
   for (const [jobName, minutes] of [
     ["pr-benchmark", 30],

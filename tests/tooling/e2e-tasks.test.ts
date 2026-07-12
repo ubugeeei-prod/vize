@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -38,6 +39,52 @@ test("workspace exposes app e2e task aliases with scoped cache inputs", () => {
   assert.match(taskGroups, /"test:e2e:vrt":\s*task\(runInPackages\("test:vrt", \["\.\/tests"\]\)/);
   assert.match(taskGroups, /input:\s*cacheInputs\.e2e/);
   assert.match(testPackage.scripts?.["test:dev:ci"] ?? "", /app\/dev\/nuxt-ui\.spec\.ts/);
+});
+
+test("fast app readiness aliases use bounded pinned fixtures", () => {
+  const testPackage = JSON.parse(readRepoFile("tests", "package.json")) as {
+    scripts?: Record<string, string>;
+  };
+  const scripts = testPackage.scripts ?? {};
+
+  assert.equal(
+    scripts["test:readiness"],
+    "pnpm test:readiness:check && pnpm test:readiness:lint && pnpm test:readiness:build && pnpm test:readiness:dev",
+  );
+  assert.equal(
+    scripts["test:readiness:check"],
+    "node --test --test-concurrency=1 snapshots/check/compiler-macros.ts",
+  );
+  assert.equal(
+    scripts["test:readiness:lint"],
+    "node --test --test-concurrency=1 tooling/cli-lint-contract.test.ts",
+  );
+  assert.equal(
+    scripts["test:readiness:build"],
+    "node --test --test-concurrency=1 snapshots/build/elk.ts",
+  );
+  assert.equal(
+    scripts["test:readiness:dev"],
+    "VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} playwright test --config app/playwright.config.ts app/dev/misskey.spec.ts",
+  );
+
+  assertExists("tests", "snapshots", "check", "compiler-macros.ts");
+  assertExists("tests", "tooling", "cli-lint-contract.test.ts");
+  assertExists("tests", "snapshots", "build", "elk.ts");
+  assertExists("tests", "app", "dev", "misskey.spec.ts");
+
+  for (const fixture of ["elk", "misskey"]) {
+    const gitlink = execFileSync(
+      "git",
+      ["ls-files", "--stage", `tests/_fixtures/_git/${fixture}`],
+      { cwd: root, encoding: "utf8" },
+    );
+    assert.match(
+      gitlink,
+      new RegExp(`^160000 [0-9a-f]{40} 0\\ttests/_fixtures/_git/${fixture}\\n$`),
+      `${fixture} must remain pinned to an exact gitlink commit`,
+    );
+  }
 });
 
 test("real-world browser smoke inventory stays wired into app e2e scripts", () => {

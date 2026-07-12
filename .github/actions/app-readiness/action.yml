@@ -1,0 +1,152 @@
+name: App readiness
+description: Run the bounded compiler, lint, build, and dev readiness suites
+
+runs:
+  using: composite
+  steps:
+    - name: Hydrate pinned app fixtures
+      shell: bash
+      run: |
+        git submodule update --init --recursive --depth 1 \
+          tests/_fixtures/_git/elk \
+          tests/_fixtures/_git/misskey
+
+    - name: Setup Rust
+      id: rust-toolchain
+      uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+    - name: Setup Wild linker
+      uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      with:
+        wild-version: "0.9.0"
+
+    - uses: ./.github/actions/setup-rust-sticky-cache
+      with:
+        key: app-readiness
+        cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ steps.rust-toolchain.outputs.cachekey }}-${{ hashFiles('Cargo.lock') }}
+
+    - name: Setup Vite+ and Node.js
+      uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      with:
+        node-version-file: ".node-version"
+        cache: true
+        run-install: false
+
+    - uses: ./.github/actions/setup-moonbit
+
+    - name: Install JS dependencies
+      shell: bash
+      run: |
+        vp install --frozen-lockfile --prefer-offline \
+          --filter './tests...' \
+          --filter './npm/native...' \
+          --filter './npm/cli...' \
+          --filter './npm/builder/vite...' \
+          --filter './npm/framework/nuxt...' \
+          --filter './npm/builder/vite-musea...' \
+          --filter './npm/framework/musea-nuxt...'
+
+    - name: Build native package
+      shell: bash
+      run: vp run --filter './npm/native' build:ci
+
+    - name: Build vize CLI
+      shell: bash
+      run: cargo build --profile ci -p vize
+
+    - name: Cache Playwright browsers
+      id: cache-playwright
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+    - name: Install Playwright OS dependencies
+      shell: bash
+      run: vp exec --filter './tests' -- playwright install-deps chromium
+
+    - name: Install Playwright browser
+      if: steps.cache-playwright.outputs.cache-hit != 'true'
+      shell: bash
+      run: vp exec --filter './tests' -- playwright install chromium
+
+    - name: Prepare readiness logs
+      shell: bash
+      run: mkdir -p target/app-readiness-logs
+
+    - name: Check compiler fixture
+      id: check
+      continue-on-error: true
+      shell: bash
+      run: |
+        set -o pipefail
+        vp run --filter './tests' test:readiness:check 2>&1 \
+          | tee target/app-readiness-logs/check.log
+
+    - name: Lint CLI fixture
+      id: lint
+      continue-on-error: true
+      shell: bash
+      run: |
+        set -o pipefail
+        vp run --filter './tests' test:readiness:lint 2>&1 \
+          | tee target/app-readiness-logs/lint.log
+
+    - name: Build compiler fixture
+      id: build
+      continue-on-error: true
+      shell: bash
+      run: |
+        set -o pipefail
+        vp run --filter './tests' test:readiness:build 2>&1 \
+          | tee target/app-readiness-logs/build.log
+
+    - name: Run representative dev smoke
+      id: dev
+      continue-on-error: true
+      shell: bash
+      run: |
+        set -o pipefail
+        vp run --filter './tests' test:readiness:dev 2>&1 \
+          | tee target/app-readiness-logs/dev.log
+
+    - name: Upload app readiness artifacts
+      if: ${{ failure() || steps.check.outcome == 'failure' || steps.lint.outcome == 'failure' || steps.build.outcome == 'failure' || steps.dev.outcome == 'failure' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: app-readiness-artifacts
+        path: |
+          target/app-readiness-logs/
+          tests/app/results/
+          tests/app/screenshots/
+          tests/app/playwright-report/
+          tests/playwright-report/
+        if-no-files-found: ignore
+        retention-days: 7
+
+    - name: Report app readiness
+      if: ${{ !cancelled() }}
+      shell: bash
+      env:
+        CHECK_OUTCOME: ${{ steps.check.outcome }}
+        LINT_OUTCOME: ${{ steps.lint.outcome }}
+        BUILD_OUTCOME: ${{ steps.build.outcome }}
+        DEV_OUTCOME: ${{ steps.dev.outcome }}
+      run: |
+        {
+          echo "## Fast app readiness"
+          echo
+          echo "| Suite | Outcome |"
+          echo "| --- | --- |"
+          echo "| check | $CHECK_OUTCOME |"
+          echo "| lint | $LINT_OUTCOME |"
+          echo "| build | $BUILD_OUTCOME |"
+          echo "| dev | $DEV_OUTCOME |"
+        } >> "$GITHUB_STEP_SUMMARY"
+
+        for outcome in "$CHECK_OUTCOME" "$LINT_OUTCOME" "$BUILD_OUTCOME" "$DEV_OUTCOME"; do
+          if [[ "$outcome" != "success" ]]; then
+            echo "::error title=Fast app readiness failed::See the failed Actions step, job summary, and captured suite logs in app-readiness-artifacts"
+            exit 1
+          fi
+        done
