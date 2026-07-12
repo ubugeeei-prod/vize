@@ -6,13 +6,23 @@ use ignore::Walk;
 use vize_carton::cstr;
 use vize_carton::{String, ToCompactString};
 
+pub(super) struct CollectedFiles {
+    pub files: Vec<PathBuf>,
+    pub roots: Vec<PathBuf>,
+}
+
 /// Collect `.vue` files matching the given glob patterns.
 #[allow(clippy::disallowed_types)]
-pub(super) fn collect_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
+pub(super) fn collect_files(patterns: &[std::string::String]) -> CollectedFiles {
     let mut files = Vec::new();
+    let mut roots = Vec::new();
 
     for pattern in patterns {
         let (root, glob_pattern) = parse_pattern(pattern);
+        let root_path = PathBuf::from(root.as_str());
+        if root_path.is_dir() {
+            roots.push(root_path);
+        }
 
         for entry in Walk::new(&root).flatten() {
             let path = entry.path();
@@ -28,7 +38,9 @@ pub(super) fn collect_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
 
     files.sort();
     files.dedup();
-    files
+    roots.sort();
+    roots.dedup();
+    CollectedFiles { files, roots }
 }
 
 /// Extract a root directory and glob pattern from a user-provided pattern string.
@@ -127,12 +139,13 @@ mod tests {
         )
         .unwrap();
 
-        let files = collect_files(&vec![root.display().to_string()]);
+        let collected = collect_files(&vec![root.display().to_string()]);
         let _ = fs::remove_dir_all(&root);
 
         let mut expected = vec![component_dir.join("Nested.vue"), src.join("App.vue")];
         expected.sort();
-        assert_eq!(files, expected);
+        assert_eq!(collected.files, expected);
+        assert_eq!(collected.roots, vec![root]);
     }
 
     #[test]
@@ -146,10 +159,32 @@ mod tests {
         fs::write(&app, "<template><div /></template>").unwrap();
         fs::write(sibling, "<template><div /></template>").unwrap();
 
-        let files = collect_files(&vec![app.display().to_string()]);
+        let collected = collect_files(&vec![app.display().to_string()]);
         let _ = fs::remove_dir_all(&root);
 
-        assert_eq!(files, vec![app]);
+        assert_eq!(collected.files, vec![app]);
+        assert_eq!(collected.roots, vec![src]);
+    }
+
+    #[test]
+    fn collect_files_keeps_empty_searched_roots() {
+        let root = unique_case_dir("build-empty-searched-root");
+        let alpha = root.join("packages/alpha/src");
+        let beta = root.join("packages/beta/src");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&alpha).unwrap();
+        fs::create_dir_all(&beta).unwrap();
+        let app = alpha.join("App.vue");
+        fs::write(&app, "<template><div /></template>").unwrap();
+
+        let collected = collect_files(&[
+            alpha.to_string_lossy().into_owned(),
+            beta.to_string_lossy().into_owned(),
+        ]);
+        let _ = fs::remove_dir_all(&root);
+
+        assert_eq!(collected.files, vec![app]);
+        assert_eq!(collected.roots, vec![alpha, beta]);
     }
 
     fn unique_case_dir(name: &str) -> PathBuf {

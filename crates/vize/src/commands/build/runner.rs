@@ -7,12 +7,11 @@ mod cache;
 mod collect;
 mod compile;
 mod compile_stats;
+mod output;
 mod profile_facts;
 mod settings;
 
 use std::{
-    fs,
-    path::PathBuf,
     sync::{Mutex, atomic::Ordering},
     time::{Duration, Instant},
 };
@@ -20,7 +19,6 @@ use std::{
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use vize_carton::String;
 use vize_carton::cstr;
-use vize_carton::profile;
 use vize_carton::profiler::global_profiler;
 
 use crate::profile_support;
@@ -30,13 +28,14 @@ use vize_curator::profile::{
 
 use super::{
     BuildArgs, OutputFormat,
-    config::{CompileError, CompileStats, ErrorPhase, FileProfile, get_output_extension},
+    config::{CompileError, CompileStats, ErrorPhase, FileProfile},
 };
 
 use cache::StatsCompileCache;
-use collect::collect_files;
+use collect::{CollectedFiles, collect_files};
 use compile::compile_file_with_profile;
 use compile_stats::compile_file_stats_with_cache;
+use output::{CompiledBuildOutput, plan_inputs, preflight_outputs, write_outputs};
 use settings::{CompileFileSettings, load_build_config, template_syntax_mode};
 
 /// Main entry point for the build command.
@@ -71,14 +70,37 @@ pub(crate) fn run(args: BuildArgs) {
         std::process::exit(1);
     }
 
-    let files = collect_files(&args.patterns);
+    let CollectedFiles { mut files, roots } = collect_files(&args.patterns);
 
     if files.is_empty() {
         eprintln!("No .vue files found matching the patterns");
         std::process::exit(1);
     }
 
-    let stats = CompileStats::new(files.len());
+    let stats_only = matches!(args.format, OutputFormat::Stats);
+    let planned_inputs = if stats_only {
+        Vec::new()
+    } else {
+        let inputs = match plan_inputs(std::mem::take(&mut files), &roots) {
+            Ok(inputs) => inputs,
+            Err(error) => {
+                eprintln!("\x1b[31mError:\x1b[0m {error}");
+                std::process::exit(1);
+            }
+        };
+        if let Err(error) = preflight_outputs(&inputs, &args.output, args.format, args.script_ext) {
+            eprintln!("\x1b[31mError:\x1b[0m {error}");
+            std::process::exit(1);
+        }
+        inputs
+    };
+
+    let total_files = if stats_only {
+        files.len()
+    } else {
+        planned_inputs.len()
+    };
+    let stats = CompileStats::new(total_files);
     let collect_elapsed = start.elapsed();
 
     if args.profile {
@@ -87,7 +109,7 @@ pub(crate) fn run(args: BuildArgs) {
         profiler.enable();
         eprintln!(
             "Found {} files in {:.4}s. Compiling using {} threads...",
-            files.len(),
+            total_files,
             collect_elapsed.as_secs_f64(),
             rayon::current_num_threads()
         );
@@ -115,7 +137,6 @@ pub(crate) fn run(args: BuildArgs) {
         record_profile_totals: args.profile,
     };
 
-    let stats_only = matches!(args.format, OutputFormat::Stats);
     let results: Vec<_> = if stats_only {
         let compile_cache = StatsCompileCache::default();
         files.par_iter().for_each(|path| {
@@ -149,10 +170,10 @@ pub(crate) fn run(args: BuildArgs) {
         });
         Vec::new()
     } else {
-        files
+        planned_inputs
             .par_iter()
-            .map(
-                |path| match compile_file_with_profile(path, compile_settings, &stats) {
+            .map(|input| {
+                match compile_file_with_profile(&input.source, compile_settings, &stats) {
                     Ok((output, profile)) => {
                         stats.success.fetch_add(1, Ordering::Relaxed);
                         stats
@@ -172,7 +193,7 @@ pub(crate) fn run(args: BuildArgs) {
                             p.push(profile);
                         }
 
-                        Some((path.clone(), output))
+                        Some(CompiledBuildOutput { input, output })
                     }
                     Err(err) => {
                         stats.failed.fetch_add(1, Ordering::Relaxed);
@@ -183,8 +204,8 @@ pub(crate) fn run(args: BuildArgs) {
 
                         None
                     }
-                },
-            )
+                }
+            })
             .collect()
     };
     let compile_elapsed = compile_start.elapsed();
@@ -193,66 +214,14 @@ pub(crate) fn run(args: BuildArgs) {
     match args.format {
         OutputFormat::Stats => {}
         OutputFormat::Js | OutputFormat::Json => {
-            // Create the output directory once per build, then write every
-            // generated file. Calling `create_dir_all` from each worker looked
-            // harmless but showed up in profiles as repeated metadata syscalls,
-            // especially when benchmarking many generated SFCs.
-            match profile!(
-                "cli.build.output.create_dir_all",
-                fs::create_dir_all(&args.output)
+            if let Err(error) = write_outputs(
+                results.into_iter().flatten(),
+                &args.output,
+                args.format,
+                args.script_ext,
             ) {
-                Ok(()) => global_profiler().record_fs_create_dir_all(),
-                Err(error) => {
-                    global_profiler().record_fs_create_dir_all_failure();
-                    eprintln!(
-                        "Failed to create output directory {}: {error}",
-                        args.output.display()
-                    );
-                    std::process::exit(1);
-                }
-            }
-
-            for (path, output) in results.into_iter().flatten() {
-                let ext = match args.format {
-                    OutputFormat::Js => get_output_extension(&output.script_lang, args.script_ext),
-                    OutputFormat::Json => "json",
-                    // Panic path by control-flow invariant: this match is inside
-                    // the `OutputFormat::Js | OutputFormat::Json` arm above.
-                    // Keeping the enum match explicit lets the compiler keep
-                    // checking newly added output formats here.
-                    OutputFormat::Stats => unreachable!(),
-                };
-
-                let filename = path
-                    .file_name()
-                    .map(|f| PathBuf::from(f).with_extension(ext))
-                    .unwrap_or_else(|| PathBuf::from("output").with_extension(ext));
-                let out_path = args.output.join(filename);
-
-                let content: String = match args.format {
-                    OutputFormat::Js => output.code,
-                    OutputFormat::Json =>
-                    {
-                        #[allow(clippy::disallowed_methods)]
-                        serde_json::to_string_pretty(&output)
-                            .unwrap_or_default()
-                            .into()
-                    }
-                    // Panic path by the same outer-match invariant as `ext`.
-                    OutputFormat::Stats => unreachable!(),
-                };
-
-                let bytes = content.len();
-                match profile!(
-                    "cli.build.output.write",
-                    fs::write(&out_path, content.as_str())
-                ) {
-                    Ok(()) => global_profiler().record_fs_write(bytes),
-                    Err(error) => {
-                        global_profiler().record_fs_write_failure(bytes);
-                        eprintln!("Failed to write {}: {}", out_path.display(), error);
-                    }
-                }
+                eprintln!("\x1b[31mError:\x1b[0m {error}");
+                std::process::exit(1);
             }
         }
     }

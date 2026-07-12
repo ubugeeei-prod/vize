@@ -8,7 +8,7 @@ Usage: build [OPTIONS] [PATTERNS]...
 
 Arguments:
   [PATTERNS]...
-          Glob pattern(s) to match .vue files (default: ./**/*.vue)
+          File, directory, or glob inputs (output paths stay relative to their common root)
 
           [default: ./**/*.vue]
 
