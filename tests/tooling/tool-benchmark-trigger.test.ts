@@ -22,19 +22,24 @@ test("Tool Benchmark ignores only known non-runtime pull request paths", () => {
     }
   >;
   const impact = jobs["tool-benchmark-impact"];
-  const changeDetection = impact.steps?.[0]?.with as {
+  assert.ok(impact, "missing tool-benchmark-impact job");
+  const changeDetection = impact.steps?.find((step) => step.id === "changes");
+  assert.ok(changeDetection, "missing changes step");
+  assert.match(String(changeDetection.uses), /^dorny\/paths-filter@/);
+  const filterInput = changeDetection.with as {
     filters: string;
     "predicate-quantifier"?: string;
   };
-  const filters = parse(String(changeDetection.filters)) as {
+  const filters = parse(String(filterInput.filters)) as {
     runtime?: string[];
   };
 
   assert.equal(events.pull_request?.["paths-ignore"], undefined);
-  assert.equal(changeDetection["predicate-quantifier"], "every");
+  assert.equal(filterInput["predicate-quantifier"], "every");
   const expectedRuntimePatterns = [
     "**",
     "!**/*.md",
+    "!docs/**",
     "!.changeset/**",
     "!.github/ISSUE_TEMPLATE/**",
     "!.github/PULL_REQUEST_TEMPLATE.md",

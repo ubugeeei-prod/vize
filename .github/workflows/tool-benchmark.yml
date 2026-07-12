@@ -84,6 +84,7 @@ jobs:
             runtime:
               - '**'
               - '!**/*.md'
+              - '!docs/**'
               - '!.changeset/**'
               - '!.github/ISSUE_TEMPLATE/**'
               - '!.github/PULL_REQUEST_TEMPLATE.md'
