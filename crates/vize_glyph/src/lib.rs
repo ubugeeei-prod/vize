@@ -32,12 +32,12 @@
 //!   <button @click="count++">{{count}}</button>
 //! </template>
 //! "#;
-//!
 //! let options = FormatOptions::default();
 //! let result = format_sfc(source, &options).unwrap();
 //! println!("{}", result.code);
 //! ```
 
+mod attribute;
 mod error;
 mod formatter;
 mod json;
