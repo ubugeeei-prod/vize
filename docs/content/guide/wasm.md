@@ -40,9 +40,9 @@ const result = compileSfc(
   { filename: "App.vue" },
 );
 
-console.log(result.code);
-// → import { ref, toDisplayString, ... } from 'vue'
-// → ...compiled render function...
+console.log(result.script.code); // compiled <script> / <script setup>
+console.log(result.template?.code); // compiled render function, when a template exists
+console.log(result.css); // compiled styles, when styles exist
 ```
 
 ### Lint SFC
@@ -103,14 +103,18 @@ Build interactive Vue compilation playgrounds that run entirely in the browser. 
 ```javascript
 // React to editor changes and compile in real-time
 editor.onChange((source) => {
-  const { code, errors } = compileSfc(source, {
+  const result = compileSfc(source, {
     filename: "Playground.vue",
   });
 
-  if (errors.length === 0) {
-    preview.update(code);
+  if (result.errors.length === 0) {
+    preview.update({
+      script: result.script.code,
+      template: result.template?.code,
+      css: result.css,
+    });
   } else {
-    diagnostics.show(errors);
+    diagnostics.show(result.errors);
   }
 });
 ```
@@ -123,10 +127,10 @@ Embed live, editable Vue examples in your documentation:
 // Compile documentation examples on the fly
 const examples = document.querySelectorAll("[data-vue-example]");
 for (const el of examples) {
-  const { code } = compileSfc(el.textContent, {
+  const result = compileSfc(el.textContent, {
     filename: `example-${el.id}.vue`,
   });
-  // Mount the compiled component...
+  // Use result.script.code, result.template?.code, and result.css to mount it.
 }
 ```
 
@@ -186,5 +190,6 @@ For production use, consider lazy-loading the WASM module:
 // Lazy-load the compiler only when needed
 const compiler = await import("@vizejs/wasm");
 await compiler.default(); // init()
-const { code } = compiler.compileSfc(source, opts);
+const result = compiler.compileSfc(source, opts);
+console.log(result.script.code, result.template?.code, result.css);
 ```
