@@ -1,37 +1,83 @@
 //! File collection and glob pattern matching for the build command.
 
-use std::path::PathBuf;
+use std::{
+    fmt,
+    path::{Path, PathBuf},
+};
 
 use ignore::Walk;
-use vize_carton::cstr;
-use vize_carton::{String, ToCompactString};
 
+#[derive(Debug)]
 pub(super) struct CollectedFiles {
     pub files: Vec<PathBuf>,
     pub roots: Vec<PathBuf>,
 }
 
-/// Collect `.vue` files matching the given glob patterns.
+#[derive(Debug, PartialEq, Eq)]
+pub(super) enum InputError<'a> {
+    MissingLiteral { input: &'a str },
+    NonVueFile { input: &'a str },
+}
+
+impl fmt::Display for InputError<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::MissingLiteral { input } => {
+                write!(formatter, "Build input does not exist: {input}")
+            }
+            Self::NonVueFile { input } => {
+                write!(formatter, "Build input is not a .vue file: {input}")
+            }
+        }
+    }
+}
+
+#[derive(Debug)]
+enum BuildInput<'a> {
+    File(&'a Path),
+    Directory(&'a Path),
+    Glob { root: PathBuf, pattern: &'a str },
+}
+
 #[allow(clippy::disallowed_types)]
-pub(super) fn collect_files(patterns: &[std::string::String]) -> CollectedFiles {
+pub(super) fn collect_files_or_exit(patterns: &[std::string::String]) -> CollectedFiles {
+    collect_files(patterns).unwrap_or_else(|error| {
+        eprintln!("{error}");
+        std::process::exit(1);
+    })
+}
+
+/// Collect `.vue` files from literal files, directories, and glob patterns.
+#[allow(clippy::disallowed_types)]
+pub(super) fn collect_files<'a>(
+    patterns: &'a [std::string::String],
+) -> Result<CollectedFiles, InputError<'a>> {
+    // Validate every literal before starting an expensive walk. A typo or an
+    // unsupported file must not affect collection roots or scan other inputs.
+    let inputs = patterns
+        .iter()
+        .map(|pattern| classify_input(pattern))
+        .collect::<Result<Vec<_>, _>>()?;
     let mut files = Vec::new();
     let mut roots = Vec::new();
 
-    for pattern in patterns {
-        let (root, glob_pattern) = parse_pattern(pattern);
-        let root_path = PathBuf::from(root.as_str());
-        if root_path.is_dir() {
-            roots.push(root_path);
-        }
-
-        for entry in Walk::new(&root).flatten() {
-            let path = entry.path();
-
-            if path.is_file()
-                && path.extension().is_some_and(|ext| ext == "vue")
-                && pattern_matches(path, &glob_pattern)
-            {
+    for input in inputs {
+        match input {
+            BuildInput::File(path) => {
                 files.push(path.to_path_buf());
+                if let Some(parent) = path.parent() {
+                    roots.push(parent.to_path_buf());
+                }
+            }
+            BuildInput::Directory(root) => {
+                roots.push(root.to_path_buf());
+                collect_walked_files(root, None, &mut files);
+            }
+            BuildInput::Glob { root, pattern } => {
+                if root.is_dir() {
+                    roots.push(root.clone());
+                }
+                collect_walked_files(&root, Some(pattern), &mut files);
             }
         }
     }
@@ -40,45 +86,80 @@ pub(super) fn collect_files(patterns: &[std::string::String]) -> CollectedFiles 
     files.dedup();
     roots.sort();
     roots.dedup();
-    CollectedFiles { files, roots }
+    Ok(CollectedFiles { files, roots })
 }
 
-/// Extract a root directory and glob pattern from a user-provided pattern string.
-fn parse_pattern(pattern: &str) -> (String, String) {
-    if let Some(pos) = pattern.find(['*', '?']) {
-        let root_part = &pattern[..pos];
-        if let Some(last_slash) = root_part.rfind('/') {
-            let root = &pattern[..last_slash];
-            let root = if root.is_empty() { "." } else { root };
-            return (root.to_compact_string(), pattern.to_compact_string());
+fn classify_input(input: &str) -> Result<BuildInput<'_>, InputError<'_>> {
+    let path = Path::new(input);
+    if let Ok(metadata) = path.metadata() {
+        if metadata.is_file() {
+            return if is_vue_file(path) {
+                Ok(BuildInput::File(path))
+            } else {
+                Err(InputError::NonVueFile { input })
+            };
+        }
+        return if metadata.is_dir() {
+            Ok(BuildInput::Directory(path))
+        } else {
+            Err(InputError::MissingLiteral { input })
+        };
+    }
+
+    if contains_glob_metacharacter(input) {
+        Ok(BuildInput::Glob {
+            root: glob_root(input),
+            pattern: input,
+        })
+    } else {
+        Err(InputError::MissingLiteral { input })
+    }
+}
+
+fn glob_root(pattern: &str) -> PathBuf {
+    let metacharacter = pattern
+        .find(['*', '?', '['])
+        .expect("glob roots are only derived from classified glob inputs");
+    let literal_prefix = &pattern[..metacharacter];
+
+    literal_prefix.rfind(['/', '\\']).map_or_else(
+        || PathBuf::from("."),
+        |separator| {
+            // Retaining the separator preserves filesystem roots such as `/`
+            // and `C:\\` while remaining equivalent for ordinary directories.
+            PathBuf::from(&literal_prefix[..=separator])
+        },
+    )
+}
+
+fn collect_walked_files(root: &Path, pattern: Option<&str>, files: &mut Vec<PathBuf>) {
+    for entry in Walk::new(root).flatten() {
+        let path = entry.path();
+
+        if path.is_file()
+            && is_vue_file(path)
+            && pattern.is_none_or(|pattern| pattern_matches(path, pattern))
+        {
+            files.push(path.to_path_buf());
         }
     }
+}
 
-    let path = std::path::Path::new(pattern);
-    if path.is_dir() {
-        return (pattern.to_compact_string(), cstr!("{}/**/*.vue", pattern));
-    }
+#[inline]
+fn contains_glob_metacharacter(input: &str) -> bool {
+    input.contains(['*', '?', '['])
+}
 
-    if path.is_file()
-        && pattern.ends_with(".vue")
-        && let Some(parent) = path.parent()
-    {
-        let parent_str = parent.to_string_lossy();
-        let parent_str = if parent_str.is_empty() {
-            "."
-        } else {
-            &parent_str
-        };
-        return (parent_str.to_compact_string(), pattern.to_compact_string());
-    }
-
-    (".".into(), pattern.to_compact_string())
+#[inline]
+fn is_vue_file(path: &Path) -> bool {
+    path.extension().is_some_and(|extension| extension == "vue")
 }
 
 /// Check whether a file path matches a glob-like pattern.
 #[allow(clippy::disallowed_types, clippy::disallowed_methods)]
-fn pattern_matches(path: &std::path::Path, pattern: &str) -> bool {
-    let path_str = path.to_string_lossy().replace("\\", "/");
+fn pattern_matches(path: &Path, pattern: &str) -> bool {
+    let path_str = path.to_string_lossy().replace('\\', "/");
+    let pattern = pattern.replace('\\', "/");
 
     if pattern == "./**/*.vue" || pattern == "**/*.vue" {
         return path_str.ends_with(".vue");
@@ -97,16 +178,14 @@ fn pattern_matches(path: &std::path::Path, pattern: &str) -> bool {
     }
 
     if pattern.ends_with(".vue") {
-        let pattern_normalized = pattern.replace("\\", "/");
-        if path_str == pattern_normalized {
+        if path_str == pattern {
             return true;
         }
-
-        if !path_str.ends_with(pattern_normalized.as_str()) {
+        if !path_str.ends_with(pattern.as_str()) {
             return false;
         }
 
-        let prefix_len = path_str.len() - pattern_normalized.len();
+        let prefix_len = path_str.len() - pattern.len();
         let Some(separator_idx) = prefix_len.checked_sub(1) else {
             return false;
         };
@@ -117,88 +196,4 @@ fn pattern_matches(path: &std::path::Path, pattern: &str) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::collect_files;
-    use std::{
-        fs,
-        path::{Path, PathBuf},
-    };
-    use vize_carton::ToCompactString;
-
-    #[test]
-    fn collect_files_ignores_vue_extension_directories() {
-        let root = unique_case_dir("build-vue-extension-directories");
-        let src = root.join("src");
-        let component_dir = src.join("Directory.vue");
-        let _ = fs::remove_dir_all(&root);
-        fs::create_dir_all(&component_dir).unwrap();
-        fs::write(src.join("App.vue"), "<template><div /></template>").unwrap();
-        fs::write(
-            component_dir.join("Nested.vue"),
-            "<template><div /></template>",
-        )
-        .unwrap();
-
-        let collected = collect_files(&vec![root.display().to_string()]);
-        let _ = fs::remove_dir_all(&root);
-
-        let mut expected = vec![component_dir.join("Nested.vue"), src.join("App.vue")];
-        expected.sort();
-        assert_eq!(collected.files, expected);
-        assert_eq!(collected.roots, vec![root]);
-    }
-
-    #[test]
-    fn collect_files_keeps_direct_vue_file_patterns() {
-        let root = unique_case_dir("build-direct-vue-file");
-        let src = root.join("src");
-        let _ = fs::remove_dir_all(&root);
-        fs::create_dir_all(&src).unwrap();
-        let app = src.join("App.vue");
-        let sibling = src.join("Sibling.vue");
-        fs::write(&app, "<template><div /></template>").unwrap();
-        fs::write(sibling, "<template><div /></template>").unwrap();
-
-        let collected = collect_files(&vec![app.display().to_string()]);
-        let _ = fs::remove_dir_all(&root);
-
-        assert_eq!(collected.files, vec![app]);
-        assert_eq!(collected.roots, vec![src]);
-    }
-
-    #[test]
-    fn collect_files_keeps_empty_searched_roots() {
-        let root = unique_case_dir("build-empty-searched-root");
-        let alpha = root.join("packages/alpha/src");
-        let beta = root.join("packages/beta/src");
-        let _ = fs::remove_dir_all(&root);
-        fs::create_dir_all(&alpha).unwrap();
-        fs::create_dir_all(&beta).unwrap();
-        let app = alpha.join("App.vue");
-        fs::write(&app, "<template><div /></template>").unwrap();
-
-        let collected = collect_files(&[
-            alpha.to_string_lossy().into_owned(),
-            beta.to_string_lossy().into_owned(),
-        ]);
-        let _ = fs::remove_dir_all(&root);
-
-        assert_eq!(collected.files, vec![app]);
-        assert_eq!(collected.roots, vec![alpha, beta]);
-    }
-
-    fn unique_case_dir(name: &str) -> PathBuf {
-        static NEXT_CASE_ID: std::sync::atomic::AtomicUsize =
-            std::sync::atomic::AtomicUsize::new(0);
-        let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("target")
-            .join("vize-tests")
-            .join(format!(
-                "{}-{}-{}",
-                name,
-                std::process::id(),
-                case_id.to_compact_string()
-            ))
-    }
-}
+mod tests;

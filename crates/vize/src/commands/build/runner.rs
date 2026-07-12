@@ -32,7 +32,7 @@ use super::{
 };
 
 use cache::StatsCompileCache;
-use collect::{CollectedFiles, collect_files};
+use collect::{CollectedFiles, collect_files_or_exit};
 use compile::compile_file_with_profile;
 use compile_stats::compile_file_stats_with_cache;
 use output::{CompiledBuildOutput, plan_inputs, preflight_outputs, write_outputs};
@@ -70,7 +70,7 @@ pub(crate) fn run(args: BuildArgs) {
         std::process::exit(1);
     }
 
-    let CollectedFiles { mut files, roots } = collect_files(&args.patterns);
+    let CollectedFiles { mut files, roots } = collect_files_or_exit(&args.patterns);
 
     if files.is_empty() {
         eprintln!("No .vue files found matching the patterns");
