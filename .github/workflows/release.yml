@@ -342,7 +342,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: npm/wasm
-          key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/wasm/package.json', 'npm/wasm/index.js', 'npm/wasm/index.d.ts', 'tools/moon/cmd/build_vize_wasm_package') }}
+          key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/wasm/package.json', 'npm/wasm/index.js', 'npm/wasm/index.d.ts', 'npm/wasm/lint-format.d.ts', 'tools/moon/cmd/build_vize_wasm_package') }}
 
       - name: Install wasm-bindgen-cli
         if: steps.cache-wasm.outputs.cache-hit != 'true'

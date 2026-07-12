@@ -546,6 +546,7 @@ test("wasm package publishes the wrapper entrypoint and raw wasm assets", () => 
   for (const file of [
     "index.js",
     "index.d.ts",
+    "lint-format.d.ts",
     "vize_vitrine.js",
     "vize_vitrine.d.ts",
     "vize_vitrine_bg.wasm",
@@ -553,7 +554,6 @@ test("wasm package publishes the wrapper entrypoint and raw wasm assets", () => 
     assert.ok(wasmPackage.files?.includes(file), `@vizejs/wasm files include ${file}`);
   }
 });
-
 test("workspace TypeScript package builds use vp pack", () => {
   const packages = [
     ["npm/fresco", "vp pack", "vp pack --watch"],

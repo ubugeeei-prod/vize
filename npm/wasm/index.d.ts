@@ -4,6 +4,18 @@
  * This package provides WebAssembly bindings for the Vue compiler implemented in Rust.
  */
 
+import type { FormatOptions, FormatResult, LintOptions, LintResult } from "./lint-format.js";
+
+export type {
+  FormatOptions,
+  FormatResult,
+  LintDiagnostic,
+  LintOptions,
+  LintPosition,
+  LintPreset,
+  LintResult,
+} from "./lint-format.js";
+
 /** Compiler options for template compilation */
 export interface CompilerOptions {
   /** Output mode: "module" or "function" */
@@ -288,6 +300,18 @@ export declare function compileCss(
   css: string,
   options?: CssCompileOptions
 ): CssCompileResult;
+
+/** Lint a Vue SFC */
+export declare function lintSfc(
+  source: string,
+  options?: LintOptions
+): LintResult;
+
+/** Format a Vue SFC */
+export declare function formatSfc(
+  source: string,
+  options?: FormatOptions
+): FormatResult;
 
 /** Initialize the WASM module */
 export declare function init(

@@ -11,12 +11,13 @@ import { pathToFileURL } from "node:url";
 const REQUIRED_FILES = [
   "index.js",
   "index.d.ts",
+  "lint-format.d.ts",
   "vize_vitrine.js",
   "vize_vitrine.d.ts",
   "vize_vitrine_bg.wasm",
 ];
 
-const REQUIRED_EXPORTS = [
+const EXPECTED_EXPORTS = [
   "Compiler",
   "compile",
   "compileCss",
@@ -24,8 +25,10 @@ const REQUIRED_EXPORTS = [
   "compileSfc",
   "compileVapor",
   "default",
+  "formatSfc",
   "init",
   "isInitialized",
+  "lintSfc",
   "parseSfc",
   "parseTemplate",
 ];
@@ -68,13 +71,57 @@ async function assertEntryPoint(packageDir) {
   const entry = await import(
     `${pathToFileURL(path.join(packageDir, "index.js")).href}?smoke=${Date.now()}`
   );
-  for (const exportName of REQUIRED_EXPORTS) {
-    assert.ok(exportName in entry, `missing export ${exportName}`);
-  }
+  assert.deepEqual(Object.keys(entry).sort(), EXPECTED_EXPORTS);
 
   assert.equal(entry.default, entry.init);
   assert.equal(entry.isInitialized(), false);
   assert.throws(() => entry.compile("<div />"), /Call `await init\(\)` first/);
+  assert.throws(() => entry.lintSfc("<template />"), /Call `await init\(\)` first/);
+  assert.throws(() => entry.formatSfc("<template />"), /Call `await init\(\)` first/);
+
+  await assert.rejects(() => entry.init(new Uint8Array()), /.+/);
+  assert.equal(entry.isInitialized(), false);
+
+  const failedUrl = new URL("https://vize.invalid/vize_vitrine_bg.wasm");
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input, init) => {
+    const inputUrl =
+      typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+    if (inputUrl === failedUrl.href) {
+      throw new Error("intentional WASM fetch failure");
+    }
+    return originalFetch(input, init);
+  };
+  try {
+    await assert.rejects(() => entry.init(failedUrl), /intentional WASM fetch failure/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+  assert.equal(entry.isInitialized(), false);
+
+  const wasm = fs.readFileSync(path.join(packageDir, "vize_vitrine_bg.wasm"));
+  await entry.init(wasm);
+  assert.equal(entry.isInitialized(), true);
+
+  const source = '<template>\n  <div  id="x"></div>\n</template>\n';
+  const formattedSource = '<template>\n  <div id="x"></div>\n</template>\n';
+  const lintResult = entry.lintSfc(source, {
+    filename: "Smoke.vue",
+    locale: "en",
+    enabledRules: ["vue/no-multi-spaces"],
+  });
+  assert.equal(lintResult.filename, "Smoke.vue");
+  assert.equal(lintResult.errorCount, 0);
+  assert.equal(lintResult.warningCount, 1);
+  assert.equal(lintResult.diagnostics.length, 1);
+  assert.equal(lintResult.diagnostics[0].rule, "vue/no-multi-spaces");
+  assert.equal(lintResult.diagnostics[0].severity, "warning");
+  assert.equal(lintResult.diagnostics[0].location.start.offset, 17);
+  assert.equal(lintResult.diagnostics[0].help, undefined);
+
+  const formatResult = entry.formatSfc(source, { printWidth: 80 });
+  assert.equal(formatResult.code, formattedSource);
+  assert.equal(formatResult.changed, true);
 }
 
 export async function smokeWasmPackage(packageDir) {

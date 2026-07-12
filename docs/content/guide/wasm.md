@@ -54,13 +54,15 @@ import init, { lintSfc } from "@vizejs/wasm";
 
 await init();
 
-const diagnostics = lintSfc(source, {
+const result = lintSfc(source, {
   filename: "App.vue",
   locale: "en", // 'en' | 'ja' | 'zh'
 });
 
-for (const d of diagnostics) {
-  console.log(`${d.severity}: ${d.message} (line ${d.line})`);
+for (const diagnostic of result.diagnostics) {
+  console.log(
+    `${diagnostic.severity}: ${diagnostic.message} (line ${diagnostic.location.start.line})`,
+  );
 }
 ```
 
@@ -73,11 +75,9 @@ import init, { formatSfc } from "@vizejs/wasm";
 
 await init();
 
-const formatted = formatSfc(source, {
-  filename: "App.vue",
-});
+const formatted = formatSfc(source, { printWidth: 80 });
 
-console.log(formatted);
+console.log(formatted.code);
 ```
 
 ## Initialization
@@ -174,10 +174,12 @@ All WASM APIs that produce diagnostics (lint, compile errors) support localized 
 Pass the `locale` option to any API that produces diagnostics:
 
 ```javascript
-const diagnostics = lintSfc(source, {
+const result = lintSfc(source, {
   filename: "App.vue",
   locale: "ja", // Lint messages in Japanese
 });
+
+console.log(result.diagnostics);
 ```
 
 ## Bundle Size

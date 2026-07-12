@@ -15,6 +15,7 @@
   "files": [
     "index.js",
     "index.d.ts",
+    "lint-format.d.ts",
     "vize_vitrine_bg.wasm",
     "vize_vitrine.js",
     "vize_vitrine.d.ts",

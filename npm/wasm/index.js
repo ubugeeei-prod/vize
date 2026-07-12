@@ -13,6 +13,8 @@ import initWasm, {
   compileSfc as wasmCompileSfc,
   compileJsx as wasmCompileJsx,
   compileCss as wasmCompileCss,
+  lintSfc as wasmLintSfc,
+  formatSfc as wasmFormatSfc,
 } from "./vize_vitrine.js";
 
 let initialized = false;
@@ -34,9 +36,17 @@ export async function init(moduleOrPath) {
     return initPromise;
   }
 
-  initPromise = initWasm(moduleOrPath).then(() => {
-    initialized = true;
-  });
+  const initOptions =
+    moduleOrPath === undefined ? undefined : { module_or_path: moduleOrPath };
+  initPromise = initWasm(initOptions).then(
+    () => {
+      initialized = true;
+    },
+    (error) => {
+      initPromise = null;
+      throw error;
+    }
+  );
 
   return initPromise;
 }
@@ -235,6 +245,30 @@ export function compileJsx(source, options = {}) {
 export function compileCss(css, options = {}) {
   ensureInitialized();
   return wasmCompileCss(css, options);
+}
+
+/**
+ * Lint a Vue SFC.
+ *
+ * @param {string} source
+ * @param {object} [options]
+ * @returns {object}
+ */
+export function lintSfc(source, options = {}) {
+  ensureInitialized();
+  return wasmLintSfc(source, options);
+}
+
+/**
+ * Format a Vue SFC.
+ *
+ * @param {string} source
+ * @param {object} [options]
+ * @returns {object}
+ */
+export function formatSfc(source, options = {}) {
+  ensureInitialized();
+  return wasmFormatSfc(source, options);
 }
 
 export default init;
