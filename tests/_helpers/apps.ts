@@ -145,12 +145,30 @@ function ensureLocalVizePackagesBuilt(): void {
   }
 }
 
-function installPnpmDependencies(cwd: string): void {
+interface PnpmInstallOptions {
+  env?: NodeJS.ProcessEnv;
+  ignoreScripts?: boolean;
+  timeout?: number;
+}
+export function installPnpmDependencies(cwd: string, options: PnpmInstallOptions = {}): void {
   console.log(`[vize:setup] pnpm install in ${cwd}...`);
-  execSync("npx -y pnpm@10 install --no-frozen-lockfile --prefer-offline", {
+  const args = ["-y", "pnpm@10", "install", "--no-frozen-lockfile"];
+  if (options.ignoreScripts) args.push("--ignore-scripts");
+  args.push("--prefer-offline");
+  const executable = process.platform === "win32" ? (process.env.ComSpec ?? "cmd.exe") : "npx";
+  const executableArgs =
+    process.platform === "win32" ? ["/d", "/s", "/c", "npx.cmd", ...args] : args;
+  execFileSync(executable, executableArgs, {
     cwd,
+    env: {
+      ...process.env,
+      ...options.env,
+      GIT_CEILING_DIRECTORIES: path.dirname(cwd),
+      HUSKY: "0",
+      SKIP_INSTALL_SIMPLE_GIT_HOOKS: "1",
+    },
     stdio: "inherit",
-    timeout: 600_000,
+    timeout: options.timeout ?? 600_000,
   });
 }
 
@@ -747,10 +765,7 @@ function setupElkWorktree(opts?: { enableVize?: boolean; variant?: string }): st
   });
   patchElkBuildEnvTime(path.join(elkDir, "modules", "build-env.ts"));
 
-  console.log(`[elk:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`);
-  execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
-    cwd: elkDir,
-    stdio: "inherit",
+  installPnpmDependencies(elkDir, {
     timeout: 300_000,
   });
 
@@ -879,16 +894,13 @@ function setupMisskeyWorktree(opts?: {
     vite: "^8.0.0",
   });
 
-  console.log(`[misskey:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`);
-  execSync("npx -y pnpm@10 install --no-frozen-lockfile --ignore-scripts", {
-    cwd: misskeyDir,
+  installPnpmDependencies(misskeyDir, {
     env: {
-      ...process.env,
       CYPRESS_INSTALL_BINARY: "0",
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1",
       PUPPETEER_SKIP_DOWNLOAD: "1",
     },
-    stdio: "inherit",
+    ignoreScripts: true,
     timeout: 300_000,
   });
 
@@ -1240,15 +1252,10 @@ function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): s
     vite: "^8.0.0",
   });
 
-  console.log(`[npmx.dev:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`);
-  execSync("npx -y pnpm@10 install --no-frozen-lockfile --ignore-scripts", {
-    cwd: npmxDir,
-    stdio: "inherit",
+  installPnpmDependencies(npmxDir, {
+    env: NPMX_E2E_ENV,
+    ignoreScripts: true,
     timeout: 300_000,
-    env: {
-      ...process.env,
-      ...NPMX_E2E_ENV,
-    },
   });
   for (const script of ["generate:lexicons", "generate:sprite"]) {
     console.log(`[npmx.dev:${enableVize ? "candidate" : "reference"}:setup] pnpm ${script}...`);
@@ -1550,17 +1557,9 @@ function setupFrontendPhpconWorktree(opts?: { enableVize?: boolean; variant?: st
   });
   patchFrontendPhpconVisualFixture(frontendDir);
 
-  console.log(
-    `[frontend-phpcon-do-website:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`,
-  );
-  execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
-    cwd: frontendDir,
-    stdio: "inherit",
+  installPnpmDependencies(frontendDir, {
+    env: FRONTEND_PHPCON_E2E_ENV,
     timeout: 300_000,
-    env: {
-      ...process.env,
-      ...FRONTEND_PHPCON_E2E_ENV,
-    },
   });
 
   if (enableVize) {
@@ -1725,10 +1724,7 @@ function setupVuefesWorktree(opts?: { enableVize?: boolean; variant?: string }):
   });
   patchVuefesVisualFixture(vuefesDir);
 
-  console.log(`[vuefes-2025:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`);
-  execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
-    cwd: vuefesDir,
-    stdio: "inherit",
+  installPnpmDependencies(vuefesDir, {
     timeout: 300_000,
   });
 

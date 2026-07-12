@@ -4,6 +4,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { installPnpmDependencies } from "../_helpers/apps.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 function readRepoFile(...segments: string[]): string {
@@ -23,3 +25,100 @@ test("app e2e Playwright config keeps CI runs guarded and debuggable", () => {
   assert.match(config, /trace:\s*process\.env\.CI \? "off" : "retain-on-failure"/);
   assert.match(config, /video:\s*process\.env\.CI \? "off" : "retain-on-failure"/);
 });
+
+test("external fixture installs use the guarded helper", () => {
+  const apps = readRepoFile("tests", "_helpers", "apps.ts");
+  assert.doesNotMatch(apps, /execSync\("npx -y pnpm@10 install\b/);
+});
+
+test("fixture install child cannot discover or mutate the parent Git repository", () => {
+  const tempRoot = fs.mkdtempSync(path.join(root, ".fixture-install-safety-"));
+  const fixtureDir = path.join(tempRoot, "fixture");
+  const binDir = path.join(tempRoot, "bin");
+  const probeScript = path.join(tempRoot, "probe.cjs");
+  const probeOutput = path.join(tempRoot, "probe.json");
+
+  try {
+    fs.mkdirSync(fixtureDir);
+    fs.mkdirSync(binDir);
+    writeInstallProbe(probeScript);
+    writeNpxShim(binDir, probeScript);
+
+    const before = snapshotParentGitState();
+    installPnpmDependencies(fixtureDir, {
+      env: {
+        ...process.env,
+        FIXTURE_INSTALL_PROBE: probeOutput,
+        GIT_CEILING_DIRECTORIES: root,
+        HUSKY: "1",
+        PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+        SKIP_INSTALL_SIMPLE_GIT_HOOKS: "0",
+      },
+      timeout: 10_000,
+    });
+
+    assert.deepEqual(snapshotParentGitState(), before);
+    const probe = JSON.parse(fs.readFileSync(probeOutput, "utf8"));
+    assert.deepEqual(probe.argv, [
+      "-y",
+      "pnpm@10",
+      "install",
+      "--no-frozen-lockfile",
+      "--prefer-offline",
+    ]);
+    assert.equal(probe.env.GIT_CEILING_DIRECTORIES, tempRoot);
+    assert.equal(probe.env.HUSKY, "0");
+    assert.equal(probe.env.SKIP_INSTALL_SIMPLE_GIT_HOOKS, "1");
+    assert.notEqual(probe.gitStatus, 0);
+    assert.notEqual(probe.gitTopLevel, root);
+  } finally {
+    fs.rmSync(tempRoot, { force: true, recursive: true });
+  }
+});
+
+function snapshotParentGitState() {
+  const hooksDir = path.join(root, ".git", "hooks");
+  return {
+    config: fs.readFileSync(path.join(root, ".git", "config")),
+    hooks: fs.existsSync(hooksDir)
+      ? fs
+          .readdirSync(hooksDir)
+          .sort()
+          .map((name) => [name, fs.readFileSync(path.join(hooksDir, name))])
+      : [],
+  };
+}
+
+function writeInstallProbe(probeScript: string): void {
+  fs.writeFileSync(
+    probeScript,
+    `const { spawnSync } = require("node:child_process");
+const fs = require("node:fs");
+const git = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
+fs.writeFileSync(process.env.FIXTURE_INSTALL_PROBE, JSON.stringify({
+  argv: process.argv.slice(2),
+  env: {
+    GIT_CEILING_DIRECTORIES: process.env.GIT_CEILING_DIRECTORIES,
+    HUSKY: process.env.HUSKY,
+    SKIP_INSTALL_SIMPLE_GIT_HOOKS: process.env.SKIP_INSTALL_SIMPLE_GIT_HOOKS,
+  },
+  gitStatus: git.status,
+  gitTopLevel: git.stdout.trim(),
+}));
+`,
+  );
+}
+
+function writeNpxShim(binDir: string, probeScript: string): void {
+  if (process.platform === "win32") {
+    fs.writeFileSync(
+      path.join(binDir, "npx.cmd"),
+      `@echo off\r\n"${process.execPath}" "${probeScript}" %*\r\n`,
+    );
+    return;
+  }
+
+  const shim = path.join(binDir, "npx");
+  fs.writeFileSync(shim, `#!/bin/sh\nexec "${process.execPath}" "${probeScript}" "$@"\n`);
+  fs.chmodSync(shim, 0o755);
+}
