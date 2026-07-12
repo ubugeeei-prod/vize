@@ -88,89 +88,21 @@ fn workspace_version_from_content(content : String) -> String? {
   None
 }
 
-/// Returns `true` when the crates.io API already reports the target version.
-/// This check is used both before and after `cargo publish` so reruns and
-/// partial-success cases remain safe.
-fn json_has_published_version(value : Json, version : String) -> Bool {
-  guard value is Object(root) else { return false }
-  guard root.get("versions") is Some(Array(versions)) else { return false }
-  for item in versions {
-    guard item is Object(version_obj) else { continue }
-    if version_obj.get("num") is Some(String(num)) && num == version {
-      return true
-    }
-  }
-  false
-}
-
-/// Queries crates.io to see whether `crate_name@version` has already been published.
-async fn crate_is_published(crate_name : String, version : String) -> Bool {
-  let (exit_code, body) = @process.collect_stdout(
-    "curl",
-    [
-      "-sf",
-      "-H",
-      "User-Agent: vize-release-publish (https://github.com/ubugeeei-prod/vize)",
-      "https://crates.io/api/v1/crates/" + crate_name,
-    ],
-  )
-  if exit_code != 0 {
-    return false
-  }
-  let parsed = try {
-    @json.parse(body.text())
-  } catch {
-    _ => return false
-  }
-  json_has_published_version(parsed, version)
-}
-
-/// Checks whether the published crate can be resolved by Cargo.
-/// A crate may appear in the HTTP API before the registry index and Cargo
-/// metadata are fully updated. This helper verifies the state that downstream
-/// releases actually depend on.
-async fn crate_is_resolvable(crate_name : String, version : String) -> Bool {
-  let (exit_code, _, _) = @process.collect_output(
-    "cargo",
-    ["info", "--registry", "crates-io", crate_name + "@" + version],
-  )
-  exit_code == 0
-}
-
-/// Waits until `cargo info crate@version` succeeds or a timeout is reached.
-async fn wait_for_resolution(
-  crate_name : String,
-  version : String,
-  max_attempts : Int,
-  delay_seconds : Int,
-) -> Int {
-  let mut attempt = 1
-  while attempt <= max_attempts {
-    if crate_is_resolvable(crate_name, version) {
-      println("\{crate_name} v\{version} is resolvable from crates.io.")
-      return 0
-    }
-    if attempt >= max_attempts {
-      @stdio.stderr.write(
-        "Timed out waiting for \{crate_name} v\{version} to become resolvable from crates.io.\n",
-      )
-      return 1
-    }
-    println(
-      "Waiting for \{crate_name} v\{version} to become resolvable from crates.io... (\{attempt}/\{max_attempts})",
-    )
-    @async.sleep(delay_seconds * 1000)
-    attempt = attempt + 1
-  }
-  1
-}
-
 /// Main entry point for ordered and rerun-safe crates.io publishing.
 /// Each crate is published serially, retried on transient failure, and then
 /// verified through Cargo resolution before the next dependent crate is
 /// attempted. This avoids the common race where a dependent crate publishes
 /// before crates.io index propagation catches up.
 async fn run_app() -> Int {
+  let args = @tool.cli_args()
+  let dry_run = args.length() == 1 && args[0] == "--dry-run"
+  if !args.is_empty() && !dry_run {
+    @stdio.stderr.write(
+      "Usage: moon run --target native tools/moon/cmd/publish_crates -- [--dry-run]\n",
+    )
+    return 1
+  }
+
   let cargo_toml = match @tool.read_file_to_string("Cargo.toml") {
     Some(content) => content
     None => {
@@ -205,6 +137,65 @@ async fn run_app() -> Int {
     )
   }
 
+  if dry_run {
+    let package_args = ["package", "--locked", "--no-verify"]
+    for crate_name in published_crates {
+      package_args.push("-p")
+      package_args.push(crate_name)
+    }
+    println("Packaging the complete supported crate plan for v\{version}...")
+    if @process.run("cargo", package_args) != 0 {
+      @stdio.stderr.write("Crate package validation failed for v\{version}.\n")
+      return 1
+    }
+
+    let mut frontier : String? = None
+    for crate_name in published_crates {
+      match query_crate_version(crate_name, version) {
+        QueryFailed(message) => {
+          @stdio.stderr.write("Release registry check failed: " + message + "\n")
+          return 1
+        }
+        Missing => {
+          frontier = Some(crate_name)
+          break
+        }
+        Published =>
+          match crate_resolution_error(crate_name, version) {
+            Some(message) => {
+              @stdio.stderr.write("Release registry check failed: " + message + "\n")
+              return 1
+            }
+            None =>
+              println(
+                "\{crate_name} v\{version} is already published and resolvable.",
+              )
+          }
+      }
+    }
+    let frontier = match frontier {
+      Some(frontier) => frontier
+      None => {
+        println(
+          "Every crate in the v\{version} publish plan is already published and resolvable.",
+        )
+        return 0
+      }
+    }
+    println("Dry-running registry-resolvable frontier \{frontier} v\{version}...")
+    if @process.run(
+      "cargo",
+      ["publish", "--dry-run", "--locked", "-p", frontier],
+    ) != 0 {
+      @stdio.stderr.write("Crate publish dry-run failed for \{frontier} v\{version}.\n")
+      return 1
+    }
+    println(
+      "Package validation covered all supported crates; registry dry-run covered \{frontier}.",
+    )
+    return 0
+  }
+
   for crate_name in published_crates {
     println("Publishing \{crate_name} v\{version}...")
     if crate_is_published(crate_name, version) {
@@ -225,7 +216,7 @@ async fn run_app() -> Int {
     while attempt <= max_attempts {
       let (publish_exit, publish_stdout, publish_stderr) = @process.collect_output(
         "cargo",
-        ["publish", "-p", crate_name],
+        ["publish", "--locked", "-p", crate_name],
       )
       if publish_exit == 0 {
         published = true

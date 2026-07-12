@@ -18,12 +18,10 @@ type CargoPackage = {
   dependencies: CargoDependency[];
   manifest_path: string;
   publish: string[] | null;
+  version: string;
 };
 
-type CargoDependency = {
-  kind: "dev" | "build" | null;
-  name: string;
-};
+type CargoDependency = { name: string };
 
 function getScriptCrateArray(variableName: string): string[] {
   const scriptPath = path.join(repoRoot, "tools", "moon", "cmd", "publish_crates", "main.mbt");
@@ -70,14 +68,12 @@ test("publish_crates script keeps publishable workspace dependencies ordered", (
     assert.ok(pkg, `Missing package metadata for ${crateName}`);
 
     for (const dependency of pkg.dependencies) {
-      if (dependency.kind === "dev") {
-        continue;
-      }
-
       const dependencyOrder = publishOrder.get(dependency.name);
-      if (dependencyOrder == null) {
-        continue;
-      }
+      if (!packages.has(dependency.name)) continue;
+      assert.ok(
+        dependencyOrder != null,
+        `${crateName} cannot depend on deferred workspace crate ${dependency.name}`,
+      );
 
       const crateOrder = publishOrder.get(crateName);
       assert.ok(crateOrder != null, `Missing publish order for ${crateName}`);
@@ -114,10 +110,14 @@ test("publish_crates only blocks crates that depend on first-publish exclusions"
   assert.deepEqual(getBlockedByPendingFirstPublishCrates(), ["vize_canon", "vize_patina"]);
 });
 
-test("publish_crates runs as a native MoonBit script", () => {
+test("publish_crates native script covers publish and idempotent dry-run modes", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-crates-"));
   const binDir = path.join(tempDir, "bin");
   const cargoLogPath = path.join(tempDir, "cargo.log");
+  const curlLogPath = path.join(tempDir, "curl.log");
+  const publishedCrates = getPublishedCrates();
+  const version = getMetadata().packages.find((pkg) => pkg.name === publishedCrates[0])?.version;
+  assert.ok(version);
 
   try {
     fs.mkdirSync(binDir, { recursive: true });
@@ -126,16 +126,30 @@ test("publish_crates runs as a native MoonBit script", () => {
       "cargo",
       [
         "const fs = require('node:fs');",
-        "fs.appendFileSync(process.env.CARGO_LOG, process.argv.slice(2).join(' ') + '\\n');",
-        "const [command] = process.argv.slice(2);",
-        "if (command === 'publish' || command === 'info') process.exit(0);",
+        "const args = process.argv.slice(2);",
+        "fs.appendFileSync(process.env.CARGO_LOG, args.join(' ') + '\\n');",
+        "const [command] = args;",
+        "if (command === 'package' && process.env.TEST_FAIL_PACKAGE) process.exit(1);",
+        "const unresolved = (process.env.TEST_UNRESOLVED_CRATES || '').split(',');",
+        "if (command === 'info' && unresolved.includes(args.at(-1).split('@')[0])) { console.error('not in registry index'); process.exit(1); }",
+        "if (command === 'package' || command === 'publish' || command === 'info') process.exit(0);",
         "process.exit(1);",
       ].join("\n"),
     );
     writeFakeCommand(
       binDir,
       "curl",
-      ["process.stdout.write(JSON.stringify({ versions: [] }));", "process.exit(0);"].join("\n"),
+      [
+        "const fs = require('node:fs');",
+        "const args = process.argv.slice(2);",
+        "if (process.env.CURL_LOG) fs.appendFileSync(process.env.CURL_LOG, args.join(' ') + '\\n');",
+        "const crateName = args.at(-1).split('/').at(-1);",
+        "if (crateName === process.env.TEST_CURL_FAIL_CRATE) { console.error('registry unavailable'); process.exit(22); }",
+        "if (crateName === process.env.TEST_CURL_MALFORMED_CRATE) { process.stdout.write('{bad json'); process.exit(0); }",
+        "const published = (process.env.TEST_PUBLISHED_CRATES || '').split(',').includes(crateName);",
+        "const versions = published ? [{ num: process.env.TEST_PUBLISHED_VERSION }] : [];",
+        "process.stdout.write(JSON.stringify({ versions }));",
+      ].join("\n"),
     );
 
     const result = runMoonScript("publish_crates", [], {
@@ -150,10 +164,126 @@ test("publish_crates runs as a native MoonBit script", () => {
 
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     const logLines = fs.readFileSync(cargoLogPath, "utf8").trim().split("\n");
-    assert.match(logLines[0] ?? "", /^publish -p vize_carton$/);
+    assert.match(logLines[0] ?? "", /^publish --locked -p vize_carton$/);
     assert.match(logLines[1] ?? "", /^info --registry crates-io vize_carton@/);
-    assert.match(logLines.at(-2) ?? "", /^publish -p vize_fresco$/);
+    assert.match(logLines.at(-2) ?? "", /^publish --locked -p vize_fresco$/);
     assert.match(logLines.at(-1) ?? "", /^info --registry crates-io vize_fresco@/);
+
+    const runDryRun = (alreadyPublished: string[], extraEnv: Record<string, string> = {}) => {
+      fs.writeFileSync(cargoLogPath, "");
+      fs.writeFileSync(curlLogPath, "");
+      return runMoonScript("publish_crates", ["--dry-run"], {
+        cwd: repoRoot,
+        env: {
+          PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+          CARGO_LOG: cargoLogPath,
+          CURL_LOG: curlLogPath,
+          TEST_PUBLISHED_CRATES: alreadyPublished.join(","),
+          TEST_PUBLISHED_VERSION: version,
+          ...extraEnv,
+        },
+      });
+    };
+    const expectedPackage = [
+      "package",
+      "--locked",
+      "--no-verify",
+      ...publishedCrates.flatMap((name) => ["-p", name]),
+    ].join(" ");
+    const expectedFrontier = (crateName: string) =>
+      ["publish", "--dry-run", "--locked", "-p", crateName].join(" ");
+    const expectedInfo = (crateName: string) => `info --registry crates-io ${crateName}@${version}`;
+
+    const nonePublished = runDryRun([]);
+    assert.equal(nonePublished.status, 0, nonePublished.stderr);
+    assert.deepEqual(fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"), [
+      expectedPackage,
+      expectedFrontier(publishedCrates[0]),
+    ]);
+    const curlCalls = fs.readFileSync(curlLogPath, "utf8").trim().split("\n");
+    assert.equal(curlCalls.length, 1);
+    assert.match(
+      curlCalls[0],
+      /--connect-timeout 5 --max-time 15 --retry 2 --retry-delay 1 --retry-all-errors/,
+    );
+
+    const somePublished = publishedCrates.slice(0, 5);
+    const partial = runDryRun(somePublished);
+    assert.equal(partial.status, 0, partial.stderr);
+    assert.deepEqual(fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"), [
+      expectedPackage,
+      ...somePublished.map(expectedInfo),
+      expectedFrontier(publishedCrates[5]),
+    ]);
+    assert.match(partial.stdout, /vize_carton .* already published and resolvable/i);
+    assert.match(partial.stdout, /registry-resolvable frontier vize_atelier_dom/i);
+    assert.equal(fs.readFileSync(curlLogPath, "utf8").trim().split("\n").length, 6);
+
+    const allPublished = runDryRun(publishedCrates);
+    assert.equal(allPublished.status, 0, allPublished.stderr);
+    assert.deepEqual(fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"), [
+      expectedPackage,
+      ...publishedCrates.map(expectedInfo),
+    ]);
+    assert.match(allPublished.stdout, /Every crate .* already published and resolvable/);
+
+    for (const [envName, diagnostic] of [
+      ["TEST_CURL_FAIL_CRATE", /curl exit 22/],
+      ["TEST_CURL_MALFORMED_CRATE", /invalid JSON/],
+    ] as const) {
+      const failedQuery = runDryRun([], { [envName]: publishedCrates[0] });
+      assert.notEqual(failedQuery.status, 0);
+      assert.match(failedQuery.stderr, diagnostic);
+      assert.equal(fs.readFileSync(cargoLogPath, "utf8").trim(), expectedPackage);
+      assert.equal(fs.readFileSync(curlLogPath, "utf8").trim().split("\n").length, 1);
+    }
+
+    const unresolvedPrefix = runDryRun(somePublished, {
+      TEST_UNRESOLVED_CRATES: publishedCrates[2],
+    });
+    assert.notEqual(unresolvedPrefix.status, 0);
+    assert.match(unresolvedPrefix.stderr, /could not resolve .*vize_armature/i);
+    assert.deepEqual(fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"), [
+      expectedPackage,
+      ...somePublished.slice(0, 3).map(expectedInfo),
+    ]);
+    assert.equal(fs.readFileSync(curlLogPath, "utf8").trim().split("\n").length, 3);
+
+    const unresolvedAll = runDryRun(publishedCrates, {
+      TEST_UNRESOLVED_CRATES: publishedCrates.at(-1) ?? "",
+    });
+    assert.notEqual(unresolvedAll.status, 0);
+    assert.match(unresolvedAll.stderr, /could not resolve .*vize_fresco/i);
+    assert.doesNotMatch(unresolvedAll.stdout, /Every crate/);
+    const unresolvedAllCargo = fs.readFileSync(cargoLogPath, "utf8");
+    assert.equal(
+      unresolvedAllCargo.trim().split("\n").at(-1),
+      expectedInfo(publishedCrates.at(-1) ?? ""),
+    );
+    assert.doesNotMatch(unresolvedAllCargo, /^publish --dry-run/m);
+
+    const packageFailure = runDryRun([], { TEST_FAIL_PACKAGE: "1" });
+    assert.notEqual(packageFailure.status, 0);
+    assert.match(packageFailure.stderr, /Crate package validation failed/);
+    assert.equal(fs.readFileSync(cargoLogPath, "utf8").trim(), expectedPackage);
+    assert.equal(fs.readFileSync(curlLogPath, "utf8"), "");
+
+    for (const invalidArgs of [["--unknown"], ["--dry-run", "extra"]]) {
+      fs.writeFileSync(cargoLogPath, "");
+      fs.writeFileSync(curlLogPath, "");
+      const invalid = runMoonScript("publish_crates", invalidArgs, {
+        cwd: repoRoot,
+        env: {
+          PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+          CARGO_LOG: cargoLogPath,
+          CURL_LOG: curlLogPath,
+        },
+      });
+      assert.notEqual(invalid.status, 0);
+      assert.match(invalid.stderr, /Usage: .*publish_crates.*\[--dry-run\]/);
+      assert.equal(fs.readFileSync(cargoLogPath, "utf8"), "");
+      assert.equal(fs.readFileSync(curlLogPath, "utf8"), "");
+    }
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
@@ -173,7 +303,7 @@ test("publish_crates treats a non-zero cargo publish exit as success when the cr
         "const fs = require('node:fs');",
         "const args = process.argv.slice(2);",
         "fs.appendFileSync(process.env.CARGO_LOG, args.join(' ') + '\\n');",
-        "if (args[0] === 'publish' && args[2] === 'vize_carton') process.exit(1);",
+        "if (args[0] === 'publish' && args.at(-1) === 'vize_carton') process.exit(1);",
         "if (args[0] === 'publish' || args[0] === 'info') process.exit(0);",
         "process.exit(1);",
       ].join("\n"),
@@ -197,7 +327,7 @@ test("publish_crates treats a non-zero cargo publish exit as success when the cr
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     assert.match(result.stdout, /already resolvable despite a non-zero cargo publish exit/i);
     const logLines = fs.readFileSync(cargoLogPath, "utf8").trim().split("\n");
-    assert.equal(logLines[0], "publish -p vize_carton");
+    assert.equal(logLines[0], "publish --locked -p vize_carton");
     assert.match(logLines[1] ?? "", /^info --registry crates-io vize_carton@/);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
