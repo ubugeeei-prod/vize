@@ -37,17 +37,10 @@ function getScriptCrateArray(variableName: string): string[] {
   return Array.from(arrayBody.matchAll(/"([^"]+)"/g), ([, crateName]) => crateName);
 }
 
-function getPublishedCrates(): string[] {
-  return getScriptCrateArray("published_crates");
-}
-
-function getPendingFirstPublishCrates(): string[] {
-  return getScriptCrateArray("pending_first_publish_crates");
-}
-
-function getBlockedByPendingFirstPublishCrates(): string[] {
-  return getScriptCrateArray("blocked_by_pending_first_publish_crates");
-}
+const getPublishedCrates = () => getScriptCrateArray("published_crates");
+const getPendingFirstPublishCrates = () => getScriptCrateArray("pending_first_publish_crates");
+const getBlockedByPendingFirstPublishCrates = () =>
+  getScriptCrateArray("blocked_by_pending_first_publish_crates");
 
 function getMetadata(): CargoMetadata {
   return JSON.parse(
@@ -143,12 +136,17 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
         "const fs = require('node:fs');",
         "const args = process.argv.slice(2);",
         "if (process.env.CURL_LOG) fs.appendFileSync(process.env.CURL_LOG, args.join(' ') + '\\n');",
-        "const crateName = args.at(-1).split('/').at(-1);",
-        "if (crateName === process.env.TEST_CURL_FAIL_CRATE) { console.error('registry unavailable'); process.exit(22); }",
-        "if (crateName === process.env.TEST_CURL_MALFORMED_CRATE) { process.stdout.write('{bad json'); process.exit(0); }",
+        "const endpoint = args.at(-1).split('/');",
+        "const crateName = endpoint.at(-2);",
+        "const version = endpoint.at(-1);",
+        "if (crateName === process.env.TEST_CURL_FAIL_CRATE) { console.error('registry unavailable'); process.exit(7); }",
+        "if (crateName === process.env.TEST_CURL_MALFORMED_CRATE) { fs.writeSync(1, '{bad jsonVIZE_HTTP_STATUS:200'); process.exit(0); }",
+        "if (crateName === process.env.TEST_CURL_SCHEMA_CRATE) { fs.writeSync(1, JSON.stringify({ version: { crate: crateName } }) + 'VIZE_HTTP_STATUS:200'); process.exit(0); }",
+        "if (crateName === process.env.TEST_CURL_SERVER_ERROR_CRATE) { fs.writeSync(1, JSON.stringify({ errors: [{ detail: 'unavailable' }] }) + 'VIZE_HTTP_STATUS:500'); process.exit(22); }",
         "const published = (process.env.TEST_PUBLISHED_CRATES || '').split(',').includes(crateName);",
-        "const versions = published ? [{ num: process.env.TEST_PUBLISHED_VERSION }] : [];",
-        "process.stdout.write(JSON.stringify({ versions }));",
+        "const body = published ? { version: { crate: crateName, num: version } } : { errors: [{ detail: 'Not Found' }] };",
+        "fs.writeSync(1, JSON.stringify(body) + 'VIZE_HTTP_STATUS:' + (published ? '200' : '404'));",
+        "process.exit(published ? 0 : 22);",
       ].join("\n"),
     );
 
@@ -202,10 +200,18 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
     ]);
     const curlCalls = fs.readFileSync(curlLogPath, "utf8").trim().split("\n");
     assert.equal(curlCalls.length, 1);
-    assert.match(
-      curlCalls[0],
-      /--connect-timeout 5 --max-time 15 --retry 2 --retry-delay 1 --retry-all-errors/,
-    );
+    for (const flag of [
+      "--fail-with-body",
+      "--connect-timeout 5",
+      "--max-time 15",
+      "--retry 2",
+      "--retry-delay 1",
+      "--retry-connrefused",
+    ]) {
+      assert.ok(curlCalls[0].includes(flag), `missing ${flag}`);
+    }
+    assert.match(curlCalls[0], /--write-out VIZE_HTTP_STATUS:%\{http_code\}/);
+    assert.ok(curlCalls[0].endsWith(`/vize_carton/${version}`));
 
     const somePublished = publishedCrates.slice(0, 5);
     const partial = runDryRun(somePublished);
@@ -228,8 +234,10 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
     assert.match(allPublished.stdout, /Every crate .* already published and resolvable/);
 
     for (const [envName, diagnostic] of [
-      ["TEST_CURL_FAIL_CRATE", /curl exit 22/],
+      ["TEST_CURL_FAIL_CRATE", /curl exit 7/],
       ["TEST_CURL_MALFORMED_CRATE", /invalid JSON/],
+      ["TEST_CURL_SCHEMA_CRATE", /version without num/],
+      ["TEST_CURL_SERVER_ERROR_CRATE", /HTTP 500/],
     ] as const) {
       const failedQuery = runDryRun([], { [envName]: publishedCrates[0] });
       assert.notEqual(failedQuery.status, 0);
@@ -311,7 +319,10 @@ test("publish_crates treats a non-zero cargo publish exit as success when the cr
     writeFakeCommand(
       binDir,
       "curl",
-      ["process.stdout.write(JSON.stringify({ versions: [] }));", "process.exit(0);"].join("\n"),
+      [
+        "require('node:fs').writeSync(1, JSON.stringify({ errors: [{ detail: 'Not Found' }] }) + 'VIZE_HTTP_STATUS:404');",
+        "process.exit(22);",
+      ].join("\n"),
     );
 
     const result = runMoonScript("publish_crates", [], {

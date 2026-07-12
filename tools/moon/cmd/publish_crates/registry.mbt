@@ -11,21 +11,19 @@ fn published_version_state(value : Json, crate_name : String, version : String) 
   guard value is Object(root) else {
     return QueryFailed("crates.io returned a non-object response for \{crate_name}@\{version}")
   }
-  guard root.get("versions") is Some(Array(versions)) else {
-    return QueryFailed("crates.io response for \{crate_name}@\{version} has no versions array")
+  guard root.get("version") is Some(Object(version_obj)) else {
+    return QueryFailed("crates.io response for \{crate_name}@\{version} has no version object")
   }
-  for item in versions {
-    guard item is Object(version_obj) else {
-      return QueryFailed("crates.io returned an invalid version entry for \{crate_name}@\{version}")
-    }
-    guard version_obj.get("num") is Some(String(num)) else {
-      return QueryFailed("crates.io returned a version without num for \{crate_name}@\{version}")
-    }
-    if num == version {
-      return Published
-    }
+  guard version_obj.get("crate") is Some(String(returned_crate)) else {
+    return QueryFailed("crates.io returned a version without crate for \{crate_name}@\{version}")
   }
-  Missing
+  guard version_obj.get("num") is Some(String(returned_version)) else {
+    return QueryFailed("crates.io returned a version without num for \{crate_name}@\{version}")
+  }
+  if returned_crate != crate_name || returned_version != version {
+    return QueryFailed("crates.io returned mismatched identity for \{crate_name}@\{version}")
+  }
+  Published
 }
 
 /// Queries crates.io for an exact version. Dry-run callers consume the full
@@ -34,7 +32,8 @@ async fn query_crate_version(crate_name : String, version : String) -> CrateVers
   let (exit_code, body, stderr) = @process.collect_output(
     "curl",
     [
-      "-sf",
+      "-sS",
+      "--fail-with-body",
       "--connect-timeout",
       "5",
       "--max-time",
@@ -43,21 +42,47 @@ async fn query_crate_version(crate_name : String, version : String) -> CrateVers
       "2",
       "--retry-delay",
       "1",
-      "--retry-all-errors",
+      "--retry-connrefused",
+      "--write-out",
+      "VIZE_HTTP_STATUS:%{http_code}",
       "-H",
       "User-Agent: vize-release-publish (https://github.com/ubugeeei-prod/vize)",
-      "https://crates.io/api/v1/crates/" + crate_name,
+      "https://crates.io/api/v1/crates/" + crate_name + "/" + version,
     ],
   )
+  let response_parts : Array[String] = body
+    .text()
+    .split("VIZE_HTTP_STATUS:")
+    .map(view => view.to_owned())
+    .collect()
+  if response_parts.length() == 2 && response_parts[1] == "404" {
+    return Missing
+  }
   if exit_code != 0 {
     let detail = stderr.text().trim().to_owned()
     let suffix = if detail == "" { "" } else { ": " + detail }
+    if response_parts.length() == 2 && response_parts[1] != "000" {
+      return QueryFailed(
+        "crates.io query for \{crate_name}@\{version} returned HTTP \{response_parts[1]} (curl exit \{exit_code})\{suffix}",
+      )
+    }
     return QueryFailed(
       "crates.io query for \{crate_name}@\{version} failed with curl exit \{exit_code}\{suffix}",
     )
   }
+  if response_parts.length() != 2 {
+    return QueryFailed(
+      "crates.io query for \{crate_name}@\{version} returned no HTTP status",
+    )
+  }
+  let status = response_parts[1]
+  if status != "200" {
+    return QueryFailed(
+      "crates.io query for \{crate_name}@\{version} returned HTTP \{status}",
+    )
+  }
   let parsed = try {
-    @json.parse(body.text())
+    @json.parse(response_parts[0])
   } catch {
     _ =>
       return QueryFailed(
