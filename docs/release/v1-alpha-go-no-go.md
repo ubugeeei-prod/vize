@@ -67,7 +67,10 @@ moon run --target native tools/moon/cmd/release -- alpha -y
   - root npm packages
   - WASM npm package
   - crates.io publishing
-  - VS Code marketplace publishing
+  - required VS Code Marketplace publishing and exact-version visibility
+- [ ] Open VSX is an optional channel. Publish it only when the editor owner explicitly dispatches
+      [`release-open-vsx.yml`](../../.github/workflows/release-open-vsx.yml) for an existing,
+      published GitHub Release tag; it is not part of the official release completion signal.
 - [ ] npm owner verifies every package is visible with the expected prerelease dist-tag:
 
 ```bash
@@ -137,6 +140,19 @@ cargo yank --vers <bad-version> vize
 - [ ] If docs are wrong, revert the docs commit or redeploy the previous known-good Pages artifact.
 - [ ] If the VS Code extension is broken, publish a fixed pre-release and update the marketplace
       description. Do not unpublish without editor owner and release captain approval.
+
+### Partial editor publication recovery
+
+- If VS Code Marketplace publication fails, the required job prevents GitHub Release creation.
+  Restore the `VSCE_PAT` secret in the protected `vscode-marketplace` environment, then rerun the
+  failed jobs in the same Release workflow. Do not recreate or force-push the tag. The publisher
+  skips the exact version when it is already visible, so rerunning after a partial publish is safe.
+- Open VSX does not run automatically. For an existing published GitHub Release, restore `OVSX_PAT`
+  in the protected `open-vsx-registry` environment and manually dispatch the optional workflow with
+  that release tag. It checks out the same tag and requires exactly one attached VSIX. Re-dispatching
+  is safe when the exact version is already visible.
+- A publisher exit code is never sufficient evidence by itself. Both registry jobs stay red until
+  the exact extension version is visible in the destination registry.
 
 ## Communication
 

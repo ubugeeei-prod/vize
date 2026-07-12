@@ -161,41 +161,49 @@ test("release workflow creates GitHub Releases only after registry publishing su
   assert.notEqual(createRelease, -1);
 });
 
-test("release workflow does not block GitHub releases on VS Code Marketplace token expiry", () => {
+test("release workflow requires VS Code Marketplace publication", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const publishJob = workflowJobBody(workflow, "release-vscode-extension");
 
-  assert.match(publishJob, /name:\s*Skip publish when VSCE_PAT is absent/);
-  assert.match(
-    publishJob,
-    /name:\s*Publish VS Code extension[\s\S]*if:\s*env\.VSCE_PAT != ''[\s\S]*continue-on-error:\s*true[\s\S]*tools\/moon\/cmd\/publish_vscode_extension/,
-  );
+  assert.match(publishJob, /environment:\s*vscode-marketplace/);
+  assert.match(publishJob, /VSCE_PAT:\s*\$\{\{ secrets\.VSCE_PAT \}\}/);
+  assert.match(publishJob, /name:\s*Require VS Code Marketplace credentials/);
+  assert.match(publishJob, /if \[ -z "\$\{VSCE_PAT:-\}" \]/);
+  assert.match(publishJob, /VSCE_PAT is required in the protected vscode-marketplace environment/);
+  assert.match(publishJob, /name:\s*Publish VS Code extension/);
+  assert.match(publishJob, /tools\/moon\/cmd\/publish_vscode_extension/);
+  assert.doesNotMatch(publishJob, /Skip publish|continue-on-error|if:\s*env\.VSCE_PAT/);
 });
 
-test("Open VSX workflow publishes the VS Code extension when configured", () => {
+test("Open VSX publication is an explicit, fail-closed opt-in", () => {
   const workflow = readRepoFile(".github", "workflows", "release-open-vsx.yml");
   const publishJob = workflowJobBody(workflow, "release-open-vsx-extension");
 
-  assert.match(workflow, /on:\s*\n\s*release:\s*\n\s*types:\s*\[published\]/);
+  assert.match(workflow, /name:\s*Publish Open VSX \(optional\)/);
+  assert.match(workflow, /group:\s*publish-open-vsx-\$\{\{ inputs\.tag_name \}\}/);
+  assert.match(workflow, /cancel-in-progress:\s*false/);
+  assert.doesNotMatch(workflow, /\n\s*release:\s*\n\s*types:\s*\[published\]/);
   assert.match(
     workflow,
-    /workflow_dispatch:\s*\n\s*inputs:\s*\n\s*tag_name:\s*\n\s*description:\s*Release tag to publish to Open VSX[\s\S]*required:\s*true[\s\S]*type:\s*string/,
+    /workflow_dispatch:\s*\n\s*inputs:\s*\n\s*tag_name:\s*\n\s*description:\s*Published GitHub Release tag to publish to Open VSX[\s\S]*required:\s*true[\s\S]*type:\s*string/,
   );
   assert.match(publishJob, /environment:\s*open-vsx-registry/);
-  assert.match(workflow, /OVSX_PAT:\s*\$\{\{ secrets\.OVSX_PAT \}\}/);
+  assert.match(publishJob, /OVSX_PAT:\s*\$\{\{ secrets\.OVSX_PAT \}\}/);
   assert.match(publishJob, /name:\s*Resolve release tag/);
-  assert.match(
-    publishJob,
-    /RELEASE_TAG_NAME:\s*\$\{\{ github\.event\.release\.tag_name \|\| inputs\.tag_name \}\}/,
-  );
+  assert.match(publishJob, /RELEASE_TAG_NAME:\s*\$\{\{ inputs\.tag_name \}\}/);
+  assert.match(publishJob, /gh release view "\$RELEASE_TAG_NAME" --repo "\$GITHUB_REPOSITORY"/);
+  assert.match(publishJob, /--json isDraft,tagName/);
+  assert.match(publishJob, /select\(\.isDraft == false\)/);
   assert.match(publishJob, /tag_name=%s\\n/);
+  assert.match(publishJob, /name:\s*Require Open VSX credentials/);
+  assert.match(publishJob, /if \[ -z "\$\{OVSX_PAT:-\}" \]/);
+  assert.match(publishJob, /OVSX_PAT is required in the protected open-vsx-registry environment/);
+  assert.match(publishJob, /ref:\s*\$\{\{ steps\.release\.outputs\.tag_name \}\}/);
+  assert.match(publishJob, /persist-credentials:\s*false/);
   assert.match(publishJob, /name:\s*Download VSIX from GitHub Release/);
   assert.match(publishJob, /gh release download "\$\{\{ steps\.release\.outputs\.tag_name \}\}"/);
   assert.match(publishJob, /--pattern "\*\.vsix"/);
-  assert.match(publishJob, /name:\s*Skip publish when OVSX_PAT is absent/);
-  assert.match(
-    publishJob,
-    /name:\s*Publish Open VSX extension[\s\S]*if:\s*env\.OVSX_PAT != ''[\s\S]*tools\/moon\/cmd\/publish_open_vsx_extension/,
-  );
-  assert.doesNotMatch(publishJob, /continue-on-error:\s*true/);
+  assert.match(publishJob, /test "\$\{#vsix_files\[@\]\}" -eq 1/);
+  assert.match(publishJob, /tools\/moon\/cmd\/publish_open_vsx_extension/);
+  assert.doesNotMatch(publishJob, /Skip publish|continue-on-error|if:\s*env\.OVSX_PAT/);
 });

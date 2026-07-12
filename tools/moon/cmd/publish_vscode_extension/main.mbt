@@ -1,3 +1,4 @@
+///|
 /// Publishes the VS Code extension in a rerun-safe way.
 /// Release retries are common when a tag is force-pushed to re-run a partially
 /// completed workflow. npm packages and crates are already idempotent in this
@@ -8,20 +9,19 @@
 /// 3. Skip publish entirely when the exact version is already visible.
 /// 4. Treat a non-zero `vsce publish` exit as success if the version becomes
 ///    visible immediately after the attempted publish.
-
 struct ExtensionInfo {
   extension_id : String
   version : String
 }
 
+///|
 fn parse_int(value : String) -> Int? {
-  try {
-    Some(@string.parse_int(value))
-  } catch {
+  Some(@string.parse_int(value)) catch {
     _ => None
   }
 }
 
+///|
 fn int_at_least_or(value : String, minimum : Int, fallback : Int) -> Int {
   match parse_int(value) {
     Some(parsed) if parsed >= minimum => parsed
@@ -29,6 +29,7 @@ fn int_at_least_or(value : String, minimum : Int, fallback : Int) -> Int {
   }
 }
 
+///|
 fn env_int_at_least(name : String, minimum : Int, fallback : Int) -> Int {
   match @sys.get_env_var(name) {
     Some(value) if value != "" => int_at_least_or(value, minimum, fallback)
@@ -36,14 +37,14 @@ fn env_int_at_least(name : String, minimum : Int, fallback : Int) -> Int {
   }
 }
 
+///|
 fn read_package_json(path : String) -> Json? {
-  try {
-    Some(@json.parse(@xfs.read_file_to_string(path)))
-  } catch {
+  Some(@json.parse(@xfs.read_file_to_string(path))) catch {
     _ => None
   }
 }
 
+///|
 fn extension_info_from_package_json(value : Json) -> ExtensionInfo? {
   guard value is Object(obj) else { return None }
   guard obj.get("publisher") is Some(String(publisher)) else { return None }
@@ -53,23 +54,29 @@ fn extension_info_from_package_json(value : Json) -> ExtensionInfo? {
   Some(ExtensionInfo::{ extension_id: publisher + "." + name, version })
 }
 
+///|
 fn json_has_extension_version(value : Json, expected : String) -> Bool {
   guard value is Object(obj) else { return false }
   guard obj.get("versions") is Some(Array(versions)) else { return false }
   for item in versions {
     guard item is Object(version_obj) else { continue }
-    if version_obj.get("version") is Some(String(version)) && version == expected {
+    if version_obj.get("version") is Some(String(version)) &&
+      version == expected {
       return true
     }
   }
   false
 }
 
-async fn extension_version_is_visible(vp_bin : String, extension_id : String, version : String) -> Bool {
-  let (exit_code, stdout, _) = @process.collect_output(
-    vp_bin,
-    ["dlx", "-p", "@vscode/vsce@^3.3.2", "vsce", "show", extension_id, "--json"],
-  )
+///|
+async fn extension_version_is_visible(
+  vp_bin : String,
+  extension_id : String,
+  version : String,
+) -> Bool {
+  let (exit_code, stdout, _) = @process.collect_output(vp_bin, [
+    "dlx", "-p", "@vscode/vsce@^3.3.2", "vsce", "show", extension_id, "--json",
+  ])
   if exit_code != 0 {
     return false
   }
@@ -77,14 +84,11 @@ async fn extension_version_is_visible(vp_bin : String, extension_id : String, ve
   if body == "" {
     return false
   }
-  let parsed = try {
-    @json.parse(body)
-  } catch {
-    _ => return false
-  }
+  let parsed = @json.parse(body) catch { _ => return false }
   json_has_extension_version(parsed, version)
 }
 
+///|
 async fn wait_for_extension_visibility(
   vp_bin : String,
   extension_id : String,
@@ -95,7 +99,9 @@ async fn wait_for_extension_visibility(
   let mut attempt = 1
   while attempt <= max_attempts {
     if extension_version_is_visible(vp_bin, extension_id, version) {
-      println("\{extension_id} \{version} is visible in the VS Code Marketplace.")
+      println(
+        "\{extension_id} \{version} is visible in the VS Code Marketplace.",
+      )
       return true
     }
     if attempt >= max_attempts {
@@ -110,6 +116,7 @@ async fn wait_for_extension_visibility(
   false
 }
 
+///|
 async fn run_app() -> Int {
   let args = @tool.cli_args()
   if args.is_empty() || args.length() > 2 {
@@ -128,7 +135,9 @@ async fn run_app() -> Int {
       match extension_info_from_package_json(value) {
         Some(info) => info
         None => {
-          @stdio.stderr.write("Failed to read extension metadata from \{package_json_path}\n")
+          @stdio.stderr.write(
+            "Failed to read extension metadata from \{package_json_path}\n",
+          )
           return 1
         }
       }
@@ -141,13 +150,17 @@ async fn run_app() -> Int {
     Some(value) if value != "" => value
     _ => "vp"
   }
-  let resolution_attempts = env_int_at_least("PUBLISH_RESOLUTION_RETRY_LIMIT", 1, 24)
-  let resolution_delay_seconds = env_int_at_least("PUBLISH_RESOLUTION_RETRY_DELAY", 0, 10)
+  let resolution_attempts = env_int_at_least(
+    "PUBLISH_RESOLUTION_RETRY_LIMIT", 1, 24,
+  )
+  let resolution_delay_seconds = env_int_at_least(
+    "PUBLISH_RESOLUTION_RETRY_DELAY", 0, 10,
+  )
   if extension_version_is_visible(
-    vp_bin,
-    extension_info.extension_id,
-    extension_info.version,
-  ) {
+      vp_bin,
+      extension_info.extension_id,
+      extension_info.version,
+    ) {
     println(
       "\{extension_info.extension_id} \{extension_info.version} is already published, skipping VS Code Marketplace publish.",
     )
@@ -172,24 +185,30 @@ async fn run_app() -> Int {
     publish_args.push("--pre-release")
   }
   let exit_code = @process.run(vp_bin, publish_args)
-  if exit_code == 0 {
+  if wait_for_extension_visibility(
+      vp_bin,
+      extension_info.extension_id,
+      extension_info.version,
+      resolution_attempts,
+      resolution_delay_seconds,
+    ) {
+    if exit_code != 0 {
+      println(
+        "\{extension_info.extension_id} \{extension_info.version} was published despite a non-zero vsce publish exit.",
+      )
+    }
     return 0
   }
-  if wait_for_extension_visibility(
-    vp_bin,
-    extension_info.extension_id,
-    extension_info.version,
-    resolution_attempts,
-    resolution_delay_seconds,
-  ) {
-    println(
-      "\{extension_info.extension_id} \{extension_info.version} was published despite a non-zero vsce publish exit.",
+  if exit_code == 0 {
+    @stdio.stderr.write(
+      "VS Code Marketplace did not expose \{extension_info.extension_id} \{extension_info.version} before the visibility deadline.\n",
     )
-    return 0
+    return 1
   }
   exit_code
 }
 
+///|
 async fn main {
   @sys.exit(run_app())
 }

@@ -1,21 +1,24 @@
-name: Release Open VSX
+name: Publish Open VSX (optional)
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       tag_name:
-        description: Release tag to publish to Open VSX
+        description: Published GitHub Release tag to publish to Open VSX
         required: true
         type: string
+
+run-name: Publish Open VSX (optional) - ${{ inputs.tag_name }}
+
+concurrency:
+  group: publish-open-vsx-${{ inputs.tag_name }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  OVSX_PAT: ${{ secrets.OVSX_PAT }}
   PUBLISH_RESOLUTION_RETRY_LIMIT: 24
   PUBLISH_RESOLUTION_RETRY_DELAY: 10
 
@@ -25,8 +28,31 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     environment: open-vsx-registry
+    env:
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
     steps:
+      - name: Resolve release tag
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG_NAME: ${{ inputs.tag_name }}
+        run: |
+          test -n "$RELEASE_TAG_NAME"
+          resolved_tag=$(gh release view "$RELEASE_TAG_NAME" --repo "$GITHUB_REPOSITORY" --json isDraft,tagName --jq 'select(.isDraft == false) | .tagName')
+          test "$resolved_tag" = "$RELEASE_TAG_NAME"
+          printf 'tag_name=%s\n' "$resolved_tag" >> "$GITHUB_OUTPUT"
+
+      - name: Require Open VSX credentials
+        run: |
+          if [ -z "${OVSX_PAT:-}" ]; then
+            echo "::error::OVSX_PAT is required in the protected open-vsx-registry environment."
+            exit 1
+          fi
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ steps.release.outputs.tag_name }}
+          persist-credentials: false
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -35,26 +61,13 @@ jobs:
           run-install: false
       - uses: ./.github/actions/setup-moonbit
 
-      - name: Resolve release tag
-        id: release
-        env:
-          RELEASE_TAG_NAME: ${{ github.event.release.tag_name || inputs.tag_name }}
-        run: |
-          test -n "$RELEASE_TAG_NAME"
-          printf 'tag_name=%s\n' "$RELEASE_TAG_NAME" >> "$GITHUB_OUTPUT"
-
       - name: Download VSIX from GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release download "${{ steps.release.outputs.tag_name }}" --pattern "*.vsix" --dir open-vsx-artifacts
 
-      - name: Skip publish when OVSX_PAT is absent
-        if: env.OVSX_PAT == ''
-        run: echo "OVSX_PAT is not configured; skipping Open VSX publish."
-
       - name: Publish Open VSX extension
-        if: env.OVSX_PAT != ''
         run: |
-          vsix=$(find open-vsx-artifacts -name '*.vsix' -print -quit)
-          test -n "$vsix"
-          moon run --target native tools/moon/cmd/publish_open_vsx_extension -- "$vsix"
+          mapfile -t vsix_files < <(find open-vsx-artifacts -type f -name '*.vsix' -print)
+          test "${#vsix_files[@]}" -eq 1
+          moon run --target native tools/moon/cmd/publish_open_vsx_extension -- "${vsix_files[0]}"

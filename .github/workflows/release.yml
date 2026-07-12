@@ -209,13 +209,13 @@ jobs:
           name: editor-extensions
           path: editor-extension-artifacts
 
-      - name: Skip publish when VSCE_PAT is absent
-        if: env.VSCE_PAT == ''
-        run: echo "VSCE_PAT is not configured; skipping VS Code Marketplace publish."
-
+      - name: Require VS Code Marketplace credentials
+        run: |
+          if [ -z "${VSCE_PAT:-}" ]; then
+            echo "::error::VSCE_PAT is required in the protected vscode-marketplace environment."
+            exit 1
+          fi
       - name: Publish VS Code extension
-        if: env.VSCE_PAT != ''
-        continue-on-error: true
         run: moon run --target native tools/moon/cmd/publish_vscode_extension -- editor-extension-artifacts/editors/vscode/dist/vize.vsix
 
   build-release-packages:

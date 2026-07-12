@@ -45,7 +45,9 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
         "  process.exit(1);",
         "}",
         "if (args[0] === 'dlx' && args[2] === 'ovsx@^1.0.0' && args[3] === 'ovsx' && args[4] === 'create-namespace') {",
-        "  process.exit(0);",
+        "  if (process.env.NAMESPACE_ERROR === 'auth') { console.error('token is not authorized'); process.exit(17); }",
+        "  console.error('Namespace already exists');",
+        "  process.exit(17);",
         "}",
         "if (args[0] === 'dlx' && args[2] === 'ovsx@^1.0.0' && args[3] === 'ovsx' && args[4] === 'publish') {",
         "  state.published = true;",
@@ -56,17 +58,33 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
       ].join("\n"),
     );
 
-    const result = runMoonScript("publish_open_vsx_extension", [vsixPath, manifestPath], {
-      env: {
-        PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
-        CALLS_PATH: callsPath,
-        STATE_PATH: statePath,
-      },
-    });
+    const runPublish = (namespaceError?: string) =>
+      runMoonScript("publish_open_vsx_extension", [vsixPath, manifestPath], {
+        env: {
+          PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+          CALLS_PATH: callsPath,
+          STATE_PATH: statePath,
+          NAMESPACE_ERROR: namespaceError ?? "",
+        },
+      });
+
+    const rejected = runPublish("auth");
+    assert.equal(rejected.status, 1);
+    assert.match(rejected.stderr, /token is not authorized/);
+    assert.doesNotMatch(rejected.stdout, /continuing to publish/);
+    const rejectedCalls = JSON.parse(fs.readFileSync(callsPath, "utf8")) as string[][];
+    assert.deepEqual(
+      rejectedCalls.map((call) => call[4]),
+      ["get", "create-namespace"],
+    );
+
+    writeFileSync(callsPath, "[]");
+    const result = runPublish();
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.match(result.stdout, /already exists; continuing to publish/);
 
     const calls = JSON.parse(fs.readFileSync(callsPath, "utf8")) as string[][];
-    assert.deepEqual(calls.at(-2), [
+    assert.deepEqual(calls.at(-3), [
       "dlx",
       "-p",
       "ovsx@^1.0.0",
@@ -74,7 +92,8 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
       "create-namespace",
       "ubugeeei",
     ]);
-    assert.deepEqual(calls.at(-1), ["dlx", "-p", "ovsx@^1.0.0", "ovsx", "publish", vsixPath]);
+    assert.deepEqual(calls.at(-2), ["dlx", "-p", "ovsx@^1.0.0", "ovsx", "publish", vsixPath]);
+    assert.equal(calls.at(-1)?.[4], "get");
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
