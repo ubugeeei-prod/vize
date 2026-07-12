@@ -470,7 +470,7 @@ fn inject_scope_id<'a>(
 
 /// Check if an element has static props that can be hoisted as an object.
 fn has_static_props(el: &ElementNode<'_>) -> bool {
-    if el.props.is_empty() {
+    if el.tag_type == ElementType::Slot || el.props.is_empty() {
         return false;
     }
 
