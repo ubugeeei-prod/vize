@@ -9,6 +9,10 @@ on:
   schedule:
     # 02:23 UTC daily (~11:23 JST). Covers every suite including vrt.
     - cron: "23 2 * * *"
+  # A dispatch run's GitHub head_sha comes from --ref. Release evidence must
+  # therefore use a branch or tag whose tip is target_sha; suite=all validates
+  # that invariant before checkout. Existing one-suite and Testbox dispatches
+  # may omit target_sha and continue to run at the selected --ref tip.
   workflow_dispatch:
     inputs:
       suite:
@@ -23,18 +27,26 @@ on:
           - check
           - lint
           - build
+          - all
+      target_sha:
+        description: Full lowercase 40-character target SHA; --ref must be a branch or tag at this commit
+        required: false
+        type: string
       testbox_id:
         description: Blacksmith Testbox session ID
         required: false
         type: string
 
+run-name: App E2E ${{ github.event_name == 'workflow_dispatch' && (inputs.testbox_id || inputs.suite) || 'nightly' }} @ ${{ inputs.target_sha || github.sha }}
+
 concurrency:
-  group: app-e2e-${{ github.ref }}-${{ github.event.inputs.testbox_id || github.event.inputs.suite || github.event_name }}
+  group: app-e2e-${{ github.event_name == 'workflow_dispatch' && (inputs.testbox_id || inputs.suite) || github.ref }}-${{ github.event_name == 'workflow_dispatch' && (inputs.target_sha || github.sha) || github.event_name }}
   cancel-in-progress: true
 
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  E2E_TARGET_SHA: ${{ inputs.target_sha || github.sha }}
 
 jobs:
   testbox:
@@ -47,13 +59,30 @@ jobs:
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
+      - name: Validate optional target SHA
+        if: ${{ inputs.target_sha != '' }}
+        env:
+          REQUESTED_TARGET_SHA: ${{ inputs.target_sha }}
+          RUN_HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [[ ! "$REQUESTED_TARGET_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error title=Invalid target_sha::target_sha must be a full lowercase 40-character commit SHA"
+            exit 1
+          fi
+          if [[ "$RUN_HEAD_SHA" != "$REQUESTED_TARGET_SHA" ]]; then
+            echo "::error title=Dispatch ref mismatch::run head_sha comes from --ref; dispatch with a branch or tag at $REQUESTED_TARGET_SHA (got $RUN_HEAD_SHA)"
+            exit 1
+          fi
+
       - name: Begin Testbox
+        id: begin-testbox
         uses: useblacksmith/begin-testbox@233448af4bfdc6fca509a7f0974411ac6d8a8043 # v2
         with:
           testbox_id: ${{ inputs.testbox_id }}
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
+          ref: ${{ env.E2E_TARGET_SHA }}
           submodules: recursive
 
       - name: Setup Vite+ and Node.js
@@ -88,7 +117,7 @@ jobs:
 
       - name: Run Testbox
         uses: useblacksmith/run-testbox@5ca05834db1d3813554d1dd109e5f2087a8d7cbc # v2
-        if: always()
+        if: ${{ always() && steps.begin-testbox.outcome == 'success' }}
 
   app-e2e:
     name: app-e2e (${{ matrix.suite }})
@@ -100,13 +129,37 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # workflow_dispatch: pick one suite. schedule: run every suite,
-        # including vrt, because nothing else exercises the visual regression
-        # baselines today.
-        suite: ${{ github.event_name == 'workflow_dispatch' && fromJSON(format('["{0}"]', inputs.suite)) || fromJSON('["dev","vrt","preview","build","check","lint"]') }}
+        # workflow_dispatch: pick one suite, or `all` for release evidence.
+        # schedule: run every suite, including vrt, because nothing else
+        # exercises the visual regression baselines today.
+        suite: ${{ github.event_name == 'workflow_dispatch' && inputs.suite != 'all' && fromJSON(format('["{0}"]', inputs.suite)) || fromJSON('["dev","vrt","preview","build","check","lint"]') }}
     steps:
+      - name: Validate target SHA
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          REQUESTED_SUITE: ${{ inputs.suite }}
+          REQUESTED_TARGET_SHA: ${{ inputs.target_sha }}
+          RUN_HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [[ -z "$REQUESTED_TARGET_SHA" ]]; then
+            if [[ "$REQUESTED_SUITE" == "all" ]]; then
+              echo "::error title=Missing target_sha::target_sha is required when suite=all"
+              exit 1
+            fi
+            exit 0
+          fi
+          if [[ ! "$REQUESTED_TARGET_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error title=Invalid target_sha::target_sha must be a full lowercase 40-character commit SHA"
+            exit 1
+          fi
+          if [[ "$RUN_HEAD_SHA" != "$REQUESTED_TARGET_SHA" ]]; then
+            echo "::error title=Dispatch ref mismatch::run head_sha comes from --ref; dispatch with a branch or tag at $REQUESTED_TARGET_SHA (got $RUN_HEAD_SHA)"
+            exit 1
+          fi
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
+          ref: ${{ env.E2E_TARGET_SHA }}
           submodules: recursive
 
       - name: Setup Rust

@@ -4,14 +4,32 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
+  # GitHub records a workflow_dispatch run's head_sha from the branch or tag
+  # passed via --ref, not from a later checkout. Dispatch with a ref whose tip
+  # is exactly head_sha; the first step rejects mismatches so release evidence
+  # cannot be attributed to the wrong commit.
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Full lowercase 40-character base commit SHA
+        required: true
+        type: string
+      head_sha:
+        description: Full lowercase 40-character head SHA; --ref must be a branch or tag at this commit
+        required: true
+        type: string
+
+run-name: "Benchmark ${{ github.event_name == 'workflow_dispatch' && format('{0}...{1}', inputs.base_sha, inputs.head_sha) || format('PR #{0}', github.event.pull_request.number) }}"
 
 concurrency:
-  group: benchmark-${{ github.event.pull_request.number }}
+  group: benchmark-${{ github.event_name == 'workflow_dispatch' && format('dispatch-{0}-{1}', inputs.base_sha, inputs.head_sha) || github.event.pull_request.number }}
   cancel-in-progress: true
 
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  BENCHMARK_BASE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.base_sha || github.event.pull_request.base.sha }}
+  BENCHMARK_HEAD_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.head_sha || github.event.pull_request.head.sha }}
   # 1000 files keeps the fastest lane (compile, ~200us/file single-threaded)
   # above ~200ms so runner thermal drift between interleaved runs stays well
   # under the 5% threshold; at 300 files the lane ran ~65ms and perf-neutral
@@ -33,24 +51,43 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Validate dispatch SHAs
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          RUN_HEAD_SHA: ${{ github.sha }}
+        run: |
+          full_sha='^[0-9a-f]{40}$'
+          if [[ ! "$BENCHMARK_BASE_SHA" =~ $full_sha ]]; then
+            echo "::error title=Invalid base_sha::base_sha must be a full lowercase 40-character commit SHA"
+            exit 1
+          fi
+          if [[ ! "$BENCHMARK_HEAD_SHA" =~ $full_sha ]]; then
+            echo "::error title=Invalid head_sha::head_sha must be a full lowercase 40-character commit SHA"
+            exit 1
+          fi
+          if [[ "$RUN_HEAD_SHA" != "$BENCHMARK_HEAD_SHA" ]]; then
+            echo "::error title=Dispatch ref mismatch::run head_sha comes from --ref; dispatch with a branch or tag at $BENCHMARK_HEAD_SHA (got $RUN_HEAD_SHA)"
+            exit 1
+          fi
+
       - name: Checkout head
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: head
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ env.BENCHMARK_HEAD_SHA }}
 
       - name: Checkout base
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: base
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: ${{ env.BENCHMARK_BASE_SHA }}
 
       - name: Check base checkout
         id: base-integrity
         working-directory: base
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ env.BENCHMARK_BASE_SHA }}
+          HEAD_SHA: ${{ env.BENCHMARK_HEAD_SHA }}
         run: |
           if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)' -- . ':(exclude)tests/_fixtures/_git/**'; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
@@ -111,8 +148,8 @@ jobs:
             echo "| skipped | base checkout is not buildable |"
           } > benchmark-summary.md
           printf '{"skipped":true,"reason":"base_metadata_invalid","base":"%s","head":"%s"}\n' \
-            "${{ github.event.pull_request.base.sha }}" \
-            "${{ github.event.pull_request.head.sha }}" \
+            "$BENCHMARK_BASE_SHA" \
+            "$BENCHMARK_HEAD_SHA" \
             > benchmark-results.json
 
       - name: Cache base CLI
@@ -121,7 +158,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: base/target/ci-opt/vize
-          key: ${{ runner.os }}-benchmark-base-cli-ci-opt-${{ github.event.pull_request.base.sha }}
+          key: ${{ runner.os }}-benchmark-base-cli-ci-opt-${{ env.BENCHMARK_BASE_SHA }}
 
       # The ci-opt profile is also injected via --config so the base checkout
       # builds even when it predates the profile's Cargo.toml definition, and
@@ -151,8 +188,8 @@ jobs:
             echo "| skipped | base checkout does not compile |"
           } > benchmark-summary.md
           printf '{"skipped":true,"reason":"base_not_buildable","base":"%s","head":"%s"}\n' \
-            "${{ github.event.pull_request.base.sha }}" \
-            "${{ github.event.pull_request.head.sha }}" \
+            "$BENCHMARK_BASE_SHA" \
+            "$BENCHMARK_HEAD_SHA" \
             > benchmark-results.json
 
       - name: Cache head CLI
@@ -161,7 +198,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: head/target/ci-opt/vize
-          key: ${{ runner.os }}-benchmark-head-cli-ci-opt-${{ github.event.pull_request.head.sha }}
+          key: ${{ runner.os }}-benchmark-head-cli-ci-opt-${{ env.BENCHMARK_HEAD_SHA }}
 
       - name: Build head CLI
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.cache-head-cli.outputs.cache-hit != 'true' && steps.build-base.outcome != 'failure'
@@ -183,8 +220,8 @@ jobs:
             --input "$GITHUB_WORKSPACE/head/bench/__in__" \
             --base-bin "$GITHUB_WORKSPACE/base/target/ci-opt/vize" \
             --head-bin "$GITHUB_WORKSPACE/head/target/ci-opt/vize" \
-            --base-label "${{ github.event.pull_request.base.sha }}" \
-            --head-label "${{ github.event.pull_request.head.sha }}" \
+            --base-label "$BENCHMARK_BASE_SHA" \
+            --head-label "$BENCHMARK_HEAD_SHA" \
             --runs "$VIZE_BENCH_RUNS" \
             --warmups "$VIZE_BENCH_WARMUPS" \
             --threshold "$VIZE_BENCH_REGRESSION_THRESHOLD_PERCENT" \
@@ -219,7 +256,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: head
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ env.BENCHMARK_HEAD_SHA }}
 
       - name: Download benchmark results
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -228,6 +265,7 @@ jobs:
 
       - name: Read current PR labels
         id: pr-labels
+        if: ${{ github.event_name == 'pull_request' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -259,7 +297,7 @@ jobs:
 
       - name: Enforce benchmark budget
         env:
-          PR_LABELS_JSON: ${{ steps.pr-labels.outputs.labels }}
+          PR_LABELS_JSON: ${{ github.event_name == 'pull_request' && steps.pr-labels.outputs.labels || '[]' }}
         run: >-
           node head/bench/enforce-pr-budget.mjs
           --json benchmark-results.json
@@ -269,7 +307,7 @@ jobs:
     name: pr-benchmark-comment
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
     needs:
       - pr-benchmark
     permissions:

@@ -161,8 +161,13 @@ test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", ()
     /if:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch' && inputs\.testbox_id != ''\s*\}\}/,
   );
   assert.match(job, /uses:\s*useblacksmith\/begin-testbox@[0-9a-f]{40}\s*# v2/);
+  assert.match(job, /id:\s*begin-testbox/);
   assert.match(job, /testbox_id:\s*\$\{\{\s*inputs\.testbox_id\s*\}\}/);
   assert.match(job, /uses:\s*useblacksmith\/run-testbox@[0-9a-f]{40}\s*# v2/);
+  assert.match(
+    job,
+    /if:\s*\$\{\{\s*always\(\) && steps\.begin-testbox\.outcome == 'success'\s*\}\}/,
+  );
   assert.doesNotMatch(job, /vp run --workspace-root test|cargo test --workspace/);
   assert.match(
     appJob,
