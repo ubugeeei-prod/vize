@@ -54,10 +54,11 @@ impl Drop for TypeResolutionBatchGuard {
         let mut state = BATCH_EPOCH_STATE
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
-        state.active_batches = state
-            .active_batches
-            .checked_sub(1)
-            .expect("type-resolution batch guard dropped without an active batch");
+        debug_assert!(
+            state.active_batches > 0,
+            "type-resolution batch guard dropped without an active batch"
+        );
+        state.active_batches = state.active_batches.saturating_sub(1);
 
         let epoch = if state.active_batches == 0 {
             NO_EPOCH
@@ -76,6 +77,9 @@ impl Drop for TypeResolutionBatchGuard {
 /// is alive, imported-type caches skip repeated metadata checks within the
 /// current generation. Single compiles do not open a batch and always observe
 /// current filesystem metadata.
+///
+/// Bind the result to a named variable and keep it alive until all parallel
+/// work joins. `let _ = begin_type_resolution_batch();` drops it immediately.
 pub fn begin_type_resolution_batch() -> TypeResolutionBatchGuard {
     let mut state = BATCH_EPOCH_STATE
         .lock()

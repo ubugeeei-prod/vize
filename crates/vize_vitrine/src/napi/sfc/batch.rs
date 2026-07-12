@@ -211,6 +211,8 @@ pub fn compile_sfc_batch(
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
     let standalone = opts.mode.as_deref() == Some("function");
     let start = Instant::now();
+    // This named guard must stay alive until the parallel reduce has joined.
+    #[deny(let_underscore_drop)]
     let _type_resolution_batch = vize_atelier_sfc::begin_type_resolution_batch();
     let option_bits = batch_options_bits(
         ssr,
