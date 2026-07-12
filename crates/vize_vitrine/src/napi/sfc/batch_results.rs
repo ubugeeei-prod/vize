@@ -57,7 +57,7 @@ pub fn compile_sfc_batch_with_results(
     // Snapshot the filesystem for this batch: imported-type resolution treats
     // every file it stats as stable for the batch's duration, so the second and
     // later hits of a shared types barrel skip their revalidation syscalls.
-    vize_atelier_sfc::begin_type_resolution_batch();
+    let _type_resolution_batch = vize_atelier_sfc::begin_type_resolution_batch();
 
     // Indexed parallel map keeps results in input order (deterministic) and
     // collects lock-free, replacing the previous contended `Mutex<Vec>`.

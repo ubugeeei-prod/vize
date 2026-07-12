@@ -3,12 +3,12 @@
 //! Holds all state during script compilation.
 //! Uses OXC for proper AST-based parsing instead of regex.
 
+mod batch_epoch;
 mod external_types;
 mod helpers;
 mod parse;
 mod props;
-
-pub use external_types::begin_type_resolution_batch;
+pub use batch_epoch::{TypeResolutionBatchGuard, begin_type_resolution_batch};
 
 use crate::types::{BindingMetadata, BindingType};
 use vize_carton::{CompactString, String, ToCompactString};

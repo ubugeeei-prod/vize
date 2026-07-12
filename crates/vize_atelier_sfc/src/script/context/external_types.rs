@@ -14,6 +14,7 @@ use crate::script::build_interface_type_source;
 use crate::types::SfcParseOptions;
 
 use super::ScriptCompileContext;
+use super::batch_epoch::{NO_EPOCH, current_batch_epoch};
 use super::helpers::is_import_type_only;
 
 /// Type declarations and outgoing type-bearing specifiers extracted from one
@@ -33,7 +34,7 @@ type FileStamp = (Option<SystemTime>, u64);
 
 /// One cached file summary plus the metadata needed to revalidate it.
 ///
-/// `validated_epoch` records the [`BATCH_EPOCH`] in which the entry's
+/// `validated_epoch` records the active batch epoch in which the entry's
 /// [`FileStamp`] was last confirmed against disk. It is an atomic so a read
 /// hit can stamp it forward under the shared read guard, without upgrading to
 /// a write lock.
@@ -66,7 +67,7 @@ impl CachedFileSummary {
 /// the same type-barrel closure for every SFC (nuxt-ui re-reads ~200 files per
 /// component without this); outside a batch entries are revalidated against
 /// [`FileStamp`] on every use so on-disk edits are picked up, and within a
-/// batch the first hit revalidates and the rest reuse it (see [`BATCH_EPOCH`]).
+/// batch the first hit revalidates and the rest reuse it.
 static FILE_TYPE_CACHE: LazyLock<RwLock<FxHashMap<PathBuf, CachedFileSummary>>> =
     LazyLock::new(|| RwLock::new(FxHashMap::default()));
 
@@ -75,47 +76,6 @@ fn file_stamp(path: &Path) -> FileStamp {
         Ok(metadata) => (metadata.modified().ok(), metadata.len()),
         Err(_) => (None, 0),
     }
-}
-
-/// Monotonic batch generation. A batch compile snapshots its inputs up front
-/// and resolves a fixed set of files, so the type-resolution caches can treat
-/// the filesystem as stable for the batch's duration: once an entry is
-/// revalidated inside a batch, later hits in the *same* batch reuse it without
-/// re-issuing the `stat`/`metadata` syscall that dominates this path.
-///
-/// `0` is reserved for "no batch in flight" — single compiles (LSP edits, the
-/// dev-server one-file recompile) leave the epoch here and keep revalidating
-/// every hit, so an on-disk edit between compiles is still picked up exactly as
-/// before. [`begin_type_resolution_batch`] advances the epoch, never returning
-/// `0`, so each new batch invalidates the previous batch's "validated" stamps.
-static BATCH_EPOCH: AtomicU64 = AtomicU64::new(0);
-
-/// Sentinel meaning "this cache entry has not been revalidated inside any
-/// batch": it never equals a live epoch, so the first hit in a batch always
-/// pays one revalidation before the entry is trusted for the rest of it.
-const NO_EPOCH: u64 = 0;
-
-/// Open a new type-resolution batch and return its epoch.
-///
-/// Call this once before a batch of SFC compiles that share a filesystem
-/// snapshot (e.g. `compileSfcBatch*`). Within the returned epoch, the
-/// imported-type summary / canonicalization / resolution caches skip per-hit
-/// `stat` revalidation; the next batch advances the epoch and the first hit
-/// re-stats. Single compiles need not call this.
-pub fn begin_type_resolution_batch() -> u64 {
-    // `Relaxed` is enough: this is a generation counter, not a lock — readers
-    // only ever compare it for equality, and a batch publishes its files
-    // through rayon's join barriers, not through this value.
-    let previous = BATCH_EPOCH.fetch_add(1, Ordering::Relaxed);
-    // Skip the reserved `0` if the counter ever wraps back onto it.
-    if previous.wrapping_add(1) == NO_EPOCH {
-        BATCH_EPOCH.fetch_add(1, Ordering::Relaxed);
-    }
-    BATCH_EPOCH.load(Ordering::Relaxed)
-}
-
-fn current_batch_epoch() -> u64 {
-    BATCH_EPOCH.load(Ordering::Relaxed)
 }
 
 fn build_file_summary(path: &Path) -> Option<FileTypeSummary> {
@@ -1046,18 +1006,6 @@ const props = defineProps<ButtonProps>();
         assert_eq!(ctx.bindings.bindings.get("raw"), None);
 
         let _ = std::fs::remove_dir_all(project);
-    }
-
-    #[test]
-    fn batch_epochs_are_monotonic_and_never_reserved_zero() {
-        // Each batch must advance the epoch (so the previous batch's "validated
-        // this epoch" stamps stop matching) and never land on the reserved `0`
-        // that marks "no batch in flight".
-        let first = super::begin_type_resolution_batch();
-        let second = super::begin_type_resolution_batch();
-        assert_ne!(first, super::NO_EPOCH);
-        assert_ne!(second, super::NO_EPOCH);
-        assert!(second > first, "epoch must advance: {first} -> {second}");
     }
 
     #[test]
