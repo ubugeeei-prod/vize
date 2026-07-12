@@ -9,7 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const extensionDir = path.join(root, "editors/vscode");
 const sourceDir = path.join(extensionDir, "typescript-vue-plugin");
 const packagePath = "node_modules/@vizejs/typescript-vue-plugin";
-const pluginFiles = ["index.cjs", "package.json"];
+const pluginFiles = ["index.cjs", "package.json", "virtual-modules.cjs"];
 
 const command = process.argv[2];
 
