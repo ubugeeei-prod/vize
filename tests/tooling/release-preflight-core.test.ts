@@ -11,6 +11,10 @@ import {
 
 const sha = "a".repeat(40);
 const cargoToml = `[workspace]\n\n[workspace.package]\nversion = "1.2.3"\nedition = "2024"\n`;
+const packageManifests = [
+  { path: "npm/cli/package.json", content: '{"name":"vize","version":"1.2.3"}' },
+  { path: "editors/vscode/package.json", content: '{"name":"vize-vscode","version":"1.2.3"}' },
+];
 
 test("workspace release version comes only from the workspace package table", () => {
   assert.equal(workspaceVersionFromCargoToml(cargoToml), "1.2.3");
@@ -21,15 +25,17 @@ test("workspace release version comes only from the workspace package table", ()
 });
 
 test("release metadata binds the tag and every publishable package to one version", () => {
-  const packageManifests = [
-    { path: "npm/cli/package.json", content: '{"name":"vize","version":"1.2.3"}' },
-    { path: "editors/vscode/package.json", content: '{"name":"vize-vscode","version":"1.2.3"}' },
-  ];
   assert.equal(assertReleaseMetadata({ tag: "v1.2.3", sha, cargoToml, packageManifests }), "1.2.3");
+});
+
+test("release metadata rejects a tag that diverges from the workspace version", () => {
   assert.throws(
     () => assertReleaseMetadata({ tag: "v1.2.4", sha, cargoToml, packageManifests }),
     /does not match workspace version/,
   );
+});
+
+test("release metadata rejects a divergent publishable package version", () => {
   assert.throws(
     () =>
       assertReleaseMetadata({
@@ -43,9 +49,25 @@ test("release metadata binds the tag and every publishable package to one versio
       }),
     /npm\/wasm\/package\.json=1\.2\.2/,
   );
+});
+
+test("release metadata rejects a non-full commit SHA", () => {
   assert.throws(
     () => assertReleaseMetadata({ tag: "v1.2.3", sha: "main", cargoToml, packageManifests }),
     /full commit SHA/,
+  );
+});
+
+test("release metadata identifies malformed package manifests", () => {
+  assert.throws(
+    () =>
+      assertReleaseMetadata({
+        tag: "v1.2.3",
+        sha,
+        cargoToml,
+        packageManifests: [{ path: "npm/broken/package.json", content: "{" }],
+      }),
+    /Failed to parse release package manifest npm\/broken\/package\.json/,
   );
 });
 

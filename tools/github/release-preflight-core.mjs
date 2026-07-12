@@ -29,7 +29,15 @@ export function assertReleaseMetadata({ tag, sha, cargoToml, packageManifests })
 
   const mismatches = [];
   for (const manifest of packageManifests) {
-    const packageJson = JSON.parse(manifest.content);
+    let packageJson;
+    try {
+      packageJson = JSON.parse(manifest.content);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to parse release package manifest ${manifest.path}: ${detail}`, {
+        cause: error,
+      });
+    }
     if (packageJson.private === true) {
       mismatches.push(`${manifest.path} is private`);
       continue;
