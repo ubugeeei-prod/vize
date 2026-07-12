@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { parse } from "yaml";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fuzzWorkspace = "tests/fuzz";
@@ -37,6 +38,20 @@ test("fuzz workspace declares libfuzzer-sys and an isolated [workspace]", () => 
 
 test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () => {
   const workflow = readRepoFile(".github/workflows/fuzz.yml");
+  const parsed = parse(workflow) as {
+    jobs: {
+      fuzz: {
+        "continue-on-error": string;
+        steps: Array<{
+          "continue-on-error"?: boolean;
+          env?: Record<string, string>;
+          id?: string;
+          if?: string;
+          run?: string;
+        }>;
+      };
+    };
+  };
 
   assert.match(workflow, /name:\s*Fuzz/);
   assert.match(workflow, /schedule:[\s\S]*?-\s*cron:/);
@@ -57,12 +72,37 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
 
   assert.match(workflow, /cargo \+nightly fuzz run/);
   assert.match(workflow, /-max_total_time=/);
+  const fuzzJob = parsed.jobs.fuzz;
+  assert.equal(fuzzJob["continue-on-error"], "${{ github.event_name == 'pull_request' }}");
+  const fuzzStep = fuzzJob.steps.find((step) => step.id === "fuzz");
+  assert.equal(fuzzStep?.["continue-on-error"], true);
+  assert.match(fuzzStep?.run ?? "", /cargo \+nightly fuzz run "\$FUZZ_TARGET"/);
+  assert.deepEqual(fuzzStep?.env, {
+    FUZZ_MAX_TOTAL_TIME: "${{ steps.budget.outputs.seconds }}",
+    FUZZ_TARGET: "${{ matrix.target }}",
+  });
+  const enforceStep = fuzzJob.steps.find((step) => step.id === "enforce");
+  assert.match(enforceStep?.run ?? "", /tools\/fuzz\/enforce-result\.mjs/);
+  assert.deepEqual(enforceStep?.env, {
+    FUZZ_EVENT_NAME: "${{ github.event_name }}",
+    FUZZ_OUTCOME: "${{ steps.fuzz.outcome || 'skipped' }}",
+    FUZZ_TARGET: "${{ matrix.target }}",
+  });
 
   // Reproducers on failure must be uploaded so triage does not have to
   // re-run the fuzzer to recover the failing input.
   assert.match(workflow, /upload-artifact[\s\S]*tests\/fuzz\/artifacts\//);
   assert.match(workflow, /issues:\s*write/);
-  assert.match(workflow, /github\.event_name != 'pull_request'/);
+  const uploadStep = fuzzJob.steps.find((step) => step.id === "upload-reproducers");
+  assert.equal(
+    uploadStep?.if,
+    "always() && hashFiles(format('tests/fuzz/artifacts/{0}/**', matrix.target)) != ''",
+  );
+  const triageStep = fuzzJob.steps.find((step) => step.id === "triage");
+  assert.equal(
+    triageStep?.if,
+    "always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && hashFiles(format('tests/fuzz/artifacts/{0}/**', matrix.target)) != ''",
+  );
   assert.match(workflow, /gh issue (create|comment)/);
 });
 
