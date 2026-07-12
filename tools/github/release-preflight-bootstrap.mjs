@@ -124,6 +124,6 @@ export async function bootstrapRequiredWorkflowRuns({
     }
 
     onWait({ missing, pending });
-    await sleep(pollIntervalMs);
+    await sleep(Math.min(pollIntervalMs, Math.max(0, deadline - now())));
   }
 }

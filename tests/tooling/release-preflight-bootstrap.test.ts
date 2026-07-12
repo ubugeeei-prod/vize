@@ -47,30 +47,40 @@ function findReleasePlan(workflowName: string) {
 
 test("release gate plans bind exact SHAs to expected evidence titles", () => {
   assert.deepEqual(
-    releasePlans().map(({ workflowName, workflowId, expectedRunName }) => ({
+    releasePlans().map(({ workflowName, workflowId, ref, inputs, expectedRunName }) => ({
       workflowName,
       workflowId,
+      ref,
+      inputs,
       expectedRunName,
     })),
     [
       {
         workflowName: "Benchmark",
         workflowId: "benchmark.yml",
+        ref: "v1.2.3",
+        inputs: { base_sha: "b".repeat(40), head_sha: releaseSha },
         expectedRunName: `Benchmark ${"b".repeat(40)}...${releaseSha}`,
       },
       {
         workflowName: "App E2E",
         workflowId: "e2e.yml",
+        ref: "v1.2.3",
+        inputs: { suite: "all", target_sha: releaseSha },
         expectedRunName: `App E2E all @ ${releaseSha}`,
       },
       {
         workflowName: "Native Smoke",
         workflowId: "native-smoke.yml",
+        ref: "v1.2.3",
+        inputs: {},
         expectedRunName: "Native Smoke",
       },
       {
         workflowName: "Fuzz",
         workflowId: "fuzz.yml",
+        ref: "v1.2.3",
+        inputs: { "max-total-time": "120" },
         expectedRunName: `Fuzz 120s @ ${releaseSha}`,
       },
     ],
@@ -295,8 +305,9 @@ test("release gate bootstrap reports a bounded wait timeout", async () => {
       },
       now: () => clock,
       timeoutMs: 2,
-      pollIntervalMs: 1,
+      pollIntervalMs: 10,
     }),
     /Timed out after 2ms[\s\S]*Check: missing/,
   );
+  assert.equal(clock, 2);
 });
