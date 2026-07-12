@@ -24,7 +24,7 @@ The bridge is optimized around Oxlint's per-rule execution model:
 
 - The first enabled Patina rule on a file runs native linting for that rule only.
 - If a second Patina rule is encountered on the same file, the bridge upgrades to one shared full-file Patina pass and reuses that result for the remaining Patina rules.
-- File contents and rule results are cached per file and locale for the lifetime of the Oxlint process.
+- Exact source revisions and rule results are cached for up to 128 recently used file/settings pairs; edits replace revision-local diagnostics and reporting state.
 
 ## Installation
 

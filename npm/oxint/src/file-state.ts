@@ -15,6 +15,7 @@ import {
 import { resolveWorkaroundSource } from "./workaround.js";
 
 export interface FileState {
+  readonly revision: SourceRevisionIdentity;
   filename: string;
   source: string;
   extractedScript: string;
@@ -29,9 +30,23 @@ export interface FileState {
   reportedTypeAwareRuntimeDiagnostic: boolean;
 }
 
-const fileStateCache = new Map<string, FileState>();
+interface SourceRevisionIdentity {
+  // Exact text avoids hash collisions and per-rule digest allocations. For
+  // normal files physicalSource and state.source share the same string reference.
+  readonly physicalSource: string;
+}
+
+interface CachedFileState {
+  state: FileState;
+  lastUsed: number;
+}
+
+// A watch process only needs the active working set, not every file ever seen.
+const FILE_STATE_CACHE_CAPACITY = 128;
+const fileStateCache = new Map<string, CachedFileState>();
 const EMPTY_DIAGNOSTICS: readonly PatinaDiagnostic[] = [];
 const TYPE_AWARE_RUNTIME_RULE = "type/corsa-runtime";
+let fileStateCacheClock = 0;
 
 export function getFileState(context: Context): FileState {
   const settings = getVizeSettings(context);
@@ -39,11 +54,22 @@ export function getFileState(context: Context): FileState {
   const resolvedSource = resolveWorkaroundSource(physicalSource, context.physicalFilename);
   const cacheKey = getCacheKey(resolvedSource.filename, settings);
   const cached = fileStateCache.get(cacheKey);
-  if (cached) {
-    return cached;
+  if (cached && cached.state.revision.physicalSource === physicalSource) {
+    if (cached.state.extractedScript !== context.sourceCode.text) {
+      // A dual-script SFC is visited with multiple extracted programs for the
+      // same physical revision. Diagnostics/reporting remain shared to avoid
+      // duplicates; only the extracted-program location map becomes stale.
+      cached.state.extractedScript = context.sourceCode.text;
+      cached.state.scriptMap = undefined;
+    }
+    cached.lastUsed = nextFileStateCacheClock();
+    return cached.state;
   }
 
   const state: FileState = {
+    revision: {
+      physicalSource,
+    },
     filename: resolvedSource.filename,
     source: resolvedSource.source,
     extractedScript: context.sourceCode.text,
@@ -57,8 +83,24 @@ export function getFileState(context: Context): FileState {
     requestedRules: new Set(),
     reportedTypeAwareRuntimeDiagnostic: false,
   };
-  fileStateCache.set(cacheKey, state);
+  fileStateCache.set(cacheKey, {
+    state,
+    lastUsed: nextFileStateCacheClock(),
+  });
+  evictLeastRecentlyUsedFileState();
   return state;
+}
+
+export function clearFileStateCache(): void {
+  fileStateCache.clear();
+  fileStateCacheClock = 0;
+}
+
+export function getFileStateCacheStats(): { capacity: number; entries: number } {
+  return {
+    capacity: FILE_STATE_CACHE_CAPACITY,
+    entries: fileStateCache.size,
+  };
 }
 
 export function getDiagnosticsForRule(
@@ -144,6 +186,30 @@ export function markRuleAsReported(state: FileState, ruleName: string): boolean 
 
   state.reportedRules.add(ruleName);
   return true;
+}
+
+function nextFileStateCacheClock(): number {
+  fileStateCacheClock += 1;
+  return fileStateCacheClock;
+}
+
+function evictLeastRecentlyUsedFileState(): void {
+  if (fileStateCache.size <= FILE_STATE_CACHE_CAPACITY) {
+    return;
+  }
+
+  let oldestKey: string | undefined;
+  let oldestUse = Number.POSITIVE_INFINITY;
+  for (const [key, cached] of fileStateCache) {
+    if (cached.lastUsed < oldestUse) {
+      oldestKey = key;
+      oldestUse = cached.lastUsed;
+    }
+  }
+
+  if (oldestKey !== undefined) {
+    fileStateCache.delete(oldestKey);
+  }
 }
 
 function indexDiagnosticsByRule(

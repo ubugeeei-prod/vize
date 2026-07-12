@@ -587,8 +587,8 @@ test("workspace TypeScript package builds use vp pack", () => {
     scripts?: Record<string, string>;
   };
   assert.equal(oxlintPackage.engines?.node, "^22 || >= 24");
-  assert.equal(oxlintPackage.scripts?.test, "vp pack && node src/test.ts");
-
+  const oxlintTest = "vp pack && vp test run src/file-state.test.ts && node src/test.ts";
+  assert.equal(oxlintPackage.scripts?.test, oxlintTest);
   const rootTasks = fs.readFileSync(path.join(root, "tools/vite-plus/tasks/build.ts"), "utf-8");
   assert.match(rootTasks, /pnpm exec vp pack/);
 });

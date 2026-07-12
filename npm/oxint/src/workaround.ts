@@ -63,6 +63,10 @@ export function resolveWorkaroundSource(
 function getPrependedWorkaroundBlock(
   source: string,
 ): { closeTagEnd: number; encodedFilename: string } | null {
+  if (!source.startsWith(SCRIPTLESS_WORKAROUND_OPEN_TAG_PREFIX)) {
+    return null;
+  }
+
   const [firstBlock] = extractSfcBlocks(source);
   if (!firstBlock || firstBlock.kind !== "script-setup") {
     return null;
