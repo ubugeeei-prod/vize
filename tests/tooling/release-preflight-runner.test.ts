@@ -29,6 +29,11 @@ test("target-only mode verifies HEAD, current main, and the peeled remote tag", 
   const version = workspaceVersionFromCargoToml(
     fs.readFileSync(path.join(repoRoot, "Cargo.toml"), "utf8"),
   );
+  const trackedManifests = spawnSync("git", ["ls-files", "-z", "--", "editors", "npm"], {
+    cwd: repoRoot,
+    encoding: "utf8",
+  });
+  assert.equal(trackedManifests.status, 0, trackedManifests.stderr);
   fs.mkdirSync(binDir, { recursive: true });
   writeFakeCommand(
     binDir,
@@ -39,6 +44,7 @@ test("target-only mode verifies HEAD, current main, and the peeled remote tag", 
       "if (command === 'rev-parse HEAD') console.log(process.env.TEST_RELEASE_SHA);",
       "else if (command === 'rev-parse refs/remotes/origin/main') console.log(process.env.TEST_MAIN_SHA);",
       "else if (args[0] === 'fetch') process.exit(0);",
+      "else if (args[0] === 'ls-files') process.stdout.write(JSON.parse(process.env.TEST_PACKAGE_MANIFESTS).join('\\0') + '\\0');",
       "else if (args[0] === 'ls-remote') {",
       "  console.log(`${process.env.TEST_TAG_OBJECT}\\trefs/tags/${process.env.TEST_TAG}`);",
       "  console.log(`${process.env.TEST_TAG_SHA}\\trefs/tags/${process.env.TEST_TAG}^{}`);",
@@ -63,6 +69,7 @@ test("target-only mode verifies HEAD, current main, and the peeled remote tag", 
         TEST_TAG_OBJECT: "c".repeat(40),
         TEST_TAG_SHA: sha,
         TEST_BASE_SHA: "b".repeat(40),
+        TEST_PACKAGE_MANIFESTS: JSON.stringify(trackedManifests.stdout.split("\0").filter(Boolean)),
         ...overrides,
       },
     });
@@ -70,8 +77,12 @@ test("target-only mode verifies HEAD, current main, and the peeled remote tag", 
   try {
     const success = run();
     assert.equal(success.status, 0, `${success.stderr}\n${success.stdout}`.trim());
-    assert.match(run({ TEST_MAIN_SHA: "d".repeat(40) }).stderr, /not the current origin\/main/);
-    assert.match(run({ TEST_TAG_SHA: "e".repeat(40) }).stderr, /Remote tag .* points to/);
+    const mainMismatch = run({ TEST_MAIN_SHA: "d".repeat(40) });
+    assert.equal(mainMismatch.status, 1);
+    assert.match(mainMismatch.stderr, /not the current origin\/main/);
+    const tagMismatch = run({ TEST_TAG_SHA: "e".repeat(40) });
+    assert.equal(tagMismatch.status, 1);
+    assert.match(tagMismatch.stderr, /Remote tag .* points to/);
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
@@ -98,4 +109,21 @@ test("release metadata inventory discovers every non-private npm and editor pack
       "npm/wasm/package.json",
     ],
   );
+});
+
+test("release metadata inventory ignores untracked package manifests", () => {
+  const untrackedDirectory = path.join(repoRoot, "npm", `.preflight-untracked-${process.pid}`);
+  fs.mkdirSync(untrackedDirectory, { recursive: true });
+  fs.writeFileSync(
+    path.join(untrackedDirectory, "package.json"),
+    '{"name":"untracked-release-output","version":"9.9.9"}',
+  );
+  try {
+    assert.equal(
+      readPackageManifests().some((manifest) => manifest.path.includes(".preflight-untracked-")),
+      false,
+    );
+  } finally {
+    fs.rmSync(untrackedDirectory, { recursive: true, force: true });
+  }
 });

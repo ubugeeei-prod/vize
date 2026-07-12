@@ -87,25 +87,24 @@ function releaseParentSha(sha) {
 }
 
 export function readPackageManifests() {
+  const manifestPaths = runGit(["ls-files", "-z", "--", ...releasePackageRoots])
+    .stdout.split("\0")
+    .filter((relativePath) => relativePath.endsWith("/package.json"));
   const manifests = [];
-  const visit = (directory) => {
-    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-      const absolutePath = path.join(directory, entry.name);
-      if (entry.isDirectory()) {
-        visit(absolutePath);
-        continue;
-      }
-      if (!entry.isFile() || entry.name !== "package.json") continue;
-
-      const content = fs.readFileSync(absolutePath, "utf8");
-      if (JSON.parse(content).private === true) continue;
-      manifests.push({
-        path: path.relative(root, absolutePath).split(path.sep).join("/"),
-        content,
+  for (const relativePath of manifestPaths) {
+    const content = fs.readFileSync(path.join(root, relativePath), "utf8");
+    let packageJson;
+    try {
+      packageJson = JSON.parse(content);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to parse tracked package manifest ${relativePath}: ${detail}`, {
+        cause: error,
       });
     }
-  };
-  for (const relativeRoot of releasePackageRoots) visit(path.join(root, relativeRoot));
+    if (packageJson.private === true) continue;
+    manifests.push({ path: relativePath, content });
+  }
   return manifests.sort((left, right) => left.path.localeCompare(right.path));
 }
 
