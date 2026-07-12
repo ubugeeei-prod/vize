@@ -11,6 +11,32 @@ import { writeFakeCommand } from "./support/fake-command.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
+test("runMoonScript does not leak the parent Node test context", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-helper-node-context-"));
+  const binDir = path.join(tempDir, "bin");
+  const logPath = path.join(tempDir, "node-context.log");
+
+  try {
+    fs.mkdirSync(binDir, { recursive: true });
+    writeFakeCommand(
+      binDir,
+      "moon",
+      `require('node:fs').writeFileSync(${JSON.stringify(logPath)}, process.env.NODE_TEST_CONTEXT ?? 'absent');`,
+    );
+    const moonCommand = path.join(binDir, process.platform === "win32" ? "moon.cmd" : "moon");
+
+    const result = runMoonScript("release", [], {
+      cwd: tempDir,
+      env: { MOON_BIN: moonCommand, NODE_TEST_CONTEXT: "child-v8" },
+    });
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.equal(fs.readFileSync(logPath, "utf8"), "absent");
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
 test("runMoonScript falls back to the GitHub runner shim when MOON_BIN is unavailable", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-helper-"));
   const runnerTemp = path.join(tempDir, "runner-temp");

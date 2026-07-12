@@ -71,6 +71,9 @@ export function runMoonScript(
     ...process.env,
     ...options.env,
   };
+  // Moon commands can launch their own `node --test` processes. Do not leak
+  // the parent runner's private child marker into those independent runners.
+  delete env.NODE_TEST_CONTEXT;
   if (!hasExplicitEnvValue(options.env, "TMPDIR")) {
     env.TMPDIR = moonbitTempDir;
   }
