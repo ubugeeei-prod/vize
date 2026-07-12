@@ -89,6 +89,61 @@ fn build_rejects_fixed_extension_collision_before_compiling_or_writing() {
     assert!(!project.path().join("dist").exists());
 }
 
+#[cfg(unix)]
+#[test]
+fn build_rejects_distinct_sources_crossing_a_symlinked_parent() {
+    let project = tempfile::tempdir().unwrap();
+    let external = tempfile::tempdir().unwrap();
+    write_file(project.path(), "src/Target.vue", ALPHA.as_bytes());
+    write_file(external.path(), "Target.vue", BETA.as_bytes());
+    fs::create_dir_all(external.path().join("nested")).unwrap();
+    let link = project.path().join("src/link");
+    if !symlink_directory(&external.path().join("nested"), &link) {
+        return;
+    }
+
+    let output = run_build(
+        project.path(),
+        &["src/Target.vue", "src/link/../Target.vue"],
+        "dist",
+        &[],
+    );
+
+    assert!(!output.status.success());
+    let stderr = std::str::from_utf8(&output.stderr)
+        .unwrap()
+        .replace('\\', "/");
+    assert!(stderr.contains("output collision"), "{stderr}");
+    assert!(
+        stderr.contains("src/Target.vue -> dist/Target.js"),
+        "{stderr}"
+    );
+    assert!(
+        stderr.contains("src/link/../Target.vue -> dist/Target.js"),
+        "{stderr}"
+    );
+    assert!(!project.path().join("dist").exists());
+}
+
+#[test]
+fn build_deduplicates_aliases_of_the_same_source_and_output() {
+    let project = tempfile::tempdir().unwrap();
+    write_file(project.path(), "src/Target.vue", ALPHA.as_bytes());
+    fs::create_dir_all(project.path().join("src/nested")).unwrap();
+
+    let output = run_build(
+        project.path(),
+        &["src/Target.vue", "src/nested/../Target.vue"],
+        "dist",
+        &[],
+    );
+
+    assert_success(&output);
+    assert!(project.path().join("dist/Target.js").is_file());
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
+    assert_eq!(stderr.matches("Built:").count(), 1, "{stderr}");
+}
+
 #[test]
 fn build_rejects_preserved_extension_collision_before_first_write() {
     let project = tempfile::tempdir().unwrap();
@@ -153,6 +208,22 @@ fn write_file(root: &Path, relative: &str, content: &[u8]) {
     let path = root.join(relative);
     fs::create_dir_all(path.parent().unwrap()).unwrap();
     fs::write(path, content).unwrap();
+}
+
+#[cfg(unix)]
+fn symlink_directory(source: &Path, target: &Path) -> bool {
+    match std::os::unix::fs::symlink(source, target) {
+        Ok(()) => true,
+        Err(error)
+            if matches!(
+                error.kind(),
+                std::io::ErrorKind::Unsupported | std::io::ErrorKind::PermissionDenied
+            ) =>
+        {
+            false
+        }
+        Err(error) => panic!("failed to create directory symlink: {error}"),
+    }
 }
 
 fn output_files(root: &Path) -> Vec<(PathBuf, Vec<u8>)> {
