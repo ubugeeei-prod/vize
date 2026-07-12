@@ -36,6 +36,7 @@ pub(super) fn cached_component_metadata(
         let len = metadata.len();
         let modified = metadata.modified().ok();
         if let Some(entry) = cache.get(resolved)
+            && modified.is_some()
             && entry.len == len
             && entry.modified == modified
             && entry.version.is_none()
