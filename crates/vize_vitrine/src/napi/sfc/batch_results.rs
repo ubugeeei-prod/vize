@@ -9,6 +9,7 @@ use vize_carton::cstr;
 
 use super::{
     experimentals::ExperimentalTemplateOptions,
+    thread_pool::BatchThreadPool,
     types::{
         BatchCompileOptionsNapi, BatchCompileResultWithFilesNapi, BatchFileInputNapi,
         BatchFileResultNapi, custom_blocks_to_napi, macro_artifacts_to_napi, style_blocks_to_napi,
@@ -21,19 +22,21 @@ pub fn compile_sfc_batch_with_results(
     files: Vec<BatchFileInputNapi>,
     options: Option<BatchCompileOptionsNapi>,
 ) -> Result<BatchCompileResultWithFilesNapi> {
+    let opts = options.unwrap_or_default();
+    BatchThreadPool::new(opts.threads)?
+        .install(|| compile_sfc_batch_with_results_inner(files, opts))
+}
+
+fn compile_sfc_batch_with_results_inner(
+    files: Vec<BatchFileInputNapi>,
+    opts: BatchCompileOptionsNapi,
+) -> Result<BatchCompileResultWithFilesNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
         TemplateCompileOptions,
         compile_sfc_with_template_syntax as sfc_compile_with_template_syntax,
         parse_sfc as sfc_parse,
     };
-
-    let opts = options.unwrap_or_default();
-    if let Some(threads) = opts.threads {
-        let _ = rayon::ThreadPoolBuilder::new()
-            .num_threads(threads as usize)
-            .build_global();
-    }
 
     let total_count = files.len();
     let success_count = AtomicUsize::new(0);

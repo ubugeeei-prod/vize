@@ -114,6 +114,9 @@ pub struct BatchCompileOptionsNapi {
     pub vue_version: Option<String>,
     /// Preserve TypeScript in output when true
     pub is_ts: Option<bool>,
+    /// Worker threads for this call (1-256). Omit to use Rayon's global pool.
+    /// Concurrent explicit calls share a process-wide 256-worker budget.
+    /// Capacity exhaustion fails immediately with a `WouldDeadlock` error.
     pub threads: Option<u32>,
     /// Include per-block style metadata (incl. `styles[].content`). Default OFF.
     ///

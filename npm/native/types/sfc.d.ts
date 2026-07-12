@@ -11,6 +11,9 @@ export interface BatchCompileOptionsNapi {
   experimentalServerScript?: boolean;
   /** Preserve TypeScript in output when true */
   isTs?: boolean;
+  /** Worker threads for this call (1-256). Omit to use Rayon's global pool.
+   * Concurrent explicit calls share a process-wide 256-worker budget.
+   * Capacity exhaustion fails immediately with a `WouldDeadlock` error. */
   threads?: number;
 }
 

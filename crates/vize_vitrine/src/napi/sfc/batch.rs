@@ -12,6 +12,7 @@ use vize_carton::{FxHashMap, hash::hash_str};
 
 use super::{
     experimentals::ExperimentalTemplateOptions,
+    thread_pool::BatchThreadPool,
     types::{BatchCompileOptionsNapi, BatchCompileResultNapi},
 };
 use crate::template_syntax::resolve_template_syntax;
@@ -171,19 +172,20 @@ pub fn compile_sfc_batch(
     pattern: String,
     options: Option<BatchCompileOptionsNapi>,
 ) -> Result<BatchCompileResultNapi> {
+    let opts = options.unwrap_or_default();
+    BatchThreadPool::new(opts.threads)?.install(|| compile_sfc_batch_inner(pattern, opts))
+}
+
+fn compile_sfc_batch_inner(
+    pattern: String,
+    opts: BatchCompileOptionsNapi,
+) -> Result<BatchCompileResultNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
         TemplateCompileOptions,
         compile_sfc_with_template_syntax as sfc_compile_with_template_syntax,
         parse_sfc as sfc_parse,
     };
-
-    let opts = options.unwrap_or_default();
-    if let Some(threads) = opts.threads {
-        let _ = rayon::ThreadPoolBuilder::new()
-            .num_threads(threads as usize)
-            .build_global();
-    }
 
     let files: Vec<_> = glob(&pattern)
         .map_err(|e| {
