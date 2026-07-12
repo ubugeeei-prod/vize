@@ -164,6 +164,10 @@ import Child from './Child.vue'
     assert!(!has_label(&labels, "fresh-prop"), "{labels:?}");
 
     state.documents.close(&child_uri);
+    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+    assert!(has_label(&labels, "stale-prop"), "{labels:?}");
+    assert!(!has_label(&labels, "newer-prop"), "{labels:?}");
+
     state.documents.open(
         child_uri,
         "<script setup lang=\"ts\">defineProps<{ otherProp: string }>()</script>".to_string(),

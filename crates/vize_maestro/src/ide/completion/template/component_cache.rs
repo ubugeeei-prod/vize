@@ -23,26 +23,33 @@ pub(super) fn cached_component_metadata(
     let open = open_component(ctx, resolved);
     let (content, len, modified, version, hash) = if let Some((content, len, version, hash)) = open
     {
+        if let Some(entry) = cache.get(resolved)
+            && entry.len == len
+            && entry.version == Some(version)
+            && entry.hash == Some(hash)
+        {
+            return Some(entry.metadata.clone());
+        }
         (content, len, None, Some(version), Some(hash))
     } else {
         let metadata = std::fs::metadata(resolved).ok()?;
+        let len = metadata.len();
+        let modified = metadata.modified().ok();
+        if let Some(entry) = cache.get(resolved)
+            && entry.len == len
+            && entry.modified == modified
+            && entry.version.is_none()
+        {
+            return Some(entry.metadata.clone());
+        }
         (
             std::fs::read_to_string(resolved).ok()?,
-            metadata.len(),
-            metadata.modified().ok(),
+            len,
+            modified,
             None,
             None,
         )
     };
-
-    if let Some(entry) = cache.get(resolved)
-        && entry.len == len
-        && entry.modified == modified
-        && entry.version == version
-        && entry.hash == hash
-    {
-        return Some(entry.metadata.clone());
-    }
 
     let metadata = Arc::new(extract_component_metadata(
         &content,
