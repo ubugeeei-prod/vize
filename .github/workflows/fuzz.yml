@@ -25,6 +25,8 @@ on:
       - "tools/fuzz/**"
       - ".github/workflows/fuzz.yml"
 
+run-name: Fuzz ${{ github.event_name == 'workflow_dispatch' && format('{0}s', inputs.max-total-time) || github.event_name }} @ ${{ github.sha }}
+
 concurrency:
   group: fuzz-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -59,22 +61,29 @@ jobs:
       - name: Resolve max-total-time
         id: budget
         shell: bash
+        env:
+          REQUESTED_MAX_TOTAL_TIME: ${{ inputs.max-total-time }}
         run: |
           case "${{ github.event_name }}" in
             schedule)
               # Nightly long fuzz: 30 minutes/target — large enough to drive
               # libFuzzer past coverage plateaus on the seeded corpus.
-              echo "seconds=1800" >> "$GITHUB_OUTPUT"
+              seconds=1800
               ;;
             workflow_dispatch)
-              echo "seconds=${{ inputs.max-total-time }}" >> "$GITHUB_OUTPUT"
+              seconds="$REQUESTED_MAX_TOTAL_TIME"
               ;;
             *)
               # PR-gating short fuzz: 2 minutes/target — tight enough to keep
               # PR latency reasonable while still exercising every seed.
-              echo "seconds=120" >> "$GITHUB_OUTPUT"
+              seconds=120
               ;;
           esac
+          if [[ ! "$seconds" =~ ^[0-9]{1,4}$ ]] || (( 10#$seconds < 1 || 10#$seconds > 3600 )); then
+            echo "::error title=Invalid fuzz budget::max-total-time must be an integer from 1 to 3600 seconds"
+            exit 1
+          fi
+          echo "seconds=$seconds" >> "$GITHUB_OUTPUT"
 
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
