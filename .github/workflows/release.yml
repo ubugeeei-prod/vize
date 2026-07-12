@@ -178,7 +178,7 @@ jobs:
   release-vscode-extension:
     name: Release VS Code extension
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    needs: build-editor-extensions
+    needs: [build-editor-extensions, release-preflight]
     timeout-minutes: 15
     environment: vscode-marketplace
     permissions:
@@ -596,12 +596,48 @@ jobs:
             npm/framework/musea-nuxt \
             npm/framework/nuxt
 
+  release-preflight-bootstrap:
+    permissions:
+      actions: write
+      contents: read
+      issues: read
+    uses: ./.github/workflows/release-preflight.yml
+
+  release-preflight:
+    name: Final release preflight
+    needs:
+      - release-preflight-bootstrap
+      - build-cli
+      - build-editor-extensions
+      - build-wasm-package
+      - smoke-release-packages
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: read
+      issues: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: ".node-version"
+
+      - name: Revalidate immutable target, gates, and blockers after build fan-in
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node tools/github/release-preflight.mjs --verify-only
+
   # npm Trusted Publishing/provenance currently rejects self-hosted runners.
   # Keep the publish edge on GitHub-hosted runners; build and smoke jobs stay on Blacksmith.
   release-npm-native:
     name: Release @vizejs/native to npm
     runs-on: ubuntu-24.04
-    needs: [plan-release-platforms, build-native-all]
+    needs: [plan-release-platforms, build-native-all, release-preflight]
     timeout-minutes: 30
     environment: npm
     permissions:
@@ -657,7 +693,7 @@ jobs:
   release-npm-fresco-native:
     name: Release @vizejs/fresco-native to npm
     runs-on: ubuntu-24.04
-    needs: build-native-all
+    needs: [build-native-all, release-preflight]
     timeout-minutes: 20
     environment: npm
     permissions:
@@ -699,7 +735,7 @@ jobs:
   release-npm-wasm:
     name: Release @vizejs/wasm to npm
     runs-on: ubuntu-24.04
-    needs: build-wasm-package
+    needs: [build-wasm-package, release-preflight]
     timeout-minutes: 30
     environment: npm
     permissions:
@@ -733,7 +769,12 @@ jobs:
   release-npm-vite-plugin:
     name: Release @vizejs/vite-plugin to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, release-npm-cli, smoke-release-packages]
+    needs:
+      - build-release-packages
+      - release-npm-native
+      - release-npm-cli
+      - smoke-release-packages
+      - release-preflight
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -766,6 +807,7 @@ jobs:
       - build-release-packages
       - release-npm-native
       - smoke-release-packages
+      - release-preflight
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -800,7 +842,7 @@ jobs:
   release-npm-unplugin:
     name: Release @vizejs/unplugin to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -829,7 +871,11 @@ jobs:
   release-npm-fresco:
     name: Release @vizejs/fresco to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-fresco-native, smoke-release-packages]
+    needs:
+      - build-release-packages
+      - release-npm-fresco-native
+      - smoke-release-packages
+      - release-preflight
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -858,7 +904,7 @@ jobs:
   release-npm-musea-mcp-server:
     name: Release @vizejs/musea-mcp-server to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -887,7 +933,7 @@ jobs:
   release-npm-vite-plugin-musea:
     name: Release @vizejs/vite-plugin-musea to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -916,7 +962,7 @@ jobs:
   release-npm-rspack-plugin:
     name: Release @vizejs/rspack-plugin to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -945,7 +991,7 @@ jobs:
   release-npm-musea-nuxt:
     name: Release @vizejs/musea-nuxt to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -981,6 +1027,7 @@ jobs:
       - release-npm-musea-nuxt
       - release-npm-cli
       - smoke-release-packages
+      - release-preflight
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -1009,6 +1056,7 @@ jobs:
   release-crates:
     name: Release crates to crates.io
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    needs: release-preflight
     timeout-minutes: 30
     environment: crates-io
     permissions:
@@ -1057,6 +1105,7 @@ jobs:
       - release-npm-musea-nuxt
       - release-npm-nuxt
       - release-crates
+      - release-preflight
     timeout-minutes: 20
     # `id-token: write` is required by sigstore/cosign-installer to mint the
     # keyless signing certificate, and by anchore/sbom-action when it uploads
@@ -1187,7 +1236,7 @@ jobs:
   release-npm-cli:
     name: Release vize CLI to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions:
