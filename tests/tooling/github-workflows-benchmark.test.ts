@@ -246,6 +246,7 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
   assert.match(checkoutHead, /ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/);
   assert.match(checkoutHead, /fetch-depth:\s*0/);
   assert.match(checkoutHead, /persist-credentials:\s*false/);
+  assert.match(checkoutBase, /ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/);
   assert.match(checkoutBase, /persist-credentials:\s*false/);
 
   const impactStep = workflowStepBody(abJob, "Select affected Criterion suites");
