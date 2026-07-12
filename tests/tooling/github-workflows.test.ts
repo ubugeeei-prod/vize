@@ -22,6 +22,7 @@ test("GitHub workflows opt JavaScript actions into Node 24", () => {
     "miri.yml",
     "native-smoke.yml",
     "pkg-pr-new.yml",
+    "release-preflight.yml",
     "release.yml",
     "title-policy.yml",
     "tool-benchmark.yml",
@@ -183,6 +184,7 @@ test("Linux Rust CI installs Wild linker before cargo builds", () => {
     "deploy-docs.yml",
     "e2e.yml",
     "native-smoke.yml",
+    "release-preflight.yml",
     "release.yml",
     "tool-benchmark.yml",
   ]) {
@@ -212,6 +214,7 @@ test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
     "e2e.yml",
     "fuzz.yml",
     "miri.yml",
+    "release-preflight.yml",
     "tool-benchmark.yml",
   ]) {
     const workflow = readRepoFile(".github", "workflows", workflowName);
