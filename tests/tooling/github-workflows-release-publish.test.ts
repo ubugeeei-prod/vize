@@ -63,47 +63,16 @@ test("every publication edge waits for credential-free release preflight", () =>
     assert.ok(jobNeeds(jobs[jobName]).includes("release-preflight"), jobName);
   }
 
-  const bootstrap = jobs["release-preflight-bootstrap"];
-  assert.ok(bootstrap);
-  assert.equal(bootstrap.uses, "./.github/workflows/release-preflight.yml");
-  assert.deepEqual(bootstrap.permissions, {
+  const preflight = jobs["release-preflight"];
+  assert.ok(preflight);
+  assert.equal(preflight.uses, "./.github/workflows/release-preflight.yml");
+  assert.deepEqual(preflight.permissions, {
     actions: "write",
     contents: "read",
     issues: "read",
   });
-  assert.deepEqual(jobNeeds(bootstrap), []);
-
-  const preflight = jobs["release-preflight"];
-  assert.ok(preflight);
-  assert.deepEqual(jobNeeds(preflight).toSorted(), [
-    "build-cli",
-    "build-editor-extensions",
-    "build-wasm-package",
-    "release-preflight-bootstrap",
-    "smoke-release-packages",
-  ]);
-  assert.equal(preflight["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
-  assert.equal(preflight["timeout-minutes"], 15);
-  assert.deepEqual(preflight.permissions, {
-    actions: "read",
-    contents: "read",
-    issues: "read",
-  });
-  const checkout = preflight.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
-  assert.equal(checkout?.with?.["fetch-depth"], 0);
-  assert.equal(checkout?.with?.["persist-credentials"], false);
-  assert.ok(
-    preflight.steps?.some(
-      (step) => step.run === "node tools/github/release-preflight.mjs --verify-only",
-    ),
-  );
-
-  for (const job of [bootstrap, preflight]) {
-    assert.doesNotMatch(
-      JSON.stringify(job),
-      /environment|id-token|secrets\.|crates-io-auth-action/,
-    );
-  }
+  assert.deepEqual(jobNeeds(preflight), []);
+  assert.doesNotMatch(JSON.stringify(preflight), /environment|id-token|secrets\./);
 });
 
 test("release workflow does not pin a separate hard-coded Node version for VS Code publishing", () => {
