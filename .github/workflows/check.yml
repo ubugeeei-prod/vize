@@ -74,16 +74,16 @@ jobs:
         run: vp run --workspace-root check:ci
   semver-checks:
     name: cargo-semver-checks (${{ matrix.crate }})
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     permissions:
       contents: read
     # Matrix legs run in parallel and keep breaking changes attributed per crate.
-    # PRs compare against base; pushes compare against the previous main commit.
+    # PRs compare against base; pushes compare against previous main. Schedules lack an exact base.
     # Conventional breaking markers (`type(scope)!:` / `BREAKING CHANGE:`) are major.
     # Keep this list in sync with crates published by tools/moon/cmd/publish_crates.
-    # New crates are omitted until first publish so registry fallback cannot hit
-    # "not found in registry"; dependents of those crates are omitted with them.
+    # Omit unpublished crates and their dependents so registry fallback cannot hit "not found".
     strategy:
       fail-fast: false
       matrix:

@@ -77,6 +77,20 @@ test("check workflow runs declared Node engine compatibility matrix", () => {
   assert.doesNotMatch(job, /vscode-typescript-vue-plugin\.test\.ts/);
 });
 
+test("check workflow only runs SemVer checks with an exact Git event baseline", () => {
+  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const job = workflowJobBody(workflow, "semver-checks");
+
+  assert.match(
+    job,
+    /if:\s*\$\{\{\s*github\.event_name == 'pull_request' \|\| github\.event_name == 'push'\s*\}\}/,
+  );
+  assert.match(
+    job,
+    /BASELINE_REV:\s*\$\{\{\s*github\.event_name == 'pull_request' && github\.event\.pull_request\.base\.sha \|\| \(github\.event_name == 'push' && github\.event\.before \|\| ''\)\s*\}\}/,
+  );
+});
+
 test("check workflow comments a detailed PR test report for each head push", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const reportJob = workflowJobBody(workflow, "test-report");
