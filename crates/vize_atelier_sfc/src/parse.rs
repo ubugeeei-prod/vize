@@ -5,6 +5,7 @@
 
 mod block;
 mod parse_sfc;
+mod template_boundary;
 
 #[cfg(test)]
 mod tests;
