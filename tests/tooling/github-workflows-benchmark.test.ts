@@ -219,7 +219,10 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
   // Only runs on PRs and only when Rust or the bench harness changes.
   assert.match(workflow, /\n  pull_request:\n/);
   assert.match(workflow, /paths:\n\s+- "crates\/\*\*"/);
+  assert.match(workflow, /- "Cargo\.lock"/);
+  assert.match(workflow, /- "Cargo\.toml"/);
   assert.match(workflow, /- "bench\/criterion-ab\.mjs"/);
+  assert.match(workflow, /- "bench\/criterion-impact\.mjs"/);
   assert.match(workflow, /- "bench\/dialect-guard\.mjs"/);
   assert.match(workflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*true/);
 
@@ -247,9 +250,14 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
     /path:\s*base[\s\S]*ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/,
   );
   assert.match(abJob, /uses:\s*\.\/head\/\.github\/actions\/setup-rust-sticky-cache/);
+  assert.match(abJob, /node head\/bench\/criterion-impact\.mjs/);
+  assert.match(abJob, /--base-sha "\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}"/);
+  assert.match(abJob, /--head-sha "\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}"/);
+  assert.match(abJob, /if:\s*steps\.impact\.outputs\.has_suites == 'true'/);
   assert.match(abJob, /cargo install critcmp --version 0\.1\.8 --locked/);
   assert.match(abJob, /node head\/bench\/criterion-ab\.mjs/);
   assert.match(abJob, /--target-dir "\$GITHUB_WORKSPACE\/head\/target"/);
+  assert.match(abJob, /--selection "\$GITHUB_WORKSPACE\/criterion-impact\.json"/);
 
   // Dialect guard: build vize with legacy OFF and ON, then assert byte-identical
   // Vue 3 codegen plus a small A/B timing budget.
