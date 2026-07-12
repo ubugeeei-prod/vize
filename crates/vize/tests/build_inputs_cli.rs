@@ -142,3 +142,121 @@ fn build_rejects_existing_non_vue_literal_before_writing_other_inputs() {
 
     let _ = fs::remove_dir_all(root);
 }
+
+#[test]
+fn build_honors_segment_and_recursive_glob_syntax() {
+    let root = temp_project_dir("general-globs");
+    for file in [
+        "src/App1.vue",
+        "src/App12.vue",
+        "src/Button.vue",
+        "src/Card.vue",
+        "src/nested/App2.vue",
+        "src/nested/deep/App3.vue",
+    ] {
+        write_vue(&root, file);
+    }
+
+    let question = run_build(&root, &["src/App?.vue"], "dist-question");
+    assert_success(&question);
+    assert!(root.join("dist-question/App1.js").is_file());
+    assert!(!root.join("dist-question/App12.js").exists());
+
+    let class = run_build(&root, &["src/[AB]*.vue"], "dist-class");
+    assert_success(&class);
+    assert!(root.join("dist-class/App1.js").is_file());
+    assert!(root.join("dist-class/Button.js").is_file());
+    assert!(!root.join("dist-class/Card.js").exists());
+
+    let segment = run_build(&root, &["src/*/App?.vue"], "dist-segment");
+    assert_success(&segment);
+    assert!(root.join("dist-segment/nested/App2.js").is_file());
+    assert!(!root.join("dist-segment/nested/deep/App3.js").exists());
+
+    let recursive = run_build(&root, &["src/**/App?.vue"], "dist-recursive");
+    assert_success(&recursive);
+    assert!(root.join("dist-recursive/App1.js").is_file());
+    assert!(root.join("dist-recursive/nested/App2.js").is_file());
+    assert!(root.join("dist-recursive/nested/deep/App3.js").is_file());
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn build_honors_absolute_globs_and_source_relative_outputs() {
+    let root = temp_project_dir("absolute-glob");
+    write_vue(&root, "src/App1.vue");
+    write_vue(&root, "src/nested/App2.vue");
+    write_vue(&root, "other/App3.vue");
+    let pattern = root.join("src/**/App?.vue").display().to_string();
+
+    let output = run_build(&root, &[&pattern], "dist");
+
+    assert_success(&output);
+    assert!(root.join("dist/App1.js").is_file());
+    assert!(root.join("dist/nested/App2.js").is_file());
+    assert!(!root.join("dist/other/App3.js").exists());
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn build_reports_invalid_glob_syntax_exactly_before_writing() {
+    let root = temp_project_dir("invalid-glob");
+    write_vue(&root, "src/App.vue");
+    let pattern = "src/[AB.vue";
+
+    let output = run_build(&root, &[pattern], "dist");
+
+    assert!(!output.status.success());
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        format!(
+            "Invalid glob pattern {pattern}: Pattern syntax error near position 4: invalid range pattern\n"
+        )
+    );
+    assert!(!root.join("dist").exists());
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[cfg(not(windows))]
+#[test]
+fn build_uses_bracket_expressions_to_escape_metacharacters() {
+    let root = temp_project_dir("escaped-glob");
+    write_vue(&root, "src/Component[old]-*-?.vue");
+    write_vue(&root, "src/Component-new.vue");
+    let pattern = "src/Component[[]old[]]-[*]-[?].vue";
+
+    let output = run_build(&root, &[pattern], "dist");
+
+    assert_success(&output);
+    assert!(root.join("dist/Component[old]-*-?.js").is_file());
+    assert!(!root.join("dist/Component-new.js").exists());
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[cfg(windows)]
+#[test]
+fn build_accepts_native_windows_globs_case_insensitively() {
+    let root = temp_project_dir("windows-glob");
+    write_vue(&root, "src/CardA.vue");
+    let pattern = root.join("src/card?.vue").display().to_string();
+
+    let output = run_build(&root, &[&pattern], "dist");
+
+    assert_success(&output);
+    assert!(root.join("dist/CardA.js").is_file());
+
+    let _ = fs::remove_dir_all(root);
+}
+
+fn assert_success(output: &Output) {
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+}

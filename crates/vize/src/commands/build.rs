@@ -53,6 +53,11 @@ impl From<TemplateSyntaxArg> for vize_atelier_core::TemplateSyntaxMode {
 #[allow(clippy::disallowed_types)]
 pub struct BuildArgs {
     /// File, directory, or glob inputs (output paths stay relative to their common root)
+    ///
+    /// Existing paths are literal. Globs support *, ?, [...], and recursive **;
+    /// quote patterns in the shell.
+    /// Backslashes are separators, not escapes. Use [*], [?], [[], or []] for
+    /// literal *, ?, [, or ].
     #[arg(default_value = "./**/*.vue")]
     pub patterns: Vec<String>,
 

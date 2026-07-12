@@ -4,10 +4,7 @@
     clippy::disallowed_types
 )]
 
-use super::{
-    BuildInput, classify_input, collect_files, contains_glob_metacharacter, glob_root,
-    pattern_matches,
-};
+use super::{BuildInput, classify_input, collect_files, contains_glob_metacharacter};
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -117,6 +114,21 @@ fn collect_files_rejects_non_vue_files_before_collecting_roots() {
 }
 
 #[test]
+fn collect_files_accepts_backslash_pattern_separators() {
+    let root = unique_case_dir("build-backslash-glob");
+    let app = root.join("src/App.vue");
+    let _ = fs::remove_dir_all(&root);
+    fs::create_dir_all(app.parent().unwrap()).unwrap();
+    fs::write(&app, "<template><div /></template>").unwrap();
+    let pattern = root.join("src/*.vue").to_string_lossy().replace('/', "\\");
+
+    let collected = collect_files(&[pattern]).unwrap();
+    let _ = fs::remove_dir_all(&root);
+
+    assert_eq!(collected.files, vec![app]);
+}
+
+#[test]
 fn existing_paths_with_metacharacters_remain_literals() {
     let root = unique_case_dir("build-literal-metacharacter");
     let file = root.join("Component[old].vue");
@@ -134,29 +146,20 @@ fn existing_paths_with_metacharacters_remain_literals() {
 #[test]
 fn classifies_windows_separators_and_glob_metacharacters_portably() {
     let pattern = r"C:\workspace\src\**\*.vue";
-    let BuildInput::Glob {
-        root,
-        pattern: classified_pattern,
-    } = classify_input(pattern).unwrap()
-    else {
+    let BuildInput::Glob(classified) = classify_input(pattern).unwrap() else {
         panic!("Windows-style glob should be classified as a glob");
     };
 
-    assert_eq!(root.to_string_lossy(), r"C:\workspace\src\");
-    assert_eq!(classified_pattern, pattern);
+    let expected_root = if cfg!(windows) {
+        r"C:\workspace\src\"
+    } else {
+        "C:/workspace/src/"
+    };
+    assert_eq!(classified.root().to_string_lossy(), expected_root);
     assert!(contains_glob_metacharacter(r"src\?.vue"));
     assert!(contains_glob_metacharacter(r"src\[AB].vue"));
     assert!(!contains_glob_metacharacter(r"C:\workspace\src\App.vue"));
-    assert!(pattern_matches(
-        Path::new(r"C:\workspace\src\App.vue"),
-        pattern
-    ));
-}
-
-#[test]
-fn glob_roots_preserve_absolute_filesystem_roots() {
-    assert_eq!(glob_root("/**/*.vue"), PathBuf::from("/"));
-    assert_eq!(glob_root(r"C:\**\*.vue").to_string_lossy(), r"C:\");
+    assert!(classified.matches(Path::new(r"C:\workspace\src\App.vue")));
 }
 
 fn unique_case_dir(name: &str) -> PathBuf {
