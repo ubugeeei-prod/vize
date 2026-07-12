@@ -1,5 +1,6 @@
 //! Lint command - Lint Vue and script files
 
+mod aggregate;
 mod args;
 mod collect;
 mod cross_file;
@@ -13,6 +14,7 @@ mod tests;
 pub use args::LintArgs;
 
 use crate::profile_support;
+use aggregate::{LintRunAccumulator, should_retain_file_results};
 use collect::{collect_lint_files, load_lint_ignore_set, resolve_lint_config_path};
 use cross_file::apply_sfc_cross_file_lint;
 use fix::lint_source_with_optional_fix;
@@ -47,7 +49,7 @@ pub fn run(args: LintArgs) {
         );
         std::process::exit(2);
     });
-    let render_details = should_render_lint_details(format, args.quiet);
+    let render_details = aggregate::should_render_details(format, args.quiet);
     crate::config::write_schema(None);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     let (loaded_config, linter_config, linter_features) = if args.no_config {
@@ -134,7 +136,7 @@ pub fn run(args: LintArgs) {
 
     let lint_start = Instant::now();
     let cross_file_enabled = args.cross_file || args.cross_file_tree || args.cross_file_complexity;
-    let retain_file_results = should_retain_lint_file_results(render_details, cross_file_enabled);
+    let retain_file_results = should_retain_file_results(render_details, cross_file_enabled);
     let lint_run = files
         .par_iter()
         .filter_map(|path| {
@@ -201,18 +203,13 @@ pub fn run(args: LintArgs) {
         })
         .fold(
             || LintRunAccumulator::new(retain_file_results),
-            |mut accumulator, file_result| {
-                accumulator.push(file_result);
-                accumulator
-            },
+            LintRunAccumulator::push,
         )
         .reduce(
             || LintRunAccumulator::new(retain_file_results),
             LintRunAccumulator::merge,
         );
-    let quiet_totals =
-        (!retain_file_results).then_some((lint_run.error_count, lint_run.warning_count));
-    let mut results = lint_run.results.unwrap_or_default();
+    let (mut results, quiet_totals) = lint_run.into_parts();
     let lint_time = lint_start.elapsed();
 
     let mut cross_file_report = None;
@@ -232,13 +229,7 @@ pub fn run(args: LintArgs) {
         .map(|start| start.elapsed())
         .unwrap_or(Duration::ZERO);
 
-    let (lint_error_count, total_warnings) = quiet_totals.unwrap_or_else(|| {
-        results
-            .iter()
-            .fold((0, 0), |(errors, warnings), (_, _, _, result)| {
-                (errors + result.error_count, warnings + result.warning_count)
-            })
-    });
+    let (lint_error_count, total_warnings) = aggregate::totals(quiet_totals, &results);
     let total_errors = lint_error_count + write_failures.load(Ordering::Relaxed);
 
     let output_start = Instant::now();
@@ -417,49 +408,4 @@ fn severity_overrides(entries: Vec<(String, LintRuleSeverity)>) -> Vec<(String, 
             LintRuleSeverity::Error => Some((name, Severity::Error)),
         })
         .collect()
-}
-
-#[inline]
-fn should_render_lint_details(format: OutputFormat, quiet: bool) -> bool {
-    format.renders_details_when_quiet() || !quiet
-}
-
-struct LintRunAccumulator {
-    error_count: usize,
-    warning_count: usize,
-    results: Option<Vec<cross_file::CliLintFileResult>>,
-}
-
-impl LintRunAccumulator {
-    fn new(retain_file_results: bool) -> Self {
-        Self {
-            error_count: 0,
-            warning_count: 0,
-            results: retain_file_results.then(Vec::new),
-        }
-    }
-
-    fn push(&mut self, file_result: cross_file::CliLintFileResult) {
-        self.error_count += file_result.3.error_count;
-        self.warning_count += file_result.3.warning_count;
-        if let Some(results) = self.results.as_mut() {
-            results.push(file_result);
-        }
-    }
-
-    fn merge(mut self, other: Self) -> Self {
-        self.error_count += other.error_count;
-        self.warning_count += other.warning_count;
-        match (self.results.as_mut(), other.results) {
-            (Some(results), Some(other_results)) => results.extend(other_results),
-            (None, None) => {}
-            _ => unreachable!("lint accumulators must use the same retention mode"),
-        }
-        self
-    }
-}
-
-#[inline]
-fn should_retain_lint_file_results(render_details: bool, cross_file_enabled: bool) -> bool {
-    render_details || cross_file_enabled
 }
