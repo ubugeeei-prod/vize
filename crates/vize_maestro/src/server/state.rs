@@ -51,6 +51,7 @@ pub struct ServerState {
     virtual_gen: RwLock<VirtualCodeGenerator>,
     /// Cached virtual documents per file
     virtual_docs_cache: DashMap<Url, VirtualDocuments>,
+    pub(super) open_vue_imports: super::importers::OpenVueImportIndex,
     /// Parsed metadata for imported components, keyed by resolved path.
     /// Lets template completion skip re-reading + re-parsing + re-analyzing an
     /// imported component on every keystroke; entries are invalidated by the
@@ -126,6 +127,7 @@ impl ServerState {
             documents: DocumentStore::new(),
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
+            open_vue_imports: super::importers::OpenVueImportIndex::default(),
             component_metadata_cache: DashMap::new(),
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),

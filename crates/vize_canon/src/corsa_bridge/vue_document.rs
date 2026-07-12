@@ -3,7 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::{String, cstr};
+use vize_carton::{FxHashMap, String, cstr};
 
 use super::bridge::CorsaBridge;
 use super::types::CorsaBridgeError;
@@ -53,7 +53,21 @@ impl CorsaBridge {
         content: &str,
         options: CorsaVueVirtualDocumentOptions,
     ) -> Result<CorsaVueVirtualDocument, CorsaBridgeError> {
-        let project = build_vue_virtual_project(source_path, content, options)?;
+        self.open_vue_virtual_document_with_overlays(source_path, content, options, &[])
+            .await
+    }
+
+    /// Generate and sync a Vue document while preferring unsaved dependency
+    /// buffers over their on-disk contents.
+    pub async fn open_vue_virtual_document_with_overlays(
+        &self,
+        source_path: &Path,
+        content: &str,
+        options: CorsaVueVirtualDocumentOptions,
+        overlays: &[(PathBuf, String)],
+    ) -> Result<CorsaVueVirtualDocument, CorsaBridgeError> {
+        let project =
+            build_vue_virtual_project_with_overlays(source_path, content, options, overlays)?;
         self.open_virtual_documents_batch(&project.documents)
             .await?;
         Ok(project.host)
@@ -85,13 +99,29 @@ pub(crate) fn build_vue_virtual_project(
     content: &str,
     options: CorsaVueVirtualDocumentOptions,
 ) -> Result<CorsaVueVirtualProject, CorsaBridgeError> {
+    build_vue_virtual_project_with_overlays(source_path, content, options, &[])
+}
+
+pub(crate) fn build_vue_virtual_project_with_overlays(
+    source_path: &Path,
+    content: &str,
+    options: CorsaVueVirtualDocumentOptions,
+    overlays: &[(PathBuf, String)],
+) -> Result<CorsaVueVirtualProject, CorsaBridgeError> {
     let rewriter = ImportRewriter::new();
     let host = generate_vue_document(source_path, content, options, &rewriter)?;
     let mut documents = vec![(host.virtual_uri.clone(), host.generated.code.clone())];
     if host.generated.virtual_suffix == ".tsx" {
         documents.push(tsx_vue_import_shim(&host.source_path));
     }
-    collect_dependency_documents(&mut documents, &host, options, &rewriter);
+    let overlays = overlays
+        .iter()
+        .map(|(path, content)| {
+            let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.clone());
+            (key, content.as_str())
+        })
+        .collect::<FxHashMap<_, _>>();
+    collect_dependency_documents(&mut documents, &host, options, &rewriter, &overlays);
 
     let generated = host.generated;
     Ok(CorsaVueVirtualProject {

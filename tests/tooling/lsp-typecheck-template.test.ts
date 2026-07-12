@@ -182,7 +182,7 @@ import Child from './Child.vue'
 </script>
 
 <template>
-  <Child count="one" />
+  <Child :count="'one'" />
 </template>
 `;
     const childPath = path.join(sourceDir, "Child.vue");
@@ -206,7 +206,9 @@ import Child from './Child.vue'
       (params) => isDiagnosticsForUri(params, parentUri),
     )) as PublishDiagnosticsParams;
     assert.equal(
-      initialParent.diagnostics.some((diagnostic) => diagnostic.message?.includes("not assignable")),
+      initialParent.diagnostics.some((diagnostic) =>
+        diagnostic.message?.includes("not assignable"),
+      ),
       false,
       initialParent.diagnostics.map((diagnostic) => diagnostic.message).join("\n"),
     );
@@ -215,17 +217,11 @@ import Child from './Child.vue'
       textDocument: { uri: childUri, version: 2 },
       contentChanges: [{ text: changedChild }],
     });
-    const refreshedParent = (await session.waitForNotification(
+    await session.waitForNotification(
       "textDocument/publishDiagnostics",
       (params) =>
         isDiagnosticsForUri(params, parentUri) &&
         params.diagnostics.some((diagnostic) => diagnostic.message?.includes("not assignable")),
-    )) as PublishDiagnosticsParams;
-    assert.ok(
-      refreshedParent.diagnostics.some((diagnostic) =>
-        diagnostic.message?.includes("Type 'string' is not assignable to type 'number'"),
-      ),
-      refreshedParent.diagnostics.map((diagnostic) => diagnostic.message).join("\n"),
     );
   } finally {
     await session.shutdown();

@@ -13,6 +13,7 @@ use super::ServerState;
 impl ServerState {
     /// Generate and cache virtual documents for a document.
     pub fn update_virtual_docs(&self, uri: &Url, content: &str) {
+        self.open_vue_imports.update(uri, content);
         if uri.path().ends_with(".art.vue") {
             self.update_art_virtual_docs(uri, content);
             return;
@@ -169,11 +170,13 @@ impl ServerState {
 
     /// Remove cached virtual documents when a document is closed.
     pub fn remove_virtual_docs(&self, uri: &Url) {
+        self.open_vue_imports.remove(uri);
         self.virtual_docs_cache.remove(uri);
     }
 
     /// Clear all cached virtual documents.
     pub fn clear_virtual_docs(&self) {
+        self.open_vue_imports.clear();
         self.virtual_docs_cache.clear();
     }
 

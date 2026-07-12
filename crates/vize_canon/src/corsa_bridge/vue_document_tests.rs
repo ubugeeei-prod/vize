@@ -1,4 +1,7 @@
-use super::vue_document::{CorsaVueVirtualDocumentOptions, build_vue_virtual_project};
+use super::vue_document::{
+    CorsaVueVirtualDocumentOptions, build_vue_virtual_project,
+    build_vue_virtual_project_with_overlays,
+};
 use crate::file_uri::path_to_file_uri;
 
 #[test]
@@ -113,6 +116,41 @@ export { default as ReexportedChild } from "./Child.vue";
         1,
         "Vue dependency documents must be de-duplicated: {uris:?}",
     );
+}
+
+#[test]
+fn vue_virtual_project_prefers_open_dependency_overlays() {
+    let project = tempfile::TempDir::new().expect("temp project");
+    let host_path = project.path().join("Host.vue");
+    let child_path = project.path().join("Child.vue");
+    let host = r#"<script setup lang="ts">import Child from "./Child.vue"</script>
+<template><Child count="one" /></template>"#;
+    std::fs::write(&host_path, host).expect("host");
+    std::fs::write(
+        &child_path,
+        "<script setup lang=\"ts\">defineProps<{ count: string }>()</script>",
+    )
+    .expect("child");
+    let overlays = vec![(
+        child_path.clone(),
+        "<script setup lang=\"ts\">defineProps<{ count: number }>()</script>".into(),
+    )];
+
+    let virtual_project = build_vue_virtual_project_with_overlays(
+        &host_path,
+        host,
+        CorsaVueVirtualDocumentOptions::default(),
+        &overlays,
+    )
+    .expect("virtual project");
+    let child = virtual_project
+        .documents
+        .iter()
+        .find(|(uri, _)| uri == path_to_file_uri(&child_path.with_extension("vue.ts")).as_str())
+        .map(|(_, content)| content.as_str())
+        .expect("child virtual document");
+    assert!(child.contains("count: number"), "{child}");
+    assert!(!child.contains("count: string"), "{child}");
 }
 
 #[test]

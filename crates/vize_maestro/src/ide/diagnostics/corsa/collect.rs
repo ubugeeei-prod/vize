@@ -75,14 +75,25 @@ impl DiagnosticService {
                 tracing::warn!("cannot derive source path for {}", uri);
                 return vec![];
             };
+            let overlays = state
+                .documents
+                .iter()
+                .filter_map(|document| {
+                    Some((
+                        document.key().to_file_path().ok()?,
+                        document.value().text().into(),
+                    ))
+                })
+                .collect::<Vec<(std::path::PathBuf, vize_carton::String)>>();
             let opened = match bridge
-                .open_vue_virtual_document(
+                .open_vue_virtual_document_with_overlays(
                     &source_path,
                     &content,
                     CorsaVueVirtualDocumentOptions {
                         options_api,
                         legacy_vue2,
                     },
+                    &overlays,
                 )
                 .await
             {

@@ -113,10 +113,9 @@ impl LanguageServer for MaestroServer {
 
         if let Some(doc) = self.state.documents.get(&uri) {
             let content = doc.text();
-            self.state.update_virtual_docs(&uri, &content);
+            drop(doc);
+            self.publish_changed_diagnostics(&uri, &content).await;
         }
-
-        self.publish_changed_diagnostics(&uri).await;
     }
 
     async fn did_save(&self, params: DidSaveTextDocumentParams) {

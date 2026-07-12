@@ -1,4 +1,4 @@
-//! Fast discovery of open Vue files that directly import a changed file.
+//! Reverse dependency index for open Vue documents.
 
 use std::path::{Component, Path, PathBuf};
 
@@ -6,92 +6,159 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::Statement;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use parking_lot::RwLock;
 use tower_lsp::lsp_types::Url;
+use vize_carton::{FxHashMap, FxHashSet};
 
 use super::ServerState;
 
-pub(super) fn open_vue_importers(state: &ServerState, dependency: &Url) -> Vec<Url> {
-    let Ok(dependency_path) = dependency.to_file_path() else {
-        return Vec::new();
-    };
-    let dependency_path = comparable_path(&dependency_path);
+const SCRIPT_EXTENSIONS: &[&str] = &["vue", "ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs"];
 
-    state
-        .documents
-        .iter()
-        .filter_map(|document| {
-            let uri = document.key();
-            if uri == dependency || !uri.path().ends_with(".vue") {
-                return None;
-            }
-
-            let importer_path = uri.to_file_path().ok()?;
-            imports_path(&importer_path, &document.value().text(), &dependency_path)
-                .then(|| uri.clone())
-        })
-        .collect()
+#[derive(Default)]
+pub(super) struct OpenVueImportIndex {
+    inner: RwLock<ImportIndexData>,
 }
 
-fn imports_path(importer: &Path, source: &str, dependency: &Path) -> bool {
+#[derive(Default)]
+struct ImportIndexData {
+    by_dependency: FxHashMap<PathBuf, FxHashSet<Url>>,
+    by_importer: FxHashMap<Url, Vec<PathBuf>>,
+}
+
+impl OpenVueImportIndex {
+    pub(super) fn update(&self, importer: &Url, source: &str) {
+        let dependencies = importer
+            .to_file_path()
+            .ok()
+            .filter(|path| path.extension().is_some_and(|extension| extension == "vue"))
+            .map(|path| collect_dependencies(&path, source))
+            .unwrap_or_default();
+        let mut index = self.inner.write();
+        remove_importer(&mut index, importer);
+
+        for dependency in &dependencies {
+            index
+                .by_dependency
+                .entry(dependency.clone())
+                .or_default()
+                .insert(importer.clone());
+        }
+        if !dependencies.is_empty() {
+            index.by_importer.insert(importer.clone(), dependencies);
+        }
+    }
+
+    pub(super) fn remove(&self, importer: &Url) {
+        remove_importer(&mut self.inner.write(), importer);
+    }
+
+    pub(super) fn clear(&self) {
+        let mut index = self.inner.write();
+        index.by_dependency.clear();
+        index.by_importer.clear();
+    }
+
+    fn importers(&self, dependency: &Path) -> Vec<Url> {
+        self.inner
+            .read()
+            .by_dependency
+            .get(&comparable_path(dependency))
+            .map(|importers| importers.iter().cloned().collect())
+            .unwrap_or_default()
+    }
+}
+
+fn remove_importer(index: &mut ImportIndexData, importer: &Url) {
+    let Some(dependencies) = index.by_importer.remove(importer) else {
+        return;
+    };
+    for dependency in dependencies {
+        if let Some(importers) = index.by_dependency.get_mut(&dependency) {
+            importers.remove(importer);
+            if importers.is_empty() {
+                index.by_dependency.remove(&dependency);
+            }
+        }
+    }
+}
+
+pub(super) fn open_vue_importers(state: &ServerState, dependency: &Url) -> Vec<Url> {
+    dependency
+        .to_file_path()
+        .ok()
+        .map(|path| state.open_vue_imports.importers(&path))
+        .unwrap_or_default()
+}
+
+fn collect_dependencies(importer: &Path, source: &str) -> Vec<PathBuf> {
     let options = vize_atelier_sfc::SfcParseOptions {
         filename: importer.to_string_lossy().into_owned().into(),
         ..Default::default()
     };
     let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, options) else {
-        return false;
+        return Vec::new();
     };
     let Some(importer_dir) = importer.parent() else {
-        return false;
+        return Vec::new();
     };
+    let mut dependencies = FxHashSet::default();
 
-    descriptor
+    for script in descriptor
         .script
         .iter()
         .chain(descriptor.script_setup.iter())
-        .any(|script| {
-            script_imports_path(
-                script.content.as_ref(),
-                source_type(script.lang.as_deref()),
-                importer_dir,
-                dependency,
-            )
-        })
+    {
+        collect_script_dependencies(
+            script.content.as_ref(),
+            source_type(script.lang.as_deref()),
+            importer_dir,
+            &mut dependencies,
+        );
+    }
+    dependencies.into_iter().collect()
 }
 
-fn script_imports_path(
+fn collect_script_dependencies(
     source: &str,
     source_type: SourceType,
     importer_dir: &Path,
-    dependency: &Path,
-) -> bool {
+    dependencies: &mut FxHashSet<PathBuf>,
+) {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, source_type).parse();
 
-    parsed.program.body.iter().any(|statement| {
+    for statement in &parsed.program.body {
         let Statement::ImportDeclaration(import) = statement else {
-            return false;
+            continue;
         };
-        resolves_to(importer_dir, import.source.value.as_str(), dependency)
-    })
+        if let Some(dependency) = resolve_import(importer_dir, import.source.value.as_str()) {
+            dependencies.insert(dependency);
+        }
+    }
 }
 
-fn resolves_to(importer_dir: &Path, specifier: &str, dependency: &Path) -> bool {
+fn resolve_import(importer_dir: &Path, specifier: &str) -> Option<PathBuf> {
     let specifier = specifier
         .split_once(['?', '#'])
         .map_or(specifier, |(path, _)| path);
     if !specifier.starts_with("./") && !specifier.starts_with("../") {
-        return false;
+        return None;
     }
 
     let joined = importer_dir.join(specifier);
-    let candidates = if Path::new(specifier).extension().is_some() {
-        vec![joined]
-    } else {
-        vec![joined.with_extension("vue"), joined.join("index.vue")]
-    };
-    candidates
+    if Path::new(specifier).extension().is_some() {
+        return Some(comparable_path(&joined));
+    }
+    SCRIPT_EXTENSIONS
         .iter()
-        .any(|candidate| comparable_path(candidate) == dependency)
+        .map(|extension| joined.with_extension(extension))
+        .chain(
+            SCRIPT_EXTENSIONS
+                .iter()
+                .map(|extension| joined.join("index").with_extension(extension)),
+        )
+        .find(|candidate| candidate.exists())
+        .map(|candidate| comparable_path(&candidate))
 }
 
 fn comparable_path(path: &Path) -> PathBuf {
@@ -128,59 +195,40 @@ mod tests {
     use tower_lsp::lsp_types::Url;
 
     #[test]
-    fn finds_only_open_vue_files_that_import_changed_component() {
+    fn index_tracks_and_removes_open_vue_imports() {
         let dir = tempfile::tempdir().unwrap();
         let child = dir.path().join("Child.vue");
         let parent = dir.path().join("Parent.vue");
-        let unrelated = dir.path().join("Unrelated.vue");
         std::fs::write(&child, "<template />").unwrap();
         std::fs::write(&parent, "<template />").unwrap();
-        std::fs::write(&unrelated, "<template />").unwrap();
-
         let child_uri = Url::from_file_path(&child).unwrap();
         let parent_uri = Url::from_file_path(&parent).unwrap();
-        let unrelated_uri = Url::from_file_path(&unrelated).unwrap();
         let state = ServerState::new();
-        state.documents.open(
-            child_uri.clone(),
-            "<template />".to_string(),
-            2,
-            "vue".to_string(),
-        );
-        state.documents.open(
-            parent_uri.clone(),
-            "<script setup lang=\"ts\">\nimport Child from './Child'\n</script>".to_string(),
-            1,
-            "vue".to_string(),
-        );
-        state.documents.open(
-            unrelated_uri,
-            "<script>import Other from './Other.vue'</script>".to_string(),
-            1,
-            "vue".to_string(),
+        let source = "<script setup lang=\"ts\">import Child from './Child'</script>";
+
+        state.update_virtual_docs(&parent_uri, source);
+        assert_eq!(
+            open_vue_importers(&state, &child_uri),
+            vec![parent_uri.clone()]
         );
 
-        assert_eq!(open_vue_importers(&state, &child_uri), vec![parent_uri]);
+        state.update_virtual_docs(&parent_uri, "<script setup>const local = 1</script>");
+        assert!(open_vue_importers(&state, &child_uri).is_empty());
     }
 
     #[test]
-    fn detects_imports_from_normal_script_with_query_suffix() {
+    fn index_resolves_explicit_script_dependencies_and_query_suffixes() {
         let dir = tempfile::tempdir().unwrap();
-        let child = dir.path().join("Child.vue");
+        let child = dir.path().join("types.ts");
         let parent = dir.path().join("Parent.vue");
-        std::fs::write(&child, "<template />").unwrap();
+        std::fs::write(&child, "export type Count = number").unwrap();
         std::fs::write(&parent, "<template />").unwrap();
-
         let child_uri = Url::from_file_path(&child).unwrap();
         let parent_uri = Url::from_file_path(&parent).unwrap();
         let state = ServerState::new();
-        state.documents.open(
-            parent_uri.clone(),
-            "<script>import Child from './Child.vue?vue&type=script'</script>".to_string(),
-            1,
-            "vue".to_string(),
-        );
+        let source = "<script>import './types.ts?raw'</script>";
 
+        state.update_virtual_docs(&parent_uri, source);
         assert_eq!(open_vue_importers(&state, &child_uri), vec![parent_uri]);
     }
 }

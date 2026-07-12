@@ -18,7 +18,8 @@ impl MaestroServer {
     /// Publish the changed document first, then refresh open Vue files that
     /// directly import it. Corsa has already received the changed virtual
     /// document by this point, so importer diagnostics observe the new shape.
-    pub(crate) async fn publish_changed_diagnostics(&self, uri: &Url) {
+    pub(crate) async fn publish_changed_diagnostics(&self, uri: &Url, content: &str) {
+        self.state.update_virtual_docs(uri, content);
         self.publish_diagnostics(uri).await;
         if !self.state.is_lsp_typecheck_enabled() {
             return;

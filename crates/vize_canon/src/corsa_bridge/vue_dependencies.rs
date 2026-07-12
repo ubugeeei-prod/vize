@@ -4,7 +4,7 @@ use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, String, cstr};
+use vize_carton::{FxHashMap, FxHashSet, String, cstr};
 
 use super::bridge::normalize_document_uri;
 use super::vue_dependency_specifiers::collect_relative_ts_specifiers;
@@ -22,6 +22,7 @@ pub(super) fn collect_dependency_documents(
     host: &GeneratedVueDocument,
     options: CorsaVueVirtualDocumentOptions,
     rewriter: &ImportRewriter,
+    overlays: &FxHashMap<PathBuf, &str>,
 ) {
     let mut visited_vue = FxHashSet::<PathBuf>::default();
     visited_vue.insert(host.source_path.clone());
@@ -45,6 +46,7 @@ pub(super) fn collect_dependency_documents(
                     queue: &mut queue,
                     visited_vue: &mut visited_vue,
                     visited_ts: &mut visited_ts,
+                    overlays,
                 },
                 options,
                 rewriter,
@@ -62,6 +64,7 @@ pub(super) fn collect_dependency_documents(
                     queue: &mut queue,
                     visited_vue: &mut visited_vue,
                     visited_ts: &mut visited_ts,
+                    overlays,
                 },
                 options,
                 rewriter,
@@ -78,6 +81,7 @@ struct ImportQueue<'a> {
     queue: &'a mut VecDeque<DependencyScan>,
     visited_vue: &'a mut FxHashSet<PathBuf>,
     visited_ts: &'a mut FxHashSet<PathBuf>,
+    overlays: &'a FxHashMap<PathBuf, &'a str>,
 }
 
 enum DependencyScan {
@@ -119,7 +123,7 @@ fn queue_vue_imports(
         if !imports.visited_vue.insert(key) {
             continue;
         }
-        let Ok(content) = std::fs::read_to_string(&path) else {
+        let Some(content) = dependency_content(&path, imports.overlays) else {
             continue;
         };
         let generated = match generate_vue_document(&path, &content, options, rewriter) {
@@ -192,7 +196,7 @@ fn queue_ts_imports(
         if !imports.visited_ts.insert(key) {
             continue;
         }
-        let Ok(content) = std::fs::read_to_string(&path) else {
+        let Some(content) = dependency_content(&path, imports.overlays) else {
             continue;
         };
         let dependency_source_type = source_type_for_path(&path);
@@ -202,9 +206,17 @@ fn queue_ts_imports(
         imports.queue.push_back(DependencyScan::Script {
             path: path.clone(),
             source_type: dependency_source_type,
-            content: content.into(),
+            content,
         });
     }
+}
+
+fn dependency_content(path: &Path, overlays: &FxHashMap<PathBuf, &str>) -> Option<String> {
+    let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    overlays
+        .get(&key)
+        .map(|content| String::from(*content))
+        .or_else(|| std::fs::read_to_string(path).ok().map(Into::into))
 }
 
 fn resolve_relative_script_import(dir: &Path, specifier: &str) -> Option<PathBuf> {
