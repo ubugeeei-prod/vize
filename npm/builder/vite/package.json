@@ -34,6 +34,11 @@
       "types": "./index.d.mts",
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
+    },
+    "./internal/config-bridge": {
+      "types": "./dist/internal/config-bridge.d.mts",
+      "import": "./dist/internal/config-bridge.mjs",
+      "default": "./dist/internal/config-bridge.mjs"
     }
   },
   "publishConfig": {

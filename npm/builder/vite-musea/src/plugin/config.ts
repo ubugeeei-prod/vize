@@ -1,10 +1,20 @@
 import type { ResolvedConfig } from "vite";
-import { VIZE_CONFIG_FILE_ENV, loadConfig, vizeConfigStore } from "@vizejs/vite-plugin";
+import { VIZE_CONFIG_FILE_ENV, loadConfig } from "@vizejs/vite-plugin";
+import { getResolvedVizeConfigRegistration } from "@vizejs/vite-plugin/internal/config-bridge";
 
-export async function resolveMuseaSharedConfig(resolvedConfig: ResolvedConfig) {
-  const sharedConfig = vizeConfigStore.get(resolvedConfig.root);
-  if (sharedConfig) {
-    return sharedConfig;
+export async function resolveMuseaSharedConfig(
+  resolvedConfig: ResolvedConfig,
+  loadConfigFile: typeof loadConfig = loadConfig,
+) {
+  let registration = getResolvedVizeConfigRegistration(resolvedConfig);
+  if (!registration.registered) {
+    // Vite starts configResolved hooks in parallel. Yield once so Vize can
+    // register the exact config even when Musea appears first in plugin order.
+    await Promise.resolve();
+    registration = getResolvedVizeConfigRegistration(resolvedConfig);
+  }
+  if (registration.registered) {
+    return await registration.config;
   }
 
   const configFile = process.env[VIZE_CONFIG_FILE_ENV];
@@ -13,7 +23,7 @@ export async function resolveMuseaSharedConfig(resolvedConfig: ResolvedConfig) {
   }
 
   try {
-    return await loadConfig(resolvedConfig.root, {
+    return await loadConfigFile(resolvedConfig.root, {
       configFile,
       env: {
         mode: resolvedConfig.mode,

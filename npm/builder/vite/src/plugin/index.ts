@@ -7,12 +7,6 @@ import { createFilter } from "../utils/index.ts";
 import { toBrowserImportPrefix } from "../virtual.ts";
 import { shouldApplyDefineInVirtualModule, createLogger } from "../transform.ts";
 import {
-  VIZE_CONFIG_FILE_ENV,
-  loadConfig,
-  resolveConfigExport,
-  vizeConfigStore,
-} from "../config.ts";
-import {
   DEFAULT_PRECOMPILE_BATCH_SIZE,
   DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
   clearBuildCaches,
@@ -42,7 +36,8 @@ import {
   isLegacyVueCompatibilityMode,
   isLegacyVueVersion,
 } from "./vue-version.ts";
-import { mergeSharedConfig } from "./shared-config.ts";
+import { resolveSharedConfig } from "./shared-config.ts";
+import * as configBridge from "./config-lifecycle.ts";
 
 export type { VizePluginState } from "./state.ts";
 
@@ -188,37 +183,14 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         isSsrBuild: !!resolvedConfig.build?.ssr,
       };
 
-      let fileConfig: ResolvedVizeConfig | null = null;
-      if (options.configMode !== false) {
-        const configFile = options.configFile ?? process.env[VIZE_CONFIG_FILE_ENV];
-        try {
-          fileConfig = await loadConfig(state.root, {
-            mode: options.configMode ?? "root",
-            configFile,
-            env: configEnv,
-          });
-          if (fileConfig) {
-            state.logger.log("Loaded config from vize.config file");
-          }
-        } catch (error) {
-          state.logger.warn(`Failed to load vize config from ${configFile ?? state.root}:`, error);
-        }
-      }
-
-      let inlineConfig: ResolvedVizeConfig | null = null;
-      if (options.config) {
-        try {
-          inlineConfig = await resolveConfigExport(options.config, configEnv);
-          state.logger.log("Loaded inline vize config from plugin options");
-        } catch (error) {
-          state.logger.warn("Failed to resolve inline vize config:", error);
-        }
-      }
-
-      const sharedConfig = mergeSharedConfig(fileConfig, inlineConfig);
-      if (sharedConfig) {
-        vizeConfigStore.set(state.root, sharedConfig);
-      }
+      const sharedConfigPromise = resolveSharedConfig(options, state.root, configEnv, state.logger);
+      // Vite runs configResolved hooks in parallel. Register the pending lookup
+      // before yielding so companion plugins can await this exact config.
+      const sharedConfig = await configBridge.register(
+        resolvedConfig,
+        state.root,
+        sharedConfigPromise,
+      );
 
       const viteConfig = sharedConfig?.vite ?? {};
       const compilerConfig = sharedConfig?.compiler ?? {};
@@ -309,6 +281,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
 
     configureServer(devServer: ViteDevServer) {
       state.server = devServer;
+      configBridge.configureServerCleanup(devServer);
       installDevMiddleware(devServer, state);
     },
 
@@ -353,6 +326,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
 
     closeBundle() {
       if (state.server === null) {
+        configBridge.unregisterBuild(this);
         clearBuildCaches(state);
       }
     },
