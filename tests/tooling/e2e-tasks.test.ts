@@ -61,7 +61,7 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
   );
   assert.equal(
     scripts["test:readiness:build"],
-    "node --test --test-concurrency=1 snapshots/build/elk.ts",
+    "node --test --test-concurrency=1 snapshots/build/generic.ts snapshots/build/elk.ts",
   );
   assert.equal(
     scripts["test:readiness:dev"],
@@ -71,6 +71,7 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
   assertExists("tests", "snapshots", "check", "compiler-macros.ts");
   assertExists("tests", "tooling", "cli-lint-contract.test.ts");
   assertExists("tests", "snapshots", "build", "elk.ts");
+  assertExists("tests", "snapshots", "build", "generic.ts");
   assertExists("tests", "app", "dev", "misskey.spec.ts");
 
   for (const fixture of ["elk", "misskey"]) {
@@ -84,6 +85,34 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
       new RegExp(`^160000 [0-9a-f]{40} 0\\ttests/_fixtures/_git/${fixture}\\n$`),
       `${fixture} must remain pinned to an exact gitlink commit`,
     );
+  }
+});
+
+test("generic compiler build snapshots stay in the blocking build inventory", () => {
+  const testPackage = JSON.parse(readRepoFile("tests", "package.json")) as {
+    scripts?: Record<string, string>;
+  };
+  const readinessWorkflow = readRepoFile(".github", "workflows", "e2e.yml");
+  assert.ok(testPackage.scripts?.["test:build"]?.includes("snapshots/build/generic.ts"));
+  for (const trigger of [
+    "tests/_fixtures/_projects/generic-build/**",
+    "tests/snapshots/build/generic.ts",
+    "tests/snapshots/build/__snapshots__/generic-*.snap",
+  ]) {
+    assert.ok(
+      readinessWorkflow.includes(`- '${trigger}'`),
+      `missing readiness trigger: ${trigger}`,
+    );
+  }
+
+  assertExists("tests", "snapshots", "build", "generic.ts");
+  for (const snapshot of [
+    "generic-directive-builtins.snap",
+    "generic-fixture-panel.snap",
+    "generic-normal-script-bindings.snap",
+    "generic-slot-outlet.snap",
+  ]) {
+    assertExists("tests", "snapshots", "build", "__snapshots__", snapshot);
   }
 });
 

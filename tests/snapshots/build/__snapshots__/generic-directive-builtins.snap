@@ -1,4 +1,4 @@
-import { Fragment as _Fragment, Suspense as _Suspense, KeepAlive as _KeepAlive, openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, resolveDynamicComponent as _resolveDynamicComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, withCtx as _withCtx, unref as _unref, vShow as _vShow } from "vue";
+import { resolveDirective as _resolveDirective, resolveDynamicComponent as _resolveDynamicComponent, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock, Fragment as _Fragment, unref as _unref, KeepAlive as _KeepAlive, Suspense as _Suspense, withCtx as _withCtx, vShow as _vShow } from "vue";
 import { ref } from "vue";
 import FixturePanel from "./FixturePanel.vue";
 export default {
@@ -16,25 +16,25 @@ export default {
       return _openBlock(), _createElementBlock(
         _Fragment,
         null,
-        [_createVNode(
+        [(_openBlock(), _createBlock(
           _KeepAlive,
           null,
-          [_createVNode(_Suspense, null, {
-            default: _withCtx(() => [_withDirectives(_createVNode(
+          [(_openBlock(), _createBlock(_Suspense, null, {
+            default: _withCtx(() => [_withDirectives((_openBlock(), _createBlock(
               _resolveDynamicComponent(_unref(currentPanel)),
               null,
               null,
               512
               /* NEED_PATCH */
-            ), [[_vShow, showPanel.value]])]),
+            )), [[_vShow, showPanel.value]])]),
             _: 1
-          })],
+          }))],
           1024
           /* DYNAMIC_SLOTS */
-        ), _withDirectives(_createElementVNode(
+        )), _withDirectives(_createElementVNode(
           "button",
           null,
-          "\n    Load more\n  ",
+          " Load more ",
           512
           /* NEED_PATCH */
         ), [
