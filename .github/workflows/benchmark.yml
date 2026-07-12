@@ -65,6 +65,10 @@ jobs:
             echo "::error title=Invalid head_sha::head_sha must be a full lowercase 40-character commit SHA"
             exit 1
           fi
+          if [[ "$BENCHMARK_BASE_SHA" == "$BENCHMARK_HEAD_SHA" ]]; then
+            echo "::error title=Invalid benchmark range::base_sha must differ from head_sha"
+            exit 1
+          fi
           if [[ "$RUN_HEAD_SHA" != "$BENCHMARK_HEAD_SHA" ]]; then
             echo "::error title=Dispatch ref mismatch::run head_sha comes from --ref; dispatch with a branch or tag at $BENCHMARK_HEAD_SHA (got $RUN_HEAD_SHA)"
             exit 1
@@ -75,6 +79,7 @@ jobs:
         with:
           path: head
           ref: ${{ env.BENCHMARK_HEAD_SHA }}
+          fetch-depth: ${{ github.event_name == 'workflow_dispatch' && '0' || '1' }}
 
       - name: Checkout base
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -88,7 +93,13 @@ jobs:
         env:
           BASE_SHA: ${{ env.BENCHMARK_BASE_SHA }}
           HEAD_SHA: ${{ env.BENCHMARK_HEAD_SHA }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]] && \
+             ! git -C "$GITHUB_WORKSPACE/head" merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"; then
+            echo "::error title=Invalid benchmark range::base_sha must be an ancestor of head_sha"
+            exit 1
+          fi
           if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)' -- . ':(exclude)tests/_fixtures/_git/**'; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             {

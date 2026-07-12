@@ -3,6 +3,15 @@ import { test } from "node:test";
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
+function workflowStepBody(job: string, stepName: string): string {
+  const marker = `\n      - name: ${stepName}\n`;
+  const start = job.indexOf(marker);
+  assert.notEqual(start, -1, `missing step ${stepName}`);
+  const bodyStart = start + 1;
+  const nextStep = job.indexOf("\n      - ", bodyStart + marker.length);
+  return job.slice(bodyStart, nextStep === -1 ? undefined : nextStep);
+}
+
 test("benchmark workflow comments from trusted code after a read-only benchmark run", () => {
   const workflow = readRepoFile(".github", "workflows", "benchmark.yml");
   const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
@@ -77,6 +86,9 @@ test("benchmark dispatch validates exact SHA evidence and runs the existing budg
   const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
   const budgetJob = workflowJobBody(workflow, "pr-benchmark-budget");
   const commentJob = workflowJobBody(workflow, "pr-benchmark-comment");
+  const validateDispatchStep = workflowStepBody(benchmarkJob, "Validate dispatch SHAs");
+  const checkoutHeadStep = workflowStepBody(benchmarkJob, "Checkout head");
+  const checkBaseStep = workflowStepBody(benchmarkJob, "Check base checkout");
 
   assert.match(
     workflow,
@@ -96,15 +108,33 @@ test("benchmark dispatch validates exact SHA evidence and runs the existing budg
   assert.match(workflow, /head_sha from the branch or tag/);
   assert.match(workflow, /passed via --ref, not from a later checkout/);
 
-  assert.match(benchmarkJob, /name:\s*Validate dispatch SHAs/);
-  assert.match(benchmarkJob, /if:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch'\s*\}\}/);
-  assert.match(benchmarkJob, /full_sha='\^\[0-9a-f\]\{40\}\$'/);
-  assert.match(benchmarkJob, /! "\$BENCHMARK_BASE_SHA" =~ \$full_sha/);
-  assert.match(benchmarkJob, /! "\$BENCHMARK_HEAD_SHA" =~ \$full_sha/);
-  assert.match(benchmarkJob, /RUN_HEAD_SHA:\s*\$\{\{\s*github\.sha\s*\}\}/);
-  assert.match(benchmarkJob, /"\$RUN_HEAD_SHA" != "\$BENCHMARK_HEAD_SHA"/);
-  assert.match(benchmarkJob, /run head_sha comes from --ref/);
-  assert.match(benchmarkJob, /dispatch with a branch or tag/);
+  assert.match(
+    validateDispatchStep,
+    /if:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch'\s*\}\}/,
+  );
+  assert.match(validateDispatchStep, /full_sha='\^\[0-9a-f\]\{40\}\$'/);
+  assert.match(validateDispatchStep, /! "\$BENCHMARK_BASE_SHA" =~ \$full_sha/);
+  assert.match(validateDispatchStep, /! "\$BENCHMARK_HEAD_SHA" =~ \$full_sha/);
+  assert.match(validateDispatchStep, /"\$BENCHMARK_BASE_SHA" == "\$BENCHMARK_HEAD_SHA"/);
+  assert.match(validateDispatchStep, /base_sha must differ from head_sha/);
+  assert.match(validateDispatchStep, /RUN_HEAD_SHA:\s*\$\{\{\s*github\.sha\s*\}\}/);
+  assert.match(validateDispatchStep, /"\$RUN_HEAD_SHA" != "\$BENCHMARK_HEAD_SHA"/);
+  assert.match(validateDispatchStep, /run head_sha comes from --ref/);
+  assert.match(validateDispatchStep, /dispatch with a branch or tag/);
+  assert.match(
+    checkoutHeadStep,
+    /fetch-depth:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch' && '0' \|\| '1'\s*\}\}/,
+  );
+  assert.match(checkBaseStep, /EVENT_NAME:\s*\$\{\{\s*github\.event_name\s*\}\}/);
+  assert.match(checkBaseStep, /"\$EVENT_NAME" == "workflow_dispatch"/);
+  assert.match(checkBaseStep, /merge-base --is-ancestor "\$BASE_SHA" "\$HEAD_SHA"/);
+  assert.match(checkBaseStep, /base_sha must be an ancestor of head_sha/);
+
+  const validateIndex = benchmarkJob.indexOf("- name: Validate dispatch SHAs");
+  const ancestryIndex = benchmarkJob.indexOf("- name: Check base checkout");
+  const benchmarkIndex = benchmarkJob.indexOf("- name: Compare base and head");
+  assert.ok(validateIndex < ancestryIndex, "SHA equality must be validated before ancestry");
+  assert.ok(ancestryIndex < benchmarkIndex, "ancestry must be validated before benchmarking");
 
   assert.match(budgetJob, /name:\s*pr-benchmark/);
   assert.match(budgetJob, /--labels-json "\$PR_LABELS_JSON"/);
