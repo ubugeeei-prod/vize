@@ -57,6 +57,7 @@ function installVueVirtualModules(ts, info) {
 
       const cached = snapshots.get(fileName);
       if (cached?.source === source) return cached.snapshot;
+      const version = sourceVersion(source);
 
       try {
         const result = native.typeCheck(source, {
@@ -67,12 +68,12 @@ function installVueVirtualModules(ts, info) {
           throw new Error("native typeCheck returned no virtual TypeScript");
         }
         const snapshot = ts.ScriptSnapshot.fromString(result.virtualTs);
-        snapshots.set(fileName, { snapshot, source });
+        snapshots.set(fileName, { snapshot, source, version });
         return snapshot;
       } catch (error) {
         logPluginError(info, "generate virtual module", error);
         const snapshot = ts.ScriptSnapshot.fromString(fallbackVirtualModule());
-        snapshots.set(fileName, { snapshot, source });
+        snapshots.set(fileName, { snapshot, source, version });
         return snapshot;
       }
     },
@@ -80,7 +81,8 @@ function installVueVirtualModules(ts, info) {
       if (!isVuePath(fileName)) return getScriptVersion?.(fileName) ?? "0";
       const snapshot = getSnapshot(fileName);
       const source = readSnapshotText(snapshot) ?? readFile(fileName) ?? "";
-      return crypto.createHash("sha1").update(source).digest("base64url");
+      const cached = snapshots.get(fileName);
+      return cached?.source === source ? cached.version : sourceVersion(source);
     },
     resolveModuleNameLiterals(...args) {
       const [literals, containingFile] = args;
@@ -197,6 +199,10 @@ function isVuePath(fileName) {
 
 function readSnapshotText(snapshot) {
   return snapshot ? snapshot.getText(0, snapshot.getLength()) : undefined;
+}
+
+function sourceVersion(source) {
+  return crypto.createHash("sha1").update(source).digest("base64url");
 }
 
 function fallbackVirtualModule() {

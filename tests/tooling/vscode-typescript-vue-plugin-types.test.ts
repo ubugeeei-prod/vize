@@ -61,7 +61,11 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
     );
     assert.match(displayPartsText(refreshedInfo?.displayParts), /count: number/);
     assert.doesNotMatch(displayPartsText(refreshedInfo?.displayParts), /title: string/);
-    assert.equal(fs.readFileSync(project.nativeCalls, "utf8"), "11");
+    assert.equal(
+      Number(fs.readFileSync(project.nativeCalls, "utf8")),
+      2,
+      "expected one native generation per distinct SFC source",
+    );
   } finally {
     fs.rmSync(project.root, { force: true, recursive: true });
   }
@@ -109,7 +113,7 @@ function createProject() {
     JSON.stringify({ main: "index.cjs", name: "@vizejs/native", version: "0.0.0" }),
   );
   const nativeCalls = path.join(nativeDir, "calls.txt");
-  fs.writeFileSync(nativeCalls, "");
+  fs.writeFileSync(nativeCalls, "0");
   fs.writeFileSync(
     path.join(nativeDir, "index.cjs"),
     [
@@ -117,7 +121,9 @@ function createProject() {
       'const fs = require("node:fs");',
       'const path = require("node:path");',
       "exports.typeCheck = (source) => {",
-      '  fs.appendFileSync(path.join(__dirname, "calls.txt"), "1");',
+      '  const callsFile = path.join(__dirname, "calls.txt");',
+      '  const calls = Number(fs.readFileSync(callsFile, "utf8")) + 1;',
+      "  fs.writeFileSync(callsFile, String(calls));",
       "  const props = source.match(/defineProps<([\\s\\S]*?)>\\s*\\(\\s*\\)/)?.[1] || '{}';",
       "  return { virtualTs: `declare const component: new () => { $props: ${props} };\\nexport default component;\\n` };",
       "};",
