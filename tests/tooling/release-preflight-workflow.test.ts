@@ -14,6 +14,7 @@ type WorkflowStep = {
 
 type WorkflowJob = {
   permissions?: Record<string, string>;
+  "runs-on"?: string;
   steps?: WorkflowStep[];
   "timeout-minutes"?: number;
 };
@@ -38,6 +39,7 @@ test("reusable release preflight verifies evidence and crate plans without regis
 
   const verify = workflow.jobs?.verify;
   assert.ok(verify);
+  assert.match(verify["runs-on"] ?? "", /^blacksmith-\d+vcpu-ubuntu-2404$/);
   assert.equal(verify["timeout-minutes"], 120);
   assert.deepEqual(verify.permissions, {
     actions: "write",
@@ -54,13 +56,28 @@ test("reusable release preflight verifies evidence and crate plans without regis
 
   const crateValidation = workflow.jobs?.["validate-crates"];
   assert.ok(crateValidation);
+  assert.match(crateValidation["runs-on"] ?? "", /^blacksmith-\d+vcpu-ubuntu-2404$/);
   assert.equal(crateValidation["timeout-minutes"], 45);
   assert.deepEqual(crateValidation.permissions, { contents: "read" });
+  const crateCheckout = crateValidation.steps?.find((step) =>
+    step.uses?.startsWith("actions/checkout@"),
+  );
+  assert.ok(crateCheckout);
+  assert.equal(crateCheckout.with?.["persist-credentials"], false);
   assert.ok(crateValidation.steps?.some((step) => step.uses?.startsWith("wild-linker/action@")));
   assert.ok(
     crateValidation.steps?.some(
       (step) => step.run === "moon run --target native tools/moon/cmd/publish_crates -- --dry-run",
     ),
+  );
+  const stickyCache = crateValidation.steps?.find(
+    (step) => step.uses === "./.github/actions/setup-rust-sticky-cache",
+  );
+  assert.ok(stickyCache);
+  assert.equal(stickyCache.with?.key, "release-crates-dry-run");
+  assert.equal(
+    stickyCache.with?.["cache-key-suffix"],
+    "${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}",
   );
 
   assert.doesNotMatch(source, /environment:|id-token:\s*write|secrets\.|crates-io-auth-action/);
