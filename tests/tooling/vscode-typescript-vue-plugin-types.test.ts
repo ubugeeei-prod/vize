@@ -48,6 +48,11 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
       formatDiagnostics(service.getSemanticDiagnostics(project.mainTs)),
       /Property 'title' is missing/,
     );
+    assert.equal(
+      nativeGenerationCount(project.nativeCalls),
+      1,
+      "expected one native generation across the initial queries",
+    );
 
     fs.writeFileSync(
       project.appVue,
@@ -62,9 +67,9 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
     assert.match(displayPartsText(refreshedInfo?.displayParts), /count: number/);
     assert.doesNotMatch(displayPartsText(refreshedInfo?.displayParts), /title: string/);
     assert.equal(
-      Number(fs.readFileSync(project.nativeCalls, "utf8")),
+      nativeGenerationCount(project.nativeCalls),
       2,
-      "expected one native generation per distinct SFC source",
+      "expected one additional native generation after the SFC edit",
     );
   } finally {
     fs.rmSync(project.root, { force: true, recursive: true });
@@ -169,6 +174,10 @@ function createHost(rootDir: string, rootFiles: string[]) {
 
 function displayPartsText(parts: readonly import("typescript").SymbolDisplayPart[] | undefined) {
   return parts?.map((part) => part.text).join("") ?? "";
+}
+
+function nativeGenerationCount(callsFile: string) {
+  return Number(fs.readFileSync(callsFile, "utf8"));
 }
 
 function formatDiagnostics(diagnostics: readonly import("typescript").Diagnostic[]) {
