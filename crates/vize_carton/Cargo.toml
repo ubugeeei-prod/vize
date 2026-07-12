@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Carton - The artist's toolbox for Vize compiler"
+metadata.vize.stability = "alpha-supported"
 
 [dependencies]
 # Arena allocator

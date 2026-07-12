@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Croquis - Semantic analysis layer for Vize. Quick sketches of meaning from Vue templates"
+metadata.vize.stability = "compatibility-preview"
 
 [dependencies]
 vize_carton.workspace = true

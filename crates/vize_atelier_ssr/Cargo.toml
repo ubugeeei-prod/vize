@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Vue SSR compiler for Vize"
+metadata.vize.stability = "compatibility-preview"
 
 [dependencies]
 vize_carton = { workspace = true }

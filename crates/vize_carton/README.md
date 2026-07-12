@@ -1,5 +1,8 @@
 # vize_carton
 
+Support and deprecation guarantees are defined in the
+[Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
 `vize_carton` is the shared foundation crate for the Vize workspace.
 
 ## Highlights

@@ -89,21 +89,21 @@ test("publish_crates script keeps publishable workspace dependencies ordered", (
   }
 });
 
-test("publish_crates includes every publishable crate package after first publish exclusions", () => {
-  const publishedCrates = new Set(getPublishedCrates());
-  const pendingFirstPublishCrates = new Set(getPendingFirstPublishCrates());
-  const blockedByPendingFirstPublishCrates = new Set(getBlockedByPendingFirstPublishCrates());
-  const missingCrates = getMetadata()
+test("publish_crates exactly partitions every publishable workspace crate", () => {
+  const releaseCrates = [
+    ...getPublishedCrates(),
+    ...getPendingFirstPublishCrates(),
+    ...getBlockedByPendingFirstPublishCrates(),
+  ];
+  const publishableCrates = getMetadata()
     .packages.filter((pkg) =>
       path.relative(repoRoot, pkg.manifest_path).startsWith(`crates${path.sep}`),
     )
     .filter((pkg) => pkg.publish === null || pkg.publish.length > 0)
-    .map((pkg) => pkg.name)
-    .filter((crateName) => !publishedCrates.has(crateName))
-    .filter((crateName) => !pendingFirstPublishCrates.has(crateName))
-    .filter((crateName) => !blockedByPendingFirstPublishCrates.has(crateName));
+    .map((pkg) => pkg.name);
 
-  assert.deepEqual(missingCrates, []);
+  assert.equal(new Set(releaseCrates).size, releaseCrates.length, "release crate lists overlap");
+  assert.deepEqual(releaseCrates.toSorted(), publishableCrates.toSorted());
 });
 
 test("publish_crates only defers crates that have not been created on crates.io", () => {

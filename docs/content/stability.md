@@ -27,7 +27,8 @@ The v1 alpha line uses these rules:
 | Documented CLI commands and flags    | Should avoid silent behavior changes                                               |
 | Documented config fields             | Should keep names and value shapes stable unless release notes call out a change   |
 | Diagnostic codes listed in docs      | Should remain recognizable so suppressions and fix reports stay useful             |
-| Rust crate internals                 | May change without migration support before v1 stable                              |
+| Published Rust crate APIs            | Follow the per-crate tier and deprecation contract below                           |
+| Unexported Rust crate internals      | May change without migration support before v1 stable                              |
 | Generated code and virtual TS output | May change when needed for correctness, compatibility, performance, or diagnostics |
 
 ## Runtime Support
@@ -75,6 +76,55 @@ the move is called out in release notes when it changes. Downstream packagers sh
 | Compatibility preview | `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/musea-nuxt`             | Expected to work for common host setups, but host-framework compatibility can move quickly.    |
 | Experimental          | `oxlint-plugin-vize`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/wasm` | Public packages, but APIs, commands, output, and workflow shape may change during alpha.       |
 | Incubating            | `@vizejs/fresco`, `@vizejs/fresco-native`, editor extension packages                          | Useful for development and feedback, but not yet part of the v1 alpha production-ready target. |
+
+## Rust Crate Support Tiers
+
+This table is the canonical compatibility contract for crates.io consumers. It covers every crate
+whose Cargo metadata permits publishing, including crates temporarily deferred by the release
+publisher while their first crates.io release is prepared. Private modules and implementation
+details are not compatibility surfaces.
+
+<!-- rust-crate-support:start -->
+
+| Crate                | Tier                  | Intended audience                         | Public entrypoint                               | Removal / deprecation                  |
+| -------------------- | --------------------- | ----------------------------------------- | ----------------------------------------------- | -------------------------------------- |
+| `vize_carton`        | Alpha-supported       | Vize compiler and library authors         | `vize_carton::{Allocator, Bump, FxHashMap}`     | One minor with `#[deprecated]`         |
+| `vize_relief`        | Alpha-supported       | AST and compiler integration authors      | `vize_relief::{RootNode, CompilerOptions}`      | One minor with `#[deprecated]`         |
+| `vize_armature`      | Alpha-supported       | Tools that parse Vue templates            | `vize_armature::{parse, Parser, Tokenizer}`     | One minor with `#[deprecated]`         |
+| `vize_croquis`       | Compatibility preview | Semantic and type-aware tooling authors   | `vize_croquis::{Croquis, Drawer}`               | One minor with `#[deprecated]`         |
+| `vize_croquis_cf`    | Experimental          | Opt-in whole-project analysis experiments | `vize_croquis_cf::CrossFileAnalyzer`            | No minimum; note breaks when practical |
+| `vize_atelier_core`  | Alpha-supported       | Custom Vue compiler backend authors       | `vize_atelier_core::{transform, generate}`      | One minor with `#[deprecated]`         |
+| `vize_atelier_dom`   | Alpha-supported       | VDOM compiler and bundler integrations    | `vize_atelier_dom::compile_template`            | One minor with `#[deprecated]`         |
+| `vize_atelier_vapor` | Experimental          | Opt-in Vapor compiler integrations        | `vize_atelier_vapor::compile_vapor`             | No minimum; note breaks when practical |
+| `vize_atelier_ssr`   | Compatibility preview | SSR and framework integration authors     | `vize_atelier_ssr::compile_ssr`                 | One minor with `#[deprecated]`         |
+| `vize_atelier_sfc`   | Alpha-supported       | SFC tooling and bundler authors           | `vize_atelier_sfc::{parse_sfc, compile_sfc}`    | One minor with `#[deprecated]`         |
+| `vize_atelier_jsx`   | Compatibility preview | JSX/TSX compiler and tooling authors      | `vize_atelier_jsx::{compile_jsx, lower_source}` | One minor with `#[deprecated]`         |
+| `vize_musea`         | Experimental          | Musea gallery and documentation tools     | `vize_musea::{parse_art, transform_to_csf}`     | No minimum; note breaks when practical |
+| `vize_fresco`        | Incubating            | TUI experiments                           | `vize_fresco::{RenderTree, LayoutEngine}`       | No minimum                             |
+| `vize_canon`         | Compatibility preview | Type-checker and editor integrations      | `vize_canon::{type_check_sfc, TypeChecker}`     | One minor with `#[deprecated]`         |
+| `vize_patina`        | Compatibility preview | Linter and Oxlint integrations            | `vize_patina::{lint, Linter}`                   | One minor with `#[deprecated]`         |
+
+<!-- rust-crate-support:end -->
+
+Each crate also records its tier in `package.metadata.vize.stability`. CI compares those Cargo
+metadata values, this table, and the complete release-publisher crate set so adding, removing, or
+reclassifying a publishable crate cannot silently change the contract.
+
+### SemVer gate interpretation
+
+`cargo-semver-checks` runs for the release publisher's crates that have resolvable registry
+baselines. A crate waiting for its first publish, or blocked on one, joins that matrix once its
+baseline is available. Until then, the metadata/table/release-list check still applies.
+
+| Tier                                    | CI interpretation                                                                                                      |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Alpha-supported / Compatibility preview | An API break must be fixed or follow the support policy's deprecation window and carry a conventional breaking marker. |
+| Experimental                            | The gate catches accidental drift; an intentional break may use a breaking marker without a deprecation window.        |
+| Incubating                              | The same detection applies, but the entire API or crate may be replaced or removed in any release.                     |
+
+The breaking markers recognized by CI are a `!` in the conventional change title or a
+`BREAKING CHANGE:` footer. Passing the gate with either marker does not waive the deprecation
+window for alpha-supported or compatibility-preview crates.
 
 ## What Counts as Stable Enough for Alpha
 

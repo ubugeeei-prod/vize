@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Patina - The quality checker for Vize code linting"
+metadata.vize.stability = "compatibility-preview"
 
 [dependencies]
 # Internal crates

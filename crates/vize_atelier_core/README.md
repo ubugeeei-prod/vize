@@ -1,5 +1,8 @@
 # vize_atelier_core
 
+Support and deprecation guarantees are defined in the
+[Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
 `vize_atelier_core` contains the shared transform lane and code generation infrastructure used by the
 DOM, Vapor, and SSR compilers.
 

@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Atelier Vapor - The Vapor mode compiler workshop for Vize"
+metadata.vize.stability = "experimental"
 
 [dependencies]
 vize_carton = { workspace = true }

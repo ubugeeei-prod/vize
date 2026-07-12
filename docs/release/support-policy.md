@@ -7,15 +7,16 @@ copy or a blog post, this page wins.
 
 ## Scope of this policy
 
-This policy applies to all surfaces in the `alpha-supported` and `preview` tiers as listed on the
-stability page. `experimental` and `incubating` surfaces are explicitly out of scope: they may
-change or disappear in any release.
+This policy applies to all surfaces in the `alpha-supported` and `compatibility-preview` tiers as
+listed on the stability page. `experimental` and `incubating` surfaces are explicitly out of scope:
+they may change or disappear in any release.
 
 In-scope surfaces:
 
 - **CLI**: `vize` binary, its subcommands, and their documented flags.
 - **Config**: `vize.config.*` keys and their value shapes.
-- **Public Rust crates**: items reachable through a published crate's `pub` API.
+- **Public Rust crates**: items reachable through the `pub` API of a published crate in the
+  `alpha-supported` or `compatibility-preview` tier.
 - **Public npm packages**: items in each package's exported entrypoints.
 - **Patina lint rules**: rule names, default severities, and message ids.
 - **Type-checker diagnostics**: error codes listed in the docs.
@@ -29,7 +30,7 @@ While Vize is in `0.x` alpha:
 | Remove or rename a CLI subcommand, flag, or env var            | Breaking       |
 | Remove or rename a config key                                  | Breaking       |
 | Tighten a config value's accepted shape                        | Breaking       |
-| Remove a `pub` item from a published Rust crate                | Breaking       |
+| Remove a `pub` item from an alpha/preview published Rust crate | Breaking       |
 | Remove or rename an export from a published npm package        | Breaking       |
 | Promote a Patina rule from `warn` to `error` by default        | Breaking       |
 | Demote a Patina rule from `error` to `warn` by default         | Non-breaking   |
@@ -50,14 +51,14 @@ Once Vize reaches v1 stable, the same table applies with `0.x` replaced by SemVe
 
 Vize keeps deprecated surfaces working for a minimum window before removal:
 
-| Surface                | Minimum deprecation window before removal |
-| ---------------------- | ----------------------------------------- |
-| Public Rust crate item | One minor release with a `#[deprecated]`  |
-| npm package entrypoint | One minor release with a console warning  |
-| CLI flag or subcommand | One minor release with a stderr warning   |
-| Config key             | One minor release with a stderr warning   |
-| Patina rule (name)     | One minor release with a stderr warning   |
-| Diagnostic code (id)   | One minor release with a release note     |
+| Surface                       | Minimum deprecation window before removal |
+| ----------------------------- | ----------------------------------------- |
+| Alpha/preview Rust crate item | One minor release with a `#[deprecated]`  |
+| npm package entrypoint        | One minor release with a console warning  |
+| CLI flag or subcommand        | One minor release with a stderr warning   |
+| Config key                    | One minor release with a stderr warning   |
+| Patina rule (name)            | One minor release with a stderr warning   |
+| Diagnostic code (id)          | One minor release with a release note     |
 
 A "minor release" means one published version with `minor` or higher SemVer bump; weekly patches
 do not count. When two deprecations are linked, both removal points must satisfy this window.

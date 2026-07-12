@@ -1,5 +1,8 @@
 # vize_musea
 
+Support and deprecation guarantees are defined in the
+[Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
 `vize_musea` is the Rust core for Musea art files, docs, palette generation, autogen, and VRT
 support.
 

@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Canon - The standard of correctness for Vize type checking"
+metadata.vize.stability = "compatibility-preview"
 
 [features]
 default = ["native"]

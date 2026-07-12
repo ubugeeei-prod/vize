@@ -1,5 +1,8 @@
 # vize_fresco
 
+Support and deprecation guarantees are defined in the
+[Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
 `vize_fresco` is the terminal UI foundation used by Vize's TUI-oriented experiments.
 
 ## Highlights

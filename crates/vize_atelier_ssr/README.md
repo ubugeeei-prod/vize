@@ -1,5 +1,8 @@
 # vize_atelier_ssr
 
+Support and deprecation guarantees are defined in the
+[Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
 `vize_atelier_ssr` compiles Vue templates for server-side rendering output.
 
 ## Highlights

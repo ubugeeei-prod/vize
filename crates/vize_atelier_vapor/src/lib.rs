@@ -2,6 +2,11 @@
 //!
 //! Vapor mode is a new compilation strategy that generates more efficient code
 //! by eliminating the virtual DOM overhead for static parts of the template.
+//!
+//! ## Stability
+//!
+//! **Experimental.** Public APIs and generated output may change in any release. See the
+//! [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
 
 #![allow(clippy::collapsible_match)]
 

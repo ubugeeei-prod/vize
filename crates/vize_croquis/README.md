@@ -1,5 +1,8 @@
 # vize_croquis
 
+Support and deprecation guarantees are defined in the
+[Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
 `vize_croquis` is the semantic analysis layer for Vue templates and SFCs.
 
 ## Highlights
