@@ -241,23 +241,46 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
   assert.match(abJob, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);
   assert.match(abJob, /contents:\s*read/);
   assert.doesNotMatch(abJob, /contents:\s*write/);
+  const checkoutHead = workflowStepBody(abJob, "Checkout head");
+  const checkoutBase = workflowStepBody(abJob, "Checkout base");
+  assert.match(checkoutHead, /ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/);
+  assert.match(checkoutHead, /fetch-depth:\s*0/);
+  assert.match(checkoutHead, /persist-credentials:\s*false/);
+  assert.match(checkoutBase, /persist-credentials:\s*false/);
+
+  const impactStep = workflowStepBody(abJob, "Select affected Criterion suites");
+  assert.match(impactStep, /PR_BASE_SHA:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/);
+  assert.match(impactStep, /PR_HEAD_SHA:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/);
+  assert.match(impactStep, /--base-sha "\$PR_BASE_SHA"/);
+  assert.match(impactStep, /--head-sha "\$PR_HEAD_SHA"/);
+
+  for (const stepName of [
+    "Setup Wild linker",
+    "Mount Criterion cache",
+    "Cache critcmp",
+    "Install critcmp",
+  ]) {
+    assert.match(
+      workflowStepBody(abJob, stepName),
+      /if:\s*steps\.impact\.outputs\.has_suites == 'true'/,
+      stepName,
+    );
+  }
   assert.match(
-    abJob,
-    /path:\s*head[\s\S]*ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/,
+    workflowStepBody(abJob, "Mount Criterion cache"),
+    /uses:\s*\.\/head\/\.github\/actions\/setup-rust-sticky-cache/,
   );
   assert.match(
-    abJob,
-    /path:\s*base[\s\S]*ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/,
+    workflowStepBody(abJob, "Install critcmp"),
+    /cargo install critcmp --version 0\.1\.8 --locked/,
   );
-  assert.match(abJob, /uses:\s*\.\/head\/\.github\/actions\/setup-rust-sticky-cache/);
-  assert.match(abJob, /node head\/bench\/criterion-impact\.mjs/);
-  assert.match(abJob, /--base-sha "\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}"/);
-  assert.match(abJob, /--head-sha "\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}"/);
-  assert.match(abJob, /if:\s*steps\.impact\.outputs\.has_suites == 'true'/);
-  assert.match(abJob, /cargo install critcmp --version 0\.1\.8 --locked/);
-  assert.match(abJob, /node head\/bench\/criterion-ab\.mjs/);
-  assert.match(abJob, /--target-dir "\$GITHUB_WORKSPACE\/head\/target"/);
-  assert.match(abJob, /--selection "\$GITHUB_WORKSPACE\/criterion-impact\.json"/);
+  const runStep = workflowStepBody(abJob, "Run criterion A/B");
+  assert.match(runStep, /node head\/bench\/criterion-ab\.mjs/);
+  assert.match(runStep, /--target-dir "\$GITHUB_WORKSPACE\/head\/target"/);
+  const impactPath = impactStep.match(/--out "([^"]+)"/)?.[1];
+  const selectionPath = runStep.match(/--selection "([^"]+)"/)?.[1];
+  assert.equal(impactPath, "$GITHUB_WORKSPACE/criterion-impact.json");
+  assert.equal(selectionPath, impactPath);
 
   // Dialect guard: build vize with legacy OFF and ON, then assert byte-identical
   // Vue 3 codegen plus a small A/B timing budget.

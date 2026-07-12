@@ -183,6 +183,19 @@ export function selectCriterionSuites({ changedPaths, metadata, repoDir }) {
   };
 }
 
+export function changedPathsBetween(repoDir, baseSha, headSha) {
+  const mergeBase = run("git", ["merge-base", baseSha, headSha], repoDir).trim();
+  if (!/^[0-9a-f]{40}$/.test(mergeBase)) {
+    throw new Error("git merge-base did not return a full lowercase commit SHA");
+  }
+  const diff = run(
+    "git",
+    ["diff", "--name-status", "-z", "--find-renames", mergeBase, headSha, "--"],
+    repoDir,
+  );
+  return parseNameStatusZ(diff);
+}
+
 export function main(argv = process.argv.slice(2)) {
   const args = parseArgs(argv);
   const repoDir = resolve(requireArg(args, "repo-dir"));
@@ -197,16 +210,11 @@ export function main(argv = process.argv.slice(2)) {
       throw new Error(`${label} SHA must be a full lowercase commit SHA`);
   }
 
-  const diff = run(
-    "git",
-    ["diff", "--name-status", "-z", "--find-renames", baseSha, headSha, "--"],
-    repoDir,
-  );
   const metadata = JSON.parse(
     run("cargo", ["metadata", "--format-version", "1", "--locked"], repoDir),
   );
   const selection = selectCriterionSuites({
-    changedPaths: parseNameStatusZ(diff),
+    changedPaths: changedPathsBetween(repoDir, baseSha, headSha),
     metadata,
     repoDir,
   });

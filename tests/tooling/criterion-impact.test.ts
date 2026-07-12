@@ -1,4 +1,8 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 
 import {
@@ -6,10 +10,26 @@ import {
   renderSummary,
   resolveSuiteSelection,
 } from "../../bench/criterion-ab.mjs";
-import { parseNameStatusZ, selectCriterionSuites } from "../../bench/criterion-impact.mjs";
+import {
+  changedPathsBetween,
+  parseNameStatusZ,
+  selectCriterionSuites,
+} from "../../bench/criterion-impact.mjs";
 
 const repoDir = "/repo";
 const suiteNames = CRITERION_SUITES.map((suite) => suite.package);
+
+function git(cwd: string, args: string[]): string {
+  const result = spawnSync("git", args, { cwd, encoding: "utf8" });
+  assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+  return result.stdout.trim();
+}
+
+function commit(cwd: string, message: string): string {
+  git(cwd, ["add", "."]);
+  git(cwd, ["-c", "user.name=Vize", "-c", "user.email=vize@example.com", "commit", "-qm", message]);
+  return git(cwd, ["rev-parse", "HEAD"]);
+}
 
 function metadata(dependencies: Record<string, string[]> = {}) {
   const names = ["vize", "vize_atelier_core", ...suiteNames];
@@ -37,6 +57,24 @@ test("Criterion impact parser preserves both sides of renamed Rust paths", () =>
     ),
     ["crates/vize/src/main.rs", "crates/old/src/lib.rs", "crates/new/src/lib.rs"],
   );
+});
+
+test("Criterion impact diff excludes base-only changes after the feature fork", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-criterion-impact-"));
+  fs.mkdirSync(path.join(root, "crates", "vize"), { recursive: true });
+  git(root, ["init", "-q", "--initial-branch=main"]);
+  fs.writeFileSync(path.join(root, "README.md"), "base\n");
+  commit(root, "base");
+
+  git(root, ["switch", "-qc", "feature"]);
+  fs.writeFileSync(path.join(root, "crates", "vize", "feature.rs"), "feature\n");
+  const headSha = commit(root, "feature");
+
+  git(root, ["switch", "-q", "main"]);
+  fs.writeFileSync(path.join(root, "Cargo.lock"), "base advanced\n");
+  const baseSha = commit(root, "advance base");
+
+  assert.deepEqual(changedPathsBetween(root, baseSha, headSha), ["crates/vize/feature.rs"]);
 });
 
 test("direct Criterion package changes select only their suite", () => {
