@@ -166,6 +166,27 @@
             }
           else
             null;
+        clearTestboxEnvironment = ''
+          unset VIZE_TESTBOX_SHELL VIZE_BLACKSMITH_BIN
+        '';
+        activateTestboxEnvironment = lib.optionalString (blacksmith != null) ''
+          export VIZE_TESTBOX_SHELL=1
+          export VIZE_BLACKSMITH_BIN="${blacksmith}/bin/blacksmith"
+        '';
+        testboxEnvironmentCheck =
+          assert blacksmith != null;
+          pkgs.runCommand "vize-testbox-environment" { } ''
+            export VIZE_TESTBOX_SHELL=inherited
+            export VIZE_BLACKSMITH_BIN=/host/blacksmith
+            ${clearTestboxEnvironment}
+            test -z "''${VIZE_TESTBOX_SHELL:-}"
+            test -z "''${VIZE_BLACKSMITH_BIN:-}"
+            ${activateTestboxEnvironment}
+            test "$VIZE_TESTBOX_SHELL" = 1
+            test "$VIZE_BLACKSMITH_BIN" = "${blacksmith}/bin/blacksmith"
+            test -x "$VIZE_BLACKSMITH_BIN"
+            touch "$out"
+          '';
         nodejs = pkgs.nodejs_24;
         pnpm = pkgs.pnpm;
         workspaceVp = pkgs.writeShellApplication {
@@ -200,7 +221,7 @@
             if local_vp="$(resolve_local_vp)"; then
               if [ "$current_dir" = "$workspace_root" ] && [ "$#" -eq 1 ]; then
                 case "$1" in
-                  check | fmt | dev | build)
+                  build | check | dev | fmt | lint | test | *:*)
                     exec "$local_vp" run --workspace-root "$1"
                     ;;
                 esac
@@ -331,6 +352,7 @@
           RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
 
           shellHook = ''
+            ${clearTestboxEnvironment}
             export VIZE_WORKSPACE_ROOT="$PWD"
             export PATH="${workspaceVp}/bin:$VIZE_WORKSPACE_ROOT/node_modules/.bin:$PATH"
             export PLAYWRIGHT_BROWSERS_PATH="$PWD/.cache/ms-playwright"
@@ -365,7 +387,7 @@
               ''echo "MoonBit native toolchain is not available for ${system}; install it separately if needed."''
             }
             echo "Run: vp install --frozen-lockfile"
-            echo "Then: vp check / vp fmt / vp dev / vp build"
+            echo "Local defaults: vp check / vp fmt / vp dev / vp build / vp test / vp lint"
           '';
         };
         testboxDevShell = devShell.overrideAttrs (previous: {
@@ -377,8 +399,12 @@
             ]
             ++ lib.optionals (blacksmith != null) [ blacksmith ];
           shellHook = (previous.shellHook or "") + ''
+            ${activateTestboxEnvironment}
             echo "Blacksmith Testbox tools ready (CLI ${blacksmithVersion})."
-            echo "First use: blacksmith auth login"
+            echo "Pinned CLI: $VIZE_BLACKSMITH_BIN"
+            echo 'First use: "$VIZE_BLACKSMITH_BIN" auth login'
+            echo "After pushing the current HEAD, see CONTRIBUTING.md for warmup and safe ID capture."
+            echo "Then: vp build:testbox / vp test:testbox / vp lint:testbox; stop with vp testbox:stop"
           '';
         });
       in
@@ -391,6 +417,7 @@
         checks = {
           package = vize;
           shell = devShell.inputDerivation;
+          testbox-environment = testboxEnvironmentCheck;
         };
 
         devShells = {

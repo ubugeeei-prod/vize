@@ -400,7 +400,7 @@ Zed starting point:
 
 ## Local Development
 
-This repository uses `Nix + Vite+ (vp)` for local development. In this workspace, `vp` will use `pnpm` automatically.
+Local tasks stay local; [CI parity](./contributing.md#common-checks) uses `nix develop .#testbox`.
 
 ```bash
 nix develop

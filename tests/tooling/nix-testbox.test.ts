@@ -24,10 +24,17 @@ test("Nix isolates the pinned Blacksmith CLI from the default dev shell", () => 
   assert.ok(defaultShell, "default dev shell");
   assert.ok(testboxShell, "Testbox dev shell");
   assert.doesNotMatch(defaultShell, /blacksmith/i);
+  assert.doesNotMatch(defaultShell, /VIZE_TESTBOX_SHELL/);
+  assert.match(defaultShell, /\$\{clearTestboxEnvironment\}/);
   assert.match(testboxShell, /previous\.nativeBuildInputs/);
   assert.match(testboxShell, /pkgs\.gh/);
   assert.match(testboxShell, /pkgs\.rsync/);
   assert.match(testboxShell, /\[ blacksmith \]/);
+  assert.match(testboxShell, /\$\{activateTestboxEnvironment\}/);
+  assert.match(flake, /unset VIZE_TESTBOX_SHELL VIZE_BLACKSMITH_BIN/);
+  assert.match(flake, /export VIZE_TESTBOX_SHELL=1/);
+  assert.match(flake, /export VIZE_BLACKSMITH_BIN="\$\{blacksmith\}\/bin\/blacksmith"/);
+  assert.match(flake, /testbox-environment = testboxEnvironmentCheck/);
   assert.match(flake, /blacksmithVersion = "0\.4\.46";/);
   assert.ok(sourceUrls.length > 0, "fixed-output source URLs");
   for (const sourceUrl of sourceUrls) assert.doesNotMatch(sourceUrl, /\/latest\//);
