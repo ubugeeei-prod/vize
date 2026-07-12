@@ -1,0 +1,71 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+import { parse } from "yaml";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+test("Tool Benchmark ignores only known non-runtime pull request paths", () => {
+  const workflow = parse(
+    fs.readFileSync(path.join(root, ".github", "workflows", "tool-benchmark.yml"), "utf8"),
+  ) as Record<string, unknown>;
+  const events = workflow.on as { pull_request?: { "paths-ignore"?: string[] } };
+  const jobs = workflow.jobs as Record<
+    string,
+    {
+      if?: string;
+      needs?: string;
+      outputs?: Record<string, string>;
+      steps?: Array<Record<string, unknown>>;
+    }
+  >;
+  const impact = jobs["tool-benchmark-impact"];
+  const changeDetection = impact.steps?.[0]?.with as {
+    filters: string;
+    "predicate-quantifier"?: string;
+  };
+  const filters = parse(String(changeDetection.filters)) as {
+    runtime?: string[];
+  };
+
+  assert.equal(events.pull_request?.["paths-ignore"], undefined);
+  assert.equal(changeDetection["predicate-quantifier"], "every");
+  const expectedRuntimePatterns = [
+    "**",
+    "!**/*.md",
+    "!.changeset/**",
+    "!.github/ISSUE_TEMPLATE/**",
+    "!.github/PULL_REQUEST_TEMPLATE.md",
+    "!.github/actions/app-readiness/**",
+    "!.github/workflows/check.yml",
+    "!.github/workflows/criterion-bench.yml",
+    "!.github/workflows/deploy-docs.yml",
+    "!.github/workflows/e2e.yml",
+    "!.github/workflows/fuzz.yml",
+    "!.github/workflows/miri.yml",
+    "!.github/workflows/native-smoke.yml",
+    "!.github/workflows/pkg-pr-new.yml",
+    "!.github/workflows/release*.yml",
+    "!.github/workflows/title-policy.yml",
+    "!editors/**",
+    "!tests/**",
+    "!tools/github/**",
+    "!tools/moon/cmd/check_warning_budget/**",
+    "!tools/moon/cmd/enforce_rust_source_coverage/**",
+    "!tools/moon/cmd/github/**",
+    "!tools/moon/cmd/npm_tag/**",
+    "!tools/moon/cmd/publish*/**",
+    "!tools/moon/cmd/release/**",
+    "!tools/moon/cmd/source_file_lengths/**",
+  ];
+  assert.deepEqual([...(filters.runtime ?? [])].sort(), expectedRuntimePatterns.toSorted());
+  assert.match(impact.if ?? "", /github\.event_name == 'pull_request'/);
+  assert.equal(impact.outputs?.runtime, "${{ steps.changes.outputs.runtime }}");
+  assert.equal(jobs["tool-benchmark"].needs, "tool-benchmark-impact");
+  const benchmarkIf = jobs["tool-benchmark"].if ?? "";
+  assert.match(benchmarkIf, /always\(\).* !cancelled\(\)/);
+  assert.match(benchmarkIf, /github\.event_name != 'pull_request'/);
+  assert.match(benchmarkIf, /outputs\.runtime == 'true'/);
+});

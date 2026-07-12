@@ -62,8 +62,57 @@ env:
   VIZE_TOOL_BENCH_WARMUPS: ${{ github.event_name == 'workflow_dispatch' && inputs.warmups || '1' }}
 
 jobs:
+  tool-benchmark-impact:
+    name: tool-benchmark-impact
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      runtime: ${{ steps.changes.outputs.runtime }}
+    steps:
+      # Unknown paths match `**` and run the benchmark. Negations remove only
+      # areas known not to affect any measured CLI/native/Vite/Nuxt runtime.
+      - name: Detect measured runtime changes
+        id: changes
+        uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4.0.2
+        with:
+          predicate-quantifier: every
+          filters: |
+            runtime:
+              - '**'
+              - '!**/*.md'
+              - '!.changeset/**'
+              - '!.github/ISSUE_TEMPLATE/**'
+              - '!.github/PULL_REQUEST_TEMPLATE.md'
+              - '!.github/actions/app-readiness/**'
+              - '!.github/workflows/check.yml'
+              - '!.github/workflows/criterion-bench.yml'
+              - '!.github/workflows/deploy-docs.yml'
+              - '!.github/workflows/e2e.yml'
+              - '!.github/workflows/fuzz.yml'
+              - '!.github/workflows/miri.yml'
+              - '!.github/workflows/native-smoke.yml'
+              - '!.github/workflows/pkg-pr-new.yml'
+              - '!.github/workflows/release*.yml'
+              - '!.github/workflows/title-policy.yml'
+              - '!editors/**'
+              - '!tests/**'
+              - '!tools/github/**'
+              - '!tools/moon/cmd/check_warning_budget/**'
+              - '!tools/moon/cmd/enforce_rust_source_coverage/**'
+              - '!tools/moon/cmd/github/**'
+              - '!tools/moon/cmd/npm_tag/**'
+              - '!tools/moon/cmd/publish*/**'
+              - '!tools/moon/cmd/release/**'
+              - '!tools/moon/cmd/source_file_lengths/**'
+
   tool-benchmark:
     name: tool-benchmark
+    needs: tool-benchmark-impact
+    if: ${{ always() && !cancelled() && (github.event_name != 'pull_request' || needs.tool-benchmark-impact.outputs.runtime == 'true') }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 75
     permissions:
