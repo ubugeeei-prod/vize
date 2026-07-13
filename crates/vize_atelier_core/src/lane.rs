@@ -10,6 +10,8 @@ pub mod element;
 pub mod patterned_template;
 #[path = "transform/structural.rs"]
 pub mod structural;
+#[path = "transform/structural_keys.rs"]
+mod structural_keys;
 #[path = "transform/traverse.rs"]
 pub mod traverse;
 

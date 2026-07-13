@@ -9,6 +9,7 @@ use crate::{
 };
 
 use super::context::clone_expression;
+use super::structural_keys::extract_key_value_str;
 use super::traverse::traverse_children;
 use super::{ExitFns, ParentNode, TransformContext};
 
@@ -356,13 +357,16 @@ pub(crate) fn transform_v_if_with_directive<'a>(
 
             // Check for key collision with existing branches (vuejs/core #13881)
             let has_key_collision = if let Some(ref new_key) = user_key {
-                let new_key_str = extract_key_value_str(new_key);
+                let new_key_str = extract_key_value_str(new_key, ctx.template_syntax_quirks());
                 if let Some(parent) = &ctx.parent {
                     let children = parent.children_mut();
                     if let TemplateChildNode::If(if_node) = &children[if_idx] {
                         if_node.branches.iter().any(|existing_branch| {
                             if let Some(ref existing_key) = existing_branch.user_key {
-                                let existing_key_str = extract_key_value_str(existing_key);
+                                let existing_key_str = extract_key_value_str(
+                                    existing_key,
+                                    ctx.template_syntax_quirks(),
+                                );
                                 matches!((&new_key_str, &existing_key_str), (Some(nk), Some(ek)) if nk == ek)
                             } else {
                                 false
@@ -551,16 +555,5 @@ mod tests {
         let errors = transform_errors(r#"<div v-if="ok">yes</div><div v-else>no</div>"#);
 
         assert!(errors.is_empty(), "Unexpected errors: {:?}", errors);
-    }
-}
-
-/// Extract key value string from a PropNode for comparison
-fn extract_key_value_str(prop: &PropNode<'_>) -> Option<String> {
-    match prop {
-        PropNode::Attribute(attr) => attr.value.as_ref().map(|v| v.content.clone()),
-        PropNode::Directive(dir) => dir.exp.as_ref().map(|exp| match exp {
-            ExpressionNode::Simple(s) => s.content.clone(),
-            ExpressionNode::Compound(c) => c.loc.source.clone(),
-        }),
     }
 }
