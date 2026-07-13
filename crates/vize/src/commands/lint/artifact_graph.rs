@@ -178,6 +178,11 @@ fn configured_compilation(
     compilation
         .register_provider(vize_atelier_template::RawTemplateReliefProvider)
         .map_err(|error| vize_carton::cstr!("failed to register raw-template provider: {error}"))?;
+    compilation
+        .register_provider(vize_atelier_template::RawTemplateCroquisProvider)
+        .map_err(|error| {
+            vize_carton::cstr!("failed to register raw-template semantics provider: {error}")
+        })?;
     vize_patina::register_shared_document_lint_recipe(&mut compilation, Shared::clone(&linter))
         .map_err(|error| vize_carton::cstr!("failed to register Patina provider: {error}"))?;
     vize_patina::register_shared_module_lint_recipe(&mut compilation, Shared::clone(&linter))
