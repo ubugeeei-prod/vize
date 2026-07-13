@@ -85,14 +85,10 @@ void test("vapor codegen differs from vdom codegen for the same SFC", async (t) 
     "vdom output does not have defineVaporComponent",
   );
 
-  // vdom-specific marker present only in the vdom output: the block-based
-  // element factory from the virtual-DOM runtime.
-  t.assert.match(vdomCode, /createElementBlock/, "vdom output uses createElementBlock");
-  t.assert.doesNotMatch(
-    vaporCode,
-    /createElementBlock/,
-    "vapor output does not use createElementBlock",
-  );
+  // vdom-specific marker present only in the vdom output: the virtual-DOM
+  // element factory selected by the Atlas production backend.
+  t.assert.match(vdomCode, /h as _h/, "vdom output imports the h helper");
+  t.assert.doesNotMatch(vaporCode, /h as _h/, "vapor output does not import the h helper");
 });
 
 void test('vapor SFC with <script setup lang="ts"> compiles and strips TS', async (t) => {

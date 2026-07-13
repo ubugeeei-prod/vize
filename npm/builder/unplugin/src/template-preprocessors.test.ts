@@ -59,16 +59,16 @@ const msg = "x"
   // No warnings were collected during compilation.
   t.assert.deepStrictEqual(warnings, []);
 
-  // A render output is produced: the SFC descriptor object plus a runtime render
-  // helper import. (Vize inlines the render fn inside `setup`; there is no top-level
-  // `render` identifier, so we assert on the actual shape.)
+  // A render output is produced: the SFC descriptor object plus a standalone runtime
+  // render function. Atlas keeps script setup bindings on the setup return object and
+  // addresses them through `$setup` from render.
   t.assert.match(result.code, /_sfc_main/);
-  t.assert.match(result.code, /setup\(__props\)/);
-  t.assert.match(result.code, /_createElementBlock/);
+  t.assert.match(result.code, /setup\(__props, \{ expose: __expose, emit: __emit \}\)/);
+  t.assert.match(result.code, /_h\(_Fragment/);
   t.assert.match(result.code, /from "vue"/);
 
   // `{{ msg }}` interpolation was resolved into a real binding reference.
-  t.assert.match(result.code, /_toDisplayString\(msg\)/);
+  t.assert.match(result.code, /_toDisplayString\(\$setup\.msg\)/);
 
   // No leftover TS-only syntax in this JS `<script setup>` case.
   t.assert.doesNotMatch(result.code, /\binterface\b/);
@@ -102,7 +102,7 @@ const f: Foo = { a: 1 }
 
   // Still produces a render output.
   t.assert.match(result.code, /_sfc_main/);
-  t.assert.match(result.code, /_createElementBlock/);
+  t.assert.match(result.code, /_h\(_Fragment/);
 });
 
 void test("pug template with a scoped style compiles successfully", async (t) => {
@@ -142,6 +142,6 @@ const msg = "x"
 
   // The standard parser produces a real `div` element (contrast with the pug path,
   // where `div.box` is emitted as plain text).
-  t.assert.match(result.code, /_createElementBlock\("div"/);
-  t.assert.match(result.code, /_toDisplayString\(msg\)/);
+  t.assert.match(result.code, /_h\("div"/);
+  t.assert.match(result.code, /_toDisplayString\(\$setup\.msg\)/);
 });
