@@ -1,6 +1,8 @@
-use vize_atelier_core::TemplateSyntaxMode;
+#![cfg(feature = "legacy")]
+
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
 use vize_carton::Bump;
+use vize_relief::TemplateSyntaxMode;
 
 #[test]
 fn quirks_preserves_adjacent_table_control_flow() {
