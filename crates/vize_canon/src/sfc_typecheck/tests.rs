@@ -150,7 +150,7 @@ const { thickness, label } = props;
 
     assert!(
             virtual_ts.contains(
-                r#"type __WithDefaultsResult<T, D> = T extends unknown ? Omit<T, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? T[K] : Exclude<T[K], undefined> } : never;"#
+                r#"type __WithDefaultsResult<T, D> = T extends unknown ? Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__LooseRequired<T>[K], undefined> } : never;"#
             ),
             "{virtual_ts}"
         );

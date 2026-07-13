@@ -37,7 +37,7 @@ type __WithDefaultValue<T> = T | __DefaultFactory<T>;
 type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
 type __VizeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [T[K]] extends [boolean | undefined] ? K : never : never; type __DefineProps<T, __BKeys extends keyof T = __VizeBooleanKey<T>> = __LooseRequired<T> & { [K in __BKeys]-?: boolean };
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-type __WithDefaultsResult<T, D> = T extends unknown ? Omit<T, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? T[K] : Exclude<T[K], undefined> } : never;
+type __WithDefaultsResult<T, D> = T extends unknown ? Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__LooseRequired<T>[K], undefined> } : never;
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
 type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
@@ -79,7 +79,7 @@ function __setup() {
   const status = ref('loading')
   const message = ref('')
   
-  // @vize-map: 6450:6511 -> 0:80
+  // @vize-map: 6501:6562 -> 0:80
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
