@@ -414,3 +414,128 @@
 	path = tests/_fixtures/_git/nativescript-vue
 	url = https://github.com/nativescript-vue/nativescript-vue
 	shallow = true
+
+[submodule "tests/_fixtures/_git/sigma-file-manager"]
+	path = tests/_fixtures/_git/sigma-file-manager
+	url = https://github.com/aleksey-hoffman/sigma-file-manager
+	shallow = true
+
+[submodule "tests/_fixtures/_git/gogocode"]
+	path = tests/_fixtures/_git/gogocode
+	url = https://github.com/thx/gogocode
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-chartjs"]
+	path = tests/_fixtures/_git/vue-chartjs
+	url = https://github.com/apertureless/vue-chartjs
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vuesax"]
+	path = tests/_fixtures/_git/vuesax
+	url = https://github.com/lusaxweb/vuesax
+	shallow = true
+
+[submodule "tests/_fixtures/_git/cssgridgenerator"]
+	path = tests/_fixtures/_git/cssgridgenerator
+	url = https://github.com/sdras/cssgridgenerator
+	shallow = true
+
+[submodule "tests/_fixtures/_git/varlet"]
+	path = tests/_fixtures/_git/varlet
+	url = https://github.com/varletjs/varlet
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-select"]
+	path = tests/_fixtures/_git/vue-select
+	url = https://github.com/sagalbot/vue-select
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-cropper"]
+	path = tests/_fixtures/_git/vue-cropper
+	url = https://github.com/xyxiao001/vue-cropper
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-draggable-next"]
+	path = tests/_fixtures/_git/vue-draggable-next
+	url = https://github.com/SortableJS/vue.draggable.next
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-js-modal"]
+	path = tests/_fixtures/_git/vue-js-modal
+	url = https://github.com/euvl/vue-js-modal
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-bits"]
+	path = tests/_fixtures/_git/vue-bits
+	url = https://github.com/DavidHDev/vue-bits
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-netcore"]
+	path = tests/_fixtures/_git/vue-netcore
+	url = https://github.com/cq-panda/Vue.NetCore
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-draggable-plus"]
+	path = tests/_fixtures/_git/vue-draggable-plus
+	url = https://github.com/Alfred-Skyblue/vue-draggable-plus
+	shallow = true
+
+[submodule "tests/_fixtures/_git/tdesign"]
+	path = tests/_fixtures/_git/tdesign
+	url = https://github.com/Tencent/tdesign
+	shallow = true
+
+[submodule "tests/_fixtures/_git/epic-spinners"]
+	path = tests/_fixtures/_git/epic-spinners
+	url = https://github.com/epicmaxco/epic-spinners
+	shallow = true
+
+[submodule "tests/_fixtures/_git/portal-vue"]
+	path = tests/_fixtures/_git/portal-vue
+	url = https://github.com/LinusBorg/portal-vue
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vuestic-ui"]
+	path = tests/_fixtures/_git/vuestic-ui
+	url = https://github.com/epicmaxco/vuestic-ui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/piclist"]
+	path = tests/_fixtures/_git/piclist
+	url = https://github.com/Kuingsmile/PicList
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-draggable-resizable"]
+	path = tests/_fixtures/_git/vue-draggable-resizable
+	url = https://github.com/mauricius/vue-draggable-resizable
+	shallow = true
+
+[submodule "tests/_fixtures/_git/pinry"]
+	path = tests/_fixtures/_git/pinry
+	url = https://github.com/pinry/pinry
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vonic"]
+	path = tests/_fixtures/_git/vonic
+	url = https://github.com/wangdahoo/vonic
+	shallow = true
+
+[submodule "tests/_fixtures/_git/laravel-breeze"]
+	path = tests/_fixtures/_git/laravel-breeze
+	url = https://github.com/laravel/breeze
+	shallow = true
+
+[submodule "tests/_fixtures/_git/frappe-crm"]
+	path = tests/_fixtures/_git/frappe-crm
+	url = https://github.com/frappe/crm
+	shallow = true
+
+[submodule "tests/_fixtures/_git/v-viewer"]
+	path = tests/_fixtures/_git/v-viewer
+	url = https://github.com/mirari/v-viewer
+	shallow = true
+
+[submodule "tests/_fixtures/_git/antares"]
+	path = tests/_fixtures/_git/antares
+	url = https://github.com/antares-sql/antares
+	shallow = true

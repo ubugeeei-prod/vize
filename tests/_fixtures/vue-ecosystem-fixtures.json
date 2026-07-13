@@ -1558,6 +1558,656 @@
         "lsp"
       ],
       "diff": "curator-compare"
+    },
+    {
+      "id": "sigma-file-manager",
+      "displayName": "Sigma File Manager",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/sigma-file-manager",
+      "repository": "https://github.com/aleksey-hoffman/sigma-file-manager",
+      "revision": "00190b6d8d6834dcc2fa1b4cd3ac9f62b728ebde",
+      "license": {
+        "spdx": "GPL-3.0-or-later",
+        "files": [
+          "LICENSE.md"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "gogocode",
+      "displayName": "GoGoCode",
+      "kind": "tooling",
+      "fixturePath": "tests/_fixtures/_git/gogocode",
+      "repository": "https://github.com/thx/gogocode",
+      "revision": "6b94d4d05ee4facc935fe2c3e4965655913afd6e",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-chartjs",
+      "displayName": "Vue Chart.js",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-chartjs",
+      "repository": "https://github.com/apertureless/vue-chartjs",
+      "revision": "ebf26ede933ebd3672afc0309ec24537b28eec40",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vuesax",
+      "displayName": "Vuesax",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vuesax",
+      "repository": "https://github.com/lusaxweb/vuesax",
+      "revision": "3f03427ca3a66110c17d78c9b12093176b8683d1",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "cssgridgenerator",
+      "displayName": "CSS Grid Generator",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/cssgridgenerator",
+      "repository": "https://github.com/sdras/cssgridgenerator",
+      "revision": "be1e0a53497a7381ed5e60ba6c759bed0f271baf",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "varlet",
+      "displayName": "Varlet",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/varlet",
+      "repository": "https://github.com/varletjs/varlet",
+      "revision": "0e7693257b7fd2ac80c6327f71ea92a8260bc119",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-select",
+      "displayName": "Vue Select",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-select",
+      "repository": "https://github.com/sagalbot/vue-select",
+      "revision": "35897ade99e750a452e67df3b38e156d0c1fff42",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE.md"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-cropper",
+      "displayName": "Vue Cropper",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-cropper",
+      "repository": "https://github.com/xyxiao001/vue-cropper",
+      "revision": "29edd081e6a0293801bc2f692c93141f96532cb1",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-draggable-next",
+      "displayName": "Vue Draggable Next",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-draggable-next",
+      "repository": "https://github.com/SortableJS/vue.draggable.next",
+      "revision": "8687d34f3182a1a0bfb138e995609f32ffe3ce6b",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-js-modal",
+      "displayName": "Vue.js Modal",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-js-modal",
+      "repository": "https://github.com/euvl/vue-js-modal",
+      "revision": "2dcc67984a65ec6ad351f8a2b13bb84582a0800d",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE.md"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-bits",
+      "displayName": "Vue Bits",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-bits",
+      "repository": "https://github.com/DavidHDev/vue-bits",
+      "revision": "33103d89034f12266cd88f7d1647774dbf1a62b2",
+      "license": {
+        "spdx": "MIT AND LicenseRef-Commons-Clause-1.0",
+        "files": [
+          "LICENSE.md"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-netcore",
+      "displayName": "Vue.NetCore",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/vue-netcore",
+      "repository": "https://github.com/cq-panda/Vue.NetCore",
+      "revision": "a5512b75501bcc5f98c2b52aa498c4c07877f9ec",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue-draggable-plus",
+      "displayName": "Vue Draggable Plus",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-draggable-plus",
+      "repository": "https://github.com/Alfred-Skyblue/vue-draggable-plus",
+      "revision": "1b82b5f115fda6c2137698d823d59be7b895868b",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "tdesign",
+      "displayName": "TDesign",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/tdesign",
+      "repository": "https://github.com/Tencent/tdesign",
+      "revision": "cb8548e45c92c77c6bc119fe179b239b040ca15d",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "epic-spinners",
+      "displayName": "Epic Spinners",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/epic-spinners",
+      "repository": "https://github.com/epicmaxco/epic-spinners",
+      "revision": "3a4dda1d72fbeb2da9ac75bdd53df948e9c3f869",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "packages/epic-spinners/LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "portal-vue",
+      "displayName": "Portal Vue",
+      "kind": "library",
+      "fixturePath": "tests/_fixtures/_git/portal-vue",
+      "repository": "https://github.com/LinusBorg/portal-vue",
+      "revision": "024509fa1545c43ea2c306827ab718229814d2b3",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vuestic-ui",
+      "displayName": "Vuestic UI",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vuestic-ui",
+      "repository": "https://github.com/epicmaxco/vuestic-ui",
+      "revision": "c5337ed8e7e24ea294221326fe2ca6af8d3b8e1b",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE.MD"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "piclist",
+      "displayName": "PicList",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/piclist",
+      "repository": "https://github.com/Kuingsmile/PicList",
+      "revision": "3a26cc882983af899e97b4f492d06355c2a89077",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue-draggable-resizable",
+      "displayName": "Vue Draggable Resizable",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-draggable-resizable",
+      "repository": "https://github.com/mauricius/vue-draggable-resizable",
+      "revision": "72cda0844f765c85df7ae423de12bb54790bcc75",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "pinry",
+      "displayName": "Pinry",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/pinry",
+      "repository": "https://github.com/pinry/pinry",
+      "revision": "05476b112401cf34a38bfbffc67c37f5f6c3b38f",
+      "license": {
+        "spdx": "BSD-2-Clause",
+        "files": [
+          "LICENSE.md"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vonic",
+      "displayName": "Vonic",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vonic",
+      "repository": "https://github.com/wangdahoo/vonic",
+      "revision": "6ed81779655796459b4e807582ed26332cbaaf25",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "laravel-breeze",
+      "displayName": "Laravel Breeze",
+      "kind": "tooling",
+      "fixturePath": "tests/_fixtures/_git/laravel-breeze",
+      "repository": "https://github.com/laravel/breeze",
+      "revision": "727b746ac1fb8693b7a910eb562dc856ead9e1a7",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE.md"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "frappe-crm",
+      "displayName": "Frappe CRM",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/frappe-crm",
+      "repository": "https://github.com/frappe/crm",
+      "revision": "2f8c8343ffd75cdf8d6fd9f5f29c172d0f7e3be2",
+      "license": {
+        "spdx": "AGPL-3.0-only",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "v-viewer",
+      "displayName": "V Viewer",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/v-viewer",
+      "repository": "https://github.com/mirari/v-viewer",
+      "revision": "9d51fe98f9d2b5d7c836a637cbb3b11d20bf4899",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "antares",
+      "displayName": "Antares",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/antares",
+      "repository": "https://github.com/antares-sql/antares",
+      "revision": "954b455f612d170742c1a1065276132f2cc115ea",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
     }
   ]
 }
