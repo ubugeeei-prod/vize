@@ -45,6 +45,7 @@ test.describe("vuefes-2025 dev", () => {
     );
     await waitForHttpReady(app.url, app.port);
     page = await browser.newPage();
+    await mockViteHmrSocket(page);
     console.log(`${app.name} server is ready`);
   });
 
@@ -149,3 +150,10 @@ test.describe("vuefes-2025 dev", () => {
     });
   });
 });
+
+async function mockViteHmrSocket(page: Page): Promise<void> {
+  // These checks exercise initial compilation and rendering, not hot updates.
+  // Keeping the socket in Playwright prevents the fixture's two Vite HMR
+  // listeners from upgrading the same connection and terminating Nuxt.
+  await page.routeWebSocket(/\/_nuxt\//, () => {});
+}

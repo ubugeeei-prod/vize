@@ -131,7 +131,14 @@ async function compareRoute(
 }
 
 async function setupPage(page: Page): Promise<void> {
+  await mockViteHmrSocket(page);
   await installVisualStabilityHooks(page);
+}
+
+async function mockViteHmrSocket(page: Page): Promise<void> {
+  // Visual parity only needs the initial render. Mocking HMR avoids the
+  // fixture's duplicate WebSocket upgrade listeners crashing the dev server.
+  await page.routeWebSocket(/\/_nuxt\//, () => {});
 }
 
 async function openRoute(page: Page, baseUrl: string, route: VisualRoute): Promise<void> {
