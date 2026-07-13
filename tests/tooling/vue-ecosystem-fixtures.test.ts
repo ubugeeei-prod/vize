@@ -183,7 +183,11 @@ test("registered fixtures are pinned submodules with declared licenses", () => {
     assert.match(project.revision, /^[0-9a-f]{40}$/);
     assert.equal(gitlinkRevision, project.revision, `${project.id} revision should match gitlink`);
     assert.ok(project.license.spdx.length > 0, `${project.id} should declare an SPDX expression`);
-    assert.ok(project.license.files.length > 0, `${project.id} should declare license files`);
+    if (project.license.spdx === "NONE") {
+      assert.deepEqual(project.license.files, [], `${project.id} has no upstream license files`);
+    } else {
+      assert.ok(project.license.files.length > 0, `${project.id} should declare license files`);
+    }
 
     if (newlyAddedSubmodules.has(project.id)) {
       assert.equal(entry?.shallow, "true", `${project.id} should stay shallow in CI checkout`);
@@ -199,6 +203,15 @@ test("registered fixtures are pinned submodules with declared licenses", () => {
       }
     }
   }
+});
+
+test("missing upstream license metadata stays explicit", () => {
+  const registry = readRegistry();
+  const project = registry.projects.find((candidate) => candidate.id === "bym-vue-echarts");
+
+  assert.ok(project);
+  assert.equal(project.license.spdx, "NONE");
+  assert.deepEqual(project.license.files, []);
 });
 
 test("new fixture licenses and read-only policy stay explicit", () => {

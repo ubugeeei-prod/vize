@@ -289,3 +289,378 @@
 	path = tests/_fixtures/_git/gridea
 	url = https://github.com/getgridea/gridea
 	shallow = true
+
+[submodule "tests/_fixtures/_git/dbx"]
+	path = tests/_fixtures/_git/dbx
+	url = https://github.com/t8y2/dbx
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-material"]
+	path = tests/_fixtures/_git/vue-material
+	url = https://github.com/vuematerial/vue-material
+	shallow = true
+
+[submodule "tests/_fixtures/_git/datav"]
+	path = tests/_fixtures/_git/datav
+	url = https://github.com/DataV-Team/DataV
+	shallow = true
+
+[submodule "tests/_fixtures/_git/buefy"]
+	path = tests/_fixtures/_git/buefy
+	url = https://github.com/buefy/buefy
+	shallow = true
+
+[submodule "tests/_fixtures/_git/cube-ui"]
+	path = tests/_fixtures/_git/cube-ui
+	url = https://github.com/didi/cube-ui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/youtube-dl-gui"]
+	path = tests/_fixtures/_git/youtube-dl-gui
+	url = https://github.com/jely2002/youtube-dl-gui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/solidtime"]
+	path = tests/_fixtures/_git/solidtime
+	url = https://github.com/solidtime-io/solidtime
+	shallow = true
+
+[submodule "tests/_fixtures/_git/crater"]
+	path = tests/_fixtures/_git/crater
+	url = https://github.com/crater-invoice-inc/crater
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-native-core"]
+	path = tests/_fixtures/_git/vue-native-core
+	url = https://github.com/GeekyAnts/vue-native-core
+	shallow = true
+
+[submodule "tests/_fixtures/_git/muse-ui"]
+	path = tests/_fixtures/_git/muse-ui
+	url = https://github.com/museui/muse-ui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/inertia"]
+	path = tests/_fixtures/_git/inertia
+	url = https://github.com/inertiajs/inertia
+	shallow = true
+
+[submodule "tests/_fixtures/_git/gui-for-singbox"]
+	path = tests/_fixtures/_git/gui-for-singbox
+	url = https://github.com/GUI-for-Cores/GUI.for.SingBox
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-fabric-editor"]
+	path = tests/_fixtures/_git/vue-fabric-editor
+	url = https://github.com/ikuaitu/vue-fabric-editor
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-grid-layout"]
+	path = tests/_fixtures/_git/vue-grid-layout
+	url = https://github.com/jbaysolutions/vue-grid-layout
+	shallow = true
+
+[submodule "tests/_fixtures/_git/splayer"]
+	path = tests/_fixtures/_git/splayer
+	url = https://github.com/SPlayer-Dev/SPlayer
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vuelidate"]
+	path = tests/_fixtures/_git/vuelidate
+	url = https://github.com/vuelidate/vuelidate
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vuetorrent"]
+	path = tests/_fixtures/_git/vuetorrent
+	url = https://github.com/VueTorrent/VueTorrent
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-multiselect"]
+	path = tests/_fixtures/_git/vue-multiselect
+	url = https://github.com/shentao/vue-multiselect
+	shallow = true
+
+[submodule "tests/_fixtures/_git/frpc-desktop"]
+	path = tests/_fixtures/_git/frpc-desktop
+	url = https://github.com/luckjiawei/frpc-desktop
+	shallow = true
+
+[submodule "tests/_fixtures/_git/v-charts"]
+	path = tests/_fixtures/_git/v-charts
+	url = https://github.com/ElemeFE/v-charts
+	shallow = true
+
+[submodule "tests/_fixtures/_git/music-website"]
+	path = tests/_fixtures/_git/music-website
+	url = https://github.com/Yin-Hongwei/music-website
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-flow"]
+	path = tests/_fixtures/_git/vue-flow
+	url = https://github.com/bcakmakoglu/vue-flow
+	shallow = true
+
+[submodule "tests/_fixtures/_git/mavon-editor"]
+	path = tests/_fixtures/_git/mavon-editor
+	url = https://github.com/hinesboy/mavonEditor
+	shallow = true
+
+[submodule "tests/_fixtures/_git/nutui"]
+	path = tests/_fixtures/_git/nutui
+	url = https://github.com/jd-opensource/nutui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/nativescript-vue"]
+	path = tests/_fixtures/_git/nativescript-vue
+	url = https://github.com/nativescript-vue/nativescript-vue
+	shallow = true
+
+[submodule "tests/_fixtures/_git/sigma-file-manager"]
+	path = tests/_fixtures/_git/sigma-file-manager
+	url = https://github.com/aleksey-hoffman/sigma-file-manager
+	shallow = true
+
+[submodule "tests/_fixtures/_git/gogocode"]
+	path = tests/_fixtures/_git/gogocode
+	url = https://github.com/thx/gogocode
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-chartjs"]
+	path = tests/_fixtures/_git/vue-chartjs
+	url = https://github.com/apertureless/vue-chartjs
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vuesax"]
+	path = tests/_fixtures/_git/vuesax
+	url = https://github.com/lusaxweb/vuesax
+	shallow = true
+
+[submodule "tests/_fixtures/_git/cssgridgenerator"]
+	path = tests/_fixtures/_git/cssgridgenerator
+	url = https://github.com/sdras/cssgridgenerator
+	shallow = true
+
+[submodule "tests/_fixtures/_git/varlet"]
+	path = tests/_fixtures/_git/varlet
+	url = https://github.com/varletjs/varlet
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-select"]
+	path = tests/_fixtures/_git/vue-select
+	url = https://github.com/sagalbot/vue-select
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-cropper"]
+	path = tests/_fixtures/_git/vue-cropper
+	url = https://github.com/xyxiao001/vue-cropper
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-draggable-next"]
+	path = tests/_fixtures/_git/vue-draggable-next
+	url = https://github.com/SortableJS/vue.draggable.next
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-js-modal"]
+	path = tests/_fixtures/_git/vue-js-modal
+	url = https://github.com/euvl/vue-js-modal
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-bits"]
+	path = tests/_fixtures/_git/vue-bits
+	url = https://github.com/DavidHDev/vue-bits
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-netcore"]
+	path = tests/_fixtures/_git/vue-netcore
+	url = https://github.com/cq-panda/Vue.NetCore
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-draggable-plus"]
+	path = tests/_fixtures/_git/vue-draggable-plus
+	url = https://github.com/Alfred-Skyblue/vue-draggable-plus
+	shallow = true
+
+[submodule "tests/_fixtures/_git/tdesign"]
+	path = tests/_fixtures/_git/tdesign
+	url = https://github.com/Tencent/tdesign
+	shallow = true
+
+[submodule "tests/_fixtures/_git/epic-spinners"]
+	path = tests/_fixtures/_git/epic-spinners
+	url = https://github.com/epicmaxco/epic-spinners
+	shallow = true
+
+[submodule "tests/_fixtures/_git/portal-vue"]
+	path = tests/_fixtures/_git/portal-vue
+	url = https://github.com/LinusBorg/portal-vue
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vuestic-ui"]
+	path = tests/_fixtures/_git/vuestic-ui
+	url = https://github.com/epicmaxco/vuestic-ui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/piclist"]
+	path = tests/_fixtures/_git/piclist
+	url = https://github.com/Kuingsmile/PicList
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-draggable-resizable"]
+	path = tests/_fixtures/_git/vue-draggable-resizable
+	url = https://github.com/mauricius/vue-draggable-resizable
+	shallow = true
+
+[submodule "tests/_fixtures/_git/pinry"]
+	path = tests/_fixtures/_git/pinry
+	url = https://github.com/pinry/pinry
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vonic"]
+	path = tests/_fixtures/_git/vonic
+	url = https://github.com/wangdahoo/vonic
+	shallow = true
+
+[submodule "tests/_fixtures/_git/laravel-breeze"]
+	path = tests/_fixtures/_git/laravel-breeze
+	url = https://github.com/laravel/breeze
+	shallow = true
+
+[submodule "tests/_fixtures/_git/frappe-crm"]
+	path = tests/_fixtures/_git/frappe-crm
+	url = https://github.com/frappe/crm
+	shallow = true
+
+[submodule "tests/_fixtures/_git/v-viewer"]
+	path = tests/_fixtures/_git/v-viewer
+	url = https://github.com/mirari/v-viewer
+	shallow = true
+
+[submodule "tests/_fixtures/_git/antares"]
+	path = tests/_fixtures/_git/antares
+	url = https://github.com/antares-sql/antares
+	shallow = true
+
+[submodule "tests/_fixtures/_git/heyui"]
+	path = tests/_fixtures/_git/heyui
+	url = https://github.com/heyui/heyui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-data-ui"]
+	path = tests/_fixtures/_git/vue-data-ui
+	url = https://github.com/graphieros/vue-data-ui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/splitpanes"]
+	path = tests/_fixtures/_git/splitpanes
+	url = https://github.com/antoniandre/splitpanes
+	shallow = true
+
+[submodule "tests/_fixtures/_git/tailwind-config-viewer"]
+	path = tests/_fixtures/_git/tailwind-config-viewer
+	url = https://github.com/rogden/tailwind-config-viewer
+	shallow = true
+
+[submodule "tests/_fixtures/_git/frappe-builder"]
+	path = tests/_fixtures/_git/frappe-builder
+	url = https://github.com/frappe/builder
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-uploader"]
+	path = tests/_fixtures/_git/vue-uploader
+	url = https://github.com/simple-uploader/vue-uploader
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vant-demo"]
+	path = tests/_fixtures/_git/vant-demo
+	url = https://github.com/vant-ui/vant-demo
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-dropzone"]
+	path = tests/_fixtures/_git/vue-dropzone
+	url = https://github.com/rowanwins/vue-dropzone
+	shallow = true
+
+[submodule "tests/_fixtures/_git/multiple-select"]
+	path = tests/_fixtures/_git/multiple-select
+	url = https://github.com/wenzhixin/multiple-select
+	shallow = true
+
+[submodule "tests/_fixtures/_git/alexandrie"]
+	path = tests/_fixtures/_git/alexandrie
+	url = https://github.com/Smaug6739/Alexandrie
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-fullpage-js"]
+	path = tests/_fixtures/_git/vue-fullpage-js
+	url = https://github.com/alvarotrigo/vue-fullpage.js
+	shallow = true
+
+[submodule "tests/_fixtures/_git/arco-design-pro-vue"]
+	path = tests/_fixtures/_git/arco-design-pro-vue
+	url = https://github.com/arco-design/arco-design-pro-vue
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-datepicker"]
+	path = tests/_fixtures/_git/vue-datepicker
+	url = https://github.com/Vuepic/vue-datepicker
+	shallow = true
+
+[submodule "tests/_fixtures/_git/layoutit-grid"]
+	path = tests/_fixtures/_git/layoutit-grid
+	url = https://github.com/layoutit/layoutit-grid
+	shallow = true
+
+[submodule "tests/_fixtures/_git/jellyfin-vue"]
+	path = tests/_fixtures/_git/jellyfin-vue
+	url = https://github.com/jellyfin/jellyfin-vue
+	shallow = true
+
+[submodule "tests/_fixtures/_git/lew-ui"]
+	path = tests/_fixtures/_git/lew-ui
+	url = https://github.com/lewkamtao/lew-ui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-sonner"]
+	path = tests/_fixtures/_git/vue-sonner
+	url = https://github.com/xiaoluoboding/vue-sonner
+	shallow = true
+
+[submodule "tests/_fixtures/_git/element-plus-x"]
+	path = tests/_fixtures/_git/element-plus-x
+	url = https://github.com/element-plus-x/Element-Plus-X
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-vine"]
+	path = tests/_fixtures/_git/vue-vine
+	url = https://github.com/vue-vine/vue-vine
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-calendar"]
+	path = tests/_fixtures/_git/vue-calendar
+	url = https://github.com/jinzhe/vue-calendar
+	shallow = true
+
+[submodule "tests/_fixtures/_git/prevue"]
+	path = tests/_fixtures/_git/prevue
+	url = https://github.com/open-source-labs/PreVue
+	shallow = true
+
+[submodule "tests/_fixtures/_git/bym-vue-echarts"]
+	path = tests/_fixtures/_git/bym-vue-echarts
+	url = https://github.com/bym110/vue-echarts
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-apexcharts"]
+	path = tests/_fixtures/_git/vue-apexcharts
+	url = https://github.com/apexcharts/vue-apexcharts
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-lottie"]
+	path = tests/_fixtures/_git/vue-lottie
+	url = https://github.com/chenqingspring/vue-lottie
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-cal-v4"]
+	path = tests/_fixtures/_git/vue-cal-v4
+	url = https://github.com/antoniandre/vue-cal-v4
+	shallow = true
