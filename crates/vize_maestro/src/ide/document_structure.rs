@@ -40,12 +40,12 @@ impl SfcDocumentStructureService {
             let name = style.module.as_ref().map_or_else(
                 || {
                     if style.scoped {
-                        "style scoped".to_string()
+                        vize_carton::cstr!("style scoped")
                     } else {
-                        format!("style[{index}]")
+                        vize_carton::cstr!("style[{index}]")
                     }
                 },
-                |module| format!("style module={module}"),
+                |module| vize_carton::cstr!("style module={module}"),
             );
             symbols.push(block_symbol(
                 &name,

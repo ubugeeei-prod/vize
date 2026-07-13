@@ -7,6 +7,7 @@ use std::{
 };
 
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use vize_carton::String;
 
 use crate::commands::build::config::{CompileError, CompileOutput, CompileStats, FileProfile};
 

@@ -87,7 +87,7 @@ impl TypeService {
         let template_offset = ctx.offset - template_start;
 
         // Build type context
-        let type_ctx = Self::build_type_context(&descriptor);
+        let type_ctx = Self::build_type_context(descriptor);
 
         // Get type at position
         let checker = vize_canon::TypeChecker::new();
@@ -115,7 +115,7 @@ impl TypeService {
         let template_offset = ctx.offset - template_start;
 
         // Build type context
-        let type_ctx = Self::build_type_context(&descriptor);
+        let type_ctx = Self::build_type_context(descriptor);
 
         // Get completions
         let checker = vize_canon::TypeChecker::new();

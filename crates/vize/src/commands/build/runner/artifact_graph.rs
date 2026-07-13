@@ -1,6 +1,12 @@
 //! Multi-source Atlas preparation for the production build command.
 
-use std::{fs, path::PathBuf, sync::atomic::Ordering, time::Duration, time::Instant};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    sync::atomic::Ordering,
+    time::Duration,
+    time::Instant,
+};
 
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use vize_atelier_sfc::{
@@ -94,12 +100,12 @@ impl BuildArtifactGraph {
     }
 }
 
-fn read_source(path: PathBuf) -> Result<(PathBuf, std::string::String, Duration), CompileError> {
+fn read_source(path: PathBuf) -> Result<(PathBuf, String, Duration), CompileError> {
     let started = Instant::now();
     match profile!("cli.build.file.read", fs::read_to_string(&path)) {
         Ok(source) => {
             global_profiler().record_fs_read_to_string(source.len());
-            Ok((path, source, started.elapsed()))
+            Ok((path, source.into(), started.elapsed()))
         }
         Err(error) => {
             global_profiler().record_fs_read_to_string_failure();
@@ -112,7 +118,7 @@ fn read_source(path: PathBuf) -> Result<(PathBuf, std::string::String, Duration)
     }
 }
 
-fn compile_request(path: &PathBuf, settings: CompileFileSettings) -> SfcCompileRequest {
+fn compile_request(path: &Path, settings: CompileFileSettings) -> SfcCompileRequest {
     let filename: String = path
         .file_name()
         .and_then(|name| name.to_str())

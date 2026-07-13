@@ -1,4 +1,7 @@
-use super::*;
+use super::{
+    ByteRange, JsxSyntaxAttribute, JsxSyntaxAttributeValue, JsxSyntaxNode, JsxSyntaxSpan,
+    MarkupBindingKind, MarkupElement, is_jsx_event_handler_name,
+};
 
 pub(super) fn snapshot_children(node: &JsxSyntaxNode) -> &[JsxSyntaxNode] {
     match node {

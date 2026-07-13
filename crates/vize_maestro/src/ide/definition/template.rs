@@ -450,13 +450,13 @@ pub(crate) fn find_component_prop_definition(
 
         let analysis = if ctx.state.legacy_vue2_enabled() {
             analyze_sfc_descriptor_with_context_legacy_vue2(
-                &descriptor,
+                descriptor,
                 None,
                 SfcCroquisOptions::full(),
             )
         } else {
             analyze_sfc_descriptor_with_context_options_api(
-                &descriptor,
+                descriptor,
                 None,
                 SfcCroquisOptions::full(),
             )

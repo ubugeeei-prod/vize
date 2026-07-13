@@ -172,12 +172,11 @@ impl super::DefinitionService {
         }
 
         // Check if this is a prop name used directly in template
-        if helpers::is_in_vue_directive_expression(ctx) {
-            if let Some(descriptor) = ctx.sfc_descriptor()
-                && let Some(def) = template::find_prop_definition_by_name(ctx, descriptor, &word)
-            {
-                return Some(def);
-            }
+        if helpers::is_in_vue_directive_expression(ctx)
+            && let Some(descriptor) = ctx.sfc_descriptor()
+            && let Some(def) = template::find_prop_definition_by_name(ctx, descriptor, &word)
+        {
+            return Some(def);
         }
 
         // Fall back to synchronous definition

@@ -117,11 +117,11 @@ fn component_is_used(
 }
 
 fn normalize_component_name(name: &str) -> String {
-    name.chars()
-        .filter(char::is_ascii_alphanumeric)
-        .map(|character| character.to_ascii_lowercase())
-        .collect::<std::string::String>()
-        .to_compact_string()
+    let mut normalized = String::new("");
+    for character in name.chars().filter(char::is_ascii_alphanumeric) {
+        normalized.push(character.to_ascii_lowercase());
+    }
+    normalized
 }
 
 fn push_graph_edge(edges: &mut Vec<InspectorGraphEdge>, edge: InspectorGraphEdge) {

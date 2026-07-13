@@ -154,26 +154,25 @@ pub(crate) fn definition_in_style(ctx: &IdeContext) -> Option<GotoDefinitionResp
     }
 
     // Check for v-bind() references to script variables.
-    if is_inside_style_v_bind_argument(&ctx.content, ctx.offset) {
-        if let Some(descriptor) = ctx.sfc_descriptor()
-            && let Some(ref script_setup) = descriptor.script_setup
-        {
-            let content = script_setup.content.as_ref();
-            if let Some(binding_loc) = find_binding_location_raw(content, &word) {
-                let sfc_offset = script_setup.loc.start + binding_loc.offset;
-                let (line, character) = helpers::offset_to_position(&ctx.content, sfc_offset);
+    if is_inside_style_v_bind_argument(&ctx.content, ctx.offset)
+        && let Some(descriptor) = ctx.sfc_descriptor()
+        && let Some(ref script_setup) = descriptor.script_setup
+    {
+        let content = script_setup.content.as_ref();
+        if let Some(binding_loc) = find_binding_location_raw(content, &word) {
+            let sfc_offset = script_setup.loc.start + binding_loc.offset;
+            let (line, character) = helpers::offset_to_position(&ctx.content, sfc_offset);
 
-                return Some(GotoDefinitionResponse::Scalar(Location {
-                    uri: ctx.uri.clone(),
-                    range: Range {
-                        start: Position { line, character },
-                        end: Position {
-                            line,
-                            character: character + word.len() as u32,
-                        },
+            return Some(GotoDefinitionResponse::Scalar(Location {
+                uri: ctx.uri.clone(),
+                range: Range {
+                    start: Position { line, character },
+                    end: Position {
+                        line,
+                        character: character + word.len() as u32,
                     },
-                }));
-            }
+                },
+            }));
         }
     }
 

@@ -70,7 +70,11 @@ use vize_relief::{
 
 #[path = "markup/snapshot.rs"]
 mod snapshot;
-use snapshot::*;
+use snapshot::{
+    snapshot_attribute_arg, snapshot_attribute_dynamic, snapshot_attribute_kind,
+    snapshot_attribute_name, snapshot_attribute_span, snapshot_children, snapshot_range,
+    walk_snapshot_nodes,
+};
 
 /// High-level classification for a markup element.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
