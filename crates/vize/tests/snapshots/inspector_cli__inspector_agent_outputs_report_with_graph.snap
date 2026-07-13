@@ -1,5 +1,6 @@
 ---
 source: crates/vize/tests/inspector_cli.rs
+assertion_line: 239
 expression: "serde_json::to_string_pretty(&json).unwrap()"
 ---
 {
@@ -83,8 +84,8 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
             "name": "Child",
             "props": [],
             "range": {
-              "end": 12,
-              "start": 3
+              "end": 86,
+              "start": 77
             },
             "scopeId": 5,
             "slots": [],
@@ -155,8 +156,8 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
               0
             ],
             "range": {
-              "end": 29,
-              "start": 0
+              "end": 103,
+              "start": 74
             }
           },
           {
@@ -168,8 +169,8 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
               4
             ],
             "range": {
-              "end": 29,
-              "start": 0
+              "end": 103,
+              "start": 74
             }
           },
           {
@@ -194,6 +195,11 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
             }
           }
         ],
+        "sourceAnchor": {
+          "parent_range": null,
+          "revision": 1,
+          "source": 1
+        },
         "summary": {
           "bindingSpanCount": 1,
           "bindsAttrsExplicitly": false,
@@ -277,6 +283,11 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
             }
           }
         ],
+        "sourceAnchor": {
+          "parent_range": null,
+          "revision": 1,
+          "source": 2
+        },
         "summary": {
           "bindingSpanCount": 0,
           "bindsAttrsExplicitly": false,
@@ -356,6 +367,7 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
       "fallthroughAttrRiskFiles": 0,
       "importStatementCount": 1,
       "injectCount": 0,
+      "jsxParseErrorFiles": 0,
       "modelDefinitionCount": 0,
       "passedPropCount": 0,
       "propDefinitionCount": 0,
