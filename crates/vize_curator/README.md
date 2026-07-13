@@ -29,10 +29,12 @@ orchestration layer for running `@vue/compiler-sfc` and formatting output.
 - summary metrics for files and options
 - a lightweight cross-file graph extracted from local imports
 
-The same graph metadata is available in the playground inspector. Component
-edges are added when a local Vue import is used as a template tag, which makes
-batch payloads easier to inspect without reimplementing graph extraction in
-TypeScript.
+The same graph metadata is available in the playground inspector. Vue SFCs use
+descriptor, Relief, Croquis, and conditional Module products. JSX/TSX uses its
+owned syntax plus Module and Croquis without Relief; raw JS/TS uses Module only.
+Component edges are added when a local component import is used by a Vue
+template or JSX tag, including JSX namespace members. This keeps batch payloads
+inspectable without rebuilding graph extraction in TypeScript.
 
 The report is intended for local debugging and AI-agent handoff, not as a
 stable public interchange format.

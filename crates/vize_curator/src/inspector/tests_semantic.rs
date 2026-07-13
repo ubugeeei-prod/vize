@@ -87,3 +87,77 @@ const groups = [{ id: 1, visible: true }]
         }
     }
 }
+
+#[test]
+fn tsx_agent_report_keeps_script_and_jsx_semantics_referentially_complete() {
+    let files = vec![InspectorSourceFile {
+        path: cstr!("src/App.tsx"),
+        source: String::from(
+            "import Child from './Child'; const count = 1; export const App = () => <Child value={count} />;",
+        ),
+    }];
+    let payload = build_payload(
+        InspectorTarget::Dom,
+        InspectorOptions {
+            custom_renderer: false,
+            template_syntax: InspectorTemplateSyntax::Standard,
+        },
+        files.clone(),
+    );
+    let report = build_agent_report(payload, cstr!("https://example.test"), files);
+    let report_json = serialize_agent_report(&report).expect("report serializes");
+    let report: serde_json::Value =
+        serde_json::from_str(report_json.as_str()).expect("report is valid JSON");
+    let snapshot = &report["semanticFiles"][0]["snapshot"];
+    let summary = &snapshot["summary"];
+    let scope_ids = snapshot["scopes"]
+        .as_array()
+        .expect("semantic scopes")
+        .iter()
+        .map(|scope| scope["id"].as_u64().expect("scope id"))
+        .collect::<FxHashSet<_>>();
+
+    assert_eq!(summary["importStatementCount"], 1);
+    assert!(
+        summary["scriptBindingCount"]
+            .as_u64()
+            .is_some_and(|count| count > 0)
+    );
+    assert_eq!(summary["componentUsageCount"], 1);
+    for collection in ["componentUsages", "templateExpressions"] {
+        for item in snapshot[collection]
+            .as_array()
+            .expect("semantic collection")
+        {
+            assert!(
+                scope_ids.contains(&item["scopeId"].as_u64().expect("referenced scope id")),
+                "{collection} scope must resolve: {item}"
+            );
+        }
+    }
+}
+
+#[test]
+fn malformed_tsx_is_counted_as_a_frontend_parse_error() {
+    let files = vec![InspectorSourceFile {
+        path: cstr!("src/Broken.tsx"),
+        source: cstr!("export const Broken = () => <main"),
+    }];
+    let payload = build_payload(
+        InspectorTarget::Dom,
+        InspectorOptions {
+            custom_renderer: false,
+            template_syntax: InspectorTemplateSyntax::Standard,
+        },
+        files.clone(),
+    );
+    let report = build_agent_report(payload, cstr!("https://example.test"), files);
+    let report_json = serialize_agent_report(&report).expect("report serializes");
+    let report: serde_json::Value =
+        serde_json::from_str(report_json.as_str()).expect("report is valid JSON");
+    let semantic = &report["summary"]["semantic"];
+
+    assert_eq!(semantic["jsxParseErrorFiles"], 1);
+    assert_eq!(semantic["analyzedFiles"], 0);
+    assert!(report["semanticFiles"].as_array().unwrap().is_empty());
+}

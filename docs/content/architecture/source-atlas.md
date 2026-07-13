@@ -61,25 +61,25 @@ flowchart LR
     SFC["SFC source"] --> SD["SFC descriptor"]
     SD --> VT["template source"]
     SD -. "when script exists" .-> MODULE["module facts"]
-    VT --> RELIEF["Relief syntax"]
-    RAWTPL["raw template"] --> RELIEF
-    RAWTPL --> SEM["Croquis semantics"]
+    VT -. "when requested" .-> RELIEF["Relief syntax"]
+    RAWTPL["raw template"] -. "when requested" .-> RELIEF
+    RAWTPL -. "when requested" .-> SEM["Croquis semantics"]
     JSX["JSX / TSX source"] --> OXC["owned JSX syntax"]
-    OXC --> MODULE
+    OXC -. "when requested" .-> MODULE
     RAWMOD["raw JS / TS"] --> MODULE
 
-    RELIEF --> SEM
-    MODULE --> SEM
-    OXC --> SEM
-    RELIEF --> FLOW["Flow graph"]
-    OXC --> FLOW
-    MODULE --> FLOW
-    RELIEF --> RENDU["Rendu HIR"]
-    OXC --> RENDU
+    RELIEF -. "when requested" .-> SEM
+    MODULE -. "when requested" .-> SEM
+    OXC -. "when requested" .-> SEM
+    RELIEF -. "when requested" .-> FLOW["Flow graph"]
+    OXC -. "when requested" .-> FLOW
+    MODULE -. "when requested" .-> FLOW
+    RELIEF -. "when requested" .-> RENDU["Rendu HIR"]
+    OXC -. "when requested" .-> RENDU
 
-    RENDU --> DOM["DOM module"]
-    RENDU --> SSR["SSR module"]
-    RENDU --> VAPOR["Vapor plan"]
+    RENDU -. "selected target" .-> DOM["DOM module"]
+    RENDU -. "selected target" .-> SSR["SSR module"]
+    RENDU -. "selected target" .-> VAPOR["Vapor plan"]
     RELIEF -. "template rules" .-> LINT["Patina diagnostics"]
     MODULE -. "module rules" .-> LINT
     SEM -. "semantic rules" .-> LINT
@@ -170,6 +170,25 @@ stores the concrete `ProviderId`, target source/range, code, and message. These
 side outcomes are cached with the product, so a cache hit preserves provenance
 instead of reconstructing telemetry after execution. JSX parser diagnostics
 exercise this path in the canary integration tests.
+
+## Frontend registration and host composition
+
+A frontend registrar registers only provider implementations owned by that
+frontend crate. It may implement a peer product identity such as Module,
+Croquis, Flow, or Rendu for its own source shape, but it never calls a peer
+crate's registrar and never installs DOM, SSR, or Vapor backends implicitly.
+
+The application host is the composition root. A build host registers the SFC
+or JSX frontend plus the selected peer render backends. A lint host registers
+the applicable frontends, raw Module support, and Patina, but no render
+backend. Cross-file and compact semantic projections are registered only by
+hosts that expose those roots. Registration alone does not execute a product;
+the requested root still determines the plan.
+
+`tools/check-graph-backend-boundaries.sh` enforces this registrar boundary for
+the SFC, JSX/TSX, and raw-template frontends. Source-shaped plan tests then
+prove that raw JS/TS remains Module-only, template-only SFCs avoid Module, and
+unrequested peer products have zero executions and no cache entry.
 
 ## Sources and provenance
 
@@ -274,7 +293,7 @@ there is no shadow execution or second parse used only for telemetry.
 | `vize check`                  | one project snapshot for Vue, TS, declarations, and JSX/TSX                                                                    | Canon typed-document products; SFCs use descriptor and Croquis, conditional Relief/Module, and no fabricated Flow                                      |
 | Maestro                       | one URI-keyed mutable compilation; open and discovered file-backed Vue dependency URIs retain source identity across revisions | SFC descriptor/Module/Relief/Croquis, raw-template Relief/Croquis, JSX syntax, Patina, Canon, `GlyphFormatProduct`, and virtual documents as requested |
 | Standalone Glyph / `vize fmt` | one document compilation per SFC formatting request                                                                            | `GlyphFormatProduct` over the SFC descriptor                                                                                                           |
-| Inspector                     | one report-scoped multi-source compilation                                                                                     | `InspectorAgentReport` over per-source analyses; SFC analysis uses Module/descriptor/Relief/Croquis, raw JS/TS uses Module                             |
+| Inspector                     | one report-scoped multi-source compilation                                                                                     | `InspectorAgentReport` over per-source analyses; SFC uses descriptor/Relief/Croquis plus conditional Module, JSX/TSX uses owned JSX syntax/Module/Croquis without Relief, and raw JS/TS uses Module |
 | NAPI/WASM bindings            | one compilation per stateless request; one compilation shared by each batch API                                                | SFC/JSX compile, raw `TemplateCompile`, Patina, Canon, and cross-file analysis roots exposed by that binding surface                                   |
 | Bundler hosts                 | one native compile request per transform, with native batch compilation where the host batches inputs                          | SFC or JSX compiled-module products and source maps through the binding API; bundlers do not own graph products                                        |
 

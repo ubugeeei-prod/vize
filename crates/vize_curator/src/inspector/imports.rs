@@ -24,7 +24,7 @@ pub(super) fn analyze_script_file(modules: &ModuleDocument) -> FileAnalysis {
     }
 }
 
-pub(super) fn analyze_sfc_file(
+pub(super) fn analyze_component_file(
     modules: &ModuleDocument,
     semantics: &CroquisSemanticSnapshot,
 ) -> FileAnalysis {
@@ -44,6 +44,9 @@ fn collect_imports(modules: &ModuleDocument) -> Vec<ImportEdge> {
         .iter()
         .flat_map(|module| module.imports.iter())
         .filter(|import| !import.type_only)
+        .filter(|import| {
+            import.bindings.is_empty() || import.bindings.iter().any(|binding| !binding.type_only)
+        })
         .map(import_edge)
         .collect()
 }
@@ -56,10 +59,19 @@ fn import_edge(import: &ModuleImport) -> ImportEdge {
         } else {
             "import"
         },
-        locals: import
-            .locals
-            .iter()
-            .map(|local| local.as_ref().to_compact_string())
-            .collect(),
+        locals: if import.bindings.is_empty() {
+            import
+                .locals
+                .iter()
+                .map(|local| local.as_ref().to_compact_string())
+                .collect()
+        } else {
+            import
+                .bindings
+                .iter()
+                .filter(|binding| !binding.type_only)
+                .map(|binding| binding.local.as_ref().to_compact_string())
+                .collect()
+        },
     }
 }

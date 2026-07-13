@@ -101,6 +101,7 @@ struct InspectorSemanticSummary {
     analyzed_files: usize,
     skipped_files: usize,
     sfc_parse_error_files: usize,
+    jsx_parse_error_files: usize,
     template_parse_error_files: usize,
     scope_count: usize,
     scope_binding_count: usize,
@@ -227,12 +228,12 @@ fn build_semantic_report(
     let mut summary = InspectorSemanticSummary::default();
     let mut semantic_files = Vec::new();
     for (source, analysis) in files {
-        if !source.name().ends_with(".vue") {
-            summary.skipped_files += 1;
-            continue;
-        }
         if analysis.sfc_parse_error {
             summary.sfc_parse_error_files += 1;
+            continue;
+        }
+        if analysis.jsx_parse_error {
+            summary.jsx_parse_error_files += 1;
             continue;
         }
         if analysis.template_parse_error {

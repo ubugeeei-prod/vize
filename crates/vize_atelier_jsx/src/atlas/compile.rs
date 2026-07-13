@@ -183,6 +183,12 @@ pub fn compile_jsx_with_atlas(
     let mut compilation = Compilation::new();
     super::register_atlas_providers(&mut compilation)
         .map_err(|error| ProviderError::message(cstr!("{error}")))?;
+    vize_atelier_dom::register_atlas_provider(&mut compilation)
+        .map_err(|error| ProviderError::message(cstr!("{error}")))?;
+    vize_atelier_ssr::register_atlas_provider(&mut compilation)
+        .map_err(|error| ProviderError::message(cstr!("{error}")))?;
+    vize_atelier_vapor::register_atlas_provider(&mut compilation)
+        .map_err(|error| ProviderError::message(cstr!("{error}")))?;
     let source_id = compilation
         .add_source(filename, source)
         .map_err(|error| ProviderError::message(cstr!("{error}")))?;

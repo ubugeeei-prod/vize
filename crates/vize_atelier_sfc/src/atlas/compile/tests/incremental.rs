@@ -4,7 +4,7 @@ use super::*;
 fn output_affecting_source_override_invalidates_the_cached_module() {
     let source_text = "<template><surface /></template>";
     let mut compilation = Compilation::new();
-    crate::register_atlas_providers(&mut compilation).unwrap();
+    super::register_compile_test_providers(&mut compilation);
     let source = compilation.add_source("Renderer.vue", source_text).unwrap();
     let mut settings = SfcCompileSettings::default();
     settings.insert(
@@ -42,7 +42,7 @@ fn output_affecting_source_override_invalidates_the_cached_module() {
 #[test]
 fn source_compile_request_update_retains_other_source_artifacts() {
     let mut compilation = Compilation::new();
-    crate::register_atlas_providers(&mut compilation).unwrap();
+    super::register_compile_test_providers(&mut compilation);
     let source_text = r#"<script setup>const message = 'ready'</script>
 <template><main>{{ message }}</main></template>"#;
     let first = compilation.add_source("First.vue", source_text).unwrap();
@@ -97,7 +97,7 @@ fn style_setting_changes_only_rerun_final_sfc_assembly() {
 <template><main>{{ message }}</main></template>
 <style>.ready { color: green }</style>"#;
     let mut compilation = Compilation::new();
-    crate::register_atlas_providers(&mut compilation).unwrap();
+    super::register_compile_test_providers(&mut compilation);
     let source = compilation
         .add_source("StyleOnly.vue", source_text)
         .unwrap();
@@ -144,7 +144,7 @@ fn backend_target_change_reuses_descriptor_and_template_frontend() {
     let source_text = r#"<script setup>const message = 'ready'</script>
 <template><main>{{ message }}</main></template>"#;
     let mut compilation = Compilation::new();
-    crate::register_atlas_providers(&mut compilation).unwrap();
+    super::register_compile_test_providers(&mut compilation);
     let source = compilation.add_source("Target.vue", source_text).unwrap();
     install_sfc_compile_request(
         &mut compilation,
@@ -191,7 +191,7 @@ fn backend_target_change_reuses_descriptor_and_template_frontend() {
 #[test]
 fn source_vapor_attribute_change_replans_without_reinstalling_settings() {
     let mut compilation = Compilation::new();
-    crate::register_atlas_providers(&mut compilation).unwrap();
+    super::register_compile_test_providers(&mut compilation);
     let source = compilation
         .add_source(
             "SourceMode.vue",
@@ -228,7 +228,7 @@ fn executions<P: vize_atlas::Product>(compilation: &Compilation) -> u64 {
 fn one_snapshot_compiles_source_specific_requests_in_parallel_sessions() {
     let cases = cases();
     let mut compilation = Compilation::new();
-    crate::register_atlas_providers(&mut compilation).unwrap();
+    super::register_compile_test_providers(&mut compilation);
     let (sources, settings) = add_cases(&mut compilation, &cases);
     settings.install(&mut compilation).unwrap();
     let snapshot = compilation.snapshot();
@@ -282,7 +282,7 @@ fn shared_syntax_rejects_descriptor_artifact_presence_mismatches() {
 fn malformed_sfc_diagnostic_is_cached_while_neutral_dependencies_stay_queryable() {
     let source_text = "<template><div /></template><template><span /></template>";
     let mut compilation = Compilation::new();
-    crate::register_atlas_providers(&mut compilation).unwrap();
+    super::register_compile_test_providers(&mut compilation);
     let source = compilation.add_source("Broken.vue", source_text).unwrap();
 
     let parsed = compilation.query::<SfcDescriptorProduct>(source).unwrap();

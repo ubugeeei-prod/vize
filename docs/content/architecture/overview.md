@@ -32,24 +32,24 @@ graph TD
     Atlas --> Jsx["vize_atelier_jsx<br/>JSX / TSX providers"]
     Atlas --> Module["vize_module<br/>JS / TS module facts"]
     Sfc -. "when script exists" .-> Module
-    Jsx --> Module
+    Jsx -. "when requested" .-> Module
     Sfc -. "when template exists" .-> Relief["vize_relief<br/>Vue-template syntax"]
     Sfc -. "when semantics requested" .-> Croquis["vize_croquis<br/>semantic snapshot"]
-    Jsx --> Croquis
-    Template --> Relief
-    Template --> Croquis
-    Module --> Croquis
-    Sfc --> Flow["vize_flow<br/>CFG / data / effects"]
-    Jsx --> Flow
-    Template --> Flow
-    Module --> Flow
-    Sfc --> Rendu["vize_rendu<br/>render HIR"]
-    Jsx --> Rendu
-    Template --> Rendu
+    Jsx -. "when requested" .-> Croquis
+    Template -. "when requested" .-> Relief
+    Template -. "when requested" .-> Croquis
+    Module -. "when requested" .-> Croquis
+    Sfc -. "when requested" .-> Flow["vize_flow<br/>CFG / data / effects"]
+    Jsx -. "when requested" .-> Flow
+    Template -. "when requested" .-> Flow
+    Module -. "when requested" .-> Flow
+    Sfc -. "when requested" .-> Rendu["vize_rendu<br/>render HIR"]
+    Jsx -. "when requested" .-> Rendu
+    Template -. "when requested" .-> Rendu
 
-    Rendu --> Dom["vize_atelier_dom"]
-    Rendu --> Ssr["vize_atelier_ssr"]
-    Rendu --> Vapor["vize_atelier_vapor"]
+    Rendu -. "selected target" .-> Dom["vize_atelier_dom"]
+    Rendu -. "selected target" .-> Ssr["vize_atelier_ssr"]
+    Rendu -. "selected target" .-> Vapor["vize_atelier_vapor"]
     Relief -. "template rules" .-> Patina["vize_patina"]
     Module -. "module rules" .-> Patina
     Croquis -. "semantic rules" .-> Patina
@@ -64,26 +64,31 @@ workspace call edge. Atlas selects dependencies from the source shape and root,
 plans only the reachable products, and caches common upstream work once for the
 same source revision, provider-registry revision, and relevant-input revision.
 Canon does not fabricate a Flow dependency.
+Each frontend registrar installs only implementations owned by that frontend;
+the application host explicitly composes raw Module support, analysis recipes,
+and the DOM/SSR/Vapor backends it exposes.
 
 ## Lanes
 
 ```mermaid
 flowchart LR
-    SFC[".vue"] -. "when template exists" .-> Relief["Relief"] --> Rendu["Rendu"]
-    RawTemplate["raw template / HTML"] --> Relief
-    JSX[".jsx / .tsx"] --> JsxSyntax["owned JSX syntax"] --> Rendu
+    SFC[".vue"] -. "when template exists" .-> Relief["Relief"]
+    Relief -. "when render requested" .-> Rendu["Rendu"]
+    RawTemplate["raw template / HTML"] -. "when requested" .-> Relief
+    JSX[".jsx / .tsx"] --> JsxSyntax["owned JSX syntax"]
+    JsxSyntax -. "when render requested" .-> Rendu
     SFC -. "when script exists" .-> Module["Module facts"]
-    JsxSyntax --> Module
+    JsxSyntax -. "when requested" .-> Module
     RawModule[".js / .ts"] --> Module
-    Relief --> Semantics["Croquis"]
-    RawTemplate --> Semantics
-    Module --> Semantics
-    JsxSyntax --> Semantics
-    Relief --> Flow["Flow"]
-    JsxSyntax --> Flow
-    Rendu --> DOM["DOM output"]
-    Rendu --> SSR["SSR output"]
-    Rendu --> Vapor["Vapor plan"]
+    Relief -. "when requested" .-> Semantics["Croquis"]
+    RawTemplate -. "when requested" .-> Semantics
+    Module -. "when requested" .-> Semantics
+    JsxSyntax -. "when requested" .-> Semantics
+    Relief -. "when requested" .-> Flow["Flow"]
+    JsxSyntax -. "when requested" .-> Flow
+    Rendu -. "selected target" .-> DOM["DOM output"]
+    Rendu -. "selected target" .-> SSR["SSR output"]
+    Rendu -. "selected target" .-> Vapor["Vapor plan"]
     Relief -. "template rules" .-> Lint["Patina report"]
     Module -. "module rules" .-> Lint
     Semantics -. "semantic rules" .-> Lint

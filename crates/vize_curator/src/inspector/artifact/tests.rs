@@ -1,6 +1,7 @@
 use vize_atelier_sfc::SfcDescriptorProduct;
 use vize_atlas::Compilation;
 use vize_croquis::CroquisDocumentProduct;
+use vize_module::ModuleSyntaxProduct;
 use vize_relief::ReliefProduct;
 
 use super::*;
@@ -64,6 +65,71 @@ fn source_analysis_does_not_execute_report_or_vue_products_for_ts() {
     assert!(!outcome.plan().contains::<SfcDescriptorProduct>());
     assert!(!outcome.plan().contains::<ReliefProduct>());
     assert_eq!(outcome.value().graph.imports.len(), 1);
+}
+
+#[test]
+fn source_analysis_uses_the_jsx_frontend_for_tsx() {
+    let mut compilation = Compilation::new();
+    register_inspector_atlas_providers(&mut compilation).unwrap();
+    let source = compilation
+        .add_source(
+            "src/Card.tsx",
+            "import Child from './Child.vue'; export const Card = () => <Child />;",
+        )
+        .unwrap();
+    let outcome = compilation
+        .query::<InspectorSourceAnalysisProduct>(source)
+        .unwrap();
+
+    assert!(
+        outcome
+            .plan()
+            .contains::<vize_atelier_jsx::JsxSyntaxProduct>()
+    );
+    assert!(outcome.plan().contains::<ModuleSyntaxProduct>());
+    assert!(outcome.plan().contains::<CroquisDocumentProduct>());
+    assert!(!outcome.plan().contains::<SfcDescriptorProduct>());
+    assert!(!outcome.plan().contains::<ReliefProduct>());
+    assert_eq!(outcome.value().graph.imports.len(), 1);
+    assert!(outcome.value().graph.template_used_ids.contains("Child"));
+    assert!(outcome.value().semantic.is_some());
+}
+
+#[test]
+fn source_analysis_accepts_virtual_source_suffixes() {
+    for (name, source) in [
+        (
+            "src/App.vue?vue&type=script",
+            "<template><main /></template>",
+        ),
+        (
+            "src/Card.tsx#component",
+            "type Props = { label: string }; export const Card = (props: Props) => <main>{props.label}</main>;",
+        ),
+    ] {
+        let mut compilation = Compilation::new();
+        register_inspector_atlas_providers(&mut compilation).unwrap();
+        let source = compilation.add_source(name, source).unwrap();
+        let outcome = compilation
+            .query::<InspectorSourceAnalysisProduct>(source)
+            .unwrap();
+
+        assert!(outcome.value().semantic.is_some(), "{name}");
+    }
+}
+
+#[test]
+fn source_analysis_reports_recovered_tsx_parse_errors() {
+    let mut compilation = Compilation::new();
+    register_inspector_atlas_providers(&mut compilation).unwrap();
+    let source = compilation
+        .add_source("src/Broken.tsx", "export const Broken = () => <main")
+        .unwrap();
+    let outcome = compilation
+        .query::<InspectorSourceAnalysisProduct>(source)
+        .unwrap();
+
+    assert!(outcome.value().jsx_parse_error);
 }
 
 #[test]

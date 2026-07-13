@@ -11,7 +11,7 @@ fn descriptor_scoped_inference_matches_preexisting_build_normalization() {
     let source_text = r#"<template><div class="plain scoped" /></template>
 <style>.plain { color: red }</style><style scoped>.scoped { color: blue }</style>"#;
     let mut compilation = Compilation::new();
-    crate::register_atlas_providers(&mut compilation).unwrap();
+    super::register_compile_test_providers(&mut compilation);
     let source = compilation.add_source("Scoped.vue", source_text).unwrap();
     let request =
         SfcCompileRequest::new(SfcCompileOptions::default(), TemplateSyntaxMode::Standard)

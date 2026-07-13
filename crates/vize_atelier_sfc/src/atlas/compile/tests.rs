@@ -10,6 +10,13 @@ use vize_relief::{ReliefProduct, TransformedReliefProduct};
 use vize_rendu::RenduProduct;
 
 use super::*;
+
+pub(super) fn register_compile_test_providers(compilation: &mut vize_atlas::Compilation) {
+    crate::register_atlas_providers(compilation).unwrap();
+    vize_atelier_dom::register_atlas_provider(compilation).unwrap();
+    vize_atelier_ssr::register_atlas_provider(compilation).unwrap();
+    vize_atelier_vapor::register_atlas_provider(compilation).unwrap();
+}
 use crate::{SfcCompileOptions, SfcTemplateProduct, parse_sfc};
 
 #[path = "tests/incremental.rs"]
@@ -125,7 +132,7 @@ fn add_cases(compilation: &mut Compilation, cases: &[Case]) -> (Vec<SourceId>, S
 fn multi_source_product_assembles_every_target_from_rendu() {
     let cases = cases();
     let mut compilation = Compilation::new();
-    crate::register_atlas_providers(&mut compilation).unwrap();
+    register_compile_test_providers(&mut compilation);
     let (sources, settings) = add_cases(&mut compilation, &cases);
     settings.install(&mut compilation).unwrap();
 
@@ -226,7 +233,7 @@ fn multi_source_product_assembles_every_target_from_rendu() {
 #[test]
 fn one_rendu_module_can_feed_all_registered_backend_products() {
     let mut compilation = Compilation::new();
-    crate::register_atlas_providers(&mut compilation).unwrap();
+    register_compile_test_providers(&mut compilation);
     let source = compilation
         .add_source(
             "Shared.vue",

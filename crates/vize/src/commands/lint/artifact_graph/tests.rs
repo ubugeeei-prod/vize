@@ -228,6 +228,8 @@ fn raw_module_and_html_use_their_own_frontend_products() {
 
     assert!(module.trace.executed::<ModuleSyntaxProduct>());
     assert!(!module.trace.executed::<ReliefProduct>());
+    assert!(!module.trace.executed::<CroquisDocumentProduct>());
+    assert!(module.semantics.is_none());
     assert_eq!(
         module
             .counters

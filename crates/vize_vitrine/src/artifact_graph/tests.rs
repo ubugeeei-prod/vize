@@ -81,7 +81,7 @@ fn ffi_vue_versions_configure_the_compile_plan_before_any_query() {
         let dialect = resolve_vue_version(Some(raw)).unwrap();
         assert_eq!(dialect, expected);
         let mut compilation = Compilation::new();
-        vize_atelier_sfc::register_atlas_providers(&mut compilation).unwrap();
+        register_sfc_compile_providers(&mut compilation).unwrap();
         let source = compilation
             .add_source(
                 "Dialect.vue",
@@ -146,7 +146,7 @@ fn ffi_vue_version_rejects_ambiguous_and_unknown_values() {
 #[test]
 fn vapor_render_product_preserves_static_templates_for_wasm() {
     let mut compilation = Compilation::new();
-    vize_atelier_sfc::register_atlas_providers(&mut compilation).unwrap();
+    register_sfc_compile_providers(&mut compilation).unwrap();
     let source = compilation
         .add_source("Vapor.vue", "<template><main>Hello</main></template>")
         .unwrap();

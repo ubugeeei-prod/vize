@@ -46,6 +46,23 @@ for crate in "${graph_crates[@]}"; do
   fi
 done
 
+# Frontend registrars compose only providers owned by that frontend. Peer
+# backends, semantic projections, and other input frontends belong to the
+# application host that requests them.
+frontend_registration_leaks="$({
+  rg -n \
+    'vize_atelier_(dom|ssr|vapor)::|vize_croquis::(register_semantic_projection|CroquisSemanticProjectionProvider)|vize_module::(register_raw_providers|RawModuleSyntaxProvider|ModuleFlowProvider)' \
+    crates/vize_atelier_sfc/src/atlas.rs \
+    crates/vize_atelier_jsx/src/atlas.rs \
+    crates/vize_atelier_template/src/atlas.rs || true
+})"
+
+if [[ -n "$frontend_registration_leaks" ]]; then
+  printf 'frontend registrars compose peer-crate providers:\n%s\n' \
+    "$frontend_registration_leaks" >&2
+  exit 1
+fi
+
 # The neutral script frontend may depend on Atlas and Flow, but never on Vue
 # template syntax, semantic products, compilers, or their consumers.
 module_internal="$({

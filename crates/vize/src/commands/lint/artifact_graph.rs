@@ -173,6 +173,8 @@ fn configured_compilation(
         .map_err(|error| vize_carton::cstr!("failed to configure Vue dialect: {error}"))?;
     vize_atelier_sfc::register_atlas_providers(&mut compilation)
         .map_err(|error| vize_carton::cstr!("failed to register SFC providers: {error}"))?;
+    vize_module::register_raw_providers(&mut compilation)
+        .map_err(|error| vize_carton::cstr!("failed to register Module providers: {error}"))?;
     vize_atelier_jsx::register_atlas_providers(&mut compilation)
         .map_err(|error| vize_carton::cstr!("failed to register JSX providers: {error}"))?;
     compilation

@@ -44,6 +44,8 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
     let mut compilation = Compilation::new();
     vize_atelier_sfc::register_atlas_providers(&mut compilation)
         .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    vize_module::register_raw_providers(&mut compilation)
+        .map_err(|error| JsValue::from_str(&error.to_string()))?;
     vize_atelier_jsx::register_atlas_providers(&mut compilation)
         .map_err(|error| JsValue::from_str(&error.to_string()))?;
     vize_croquis_cf::register_atlas_provider(&mut compilation)

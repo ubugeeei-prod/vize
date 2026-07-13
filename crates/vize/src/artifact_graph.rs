@@ -75,7 +75,9 @@ pub fn create_compilation(config: VizeGraphConfig) -> Result<Compilation, VizeGr
 /// Register providers without allocating per-source artifact state.
 pub fn register_providers(compilation: &mut Compilation) -> Result<(), RegisterProviderError> {
     vize_atelier_sfc::register_atlas_providers(compilation)?;
+    vize_module::register_raw_providers(compilation)?;
     vize_atelier_jsx::register_atlas_providers(compilation)?;
+    vize_croquis::register_semantic_projection(compilation)?;
     vize_atelier_dom::register_atlas_provider(compilation)?;
     vize_atelier_ssr::register_atlas_provider(compilation)?;
     vize_atelier_vapor::register_atlas_provider(compilation)?;

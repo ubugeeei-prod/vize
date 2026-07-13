@@ -107,6 +107,8 @@ pub fn register_inspector_atlas_providers(
     compilation: &mut Compilation,
 ) -> Result<(), RegisterProviderError> {
     vize_atelier_sfc::register_atlas_providers(compilation)?;
+    vize_atelier_jsx::register_atlas_providers(compilation)?;
+    vize_module::register_raw_providers(compilation)?;
     if !compilation.has_provider::<InspectorSourceAnalysisProduct>() {
         compilation.register_provider(InspectorSourceAnalysisProvider)?;
     }

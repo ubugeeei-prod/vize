@@ -38,20 +38,20 @@ flowchart LR
     Atlas --> JSX["JSX / TSX providers"]
     Atlas --> Module["JS / TS module providers"]
     SFC -. "when template exists" .-> Relief["Relief"]
-    Template --> Relief
+    Template -. "when requested" .-> Relief
     SFC -. "when script exists" .-> Module["Module"]
-    SFC --> Croquis["Croquis"]
-    Template --> Croquis
-    JSX --> Module
-    JSX --> Croquis
-    SFC --> Flow["Flow"]
-    Template --> Flow
-    JSX --> Flow
-    Module --> Flow
-    SFC --> Rendu["Rendu"]
-    Template --> Rendu
-    JSX --> Rendu
-    Rendu --> Atelier["DOM / SSR / Vapor"]
+    SFC -. "when requested" .-> Croquis["Croquis"]
+    Template -. "when requested" .-> Croquis
+    JSX -. "when requested" .-> Module
+    JSX -. "when requested" .-> Croquis
+    SFC -. "when requested" .-> Flow["Flow"]
+    Template -. "when requested" .-> Flow
+    JSX -. "when requested" .-> Flow
+    Module -. "when requested" .-> Flow
+    SFC -. "when requested" .-> Rendu["Rendu"]
+    Template -. "when requested" .-> Rendu
+    JSX -. "when requested" .-> Rendu
+    Rendu -. "selected target" .-> Atelier["DOM / SSR / Vapor"]
     Relief -. "template rules" .-> Patina["Patina"]
     Module -. "module rules" .-> Patina
     Croquis -. "semantic rules" .-> Patina
@@ -71,6 +71,12 @@ Each authored SFC script block is parsed once per source revision while its live
 OXC `Program` is projected into Module facts, Croquis analysis, and compiler
 preanalysis.
 
+Frontend registrars install only provider implementations owned by their own
+crate. They can provide a shared peer product identity for their source shape,
+but they do not invoke peer registrars or smuggle render backends into the
+registry. The command, editor, binding, or bundler host explicitly composes the
+frontends, raw Module provider, analysis recipes, and target backends it offers.
+
 Production commands, Maestro, Glyph, Inspector, and binding hosts enter through
 typed roots. Maestro revises one URI-keyed mutable `Compilation` and queries it
 directly. Open documents and discovered file-backed Vue dependencies keep stable
@@ -84,7 +90,9 @@ Standalone Glyph calls, including each `vize fmt` SFC request, use a
 request-scoped one-document compilation. Inspector requests
 `InspectorAgentReport`, which
 aggregates its own per-source analysis products: SFC analysis uses Module,
-descriptor, Relief, and Croquis, while raw JS/TS analysis uses Module. NAPI/WASM
+descriptor, Relief, and Croquis (skipping Module for template-only sources),
+JSX/TSX analysis uses its owned syntax plus Module and Croquis without Relief,
+and raw JS/TS analysis uses Module. NAPI/WASM
 expose compile, raw-template, Patina, Canon, and cross-file roots as supported by
 each surface; bundler packages only host the relevant compile bindings. Legacy
 public functions remain compatibility APIs rather than host orchestration.

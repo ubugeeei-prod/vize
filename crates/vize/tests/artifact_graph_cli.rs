@@ -41,16 +41,16 @@ const ready = true
 
     for file in files {
         assert!(file["compilerBytes"].as_u64().unwrap() > 0);
-        assert!(file["virtualTsBytes"].as_u64().unwrap() > 0);
-        assert!(file["flowReachableBlocks"].as_u64().unwrap() > 1);
+        let is_vue = file["path"]
+            .as_str()
+            .is_some_and(|path| path.ends_with(".vue"));
+        assert_eq!(file["virtualTsBytes"].as_u64().is_some(), is_vue);
         let products = file["products"].as_array().unwrap();
         for required in [
-            "croquis.semantics",
-            "flow.graph",
+            "croquis.document",
             "rendu.hir",
             "backend.dom-module",
-            "patina.semantic-diagnostics",
-            "canon.semantic-virtual-ts",
+            "patina.document-report",
         ] {
             assert!(
                 products
@@ -59,12 +59,24 @@ const ready = true
                 "missing {required} in {products:?}"
             );
         }
+        assert!(
+            products
+                .iter()
+                .all(|product| product["product"] != "flow.graph"),
+            "compiler/lint/typecheck must not fabricate an unrequested Flow product"
+        );
         assert_eq!(
             products
                 .iter()
-                .filter(|product| product["product"] == "croquis.semantics")
+                .filter(|product| product["product"] == "croquis.document")
                 .count(),
             1
+        );
+        assert_eq!(
+            products
+                .iter()
+                .any(|product| product["product"] == "canon.sfc-typecheck"),
+            is_vue
         );
         assert!(
             products
@@ -88,7 +100,7 @@ const ready = true
     let counters = report["counters"].as_array().unwrap();
     let semantics = counters
         .iter()
-        .find(|counter| counter["product"] == "croquis.semantics")
+        .find(|counter| counter["product"] == "croquis.document")
         .unwrap();
     assert_eq!(semantics["executions"], 2);
     assert_eq!(semantics["queries"], 4);

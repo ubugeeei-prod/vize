@@ -9,6 +9,9 @@ use super::*;
 fn compilation(target: TemplateRenderTarget) -> (Compilation, vize_atlas::SourceId) {
     let mut compilation = Compilation::new();
     register_atlas_providers(&mut compilation).unwrap();
+    vize_atelier_dom::register_atlas_provider(&mut compilation).unwrap();
+    vize_atelier_ssr::register_atlas_provider(&mut compilation).unwrap();
+    vize_atelier_vapor::register_atlas_provider(&mut compilation).unwrap();
     let source = compilation
         .add_source("fixture.vue-template", "<main>{{ message }}</main>")
         .unwrap();
@@ -138,6 +141,7 @@ fn standalone_document_relief_and_croquis_share_one_frontend_revision() {
 </body></html>"#;
     let mut compilation = Compilation::new();
     register_atlas_providers(&mut compilation).unwrap();
+    vize_croquis::register_semantic_projection(&mut compilation).unwrap();
     let source = compilation.add_source("index.html", text).unwrap();
     install_template_compile_request(&mut compilation, source, TemplateCompileRequest::default())
         .unwrap();

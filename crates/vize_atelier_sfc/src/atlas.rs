@@ -22,7 +22,6 @@ use vize_atlas::{
 use vize_carton::{
     cstr, source_anchor::SourceAnchor, source_range::SourceRange as StableSourceRange,
 };
-use vize_croquis::CroquisSemanticProduct;
 use vize_flow::{FlowGraph, FlowProduct};
 use vize_module::{ModuleSyntaxProduct, append_module_flow};
 use vize_relief::{ReliefSnapshot, TransformedReliefArtifact, TransformedReliefProduct};
@@ -148,34 +147,27 @@ impl Provider for SfcFlowProvider {
     }
 }
 
-/// Register the SFC frontend's independently applicable providers.
+/// Register only the SFC frontend's independently applicable providers.
 pub fn register_atlas_providers(
     compilation: &mut Compilation,
 ) -> Result<(), RegisterProviderError> {
     compilation.register_provider(SfcDescriptorProvider)?;
     compilation.register_provider(SfcScriptSyntaxProvider)?;
     compilation.register_provider(SfcModuleSyntaxProvider)?;
-    compilation.register_provider(vize_module::RawModuleSyntaxProvider)?;
-    compilation.register_provider(vize_module::ModuleFlowProvider)?;
     compilation.register_provider(SfcTemplateProvider)?;
     compilation.register_provider(SfcReliefProvider)?;
     compilation.register_provider(SfcTransformedReliefProvider)?;
     compilation.register_provider(SfcRenduProvider)?;
     compilation.register_provider(SfcFlowProvider)?;
     compilation.register_provider(SfcCroquisProvider)?;
-    vize_atelier_dom::register_atlas_provider(compilation)?;
-    vize_atelier_ssr::register_atlas_provider(compilation)?;
-    vize_atelier_vapor::register_atlas_provider(compilation)?;
     compilation.register_provider(SfcRenderModuleProvider)?;
     compilation.register_provider(SfcCompileProvider)?;
     compilation.register_provider(SfcSourceMapProvider)?;
-    if !compilation.has_provider::<CroquisSemanticProduct>() {
-        vize_croquis::register_semantic_projection(compilation)?;
-    }
     Ok(())
 }
 
 fn is_sfc_source(name: &str) -> bool {
+    let name = name.split(['?', '#']).next().unwrap_or(name);
     name.ends_with(".vue")
 }
 

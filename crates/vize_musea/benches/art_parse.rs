@@ -20,7 +20,6 @@ use vize_musea::{ArtParseOptions, parse_art, transform_to_csf, transform_to_vue}
 // =============================================================================
 // Test Data
 // =============================================================================
-
 /// Minimal Art file - single variant, no metadata
 const SIMPLE_ART: &str = r#"<art title="Button">
   <variant name="Default">

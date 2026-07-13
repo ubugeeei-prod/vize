@@ -10,7 +10,7 @@ Support and deprecation guarantees are defined in the
 - `.vue` descriptor parsing (`<template>`, `<script>`, `<script setup>`, `<style>`, custom blocks)
 - Parse-once authored-script projection: one live OXC `Program` supplies Module facts, Croquis analysis, and compiler preanalysis
 - Source-shaped template products: Relief, Croquis, Flow, and Rendu are requested independently
-- Typed DOM, SSR, or Vapor backend selection without owning raw-template compilation
+- Frontend-owned compile recipes with DOM, SSR, and Vapor supplied explicitly by the application host
 - Scoped CSS and style transforms powered by Lightning CSS
 - Serialized CSS AST parse/print helpers for parser-backed tooling
 
@@ -25,6 +25,10 @@ Support and deprecation guarantees are defined in the
 - `SfcParseOptions`
 - `SfcCompileOptions`
 - `register_atlas_providers`
+
+`register_atlas_providers` installs only SFC-owned implementations. It does not
+register raw JS/TS support, Croquis projection, or a render backend on behalf of
+the host.
 
 ## Related Crates
 

@@ -43,6 +43,7 @@ vize_atelier_template = { workspace = true }
 vize_atelier_sfc = { workspace = true, default-features = false }
 vize_atelier_jsx = { workspace = true }
 vize_atlas = { workspace = true }
+vize_module = { workspace = true }
 vize_musea = { workspace = true }
 vize_patina = { workspace = true }
 vize_glyph = { workspace = true, optional = true }

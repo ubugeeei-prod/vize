@@ -1,7 +1,6 @@
 //! Native Rust benchmarks for SFC parsing performance.
 //!
 //! Run with: cargo bench -p vize_atelier_sfc
-
 use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use std::hint::black_box;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};

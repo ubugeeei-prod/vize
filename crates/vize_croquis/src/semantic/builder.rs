@@ -4,7 +4,8 @@ use vize_carton::{CompactString, cstr};
 
 use super::{
     CroquisSemanticSnapshot, SemanticBindingSnapshot, SemanticComponentUsageSnapshot,
-    SemanticScopeBindingSnapshot, SemanticScopeSnapshot, SemanticSourceRange,
+    SemanticEventListenerSnapshot, SemanticPassedPropSnapshot, SemanticScopeBindingSnapshot,
+    SemanticScopeSnapshot, SemanticSlotUsageSnapshot, SemanticSourceRange,
     SemanticTemplateExpressionSnapshot,
 };
 
@@ -92,7 +93,7 @@ impl CroquisSemanticSnapshotBuilder {
         range: SemanticSourceRange,
         scope_id: u32,
         has_spread_attrs: bool,
-    ) {
+    ) -> usize {
         let index = self.snapshot.component_usages.len();
         self.snapshot
             .component_usages
@@ -107,6 +108,56 @@ impl CroquisSemanticSnapshotBuilder {
                 events: Vec::new(),
                 slots: Vec::new(),
             });
+        index
+    }
+
+    pub fn add_component_prop(
+        &mut self,
+        usage: usize,
+        name: &str,
+        value: Option<&str>,
+        range: SemanticSourceRange,
+        dynamic: bool,
+    ) {
+        if let Some(usage) = self.snapshot.component_usages.get_mut(usage) {
+            usage.props.push(SemanticPassedPropSnapshot {
+                name: CompactString::new(name),
+                name_is_dynamic: false,
+                value: value.map(CompactString::new),
+                range,
+                dynamic,
+            });
+        }
+    }
+
+    pub fn add_component_event(
+        &mut self,
+        usage: usize,
+        name: &str,
+        handler: Option<&str>,
+        range: SemanticSourceRange,
+    ) {
+        if let Some(usage) = self.snapshot.component_usages.get_mut(usage) {
+            usage.events.push(SemanticEventListenerSnapshot {
+                name: CompactString::new(name),
+                name_is_dynamic: false,
+                handler: handler.map(CompactString::new),
+                modifiers: Vec::new(),
+                range,
+            });
+        }
+    }
+
+    pub fn add_component_slot(&mut self, usage: usize, name: &str, range: SemanticSourceRange) {
+        if let Some(usage) = self.snapshot.component_usages.get_mut(usage) {
+            usage.slots.push(SemanticSlotUsageSnapshot {
+                name: CompactString::new(name),
+                name_is_dynamic: false,
+                scope_vars: Vec::new(),
+                range,
+                scoped: false,
+            });
+        }
     }
 
     /// Finish the deterministic snapshot and derive aggregate counts from the
@@ -119,10 +170,34 @@ impl CroquisSemanticSnapshotBuilder {
             .iter()
             .map(|scope| scope.binding_count)
             .sum();
+        self.snapshot.summary.callback_scope_count = self
+            .snapshot
+            .scopes
+            .iter()
+            .filter(|scope| scope.kind == "callback")
+            .count();
         self.snapshot.summary.script_binding_count = self.snapshot.bindings.len();
         self.snapshot.summary.template_expression_count = self.snapshot.template_expressions.len();
         self.snapshot.summary.component_usage_count = self.snapshot.component_usages.len();
         self.snapshot.summary.used_component_count = self.snapshot.component_usages.len();
+        self.snapshot.summary.passed_prop_count = self
+            .snapshot
+            .component_usages
+            .iter()
+            .map(|usage| usage.props.len())
+            .sum();
+        self.snapshot.summary.event_listener_count = self
+            .snapshot
+            .component_usages
+            .iter()
+            .map(|usage| usage.events.len())
+            .sum();
+        self.snapshot.summary.slot_usage_count = self
+            .snapshot
+            .component_usages
+            .iter()
+            .map(|usage| usage.slots.len())
+            .sum();
         self.snapshot.summary.spread_attr_component_count = self
             .snapshot
             .component_usages

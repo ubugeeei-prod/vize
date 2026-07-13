@@ -141,6 +141,24 @@ pub struct SemanticScopeBindingSnapshot {
     pub mutated: bool,
 }
 
+impl SemanticScopeBindingSnapshot {
+    pub fn new(
+        name: &str,
+        kind: &'static str,
+        declaration_offset: u32,
+        used: bool,
+        mutated: bool,
+    ) -> Self {
+        Self {
+            name: CompactString::new(name),
+            kind,
+            declaration_offset,
+            used,
+            mutated,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]

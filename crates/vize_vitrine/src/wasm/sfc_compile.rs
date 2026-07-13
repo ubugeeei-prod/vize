@@ -71,7 +71,7 @@ impl Compiler {
         let syntax = resolve_template_syntax(opts.template_syntax.as_deref())
             .map_err(|message| JsValue::from_str(&message))?;
         let mut compilation = Compilation::new();
-        vize_atelier_sfc::register_atlas_providers(&mut compilation)
+        crate::artifact_graph::register_sfc_compile_providers(&mut compilation)
             .map_err(|error| JsValue::from_str(&error.to_string()))?;
         let source_id = compilation
             .add_source(filename.as_str(), source)

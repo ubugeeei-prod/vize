@@ -49,6 +49,12 @@ impl BuildArtifactGraph {
         let mut compilation = Compilation::new();
         vize_atelier_sfc::register_atlas_providers(&mut compilation)
             .map_err(|error| cstr!("failed to register SFC artifact providers: {error}"))?;
+        vize_atelier_dom::register_atlas_provider(&mut compilation)
+            .map_err(|error| cstr!("failed to register DOM backend: {error}"))?;
+        vize_atelier_ssr::register_atlas_provider(&mut compilation)
+            .map_err(|error| cstr!("failed to register SSR backend: {error}"))?;
+        vize_atelier_vapor::register_atlas_provider(&mut compilation)
+            .map_err(|error| cstr!("failed to register Vapor backend: {error}"))?;
         compilation
             .set_input::<VueDialectInput>(settings.dialect)
             .map_err(|error| cstr!("failed to install Vue dialect input: {error}"))?;

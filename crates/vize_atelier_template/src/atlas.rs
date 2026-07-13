@@ -23,7 +23,7 @@ pub use settings::{
 
 use vize_atlas::{Compilation, RegisterProviderError};
 
-/// Register the raw-template frontend and frontend-neutral target backends.
+/// Register only the raw-template frontend's product providers and compile recipe.
 pub fn register_atlas_providers(
     compilation: &mut Compilation,
 ) -> Result<(), RegisterProviderError> {
@@ -32,12 +32,6 @@ pub fn register_atlas_providers(
     compilation.register_provider(RawTemplateTransformedReliefProvider)?;
     compilation.register_provider(RawTemplateRenduProvider)?;
     compilation.register_provider(RawTemplateFlowProvider)?;
-    vize_atelier_dom::register_atlas_provider(compilation)?;
-    vize_atelier_ssr::register_atlas_provider(compilation)?;
-    vize_atelier_vapor::register_atlas_provider(compilation)?;
     compilation.register_provider(TemplateCompileProvider)?;
-    if !compilation.has_provider::<vize_croquis::CroquisSemanticProduct>() {
-        vize_croquis::register_semantic_projection(compilation)?;
-    }
     Ok(())
 }

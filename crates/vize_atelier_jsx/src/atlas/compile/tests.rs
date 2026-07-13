@@ -1,4 +1,11 @@
 use super::*;
+
+fn register_compile_test_providers(compilation: &mut vize_atlas::Compilation) {
+    super::super::register_atlas_providers(compilation).unwrap();
+    vize_atelier_dom::register_atlas_provider(compilation).unwrap();
+    vize_atelier_ssr::register_atlas_provider(compilation).unwrap();
+    vize_atelier_vapor::register_atlas_provider(compilation).unwrap();
+}
 use crate::JsxSyntaxProduct;
 use vize_atelier_dom::DomOutputProduct;
 use vize_atelier_ssr::SsrOutputProduct;
@@ -9,7 +16,7 @@ use vize_rendu::RenduProduct;
 fn typed_compile_product_reuses_the_syntax_plan_and_cache() {
     crate::syntax::reset_frontend_counters();
     let mut compilation = Compilation::new();
-    super::super::register_atlas_providers(&mut compilation).unwrap();
+    register_compile_test_providers(&mut compilation);
     let source = compilation
         .add_source("App.jsx", "const App = () => <div>{message}</div>")
         .unwrap();
@@ -130,7 +137,7 @@ const Fast = () => {
 #[test]
 fn mixed_jsx_module_selects_both_client_backends_over_one_rendu_product() {
     let mut compilation = Compilation::new();
-    super::super::register_atlas_providers(&mut compilation).unwrap();
+    register_compile_test_providers(&mut compilation);
     let source = compilation
         .add_source(
             "Mixed.jsx",
@@ -168,7 +175,7 @@ const Stable = () => <aside/>;"#,
 fn planning_classifies_directive_prologues_without_running_oxc() {
     crate::syntax::reset_frontend_counters();
     let mut compilation = Compilation::new();
-    super::super::register_atlas_providers(&mut compilation).unwrap();
+    register_compile_test_providers(&mut compilation);
     let source = compilation
         .add_source(
             "Planning.jsx",
@@ -194,7 +201,7 @@ const Fast = () => { "use vue:vapor"; return <aside/>; };"#,
 #[test]
 fn non_prologue_and_escaped_mode_strings_do_not_select_vapor() {
     let mut compilation = Compilation::new();
-    super::super::register_atlas_providers(&mut compilation).unwrap();
+    register_compile_test_providers(&mut compilation);
     let source = compilation
         .add_source(
             "Stable.jsx",
@@ -214,7 +221,7 @@ const Late = () => { const marker = 1; "use vue:vapor"; return <b/>; };"#,
 #[test]
 fn conflicting_mode_directives_plan_both_backends_and_retain_diagnostic() {
     let mut compilation = Compilation::new();
-    super::super::register_atlas_providers(&mut compilation).unwrap();
+    register_compile_test_providers(&mut compilation);
     let source = compilation
         .add_source(
             "Conflict.jsx",

@@ -48,6 +48,12 @@ impl InspectorArtifactGraph {
         let mut compilation = Compilation::new();
         vize_atelier_sfc::register_atlas_providers(&mut compilation)
             .map_err(|error| cstr!("{error}"))?;
+        vize_atelier_dom::register_atlas_provider(&mut compilation)
+            .map_err(|error| cstr!("{error}"))?;
+        vize_atelier_ssr::register_atlas_provider(&mut compilation)
+            .map_err(|error| cstr!("{error}"))?;
+        vize_atelier_vapor::register_atlas_provider(&mut compilation)
+            .map_err(|error| cstr!("{error}"))?;
 
         let mut sources = FxHashMap::default();
         let mut settings = SfcCompileSettings::default();

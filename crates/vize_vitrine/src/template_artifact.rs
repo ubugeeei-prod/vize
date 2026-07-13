@@ -52,6 +52,12 @@ pub(crate) fn compile_template_product(
     let mut compilation = Compilation::new();
     vize_atelier_template::register_atlas_providers(&mut compilation)
         .map_err(|error| cstr!("{error}"))?;
+    vize_atelier_dom::register_atlas_provider(&mut compilation)
+        .map_err(|error| cstr!("{error}"))?;
+    vize_atelier_ssr::register_atlas_provider(&mut compilation)
+        .map_err(|error| cstr!("{error}"))?;
+    vize_atelier_vapor::register_atlas_provider(&mut compilation)
+        .map_err(|error| cstr!("{error}"))?;
     let source = compilation
         .add_source("ffi.vue-template", template)
         .map_err(|error| cstr!("{error}"))?;

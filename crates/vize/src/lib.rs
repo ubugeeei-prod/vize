@@ -23,7 +23,7 @@
 //! - [`croquis`] - Frontend-neutral semantic facts
 //! - [`croquis_cf`] - Opt-in cross-file semantic aggregation
 //! - [`glyph`] - Vue SFC formatter
-//! - [`patina`] - Vue SFC linter
+//! - [`patina`] - Document linter for SFC, template, JSX/TSX, and JS/TS sources
 //! - [`canon`] - Vue-aware type checking and virtual TS generation
 //! - [`musea`] - Musea art parsing and documentation core
 //! - [`maestro`] - Language Server Protocol (LSP) implementation
@@ -87,7 +87,7 @@ pub use vize_croquis_cf as croquis_cf;
 #[cfg(feature = "glyph")]
 pub use vize_glyph as glyph;
 
-/// Vue SFC linter.
+/// Document linter for SFC, template, JSX/TSX, and JS/TS sources.
 pub use vize_patina as patina;
 
 /// Vue-aware type checking and virtual TS generation.

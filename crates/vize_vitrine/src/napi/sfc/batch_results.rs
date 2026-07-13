@@ -69,7 +69,7 @@ fn compile_sfc_batch_with_results_inner(
     let _type_resolution_batch = vize_atelier_sfc::begin_type_resolution_batch();
 
     let mut compilation = Compilation::new();
-    vize_atelier_sfc::register_atlas_providers(&mut compilation)
+    crate::artifact_graph::register_sfc_compile_providers(&mut compilation)
         .map_err(|error| napi::Error::new(Status::GenericFailure, error.to_string()))?;
     let mut settings = SfcCompileSettings::default();
     let prepared = files

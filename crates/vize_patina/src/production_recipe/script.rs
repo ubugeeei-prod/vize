@@ -69,6 +69,8 @@ fn is_raw_module_name(name: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use vize_atlas::{Compilation, ProductStatus};
+    use vize_croquis::CroquisDocumentProduct;
+    use vize_relief::ReliefProduct;
 
     use super::*;
 
@@ -94,6 +96,8 @@ mod tests {
         assert_eq!(first.status(), ProductStatus::Executed);
         assert_eq!(second.status(), ProductStatus::CacheHit);
         assert!(first.plan().contains::<ModuleSyntaxProduct>());
+        assert!(!first.plan().contains::<CroquisDocumentProduct>());
+        assert!(!first.plan().contains::<ReliefProduct>());
         assert_eq!(
             vize_carton::cstr!("{:?}", first.value()),
             vize_carton::cstr!("{expected:?}")

@@ -8,7 +8,7 @@ use vize_atelier_sfc::{
     SfcCompileProduct, SfcCompileResult, SfcCroquisMode, SfcCroquisSettings, SfcDescriptorArtifact,
     SfcDescriptorProduct,
 };
-use vize_atlas::{Compilation, CompilationSnapshot, Shared, SourceId};
+use vize_atlas::{Compilation, CompilationSnapshot, RegisterProviderError, Shared, SourceId};
 use vize_canon::{
     SfcTypeCheckOptions, SfcTypeCheckProduct, SfcTypeCheckRequest, SfcTypeCheckResult,
     install_sfc_typecheck_request, register_sfc_typecheck_provider,
@@ -16,6 +16,16 @@ use vize_canon::{
 use vize_carton::config::VueVersion;
 use vize_carton::{FxHashMap, String, cstr};
 use vize_croquis::{CroquisDocument, CroquisDocumentProduct};
+
+/// Compose the SFC frontend with peer render backends for FFI compile hosts.
+pub(crate) fn register_sfc_compile_providers(
+    compilation: &mut Compilation,
+) -> Result<(), RegisterProviderError> {
+    vize_atelier_sfc::register_atlas_providers(compilation)?;
+    vize_atelier_dom::register_atlas_provider(compilation)?;
+    vize_atelier_ssr::register_atlas_provider(compilation)?;
+    vize_atelier_vapor::register_atlas_provider(compilation)
+}
 
 /// Parse one FFI `vueVersion` option without silently rounding or falling back.
 pub(crate) fn resolve_vue_version(value: Option<&str>) -> Result<VueVersion, String> {

@@ -33,11 +33,11 @@ pub struct GraphArgs {
     #[arg(long)]
     no_compiler: bool,
 
-    /// Omit the Patina semantic report root.
+    /// Omit the Patina document lint root.
     #[arg(long)]
     no_lint: bool,
 
-    /// Omit the Canon semantic Virtual TS root.
+    /// Omit the Canon typecheck/Virtual TS root.
     #[arg(long)]
     no_typecheck: bool,
 

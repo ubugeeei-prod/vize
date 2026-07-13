@@ -132,7 +132,7 @@ fn compile_sfc_batch_inner(
         jobs.push(BatchCompileJob::single(path, source));
     }
     let mut compilation = Compilation::new();
-    vize_atelier_sfc::register_atlas_providers(&mut compilation).map_err(|error| {
+    crate::artifact_graph::register_sfc_compile_providers(&mut compilation).map_err(|error| {
         Error::new(
             Status::GenericFailure,
             format!("Atlas setup failed: {error}"),

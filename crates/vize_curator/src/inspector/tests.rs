@@ -94,6 +94,32 @@ fn builds_graph_component_edges_for_used_imports() {
 }
 
 #[test]
+fn builds_component_edges_for_jsx_namespace_members() {
+    let files = vec![
+        InspectorSourceFile {
+            path: cstr!("src/App.tsx"),
+            source: cstr!(
+                "import * as Cards from './Cards.tsx'; export const App = () => <Cards.Button />;"
+            ),
+        },
+        InspectorSourceFile {
+            path: cstr!("src/Cards.tsx"),
+            source: cstr!("export const Button = () => <button />;"),
+        },
+    ];
+
+    let graph = build_graph(&files);
+    let component_edges: Vec<_> = graph
+        .edges
+        .iter()
+        .filter(|edge| edge.kind == "component")
+        .collect();
+
+    assert_eq!(component_edges.len(), 1);
+    assert_eq!(component_edges[0].to.as_str(), "src/Cards.tsx");
+}
+
+#[test]
 fn graph_ignores_import_meta_and_type_only_component_imports() {
     let files = vec![
         InspectorSourceFile {
@@ -126,6 +152,24 @@ import RuntimeOnly from './RuntimeOnly.vue';
 
     assert_eq!(component_edges.len(), 1);
     assert_eq!(component_edges[0].to.as_str(), "src/RuntimeOnly.vue");
+}
+
+#[test]
+fn graph_ignores_inline_type_only_import_specifiers() {
+    let files = vec![
+        InspectorSourceFile {
+            path: cstr!("src/App.tsx"),
+            source: String::from(
+                "import { type Child } from './Child.vue'; export const App = () => <main />;",
+            ),
+        },
+        InspectorSourceFile {
+            path: cstr!("src/Child.vue"),
+            source: cstr!("<template><span /></template>"),
+        },
+    ];
+
+    assert!(build_graph(&files).edges.is_empty());
 }
 
 #[test]

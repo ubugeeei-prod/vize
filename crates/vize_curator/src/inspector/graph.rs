@@ -110,9 +110,10 @@ fn component_is_used(
 ) -> bool {
     locals.iter().any(|local| {
         template_used_ids.contains(local.as_str())
-            || template_used_ids
-                .iter()
-                .any(|used| normalize_component_name(used) == normalize_component_name(local))
+            || template_used_ids.iter().any(|used| {
+                let root = used.split_once('.').map_or(used.as_str(), |(root, _)| root);
+                normalize_component_name(root) == normalize_component_name(local)
+            })
     })
 }
 

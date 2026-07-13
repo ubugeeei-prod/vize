@@ -1,14 +1,15 @@
 //! Per-source inspector analysis produced once from frontend artifacts.
 
+use vize_atelier_jsx::JsxSyntaxProduct;
 use vize_atelier_sfc::SfcDescriptorProduct;
 use vize_atlas::{
     Compilation, PlanningContext, Product, ProductId, Provider, ProviderContext, ProviderError,
 };
 use vize_croquis::{CroquisDocumentProduct, CroquisSemanticSnapshot};
-use vize_module::ModuleSyntaxProduct;
+use vize_module::{ModuleDocument, ModuleSyntaxProduct};
 use vize_relief::ReliefProduct;
 
-use super::super::imports::{FileAnalysis, analyze_script_file, analyze_sfc_file};
+use super::super::imports::{FileAnalysis, analyze_component_file, analyze_script_file};
 
 /// Cached imports, template usage, and semantics for one inspector source.
 #[derive(Debug, Clone, Default)]
@@ -16,6 +17,7 @@ pub struct InspectorSourceAnalysis {
     pub(in crate::inspector) graph: FileAnalysis,
     pub(in crate::inspector) semantic: Option<CroquisSemanticSnapshot>,
     pub(in crate::inspector) sfc_parse_error: bool,
+    pub(in crate::inspector) jsx_parse_error: bool,
     pub(in crate::inspector) template_parse_error: bool,
 }
 
@@ -28,7 +30,7 @@ impl Product for InspectorSourceAnalysisProduct {
     const NAME: &'static str = "curator.inspector.source-analysis";
 }
 
-/// Selects the Vue frontend graph for SFCs and raw OXC syntax for script files.
+/// Selects the SFC, JSX/TSX, or raw Module frontend for one inspector source.
 pub struct InspectorSourceAnalysisProvider;
 
 impl Provider for InspectorSourceAnalysisProvider {
@@ -39,11 +41,20 @@ impl Provider for InspectorSourceAnalysisProvider {
     }
 
     fn dependencies(&self, context: &PlanningContext<'_>) -> Vec<ProductId> {
-        if context.source().name().ends_with(".vue") {
-            vec![
-                ProductId::of::<ModuleSyntaxProduct>(),
+        if is_sfc_source(context.source().name()) {
+            let mut dependencies = vec![
                 ProductId::of::<SfcDescriptorProduct>(),
                 ProductId::of::<ReliefProduct>(),
+                ProductId::of::<CroquisDocumentProduct>(),
+            ];
+            if vize_atelier_sfc::sfc_source_has_script(context.source().text()) {
+                dependencies.push(ProductId::of::<ModuleSyntaxProduct>());
+            }
+            dependencies
+        } else if is_jsx_source(context.source().name()) {
+            vec![
+                ProductId::of::<JsxSyntaxProduct>(),
+                ProductId::of::<ModuleSyntaxProduct>(),
                 ProductId::of::<CroquisDocumentProduct>(),
             ]
         } else {
@@ -55,10 +66,27 @@ impl Provider for InspectorSourceAnalysisProvider {
         &self,
         context: &mut ProviderContext<'_>,
     ) -> Result<InspectorSourceAnalysis, ProviderError> {
-        let modules = context.get::<ModuleSyntaxProduct>()?;
-        if !context.source().name().ends_with(".vue") {
+        if !is_sfc_source(context.source().name()) {
+            let modules = context.get::<ModuleSyntaxProduct>()?;
+            let is_jsx = is_jsx_source(context.source().name());
+            let semantic = if is_jsx {
+                Some(context.get::<CroquisDocumentProduct>()?.semantic_snapshot())
+            } else {
+                None
+            };
+            let jsx_parse_error = if is_jsx {
+                context.get::<JsxSyntaxProduct>()?.has_errors()
+            } else {
+                false
+            };
+            let graph = semantic.as_ref().map_or_else(
+                || analyze_script_file(&modules),
+                |semantic| analyze_component_file(&modules, semantic),
+            );
             return Ok(InspectorSourceAnalysis {
-                graph: analyze_script_file(&modules),
+                graph,
+                semantic,
+                jsx_parse_error,
                 ..Default::default()
             });
         }
@@ -73,16 +101,36 @@ impl Provider for InspectorSourceAnalysisProvider {
             });
         }
         let semantic = document.semantic_snapshot();
+        let modules = if vize_atelier_sfc::sfc_source_has_script(context.source().text()) {
+            Some(context.get::<ModuleSyntaxProduct>()?)
+        } else {
+            None
+        };
+        let empty_modules = ModuleDocument::default();
         Ok(InspectorSourceAnalysis {
-            graph: analyze_sfc_file(&modules, &semantic),
+            graph: analyze_component_file(modules.as_deref().unwrap_or(&empty_modules), &semantic),
             semantic: Some(semantic),
             template_parse_error: relief
                 .as_ref()
                 .as_ref()
                 .is_some_and(|syntax| syntax.has_fatal_diagnostics()),
             sfc_parse_error: false,
+            jsx_parse_error: false,
         })
     }
+}
+
+fn is_jsx_source(name: &str) -> bool {
+    let name = name.split(['?', '#']).next().unwrap_or(name);
+    matches!(
+        name.rsplit_once('.').map(|(_, extension)| extension),
+        Some("jsx" | "tsx")
+    )
+}
+
+fn is_sfc_source(name: &str) -> bool {
+    let name = name.split(['?', '#']).next().unwrap_or(name);
+    name.ends_with(".vue")
 }
 
 pub(super) fn is_inspector_source(name: &str) -> bool {
