@@ -1866,36 +1866,24 @@
   },
   {
     "file": "app/components/notification/NotificationGroupedLikes.vue",
-    "messages": [
-      {
-        "ruleId": "vue/valid-v-for",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-v-for] v-for key should use variables defined by v-for",
-        "line": 25,
-        "column": 47,
-        "endLine": 25,
-        "endColumn": 57,
-        "help": "Valid v-for syntax:\n  <!-- Array iteration -->\n  <li v-for=\"item in items\">{{ item }}</li>\n  <li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n  \n  <!-- Object iteration -->\n  <li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n  <li v-for=\"(value, key, index) in object\">{{ index }}</li>\n  \n  <!-- Range -->\n  <span v-for=\"n in 10\">{{ n }}</span>"
-      },
-      {
-        "ruleId": "vue/valid-v-for",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-v-for] v-for key should use variables defined by v-for",
-        "line": 41,
-        "column": 45,
-        "endLine": 41,
-        "endColumn": 55,
-        "help": "Valid v-for syntax:\n  <!-- Array iteration -->\n  <li v-for=\"item in items\">{{ item }}</li>\n  <li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n  \n  <!-- Object iteration -->\n  <li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n  <li v-for=\"(value, key, index) in object\">{{ index }}</li>\n  \n  <!-- Range -->\n  <span v-for=\"n in 10\">{{ n }}</span>"
-      }
-    ],
-    "errorCount": 2,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
     "file": "app/components/notification/NotificationPaginator.vue",
     "messages": [
+      {
+        "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-vars] Slot prop 'update' from slot 'updater' is defined but never used",
+        "line": 184,
+        "column": 15,
+        "endLine": 184,
+        "endColumn": 21,
+        "help": "Consider removing unused slot props or prefix with underscore"
+      },
       {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -1953,7 +1941,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 5
+    "warningCount": 6
   },
   {
     "file": "app/components/notification/NotificationPreferences.client.vue",
@@ -2199,17 +2187,6 @@
         "help": "Use CSS border instead."
       },
       {
-        "ruleId": "vue/valid-v-for",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-v-for] v-for key should use variables defined by v-for",
-        "line": 420,
-        "column": 48,
-        "endLine": 420,
-        "endColumn": 56,
-        "help": "Valid v-for syntax:\n  <!-- Array iteration -->\n  <li v-for=\"item in items\">{{ item }}</li>\n  <li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n  \n  <!-- Object iteration -->\n  <li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n  <li v-for=\"(value, key, index) in object\">{{ index }}</li>\n  \n  <!-- Range -->\n  <span v-for=\"n in 10\">{{ n }}</span>"
-      },
-      {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2339,7 +2316,7 @@
         "endColumn": 59
       }
     ],
-    "errorCount": 5,
+    "errorCount": 4,
     "warningCount": 11
   },
   {

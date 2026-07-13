@@ -145,8 +145,7 @@
       "diagnostics": [
         "error:3:30 [TS2307] Cannot find module '@vueuse/integrations/useFocusTrap/component' or its corresponding type declarations.",
         "error:19:1 [TS2304] Cannot find name 'onClickOutside'.",
-        "error:32:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
-        "error:103:15 [TS1117] An object literal cannot have multiple properties with the same name."
+        "error:32:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?"
       ]
     },
     {
@@ -155,10 +154,7 @@
     },
     {
       "file": "app/components/Filter/Panel.vue",
-      "diagnostics": [
-        "error:269:64 [TS2352] Conversion of type 'Event' to type 'DownloadRange' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
-        "error:293:64 [TS2352] Conversion of type 'Event' to type 'UpdatedWithin' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/Header/AccountMenu.client.vue",
@@ -212,8 +208,7 @@
         "error:58:15 [TS2339] Property 'startsWith' does not exist on type 'never'.",
         "error:58:47 [TS2339] Property 'startsWith' does not exist on type 'never'.",
         "error:58:80 [TS2339] Property 'startsWith' does not exist on type 'never'.",
-        "error:61:64 [TS2339] Property 'startsWith' does not exist on type 'never'.",
-        "error:91:5 [TS1117] An object literal cannot have multiple properties with the same name."
+        "error:61:64 [TS2339] Property 'startsWith' does not exist on type 'never'."
       ]
     },
     {
@@ -239,9 +234,7 @@
     },
     {
       "file": "app/components/Org/MembersPanel.vue",
-      "diagnostics": [
-        "error:480:74 [TS2352] Conversion of type 'Event' to type 'MemberRole' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/Org/OperationsQueue.vue",
@@ -285,9 +278,7 @@
     },
     {
       "file": "app/components/Package/DeprecatedTree.vue",
-      "diagnostics": [
-        "error:89:17 [TS1117] An object literal cannot have multiple properties with the same name."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/Package/InstallScripts.vue",
@@ -305,11 +296,7 @@
       "file": "app/components/Package/List.vue",
       "diagnostics": [
         "error:12:35 [TS2307] Cannot find module 'virtua/vue' or its corresponding type declarations.",
-        "error:108:17 [TS7006] Parameter 'page' implicitly has an 'any' type.",
-        "error:162:30 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"clickKeyword\"' is not assignable to parameter of type '\"update:sortOption\"'.",
-        "error:190:38 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"clickKeyword\"' is not assignable to parameter of type '\"update:sortOption\"'.",
-        "error:208:40 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"clickKeyword\"' is not assignable to parameter of type '\"update:sortOption\"'.",
-        "error:242:34 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"clickKeyword\"' is not assignable to parameter of type '\"update:sortOption\"'."
+        "error:108:17 [TS7006] Parameter 'page' implicitly has an 'any' type."
       ]
     },
     {
@@ -318,16 +305,7 @@
     },
     {
       "file": "app/components/Package/ListToolbar.vue",
-      "diagnostics": [
-        "error:208:27 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"toggleColumn\"' is not assignable to parameter of type '\"update:updatedWithin\"'.",
-        "error:222:26 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"update:text\"' is not assignable to parameter of type '\"update:updatedWithin\"'.",
-        "error:223:34 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"update:searchScope\"' is not assignable to parameter of type '\"update:updatedWithin\"'.",
-        "error:224:36 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"update:downloadRange\"' is not assignable to parameter of type '\"update:updatedWithin\"'.",
-        "error:225:30 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"update:security\"' is not assignable to parameter of type '\"update:updatedWithin\"'.",
-        "error:226:60 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type 'Event' is not assignable to parameter of type 'UpdatedWithin'.",
-        "error:227:29 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"toggleKeyword\"' is not assignable to parameter of type '\"update:updatedWithin\"'.",
-        "error:234:21 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"clearFilter\"' is not assignable to parameter of type '\"update:updatedWithin\"'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/Package/Maintainers.vue",
@@ -381,13 +359,13 @@
     },
     {
       "file": "app/components/Package/SkillsModal.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:200:3 [TS2367] This comparison appears to be unintentional because the types '\"skills-cli\"' and '\"skills-npm\"' have no overlap."
+      ]
     },
     {
       "file": "app/components/Package/Table.vue",
-      "diagnostics": [
-        "error:341:50 [TS2345] Argument of type 'Event' is not assignable to parameter of type 'string'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/Package/TableRow.vue",
@@ -435,8 +413,7 @@
     {
       "file": "app/components/Package/VulnerabilityTree.vue",
       "diagnostics": [
-        "error:34:10 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ critical: any; high: any; moderate: any; low: any; }'.",
-        "error:129:19 [TS1117] An object literal cannot have multiple properties with the same name."
+        "error:34:10 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ critical: any; high: any; moderate: any; low: any; }'."
       ]
     },
     {
@@ -466,10 +443,7 @@
       "file": "app/components/ReadmeTocDropdown.vue",
       "diagnostics": [
         "error:73:17 [TS2304] Cannot find name 'useId'.",
-        "error:109:30 [TS2304] Cannot find name 'useMediaQuery'.",
-        "error:196:13 [TS1117] An object literal cannot have multiple properties with the same name.",
-        "error:214:15 [TS1117] An object literal cannot have multiple properties with the same name.",
-        "error:233:15 [TS1117] An object literal cannot have multiple properties with the same name."
+        "error:109:30 [TS2304] Cannot find name 'useMediaQuery'."
       ]
     },
     {
@@ -503,8 +477,7 @@
     {
       "file": "app/components/Select/Field.vue",
       "diagnostics": [
-        "error:22:1 [TS1184] Modifiers cannot appear here.",
-        "error:53:20 [TS2304] Cannot find name 'disabled'."
+        "error:22:1 [TS1184] Modifiers cannot appear here."
       ]
     },
     {
@@ -552,7 +525,9 @@
       "diagnostics": [
         "error:18:13 [TS2552] Cannot find name 'useId'. Did you mean 'uid'?",
         "error:20:54 [TS2339] Property 'value' does not exist on type 'never'.\nThe intersection '__DefineProps<{ disabled?: boolean | undefined; type?: undefined; checked?: undefined; value: string; }, \"checked\" | \"disabled\" | \"type\">' was reduced to 'never' because property 'type' has conflicting types in some constituents.",
-        "error:23:23 [TS2339] Property 'value' does not exist on type 'never'.\nThe intersection '__DefineProps<{ disabled?: boolean | undefined; type?: undefined; checked?: undefined; value: string; }, \"checked\" | \"disabled\" | \"type\">' was reduced to 'never' because property 'type' has conflicting types in some constituents."
+        "error:23:23 [TS2339] Property 'value' does not exist on type 'never'.\nThe intersection '__DefineProps<{ disabled?: boolean | undefined; type?: undefined; checked?: undefined; value: string; }, \"checked\" | \"disabled\" | \"type\">' was reduced to 'never' because property 'type' has conflicting types in some constituents.",
+        "error:32:21 [TS2339] Property 'value' does not exist on type 'never'.\nThe intersection '__DefineProps<Props, \"checked\" | \"disabled\" | \"type\">' was reduced to 'never' because property 'type' has conflicting types in some constituents.",
+        "error:34:24 [TS2339] Property 'disabled' does not exist on type 'never'.\nThe intersection '__DefineProps<Props, \"checked\" | \"disabled\" | \"type\">' was reduced to 'never' because property 'type' has conflicting types in some constituents."
       ]
     },
     {
@@ -605,8 +580,7 @@
     {
       "file": "app/components/VersionSelector.vue",
       "diagnostics": [
-        "error:4:25 [TS2307] Cannot find module 'semver' or its corresponding type declarations.",
-        "error:596:17 [TS1117] An object literal cannot have multiple properties with the same name."
+        "error:4:25 [TS2307] Cannot find module 'semver' or its corresponding type declarations."
       ]
     },
     {
@@ -615,9 +589,7 @@
     },
     {
       "file": "app/components/diff/FileTree.vue",
-      "diagnostics": [
-        "error:162:35 [TS2741] Property 'path' is missing in type 'Event' but required in type 'FileChange'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/diff/Hunk.vue",
@@ -633,9 +605,7 @@
     },
     {
       "file": "app/components/diff/SidebarPanel.vue",
-      "diagnostics": [
-        "error:254:20 [TS2345] Argument of type '(file: FileChange) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'file' and '$event' are incompatible.\nProperty 'path' is missing in type 'Event' but required in type 'FileChange'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/diff/SkipBlock.vue",
@@ -690,9 +660,7 @@
     },
     {
       "file": "app/pages/diff/[[org]]/[packageName]/v/[versionRange].vue",
-      "diagnostics": [
-        "error:195:25 [TS2741] Property 'path' is missing in type 'Event' but required in type 'FileChange'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/index.vue",
@@ -704,15 +672,14 @@
         "error:4:26 [TS2307] Cannot find module 'perfect-debounce' or its corresponding type declarations.",
         "error:100:43 [TS7006] Parameter 'keyword' implicitly has an 'any' type.",
         "error:111:32 [TS7006] Parameter 'sum' implicitly has an 'any' type.",
-        "error:111:37 [TS7006] Parameter 'pkg' implicitly has an 'any' type.",
-        "error:279:24 [TS2345] Argument of type '(chip: FilterChip) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'chip' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'FilterChip': id, label, value"
+        "error:111:37 [TS7006] Parameter 'pkg' implicitly has an 'any' type."
       ]
     },
     {
       "file": "app/pages/package-code/[[org]]/[packageName]/v/[version]/[...filePath].vue",
       "diagnostics": [
         "error:143:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
-        "error:518:26 [TS2345] Argument of type '(lineNum: number, event: MouseEvent) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTarget signature provides too few arguments. Expected 2 or more, but got 1."
+        "error:518:26 [TS2345] Argument of type '(lineNum: number, event: MouseEvent) => void' is not assignable to parameter of type '($event: any) => unknown'.\nTarget signature provides too few arguments. Expected 2 or more, but got 1."
       ]
     },
     {
@@ -769,22 +736,17 @@
         "error:177:21 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<\"algolia\" | \"npm\", Set<SortKey>>'.",
         "error:355:44 [TS7006] Parameter 'r' implicitly has an 'any' type.",
         "error:364:5 [TS7006] Parameter 's' implicitly has an 'any' type.",
-        "error:380:9 [TS7006] Parameter 's' implicitly has an 'any' type.",
-        "error:640:30 [TS2345] Argument of type '(chip: FilterChip) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'chip' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'FilterChip': id, label, value",
-        "error:744:27 [TS2345] Argument of type '(page: number) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'page' and '$event' are incompatible.\nType 'Event' is not assignable to type 'number'."
+        "error:380:9 [TS7006] Parameter 's' implicitly has an 'any' type."
       ]
     },
     {
       "file": "app/pages/settings.vue",
-      "diagnostics": [
-        "error:227:49 [TS2352] Conversion of type 'Event' to type 'string' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/~[username]/index.vue",
       "diagnostics": [
-        "error:2:26 [TS2307] Cannot find module 'perfect-debounce' or its corresponding type declarations.",
-        "error:225:23 [TS2345] Argument of type '(page: number) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'page' and '$event' are incompatible.\nType 'Event' is not assignable to type 'number'."
+        "error:2:26 [TS2307] Cannot find module 'perfect-debounce' or its corresponding type declarations."
       ]
     },
     {
@@ -795,7 +757,7 @@
       ]
     }
   ],
-  "errorCount": 197,
+  "errorCount": 167,
   "warningCount": 0,
   "fileCount": 134
 }

@@ -39,7 +39,7 @@
     {
       "file": "src/components/MkAsUi.vue",
       "diagnostics": [
-        "error:14:285 [TS2345] Argument of type '((evId: string) => Promise<void>) | undefined' is not assignable to parameter of type '($event: Event) => unknown'.\nType 'undefined' is not assignable to type '($event: Event) => unknown'.\nProperty 'primary' does not exist on type 'AsUiButtons'.\nProperty 'rounded' does not exist on type 'AsUiButtons'.\nProperty 'disabled' does not exist on type 'AsUiButtons'.",
+        "error:14:285 [TS2345] Argument of type '((evId: string) => Promise<void>) | undefined' is not assignable to parameter of type '($event: any) => unknown'.\nType 'undefined' is not assignable to type '($event: any) => unknown'.\nProperty 'primary' does not exist on type 'AsUiButtons'.\nProperty 'rounded' does not exist on type 'AsUiButtons'.\nProperty 'disabled' does not exist on type 'AsUiButtons'.",
         "error:15:150 [TS2345] Argument of type '(() => Promise<void>) | undefined' is not assignable to parameter of type '(payload: PointerEvent) => unknown'.\nType 'undefined' is not assignable to type '(payload: PointerEvent) => unknown'.",
         "error:17:162 [TS2345] Argument of type '(() => Promise<void>) | undefined' is not assignable to parameter of type '(payload: PointerEvent) => unknown'.\nType 'undefined' is not assignable to type '(payload: PointerEvent) => unknown'.\nProperty 'default' does not exist on type 'AsUiButton'.",
         "error:23:100 [TS2345] Argument of type '((v: string) => Promise<void>) | undefined' is not assignable to parameter of type '(value: string) => unknown'.\nType 'undefined' is not assignable to type '(value: string) => unknown'.\nProperty 'default' does not exist on type 'AsUiButton'.",
@@ -178,15 +178,11 @@
     },
     {
       "file": "src/components/MkDrive.file.vue",
-      "diagnostics": [
-        "error:11:21 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkDrive.folder.vue",
-      "diagnostics": [
-        "error:11:21 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkDrive.navFolder.vue",
@@ -194,9 +190,7 @@
     },
     {
       "file": "src/components/MkDrive.vue",
-      "diagnostics": [
-        "error:61:23 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkDriveFileSelectDialog.vue",
@@ -248,9 +242,7 @@
     },
     {
       "file": "src/components/MkEmojiPickerDialog.vue",
-      "diagnostics": [
-        "error:25:3 [TS1117] An object literal cannot have multiple properties with the same name."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkExtensionInstaller.vue",
@@ -416,15 +408,11 @@
     },
     {
       "file": "src/components/MkMediaImage.vue",
-      "diagnostics": [
-        "error:7:167 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkMediaList.vue",
-      "diagnostics": [
-        "error:24:105 [TS1117] An object literal cannot have multiple properties with the same name."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkMediaRange.vue",
@@ -456,7 +444,7 @@
     {
       "file": "src/components/MkModal.vue",
       "diagnostics": [
-        "error:298:36 [TS7006] Parameter 'ev' implicitly has an 'any' type."
+        "error:298:36 [TS7006] Parameter 'ev' implicitly has an 'any' type.\nThe last overload gave the following error.\nArgument of type 'number | null' is not assignable to parameter of type 'string | number'.\nType 'null' is not assignable to type 'string | number'."
       ]
     },
     {
@@ -465,15 +453,11 @@
     },
     {
       "file": "src/components/MkNote.vue",
-      "diagnostics": [
-        "error:48:61 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkNoteDetailed.vue",
-      "diagnostics": [
-        "error:50:52 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkNoteDraftsDialog.vue",
@@ -541,15 +525,11 @@
     },
     {
       "file": "src/components/MkPagination.vue",
-      "diagnostics": [
-        "error:7:155 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkPaginationControl.vue",
-      "diagnostics": [
-        "error:13:117 [TS2322] Type 'boolean' is not assignable to type '__U<[Exclude<__LooseRequired<__DefineProps<{ paginator: T; canFilter?: boolean | undefined; filterOpened?: boolean | undefined; }, \"canFilter\" | \"filterOpened\" | ([T] extends [boolean | undefined] ? \"paginator\" : never)>>[\"filterOpened\"], undefined>] extends [...] ? IfAny<...> : Ref<...>>'.\nThe last overload gave the following error.\nArgument of type 'number | null' is not assignable to parameter of type 'string | number'.\nType 'null' is not assignable to type 'string | number'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkPagingButtons.vue",
@@ -593,21 +573,15 @@
     },
     {
       "file": "src/components/MkPostFormAttaches.vue",
-      "diagnostics": [
-        "error:22:51 [TS2345] Argument of type 'MouseEvent' is not assignable to parameter of type 'KeyboardEvent | PointerEvent'.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkPostFormDialog.vue",
-      "diagnostics": [
-        "error:17:3 [TS1117] An object literal cannot have multiple properties with the same name."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkPreferenceContainer.vue",
-      "diagnostics": [
-        "error:7:63 [TS2740] Type 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkPreview.vue",
@@ -653,9 +627,7 @@
     },
     {
       "file": "src/components/MkReactionsViewer.reaction.vue",
-      "diagnostics": [
-        "error:13:29 [TS2345] Argument of type '(ev: PointerEvent) => Promise<void>' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkReactionsViewer.vue",
@@ -798,7 +770,7 @@
         "error:33:14 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
         "error:34:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
         "error:35:14 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:36:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more."
+        "error:36:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'."
       ]
     },
     {
@@ -863,9 +835,7 @@
     },
     {
       "file": "src/components/MkUploaderItems.vue",
-      "diagnostics": [
-        "error:17:50 [TS2740] Type 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkUrlPreview.vue",
@@ -929,9 +899,7 @@
     },
     {
       "file": "src/components/MkVisibilityPicker.vue",
-      "diagnostics": [
-        "error:138:11 [TS2339] Property 'type' does not exist on type 'unknown'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkVisitorDashboard.ActiveUsersChart.vue",
@@ -947,10 +915,7 @@
     },
     {
       "file": "src/components/MkWatermarkEditorDialog.Layer.vue",
-      "diagnostics": [
-        "error:318:10 [TS2339] Property 'align' does not exist on type '{ id: string; type: \"text\"; text: string; repeat: boolean; noBoundingBoxExpansion: boolean; scale: number; angle: number; align: Align; opacity: number; } | { id: string; type: \"image\"; imageUrl: string | null; ... 7 more ...; opacity: number; } | { ...; } | { ...; } | { ...; } | { ...; }'.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'.",
-        "error:322:23 [TS7006] Parameter 'v' implicitly has an 'any' type.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkWatermarkEditorDialog.vue",
@@ -962,15 +927,11 @@
     },
     {
       "file": "src/components/MkWidgets.vue",
-      "diagnostics": [
-        "error:32:269 [TS2740] Type 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkWindow.vue",
-      "diagnostics": [
-        "error:17:86 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkYouTubePlayer.vue",
@@ -998,9 +959,7 @@
     },
     {
       "file": "src/components/global/MkA.vue",
-      "diagnostics": [
-        "error:7:101 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/global/MkAcct.vue",
@@ -1138,9 +1097,7 @@
     },
     {
       "file": "src/components/grid/MkGrid.vue",
-      "diagnostics": [
-        "error:17:29 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/grid/MkHeaderCell.vue",
@@ -1228,22 +1185,19 @@
     },
     {
       "file": "src/pages/admin-file.vue",
-      "diagnostics": [
-        "error:7:83 [TS2339] Property 'file' does not exist on type 'Event'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/admin-user.vue",
       "diagnostics": [
-        "error:190:43 [TS2322] Type 'string' is not assignable to type '\"active-users\" | \"ap-request\" | \"drive\" | \"drive-files\" | \"federation\" | \"instance-drive-files\" | \"instance-drive-files-total\" | \"instance-drive-usage\" | \"instance-drive-usage-total\" | ... 17 more ... | \"users-total\"'.",
-        "error:192:43 [TS2322] Type 'string' is not assignable to type '\"active-users\" | \"ap-request\" | \"drive\" | \"drive-files\" | \"federation\" | \"instance-drive-files\" | \"instance-drive-files-total\" | \"instance-drive-usage\" | \"instance-drive-usage-total\" | ... 17 more ... | \"users-total\"'."
+        "error:190:39 [TS2322] Type 'string' is not assignable to type '\"active-users\" | \"ap-request\" | \"drive\" | \"drive-files\" | \"federation\" | \"instance-drive-files\" | \"instance-drive-files-total\" | \"instance-drive-usage\" | \"instance-drive-usage-total\" | ... 17 more ... | \"users-total\"'.",
+        "error:192:39 [TS2322] Type 'string' is not assignable to type '\"active-users\" | \"ap-request\" | \"drive\" | \"drive-files\" | \"federation\" | \"instance-drive-files\" | \"instance-drive-files-total\" | \"instance-drive-usage\" | \"instance-drive-usage-total\" | ... 17 more ... | \"users-total\"'."
       ]
     },
     {
       "file": "src/pages/admin/RolesEditorFormula.vue",
       "diagnostics": [
-        "error:11:106 [TS2345] Argument of type '((ev: DragEvent) => void) | undefined' is not assignable to parameter of type '($event: DragEvent) => unknown'.\nType 'undefined' is not assignable to type '($event: DragEvent) => unknown'.",
-        "error:35:61 [TS2345] Argument of type 'Event' is not assignable to parameter of type '{ id: string; type: \"and\" | \"or\"; values: (... | { id: string; type: \"not\"; value: ... | ... | { id: string; type: \"isLocal\" | \"isRemote\"; } | { id: string; type: \"isBot\" | \"isCat\" | \"isExplorable\" | \"isLocked\" | \"isSuspended\"; } | { ...; } | { ...; } | { ...; }; } | ... 4 more ... | { ...; })[]; } | ... 5 more ... ...'.\nType 'Event' is missing the following properties from type '{ id: string; type: \"followersLessThanOrEq\" | \"followersMoreThanOrEq\" | \"followingLessThanOrEq\" | \"followingMoreThanOrEq\" | \"notesLessThanOrEq\" | \"notesMoreThanOrEq\"; value: number; }': id, value"
+        "error:11:106 [TS2345] Argument of type '((ev: DragEvent) => void) | undefined' is not assignable to parameter of type '($event: DragEvent) => unknown'.\nType 'undefined' is not assignable to type '($event: DragEvent) => unknown'."
       ]
     },
     {
@@ -1446,9 +1400,7 @@
     },
     {
       "file": "src/pages/admin/roles.editor.vue",
-      "diagnostics": [
-        "error:467:124 [TS7006] Parameter 'v' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/admin/roles.role.vue",
@@ -1456,9 +1408,7 @@
     },
     {
       "file": "src/pages/admin/roles.vue",
-      "diagnostics": [
-        "error:208:23 [TS7006] Parameter 'v' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/admin/security.vue",
@@ -1526,10 +1476,7 @@
     },
     {
       "file": "src/pages/channel.vue",
-      "diagnostics": [
-        "error:12:101 [TS1117] An object literal cannot have multiple properties with the same name.",
-        "error:13:81 [TS1117] An object literal cannot have multiple properties with the same name."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/channels.vue",
@@ -1537,9 +1484,7 @@
     },
     {
       "file": "src/pages/chat/XMessage.vue",
-      "diagnostics": [
-        "error:9:97 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/chat/XRoom.vue",
@@ -1676,9 +1621,7 @@
     },
     {
       "file": "src/pages/flash/flash.vue",
-      "diagnostics": [
-        "error:25:91 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/follow-requests.vue",
@@ -1804,9 +1747,7 @@
     },
     {
       "file": "src/pages/page.vue",
-      "diagnostics": [
-        "error:87:103 [TS1117] An object literal cannot have multiple properties with the same name."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/pages.vue",
@@ -1932,9 +1873,7 @@
     },
     {
       "file": "src/pages/settings/drive-cleaner.vue",
-      "diagnostics": [
-        "error:18:49 [TS2740] Type 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/settings/drive.ImageFrameItem.vue",
@@ -2054,14 +1993,7 @@
     },
     {
       "file": "src/pages/settings/theme.vue",
-      "diagnostics": [
-        "error:65:250 [TS2740] Type 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more.",
-        "error:85:211 [TS2740] Type 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more.",
-        "error:105:211 [TS2740] Type 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more.",
-        "error:136:247 [TS2740] Type 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more.",
-        "error:156:211 [TS2740] Type 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more.",
-        "error:176:211 [TS2740] Type 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/settings/webhook.edit.vue",
@@ -2089,9 +2021,7 @@
     },
     {
       "file": "src/pages/timeline.vue",
-      "diagnostics": [
-        "error:12:80 [TS1117] An object literal cannot have multiple properties with the same name."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/user-list-timeline.vue",
@@ -2286,7 +2216,6 @@
     {
       "file": "src/ui/deck.vue",
       "diagnostics": [
-        "error:22:182 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more.",
         "error:27:23 [TS2339] Property 'filter' does not exist on type 'Ref<{ id: string; type: \"antenna\" | \"channel\" | \"chat\" | \"direct\" | \"list\" | \"main\" | \"mentions\" | \"notifications\" | \"roleTimeline\" | \"tl\" | \"widgets\"; name: string | null; width: number; ... 14 more ...; timelineNameCache?: string | undefined; }[], Column[] | { ...; }[]>'.",
         "error:27:30 [TS7006] Parameter 'c' implicitly has an 'any' type.",
         "error:27:39 [TS2339] Property 'includes' does not exist on type 'true | string[][]'.\nProperty 'includes' does not exist on type 'true'.",
@@ -2325,9 +2254,7 @@
     },
     {
       "file": "src/ui/deck/column.vue",
-      "diagnostics": [
-        "error:20:30 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/ui/deck/direct-column.vue",
@@ -2340,8 +2267,6 @@
     {
       "file": "src/ui/deck/main-column.vue",
       "diagnostics": [
-        "error:22:93 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more.",
-        "error:23:41 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more.",
         "error:82:19 [TS2347] Untyped function calls may not accept type arguments."
       ]
     },
@@ -2371,9 +2296,7 @@
     },
     {
       "file": "src/ui/universal.vue",
-      "diagnostics": [
-        "error:13:135 [TS2345] Argument of type '(ev: PointerEvent) => void' is not assignable to parameter of type '($event: MouseEvent) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'MouseEvent' is missing the following properties from type 'PointerEvent': altitudeAngle, azimuthAngle, height, isPrimary, and 11 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/ui/visitor.vue",
@@ -2433,9 +2356,7 @@
     },
     {
       "file": "src/widgets/WidgetClock.vue",
-      "diagnostics": [
-        "error:25:126 [TS1117] An object literal cannot have multiple properties with the same name."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/widgets/WidgetDigitalClock.vue",
@@ -2471,9 +2392,7 @@
     },
     {
       "file": "src/widgets/WidgetPhotos.vue",
-      "diagnostics": [
-        "error:7:182 [TS1117] An object literal cannot have multiple properties with the same name."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/widgets/WidgetPostForm.vue",
@@ -2540,7 +2459,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 145,
+  "errorCount": 99,
   "warningCount": 0,
   "fileCount": 583
 }

@@ -5452,17 +5452,6 @@
     "file": "src/components/MkImageEffectorFxForm.vue",
     "messages": [
       {
-        "ruleId": "vue/valid-v-for",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-v-for] v-for key should use variables defined by v-for",
-        "line": 8,
-        "column": 33,
-        "endLine": 8,
-        "endColumn": 41,
-        "help": "Valid v-for syntax:\n  <!-- Array iteration -->\n  <li v-for=\"item in items\">{{ item }}</li>\n  <li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n  \n  <!-- Object iteration -->\n  <li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n  <li v-for=\"(value, key, index) in object\">{{ index }}</li>\n  \n  <!-- Range -->\n  <span v-for=\"n in 10\">{{ n }}</span>"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -5562,7 +5551,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 9
   },
   {
@@ -23615,6 +23604,28 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-vars] Slot prop 'delta' from slot 'right' is defined but never used",
+        "line": 31,
+        "column": 16,
+        "endLine": 31,
+        "endColumn": 21,
+        "help": "Consider removing unused slot props or prefix with underscore"
+      },
+      {
+        "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-vars] Slot prop 'timestamp' from slot 'right' is defined but never used",
+        "line": 31,
+        "column": 16,
+        "endLine": 31,
+        "endColumn": 25,
+        "help": "Consider removing unused slot props or prefix with underscore"
+      },
+      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -23627,7 +23638,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 8
   },
   {
     "file": "src/pages/admin/object-storage.vue",
@@ -25591,6 +25602,17 @@
     "file": "src/pages/admin/settings.vue",
     "messages": [
       {
+        "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-vars] Slot prop 'slotProps' from slot 'default' is defined but never used",
+        "line": 11,
+        "column": 19,
+        "endLine": 11,
+        "endColumn": 28,
+        "help": "Consider removing unused slot props or prefix with underscore"
+      },
+      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -25922,7 +25944,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 30
+    "warningCount": 31
   },
   {
     "file": "src/pages/admin/system-webhook.item.vue",

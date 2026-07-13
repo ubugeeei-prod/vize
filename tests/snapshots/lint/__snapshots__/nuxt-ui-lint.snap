@@ -1319,76 +1319,10 @@
         "endLine": 119,
         "endColumn": 82,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 119,
-        "column": 19,
-        "endLine": 119,
-        "endColumn": 82,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 119,
-        "column": 19,
-        "endLine": 119,
-        "endColumn": 82,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 125,
-        "column": 27,
-        "endLine": 125,
-        "endColumn": 78,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 125,
-        "column": 27,
-        "endLine": 125,
-        "endColumn": 78,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 130,
-        "column": 30,
-        "endLine": 130,
-        "endColumn": 81,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 130,
-        "column": 30,
-        "endLine": 130,
-        "endColumn": 81,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 7
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/PricingPlan.vue",

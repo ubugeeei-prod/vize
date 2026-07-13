@@ -26,9 +26,7 @@
     },
     {
       "file": "app/components/button/VFButton.vue",
-      "diagnostics": [
-        "error:52:5 [TS1117] An object literal cannot have multiple properties with the same name."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/cta/VFCta.vue",
@@ -51,8 +49,7 @@
       "diagnostics": [
         "error:2:37 [TS2307] Cannot find module '@primevue/forms' or its corresponding type declarations.",
         "error:3:27 [TS2307] Cannot find module '@primevue/forms' or its corresponding type declarations.",
-        "error:41:25 [TS7006] Parameter 'v' implicitly has an 'any' type.",
-        "error:72:35 [TS2739] Type 'Event' is missing the following properties from type 'FileUploadSelectEvent': originalEvent, files"
+        "error:41:25 [TS7006] Parameter 'v' implicitly has an 'any' type."
       ]
     },
     {
@@ -205,9 +202,7 @@
     },
     {
       "file": "app/pages/_components/StaffGridItem.vue",
-      "diagnostics": [
-        "error:34:5 [TS1117] An object literal cannot have multiple properties with the same name."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/code-of-conduct/index.vue",
@@ -297,8 +292,8 @@
     {
       "file": "app/pages/timetable/_components/TimetableCard.vue",
       "diagnostics": [
-        "error:249:6 [TS2367] This comparison appears to be unintentional because the types '\"event\" | \"lightningTalk\" | \"session\" | undefined' and '\"schedule\"' have no overlap.",
-        "error:259:7 [TS2367] This comparison appears to be unintentional because the types '\"event\" | \"lightningTalk\" | \"session\" | undefined' and '\"schedule\"' have no overlap."
+        "error:251:3 [TS2367] This comparison appears to be unintentional because the types '\"event\" | \"lightningTalk\" | \"session\" | undefined' and '\"schedule\"' have no overlap.",
+        "error:261:7 [TS2367] This comparison appears to be unintentional because the types '\"event\" | \"lightningTalk\" | \"session\" | undefined' and '\"schedule\"' have no overlap."
       ]
     },
     {
@@ -318,7 +313,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 22,
+  "errorCount": 19,
   "warningCount": 0,
   "fileCount": 71
 }

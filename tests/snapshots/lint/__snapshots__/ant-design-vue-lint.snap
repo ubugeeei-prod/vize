@@ -1372,6 +1372,17 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
+        "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-vars] Slot prop 'onChange' from slot 'headerRender' is defined but never used",
+        "line": 22,
+        "column": 17,
+        "endLine": 22,
+        "endColumn": 25,
+        "help": "Consider removing unused slot props or prefix with underscore"
+      },
+      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1384,7 +1395,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 3
   },
   {
     "file": "components/calendar/demo/index.vue",
@@ -5688,39 +5699,6 @@
     "file": "components/icon/demo/custom.vue",
     "messages": [
       {
-        "ruleId": "vue/valid-v-slot",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-v-slot] v-slot can only be used on components or template elements",
-        "line": 22,
-        "column": 17,
-        "endLine": 22,
-        "endColumn": 27,
-        "help": "Use v-slot on a component or a template element inside a component"
-      },
-      {
-        "ruleId": "vue/valid-v-slot",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-v-slot] v-slot can only be used on components or template elements",
-        "line": 32,
-        "column": 17,
-        "endLine": 32,
-        "endColumn": 38,
-        "help": "Use v-slot on a component or a template element inside a component"
-      },
-      {
-        "ruleId": "vue/valid-v-slot",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-v-slot] v-slot can only be used on components or template elements",
-        "line": 78,
-        "column": 17,
-        "endLine": 78,
-        "endColumn": 27,
-        "help": "Use v-slot on a component or a template element inside a component"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -5732,7 +5710,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 3,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -14379,6 +14357,28 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
+        "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-vars] Slot prop 'onItemSelect' from slot 'children' is defined but never used",
+        "line": 28,
+        "column": 17,
+        "endLine": 28,
+        "endColumn": 29,
+        "help": "Consider removing unused slot props or prefix with underscore"
+      },
+      {
+        "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-vars] Slot prop 'selectedKeys' from slot 'children' is defined but never used",
+        "line": 28,
+        "column": 17,
+        "endLine": 28,
+        "endColumn": 29,
+        "help": "Consider removing unused slot props or prefix with underscore"
+      },
+      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -14391,7 +14391,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 4
   },
   {
     "file": "components/tree/demo/accordion.vue",

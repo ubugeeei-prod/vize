@@ -1,6 +1,8 @@
 const VUE_CLIENT_RUNTIME_IMPORT = "vue/dist/vue.runtime.esm-bundler.js";
 const COMPONENT_BRIDGE_RE = /(?:_?resolveComponent\s*\(|from\s+(["'])#components\1)/;
-const I18N_BRIDGE_RE = /\b(?:\$t|\$rt|\$d|\$n|\$tm|\$te)\s*\(/;
+// `$` is not a word character, so a leading `\b` prevents matches after
+// whitespace (the normal shape of setup-scope calls such as `$t(...)`).
+const I18N_BRIDGE_RE = /(?:\$t|\$rt|\$d|\$n|\$tm|\$te)\s*\(/;
 const STABLE_KEY_BRIDGE_RE = /\b(?:useFetch|useLazyFetch)\s*\(|\/\*\s*nuxt-injected\s*\*\//;
 
 export function hasComponentBridgeInput(code: string): boolean {

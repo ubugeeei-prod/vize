@@ -116,7 +116,10 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
   }
   const fuzzStep = fuzzJob.steps.find((step) => step.id === "fuzz");
   assert.equal(fuzzStep?.["continue-on-error"], true);
-  assert.match(fuzzStep?.run ?? "", /cargo \+nightly fuzz run "\$FUZZ_TARGET"/);
+  assert.match(
+    fuzzStep?.run ?? "",
+    /cargo \+nightly fuzz run --fuzz-dir tests\/fuzz "\$FUZZ_TARGET"/,
+  );
   assert.deepEqual(fuzzStep?.env, {
     FUZZ_MAX_TOTAL_TIME: "${{ steps.budget.outputs.seconds }}",
     FUZZ_TARGET: "${{ matrix.target }}",

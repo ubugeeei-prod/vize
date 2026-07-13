@@ -224,7 +224,7 @@
         "error:56:29 [TS2554] Expected 2 arguments, but got 1.",
         "error:69:39 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:75:36 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:90:23 [TS2322] Type 'string | number | symbol' is not assignable to type 'KeyFieldValue<any> | undefined'.\nType 'number' is not assignable to type 'KeyFieldValue<any> | undefined'."
+        "error:90:21 [TS2322] Type 'string | number | symbol' is not assignable to type 'KeyFieldValue<any> | undefined'.\nType 'number' is not assignable to type 'KeyFieldValue<any> | undefined'."
       ]
     },
     {
@@ -252,7 +252,7 @@
     {
       "file": "app/components/common/CommonTooltip.vue",
       "diagnostics": [
-        "error:2:45 [TS2307] Cannot find module 'floating-vue' or its corresponding type declarations."
+        "error:2:45 [TS2307] Cannot find module 'floating-vue' or its corresponding type declarations.\nProperty 'isHydrated' does not exist on type '__DefineProps<Props, never>'."
       ]
     },
     {
@@ -369,8 +369,7 @@
       "file": "app/components/modal/ModalContainer.vue",
       "diagnostics": [
         "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:26:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
-        "error:92:84 [TS2345] Argument of type '(choice: ConfirmDialogChoice) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'choice' and '$event' are incompatible.\nProperty 'choice' is missing in type 'Event' but required in type 'ConfirmDialogChoice'.\nProperty 'closeErrorDialog' does not exist on type 'ErrorDialogData'."
+        "error:26:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?\nProperty 'closeErrorDialog' does not exist on type '__DefineProps<ErrorDialogData, never>'."
       ]
     },
     {
@@ -624,8 +623,7 @@
         "error:69:20 [TS2554] Expected 2 arguments, but got 1.",
         "error:95:76 [TS7006] Parameter 'option' implicitly has an 'any' type.",
         "error:250:67 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:364:24 [TS2304] Cannot find name 'useDebounceFn'.",
-        "error:605:42 [TS2345] Argument of type '(name: string) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'name' and '$event' are incompatible.\nType 'Event' is not assignable to type 'string'."
+        "error:364:24 [TS2304] Cannot find name 'useDebounceFn'."
       ]
     },
     {
@@ -1247,8 +1245,7 @@
     {
       "file": "app/pages/[[server]]/lists/index.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:76:24 [TS2345] Argument of type '(id: string) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'id' and '$event' are incompatible.\nType 'Event' is not assignable to type 'string'."
+        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
       ]
     },
     {
@@ -1277,7 +1274,8 @@
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
         "error:12:51 [TS2345] Argument of type '() => string' is not assignable to parameter of type 'string'.",
         "error:12:157 [TS2554] Expected 1 arguments, but got 0.",
-        "error:15:29 [TS7006] Parameter 'client' implicitly has an 'any' type."
+        "error:15:29 [TS7006] Parameter 'client' implicitly has an 'any' type.",
+        "error:50:42 [TS2454] Variable 'followedTags' is used before being assigned."
       ]
     },
     {
@@ -1426,7 +1424,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 279,
+  "errorCount": 277,
   "warningCount": 0,
   "fileCount": 253
 }

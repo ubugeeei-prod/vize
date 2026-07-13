@@ -76,6 +76,9 @@ test("full app e2e workflow remains nightly/on-demand and uploads failure artifa
   assert.match(appJob, /tests\/app\/screenshots\//);
   assert.match(appJob, /tests\/app\/playwright-report\//);
   assert.match(appJob, /tests\/playwright-report\//);
+  for (const fixture of ["elk", "frontend-phpcon", "npmx", "vuefes"]) {
+    assert.match(appJob, new RegExp(`__agent_only/${fixture}-vrt/artifacts/`));
+  }
   assert.match(appJob, /if-no-files-found:\s*ignore/);
 });
 

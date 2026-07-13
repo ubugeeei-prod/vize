@@ -121,12 +121,11 @@ jobs:
       - name: Run fuzz target ${{ matrix.target }}
         id: fuzz
         continue-on-error: true
-        working-directory: tests/fuzz
         env:
           FUZZ_MAX_TOTAL_TIME: ${{ steps.budget.outputs.seconds }}
           FUZZ_TARGET: ${{ matrix.target }}
         run: >-
-          cargo +nightly fuzz run "$FUZZ_TARGET" --
+          cargo +nightly fuzz run --fuzz-dir tests/fuzz "$FUZZ_TARGET" --
           "-max_total_time=$FUZZ_MAX_TOTAL_TIME"
           -max_len=65536
           -timeout=25
