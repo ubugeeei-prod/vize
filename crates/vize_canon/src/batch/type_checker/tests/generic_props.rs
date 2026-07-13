@@ -99,3 +99,47 @@ mount(Child, {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn preserves_generic_parameter_when_default_differs_from_constraint() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "issue-2811-generic-default-scope",
+        &[(
+            "src/Foo.vue",
+            r#"<script setup lang="ts" generic="T extends string | number = string">
+import { ref } from "vue";
+
+interface Props {
+  value?: T;
+}
+
+const props = defineProps<Props>();
+const state = ref(props.value);
+
+function setValue(value: T) {
+  state.value = value;
+}
+</script>
+
+<template>
+  <slot :set-value :state />
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "generic defaults must not replace T inside the SFC declaration: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

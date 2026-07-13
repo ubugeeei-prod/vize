@@ -1,7 +1,76 @@
 //! Helpers for splicing `<script setup generic="...">` type parameters into
 //! hoisted type/interface declarations lifted to module scope.
 
-use vize_carton::String;
+use vize_carton::{String, append};
+use vize_croquis::Croquis;
+
+use crate::virtual_ts::props::{
+    add_generic_defaults, extract_generic_names, strip_const_modifiers,
+};
+
+#[derive(Default)]
+pub(super) struct HoistedGenericAliases {
+    generic_decl: String,
+    generic_names: String,
+    type_names: Vec<String>,
+}
+
+impl HoistedGenericAliases {
+    pub(super) fn collect(
+        summary: &Croquis,
+        script: Option<&str>,
+        generic_param: Option<&str>,
+    ) -> Self {
+        let Some((script, generic_param)) = script.zip(generic_param) else {
+            return Self::default();
+        };
+        let generic_names = extract_generic_names(generic_param);
+        let names: Vec<String> = generic_names
+            .split(',')
+            .map(str::trim)
+            .filter(|name| !name.is_empty())
+            .map(String::from)
+            .collect();
+        let type_names = summary
+            .type_exports
+            .iter()
+            .filter(|export| export.hoisted)
+            .filter_map(|export| {
+                let source = &script[export.start as usize..export.end as usize];
+                (references_any_identifier(source, &names)
+                    && generic_injection_point(source, export.name.as_str()).is_some())
+                .then(|| String::from(export.name.as_str()))
+            })
+            .collect();
+
+        Self {
+            generic_decl: strip_const_modifiers(&add_generic_defaults(generic_param)),
+            generic_names,
+            type_names,
+        }
+    }
+
+    pub(super) fn emit_module_aliases(&self, ts: &mut String) {
+        for (index, type_name) in self.type_names.iter().enumerate() {
+            append!(
+                *ts,
+                "type __VizeHoistedGeneric{index}<{}> = {type_name}<{}>;\n",
+                self.generic_decl,
+                self.generic_names
+            );
+        }
+    }
+
+    pub(super) fn emit_setup_aliases(&self, ts: &mut String) {
+        for (index, type_name) in self.type_names.iter().enumerate() {
+            append!(
+                *ts,
+                "  type {type_name} = __VizeHoistedGeneric{index}<{}>;\n",
+                self.generic_names
+            );
+        }
+    }
+}
 
 pub(super) fn is_ident_byte(b: u8) -> bool {
     b == b'_' || b == b'$' || b.is_ascii_alphanumeric()
