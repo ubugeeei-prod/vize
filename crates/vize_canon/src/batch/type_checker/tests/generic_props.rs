@@ -199,3 +199,43 @@ function clear() {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn preserves_optional_object_spreads_after_with_defaults() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "issue-2810-generic-with-defaults-object-spread",
+        &[(
+            "src/Panel.vue",
+            r#"<script setup lang="ts" generic="T">
+interface Props {
+  value?: T;
+  options?: { label?: string };
+  disabled?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  disabled: false
+});
+</script>
+
+<template>
+  <div v-bind="{ ...props.options }" />
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "optional object props must remain spreadable after unrelated defaults: {snapshot:#?}"
+    );
+    let _ = std::fs::remove_dir_all(&project_root);
+}
