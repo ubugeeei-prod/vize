@@ -21,6 +21,8 @@ use crate::{SfcCompileOptions, SfcTemplateProduct, parse_sfc};
 
 #[path = "tests/incremental.rs"]
 mod incremental;
+#[path = "tests/runtime_names.rs"]
+mod runtime_names;
 #[path = "tests/scoped_inference.rs"]
 mod scoped_inference;
 

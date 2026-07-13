@@ -29,6 +29,7 @@ pub(crate) struct GraphRenderModule {
 pub(crate) fn compile_sfc_with_graph_render(
     descriptor: &SfcDescriptor<'_>,
     options: SfcCompileOptions,
+    render_emit: &vize_rendu::RenderEmitSettings,
     render: GraphRenderModule,
     mut warnings: Vec<SfcError>,
     modules: Option<&vize_module::ModuleDocument>,
@@ -92,7 +93,11 @@ pub(crate) fn compile_sfc_with_graph_render(
         &mut code,
         &mut warnings,
         &options,
-        &vize_relief::CodegenOptions::default(),
+        &vize_relief::CodegenOptions {
+            runtime_module_name: render_emit.runtime_module_name.clone(),
+            runtime_global_name: render_emit.runtime_global_name.clone(),
+            ..Default::default()
+        },
     );
     trim_trailing_newlines(&mut code);
     let map = source_map(

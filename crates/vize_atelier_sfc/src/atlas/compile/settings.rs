@@ -3,6 +3,7 @@
 use vize_atlas::{Compilation, CompilationInputError, SourceId, SourceInput};
 use vize_carton::{FxHashMap, String};
 use vize_relief::TemplateSyntaxMode;
+use vize_rendu::{RenderEmitSettings, RenderEmitSettingsInput};
 
 use crate::{SfcCompileOptions, SfcParseOptions};
 
@@ -15,6 +16,8 @@ pub struct SfcCompileRequest {
     pub template_syntax: TemplateSyntaxMode,
     /// Derive template/style scoped flags from the parsed descriptor before compilation.
     pub infer_scoped_from_descriptor: bool,
+    /// Frontend-neutral JavaScript packaging settings consumed by the selected backend.
+    pub render_emit: RenderEmitSettings,
 }
 
 impl SfcCompileRequest {
@@ -24,12 +27,24 @@ impl SfcCompileRequest {
             options,
             template_syntax,
             infer_scoped_from_descriptor: false,
+            render_emit: RenderEmitSettings::default(),
         }
     }
 
     /// Derive both template and style scoped flags from the cached descriptor.
     pub fn with_inferred_scoped_from_descriptor(mut self) -> Self {
         self.infer_scoped_from_descriptor = true;
+        self
+    }
+
+    /// Override the runtime names used by every Rendu backend and standalone assembly.
+    pub fn with_runtime_names(
+        mut self,
+        runtime_module_name: impl Into<String>,
+        runtime_global_name: impl Into<String>,
+    ) -> Self {
+        self.render_emit.runtime_module_name = runtime_module_name.into();
+        self.render_emit.runtime_global_name = runtime_global_name.into();
         self
     }
 }
@@ -202,6 +217,11 @@ pub fn install_sfc_compile_request(
     let render = SfcRenderRequest::from(&request);
     if compilation.source_input::<SfcRenderSettingsInput>(source) != Some(&render) {
         compilation.set_source_input::<SfcRenderSettingsInput>(source, render)?;
+    }
+
+    if compilation.source_input::<RenderEmitSettingsInput>(source) != Some(&request.render_emit) {
+        compilation
+            .set_source_input::<RenderEmitSettingsInput>(source, request.render_emit.clone())?;
     }
 
     compilation.set_source_input::<SfcCompileSettingsInput>(source, request)?;

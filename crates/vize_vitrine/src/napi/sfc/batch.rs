@@ -174,6 +174,10 @@ fn compile_sfc_batch_inner(
         settings.insert(
             source_id,
             SfcCompileRequest::new(compile_options, template_syntax)
+                .with_runtime_names(
+                    opts.runtime_module_name.as_deref().unwrap_or("vue"),
+                    opts.runtime_global_name.as_deref().unwrap_or("Vue"),
+                )
                 .with_inferred_scoped_from_descriptor(),
         );
         source_ids.push(source_id);

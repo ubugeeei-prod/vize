@@ -39,6 +39,8 @@ impl Compiler {
             .scope_id
             .as_deref()
             .map(|scope_id| scope_id.strip_prefix("data-v-").unwrap_or(scope_id).into());
+        let mut template_compiler_options = experimental_dom_options(&opts);
+        template_compiler_options.source_map = opts.source_map.unwrap_or(false);
         let compile_options = SfcCompileOptions {
             parse: SfcParseOptions {
                 filename: filename.clone(),
@@ -57,7 +59,7 @@ impl Compiler {
                 is_ts: output_is_ts,
                 custom_renderer: opts.custom_renderer.unwrap_or(false),
                 dialect,
-                compiler_options: Some(experimental_dom_options(&opts)),
+                compiler_options: Some(template_compiler_options),
                 ..Default::default()
             },
             style: StyleCompileOptions {
@@ -79,7 +81,12 @@ impl Compiler {
         let mut settings = SfcCompileSettings::default();
         settings.insert(
             source_id,
-            SfcCompileRequest::new(compile_options, syntax).with_inferred_scoped_from_descriptor(),
+            SfcCompileRequest::new(compile_options, syntax)
+                .with_runtime_names(
+                    opts.runtime_module_name.as_deref().unwrap_or("vue"),
+                    opts.runtime_global_name.as_deref().unwrap_or("Vue"),
+                )
+                .with_inferred_scoped_from_descriptor(),
         );
         settings
             .install(&mut compilation)

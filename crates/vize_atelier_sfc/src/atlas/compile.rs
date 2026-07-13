@@ -110,6 +110,7 @@ impl Provider for SfcCompileProvider {
         compile_sfc_with_graph_render(
             descriptor,
             request.options,
+            &request.render_emit,
             render,
             warnings,
             modules.as_deref(),
