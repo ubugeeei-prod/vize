@@ -5,9 +5,9 @@ mod property;
 
 use vize_carton::line_index::LineIndex;
 use vize_rendu::{
-    RenduBinding, RenduBuilder, RenduEscapeMode, RenduExpression, RenduExpressionId,
-    RenduExpressionKind, RenduIfBranch, RenduName, RenduNamespace, RenduNode, RenduNodeId,
-    RenduPosition, RenduProvenance, RenduRoot, RenduSource, RenduSourceId, RenduSpan,
+    RenduBinding, RenduBuilder, RenduComponentKind, RenduEscapeMode, RenduExpression,
+    RenduExpressionId, RenduExpressionKind, RenduIfBranch, RenduName, RenduNamespace, RenduNode,
+    RenduNodeId, RenduPosition, RenduProvenance, RenduRoot, RenduSource, RenduSourceId, RenduSpan,
     RenduValidationErrors,
 };
 
@@ -114,6 +114,7 @@ impl<'s> RenduLowerer<'s> {
                             .with_provenance(self.provenance(element.span)),
                     );
                     self.builder.add_node(RenduNode::Component {
+                        kind: RenduComponentKind::Ordinary,
                         name: RenduName::Dynamic(name),
                         properties,
                         children,

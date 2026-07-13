@@ -1,10 +1,15 @@
-use vize_atlas::{Compilation, CompilationInputError, SourceId, SourceInput};
+use vize_atlas::{
+    Compilation, CompilationInputError, PlanningContext, SourceId, SourceInput, SourceKind,
+    SourceKindInput,
+};
 use vize_carton::String;
 use vize_relief::{CodegenMode, ParserOptions, TemplateSyntaxMode, TransformOptions};
 use vize_rendu::{RenderEmitSettings, RenderEmitSettingsInput, RenderOutputMode};
 
 /// Explicit applicability suffix for raw Vue-template sources.
 pub const RAW_TEMPLATE_SUFFIX: &str = ".vue-template";
+/// Open Atlas source-kind value owned by the raw-template frontend.
+pub const RAW_TEMPLATE_SOURCE_KIND: &str = "vue-template";
 
 /// Container interpretation for an independently supplied template source.
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq)]
@@ -86,6 +91,10 @@ pub fn install_template_compile_request(
     source: SourceId,
     request: TemplateCompileRequest,
 ) -> Result<(), CompilationInputError> {
+    let source_kind = SourceKind::new(RAW_TEMPLATE_SOURCE_KIND);
+    if compilation.source_input::<SourceKindInput>(source) != Some(&source_kind) {
+        compilation.set_source_input::<SourceKindInput>(source, source_kind)?;
+    }
     let emit = RenderEmitSettings {
         mode: match request.mode {
             CodegenMode::Function => RenderOutputMode::Function,
@@ -112,4 +121,11 @@ pub fn install_template_parse_mode(
 
 pub(super) fn is_raw_template_source(name: &str) -> bool {
     name.ends_with(RAW_TEMPLATE_SUFFIX)
+}
+
+pub(super) fn is_raw_template_context(context: &PlanningContext<'_>) -> bool {
+    context.source_input::<SourceKindInput>().map_or_else(
+        || is_raw_template_source(context.source().name()),
+        |kind| kind.is(RAW_TEMPLATE_SOURCE_KIND),
+    )
 }

@@ -24,6 +24,18 @@ fn test_extract_props_from_reference() {
 }
 
 #[test]
+fn extract_properties_normalizes_readonly_members() {
+    let mut resolver = TypeResolver::new();
+    resolver.add_interface("Props", "{ readonly minScale?: number }");
+
+    let props = resolver.extract_properties("Props");
+
+    assert_eq!(props.len(), 1);
+    assert_eq!(props[0].name.as_str(), "minScale");
+    assert!(props[0].optional);
+}
+
+#[test]
 fn extract_properties_includes_interface_pick_heritage() {
     let mut resolver = TypeResolver::new();
     resolver.add_interface("BaseProps", "{ required?: boolean; disabled?: boolean }");

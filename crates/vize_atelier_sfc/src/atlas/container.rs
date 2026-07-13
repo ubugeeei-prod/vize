@@ -8,7 +8,7 @@ use vize_carton::{String, cstr};
 
 use crate::{SfcDescriptor, SfcError, parse_sfc};
 
-use super::{SfcParseSettingsInput, is_sfc_source};
+use super::{SfcParseSettingsInput, is_sfc_context};
 
 /// Cached SFC container parse, including a structured fatal diagnostic.
 #[derive(Debug, Clone)]
@@ -78,11 +78,14 @@ impl Provider for SfcDescriptorProvider {
     type Product = SfcDescriptorProduct;
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<SfcParseSettingsInput>()]
+        vec![
+            SourceInputId::of::<SfcParseSettingsInput>(),
+            SourceInputId::of::<vize_atlas::SourceKindInput>(),
+        ]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name())
+        is_sfc_context(context)
     }
 
     fn provide(
@@ -115,8 +118,12 @@ pub struct SfcTemplateProvider;
 impl Provider for SfcTemplateProvider {
     type Product = SfcTemplateProduct;
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<vize_atlas::SourceKindInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name())
+        is_sfc_context(context)
     }
 
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {

@@ -160,10 +160,7 @@ fn compile_graph_script(
                 .ok_or_else(|| {
                     script_module_error("normal script compiler projection is missing")
                 })?;
-            let mut content = String::from(normal_projection.dual_content());
-            if normal_projection.source_is_ts() && !preserve_types {
-                content = crate::compile_script::typescript::transform_typescript_to_js(&content);
-            }
+            let mut content = String::from(normal_projection.dual_content(preserve_types));
             if !content.contains("const __default__") {
                 content.push_str("\nconst __default__ = {}\n");
             }

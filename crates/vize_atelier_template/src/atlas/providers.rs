@@ -2,7 +2,7 @@ use vize_armature::{parse_document_with_options, parse_with_options_and_template
 use vize_atelier_core::{transform, transform_with_template_syntax_quirks};
 use vize_atlas::{
     InputId, PlanningContext, Product, ProductId, Provider, ProviderContext, ProviderError,
-    SourceInputId,
+    SourceInputId, SourceKindInput,
 };
 use vize_carton::{Bump, cstr, source_anchor::SourceAnchor};
 use vize_croquis::{
@@ -37,6 +37,7 @@ impl Provider for RawTemplateReliefProvider {
         vec![
             SourceInputId::of::<TemplateCompileSettingsInput>(),
             SourceInputId::of::<TemplateParseModeInput>(),
+            SourceInputId::of::<SourceKindInput>(),
         ]
     }
 
@@ -79,7 +80,10 @@ impl Provider for RawTemplateCroquisProvider {
     type Product = CroquisDocumentProduct;
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<TemplateCompileSettingsInput>()]
+        vec![
+            SourceInputId::of::<TemplateCompileSettingsInput>(),
+            SourceInputId::of::<SourceKindInput>(),
+        ]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
@@ -120,7 +124,10 @@ impl Provider for RawTemplateTransformedReliefProvider {
     }
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<TemplateCompileSettingsInput>()]
+        vec![
+            SourceInputId::of::<TemplateCompileSettingsInput>(),
+            SourceInputId::of::<SourceKindInput>(),
+        ]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
@@ -162,7 +169,10 @@ impl Provider for RawTemplateRenduProvider {
     type Product = RenduProduct;
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<TemplateCompileSettingsInput>()]
+        vec![
+            SourceInputId::of::<TemplateCompileSettingsInput>(),
+            SourceInputId::of::<SourceKindInput>(),
+        ]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
@@ -193,7 +203,10 @@ impl Provider for RawTemplateFlowProvider {
     type Product = FlowProduct;
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<TemplateCompileSettingsInput>()]
+        vec![
+            SourceInputId::of::<TemplateCompileSettingsInput>(),
+            SourceInputId::of::<SourceKindInput>(),
+        ]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
@@ -230,9 +243,10 @@ pub(super) fn request_for(context: &ProviderContext<'_>) -> TemplateCompileReque
 }
 
 fn applicable(context: &PlanningContext<'_>) -> bool {
-    context
-        .source_input::<TemplateCompileSettingsInput>()
-        .is_some()
+    super::settings::is_raw_template_context(context)
+        && context
+            .source_input::<TemplateCompileSettingsInput>()
+            .is_some()
 }
 
 fn usable_relief(

@@ -35,21 +35,22 @@ This page is the implementation contract for
 Atlas is not a universal IR. The representations are peer products with
 different jobs:
 
-| Product                        | Owner                   | One job                                                                                                           |
-| ------------------------------ | ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| SFC descriptor/template source | `vize_atelier_sfc`      | Decompose a container and retain parent ranges.                                                                   |
-| Raw Vue template frontend      | `vize_atelier_template` | Parse standalone template sources without fabricating an SFC container.                                           |
-| JS/TS module snapshot          | `vize_module`           | Own parser-lifetime-free imports, exports, declarations, references, diagnostics, and OXC CFG facts.              |
-| JSX/TSX syntax snapshot        | `vize_atelier_jsx`      | Own OXC-derived JSX syntax without constructing Relief.                                                           |
-| Relief snapshot                | `vize_relief`           | Preserve Vue-template syntax and exact source locations.                                                          |
-| Croquis semantic snapshot      | `vize_croquis`          | Preserve derived identity, scope, binding, usage, and reactivity facts.                                           |
-| Flow graph                     | `vize_flow`             | Represent single-file control, data, and effect flow.                                                             |
-| Croquis project snapshot       | `vize_croquis_cf`       | Lightweight, serializable component and provide/inject index across requested documents.                          |
-| Cross-file analysis artifact   | `vize_croquis_cf`       | Run the full dependency/rule analyzer and retain diagnostics, complexity, layouts, and tree output.               |
-| Rendu HIR                      | `vize_rendu`            | Represent frontend-neutral render intent for backends.                                                            |
-| DOM/SSR/Vapor output           | target Atelier crates   | Emit or plan one target from Rendu without parsing source.                                                        |
-| Patina diagnostics             | `vize_patina`           | Request the syntax, Module, and semantic products selected by the document shape and production recipe.           |
-| Canon Virtual TS               | `vize_canon`            | Consume the SFC descriptor and Croquis, plus Relief for a template and Module for a script; never fabricate Flow. |
+| Product                        | Owner                   | One job                                                                                                            |
+| ------------------------------ | ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| SFC descriptor/template source | `vize_atelier_sfc`      | Decompose a container and retain parent ranges.                                                                    |
+| Raw Vue template frontend      | `vize_atelier_template` | Parse standalone template sources without fabricating an SFC container.                                            |
+| JS/TS module snapshot          | `vize_module`           | Own parser-lifetime-free imports, exports, declarations, references, diagnostics, and OXC CFG facts.               |
+| JSX/TSX syntax snapshot        | `vize_atelier_jsx`      | Own OXC-derived JSX syntax without constructing Relief.                                                            |
+| SFC template bindings          | `vize_atelier_sfc`      | Project only script identities needed by template transforms/rendering; do not construct a full semantic document. |
+| Relief snapshot                | `vize_relief`           | Preserve Vue-template syntax and exact source locations.                                                           |
+| Croquis semantic snapshot      | `vize_croquis`          | Preserve derived identity, scope, binding, usage, and reactivity facts.                                            |
+| Flow graph                     | `vize_flow`             | Represent single-file control, data, and effect flow.                                                              |
+| Croquis project snapshot       | `vize_croquis_cf`       | Lightweight, serializable component and provide/inject index across requested documents.                           |
+| Cross-file analysis artifact   | `vize_croquis_cf`       | Run the full dependency/rule analyzer and retain diagnostics, complexity, layouts, and tree output.                |
+| Rendu HIR                      | `vize_rendu`            | Represent frontend-neutral render intent for backends.                                                             |
+| DOM/SSR/Vapor output           | target Atelier crates   | Emit or plan one target from Rendu without parsing source.                                                         |
+| Patina diagnostics             | `vize_patina`           | Request the syntax, Module, and semantic products selected by the document shape and production recipe.            |
+| Canon Virtual TS               | `vize_canon`            | Consume the SFC descriptor and Croquis, plus Relief for a template and Module for a script; never fabricate Flow.  |
 
 No product above is “the foundation”. Atlas supplies identity and execution;
 the owning crate supplies the representation and independently applicable
@@ -61,6 +62,7 @@ flowchart LR
     SFC["SFC source"] --> SD["SFC descriptor"]
     SD --> VT["template source"]
     SD -. "when script exists" .-> MODULE["module facts"]
+    SD -. "when template and script exist" .-> BIND["template bindings"]
     VT -. "when requested" .-> RELIEF["Relief syntax"]
     RAWTPL["raw template"] -. "when requested" .-> RELIEF
     RAWTPL -. "when requested" .-> SEM["Croquis semantics"]
@@ -75,6 +77,7 @@ flowchart LR
     OXC -. "when requested" .-> FLOW
     MODULE -. "when requested" .-> FLOW
     RELIEF -. "when requested" .-> RENDU["Rendu HIR"]
+    BIND -. "script identity only" .-> RENDU
     OXC -. "when requested" .-> RENDU
 
     RENDU -. "selected target" .-> DOM["DOM module"]
@@ -95,6 +98,7 @@ flowchart LR
     C -. "plans, caches, invalidates" .-> SD
     C -.-> OXC
     C -.-> MODULE
+    C -.-> BIND
     C -.-> RELIEF
     C -.-> SEM
     C -.-> FLOW
@@ -130,6 +134,13 @@ request Relief and stop. JSX can produce Croquis or Rendu directly from its own
 owned syntax and never create Relief. A compiler may request Rendu without
 requesting Flow; a flow-aware tool may request Flow without Rendu.
 
+An SFC compiler also does not request a complete Croquis document merely to
+render a template. `SfcTemplateBindingsProduct` is a narrow projection from the
+parse-once script facts: it carries binding classifications and prop aliases,
+performs no template traversal, and is shared by the Relief transform and Rendu
+lowering. Croquis remains the independently requested semantic document for
+linting, type checking, editor queries, and cross-file analysis.
+
 `vize_croquis_cf` is also separate from `vize_flow`: Flow is one compilation
 unit's CFG/data/effect representation, while Croquis CF owns opt-in cross-file
 module/component analysis. Within Croquis CF, `CroquisProjectProduct` is only a
@@ -163,6 +174,13 @@ No central `match input_kind` must be edited when another frontend is added.
 Planning fails explicitly when no provider applies or more than one provider
 claims the same product. The immutable plan records the selected provider
 identity, its declared dependencies, and relevant typed-input revisions.
+
+Physical suffixes are only a default frontend hint. Hosts can attach the open
+`SourceKindInput` to virtual or transformed sources, and every SFC, raw
+template, JSX/TSX, and raw JS/TS provider participates in that same arbitration.
+This preserves the original source name for maps and caches without allowing a
+virtual `Card.tsx` SFC to be claimed simultaneously by the SFC, JSX, and raw
+module providers.
 
 Providers can attach structured diagnostics, fallback records, or notes to the
 exact `(SourceId, ProductId)` request they are serving. Each observation also
@@ -207,9 +225,11 @@ For an SFC with authored script, `SfcScriptSyntaxProduct` is the parse owner.
 Each `<script>` and `<script setup>` block is parsed once per source revision
 while its OXC `Program` is live. Before that allocator is dropped, the provider
 projects the owned `ModuleDocument`, Croquis script analysis, and compiler
-preanalysis used by normal-script and script-setup compilation. Module, Canon,
-Croquis, and the SFC compiler consume those projections instead of reparsing the
-authored block.
+preanalysis used by normal-script and script-setup compilation. Only the
+selected semantic compatibility mode is analyzed; the provider does not
+speculatively run Vue 3, Options API, and legacy analysis together. Module,
+Canon, Croquis, the narrow template-binding projection, and the SFC compiler
+consume those projections instead of reparsing the authored block.
 
 ## Cross-source requests and immutable snapshots
 
@@ -286,30 +306,10 @@ there is no shadow execution or second parse used only for telemetry.
 
 ## Production host roots
 
-| Host                          | Compilation lifetime                                                                                                           | Requested roots                                                                                                                                                                                     |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vize build`                  | one multi-source snapshot per invocation                                                                                       | source-aware SFC compiled modules and maps                                                                                                                                                          |
-| `vize lint`                   | one multi-source compilation, including autofix revalidation                                                                   | Patina document reports plus optional full Croquis CF analysis                                                                                                                                      |
-| `vize check`                  | one project snapshot for Vue, TS, declarations, and JSX/TSX                                                                    | Canon typed-document products; SFCs use descriptor and Croquis, conditional Relief/Module, and no fabricated Flow                                                                                   |
-| Maestro                       | one URI-keyed mutable compilation; open and discovered file-backed Vue dependency URIs retain source identity across revisions | SFC descriptor/Module/Relief/Croquis, raw-template Relief/Croquis, JSX syntax, Patina, Canon, `GlyphFormatProduct`, and virtual documents as requested                                              |
-| Standalone Glyph / `vize fmt` | one document compilation per SFC formatting request                                                                            | `GlyphFormatProduct` over the SFC descriptor                                                                                                                                                        |
-| Inspector                     | one report-scoped multi-source compilation                                                                                     | `InspectorAgentReport` over per-source analyses; SFC uses descriptor/Relief/Croquis plus conditional Module, JSX/TSX uses owned JSX syntax/Module/Croquis without Relief, and raw JS/TS uses Module |
-| NAPI/WASM bindings            | one compilation per stateless request; one compilation shared by each batch API                                                | SFC/JSX compile, raw `TemplateCompile`, Patina, Canon, and cross-file analysis roots exposed by that binding surface                                                                                |
-| Bundler hosts                 | one native compile request per transform, with native batch compilation where the host batches inputs                          | SFC or JSX compiled-module products and source maps through the binding API; bundlers do not own graph products                                                                                     |
-
-For normal `.vue` editor requests, Maestro queries `CanonVueDocumentProduct`
-for the host and every discovered non-Art Vue dependency in that same compilation.
-Open-document contents take precedence over disk contents, and either source
-keeps its URI-keyed `SourceId` while revisions change. Maestro then passes the
-prebuilt host and dependency products to Corsa as overlays; this synchronization
-does not create a private `Compilation` or reparse the SFCs. Art/Musea virtual
-documents use specialized generation paths and are outside this guarantee.
-
-The SFC compiled-module root requests Rendu only when a template must be
-rendered and invokes the graph-native DOM, SSR, or Vapor emitter. It does not
-call the legacy frontend-coupled backend entry points. A script-only SFC
-requests no Relief, Croquis, Flow, or Rendu product; a template without script
-requests syntax and Rendu but not Module or semantic analysis.
+The concrete compilation lifetime and root set for `build`, `lint`, `check`,
+Maestro, Glyph, Inspector, NAPI/WASM, and bundlers are recorded in
+[Production Atlas hosts](./source-atlas-hosts.md). Those hosts compose the peer
+providers described here; none owns a second frontend pipeline.
 
 ## Physical dependency rules
 

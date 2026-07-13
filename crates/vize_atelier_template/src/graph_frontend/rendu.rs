@@ -1,27 +1,34 @@
-use vize_carton::source_anchor::SourceAnchor;
+use vize_carton::{BindingMetadata, FxHashSet, String, source_anchor::SourceAnchor};
 use vize_relief::{
     ElementType, ReliefSnapshot, ReliefSnapshotNode, ReliefSnapshotNodeId, SnapshotElement,
-    SnapshotFor, SnapshotIf, SnapshotIfBranch, SnapshotProp, SnapshotTextCallContent,
+    SnapshotExpression, SnapshotTextCallContent,
 };
 use vize_rendu::{
-    RenduAttribute, RenduAttributeValue, RenduBuilder, RenduDirective, RenduEscapeMode,
-    RenduIfBranch, RenduName, RenduNode, RenduNodeId, RenduProperty, RenduRoot, RenduSourceId,
+    RenduBuilder, RenduEscapeMode, RenduName, RenduNode, RenduNodeId, RenduRoot, RenduSourceId,
 };
 
 use super::{
     TemplateGraphAdapterError,
-    expression::{add_rendu_compound, add_rendu_expression, add_rendu_name},
-    provenance::{add_rendu_source, rendu_provenance},
-    rendu_helpers::{
-        binding, is_name_argument, namespace, optional_binding, slot_bindings, slot_directive,
+    expression::{
+        add_rendu_compound_with_code, add_rendu_expression_with_code, compound_code,
+        expression_code,
     },
+    provenance::{add_rendu_source, rendu_provenance},
+    rendu_helpers::{namespace, slot_bindings, slot_directive},
+    scope::{pattern_bindings, strip_local_scope_prefixes},
 };
+
+mod component;
+mod control;
+mod property;
+
+use component::component_kind;
 
 /// Lower one cached Relief syntax product directly into independent Rendu HIR.
 pub fn lower_relief_snapshot_to_rendu(
     snapshot: &ReliefSnapshot,
 ) -> Result<RenduRoot, TemplateGraphAdapterError> {
-    RenduLowerer::new(snapshot, None).lower()
+    RenduLowerer::new(snapshot, None, None).lower()
 }
 
 #[doc(hidden)]
@@ -29,23 +36,46 @@ pub fn lower_relief_snapshot_to_rendu_with_anchor(
     snapshot: &ReliefSnapshot,
     anchor: SourceAnchor,
 ) -> Result<RenduRoot, TemplateGraphAdapterError> {
-    RenduLowerer::new(snapshot, Some(anchor)).lower()
+    RenduLowerer::new(snapshot, Some(anchor), None).lower()
+}
+
+/// Lower one cached Relief snapshot while preserving component bindings
+/// resolved by a peer semantic product.
+///
+/// Raw-template frontends intentionally call the binding-free entry point.
+/// SFC hosts pass their Croquis projection through the neutral Carton binding
+/// contract so Rendu remains independent of both frontend and semantic crates.
+#[doc(hidden)]
+pub fn lower_relief_snapshot_to_rendu_with_anchor_and_bindings(
+    snapshot: &ReliefSnapshot,
+    anchor: SourceAnchor,
+    bindings: &BindingMetadata,
+) -> Result<RenduRoot, TemplateGraphAdapterError> {
+    RenduLowerer::new(snapshot, Some(anchor), Some(bindings)).lower()
 }
 
 struct RenduLowerer<'a> {
     snapshot: &'a ReliefSnapshot,
     builder: RenduBuilder,
     source: RenduSourceId,
+    bindings: Option<&'a BindingMetadata>,
+    scopes: Vec<FxHashSet<String>>,
 }
 
 impl<'a> RenduLowerer<'a> {
-    fn new(snapshot: &'a ReliefSnapshot, anchor: Option<SourceAnchor>) -> Self {
+    fn new(
+        snapshot: &'a ReliefSnapshot,
+        anchor: Option<SourceAnchor>,
+        bindings: Option<&'a BindingMetadata>,
+    ) -> Self {
         let mut builder = RenduBuilder::new();
         let source = add_rendu_source(&mut builder, snapshot, anchor);
         Self {
             snapshot,
             builder,
             source,
+            bindings,
+            scopes: Vec::new(),
         }
     }
 
@@ -53,6 +83,28 @@ impl<'a> RenduLowerer<'a> {
         let entry = self.lower_nodes(self.snapshot.children())?;
         self.builder.set_entry(entry);
         Ok(self.builder.finish()?)
+    }
+
+    fn add_expression(&mut self, expression: &SnapshotExpression) -> vize_rendu::RenduExpressionId {
+        let code = strip_local_scope_prefixes(&self.scopes, &expression_code(expression));
+        add_rendu_expression_with_code(&mut self.builder, expression, code.as_str(), self.source)
+    }
+
+    fn add_compound(
+        &mut self,
+        expression: &vize_relief::SnapshotCompoundExpression,
+    ) -> vize_rendu::RenduExpressionId {
+        let code = strip_local_scope_prefixes(&self.scopes, &compound_code(expression));
+        add_rendu_compound_with_code(&mut self.builder, expression, code.as_str(), self.source)
+    }
+
+    fn add_name(&mut self, expression: &SnapshotExpression) -> RenduName {
+        match expression {
+            SnapshotExpression::Simple(simple) if simple.is_static => {
+                RenduName::static_name(simple.content.as_str())
+            }
+            _ => RenduName::Dynamic(self.add_expression(expression)),
+        }
     }
 
     fn lower_nodes(
@@ -81,8 +133,7 @@ impl<'a> RenduLowerer<'a> {
                 provenance: rendu_provenance(&comment.location, self.source),
             })),
             ReliefSnapshotNode::Interpolation(interpolation) => {
-                let expression =
-                    add_rendu_expression(&mut self.builder, &interpolation.content, self.source);
+                let expression = self.add_expression(&interpolation.content);
                 Ok(self.builder.add_node(RenduNode::Expression {
                     expression,
                     escape: RenduEscapeMode::Escaped,
@@ -98,11 +149,7 @@ impl<'a> RenduLowerer<'a> {
                     provenance: rendu_provenance(&call.location, self.source),
                 })),
                 SnapshotTextCallContent::Interpolation(interpolation) => {
-                    let expression = add_rendu_expression(
-                        &mut self.builder,
-                        &interpolation.content,
-                        self.source,
-                    );
+                    let expression = self.add_expression(&interpolation.content);
                     Ok(self.builder.add_node(RenduNode::Expression {
                         expression,
                         escape: RenduEscapeMode::Escaped,
@@ -110,7 +157,7 @@ impl<'a> RenduLowerer<'a> {
                     }))
                 }
                 SnapshotTextCallContent::Compound(compound) => {
-                    let expression = add_rendu_compound(&mut self.builder, compound, self.source);
+                    let expression = self.add_compound(compound);
                     Ok(self.builder.add_node(RenduNode::Expression {
                         expression,
                         escape: RenduEscapeMode::Escaped,
@@ -119,7 +166,7 @@ impl<'a> RenduLowerer<'a> {
                 }
             },
             ReliefSnapshotNode::CompoundExpression(compound) => {
-                let expression = add_rendu_compound(&mut self.builder, compound, self.source);
+                let expression = self.add_compound(compound);
                 Ok(self.builder.add_node(RenduNode::Expression {
                     expression,
                     escape: RenduEscapeMode::Escaped,
@@ -141,205 +188,104 @@ impl<'a> RenduLowerer<'a> {
         &mut self,
         element: &SnapshotElement,
     ) -> Result<RenduNodeId, TemplateGraphAdapterError> {
-        let children = self.lower_nodes(element.children())?;
         let provenance = rendu_provenance(&element.location, self.source);
         let node = match element.tag_type {
             ElementType::Element => RenduNode::Element {
                 tag: element.tag.as_str().into(),
                 namespace: namespace(element.namespace),
                 properties: self.lower_properties(&element.props, None),
-                children,
+                children: self.lower_nodes(element.children())?,
                 provenance,
             },
-            ElementType::Component => RenduNode::Component {
-                name: RenduName::static_name(element.tag.as_str()),
-                properties: self.lower_properties(&element.props, None),
-                children,
-                provenance,
-            },
+            ElementType::Component => {
+                // Capture Vue's source-level component identity before
+                // script-setup binding resolution can turn its name into an
+                // opaque runtime expression such as `$setup.Suspense`.
+                let kind = component_kind(element);
+                let name = if kind.is_builtin() {
+                    RenduName::static_name(element.tag.as_str())
+                } else {
+                    self.component_name(element)
+                };
+                if let Some((index, directive)) = slot_directive(&element.props) {
+                    // `v-slot` on a component is shorthand for a default slot on
+                    // the component itself. Lower it into the same first-class
+                    // Rendu node used by `<template #default>` instead of letting
+                    // a backend mistake it for a runtime directive.
+                    let slot_name = directive
+                        .argument
+                        .as_ref()
+                        .map(|argument| self.add_name(argument))
+                        .unwrap_or_else(|| RenduName::static_name("default"));
+                    let bindings = slot_bindings(directive, self.source);
+                    let mut scope = FxHashSet::default();
+                    for binding in &bindings {
+                        scope.extend(pattern_bindings(&binding.pattern));
+                    }
+                    self.scopes.push(scope);
+                    let children = self.lower_nodes(element.children())?;
+                    self.scopes.pop();
+                    let slot = self.builder.add_node(RenduNode::SlotContent {
+                        name: slot_name,
+                        bindings,
+                        children,
+                        provenance: provenance.clone(),
+                    });
+                    RenduNode::Component {
+                        kind,
+                        name,
+                        properties: self.lower_properties(&element.props, Some(index)),
+                        children: vec![slot],
+                        provenance,
+                    }
+                } else {
+                    RenduNode::Component {
+                        kind,
+                        name,
+                        properties: self.lower_properties(&element.props, None),
+                        children: self.lower_nodes(element.children())?,
+                        provenance,
+                    }
+                }
+            }
             ElementType::Slot => {
                 let (name, consumed) = self.slot_outlet_name(&element.props);
                 RenduNode::SlotOutlet {
                     name,
                     properties: self.lower_properties(&element.props, consumed),
-                    fallback: children,
+                    fallback: self.lower_nodes(element.children())?,
                     provenance,
                 }
             }
             ElementType::Template => {
                 if let Some((_index, directive)) = slot_directive(&element.props) {
+                    let name = directive
+                        .argument
+                        .as_ref()
+                        .map(|argument| self.add_name(argument))
+                        .unwrap_or_else(|| RenduName::static_name("default"));
+                    let bindings = slot_bindings(directive, self.source);
+                    let mut scope = FxHashSet::default();
+                    for binding in &bindings {
+                        scope.extend(pattern_bindings(&binding.pattern));
+                    }
+                    self.scopes.push(scope);
+                    let children = self.lower_nodes(element.children())?;
+                    self.scopes.pop();
                     RenduNode::SlotContent {
-                        name: directive
-                            .argument
-                            .as_ref()
-                            .map(|argument| {
-                                add_rendu_name(&mut self.builder, argument, self.source)
-                            })
-                            .unwrap_or_else(|| RenduName::static_name("default")),
-                        bindings: slot_bindings(directive, self.source),
+                        name,
+                        bindings,
                         children,
                         provenance,
                     }
                 } else {
                     RenduNode::Fragment {
-                        children,
+                        children: self.lower_nodes(element.children())?,
                         provenance,
                     }
                 }
             }
         };
         Ok(self.builder.add_node(node))
-    }
-
-    fn lower_if(&mut self, node: &SnapshotIf) -> Result<RenduNodeId, TemplateGraphAdapterError> {
-        let mut branches = Vec::with_capacity(node.branches().len());
-        for id in node.branches() {
-            let Some(ReliefSnapshotNode::IfBranch(branch)) = self.snapshot.node(*id) else {
-                return Err(TemplateGraphAdapterError::ExpectedIfBranch(*id));
-            };
-            branches.push(self.lower_branch(branch)?);
-        }
-        Ok(self.builder.add_node(RenduNode::If {
-            branches,
-            provenance: rendu_provenance(&node.location, self.source),
-        }))
-    }
-
-    fn lower_standalone_branch(
-        &mut self,
-        branch: &SnapshotIfBranch,
-    ) -> Result<RenduNodeId, TemplateGraphAdapterError> {
-        let provenance = rendu_provenance(&branch.location, self.source);
-        let branch = self.lower_branch(branch)?;
-        Ok(self.builder.add_node(RenduNode::If {
-            branches: vec![branch],
-            provenance,
-        }))
-    }
-
-    fn lower_branch(
-        &mut self,
-        branch: &SnapshotIfBranch,
-    ) -> Result<RenduIfBranch, TemplateGraphAdapterError> {
-        let condition = branch
-            .condition
-            .as_ref()
-            .map(|condition| add_rendu_expression(&mut self.builder, condition, self.source));
-        Ok(
-            RenduIfBranch::new(condition, self.lower_nodes(branch.children())?)
-                .with_provenance(rendu_provenance(&branch.location, self.source)),
-        )
-    }
-
-    fn lower_for(&mut self, node: &SnapshotFor) -> Result<RenduNodeId, TemplateGraphAdapterError> {
-        let source = add_rendu_expression(&mut self.builder, &node.source, self.source);
-        let provenance = rendu_provenance(&node.location, self.source);
-        let value = binding(
-            node.value_alias
-                .as_ref()
-                .or(node.parse_result.value.as_ref()),
-            "_value",
-            &provenance,
-        );
-        let key = optional_binding(
-            node.key_alias.as_ref().or(node.parse_result.key.as_ref()),
-            &provenance,
-        );
-        let index = optional_binding(
-            node.object_index_alias
-                .as_ref()
-                .or(node.parse_result.index.as_ref()),
-            &provenance,
-        );
-        let body = self.lower_nodes(node.children())?;
-        Ok(self.builder.add_node(RenduNode::For {
-            source,
-            value,
-            key,
-            index,
-            key_expression: None,
-            body,
-            provenance,
-        }))
-    }
-
-    fn lower_properties(
-        &mut self,
-        properties: &[SnapshotProp],
-        consumed: Option<usize>,
-    ) -> Vec<RenduProperty> {
-        properties
-            .iter()
-            .enumerate()
-            .filter(|(index, _)| Some(*index) != consumed)
-            .map(|(_, property)| self.lower_property(property))
-            .collect()
-    }
-
-    fn lower_property(&mut self, property: &SnapshotProp) -> RenduProperty {
-        match property {
-            SnapshotProp::Attribute(attribute) => RenduProperty::Attribute(RenduAttribute {
-                name: RenduName::static_name(attribute.name.as_str()),
-                value: attribute
-                    .value
-                    .as_ref()
-                    .map(|value| RenduAttributeValue::Static(value.content.as_str().into())),
-                provenance: rendu_provenance(&attribute.location, self.source),
-            }),
-            SnapshotProp::Directive(directive) => {
-                let mut lowered = RenduDirective::new(directive.name.as_str())
-                    .with_provenance(rendu_provenance(&directive.location, self.source));
-                if let Some(argument) = &directive.argument {
-                    lowered = lowered.with_argument(add_rendu_name(
-                        &mut self.builder,
-                        argument,
-                        self.source,
-                    ));
-                }
-                if let Some(expression) = &directive.expression {
-                    lowered = lowered.with_expression(add_rendu_expression(
-                        &mut self.builder,
-                        expression,
-                        self.source,
-                    ));
-                }
-                for modifier in &directive.modifiers {
-                    lowered = lowered.with_modifier(modifier.content.as_str());
-                }
-                RenduProperty::Directive(lowered)
-            }
-        }
-    }
-
-    fn slot_outlet_name(&mut self, properties: &[SnapshotProp]) -> (RenduName, Option<usize>) {
-        for (index, property) in properties.iter().enumerate() {
-            match property {
-                SnapshotProp::Attribute(attribute) if attribute.name == "name" => {
-                    let name = attribute
-                        .value
-                        .as_ref()
-                        .map(|value| RenduName::static_name(value.content.as_str()))
-                        .unwrap_or_else(|| RenduName::static_name("default"));
-                    return (name, Some(index));
-                }
-                SnapshotProp::Directive(directive)
-                    if directive.name == "bind"
-                        && directive.argument.as_ref().is_some_and(is_name_argument) =>
-                {
-                    if let Some(expression) = &directive.expression {
-                        return (
-                            RenduName::Dynamic(add_rendu_expression(
-                                &mut self.builder,
-                                expression,
-                                self.source,
-                            )),
-                            Some(index),
-                        );
-                    }
-                }
-                _ => {}
-            }
-        }
-        (RenduName::static_name("default"), None)
     }
 }

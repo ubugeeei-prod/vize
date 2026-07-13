@@ -1,7 +1,7 @@
 use vize_rendu::{
-    RenduAttribute, RenduBinding, RenduBuilder, RenduCapability, RenduDirective, RenduExpression,
-    RenduExpressionKind, RenduIfBranch, RenduName, RenduNamespace, RenduNode, RenduProperty,
-    RenduProvenance, RenduSource, RenduSpan,
+    RenduAttribute, RenduBinding, RenduBuilder, RenduCapability, RenduComponentKind,
+    RenduDirective, RenduExpression, RenduExpressionKind, RenduIfBranch, RenduName, RenduNamespace,
+    RenduNode, RenduProperty, RenduProvenance, RenduSource, RenduSpan,
 };
 
 use super::emit_rendu;
@@ -88,6 +88,7 @@ fn emits_directives_dynamic_names_bindings_and_full_render_scope() {
         provenance: provenance.clone(),
     });
     let component = builder.add_node(RenduNode::Component {
+        kind: RenduComponentKind::Ordinary,
         name: RenduName::Dynamic(component_name),
         properties: vec![
             RenduProperty::Directive(RenduDirective::new("model").with_expression(value)),
@@ -143,7 +144,8 @@ fn emits_directives_dynamic_names_bindings_and_full_render_scope() {
     for expected in [
         "render(_ctx = {}, _cache, $props, $setup, $data, $options)",
         "_createComponentWithFallback($setup.component",
-        "[$props.slot]: (slotProps) =>",
+        "\"default\": () =>",
+        "$: [() => ({ name: $props.slot, fn: (slotProps) =>",
         "_renderSlot($slots, $props.slot",
         "_setProp(n",
         "$data.property, $data.value",
@@ -257,6 +259,7 @@ fn emits_graph_operations_without_legacy_materialization() {
         provenance: generated(),
     });
     let component = builder.add_node(RenduNode::Component {
+        kind: RenduComponentKind::Ordinary,
         name: RenduName::static_name("Panel"),
         properties: vec![RenduProperty::Attribute(RenduAttribute::expression(
             "open", show,

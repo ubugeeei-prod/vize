@@ -125,7 +125,7 @@ const Fast = () => {
         "_withDirectives",
         "_createIf",
         "_createFor",
-        "default: () =>",
+        "\"default\": () =>",
         "data-v-",
     ] {
         assert!(code.contains(marker), "missing {marker}: {code}");

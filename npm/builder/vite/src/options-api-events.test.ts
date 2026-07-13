@@ -23,7 +23,7 @@ export default {
 
 assert.match(
   compiled.code,
-  /onFocus:\s*\(\.\.\.args\) => \(_ctx\.onFocus && _ctx\.onFocus\(\.\.\.args\)\)/,
+  /"onFocus":\s*\(\.\.\.args\) => \(_ctx\.onFocus && _ctx\.onFocus\(\.\.\.args\)\)/,
   "Options API v-on method refs must perform a live public instance lookup",
 );
 assert.doesNotMatch(

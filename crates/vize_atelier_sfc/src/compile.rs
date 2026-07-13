@@ -31,16 +31,16 @@ use crate::types::{
 use vize_relief::CodegenOptions;
 use vize_relief::TemplateSyntaxMode;
 
-use self::bindings::{
-    collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
+pub(crate) use self::bindings::{
+    collect_normal_script_bindings, collect_normal_script_bindings_from_program,
 };
+use self::bindings::{croquis_to_legacy_bindings, merge_normal_script_bindings};
 use self::fallbacks::apply_vapor_ssr_fallback;
 pub(crate) use self::graph::{
     GraphRenderMapping, GraphRenderModule, compile_sfc_with_graph_render,
 };
-use self::helpers::{
-    demote_v_model_reactive_const_bindings, extract_component_name, generate_scope_id,
-};
+pub(crate) use self::helpers::generate_scope_id;
+use self::helpers::{demote_v_model_reactive_const_bindings, extract_component_name};
 use self::normal_script::extract_normal_script_content;
 pub(crate) use self::normal_script::extract_normal_script_content_from_program;
 use self::output_module::{

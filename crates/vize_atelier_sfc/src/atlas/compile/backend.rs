@@ -6,7 +6,7 @@ use vize_atlas::{
 
 use crate::compile::{GraphRenderMapping, GraphRenderModule, output_module::RenderFunctionName};
 
-use super::super::{SfcDescriptorProduct, is_sfc_source, source_structure, usable_descriptor};
+use super::super::{SfcDescriptorProduct, is_sfc_context, source_structure, usable_descriptor};
 use super::{SfcRenderRequest, SfcRenderSettingsInput};
 
 /// Selected graph backend for one SFC render module.
@@ -55,11 +55,14 @@ impl Provider for SfcRenderModuleProvider {
     type Product = SfcRenderModuleProduct;
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<SfcRenderSettingsInput>()]
+        vec![
+            SourceInputId::of::<SfcRenderSettingsInput>(),
+            SourceInputId::of::<vize_atlas::SourceKindInput>(),
+        ]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name()) && source_structure(context).has_template
+        is_sfc_context(context) && source_structure(context).has_template
     }
 
     fn dependencies(&self, context: &PlanningContext<'_>) -> Vec<ProductId> {

@@ -8,6 +8,7 @@ mod settings;
 pub use backend::{
     SfcRenderModuleArtifact, SfcRenderModuleProduct, SfcRenderModuleProvider, SfcRenderTarget,
 };
+pub(crate) use settings::SfcRenderScopeSettingsInput;
 pub use settings::{
     SfcCompileRequest, SfcCompileSettings, SfcCompileSettingsInput, SfcParseSettingsInput,
     SfcRenderRequest, SfcRenderSettingsInput, SfcTemplateFrontendRequest,
@@ -25,7 +26,7 @@ use crate::SfcCompileResult;
 use crate::compile::{GraphRenderModule, compile_sfc_with_graph_render};
 
 use super::{
-    SfcDescriptorProduct, SfcScriptSyntaxProduct, is_sfc_source, source_structure,
+    SfcDescriptorProduct, SfcScriptSyntaxProduct, is_sfc_context, source_structure,
     usable_descriptor,
 };
 
@@ -45,11 +46,14 @@ impl Provider for SfcCompileProvider {
     type Product = SfcCompileProduct;
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<SfcCompileSettingsInput>()]
+        vec![
+            SourceInputId::of::<SfcCompileSettingsInput>(),
+            SourceInputId::of::<vize_atlas::SourceKindInput>(),
+        ]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name())
+        is_sfc_context(context)
     }
 
     fn dependencies(&self, context: &PlanningContext<'_>) -> Vec<ProductId> {
@@ -156,8 +160,12 @@ pub struct SfcSourceMapProvider;
 impl Provider for SfcSourceMapProvider {
     type Product = SfcSourceMapProduct;
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<vize_atlas::SourceKindInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name())
+        is_sfc_context(context)
     }
 
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {

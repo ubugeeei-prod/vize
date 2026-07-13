@@ -140,3 +140,16 @@ impl SourceInput for SfcCroquisSettingsInput {
 
     const NAME: &'static str = "sfc.croquis-settings";
 }
+
+/// Compiler-derived semantic defaults kept separate from host overrides.
+///
+/// A persistent Atlas source may change shape or dialect between revisions.
+/// Keeping inference in its own input lets the compiler refresh that value
+/// without overwriting an explicit linter, editor, or type-checker request.
+pub(crate) struct SfcInferredCroquisSettingsInput;
+
+impl SourceInput for SfcInferredCroquisSettingsInput {
+    type Value = SfcCroquisRequest;
+
+    const NAME: &'static str = "sfc.inferred-croquis-settings";
+}

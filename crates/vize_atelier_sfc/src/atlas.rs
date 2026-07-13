@@ -1,5 +1,7 @@
 //! Independently registered Atlas providers for Vue SFC sources.
 
+#[path = "atlas/bindings.rs"]
+mod bindings;
 #[path = "atlas/container.rs"]
 mod container;
 #[path = "atlas/croquis.rs"]
@@ -17,7 +19,7 @@ mod structure;
 
 use vize_atlas::{
     Compilation, PlanningContext, Product, ProductId, Provider, ProviderContext, ProviderError,
-    RegisterProviderError,
+    RegisterProviderError, SourceInputId, SourceKindInput,
 };
 use vize_carton::{
     cstr, source_anchor::SourceAnchor, source_range::SourceRange as StableSourceRange,
@@ -28,9 +30,12 @@ use vize_relief::{ReliefSnapshot, TransformedReliefArtifact, TransformedReliefPr
 use vize_rendu::{RenduBuilder, RenduModule, RenduProduct};
 
 use crate::graph_frontend::{
-    lower_relief_snapshot_to_rendu_with_anchor, project_relief_snapshot_to_flow_with_anchor,
+    lower_relief_snapshot_to_rendu_with_anchor,
+    lower_relief_snapshot_to_rendu_with_anchor_and_bindings,
+    project_relief_snapshot_to_flow_with_anchor,
 };
 use crate::{SfcDescriptor, SfcGraphAdapterError};
+pub use bindings::{SfcTemplateBindingsProduct, SfcTemplateBindingsProvider};
 pub use container::{
     SfcDescriptorArtifact, SfcDescriptorProduct, SfcDescriptorProvider, SfcTemplateProduct,
     SfcTemplateProvider, SfcTemplateSource,
@@ -58,27 +63,43 @@ pub use script_module::{
 };
 use structure::source_structure;
 
+/// Open Atlas source-kind value owned by the SFC frontend.
+pub const SFC_SOURCE_KIND: &str = "vue-sfc";
+
 /// Relief syntax to frontend-neutral Rendu for SFC sources.
 pub struct SfcRenduProvider;
 
 impl Provider for SfcRenduProvider {
     type Product = RenduProduct;
 
-    fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name())
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![
+            SourceInputId::of::<full_compile::SfcRenderScopeSettingsInput>(),
+            SourceInputId::of::<SourceKindInput>(),
+        ]
     }
 
-    fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
-        vec![
+    fn supports(&self, context: &PlanningContext<'_>) -> bool {
+        is_sfc_context(context)
+    }
+
+    fn dependencies(&self, context: &PlanningContext<'_>) -> Vec<ProductId> {
+        let mut dependencies = vec![
+            ProductId::of::<SfcDescriptorProduct>(),
             ProductId::of::<SfcTemplateProduct>(),
             ProductId::of::<TransformedReliefProduct>(),
-        ]
+        ];
+        if source_structure(context).has_script {
+            dependencies.push(ProductId::of::<SfcTemplateBindingsProduct>());
+        }
+        dependencies
     }
 
     fn provide(
         &self,
         context: &mut ProviderContext<'_>,
     ) -> Result<<RenduProduct as Product>::Value, ProviderError> {
+        let descriptor = context.get::<SfcDescriptorProduct>()?;
         let template = context.get::<SfcTemplateProduct>()?;
         let relief = context.get::<TransformedReliefProduct>()?;
         let (template, relief) = match (template.as_ref(), relief.as_ref()) {
@@ -93,9 +114,30 @@ impl Provider for SfcRenduProvider {
         };
         let relief = usable_relief_snapshot(relief)?;
         let anchor = template_source_anchor(template)?;
-        lower_relief_snapshot_to_rendu_with_anchor(relief, anchor)
-            .map(RenduModule::from_root)
-            .map_err(graph_error)
+        let has_script = sfc_source_structure(context.source().text()).has_script;
+        let bindings = if has_script {
+            Some(context.get::<SfcTemplateBindingsProduct>()?)
+        } else {
+            None
+        };
+        let rendu = if let Some(bindings) = bindings.as_ref() {
+            lower_relief_snapshot_to_rendu_with_anchor_and_bindings(relief, anchor, bindings)
+        } else {
+            lower_relief_snapshot_to_rendu_with_anchor(relief, anchor)
+        };
+        let mut rendu = rendu.map_err(graph_error)?;
+        if usable_descriptor(&descriptor)?
+            .styles
+            .iter()
+            .any(|style| style.scoped)
+        {
+            let scope_id = context
+                .source_input::<full_compile::SfcRenderScopeSettingsInput>()
+                .map(|request| request.scope_id.clone())
+                .unwrap_or_else(|| crate::compile::generate_scope_id(context.source().name()));
+            rendu = rendu.with_component_scope_id(cstr!("data-v-{scope_id}"));
+        }
+        Ok(RenduModule::from_root(rendu))
     }
 }
 
@@ -105,8 +147,12 @@ pub struct SfcFlowProvider;
 impl Provider for SfcFlowProvider {
     type Product = FlowProduct;
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<SourceKindInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name())
+        is_sfc_context(context)
     }
 
     fn dependencies(&self, context: &PlanningContext<'_>) -> Vec<ProductId> {
@@ -153,6 +199,7 @@ pub fn register_atlas_providers(
 ) -> Result<(), RegisterProviderError> {
     compilation.register_provider(SfcDescriptorProvider)?;
     compilation.register_provider(SfcScriptSyntaxProvider)?;
+    compilation.register_provider(SfcTemplateBindingsProvider)?;
     compilation.register_provider(SfcModuleSyntaxProvider)?;
     compilation.register_provider(SfcTemplateProvider)?;
     compilation.register_provider(SfcReliefProvider)?;
@@ -168,6 +215,21 @@ pub fn register_atlas_providers(
 
 fn is_sfc_source(name: &str) -> bool {
     source_name_has_extension(name, ".vue")
+}
+
+/// Select the SFC frontend by physical suffix or an explicit parse request.
+///
+/// Vite and other hosts can feed virtual SFC bytes under their original module
+/// identity instead of fabricating a `.vue` filename and corrupting source-map,
+/// scope-id, and cache provenance.
+fn is_sfc_context(context: &PlanningContext<'_>) -> bool {
+    context.source_input::<SourceKindInput>().map_or_else(
+        || {
+            is_sfc_source(context.source().name())
+                || context.source_input::<SfcParseSettingsInput>().is_some()
+        },
+        |kind| kind.is(SFC_SOURCE_KIND),
+    )
 }
 
 fn source_name_has_extension(name: &str, extension: &str) -> bool {

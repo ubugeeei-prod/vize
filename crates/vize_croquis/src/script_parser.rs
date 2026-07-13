@@ -26,7 +26,8 @@ mod typeof_refs;
 mod walk;
 
 pub use parse::{
-    analyze_script_program, analyze_script_setup_program, parse_script, parse_script_setup,
+    analyze_script_program, analyze_script_setup_program,
+    analyze_script_setup_program_with_inherited_types, parse_script, parse_script_setup,
     parse_script_setup_with_generic, parse_script_setup_with_generic_and_jsx,
     parse_script_with_options, parse_script_with_options_and_jsx,
 };
@@ -39,6 +40,9 @@ mod tests;
 
 #[cfg(test)]
 mod interface_extends_tests;
+
+#[cfg(test)]
+mod inherited_types_tests;
 
 #[cfg(test)]
 mod props_destructure_tests;

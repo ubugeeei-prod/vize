@@ -124,10 +124,10 @@ impl TypeResolver {
         }
 
         let colon_pos = trimmed.find(':')?;
-        let name_part = &trimmed[..colon_pos];
+        let name_part = normalize_property_name(&trimmed[..colon_pos]);
         let type_part = &trimmed[colon_pos + 1..];
         let optional = name_part.ends_with('?');
-        let name = name_part.trim().trim_end_matches('?').trim();
+        let name = name_part.trim_end_matches('?').trim();
 
         if name.is_empty() || !is_valid_identifier(name) {
             return None;
@@ -139,6 +139,14 @@ impl TypeResolver {
             optional,
         })
     }
+}
+
+fn normalize_property_name(name: &str) -> &str {
+    let name = name.trim();
+    name.strip_prefix("readonly")
+        .filter(|rest| rest.chars().next().is_some_and(char::is_whitespace))
+        .map(str::trim_start)
+        .unwrap_or(name)
 }
 
 fn push_unique_properties(

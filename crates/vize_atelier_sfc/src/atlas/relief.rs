@@ -7,15 +7,14 @@ use vize_atlas::{
     SourceInputId,
 };
 use vize_carton::Bump;
-use vize_croquis::CroquisDocumentProduct;
 use vize_relief::{
     Namespace, ParserOptions, ReliefArtifact, ReliefProduct, ReliefSnapshot, TransformOptions,
     TransformedReliefArtifact, TransformedReliefProduct, VueDialectInput,
 };
 
 use super::{
-    SfcDescriptorProduct, SfcTemplateFrontendRequest, SfcTemplateFrontendSettingsInput,
-    SfcTemplateProduct, is_sfc_source, source_structure,
+    SfcDescriptorProduct, SfcTemplateBindingsProduct, SfcTemplateFrontendRequest,
+    SfcTemplateFrontendSettingsInput, SfcTemplateProduct, is_sfc_context, source_structure,
 };
 
 /// Parse one template block into source-faithful owned Relief syntax.
@@ -29,11 +28,14 @@ impl Provider for SfcReliefProvider {
     }
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<SfcTemplateFrontendSettingsInput>()]
+        vec![
+            SourceInputId::of::<SfcTemplateFrontendSettingsInput>(),
+            SourceInputId::of::<vize_atlas::SourceKindInput>(),
+        ]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name())
+        is_sfc_context(context)
     }
 
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
@@ -147,11 +149,14 @@ impl Provider for SfcTransformedReliefProvider {
     }
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<SfcTemplateFrontendSettingsInput>()]
+        vec![
+            SourceInputId::of::<SfcTemplateFrontendSettingsInput>(),
+            SourceInputId::of::<vize_atlas::SourceKindInput>(),
+        ]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name())
+        is_sfc_context(context)
     }
 
     fn dependencies(&self, context: &PlanningContext<'_>) -> Vec<ProductId> {
@@ -160,7 +165,7 @@ impl Provider for SfcTransformedReliefProvider {
             ProductId::of::<ReliefProduct>(),
         ];
         if source_structure(context).has_script {
-            dependencies.push(ProductId::of::<CroquisDocumentProduct>());
+            dependencies.push(ProductId::of::<SfcTemplateBindingsProduct>());
         }
         dependencies
     }
@@ -184,15 +189,12 @@ impl Provider for SfcTransformedReliefProvider {
         let request = frontend_request_for(context);
         let has_script = descriptor.script.is_some() || descriptor.script_setup.is_some();
         let binding_metadata = if has_script {
-            let document = context.get::<CroquisDocumentProduct>()?;
-            let analysis = document.analysis();
             Some(
-                vize_carton::BindingMetadata {
-                    bindings: analysis.bindings.bindings.clone(),
-                    props_aliases: analysis.bindings.props_aliases.clone(),
-                    is_script_setup: analysis.bindings.is_script_setup,
-                }
-                .into(),
+                context
+                    .get::<SfcTemplateBindingsProduct>()?
+                    .as_ref()
+                    .clone()
+                    .into(),
             )
         } else {
             None

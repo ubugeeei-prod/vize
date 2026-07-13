@@ -155,7 +155,10 @@ export const h = (...args) => ({ args });
 async function readOutputJs(dir: string): Promise<string> {
   const chunks: string[] = [];
   for (const file of await collectFiles(dir)) {
-    if (file.endsWith(".js")) chunks.push(await fs.promises.readFile(file, "utf8"));
+    const relative = path.relative(dir, file);
+    if (file.endsWith(".js") && !relative.startsWith(`__musea__${path.sep}`)) {
+      chunks.push(await fs.promises.readFile(file, "utf8"));
+    }
   }
   return chunks.join("\n");
 }

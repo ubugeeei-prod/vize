@@ -103,7 +103,7 @@ const ready = true
         .find(|counter| counter["product"] == "croquis.document")
         .unwrap();
     assert_eq!(semantics["executions"], 2);
-    assert_eq!(semantics["queries"], 4);
+    assert_eq!(semantics["queries"], 3);
 }
 
 #[test]

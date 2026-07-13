@@ -1,9 +1,12 @@
 //! Component-boundary-preserving Rendu module product for JSX backends.
 
-use vize_atlas::{PlanningContext, Product, ProductId, Provider, ProviderContext, ProviderError};
+use vize_atlas::{
+    PlanningContext, Product, ProductId, Provider, ProviderContext, ProviderError, SourceInputId,
+    SourceKindInput,
+};
 use vize_rendu::RenduRoot;
 
-use super::{JsxSyntaxProduct, is_jsx_source};
+use super::{JsxSyntaxProduct, is_jsx_context};
 use crate::{JsxDiagnostic, JsxSyntaxRootMetadata};
 use vize_rendu::RenduProduct;
 
@@ -35,8 +38,12 @@ pub struct JsxRenderModuleProvider;
 impl Provider for JsxRenderModuleProvider {
     type Product = JsxRenderModuleProduct;
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<SourceKindInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_jsx_source(context.source().name())
+        is_jsx_context(context)
     }
 
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {

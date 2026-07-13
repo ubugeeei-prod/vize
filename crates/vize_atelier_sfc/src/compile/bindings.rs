@@ -33,7 +33,7 @@ pub(super) fn croquis_to_legacy_bindings(
 /// declarations from the normal script are accessible in the template.
 /// Uses OXC parser for accurate import and declaration extraction (handles
 /// `import { Form as PForm }`, default imports, and namespace imports).
-pub(super) fn collect_normal_script_bindings(content: &str) -> BindingMetadata {
+pub(crate) fn collect_normal_script_bindings(content: &str) -> BindingMetadata {
     use oxc_allocator::Allocator;
     use oxc_parser::Parser;
     use oxc_span::SourceType;
@@ -41,13 +41,20 @@ pub(super) fn collect_normal_script_bindings(content: &str) -> BindingMetadata {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
     let ret = Parser::new(&allocator, content, source_type).parse();
-    let mut bindings = BindingMetadata::default();
-
     if ret.panicked {
-        return bindings;
+        return BindingMetadata::default();
     }
 
-    for stmt in ret.program.body.iter() {
+    collect_normal_script_bindings_from_program(&ret.program)
+}
+
+/// Parse-free normal-script binding projection for the Atlas SFC frontend.
+pub(crate) fn collect_normal_script_bindings_from_program(
+    program: &oxc_ast::ast::Program<'_>,
+) -> BindingMetadata {
+    let mut bindings = BindingMetadata::default();
+
+    for stmt in program.body.iter() {
         match stmt {
             // Register import bindings: import { Foo, Bar as Baz } from '...'
             Statement::ImportDeclaration(decl) => {

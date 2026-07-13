@@ -54,6 +54,15 @@ pub(crate) fn compile_script_setup_from_source(
     ctx.analyze();
     let sections = extract_script_sections(content, source_is_ts)
         .unwrap_or_else(|| fallback_script_sections(content));
+    let external_value_imports: Vec<String> = normal_script_content
+        .and_then(|normal| extract_script_sections(normal, source_is_ts))
+        .map(|(imports, _, _)| {
+            imports
+                .iter()
+                .flat_map(|import| super::super::import_utils::extract_import_identifiers(import))
+                .collect()
+        })
+        .unwrap_or_default();
     let mut result = compile_script_setup_with_context(
         content,
         component_name,
@@ -63,6 +72,7 @@ pub(crate) fn compile_script_setup_from_source(
         template_content,
         ctx,
         sections,
+        &external_value_imports,
     )?;
     if let Some(transform) = lazy_hydration_transform {
         let mut code = transform.preamble;
@@ -82,6 +92,7 @@ pub(crate) fn compile_script_setup_with_context(
     template_content: Option<&str>,
     mut ctx: ScriptCompileContext,
     sections: ScriptSections,
+    external_value_imports: &[String],
 ) -> Result<ScriptCompileResult, SfcError> {
     validate_props_destructure_default_types(&ctx, 0, content)?;
 
@@ -266,6 +277,7 @@ pub(crate) fn compile_script_setup_with_context(
         has_props_destructure,
         &emit_binding_name,
         &imports,
+        external_value_imports,
         template_content,
         &runtime_used_identifiers,
         &model_binding_names,

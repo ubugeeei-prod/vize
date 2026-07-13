@@ -28,6 +28,44 @@ pub trait SourceInput: Send + Sync + 'static {
     const NAME: &'static str;
 }
 
+/// Open frontend discriminator for sources whose physical name is ambiguous.
+///
+/// File suffixes remain a convenient fallback, but virtual modules and
+/// generated sources can select exactly one frontend without fabricating a
+/// filename. Kind values are owned by frontend crates; Atlas only supplies the
+/// arbitration contract.
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct SourceKind(vize_carton::String);
+
+impl SourceKind {
+    pub fn new(kind: impl Into<vize_carton::String>) -> Self {
+        Self(kind.into())
+    }
+
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+
+    pub fn is(&self, kind: &str) -> bool {
+        self.0 == kind
+    }
+}
+
+impl From<&str> for SourceKind {
+    fn from(kind: &str) -> Self {
+        Self::new(kind)
+    }
+}
+
+/// Per-source frontend arbitration input.
+pub struct SourceKindInput;
+
+impl SourceInput for SourceKindInput {
+    type Value = SourceKind;
+
+    const NAME: &'static str = "source.kind";
+}
+
 /// Runtime identity of an open [`CompilationInput`] marker.
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
 pub struct InputId {

@@ -1,5 +1,5 @@
 use vize_rendu::{
-    RenduAttributeValue, RenduDirective, RenduName, RenduNode, RenduNodeId, RenduProperty,
+    RenduAttributeValue, RenduComponentKind, RenduDirective, RenduName, RenduProperty,
 };
 
 use super::DomEmitter;
@@ -7,9 +7,29 @@ use super::syntax::{comma, quote};
 
 impl DomEmitter<'_> {
     pub(super) fn emit_properties(&mut self, properties: &[RenduProperty], component: bool) {
+        self.emit_properties_filtered(properties, component, false);
+    }
+
+    pub(super) fn emit_component_properties(
+        &mut self,
+        kind: RenduComponentKind,
+        properties: &[RenduProperty],
+    ) {
+        self.emit_properties_filtered(properties, true, kind == RenduComponentKind::Dynamic);
+    }
+
+    fn emit_properties_filtered(
+        &mut self,
+        properties: &[RenduProperty],
+        component: bool,
+        consume_dynamic_is: bool,
+    ) {
         self.output.code.push('{');
         let mut first = true;
         for property in properties {
+            if consume_dynamic_is && is_named_property(property, "is") {
+                continue;
+            }
             let start = self.output.code.len();
             match property {
                 RenduProperty::Attribute(attribute) => {
@@ -200,15 +220,69 @@ impl DomEmitter<'_> {
         self.output.code.push_str("}]");
     }
 
-    pub(super) fn emit_component_name(&mut self, name: &RenduName) {
-        match name {
-            RenduName::Static(name) => {
-                self.output.code.push_str("_resolveComponent(");
-                quote(&mut self.output.code, name);
+    pub(super) fn emit_component_name(
+        &mut self,
+        kind: RenduComponentKind,
+        name: &RenduName,
+        properties: &[RenduProperty],
+    ) {
+        match kind {
+            RenduComponentKind::Ordinary => match name {
+                RenduName::Static(name) => {
+                    self.output.code.push_str("_resolveComponent(");
+                    quote(&mut self.output.code, name);
+                    self.output.code.push(')');
+                }
+                RenduName::Dynamic(expression) => self.emit_expression(*expression),
+            },
+            RenduComponentKind::Suspense => self.output.code.push_str("_Suspense"),
+            RenduComponentKind::Teleport => self.output.code.push_str("_Teleport"),
+            RenduComponentKind::KeepAlive => self.output.code.push_str("_KeepAlive"),
+            RenduComponentKind::Transition => {
+                if matches!(name, RenduName::Static(name) if name.as_ref().eq_ignore_ascii_case("BaseTransition") || name.as_ref() == "base-transition")
+                {
+                    self.output.code.push_str("_BaseTransition");
+                } else {
+                    self.output.code.push_str("_Transition");
+                }
+            }
+            RenduComponentKind::TransitionGroup => {
+                self.output.code.push_str("_TransitionGroup");
+            }
+            RenduComponentKind::Dynamic => {
+                self.output.code.push_str("_resolveDynamicComponent(");
+                self.emit_named_property_value(properties, "is", "null");
                 self.output.code.push(')');
             }
-            RenduName::Dynamic(expression) => self.emit_expression(*expression),
         }
+    }
+
+    fn emit_named_property_value(
+        &mut self,
+        properties: &[RenduProperty],
+        name: &str,
+        fallback: &str,
+    ) {
+        for property in properties {
+            match property {
+                RenduProperty::Attribute(attribute) if matches!(&attribute.name, RenduName::Static(key) if key.as_ref() == name) =>
+                {
+                    self.emit_attribute_value(attribute.value.as_ref());
+                    return;
+                }
+                RenduProperty::Directive(directive)
+                    if directive.name.as_ref() == "bind"
+                        && matches!(&directive.argument, Some(RenduName::Static(key)) if key.as_ref() == name) =>
+                {
+                    if let Some(expression) = directive.expression {
+                        self.emit_expression(expression);
+                        return;
+                    }
+                }
+                _ => {}
+            }
+        }
+        self.output.code.push_str(fallback);
     }
 
     pub(super) fn emit_name_value(&mut self, name: &RenduName) {
@@ -249,51 +323,18 @@ impl DomEmitter<'_> {
             Some(RenduAttributeValue::Expression(expression)) => self.emit_expression(*expression),
         }
     }
+}
 
-    pub(super) fn emit_component_slots(&mut self, children: &[RenduNodeId]) {
-        self.output.code.push('{');
-        let ordinary = children
-            .iter()
-            .copied()
-            .filter(|id| {
-                !matches!(
-                    self.root.node(*id).expect("validated slot child"),
-                    RenduNode::SlotContent { .. }
-                )
-            })
-            .collect::<Vec<_>>();
-        let mut first = true;
-        if !ordinary.is_empty() {
-            comma(&mut self.output.code, &mut first);
-            quote(&mut self.output.code, "default");
-            self.output.code.push_str(": () => [");
-            self.emit_node_list(&ordinary);
-            self.output.code.push(']');
+fn is_named_property(property: &RenduProperty, name: &str) -> bool {
+    match property {
+        RenduProperty::Attribute(attribute) => {
+            matches!(&attribute.name, RenduName::Static(key) if key.as_ref() == name)
         }
-        for &child in children {
-            let Some(RenduNode::SlotContent {
-                name,
-                bindings,
-                children,
-                ..
-            }) = self.root.node(child)
-            else {
-                continue;
-            };
-            comma(&mut self.output.code, &mut first);
-            self.emit_object_key(name);
-            self.output.code.push_str(": (");
-            for (index, binding) in bindings.iter().enumerate() {
-                if index > 0 {
-                    self.output.code.push_str(", ");
-                }
-                self.output.code.push_str(&binding.pattern);
-            }
-            self.output.code.push_str(") => [");
-            self.emit_node_list(children);
-            self.output.code.push(']');
+        RenduProperty::Directive(directive) => {
+            directive.name.as_ref() == "bind"
+                && matches!(&directive.argument, Some(RenduName::Static(key)) if key.as_ref() == name)
         }
-        self.output.code.push('}');
+        RenduProperty::Spread { .. } => false,
     }
 }
 

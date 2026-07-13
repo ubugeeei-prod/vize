@@ -140,11 +140,12 @@ impl<'a> Emitter<'a> {
                 ..
             } => self.emit_element(tag, properties, *body, indent, out),
             VaporOperation::Component {
+                kind,
                 name: component,
                 properties,
-                body,
+                slots,
                 ..
-            } => self.emit_component(component, properties, *body, indent, out),
+            } => self.emit_component(*kind, component, properties, slots, indent, out),
             VaporOperation::SlotOutlet {
                 name: slot,
                 properties,

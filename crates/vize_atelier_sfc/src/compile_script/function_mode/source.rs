@@ -36,6 +36,10 @@ pub(super) fn build_context(
     let mut context = ScriptCompileContext::new(content);
     if let Some(normal) = normal_script_content.filter(|normal| !normal.is_empty()) {
         context.collect_types_from(normal);
+        let normal_bindings = crate::compile::collect_normal_script_bindings(normal);
+        for (name, binding) in normal_bindings.bindings {
+            context.bindings.bindings.entry(name).or_insert(binding);
+        }
     }
     if let Some(filename) = filename.filter(|filename| !filename.is_empty()) {
         context.collect_imported_types_from_path(content, filename, source_is_ts);

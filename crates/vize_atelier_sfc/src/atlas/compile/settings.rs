@@ -1,11 +1,20 @@
 //! Narrow source-local inputs for each SFC compilation stage.
 
-use vize_atlas::{Compilation, CompilationInputError, SourceId, SourceInput};
+#[path = "settings/equality.rs"]
+mod equality;
+
+use vize_atlas::{
+    Compilation, CompilationInputError, SourceId, SourceInput, SourceKind, SourceKindInput,
+};
 use vize_carton::{FxHashMap, String};
 use vize_relief::TemplateSyntaxMode;
 use vize_rendu::{RenderEmitSettings, RenderEmitSettingsInput};
 
-use crate::{SfcCompileOptions, SfcParseOptions};
+use crate::atlas::croquis::SfcInferredCroquisSettingsInput;
+use crate::{SFC_SOURCE_KIND, SfcCompileOptions, SfcParseOptions};
+use crate::{SfcCroquisMode, SfcCroquisRequest};
+
+use self::equality::parse_options_eq;
 
 /// Complete output-affecting request for one SFC source.
 #[derive(Debug, Clone, Default)]
@@ -191,12 +200,29 @@ impl SourceInput for SfcRenderSettingsInput {
     const NAME: &'static str = "sfc.render-settings";
 }
 
+/// Scope identity consumed only while producing frontend-neutral render HIR.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub(crate) struct SfcRenderScopeRequest {
+    pub scope_id: String,
+}
+
+pub(crate) struct SfcRenderScopeSettingsInput;
+
+impl SourceInput for SfcRenderScopeSettingsInput {
+    type Value = SfcRenderScopeRequest;
+    const NAME: &'static str = "sfc.render-scope-settings";
+}
+
 /// Install one complete request as narrow, independently invalidated inputs.
 pub fn install_sfc_compile_request(
     compilation: &mut Compilation,
     source: SourceId,
     request: SfcCompileRequest,
 ) -> Result<(), CompilationInputError> {
+    let source_kind = SourceKind::new(SFC_SOURCE_KIND);
+    if compilation.source_input::<SourceKindInput>(source) != Some(&source_kind) {
+        compilation.set_source_input::<SourceKindInput>(source, source_kind)?;
+    }
     let parse = request.options.parse.clone();
     if compilation
         .source_input::<SfcParseSettingsInput>(source)
@@ -205,10 +231,44 @@ pub fn install_sfc_compile_request(
         compilation.set_source_input::<SfcParseSettingsInput>(source, parse)?;
     }
 
-    let vapor_script = compilation
+    let structure = compilation
         .source(source)
         .and_then(|source| crate::parse::scan_sfc_structure(source.text()))
-        .is_some_and(|structure| structure.vapor_script);
+        .unwrap_or_default();
+    let vapor_script = structure.vapor_script;
+    let mode = if request.options.template.dialect.is_legacy() {
+        SfcCroquisMode::LegacyVue2
+    } else if structure.has_normal_script {
+        SfcCroquisMode::OptionsApi
+    } else {
+        SfcCroquisMode::Full
+    };
+    let resolved_filename = request
+        .options
+        .script
+        .id
+        .as_ref()
+        .filter(|filename| !filename.is_empty())
+        .cloned()
+        .or_else(|| {
+            (!request.options.parse.filename.is_empty())
+                .then(|| request.options.parse.filename.clone())
+        })
+        .or_else(|| {
+            compilation
+                .source(source)
+                .map(|source| source.name())
+                .filter(|filename| !filename.is_empty())
+                .map(Into::into)
+        });
+    let inferred = SfcCroquisRequest {
+        mode,
+        resolved_filename,
+        ..Default::default()
+    };
+    if compilation.source_input::<SfcInferredCroquisSettingsInput>(source) != Some(&inferred) {
+        compilation.set_source_input::<SfcInferredCroquisSettingsInput>(source, inferred)?;
+    }
     let frontend = SfcTemplateFrontendRequest::from_compile_request(&request, vapor_script);
     if compilation.source_input::<SfcTemplateFrontendSettingsInput>(source) != Some(&frontend) {
         compilation.set_source_input::<SfcTemplateFrontendSettingsInput>(source, frontend)?;
@@ -219,6 +279,32 @@ pub fn install_sfc_compile_request(
         compilation.set_source_input::<SfcRenderSettingsInput>(source, render)?;
     }
 
+    let scope_filename = if request.options.parse.filename.as_str().is_empty() {
+        request
+            .options
+            .script
+            .id
+            .as_deref()
+            .filter(|filename| !filename.is_empty())
+            .unwrap_or_else(|| {
+                compilation
+                    .source(source)
+                    .map_or("anonymous.vue", |source| source.name())
+            })
+    } else {
+        request.options.parse.filename.as_str()
+    };
+    let render_scope = SfcRenderScopeRequest {
+        scope_id: request
+            .options
+            .scope_id
+            .clone()
+            .unwrap_or_else(|| crate::compile::generate_scope_id(scope_filename)),
+    };
+    if compilation.source_input::<SfcRenderScopeSettingsInput>(source) != Some(&render_scope) {
+        compilation.set_source_input::<SfcRenderScopeSettingsInput>(source, render_scope)?;
+    }
+
     if compilation.source_input::<RenderEmitSettingsInput>(source) != Some(&request.render_emit) {
         compilation
             .set_source_input::<RenderEmitSettingsInput>(source, request.render_emit.clone())?;
@@ -226,56 +312,4 @@ pub fn install_sfc_compile_request(
 
     compilation.set_source_input::<SfcCompileSettingsInput>(source, request)?;
     Ok(())
-}
-
-fn parse_options_eq(left: &SfcParseOptions, right: &SfcParseOptions) -> bool {
-    left.filename == right.filename
-        && left.source_map == right.source_map
-        && left.pad == right.pad
-        && left.ignore_empty == right.ignore_empty
-        && match (&left.template_parse_options, &right.template_parse_options) {
-            (None, None) => true,
-            (Some(left), Some(right)) => parser_options_eq(left, right),
-            _ => false,
-        }
-}
-
-#[allow(clippy::too_many_lines)]
-fn parser_options_eq(
-    left: &vize_relief::ParserOptions,
-    right: &vize_relief::ParserOptions,
-) -> bool {
-    left.mode == right.mode
-        && left.whitespace == right.whitespace
-        && left.delimiters == right.delimiters
-        && std::ptr::fn_addr_eq(left.is_pre_tag, right.is_pre_tag)
-        && optional_fn_eq(left.is_native_tag, right.is_native_tag)
-        && optional_fn_eq(left.is_custom_element, right.is_custom_element)
-        && left.custom_renderer == right.custom_renderer
-        && std::ptr::fn_addr_eq(left.is_void_tag, right.is_void_tag)
-        && std::ptr::fn_addr_eq(left.get_namespace, right.get_namespace)
-        && optional_handler_eq(left.on_error, right.on_error)
-        && optional_handler_eq(left.on_warn, right.on_warn)
-        && left.comments == right.comments
-        && left.experimental_in_tag_comments == right.experimental_in_tag_comments
-        && left.dialect == right.dialect
-}
-
-fn optional_fn_eq(left: Option<fn(&str) -> bool>, right: Option<fn(&str) -> bool>) -> bool {
-    match (left, right) {
-        (Some(left), Some(right)) => std::ptr::fn_addr_eq(left, right),
-        (None, None) => true,
-        _ => false,
-    }
-}
-
-fn optional_handler_eq(
-    left: Option<fn(vize_relief::CompilerError)>,
-    right: Option<fn(vize_relief::CompilerError)>,
-) -> bool {
-    match (left, right) {
-        (Some(left), Some(right)) => std::ptr::fn_addr_eq(left, right),
-        (None, None) => true,
-        _ => false,
-    }
 }

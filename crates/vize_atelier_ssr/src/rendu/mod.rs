@@ -53,8 +53,8 @@ pub fn compile_rendu_with_settings(
     finish_output(emit::SsrEmitter::new(root).emit(settings), settings)
 }
 
-const CORE_HELPERS: &str = "mergeProps as _mergeProps, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withModifiers as _withModifiers";
-const SSR_HELPERS: &str = "ssrGetDirectiveProps as _ssrGetDirectiveProps, ssrInterpolate as _ssrInterpolate, ssrRenderAttr as _ssrRenderAttr, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderComponent as _ssrRenderComponent, ssrRenderDynamicAttr as _ssrRenderDynamicAttr, ssrRenderList as _ssrRenderList, ssrRenderSlot as _ssrRenderSlot";
+const CORE_HELPERS: &str = "BaseTransition as _BaseTransition, Fragment as _Fragment, KeepAlive as _KeepAlive, Suspense as _Suspense, Teleport as _Teleport, Transition as _Transition, TransitionGroup as _TransitionGroup, createCommentVNode as _createCommentVNode, createSlots as _createSlots, createTextVNode as _createTextVNode, createVNode as _createVNode, mergeProps as _mergeProps, renderList as _renderList, renderSlot as _renderSlot, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, resolveDynamicComponent as _resolveDynamicComponent, toDisplayString as _toDisplayString, withCtx as _withCtx, withModifiers as _withModifiers";
+const SSR_HELPERS: &str = "ssrGetDirectiveProps as _ssrGetDirectiveProps, ssrInterpolate as _ssrInterpolate, ssrRenderAttr as _ssrRenderAttr, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderComponent as _ssrRenderComponent, ssrRenderDynamicAttr as _ssrRenderDynamicAttr, ssrRenderList as _ssrRenderList, ssrRenderSlot as _ssrRenderSlot, ssrRenderSuspense as _ssrRenderSuspense, ssrRenderTeleport as _ssrRenderTeleport";
 
 fn finish_output(mut output: RenduSsrOutput, settings: &RenderEmitSettings) -> RenduSsrOutput {
     let body = output.code;

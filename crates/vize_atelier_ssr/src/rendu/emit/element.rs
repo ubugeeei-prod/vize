@@ -9,10 +9,22 @@ impl SsrEmitter<'_> {
         tag: &str,
         properties: &[RenduProperty],
         children: &[RenduNodeId],
+        fallthrough: bool,
     ) {
         self.push_line_value(&vize_carton::cstr!("<{tag}"));
-        for property in properties {
-            self.emit_element_property(tag, property);
+        if fallthrough {
+            self.emit_element_fallthrough_properties(properties);
+        } else {
+            for property in properties {
+                self.emit_element_property(tag, property);
+            }
+        }
+        if let Some(scope_id) = self.root.component_scope_id() {
+            self.push_line_value(&vize_carton::cstr!(" {scope_id}"));
+        }
+        if self.slot_scope_depth > 0 {
+            self.indent();
+            self.output.code.push_str("_push(_scopeId)\n");
         }
         self.push_line_value(">");
         if !vize_carton::is_void_tag(tag) {
@@ -27,7 +39,85 @@ impl SsrEmitter<'_> {
         }
     }
 
-    fn emit_element_property(&mut self, tag: &str, property: &RenduProperty) {
+    fn emit_element_fallthrough_properties(&mut self, properties: &[RenduProperty]) {
+        self.indent();
+        self.output
+            .code
+            .push_str("_push(_ssrRenderAttrs(_mergeProps(");
+        let mut wrote = false;
+        for property in properties
+            .iter()
+            .filter(|property| is_fallthrough_operand(property))
+        {
+            if wrote {
+                self.output.code.push_str(", ");
+            }
+            let start = self.output.code.len();
+            self.emit_element_property_operand(property);
+            self.map(start, property.provenance(), RenduSsrMappingKind::Property);
+            wrote = true;
+        }
+        if wrote {
+            self.output.code.push_str(", ");
+        }
+        self.output.code.push_str("_attrs)))\n");
+    }
+
+    fn emit_element_property_operand(&mut self, property: &RenduProperty) {
+        match property {
+            RenduProperty::Attribute(attribute) => {
+                self.output.code.push('{');
+                self.emit_object_key(&attribute.name);
+                self.output.code.push_str(": ");
+                self.emit_attribute_value(attribute.value.as_ref());
+                self.output.code.push('}');
+            }
+            RenduProperty::Spread { expression, .. } => self.emit_expression(*expression),
+            RenduProperty::Directive(directive) => match directive.name.as_ref() {
+                "bind" => {
+                    let expression = directive
+                        .expression
+                        .expect("filtered v-bind operand has an expression");
+                    if let Some(argument) = directive.argument.as_ref() {
+                        self.output.code.push('{');
+                        self.emit_object_key(argument);
+                        self.output.code.push_str(": ");
+                        self.emit_expression(expression);
+                        self.output.code.push('}');
+                    } else {
+                        self.emit_expression(expression);
+                    }
+                }
+                "model" => {
+                    self.output.code.push_str("{ value: ");
+                    self.emit_expression(
+                        directive
+                            .expression
+                            .expect("filtered v-model operand has an expression"),
+                    );
+                    self.output.code.push_str(" }");
+                }
+                "show" => {
+                    self.output.code.push_str("{ style: (");
+                    self.emit_expression(
+                        directive
+                            .expression
+                            .expect("filtered v-show operand has an expression"),
+                    );
+                    self.output
+                        .code
+                        .push_str(") ? null : { display: \"none\" } }");
+                }
+                _ => {
+                    self.output.code.push_str("_ssrGetDirectiveProps(_ctx, ");
+                    self.emit_directive(directive);
+                    self.output.code.push(')');
+                }
+            },
+        }
+    }
+
+    pub(super) fn emit_element_property(&mut self, tag: &str, property: &RenduProperty) {
         let start = self.output.code.len();
         match property {
             RenduProperty::Attribute(attribute) => match (&attribute.name, &attribute.value) {
@@ -166,4 +256,15 @@ fn content_directive<'a>(
         RenduProperty::Directive(directive) if directive.name.as_ref() == name => Some(directive),
         _ => None,
     })
+}
+
+fn is_fallthrough_operand(property: &RenduProperty) -> bool {
+    match property {
+        RenduProperty::Attribute(_) | RenduProperty::Spread { .. } => true,
+        RenduProperty::Directive(directive) => match directive.name.as_ref() {
+            "on" | "html" | "text" => false,
+            "bind" | "model" | "show" => directive.expression.is_some(),
+            _ => true,
+        },
+    }
 }

@@ -86,8 +86,8 @@ assert.doesNotMatch(
 );
 assert.match(
   readonlyInterfacePropsCompiled.code,
-  /__props\.minScale/,
-  "readonly type props should compile as props access in inline render",
+  /\$props\.minScale/,
+  "readonly type props should compile as props access in the standalone render function",
 );
 
 const importedFunctionTypeRoot = fs.mkdtempSync(
@@ -144,8 +144,8 @@ const active = true;
 <style scoped>
 .static { color: red; }
 </style>`;
-const hoistedScopedPattern =
-  /_createElementVNode\("div", \{\s*class: "static",\s*"data-v-[^"]+": ""\s*\}, "Static"\)/s;
+const scopedStaticRenderPattern =
+  /(?=[\s\S]*_h\("div", \{class: "static"\}, \["Static"\]\))(?=[\s\S]*_sfc_main\.__scopeId = "data-v-[^"]+")/;
 
 const hoistedScopedCompiled = compileFile(
   "/src/HoistedScoped.vue",
@@ -156,8 +156,8 @@ const hoistedScopedCompiled = compileFile(
 
 assert.match(
   hoistedScopedCompiled.code,
-  hoistedScopedPattern,
-  "scoped static VNodes hoisted outside render should carry the component scope id",
+  scopedStaticRenderPattern,
+  "the standalone render should retain static content under the component scope",
 );
 
 const hoistedScopedBatch = compileBatch(
@@ -168,8 +168,8 @@ const hoistedScopedBatch = compileBatch(
 
 assert.match(
   hoistedScopedBatch.results[0]?.code ?? "",
-  hoistedScopedPattern,
-  "batch compilation should also scope static VNodes hoisted outside render",
+  scopedStaticRenderPattern,
+  "batch compilation should retain static content under the component scope",
 );
 
 const componentClassCompiled = compileFile(
@@ -193,13 +193,13 @@ const channel = ref({});
 
 assert.match(
   componentClassCompiled.code,
-  /_createBlock\(Child, \{\s*channel: channel\.value,\s*full: true,\s*class: _normalizeClass\(\$style\.subscribe\)\s*\}, null, 8[\s\S]*\["channel", "class"\]/,
-  "dynamic component class bindings should be tracked as component props so fallthrough classes apply",
+  /_h\(\$setup\.Child, \{channel: \$setup\.channel, full: true, class: _ctx\.\$style\.subscribe\}, \{\}\)/,
+  "Atlas component props should preserve the setup ref, static binding, and fallthrough class",
 );
 assert.doesNotMatch(
   componentClassCompiled.code,
-  /\["channel", "full", "class"\]/,
-  "static bound component props should not be listed as dynamic props",
+  /_resolveComponent\("Child"\)/,
+  "script setup component imports should not fall back to global component resolution",
 );
 
 const dynamicArgForCompiled = compileFile(
@@ -223,8 +223,8 @@ assert.doesNotMatch(
 );
 assert.match(
   dynamicArgForCompiled.code,
-  /\[attr \|\| ""\]: maybeRelativeUrl/,
-  "dynamic v-bind arguments from v-for scope should be emitted as local loop bindings",
+  /\{\[attr\]: \$setup\.maybeRelativeUrl\}/,
+  "dynamic v-bind arguments should keep the loop key local and resolve setup values semantically",
 );
 
 const tresSource = `<script setup lang="ts">
@@ -246,13 +246,13 @@ const clientCompiled = compileFile(
 
 assert.match(
   clientCompiled.code,
-  /const _component_primitive = _ctx\.Primitive/,
+  /_createComponentWithFallback\(\$setup\.Primitive,/,
   "Client Vapor builds should resolve lowercase imported components through setup bindings",
 );
 assert.match(
   clientCompiled.code,
-  /const __vaporRender = render/,
-  "Client Vapor builds should preserve the render alias used by script setup output",
+  /_sfc_main\.render = render/,
+  "Client Vapor builds should attach the standalone Atlas render to the component",
 );
 
 const ssrCompiled = compileFile(
@@ -625,8 +625,8 @@ const antDesignDomCompiled = compileFile(
 
 assert.match(
   antDesignDomCompiled.code,
-  /(?=[\s\S]*_create(?:Block|VNode)\(_unref\(Form\)\.Item)(?=[\s\S]*_create(?:Block|VNode)\(_unref\(Input\))/,
-  "DOM builds should unref setup component tags while preserving member access",
+  /(?=[\s\S]*_h\(\$setup\.Form\.Item)(?=[\s\S]*_h\(\$setup\.Input)/,
+  "DOM builds should use proxy-unwrapped setup component tags while preserving member access",
 );
 assert.doesNotMatch(
   antDesignDomCompiled.code,
@@ -661,8 +661,8 @@ const antDesignVaporCompiled = compileFile(
 
 assert.match(
   antDesignVaporCompiled.code,
-  /const _component_Form_Item = _ctx\.Form\.Item/,
-  "Vapor builds should resolve dotted imported components through ctx member expressions",
+  /_createComponentWithFallback\(\$setup\.Form\.Item,/,
+  "Vapor builds should resolve dotted imported components through setup member expressions",
 );
 assert.doesNotMatch(
   antDesignVaporCompiled.code,
@@ -729,7 +729,7 @@ const customRendererClientCompiled = compileFile(
 
 assert.match(
   customRendererClientCompiled.code,
-  /const _component_primitive = _ctx\.Primitive/,
+  /_createComponentWithFallback\(\$setup\.Primitive,/,
   "Custom renderer Vapor builds should still resolve imported lowercase components through setup bindings",
 );
 assert.doesNotMatch(
@@ -822,12 +822,12 @@ const ssrComponentPropsCompiled = compileFile(
 
 assert.match(
   ssrComponentPropsCompiled.code,
-  /\$setup\.ErrorBoundary, \{ error: \$setup\.error \}/,
+  /\$setup\.ErrorBoundary, _mergeProps\(\{"error": \$setup\.error\}\)/,
   "SSR builds should pass dynamic props through the setup proxy",
 );
 assert.match(
   ssrComponentPropsCompiled.code,
-  /_resolveComponent\("I18nT"\), \{\s*keypath: "build\.environment",\s*tag: "span"\s*\}/,
+  /_resolveComponent\("I18nT"\), _mergeProps\(\{"keypath": "build\.environment", "tag": "span"\}\)/,
   "SSR builds should pass static props to runtime-resolved components",
 );
 assert.doesNotMatch(
@@ -889,7 +889,7 @@ assert.match(
 );
 assert.match(
   ssrSlotForCompiled.code,
-  /to: _ctx\.packageRoute\(dep, version\)/,
+  /"to": _ctx\.packageRoute\(dep, version\)/,
   "SSR component slots should not prefix v-for aliases with _ctx inside child component props",
 );
 assert.doesNotMatch(
@@ -920,7 +920,7 @@ const ssrScopedSlotCompiled = compileFile(
 
 assert.match(
   ssrScopedSlotCompiled.code,
-  /const __returned__ = \{\s*valibotResolver,\s*schema\s*\}/,
+  /const __returned__ = \{\s*schema,\s*valibotResolver\s*\}/,
   "SSR script setup should return imports that are only used inside template expressions",
 );
 assert.match(
@@ -930,12 +930,12 @@ assert.match(
 );
 assert.match(
   ssrScopedSlotCompiled.code,
-  /resolver: \$setup\.schema \? (?:_unref\(\$setup\.valibotResolver\)|\$setup\.valibotResolver)\(\$setup\.schema\) : undefined/,
+  /"resolver": \$setup\.schema \? (?:_unref\(\$setup\.valibotResolver\)|\$setup\.valibotResolver)\(\$setup\.schema\) : undefined/,
   "SSR component props should call template-only imports through setup bindings",
 );
 assert.match(
   ssrScopedSlotCompiled.code,
-  /item: _withCtx\(\(\{ data: speaker \}, _push, _parent, _scopeId\) =>/,
+  /"item": _withCtx\(\(\{ data: speaker \}, _push, _parent, _scopeId\) =>/,
   "SSR component slots should preserve destructured slot prop parameters",
 );
 assert.doesNotMatch(
@@ -974,7 +974,7 @@ const ssrNormalScriptImportCompiled = compileFile(
 
 assert.match(
   ssrNormalScriptImportCompiled.code,
-  /const __returned__ = \{\s*emit,\s*PForm,\s*valibotResolver\s*\}/,
+  /const __returned__ = \{\s*PForm,\s*emit,\s*valibotResolver\s*\}/,
   "SSR script setup should return normal-script imports that are used by template expressions",
 );
 assert.match(
@@ -989,7 +989,7 @@ assert.match(
 );
 assert.match(
   ssrNormalScriptImportCompiled.code,
-  /resolver: \$props\.schema \? (?:_unref\(\$setup\.valibotResolver\)|\$setup\.valibotResolver)\(\$props\.schema\) : undefined/,
+  /"resolver": \$props\.schema \? (?:_unref\(\$setup\.valibotResolver\)|\$setup\.valibotResolver)\(\$props\.schema\) : undefined/,
   "SSR component props should call normal-script template imports through setup bindings",
 );
 

@@ -5,8 +5,8 @@ use vize_atelier_jsx::{
     snapshot_jsx_named,
 };
 use vize_rendu::{
-    RenduAttributeValue, RenduCapability, RenduNamespace, RenduNode, RenduProperty, RenduWalkEvent,
-    walk_rendu,
+    RenduAttributeValue, RenduCapability, RenduComponentKind, RenduNamespace, RenduNode,
+    RenduProperty, RenduWalkEvent, walk_rendu,
 };
 
 fn assert_owned_snapshot<T: Send + Sync + 'static>() {}
@@ -135,6 +135,10 @@ const App = (): JSX.Element => (
         |node| matches!(node, RenduNode::For { value, index: Some(index), .. }
             if value.pattern.as_ref() == "item" && index.pattern.as_ref() == "index")
     ));
+    assert!(output.root.nodes().iter().all(|node| !matches!(
+        node,
+        RenduNode::Component { kind, .. } if *kind != RenduComponentKind::Ordinary
+    )));
 
     let expression_codes = output
         .root

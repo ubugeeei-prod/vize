@@ -1,11 +1,14 @@
 use vize_atlas::{
     Compilation, ObservationKind, PlanningContext, Product, ProductId, Provider, ProviderContext,
-    ProviderError, RegisterProviderError, SourceRange,
+    ProviderError, RegisterProviderError, SourceInputId, SourceKindInput, SourceRange,
 };
 use vize_carton::{cstr, source_anchor::SourceAnchor};
 use vize_flow::{FlowGraph, FlowProduct};
 
 use crate::{ModuleDocument, ModuleLanguage, frontend, project_module_flow};
+
+/// Open Atlas source-kind value owned by the raw module frontend.
+pub const MODULE_SOURCE_KIND: &str = "js-module";
 
 pub struct ModuleSyntaxProduct;
 
@@ -20,8 +23,12 @@ pub struct RawModuleSyntaxProvider;
 impl Provider for RawModuleSyntaxProvider {
     type Product = ModuleSyntaxProduct;
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<SourceKindInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        language_for_path(context.source().name()).is_some()
+        raw_module_supports(context)
     }
 
     fn provide(&self, context: &mut ProviderContext<'_>) -> Result<ModuleDocument, ProviderError> {
@@ -58,8 +65,12 @@ pub struct ModuleFlowProvider;
 impl Provider for ModuleFlowProvider {
     type Product = FlowProduct;
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<SourceKindInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        language_for_path(context.source().name()).is_some()
+        raw_module_supports(context)
     }
 
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
@@ -70,6 +81,13 @@ impl Provider for ModuleFlowProvider {
         let syntax = context.get::<ModuleSyntaxProduct>()?;
         project_module_flow(&syntax).map_err(|error| ProviderError::message(cstr!("{error}")))
     }
+}
+
+fn raw_module_supports(context: &PlanningContext<'_>) -> bool {
+    context.source_input::<SourceKindInput>().map_or_else(
+        || language_for_path(context.source().name()).is_some(),
+        |kind| kind.is(MODULE_SOURCE_KIND),
+    )
 }
 
 pub fn register_raw_providers(compilation: &mut Compilation) -> Result<(), RegisterProviderError> {

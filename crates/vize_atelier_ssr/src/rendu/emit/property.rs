@@ -1,12 +1,43 @@
-use vize_rendu::{RenduAttributeValue, RenduDirective, RenduName, RenduProperty};
+use vize_rendu::{
+    RenduAttributeValue, RenduComponentKind, RenduDirective, RenduName, RenduProperty,
+};
 
 use super::{SsrEmitter, syntax::quote_js};
 
 impl SsrEmitter<'_> {
     pub(super) fn emit_properties(&mut self, properties: &[RenduProperty]) {
+        self.emit_properties_filtered(properties, false, false);
+    }
+
+    pub(super) fn emit_component_properties(
+        &mut self,
+        kind: RenduComponentKind,
+        properties: &[RenduProperty],
+    ) {
+        self.emit_component_properties_with_fallthrough(kind, properties, false);
+    }
+
+    pub(super) fn emit_component_properties_with_fallthrough(
+        &mut self,
+        kind: RenduComponentKind,
+        properties: &[RenduProperty],
+        fallthrough: bool,
+    ) {
+        self.emit_properties_filtered(properties, kind == RenduComponentKind::Dynamic, fallthrough);
+    }
+
+    fn emit_properties_filtered(
+        &mut self,
+        properties: &[RenduProperty],
+        consume_dynamic_is: bool,
+        fallthrough: bool,
+    ) {
         self.output.code.push_str("_mergeProps({");
         let mut first = true;
         for property in properties {
+            if consume_dynamic_is && is_named_property(property, "is") {
+                continue;
+            }
             let start = self.output.code.len();
             let emitted = match property {
                 RenduProperty::Attribute(attribute) => {
@@ -60,6 +91,9 @@ impl SsrEmitter<'_> {
                     crate::rendu::RenduSsrMappingKind::Property,
                 );
             }
+        }
+        if fallthrough {
+            self.output.code.push_str(", _attrs");
         }
         self.output.code.push(')');
     }
@@ -173,17 +207,6 @@ impl SsrEmitter<'_> {
         self.output.code.push('}');
     }
 
-    pub(super) fn emit_component_name(&mut self, name: &RenduName) {
-        match name {
-            RenduName::Static(name) => {
-                self.output.code.push_str("_resolveComponent(");
-                quote_js(&mut self.output.code, name);
-                self.output.code.push(')');
-            }
-            RenduName::Dynamic(expression) => self.emit_expression(*expression),
-        }
-    }
-
     pub(super) fn emit_name_value(&mut self, name: &RenduName) {
         match name {
             RenduName::Static(name) => quote_js(&mut self.output.code, name),
@@ -245,6 +268,19 @@ impl SsrEmitter<'_> {
         } else {
             self.output.code.push_str(", ");
         }
+    }
+}
+
+pub(super) fn is_named_property(property: &RenduProperty, name: &str) -> bool {
+    match property {
+        RenduProperty::Attribute(attribute) => {
+            matches!(&attribute.name, RenduName::Static(key) if key.as_ref() == name)
+        }
+        RenduProperty::Directive(directive) => {
+            directive.name.as_ref() == "bind"
+                && matches!(&directive.argument, Some(RenduName::Static(key)) if key.as_ref() == name)
+        }
+        RenduProperty::Spread { .. } => false,
     }
 }
 

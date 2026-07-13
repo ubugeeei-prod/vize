@@ -1,6 +1,9 @@
 use vize_rendu::{
-    RenduEscapeMode, RenduExpressionKind, RenduNamespace, RenduProvenance, RenduSource,
+    RenduComponentKind, RenduEscapeMode, RenduExpressionKind, RenduNamespace, RenduProvenance,
+    RenduSource,
 };
+
+use super::VaporComponentSlots;
 
 macro_rules! define_id {
     ($name:ident) => {
@@ -164,9 +167,10 @@ pub enum VaporOperation {
         provenance: RenduProvenance,
     },
     Component {
+        kind: RenduComponentKind,
         name: VaporName,
         properties: Vec<VaporProperty>,
-        body: VaporBlockId,
+        slots: VaporComponentSlots,
         provenance: RenduProvenance,
     },
     SlotOutlet {

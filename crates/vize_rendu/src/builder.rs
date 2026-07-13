@@ -61,6 +61,7 @@ impl RenduBuilder {
             nodes: self.nodes,
             entry: self.entry,
             capabilities: RenduCapabilities::empty(),
+            component_scope_id: None,
         };
         root.validate()?;
         root.capabilities = RenduCapabilities::infer(&root);

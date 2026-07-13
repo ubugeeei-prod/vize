@@ -8,7 +8,8 @@ Support and deprecation guarantees are defined in the
 ## Highlights
 
 - `.vue` descriptor parsing (`<template>`, `<script>`, `<script setup>`, `<style>`, custom blocks)
-- Parse-once authored-script projection: one live OXC `Program` supplies Module facts, Croquis analysis, and compiler preanalysis
+- Parse-once authored-script projection: one live OXC `Program` supplies Module facts, the selected semantic mode, and compiler preanalysis
+- Narrow render semantics: `SfcTemplateBindingsProduct` supplies only binding identity to template transforms and Rendu; production compilation does not require a full Croquis document
 - Source-shaped template products: Relief, Croquis, Flow, and Rendu are requested independently
 - Frontend-owned compile recipes with DOM, SSR, and Vapor supplied explicitly by the application host
 - Scoped CSS and style transforms powered by Lightning CSS

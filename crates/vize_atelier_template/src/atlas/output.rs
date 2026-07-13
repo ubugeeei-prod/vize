@@ -1,5 +1,6 @@
 use vize_atlas::{
     PlanningContext, Product, ProductId, Provider, ProviderContext, ProviderError, SourceInputId,
+    SourceKindInput,
 };
 use vize_carton::String;
 use vize_relief::{ReliefSnapshot, TransformedReliefProduct};
@@ -7,7 +8,7 @@ use vize_rendu::RenderEmitSettingsInput;
 
 use super::{
     TemplateCompileSettingsInput, TemplateRenderTarget, providers::request_for,
-    settings::is_raw_template_source, source_map::source_map,
+    settings::is_raw_template_context, source_map::source_map,
 };
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -45,11 +46,12 @@ impl Provider for TemplateCompileProvider {
         vec![
             SourceInputId::of::<TemplateCompileSettingsInput>(),
             SourceInputId::of::<RenderEmitSettingsInput>(),
+            SourceInputId::of::<SourceKindInput>(),
         ]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_raw_template_source(context.source().name())
+        is_raw_template_context(context)
             && context
                 .source_input::<TemplateCompileSettingsInput>()
                 .is_some()

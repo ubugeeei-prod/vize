@@ -61,7 +61,7 @@ fn source_compile_request_update_retains_other_source_artifacts() {
     assert!(
         compilation
             .cache()
-            .contains::<CroquisDocumentProduct>(second)
+            .contains::<SfcTemplateBindingsProduct>(second)
     );
 
     let mut changed = SfcCompileOptions::default();
@@ -78,7 +78,7 @@ fn source_compile_request_update_retains_other_source_artifacts() {
     assert!(
         compilation
             .cache()
-            .contains::<CroquisDocumentProduct>(second)
+            .contains::<SfcTemplateBindingsProduct>(second)
     );
     assert_eq!(
         compilation
@@ -112,7 +112,7 @@ fn style_setting_changes_only_rerun_final_sfc_assembly() {
     let descriptor = executions::<SfcDescriptorProduct>(&compilation);
     let relief = executions::<ReliefProduct>(&compilation);
     let transformed = executions::<TransformedReliefProduct>(&compilation);
-    let croquis = executions::<CroquisDocumentProduct>(&compilation);
+    let bindings = executions::<SfcTemplateBindingsProduct>(&compilation);
     let rendu = executions::<RenduProduct>(&compilation);
     let backend = executions::<DomOutputProduct>(&compilation);
     let assembly = executions::<SfcCompileProduct>(&compilation);
@@ -133,7 +133,10 @@ fn style_setting_changes_only_rerun_final_sfc_assembly() {
         executions::<TransformedReliefProduct>(&compilation),
         transformed
     );
-    assert_eq!(executions::<CroquisDocumentProduct>(&compilation), croquis);
+    assert_eq!(
+        executions::<SfcTemplateBindingsProduct>(&compilation),
+        bindings
+    );
     assert_eq!(executions::<RenduProduct>(&compilation), rendu);
     assert_eq!(executions::<DomOutputProduct>(&compilation), backend);
     assert_eq!(executions::<SfcCompileProduct>(&compilation), assembly + 1);
@@ -157,7 +160,7 @@ fn backend_target_change_reuses_descriptor_and_template_frontend() {
     let descriptor = executions::<SfcDescriptorProduct>(&compilation);
     let relief = executions::<ReliefProduct>(&compilation);
     let transformed = executions::<TransformedReliefProduct>(&compilation);
-    let croquis = executions::<CroquisDocumentProduct>(&compilation);
+    let bindings = executions::<SfcTemplateBindingsProduct>(&compilation);
     let rendu = executions::<RenduProduct>(&compilation);
     let render_module = executions::<SfcRenderModuleProduct>(&compilation);
 
@@ -178,7 +181,10 @@ fn backend_target_change_reuses_descriptor_and_template_frontend() {
         executions::<TransformedReliefProduct>(&compilation),
         transformed
     );
-    assert_eq!(executions::<CroquisDocumentProduct>(&compilation), croquis);
+    assert_eq!(
+        executions::<SfcTemplateBindingsProduct>(&compilation),
+        bindings
+    );
     assert_eq!(executions::<RenduProduct>(&compilation), rendu);
     assert_eq!(executions::<DomOutputProduct>(&compilation), 1);
     assert_eq!(executions::<SsrOutputProduct>(&compilation), 1);

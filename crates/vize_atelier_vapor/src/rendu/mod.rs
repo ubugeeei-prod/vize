@@ -3,8 +3,12 @@
 mod emit;
 mod lower;
 mod model;
+mod slot;
 mod syntax;
 
+#[cfg(test)]
+#[path = "emit/slot_tests.rs"]
+mod emit_slot_tests;
 #[cfg(test)]
 mod tests;
 
@@ -15,3 +19,4 @@ pub use model::{
     VaporAttributeValue, VaporBinding, VaporBlock, VaporBlockId, VaporBranch, VaporDirective,
     VaporExpression, VaporExpressionId, VaporName, VaporOperation, VaporPlan, VaporProperty,
 };
+pub use slot::{VaporComponentSlots, VaporConditionalSlotBranch, VaporDynamicSlot, VaporSlot};

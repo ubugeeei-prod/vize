@@ -34,6 +34,7 @@ graph TD
     Sfc -. "when script exists" .-> Module
     Jsx -. "when requested" .-> Module
     Sfc -. "when template exists" .-> Relief["vize_relief<br/>Vue-template syntax"]
+    Sfc -. "template plus script" .-> Bindings["SFC template bindings<br/>narrow script projection"]
     Sfc -. "when semantics requested" .-> Croquis["vize_croquis<br/>semantic snapshot"]
     Jsx -. "when requested" .-> Croquis
     Template -. "when requested" .-> Relief
@@ -44,6 +45,7 @@ graph TD
     Template -. "when requested" .-> Flow
     Module -. "when requested" .-> Flow
     Sfc -. "when requested" .-> Rendu["vize_rendu<br/>render HIR"]
+    Bindings -. "render identity" .-> Rendu
     Jsx -. "when requested" .-> Rendu
     Template -. "when requested" .-> Rendu
 
@@ -73,7 +75,9 @@ and the DOM/SSR/Vapor backends it exposes.
 ```mermaid
 flowchart LR
     SFC[".vue"] -. "when template exists" .-> Relief["Relief"]
+    SFC -. "template plus script" .-> Bindings["template bindings"]
     Relief -. "when render requested" .-> Rendu["Rendu"]
+    Bindings -. "render identity" .-> Rendu
     RawTemplate["raw template / HTML"] -. "when requested" .-> Relief
     JSX[".jsx / .tsx"] --> JsxSyntax["owned JSX syntax"]
     JsxSyntax -. "when render requested" .-> Rendu
@@ -100,7 +104,9 @@ flowchart LR
 
 These lanes are composable. For example, a raw-template lint root requests
 Relief and Croquis, an SFC script is projected to Module facts, and a
-script-only SFC never enters the Relief/Rendu lane.
+script-only SFC never enters the Relief/Rendu lane. The SFC build lane uses the
+narrow template-binding projection and does not construct a complete Croquis
+document merely to render.
 
 ### Stage Details
 
@@ -109,8 +115,9 @@ script-only SFC never enters the Relief/Rendu lane.
 2. **Frontend products** — SFC decomposition, Vue-template syntax, owned
    JSX/TSX syntax, and parser-lifetime-free JS/TS Module facts retain their
    source-specific contracts. Each authored SFC script block is parsed once per
-   source revision; its live OXC program supplies Module, Croquis, and compiler
-   preanalysis projections before the allocator is dropped.
+   source revision; its live OXC program supplies Module, the selected semantic
+   compatibility mode, narrow render bindings, and compiler preanalysis before
+   the allocator is dropped.
 3. **Relief** — Records authored Vue-template syntax and source locations. It
    does not assign symbol identity or own render decisions.
 4. **Croquis** — Records derived semantic identity, scopes, bindings, usage,
@@ -119,7 +126,9 @@ script-only SFC never enters the Relief/Rendu lane.
 5. **Flow** — Owns single-file control/data/effect edges and graph analyses;
    it is not Croquis or cross-file aggregation.
 6. **Rendu** — Owns indexed, frontend-neutral render HIR. It has no Relief,
-   Croquis, SFC, JSX, or backend dependency.
+   Croquis, SFC, JSX, or backend dependency. Structured slots, branches,
+   iteration, component identity, and component-local render metadata survive
+   frontend lowering instead of being rediscovered by each backend.
 7. **Graph-native Atelier providers** — Consume Rendu without parsing source:
    - **VDOM** (`vize_atelier_dom`) — `createVNode`/`h` calls with patch flag optimization and static hoisting
    - **Vapor** (`vize_atelier_vapor`) — Fine-grained reactive code with direct DOM manipulation (no VDOM)

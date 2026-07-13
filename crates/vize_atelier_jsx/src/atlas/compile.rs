@@ -5,7 +5,8 @@ mod codegen;
 
 use vize_atlas::{
     Compilation, CompilationInputError, PlanningContext, Product, ProductId, Provider,
-    ProviderContext, ProviderError, SourceId, SourceInput, SourceInputId,
+    ProviderContext, ProviderError, SourceId, SourceInput, SourceInputId, SourceKind,
+    SourceKindInput,
 };
 use vize_carton::{FxHashMap, String, cstr};
 use vize_rendu::{RenderCapabilities, RenderCapabilitiesInput};
@@ -13,7 +14,7 @@ use vize_rendu::{RenderCapabilities, RenderCapabilitiesInput};
 use crate::mode::classify_source_directives;
 use crate::{JsxCompileConfig, JsxDiagnostic, JsxLang, ScopedStyle};
 
-use super::{JsxRenderModuleProduct, is_jsx_source};
+use super::{JSX_SOURCE_KIND, JsxRenderModuleProduct, is_jsx_context};
 
 /// Complete output-affecting request for one JSX/TSX source.
 #[derive(Debug, Clone, Default)]
@@ -57,6 +58,10 @@ impl JsxCompileSettings {
     /// Install all source overrides without invalidating unrelated JSX files.
     pub fn install(&self, compilation: &mut Compilation) -> Result<(), CompilationInputError> {
         for (source, request) in &self.sources {
+            let kind = SourceKind::new(JSX_SOURCE_KIND);
+            if compilation.source_input::<SourceKindInput>(*source) != Some(&kind) {
+                compilation.set_source_input::<SourceKindInput>(*source, kind)?;
+            }
             compilation.set_source_input::<JsxCompileSettingsInput>(*source, request.clone())?;
         }
         Ok(())
@@ -101,11 +106,14 @@ impl Provider for JsxCompileProvider {
     type Product = JsxCompileProduct;
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<JsxCompileSettingsInput>()]
+        vec![
+            SourceInputId::of::<JsxCompileSettingsInput>(),
+            SourceInputId::of::<SourceKindInput>(),
+        ]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_jsx_source(context.source().name())
+        is_jsx_context(context)
     }
 
     fn dependencies(&self, context: &PlanningContext<'_>) -> Vec<ProductId> {

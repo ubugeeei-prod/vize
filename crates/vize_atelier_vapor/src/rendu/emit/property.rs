@@ -54,6 +54,24 @@ pub(super) fn props_object(
     cstr!("{{ {} }}", entries.join(", "))
 }
 
+pub(super) fn is_named_property(property: &VaporProperty, name: &str) -> bool {
+    match property {
+        VaporProperty::Attribute {
+            name: VaporName::Static(key),
+            ..
+        } => key.as_ref() == name,
+        VaporProperty::Attribute {
+            name: VaporName::Dynamic(_),
+            ..
+        } => false,
+        VaporProperty::Directive(directive) => {
+            directive.name.as_ref() == "bind"
+                && matches!(&directive.argument, Some(VaporName::Static(key)) if key.as_ref() == name)
+        }
+        VaporProperty::Spread { .. } => false,
+    }
+}
+
 fn emit_component_directive_props(
     plan: &VaporPlan,
     directive: &VaporDirective,

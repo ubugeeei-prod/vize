@@ -13,6 +13,7 @@ mod node;
 mod product;
 mod property;
 mod root;
+mod slot;
 mod source;
 mod validate;
 mod walk;
@@ -22,7 +23,8 @@ pub use capability::{RenduCapabilities, RenduCapability};
 pub use expression::{RenduExpression, RenduExpressionKind};
 pub use ids::{RenduExpressionId, RenduNodeId, RenduSourceId};
 pub use node::{
-    RenduBinding, RenduEscapeMode, RenduIfBranch, RenduName, RenduNamespace, RenduNode,
+    RenduBinding, RenduComponentKind, RenduEscapeMode, RenduIfBranch, RenduName, RenduNamespace,
+    RenduNode,
 };
 pub use product::{
     RenderCapabilities, RenderCapabilitiesInput, RenderEmitSettings, RenderEmitSettingsInput,
@@ -30,6 +32,7 @@ pub use product::{
 };
 pub use property::{RenduAttribute, RenduAttributeValue, RenduDirective, RenduProperty};
 pub use root::RenduRoot;
+pub use slot::{RenduDynamicSlot, RenduSlotPlan};
 pub use source::{RenduPosition, RenduProvenance, RenduSource, RenduSpan};
 pub use validate::{RenduValidationError, RenduValidationErrors};
 pub use walk::{RenduWalkEvent, RenduWalkSummary, RenduWalker, summarize_rendu, walk_rendu};

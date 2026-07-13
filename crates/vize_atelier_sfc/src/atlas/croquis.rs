@@ -19,7 +19,8 @@ use crate::croquis::{
     analyze_sfc_descriptor_with_context_options_api,
 };
 
-use super::{SfcDescriptorProduct, SfcScriptSyntaxProduct, is_sfc_source, source_structure};
+use super::{SfcDescriptorProduct, SfcScriptSyntaxProduct, is_sfc_context, source_structure};
+pub(crate) use settings::SfcInferredCroquisSettingsInput;
 pub use settings::{
     SfcCroquisMode, SfcCroquisRequest, SfcCroquisSettings, SfcCroquisSettingsInput,
     SfcResolvedPropsPolicy,
@@ -36,18 +37,19 @@ impl Provider for SfcCroquisProvider {
     type Product = CroquisDocumentProduct;
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<SfcCroquisSettingsInput>()]
+        vec![
+            SourceInputId::of::<SfcCroquisSettingsInput>(),
+            SourceInputId::of::<SfcInferredCroquisSettingsInput>(),
+            SourceInputId::of::<vize_atlas::SourceKindInput>(),
+        ]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name())
+        is_sfc_context(context)
     }
 
     fn dependencies(&self, context: &PlanningContext<'_>) -> Vec<ProductId> {
-        let mode = context
-            .source_input::<SfcCroquisSettingsInput>()
-            .map(|request| request.mode)
-            .unwrap_or_default();
+        let mode = croquis_request_for_planning(context).mode;
         let structure = source_structure(context);
         let mut dependencies = vec![ProductId::of::<SfcDescriptorProduct>()];
         if structure.has_script {
@@ -68,18 +70,10 @@ impl Provider for SfcCroquisProvider {
         let Some(descriptor) = artifact.descriptor() else {
             return Ok(CroquisDocument::new(Default::default()).with_source_anchor(root_anchor));
         };
-        let request = context.source_input::<SfcCroquisSettingsInput>().cloned();
-        let mode = request
-            .as_ref()
-            .map(|request| request.mode)
-            .unwrap_or_default();
-        let resolved_filename = request
-            .as_ref()
-            .and_then(|request| request.resolved_filename.clone());
-        let resolved_policy = request
-            .as_ref()
-            .map(|request| request.resolved_props_policy)
-            .unwrap_or_default();
+        let request = croquis_request_for_provider(context);
+        let mode = request.mode;
+        let resolved_filename = request.resolved_filename;
+        let resolved_policy = request.resolved_props_policy;
         let allocator = Bump::new();
         let root = if mode == SfcCroquisMode::Declaration || descriptor.template.is_none() {
             None
@@ -101,7 +95,7 @@ impl Provider for SfcCroquisProvider {
             if descriptor.script.is_some() || descriptor.script_setup.is_some() {
                 let syntax = context.get::<SfcScriptSyntaxProduct>()?;
                 let modules = context.get::<ModuleSyntaxProduct>()?;
-                (syntax.croquis(mode, true), Some(modules))
+                (syntax.croquis(true), Some(modules))
             } else {
                 (vize_croquis::Croquis::new(), None)
             };
@@ -140,6 +134,46 @@ impl Provider for SfcCroquisProvider {
         }
         Ok(document)
     }
+}
+
+pub(super) fn croquis_request_for_planning(context: &PlanningContext<'_>) -> SfcCroquisRequest {
+    if let Some(request) = context.source_input::<SfcCroquisSettingsInput>() {
+        return request.clone();
+    }
+    refresh_inferred_mode(
+        context
+            .source_input::<SfcInferredCroquisSettingsInput>()
+            .cloned()
+            .unwrap_or_default(),
+        context.source().text(),
+    )
+}
+
+pub(super) fn croquis_request_for_provider(context: &ProviderContext<'_>) -> SfcCroquisRequest {
+    if let Some(request) = context.source_input::<SfcCroquisSettingsInput>() {
+        return request.clone();
+    }
+    refresh_inferred_mode(
+        context
+            .source_input::<SfcInferredCroquisSettingsInput>()
+            .cloned()
+            .unwrap_or_default(),
+        context.source().text(),
+    )
+}
+
+fn refresh_inferred_mode(mut request: SfcCroquisRequest, source: &str) -> SfcCroquisRequest {
+    if matches!(
+        request.mode,
+        SfcCroquisMode::Full | SfcCroquisMode::OptionsApi
+    ) {
+        request.mode = if crate::sfc_source_structure(source).has_normal_script {
+            SfcCroquisMode::OptionsApi
+        } else {
+            SfcCroquisMode::Full
+        };
+    }
+    request
 }
 
 fn analyze_document(

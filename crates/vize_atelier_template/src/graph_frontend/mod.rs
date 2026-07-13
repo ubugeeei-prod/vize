@@ -15,7 +15,10 @@ mod flow_facts;
 mod provenance;
 mod rendu;
 mod rendu_helpers;
+mod scope;
 
+#[cfg(test)]
+mod builtin_tests;
 #[cfg(test)]
 mod tests;
 
@@ -26,4 +29,7 @@ pub use flow::project_relief_snapshot_to_flow;
 pub use flow::project_relief_snapshot_to_flow_with_anchor;
 pub use rendu::lower_relief_snapshot_to_rendu;
 #[doc(hidden)]
-pub use rendu::lower_relief_snapshot_to_rendu_with_anchor;
+pub use rendu::{
+    lower_relief_snapshot_to_rendu_with_anchor,
+    lower_relief_snapshot_to_rendu_with_anchor_and_bindings,
+};

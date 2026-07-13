@@ -15,6 +15,39 @@ impl RenduName {
     }
 }
 
+/// Semantic identity of a component before backend-specific emission.
+///
+/// A component name may be dynamic for several unrelated reasons (for
+/// example, a script-setup binding is emitted as `$setup.Name`). Keeping this
+/// classification separate prevents that name lowering from erasing Vue
+/// built-in behavior that render backends must preserve.
+#[derive(Debug, Clone, Copy, Default, Eq, Hash, PartialEq)]
+pub enum RenduComponentKind {
+    /// An ordinary user component, even when its runtime name is an expression.
+    #[default]
+    Ordinary,
+    /// Vue's `<Suspense>` boundary.
+    Suspense,
+    /// Vue's `<Teleport>` target.
+    Teleport,
+    /// Vue's `<KeepAlive>` cache boundary.
+    KeepAlive,
+    /// Vue's `<Transition>` or `<BaseTransition>` wrapper.
+    Transition,
+    /// Vue's `<TransitionGroup>` wrapper.
+    TransitionGroup,
+    /// Vue's `<component :is="...">` dynamic-component primitive.
+    Dynamic,
+}
+
+impl RenduComponentKind {
+    /// Whether this component has Vue runtime semantics beyond ordinary
+    /// component resolution.
+    pub const fn is_builtin(self) -> bool {
+        !matches!(self, Self::Ordinary)
+    }
+}
+
 /// Namespace of a host element. Custom values allow non-web renderers without
 /// baking their frontend or backend crate into Rendu.
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -94,6 +127,7 @@ pub enum RenduNode {
         provenance: RenduProvenance,
     },
     Component {
+        kind: RenduComponentKind,
         name: RenduName,
         properties: Vec<RenduProperty>,
         children: Vec<RenduNodeId>,

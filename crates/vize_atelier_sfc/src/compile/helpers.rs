@@ -12,7 +12,7 @@ use crate::script::{ScriptCompileContext, resolve_template_v_model_identifiers};
 use crate::types::{BindingMetadata, BindingType};
 
 /// Generate scope ID from filename
-pub(super) fn generate_scope_id(filename: &str) -> String {
+pub(crate) fn generate_scope_id(filename: &str) -> String {
     use std::hash::{Hash, Hasher};
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
     filename.hash(&mut hasher);

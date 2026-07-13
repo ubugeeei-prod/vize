@@ -1,8 +1,8 @@
 use super::compile_rendu;
 use vize_rendu::{
-    RenduAttribute, RenduBinding, RenduBuilder, RenduCapability, RenduDirective, RenduEscapeMode,
-    RenduExpression, RenduExpressionKind, RenduIfBranch, RenduName, RenduNode, RenduProperty,
-    RenduProvenance, RenduSource, RenduSpan,
+    RenduAttribute, RenduBinding, RenduBuilder, RenduCapability, RenduComponentKind,
+    RenduDirective, RenduEscapeMode, RenduExpression, RenduExpressionKind, RenduIfBranch,
+    RenduName, RenduNode, RenduProperty, RenduProvenance, RenduSource, RenduSpan,
 };
 
 #[test]
@@ -108,6 +108,7 @@ fn emits_every_rendu_capability_and_preserves_final_provenance() {
         provenance: provenance.clone(),
     });
     let component = builder.add_node(RenduNode::Component {
+        kind: RenduComponentKind::Ordinary,
         name: RenduName::Dynamic(component_name),
         properties: vec![RenduProperty::Directive(
             RenduDirective::new("model").with_expression(value),
@@ -157,7 +158,8 @@ fn emits_every_rendu_capability_and_preserves_final_provenance() {
     for expected in [
         "export function render(_ctx, _cache, $props, $setup, $data, $options)",
         "_h($setup.component",
-        "[$props.slot]: (slotProps) =>",
+        "_createSlots(",
+        "{ name: $props.slot, fn: _withCtx((slotProps) =>",
         "_renderSlot(_ctx.$slots, $props.slot",
         "[$data.property]: $data.value",
         "...$props.attrs",

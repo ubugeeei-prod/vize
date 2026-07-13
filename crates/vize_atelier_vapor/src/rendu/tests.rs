@@ -1,6 +1,7 @@
 use vize_rendu::{
-    RenduAttribute, RenduBinding, RenduBuilder, RenduExpression, RenduExpressionKind,
-    RenduIfBranch, RenduName, RenduNode, RenduProperty, RenduProvenance, RenduSource, RenduSpan,
+    RenduAttribute, RenduBinding, RenduBuilder, RenduComponentKind, RenduExpression,
+    RenduExpressionKind, RenduIfBranch, RenduName, RenduNode, RenduProperty, RenduProvenance,
+    RenduSource, RenduSpan,
 };
 
 use super::{VaporName, VaporOperation, VaporProperty, plan_rendu};
@@ -75,6 +76,7 @@ fn plans_components_conditionals_and_lists_as_owned_blocks() {
             provenance: RenduProvenance::generated(),
         });
         let component = builder.add_node(RenduNode::Component {
+            kind: RenduComponentKind::Ordinary,
             name: RenduName::Dynamic(dynamic_name),
             properties: vec![RenduProperty::Attribute(RenduAttribute::expression(
                 "title", title,
@@ -115,18 +117,23 @@ fn plans_components_conditionals_and_lists_as_owned_blocks() {
         panic!("expected three root operations");
     };
     let VaporOperation::Component {
+        kind,
         name,
         properties,
-        body,
+        slots,
         ..
     } = component
     else {
         panic!("expected component operation");
     };
+    assert_eq!(*kind, RenduComponentKind::Ordinary);
     assert!(matches!(name, VaporName::Dynamic(_)));
     assert!(matches!(properties[0], VaporProperty::Attribute { .. }));
+    let body = slots
+        .default
+        .expect("ordinary children form a default slot");
     assert!(matches!(
-        plan.block(*body).unwrap().operations[0],
+        plan.block(body).unwrap().operations[0],
         VaporOperation::StaticHtml { .. }
     ));
 

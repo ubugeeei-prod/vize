@@ -67,9 +67,10 @@ impl BuildArtifactGraph {
             match read {
                 Ok((path, text, read_time)) => {
                     stats.total_bytes.fetch_add(text.len(), Ordering::Relaxed);
+                    let structure = vize_atelier_sfc::sfc_source_structure(text.as_str());
                     let mode = if settings.dialect.is_legacy() {
                         SfcCroquisMode::LegacyVue2
-                    } else if text.contains("<script") && !text.contains("<script setup") {
+                    } else if structure.has_normal_script {
                         SfcCroquisMode::OptionsApi
                     } else {
                         SfcCroquisMode::Full

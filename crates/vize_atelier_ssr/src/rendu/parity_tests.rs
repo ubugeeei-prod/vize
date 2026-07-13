@@ -1,7 +1,7 @@
 use vize_rendu::{
-    RenduAttribute, RenduBinding, RenduBuilder, RenduCapability, RenduDirective, RenduEscapeMode,
-    RenduExpression, RenduExpressionKind, RenduIfBranch, RenduName, RenduNode, RenduProperty,
-    RenduProvenance, RenduSource, RenduSpan,
+    RenduAttribute, RenduBinding, RenduBuilder, RenduCapability, RenduComponentKind,
+    RenduDirective, RenduEscapeMode, RenduExpression, RenduExpressionKind, RenduIfBranch,
+    RenduName, RenduNode, RenduProperty, RenduProvenance, RenduSource, RenduSpan,
 };
 
 use super::compile_rendu;
@@ -83,6 +83,7 @@ fn graph_ssr_covers_dynamic_names_directives_hoists_and_keys() {
         provenance: provenance.clone(),
     });
     let component = builder.add_node(RenduNode::Component {
+        kind: RenduComponentKind::Ordinary,
         name: RenduName::Dynamic(component_name),
         properties: vec![
             RenduProperty::Directive(RenduDirective::new("model").with_expression(value)),
@@ -143,7 +144,8 @@ fn graph_ssr_covers_dynamic_names_directives_hoists_and_keys() {
         "display: none",
         "_resolveDirective(\"focus\")",
         "_ssrRenderComponent($setup.component",
-        "[$props.slot]: (slotProps, _push, _parent)",
+        "_createSlots(",
+        "{ name: $props.slot, fn: _withCtx((slotProps, _push, _parent, _scopeId)",
         "[\"on\" + ($options.event)]: _withModifiers($setup.handler, [\"stop\"])",
         "\"modelValue\": $data.value",
         "_ssrRenderSlot(_ctx.$slots, $props.slot",

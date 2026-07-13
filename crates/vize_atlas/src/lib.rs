@@ -33,7 +33,8 @@ pub use cache::{ArtifactCache, CachedProduct};
 pub use compilation::{Compilation, CompilationSnapshot, QuerySession};
 pub use error::{PlanError, ProviderError, QueryError, RegisterProviderError};
 pub use input::{
-    CompilationInput, CompilationInputError, CompilationInputs, InputId, SourceInput, SourceInputId,
+    CompilationInput, CompilationInputError, CompilationInputs, InputId, SourceInput,
+    SourceInputId, SourceKind, SourceKindInput,
 };
 pub use invalidation::{
     InputInvalidationReport, InvalidatedProduct, InvalidationPolicy, InvalidationReport,

@@ -22,5 +22,6 @@ pub use model::{
     ModuleReference, ModuleSpan, ModuleSyntax,
 };
 pub use provider::{
-    ModuleFlowProvider, ModuleSyntaxProduct, RawModuleSyntaxProvider, register_raw_providers,
+    MODULE_SOURCE_KIND, ModuleFlowProvider, ModuleSyntaxProduct, RawModuleSyntaxProvider,
+    register_raw_providers,
 };

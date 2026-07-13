@@ -1,8 +1,8 @@
 use vize_rendu::{
-    RenduAttribute, RenduBinding, RenduBuilder, RenduCapabilities, RenduCapability, RenduDirective,
-    RenduEscapeMode, RenduExpression, RenduExpressionKind, RenduIfBranch, RenduName,
-    RenduNamespace, RenduNode, RenduNodeId, RenduPosition, RenduProperty, RenduProvenance,
-    RenduSource, RenduSpan, RenduValidationError, RenduWalkEvent, walk_rendu,
+    RenduAttribute, RenduBinding, RenduBuilder, RenduCapabilities, RenduCapability,
+    RenduComponentKind, RenduDirective, RenduEscapeMode, RenduExpression, RenduExpressionKind,
+    RenduIfBranch, RenduName, RenduNamespace, RenduNode, RenduNodeId, RenduPosition, RenduProperty,
+    RenduProvenance, RenduSource, RenduSpan, RenduValidationError, RenduWalkEvent, walk_rendu,
 };
 
 #[derive(Debug)]
@@ -100,6 +100,7 @@ fn lower_jsx(shape: &SyntheticJsx<'_>) -> vize_rendu::RenduRoot {
         provenance: full.clone(),
     });
     let component = builder.add_node(RenduNode::Component {
+        kind: RenduComponentKind::Ordinary,
         name: RenduName::static_name(shape.component),
         properties: vec![RenduProperty::Attribute(RenduAttribute::expression(
             "active", active,

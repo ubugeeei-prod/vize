@@ -13,6 +13,7 @@ pub struct RenduRoot {
     pub(crate) nodes: Vec<RenduNode>,
     pub(crate) entry: Vec<RenduNodeId>,
     pub(crate) capabilities: RenduCapabilities,
+    pub(crate) component_scope_id: Option<Box<str>>,
 }
 
 impl RenduRoot {
@@ -34,6 +35,17 @@ impl RenduRoot {
 
     pub const fn capabilities(&self) -> RenduCapabilities {
         self.capabilities
+    }
+
+    /// Static scoped-style attribute owned by the component that produced this root.
+    pub fn component_scope_id(&self) -> Option<&str> {
+        self.component_scope_id.as_deref()
+    }
+
+    /// Attach component-local render metadata without coupling Rendu to SFC syntax.
+    pub fn with_component_scope_id(mut self, scope_id: impl Into<Box<str>>) -> Self {
+        self.component_scope_id = Some(scope_id.into());
+        self
     }
 
     pub fn source(&self, id: RenduSourceId) -> Option<&RenduSource> {

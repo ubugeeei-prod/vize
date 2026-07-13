@@ -10,6 +10,7 @@ use vize_relief::{ReliefProduct, TransformedReliefProduct};
 use vize_rendu::RenduProduct;
 
 use super::*;
+use crate::SfcTemplateBindingsProduct;
 
 pub(super) fn register_compile_test_providers(compilation: &mut vize_atlas::Compilation) {
     crate::register_atlas_providers(compilation).unwrap();
@@ -19,12 +20,22 @@ pub(super) fn register_compile_test_providers(compilation: &mut vize_atlas::Comp
 }
 use crate::{SfcCompileOptions, SfcTemplateProduct, parse_sfc};
 
+#[path = "tests/bindings.rs"]
+mod bindings;
+#[path = "tests/builtins.rs"]
+mod builtins;
 #[path = "tests/incremental.rs"]
 mod incremental;
 #[path = "tests/runtime_names.rs"]
 mod runtime_names;
 #[path = "tests/scoped_inference.rs"]
 mod scoped_inference;
+#[path = "tests/scoped_ssr.rs"]
+mod scoped_ssr;
+#[path = "tests/slots.rs"]
+mod slots;
+#[path = "tests/ssr_semantics.rs"]
+mod ssr_semantics;
 
 struct Case {
     name: &'static str,
@@ -182,8 +193,12 @@ fn multi_source_product_assembles_every_target_from_rendu() {
             "OptionsApi.vue" | "ScriptSetup.vue" | "Server.vue" | "Vapor.vue"
         );
         assert_eq!(
-            outcome.plan().contains::<CroquisDocumentProduct>(),
+            outcome.plan().contains::<SfcTemplateBindingsProduct>(),
             needs_semantics
+        );
+        assert!(
+            !outcome.plan().contains::<CroquisDocumentProduct>(),
+            "production compile must not require the full semantic document"
         );
         match case.name {
             "TemplateOnly.vue" => {

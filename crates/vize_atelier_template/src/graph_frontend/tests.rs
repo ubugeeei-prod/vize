@@ -6,7 +6,7 @@ use vize_carton::Bump;
 use vize_flow::{ControlEdgeKind, DataEdgeKind, EffectKind};
 use vize_relief::TransformOptions;
 use vize_relief::{ReliefSnapshot, RootNode, SnapshotProp, TemplateChildNode};
-use vize_rendu::{RenduCapability, RenduNode, RenduProperty};
+use vize_rendu::{RenduCapability, RenduName, RenduNode, RenduProperty};
 
 use super::TemplateGraphAdapter;
 
@@ -19,8 +19,12 @@ const TEMPLATE: &str = r#"<div id="app" :class="theme">
 </div>"#;
 
 fn transformed_snapshot() -> ReliefSnapshot {
+    transformed_snapshot_of(TEMPLATE)
+}
+
+pub(super) fn transformed_snapshot_of(template: &str) -> ReliefSnapshot {
     let allocator = Bump::new();
-    let (mut root, errors) = parse(&allocator, TEMPLATE);
+    let (mut root, errors) = parse(&allocator, template);
     assert!(errors.is_empty(), "template parse errors: {errors:?}");
     let result = transform(&allocator, &mut root, TransformOptions::default(), None);
     assert!(
@@ -69,12 +73,11 @@ fn snapshot_lowers_directly_to_valid_rendu_with_all_template_shapes() {
         );
     }
 
-    assert!(
-        rendu
-            .nodes()
-            .iter()
-            .any(|node| matches!(node, RenduNode::Component { .. }))
-    );
+    assert!(rendu.nodes().iter().any(|node| matches!(
+        node,
+        RenduNode::Component { name: RenduName::Static(name), .. }
+            if name.as_ref() == "UserCard"
+    )));
     assert!(
         rendu
             .nodes()
@@ -199,4 +202,116 @@ fn relief_hoist_references_remain_typed_rendu_hoists() {
         rendu.node(rendu.entry()[0]),
         Some(RenduNode::HoistRef { index: 9, .. })
     ));
+}
+
+#[test]
+fn component_v_slot_becomes_first_class_slot_with_lexical_bindings() {
+    let template = r#"<Popover v-slot="{ item }">{{ item.label }} {{ outside }}</Popover>"#;
+    let snapshot = transformed_snapshot_of(template);
+    let rendu = TemplateGraphAdapter::new(&snapshot)
+        .lower_rendu()
+        .expect("component v-slot Rendu product");
+
+    let component = rendu
+        .nodes()
+        .iter()
+        .find_map(|node| match node {
+            RenduNode::Component {
+                properties,
+                children,
+                ..
+            } => Some((properties, children)),
+            _ => None,
+        })
+        .expect("component node");
+    assert!(
+        component.0.iter().all(|property| !matches!(
+            property,
+            RenduProperty::Directive(directive) if directive.name.as_ref() == "slot"
+        )),
+        "component v-slot must not survive as a runtime directive"
+    );
+    assert!(matches!(
+        component.1.as_slice(),
+        [slot] if matches!(
+            rendu.node(*slot),
+            Some(RenduNode::SlotContent {
+                name: RenduName::Static(name),
+                bindings,
+                ..
+            }) if name.as_ref() == "default"
+                && bindings.iter().any(|binding| binding.pattern.as_ref() == "{ item }")
+        )
+    ));
+
+    let dom = vize_atelier_dom::compile_rendu(&rendu);
+    assert!(
+        dom.code.contains("default: _withCtx(({ item }) => ["),
+        "{}",
+        dom.code
+    );
+    assert!(
+        dom.code.contains("_toDisplayString(item.label)"),
+        "{}",
+        dom.code
+    );
+    assert!(!dom.code.contains("_ctx.item"), "{}", dom.code);
+    assert!(
+        !dom.code.contains("_resolveDirective(\"slot\")"),
+        "{}",
+        dom.code
+    );
+
+    let ssr = vize_atelier_ssr::compile_rendu(&rendu);
+    assert!(
+        ssr.code
+            .contains("\"default\": _withCtx(({ item }, _push, _parent, _scopeId)"),
+        "{}",
+        ssr.code
+    );
+    assert!(
+        ssr.code.contains("_ssrInterpolate(item.label)"),
+        "{}",
+        ssr.code
+    );
+    assert!(!ssr.code.contains("_ctx.item"), "{}", ssr.code);
+    assert!(
+        !ssr.code.contains("_resolveDirective(\"slot\")"),
+        "{}",
+        ssr.code
+    );
+}
+
+#[test]
+fn suspense_fallback_survives_dom_ssr_and_ssr_vnode_slot_paths() {
+    let template = r#"<Outer><Suspense><AsyncView /><template #fallback>loading</template></Suspense></Outer>"#;
+    let snapshot = transformed_snapshot_of(template);
+    let rendu = TemplateGraphAdapter::new(&snapshot)
+        .lower_rendu()
+        .expect("Suspense Rendu product");
+
+    let dom = vize_atelier_dom::compile_rendu(&rendu);
+    assert!(
+        dom.code.contains("fallback: _withCtx(() => [\"loading\"])")
+            || dom
+                .code
+                .contains("\"fallback\": _withCtx(() => [\"loading\"])"),
+        "DOM fallback slot was dropped:\n{}",
+        dom.code
+    );
+
+    let ssr = vize_atelier_ssr::compile_rendu(&rendu);
+    assert!(
+        ssr.code.contains("_ssrRenderSuspense(_push, {")
+            && ssr.code.contains("\"fallback\": () => {")
+            && ssr.code.contains("_push(\"loading\")"),
+        "SSR push fallback slot was dropped:\n{}",
+        ssr.code
+    );
+    assert!(
+        ssr.code
+            .contains("\"fallback\": _withCtx(() => [_createTextVNode(\"loading\")])"),
+        "SSR VNode fallback path must retain the Suspense fallback slot too:\n{}",
+        ssr.code
+    );
 }

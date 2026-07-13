@@ -82,10 +82,10 @@ pub use ir::{
 pub use lower::transform_to_ir;
 #[cfg(feature = "graph")]
 pub use rendu::{
-    VaporAttributeValue, VaporBinding, VaporBlock, VaporBlockId, VaporBranch, VaporDirective,
-    VaporEmitResult, VaporExpression, VaporExpressionId, VaporName, VaporOperation, VaporPlan,
-    VaporProperty, emit_rendu, emit_vapor_plan, emit_vapor_plan_with_settings, lower_rendu,
-    plan_rendu,
+    VaporAttributeValue, VaporBinding, VaporBlock, VaporBlockId, VaporBranch, VaporComponentSlots,
+    VaporConditionalSlotBranch, VaporDirective, VaporDynamicSlot, VaporEmitResult, VaporExpression,
+    VaporExpressionId, VaporName, VaporOperation, VaporPlan, VaporProperty, VaporSlot, emit_rendu,
+    emit_vapor_plan, emit_vapor_plan_with_settings, lower_rendu, plan_rendu,
 };
 #[cfg(feature = "legacy")]
 pub use steps::{

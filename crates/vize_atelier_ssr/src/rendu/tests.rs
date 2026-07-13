@@ -1,7 +1,7 @@
 use vize_rendu::{
-    RenduAttribute, RenduBinding, RenduBuilder, RenduDirective, RenduEscapeMode, RenduExpression,
-    RenduExpressionKind, RenduIfBranch, RenduName, RenduNamespace, RenduNode, RenduProperty,
-    RenduProvenance, RenduSource, RenduSpan,
+    RenduAttribute, RenduBinding, RenduBuilder, RenduComponentKind, RenduDirective,
+    RenduEscapeMode, RenduExpression, RenduExpressionKind, RenduIfBranch, RenduName,
+    RenduNamespace, RenduNode, RenduProperty, RenduProvenance, RenduSource, RenduSpan,
 };
 
 use super::{RenduSsrMappingKind, compile_rendu};
@@ -79,6 +79,7 @@ fn emits_the_complete_render_vocabulary_deterministically() {
         provenance: provenance(90, 105),
     });
     let component = builder.add_node(RenduNode::Component {
+        kind: RenduComponentKind::Ordinary,
         name: RenduName::static_name("Card"),
         properties: vec![RenduProperty::Attribute(RenduAttribute::expression(
             "title", title,
@@ -137,8 +138,9 @@ fn emits_the_complete_render_vocabulary_deterministically() {
     assert!(
         first
             .code
-            .contains("\"header\": (slotProps, _push, _parent)")
+            .contains("\"header\": _withCtx((slotProps, _push, _parent, _scopeId)")
     );
+    assert!(first.code.contains("_push(_scopeId)"));
     assert!(
         first
             .code

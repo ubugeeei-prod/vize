@@ -21,6 +21,7 @@ pub(super) fn build_returned_bindings(
     _has_props_destructure: bool,
     emit_binding_name: &Option<String>,
     imports: &[String],
+    external_value_imports: &[String],
     template_content: Option<&str>,
     runtime_used_identifiers: &FxHashSet<String>,
     _model_binding_names: &[String],
@@ -55,11 +56,17 @@ pub(super) fn build_returned_bindings(
         })
         .unwrap_or_default();
 
-    let imported_identifier_set: FxHashSet<String> = imports
+    let mut imported_identifier_set: FxHashSet<String> = imports
         .iter()
         .flat_map(|import| extract_import_identifiers(import).into_iter())
         .filter(|name| !compiler_macros.contains(name.as_str()))
         .collect();
+    imported_identifier_set.extend(
+        external_value_imports
+            .iter()
+            .filter(|name| !compiler_macros.contains(name.as_str()))
+            .cloned(),
+    );
 
     // Generate __returned__ object
     let mut returned_bindings: Vec<String> = ctx

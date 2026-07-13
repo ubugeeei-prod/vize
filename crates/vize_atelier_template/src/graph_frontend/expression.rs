@@ -3,14 +3,15 @@ use vize_relief::{
     SnapshotCompoundChild, SnapshotCompoundExpression, SnapshotExpression, SnapshotSimpleExpression,
 };
 use vize_rendu::{
-    RenduBuilder, RenduExpression, RenduExpressionId, RenduExpressionKind, RenduName, RenduSourceId,
+    RenduBuilder, RenduExpression, RenduExpressionId, RenduExpressionKind, RenduSourceId,
 };
 
 use super::provenance::rendu_provenance;
 
-pub(super) fn add_rendu_expression(
+pub(super) fn add_rendu_expression_with_code(
     builder: &mut RenduBuilder,
     expression: &SnapshotExpression,
+    code: &str,
     source: RenduSourceId,
 ) -> RenduExpressionId {
     let kind = match expression {
@@ -18,36 +19,21 @@ pub(super) fn add_rendu_expression(
         SnapshotExpression::Compound(_) => RenduExpressionKind::Compound,
     };
     builder.add_expression(
-        RenduExpression::new(expression_code(expression).as_str(), kind)
+        RenduExpression::new(code, kind)
             .with_provenance(rendu_provenance(expression.location(), source)),
     )
 }
 
-pub(super) fn add_rendu_compound(
+pub(super) fn add_rendu_compound_with_code(
     builder: &mut RenduBuilder,
     expression: &SnapshotCompoundExpression,
+    code: &str,
     source: RenduSourceId,
 ) -> RenduExpressionId {
     builder.add_expression(
-        RenduExpression::new(
-            compound_code(expression).as_str(),
-            RenduExpressionKind::Compound,
-        )
-        .with_provenance(rendu_provenance(&expression.location, source)),
+        RenduExpression::new(code, RenduExpressionKind::Compound)
+            .with_provenance(rendu_provenance(&expression.location, source)),
     )
-}
-
-pub(super) fn add_rendu_name(
-    builder: &mut RenduBuilder,
-    expression: &SnapshotExpression,
-    source: RenduSourceId,
-) -> RenduName {
-    match expression {
-        SnapshotExpression::Simple(simple) if simple.is_static => {
-            RenduName::static_name(simple.content.as_str())
-        }
-        _ => RenduName::Dynamic(add_rendu_expression(builder, expression, source)),
-    }
 }
 
 pub(super) fn expression_code(expression: &SnapshotExpression) -> String {

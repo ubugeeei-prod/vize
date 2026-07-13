@@ -1,6 +1,7 @@
 //! DOM/VDOM emission from the frontend-neutral Rendu artifact.
 
 mod property;
+mod slot;
 mod syntax;
 
 use vize_carton::{String, append, source_anchor::SourceAnchor};
@@ -57,7 +58,7 @@ pub fn compile_rendu_with_settings(
     finish_output(emitter.output, settings)
 }
 
-const DOM_HELPERS: &str = "Fragment as _Fragment, createCommentVNode as _createCommentVNode, h as _h, renderList as _renderList, renderSlot as _renderSlot, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, toDisplayString as _toDisplayString, vModelText as _vModelText, vShow as _vShow, withDirectives as _withDirectives, withModifiers as _withModifiers";
+const DOM_HELPERS: &str = "BaseTransition as _BaseTransition, Fragment as _Fragment, KeepAlive as _KeepAlive, Suspense as _Suspense, Teleport as _Teleport, Transition as _Transition, TransitionGroup as _TransitionGroup, createCommentVNode as _createCommentVNode, createSlots as _createSlots, h as _h, renderList as _renderList, renderSlot as _renderSlot, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, resolveDynamicComponent as _resolveDynamicComponent, toDisplayString as _toDisplayString, vModelText as _vModelText, vShow as _vShow, withCtx as _withCtx, withDirectives as _withDirectives, withModifiers as _withModifiers";
 
 fn finish_output(mut output: RenduDomOutput, settings: &RenderEmitSettings) -> RenduDomOutput {
     let body = output.code;
@@ -131,15 +132,16 @@ impl DomEmitter<'_> {
                 ..
             } => self.emit_vnode(tag, properties, children),
             RenduNode::Component {
+                kind,
                 name,
                 properties,
                 children,
                 ..
             } => {
                 self.output.code.push_str("_h(");
-                self.emit_component_name(name);
+                self.emit_component_name(*kind, name, properties);
                 self.output.code.push_str(", ");
-                self.emit_properties(properties, true);
+                self.emit_component_properties(*kind, properties);
                 self.output.code.push_str(", ");
                 self.emit_component_slots(children);
                 self.output.code.push(')');

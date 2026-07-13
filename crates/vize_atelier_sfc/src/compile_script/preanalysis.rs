@@ -1,7 +1,7 @@
 //! Owned compiler projections built while authored script Programs are live.
 
 use crate::script::{ScriptCompileContext, type_import_specifiers_from_program};
-use crate::types::{SfcError, SfcMacroArtifact};
+use crate::types::{BindingMetadata, SfcError, SfcMacroArtifact};
 use vize_carton::String;
 
 use super::ScriptCompileResult;
@@ -23,7 +23,10 @@ pub(crate) struct NormalScriptCompilerFacts {
     source_is_ts: bool,
     macro_artifacts: Vec<SfcMacroArtifact>,
     dual_preserved: String,
+    dual_javascript: String,
     rewritten_default: String,
+    runtime_bindings: BindingMetadata,
+    value_imports: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -38,6 +41,7 @@ pub(crate) struct PreanalyzedScriptSetup {
     source_is_ts: bool,
     preamble: String,
     macro_artifacts: Vec<SfcMacroArtifact>,
+    external_value_imports: Vec<String>,
 }
 
 pub(crate) fn analyze_normal_script_program(
@@ -45,16 +49,18 @@ pub(crate) fn analyze_normal_script_program(
     source: &str,
     source_is_ts: bool,
     absolute_offset: usize,
+    value_imports: Vec<String>,
 ) -> NormalScriptCompilerFacts {
     let mut context = ScriptCompileContext::new("");
     context.collect_types_from_program(program, source);
     let (derived, preamble) = derive_script_source(program, source);
-    let (mut dual_preserved, mut rewritten_default) = derived
+    let (mut dual_preserved, mut dual_javascript, mut rewritten_default) = derived
         .as_ref()
         .and_then(|derived| normal_outputs_from_derived(derived.as_str(), source_is_ts))
         .unwrap_or_else(|| normal_outputs_from_program(program, source, source_is_ts));
     if !preamble.is_empty() {
         dual_preserved.insert_str(0, preamble.as_str());
+        dual_javascript.insert_str(0, preamble.as_str());
         rewritten_default.insert_str(0, preamble.as_str());
     }
     NormalScriptCompilerFacts {
@@ -63,7 +69,10 @@ pub(crate) fn analyze_normal_script_program(
         source_is_ts,
         macro_artifacts: extract_macro_artifacts_from_program(program, source, absolute_offset),
         dual_preserved,
+        dual_javascript,
         rewritten_default,
+        runtime_bindings: crate::compile::collect_normal_script_bindings_from_program(program),
+        value_imports,
     }
 }
 
@@ -109,6 +118,7 @@ pub(crate) fn preanalyze_script_setup_program(
     };
     if let Some(normal) = normal {
         context.merge_types_from(&normal.context);
+        merge_runtime_bindings(&mut context.bindings, &normal.runtime_bindings);
     }
     PreanalyzedScriptSetup {
         source,
@@ -121,6 +131,9 @@ pub(crate) fn preanalyze_script_setup_program(
         source_is_ts,
         preamble,
         macro_artifacts: artifacts,
+        external_value_imports: normal
+            .map(|normal| normal.value_imports.clone())
+            .unwrap_or_default(),
     }
 }
 
@@ -142,7 +155,10 @@ fn derive_script_source(
     (derived, preamble)
 }
 
-fn normal_outputs_from_derived(source: &str, source_is_ts: bool) -> Option<(String, String)> {
+fn normal_outputs_from_derived(
+    source: &str,
+    source_is_ts: bool,
+) -> Option<(String, String, String)> {
     let allocator = oxc_allocator::Allocator::default();
     let parsed = oxc_parser::Parser::new(
         &allocator,
@@ -157,16 +173,32 @@ fn normal_outputs_from_program(
     program: &oxc_ast::ast::Program<'_>,
     source: &str,
     source_is_ts: bool,
-) -> (String, String) {
+) -> (String, String, String) {
     let preserved = crate::compile::extract_normal_script_content_from_program(
         program,
         source,
         source_is_ts,
         true,
     );
+    let javascript = if source_is_ts {
+        crate::compile::extract_normal_script_content_from_program(
+            program,
+            source,
+            source_is_ts,
+            false,
+        )
+    } else {
+        preserved.clone()
+    };
     let (rewritten, _) =
         crate::rewrite_default::rewrite_default_from_program(program, source, "_sfc_main");
-    (preserved, rewritten)
+    (preserved, javascript, rewritten)
+}
+
+fn merge_runtime_bindings(target: &mut BindingMetadata, source: &BindingMetadata) {
+    for (name, binding) in &source.bindings {
+        target.bindings.entry(name.clone()).or_insert(*binding);
+    }
 }
 
 fn erase_artifacts_from_derived(source: &str) -> Option<String> {
@@ -262,6 +294,7 @@ pub(crate) fn compile_preanalyzed_script_setup(
         } else {
             projection.sections.clone()
         },
+        &projection.external_value_imports,
     )?;
     if !projection.preamble.is_empty() {
         let mut code = projection.preamble.clone();
@@ -283,12 +316,12 @@ impl NormalScriptCompilerFacts {
         &self.macro_artifacts
     }
 
-    pub(crate) fn dual_content(&self) -> &str {
-        self.dual_preserved.as_str()
-    }
-
-    pub(crate) fn source_is_ts(&self) -> bool {
-        self.source_is_ts
+    pub(crate) fn dual_content(&self, preserve_types: bool) -> &str {
+        if preserve_types {
+            self.dual_preserved.as_str()
+        } else {
+            self.dual_javascript.as_str()
+        }
     }
 
     pub(crate) fn rewritten_default(&self) -> &str {

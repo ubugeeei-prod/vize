@@ -8,9 +8,9 @@ use vize_carton::{cstr, source_anchor::SourceAnchor};
 use vize_croquis::script_parser::ScriptParseResult;
 use vize_module::{ModuleLanguage, ModuleSyntax, snapshot_program};
 
+use crate::SfcCroquisMode;
 use crate::compile_script::{
-    NormalScriptCompilerFacts, PreanalyzedScriptSetup, analyze_normal_script_program,
-    preanalyze_script_setup_program,
+    PreanalyzedScriptSetup, analyze_normal_script_program, preanalyze_script_setup_program,
 };
 
 use super::super::script_generator::SfcScriptGeneratorFacts;
@@ -23,6 +23,7 @@ pub(super) fn parse_plain(
     start: usize,
     end: usize,
     root_anchor: SourceAnchor,
+    semantic_mode: SfcCroquisMode,
 ) -> Result<(ModuleSyntax, PlainScriptAnalysis, SfcScriptGeneratorFacts), ProviderError> {
     let (language, source_type) = language_and_source_type(lang);
     let allocator = Allocator::default();
@@ -40,32 +41,41 @@ pub(super) fn parse_plain(
         &parsed.program,
         &parsed.errors,
     )?;
-    let analyze = |options| {
-        if parsed.panicked {
-            ScriptParseResult::default()
-        } else {
-            vize_croquis::script_parser::analyze_script_program(&parsed.program, source, options)
-        }
+    let semantics = if parsed.panicked {
+        ScriptParseResult::default()
+    } else {
+        let options = match semantic_mode {
+            SfcCroquisMode::OptionsApi => vize_croquis::script_parser::ScriptParserOptions {
+                options_api: true,
+                legacy_vue2: false,
+            },
+            SfcCroquisMode::LegacyVue2 => vize_croquis::script_parser::ScriptParserOptions {
+                options_api: false,
+                legacy_vue2: true,
+            },
+            SfcCroquisMode::Full | SfcCroquisMode::Declaration => Default::default(),
+        };
+        vize_croquis::script_parser::analyze_script_program(&parsed.program, source, options)
     };
     let compiler = analyze_normal_script_program(
         &parsed.program,
         source,
         matches!(language, ModuleLanguage::TypeScript | ModuleLanguage::Tsx),
         start,
+        module
+            .imports
+            .iter()
+            .filter(|import| !import.dynamic)
+            .flat_map(|import| &import.bindings)
+            .filter(|binding| !binding.type_only)
+            .map(|binding| binding.local.as_ref().into())
+            .collect(),
     );
     let generator = SfcScriptGeneratorFacts::from_program(&parsed.program, source);
     Ok((
         module,
         PlainScriptAnalysis {
-            standard: analyze(Default::default()),
-            options_api: analyze(vize_croquis::script_parser::ScriptParserOptions {
-                options_api: true,
-                legacy_vue2: false,
-            }),
-            legacy_vue2: analyze(vize_croquis::script_parser::ScriptParserOptions {
-                options_api: false,
-                legacy_vue2: true,
-            }),
+            semantics,
             compiler,
         },
         generator,
@@ -81,7 +91,7 @@ pub(super) fn parse_setup(
     start: usize,
     end: usize,
     root_anchor: SourceAnchor,
-    normal: Option<&NormalScriptCompilerFacts>,
+    normal: Option<&PlainScriptAnalysis>,
 ) -> Result<
     (
         ModuleSyntax,
@@ -110,14 +120,21 @@ pub(super) fn parse_setup(
     let analysis = if parsed.panicked {
         ScriptParseResult::default()
     } else {
-        vize_croquis::script_parser::analyze_script_setup_program(&parsed.program, source, generic)
+        vize_croquis::script_parser::analyze_script_setup_program_with_inherited_types(
+            &parsed.program,
+            source,
+            generic,
+            normal
+                .map(|plain| plain.semantics.types.clone())
+                .unwrap_or_default(),
+        )
     };
     let compiler = preanalyze_script_setup_program(
         &parsed.program,
         source,
         matches!(language, ModuleLanguage::TypeScript | ModuleLanguage::Tsx),
         start,
-        normal,
+        normal.map(|plain| &plain.compiler),
     );
     let generator = SfcScriptGeneratorFacts::from_program(&parsed.program, source);
     Ok((module, analysis, compiler, generator))

@@ -53,7 +53,8 @@ pub mod graph_frontend {
     pub use vize_atelier_template::graph_frontend::{
         TemplateGraphAdapter as SfcTemplateGraphAdapter,
         TemplateGraphAdapterError as SfcGraphAdapterError, lower_relief_snapshot_to_rendu,
-        lower_relief_snapshot_to_rendu_with_anchor, project_relief_snapshot_to_flow,
+        lower_relief_snapshot_to_rendu_with_anchor,
+        lower_relief_snapshot_to_rendu_with_anchor_and_bindings, project_relief_snapshot_to_flow,
         project_relief_snapshot_to_flow_with_anchor,
     };
 }

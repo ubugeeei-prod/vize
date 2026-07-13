@@ -15,7 +15,7 @@ pub use render::{JsxRenderModule, JsxRenderModuleProduct, JsxRenderModuleProvide
 
 use vize_atlas::{
     Compilation, ObservationKind, PlanningContext, Product, ProductId, Provider, ProviderContext,
-    ProviderError, RegisterProviderError, SourceInputId, SourceRange,
+    ProviderError, RegisterProviderError, SourceInputId, SourceKindInput, SourceRange,
 };
 use vize_carton::{cstr, source_anchor::SourceAnchor};
 use vize_croquis::{CroquisDocument, CroquisDocumentProduct, CroquisSourceSegment};
@@ -24,6 +24,9 @@ use vize_module::{ModuleDocument, ModuleSyntaxProduct, append_module_flow};
 use vize_rendu::{RenduModule, RenduProduct};
 
 use crate::{JsxLang, JsxSyntaxSnapshot, Severity, snapshot_jsx_named};
+
+/// Open Atlas source-kind value owned by the JSX frontend.
+pub const JSX_SOURCE_KIND: &str = "jsx-module";
 
 /// Owned OXC-derived JSX syntax product. No Relief tree is constructed.
 pub struct JsxSyntaxProduct;
@@ -41,11 +44,14 @@ impl Provider for JsxSyntaxProvider {
     type Product = JsxSyntaxProduct;
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<JsxCompileSettingsInput>()]
+        vec![
+            SourceInputId::of::<JsxCompileSettingsInput>(),
+            SourceInputId::of::<SourceKindInput>(),
+        ]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_jsx_source(context.source().name())
+        is_jsx_context(context)
     }
 
     fn provide(
@@ -94,8 +100,12 @@ pub struct JsxRenduProvider;
 impl Provider for JsxRenduProvider {
     type Product = RenduProduct;
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<SourceKindInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_jsx_source(context.source().name())
+        is_jsx_context(context)
     }
 
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
@@ -131,8 +141,12 @@ pub struct JsxCroquisProvider;
 impl Provider for JsxCroquisProvider {
     type Product = CroquisDocumentProduct;
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<SourceKindInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_jsx_source(context.source().name())
+        is_jsx_context(context)
     }
 
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
@@ -165,8 +179,12 @@ pub struct JsxModuleSyntaxProvider;
 impl Provider for JsxModuleSyntaxProvider {
     type Product = ModuleSyntaxProduct;
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<SourceKindInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_jsx_source(context.source().name())
+        is_jsx_context(context)
     }
 
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
@@ -193,8 +211,12 @@ pub struct JsxFlowProvider;
 impl Provider for JsxFlowProvider {
     type Product = FlowProduct;
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<SourceKindInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_jsx_source(context.source().name())
+        is_jsx_context(context)
     }
 
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
@@ -234,6 +256,13 @@ pub fn register_atlas_providers(
 
 fn is_jsx_source(name: &str) -> bool {
     source_name_has_extension(name, ".jsx") || source_name_has_extension(name, ".tsx")
+}
+
+fn is_jsx_context(context: &PlanningContext<'_>) -> bool {
+    context.source_input::<SourceKindInput>().map_or_else(
+        || is_jsx_source(context.source().name()),
+        |kind| kind.is(JSX_SOURCE_KIND),
+    )
 }
 
 fn source_name_has_extension(name: &str, extension: &str) -> bool {

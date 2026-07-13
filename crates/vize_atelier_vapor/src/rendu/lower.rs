@@ -4,6 +4,9 @@ use vize_rendu::{
     RenduRoot,
 };
 
+#[path = "lower/slot.rs"]
+mod slot;
+
 use super::model::{
     VaporAttributeValue, VaporBinding, VaporBlock, VaporBlockId, VaporBranch, VaporDirective,
     VaporExpression, VaporExpressionId, VaporName, VaporOperation, VaporPlan, VaporProperty,
@@ -96,14 +99,16 @@ impl<'a> Planner<'a> {
                 provenance: provenance.clone(),
             },
             RenduNode::Component {
+                kind,
                 name,
                 properties,
                 children,
                 provenance,
             } => VaporOperation::Component {
+                kind: *kind,
                 name: lower_name(name),
                 properties: properties.iter().map(lower_property).collect(),
-                body: self.lower_block(children, provenance.clone()),
+                slots: self.lower_component_slots(children, provenance.clone()),
                 provenance: provenance.clone(),
             },
             RenduNode::SlotOutlet {

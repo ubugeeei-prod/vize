@@ -182,8 +182,12 @@ async function emitGalleryShell(
     const target = joinFileName(staticRoot, relative);
     const content = await fs.promises.readFile(filePath);
     if (relative === "index.html") {
-      const html = injectStaticGlobals(content.toString("utf-8"), ctx, payload);
-      emitFile({ type: "asset", fileName: target, source: rewriteGalleryBase(html, ctx.basePath) });
+      const html = rewriteGalleryBase(content.toString("utf-8"), ctx.basePath);
+      emitFile({
+        type: "asset",
+        fileName: target,
+        source: injectStaticGlobals(html, ctx, payload),
+      });
     } else {
       const source = rewriteGalleryTextAssetBase(content, relative, ctx.basePath);
       emitFile({ type: "asset", fileName: target, source });

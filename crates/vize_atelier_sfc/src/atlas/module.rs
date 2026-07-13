@@ -7,7 +7,7 @@ use std::cell::Cell;
 
 use vize_atlas::{
     ObservationKind, PlanningContext, Product, ProductId, Provider, ProviderContext, ProviderError,
-    SourceRange,
+    SourceInputId, SourceKindInput, SourceRange,
 };
 use vize_carton::source_anchor::SourceAnchor;
 use vize_croquis::{Croquis, script_parser::ScriptParseResult};
@@ -16,8 +16,11 @@ use vize_module::{ModuleDocument, ModuleSyntaxProduct};
 use crate::compile_script::{NormalScriptCompilerFacts, PreanalyzedScriptSetup};
 use crate::types::SfcMacroArtifact;
 
+use super::croquis::{
+    SfcCroquisSettingsInput, SfcInferredCroquisSettingsInput, croquis_request_for_provider,
+};
 use super::script_generator::SfcScriptGeneratorFacts;
-use super::{SfcCroquisMode, SfcDescriptorProduct, is_sfc_source, source_structure};
+use super::{SfcDescriptorProduct, is_sfc_context, source_structure};
 use parse::{parse_plain, parse_setup};
 
 /// Owned script facts derived while each SFC script block's OXC program is live.
@@ -73,10 +76,10 @@ impl SfcScriptSyntaxSnapshot {
             .collect()
     }
 
-    pub(super) fn croquis(&self, mode: SfcCroquisMode, merge_scripts: bool) -> Croquis {
+    pub(super) fn croquis(&self, merge_scripts: bool) -> Croquis {
         match (&self.plain, &self.setup) {
             (Some(plain), Some(setup)) if merge_scripts => {
-                let plain = plain.for_mode(mode).clone().into_croquis();
+                let plain = plain.semantics.clone().into_croquis();
                 let mut summary = setup.clone().into_croquis();
                 let setup_offset = self.modules.modules.first().map_or(0, |module| {
                     u32::try_from(module.source.len())
@@ -88,7 +91,7 @@ impl SfcScriptSyntaxSnapshot {
                 summary
             }
             (_, Some(setup)) => setup.clone().into_croquis(),
-            (Some(plain), None) => plain.for_mode(mode).clone().into_croquis(),
+            (Some(plain), None) => plain.semantics.clone().into_croquis(),
             (None, None) => Croquis::new(),
         }
     }
@@ -96,9 +99,7 @@ impl SfcScriptSyntaxSnapshot {
 
 #[derive(Debug, Clone)]
 struct PlainScriptAnalysis {
-    standard: ScriptParseResult,
-    options_api: ScriptParseResult,
-    legacy_vue2: ScriptParseResult,
+    semantics: ScriptParseResult,
     compiler: NormalScriptCompilerFacts,
 }
 
@@ -116,16 +117,6 @@ pub fn reset_authored_script_parse_invocations() {
     AUTHORED_SCRIPT_PARSE_INVOCATIONS.set(0);
 }
 
-impl PlainScriptAnalysis {
-    fn for_mode(&self, mode: SfcCroquisMode) -> &ScriptParseResult {
-        match mode {
-            SfcCroquisMode::OptionsApi => &self.options_api,
-            SfcCroquisMode::LegacyVue2 => &self.legacy_vue2,
-            SfcCroquisMode::Full | SfcCroquisMode::Declaration => &self.standard,
-        }
-    }
-}
-
 /// SFC-owned script syntax product shared by Module, Croquis, Canon, and compile.
 pub struct SfcScriptSyntaxProduct;
 
@@ -141,8 +132,16 @@ pub struct SfcScriptSyntaxProvider;
 impl Provider for SfcScriptSyntaxProvider {
     type Product = SfcScriptSyntaxProduct;
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![
+            SourceInputId::of::<SfcCroquisSettingsInput>(),
+            SourceInputId::of::<SfcInferredCroquisSettingsInput>(),
+            SourceInputId::of::<SourceKindInput>(),
+        ]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name()) && source_structure(context).has_script
+        is_sfc_context(context) && source_structure(context).has_script
     }
 
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
@@ -160,6 +159,7 @@ impl Provider for SfcScriptSyntaxProvider {
         let source = context.source();
         let root_anchor = SourceAnchor::new(source.id().get(), source.revision().get());
         let mut snapshot = SfcScriptSyntaxSnapshot::default();
+        let semantic_mode = croquis_request_for_provider(context).mode;
 
         if let Some(script) = descriptor.script.as_ref() {
             let (module, analysis, generator) = parse_plain(
@@ -169,6 +169,7 @@ impl Provider for SfcScriptSyntaxProvider {
                 script.loc.start,
                 script.loc.end,
                 root_anchor,
+                semantic_mode,
             )?;
             snapshot.modules.modules.push(module);
             snapshot.generator.merge(generator);
@@ -184,7 +185,7 @@ impl Provider for SfcScriptSyntaxProvider {
                 script.loc.start,
                 script.loc.end,
                 root_anchor,
-                snapshot.plain.as_ref().map(|plain| &plain.compiler),
+                snapshot.plain.as_ref(),
             )?;
             snapshot.modules.modules.push(module);
             snapshot.generator.merge(generator);
@@ -201,8 +202,12 @@ pub struct SfcModuleSyntaxProvider;
 impl Provider for SfcModuleSyntaxProvider {
     type Product = ModuleSyntaxProduct;
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<SourceKindInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name()) && source_structure(context).has_script
+        is_sfc_context(context) && source_structure(context).has_script
     }
 
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {

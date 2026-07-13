@@ -1,7 +1,7 @@
 //! Public parse entry points for script setup and plain (Options API) scripts.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::Program;
+use oxc_ast::ast::{Program, Statement};
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk::{walk_arrow_function_expression, walk_for_of_statement, walk_function};
 use oxc_parser::Parser;
@@ -13,6 +13,7 @@ use super::process;
 use super::result::{ScriptParseResult, ScriptParserOptions};
 use crate::croquis::BindingMetadata;
 use crate::scope::{NonScriptSetupScopeData, ScopeChain, ScriptSetupScopeData};
+use crate::types::TypeResolver;
 use vize_carton::{CompactString, profile};
 
 /// Parse script setup source code using OXC parser with an optional generic parameter.
@@ -59,13 +60,59 @@ pub fn analyze_script_setup_program(
     source: &str,
     generic: Option<&str>,
 ) -> ScriptParseResult {
+    analyze_script_setup_program_with_inherited_types(
+        program,
+        source,
+        generic,
+        TypeResolver::default(),
+    )
+}
+
+/// Analyze an already-parsed script setup program with type definitions
+/// inherited from another source segment in the same component.
+///
+/// Multi-block frontends use this to make a normal `<script>` interface or
+/// type alias available while resolving `defineProps<Type>()` in
+/// `<script setup>`. Setup-local declarations retain precedence.
+#[doc(hidden)]
+pub fn analyze_script_setup_program_with_inherited_types(
+    program: &Program<'_>,
+    source: &str,
+    generic: Option<&str>,
+    inherited_types: TypeResolver,
+) -> ScriptParseResult {
     let source_len = source.len() as u32;
 
     let mut result = ScriptParseResult {
         bindings: BindingMetadata::script_setup(),
         scopes: ScopeChain::with_capacity(16),
+        types: inherited_types,
         ..Default::default()
     };
+
+    // TypeScript declarations are visible throughout the setup block, even
+    // when they appear after a macro that references them. Register every
+    // setup-local declaration before processing macro calls, which also makes
+    // a setup declaration replace an inherited normal-script declaration of
+    // the same kind before `defineProps<Props>()` is resolved.
+    profile!("croquis.script_setup.register_local_types", {
+        for stmt in program.body.iter() {
+            match stmt {
+                Statement::TSInterfaceDeclaration(interface) => {
+                    result.register_local_interface(interface, source);
+                }
+                Statement::TSTypeAliasDeclaration(alias) => {
+                    result.register_local_type_alias(alias, source);
+                }
+                Statement::ExportNamedDeclaration(export) => {
+                    if let Some(declaration) = &export.declaration {
+                        result.register_local_type(declaration, source);
+                    }
+                }
+                _ => {}
+            }
+        }
+    });
 
     // Setup global scope hierarchy (universal → mod)
     profile!(

@@ -11,6 +11,9 @@ const TAG_SCRIPT: &[u8] = b"script";
 pub struct SfcSourceStructure {
     pub has_template: bool,
     pub has_script: bool,
+    /// Whether a normal (non-setup) `<script>` block is present.
+    pub has_normal_script: bool,
+    pub has_script_setup: bool,
     pub vapor_script: bool,
 }
 
@@ -70,6 +73,8 @@ pub(crate) fn scan_sfc_structure(source: &str) -> Option<SfcSourceStructure> {
                     script_setup_seen |= setup;
                     script_seen |= !setup;
                     structure.has_script = true;
+                    structure.has_normal_script |= !setup;
+                    structure.has_script_setup |= setup;
                     structure.vapor_script |= attrs.contains_key("vapor");
                 }
                 pos = end;
@@ -99,6 +104,8 @@ mod tests {
             SfcSourceStructure {
                 has_template: false,
                 has_script: true,
+                has_normal_script: true,
+                has_script_setup: false,
                 vapor_script: false,
             }
         );
@@ -116,8 +123,23 @@ mod tests {
             SfcSourceStructure {
                 has_template: true,
                 has_script: true,
+                has_normal_script: false,
+                has_script_setup: true,
                 vapor_script: true,
             }
         );
+    }
+
+    #[test]
+    fn distinguishes_dual_scripts_from_setup_only_sources() {
+        let structure = scan_sfc_structure(
+            r#"<script>export default { data: () => ({ ready: true }) }</script>
+<script setup lang="ts">const message = 'ready'</script>"#,
+        )
+        .unwrap();
+
+        assert!(structure.has_script);
+        assert!(structure.has_normal_script);
+        assert!(structure.has_script_setup);
     }
 }

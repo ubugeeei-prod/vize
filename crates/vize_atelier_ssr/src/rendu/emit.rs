@@ -1,7 +1,11 @@
 mod component;
+mod component_name;
 mod element;
 mod property;
+mod slot;
+mod suspense;
 mod syntax;
+mod vnode;
 
 use vize_rendu::{
     RenderEmitSettings, RenderOutputMode, RenduEscapeMode, RenduNode, RenduNodeId, RenduProvenance,
@@ -15,6 +19,7 @@ pub(super) struct SsrEmitter<'a> {
     root: &'a RenduRoot,
     output: RenduSsrOutput,
     indent: usize,
+    slot_scope_depth: usize,
 }
 
 impl<'a> SsrEmitter<'a> {
@@ -23,6 +28,7 @@ impl<'a> SsrEmitter<'a> {
             root,
             output: RenduSsrOutput::default(),
             indent: 0,
+            slot_scope_depth: 0,
         }
     }
 
@@ -36,10 +42,30 @@ impl<'a> SsrEmitter<'a> {
             }
         });
         self.indent += 1;
-        self.emit_nodes(self.root.entry());
+        self.emit_root_nodes(self.root.entry());
         self.indent -= 1;
         self.line("}");
         self.output
+    }
+
+    fn emit_root_nodes(&mut self, nodes: &[RenduNodeId]) {
+        let fallthrough = nodes
+            .iter()
+            .copied()
+            .filter(|id| {
+                !matches!(
+                    self.root.node(*id).expect("validated root node"),
+                    RenduNode::Comment { .. }
+                )
+            })
+            .collect::<Vec<_>>();
+        let fallthrough = match fallthrough.as_slice() {
+            [node] => Some(*node),
+            _ => None,
+        };
+        for &node in nodes {
+            self.emit_node_with_fallthrough(node, fallthrough == Some(node));
+        }
     }
 
     pub(super) fn emit_nodes(&mut self, nodes: &[RenduNodeId]) {
@@ -48,23 +74,34 @@ impl<'a> SsrEmitter<'a> {
         }
     }
 
-    fn emit_node(&mut self, id: RenduNodeId) {
+    pub(super) fn emit_node(&mut self, id: RenduNodeId) {
+        self.emit_node_with_fallthrough(id, false);
+    }
+
+    fn emit_node_with_fallthrough(&mut self, id: RenduNodeId, fallthrough: bool) {
         let node = self.root.node(id).expect("validated Rendu node");
         let start = self.output.code.len();
         match node {
-            RenduNode::Fragment { children, .. } => self.emit_nodes(children),
+            RenduNode::Fragment { children, .. } => {
+                if fallthrough {
+                    self.emit_root_nodes(children);
+                } else {
+                    self.emit_nodes(children);
+                }
+            }
             RenduNode::Element {
                 tag,
                 properties,
                 children,
                 ..
-            } => self.emit_element(tag, properties, children),
+            } => self.emit_element(tag, properties, children, fallthrough),
             RenduNode::Component {
+                kind,
                 name,
                 properties,
                 children,
                 ..
-            } => self.emit_component(name, properties, children),
+            } => self.emit_component(*kind, name, properties, children, fallthrough),
             RenduNode::SlotOutlet {
                 name,
                 properties,
@@ -81,7 +118,7 @@ impl<'a> SsrEmitter<'a> {
             RenduNode::Comment { value, .. } => {
                 self.push_line_value(&vize_carton::cstr!("<!--{}-->", escape_html_comment(value)));
             }
-            RenduNode::If { branches, .. } => self.emit_if(branches),
+            RenduNode::If { branches, .. } => self.emit_if(branches, fallthrough),
             RenduNode::For {
                 source,
                 value,
@@ -162,7 +199,7 @@ impl<'a> SsrEmitter<'a> {
         self.line("})");
     }
 
-    fn emit_if(&mut self, branches: &[vize_rendu::RenduIfBranch]) {
+    fn emit_if(&mut self, branches: &[vize_rendu::RenduIfBranch], fallthrough: bool) {
         for (index, branch) in branches.iter().enumerate() {
             let start = self.output.code.len();
             self.indent();
@@ -181,7 +218,11 @@ impl<'a> SsrEmitter<'a> {
                 (_, None) => self.output.code.push_str("else {\n"),
             }
             self.indent += 1;
-            self.emit_nodes(&branch.body);
+            if fallthrough {
+                self.emit_root_nodes(&branch.body);
+            } else {
+                self.emit_nodes(&branch.body);
+            }
             self.indent -= 1;
             self.line("}");
             self.map(start, &branch.provenance, RenduSsrMappingKind::Branch);
