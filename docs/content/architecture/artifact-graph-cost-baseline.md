@@ -11,13 +11,14 @@ executes the dependency closure, and drops the result. Six cases use one SFC;
 the cross-file case adds a second SFC to exercise a real multi-source closure.
 
 Measured on 2026-07-11 at canary commit
-`52272c67ce5a213cabfbaf30d841f791f3c5339e`, using `rustc 1.95.0` on an Apple
+`cce266d6178fdfd0b603dd8d874ece512aa8864f`, using `rustc 1.95.0` on an Apple
 M5 Pro (`arm64-apple-darwin`). The commit contains latest `main` through
-`588c1e15d`, explicit frontend/peer-provider composition, request-keyed
-multi-source planning, immutable snapshots, and cached provider observations.
-Canon requests the descriptor and Croquis document, plus Relief only when a
-template exists and Module only when a script exists. Flow is independent and
-is not fabricated as a type-check dependency. Command:
+`588c1e15d`, explicit `SourceKind` arbitration, parse-once script facts,
+request-keyed multi-source planning, immutable snapshots, and cached provider
+observations. Rendering requests the narrow SFC template-binding product rather
+than a full Croquis document. Canon requests Croquis plus source-shaped Relief
+and Module dependencies; Flow remains independent and is not fabricated as a
+type-check dependency. Command:
 
 ```sh
 cargo bench -p vize --bench artifact_graph -- \
@@ -26,13 +27,13 @@ cargo bench -p vize --bench artifact_graph -- \
 
 | Recipe                         | Observed time interval | Allocations | Peak live bytes | Queries | Provider executions | Cached products |
 | ------------------------------ | ---------------------: | ----------: | --------------: | ------: | ------------------: | --------------: |
-| DOM backend product            |       42.950-43.141 us |         660 |         132,156 |      16 |                   9 |               9 |
-| production SFC compiled module |       57.482-57.633 us |         837 |         169,522 |      23 |                  11 |              11 |
-| DOM + SSR + Vapor products     |       46.150-46.269 us |         738 |         131,212 |      20 |                  11 |              11 |
-| Patina document lint           |       37.490-37.604 us |         532 |         171,540 |      13 |                   7 |               7 |
-| Canon SFC typecheck            |       34.377-34.495 us |         508 |         105,010 |      15 |                   7 |               7 |
-| combined lint + typecheck      |       40.584-40.755 us |         579 |         176,956 |      19 |                   8 |               8 |
-| two-source cross-file analysis |       79.547-79.813 us |         938 |         174,150 |      45 |                  25 |              13 |
+| DOM backend product            |       33.061-33.128 us |         577 |         100,207 |      15 |                   8 |               8 |
+| production SFC compiled module |       49.357-49.450 us |         809 |         144,729 |      23 |                  11 |              11 |
+| DOM + SSR + Vapor products     |       36.304-36.468 us |         661 |         101,687 |      19 |                  10 |              10 |
+| Patina document lint           |       39.009-39.084 us |         556 |         170,508 |      13 |                   7 |               7 |
+| Canon SFC typecheck            |       35.495-35.668 us |         532 |         104,218 |      15 |                   7 |               7 |
+| combined lint + typecheck      |       42.018-42.287 us |         604 |         176,372 |      19 |                   8 |               8 |
+| two-source cross-file analysis |       81.828-82.097 us |         984 |         171,638 |      45 |                  25 |              13 |
 
 Allocation counts and peak live bytes are deltas observed by the benchmark's
 tracking global allocator; peak bytes are not process RSS. Timing is a
@@ -43,7 +44,9 @@ are the deterministic structural measurements.
 The DOM-product case measures a graph-native backend root. The production SFC
 case additionally assembles the public compiled-module product. The
 multi-backend case proves DOM, SSR, and Vapor share one frontend/Rendu closure
-instead of reparsing the source for each target.
+instead of reparsing the source for each target. Relative to the preceding
+canary baseline, the DOM and multi-backend closures each remove one query,
+provider execution, and cache entry by avoiding the full semantic document.
 
 The combined tool case adds only one provider execution and one cached product
 over either single-tool case. Its Patina and Canon roots share source-shaped
