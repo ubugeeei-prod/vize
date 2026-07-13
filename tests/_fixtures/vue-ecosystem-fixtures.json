@@ -2208,6 +2208,655 @@
         "lsp"
       ],
       "diff": "e2e-vrt"
+    },
+    {
+      "id": "heyui",
+      "displayName": "HeyUI",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/heyui",
+      "repository": "https://github.com/heyui/heyui",
+      "revision": "dcd5fe97b7908200beda88a26700b14a41a17429",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-data-ui",
+      "displayName": "Vue Data UI",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-data-ui",
+      "repository": "https://github.com/graphieros/vue-data-ui",
+      "revision": "3b7d82352cf7d0cf1f74557e2a5aaeb6b658c810",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "splitpanes",
+      "displayName": "Splitpanes",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/splitpanes",
+      "repository": "https://github.com/antoniandre/splitpanes",
+      "revision": "c13526b5d751ad188e19c6b6797466a7559a88d4",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "tailwind-config-viewer",
+      "displayName": "Tailwind Config Viewer",
+      "kind": "tooling",
+      "fixturePath": "tests/_fixtures/_git/tailwind-config-viewer",
+      "repository": "https://github.com/rogden/tailwind-config-viewer",
+      "revision": "56d6d2e0b97efb27ffff474dcb951a5ac441a9ac",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "package.json"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "frappe-builder",
+      "displayName": "Frappe Builder",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/frappe-builder",
+      "repository": "https://github.com/frappe/builder",
+      "revision": "0d6d37327c2c98fd92a8e3aa367f150a4dcfcda6",
+      "license": {
+        "spdx": "AGPL-3.0-only",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue-uploader",
+      "displayName": "Vue Uploader",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-uploader",
+      "repository": "https://github.com/simple-uploader/vue-uploader",
+      "revision": "0be2f9571644ac2f7d3348420baf8fb8105c5555",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vant-demo",
+      "displayName": "Vant Demo",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/vant-demo",
+      "repository": "https://github.com/vant-ui/vant-demo",
+      "revision": "c382aeba3cfea6ea31f6fee98a99b1c6604accc4",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue-dropzone",
+      "displayName": "Vue Dropzone",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-dropzone",
+      "repository": "https://github.com/rowanwins/vue-dropzone",
+      "revision": "c88b8b08922cca4743a7fde03a0213e8c7a34f0f",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "multiple-select",
+      "displayName": "Multiple Select",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/multiple-select",
+      "repository": "https://github.com/wenzhixin/multiple-select",
+      "revision": "a09f2fc759caf6d8c4bdfe57c347a5de8458e4d6",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "alexandrie",
+      "displayName": "Alexandrie",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/alexandrie",
+      "repository": "https://github.com/Smaug6739/Alexandrie",
+      "revision": "8188f996c8302775fea5ddd59c5a1f6b4b33fdde",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue-fullpage-js",
+      "displayName": "Vue FullPage.js",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-fullpage-js",
+      "repository": "https://github.com/alvarotrigo/vue-fullpage.js",
+      "revision": "e3ef972dad5b6b07d28bf725068182e2347b7bde",
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "arco-design-pro-vue",
+      "displayName": "Arco Design Pro Vue",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/arco-design-pro-vue",
+      "repository": "https://github.com/arco-design/arco-design-pro-vue",
+      "revision": "27020819af653243b7b1a3e8e2481d6b3d798749",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue-datepicker",
+      "displayName": "Vue Datepicker",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-datepicker",
+      "repository": "https://github.com/Vuepic/vue-datepicker",
+      "revision": "f1a5c11028885e02e81ed379ff04107a7d99d964",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "layoutit-grid",
+      "displayName": "Layoutit Grid",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/layoutit-grid",
+      "repository": "https://github.com/layoutit/layoutit-grid",
+      "revision": "bac9964b1d23a361f3ef9e67b0fdd2d990b48a1a",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE.txt"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "jellyfin-vue",
+      "displayName": "Jellyfin Vue",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/jellyfin-vue",
+      "repository": "https://github.com/jellyfin/jellyfin-vue",
+      "revision": "a1e76a972ac29ffe4a7dc0bd7821a12e0748b73f",
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "lew-ui",
+      "displayName": "Lew UI",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/lew-ui",
+      "repository": "https://github.com/lewkamtao/lew-ui",
+      "revision": "abdcecdcdf611211b0502383a6dbfacded2c9608",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-sonner",
+      "displayName": "Vue Sonner",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-sonner",
+      "repository": "https://github.com/xiaoluoboding/vue-sonner",
+      "revision": "4f6e3038981d7c748048913f259470fefa204b7a",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "element-plus-x",
+      "displayName": "Element Plus X",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/element-plus-x",
+      "repository": "https://github.com/element-plus-x/Element-Plus-X",
+      "revision": "c3e0177d101d4dbc039b7cd668c676839f6595f1",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-vine",
+      "displayName": "Vue Vine",
+      "kind": "tooling",
+      "fixturePath": "tests/_fixtures/_git/vue-vine",
+      "repository": "https://github.com/vue-vine/vue-vine",
+      "revision": "bc0602c49efb667e18a1105fcbddeeb7a1d592b5",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-calendar",
+      "displayName": "Vue Calendar",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-calendar",
+      "repository": "https://github.com/jinzhe/vue-calendar",
+      "revision": "e980b2f4deee02fe1b9cb4b802897a245d3daaef",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "prevue",
+      "displayName": "PreVue",
+      "kind": "tooling",
+      "fixturePath": "tests/_fixtures/_git/prevue",
+      "repository": "https://github.com/open-source-labs/PreVue",
+      "revision": "deedda8b44e97f51b06ad6e2da17baf4997bf281",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "package.json",
+          "README.md"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "bym-vue-echarts",
+      "displayName": "Vue ECharts (bym110)",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/bym-vue-echarts",
+      "repository": "https://github.com/bym110/vue-echarts",
+      "revision": "c7326b0146c21452a0ff89512d3a49a0ab6f24f6",
+      "license": {
+        "spdx": "NONE",
+        "files": []
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-apexcharts",
+      "displayName": "Vue ApexCharts",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-apexcharts",
+      "repository": "https://github.com/apexcharts/vue-apexcharts",
+      "revision": "182f8ce43d4f6e15446d39712c7a1e514aaa8627",
+      "license": {
+        "spdx": "LicenseRef-ApexCharts-Community-or-Commercial",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-lottie",
+      "displayName": "Vue Lottie",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-lottie",
+      "repository": "https://github.com/chenqingspring/vue-lottie",
+      "revision": "d66265f6d31f50dab4269f5a1fef7c7e29d5299d",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-cal-v4",
+      "displayName": "Vue Cal v4",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-cal-v4",
+      "repository": "https://github.com/antoniandre/vue-cal-v4",
+      "revision": "b88c9f840cc43e6eccda0651c1d062b0c5bd8107",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
     }
   ]
 }

@@ -539,3 +539,128 @@
 	path = tests/_fixtures/_git/antares
 	url = https://github.com/antares-sql/antares
 	shallow = true
+
+[submodule "tests/_fixtures/_git/heyui"]
+	path = tests/_fixtures/_git/heyui
+	url = https://github.com/heyui/heyui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-data-ui"]
+	path = tests/_fixtures/_git/vue-data-ui
+	url = https://github.com/graphieros/vue-data-ui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/splitpanes"]
+	path = tests/_fixtures/_git/splitpanes
+	url = https://github.com/antoniandre/splitpanes
+	shallow = true
+
+[submodule "tests/_fixtures/_git/tailwind-config-viewer"]
+	path = tests/_fixtures/_git/tailwind-config-viewer
+	url = https://github.com/rogden/tailwind-config-viewer
+	shallow = true
+
+[submodule "tests/_fixtures/_git/frappe-builder"]
+	path = tests/_fixtures/_git/frappe-builder
+	url = https://github.com/frappe/builder
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-uploader"]
+	path = tests/_fixtures/_git/vue-uploader
+	url = https://github.com/simple-uploader/vue-uploader
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vant-demo"]
+	path = tests/_fixtures/_git/vant-demo
+	url = https://github.com/vant-ui/vant-demo
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-dropzone"]
+	path = tests/_fixtures/_git/vue-dropzone
+	url = https://github.com/rowanwins/vue-dropzone
+	shallow = true
+
+[submodule "tests/_fixtures/_git/multiple-select"]
+	path = tests/_fixtures/_git/multiple-select
+	url = https://github.com/wenzhixin/multiple-select
+	shallow = true
+
+[submodule "tests/_fixtures/_git/alexandrie"]
+	path = tests/_fixtures/_git/alexandrie
+	url = https://github.com/Smaug6739/Alexandrie
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-fullpage-js"]
+	path = tests/_fixtures/_git/vue-fullpage-js
+	url = https://github.com/alvarotrigo/vue-fullpage.js
+	shallow = true
+
+[submodule "tests/_fixtures/_git/arco-design-pro-vue"]
+	path = tests/_fixtures/_git/arco-design-pro-vue
+	url = https://github.com/arco-design/arco-design-pro-vue
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-datepicker"]
+	path = tests/_fixtures/_git/vue-datepicker
+	url = https://github.com/Vuepic/vue-datepicker
+	shallow = true
+
+[submodule "tests/_fixtures/_git/layoutit-grid"]
+	path = tests/_fixtures/_git/layoutit-grid
+	url = https://github.com/layoutit/layoutit-grid
+	shallow = true
+
+[submodule "tests/_fixtures/_git/jellyfin-vue"]
+	path = tests/_fixtures/_git/jellyfin-vue
+	url = https://github.com/jellyfin/jellyfin-vue
+	shallow = true
+
+[submodule "tests/_fixtures/_git/lew-ui"]
+	path = tests/_fixtures/_git/lew-ui
+	url = https://github.com/lewkamtao/lew-ui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-sonner"]
+	path = tests/_fixtures/_git/vue-sonner
+	url = https://github.com/xiaoluoboding/vue-sonner
+	shallow = true
+
+[submodule "tests/_fixtures/_git/element-plus-x"]
+	path = tests/_fixtures/_git/element-plus-x
+	url = https://github.com/element-plus-x/Element-Plus-X
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-vine"]
+	path = tests/_fixtures/_git/vue-vine
+	url = https://github.com/vue-vine/vue-vine
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-calendar"]
+	path = tests/_fixtures/_git/vue-calendar
+	url = https://github.com/jinzhe/vue-calendar
+	shallow = true
+
+[submodule "tests/_fixtures/_git/prevue"]
+	path = tests/_fixtures/_git/prevue
+	url = https://github.com/open-source-labs/PreVue
+	shallow = true
+
+[submodule "tests/_fixtures/_git/bym-vue-echarts"]
+	path = tests/_fixtures/_git/bym-vue-echarts
+	url = https://github.com/bym110/vue-echarts
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-apexcharts"]
+	path = tests/_fixtures/_git/vue-apexcharts
+	url = https://github.com/apexcharts/vue-apexcharts
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-lottie"]
+	path = tests/_fixtures/_git/vue-lottie
+	url = https://github.com/chenqingspring/vue-lottie
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-cal-v4"]
+	path = tests/_fixtures/_git/vue-cal-v4
+	url = https://github.com/antoniandre/vue-cal-v4
+	shallow = true
