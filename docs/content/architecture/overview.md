@@ -61,8 +61,9 @@ graph TD
 
 This map shows available canary provider edges, not a fixed pipeline or every
 workspace call edge. Atlas selects dependencies from the source shape and root,
-plans only the reachable products, and caches common upstream work once. Canon
-does not fabricate a Flow dependency.
+plans only the reachable products, and caches common upstream work once for the
+same source revision, provider-registry revision, and relevant-input revision.
+Canon does not fabricate a Flow dependency.
 
 ## Lanes
 
@@ -102,9 +103,9 @@ script-only SFC never enters the Relief/Rendu lane.
    selection, planning, cache/invalidation, outcomes, counters, and traces.
 2. **Frontend products** — SFC decomposition, Vue-template syntax, owned
    JSX/TSX syntax, and parser-lifetime-free JS/TS Module facts retain their
-   source-specific contracts. Each authored SFC script block is parsed once;
-   its live OXC program supplies Module, Croquis, and compiler preanalysis
-   projections before the allocator is dropped.
+   source-specific contracts. Each authored SFC script block is parsed once per
+   source revision; its live OXC program supplies Module, Croquis, and compiler
+   preanalysis projections before the allocator is dropped.
 3. **Relief** — Records authored Vue-template syntax and source locations. It
    does not assign symbol identity or own render decisions.
 4. **Croquis** — Records derived semantic identity, scopes, bindings, usage,
@@ -128,7 +129,8 @@ The backend crates retain legacy frontend-coupled entry points only for public
 compatibility; production recipes do not invoke them. The executable contract
 is negative as well as positive: TSX render/lint/type closures never construct Relief,
 lint/typecheck closures never construct Rendu, and multi-root requests execute
-shared upstream products once.
+shared upstream products once for the same source revision, provider-registry
+revision, and relevant-input revision.
 
 The broader design and measurements are documented in
 [Atlas artifact graph](./source-atlas.md).
@@ -139,17 +141,27 @@ Beyond compilation, Vize provides additional tools that reuse parsing and
 analysis infrastructure. Patina and Canon share Atlas source identity and the
 specific syntax, Module, or Croquis products their source shape requires. Flow
 remains independently demandable. Maestro keeps one mutable, URI-keyed
-compilation alive across document revisions and queries it directly; its raw
-template features share Relief and Croquis, while SFC features can also share
-Module. Inspector has its own `InspectorAgentReport` root over per-source
-analysis products rather than borrowing the build root or reparsing imports.
+`Compilation` alive across document revisions and queries it directly. Open
+documents and file-backed Vue dependencies are registered in that same
+compilation, so each URI retains a stable `SourceId` while its content revision
+changes. For normal `.vue` production requests, Maestro queries
+`CanonVueDocumentProduct` for the host and non-Art Vue dependencies, then supplies those
+already-generated documents to Corsa as prebuilt host and dependency overlays.
+Corsa synchronization does not create a private `Compilation` or reparse those
+SFCs. Art/Musea virtual-document paths remain specialized and are not covered by
+this normal-Vue guarantee. Maestro also queries `GlyphFormatProduct` from the
+same compilation for editor formatting. Its raw-template features share Relief
+and Croquis, while SFC features can also share Module. Inspector has its own
+`InspectorAgentReport` root over per-source analysis products rather than
+borrowing the build root or reparsing imports.
 
 Vitrine exposes separate Atlas roots for SFC/JSX compilation, raw-template
 compilation, Patina, Canon, and cross-file analysis through NAPI or WASM as each
 binding surface supports them. Vite, Nuxt, unplugin, and Rspack packages are
 hosts over the compile bindings; they do not define graph products themselves.
 
-For type checking, `vize_canon` adds one more step: it generates virtual TypeScript from Vue SFCs and asks Corsa project sessions from [`corsa-bind`](https://github.com/ubugeeei/corsa-bind) for native diagnostics, then maps those results back onto the original files.
+Outside Maestro, `vize check` builds its own project-scoped Canon snapshot and
+Corsa session. It does not inherit the editor compilation lifetime.
 
 The implementation workflow is documented in
 [Language Engineering Practices](./language-engineering-practices.md), which maps parser,
@@ -169,7 +181,7 @@ parity, benchmark, and readiness evidence expected for review.
 | Analysis      | `vize_flow`             | Single-file control, data, and effect graphs                  |
 | Analysis      | `vize_module`           | Owned JS/TS module facts and OXC CFG projection               |
 | Render        | `vize_rendu`            | Owned, indexed, frontend-neutral render HIR                   |
-| Compilation   | `vize_atelier_core`     | Narrow shared Vue-template transform/codegen helpers          |
+| Compilation   | `vize_atelier_core`     | Legacy Vue-template transform/codegen IR and compatibility    |
 | Compilation   | `vize_atelier_dom`      | VDOM code generation                                          |
 | Compilation   | `vize_atelier_vapor`    | Vapor mode code generation                                    |
 | Compilation   | `vize_atelier_template` | Raw Vue-template frontend and target root                     |

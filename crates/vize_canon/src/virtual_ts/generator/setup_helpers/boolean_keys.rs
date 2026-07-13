@@ -10,7 +10,12 @@ use oxc_span::SourceType;
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
 use vize_croquis::macros::DEFINE_PROPS;
 
-pub(super) fn collect_define_props_boolean_keys(script: &str) -> Option<Vec<String>> {
+pub(super) struct DefinePropsBooleanKeys {
+    pub(super) keys: Vec<String>,
+    pub(super) has_unresolved_references: bool,
+}
+
+pub(super) fn collect_define_props_boolean_keys(script: &str) -> Option<DefinePropsBooleanKeys> {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
     if parsed.panicked {
@@ -23,6 +28,7 @@ pub(super) fn collect_define_props_boolean_keys(script: &str) -> Option<Vec<Stri
         keys: FxHashSet::default(),
         resolving: Vec::new(),
         saw_type_only_define_props: false,
+        has_unresolved_references: false,
     };
     collector.visit_program(&parsed.program);
     if !collector.saw_type_only_define_props {
@@ -31,7 +37,10 @@ pub(super) fn collect_define_props_boolean_keys(script: &str) -> Option<Vec<Stri
 
     let mut keys: Vec<String> = collector.keys.into_iter().collect();
     keys.sort_unstable();
-    Some(keys)
+    Some(DefinePropsBooleanKeys {
+        keys,
+        has_unresolved_references: collector.has_unresolved_references,
+    })
 }
 
 struct TypeDeclarations<'a> {
@@ -85,6 +94,7 @@ struct DefinePropsBooleanKeyCollector<'a> {
     keys: FxHashSet<String>,
     resolving: Vec<String>,
     saw_type_only_define_props: bool,
+    has_unresolved_references: bool,
 }
 
 impl<'a> Visit<'a> for DefinePropsBooleanKeyCollector<'a> {
@@ -117,6 +127,8 @@ impl<'a> DefinePropsBooleanKeyCollector<'a> {
                     self.collect_from_interface(interface);
                 } else if let Some(alias) = self.declarations.aliases.get(name).copied() {
                     self.collect_from_type(&alias.type_annotation);
+                } else {
+                    self.has_unresolved_references = true;
                 }
                 self.resolving.pop();
             }
@@ -143,6 +155,8 @@ impl<'a> DefinePropsBooleanKeyCollector<'a> {
                     self.collect_from_interface(parent);
                 } else if let Some(alias) = self.declarations.aliases.get(name).copied() {
                     self.collect_from_type(&alias.type_annotation);
+                } else {
+                    self.has_unresolved_references = true;
                 }
                 self.resolving.pop();
             }
@@ -261,7 +275,8 @@ defineProps<Props<Record<string, unknown>>>();
         )
         .expect("type-only defineProps should be detected");
 
-        assert_eq!(keys, vec!["active", "disabled"]);
+        assert_eq!(keys.keys, vec!["active", "disabled"]);
+        assert!(!keys.has_unresolved_references);
     }
 
     #[test]
@@ -277,6 +292,23 @@ defineProps<Props<Record<string, unknown>>>();
         )
         .expect("type-only defineProps should be detected");
 
-        assert!(keys.is_empty());
+        assert!(keys.keys.is_empty());
+        assert!(!keys.has_unresolved_references);
+    }
+
+    #[test]
+    fn records_unresolved_imported_heritage() {
+        let keys = collect_define_props_boolean_keys(
+            r#"
+interface Props<T> extends ImportedBase {
+  value: T;
+}
+defineProps<Props<string>>();
+"#,
+        )
+        .expect("type-only defineProps should be detected");
+
+        assert!(keys.keys.is_empty());
+        assert!(keys.has_unresolved_references);
     }
 }

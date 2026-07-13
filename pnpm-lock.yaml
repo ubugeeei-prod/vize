@@ -740,6 +740,9 @@ importers:
       '@vizejs/source-map':
         specifier: workspace:*
         version: link:../source-map
+      oxc-parser:
+        specifier: catalog:oxc
+        version: 0.133.0
       tinyglobby:
         specifier: catalog:repo-tooling
         version: 0.2.16

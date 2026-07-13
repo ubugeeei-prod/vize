@@ -5,7 +5,7 @@
 It provides:
 
 - the `vize` CLI binary (`build`, `fmt`, `lint`, `check`, `ready`, `upgrade`, `musea`, `lsp`, `ide`)
-- a facade crate that re-exports the workspace crates for unified Rust docs
+- a facade crate that re-exports its public tool and representation crates for unified Rust docs
 
 ## Install
 
@@ -37,12 +37,18 @@ explicit local Cargo installs.
 - `vize_carton` as `vize::carton`
 - `vize_relief` as `vize::relief`
 - `vize_armature` as `vize::armature`
-- `vize_atelier_core` as `vize::atelier_core`
+- `vize_atelier_core` as `vize::atelier_core` for legacy template compatibility
 - `vize_atelier_dom` as `vize::atelier_dom`
+- `vize_atelier_ssr` as `vize::atelier_ssr`
 - `vize_atelier_vapor` as `vize::atelier_vapor`
 - `vize_atelier_template` as `vize::atelier_template`
-- `vize_module` as `vize::module`
 - `vize_atelier_sfc` as `vize::atelier_sfc`
+- `vize_atelier_jsx` as `vize::atelier_jsx`
+- `vize_rendu` as `vize::rendu`
+- `vize_flow` as `vize::flow`
+- `vize_module` as `vize::module`
+- `vize_croquis` as `vize::croquis`
+- `vize_croquis_cf` as `vize::croquis_cf`
 - `vize_patina` as `vize::patina`
 - `vize_canon` as `vize::canon`
 - `vize_musea` as `vize::musea`
@@ -53,8 +59,14 @@ explicit local Cargo installs.
 
 - `vize_atelier_template` powers standalone template compilation without synthetic SFCs.
 - `vize_atelier_sfc` powers the SFC build pipeline.
+- `vize_atelier_jsx` owns the JSX/TSX frontend.
+- `vize_rendu` carries render intent to the DOM, SSR, and Vapor backends; optional
+  `vize_flow` products remain independent.
 - `vize_patina`, `vize_glyph`, and `vize_canon` power lint, format, and typecheck.
 - `vize_maestro` powers `vize lsp`.
+
+The CLI assembles these products with `vize_atlas`, which owns source identity,
+planning, caching, and invalidation rather than a shared AST or compiler IR.
 
 ## License
 

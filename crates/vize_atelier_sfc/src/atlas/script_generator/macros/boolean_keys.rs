@@ -10,13 +10,14 @@ use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
 
 pub(crate) fn define_props_boolean_keys(
     program: &oxc_ast::ast::Program<'_>,
-) -> Option<Vec<String>> {
+) -> Option<(Vec<String>, bool)> {
     let declarations = TypeDeclarations::from_statements(&program.body);
     let mut collector = DefinePropsBooleanKeyCollector {
         declarations,
         keys: FxHashSet::default(),
         resolving: Vec::new(),
         saw_type_only_define_props: false,
+        has_unresolved_references: false,
     };
     collector.visit_program(program);
     if !collector.saw_type_only_define_props {
@@ -24,7 +25,7 @@ pub(crate) fn define_props_boolean_keys(
     }
     let mut keys: Vec<String> = collector.keys.into_iter().collect();
     keys.sort_unstable();
-    Some(keys)
+    Some((keys, collector.has_unresolved_references))
 }
 
 struct TypeDeclarations<'a> {
@@ -78,6 +79,7 @@ struct DefinePropsBooleanKeyCollector<'a> {
     keys: FxHashSet<String>,
     resolving: Vec<String>,
     saw_type_only_define_props: bool,
+    has_unresolved_references: bool,
 }
 
 impl<'a> Visit<'a> for DefinePropsBooleanKeyCollector<'a> {
@@ -109,6 +111,8 @@ impl<'a> DefinePropsBooleanKeyCollector<'a> {
                     self.collect_from_interface(interface);
                 } else if let Some(alias) = self.declarations.aliases.get(name).copied() {
                     self.collect_from_type(&alias.type_annotation);
+                } else {
+                    self.has_unresolved_references = true;
                 }
                 self.resolving.pop();
             }
@@ -137,6 +141,8 @@ impl<'a> DefinePropsBooleanKeyCollector<'a> {
                 self.collect_from_interface(parent);
             } else if let Some(alias) = self.declarations.aliases.get(name).copied() {
                 self.collect_from_type(&alias.type_annotation);
+            } else {
+                self.has_unresolved_references = true;
             }
             self.resolving.pop();
         }

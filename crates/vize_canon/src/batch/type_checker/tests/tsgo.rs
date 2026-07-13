@@ -1,0 +1,42 @@
+use std::path::{Path, PathBuf};
+
+pub(super) fn resolve_test_tsgo_binary() -> Option<PathBuf> {
+    if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
+        return None;
+    }
+
+    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent);
+    resolve_test_tsgo_binary_from(
+        workspace_root,
+        std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_some(),
+    )
+}
+
+fn resolve_test_tsgo_binary_from(
+    workspace_root: Option<&Path>,
+    require_tsgo: bool,
+) -> Option<PathBuf> {
+    if let Some(sibling_cache) = workspace_root
+        .and_then(Path::parent)
+        .map(|parent| parent.join("corsa-bind/.cache/tsgo"))
+        && sibling_cache.exists()
+    {
+        return Some(sibling_cache);
+    }
+
+    let resolved =
+        workspace_root.and_then(vize_carton::corsa_resolver::discover_corsa_in_ancestors);
+    assert!(
+        resolved.is_some() || !require_tsgo,
+        "VIZE_TEST_REQUIRE_TSGO is set, but no tsgo executable was found"
+    );
+    resolved
+}
+
+#[test]
+#[should_panic(expected = "VIZE_TEST_REQUIRE_TSGO is set")]
+fn required_tsgo_rejects_missing_workspace_root() {
+    let _ = resolve_test_tsgo_binary_from(None, true);
+}

@@ -69,11 +69,16 @@ pub struct SfcScriptGeneratorFacts {
     options_setup_return_has_spread: bool,
     define_props_result_bindings: FxHashSet<String>,
     define_props_boolean_keys: Option<Vec<String>>,
+    define_props_boolean_keys_have_unresolved_references: bool,
+    define_props_type_references: Option<FxHashSet<String>>,
 }
 
 impl SfcScriptGeneratorFacts {
     pub(crate) fn from_program(program: &Program<'_>, source: &str) -> Self {
         let usage = macros::identifier_usage(program);
+        let (define_props_boolean_keys, define_props_boolean_keys_have_unresolved_references) =
+            macros::define_props_boolean_keys(program)
+                .map_or((None, false), |(keys, unresolved)| (Some(keys), unresolved));
         Self {
             module_statement_spans: macros::module_statement_spans(program),
             synthetic_source_len: source.len(),
@@ -89,7 +94,9 @@ impl SfcScriptGeneratorFacts {
             props_const_assertion_offsets: options::props_const_assertion_offsets(program),
             options_setup_return_has_spread: options::setup_return_has_spread(program),
             define_props_result_bindings: macros::define_props_result_bindings(program),
-            define_props_boolean_keys: macros::define_props_boolean_keys(program),
+            define_props_boolean_keys,
+            define_props_boolean_keys_have_unresolved_references,
+            define_props_type_references: macros::define_props_type_references(program),
         }
     }
 
@@ -146,6 +153,12 @@ impl SfcScriptGeneratorFacts {
         merge_optional_names(
             &mut self.define_props_boolean_keys,
             other.define_props_boolean_keys,
+        );
+        self.define_props_boolean_keys_have_unresolved_references |=
+            other.define_props_boolean_keys_have_unresolved_references;
+        merge_optional_set(
+            &mut self.define_props_type_references,
+            other.define_props_type_references,
         );
     }
 
@@ -206,6 +219,14 @@ impl SfcScriptGeneratorFacts {
     pub fn define_props_boolean_keys(&self) -> Option<&[String]> {
         self.define_props_boolean_keys.as_deref()
     }
+
+    pub const fn define_props_boolean_keys_have_unresolved_references(&self) -> bool {
+        self.define_props_boolean_keys_have_unresolved_references
+    }
+
+    pub fn define_props_type_references(&self) -> Option<&FxHashSet<String>> {
+        self.define_props_type_references.as_ref()
+    }
 }
 
 fn push_unique(target: &mut Vec<String>, source: Vec<String>) {
@@ -221,4 +242,37 @@ fn merge_optional_names(target: &mut Option<Vec<String>>, source: Option<Vec<Str
     let target = target.get_or_insert_default();
     push_unique(target, source);
     target.sort_unstable();
+}
+
+fn merge_optional_set(target: &mut Option<FxHashSet<String>>, source: Option<FxHashSet<String>>) {
+    let Some(source) = source else { return };
+    target.get_or_insert_default().extend(source);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SfcScriptGeneratorFacts;
+
+    #[test]
+    fn define_props_facts_preserve_unresolved_boolean_and_generic_references() {
+        let facts = SfcScriptGeneratorFacts::from_source(
+            r#"interface LocalProps<T> extends ImportedProps {
+  active?: boolean;
+  value?: T;
+}
+defineProps<LocalProps<T>>();"#,
+        );
+
+        assert_eq!(
+            facts.define_props_boolean_keys(),
+            Some(["active".into()].as_slice()),
+        );
+        assert!(facts.define_props_boolean_keys_have_unresolved_references());
+        let references = facts
+            .define_props_type_references()
+            .expect("type-only defineProps references");
+        assert!(references.contains("LocalProps"));
+        assert!(references.contains("T"));
+        assert!(!references.contains("active"));
+    }
 }

@@ -17,7 +17,7 @@ mod template_refs;
 use self::anchors::emit_setup_binding_anchors;
 use self::component_export::emit_default_export_declaration;
 use self::emits::{emit_emit_props_helper, emit_emits_type};
-use self::generics::{generic_injection_point, references_any_identifier};
+use self::generics::{HoistedGenericAliases, generic_injection_point, references_any_identifier};
 use self::imports::{
     collect_imported_names, emit_global_component_stubs, emit_reference_type_directives,
     extract_declared_name,
@@ -258,18 +258,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         )
     );
 
-    // For a `<script setup generic="...">` SFC, hoisted type declarations are
-    // lifted verbatim to module scope, but the generic parameters only live on
-    // `__setup<...>()`. A lifted declaration that mentions a generic parameter
-    // (e.g. `type Option = { key: T }`) would reference an unbound name there.
-    // Re-declare the SFC generics as defaulted parameters on each such
-    // declaration (`type Option<T extends string = any> = ...`) so the
-    // reference resolves at module scope while bare uses (`Option[]`) still
-    // work via the `= any` defaults.
+    // Re-declare SFC generics on hoisted declarations with safe defaults.
     let generic_injection: Option<(String, Vec<String>)> = generic_param.map(|g| {
-        // `const` modifiers are only legal on function/method/class type
-        // parameters (TS1277); the spliced copies live on `type`/`interface`
-        // declarations and must drop them.
+        // Type aliases/interfaces cannot retain function-only `const` modifiers (TS1277).
         let defaults = strip_const_modifiers(&add_generic_defaults(g));
         let names = extract_generic_names(g)
             .split(',')
@@ -387,6 +378,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             }
         });
     }
+    let hoisted_generic_aliases =
+        HoistedGenericAliases::collect(summary, script_content, generic_param);
+    if let Some(aliases) = &hoisted_generic_aliases {
+        aliases.emit_module_aliases(&mut ts);
+    }
 
     let needs_imported_names = !options.auto_import_stubs.is_empty()
         || (has_script_reference_types && !summary.component_usages.is_empty());
@@ -452,6 +448,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             summary,
             generic_param,
             options_api_props.as_ref(),
+            script_facts,
         )
     });
 
@@ -460,6 +457,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let async_prefix = if is_async { "async " } else { "" };
     let generic_params = generic_param.map(|g| cstr!("<{g}>")).unwrap_or_default();
     append!(ts, "{async_prefix}function __setup{generic_params}() {{\n",);
+    if let Some(aliases) = &hoisted_generic_aliases {
+        aliases.emit_setup_aliases(&mut ts);
+    }
 
     // Setup helpers (only valid inside setup scope)
     emit_setup_helpers(&mut ts, script_facts, generic_param, hoist_shared_preamble);

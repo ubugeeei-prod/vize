@@ -3,7 +3,10 @@
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::{Croquis, macros::ModelDefinition};
 
-use super::{PropsTypeEmission, add_generic_defaults, strip_const_modifiers};
+use super::{
+    PropsTypeEmission, add_generic_defaults, setup_scoped::unused_generic_comment,
+    strip_const_modifiers,
+};
 
 /// Runtime `props:` source for Options API `export type Props` emission.
 /// `DeferredObject` is routed through setup scope for value-only object syntax.
@@ -38,6 +41,7 @@ pub(crate) fn generate_props_type(
     generic_param: Option<&str>,
     options_api_props: Option<&OptionsApiPropsSource>,
     emission: PropsTypeEmission,
+    define_props_type_references: Option<&FxHashSet<String>>,
 ) {
     let props = summary.macros.props();
     let has_props = !props.is_empty();
@@ -67,6 +71,10 @@ pub(crate) fn generate_props_type(
             .strip_prefix('<')
             .and_then(|source| source.strip_suffix('>'))
             .unwrap_or(type_args.as_str());
+        ts.push_str(unused_generic_comment(
+            generic_param,
+            define_props_type_references,
+        ));
         if has_models {
             append!(*ts, "export type Props{generic_decl} = {inner_type} & ");
             append_model_props_type_literal(ts, models);

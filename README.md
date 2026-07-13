@@ -38,10 +38,16 @@
 
 ## What Is Vize?
 
-Vize is a Rust-native toolchain for Vue — one fast, vertically integrated lane
-for single-file components. A single shared parser powers compilation, linting, type-checking,
-formatting, and editor tooling, so your whole Vue workflow runs on the same high-performance core
-instead of a patchwork of disconnected tools.
+Vize is a Rust-native toolchain for Vue sources and outputs. Single-file components,
+standalone templates, JavaScript and TypeScript modules, and JSX/TSX keep source-shaped
+frontends, while DOM/VDOM, SSR, Vapor, lint, type checking, formatting, and editor features
+remain independently requestable products.
+
+Atlas provides stable source identity, dependency planning, caching, and invalidation. It is
+neither a shared parser nor a universal IR. Graph-native frontends parse each authored source
+shape once per relevant revision and project only the facts requested by consumers, such as
+Module, Croquis, optional Flow, or Rendu. Tools can therefore share real compiler work without
+forcing every input and output through one compiler crate or representation.
 
 It plugs into where you already work: `@vizejs/vite-plugin` (Vite), the `vize` npm package
 (project scripts and shared config helpers), the native `vize` binary (LSP / profiling /

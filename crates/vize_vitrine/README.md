@@ -1,24 +1,33 @@
 # vize_vitrine
 
-`vize_vitrine` exposes Vize functionality to JavaScript through NAPI and WASM bindings.
+`vize_vitrine` exposes source-shaped Vize products to JavaScript through NAPI
+and WASM bindings. Each stateless call, or shared batch call where supported,
+assembles the Atlas roots required by that binding instead of routing every
+input through one frontend.
 
 ## Highlights
 
-- Template, SFC, lint, Musea, and typecheck bindings
+- Raw-template, SFC, and JSX/TSX compilation with independently selected outputs
+- Patina lint, Canon typecheck, Inspector, formatting, and Musea bindings where
+  supported by the selected host
+- WASM Croquis and cross-file analysis bindings
 - Shared FFI boundary types for both NAPI and WASM builds
 - Optional `napi` and `wasm` feature gates
 
 ## Main Exports
 
-- `CompilerOptions`
-- `CompileResult`
-- `type_check_sfc`
-- `TypeCheckOptions`
-- `TypeDiagnostic`
+- Raw-template `compile` and `compileVapor`
+- SFC compilation and batch compilation
+- JSX/TSX `compileJsx`
+- Lint, typecheck, formatting, Inspector, and Musea operations exposed by the
+  selected host
 
-When the `napi` feature is enabled, the crate exposes bindings for template compilation, SFC
-compilation, linting, Musea art tooling, and batch type checking. When the `wasm` feature is
-enabled, equivalent browser-facing bindings are exported.
+The NAPI surface includes raw-template, SFC, and JSX/TSX compilation, lint and
+fixes, formatting, Canon type checking, Inspector, and Musea operations. The
+WASM surface includes browser-facing raw-template, SFC, and JSX/TSX compilation,
+Patina lint, Canon type checking, Croquis single-file and cross-file analysis,
+Inspector, Musea, and formatting when Glyph is enabled. These surfaces share FFI
+types where practical, but they are not assumed to export identical operations.
 
 ## Related Crates
 

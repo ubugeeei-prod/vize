@@ -28,8 +28,7 @@ pub(super) fn emit_setup_helpers(
         return;
     }
 
-    let Some(boolean_keys) = script_facts.and_then(|facts| facts.define_props_boolean_keys())
-    else {
+    let Some(facts) = script_facts else {
         ts.push_str(if hoist_shared_preamble {
             VUE_SETUP_HELPERS_HOISTED
         } else {
@@ -37,7 +36,19 @@ pub(super) fn emit_setup_helpers(
         });
         return;
     };
-    emit_define_props_boolean_keys_type(ts, boolean_keys);
+    let Some(boolean_keys) = facts.define_props_boolean_keys() else {
+        ts.push_str(if hoist_shared_preamble {
+            VUE_SETUP_HELPERS_HOISTED
+        } else {
+            VUE_SETUP_HELPERS
+        });
+        return;
+    };
+    emit_define_props_boolean_keys_type(
+        ts,
+        boolean_keys,
+        facts.define_props_boolean_keys_have_unresolved_references(),
+    );
     if hoist_shared_preamble {
         emit_hoisted_setup_helpers(ts);
     } else {
@@ -45,15 +56,26 @@ pub(super) fn emit_setup_helpers(
     }
 }
 
-fn emit_define_props_boolean_keys_type(ts: &mut String, keys: &[String]) {
-    if keys.is_empty() {
+fn emit_define_props_boolean_keys_type(
+    ts: &mut String,
+    keys: &[String],
+    has_unresolved_references: bool,
+) {
+    if keys.is_empty() && !has_unresolved_references {
         ts.push_str("  type __VizeDefinePropsBooleanKeys<_T> = never;\n");
         return;
     }
 
     ts.push_str("  type __VizeDefinePropsBooleanKeys<_T> =\n");
+    if has_unresolved_references {
+        ts.push_str("    __VizeBooleanKey<_T>\n");
+    }
     for (index, key) in keys.iter().enumerate() {
-        let separator = if index == 0 { "    " } else { "  | " };
+        let separator = if index == 0 && !has_unresolved_references {
+            "    "
+        } else {
+            "  | "
+        };
         let mut key_literal = String::default();
         push_ts_string_literal(&mut key_literal, key.as_str());
         append!(
@@ -100,7 +122,7 @@ fn emit_embedded_setup_helpers(ts: &mut String) {
   function defineModel<_T = unknown>(_name: string, _options?: any): __Ref<_T>;
   function defineModel(_name_or_options?: any, _options?: any) { void _name_or_options; void _options; return undefined as any; }
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
-  function withDefaults<_T, _D extends __WithDefaultsArgs<_T>>(_props: _T, _defaults: _D): __WithDefaultsResult<_T, _D>; function withDefaults<_T, _D extends Record<string, any>>(_props: _T, _defaults: _D): __WithDefaultsResult<_T, _D>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
+  function withDefaults<_T, _BKeys extends keyof _T, const _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
   function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
   // Mark compiler macros as used
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;"#,

@@ -44,6 +44,35 @@ pub(super) fn identifier_usage(program: &oxc_ast::ast::Program<'_>) -> Identifie
     usage
 }
 
+pub(super) fn define_props_type_references(
+    program: &oxc_ast::ast::Program<'_>,
+) -> Option<FxHashSet<String>> {
+    #[derive(Default)]
+    struct Collector {
+        references: Option<FxHashSet<String>>,
+    }
+
+    impl<'a> Visit<'a> for Collector {
+        fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+            if is_define_props_call(call)
+                && let Some(type_arguments) = &call.type_arguments
+                && let Some(first) = type_arguments.params.first()
+            {
+                let mut usage = IdentifierUsage::default();
+                usage.visit_ts_type(first);
+                self.references
+                    .get_or_insert_default()
+                    .extend(usage.type_references);
+            }
+            walk::walk_call_expression(self, call);
+        }
+    }
+
+    let mut collector = Collector::default();
+    collector.visit_program(program);
+    collector.references
+}
+
 pub(super) fn const_enum_names(program: &oxc_ast::ast::Program<'_>) -> FxHashSet<String> {
     #[derive(Default)]
     struct Collector {

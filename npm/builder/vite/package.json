@@ -55,6 +55,7 @@
   "dependencies": {
     "@vizejs/native": "workspace:*",
     "@vizejs/source-map": "workspace:*",
+    "oxc-parser": "catalog:oxc",
     "tinyglobby": "catalog:repo-tooling",
     "vize": "workspace:*"
   },

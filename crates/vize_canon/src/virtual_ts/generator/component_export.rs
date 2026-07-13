@@ -18,7 +18,7 @@ pub(super) fn emit_default_export_declaration(
         };
         append!(
             *ts,
-            "declare const __vize_component__: __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; {emit_props_static}{emit_props_separator}{emit_props_resolver} }};\n",
+            "declare const __vize_component__: __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; __vizeResolveProps?: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => Props<{generic_names}>; {emit_props_static}{emit_props_separator}{emit_props_resolver} }};\n",
         );
     } else if emits_info.has_emits_for_props {
         append!(

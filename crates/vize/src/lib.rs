@@ -2,18 +2,26 @@
 //!
 //! High-performance Vue.js toolchain written in Rust.
 //!
-//! This crate re-exports all Vize sub-crates for unified documentation.
+//! This crate re-exports the public Vize tool and representation crates used by
+//! CLI consumers.
 //!
 //! ## Crates
 //!
 //! - [`carton`] - Shared allocator, string, hash, and utility types
 //! - [`relief`] - Vue template AST, errors, and compiler options
 //! - [`armature`] - Vue template tokenizer and parser
-//! - [`atelier_core`] - Core template compiler infrastructure
+//! - [`atelier_core`] - Legacy template transform/codegen compatibility lane
 //! - [`atelier_dom`] - DOM mode template compiler
+//! - [`atelier_ssr`] - SSR render backend
 //! - [`atelier_vapor`] - Vapor mode template compiler
 //! - [`atelier_template`] - Independent raw Vue-template frontend
 //! - [`atelier_sfc`] - Single File Component (SFC) parser and compiler
+//! - [`atelier_jsx`] - JSX/TSX graph-native frontend
+//! - [`rendu`] - Frontend-neutral render HIR
+//! - [`flow`] - Optional single-file control/data/effect graph
+//! - [`module`] - JavaScript/TypeScript module facts and CFG
+//! - [`croquis`] - Frontend-neutral semantic facts
+//! - [`croquis_cf`] - Opt-in cross-file semantic aggregation
 //! - [`glyph`] - Vue SFC formatter
 //! - [`patina`] - Vue SFC linter
 //! - [`canon`] - Vue-aware type checking and virtual TS generation
@@ -39,7 +47,7 @@ pub use vize_relief as relief;
 /// Vue template tokenizer and parser.
 pub use vize_armature as armature;
 
-/// Core template compiler infrastructure.
+/// Legacy Vue-template transform/codegen compatibility lane.
 pub use vize_atelier_core as atelier_core;
 
 /// DOM mode template compiler.

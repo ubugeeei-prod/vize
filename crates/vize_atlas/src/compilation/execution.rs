@@ -107,13 +107,17 @@ impl Compilation {
                     *request,
                     source.revision(),
                     selected,
-                    plan.input_dependencies
-                        .get(request)
-                        .map_or(&[], Vec::as_slice),
-                    plan.source_input_dependencies
-                        .get(request)
-                        .map_or(&[], Vec::as_slice),
-                    source_dependencies,
+                    crate::cache::CacheDependencies {
+                        inputs: plan
+                            .input_dependencies
+                            .get(request)
+                            .map_or(&[], Vec::as_slice),
+                        source_inputs: plan
+                            .source_input_dependencies
+                            .get(request)
+                            .map_or(&[], Vec::as_slice),
+                        sources: source_dependencies,
+                    },
                     CachedArtifact {
                         value: Shared::clone(&value),
                         observation_closure: observation_closure.clone(),

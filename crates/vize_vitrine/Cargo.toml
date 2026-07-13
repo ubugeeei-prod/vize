@@ -18,7 +18,7 @@ crate-type = ["cdylib", "rlib"]
 [features]
 default = ["glyph"]
 glyph = ["dep:vize_glyph"]
-legacy = ["vize/legacy", "vize_atelier_sfc/legacy", "vize_canon/legacy"]
+legacy = ["vize/legacy", "vize_canon/legacy"]
 napi = [
   "dep:napi",
   "dep:napi-derive",

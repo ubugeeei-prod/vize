@@ -1,4 +1,4 @@
-use vize_carton::{String, append, cstr};
+use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 
 use super::{append_model_props_type_literal, extract_generic_names};
@@ -55,4 +55,72 @@ pub(super) fn props_type_ref(
                 })
                 .unwrap_or_else(|| "Props".into())
         })
+}
+
+pub(super) fn unused_generic_comment(
+    generic_param: Option<&str>,
+    type_references: Option<&FxHashSet<String>>,
+) -> &'static str {
+    let Some(generic) = generic_param else {
+        return "";
+    };
+    let names = extract_generic_names(generic);
+    let uses_every_generic = type_references.is_some_and(|type_references| {
+        names
+            .split(',')
+            .map(str::trim)
+            .filter(|name| !name.is_empty())
+            .all(|name| {
+                type_references
+                    .iter()
+                    .any(|type_reference| type_reference.as_str() == name)
+            })
+    });
+    if uses_every_generic {
+        ""
+    } else {
+        "// @ts-ignore TS6196: SFC generic may be used by emits or slots.\n"
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::unused_generic_comment;
+    use vize_carton::FxHashSet;
+
+    fn references(names: &[&str]) -> FxHashSet<vize_carton::String> {
+        names.iter().map(|name| (*name).into()).collect()
+    }
+
+    #[test]
+    fn suppresses_only_props_aliases_that_omit_sfc_generics() {
+        assert_eq!(
+            unused_generic_comment(Some("T"), Some(&references(&["ImportedProps"]))),
+            "// @ts-ignore TS6196: SFC generic may be used by emits or slots.\n"
+        );
+        assert_eq!(
+            unused_generic_comment(Some("T"), Some(&references(&["LocalProps", "T"]))),
+            ""
+        );
+        assert_eq!(
+            unused_generic_comment(Some("T, U"), Some(&references(&["LocalProps", "T"]))),
+            "// @ts-ignore TS6196: SFC generic may be used by emits or slots.\n"
+        );
+        assert_eq!(
+            unused_generic_comment(Some("T, U"), Some(&references(&["LocalProps", "T", "U"])),),
+            ""
+        );
+        assert_eq!(
+            unused_generic_comment(Some("T"), Some(&references(&[]))),
+            "// @ts-ignore TS6196: SFC generic may be used by emits or slots.\n"
+        );
+        assert_eq!(
+            unused_generic_comment(Some("T"), Some(&references(&["T"]))),
+            ""
+        );
+        assert_eq!(
+            unused_generic_comment(Some("T"), Some(&references(&["SomeTTProps"]))),
+            "// @ts-ignore TS6196: SFC generic may be used by emits or slots.\n"
+        );
+    }
 }

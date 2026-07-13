@@ -185,11 +185,12 @@ source, provider registry, or relevant typed-input revision is rejected rather
 than executed against mismatched state.
 
 For an SFC with authored script, `SfcScriptSyntaxProduct` is the parse owner.
-Each `<script>` and `<script setup>` block is parsed once while its OXC `Program`
-is live. Before that allocator is dropped, the provider projects the owned
-`ModuleDocument`, Croquis script analysis, and compiler preanalysis used by
-normal-script and script-setup compilation. Module, Canon, Croquis, and the SFC
-compiler consume those projections instead of reparsing the authored block.
+Each `<script>` and `<script setup>` block is parsed once per source revision
+while its OXC `Program` is live. Before that allocator is dropped, the provider
+projects the owned `ModuleDocument`, Croquis script analysis, and compiler
+preanalysis used by normal-script and script-setup compilation. Module, Canon,
+Croquis, and the SFC compiler consume those projections instead of reparsing the
+authored block.
 
 ## Cross-source requests and immutable snapshots
 
@@ -266,16 +267,24 @@ there is no shadow execution or second parse used only for telemetry.
 
 ## Production host roots
 
-| Host               | Compilation lifetime                                                                                  | Requested roots                                                                                                                  |
-| ------------------ | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `vize build`       | one multi-source snapshot per invocation                                                              | source-aware SFC compiled modules and maps                                                                                       |
-| `vize lint`        | one multi-source compilation, including autofix revalidation                                          | Patina document reports plus optional full Croquis CF analysis                                                                   |
-| `vize check`       | one project snapshot for Vue, TS, declarations, and JSX/TSX                                           | Canon typed-document products; SFCs use descriptor and Croquis, conditional Relief/Module, and no fabricated Flow                |
-| Maestro            | one URI-keyed mutable compilation; sources are revised in place and products are queried directly     | SFC descriptor/Module/Relief/Croquis, raw-template Relief/Croquis, JSX syntax, Patina, Canon, and virtual documents as requested |
-| Glyph              | one document compilation                                                                              | formatted-output product over the shared descriptor                                                                              |
-| Inspector          | one report-scoped multi-source compilation                                                            | `InspectorAgentReport` over per-source analyses; SFC analysis uses Module/descriptor/Relief/Croquis, raw JS/TS uses Module       |
-| NAPI/WASM bindings | one compilation per stateless request; one compilation shared by each batch API                       | SFC/JSX compile, raw `TemplateCompile`, Patina, Canon, and cross-file analysis roots exposed by that binding surface             |
-| Bundler hosts      | one native compile request per transform, with native batch compilation where the host batches inputs | SFC or JSX compiled-module products and source maps through the binding API; bundlers do not own graph products                  |
+| Host                          | Compilation lifetime                                                                                                           | Requested roots                                                                                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `vize build`                  | one multi-source snapshot per invocation                                                                                       | source-aware SFC compiled modules and maps                                                                                                             |
+| `vize lint`                   | one multi-source compilation, including autofix revalidation                                                                   | Patina document reports plus optional full Croquis CF analysis                                                                                         |
+| `vize check`                  | one project snapshot for Vue, TS, declarations, and JSX/TSX                                                                    | Canon typed-document products; SFCs use descriptor and Croquis, conditional Relief/Module, and no fabricated Flow                                      |
+| Maestro                       | one URI-keyed mutable compilation; open and discovered file-backed Vue dependency URIs retain source identity across revisions | SFC descriptor/Module/Relief/Croquis, raw-template Relief/Croquis, JSX syntax, Patina, Canon, `GlyphFormatProduct`, and virtual documents as requested |
+| Standalone Glyph / `vize fmt` | one document compilation per SFC formatting request                                                                            | `GlyphFormatProduct` over the SFC descriptor                                                                                                           |
+| Inspector                     | one report-scoped multi-source compilation                                                                                     | `InspectorAgentReport` over per-source analyses; SFC analysis uses Module/descriptor/Relief/Croquis, raw JS/TS uses Module                             |
+| NAPI/WASM bindings            | one compilation per stateless request; one compilation shared by each batch API                                                | SFC/JSX compile, raw `TemplateCompile`, Patina, Canon, and cross-file analysis roots exposed by that binding surface                                   |
+| Bundler hosts                 | one native compile request per transform, with native batch compilation where the host batches inputs                          | SFC or JSX compiled-module products and source maps through the binding API; bundlers do not own graph products                                        |
+
+For normal `.vue` editor requests, Maestro queries `CanonVueDocumentProduct`
+for the host and every discovered non-Art Vue dependency in that same compilation.
+Open-document contents take precedence over disk contents, and either source
+keeps its URI-keyed `SourceId` while revisions change. Maestro then passes the
+prebuilt host and dependency products to Corsa as overlays; this synchronization
+does not create a private `Compilation` or reparse the SFCs. Art/Musea virtual
+documents use specialized generation paths and are outside this guarantee.
 
 The SFC compiled-module root requests Rendu only when a template must be
 rendered and invokes the graph-native DOM, SSR, or Vapor emitter. It does not
@@ -295,10 +304,11 @@ requests syntax and Rendu but not Module or semantic analysis.
 - graph-native DOM, SSR, and Vapor providers consume Rendu and do not parse
   source. Legacy frontend-coupled entry points remain only as deprecated/public
   compatibility surfaces; production recipes do not invoke them.
-- `vize_atelier_core` contains only the shared legacy-compatible Vue-template
-  transform/emission lane. Relief, Armature, and Carton aliases are crate-private
-  implementation details; no public root facade remains. Production consumers
-  import those contracts from their owning crates directly.
+- `vize_atelier_core` owns the IR used by its legacy-compatible Vue-template
+  transform/emission lane. It does not own the Atlas product/graph kernel or act
+  as a shared workspace foundation. Relief, Armature, and Carton aliases are
+  crate-private implementation details; no public root facade remains.
+  Production consumers import those contracts from their owning crates directly.
 - frontend-specific producers live in frontend crates; stable owned products
   cross the graph boundary.
 

@@ -77,7 +77,7 @@ export interface CompilerOptions {
   /** Whether the template targets a custom renderer instead of the DOM. */
   customRenderer?: boolean;
   /** Vue language line used by SFC artifact planning. */
-  vueVersion?: "1" | "2" | "2.7" | "3";
+  vueVersion?: "1" | "2" | "2.7" | "3" | "v1" | "v2" | "v2.7" | "v3";
   /** Template syntax compatibility mode. */
   templateSyntax?: "standard" | "strict" | "quirks";
   /** Enable Vue in-tag comments (`// ...`) inside opening tags. */

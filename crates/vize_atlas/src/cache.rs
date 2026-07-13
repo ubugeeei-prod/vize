@@ -31,6 +31,12 @@ pub(crate) struct CachedArtifact {
     pub(crate) observation_closure: Vec<ProviderObservation>,
 }
 
+pub(crate) struct CacheDependencies<'a> {
+    pub(crate) inputs: &'a [InputId],
+    pub(crate) source_inputs: &'a [(SourceId, SourceInputId)],
+    pub(crate) sources: &'a [(SourceId, SourceRevision)],
+}
+
 /// Observable identity of one cached typed artifact.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub struct CachedProduct {
@@ -128,9 +134,7 @@ impl ArtifactCache {
         request: ProductRequest,
         revision: SourceRevision,
         provider: ProviderId,
-        inputs: &[InputId],
-        source_inputs: &[(SourceId, SourceInputId)],
-        source_dependencies: &[(SourceId, SourceRevision)],
+        dependencies: CacheDependencies<'_>,
         artifact: CachedArtifact,
     ) {
         self.write_entries().insert(
@@ -141,9 +145,9 @@ impl ArtifactCache {
             CacheEntry {
                 revision,
                 provider,
-                inputs: inputs.to_vec(),
-                source_inputs: source_inputs.to_vec(),
-                source_dependencies: source_dependencies.to_vec(),
+                inputs: dependencies.inputs.to_vec(),
+                source_inputs: dependencies.source_inputs.to_vec(),
+                source_dependencies: dependencies.sources.to_vec(),
                 value: artifact.value,
                 observation_closure: artifact.observation_closure,
             },

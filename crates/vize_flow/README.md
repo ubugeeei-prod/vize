@@ -26,7 +26,12 @@ aggregation, module/component relationships, and project-level analysis. A
 cross-file pass may consume facts derived from Flow, but it does not turn Flow
 into a project graph.
 
-Frontends are producers and tools are consumers. SFC, JSX, Vapor, legacy, and
-future frontends can each lower directly into this representation, while a
-compiler, linter, or type checker can request the same product without choosing
-one frontend's AST as the common foundation.
+Source frontends are optional producers. Raw-template, SFC, JSX/TSX, and future
+frontends can lower their own syntax directly into Flow when a root requests
+execution facts. A Flow-aware analysis can then consume the same owned product
+without choosing one frontend's AST.
+
+Flow is a peer product, not a mandatory foundation for compilation, linting, or
+type checking. Normal SFC Canon requests do not fabricate it. DOM, SSR, and
+Vapor are output backends over the separate Rendu product; Vapor is not a
+Flow-producing frontend.

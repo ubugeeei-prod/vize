@@ -29,6 +29,7 @@ test("compiler foundation ownership is split across physical crates", () => {
   ]);
   assert.deepEqual(internalDependencies("vize_croquis_cf"), [
     "vize_armature",
+    "vize_atelier_sfc",
     "vize_atlas",
     "vize_carton",
     "vize_croquis",
@@ -203,6 +204,7 @@ test("representation contracts stay independent of frontend producers", () => {
   const ffiLintGraph = read("crates/vize_vitrine/src/lint_artifact.rs");
   assert.match(ffiLintGraph, /PatinaDocumentReportProduct/);
   assert.match(ffiLintGraph, /RawTemplateReliefProvider/);
+  assert.match(ffiLintGraph, /RawTemplateCroquisProvider/);
   for (const host of [
     "crates/vize_vitrine/src/napi/lint.rs",
     "crates/vize_vitrine/src/napi/lint/batch.rs",

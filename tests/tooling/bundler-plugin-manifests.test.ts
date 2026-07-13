@@ -14,6 +14,7 @@ interface ExportEntry {
 }
 
 interface BundlerPluginManifest {
+  dependencies?: Record<string, string>;
   engines?: Record<string, string>;
   exports?: Record<string, ExportEntry | string>;
   name?: string;
@@ -134,6 +135,18 @@ test("Vite integrations accept Nuxt 3.19's Vite 7.3 range and Vite 8", () => {
     vitePin.startsWith("npm:@voidzero-dev/vite-plus-core@"),
     `vite catalog pin should alias the VoidZero proxy, got ${vitePin}`,
   );
+});
+
+test("@vizejs/vite-plugin does not import Vite 8-only parser APIs", () => {
+  const manifest = readManifest("builder/vite");
+  const moduleOutput = fs.readFileSync(
+    path.join(root, "npm/builder/vite/src/utils/module-output.ts"),
+    "utf-8",
+  );
+
+  assert.equal(manifest.dependencies?.["oxc-parser"], "catalog:oxc");
+  assert.match(moduleOutput, /import \{ parseSync \} from "oxc-parser";/);
+  assert.doesNotMatch(moduleOutput, /from ["']vite["']/);
 });
 
 test("all three bundler-plugin packages require Node >= 22", () => {

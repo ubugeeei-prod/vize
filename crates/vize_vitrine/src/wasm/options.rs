@@ -39,7 +39,7 @@ define_compiler_option_inventory! {
     IsTs => ("isTs", "boolean"),
     CustomRenderer => ("customRenderer", "boolean"),
     TemplateSyntax => ("templateSyntax", r#""standard" | "strict" | "quirks""#),
-    VueVersion => ("vueVersion", r#""v1" | "v2" | "v2.7" | "v3""#),
+    VueVersion => ("vueVersion", r#""1" | "2" | "2.7" | "3" | "v1" | "v2" | "v2.7" | "v3""#),
     ExperimentalInTagComments => ("experimentalInTagComments", "boolean"),
     ExperimentalPatternedTemplate => ("experimentalPatternedTemplate", "boolean"),
     RuntimeModuleName => ("runtimeModuleName", "string"),

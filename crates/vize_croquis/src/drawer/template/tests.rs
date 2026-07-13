@@ -171,6 +171,32 @@ fn dynamic_component_v_on_uses_is_binding_as_target_component() {
 }
 
 #[test]
+fn dynamic_component_v_on_keeps_static_member_target() {
+    use crate::scope::ScopeData;
+    use vize_armature::parse;
+    use vize_carton::Bump;
+
+    let template = r#"<component :is="Components.Child" @change="handle"></component>"#;
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, template);
+    assert!(errors.is_empty(), "Template should parse without errors");
+
+    let mut drawer = Drawer::with_options(DrawerOptions::full());
+    drawer.draw_template(&root);
+    let summary = drawer.finish();
+    let event = summary
+        .scopes
+        .iter()
+        .find_map(|scope| match scope.data() {
+            ScopeData::EventHandler(data) => Some(data),
+            _ => None,
+        })
+        .expect("dynamic component listener should create an event scope");
+
+    assert_eq!(event.target_component.as_deref(), Some("Components.Child"));
+}
+
+#[test]
 fn nested_v_scope_shadows_outer() {
     use vize_armature::parse;
     use vize_carton::Bump;

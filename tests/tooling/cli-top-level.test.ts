@@ -8,7 +8,16 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
+function workspaceVersion(): string {
+  const version = fs
+    .readFileSync(path.join(root, "Cargo.toml"), "utf-8")
+    .match(/^version = "(.+)"$/m)?.[1];
+  assert.ok(version, "Cargo.toml should declare a workspace version");
+  return version;
+}
+
 function resolveVizeCommand(): { command: string; prefix: string[] } {
+  const expectedVersion = `vize ${workspaceVersion()}`;
   const candidates = [
     path.join(root, "target/ci/vize"),
     path.join(root, "target/release/vize"),
@@ -17,7 +26,7 @@ function resolveVizeCommand(): { command: string; prefix: string[] } {
   ];
   for (const candidate of candidates) {
     const probe = spawnSync(candidate, ["--version"], { cwd: root, encoding: "utf8" });
-    if (probe.status === 0) {
+    if (probe.status === 0 && probe.stdout.trim() === expectedVersion) {
       return { command: candidate, prefix: [] };
     }
   }
@@ -32,14 +41,6 @@ function runVize(args: string[], cwd: string = root) {
     throw result.error;
   }
   return result;
-}
-
-function workspaceVersion(): string {
-  const version = fs
-    .readFileSync(path.join(root, "Cargo.toml"), "utf-8")
-    .match(/^version = "(.+)"$/m)?.[1];
-  assert.ok(version, "Cargo.toml should declare a workspace version");
-  return version;
 }
 
 test("vize --version matches the workspace Cargo.toml version", () => {

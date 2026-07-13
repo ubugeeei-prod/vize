@@ -7,6 +7,8 @@ use crate::{
     ProviderId, SourceId, SourceInputId, SourceRevision, SourceStore, compilation::ProviderEntry,
 };
 
+type ProviderSelection = (ProviderEntry, Vec<InputId>, Vec<(SourceId, SourceInputId)>);
+
 pub(crate) fn build_plan(
     sources: &SourceStore,
     providers: &FxHashMap<ProductId, Vec<ProviderEntry>>,
@@ -232,7 +234,7 @@ impl<'a> Traversal<'a> {
         request: ProductRequest,
         required_by: Option<ProductRequest>,
         context: &PlanningContext<'_>,
-    ) -> Result<(ProviderEntry, Vec<InputId>, Vec<(SourceId, SourceInputId)>), PlanError> {
+    ) -> Result<ProviderSelection, PlanError> {
         let Some(registered) = self.providers.get(&request.product()) else {
             return Err(self.missing_provider(request, required_by));
         };

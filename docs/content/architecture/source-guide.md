@@ -62,20 +62,32 @@ flowchart LR
 ```
 
 One Atlas compilation owns source identity and executes each requested typed
-product once. The diagram shows available provider edges, not one mandatory
-pipeline. SFC, raw-template, and JSX frontends keep their own syntax; consumers
-share only the Module, Croquis, Flow, or Rendu products they request. Each
-authored SFC script block is parsed once while its live OXC `Program` is
-projected into Module facts, Croquis analysis, and compiler preanalysis.
+product once for the same source revision, provider-registry revision, and
+relevant-input revision. A source, provider registry, or relevant typed-input change may
+execute that product again. The diagram shows available provider edges, not one
+mandatory pipeline. SFC, raw-template, and JSX frontends keep their own syntax;
+consumers share only the Module, Croquis, Flow, or Rendu products they request.
+Each authored SFC script block is parsed once per source revision while its live
+OXC `Program` is projected into Module facts, Croquis analysis, and compiler
+preanalysis.
 
 Production commands, Maestro, Glyph, Inspector, and binding hosts enter through
-typed roots. Maestro revises one URI-keyed mutable compilation and queries it
-directly. Inspector requests `InspectorAgentReport`, which aggregates its own
-per-source analysis products: SFC analysis uses Module, descriptor, Relief, and
-Croquis, while raw JS/TS analysis uses Module. NAPI/WASM expose compile,
-raw-template, Patina, Canon, and cross-file roots as supported by each surface;
-bundler packages only host the relevant compile bindings. Legacy public
-functions remain compatibility APIs rather than host orchestration.
+typed roots. Maestro revises one URI-keyed mutable `Compilation` and queries it
+directly. Open documents and discovered file-backed Vue dependencies keep stable
+`SourceId` values in that same compilation. The normal `.vue` path queries
+`CanonVueDocumentProduct` for the host and non-Art Vue dependencies, then passes those
+prebuilt documents to Corsa as host and dependency overlays; Corsa sync neither
+creates a private `Compilation` nor reparses those SFCs. Art/Musea virtual
+documents retain their specialized paths and are outside this guarantee. Editor
+formatting queries `GlyphFormatProduct` from the same persistent compilation.
+Standalone Glyph calls, including each `vize fmt` SFC request, use a
+request-scoped one-document compilation. Inspector requests
+`InspectorAgentReport`, which
+aggregates its own per-source analysis products: SFC analysis uses Module,
+descriptor, Relief, and Croquis, while raw JS/TS analysis uses Module. NAPI/WASM
+expose compile, raw-template, Patina, Canon, and cross-file roots as supported by
+each surface; bundler packages only host the relevant compile bindings. Legacy
+public functions remain compatibility APIs rather than host orchestration.
 
 ## Crate Entry Points
 

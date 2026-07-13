@@ -30,7 +30,7 @@ pub(super) fn generate_component_event_types(
     let component_name = data.target_component.as_ref()?;
     let scope_id = scope.id.as_u32();
     let safe_event_name = to_safe_identifier(data.event_name.as_str());
-    let component_ref = to_safe_identifier(component_name.as_str());
+    let component_ref = component_reference_expression(component_name.as_str());
     let component_type_name = to_safe_identifier_fragment(component_name.as_str());
     let pascal_event = to_pascal_case(data.event_name.as_str());
     let on_handler = cstr!("on{pascal_event}");
@@ -150,6 +150,18 @@ pub(super) fn generate_component_event_types(
     })
 }
 
+fn component_reference_expression(name: &str) -> String {
+    if name.split('.').all(|segment| {
+        let mut bytes = segment.bytes();
+        matches!(bytes.next(), Some(b'_' | b'$' | b'a'..=b'z' | b'A'..=b'Z'))
+            && bytes.all(|byte| byte == b'_' || byte == b'$' || byte.is_ascii_alphanumeric())
+    }) {
+        String::from(name)
+    } else {
+        to_safe_identifier(name)
+    }
+}
+
 struct EmitInferenceContext<'a> {
     summary: &'a Croquis,
     component_name: &'a str,
@@ -238,8 +250,9 @@ fn generate_inferred_emit_args(ts: &mut String, ctx: &EmitInferenceContext<'_>) 
     );
     append!(
         *ts,
-        "{}type {resolver_type} = typeof {} extends {{ __vizeResolveEmitProps?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {{}}) : (props: any) => {{}};\n",
+        "{}type {resolver_type} = typeof {} extends {{ __vizeResolveEmitProps?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {{}}) : typeof {} extends {{ __vizeResolveProps?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {{}}) : (props: any) => {{}};\n",
         ctx.indent,
+        ctx.component_ref,
         ctx.component_ref,
     );
     append!(

@@ -129,6 +129,7 @@ impl SetupPropsPlan {
         summary: &Croquis,
         generic_param: Option<&str>,
         options_api_props: Option<&OptionsApiPropsSource>,
+        script_facts: Option<&vize_atelier_sfc::SfcScriptGeneratorFacts>,
     ) {
         generate_props_type(
             ts,
@@ -136,6 +137,7 @@ impl SetupPropsPlan {
             generic_param,
             options_api_props,
             self.props_type_emission(),
+            script_facts.and_then(|facts| facts.define_props_type_references()),
         );
     }
 

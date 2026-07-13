@@ -1,5 +1,8 @@
 use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 
+mod emit_only;
+mod inherited_boolean;
+
 #[test]
 fn batch_type_checker_exposes_generic_props_inherited_from_pick() {
     if resolve_test_tsgo_binary().is_none() {
@@ -95,6 +98,247 @@ mount(Child, {
                 && message.contains("Type 'string' is not assignable to type 'undefined'"))
         }),
         "generic SFC props should infer through extracted component props, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn preserves_generic_parameter_when_default_differs_from_constraint() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "issue-2811-generic-default-scope",
+        &[(
+            "src/Foo.vue",
+            r#"<script setup lang="ts" generic="T extends string | number = string">
+import { ref } from "vue";
+
+interface Props {
+  value?: T;
+}
+
+const props = defineProps<Props>();
+const state = ref(props.value);
+
+function setValue(value: T) {
+  state.value = value;
+}
+</script>
+
+<template>
+  <slot :set-value :state />
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "generic defaults must not replace T inside the SFC declaration: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn preserves_optional_union_props_after_with_defaults() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case(
+        "issue-2809-with-defaults-union",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+import { ref } from "vue";
+
+interface FooProps {
+  kind?: "one";
+  value?: string;
+}
+
+interface BarProps {
+  kind?: "many";
+  value?: string[];
+}
+
+type ExampleProps = FooProps | BarProps;
+
+const props = withDefaults(defineProps<ExampleProps>(), {
+  kind: "one",
+});
+
+const value = ref(props.value);
+
+function clear() {
+  value.value = undefined;
+}
+</script>
+
+<template>
+  <button type="button" @click="clear">Clear</button>
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "a defaulted discriminant must not require other union props: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn preserves_optional_object_spreads_after_with_defaults() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "issue-2810-generic-with-defaults-object-spread",
+        &[(
+            "src/Panel.vue",
+            r#"<script setup lang="ts" generic="T">
+interface Props {
+  value?: T;
+  options?: { label?: string };
+  disabled?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  disabled: false
+});
+</script>
+
+<template>
+  <div v-bind="{ ...props.options }" />
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "optional object props must remain spreadable after unrelated defaults: {snapshot:#?}"
+    );
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn imported_define_emits_type_marks_generic_parameter_as_used() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case(
+        "issue-2808-imported-generic-emits",
+        &[
+            (
+                "src/types.ts",
+                r#"export interface ExampleValue {
+  value: number;
+}
+
+export interface ExampleProps {
+  firstValue?: ExampleValue | ExampleValue[];
+  secondValue?: ExampleValue | ExampleValue[];
+  additionalNumberValue?: number;
+  disabled?: boolean;
+  reversed?: boolean;
+  mode?: "a" | "b" | "c";
+}
+
+export type ExampleEmits<
+  T extends ExampleValue | ExampleValue[] = ExampleValue | ExampleValue[]
+> = {
+  change: [value: T];
+};
+"#,
+            ),
+            (
+                "src/Example.vue",
+                r#"<script
+  setup
+  lang="ts"
+  generic="
+    T extends ExampleValue | ExampleValue[] = ExampleValue | ExampleValue[]
+  "
+>
+  import {
+    type ExampleEmits,
+    type ExampleProps,
+    type ExampleValue
+  } from "./types";
+
+  const props = withDefaults(defineProps<ExampleProps>(), {
+    firstValue: undefined,
+    secondValue: undefined,
+    additionalNumberValue: 0,
+    disabled: false,
+    reversed: false,
+    mode: "b"
+  });
+
+  const emit = defineEmits<ExampleEmits<T>>();
+  emit("change", props.firstValue as T);
+  // @ts-expect-error number is outside the ExampleEmits<T> payload constraint
+  emit("change", 1);
+</script>
+
+<template>
+  <slot :emit :props />
+</template>
+"#,
+            ),
+        ],
+    );
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "noUnusedParameters": true,
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.vue", "src/**/*.ts"]
+}"#,
+    )
+    .unwrap();
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "an imported defineEmits type argument must mark T as used: {snapshot:#?}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
