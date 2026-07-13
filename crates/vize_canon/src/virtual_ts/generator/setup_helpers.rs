@@ -12,7 +12,7 @@ use crate::virtual_ts::helpers::{VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED};
 
 mod boolean_keys;
 
-use boolean_keys::collect_define_props_boolean_keys;
+use boolean_keys::{DefinePropsBooleanKeys, collect_define_props_boolean_keys};
 
 pub(super) fn emit_setup_helpers(
     ts: &mut String,
@@ -45,15 +45,22 @@ pub(super) fn emit_setup_helpers(
     }
 }
 
-fn emit_define_props_boolean_keys_type(ts: &mut String, keys: &[String]) {
-    if keys.is_empty() {
+fn emit_define_props_boolean_keys_type(ts: &mut String, collection: &DefinePropsBooleanKeys) {
+    if collection.keys.is_empty() && !collection.has_unresolved_references {
         ts.push_str("  type __VizeDefinePropsBooleanKeys<_T> = never;\n");
         return;
     }
 
     ts.push_str("  type __VizeDefinePropsBooleanKeys<_T> =\n");
-    for (index, key) in keys.iter().enumerate() {
-        let separator = if index == 0 { "    " } else { "  | " };
+    if collection.has_unresolved_references {
+        ts.push_str("    __VizeBooleanKey<_T>\n");
+    }
+    for (index, key) in collection.keys.iter().enumerate() {
+        let separator = if index == 0 && !collection.has_unresolved_references {
+            "    "
+        } else {
+            "  | "
+        };
         let mut key_literal = String::default();
         push_ts_string_literal(&mut key_literal, key.as_str());
         append!(
