@@ -384,8 +384,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
-          run-install: false
-
+          run-install: true
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: clippy-test
@@ -396,6 +395,7 @@ jobs:
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Test
+        env: { VIZE_TEST_REQUIRE_TSGO: "1" }
         run: cargo test --workspace && cargo test -p vize_vitrine --no-default-features --features wasm
 
   coverage:

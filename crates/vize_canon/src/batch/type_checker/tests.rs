@@ -19,7 +19,9 @@ mod package_exports_types;
 mod recent_issues;
 mod scan;
 mod template_block;
+mod tsgo;
 mod tsx_sfc;
+use tsgo::resolve_test_tsgo_binary;
 #[test]
 fn batch_type_checker_snapshots_vue_diagnostics() {
     if resolve_test_tsgo_binary().is_none() {
@@ -2130,22 +2132,6 @@ fn corsa_type_mismatch_snapshot(
     });
     let _ = std::fs::remove_dir_all(&project_root);
     result
-}
-
-fn resolve_test_tsgo_binary() -> Option<PathBuf> {
-    if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
-        return None;
-    }
-
-    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(Path::parent)?;
-    let sibling_cache = workspace_root.parent()?.join("corsa-bind/.cache/tsgo");
-    if sibling_cache.exists() {
-        return Some(sibling_cache);
-    }
-
-    vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
 }
 
 fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
