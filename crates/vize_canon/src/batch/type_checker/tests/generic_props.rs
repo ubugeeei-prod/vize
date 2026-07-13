@@ -241,3 +241,104 @@ const props = withDefaults(defineProps<Props>(), {
     );
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn imported_define_emits_type_marks_generic_parameter_as_used() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case(
+        "issue-2808-imported-generic-emits",
+        &[
+            (
+                "src/types.ts",
+                r#"export interface ExampleValue {
+  value: number;
+}
+
+export interface ExampleProps {
+  firstValue?: ExampleValue | ExampleValue[];
+  secondValue?: ExampleValue | ExampleValue[];
+  additionalNumberValue?: number;
+  disabled?: boolean;
+  reversed?: boolean;
+  mode?: "a" | "b" | "c";
+}
+
+export type ExampleEmits<
+  T extends ExampleValue | ExampleValue[] = ExampleValue | ExampleValue[]
+> = {
+  change: [value: T];
+};
+"#,
+            ),
+            (
+                "src/Example.vue",
+                r#"<script
+  setup
+  lang="ts"
+  generic="
+    T extends ExampleValue | ExampleValue[] = ExampleValue | ExampleValue[]
+  "
+>
+  import {
+    type ExampleEmits,
+    type ExampleProps,
+    type ExampleValue
+  } from "./types";
+
+  const props = withDefaults(defineProps<ExampleProps>(), {
+    firstValue: undefined,
+    secondValue: undefined,
+    additionalNumberValue: 0,
+    disabled: false,
+    reversed: false,
+    mode: "b"
+  });
+
+  const emit = defineEmits<ExampleEmits<T>>();
+  emit("change", props.firstValue as T);
+  // @ts-expect-error number is outside the ExampleEmits<T> payload constraint
+  emit("change", 1);
+</script>
+
+<template>
+  <slot :emit :props />
+</template>
+"#,
+            ),
+        ],
+    );
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "noUnusedParameters": true,
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.vue", "src/**/*.ts"]
+}"#,
+    )
+    .unwrap();
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "an imported defineEmits type argument must mark T as used: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

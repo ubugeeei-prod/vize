@@ -56,3 +56,45 @@ pub(super) fn props_type_ref(
                 .unwrap_or_else(|| "Props".into())
         })
 }
+
+pub(super) fn unused_generic_comment(
+    generic_param: Option<&str>,
+    props_source: &str,
+) -> &'static str {
+    let Some(generic) = generic_param else {
+        return "";
+    };
+    let names = extract_generic_names(generic);
+    let uses_generic = names
+        .split(',')
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .any(|name| {
+            props_source
+                .split(|ch: char| !(ch == '_' || ch == '$' || ch.is_ascii_alphanumeric()))
+                .any(|token| token == name)
+        });
+    if uses_generic {
+        ""
+    } else {
+        "// @ts-ignore TS6196: SFC generic may be used by emits or slots.\n"
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::unused_generic_comment;
+
+    #[test]
+    fn suppresses_only_props_aliases_that_omit_sfc_generics() {
+        assert_eq!(
+            unused_generic_comment(Some("T"), "ImportedProps"),
+            "// @ts-ignore TS6196: SFC generic may be used by emits or slots.\n"
+        );
+        assert_eq!(unused_generic_comment(Some("T"), "LocalProps<T>"), "");
+        assert_eq!(
+            unused_generic_comment(Some("T"), "SomeTTProps"),
+            "// @ts-ignore TS6196: SFC generic may be used by emits or slots.\n"
+        );
+    }
+}

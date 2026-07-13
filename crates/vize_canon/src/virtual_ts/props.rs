@@ -3,8 +3,8 @@ mod template_bindings;
 mod template_names;
 mod with_defaults;
 use super::helpers::{is_reserved_identifier, to_safe_identifier};
-use setup_scoped::props_type_ref;
 pub(crate) use setup_scoped::{PropsTypeEmission, generate_setup_scoped_props_artifact};
+use setup_scoped::{props_type_ref, unused_generic_comment};
 use template_bindings::{emit_macro_template_prop_bindings, should_skip_template_prop_binding};
 pub(crate) use template_names::collect_template_prop_names;
 use vize_carton::{FxHashSet, String, append, cstr};
@@ -231,7 +231,6 @@ pub(crate) fn generate_props_type(
         .any(|te| te.name.as_str() == "Props");
 
     // Build generic suffix for Props type declaration (with `= any` defaults).
-    // `const` modifiers are illegal on type-alias parameters (TS1277).
     let generic_decl = generic_param
         .map(|g| {
             let with_defaults = strip_const_modifiers(&add_generic_defaults(g));
@@ -249,6 +248,7 @@ pub(crate) fn generate_props_type(
             .strip_prefix('<')
             .and_then(|s| s.strip_suffix('>'))
             .unwrap_or(type_args.as_str());
+        ts.push_str(unused_generic_comment(generic_param, inner_type));
         // Always emit Props alias so it's available in template and default export.
         if has_models {
             append!(*ts, "export type Props{generic_decl} = {inner_type} & ");
