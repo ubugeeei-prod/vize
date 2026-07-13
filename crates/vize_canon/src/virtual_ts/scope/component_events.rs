@@ -250,8 +250,9 @@ fn generate_inferred_emit_args(ts: &mut String, ctx: &EmitInferenceContext<'_>) 
     );
     append!(
         *ts,
-        "{}type {resolver_type} = typeof {} extends {{ __vizeResolveEmitProps?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {{}}) : (props: any) => {{}};\n",
+        "{}type {resolver_type} = typeof {} extends {{ __vizeResolveEmitProps?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {{}}) : typeof {} extends {{ __vizeResolveProps?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {{}}) : (props: any) => {{}};\n",
         ctx.indent,
+        ctx.component_ref,
         ctx.component_ref,
     );
     append!(
