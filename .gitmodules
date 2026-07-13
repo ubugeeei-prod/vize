@@ -124,3 +124,168 @@
 	path = tests/_fixtures/_git/vue-termui
 	url = https://github.com/vue-terminal/vue-termui
 	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-element-admin"]
+	path = tests/_fixtures/_git/vue-element-admin
+	url = https://github.com/PanJiaChen/vue-element-admin
+	shallow = true
+
+[submodule "tests/_fixtures/_git/element"]
+	path = tests/_fixtures/_git/element
+	url = https://github.com/ElemeFE/element
+	shallow = true
+
+[submodule "tests/_fixtures/_git/lx-music-desktop"]
+	path = tests/_fixtures/_git/lx-music-desktop
+	url = https://github.com/lyswhut/lx-music-desktop
+	shallow = true
+
+[submodule "tests/_fixtures/_git/uni-app"]
+	path = tests/_fixtures/_git/uni-app
+	url = https://github.com/dcloudio/uni-app
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue2-elm"]
+	path = tests/_fixtures/_git/vue2-elm
+	url = https://github.com/bailicangdu/vue2-elm
+	shallow = true
+
+[submodule "tests/_fixtures/_git/filebrowser"]
+	path = tests/_fixtures/_git/filebrowser
+	url = https://github.com/filebrowser/filebrowser
+	shallow = true
+
+[submodule "tests/_fixtures/_git/docsify"]
+	path = tests/_fixtures/_git/docsify
+	url = https://github.com/docsifyjs/docsify
+	shallow = true
+
+[submodule "tests/_fixtures/_git/dashy"]
+	path = tests/_fixtures/_git/dashy
+	url = https://github.com/lissy93/dashy
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-devtools-v6"]
+	path = tests/_fixtures/_git/vue-devtools-v6
+	url = https://github.com/vuejs/devtools-v6
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vant"]
+	path = tests/_fixtures/_git/vant
+	url = https://github.com/youzan/vant
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vuepress"]
+	path = tests/_fixtures/_git/vuepress
+	url = https://github.com/vuejs/vuepress
+	shallow = true
+
+[submodule "tests/_fixtures/_git/automa"]
+	path = tests/_fixtures/_git/automa
+	url = https://github.com/AutomaApp/automa
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-pure-admin"]
+	path = tests/_fixtures/_git/vue-pure-admin
+	url = https://github.com/pure-admin/vue-pure-admin
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-manage-system"]
+	path = tests/_fixtures/_git/vue-manage-system
+	url = https://github.com/lin-xin/vue-manage-system
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vitepress"]
+	path = tests/_fixtures/_git/vitepress
+	url = https://github.com/vuejs/vitepress
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vux"]
+	path = tests/_fixtures/_git/vux
+	url = https://github.com/airyland/vux
+	shallow = true
+
+[submodule "tests/_fixtures/_git/koel"]
+	path = tests/_fixtures/_git/koel
+	url = https://github.com/koel/koel
+	shallow = true
+
+[submodule "tests/_fixtures/_git/better-scroll"]
+	path = tests/_fixtures/_git/better-scroll
+	url = https://github.com/ustbhuangyi/better-scroll
+	shallow = true
+
+[submodule "tests/_fixtures/_git/mint-ui"]
+	path = tests/_fixtures/_git/mint-ui
+	url = https://github.com/ElemeFE/mint-ui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/scalar"]
+	path = tests/_fixtures/_git/scalar
+	url = https://github.com/scalar/scalar
+	shallow = true
+
+[submodule "tests/_fixtures/_git/soybean-admin"]
+	path = tests/_fixtures/_git/soybean-admin
+	url = https://github.com/soybeanjs/soybean-admin
+	shallow = true
+
+[submodule "tests/_fixtures/_git/zy-player"]
+	path = tests/_fixtures/_git/zy-player
+	url = https://github.com/Hunlongyu/ZY-Player
+	shallow = true
+
+[submodule "tests/_fixtures/_git/bootstrap-vue"]
+	path = tests/_fixtures/_git/bootstrap-vue
+	url = https://github.com/bootstrap-vue/bootstrap-vue
+	shallow = true
+
+[submodule "tests/_fixtures/_git/habitica"]
+	path = tests/_fixtures/_git/habitica
+	url = https://github.com/HabitRPG/habitica
+	shallow = true
+
+[submodule "tests/_fixtures/_git/tiny-rdm"]
+	path = tests/_fixtures/_git/tiny-rdm
+	url = https://github.com/tiny-craft/tiny-rdm
+	shallow = true
+
+[submodule "tests/_fixtures/_git/mealie"]
+	path = tests/_fixtures/_git/mealie
+	url = https://github.com/mealie-recipes/mealie
+	shallow = true
+
+[submodule "tests/_fixtures/_git/mall-admin-web"]
+	path = tests/_fixtures/_git/mall-admin-web
+	url = https://github.com/macrozheng/mall-admin-web
+	shallow = true
+
+[submodule "tests/_fixtures/_git/douyin"]
+	path = tests/_fixtures/_git/douyin
+	url = https://github.com/zyronon/douyin
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vuestic-admin"]
+	path = tests/_fixtures/_git/vuestic-admin
+	url = https://github.com/epicmaxco/vuestic-admin
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-storefront"]
+	path = tests/_fixtures/_git/vue-storefront
+	url = https://github.com/vuestorefront/vue-storefront
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-virtual-scroller"]
+	path = tests/_fixtures/_git/vue-virtual-scroller
+	url = https://github.com/Akryum/vue-virtual-scroller
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-echarts"]
+	path = tests/_fixtures/_git/vue-echarts
+	url = https://github.com/ecomfe/vue-echarts
+	shallow = true
+
+[submodule "tests/_fixtures/_git/gridea"]
+	path = tests/_fixtures/_git/gridea
+	url = https://github.com/getgridea/gridea
+	shallow = true

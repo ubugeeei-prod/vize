@@ -238,10 +238,14 @@ test("app e2e dispatch pins validated exact-SHA checkouts and run evidence", () 
   assert.match(workflow, /branch or tag whose tip is target_sha/);
   assert.match(workflow, /E2E_TARGET_SHA:\s*\$\{\{\s*inputs\.target_sha \|\| github\.sha\s*\}\}/);
 
-  const checkouts = workflow.match(
-    /ref:\s*\$\{\{\s*env\.E2E_TARGET_SHA\s*\}\}\n\s+submodules:\s*recursive/g,
-  );
+  const checkouts = workflow.match(/ref:\s*\$\{\{\s*env\.E2E_TARGET_SHA\s*\}\}/g);
   assert.equal(checkouts?.length, 2, "both Testbox and app-e2e must pin checkout");
+  assert.doesNotMatch(workflow, /submodules:\s*recursive/);
+  assert.equal(
+    workflow.match(/uses:\s*\.\/\.github\/actions\/hydrate-app-fixtures/g)?.length,
+    2,
+    "both full E2E jobs must hydrate only their exercised fixtures",
+  );
   assert.match(workflow, /name:\s*Validate optional target SHA/);
   assert.match(
     workflow,
@@ -270,4 +274,32 @@ test("app e2e dispatch pins validated exact-SHA checkouts and run evidence", () 
     2,
     "both dispatch paths explain the ref constraint",
   );
+});
+
+test("full app e2e hydrates only fixtures referenced by its scripts", () => {
+  const action = readRepoFile(".github", "actions", "hydrate-app-fixtures", "action.yml");
+  const fixtures = [
+    "ant-design-vue",
+    "directus",
+    "element-plus",
+    "elk",
+    "frontend-phpcon-do-website",
+    "hoppscotch",
+    "misskey",
+    "naive-ui",
+    "npmx.dev",
+    "nuxt-ui",
+    "primevue",
+    "reka-ui",
+    "voicevox",
+    "vue-vben-admin",
+    "vuefes-2025",
+    "vuetify",
+  ];
+
+  assert.match(action, /git submodule update --init --recursive --depth 1/);
+  for (const fixture of fixtures) {
+    assert.match(action, new RegExp(`tests/_fixtures/_git/${fixture.replace(".", "\\.")}`));
+  }
+  assert.equal(action.match(/tests\/_fixtures\/_git\//g)?.length, fixtures.length);
 });

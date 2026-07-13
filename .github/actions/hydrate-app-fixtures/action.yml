@@ -1,0 +1,26 @@
+name: Hydrate app fixtures
+description: Checkout only the pinned fixtures exercised by App E2E
+
+runs:
+  using: composite
+  steps:
+    - name: Hydrate exercised app fixtures
+      shell: bash
+      run: |
+        git submodule update --init --recursive --depth 1 \
+          tests/_fixtures/_git/ant-design-vue \
+          tests/_fixtures/_git/directus \
+          tests/_fixtures/_git/element-plus \
+          tests/_fixtures/_git/elk \
+          tests/_fixtures/_git/frontend-phpcon-do-website \
+          tests/_fixtures/_git/hoppscotch \
+          tests/_fixtures/_git/misskey \
+          tests/_fixtures/_git/naive-ui \
+          tests/_fixtures/_git/npmx.dev \
+          tests/_fixtures/_git/nuxt-ui \
+          tests/_fixtures/_git/primevue \
+          tests/_fixtures/_git/reka-ui \
+          tests/_fixtures/_git/voicevox \
+          tests/_fixtures/_git/vue-vben-admin \
+          tests/_fixtures/_git/vuefes-2025 \
+          tests/_fixtures/_git/vuetify

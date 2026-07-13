@@ -73,7 +73,7 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn handle_in_table_start_tag(&mut self, tag: &str, offset: usize) {
-        if self.open_table_count == 0 {
+        if self.open_table_count == 0 || self.template_syntax.is_quirks() {
             return;
         }
 

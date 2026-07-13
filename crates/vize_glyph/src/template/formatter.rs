@@ -95,13 +95,11 @@ impl<'a> TemplateFormatter<'a> {
 
             // Tag start
             if source[pos] == b'<' {
-                self.flush_text_buffer(&mut output, &mut line_buffer, depth);
-
-                // Closing tag
                 if pos + 1 < len
                     && source[pos + 1] == b'/'
                     && let Some((tag_name, end_pos)) = parse_closing_tag(source, pos)
                 {
+                    self.flush_text_buffer(&mut output, &mut line_buffer, depth);
                     depth = depth.saturating_sub(1);
                     self.write_indent(&mut output, depth);
                     output.extend_from_slice(b"</");
@@ -111,12 +109,10 @@ impl<'a> TemplateFormatter<'a> {
                     pos = end_pos;
                     continue;
                 }
-
-                // Opening tag
                 if let Some((tag_name, attrs, is_self_closing, end_pos)) =
                     self.parse_opening_tag(source, pos)
                 {
-                    // Sort attributes if enabled
+                    self.flush_text_buffer(&mut output, &mut line_buffer, depth);
                     let mut sorted_attrs = attrs;
                     if self.options.sort_attributes {
                         sort_attributes(&mut sorted_attrs, self.options);
@@ -228,6 +224,10 @@ impl<'a> TemplateFormatter<'a> {
                     pos = end_pos;
                     continue;
                 }
+                // Keep a non-tag `<` as text and advance past it.
+                line_buffer.push(b'<');
+                pos += 1;
+                continue;
             }
 
             // Accumulate text content until newline or tag

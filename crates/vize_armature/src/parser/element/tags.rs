@@ -250,6 +250,10 @@ impl<'a> Parser<'a> {
             return;
         }
 
+        if self.template_syntax.is_quirks() && (self.options.is_void_tag)(tag.as_str()) {
+            return;
+        }
+
         let loc = self.create_loc(start.saturating_sub(2), end + 1); // Include </ and >
         self.errors
             .push(CompilerError::new(ErrorCode::InvalidEndTag, Some(loc)));

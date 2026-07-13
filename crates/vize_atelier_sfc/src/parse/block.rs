@@ -1,6 +1,10 @@
+mod compat;
+
 use memchr::{memchr, memchr_iter, memmem};
 use std::borrow::Cow;
 use vize_carton::{FxHashMap, String, cstr};
+
+use compat::{can_start_string_literal, is_void_block};
 
 // Tag name bytes for fast comparison
 pub(super) const TAG_TEMPLATE: &[u8] = b"template";
@@ -155,33 +159,6 @@ pub(super) fn skip_regex_literal(
     }
 
     None
-}
-
-fn can_start_string_literal(prev_significant_char: u8, quote: u8) -> bool {
-    matches!(
-        prev_significant_char,
-        b'=' | b'('
-            | b'['
-            | b','
-            | b':'
-            | b'{'
-            | b';'
-            | b'\n'
-            | b'?'
-            | b'&'
-            | b'|'
-            | b'+'
-            | b'-'
-            | b'*'
-            | b'!'
-            | b'>'
-            | b'<'
-            | b'%'
-            | b'^'
-    ) || (quote == b'`'
-        && (prev_significant_char.is_ascii_alphanumeric()
-            || prev_significant_char == b'_'
-            || prev_significant_char == b')'))
 }
 
 pub(super) fn skip_script_string_literal(
@@ -520,6 +497,19 @@ pub(super) fn parse_block_fast<'a>(
     }
 
     let content_start = pos;
+
+    if is_void_block(tag_name) {
+        return Ok(Some((
+            tag_name,
+            attrs,
+            Cow::Borrowed(""),
+            content_start,
+            content_start,
+            pos,
+            start_line,
+            pos - start,
+        )));
+    }
 
     // Find closing tag based on tag type
     let mut line = start_line;
