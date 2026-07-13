@@ -5580,17 +5580,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.borderThickness' via v-model",
-        "line": 34,
-        "column": 14,
-        "endLine": 34,
-        "endColumn": 46,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -5657,17 +5646,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.font' via v-model",
-        "line": 47,
-        "column": 6,
-        "endLine": 47,
-        "endColumn": 27,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -5690,28 +5668,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.labelTop.enabled' via v-model",
-        "line": 59,
-        "column": 17,
-        "endLine": 59,
-        "endColumn": 50,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.labelTop.padding' via v-model",
-        "line": 63,
-        "column": 16,
-        "endLine": 63,
-        "endColumn": 49,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -5732,17 +5688,6 @@
         "endLine": 63,
         "endColumn": 110,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.labelTop.scale' via v-model",
-        "line": 67,
-        "column": 16,
-        "endLine": 67,
-        "endColumn": 47,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
       },
       {
         "ruleId": "vue/attribute-hyphenation",
@@ -5767,50 +5712,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.labelTop.centered' via v-model",
-        "line": 71,
-        "column": 17,
-        "endLine": 71,
-        "endColumn": 51,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.labelTop.textBig' via v-model",
-        "line": 75,
-        "column": 16,
-        "endLine": 75,
-        "endColumn": 49,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.labelTop.textSmall' via v-model",
-        "line": 79,
-        "column": 19,
-        "endLine": 79,
-        "endColumn": 54,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.labelTop.withQrCode' via v-model",
-        "line": 83,
-        "column": 17,
-        "endLine": 83,
-        "endColumn": 53,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -5833,28 +5734,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.labelBottom.enabled' via v-model",
-        "line": 93,
-        "column": 17,
-        "endLine": 93,
-        "endColumn": 53,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.labelBottom.padding' via v-model",
-        "line": 97,
-        "column": 16,
-        "endLine": 97,
-        "endColumn": 52,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -5877,17 +5756,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.labelBottom.scale' via v-model",
-        "line": 101,
-        "column": 16,
-        "endLine": 101,
-        "endColumn": 50,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -5908,50 +5776,6 @@
         "endLine": 101,
         "endColumn": 110,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.labelBottom.centered' via v-model",
-        "line": 105,
-        "column": 17,
-        "endLine": 105,
-        "endColumn": 54,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.labelBottom.textBig' via v-model",
-        "line": 109,
-        "column": 16,
-        "endLine": 109,
-        "endColumn": 52,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.labelBottom.textSmall' via v-model",
-        "line": 113,
-        "column": 19,
-        "endLine": 113,
-        "endColumn": 57,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'params.labelBottom.withQrCode' via v-model",
-        "line": 117,
-        "column": 17,
-        "endLine": 117,
-        "endColumn": 56,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
       },
       {
         "ruleId": "vue/sfc-element-order",
@@ -5965,7 +5789,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 16,
+    "errorCount": 0,
     "warningCount": 21
   },
   {
@@ -16880,17 +16704,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'layers[i]' via v-model",
-        "line": 53,
-        "column": 8,
-        "endLine": 53,
-        "endColumn": 33,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -16902,7 +16715,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 14
   },
   {
@@ -32916,17 +32729,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'game.bw' via v-model",
-        "line": 39,
-        "column": 8,
-        "endLine": 39,
-        "endColumn": 25,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -32971,17 +32773,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'game.timeLimitForEachTurn' via v-model",
-        "line": 68,
-        "column": 8,
-        "endLine": 68,
-        "endColumn": 43,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -33002,39 +32793,6 @@
         "endLine": 74,
         "endColumn": 35,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'game.isLlotheo' via v-model",
-        "line": 78,
-        "column": 18,
-        "endLine": 78,
-        "endColumn": 42,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'game.loopedBoard' via v-model",
-        "line": 79,
-        "column": 18,
-        "endLine": 79,
-        "endColumn": 44,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'game.canPutEverywhere' via v-model",
-        "line": 80,
-        "column": 18,
-        "endLine": 80,
-        "endColumn": 49,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
       },
       {
         "ruleId": "vue/sfc-element-order",
@@ -33059,7 +32817,7 @@
         "help": "Use router.push({ name: 'route-name' }) or router.replace({ name: 'route-name' }) so typed routes can validate params and editor completions."
       }
     ],
-    "errorCount": 6,
+    "errorCount": 1,
     "warningCount": 12
   },
   {
@@ -38731,17 +38489,6 @@
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
       {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'user' via v-model",
-        "line": 38,
-        "column": 50,
-        "endLine": 38,
-        "endColumn": 69,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -38863,7 +38610,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 15
   },
   {

@@ -42,31 +42,9 @@
         "endLine": 21,
         "endColumn": 62,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 31,
-        "column": 11,
-        "endLine": 31,
-        "endColumn": 69,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 49,
-        "column": 9,
-        "endLine": 49,
-        "endColumn": 67,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 2,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -314,20 +292,9 @@
         "endLine": 36,
         "endColumn": 10,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 32,
-        "column": 9,
-        "endLine": 36,
-        "endColumn": 10,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -691,20 +658,9 @@
         "endLine": 16,
         "endColumn": 126,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 16,
-        "column": 9,
-        "endLine": 16,
-        "endColumn": 126,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -946,17 +902,6 @@
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 28,
-        "column": 7,
-        "endLine": 28,
-        "endColumn": 95,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -966,17 +911,6 @@
         "endLine": 33,
         "endColumn": 94,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 33,
-        "column": 5,
-        "endLine": 33,
-        "endColumn": 94,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       },
       {
         "ruleId": "html/no-empty-palpable-content",
@@ -1001,17 +935,6 @@
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 38,
-        "column": 9,
-        "endLine": 38,
-        "endColumn": 155,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1032,20 +955,9 @@
         "endLine": 44,
         "endColumn": 77,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 44,
-        "column": 7,
-        "endLine": 44,
-        "endColumn": 77,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 4,
+    "errorCount": 0,
     "warningCount": 7
   },
   {
@@ -1379,17 +1291,6 @@
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 35,
-        "column": 9,
-        "endLine": 42,
-        "endColumn": 11,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1401,17 +1302,6 @@
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 53,
-        "column": 7,
-        "endLine": 59,
-        "endColumn": 8,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1421,17 +1311,6 @@
         "endLine": 70,
         "endColumn": 10,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 65,
-        "column": 9,
-        "endLine": 70,
-        "endColumn": 10,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       },
       {
         "ruleId": "ecosystem/vue-router-prefer-named-link",
@@ -1456,17 +1335,6 @@
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 86,
-        "column": 7,
-        "endLine": 86,
-        "endColumn": 58,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1478,17 +1346,6 @@
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 90,
-        "column": 7,
-        "endLine": 90,
-        "endColumn": 71,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1498,20 +1355,9 @@
         "endLine": 94,
         "endColumn": 81,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 94,
-        "column": 7,
-        "endLine": 94,
-        "endColumn": 81,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 6,
+    "errorCount": 0,
     "warningCount": 7
   },
   {
@@ -2009,17 +1855,6 @@
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 39,
-        "column": 9,
-        "endLine": 39,
-        "endColumn": 123,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2029,20 +1864,9 @@
         "endLine": 46,
         "endColumn": 129,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 46,
-        "column": 7,
-        "endLine": 46,
-        "endColumn": 129,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 2,
+    "errorCount": 0,
     "warningCount": 3
   },
   {
@@ -2637,17 +2461,6 @@
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 3,
-        "column": 5,
-        "endLine": 3,
-        "endColumn": 59,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2657,20 +2470,9 @@
         "endLine": 13,
         "endColumn": 61,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 13,
-        "column": 5,
-        "endLine": 13,
-        "endColumn": 61,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 2,
+    "errorCount": 0,
     "warningCount": 2
   },
   {
@@ -2931,20 +2733,9 @@
         "endLine": 177,
         "endColumn": 39,
         "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 194,
-        "column": 21,
-        "endLine": 194,
-        "endColumn": 110,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 5
   },
   {
@@ -3003,17 +2794,6 @@
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 35,
-        "column": 9,
-        "endLine": 35,
-        "endColumn": 119,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3036,7 +2816,7 @@
         "help": "Add scoped attribute: <style scoped>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 3
   },
   {
@@ -3230,17 +3010,6 @@
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 99,
-        "column": 11,
-        "endLine": 99,
-        "endColumn": 122,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3252,17 +3021,6 @@
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 105,
-        "column": 11,
-        "endLine": 105,
-        "endColumn": 74,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3272,17 +3030,6 @@
         "endLine": 116,
         "endColumn": 68,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 116,
-        "column": 11,
-        "endLine": 116,
-        "endColumn": 68,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       },
       {
         "ruleId": "a11y/img-alt",
@@ -3351,7 +3098,7 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
-    "errorCount": 3,
+    "errorCount": 0,
     "warningCount": 9
   },
   {
@@ -3726,20 +3473,9 @@
         "endLine": 60,
         "endColumn": 12,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 56,
-        "column": 11,
-        "endLine": 60,
-        "endColumn": 12,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 2
   },
   {
@@ -3790,20 +3526,9 @@
         "endLine": 64,
         "endColumn": 12,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 60,
-        "column": 11,
-        "endLine": 64,
-        "endColumn": 12,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 2
   },
   {
@@ -3975,20 +3700,9 @@
         "endLine": 170,
         "endColumn": 125,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 170,
-        "column": 11,
-        "endLine": 170,
-        "endColumn": 125,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 6
   },
   {
@@ -4584,20 +4298,9 @@
         "endLine": 37,
         "endColumn": 10,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "ecosystem/router-link-require-to",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 2,
-        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
-        "line": 33,
-        "column": 9,
-        "endLine": 37,
-        "endColumn": 10,
-        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {

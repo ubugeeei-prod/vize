@@ -4375,20 +4375,9 @@
         "endLine": 14,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
-        "ruleId": "vue/no-mutating-props",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'open' via v-model",
-        "line": 15,
-        "column": 12,
-        "endLine": 15,
-        "endColumn": 31,
-        "help": "Use a local ref or emit an event instead of mutating props directly"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {

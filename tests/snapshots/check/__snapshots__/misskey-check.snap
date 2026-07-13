@@ -601,9 +601,7 @@
     },
     {
       "file": "src/components/MkRadios.vue",
-      "diagnostics": [
-        "error:74:7 [TS2322] Type '{}' is not assignable to type 'string | number | bigint | boolean | null | undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkRange.vue",
@@ -2459,7 +2457,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 99,
+  "errorCount": 98,
   "warningCount": 0,
   "fileCount": 583
 }

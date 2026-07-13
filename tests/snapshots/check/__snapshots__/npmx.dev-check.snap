@@ -204,12 +204,7 @@
     },
     {
       "file": "app/components/Link/Base.vue",
-      "diagnostics": [
-        "error:58:15 [TS2339] Property 'startsWith' does not exist on type 'never'.",
-        "error:58:47 [TS2339] Property 'startsWith' does not exist on type 'never'.",
-        "error:58:80 [TS2339] Property 'startsWith' does not exist on type 'never'.",
-        "error:61:64 [TS2339] Property 'startsWith' does not exist on type 'never'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/LoadingSpinner.vue",
@@ -757,7 +752,7 @@
       ]
     }
   ],
-  "errorCount": 167,
+  "errorCount": 163,
   "warningCount": 0,
   "fileCount": 134
 }
