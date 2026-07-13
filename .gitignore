@@ -7,7 +7,7 @@ node_modules/
 _build/
 
 # npm package build outputs
-npm/*/dist/
+npm/**/dist/
 editors/*/dist/
 npm/builder-vite/wasm/
 editors/vscode/.vscode-test/
