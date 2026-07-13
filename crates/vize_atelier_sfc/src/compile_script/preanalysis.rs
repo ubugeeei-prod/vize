@@ -11,7 +11,10 @@ use super::artifacts::{
 };
 use super::function_mode::compile_script_setup_with_context;
 use super::lazy_hydration::transform_lazy_hydration_macros_from_program;
-use super::statement_sections::{ScriptSections, extract_script_sections_from_program};
+use super::statement_sections::{
+    ScriptSections, extract_script_sections_from_program,
+    extract_script_sections_from_program_with_options,
+};
 
 #[derive(Debug, Clone)]
 pub(crate) struct NormalScriptCompilerFacts {
@@ -30,6 +33,7 @@ pub(crate) struct PreanalyzedScriptSetup {
     validation_context: ScriptCompileContext,
     block_start: usize,
     sections: ScriptSections,
+    runtime_preserved_sections: ScriptSections,
     type_import_specifiers: Vec<String>,
     source_is_ts: bool,
     preamble: String,
@@ -83,7 +87,7 @@ pub(crate) fn preanalyze_script_setup_program(
     if let Some(normal) = normal {
         type_import_specifiers.extend(normal.type_import_specifiers.iter().cloned());
     }
-    let (source, mut context, sections) = match derived {
+    let (source, mut context, sections, runtime_preserved_sections) = match derived {
         Some(source) => analyze_derived_script(source, source_is_ts, normal),
         None => {
             let mut context = ScriptCompileContext::new(source);
@@ -93,7 +97,14 @@ pub(crate) fn preanalyze_script_setup_program(
             context.analyze_program(program, source);
             let sections = extract_script_sections_from_program(program, source, source_is_ts)
                 .unwrap_or_else(|| fallback_sections(source));
-            (source.into(), context, sections)
+            let runtime_preserved_sections = extract_script_sections_from_program_with_options(
+                program,
+                source,
+                source_is_ts,
+                true,
+            )
+            .unwrap_or_else(|| fallback_sections(source));
+            (source.into(), context, sections, runtime_preserved_sections)
         }
     };
     if let Some(normal) = normal {
@@ -105,6 +116,7 @@ pub(crate) fn preanalyze_script_setup_program(
         validation_context,
         block_start: absolute_offset,
         sections,
+        runtime_preserved_sections,
         type_import_specifiers,
         source_is_ts,
         preamble,
@@ -177,7 +189,7 @@ fn analyze_derived_script(
     source: String,
     source_is_ts: bool,
     normal: Option<&NormalScriptCompilerFacts>,
-) -> (String, ScriptCompileContext, ScriptSections) {
+) -> (String, ScriptCompileContext, ScriptSections, ScriptSections) {
     let allocator = oxc_allocator::Allocator::default();
     let parsed = oxc_parser::Parser::new(
         &allocator,
@@ -198,7 +210,18 @@ fn analyze_derived_script(
         })
         .flatten()
         .unwrap_or_else(|| fallback_sections(source.as_str()));
-    (source, context, sections)
+    let runtime_preserved_sections = (!parsed.panicked)
+        .then(|| {
+            extract_script_sections_from_program_with_options(
+                &parsed.program,
+                source.as_str(),
+                source_is_ts,
+                true,
+            )
+        })
+        .flatten()
+        .unwrap_or_else(|| fallback_sections(source.as_str()));
+    (source, context, sections, runtime_preserved_sections)
 }
 
 fn fallback_sections(source: &str) -> ScriptSections {
@@ -234,7 +257,11 @@ pub(crate) fn compile_preanalyzed_script_setup(
         projection.source_is_ts,
         template_content,
         context,
-        projection.sections.clone(),
+        if filename.is_some_and(is_art_source) {
+            projection.runtime_preserved_sections.clone()
+        } else {
+            projection.sections.clone()
+        },
     )?;
     if !projection.preamble.is_empty() {
         let mut code = projection.preamble.clone();
@@ -242,6 +269,13 @@ pub(crate) fn compile_preanalyzed_script_setup(
         result.code = code;
     }
     Ok(result)
+}
+
+fn is_art_source(filename: &str) -> bool {
+    filename.ends_with(".art.vue")
+        || filename.char_indices().any(|(index, character)| {
+            matches!(character, '?' | '#') && filename[..index].ends_with(".art.vue")
+        })
 }
 
 impl NormalScriptCompilerFacts {

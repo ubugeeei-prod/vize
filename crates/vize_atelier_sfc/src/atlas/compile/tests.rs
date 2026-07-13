@@ -263,3 +263,35 @@ fn one_rendu_module_can_feed_all_registered_backend_products() {
         1
     );
 }
+
+#[test]
+fn art_source_preserves_runtime_macro_calls_in_compiled_script() {
+    let mut compilation = Compilation::new();
+    register_compile_test_providers(&mut compilation);
+    let source = compilation
+        .add_source(
+            "Button.art.vue#inspector",
+            r#"<script setup lang="ts">
+defineArt("./Button.vue", { title: "Button" });
+</script>"#,
+        )
+        .unwrap();
+    let mut options = SfcCompileOptions::default();
+    options.parse.filename = "Button.art.vue#inspector".into();
+    options.script.id = Some("Button.art.vue#inspector".into());
+    options.script.is_ts = true;
+    let mut settings = SfcCompileSettings::default();
+    settings.insert(
+        source,
+        SfcCompileRequest::new(options, TemplateSyntaxMode::Standard),
+    );
+    settings.install(&mut compilation).unwrap();
+
+    let output = compilation.query::<SfcCompileProduct>(source).unwrap();
+
+    assert!(
+        output.value().code.contains("defineArt(\"./Button.vue\""),
+        "{}",
+        output.value().code
+    );
+}
