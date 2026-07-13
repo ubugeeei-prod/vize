@@ -54,7 +54,10 @@ export type ComponentOptions<
   props?: any;
   emits?: any;
   slots?: any;
-  setup?: any;
+  setup?: (props: any, context: any) => any;
+  data?: ((this: any, ...args: any[]) => any) | Record<string, any>;
+  computed?: Record<string, any> & ThisType<any>;
+  methods?: Record<string, any> & ThisType<any>;
   render?: Function;
   components?: any;
   directives?: any;
@@ -69,7 +72,8 @@ export type ComponentOptions<
   __multiRoot?: boolean;
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
-};
+  [key: string]: any;
+} & ThisType<any>;
 
 export interface FunctionalComponent<
   P = {},
@@ -115,7 +119,7 @@ export type InjectionKey<T> = symbol & { readonly __v_vlsInjection?: T };
 export type PropType<T> = { new (...args: any[]): T & {} } | { (): T } | null;
 
 export declare const Transition: DefineComponent;
-export declare function defineComponent(options: any): DefineComponent;
+export declare function defineComponent<T extends ComponentOptions>(options: T & ComponentOptions): DefineComponent & T;
 export declare function defineAsyncComponent(source: any): DefineComponent;
 export declare function defineProps<T = {}>(): T;
 export declare function computed<T>(getter: () => T): ComputedRef<T>;

@@ -1143,12 +1143,9 @@ fn batch_type_checker_options_api_wrap_adds_no_errors_in_facade_fallback() {
         return;
     }
 
-    // Facade-fallback mode: no resolvable vue package, so the bundled vue
-    // stub is materialized. Its `defineComponent(options: any)` signature
-    // erases `ThisType`, so the pre-existing TS2339 false positive on
-    // `this.count` remains until the stub gains a ThisType-aware signature
-    // (issue #1388 PR6). The wrap must not introduce any NEW diagnostics
-    // beyond that documented one.
+    // Facade-fallback mode: no resolvable vue package, so the bundled Vue
+    // surface must still provide contextual `this` for nested Options API
+    // objects instead of treating `this` as the computed object itself.
     with_workspace_node_modules_override(Some("__none__"), || {
         let project_root = create_project_case_without_node_modules(
             "options-api-wrap-facade-fallback",
@@ -1160,11 +1157,55 @@ fn batch_type_checker_options_api_wrap_adds_no_errors_in_facade_fallback() {
             return;
         };
 
+        assert!(snapshot.is_empty(), "{snapshot:#?}");
+
+        let _ = std::fs::remove_dir_all(&project_root);
+    });
+}
+
+#[test]
+fn batch_type_checker_facade_fallback_contextually_types_options_api() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    with_workspace_node_modules_override(Some("__none__"), || {
+        let project_root = create_project_case_without_node_modules(
+            "options-api-setup-facade-fallback",
+            &[(
+                "src/App.vue",
+                r#"<script lang="ts">
+import { defineComponent, type PropType } from "vue"
+
+type Item = { id: string }
+export default defineComponent({
+  props: {
+    items: { type: Array as PropType<Item[]>, required: true },
+  },
+  emits: { select: (_item: Item) => true },
+  setup(props, { emit }) {
+    emit("select", props.items[0])
+    return {}
+  },
+  methods: {
+    selectFirst() {
+      this.$emit("select", this.items[0])
+    },
+  },
+})
+</script>
+"#,
+            )],
+        );
+
+        let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+            let _ = std::fs::remove_dir_all(&project_root);
+            return;
+        };
+
         assert!(
-            snapshot
-                .iter()
-                .all(|(file, code, _)| file == "src/App.vue" && *code == Some(2339)),
-            "expected the defineComponent wrap to add no new diagnostics in facade-fallback mode: {snapshot:#?}"
+            snapshot.is_empty(),
+            "fallback defineComponent must type setup parameters and nested instance methods: {snapshot:#?}"
         );
 
         let _ = std::fs::remove_dir_all(&project_root);
@@ -2366,7 +2407,10 @@ export type ComponentOptions<
   props?: any;
   emits?: any;
   slots?: any;
-  setup?: any;
+  setup?: (props: any, context: any) => any;
+  data?: ((this: any, ...args: any[]) => any) | Record<string, any>;
+  computed?: Record<string, any> & ThisType<any>;
+  methods?: Record<string, any> & ThisType<any>;
   render?: Function;
   components?: any;
   directives?: any;
@@ -2381,7 +2425,8 @@ export type ComponentOptions<
   __multiRoot?: boolean;
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
-};
+  [key: string]: any;
+} & ThisType<any>;
 
 export interface FunctionalComponent<
   P = {},
@@ -2427,7 +2472,7 @@ export type InjectionKey<T> = symbol & { readonly __v_vlsInjection?: T };
 export type PropType<T> = { new (...args: any[]): T & {} } | { (): T } | null;
 
 export declare const Transition: DefineComponent;
-export declare function defineComponent(options: any): DefineComponent;
+export declare function defineComponent<T extends ComponentOptions>(options: T & ComponentOptions): DefineComponent & T;
 export declare function defineAsyncComponent(source: any): DefineComponent;
 export declare function defineProps<T = {}>(): T;
 export declare function computed<T>(getter: () => T): ComputedRef<T>;
