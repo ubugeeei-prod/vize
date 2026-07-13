@@ -175,15 +175,15 @@ impl Rule for NoMutatingProps {
 
             let mut names: FxHashSet<String> = FxHashSet::default();
 
-            // From defineProps
             for prop in analysis.macros.props() {
                 names.insert(prop.name.to_compact_string());
             }
 
-            // From destructured props
             for (name, binding_type) in analysis.bindings.iter() {
                 if matches!(binding_type, BindingType::Props | BindingType::PropsAliased) {
                     names.insert(name.to_compact_string());
+                } else {
+                    names.remove(name);
                 }
             }
 
