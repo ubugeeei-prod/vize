@@ -908,6 +908,656 @@
       "tsconfig": "tsconfig.json",
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "e2e-vrt"
+    },
+    {
+      "id": "dbx",
+      "displayName": "DBX",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/dbx",
+      "repository": "https://github.com/t8y2/dbx",
+      "revision": "8710bc90698bc2daab5088b4e2a9bef392241fc8",
+      "license": {
+        "spdx": "Apache-2.0",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue-material",
+      "displayName": "Vue Material",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-material",
+      "repository": "https://github.com/vuematerial/vue-material",
+      "revision": "7b1efd058abaccc826bcf856e2a879936bf0fcd3",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE.md"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "datav",
+      "displayName": "DataV",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/datav",
+      "repository": "https://github.com/DataV-Team/DataV",
+      "revision": "417ade755ceba9a30031e6d5fddac5e6bcbcd44a",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "buefy",
+      "displayName": "Buefy",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/buefy",
+      "repository": "https://github.com/buefy/buefy",
+      "revision": "4277a4d17f8946fa2ec02a989cac67253448340e",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE.md"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "cube-ui",
+      "displayName": "Cube UI",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/cube-ui",
+      "repository": "https://github.com/didi/cube-ui",
+      "revision": "77c342462be8f97c62f37e33abbe4824756bf057",
+      "license": {
+        "spdx": "Apache-2.0",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "youtube-dl-gui",
+      "displayName": "YouTube DL GUI",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/youtube-dl-gui",
+      "repository": "https://github.com/jely2002/youtube-dl-gui",
+      "revision": "83facb4da079dfb663b644981daceb03f329b337",
+      "license": {
+        "spdx": "AGPL-3.0-only",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "solidtime",
+      "displayName": "Solidtime",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/solidtime",
+      "repository": "https://github.com/solidtime-io/solidtime",
+      "revision": "f0de89b0e8a546870d3cfe746908e897e6fa6687",
+      "license": {
+        "spdx": "AGPL-3.0-only",
+        "files": [
+          "LICENSE.md"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "crater",
+      "displayName": "Crater",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/crater",
+      "repository": "https://github.com/crater-invoice-inc/crater",
+      "revision": "05d5ce26fdd8d9466009163444e944259bc0cc2a",
+      "license": {
+        "spdx": "AGPL-3.0-only",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue-native-core",
+      "displayName": "Vue Native Core",
+      "kind": "library",
+      "fixturePath": "tests/_fixtures/_git/vue-native-core",
+      "repository": "https://github.com/GeekyAnts/vue-native-core",
+      "revision": "0c705bebec66789696830f501870ec66c144240f",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "muse-ui",
+      "displayName": "Muse UI",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/muse-ui",
+      "repository": "https://github.com/museui/muse-ui",
+      "revision": "e799a4ff3854b9341e2207720c0937b1ba040bbc",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "README.md"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "inertia",
+      "displayName": "Inertia",
+      "kind": "library",
+      "fixturePath": "tests/_fixtures/_git/inertia",
+      "repository": "https://github.com/inertiajs/inertia",
+      "revision": "2f33ed08f53603a27b106c604b165a6f5e75f502",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE.md"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "gui-for-singbox",
+      "displayName": "GUI for SingBox",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/gui-for-singbox",
+      "repository": "https://github.com/GUI-for-Cores/GUI.for.SingBox",
+      "revision": "b0d273bf0100f5af89f00aecd896069c901123a8",
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue-fabric-editor",
+      "displayName": "Vue Fabric Editor",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/vue-fabric-editor",
+      "repository": "https://github.com/ikuaitu/vue-fabric-editor",
+      "revision": "cabddbd6d07f17fe8ed1a16494f800971ac7cec9",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue-grid-layout",
+      "displayName": "Vue Grid Layout",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-grid-layout",
+      "repository": "https://github.com/jbaysolutions/vue-grid-layout",
+      "revision": "6e536767937fbde7f1f18435a185e2b9a00c27ef",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "splayer",
+      "displayName": "SPlayer",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/splayer",
+      "repository": "https://github.com/SPlayer-Dev/SPlayer",
+      "revision": "40d9ec606cc1e323c964ffea7bf0ab02f137e93b",
+      "license": {
+        "spdx": "AGPL-3.0-only",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vuelidate",
+      "displayName": "Vuelidate",
+      "kind": "library",
+      "fixturePath": "tests/_fixtures/_git/vuelidate",
+      "repository": "https://github.com/vuelidate/vuelidate",
+      "revision": "1c7bac7121060dd95ea3e1484fc2031634f667d8",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vuetorrent",
+      "displayName": "VueTorrent",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/vuetorrent",
+      "repository": "https://github.com/VueTorrent/VueTorrent",
+      "revision": "01e456b6671dc09aae9236befcfb5d86848dab6e",
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue-multiselect",
+      "displayName": "Vue Multiselect",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-multiselect",
+      "repository": "https://github.com/shentao/vue-multiselect",
+      "revision": "8092917041f0ae02cbe4c6982deddc931c6adecd",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "frpc-desktop",
+      "displayName": "FRPC Desktop",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/frpc-desktop",
+      "repository": "https://github.com/luckjiawei/frpc-desktop",
+      "revision": "cc2eff777ebfb7c2b4f5229eeef9bcc3bd9cf98d",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "v-charts",
+      "displayName": "V Charts",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/v-charts",
+      "repository": "https://github.com/ElemeFE/v-charts",
+      "revision": "f3c31e0cc0bc85e2685caaaf8e2fe658030f744c",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "music-website",
+      "displayName": "Music Website",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/music-website",
+      "repository": "https://github.com/Yin-Hongwei/music-website",
+      "revision": "2854bb111fc06fe0a6e9ea013cb27e3d8ed5fdae",
+      "license": {
+        "spdx": "CC-BY-NC-4.0",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue-flow",
+      "displayName": "Vue Flow",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-flow",
+      "repository": "https://github.com/bcakmakoglu/vue-flow",
+      "revision": "17953c329db2d5dc5f5097370cbf5e1173bab520",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "mavon-editor",
+      "displayName": "Mavon Editor",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/mavon-editor",
+      "repository": "https://github.com/hinesboy/mavonEditor",
+      "revision": "aaaafa97c43c26aaa3da3c3fdfddb74f272e09d6",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "nutui",
+      "displayName": "NutUI",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/nutui",
+      "repository": "https://github.com/jd-opensource/nutui",
+      "revision": "212c7c3af6d0c3b5bc5cdfe00c7eaf8dd86a78cf",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "nativescript-vue",
+      "displayName": "NativeScript Vue",
+      "kind": "library",
+      "fixturePath": "tests/_fixtures/_git/nativescript-vue",
+      "repository": "https://github.com/nativescript-vue/nativescript-vue",
+      "revision": "7cba9651cfff27d9819cafe76f67e09bfd19fdbe",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
     }
   ]
 }

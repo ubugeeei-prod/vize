@@ -289,3 +289,128 @@
 	path = tests/_fixtures/_git/gridea
 	url = https://github.com/getgridea/gridea
 	shallow = true
+
+[submodule "tests/_fixtures/_git/dbx"]
+	path = tests/_fixtures/_git/dbx
+	url = https://github.com/t8y2/dbx
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-material"]
+	path = tests/_fixtures/_git/vue-material
+	url = https://github.com/vuematerial/vue-material
+	shallow = true
+
+[submodule "tests/_fixtures/_git/datav"]
+	path = tests/_fixtures/_git/datav
+	url = https://github.com/DataV-Team/DataV
+	shallow = true
+
+[submodule "tests/_fixtures/_git/buefy"]
+	path = tests/_fixtures/_git/buefy
+	url = https://github.com/buefy/buefy
+	shallow = true
+
+[submodule "tests/_fixtures/_git/cube-ui"]
+	path = tests/_fixtures/_git/cube-ui
+	url = https://github.com/didi/cube-ui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/youtube-dl-gui"]
+	path = tests/_fixtures/_git/youtube-dl-gui
+	url = https://github.com/jely2002/youtube-dl-gui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/solidtime"]
+	path = tests/_fixtures/_git/solidtime
+	url = https://github.com/solidtime-io/solidtime
+	shallow = true
+
+[submodule "tests/_fixtures/_git/crater"]
+	path = tests/_fixtures/_git/crater
+	url = https://github.com/crater-invoice-inc/crater
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-native-core"]
+	path = tests/_fixtures/_git/vue-native-core
+	url = https://github.com/GeekyAnts/vue-native-core
+	shallow = true
+
+[submodule "tests/_fixtures/_git/muse-ui"]
+	path = tests/_fixtures/_git/muse-ui
+	url = https://github.com/museui/muse-ui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/inertia"]
+	path = tests/_fixtures/_git/inertia
+	url = https://github.com/inertiajs/inertia
+	shallow = true
+
+[submodule "tests/_fixtures/_git/gui-for-singbox"]
+	path = tests/_fixtures/_git/gui-for-singbox
+	url = https://github.com/GUI-for-Cores/GUI.for.SingBox
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-fabric-editor"]
+	path = tests/_fixtures/_git/vue-fabric-editor
+	url = https://github.com/ikuaitu/vue-fabric-editor
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-grid-layout"]
+	path = tests/_fixtures/_git/vue-grid-layout
+	url = https://github.com/jbaysolutions/vue-grid-layout
+	shallow = true
+
+[submodule "tests/_fixtures/_git/splayer"]
+	path = tests/_fixtures/_git/splayer
+	url = https://github.com/SPlayer-Dev/SPlayer
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vuelidate"]
+	path = tests/_fixtures/_git/vuelidate
+	url = https://github.com/vuelidate/vuelidate
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vuetorrent"]
+	path = tests/_fixtures/_git/vuetorrent
+	url = https://github.com/VueTorrent/VueTorrent
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-multiselect"]
+	path = tests/_fixtures/_git/vue-multiselect
+	url = https://github.com/shentao/vue-multiselect
+	shallow = true
+
+[submodule "tests/_fixtures/_git/frpc-desktop"]
+	path = tests/_fixtures/_git/frpc-desktop
+	url = https://github.com/luckjiawei/frpc-desktop
+	shallow = true
+
+[submodule "tests/_fixtures/_git/v-charts"]
+	path = tests/_fixtures/_git/v-charts
+	url = https://github.com/ElemeFE/v-charts
+	shallow = true
+
+[submodule "tests/_fixtures/_git/music-website"]
+	path = tests/_fixtures/_git/music-website
+	url = https://github.com/Yin-Hongwei/music-website
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-flow"]
+	path = tests/_fixtures/_git/vue-flow
+	url = https://github.com/bcakmakoglu/vue-flow
+	shallow = true
+
+[submodule "tests/_fixtures/_git/mavon-editor"]
+	path = tests/_fixtures/_git/mavon-editor
+	url = https://github.com/hinesboy/mavonEditor
+	shallow = true
+
+[submodule "tests/_fixtures/_git/nutui"]
+	path = tests/_fixtures/_git/nutui
+	url = https://github.com/jd-opensource/nutui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/nativescript-vue"]
+	path = tests/_fixtures/_git/nativescript-vue
+	url = https://github.com/nativescript-vue/nativescript-vue
+	shallow = true
