@@ -8,6 +8,11 @@ use super::super::Parser;
 impl<'a> Parser<'a> {
     /// Handle error
     pub(in crate::parser) fn on_error_impl(&mut self, code: ErrorCode, index: usize) {
+        if self.template_syntax.is_quirks() && code == ErrorCode::MissingWhitespaceBetweenAttributes
+        {
+            return;
+        }
+
         let len = self.source.len();
         let start = index.min(len);
         let end = (index + 1).min(len);
