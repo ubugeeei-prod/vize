@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "projects": [
     {
@@ -342,6 +342,160 @@
         "maxFalsePositiveRatio": 0.02,
         "largeProjectRegressionTarget": true
       }
+    },
+    {
+      "id": "motion-vue",
+      "displayName": "Motion for Vue",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/motion-vue",
+      "repository": "https://github.com/motiondivision/motion-vue",
+      "revision": "836a2fbcc39abf13027f25d55e4b106a037f646d",
+      "license": { "spdx": "MIT", "files": ["LICENSE"] },
+      "vueGlobs": ["packages/**/*.vue", "playground/**/*.vue"],
+      "tsconfig": "tsconfig.json",
+      "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "shadcn-vue",
+      "displayName": "shadcn-vue",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/shadcn-vue",
+      "repository": "https://github.com/unovue/shadcn-vue",
+      "revision": "fd513ebaabf5d6493717bc8e3c6bf249cd026567",
+      "license": { "spdx": "MIT", "files": ["LICENSE"] },
+      "vueGlobs": [
+        "apps/**/*.vue",
+        "deprecated/www/**/*.vue",
+        "packages/**/*.vue",
+        "templates/**/*.vue"
+      ],
+      "tsconfig": "tsconfig.json",
+      "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "inspira-ui",
+      "displayName": "Inspira UI",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/inspira-ui",
+      "repository": "https://github.com/unovue/inspira-ui",
+      "revision": "9e5379f0d224764903fbeed039d152826ab7b384",
+      "license": { "spdx": "MIT", "files": ["LICENSE"] },
+      "vueGlobs": ["app/**/*.vue"],
+      "tsconfig": "tsconfig.json",
+      "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-charts",
+      "displayName": "Vue Charts",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vue-charts",
+      "repository": "https://github.com/unovue/vue-charts",
+      "revision": "ecf3d2690f34d3eef75ab6dbed451088be2fad5b",
+      "license": { "spdx": "MIT", "files": ["LICENSE"] },
+      "vueGlobs": ["packages/**/*.vue", "docs/**/*.vue", "playground/**/*.vue"],
+      "tsconfig": "tsconfig.json",
+      "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vaul-vue",
+      "displayName": "Vaul Vue",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/vaul-vue",
+      "repository": "https://github.com/unovue/vaul-vue",
+      "revision": "fafb0507c8845c34d232ebed51068428685329f1",
+      "license": { "spdx": "MIT", "files": ["LICENSE"] },
+      "vueGlobs": ["packages/**/*.vue", "playground/**/*.vue"],
+      "tsconfig": "packages/vaul-vue/tsconfig.json",
+      "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vee-validate",
+      "displayName": "VeeValidate",
+      "kind": "library",
+      "fixturePath": "tests/_fixtures/_git/vee-validate",
+      "repository": "https://github.com/logaretm/vee-validate",
+      "revision": "7d8cc524f9204655ad00a466090738e43b44ff2a",
+      "license": { "spdx": "MIT", "files": ["LICENSE"] },
+      "vueGlobs": ["docs/**/*.vue", "packages/**/*.vue"],
+      "tsconfig": "tsconfig.json",
+      "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "create-vue",
+      "displayName": "create-vue",
+      "kind": "tooling",
+      "fixturePath": "tests/_fixtures/_git/create-vue",
+      "repository": "https://github.com/vuejs/create-vue",
+      "revision": "3ee62adffdcdfa4a37b2ed4e9c30636655d5fcd1",
+      "license": { "spdx": "MIT AND CC0-1.0", "files": ["LICENSE"] },
+      "vueGlobs": ["template/**/*.vue"],
+      "tsconfig": "tsconfig.json",
+      "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-router",
+      "displayName": "Vue Router",
+      "kind": "library",
+      "fixturePath": "tests/_fixtures/_git/vue-router",
+      "repository": "https://github.com/vuejs/router",
+      "revision": "feed382f2fbfe38b3892ea780f5aea3d5459986a",
+      "license": { "spdx": "MIT", "files": ["LICENSE"] },
+      "vueGlobs": ["packages/**/*.vue"],
+      "tsconfig": "packages/router/tsconfig.json",
+      "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "pinia",
+      "displayName": "Pinia",
+      "kind": "library",
+      "fixturePath": "tests/_fixtures/_git/pinia",
+      "repository": "https://github.com/vuejs/pinia",
+      "revision": "59ec7da3f0130caa66fae6541557cf3c5b10f78b",
+      "license": { "spdx": "MIT", "files": ["LICENSE"] },
+      "vueGlobs": ["packages/**/*.vue"],
+      "tsconfig": "tsconfig.json",
+      "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-tui",
+      "displayName": "Vue TUI",
+      "kind": "library",
+      "fixturePath": "tests/_fixtures/_git/vue-tui",
+      "repository": "https://github.com/vuejs-ai/vue-tui",
+      "revision": "25df36d8751cde4677a50ec7ceb6c7f6eff97411",
+      "license": { "spdx": "MIT", "files": ["LICENSE"] },
+      "vueGlobs": ["packages/**/*.vue", "examples/**/*.vue"],
+      "tsconfig": "tsconfig.json",
+      "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-termui",
+      "displayName": "Vue TermUI",
+      "kind": "library",
+      "fixturePath": "tests/_fixtures/_git/vue-termui",
+      "repository": "https://github.com/vue-terminal/vue-termui",
+      "revision": "e75c37aca88446f9d76cd7bffe38edef86ebf282",
+      "license": { "spdx": "MIT", "files": ["LICENSE"] },
+      "vueGlobs": [
+        "src/**/*.vue",
+        "packages/**/*.vue",
+        "playground/**/*.vue",
+        "docs/**/*.vue",
+        "old/packages/**/*.vue"
+      ],
+      "tsconfig": "tsconfig.json",
+      "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+      "diff": "curator-compare"
     }
   ]
 }
