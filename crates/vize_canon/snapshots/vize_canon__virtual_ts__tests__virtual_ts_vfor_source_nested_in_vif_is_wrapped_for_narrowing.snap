@@ -37,7 +37,7 @@ type __WithDefaultValue<T> = T | __DefaultFactory<T>;
 type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
 type __VizeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [T[K]] extends [boolean | undefined] ? K : never : never; type __DefineProps<T, __BKeys extends keyof T = __VizeBooleanKey<T>> = __LooseRequired<T> & { [K in __BKeys]-?: boolean };
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-type __WithDefaultsResult<T, D> = Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof __LooseRequired<T>]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__LooseRequired<T>[K], undefined> };
+type __WithDefaultsResult<T, D> = T extends unknown ? Omit<T, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? T[K] : Exclude<T[K], undefined> } : never;
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
 type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
@@ -69,7 +69,7 @@ function __setup() {
   function defineModel<_T = unknown>(_name: string, _options?: any): __Ref<_T>;
   function defineModel(_name_or_options?: any, _options?: any) { void _name_or_options; void _options; return undefined as any; }
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
-  function withDefaults<_T, _D extends __WithDefaultsArgs<_T>>(_props: _T, _defaults: _D): __WithDefaultsResult<_T, _D>; function withDefaults<_T, _D extends Record<string, any>>(_props: _T, _defaults: _D): __WithDefaultsResult<_T, _D>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
+  function withDefaults<_T, _BKeys extends keyof _T, const _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
   function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
   // Mark compiler macros as used
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
@@ -77,7 +77,7 @@ function __setup() {
   // User setup code
   const elems = { a: [1], b: ["a"] } as const;
   const key = "a" as "a" | "b";
-  // @vize-map: 6526:6605 -> 0:74
+  // @vize-map: 6424:6503 -> 0:74
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

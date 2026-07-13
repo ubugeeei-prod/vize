@@ -10,7 +10,7 @@ pub(crate) use template_names::collect_template_prop_names;
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 use vize_croquis::macros::{MacroKind, ModelDefinition};
-use with_defaults::collect_with_defaults_default_names_from_source;
+use with_defaults::{collect_with_defaults_default_names_from_source, template_props_type_ref};
 
 fn emit_template_prop_binding(
     ts: &mut String,
@@ -175,31 +175,6 @@ fn collect_with_defaults_default_names(summary: &Croquis) -> FxHashSet<String> {
     names
 }
 
-fn template_props_type_ref(
-    base_type_ref: &str,
-    defaulted_prop_names: &FxHashSet<String>,
-) -> String {
-    if defaulted_prop_names.is_empty() {
-        return base_type_ref.into();
-    }
-
-    let mut names: Vec<&str> = defaulted_prop_names
-        .iter()
-        .map(|name| name.as_str())
-        .collect();
-    names.sort_unstable();
-
-    let mut default_keys = String::default();
-    for name in names {
-        if !default_keys.is_empty() {
-            default_keys.push_str(" | ");
-        }
-        append!(default_keys, "\"{name}\"");
-    }
-
-    cstr!("__WithDefaultsResult<{base_type_ref}, Pick<{base_type_ref}, {default_keys}>>")
-}
-
 fn model_prop_type(model: &ModelDefinition) -> &str {
     model.model_type.as_deref().unwrap_or("unknown")
 }
@@ -358,11 +333,12 @@ pub(crate) fn generate_props_variables(
             defaulted_prop_names.insert(model.name.as_str().into());
         }
     }
-    let template_base_props_type_ref = if define_props_type_args.is_some() {
-        cstr!("__DefineProps<{props_type_ref}>")
-    } else {
-        props_type_ref.clone()
-    };
+    let template_base_props_type_ref =
+        if define_props_type_args.is_some() && defaulted_prop_names.is_empty() {
+            cstr!("__DefineProps<{props_type_ref}>")
+        } else {
+            props_type_ref.clone()
+        };
     let template_props_type_ref =
         template_props_type_ref(template_base_props_type_ref.as_str(), &defaulted_prop_names);
 

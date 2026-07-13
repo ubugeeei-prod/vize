@@ -2,7 +2,32 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{Argument, Expression, ObjectPropertyKind, PropertyKey};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, String, cstr};
+use vize_carton::{FxHashSet, String, append, cstr};
+
+pub(super) fn template_props_type_ref(
+    base_type_ref: &str,
+    defaulted_prop_names: &FxHashSet<String>,
+) -> String {
+    if defaulted_prop_names.is_empty() {
+        return base_type_ref.into();
+    }
+
+    let mut names: Vec<&str> = defaulted_prop_names
+        .iter()
+        .map(|name| name.as_str())
+        .collect();
+    names.sort_unstable();
+
+    let mut default_keys = String::default();
+    for name in names {
+        if !default_keys.is_empty() {
+            default_keys.push_str(" | ");
+        }
+        append!(default_keys, "\"{name}\"");
+    }
+
+    cstr!("__WithDefaultsResult<{base_type_ref}, Pick<{base_type_ref}, {default_keys}>>")
+}
 
 pub(super) fn collect_with_defaults_default_names_from_source(
     source: &str,

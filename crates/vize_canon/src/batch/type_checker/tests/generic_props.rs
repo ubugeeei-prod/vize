@@ -143,3 +143,59 @@ function setValue(value: T) {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn preserves_optional_union_props_after_with_defaults() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case(
+        "issue-2809-with-defaults-union",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+import { ref } from "vue";
+
+interface FooProps {
+  kind?: "one";
+  value?: string;
+}
+
+interface BarProps {
+  kind?: "many";
+  value?: string[];
+}
+
+type ExampleProps = FooProps | BarProps;
+
+const props = withDefaults(defineProps<ExampleProps>(), {
+  kind: "one",
+});
+
+const value = ref(props.value);
+
+function clear() {
+  value.value = undefined;
+}
+</script>
+
+<template>
+  <button type="button" @click="clear">Clear</button>
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "a defaulted discriminant must not require other union props: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
