@@ -207,7 +207,9 @@ pub fn parse_sfc<'a>(
                     });
                 } else {
                     // Custom block - use borrowed tag name
-                    if let Ok(tag_str) = std::str::from_utf8(tag_name) {
+                    if let Ok(tag_str) = std::str::from_utf8(tag_name)
+                        && !vize_carton::is_void_tag(tag_str)
+                    {
                         descriptor.custom_blocks.push(SfcCustomBlock {
                             block_type: Cow::Borrowed(tag_str),
                             content,
