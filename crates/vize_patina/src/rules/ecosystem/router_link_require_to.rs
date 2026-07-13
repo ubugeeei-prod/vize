@@ -27,14 +27,18 @@ impl Rule for RouterLinkRequireTo {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if !is_router_link_tag(element.tag.as_str()) || has_to_prop(element) {
+        let tag = element.tag.as_str();
+        if !is_router_link_tag(tag)
+            || has_navigation_target(element, is_nuxt_link_tag(tag))
+            || can_inherit_root_navigation_target(ctx)
+        {
             return;
         }
 
         ctx.error_with_help(
-            "RouterLink components must declare a `to` target",
+            "RouterLink components must declare a navigation target",
             &element.loc,
-            "Add `to` or `:to` so navigation is explicit and typed-route tooling can infer the target.",
+            "Add `to` or `:to` (`href` or `:href` is also valid on NuxtLink) so navigation is explicit and typed-route tooling can infer the target.",
         );
     }
 }
@@ -43,22 +47,45 @@ pub(super) fn is_router_link_tag(tag: &str) -> bool {
     matches!(tag, "RouterLink" | "router-link" | "NuxtLink" | "nuxt-link")
 }
 
-fn has_to_prop(element: &ElementNode<'_>) -> bool {
+fn is_nuxt_link_tag(tag: &str) -> bool {
+    matches!(tag, "NuxtLink" | "nuxt-link")
+}
+
+fn can_inherit_root_navigation_target(ctx: &LintContext<'_>) -> bool {
+    ctx.parent_element().is_none()
+        && ctx.sfc_descriptor().is_some()
+        && ctx.analysis().is_some_and(|analysis| {
+            analysis.template_info.root_element_count <= 1
+                && !analysis.macros.all_calls().iter().any(|call| {
+                    call.name == "defineOptions"
+                        && call.runtime_args.as_ref().is_some_and(|args| {
+                            args.contains("inheritAttrs") && args.contains("false")
+                        })
+                })
+        })
+}
+
+fn has_navigation_target(element: &ElementNode<'_>, allow_href: bool) -> bool {
     element.props.iter().any(|prop| match prop {
-        PropNode::Attribute(attr) => attr.name.as_str() == "to",
-        PropNode::Directive(directive) => is_to_bind_directive(directive),
+        PropNode::Attribute(attr) => {
+            attr.name.as_str() == "to" || (allow_href && attr.name.as_str() == "href")
+        }
+        PropNode::Directive(directive) => is_navigation_bind_directive(directive, allow_href),
     })
 }
 
-fn is_to_bind_directive(directive: &DirectiveNode<'_>) -> bool {
+fn is_navigation_bind_directive(directive: &DirectiveNode<'_>, allow_href: bool) -> bool {
     if directive.name.as_str() != "bind" {
         return false;
     }
 
-    matches!(
-        directive.arg.as_ref(),
-        Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content.as_str() == "to"
-    )
+    match directive.arg.as_ref() {
+        None => true,
+        Some(ExpressionNode::Simple(arg)) if arg.is_static => {
+            arg.content.as_str() == "to" || (allow_href && arg.content.as_str() == "href")
+        }
+        _ => false,
+    }
 }
 
 #[cfg(test)]
@@ -85,6 +112,62 @@ mod tests {
         let result =
             create_linter().lint_template(r#"<router-link :to="{ name: 'home' }" />"#, "test.vue");
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn accepts_nuxt_href_aliases() {
+        let linter = create_linter();
+        let static_result = linter.lint_template(r#"<NuxtLink href="/docs" />"#, "test.vue");
+        let bound_result = linter.lint_template(r#"<nuxt-link :href="route" />"#, "test.vue");
+
+        assert_eq!(static_result.error_count, 0);
+        assert_eq!(bound_result.error_count, 0);
+    }
+
+    #[test]
+    fn accepts_object_v_bind_that_can_supply_the_target() {
+        let result =
+            create_linter().lint_template(r#"<RouterLink v-bind="linkProps" />"#, "test.vue");
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn router_link_still_requires_to_instead_of_href() {
+        let result = create_linter().lint_template(r#"<RouterLink href="/docs" />"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn accepts_single_root_link_that_inherits_fallthrough_attrs() {
+        let result = create_linter().lint_sfc(
+            r#"<script setup lang="ts">
+defineProps<{ class?: string }>()
+</script>
+<template><NuxtLink class="card"><slot /></NuxtLink></template>"#,
+            "LinkedCard.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn reports_single_root_link_when_attr_inheritance_is_disabled() {
+        let result = create_linter().lint_sfc(
+            r#"<script setup lang="ts">
+defineOptions({ inheritAttrs: false })
+</script>
+<template><NuxtLink class="card"><slot /></NuxtLink></template>"#,
+            "LinkedCard.vue",
+        );
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn reports_targetless_link_in_a_fragment() {
+        let result = create_linter().lint_sfc(
+            r#"<template><NuxtLink>Docs</NuxtLink><footer>Footer</footer></template>"#,
+            "FragmentCard.vue",
+        );
+        assert_eq!(result.error_count, 1);
     }
 
     #[test]
