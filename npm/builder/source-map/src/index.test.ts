@@ -3,7 +3,7 @@ import test from "node:test";
 import { TraceMap, originalPositionFor } from "@jridgewell/trace-mapping";
 import { applySourceProvenance, offsetEmbeddedSourceMap } from "./index.ts";
 
-test("offsetEmbeddedSourceMap keeps exact generated columns after a host prefix", () => {
+void test("offsetEmbeddedSourceMap keeps exact generated columns after a host prefix", () => {
   const generated = "const value = 1;";
   const map = {
     version: 3 as const,
@@ -23,7 +23,7 @@ test("offsetEmbeddedSourceMap keeps exact generated columns after a host prefix"
   assert.equal(original.column, 0);
 });
 
-test("applySourceProvenance remaps an inlined template anchor to its external file", () => {
+void test("applySourceProvenance remaps an inlined template anchor to its external file", () => {
   const external = "<p>external</p>";
   const synthetic = `<template>${external}</template>`;
   const map = {

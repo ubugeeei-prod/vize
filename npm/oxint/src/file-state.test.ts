@@ -87,40 +87,33 @@ it("same filename with changed source starts a fresh reporting revision", () => 
   }
 });
 
-it(
-  "diagnostics follow the latest physical revision under one filename",
-  () => {
+it("diagnostics follow the latest physical revision under one filename", () => {
+  clearFileStateCache();
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-file-state-diagnostics-"));
+  const filename = path.join(root, "App.vue");
+  const context = createContext(filename, "const items = [];");
+  const ruleName = "vue/require-v-for-key";
+
+  try {
+    fs.writeFileSync(
+      filename,
+      '<template><div v-for="item in items" :key="item">{{ item }}</div></template>',
+    );
+    const first = getFileState(context);
+    assert.equal(getDiagnosticsForRule(context, first, ruleName).length, 0);
+
+    fs.writeFileSync(filename, '<template><div v-for="item in items">{{ item }}</div></template>');
+    const changed = getFileState(context);
+    const diagnostics = getDiagnosticsForRule(context, changed, ruleName);
+
+    assert.notStrictEqual(changed, first);
+    assert.equal(diagnostics.length, 1);
+    assert.equal(diagnostics[0]?.rule, ruleName);
+  } finally {
     clearFileStateCache();
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-file-state-diagnostics-"));
-    const filename = path.join(root, "App.vue");
-    const context = createContext(filename, "const items = [];");
-    const ruleName = "vue/require-v-for-key";
-
-    try {
-      fs.writeFileSync(
-        filename,
-        '<template><div v-for="item in items" :key="item">{{ item }}</div></template>',
-      );
-      const first = getFileState(context);
-      assert.equal(getDiagnosticsForRule(context, first, ruleName).length, 0);
-
-      fs.writeFileSync(
-        filename,
-        '<template><div v-for="item in items">{{ item }}</div></template>',
-      );
-      const changed = getFileState(context);
-      const diagnostics = getDiagnosticsForRule(context, changed, ruleName);
-
-      assert.notStrictEqual(changed, first);
-      assert.equal(diagnostics.length, 1);
-      assert.equal(diagnostics[0]?.rule, ruleName);
-    } finally {
-      clearFileStateCache();
-      fs.rmSync(root, { force: true, recursive: true });
-    }
-  },
-  15_000,
-);
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+}, 15_000);
 
 it("changed extracted script refreshes only revision-local mapping work", () => {
   clearFileStateCache();
