@@ -1,5 +1,7 @@
 use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 
+mod inherited_boolean;
+
 #[test]
 fn batch_type_checker_exposes_generic_props_inherited_from_pick() {
     if resolve_test_tsgo_binary().is_none() {
