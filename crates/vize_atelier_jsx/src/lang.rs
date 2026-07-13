@@ -28,8 +28,7 @@ impl JsxLang {
 
     /// Infer the language from a file path by its extension.
     pub fn from_path(path: &str) -> Self {
-        let path = path.split(['?', '#']).next().unwrap_or(path);
-        if path.ends_with(".tsx") {
+        if source_name_has_extension(path, ".tsx") {
             Self::Tsx
         } else {
             Self::Jsx
@@ -48,6 +47,13 @@ impl JsxLang {
             Self::Tsx => SourceType::tsx().with_module(true),
         }
     }
+}
+
+fn source_name_has_extension(name: &str, extension: &str) -> bool {
+    name.ends_with(extension)
+        || name.char_indices().any(|(index, character)| {
+            matches!(character, '?' | '#') && name[..index].ends_with(extension)
+        })
 }
 
 #[cfg(test)]
@@ -74,6 +80,8 @@ mod tests {
         assert_eq!(JsxLang::from_path("App.tsx"), JsxLang::Tsx);
         assert_eq!(JsxLang::from_path("App.tsx?component"), JsxLang::Tsx);
         assert_eq!(JsxLang::from_path("App.tsx#component"), JsxLang::Tsx);
+        assert_eq!(JsxLang::from_path("App?old.tsx"), JsxLang::Tsx);
+        assert_eq!(JsxLang::from_path("App#old.tsx"), JsxLang::Tsx);
         assert_eq!(JsxLang::from_path("App.jsx"), JsxLang::Jsx);
         assert_eq!(JsxLang::from_path("App.js"), JsxLang::Jsx);
     }

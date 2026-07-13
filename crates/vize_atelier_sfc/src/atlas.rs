@@ -167,8 +167,14 @@ pub fn register_atlas_providers(
 }
 
 fn is_sfc_source(name: &str) -> bool {
-    let name = name.split(['?', '#']).next().unwrap_or(name);
-    name.ends_with(".vue")
+    source_name_has_extension(name, ".vue")
+}
+
+fn source_name_has_extension(name: &str, extension: &str) -> bool {
+    name.ends_with(extension)
+        || name.char_indices().any(|(index, character)| {
+            matches!(character, '?' | '#') && name[..index].ends_with(extension)
+        })
 }
 
 /// Return whether a Vue SFC contains an authored script block without running

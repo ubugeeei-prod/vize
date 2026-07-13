@@ -30,21 +30,21 @@ mod tests {
     }
 
     #[test]
-    fn sfc_frontend_accepts_virtual_query_suffixes() {
-        let mut compilation = vize_atlas::Compilation::new();
-        crate::register_atlas_providers(&mut compilation).unwrap();
-        let source = compilation
-            .add_source(
-                "App.vue?vue&type=script",
-                "<script>export default {}</script>",
-            )
-            .unwrap();
+    fn sfc_frontend_distinguishes_virtual_suffixes_from_filename_punctuation() {
+        for name in ["App.vue?vue&type=script", "Component[old]-*-?.vue"] {
+            let mut compilation = vize_atlas::Compilation::new();
+            crate::register_atlas_providers(&mut compilation).unwrap();
+            let source = compilation
+                .add_source(name, "<script>export default {}</script>")
+                .unwrap();
 
-        assert!(
-            compilation
-                .query::<super::super::SfcDescriptorProduct>(source)
-                .is_ok()
-        );
+            assert!(
+                compilation
+                    .query::<super::super::SfcDescriptorProduct>(source)
+                    .is_ok(),
+                "{name}"
+            );
+        }
     }
 
     #[test]

@@ -121,24 +121,26 @@ impl Provider for InspectorSourceAnalysisProvider {
 }
 
 fn is_jsx_source(name: &str) -> bool {
-    let name = name.split(['?', '#']).next().unwrap_or(name);
-    matches!(
-        name.rsplit_once('.').map(|(_, extension)| extension),
-        Some("jsx" | "tsx")
-    )
+    source_name_has_extension(name, ".jsx") || source_name_has_extension(name, ".tsx")
 }
 
 fn is_sfc_source(name: &str) -> bool {
-    let name = name.split(['?', '#']).next().unwrap_or(name);
-    name.ends_with(".vue")
+    source_name_has_extension(name, ".vue")
 }
 
 pub(super) fn is_inspector_source(name: &str) -> bool {
-    let name = name.split(['?', '#']).next().unwrap_or(name);
-    matches!(
-        name.rsplit_once('.').map(|(_, extension)| extension),
-        Some("vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs")
-    )
+    [
+        ".vue", ".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs",
+    ]
+    .into_iter()
+    .any(|extension| source_name_has_extension(name, extension))
+}
+
+fn source_name_has_extension(name: &str, extension: &str) -> bool {
+    name.ends_with(extension)
+        || name.char_indices().any(|(index, character)| {
+            matches!(character, '?' | '#') && name[..index].ends_with(extension)
+        })
 }
 
 /// Keep the standalone graph API on the same typed product path.

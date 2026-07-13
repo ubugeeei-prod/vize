@@ -238,8 +238,14 @@ pub fn register_atlas_providers(
 }
 
 fn is_jsx_source(name: &str) -> bool {
-    let name = name.split(['?', '#']).next().unwrap_or(name);
-    name.ends_with(".jsx") || name.ends_with(".tsx")
+    source_name_has_extension(name, ".jsx") || source_name_has_extension(name, ".tsx")
+}
+
+fn source_name_has_extension(name: &str, extension: &str) -> bool {
+    name.ends_with(extension)
+        || name.char_indices().any(|(index, character)| {
+            matches!(character, '?' | '#') && name[..index].ends_with(extension)
+        })
 }
 
 fn project_semantics(snapshot: &JsxSyntaxSnapshot) -> CroquisSemanticSnapshot {
