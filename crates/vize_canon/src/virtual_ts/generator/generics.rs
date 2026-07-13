@@ -8,7 +8,6 @@ use crate::virtual_ts::props::{
     add_generic_defaults, extract_generic_names, strip_const_modifiers,
 };
 
-#[derive(Default)]
 pub(super) struct HoistedGenericAliases {
     generic_decl: String,
     generic_names: String,
@@ -20,10 +19,8 @@ impl HoistedGenericAliases {
         summary: &Croquis,
         script: Option<&str>,
         generic_param: Option<&str>,
-    ) -> Self {
-        let Some((script, generic_param)) = script.zip(generic_param) else {
-            return Self::default();
-        };
+    ) -> Option<Self> {
+        let (script, generic_param) = script.zip(generic_param)?;
         let generic_names = extract_generic_names(generic_param);
         let names: Vec<String> = generic_names
             .split(',')
@@ -31,7 +28,7 @@ impl HoistedGenericAliases {
             .filter(|name| !name.is_empty())
             .map(String::from)
             .collect();
-        let type_names = summary
+        let type_names: Vec<String> = summary
             .type_exports
             .iter()
             .filter(|export| export.hoisted)
@@ -43,11 +40,15 @@ impl HoistedGenericAliases {
             })
             .collect();
 
-        Self {
+        if type_names.is_empty() {
+            return None;
+        }
+
+        Some(Self {
             generic_decl: strip_const_modifiers(&add_generic_defaults(generic_param)),
             generic_names,
             type_names,
-        }
+        })
     }
 
     pub(super) fn emit_module_aliases(&self, ts: &mut String) {

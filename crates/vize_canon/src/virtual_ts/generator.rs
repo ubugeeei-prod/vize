@@ -269,14 +269,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         merge_overlapping_spans(module_spans)
     });
 
-    // Re-declare the SFC generics as defaulted parameters on each such
-    // declaration (`type Option<T extends string = any> = ...`) so the
-    // reference resolves at module scope while bare uses (`Option[]`) still
-    // work via the `= any` defaults.
+    // Re-declare SFC generics on hoisted declarations with safe defaults.
     let generic_injection: Option<(String, Vec<String>)> = generic_param.map(|g| {
-        // `const` modifiers are only legal on function/method/class type
-        // parameters (TS1277); the spliced copies live on `type`/`interface`
-        // declarations and must drop them.
+        // Type aliases/interfaces cannot retain function-only `const` modifiers (TS1277).
         let defaults = strip_const_modifiers(&add_generic_defaults(g));
         let names = extract_generic_names(g)
             .split(',')
@@ -396,7 +391,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     }
     let hoisted_generic_aliases =
         HoistedGenericAliases::collect(summary, script_content, generic_param);
-    hoisted_generic_aliases.emit_module_aliases(&mut ts);
+    if let Some(aliases) = &hoisted_generic_aliases {
+        aliases.emit_module_aliases(&mut ts);
+    }
 
     let needs_imported_names = !options.auto_import_stubs.is_empty()
         || (has_script_reference_types && !summary.component_usages.is_empty());
@@ -470,7 +467,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let async_prefix = if is_async { "async " } else { "" };
     let generic_params = generic_param.map(|g| cstr!("<{g}>")).unwrap_or_default();
     append!(ts, "{async_prefix}function __setup{generic_params}() {{\n",);
-    hoisted_generic_aliases.emit_setup_aliases(&mut ts);
+    if let Some(aliases) = &hoisted_generic_aliases {
+        aliases.emit_setup_aliases(&mut ts);
+    }
 
     // Setup helpers (only valid inside setup scope)
     emit_setup_helpers(
