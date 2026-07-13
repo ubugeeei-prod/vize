@@ -1,5 +1,7 @@
 use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 
+mod dynamic_member_component_events;
+
 #[test]
 fn batch_type_checker_accepts_component_fallthrough_touch_listener() {
     if resolve_test_tsgo_binary().is_none() {

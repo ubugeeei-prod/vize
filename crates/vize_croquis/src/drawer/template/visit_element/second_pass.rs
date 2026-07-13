@@ -210,17 +210,19 @@ fn expression_identifier(exp: &ExpressionNode<'_>) -> Option<CompactString> {
         ExpressionNode::Simple(simple) => simple.content.as_str(),
         ExpressionNode::Compound(compound) => compound.loc.source.as_str(),
     };
-    parse_identifier_expression(source)
+    parse_component_reference_expression(source)
 }
 
-fn parse_identifier_expression(source: &str) -> Option<CompactString> {
+fn parse_component_reference_expression(source: &str) -> Option<CompactString> {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("expr.ts").unwrap_or_default();
     let expression = Parser::new(&allocator, source, source_type)
         .parse_expression()
         .ok()?;
     match expression {
-        Expression::Identifier(identifier) => Some(CompactString::new(identifier.name.as_str())),
+        Expression::Identifier(_) | Expression::StaticMemberExpression(_) => {
+            Some(CompactString::new(source.trim()))
+        }
         _ => None,
     }
 }
