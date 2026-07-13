@@ -20,6 +20,7 @@ const packageVscodeExtension = [
   "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
   injectVscodeTypeScriptPlugin,
 ].join(" && ");
+const localBuildCommand = runTasks("build:rust", "build:all");
 
 /**
  * Build and packaging tasks for the repository's compiled artifacts.
@@ -31,9 +32,10 @@ const packageVscodeExtension = [
  * forcing unrelated test or release commands into the same module.
  */
 export const buildTasks = defineTasks({
-  // `vp build` runs inside a Blacksmith Testbox; the underlying build:* tasks
-  // stay local. See tools/vite-plus/tasks/testbox.ts.
-  build: noCacheTask(inTestbox(runTasks("build:rust", "build:all"))),
+  // Local is the default so a clean checkout never needs hosted credentials.
+  // Testbox remains an explicit CI-parity opt-in with the same task graph.
+  build: noCacheTask(localBuildCommand),
+  "build:testbox": noCacheTask(inTestbox(localBuildCommand)),
   "build:all": noCacheTask(runTasks("build:runtime", "package:editor-extensions")),
   "build:rust": task("cargo build --workspace", { input: cacheInputs.rust }),
   "build:runtime": noCacheTask(runTasks("build:native", "build:wasm", "build:packages")),

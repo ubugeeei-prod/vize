@@ -1,6 +1,13 @@
 //! Functions for processing normal `<script>` blocks when both
 //! `<script>` and `<script setup>` exist.
 
+use oxc_allocator::Allocator;
+use oxc_ast::ast::Statement;
+use oxc_codegen::Codegen;
+use oxc_parser::Parser;
+use oxc_semantic::SemanticBuilder;
+use oxc_span::{GetSpan, SourceType};
+use oxc_transformer::{TransformOptions, Transformer, TypeScriptOptions};
 use vize_carton::{String, ToCompactString, profile};
 
 /// Extract content from normal script block that should be preserved when both
@@ -16,14 +23,6 @@ pub(super) fn extract_normal_script_content(
     source_is_ts: bool,
     output_is_ts: bool,
 ) -> String {
-    use oxc_allocator::Allocator;
-    use oxc_ast::ast::Statement;
-    use oxc_codegen::Codegen;
-    use oxc_parser::Parser;
-    use oxc_semantic::SemanticBuilder;
-    use oxc_span::{GetSpan, SourceType};
-    use oxc_transformer::{TransformOptions, Transformer, TypeScriptOptions};
-
     // Always parse as TypeScript if source is TypeScript
     let source_type = if source_is_ts {
         SourceType::ts()
@@ -47,7 +46,15 @@ pub(super) fn extract_normal_script_content(
             .into();
     }
 
-    let program = ret.program;
+    extract_normal_script_content_from_program(&ret.program, content, source_is_ts, output_is_ts)
+}
+
+pub(crate) fn extract_normal_script_content_from_program(
+    program: &oxc_ast::ast::Program<'_>,
+    content: &str,
+    source_is_ts: bool,
+    output_is_ts: bool,
+) -> String {
     let mut output = String::default();
     let mut last_end = 0;
 

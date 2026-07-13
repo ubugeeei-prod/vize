@@ -7,16 +7,16 @@ mod artifact_tests;
 use std::path::Path;
 #[cfg(test)]
 use std::path::PathBuf;
-use vize_atlas::{Compilation, Shared, SourceId};
+#[cfg(test)]
+use vize_atlas::Shared;
 use vize_carton::{CompactString, FxHashMap, String, ToCompactString, cstr};
-use vize_croquis_cf::{
-    CrossFileAnalysisArtifact, CrossFileAnalysisInput, CrossFileAnalysisProduct,
-    CrossFileAnalysisRequest, CrossFileDiagnostic, CrossFileOptions, DiagnosticSeverity,
-};
+use vize_croquis_cf::{CrossFileDiagnostic, DiagnosticSeverity};
 use vize_curator::complexity::render_complexity_markdown;
+#[cfg(test)]
+use vize_patina::Linter;
 use vize_patina::{HelpLevel, LintDiagnostic, LintResult};
 
-use super::pipeline::LintedFile;
+use super::{artifact_graph::LintArtifactGraph, pipeline::LintedFile};
 
 pub(super) struct CrossFileLintOutput {
     pub(super) results: Vec<LintResult>,
@@ -25,11 +25,13 @@ pub(super) struct CrossFileLintOutput {
 }
 
 struct CrossFileInput<'a> {
+    graph_index: usize,
     path: &'a Path,
     source: &'a str,
 }
 
 pub(super) fn apply_sfc_cross_file_lint(
+    graph: &LintArtifactGraph,
     results: &mut [LintedFile],
     help_level: HelpLevel,
     include_tree: bool,
@@ -39,19 +41,21 @@ pub(super) fn apply_sfc_cross_file_lint(
         .iter()
         .enumerate()
         .filter(|(_, file)| is_sfc_cross_file_target(&file.path))
-        .map(|(index, _)| index)
+        .map(|(result_index, file)| (result_index, file.source_index))
         .collect();
     let inputs: Vec<_> = targets
         .iter()
-        .map(|index| {
-            let file = &results[*index];
+        .map(|(result_index, graph_index)| {
+            let file = &results[*result_index];
             CrossFileInput {
+                graph_index: *graph_index,
                 path: &file.path,
                 source: &file.source,
             }
         })
         .collect();
-    let output = build_cross_file_lint_output_from_inputs(
+    let output = build_cross_file_lint_output_from_graph(
+        graph,
         &inputs,
         help_level,
         include_tree,
@@ -62,7 +66,7 @@ pub(super) fn apply_sfc_cross_file_lint(
         output.complexity_report.as_deref(),
     );
 
-    for (target_index, cross_result) in targets.into_iter().zip(output.results) {
+    for ((target_index, _), cross_result) in targets.into_iter().zip(output.results) {
         if let Some(file) = results.get_mut(target_index) {
             merge_lint_result(&mut file.result, cross_result);
         }
@@ -89,15 +93,32 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
 ) -> CrossFileLintOutput {
     let inputs: Vec<_> = files
         .iter()
-        .map(|(path, source)| CrossFileInput {
+        .enumerate()
+        .map(|(graph_index, (path, source))| CrossFileInput {
+            graph_index,
             path,
             source: source.as_ref(),
         })
         .collect();
-    build_cross_file_lint_output_from_inputs(&inputs, help_level, include_tree, include_complexity)
+    let graph = LintArtifactGraph::new(
+        Shared::new(Linter::new()),
+        vize_carton::config::VueVersion::V3,
+        files
+            .iter()
+            .map(|(path, source)| (path.as_path(), source.as_ref())),
+    )
+    .expect("cross-file test graph must register");
+    build_cross_file_lint_output_from_graph(
+        &graph,
+        &inputs,
+        help_level,
+        include_tree,
+        include_complexity,
+    )
 }
 
-fn build_cross_file_lint_output_from_inputs(
+fn build_cross_file_lint_output_from_graph(
+    graph: &LintArtifactGraph,
     files: &[CrossFileInput<'_>],
     help_level: HelpLevel,
     include_tree: bool,
@@ -110,8 +131,22 @@ fn build_cross_file_lint_output_from_inputs(
             complexity_report: None,
         };
     }
-    let root = std::env::current_dir().unwrap_or_default();
-    let (artifact, file_indexes) = query_cross_file_artifact(files, root);
+    let artifact = graph
+        .query_cross_file(files[0].graph_index)
+        .unwrap_or_else(|error| panic!("Atlas cross-file analysis failed: {error}"))
+        .artifact;
+    let file_indexes: FxHashMap<_, _> = files
+        .iter()
+        .enumerate()
+        .map(|(index, file)| {
+            (
+                graph
+                    .source(file.graph_index)
+                    .expect("cross-file source must remain registered"),
+                index,
+            )
+        })
+        .collect();
     let mut results: Vec<_> = files
         .iter()
         .map(|file| LintResult {
@@ -166,42 +201,6 @@ fn build_cross_file_lint_output_from_inputs(
     }
 }
 
-fn query_cross_file_artifact(
-    files: &[CrossFileInput<'_>],
-    root: std::path::PathBuf,
-) -> (
-    Shared<CrossFileAnalysisArtifact>,
-    FxHashMap<SourceId, usize>,
-) {
-    let mut compilation = Compilation::new();
-    vize_atelier_sfc::register_atlas_providers(&mut compilation)
-        .expect("SFC cross-file providers must register");
-    vize_atelier_jsx::register_atlas_providers(&mut compilation)
-        .expect("JSX cross-file providers must register");
-    vize_croquis_cf::register_atlas_provider(&mut compilation)
-        .expect("Croquis cross-file provider must register");
-    compilation
-        .set_input::<CrossFileAnalysisInput>(
-            CrossFileAnalysisRequest::new(patina_cross_file_options()).with_project_root(root),
-        )
-        .expect("cross-file options must install");
-    let mut file_indexes = FxHashMap::default();
-    let mut anchor = None;
-    for (index, file) in files.iter().enumerate() {
-        let source = compilation
-            .add_source(file.path.to_string_lossy().into_owned(), file.source)
-            .expect("lint source must fit Atlas identity space");
-        anchor.get_or_insert(source);
-        file_indexes.insert(source, index);
-    }
-    let anchor = anchor.expect("cross-file lint requires at least one supported source");
-    let artifact = compilation
-        .query::<CrossFileAnalysisProduct>(anchor)
-        .unwrap_or_else(|error| panic!("Atlas cross-file analysis failed: {error}"))
-        .shared();
-    (artifact, file_indexes)
-}
-
 fn combine_cross_file_report(tree: Option<&str>, complexity: Option<&str>) -> Option<String> {
     let mut report = String::default();
     if let Some(tree) = tree {
@@ -214,15 +213,6 @@ fn combine_cross_file_report(tree: Option<&str>, complexity: Option<&str>) -> Op
         report.push_str(complexity);
     }
     (!report.is_empty()).then_some(report)
-}
-
-fn patina_cross_file_options() -> CrossFileOptions {
-    CrossFileOptions::minimal()
-        .with_provide_inject(true)
-        .with_unique_ids(true)
-        .with_server_client_boundary(true)
-        .with_reactivity_tracking(true)
-        .with_race_conditions(true)
 }
 
 fn is_sfc_cross_file_target(path: &Path) -> bool {

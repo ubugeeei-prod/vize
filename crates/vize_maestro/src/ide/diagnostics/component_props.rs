@@ -5,7 +5,6 @@ use tower_lsp::lsp_types::{
     CodeDescription, Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url,
 };
 use vize_atelier_sfc::SfcDescriptor;
-use vize_croquis::{Drawer, DrawerOptions};
 
 use super::{DiagnosticService, LineIndex, sources};
 use crate::ide::IdeContext;
@@ -47,20 +46,14 @@ impl DiagnosticService {
         let Some(template) = descriptor.template.as_ref() else {
             return Vec::new();
         };
-        let Some(template_content) = content.get(template.loc.start..template.loc.end) else {
+        if content.get(template.loc.start..template.loc.end).is_none() {
+            return Vec::new();
+        }
+        let Some(document) = state.sfc_croquis(uri) else {
             return Vec::new();
         };
-
-        let allocator = vize_carton::Bump::new();
-        let (root, _) = vize_armature::parse(&allocator, template_content);
-        let mut drawer = Drawer::with_options(DrawerOptions {
-            analyze_template_scopes: true,
-            track_usage: true,
-            ..Default::default()
-        });
-        drawer.draw_template(&root);
-        let croquis = drawer.finish();
-        if croquis.component_usages.is_empty() {
+        let usages = &document.analysis().component_usages;
+        if usages.is_empty() {
             return Vec::new();
         }
 
@@ -68,7 +61,7 @@ impl DiagnosticService {
             IdeContext::with_content(state, uri, template.loc.start, content.to_string());
         let mut diagnostics = Vec::new();
 
-        for usage in croquis.component_usages {
+        for usage in usages {
             if usage.has_spread_attrs || usage.props.iter().any(|prop| prop.name_is_dynamic) {
                 continue;
             }

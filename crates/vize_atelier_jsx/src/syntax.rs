@@ -22,6 +22,7 @@ use crate::{JsxDiagnostic, JsxLang};
 use vize_atlas::Shared;
 use vize_carton::source_anchor::SourceAnchor;
 use vize_croquis::Croquis;
+use vize_module::ModuleDocument;
 
 /// Inclusive-start, exclusive-end byte range in the original module.
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash)]
@@ -205,6 +206,7 @@ pub struct JsxSyntaxSnapshot {
     /// Stable compilation source identity when constructed by an Atlas provider.
     pub source_anchor: Option<SourceAnchor>,
     analysis: Shared<Croquis>,
+    module: ModuleDocument,
 }
 
 impl JsxSyntaxSnapshot {
@@ -223,6 +225,11 @@ impl JsxSyntaxSnapshot {
 
     pub fn shared_analysis(&self) -> Shared<Croquis> {
         Shared::clone(&self.analysis)
+    }
+
+    /// Script/module facts and CFG built from the same OXC program as JSX roots.
+    pub fn module(&self) -> &ModuleDocument {
+        &self.module
     }
 
     /// Outermost JSX roots and their exact type-checkable expression graph.

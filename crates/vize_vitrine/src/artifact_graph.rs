@@ -103,10 +103,10 @@ pub(crate) fn query_sfc_compile(
         .query::<SfcDescriptorProduct>(source)
         .map_err(|error| cstr!("{error}"))?
         .shared();
-    if let Some(error) = descriptor.diagnostic() {
-        if compiled.is_ok() {
-            return Err(error.message.clone());
-        }
+    if let Some(error) = descriptor.diagnostic()
+        && compiled.is_ok()
+    {
+        return Err(error.message.clone());
     }
     #[cfg(test)]
     let mut render_cache_hit = false;
@@ -236,11 +236,7 @@ pub(crate) struct SfcTypeCheckGraph {
 
 impl SfcTypeCheckGraph {
     pub(crate) fn new(
-        sources: Vec<(
-            std::string::String,
-            std::string::String,
-            SfcTypeCheckOptions,
-        )>,
+        sources: Vec<(String, String, SfcTypeCheckOptions)>,
         mode: SfcCroquisMode,
     ) -> Result<Self, String> {
         let mut compilation = Compilation::new();
@@ -263,7 +259,7 @@ impl SfcTypeCheckGraph {
                 SfcTypeCheckRequest::new(options, mode),
             )
             .map_err(|error| cstr!("{error}"))?;
-            source_ids.insert(name.into(), source);
+            source_ids.insert(name, source);
         }
         Ok(Self {
             snapshot: compilation.snapshot(),

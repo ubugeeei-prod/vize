@@ -9,6 +9,7 @@
 
 mod attribute;
 mod callbacks;
+mod delimiters;
 mod element;
 #[cfg(test)]
 mod experimental_tests;
@@ -24,10 +25,8 @@ use vize_relief::{
     options::{ParserOptions, TemplateSyntaxMode, WhitespaceStrategy},
 };
 
-use crate::tokenizer::Tokenizer;
-
 use element::{note_html_tree_element_close, note_html_tree_element_open};
-use {callbacks::ParserCallbacks, whitespace::condense_whitespace};
+use whitespace::condense_whitespace;
 
 pub struct Parser<'a> {
     allocator: &'a Bump,
@@ -214,44 +213,15 @@ impl<'a> Parser<'a> {
         parser
     }
 
-    /// Whether the configured dialect recognizes Vue 1.x triple-mustache
-    /// raw-HTML interpolation (`{{{ expr }}}`). Resolved once per file from the
-    /// dialect capabilities; `false` for the default Vue 3 dialect.
-    #[cfg(feature = "legacy")]
-    fn raw_html_interpolation_enabled(&self) -> bool {
-        crate::legacy::LegacyDialectCapabilities::for_dialect(self.options.dialect)
-            .raw_html_interpolation
-    }
-
     /// Parse the source and return the AST
     pub fn parse(mut self) -> (RootNode<'a>, Vec<'a, CompilerError>) {
         // Initialize root node
         let root = RootNode::new(self.allocator, self.source);
         self.root = Some(root);
 
-        // Copy delimiters to avoid borrow issue
-        let delimiter_open: Vec<'a, u8> =
-            Vec::from_iter_in(self.options.delimiters.0.bytes(), self.allocator);
-        let delimiter_close: Vec<'a, u8> =
-            Vec::from_iter_in(self.options.delimiters.1.bytes(), self.allocator);
-
-        // We need to use a struct that implements Callbacks
-        // Create a wrapper that can capture the parser
-        let document = self.document;
-        let in_tag_comments = self.options.experimental_in_tag_comments;
-        #[cfg(feature = "legacy")]
-        let triple_mustache = self.raw_html_interpolation_enabled();
-        let mut tokenizer = Tokenizer::with_delimiters(
-            self.source,
-            ParserCallbacks { parser: &mut self },
-            &delimiter_open,
-            &delimiter_close,
-        );
-        tokenizer.set_tolerate_declarations(document);
-        tokenizer.set_in_tag_comments(in_tag_comments);
-        #[cfg(feature = "legacy")]
-        tokenizer.set_triple_mustache(triple_mustache);
-        tokenizer.tokenize();
+        if !self.tokenize_template() {
+            return self.into_result();
+        }
 
         // Handle any unclosed elements
         self.handle_unclosed_elements();
@@ -263,11 +233,7 @@ impl<'a> Parser<'a> {
             condense_whitespace(&mut root.children, self.options.is_pre_tag);
         }
 
-        let root = match self.root.take() {
-            Some(root) => root,
-            None => RootNode::new(self.allocator, self.source),
-        };
-        (root, self.errors)
+        self.into_result()
     }
 
     /// Get source slice

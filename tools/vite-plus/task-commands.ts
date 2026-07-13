@@ -92,7 +92,11 @@ export const moonRegistryUpdateGuardForEnvironment = (
     return null;
   }
 
-  return `( [ -d ${workspaceMoonRegistryIndex} ] || (cd ${moonToolsModule} && ${moonCommandForEnvironment(env, pathExists)} update) )`;
+  // The registry update runs from the repository root so the workspace-relative
+  // MoonBit paths (MOON_HOME, MOON_BIN, and the moon binary itself) resolve. A
+  // `cd` into the module directory would break those relative paths, which is
+  // exactly what silently regressed the local `vp run release` path.
+  return `( [ -d ${workspaceMoonRegistryIndex} ] || ${moonCommandForEnvironment(env, pathExists)} update )`;
 };
 
 const moonCommand = moonCommandForEnvironment();

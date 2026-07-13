@@ -1,9 +1,10 @@
+use vize_armature::parse;
 use vize_atelier_core::{
-    Allocator, CodegenOptions, TransformOptions,
     codegen::{CodegenResult, generate},
     lane::transform,
-    parse,
 };
+use vize_carton::Allocator;
+use vize_relief::{CodegenOptions, ExpressionNode, TemplateChildNode, TransformOptions};
 fn compile(source: &str, source_map: bool) -> CodegenResult {
     let allocator = Allocator::default();
     let (mut root, errors) = parse(&allocator, source);
@@ -35,10 +36,10 @@ fn compile(source: &str, source_map: bool) -> CodegenResult {
     )
 }
 
-fn expression_text<'a>(expression: &'a vize_atelier_core::ExpressionNode<'_>) -> &'a str {
+fn expression_text<'a>(expression: &'a ExpressionNode<'_>) -> &'a str {
     match expression {
-        vize_atelier_core::ExpressionNode::Simple(expression) => expression.content.as_str(),
-        vize_atelier_core::ExpressionNode::Compound(expression) => expression.loc.source.as_str(),
+        ExpressionNode::Simple(expression) => expression.content.as_str(),
+        ExpressionNode::Compound(expression) => expression.loc.source.as_str(),
     }
 }
 
@@ -97,11 +98,11 @@ fn transformed_relief_preserves_control_flow_and_for_aliases() {
     assert!(transformed.errors.is_empty());
 
     let if_node = match &root.children[0] {
-        vize_atelier_core::TemplateChildNode::If(node) => node,
+        TemplateChildNode::If(node) => node,
         node => panic!("expected transformed if node, got {node:?}"),
     };
     let for_node = match &root.children[1] {
-        vize_atelier_core::TemplateChildNode::For(node) => node,
+        TemplateChildNode::For(node) => node,
         node => panic!("expected transformed for node, got {node:?}"),
     };
     assert_eq!(if_node.branches.len(), 2);

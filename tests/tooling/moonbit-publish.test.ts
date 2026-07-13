@@ -537,7 +537,7 @@ test("publish_vscode_extension adds pre-release when NPM_TAG is not latest", () 
       [
         "const fs = require('node:fs');",
         "const args = process.argv.slice(2);",
-        "if (args[0] === 'dlx' && args[3] === 'vsce' && args[4] === 'show') process.exit(1);",
+        "if (args[0] === 'dlx' && args[3] === 'vsce' && args[4] === 'show') { if (fs.existsSync(process.env.VP_ARGS_LOG)) { process.stdout.write(JSON.stringify({ versions: [{ version: '0.57.0' }] })); process.exit(0); } process.exit(1); }",
         "fs.writeFileSync(process.env.VP_ARGS_LOG, args.join('\\n'));",
         "process.exit(0);",
       ].join("\n"),

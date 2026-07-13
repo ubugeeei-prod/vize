@@ -116,8 +116,13 @@ pub use markup::{
 pub use output::{OutputFormat, format_results, format_summary, rule_docs_path};
 pub use preset::LintPreset;
 pub use production_recipe::{
-    PatinaDocumentProvider, PatinaDocumentReportProduct, register_document_lint_recipe,
-    register_shared_document_lint_recipe,
+    PatinaDocumentMode, PatinaDocumentModeInput, PatinaDocumentProvider,
+    PatinaDocumentReportProduct, PatinaLinterInput, PatinaModuleLintProvider,
+    PatinaTemplateDocumentKind, PatinaTemplateLintInput, PatinaTemplateLintProvider,
+    PatinaTemplateLintRequest, install_document_linter, install_document_mode,
+    install_template_lint_request, register_document_lint_recipe,
+    register_shared_document_lint_recipe, register_shared_module_lint_recipe,
+    register_shared_template_lint_recipe,
 };
 pub use rule::{Rule, RuleCategory, RuleMeta, RuleRegistry};
 pub use semantic_recipe::{

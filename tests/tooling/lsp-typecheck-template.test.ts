@@ -126,6 +126,110 @@ const button = document.createElement("button")
   }
 });
 
+test("vize lsp refreshes an open parent after a child prop type changes", async (t) => {
+  const corsaPath = resolveTsgoBinary();
+  if (corsaPath == null) {
+    t.skip("tsgo binary not found; skipping LSP typecheck test");
+    return;
+  }
+
+  const testRootDir = path.join(testOutputRoot, "lsp-typecheck-dependent-component");
+  fs.mkdirSync(testRootDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    const sourceDir = path.join(workspaceDir, "src");
+    fs.mkdirSync(sourceDir, { recursive: true });
+    const vuePackage = resolveVuePackage();
+    if (vuePackage == null) {
+      writeVueShim(workspaceDir);
+    } else {
+      linkVuePackage(workspaceDir, vuePackage);
+    }
+    fs.writeFileSync(
+      path.join(workspaceDir, "vize.config.json"),
+      JSON.stringify({ lsp: { lint: false, typecheck: true }, typeChecker: { corsaPath } }),
+      "utf8",
+    );
+    fs.writeFileSync(
+      path.join(workspaceDir, "tsconfig.json"),
+      JSON.stringify({
+        compilerOptions: {
+          module: "ESNext",
+          moduleResolution: "bundler",
+          noEmit: true,
+          strict: true,
+          target: "ES2022",
+        },
+        include: ["src/**/*"],
+      }),
+      "utf8",
+    );
+    await session.initialize(workspaceDir, {
+      editor: true,
+      lint: false,
+      typecheck: true,
+    });
+
+    const initialChild = `<script setup lang="ts">
+defineProps<{ count: string }>()
+</script>
+`;
+    const changedChild = initialChild.replace("count: string", "count: number");
+    const parent = `<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child :count="'one'" />
+</template>
+`;
+    const childPath = path.join(sourceDir, "Child.vue");
+    const parentPath = path.join(sourceDir, "Parent.vue");
+    const childUri = pathToFileURL(childPath).href;
+    const parentUri = pathToFileURL(parentPath).href;
+    fs.writeFileSync(childPath, initialChild, "utf8");
+    fs.writeFileSync(parentPath, parent, "utf8");
+
+    session.notify("textDocument/didOpen", {
+      textDocument: { uri: childUri, languageId: "vue", version: 1, text: initialChild },
+    });
+    await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
+      isDiagnosticsForUri(params, childUri),
+    );
+    session.notify("textDocument/didOpen", {
+      textDocument: { uri: parentUri, languageId: "vue", version: 1, text: parent },
+    });
+    const initialParent = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => isDiagnosticsForUri(params, parentUri),
+    )) as PublishDiagnosticsParams;
+    assert.equal(
+      initialParent.diagnostics.some((diagnostic) =>
+        diagnostic.message?.includes("not assignable"),
+      ),
+      false,
+      initialParent.diagnostics.map((diagnostic) => diagnostic.message).join("\n"),
+    );
+
+    session.notify("textDocument/didChange", {
+      textDocument: { uri: childUri, version: 2 },
+      contentChanges: [{ text: changedChild }],
+    });
+    await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) =>
+        isDiagnosticsForUri(params, parentUri) &&
+        params.diagnostics.some((diagnostic) => diagnostic.message?.includes("not assignable")),
+    );
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(testRootDir, { recursive: true, force: true });
+  }
+});
+
 function resolveTsgoBinary(): string | undefined {
   const candidates = [
     path.join(root, "../corsa-bind/.cache/tsgo"),

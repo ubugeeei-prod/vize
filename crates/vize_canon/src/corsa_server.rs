@@ -331,7 +331,12 @@ impl CorsaServer {
 
         // Merge in Vue-specific compile errors (e.g. props destructure default type
         // mismatch) so the socket-mode check matches the direct `vize check` runner.
-        if let Some(sfc_diagnostic) = collect_sfc_compile_diagnostic(uri, content, descriptor) {
+        if let Some(sfc_diagnostic) = collect_sfc_compile_diagnostic(
+            uri,
+            content,
+            descriptor,
+            project.host.script_syntax.as_deref(),
+        ) {
             diagnostics.push(sfc_diagnostic);
         }
 
@@ -421,8 +426,7 @@ impl Default for CorsaServer {
 }
 
 /// Surface Vue-specific script-setup semantic errors (e.g.
-/// `DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE`). Uses the lightweight validator
-/// entry point so the socket-mode check stays as fast as the Virtual TS path.
+/// `DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE`) from the frontend-owned snapshot.
 /// Resolve a URI (file:// or plain path) to an absolute filesystem path.
 /// Returns None when the URI is a non-`file` scheme, the path cannot be
 /// extracted, or percent-decoding yields invalid UTF-8. `file://` URIs go
@@ -447,17 +451,10 @@ fn collect_sfc_compile_diagnostic(
     _uri: &str,
     source: &str,
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    script_syntax: Option<&vize_atelier_sfc::SfcScriptSyntaxSnapshot>,
 ) -> Option<Diagnostic> {
-    let script_setup = descriptor.script_setup.as_ref()?;
-    if !script_setup_has_validator_candidates(&script_setup.content) {
-        return None;
-    }
-
-    let Err(error) = vize_atelier_sfc::validate_script_setup_semantics_located(
-        &script_setup.content,
-        script_setup.loc.start,
-        source,
-    ) else {
+    descriptor.script_setup.as_ref()?;
+    let Err(error) = script_syntax?.validate_script_setup_semantics(source) else {
         return None;
     };
 
@@ -483,12 +480,6 @@ fn collect_sfc_compile_diagnostic(
         column,
         code: error.code.clone(),
     })
-}
-
-/// See the canon batch path for rationale — keep this in sync with
-/// `crates/vize_canon/src/batch/virtual_project.rs`.
-fn script_setup_has_validator_candidates(content: &str) -> bool {
-    content.contains("defineProps<") && content.contains("= defineProps")
 }
 
 fn sfc_block_fallback_offset(descriptor: &vize_atelier_sfc::SfcDescriptor<'_>) -> usize {

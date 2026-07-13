@@ -51,7 +51,6 @@ mod diagnostic;
 mod file_uri;
 pub mod intelligence;
 mod options_api_setup_spread;
-mod script_parse;
 mod semantic_recipe;
 pub mod sfc_typecheck;
 pub mod source_map;
@@ -117,11 +116,12 @@ pub use vize_carton::i18n::Locale;
 
 #[cfg(feature = "native")]
 pub use corsa_bridge::{
-    CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaVueVirtualDocument,
-    CorsaVueVirtualDocumentOptions, LspCompletionItem, LspCompletionList, LspCompletionResponse,
-    LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover, LspHoverContents,
-    LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspPosition, LspRange,
-    VIRTUAL_URI_SCHEME,
+    CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaRelativeDependencies,
+    CorsaScriptDependency, CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions,
+    LspCompletionItem, LspCompletionList, LspCompletionResponse, LspDefinitionResponse,
+    LspDiagnostic, LspDocumentation, LspHover, LspHoverContents, LspLocation, LspLocationLink,
+    LspMarkedString, LspMarkupContent, LspPosition, LspRange, VIRTUAL_URI_SCHEME,
+    collect_corsa_relative_dependencies,
 };
 
 // Re-export batch type checker

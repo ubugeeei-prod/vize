@@ -29,6 +29,8 @@ pub struct CrossFileAnalyzer {
     single_file_options: AnalyzerOptions,
 }
 
+pub(crate) use files::AtlasModuleFacts;
+
 impl Default for CrossFileAnalyzer {
     fn default() -> Self {
         Self::new(CrossFileOptions::default())

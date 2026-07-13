@@ -12,6 +12,7 @@
 //! - [`atelier_core`] - Core template compiler infrastructure
 //! - [`atelier_dom`] - DOM mode template compiler
 //! - [`atelier_vapor`] - Vapor mode template compiler
+//! - [`atelier_template`] - Independent raw Vue-template frontend
 //! - [`atelier_sfc`] - Single File Component (SFC) parser and compiler
 //! - [`glyph`] - Vue SFC formatter
 //! - [`patina`] - Vue SFC linter
@@ -50,6 +51,9 @@ pub use vize_atelier_ssr as atelier_ssr;
 /// Vapor mode template compiler.
 pub use vize_atelier_vapor as atelier_vapor;
 
+/// Independent raw Vue-template frontend.
+pub use vize_atelier_template as atelier_template;
+
 /// Single File Component (SFC) parser and compiler.
 pub use vize_atelier_sfc as atelier_sfc;
 
@@ -61,6 +65,9 @@ pub use vize_rendu as rendu;
 
 /// Frontend-neutral single-file control/data/effect graph.
 pub use vize_flow as flow;
+
+/// Production-neutral JavaScript/TypeScript module facts and CFG projection.
+pub use vize_module as module;
 
 /// Frontend-neutral semantic products and facts.
 pub use vize_croquis as croquis;

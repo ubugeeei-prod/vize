@@ -6,6 +6,7 @@ mod capabilities;
 mod format;
 mod handlers;
 mod helpers;
+mod importers;
 mod state;
 
 pub use capabilities::server_capabilities;

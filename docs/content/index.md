@@ -24,7 +24,7 @@ features:
     details: "Start from the recommended integration for Vue applications: native SFC compilation inside Vite with shared Vize configuration."
     link: guide/vite-plugin.md
   - title: Static Analysis Pipeline
-    details: Parser, semantic analysis, lint rules, virtual TypeScript, cross-file checks, and editor diagnostics share the same Rust-native analysis layers.
+    details: Typed Atlas products let parsers, Module facts, semantics, lint rules, virtual TypeScript, cross-file checks, and editor diagnostics share only the work each source shape needs.
     link: guide/static-analysis.md
   - title: Rule Documentation
     details: Browse concrete Vue, HTML, SSR, Vapor, Musea, type-aware, and cross-file diagnostics with bad and good examples.
@@ -72,16 +72,22 @@ features:
 
 ## Current Direction
 
-One of the biggest recent shifts in Vize is native type checking. The `vize check` command used by
-npm package scripts and the editor-facing type-check pipeline are moving onto `vize_canon` plus
-[`corsa-bind`](https://github.com/ubugeeei/corsa-bind), which lets Vize keep Vue virtual files and
-TypeScript project diagnostics on a native path for longer.
+One of the biggest recent shifts in Vize is the Atlas execution substrate. Compiler, lint, typecheck,
+editor, formatter, Inspector, and binding hosts request typed root products instead of rebuilding
+private pipelines. Atlas owns source identity, planning, caching, and invalidation; it is not a
+universal IR. SFCs, raw templates, JS/TS modules, and JSX/TSX retain their own representations.
 
-That matters for more than raw speed. It gives Vize a tighter loop between template analysis, diagnostics, navigation, and future editor features, while reducing the amount of work that has to bounce back through a JavaScript-hosted compiler process. The fidelity story is still catching up, but this is the direction the toolchain is clearly heading.
+An authored SFC script block is parsed once while its live OXC program is projected into Module
+facts, Croquis analysis, and compiler preanalysis. Raw-template features share Relief and Croquis
+without inventing an SFC container. Source-shaped planning also means a script-only SFC does not pay
+for Relief or Rendu, while Canon adds Relief only for a template and Module only for a script; it does
+not fabricate Flow.
 
-The same direction applies to linting and Musea. Static analysis starts with the parser and Croquis
-semantic model, then feeds Patina lint rules, Canon virtual TypeScript, compiler decisions, editor
-diagnostics, and component gallery metadata. The practical workflow is documented in
+Native type checking builds on the same execution model. `vize check` and editor type checking query
+Canon products, generate Vue virtual files, and use
+[`corsa-bind`](https://github.com/ubugeeei/corsa-bind) project sessions for native TypeScript
+diagnostics. Patina, Maestro, Inspector, and Musea each request their own typed products rather than
+being downstream stages of Canon or the compiler. The practical workflow is documented in
 [Static Analysis](./guide/static-analysis.md), with config details in
 [Configuration](./guide/configuration.md). The concrete rule and diagnostic catalog is in
 [Rules](./rules/index.md).

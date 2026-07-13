@@ -32,6 +32,7 @@ test("compiler foundation ownership is split across physical crates", () => {
     "vize_atlas",
     "vize_carton",
     "vize_croquis",
+    "vize_module",
   ]);
   assert.deepEqual(internalDependencies("vize_rendu"), ["vize_atlas", "vize_carton"]);
   assert.deepEqual(internalDependencies("vize_flow"), ["vize_atlas", "vize_carton"]);
@@ -52,6 +53,8 @@ test("compiler foundation ownership is split across physical crates", () => {
   assert.equal(fs.existsSync(path.join(root, "crates/vize_atlas/src/lib.rs")), true);
   assert.equal(fs.existsSync(path.join(root, "crates/vize_rendu/src/lib.rs")), true);
   assert.equal(fs.existsSync(path.join(root, "crates/vize_flow/src/lib.rs")), true);
+  assert.equal(fs.existsSync(path.join(root, "crates/vize_atelier_template/src/lib.rs")), true);
+  assert.equal(fs.existsSync(path.join(root, "crates/vize_atelier_sfc/src/graph_frontend")), false);
 });
 
 test("architecture docs distinguish Relief syntax from Croquis semantics", () => {
@@ -140,6 +143,26 @@ test("representation contracts stay independent of frontend producers", () => {
   assert.match(jsxProviders, /type Product = FlowProduct/);
   assert.match(jsxProviders, /type Product = RenduProduct/);
 
+  const templateProviders = read("crates/vize_atelier_template/src/atlas/providers.rs");
+  const templateOutput = read("crates/vize_atelier_template/src/atlas/output.rs");
+  assert.match(templateProviders, /type Product = ReliefProduct/);
+  assert.match(templateProviders, /type Product = FlowProduct/);
+  assert.match(templateProviders, /type Product = RenduProduct/);
+  assert.match(templateOutput, /TemplateCompileProduct/);
+  assert.doesNotMatch(templateOutput, /find\(|split_backend|replacen\(/);
+
+  for (const host of [
+    "crates/vize_vitrine/src/napi/template.rs",
+    "crates/vize_vitrine/src/wasm/compiler.rs",
+  ]) {
+    const source = read(host);
+    assert.match(source, /compile_template_product/);
+    assert.doesNotMatch(
+      source,
+      /compile_template_with_|compile_vapor_with_|compile_ssr_with_|compile_internal/,
+    );
+  }
+
   const projectProvider = read("crates/vize_croquis_cf/src/atlas.rs");
   assert.match(projectProvider, /fn dependency_requests/);
   assert.match(projectProvider, /get_for_source::<CroquisSemanticProduct>/);
@@ -152,12 +175,42 @@ test("representation contracts stay independent of frontend producers", () => {
   assert.match(fullProvider, /CrossFileAnalyzer::/);
   assert.match(fullModel, /const NAME: &'static str = "croquis\.cross-file-analysis"/);
 
+  const lintGraph = read("crates/vize/src/commands/lint/artifact_graph.rs");
+  const lintPipeline = read("crates/vize/src/commands/lint/pipeline.rs");
+  const lintFix = read("crates/vize/src/commands/lint/fix.rs");
+  const lintCrossFile = read("crates/vize/src/commands/lint/cross_file.rs");
+  assert.match(lintGraph, /CrossFileAnalysisProduct/);
+  assert.match(lintGraph, /register_shared_module_lint_recipe/);
+  assert.match(lintGraph, /register_shared_template_lint_recipe/);
+  assert.match(lintGraph, /PatinaTemplateLintRequest::standalone_html/);
+  assert.doesNotMatch(
+    lintPipeline,
+    /direct_outcome|lint_source|\.lint_(?:script|standalone_html)\(/,
+  );
+  assert.doesNotMatch(lintFix, /lint_source|\.lint_(?:script|standalone_html)\(/);
+  assert.match(lintCrossFile, /query_cross_file/);
+  assert.doesNotMatch(lintCrossFile, /Compilation::new|add_source\(/);
+
   for (const host of [
+    "crates/vize/src/commands/lint/artifact_graph.rs",
     "crates/vize/src/commands/lint/cross_file.rs",
     "crates/vize_vitrine/src/wasm/cross_file.rs",
   ]) {
-    assert.doesNotMatch(read(host), /CrossFileAnalyzer/);
-    assert.match(read(host), /CrossFileAnalysisProduct/);
+    assert.doesNotMatch(read(host), /CrossFileAnalyzer::/);
+  }
+  assert.match(read("crates/vize_vitrine/src/wasm/cross_file.rs"), /CrossFileAnalysisProduct/);
+
+  const ffiLintGraph = read("crates/vize_vitrine/src/lint_artifact.rs");
+  assert.match(ffiLintGraph, /PatinaDocumentReportProduct/);
+  assert.match(ffiLintGraph, /RawTemplateReliefProvider/);
+  for (const host of [
+    "crates/vize_vitrine/src/napi/lint.rs",
+    "crates/vize_vitrine/src/napi/lint/batch.rs",
+    "crates/vize_vitrine/src/napi/lint_fix.rs",
+    "crates/vize_vitrine/src/wasm/lint.rs",
+    "crates/vize_vitrine/src/wasm/lint/run.rs",
+  ]) {
+    assert.doesNotMatch(read(host), /\.lint_(?:sfc|template|standalone_html)\(/);
   }
 });
 

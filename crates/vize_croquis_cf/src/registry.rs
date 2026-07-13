@@ -10,13 +10,26 @@
 //! - Lazy file metadata loading to avoid unnecessary I/O
 //! - Source hashing for change detection without file I/O
 
-use crate::rules::cross_file_reactivity::store_detection::{
-    StoreFactories, collect_store_factories,
-};
+#[path = "registry/registration.rs"]
+mod registration;
+
+use crate::rules::cross_file_reactivity::store_detection::StoreFactories;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::Croquis;
+use vize_module::ModuleDocument;
+
+/// Parser-independent import data retained by the cross-file registry.
+///
+/// Production Atlas paths populate this from `ModuleDocument`; direct analyzer
+/// compatibility APIs derive the same shape from Croquis scopes.
+#[derive(Debug, Clone)]
+pub(crate) struct ModuleImportFact {
+    pub(crate) source: CompactString,
+    pub(crate) is_type_only: bool,
+    pub(crate) local_bindings: Vec<CompactString>,
+}
 
 /// Unique identifier for a file in the registry.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize)]
@@ -67,6 +80,10 @@ pub struct ModuleEntry {
     /// Computed from the AST at registration time so that Pinia store usages
     /// can be resolved structurally rather than by `use*Store` naming.
     pub pinia_stores: StoreFactories,
+    /// Imports projected from the source's neutral module product.
+    pub(crate) module_imports: Vec<ModuleImportFact>,
+    /// Complete owned module facts for production cross-file passes.
+    pub(crate) module: Option<ModuleDocument>,
 }
 
 /// Registry for tracking all analyzed files in a project.
@@ -108,93 +125,6 @@ impl ModuleRegistry {
     #[inline]
     pub fn project_root(&self) -> Option<&Path> {
         self.project_root.as_deref()
-    }
-
-    /// Register a new file or update an existing one.
-    ///
-    /// Returns the file ID and whether this was a new entry.
-    pub fn register(
-        &mut self,
-        path: impl AsRef<Path>,
-        source: &str,
-        analysis: impl Into<vize_atlas::Shared<Croquis>>,
-    ) -> (FileId, bool) {
-        let path = path.as_ref();
-        let analysis: vize_atlas::Shared<Croquis> = analysis.into();
-        let abs_path = if path.is_absolute() {
-            path.to_path_buf()
-        } else if let Some(ref root) = self.project_root {
-            root.join(path)
-        } else {
-            path.to_path_buf()
-        };
-        let source_hash = hash_source(source);
-
-        if let Some(&existing_id) = self.path_to_id.get(&abs_path) {
-            // Update existing entry
-            if let Some(entry) = self.entries.get_mut(&existing_id) {
-                entry.source_hash = source_hash;
-                entry.analysis = analysis;
-                entry.pinia_stores = collect_store_factories(source);
-                entry.mtime = std::fs::metadata(&abs_path)
-                    .ok()
-                    .and_then(|m| m.modified().ok());
-            }
-            self.set_slot_outlet(existing_id, source_renders_slot(source));
-            return (existing_id, false);
-        }
-
-        // Create new entry
-        let id = FileId::new(self.next_id);
-        self.next_id += 1;
-
-        let filename = abs_path
-            .file_name()
-            .map(|s| CompactString::new(s.to_string_lossy().as_ref()))
-            .unwrap_or_else(|| CompactString::new("unknown"));
-
-        let is_vue_sfc = abs_path
-            .extension()
-            .is_some_and(|ext| ext.eq_ignore_ascii_case("vue"));
-
-        let component_name = if is_vue_sfc {
-            extract_component_name(&abs_path)
-        } else {
-            None
-        };
-
-        let entry = ModuleEntry {
-            id,
-            path: abs_path.clone(),
-            filename,
-            mtime: std::fs::metadata(&abs_path)
-                .ok()
-                .and_then(|m| m.modified().ok()),
-            analysis,
-            source_hash,
-            is_vue_sfc,
-            component_name,
-            pinia_stores: collect_store_factories(source),
-        };
-
-        self.path_to_id.insert(abs_path, id);
-        self.entries.insert(id, entry);
-        self.set_slot_outlet(id, source_renders_slot(source));
-
-        (id, true)
-    }
-
-    #[inline]
-    pub(crate) fn renders_slot(&self, id: FileId) -> bool {
-        self.slot_outlets.contains(&id)
-    }
-
-    fn set_slot_outlet(&mut self, id: FileId, renders_slot: bool) {
-        if renders_slot {
-            self.slot_outlets.insert(id);
-        } else {
-            self.slot_outlets.remove(&id);
-        }
     }
 
     /// Get a module entry by file ID.

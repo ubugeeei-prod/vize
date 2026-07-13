@@ -10,7 +10,6 @@
 
 use tower_lsp::lsp_types::Hover;
 use vize_carton::BindingType;
-use vize_croquis::{Drawer, DrawerOptions};
 
 use super::{HoverBuilder, HoverService};
 use crate::ide::IdeContext;
@@ -80,27 +79,24 @@ impl HoverService {
             return Some(builder.build());
         }
 
-        if let Some(ref virtual_docs) = ctx.virtual_docs
-            && let Some(ref script_setup) = virtual_docs.script_setup
+        if ctx
+            .sfc_croquis()
+            .is_some_and(|document| document.analysis().bindings.contains(&word))
         {
-            let bindings =
-                crate::virtual_code::extract_simple_bindings(&script_setup.content, true);
-            if bindings.contains(&word) {
-                return Some(
-                    HoverBuilder::new()
-                        .title(&word)
-                        .meta("Template binding")
-                        .description("Binding from `<script setup>`.")
-                        .bullets(
-                            "Behavior",
-                            &[
-                                "Available directly in the template scope.",
-                                "Vue automatically unwraps refs when rendering templates.",
-                            ],
-                        )
-                        .build(),
-                );
-            }
+            return Some(
+                HoverBuilder::new()
+                    .title(&word)
+                    .meta("Template binding")
+                    .description("Binding projected from the SFC script frontend.")
+                    .bullets(
+                        "Behavior",
+                        &[
+                            "Available directly in the template scope.",
+                            "Vue automatically unwraps refs when rendering templates.",
+                        ],
+                    )
+                    .build(),
+            );
         }
 
         Some(
@@ -209,30 +205,8 @@ impl HoverService {
             .map(|s| s.content.as_ref())
             .or_else(|| descriptor.script.as_ref().map(|s| s.content.as_ref()));
 
-        // Create a drawer and analyze script.
-        let drawer_options = DrawerOptions::full();
-        let mut drawer = Drawer::with_options(drawer_options);
-        if ctx.state.lsp_features().legacy_vue2 {
-            drawer = drawer.with_legacy_vue2();
-        } else if ctx.state.options_api_enabled() {
-            drawer = drawer.with_options_api();
-        }
-
-        if let Some(ref script) = descriptor.script {
-            drawer.analyze_script_plain(&script.content);
-        }
-        if let Some(ref script_setup) = descriptor.script_setup {
-            drawer.analyze_script_setup(&script_setup.content);
-        }
-
-        // Analyze template if present
-        if let Some(ref template) = descriptor.template {
-            let allocator = vize_carton::Bump::new();
-            let (root, _) = vize_armature::parse(&allocator, &template.content);
-            drawer.analyze_template(&root);
-        }
-
-        let summary = drawer.finish();
+        let croquis = ctx.sfc_croquis()?;
+        let summary = croquis.analysis();
 
         // Look up the binding in the analysis summary
         let binding_type = summary.get_binding_type(word)?;

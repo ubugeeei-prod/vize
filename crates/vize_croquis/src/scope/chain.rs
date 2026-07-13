@@ -13,7 +13,6 @@ mod builder;
 mod resolution;
 
 use core::fmt;
-
 use vize_carton::BindingType;
 use vize_carton::{
     CompactString, FxHashMap, FxHashSet, SmallVec, String, ToCompactString, smallvec,
@@ -25,8 +24,8 @@ use super::types::{
     ParentScopes, ScopeBinding, ScopeData, ScopeId, ScopeKind, ScriptSetupScopeData, Span,
     UniversalScopeData, VForScopeData, VSlotScopeData, VueGlobalScopeData,
 };
-
 /// A single scope in the scope chain
+#[derive(Clone)]
 pub struct Scope {
     /// Unique identifier
     pub id: ScopeId,
@@ -216,6 +215,7 @@ impl Scope {
 }
 
 /// Manages the scope chain during analysis
+#[derive(Clone)]
 pub struct ScopeChain {
     /// All scopes (indexed by ScopeId)
     pub(crate) scopes: Vec<Scope>,

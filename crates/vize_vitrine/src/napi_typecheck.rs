@@ -101,8 +101,9 @@ pub fn type_check_napi(
         vize_atelier_sfc::SfcCroquisMode::Full
     };
     let name = check_opts.filename.to_string();
-    let graph = SfcTypeCheckGraph::new(vec![(name.clone(), source, check_opts)], mode)
-        .map_err(typecheck_graph_error)?;
+    let graph =
+        SfcTypeCheckGraph::new(vec![(name.clone().into(), source.into(), check_opts)], mode)
+            .map_err(typecheck_graph_error)?;
     let result = graph.query(&name).map_err(typecheck_graph_error)?;
 
     Ok(TypeCheckResultNapi {
@@ -265,7 +266,7 @@ pub fn type_check_batch_napi(
             let mut check_opts = TypeCheckOptions::new(name.as_str());
             apply_napi_options(&opts, &mut check_opts);
             check_opts.include_virtual_ts = false;
-            Some((name, source, check_opts))
+            Some((name.into(), source.into(), check_opts))
         })
         .collect();
     let mode = if opts.legacy_vue2.unwrap_or(false) {

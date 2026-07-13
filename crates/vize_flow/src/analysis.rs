@@ -1,4 +1,11 @@
-use crate::{BlockId, FlowGraph};
+use crate::{BlockId, ControlEdgeKind, FlowGraph};
+
+const fn traversable_from_entry(kind: ControlEdgeKind) -> bool {
+    !matches!(
+        kind,
+        ControlEdgeKind::FunctionEntry | ControlEdgeKind::Unreachable
+    )
+}
 
 /// Blocks reachable from a graph's entry along possible control edges.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -99,7 +106,11 @@ impl FlowGraph {
             }
             reachable[block.index()] = true;
             for edge in self.blocks[block.index()].outgoing.iter().rev() {
-                let successor = self.control_edges[edge.index()].to;
+                let edge = &self.control_edges[edge.index()];
+                if !traversable_from_entry(edge.kind) {
+                    continue;
+                }
+                let successor = edge.to;
                 if !reachable[successor.index()] {
                     pending.push(successor);
                 }
@@ -128,7 +139,11 @@ impl FlowGraph {
             visited[block.index()] = true;
             stack.push((block, true));
             for edge in self.blocks[block.index()].outgoing.iter().rev() {
-                let successor = self.control_edges[edge.index()].to;
+                let edge = &self.control_edges[edge.index()];
+                if !traversable_from_entry(edge.kind) {
+                    continue;
+                }
+                let successor = edge.to;
                 if !visited[successor.index()] {
                     stack.push((successor, false));
                 }
@@ -164,7 +179,11 @@ impl FlowGraph {
                 }
                 let block = &self.blocks[block_index];
                 let mut predecessors = block.incoming.iter().filter_map(|edge_id| {
-                    let predecessor = self.control_edges[edge_id.index()].from.index();
+                    let edge = &self.control_edges[edge_id.index()];
+                    if !traversable_from_entry(edge.kind) {
+                        return None;
+                    }
+                    let predecessor = edge.from.index();
                     reachable[predecessor].then_some(predecessor)
                 });
                 let mut next = predecessors

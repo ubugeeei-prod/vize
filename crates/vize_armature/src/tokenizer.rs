@@ -124,6 +124,16 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         }
     }
 
+    #[inline]
+    fn at_opening_delimiter(&self, c: u8) -> bool {
+        self.delimiter_open.first() == Some(&c)
+    }
+
+    #[inline]
+    fn at_closing_delimiter(&self, c: u8) -> bool {
+        self.delimiter_close.first() == Some(&c)
+    }
+
     /// Tolerate top-level markup declarations (e.g. `<!DOCTYPE html>`) instead of
     /// reporting them as recoverable errors. Used by document parse mode.
     pub fn set_tolerate_declarations(&mut self, tolerate: bool) {
@@ -237,5 +247,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     }
 }
 
+#[cfg(test)]
+mod empty_delimiter_tests;
 #[cfg(test)]
 mod tests;

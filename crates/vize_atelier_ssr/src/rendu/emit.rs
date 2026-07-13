@@ -3,7 +3,10 @@ mod element;
 mod property;
 mod syntax;
 
-use vize_rendu::{RenduEscapeMode, RenduNode, RenduNodeId, RenduProvenance, RenduRoot};
+use vize_rendu::{
+    RenderEmitSettings, RenderOutputMode, RenduEscapeMode, RenduNode, RenduNodeId, RenduProvenance,
+    RenduRoot,
+};
 
 use self::syntax::{escape_html_comment, escape_html_text, quote_js};
 use super::{RenduSsrMapping, RenduSsrMappingKind, RenduSsrOutput};
@@ -23,16 +26,15 @@ impl<'a> SsrEmitter<'a> {
         }
     }
 
-    pub(super) fn emit(mut self) -> RenduSsrOutput {
-        self.output.code.push_str(
-            "import { mergeProps as _mergeProps, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withModifiers as _withModifiers } from \"vue\"\n",
-        );
-        self.output.code.push_str(
-            "import { ssrGetDirectiveProps as _ssrGetDirectiveProps, ssrInterpolate as _ssrInterpolate, ssrRenderAttr as _ssrRenderAttr, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderComponent as _ssrRenderComponent, ssrRenderDynamicAttr as _ssrRenderDynamicAttr, ssrRenderList as _ssrRenderList, ssrRenderSlot as _ssrRenderSlot } from \"vue/server-renderer\"\n\n",
-        );
-        self.line(
-            "export function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {",
-        );
+    pub(super) fn emit(mut self, settings: &RenderEmitSettings) -> RenduSsrOutput {
+        self.line(match settings.mode {
+            RenderOutputMode::Module => {
+                "export function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {"
+            }
+            RenderOutputMode::Function => {
+                "return function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {"
+            }
+        });
         self.indent += 1;
         self.emit_nodes(self.root.entry());
         self.indent -= 1;

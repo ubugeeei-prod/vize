@@ -1,5 +1,7 @@
 # vize_flow
 
+Compatibility follows the [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
 `vize_flow` is Vize's frontend-neutral, single-compilation-unit flow IR. It
 models basic blocks, operations, control transfer, values, symbols, and effects
 without retaining a Relief tree, a Croquis model, an OXC AST, JSX nodes, or SFC

@@ -240,21 +240,16 @@ pub(crate) fn analyzed_template_binding_completions(
 
 /// Template-scope completions for a petite-vue standalone HTML document.
 ///
-/// The whole document is the template, so we parse it with the document parser
-/// (`<!DOCTYPE>`-tolerant, raw-text `<script>`/`<style>`) and run Croquis over
-/// the resulting AST. `v-scope` keys are modeled as `v-slot`-kind scopes, so
-/// they surface through the same `bindings_visible_at` walk the SFC path uses.
-/// Offsets are document-absolute here (no `<template>` block offset to
-/// subtract), and there is no `<script setup>` binding set to merge.
+/// The persistent raw-template frontend owns the document parse and Croquis
+/// analysis. `v-scope` keys are modeled as `v-slot`-kind scopes, so they surface
+/// through the same `bindings_visible_at` walk the SFC path uses. Offsets are
+/// document-absolute here (no `<template>` block offset to subtract), and there
+/// is no `<script setup>` binding set to merge.
 fn petite_vue_scope_binding_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
-    use vize_croquis::{Drawer, DrawerOptions};
-
-    let allocator = vize_carton::Bump::new();
-    let (root, _errors) = vize_armature::parse_document(&allocator, &ctx.content);
-
-    let mut drawer = Drawer::with_options(DrawerOptions::full());
-    drawer.draw_template(&root);
-    let croquis = drawer.finish();
+    let Some(document) = ctx.state.raw_template_croquis(ctx.uri) else {
+        return Vec::new();
+    };
+    let croquis = document.analysis();
 
     let offset = ctx.offset.min(ctx.content.len()) as u32;
     let mut items_vec = Vec::new();

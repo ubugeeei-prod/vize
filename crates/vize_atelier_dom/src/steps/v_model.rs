@@ -186,7 +186,9 @@ mod tests {
     #[test]
     fn test_generate_model_props_basic() {
         use vize_carton::{Box, Bump};
-        use vize_relief::{ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation};
+        use vize_relief::{
+            DirectiveNode, ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation,
+        };
 
         let allocator = Bump::new();
         let element = ElementNode::new(&allocator, "input", SourceLocation::STUB);
@@ -206,7 +208,9 @@ mod tests {
     #[test]
     fn test_generate_model_props_lazy() {
         use vize_carton::{Box, Bump};
-        use vize_relief::{ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation};
+        use vize_relief::{
+            DirectiveNode, ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation,
+        };
 
         let allocator = Bump::new();
         let element = ElementNode::new(&allocator, "input", SourceLocation::STUB);

@@ -90,6 +90,7 @@ impl ServerState {
         features.apply_effective_compatibility();
         self.lsp_typecheck_enabled
             .store(features.typecheck, Ordering::SeqCst);
+        self.linter_generation.fetch_add(1, Ordering::SeqCst);
         tracing::info!("Loaded LSP config from {}: {:?}", source, *features);
         drop(features);
         self.refresh_artifact_croquis_mode();

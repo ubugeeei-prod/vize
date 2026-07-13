@@ -115,11 +115,10 @@ impl LanguageServer for MaestroServer {
 
         if let Some(doc) = self.state.documents.get(&uri) {
             let content = doc.text();
+            drop(doc);
             self.state.upsert_artifact_source(&uri, &content);
-            self.state.update_virtual_docs(&uri, &content);
+            self.publish_changed_diagnostics(&uri, &content).await;
         }
-
-        self.publish_diagnostics(&uri).await;
     }
 
     async fn did_save(&self, params: DidSaveTextDocumentParams) {
@@ -459,7 +458,18 @@ impl LanguageServer for MaestroServer {
         // quickfix code actions. Lint-based (parse-only), so not gated on
         // `typeChecker.jsxTypecheck`.
         if crate::utils::is_jsx_path(uri.path()) {
-            let actions = crate::ide::JsxCodeActionService::code_actions(&content, uri, range);
+            let Some(report) = self
+                .state
+                .lint_report_for(uri, &content, features.ecosystem)
+            else {
+                return Ok(None);
+            };
+            let actions = crate::ide::JsxCodeActionService::code_actions(
+                &content,
+                uri,
+                range,
+                report.as_ref(),
+            );
             if actions.is_empty() {
                 return Ok(None);
             }
@@ -835,7 +845,12 @@ impl LanguageServer for MaestroServer {
         #[cfg(feature = "glyph")]
         {
             let options = self.state.get_format_options();
-            return Ok(super::format::format_document(&_content, &options));
+            return Ok(super::format::format_document(
+                &self.state,
+                uri,
+                &_content,
+                &options,
+            ));
         }
         #[cfg(not(feature = "glyph"))]
         Ok(None)
@@ -871,7 +886,12 @@ impl LanguageServer for MaestroServer {
         #[cfg(feature = "glyph")]
         {
             let options = self.state.get_format_options();
-            return Ok(super::format::format_document(&_content, &options));
+            return Ok(super::format::format_document(
+                &self.state,
+                uri,
+                &_content,
+                &options,
+            ));
         }
         #[cfg(not(feature = "glyph"))]
         Ok(None)

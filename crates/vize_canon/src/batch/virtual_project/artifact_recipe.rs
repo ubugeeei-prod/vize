@@ -1,20 +1,23 @@
 //! Production Canon document recipe over one shared Atlas compilation.
 
+#[path = "artifact_recipe/compile_request.rs"]
+mod compile_request;
+
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
 use rayon::prelude::*;
 use vize_atelier_sfc::{
-    SfcCompileOptions, SfcCompileRequest, SfcCompileSettings, SfcCroquisMode, SfcCroquisSettings,
-    SfcDescriptorProduct, SfcResolvedPropsPolicy,
+    SfcCompileSettings, SfcCroquisMode, SfcCroquisSettings, SfcDescriptorProduct,
+    SfcResolvedPropsPolicy, SfcScriptSyntaxProduct, sfc_source_structure,
 };
 use vize_atlas::{
     Compilation, PlanningContext, ProductId, Provider, ProviderContext, ProviderError, Shared,
     SourceId,
 };
-use vize_carton::{FxHashMap, ToCompactString, cstr};
+use vize_carton::{FxHashMap, cstr};
 use vize_croquis::CroquisDocumentProduct;
-use vize_flow::FlowProduct;
+use vize_module::ModuleSyntaxProduct;
 use vize_relief::{ReliefProduct, VueDialectInput};
 
 use crate::batch::declaration_path::is_declaration_file;
@@ -31,6 +34,8 @@ use super::build::{
     build_vue_registered_file_from_artifacts, source_type_for_path,
 };
 use super::jsx_build::build_jsx_registered_file;
+use super::vue_artifact_codegen::VueArtifactInputs;
+use compile_request::compile_request;
 
 #[derive(Clone)]
 struct CanonGraphSettings {
@@ -192,19 +197,6 @@ fn configure_compilation(
     Ok(())
 }
 
-fn compile_request(settings: &CanonGraphSettings, path: &Path) -> SfcCompileRequest {
-    let mut options = SfcCompileOptions::default();
-    options.parse.filename = path.to_string_lossy().to_compact_string();
-    options.template.dialect = settings.dialect;
-    options.template.compiler_options = Some(vize_atelier_dom::DomCompilerOptions {
-        comments: true,
-        experimental_in_tag_comments: settings.experimental_in_tag_comments,
-        dialect: settings.dialect,
-        ..Default::default()
-    });
-    SfcCompileRequest::new(options, settings.template_syntax)
-}
-
 struct CanonTypedDocumentProvider {
     settings: Shared<CanonGraphSettings>,
     rewriter: ImportRewriter,
@@ -231,12 +223,18 @@ impl Provider for CanonTypedDocumentProvider {
             return Vec::new();
         };
         if is_vue(path) {
+            let structure = sfc_source_structure(context.source().text());
             let mut dependencies = vec![
                 ProductId::of::<SfcDescriptorProduct>(),
-                ProductId::of::<ReliefProduct>(),
                 ProductId::of::<CroquisDocumentProduct>(),
-                ProductId::of::<FlowProduct>(),
             ];
+            if structure.has_template {
+                dependencies.push(ProductId::of::<ReliefProduct>());
+            }
+            if structure.has_script {
+                dependencies.push(ProductId::of::<SfcScriptSyntaxProduct>());
+                dependencies.push(ProductId::of::<ModuleSyntaxProduct>());
+            }
             if self.settings.preserve_unused_diagnostics {
                 dependencies.push(ProductId::of::<ArtTemplateUsageProduct>());
             }
@@ -258,6 +256,7 @@ impl Provider for CanonTypedDocumentProvider {
             .ok_or_else(|| ProviderError::message("Canon source path is missing"))?;
         let build_context = self.settings.context(&self.rewriter);
         if is_vue(path) {
+            let structure = sfc_source_structure(context.source().text());
             let artifact = context.get::<SfcDescriptorProduct>()?;
             let descriptor = match artifact.as_result() {
                 Ok(descriptor) => descriptor,
@@ -265,9 +264,22 @@ impl Provider for CanonTypedDocumentProvider {
                     return Ok(CanonTypedDocumentArtifact::SfcParse(error.message.clone()));
                 }
             };
-            let syntax = context.get::<ReliefProduct>()?;
             let semantics = context.get::<CroquisDocumentProduct>()?;
-            let _flow = context.get::<FlowProduct>()?;
+            let syntax = if structure.has_template {
+                Some(context.get::<ReliefProduct>()?)
+            } else {
+                None
+            };
+            let modules = if structure.has_script {
+                Some(context.get::<ModuleSyntaxProduct>()?)
+            } else {
+                None
+            };
+            let script_syntax = if structure.has_script {
+                Some(context.get::<SfcScriptSyntaxProduct>()?)
+            } else {
+                None
+            };
             let art_usage = if self.settings.preserve_unused_diagnostics {
                 Some(context.get::<ArtTemplateUsageProduct>()?)
             } else {
@@ -277,10 +289,14 @@ impl Provider for CanonTypedDocumentProvider {
                 build_vue_registered_file_from_artifacts(
                     path,
                     context.source().text(),
-                    descriptor,
-                    syntax.as_ref().as_ref(),
-                    semantics.as_ref(),
-                    art_usage.as_deref(),
+                    VueArtifactInputs {
+                        descriptor,
+                        syntax: syntax.as_deref().and_then(Option::as_ref),
+                        semantics: semantics.as_ref(),
+                        modules: modules.as_deref(),
+                        script_syntax: script_syntax.as_deref(),
+                        extra_template_referenced_names: art_usage.as_deref(),
+                    },
                     build_context,
                 ),
             ));

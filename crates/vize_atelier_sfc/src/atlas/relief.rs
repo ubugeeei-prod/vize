@@ -14,8 +14,8 @@ use vize_relief::{
 };
 
 use super::{
-    SfcCompileSettingsInput, SfcDescriptor, SfcDescriptorProduct, SfcTemplateProduct, full_compile,
-    is_sfc_source,
+    SfcDescriptorProduct, SfcTemplateFrontendRequest, SfcTemplateFrontendSettingsInput,
+    SfcTemplateProduct, is_sfc_source, source_structure,
 };
 
 /// Parse one template block into source-faithful owned Relief syntax.
@@ -29,7 +29,7 @@ impl Provider for SfcReliefProvider {
     }
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<SfcCompileSettingsInput>()]
+        vec![SourceInputId::of::<SfcTemplateFrontendSettingsInput>()]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
@@ -56,29 +56,31 @@ impl Provider for SfcReliefProvider {
             return Ok(None);
         };
         let allocator = Bump::new();
-        let (root, parse_diagnostics) =
-            if context.source_input::<SfcCompileSettingsInput>().is_some() {
-                let request = full_compile::request_for(context);
-                parse_with_options_and_template_syntax(
-                    &allocator,
-                    &template.text,
-                    production_parser_options(&request.options, descriptor),
-                    request.template_syntax,
-                )
-            } else {
-                let dialect = context
-                    .input::<VueDialectInput>()
-                    .copied()
-                    .unwrap_or_default();
-                parse_with_options(
-                    &allocator,
-                    &template.text,
-                    ParserOptions {
-                        dialect,
-                        ..Default::default()
-                    },
-                )
-            };
+        let (root, parse_diagnostics) = if context
+            .source_input::<SfcTemplateFrontendSettingsInput>()
+            .is_some()
+        {
+            let request = frontend_request_for(context);
+            parse_with_options_and_template_syntax(
+                &allocator,
+                &template.text,
+                production_parser_options(&request, descriptor),
+                request.template_syntax,
+            )
+        } else {
+            let dialect = context
+                .input::<VueDialectInput>()
+                .copied()
+                .unwrap_or_default();
+            parse_with_options(
+                &allocator,
+                &template.text,
+                ParserOptions {
+                    dialect,
+                    ..Default::default()
+                },
+            )
+        };
         Ok(Some(ReliefArtifact::new(
             ReliefSnapshot::from_root(&root),
             parse_diagnostics.to_vec(),
@@ -87,33 +89,30 @@ impl Provider for SfcReliefProvider {
 }
 
 fn production_parser_options(
-    options: &crate::SfcCompileOptions,
-    descriptor: &SfcDescriptor<'_>,
+    request: &SfcTemplateFrontendRequest,
+    descriptor: &crate::SfcDescriptor<'_>,
 ) -> ParserOptions {
-    let compiler = options.template.compiler_options.as_ref();
-    let vapor_requested = options.vapor
-        || descriptor
-            .script_setup
-            .as_ref()
-            .is_some_and(|script| script.attrs.contains_key("vapor"))
+    let source_vapor = descriptor
+        .script_setup
+        .as_ref()
+        .is_some_and(|script| script.attrs.contains_key("vapor"))
         || descriptor
             .script
             .as_ref()
             .is_some_and(|script| script.attrs.contains_key("vapor"));
-    let is_vapor = !options.template.ssr && vapor_requested;
+    let vapor_mode = !request.ssr && (request.vapor || source_vapor);
     let mut parser = ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
         is_native_tag: Some(vize_carton::is_native_tag),
-        custom_renderer: options.template.custom_renderer,
+        custom_renderer: request.custom_renderer,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
-        experimental_in_tag_comments: compiler
-            .is_some_and(|options| options.experimental_in_tag_comments),
+        experimental_in_tag_comments: request.experimental_in_tag_comments,
         ..ParserOptions::default()
     };
-    if !is_vapor {
-        parser.comments = compiler.is_some_and(|options| options.comments);
-        parser.dialect = options.template.dialect;
+    if !vapor_mode {
+        parser.comments = request.comments;
+        parser.dialect = request.dialect;
     }
     parser
 }
@@ -148,7 +147,7 @@ impl Provider for SfcTransformedReliefProvider {
     }
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<SfcCompileSettingsInput>()]
+        vec![SourceInputId::of::<SfcTemplateFrontendSettingsInput>()]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
@@ -160,7 +159,7 @@ impl Provider for SfcTransformedReliefProvider {
             ProductId::of::<SfcDescriptorProduct>(),
             ProductId::of::<ReliefProduct>(),
         ];
-        if context.source().text().contains("<script") {
+        if source_structure(context).has_script {
             dependencies.push(ProductId::of::<CroquisDocumentProduct>());
         }
         dependencies
@@ -182,9 +181,9 @@ impl Provider for SfcTransformedReliefProvider {
             .input::<VueDialectInput>()
             .copied()
             .unwrap_or_default();
-        let request = full_compile::request_for(context);
-        let compiler = request.options.template.compiler_options.as_ref();
-        let binding_metadata = if context.source().text().contains("<script") {
+        let request = frontend_request_for(context);
+        let has_script = descriptor.script.is_some() || descriptor.script_setup.is_some();
+        let binding_metadata = if has_script {
             let document = context.get::<CroquisDocumentProduct>()?;
             let analysis = document.analysis();
             Some(
@@ -206,20 +205,19 @@ impl Provider for SfcTransformedReliefProvider {
                 .script
                 .as_ref()
                 .is_some_and(|script| crate::compile::is_ts_lang(script.lang.as_deref()));
-        let is_ts = source_is_ts || request.options.template.is_ts || request.options.script.is_ts;
+        let is_ts = source_is_ts || request.template_is_ts || request.script_is_ts;
         let allocator = Bump::new();
         let mut root = syntax.snapshot().materialize(&allocator);
         let transformed = transform(
             &allocator,
             &mut root,
             TransformOptions {
-                filename: request.options.parse.filename.clone(),
+                filename: request.filename,
                 prefix_identifiers: true,
                 binding_metadata,
                 is_ts,
-                custom_renderer: request.options.template.custom_renderer,
-                experimental_patterned_template: compiler
-                    .is_some_and(|options| options.experimental_patterned_template),
+                custom_renderer: request.custom_renderer,
+                experimental_patterned_template: request.experimental_patterned_template,
                 dialect,
                 ..Default::default()
             },
@@ -231,4 +229,15 @@ impl Provider for SfcTransformedReliefProvider {
             transformed.errors,
         )))
     }
+}
+
+fn frontend_request_for(context: &ProviderContext<'_>) -> SfcTemplateFrontendRequest {
+    let mut request = context
+        .source_input::<SfcTemplateFrontendSettingsInput>()
+        .cloned()
+        .unwrap_or_default();
+    if request.filename.is_empty() {
+        request.filename = context.source().name().into();
+    }
+    request
 }

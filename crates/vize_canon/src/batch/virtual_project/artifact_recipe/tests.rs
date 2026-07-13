@@ -1,14 +1,19 @@
 use std::fs;
 
+use vize_atelier_sfc::SfcScriptSyntaxProduct;
 use vize_atlas::ProductStatus;
 use vize_carton::String as CompactString;
 use vize_croquis::CroquisDocumentProduct;
 use vize_flow::FlowProduct;
+use vize_module::ModuleSyntaxProduct;
 use vize_relief::{ReliefProduct, TransformedReliefProduct};
 
 use super::*;
 use crate::batch::ImportRewriter;
 use crate::virtual_ts::VirtualTsOptions;
+
+#[path = "tests/fallback.rs"]
+mod fallback;
 
 fn case(name: &str) -> (PathBuf, PathBuf) {
     static NEXT_CASE: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
@@ -52,6 +57,7 @@ fn direct_vue(
 
 #[test]
 fn vue_recipe_executes_one_shared_descriptor_relief_and_croquis() {
+    crate::virtual_ts::reset_authored_script_fallback_parse_invocations();
     let (root, src) = case("atlas-canon-counters");
     let path = src.join("Counter.vue");
     let content = "<script setup>const value = 1</script><template>{{ value }}</template>";
@@ -67,14 +73,20 @@ fn vue_recipe_executes_one_shared_descriptor_relief_and_croquis() {
     assert!(outcome.plan().contains::<SfcDescriptorProduct>());
     assert!(outcome.plan().contains::<ReliefProduct>());
     assert!(outcome.plan().contains::<CroquisDocumentProduct>());
-    assert!(outcome.plan().contains::<TransformedReliefProduct>());
-    assert!(outcome.plan().contains::<FlowProduct>());
+    assert!(outcome.plan().contains::<SfcScriptSyntaxProduct>());
+    assert!(outcome.plan().contains::<ModuleSyntaxProduct>());
+    assert!(!outcome.plan().contains::<TransformedReliefProduct>());
+    assert!(!outcome.plan().contains::<FlowProduct>());
     assert_eq!(
         session
             .counters()
             .for_product::<SfcDescriptorProduct>()
             .executions(),
         1
+    );
+    assert_eq!(
+        crate::virtual_ts::authored_script_fallback_parse_invocations(),
+        0
     );
     assert_eq!(
         session
@@ -91,7 +103,17 @@ fn vue_recipe_executes_one_shared_descriptor_relief_and_croquis() {
         1
     );
     assert_eq!(
-        session.counters().for_product::<FlowProduct>().executions(),
+        session
+            .counters()
+            .for_product::<SfcScriptSyntaxProduct>()
+            .executions(),
+        1
+    );
+    assert_eq!(
+        session
+            .counters()
+            .for_product::<ModuleSyntaxProduct>()
+            .executions(),
         1
     );
     session.query::<SfcDescriptorProduct>(sources[0]).unwrap();
@@ -106,14 +128,81 @@ fn vue_recipe_executes_one_shared_descriptor_relief_and_croquis() {
 }
 
 #[test]
+fn vue_recipe_shapes_keep_script_only_relief_free_and_template_only_module_free() {
+    let cases = [
+        (
+            "script-only",
+            "<script lang=\"ts\">export { ref } from 'vue'</script>",
+            false,
+            true,
+        ),
+        (
+            "template-only",
+            "<template><p>hello</p></template>",
+            true,
+            false,
+        ),
+    ];
+    for (name, content, has_relief, has_module) in cases {
+        let (root, src) = case(name);
+        let path = src.join("Shape.vue");
+        let project = VirtualProject::new(&root).unwrap();
+        let (compilation, sources) =
+            prepare_compilation(&project, &[source(path, content)]).unwrap();
+        let snapshot = compilation.snapshot();
+        let mut session = snapshot.query_session();
+        let outcome = session
+            .query::<CanonTypedDocumentProduct>(sources[0])
+            .unwrap();
+
+        outcome.value().to_corsa_result().unwrap();
+        assert_eq!(
+            outcome.plan().contains::<ReliefProduct>(),
+            has_relief,
+            "{name}"
+        );
+        assert_eq!(
+            outcome.plan().contains::<ModuleSyntaxProduct>(),
+            has_module,
+            "{name}"
+        );
+        assert_eq!(
+            session
+                .counters()
+                .for_product::<ReliefProduct>()
+                .executions(),
+            u64::from(has_relief),
+            "{name}"
+        );
+        assert_eq!(
+            session
+                .counters()
+                .for_product::<ModuleSyntaxProduct>()
+                .executions(),
+            u64::from(has_module),
+            "{name}"
+        );
+        let _ = fs::remove_dir_all(root);
+    }
+}
+
+#[test]
 fn editor_and_socket_vue_document_path_has_no_shadow_sfc_or_template_parse() {
     let document = include_str!("../document.rs");
+    let artifact_codegen = include_str!("../vue_artifact_codegen.rs");
+    let diagnostics = include_str!("../diagnostics.rs");
     let server = include_str!("../../../corsa_server.rs");
+    let legacy_validator = concat!("validate_script_setup_", "semantics_located");
 
     assert!(!document.contains("parse_sfc("));
     assert!(!document.contains("vize_armature::parse"));
     assert!(!document.contains("analyze_sfc_descriptor"));
+    assert!(!artifact_codegen.contains("collect_script_parse_diagnostics"));
+    assert!(!artifact_codegen.contains("oxc_parser"));
+    assert!(!diagnostics.contains(legacy_validator));
+    assert!(diagnostics.contains("script_syntax.validate_script_setup_semantics(source)"));
     assert!(!server.contains("parse_sfc("));
+    assert!(!server.contains(legacy_validator));
 }
 
 #[test]

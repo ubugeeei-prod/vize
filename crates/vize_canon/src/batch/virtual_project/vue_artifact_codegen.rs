@@ -3,16 +3,16 @@
 use std::path::Path;
 
 use vize_atelier_sfc::{
-    SfcDescriptor,
+    SfcDescriptor, SfcScriptSyntaxSnapshot,
     croquis::{SfcCroquisOptions, script_content_for_descriptor},
 };
 use vize_carton::{Bump, cstr, profile};
 use vize_croquis::CroquisDocument;
+use vize_module::ModuleDocument;
 use vize_relief::ReliefArtifact;
 
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::{Diagnostic, SfcBlockType};
-use crate::script_parse::collect_script_parse_diagnostics;
 use crate::virtual_ts::{
     VirtualTsGenerationOptions, VirtualTsOptions, generate_virtual_ts_with_offsets_and_checks,
 };
@@ -26,6 +26,8 @@ pub(super) struct VueArtifactInputs<'a, 'source> {
     pub(super) descriptor: &'a SfcDescriptor<'source>,
     pub(super) syntax: Option<&'a ReliefArtifact>,
     pub(super) semantics: &'a CroquisDocument,
+    pub(super) modules: Option<&'a ModuleDocument>,
+    pub(super) script_syntax: Option<&'a SfcScriptSyntaxSnapshot>,
     pub(super) extra_template_referenced_names:
         Option<&'a vize_carton::FxHashSet<vize_carton::String>>,
 }
@@ -43,9 +45,12 @@ pub(super) fn generate_vue_virtual_ts_from_artifacts(
         descriptor,
         syntax,
         semantics,
+        modules,
+        script_syntax,
         extra_template_referenced_names,
     } = artifacts;
-    let mut diagnostics = script_parse_diagnostics(path, source, descriptor);
+    let mut diagnostics =
+        script_parse_diagnostics(path, source, descriptor, modules, script_syntax)?;
     let allocator = Bump::new();
     let template_offset = descriptor
         .template
@@ -106,6 +111,8 @@ pub(super) fn generate_vue_virtual_ts_from_artifacts(
             template_offset,
             options,
             VirtualTsGenerationOptions {
+                module_document: modules,
+                script_facts: script_syntax.map(SfcScriptSyntaxSnapshot::generator_facts),
                 check_options: codegen_options.check_options,
                 dialect: codegen_options.dialect,
                 preserve_unused_diagnostics: codegen_options.preserve_unused_diagnostics,
@@ -124,7 +131,8 @@ pub(super) fn generate_vue_virtual_ts_from_artifacts(
 
     if let Some(diagnostic) = profile!(
         "canon.sfc.compile_validate",
-        collect_sfc_compile_diagnostic(path, source, descriptor)
+        script_syntax
+            .and_then(|syntax| collect_sfc_compile_diagnostic(path, source, descriptor, syntax))
     ) {
         diagnostics.push(diagnostic);
     }
@@ -139,30 +147,59 @@ fn script_parse_diagnostics(
     path: &Path,
     source: &str,
     descriptor: &SfcDescriptor<'_>,
-) -> Vec<Diagnostic> {
+    modules: Option<&ModuleDocument>,
+    script_syntax: Option<&SfcScriptSyntaxSnapshot>,
+) -> CorsaResult<Vec<Diagnostic>> {
     let mut diagnostics = Vec::new();
-    for (block, block_type) in [
+    let blocks = [
         (descriptor.script.as_ref(), SfcBlockType::Script),
         (descriptor.script_setup.as_ref(), SfcBlockType::ScriptSetup),
-    ] {
-        let Some(block) = block else { continue };
-        diagnostics.extend(
-            collect_script_parse_diagnostics(
-                &block.content,
-                block.loc.start as u32,
-                block.lang.as_deref(),
-            )
-            .into_iter()
-            .map(|diagnostic| {
-                diagnostic_for_offset(
-                    path,
-                    source,
-                    diagnostic.start,
-                    cstr!("Script parse error: {}", diagnostic.message),
-                    block_type,
-                )
-            }),
-        );
+    ];
+    let expected = blocks.iter().filter(|(block, _)| block.is_some()).count();
+    if expected == 0 {
+        if modules.is_some_and(|modules| !modules.modules.is_empty()) || script_syntax.is_some() {
+            return Err(CorsaError::ArtifactGraph(
+                "template-only SFC unexpectedly has script artifacts".into(),
+            ));
+        }
+        return Ok(diagnostics);
     }
-    diagnostics
+    let Some(modules) = modules else {
+        return Err(CorsaError::ArtifactGraph(
+            "scripted SFC is missing shared module artifacts".into(),
+        ));
+    };
+    if script_syntax.is_none() {
+        return Err(CorsaError::ArtifactGraph(
+            "scripted SFC is missing shared script syntax artifacts".into(),
+        ));
+    }
+    if modules.modules.len() != expected {
+        return Err(CorsaError::ArtifactGraph(
+            "SFC descriptor and module artifact counts disagree".into(),
+        ));
+    }
+    for ((block, block_type), module) in blocks
+        .into_iter()
+        .filter_map(|(block, block_type)| block.map(|block| (block, block_type)))
+        .zip(&modules.modules)
+    {
+        if module.source.as_ref() != block.content.as_ref()
+            || module.base_offset != block.loc.start as u32
+        {
+            return Err(CorsaError::ArtifactGraph(
+                "SFC descriptor and module artifact bytes disagree".into(),
+            ));
+        }
+        diagnostics.extend(module.diagnostics.iter().map(|diagnostic| {
+            diagnostic_for_offset(
+                path,
+                source,
+                diagnostic.span.start,
+                cstr!("Script parse error: {}", diagnostic.message),
+                block_type,
+            )
+        }));
+    }
+    Ok(diagnostics)
 }

@@ -34,62 +34,90 @@ provider edges used by production recipes:
 ```mermaid
 flowchart LR
     Atlas["vize_atlas"] --> SFC["SFC providers"]
+    Atlas --> Template["raw-template providers"]
     Atlas --> JSX["JSX / TSX providers"]
-    SFC --> Relief["Relief"]
+    Atlas --> Module["JS / TS module providers"]
+    SFC -. "when template exists" .-> Relief["Relief"]
+    Template --> Relief
+    SFC -. "when script exists" .-> Module["Module"]
     SFC --> Croquis["Croquis"]
+    Template --> Croquis
+    JSX --> Module
     JSX --> Croquis
     SFC --> Flow["Flow"]
+    Template --> Flow
     JSX --> Flow
+    Module --> Flow
     SFC --> Rendu["Rendu"]
+    Template --> Rendu
     JSX --> Rendu
     Rendu --> Atelier["DOM / SSR / Vapor"]
-    Croquis --> Patina["Patina"]
-    Croquis --> Canon["Canon"]
-    Flow --> Canon
+    Relief -. "template rules" .-> Patina["Patina"]
+    Module -. "module rules" .-> Patina
+    Croquis -. "semantic rules" .-> Patina
+    SFC --> Canon["Canon"]
+    Croquis --> Canon
+    Relief -. "when template exists" .-> Canon
+    Module -. "when script exists" .-> Canon
 ```
 
 One Atlas compilation owns source identity and executes each requested typed
-product once. SFC and JSX keep their own syntax; consumers share only the
-stable semantic, Flow, or Rendu products they request. Production commands,
-Maestro, Glyph, Inspector, and package hosts now enter through these recipes;
-legacy public functions are compatibility APIs rather than host orchestration.
+product once. The diagram shows available provider edges, not one mandatory
+pipeline. SFC, raw-template, and JSX frontends keep their own syntax; consumers
+share only the Module, Croquis, Flow, or Rendu products they request. Each
+authored SFC script block is parsed once while its live OXC `Program` is
+projected into Module facts, Croquis analysis, and compiler preanalysis.
+
+Production commands, Maestro, Glyph, Inspector, and binding hosts enter through
+typed roots. Maestro revises one URI-keyed mutable compilation and queries it
+directly. Inspector requests `InspectorAgentReport`, which aggregates its own
+per-source analysis products: SFC analysis uses Module, descriptor, Relief, and
+Croquis, while raw JS/TS analysis uses Module. NAPI/WASM expose compile,
+raw-template, Patina, Canon, and cross-file roots as supported by each surface;
+bundler packages only host the relevant compile bindings. Legacy public
+functions remain compatibility APIs rather than host orchestration.
 
 ## Crate Entry Points
 
-| Change area                    | Start here                             | Then check                                                          |
-| ------------------------------ | -------------------------------------- | ------------------------------------------------------------------- |
-| Template parsing               | `crates/vize_armature/src/lib.rs`      | parser fixtures and expected AST snapshots                          |
-| Typed artifact graph           | `crates/vize_atlas/src/lib.rs`         | product/provider planning, cache, invalidation, outcomes, and trace |
-| AST shape and compiler options | `crates/vize_relief/src/lib.rs`        | downstream compiler, lint, and formatter callers                    |
-| Template semantics             | `crates/vize_croquis/src/lib.rs`       | scope, binding, reactivity, and virtual TypeScript helpers          |
-| Cross-file semantics           | `crates/vize_croquis_cf/src/lib.rs`    | dependency, component, effect, and project-level graph consumers    |
-| Single-file flow graphs        | `crates/vize_flow/src/lib.rs`          | CFG, data/effect edges, reachability, and dominance                 |
-| Render HIR                     | `crates/vize_rendu/src/lib.rs`         | SFC/JSX producers and DOM, SSR, Vapor consumers                     |
-| Shared compiler behavior       | `crates/vize_atelier_core/src/lib.rs`  | backend-specific atelier crates                                     |
-| Client template output         | `crates/vize_atelier_dom/src/lib.rs`   | generated code snapshots and runtime fixture tests                  |
-| Vapor output                   | `crates/vize_atelier_vapor/src/lib.rs` | Vapor-specific rules and real-world fixture output                  |
-| SSR output                     | `crates/vize_atelier_ssr/src/lib.rs`   | SSR snapshots, escaping, and hydration behavior                     |
-| SFC orchestration              | `crates/vize_atelier_sfc/src/lib.rs`   | script, template, style, HMR, and source-map paths                  |
-| JSX/TSX frontend               | `crates/vize_atelier_jsx/src/lib.rs`   | owned OXC syntax and direct semantic/Flow/Rendu providers           |
-| Lint rules                     | `crates/vize_patina/src/lib.rs`        | rule snapshots and localized diagnostics                            |
-| Type checking                  | `crates/vize_canon/src/lib.rs`         | generated virtual TS and `corsa-bind` diagnostics                   |
-| LSP behavior                   | `crates/vize_maestro/src/lib.rs`       | server handlers, virtual documents, and editor smoke tests          |
-| Formatting                     | `crates/vize_glyph/src/lib.rs`         | golden formatting snapshots                                         |
-| Native and WASM bindings       | `crates/vize_vitrine/src/lib.rs`       | npm package wrappers and generated type declarations                |
-| CLI behavior                   | `crates/vize/src/main.rs`              | command modules, snapshots, and build/check/lint integration tests  |
+| Change area                     | Start here                                | Then check                                                                   |
+| ------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------- |
+| Template parsing                | `crates/vize_armature/src/lib.rs`         | parser fixtures and expected AST snapshots                                   |
+| Typed artifact graph            | `crates/vize_atlas/src/lib.rs`            | product/provider planning, cache, invalidation, outcomes, and trace          |
+| Vue-template syntax and options | `crates/vize_relief/src/lib.rs`           | downstream compiler, lint, and formatter callers                             |
+| Template semantics              | `crates/vize_croquis/src/lib.rs`          | scope, binding, reactivity, and virtual TypeScript helpers                   |
+| Cross-file semantics            | `crates/vize_croquis_cf/src/lib.rs`       | dependency, component, effect, and project-level graph consumers             |
+| Single-file flow graphs         | `crates/vize_flow/src/lib.rs`             | CFG, data/effect edges, reachability, and dominance                          |
+| JavaScript/TypeScript modules   | `crates/vize_module/src/lib.rs`           | owned imports, exports, declarations, references, and OXC CFG                |
+| Render HIR                      | `crates/vize_rendu/src/lib.rs`            | SFC/JSX producers and DOM, SSR, Vapor consumers                              |
+| Legacy template transforms      | `crates/vize_atelier_core/src/lib.rs`     | compatibility callers and backend-specific atelier crates                    |
+| Client template output          | `crates/vize_atelier_dom/src/lib.rs`      | generated code snapshots and runtime fixture tests                           |
+| Vapor output                    | `crates/vize_atelier_vapor/src/lib.rs`    | Vapor-specific rules and real-world fixture output                           |
+| SSR output                      | `crates/vize_atelier_ssr/src/lib.rs`      | SSR snapshots, escaping, and hydration behavior                              |
+| Raw template frontend           | `crates/vize_atelier_template/src/lib.rs` | Relief/Croquis plus independently requested Flow, Rendu, and targets         |
+| SFC orchestration               | `crates/vize_atelier_sfc/src/lib.rs`      | descriptor and parse-once script projections, template, style, HMR, and maps |
+| JSX/TSX frontend                | `crates/vize_atelier_jsx/src/lib.rs`      | owned OXC syntax and Module/Croquis/Flow/Rendu providers                     |
+| Lint rules                      | `crates/vize_patina/src/lib.rs`           | rule snapshots and localized diagnostics                                     |
+| Type checking                   | `crates/vize_canon/src/lib.rs`            | generated virtual TS and `corsa-bind` diagnostics                            |
+| LSP behavior                    | `crates/vize_maestro/src/lib.rs`          | server handlers, virtual documents, and editor smoke tests                   |
+| Formatting                      | `crates/vize_glyph/src/lib.rs`            | golden formatting snapshots                                                  |
+| Native and WASM bindings        | `crates/vize_vitrine/src/lib.rs`          | npm package wrappers and generated type declarations                         |
+| CLI behavior                    | `crates/vize/src/main.rs`                 | command modules, snapshots, and build/check/lint integration tests           |
 
 Prefer following the public crate entry point first. Many crates have compact `lib.rs` modules that
 re-export the internal modules a contributor is expected to touch.
 
 ## JavaScript Package Entry Points
 
-| Package                     | Source entry                                                   | Rust boundary                                 |
-| --------------------------- | -------------------------------------------------------------- | --------------------------------------------- |
-| `@vizejs/vite-plugin`       | `npm/builder/vite/src/index.ts`                                | `@vizejs/native` through `vize_vitrine`       |
-| `@vizejs/nuxt`              | `npm/framework/nuxt/src/index.ts`                              | Vite plugin options and component integration |
-| `@vizejs/wasm`              | generated package around `vize_vitrine` WASM exports           | `crates/vize_vitrine/src/wasm`                |
-| `@vizejs/vite-plugin-musea` | `npm/builder/vite-musea/src/index.ts` and related package code | `vize_musea` APIs exposed through bindings    |
-| `oxlint-plugin-vize`        | `npm/oxint/src/index.ts`                                       | `vize_patina` diagnostics through bindings    |
+| Package                     | Source entry                                                   | Rust boundary                                      |
+| --------------------------- | -------------------------------------------------------------- | -------------------------------------------------- |
+| `@vizejs/native`            | `npm/native/index.js` and generated declarations               | NAPI exports from `vize_vitrine`                   |
+| `@vizejs/wasm`              | generated package around `vize_vitrine` WASM exports           | `crates/vize_vitrine/src/wasm`                     |
+| `@vizejs/vite-plugin`       | `npm/builder/vite/src/index.ts`                                | native SFC compile products through `vize_vitrine` |
+| `@vizejs/unplugin`          | `npm/builder/unplugin/src/index.ts`                            | native SFC/JSX compile products                    |
+| `@vizejs/rspack-plugin`     | `npm/builder/rspack/src/index.ts`                              | native SFC compile products                        |
+| `@vizejs/nuxt`              | `npm/framework/nuxt/src/index.ts`                              | Vite host options and component integration        |
+| `@vizejs/vite-plugin-musea` | `npm/builder/vite-musea/src/index.ts` and related package code | `vize_musea` APIs exposed through bindings         |
+| `oxlint-plugin-vize`        | `npm/oxint/src/index.ts`                                       | Patina diagnostics through bindings                |
 
 Use package tests for integration wiring, but keep language semantics in Rust tests. The package
 layer should mostly prove that options, virtual modules, HMR, and native calls are connected.
@@ -162,5 +190,6 @@ the source before updating snapshots.
 ## When In Doubt
 
 Small source changes should leave a clear trail: owning crate, fixture, snapshot, verification
-command, and any broader CI lane that matters. If a change feels like it belongs to multiple crates,
-start at the earliest shared representation and keep later layers as thin adapters.
+command, and any broader CI lane that matters. If a change crosses crates, identify the product each
+crate truly owns and add only the provider edges the consumer needs; do not force the behavior into a
+universal representation.

@@ -119,35 +119,26 @@
             }
           else
             null;
-        # Blacksmith CLI (Testbox). Distributed as a single prebuilt binary
-        # from a mutable `latest` channel, so — like the MoonBit block above —
-        # each platform pins the current binary's hash. The placeholder hashes
-        # below must be filled before this builds: run `nix build` once and
-        # paste the `got: sha256-…` value Nix reports for each platform, or
-        #   nix store prefetch-file --name blacksmith \
-        #     https://clireleases.blacksmith.sh/cli/latest/<os>/<arch>/blacksmith
-        #
-        # NOTE: the CLI self-updates in the background on every invocation,
-        # which cannot write into the read-only Nix store. If the pinned
-        # binary errors while trying to self-update, gate the update off (check
-        # `blacksmith --help` for the flag/env var) — the store path is the
-        # source of truth and is refreshed by bumping the hashes here.
+        # Blacksmith CLI (Testbox). Keep this optional hosted-test tool pinned
+        # independently from the default development shell so local onboarding
+        # never depends on its artifact or authentication service.
+        blacksmithVersion = "0.4.46";
         blacksmithArtifacts = {
           aarch64-darwin = {
-            url = "https://clireleases.blacksmith.sh/cli/latest/darwin/arm64/blacksmith";
-            hash = "sha256-wTCMj9d5siTpB01ljPFa3NAwN28lJicaJcc7AiqTRWw=";
+            url = "https://clireleases.blacksmith.sh/cli/v${blacksmithVersion}/darwin/arm64/blacksmith";
+            hash = "sha256-4DBbwkNpVHIzozeV2+hcJHlTG+jvlfWJzQd4C5JmQX4=";
           };
           x86_64-darwin = {
-            url = "https://clireleases.blacksmith.sh/cli/latest/darwin/amd64/blacksmith";
-            hash = "sha256-aT3dpCOy00OyuEp/08z9pZxA31lZQEQ1MhRdNzwNgxM=";
+            url = "https://clireleases.blacksmith.sh/cli/v${blacksmithVersion}/darwin/amd64/blacksmith";
+            hash = "sha256-XGVjxInIwYZXqyGhM8vzL5GkhWha3ZXkJ6mPDXgL3Cg=";
           };
           x86_64-linux = {
-            url = "https://clireleases.blacksmith.sh/cli/latest/linux/amd64/blacksmith";
+            url = "https://clireleases.blacksmith.sh/cli/v${blacksmithVersion}/linux/amd64/blacksmith";
             hash = "sha256-ABJrjw+yHuHcjPrEZNmRsCpn229Od87Hxja38i0CNVM=";
           };
           aarch64-linux = {
-            url = "https://clireleases.blacksmith.sh/cli/latest/linux/arm64/blacksmith";
-            hash = "sha256-6XF/S/sn4s6zktPJbadkXt0yALLIySppZTUeNvoiWss=";
+            url = "https://clireleases.blacksmith.sh/cli/v${blacksmithVersion}/linux/arm64/blacksmith";
+            hash = "sha256-1RJ9+sW0pIteoODzb/8I6Qh3JYyyd+VoQcsh97PQmAI=";
           };
         };
         blacksmith =
@@ -157,7 +148,7 @@
             in
             pkgs.stdenvNoCC.mkDerivation {
               pname = "blacksmith";
-              version = "latest";
+              version = blacksmithVersion;
               src = pkgs.fetchurl { inherit (artifact) url hash; };
               dontUnpack = true;
               nativeBuildInputs = lib.optionals pkgs.stdenv.isLinux [ pkgs.autoPatchelfHook ];
@@ -175,6 +166,27 @@
             }
           else
             null;
+        clearTestboxEnvironment = ''
+          unset VIZE_TESTBOX_SHELL VIZE_BLACKSMITH_BIN
+        '';
+        activateTestboxEnvironment = lib.optionalString (blacksmith != null) ''
+          export VIZE_TESTBOX_SHELL=1
+          export VIZE_BLACKSMITH_BIN="${blacksmith}/bin/blacksmith"
+        '';
+        testboxEnvironmentCheck =
+          assert blacksmith != null;
+          pkgs.runCommand "vize-testbox-environment" { } ''
+            export VIZE_TESTBOX_SHELL=inherited
+            export VIZE_BLACKSMITH_BIN=/host/blacksmith
+            ${clearTestboxEnvironment}
+            test -z "''${VIZE_TESTBOX_SHELL:-}"
+            test -z "''${VIZE_BLACKSMITH_BIN:-}"
+            ${activateTestboxEnvironment}
+            test "$VIZE_TESTBOX_SHELL" = 1
+            test "$VIZE_BLACKSMITH_BIN" = "${blacksmith}/bin/blacksmith"
+            test -x "$VIZE_BLACKSMITH_BIN"
+            touch "$out"
+          '';
         nodejs = pkgs.nodejs_24;
         pnpm = pkgs.pnpm;
         workspaceVp = pkgs.writeShellApplication {
@@ -209,7 +221,7 @@
             if local_vp="$(resolve_local_vp)"; then
               if [ "$current_dir" = "$workspace_root" ] && [ "$#" -eq 1 ]; then
                 case "$1" in
-                  check | fmt | dev | build)
+                  build | check | dev | fmt | lint | test | *:*)
                     exec "$local_vp" run --workspace-root "$1"
                     ;;
                 esac
@@ -335,12 +347,12 @@
           ]
           ++ lib.optionals pkgs.stdenv.isDarwin [ workspaceXcrun ]
           ++ lib.optionals (moonbit != null) [ moonbit ]
-          ++ lib.optionals (blacksmith != null) [ blacksmith ]
           ++ commonNativeBuildInputs;
 
           RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
 
           shellHook = ''
+            ${clearTestboxEnvironment}
             export VIZE_WORKSPACE_ROOT="$PWD"
             export PATH="${workspaceVp}/bin:$VIZE_WORKSPACE_ROOT/node_modules/.bin:$PATH"
             export PLAYWRIGHT_BROWSERS_PATH="$PWD/.cache/ms-playwright"
@@ -375,9 +387,26 @@
               ''echo "MoonBit native toolchain is not available for ${system}; install it separately if needed."''
             }
             echo "Run: vp install --frozen-lockfile"
-            echo "Then: vp check / vp fmt / vp dev / vp build"
+            echo "Local defaults: vp check / vp fmt / vp dev / vp build / vp test / vp lint"
           '';
         };
+        testboxDevShell = devShell.overrideAttrs (previous: {
+          nativeBuildInputs =
+            (previous.nativeBuildInputs or [ ])
+            ++ [
+              pkgs.gh
+              pkgs.rsync
+            ]
+            ++ lib.optionals (blacksmith != null) [ blacksmith ];
+          shellHook = (previous.shellHook or "") + ''
+            ${activateTestboxEnvironment}
+            echo "Blacksmith Testbox tools ready (CLI ${blacksmithVersion})."
+            echo "Pinned CLI: $VIZE_BLACKSMITH_BIN"
+            echo 'First use: "$VIZE_BLACKSMITH_BIN" auth login'
+            echo "After pushing the current HEAD, see CONTRIBUTING.md for warmup and safe ID capture."
+            echo "Then: vp build:testbox / vp test:testbox / vp lint:testbox; stop with vp testbox:stop"
+          '';
+        });
       in
       {
         apps = {
@@ -388,9 +417,13 @@
         checks = {
           package = vize;
           shell = devShell.inputDerivation;
+          testbox-environment = testboxEnvironmentCheck;
         };
 
-        devShells.default = devShell;
+        devShells = {
+          default = devShell;
+          testbox = testboxDevShell;
+        };
         formatter = pkgs.nixfmt;
 
         packages = {

@@ -4,6 +4,7 @@ mod emits;
 mod generics;
 mod imports;
 mod legacy_vue2;
+mod module_spans;
 mod options_api;
 mod options_api_props_identifiers;
 mod options_api_support;
@@ -23,17 +24,16 @@ use self::imports::{
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::legacy_vue2::{exposed_unwrap_helper, instance_helper, instance_suffix};
+use self::module_spans::collect_module_spans;
 use self::options_api::{
-    find_default_export_targets, find_options_api_props, generate_options_api_bridge,
-    generate_options_api_variables,
+    generate_options_api_bridge, generate_options_api_variables, options_api_props_from_facts,
 };
 use self::options_api_props_identifiers::PropsConstAssertions;
 use self::props_anchors::emit_setup_scope_prop_anchors;
 use self::setup_helpers::emit_setup_helpers;
 use self::setup_props::SetupPropsPlan;
 use self::spans::{
-    DEFINE_COMPONENT_REF, merge_overlapping_spans, preserved_template_usage,
-    rewrite_export_default_for_module_scope,
+    DEFINE_COMPONENT_REF, preserved_template_usage, rewrite_export_default_for_module_scope,
 };
 use super::{
     helpers::{
@@ -127,6 +127,16 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     options: &VirtualTsOptions,
     generation_options: VirtualTsGenerationOptions<'_>,
 ) -> VirtualTsOutput {
+    let fallback_script_facts = generation_options.script_facts.is_none().then(|| {
+        script_content.map(|script| {
+            super::record_authored_script_fallback_parse();
+            vize_atelier_sfc::SfcScriptGeneratorFacts::from_source(script)
+        })
+    });
+    let fallback_script_facts = fallback_script_facts.flatten();
+    let script_facts = generation_options
+        .script_facts
+        .or(fallback_script_facts.as_ref());
     let check_options = generation_options.check_options;
     let check_props = check_options.check_props;
     // Configured Vue dialect, used to emit dialect-aware template instance typing
@@ -206,7 +216,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         .any(|scope| matches!(scope.kind, ScopeKind::NonScriptSetup))
         || (script_content.is_some() && !has_script_setup);
     let named_value_exports = self::script_module::collect_normal_script_named_value_exports(
-        script_content,
+        script_facts,
         has_script_setup,
         has_plain_script_scope,
     );
@@ -221,12 +231,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // Script setup virtual TS is never touched: in setup-only SFCs no rewrite
     // target exists, so the lookup is skipped entirely.
     let default_export_targets = if !has_script_setup || has_plain_script_scope {
-        profile!(
-            "canon.virtual_ts.find_default_export_targets",
-            script_content
-                .map(find_default_export_targets)
-                .unwrap_or_default()
-        )
+        script_facts
+            .map(|facts| facts.default_export_targets())
+            .unwrap_or_default()
     } else {
         Default::default()
     };
@@ -240,34 +247,16 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // keep them sorted. Later script-body emission advances an index through
     // this list, so each source line checks only the overlapping tail instead
     // of rescanning imports/re-exports/type declarations from the start.
-    let module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
-        let mut module_spans = Vec::new();
-        for imp in &summary.import_statements {
-            module_spans.push((imp.start, imp.end));
-        }
-        if let Some(script) = script_content {
-            module_spans.extend(self::script_module::collect_line_module_import_spans(
-                script,
-            ));
-        }
-        for re in &summary.re_exports {
-            module_spans.push((re.start, re.end));
-        }
-        if has_script_setup {
-            module_spans.extend(summary.scopes.iter().filter_map(|scope| {
-                matches!(scope.kind, ScopeKind::NonScriptSetup)
-                    .then_some((scope.span.start, scope.span.end))
-            }));
-        }
-        for te in &summary.type_exports {
-            // Non-hoisted types reference setup-scope values via `typeof`
-            // and must stay inside `__setup` so TS can resolve them.
-            if te.hoisted {
-                module_spans.push((te.start, te.end));
-            }
-        }
-        merge_overlapping_spans(module_spans)
-    });
+    let module_spans = profile!(
+        "canon.virtual_ts.collect_module_spans",
+        collect_module_spans(
+            summary,
+            script_content,
+            generation_options.module_document,
+            script_facts,
+            has_script_setup,
+        )
+    );
 
     // For a `<script setup generic="...">` SFC, hoisted type declarations are
     // lifted verbatim to module scope, but the generic parameters only live on
@@ -452,7 +441,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // precedence and are emitted by `generate_props_type` itself.
     let options_api_props: Option<OptionsApiPropsSource> =
         if options_api && summary.macros.props().is_empty() {
-            script_content.and_then(find_options_api_props)
+            options_api_props_from_facts(script_facts)
         } else {
             None
         };
@@ -473,12 +462,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     append!(ts, "{async_prefix}function __setup{generic_params}() {{\n",);
 
     // Setup helpers (only valid inside setup scope)
-    emit_setup_helpers(
-        &mut ts,
-        script_content,
-        generic_param,
-        hoist_shared_preamble,
-    );
+    emit_setup_helpers(&mut ts, script_facts, generic_param, hoist_shared_preamble);
     ts.push_str("\n\n");
 
     // User's script content (minus imports)
@@ -491,7 +475,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // causing src_byte_offset drift that incorrectly skips user code.
             let mut src_byte_offset: usize = 0; // offset within script content
             let mut module_span_index = 0usize;
-            let mut props_const_assertions = PropsConstAssertions::new(script, options_api);
+            let mut props_const_assertions = PropsConstAssertions::new(script_facts, options_api);
             // Script-absolute offset right after the wrapped options object.
             let mut pending_wrap_close: Option<usize> = None;
             // Deferred class-component alias: `(class_end, name)`.
@@ -723,7 +707,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             if options_api {
                 profile!(
                     "canon.virtual_ts.generate_options_api_bridge",
-                    generate_options_api_bridge(&mut ts, summary, script)
+                    generate_options_api_bridge(&mut ts, summary, script_facts)
                 );
             }
         });
@@ -739,7 +723,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 summary,
                 options_api,
                 template_referenced_names.as_ref(),
-                script_content,
+                script_facts,
             );
             template_ref_unwraps.emit_type_captures(&mut ts);
 
@@ -775,7 +759,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             if options_api {
                 profile!(
                     "canon.virtual_ts.generate_options_api_variables",
-                    generate_options_api_variables(&mut ts, summary, options, script_content)
+                    generate_options_api_variables(&mut ts, summary, options, script_facts)
                 );
             }
             let template_prop_names = profile!(
@@ -847,6 +831,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     &mut ts,
                     summary,
                     script_content,
+                    script_facts,
                     template_referenced_names.as_ref(),
                     reference_setup_bindings_comment,
                 )
@@ -863,6 +848,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 &mut ts,
                 summary,
                 script_content,
+                script_facts,
                 template_referenced_names.as_ref(),
                 reference_setup_bindings_comment,
             )
@@ -872,7 +858,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     emit_setup_scope_prop_anchors(
         &mut ts,
         summary,
-        script_content,
+        script_facts,
         template_referenced_names.as_ref(),
         preserve_unused_diagnostics,
     );

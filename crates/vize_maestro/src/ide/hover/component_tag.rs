@@ -90,12 +90,24 @@ impl HoverService {
 
 fn component_usage_at_cursor(ctx: &IdeContext<'_>, tag_name: &str) -> Option<ComponentUsage> {
     let template = template_view(ctx)?;
+    if crate::utils::is_standalone_html_path(ctx.uri.path()) {
+        let document = ctx.state.raw_template_croquis(ctx.uri)?;
+        return closest_component_usage(
+            &document.analysis().component_usages,
+            tag_name,
+            template.relative_offset,
+        );
+    }
+    if matches!(ctx.block_type, Some(BlockType::Template)) {
+        let document = ctx.sfc_croquis()?;
+        return closest_component_usage(
+            &document.analysis().component_usages,
+            tag_name,
+            template.relative_offset,
+        );
+    }
     let allocator = vize_carton::Bump::new();
-    let (root, _) = if template.is_document {
-        vize_armature::parse_document(&allocator, template.content)
-    } else {
-        vize_armature::parse(&allocator, template.content)
-    };
+    let (root, _) = vize_armature::parse(&allocator, template.content);
     let mut drawer = Drawer::with_options(DrawerOptions {
         analyze_template_scopes: true,
         track_usage: true,
@@ -104,13 +116,22 @@ fn component_usage_at_cursor(ctx: &IdeContext<'_>, tag_name: &str) -> Option<Com
     drawer.draw_template(&root);
     let croquis = drawer.finish();
 
-    croquis
-        .component_usages
+    closest_component_usage(
+        &croquis.component_usages,
+        tag_name,
+        template.relative_offset,
+    )
+}
+
+fn closest_component_usage(
+    usages: &[ComponentUsage],
+    tag_name: &str,
+    relative_offset: u32,
+) -> Option<ComponentUsage> {
+    usages
         .iter()
         .filter(|usage| {
-            usage.name == tag_name
-                && usage.start <= template.relative_offset
-                && template.relative_offset <= usage.end
+            usage.name == tag_name && usage.start <= relative_offset && relative_offset <= usage.end
         })
         .min_by_key(|usage| usage.end.saturating_sub(usage.start))
         .cloned()
@@ -119,7 +140,6 @@ fn component_usage_at_cursor(ctx: &IdeContext<'_>, tag_name: &str) -> Option<Com
 struct TemplateView<'a> {
     content: &'a str,
     relative_offset: u32,
-    is_document: bool,
 }
 
 fn template_view<'a>(ctx: &'a IdeContext<'_>) -> Option<TemplateView<'a>> {
@@ -128,7 +148,6 @@ fn template_view<'a>(ctx: &'a IdeContext<'_>) -> Option<TemplateView<'a>> {
             Some(TemplateView {
                 content: &ctx.content,
                 relative_offset: ctx.offset.min(ctx.content.len()) as u32,
-                is_document: true,
             })
         }
         BlockType::Template => {
@@ -137,13 +156,11 @@ fn template_view<'a>(ctx: &'a IdeContext<'_>) -> Option<TemplateView<'a>> {
             Some(TemplateView {
                 content: ctx.content.get(template.loc.start..template.loc.end)?,
                 relative_offset: ctx.offset.saturating_sub(template.loc.start) as u32,
-                is_document: false,
             })
         }
         BlockType::Art(ArtCursorPosition::VariantTemplate(info)) => Some(TemplateView {
             content: ctx.content.get(info.template_start..info.template_end)?,
             relative_offset: info.relative_offset as u32,
-            is_document: false,
         }),
         _ => None,
     }

@@ -8,7 +8,7 @@ mod syntax;
 #[cfg(test)]
 mod tests;
 
-pub use emit::{VaporEmitResult, emit_rendu, emit_vapor_plan};
+pub use emit::{VaporEmitResult, emit_rendu, emit_vapor_plan, emit_vapor_plan_with_settings};
 pub use lower::plan_rendu;
 pub use lower::plan_rendu as lower_rendu;
 pub use model::{

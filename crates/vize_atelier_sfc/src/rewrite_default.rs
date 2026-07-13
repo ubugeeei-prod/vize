@@ -4,7 +4,7 @@
 //! allowing the compiler to inject properties like render functions.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{ExportDefaultDeclarationKind, Statement};
+use oxc_ast::ast::{ExportDefaultDeclarationKind, Program, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{String, ToCompactString, profile};
@@ -29,8 +29,14 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
         return (input.to_compact_string(), false);
     }
 
-    let program = ret.program;
+    rewrite_default_from_program(&ret.program, input, as_name)
+}
 
+pub(crate) fn rewrite_default_from_program(
+    program: &Program<'_>,
+    input: &str,
+    as_name: &str,
+) -> (String, bool) {
     // Check if there's a default export
     let has_default = program.body.iter().any(|stmt| {
         matches!(stmt, Statement::ExportDefaultDeclaration(_))
@@ -292,63 +298,4 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
 }
 
 #[cfg(test)]
-mod tests {
-    use super::rewrite_default;
-
-    #[test]
-    fn test_rewrite_default_object() {
-        let (result, has_default) = rewrite_default("export default {}", "_sfc_main", false);
-        assert!(has_default);
-        insta::assert_snapshot!(result.as_str());
-    }
-
-    #[test]
-    fn test_rewrite_default_with_other_code() {
-        let input = r#"
-import { ref } from 'vue'
-
-const count = ref(0)
-
-export default {
-  name: 'MyComponent'
-}
-"#;
-        let (result, has_default) = rewrite_default(input, "_sfc_main", false);
-        assert!(has_default);
-        insta::assert_snapshot!(result.as_str());
-    }
-
-    #[test]
-    fn test_rewrite_default_class() {
-        let (result, has_default) =
-            rewrite_default("export default class Foo {}", "_sfc_main", false);
-        assert!(has_default);
-        insta::assert_snapshot!(result.as_str());
-    }
-
-    #[test]
-    fn test_rewrite_default_async_generator_function() {
-        let (result, has_default) = rewrite_default(
-            "export default async function* load() { yield await next() }",
-            "_sfc_main",
-            false,
-        );
-        assert!(has_default);
-        insta::assert_snapshot!(result.as_str());
-    }
-
-    #[test]
-    fn test_no_default_export() {
-        let (result, has_default) = rewrite_default("export const a = {}", "_sfc_main", false);
-        assert!(!has_default);
-        insta::assert_snapshot!(result.as_str());
-    }
-
-    #[test]
-    fn test_named_default_export() {
-        let input = "const a = 1\nexport { a as default }";
-        let (result, has_default) = rewrite_default(input, "_sfc_main", false);
-        assert!(has_default);
-        insta::assert_snapshot!(result.as_str());
-    }
-}
+mod tests;

@@ -3,12 +3,12 @@ use std::borrow::Cow;
 use vize_carton::{FxHashMap, String, cstr};
 
 // Tag name bytes for fast comparison
-const TAG_TEMPLATE: &[u8] = b"template";
+pub(super) const TAG_TEMPLATE: &[u8] = b"template";
 const TAG_SCRIPT: &[u8] = b"script";
 const TAG_STYLE: &[u8] = b"style";
 
-type BlockAttrs<'a> = FxHashMap<Cow<'a, str>, Cow<'a, str>>;
-type BlockParseOutput<'a> = (
+pub(super) type BlockAttrs<'a> = FxHashMap<Cow<'a, str>, Cow<'a, str>>;
+pub(super) type BlockParseOutput<'a> = (
     &'a [u8],       // tag name as bytes
     BlockAttrs<'a>, // attrs with borrowed strings
     Cow<'a, str>,   // content as borrowed string
@@ -18,22 +18,22 @@ type BlockParseOutput<'a> = (
     usize,          // end line
     usize,          // end column
 );
-type BlockParseError = (&'static str, String);
-type BlockParseResult<'a> = Result<Option<BlockParseOutput<'a>>, BlockParseError>;
+pub(super) type BlockParseError = (&'static str, String);
+pub(super) type BlockParseResult<'a> = Result<Option<BlockParseOutput<'a>>, BlockParseError>;
 
-struct BlockEndSearch<'a> {
-    bytes: &'a [u8],
-    source: &'a str,
-    tag_name: &'a [u8],
-    pos: usize,
-    content_start: usize,
-    start_line: usize,
-    initial_last_newline: usize,
-    attrs: BlockAttrs<'a>,
+pub(super) struct BlockEndSearch<'a> {
+    pub(super) bytes: &'a [u8],
+    pub(super) source: &'a str,
+    pub(super) tag_name: &'a [u8],
+    pub(super) pos: usize,
+    pub(super) content_start: usize,
+    pub(super) start_line: usize,
+    pub(super) initial_last_newline: usize,
+    pub(super) attrs: BlockAttrs<'a>,
 }
 
 /// Build a uniform `(code, message)` error for any malformed block.
-fn build_malformed_error(tag_name: &[u8], reason: &str) -> BlockParseError {
+pub(super) fn build_malformed_error(tag_name: &[u8], reason: &str) -> BlockParseError {
     let tag_str = std::str::from_utf8(tag_name).unwrap_or("unknown");
     (
         "MALFORMED_BLOCK",
@@ -49,7 +49,7 @@ pub(super) fn tag_name_eq(name: &[u8], expected: &[u8]) -> bool {
 
 /// Fast byte slice prefix check
 #[inline(always)]
-fn starts_with_bytes(haystack: &[u8], needle: &[u8]) -> bool {
+pub(super) fn starts_with_bytes(haystack: &[u8], needle: &[u8]) -> bool {
     haystack.len() >= needle.len() && haystack[..needle.len()].eq_ignore_ascii_case(needle)
 }
 
@@ -61,19 +61,19 @@ fn is_tag_name_char_fast(b: u8) -> bool {
 
 /// Fast whitespace check
 #[inline(always)]
-fn is_whitespace_fast(b: u8) -> bool {
+pub(super) fn is_whitespace_fast(b: u8) -> bool {
     matches!(b, b' ' | b'\t' | b'\n' | b'\r')
 }
 
 #[inline]
-fn advance_line(bytes: &[u8], base: usize, line: &mut usize, last_newline: &mut usize) {
+pub(super) fn advance_line(bytes: &[u8], base: usize, line: &mut usize, last_newline: &mut usize) {
     for offset in memchr_iter(b'\n', bytes) {
         *line += 1;
         *last_newline = base + offset;
     }
 }
 
-fn can_start_regex_literal(prev_significant_char: u8) -> bool {
+pub(super) fn can_start_regex_literal(prev_significant_char: u8) -> bool {
     matches!(
         prev_significant_char,
         b'=' | b'('
@@ -97,7 +97,7 @@ fn can_start_regex_literal(prev_significant_char: u8) -> bool {
     )
 }
 
-fn skip_regex_literal(
+pub(super) fn skip_regex_literal(
     bytes: &[u8],
     mut pos: usize,
     len: usize,
@@ -184,7 +184,7 @@ fn can_start_string_literal(prev_significant_char: u8, quote: u8) -> bool {
             || prev_significant_char == b')'))
 }
 
-fn skip_script_string_literal(
+pub(super) fn skip_script_string_literal(
     bytes: &[u8],
     mut pos: usize,
     len: usize,
@@ -323,7 +323,12 @@ fn skip_template_expression(
 /// Find the end of a closing tag `</tag_name` followed by optional whitespace and `>`.
 /// Returns the position immediately after `>`, or `None` if no valid closing tag at `pos`.
 #[inline]
-fn find_closing_tag_end(bytes: &[u8], pos: usize, len: usize, tag_name: &[u8]) -> Option<usize> {
+pub(super) fn find_closing_tag_end(
+    bytes: &[u8],
+    pos: usize,
+    len: usize,
+    tag_name: &[u8],
+) -> Option<usize> {
     // Need at least "</" + tag_name + ">"
     if pos + 2 + tag_name.len() >= len {
         return None;
@@ -522,109 +527,16 @@ pub(super) fn parse_block_fast<'a>(
 
     // Handle known tags with static closing tags
     if tag_name.eq_ignore_ascii_case(TAG_TEMPLATE) {
-        // Template block: handle nested template tags
-        let mut depth = 1;
-
-        // Check for closing template tag, handling whitespace before the closing '>'
-        // This handles cases like:
-        //   </template>       - normal
-        //   </template\n   >  - closing '>' on next line
-        fn is_closing_template_tag(bytes: &[u8], pos: usize, len: usize) -> Option<usize> {
-            // Check if we have "</template" (without the final ">")
-            const CLOSING_TAG_PREFIX: &[u8] = b"</template";
-            if pos + CLOSING_TAG_PREFIX.len() > len {
-                return None;
-            }
-            if !bytes[pos..pos + CLOSING_TAG_PREFIX.len()].eq_ignore_ascii_case(CLOSING_TAG_PREFIX)
-            {
-                return None;
-            }
-            // Find the closing '>' allowing whitespace
-            let mut check_pos = pos + CLOSING_TAG_PREFIX.len();
-            while check_pos < len {
-                match bytes[check_pos] {
-                    b'>' => return Some(check_pos + 1), // Return position after '>'
-                    b' ' | b'\t' | b'\n' | b'\r' => check_pos += 1,
-                    _ => return None, // Invalid character in closing tag
-                }
-            }
-            None
-        }
-
-        while pos < len {
-            let Some(lt_offset) = memchr(b'<', &bytes[pos..]) else {
-                advance_line(&bytes[pos..], pos, &mut line, &mut last_newline);
-                break;
-            };
-
-            advance_line(
-                &bytes[pos..pos + lt_offset],
-                pos,
-                &mut line,
-                &mut last_newline,
-            );
-            pos += lt_offset;
-
-            // Check for closing tag using byte comparison
-            if let Some(end_tag_pos) = is_closing_template_tag(bytes, pos, len) {
-                depth -= 1;
-                if depth == 0 {
-                    let content_end = pos;
-                    let end_pos = end_tag_pos;
-                    let col = pos - last_newline + (end_pos - pos);
-                    let content = Cow::Borrowed(&source[content_start..content_end]);
-                    return Ok(Some((
-                        tag_name,
-                        attrs,
-                        content,
-                        content_start,
-                        content_end,
-                        end_pos,
-                        line,
-                        col,
-                    )));
-                }
-                pos = end_tag_pos;
-                continue;
-            }
-
-            // Check for nested opening tag
-            if starts_with_bytes(&bytes[pos + 1..], TAG_TEMPLATE) {
-                let tag_check_pos = pos + 1 + TAG_TEMPLATE.len();
-                if tag_check_pos < len {
-                    let next_char = bytes[tag_check_pos];
-                    if next_char == b' '
-                        || next_char == b'>'
-                        || next_char == b'\n'
-                        || next_char == b'\t'
-                        || next_char == b'\r'
-                    {
-                        // Check if self-closing
-                        let mut check_pos = tag_check_pos;
-                        let mut is_self_closing_nested = false;
-                        while check_pos < len && bytes[check_pos] != b'>' {
-                            if bytes[check_pos] == b'/'
-                                && check_pos + 1 < len
-                                && bytes[check_pos + 1] == b'>'
-                            {
-                                is_self_closing_nested = true;
-                                break;
-                            }
-                            check_pos += 1;
-                        }
-                        if !is_self_closing_nested {
-                            depth += 1;
-                        }
-                    }
-                }
-            }
-
-            pos += 1;
-        }
-        return Err(build_malformed_error(
+        return super::template_boundary::find_template_block_end(BlockEndSearch {
+            bytes,
+            source,
             tag_name,
-            "the closing tag is missing",
-        ));
+            pos,
+            content_start,
+            start_line,
+            initial_last_newline: start,
+            attrs,
+        });
     }
 
     if tag_name.eq_ignore_ascii_case(TAG_STYLE) {

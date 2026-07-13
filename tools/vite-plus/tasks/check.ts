@@ -24,6 +24,7 @@ import { inTestbox } from "./testbox.ts";
 const ciPackageCheckCommand = runInPackages("check", ciCheckedPackages, {
   concurrencyLimit: 1,
 });
+const localLintCommand = runTask("check");
 const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckPackages);
 const rustClippyCommand = "cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports";
 const strictRepoCheckCommand = moonScript("check_warning_budget", "--", localVp, "check");
@@ -86,8 +87,8 @@ export const checkTasks = defineTasks({
   "fmt:js": noCacheTask(runInPackages("fmt", checkedPackages)),
   "fmt:rust": task("cargo fmt --all", { input: cacheInputs.rust }),
   "fmt:all": noCacheTask(runTask("fmt")),
-  // `vp lint` runs inside a Blacksmith Testbox; `check` stays local.
-  lint: noCacheTask(inTestbox(runTask("check"))),
+  lint: noCacheTask(localLintCommand),
+  "lint:testbox": noCacheTask(inTestbox(localLintCommand)),
   "lint:fix": noCacheTask(runTask("check:fix")),
   "lint:rust": task(rustClippyCommand, { input: cacheInputs.rust }),
   "lint:all": noCacheTask(runTasks("lint:rust", "check")),

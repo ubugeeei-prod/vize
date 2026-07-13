@@ -25,14 +25,55 @@ pub(crate) fn define_art_sources_from_state(
     content: &str,
     uri: &Url,
 ) -> Vec<DefineArtSource> {
+    state.ensure_artifact_source(uri, content);
     state
-        .sfc_descriptor_for(uri, content)
-        .and_then(|artifact| {
-            artifact
-                .descriptor()
-                .map(define_art_sources_from_descriptor)
-        })
+        .sfc_croquis(uri)
+        .map(|document| define_art_sources_from_croquis(&document))
         .unwrap_or_default()
+}
+
+pub(crate) fn define_art_sources_from_croquis(
+    document: &vize_croquis::CroquisDocument,
+) -> Vec<DefineArtSource> {
+    let Some(art) = document.analysis().macros.define_art() else {
+        return Vec::new();
+    };
+    let Some(source) = art.component_source.as_ref() else {
+        return Vec::new();
+    };
+    let Some((literal_start, literal_end)) = art.component_source_span else {
+        return Vec::new();
+    };
+    let Some((value_start, value_end)) = art.component_source_value_span else {
+        return Vec::new();
+    };
+    let Some(setup) = document.source_by_role("script-setup") else {
+        return Vec::new();
+    };
+    let Some(parent) = setup.anchor().parent_range() else {
+        return Vec::new();
+    };
+    // When a regular script and script-setup coexist, the shared Croquis
+    // analysis places setup after a synthetic `plain + '\n'` prefix. Remove
+    // that internal offset before resolving into authored SFC coordinates.
+    let setup_prefix = document
+        .source_by_role("script")
+        .map_or(0, |plain| plain.text().len().saturating_add(1));
+    let local = |offset: u32| {
+        usize::try_from(offset)
+            .unwrap_or(usize::MAX)
+            .saturating_sub(setup_prefix)
+    };
+    let base = parent.start as usize;
+
+    vec![DefineArtSource {
+        source: source.to_string(),
+        component_name: art.component_name.to_string(),
+        literal_start: base.saturating_add(local(literal_start)),
+        literal_end: base.saturating_add(local(literal_end)),
+        value_start: base.saturating_add(local(value_start)),
+        value_end: base.saturating_add(local(value_end)),
+    }]
 }
 
 pub(crate) fn define_art_sources_from_descriptor(
@@ -66,11 +107,13 @@ pub(crate) fn define_art_sources_from_descriptor(
     }]
 }
 
-pub(crate) fn define_art_source_at_offset_from_descriptor(
-    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+pub(crate) fn define_art_source_at_offset_from_state(
+    state: &crate::server::ServerState,
+    content: &str,
+    uri: &Url,
     offset: usize,
 ) -> Option<DefineArtSource> {
-    define_art_sources_from_descriptor(descriptor)
+    define_art_sources_from_state(state, content, uri)
         .into_iter()
         .find(|source| {
             source.literal_start <= offset
@@ -116,7 +159,8 @@ pub(crate) fn range_for_offsets(content: &str, start: usize, end: usize) -> Rang
 }
 
 pub(crate) fn define_art_source_completions(ctx: &IdeContext<'_>) -> Option<Vec<CompletionItem>> {
-    let source = define_art_source_at_offset_from_descriptor(ctx.sfc_descriptor()?, ctx.offset)?;
+    let source =
+        define_art_source_at_offset_from_state(ctx.state, &ctx.content, ctx.uri, ctx.offset)?;
     let current_path = ctx.uri.to_file_path().ok()?;
     let base_dir = current_path.parent()?;
     let typed = ctx.content.get(source.value_start..ctx.offset)?;

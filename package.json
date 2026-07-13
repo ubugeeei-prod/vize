@@ -19,7 +19,8 @@
     "shiki": "catalog:content",
     "tsdown": "catalog:vite-stack",
     "vite": "catalog:vite-stack",
-    "vite-plus": "catalog:vite-stack"
+    "vite-plus": "catalog:vite-stack",
+    "yaml": "2.9.0"
   },
   "packageManager": "pnpm@10.0.0",
   "pnpm": {

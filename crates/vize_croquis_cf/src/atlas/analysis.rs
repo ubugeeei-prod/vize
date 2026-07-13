@@ -11,15 +11,16 @@ pub use model::{
 
 use std::path::Path;
 
+use vize_atelier_sfc::sfc_source_structure;
 use vize_atlas::{
     InputId, PlanningContext, ProductRequest, Provider, ProviderContext, ProviderError, SourceId,
 };
 use vize_carton::{CompactString, String};
-use vize_croquis::{
-    CroquisDocument, CroquisDocumentProduct, EffectGraphScript, EffectGraphSummary,
-    build_effect_graph_from_sfc_scripts,
-};
+use vize_croquis::{CroquisDocument, CroquisDocumentProduct};
+use vize_module::{ModuleDocument, ModuleSyntaxProduct};
 
+use super::module_facts::{module_effect_summary, module_store_factories, project_raw_croquis};
+use crate::analyzer::AtlasModuleFacts;
 use crate::{CrossFileAnalyzer, FileId};
 
 /// Build the full analysis from frontend-owned Croquis documents and raw modules.
@@ -33,14 +34,30 @@ impl Provider for CrossFileAnalysisProvider {
     }
 
     fn source_dependencies(&self, context: &PlanningContext<'_>) -> Vec<SourceId> {
-        source_ids(context, is_raw_module)
+        source_ids(context, is_supported_source)
     }
 
     fn dependency_requests(&self, context: &PlanningContext<'_>) -> Vec<ProductRequest> {
-        source_ids(context, is_document_source)
-            .into_iter()
-            .map(ProductRequest::for_product::<CroquisDocumentProduct>)
-            .collect()
+        let mut requests = Vec::new();
+        for source in source_ids(context, is_supported_source) {
+            let Some(snapshot) = context.source_by_id(source) else {
+                continue;
+            };
+            let source_name = snapshot.name();
+            // Every value read by `provide` is a direct declared request even
+            // when another frontend also reaches it transitively. Template-only
+            // SFCs intentionally have no Module product, so retain that split at
+            // planning time without parsing JavaScript or TypeScript here.
+            if source_needs_module(source_name, snapshot.text()) {
+                requests.push(ProductRequest::for_product::<ModuleSyntaxProduct>(source));
+            }
+            if is_document_source(source_name) {
+                requests.push(ProductRequest::for_product::<CroquisDocumentProduct>(
+                    source,
+                ));
+            }
+        }
+        requests
     }
 
     fn provide(
@@ -67,6 +84,14 @@ impl Provider for CrossFileAnalysisProvider {
         for source in sources {
             if is_document_source(source.name()) {
                 let document = context.get_for_source::<CroquisDocumentProduct>(source.id())?;
+                let is_vue = source.name().ends_with(".vue");
+                let has_script = document.source_by_role("script").is_some()
+                    || document.source_by_role("script-setup").is_some();
+                let modules = if !is_vue || has_script {
+                    Some(context.get_for_source::<ModuleSyntaxProduct>(source.id())?)
+                } else {
+                    None
+                };
                 let (analysis_source, mut layout) = document_source_layout(
                     source.id(),
                     source.name(),
@@ -74,24 +99,39 @@ impl Provider for CrossFileAnalysisProvider {
                     document.as_ref(),
                 );
                 let path = Path::new(source.name());
-                let file = if path.extension().and_then(|value| value.to_str()) == Some("vue") {
-                    analyzer.add_file_with_analysis_and_effect_summary(
-                        path,
-                        analysis_source.as_str(),
-                        document.shared_analysis(),
-                        document_effect_summary(document.as_ref()),
-                    )
-                } else {
-                    analyzer.add_file_with_analysis(
-                        path,
-                        analysis_source.as_str(),
-                        document.shared_analysis(),
-                    )
-                };
+                let template_source = document
+                    .source_by_role("template")
+                    .map_or("", |template| template.text());
+                let empty_modules = ModuleDocument::default();
+                let modules = modules.as_deref().unwrap_or(&empty_modules);
+                let effect_summary = module_effect_summary(modules);
+                let file = analyzer.add_atlas_file_with_analysis_and_effect_summary(
+                    path,
+                    analysis_source.as_str(),
+                    template_source,
+                    document.shared_analysis(),
+                    AtlasModuleFacts {
+                        document: modules,
+                        effect_summary,
+                        store_factories: module_store_factories(modules),
+                    },
+                );
                 layout.file = file;
                 record_layout(&mut layouts, layout);
             } else {
-                let file = analyzer.add_file(Path::new(source.name()), source.text());
+                let modules = context.get_for_source::<ModuleSyntaxProduct>(source.id())?;
+                let analysis = project_raw_croquis(modules.as_ref());
+                let file = analyzer.add_atlas_file_with_analysis_and_effect_summary(
+                    Path::new(source.name()),
+                    source.text(),
+                    "",
+                    analysis,
+                    AtlasModuleFacts {
+                        document: modules.as_ref(),
+                        effect_summary: module_effect_summary(modules.as_ref()),
+                        store_factories: module_store_factories(modules.as_ref()),
+                    },
+                );
                 record_layout(
                     &mut layouts,
                     identity_layout(file, source.id(), source.name()),
@@ -126,16 +166,6 @@ fn record_layout(layouts: &mut Vec<CrossFileSourceLayout>, layout: CrossFileSour
     }
 }
 
-fn document_effect_summary(document: &CroquisDocument) -> EffectGraphSummary {
-    let script = document
-        .source_by_role("script")
-        .map(|segment| EffectGraphScript::new(segment.text(), segment.language()));
-    let setup = document
-        .source_by_role("script-setup")
-        .map(|segment| EffectGraphScript::new(segment.text(), segment.language()));
-    build_effect_graph_from_sfc_scripts(script, setup).summary()
-}
-
 fn source_ids(context: &PlanningContext<'_>, predicate: fn(&str) -> bool) -> Vec<SourceId> {
     let mut sources: Vec<_> = context
         .sources()
@@ -160,6 +190,10 @@ fn is_raw_module(name: &str) -> bool {
 
 fn is_supported_source(name: &str) -> bool {
     is_document_source(name) || is_raw_module(name)
+}
+
+fn source_needs_module(name: &str, source: &str) -> bool {
+    !name.ends_with(".vue") || sfc_source_structure(source).has_script
 }
 
 fn extension(name: &str) -> Option<&str> {
@@ -236,4 +270,36 @@ fn template_tag_range(source: &str, content_start: u32) -> (u32, u32) {
     let prefix = source.get(..content_start).unwrap_or(source);
     let start = prefix.rfind("<template").unwrap_or(content_start);
     (start as u32, content_start as u32)
+}
+
+#[cfg(test)]
+mod planning_tests {
+    use super::source_needs_module;
+
+    #[test]
+    fn comments_and_template_literals_do_not_create_sfc_module_work() {
+        for source in [
+            "<!-- <script setup>const fake = true</script> --><template><main /></template>",
+            r#"<template>{{ '<script setup>' }}<div data-code="<script>" /></template>"#,
+            r#"<custom-block>const tag = "<script>"</custom-block><template />"#,
+        ] {
+            assert!(!source_needs_module("OnlyTemplate.vue", source), "{source}");
+        }
+    }
+
+    #[test]
+    fn similar_or_malformed_spellings_do_not_replace_sfc_structure_rules() {
+        for source in [
+            "<scripture>not a script block</scripture><template />",
+            "<script-setup>not a script block</script-setup><template />",
+            "<scriptx>not a script block</scriptx><template />",
+        ] {
+            assert!(!source_needs_module("Adversarial.vue", source), "{source}");
+        }
+        assert!(source_needs_module(
+            "Actual.vue",
+            "<script setup lang=\"ts\">const ready = true</script><template>{{ ready }}</template>",
+        ));
+        assert!(source_needs_module("raw.ts", "export const ready = true"));
+    }
 }

@@ -75,6 +75,11 @@ export interface BatchCompileOptionsNapi {
   vueVersion?: string;
   /** Preserve TypeScript in output when true */
   isTs?: boolean;
+  /**
+   * Worker threads for this call (1-256). Omit to use Rayon's global pool.
+   * Concurrent explicit calls share a process-wide 256-worker budget.
+   * Capacity exhaustion fails immediately with a `WouldDeadlock` error.
+   */
   threads?: number;
   /**
    * Include per-block style metadata (incl. `styles[].content`). Default OFF.
@@ -238,6 +243,8 @@ export interface CompilerOptions {
   customRenderer?: boolean;
   /** Template syntax compatibility mode: "standard", "strict", or "quirks". */
   templateSyntax?: string;
+  /** Vue language line used by the SFC artifact graph ("1", "2", "2.7", or "3"). */
+  vueVersion?: string;
   /** Enable experimental Vue in-tag comments (`// ...`) inside opening tags. */
   experimentalInTagComments?: boolean;
   /** Enable experimental `v-match` / `v-case` patterned template desugaring. */
@@ -356,12 +363,10 @@ export interface CustomBlockNapi {
   index: number;
 }
 
-/** Declaration generation options for NAPI */
 export interface DeclarationOptionsNapi {
   filename?: string;
 }
 
-/** Declaration generation result for NAPI */
 export interface DeclarationResultNapi {
   code: string;
 }
@@ -482,7 +487,6 @@ export declare function generateArtPalette(
   paletteOptions?: PaletteOptionsNapi | undefined | null,
 ): PaletteOutputNapi;
 
-/** Generate a Vue SFC `.d.ts` declaration from Croquis analysis. */
 export declare function generateDeclaration(
   source: string,
   options?: DeclarationOptionsNapi | undefined | null,
@@ -541,6 +545,31 @@ export interface HmrHashesNapi {
   scriptHash?: string;
   templateHash?: string;
   styleHash?: string;
+}
+
+export interface InspectorGraphEdgeNapi {
+  from: string;
+  to: string;
+  kind: string;
+  specifier: string;
+}
+
+export interface InspectorGraphNapi {
+  nodes: Array<InspectorGraphNodeNapi>;
+  edges: Array<InspectorGraphEdgeNapi>;
+}
+
+export interface InspectorGraphNodeNapi {
+  path: string;
+  kind: string;
+  isEntry: boolean;
+  sourceBytes: number;
+  sourceLines: number;
+}
+
+export interface InspectorSourceFileNapi {
+  path: string;
+  source: string;
 }
 
 export declare function isBuiltinViteDefine(key: string): boolean;
@@ -628,7 +657,7 @@ export interface JsxScopedStyleNapi {
   css: string;
 }
 
-/** Lint Vue SFC files matching patterns (native multithreading, .gitignore-aware) */
+/** Lint Vue SFC and standalone HTML files in one persistent Atlas compilation. */
 export declare function lint(
   patterns: Array<string>,
   options?: LintOptionsNapi | undefined | null,
@@ -682,31 +711,6 @@ export interface MacroArtifactNapi {
   moduleCode?: string;
   start: number;
   end: number;
-}
-
-export interface InspectorGraphEdgeNapi {
-  from: string;
-  to: string;
-  kind: string;
-  specifier: string;
-}
-
-export interface InspectorGraphNapi {
-  nodes: Array<InspectorGraphNodeNapi>;
-  edges: Array<InspectorGraphEdgeNapi>;
-}
-
-export interface InspectorGraphNodeNapi {
-  path: string;
-  kind: string;
-  isEntry: boolean;
-  sourceBytes: number;
-  sourceLines: number;
-}
-
-export interface InspectorSourceFileNapi {
-  path: string;
-  source: string;
 }
 
 export declare function normalizeViteCssModuleFilename(filename: string): string;
@@ -919,7 +923,10 @@ export interface SfcCompileOptionsNapi {
 export interface SfcCompileResultNapi {
   code: string;
   css?: string;
-  /** Composed v3 source map JSON for `code`. */
+  /**
+   * v3 source map JSON for `code`, present only when the active SFC backend
+   * can preserve a correctly framed map and `sourceMap` was requested.
+   */
   map?: string;
   errors: Array<string>;
   warnings: Array<string>;

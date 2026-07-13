@@ -1,11 +1,6 @@
 //! Import-name extraction, `/// <reference types>` directives, and global
 //! component stub emission for the virtual TypeScript generator.
 
-use oxc_allocator::Allocator;
-use oxc_ast::ast::{IdentifierReference, TSTypeName, TSTypeQueryExprName, TSTypeReference};
-use oxc_ast_visit::{Visit, walk};
-use oxc_parser::Parser;
-use oxc_span::SourceType;
 use vize_croquis::Croquis;
 
 use crate::virtual_ts::helpers::to_safe_identifier;
@@ -77,6 +72,7 @@ pub(super) fn collect_imported_names<'a>(
 pub(super) fn collect_type_only_imported_names(
     summary: &Croquis,
     script_content: Option<&str>,
+    script_facts: Option<&vize_atelier_sfc::SfcScriptGeneratorFacts>,
 ) -> FxHashSet<CompactString> {
     let Some(script) = script_content else {
         return FxHashSet::default();
@@ -86,20 +82,27 @@ pub(super) fn collect_type_only_imported_names(
         return FxHashSet::default();
     }
 
-    let usage = collect_identifier_usage(script);
+    let Some(facts) = script_facts else {
+        return FxHashSet::default();
+    };
     import_names
         .into_iter()
-        .filter(|name| usage.type_refs.contains(name) && !usage.value_refs.contains(name))
+        .filter(|name| {
+            facts.type_references().contains(name.as_str())
+                && !facts.value_references().contains(name.as_str())
+        })
         .collect()
 }
 
 pub(super) fn collect_setup_binding_anchor_names<'a>(
     summary: &'a Croquis,
     script_content: Option<&str>,
+    script_facts: Option<&vize_atelier_sfc::SfcScriptGeneratorFacts>,
     template_referenced_names: Option<&FxHashSet<String>>,
 ) -> Vec<&'a str> {
-    let type_only_imported_names = collect_type_only_imported_names(summary, script_content);
-    let const_enum_names = script_content.map(super::script_module::collect_const_enum_names);
+    let type_only_imported_names =
+        collect_type_only_imported_names(summary, script_content, script_facts);
+    let const_enum_names = script_facts.map(|facts| facts.const_enum_names());
     let mut template_value_names: FxHashSet<&str> = summary
         .used_components
         .iter()
@@ -132,7 +135,7 @@ pub(super) fn collect_setup_binding_anchor_names<'a>(
     binding_names.retain(|name| {
         const_enum_names
             .as_ref()
-            .is_none_or(|names| !contains_compact_name(names, name))
+            .is_none_or(|names| !names.contains(*name))
             && (!contains_compact_name(&type_only_imported_names, name)
                 || template_value_names.contains(name))
     });
@@ -159,65 +162,6 @@ fn collect_value_import_binding_names(summary: &Croquis, script: &str) -> FxHash
 
 fn contains_compact_name(names: &FxHashSet<CompactString>, name: &str) -> bool {
     names.iter().any(|candidate| candidate.as_str() == name)
-}
-
-#[derive(Default)]
-struct IdentifierUsage {
-    type_refs: FxHashSet<CompactString>,
-    value_refs: FxHashSet<CompactString>,
-    type_depth: u32,
-}
-
-impl<'a> Visit<'a> for IdentifierUsage {
-    fn visit_identifier_reference(&mut self, ident: &IdentifierReference<'a>) {
-        if self.type_depth == 0 {
-            self.value_refs
-                .insert(CompactString::new(ident.name.as_str()));
-        }
-    }
-
-    fn visit_ts_type_reference(&mut self, ty: &TSTypeReference<'a>) {
-        record_type_name_root(&ty.type_name, &mut self.type_refs);
-        self.type_depth += 1;
-        walk::walk_ts_type_reference(self, ty);
-        self.type_depth -= 1;
-    }
-
-    fn visit_ts_type_query_expr_name(&mut self, name: &TSTypeQueryExprName<'a>) {
-        record_type_query_root(name, &mut self.value_refs);
-        walk::walk_ts_type_query_expr_name(self, name);
-    }
-}
-
-fn collect_identifier_usage(script: &str) -> IdentifierUsage {
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
-    let mut usage = IdentifierUsage::default();
-    usage.visit_program(&parsed.program);
-    usage
-}
-
-fn record_type_name_root(name: &TSTypeName<'_>, refs: &mut FxHashSet<CompactString>) {
-    match name {
-        TSTypeName::IdentifierReference(ident) => {
-            refs.insert(CompactString::new(ident.name.as_str()));
-        }
-        TSTypeName::QualifiedName(qualified) => record_type_name_root(&qualified.left, refs),
-        TSTypeName::ThisExpression(_) => {}
-    }
-}
-
-fn record_type_query_root(name: &TSTypeQueryExprName<'_>, refs: &mut FxHashSet<CompactString>) {
-    match name {
-        TSTypeQueryExprName::IdentifierReference(ident) => {
-            refs.insert(CompactString::new(ident.name.as_str()));
-        }
-        TSTypeQueryExprName::QualifiedName(qualified) => {
-            record_type_name_root(&qualified.left, refs);
-        }
-        TSTypeQueryExprName::TSImportType(_) => {}
-        _ => {}
-    }
 }
 
 pub(super) fn emit_global_component_stubs(

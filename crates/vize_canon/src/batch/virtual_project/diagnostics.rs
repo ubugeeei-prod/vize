@@ -6,48 +6,24 @@ use std::path::Path;
 
 use vize_carton::{String as CompactString, cstr};
 
-use vize_atelier_sfc::{SfcDescriptor, SfcError, validate_script_setup_semantics_located};
+use vize_atelier_sfc::{SfcDescriptor, SfcError, SfcScriptSyntaxSnapshot};
 
 use crate::batch::source_map::SfcBlockRange;
 use crate::batch::{Diagnostic, SfcBlockType};
 
-/// Run only the script-setup semantic validators on this SFC. We deliberately
-/// avoid `compile_sfc` here — it would do template codegen and script transform
-/// work that doubles the wall time of `vize check` (see the regression on PR
-/// #675). The validator covers the diagnostics TypeScript cannot derive on its
-/// own; parse-level errors are already collected above.
+/// Project script-setup semantic diagnostics from the parse-once syntax
+/// snapshot. Parse-level errors are collected before this validator runs.
 pub(super) fn collect_sfc_compile_diagnostic(
     path: &Path,
     source: &str,
     descriptor: &SfcDescriptor,
+    script_syntax: &SfcScriptSyntaxSnapshot,
 ) -> Option<Diagnostic> {
-    let script_setup = descriptor.script_setup.as_ref()?;
-
-    // Cheap pre-filter: the only validator we currently run targets
-    // `const { ... = ... } = defineProps<...>()`. Skip the OXC parse entirely
-    // when none of those tokens appear, which is the common case for app
-    // components without destructured typed props.
-    if !script_setup_has_validator_candidates(&script_setup.content) {
-        return None;
-    }
-
-    match validate_script_setup_semantics_located(
-        &script_setup.content,
-        script_setup.loc.start,
-        source,
-    ) {
+    descriptor.script_setup.as_ref()?;
+    match script_syntax.validate_script_setup_semantics(source) {
         Ok(()) => None,
         Err(error) => Some(sfc_error_to_diagnostic(path, source, descriptor, &error)),
     }
-}
-
-/// Cheap byte-level filter — must be a strict superset of the patterns the
-/// underlying validators actually fire on, so we never miss a real diagnostic.
-fn script_setup_has_validator_candidates(content: &str) -> bool {
-    // Validator needs: typed defineProps (`defineProps<...>`) AND a destructure
-    // pattern (`{ ... = ... } = defineProps`). The combined presence of these
-    // two substrings is a tight enough filter for typical app code.
-    content.contains("defineProps<") && content.contains("= defineProps")
 }
 
 fn sfc_error_to_diagnostic(

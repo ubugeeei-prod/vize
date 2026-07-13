@@ -74,3 +74,48 @@ const handleStepClick = (stepIndex: number) => {
         "{stdout}"
     );
 }
+
+#[test]
+fn quiet_lint_reduces_warning_totals_and_preserves_max_warnings_exit() {
+    let project_root = tempfile::tempdir().unwrap();
+    write_file(
+        project_root.path(),
+        "vize.config.json",
+        r#"{
+  "linter": {
+    "preset": "ecosystem",
+    "rules": {
+      "script/custom-event-name-casing": "warn"
+    }
+  }
+}"#,
+    );
+    let source = r#"<script setup lang="ts">
+const emit = defineEmits(["update:current-step-index"])
+emit("update:current-step-index", 1)
+</script>
+"#;
+    write_file(project_root.path(), "src/First.vue", source);
+    write_file(project_root.path(), "src/Second.vue", source);
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project_root.path())
+        .args([
+            "lint",
+            "--quiet",
+            "--config",
+            "vize.config.json",
+            "--max-warnings",
+            "0",
+            "src/*.vue",
+        ])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    assert!(stdout.contains("2 warnings in 2 files"), "{stdout}");
+    assert!(!stdout.contains("custom-event-name-casing"), "{stdout}");
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
+    assert!(stderr.contains("Too many warnings (2 > max 0)"), "{stderr}");
+}

@@ -45,7 +45,6 @@ mod engine;
 mod runner;
 #[cfg(test)]
 mod tests;
-mod virtual_ts;
 
 pub use analysis::{
     SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity,

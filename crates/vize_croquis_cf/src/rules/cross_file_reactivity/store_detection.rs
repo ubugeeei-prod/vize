@@ -25,6 +25,10 @@ pub struct StoreFactories {
 }
 
 impl StoreFactories {
+    pub(crate) fn insert(&mut self, name: CompactString) {
+        self.names.insert(name);
+    }
+
     /// Whether `name` is a `defineStore`-bound store factory in this module.
     #[inline]
     pub fn contains(&self, name: &str) -> bool {

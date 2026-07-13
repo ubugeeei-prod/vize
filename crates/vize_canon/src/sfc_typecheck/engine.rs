@@ -1,15 +1,17 @@
-//! Canon checks over frontend-owned descriptor, Relief, Croquis, and Flow products.
+//! Canon checks over frontend-owned descriptor, Relief, and Croquis products.
 
 use vize_atelier_core::atelier_output::AtelierFallback;
-use vize_atelier_sfc::{SfcDescriptorArtifact, croquis::SfcCroquisOptions};
+use vize_atelier_sfc::{
+    SfcDescriptorArtifact, SfcScriptSyntaxSnapshot, croquis::SfcCroquisOptions,
+};
 use vize_carton::{Bump, cstr, profiler::global_profiler};
 use vize_croquis::CroquisDocument;
-use vize_flow::FlowGraph;
+use vize_module::ModuleDocument;
 use vize_relief::ReliefArtifact;
 
 use crate::{
-    options_api_setup_spread, script_parse::collect_script_parse_diagnostics,
-    virtual_ts::generate_virtual_ts_with_offsets_legacy_vue2,
+    options_api_setup_spread,
+    virtual_ts::{VirtualTsGenerationOptions, generate_virtual_ts_with_offsets_and_checks},
 };
 
 use super::{
@@ -19,7 +21,6 @@ use super::{
         check_emits_typing, check_fallthrough_attrs, check_invalid_exports, check_props_typing,
         check_reactivity, check_setup_context, check_template_bindings,
     },
-    virtual_ts::generate_virtual_ts_with_scopes,
 };
 
 pub(super) fn type_check_from_artifacts(
@@ -27,7 +28,8 @@ pub(super) fn type_check_from_artifacts(
     descriptor: &SfcDescriptorArtifact,
     relief: Option<&ReliefArtifact>,
     document: &CroquisDocument,
-    flow: &FlowGraph,
+    modules: Option<&ModuleDocument>,
+    script_syntax: Option<&SfcScriptSyntaxSnapshot>,
 ) -> SfcTypeCheckResult {
     #[cfg(not(target_arch = "wasm32"))]
     let start_time = std::time::Instant::now();
@@ -50,7 +52,7 @@ pub(super) fn type_check_from_artifacts(
         }
     };
 
-    let has_script_parse_errors = collect_script_diagnostics(descriptor, &mut result);
+    let has_script_parse_errors = collect_script_diagnostics(modules, &mut result);
     let template_offset = descriptor
         .template
         .as_ref()
@@ -75,12 +77,12 @@ pub(super) fn type_check_from_artifacts(
     let legacy_vue2 = matches!(mode, vize_atelier_sfc::SfcCroquisMode::LegacyVue2);
     run_checks(
         summary,
-        script_content.as_deref(),
         script_offset,
         template_offset,
         has_script_parse_errors,
         has_template_parse_errors,
         options_api || legacy_vue2,
+        script_syntax.map(SfcScriptSyntaxSnapshot::generator_facts),
         options,
         &mut result,
     );
@@ -95,10 +97,11 @@ pub(super) fn type_check_from_artifacts(
             template_offset,
             options_api,
             legacy_vue2,
+            modules,
+            script_syntax,
         ));
     }
     record_virtual_ts_projection(options.include_virtual_ts, virtual_ts_available);
-    let _mapped_flow_nodes = flow.nodes().len();
     #[cfg(not(target_arch = "wasm32"))]
     {
         result.analysis_time_ms = Some(start_time.elapsed().as_secs_f64() * 1000.0);
@@ -107,26 +110,21 @@ pub(super) fn type_check_from_artifacts(
 }
 
 fn collect_script_diagnostics(
-    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    modules: Option<&ModuleDocument>,
     result: &mut SfcTypeCheckResult,
 ) -> bool {
     let mut found = false;
-    for script in [descriptor.script.as_ref(), descriptor.script_setup.as_ref()]
-        .into_iter()
-        .flatten()
-    {
-        let diagnostics = collect_script_parse_diagnostics(
-            &script.content,
-            script.loc.start as u32,
-            script.lang.as_deref(),
-        );
-        found |= !diagnostics.is_empty();
-        for diagnostic in diagnostics {
+    for module in modules.into_iter().flat_map(|modules| &modules.modules) {
+        found |= !module.diagnostics.is_empty();
+        for diagnostic in &module.diagnostics {
             result.add_diagnostic(SfcTypeDiagnostic {
                 severity: SfcTypeSeverity::Error,
                 message: cstr!("Script parse error: {}", diagnostic.message),
-                start: diagnostic.start,
-                end: diagnostic.end,
+                start: diagnostic.span.start,
+                end: diagnostic
+                    .span
+                    .end
+                    .max(diagnostic.span.start.saturating_add(1)),
                 code: Some("script-parse-error".into()),
                 help: None,
                 related: Vec::new(),
@@ -180,12 +178,12 @@ fn collect_template_diagnostics(
 #[allow(clippy::too_many_arguments)]
 fn run_checks(
     summary: &vize_croquis::Croquis,
-    script_content: Option<&str>,
     script_offset: u32,
     template_offset: u32,
     script_errors: bool,
     template_errors: bool,
     options_api: bool,
+    script_facts: Option<&vize_atelier_sfc::SfcScriptGeneratorFacts>,
     options: &super::SfcTypeCheckOptions,
     result: &mut SfcTypeCheckResult,
 ) {
@@ -196,10 +194,8 @@ fn run_checks(
         check_emits_typing(summary, script_offset, result, options.strict);
     }
     if options.check_template_bindings && !template_errors && !script_errors {
-        let suppress = options_api_setup_spread::suppresses_template_undefined_refs(
-            options_api,
-            script_content,
-        );
+        let suppress =
+            options_api_setup_spread::suppresses_template_undefined_refs(options_api, script_facts);
         check_template_bindings(summary, template_offset, result, options.strict, suppress);
     }
     if options.check_reactivity && !script_errors {
@@ -225,37 +221,26 @@ fn generate_virtual_ts(
     template_offset: u32,
     options_api: bool,
     legacy_vue2: bool,
+    modules: Option<&ModuleDocument>,
+    script_syntax: Option<&SfcScriptSyntaxSnapshot>,
 ) -> vize_carton::String {
     let options = &crate::virtual_ts::VirtualTsOptions::default();
-    if legacy_vue2 {
-        generate_virtual_ts_with_offsets_legacy_vue2(
-            summary,
-            script_content,
-            template_ast,
-            script_offset,
-            template_offset,
-            options,
-        )
-        .code
-    } else if options_api {
-        crate::virtual_ts::generate_virtual_ts_with_offsets_options_api(
-            summary,
-            script_content,
-            template_ast,
-            script_offset,
-            template_offset,
-            options,
-        )
-        .code
-    } else {
-        generate_virtual_ts_with_scopes(
-            summary,
-            script_content,
-            script_offset,
-            template_ast,
-            template_offset,
-        )
-    }
+    generate_virtual_ts_with_offsets_and_checks(
+        summary,
+        script_content,
+        template_ast,
+        script_offset,
+        template_offset,
+        options,
+        VirtualTsGenerationOptions {
+            module_document: modules,
+            script_facts: script_syntax.map(SfcScriptSyntaxSnapshot::generator_facts),
+            options_api,
+            legacy_vue2,
+            ..Default::default()
+        },
+    )
+    .code
 }
 
 fn record_virtual_ts_projection(requested: bool, available: bool) {

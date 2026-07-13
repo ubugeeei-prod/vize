@@ -19,7 +19,6 @@ pub mod compile_script;
 pub mod compile_template;
 pub mod croquis;
 pub mod css;
-pub mod graph_frontend;
 pub mod parse;
 pub mod rewrite_default;
 pub mod script;
@@ -35,6 +34,7 @@ pub use bundler::{
     extract_style_blocks, generate_bundler_scope_id, has_scoped_style, is_importable_asset_url,
     strip_css_comments_for_scoped, wrap_scoped_preprocessor_style,
 };
+pub use compile::compile_sfc_with_template_syntax_and_codegen_options;
 #[allow(deprecated)]
 pub use compile::compile_sfc_with_vue_parser_quirks;
 pub use compile::{
@@ -48,12 +48,21 @@ pub use css::{
     CssAstResult, CssCompileOptions, CssCompileResult, CssTargets, bundle_css, compile_css,
     compile_style_block, parse_css_ast, print_css_ast,
 };
+/// Compatibility aliases for the generic raw-template graph adapter.
+pub mod graph_frontend {
+    pub use vize_atelier_template::graph_frontend::{
+        TemplateGraphAdapter as SfcTemplateGraphAdapter,
+        TemplateGraphAdapterError as SfcGraphAdapterError, lower_relief_snapshot_to_rendu,
+        lower_relief_snapshot_to_rendu_with_anchor, project_relief_snapshot_to_flow,
+        project_relief_snapshot_to_flow_with_anchor,
+    };
+}
 pub use graph_frontend::{
     SfcGraphAdapterError, SfcTemplateGraphAdapter, lower_relief_snapshot_to_rendu,
     project_relief_snapshot_to_flow,
 };
 pub use parse::parse_sfc;
-pub use script::begin_type_resolution_batch;
+pub use script::{TypeResolutionBatchGuard, begin_type_resolution_batch};
 pub use types::{
     BindingMetadata, BindingType, BlockLocation, PadOption, PropsDestructure, ScriptCompileOptions,
     SfcCompileOptions, SfcCompileResult, SfcCustomBlock, SfcDescriptor, SfcError, SfcMacroArtifact,
@@ -373,14 +382,8 @@ const isRootSelected = ref(false)
 </script>
 "#;
         let descriptor = parse_sfc(source, Default::default()).unwrap();
-        let script_setup = descriptor
-            .script_setup
-            .as_ref()
-            .expect("expected script setup block");
-        let template = descriptor
-            .template
-            .as_ref()
-            .expect("expected template block");
+        let script_setup = descriptor.script_setup.as_ref().unwrap();
+        let template = descriptor.template.as_ref().unwrap();
         let croquis = crate::script::analyze_script_setup_to_summary(&script_setup.content);
         let mut binding_metadata = crate::BindingMetadata::default();
         binding_metadata.is_script_setup = croquis.bindings.is_script_setup;
@@ -409,6 +412,7 @@ const isRootSelected = ref(false)
                 croquis: Some(croquis),
             },
             vize_relief::TemplateSyntaxMode::Standard,
+            &vize_relief::CodegenOptions::default(),
         )
         .expect("template compile should succeed");
         let render_body = template_output.body_parts_for_inline().unwrap().render_body;

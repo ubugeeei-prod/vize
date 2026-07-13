@@ -2,7 +2,6 @@ use vize::artifact_graph::{VizeGraphConfig, create_compilation};
 use vize::atelier_dom::DomOutputProduct;
 use vize::atelier_sfc::SfcTemplateProduct;
 use vize::atelier_ssr::SsrOutputProduct;
-use vize::canon::{CanonSemanticVirtualTsProduct, SemanticVirtualTsMappingKind};
 use vize::flow::FlowProduct;
 use vize::rendu::RenduProduct;
 use vize_atlas::ProductId;
@@ -20,7 +19,7 @@ const TSX: &str = r#"const ready = true;
 export const App = () => ready ? <section>yes</section> : <span>no</span>;"#;
 
 #[test]
-fn sfc_parent_anchor_survives_render_flow_and_virtual_ts_products() {
+fn sfc_parent_anchor_survives_render_and_flow_products() {
     let mut compilation = create_compilation(VizeGraphConfig::default()).unwrap();
     let source = compilation.add_source("src/App.vue", SFC).unwrap();
     let revision = compilation.source(source).unwrap().revision();
@@ -36,7 +35,6 @@ fn sfc_parent_anchor_survives_render_flow_and_virtual_ts_products() {
     );
     let template_anchor =
         SourceAnchor::new(source.get(), revision.get()).with_parent_range(template_range);
-    let root_anchor = SourceAnchor::new(source.get(), revision.get());
 
     let plan = compilation
         .plan(
@@ -45,7 +43,6 @@ fn sfc_parent_anchor_survives_render_flow_and_virtual_ts_products() {
                 ProductId::of::<DomOutputProduct>(),
                 ProductId::of::<SsrOutputProduct>(),
                 ProductId::of::<FlowProduct>(),
-                ProductId::of::<CanonSemanticVirtualTsProduct>(),
             ],
         )
         .unwrap();
@@ -82,19 +79,6 @@ fn sfc_parent_anchor_survives_render_flow_and_virtual_ts_products() {
             .iter()
             .all(|mapping| mapping.anchor == Some(template_anchor))
     );
-
-    let virtual_ts = output
-        .get::<CanonSemanticVirtualTsProduct>()
-        .unwrap()
-        .unwrap();
-    let template_mapping = virtual_ts
-        .mappings
-        .iter()
-        .find(|mapping| mapping.kind == SemanticVirtualTsMappingKind::TemplateExpression)
-        .expect("template expression mapping");
-    assert_eq!(template_mapping.source_anchor, Some(root_anchor));
-    assert!(template_mapping.source.start >= template_range.start);
-    assert!(template_mapping.source.end <= template_range.end);
 }
 
 #[test]

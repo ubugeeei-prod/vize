@@ -8,8 +8,7 @@ use std::path::{Path, PathBuf};
 use oxc_span::SourceType;
 use vize_atlas::Shared;
 use vize_carton::{String as CompactString, ToCompactString, cstr, profile};
-use vize_croquis::CroquisDocument;
-use vize_relief::{ReliefArtifact, TemplateSyntaxMode};
+use vize_relief::TemplateSyntaxMode;
 
 use vize_atelier_sfc::SfcDescriptor;
 
@@ -58,12 +57,10 @@ pub(super) struct VirtualBuildContext<'a> {
 pub(super) fn build_vue_registered_file_from_artifacts(
     path: &Path,
     content: &str,
-    descriptor: &SfcDescriptor<'_>,
-    syntax: Option<&ReliefArtifact>,
-    semantics: &CroquisDocument,
-    extra_template_referenced_names: Option<&vize_carton::FxHashSet<CompactString>>,
+    artifacts: VueArtifactInputs<'_, '_>,
     context: VirtualBuildContext<'_>,
 ) -> CorsaResult<RegisteredFile> {
+    let descriptor = artifacts.descriptor;
     let effective_options =
         virtual_ts_options_for_descriptor(context.virtual_ts_options, descriptor);
     let generated = profile!(
@@ -71,12 +68,7 @@ pub(super) fn build_vue_registered_file_from_artifacts(
         generate_vue_virtual_ts_from_artifacts(
             path,
             content,
-            VueArtifactInputs {
-                descriptor,
-                syntax,
-                semantics,
-                extra_template_referenced_names,
-            },
+            artifacts,
             &effective_options,
             VueCodegenOptions {
                 check_options: context.virtual_ts_check_options,

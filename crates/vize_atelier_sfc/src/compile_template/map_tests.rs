@@ -47,6 +47,7 @@ fn compile_with_source_map(source_map: bool) -> super::TemplateBlockCompileResul
             croquis: None,
         },
         vize_relief::TemplateSyntaxMode::Standard,
+        &vize_relief::CodegenOptions::default(),
     )
     .expect("template should compile")
 }

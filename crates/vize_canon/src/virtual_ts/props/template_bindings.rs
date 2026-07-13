@@ -3,7 +3,7 @@ use vize_croquis::macros::PropDefinition;
 use vize_croquis::macros::PropsDestructuredBindings;
 use vize_croquis::{BindingType, Croquis};
 
-use super::emit_template_prop_binding;
+use super::variables::emit_template_prop_binding;
 
 #[inline]
 pub(super) fn should_skip_template_prop_binding(summary: &Croquis, prop_name: &str) -> bool {

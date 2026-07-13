@@ -17,6 +17,9 @@ mod no_empty_variant;
 pub mod prefer_design_tokens;
 mod require_component;
 mod require_title;
+mod scanner;
+#[cfg(test)]
+mod tests;
 mod unique_variant_names;
 mod valid_variant;
 
@@ -31,6 +34,7 @@ use memchr::memmem;
 use vize_carton::FxHashSet;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
+use scanner::{define_art_rule_info, extract_name_attr_bytes, has_attribute, is_whitespace_only};
 
 /// Musea Art file lint result
 #[derive(Debug, Clone, Default)]
@@ -41,6 +45,17 @@ pub struct MuseaLintResult {
     pub error_count: usize,
     /// Warning count
     pub warning_count: usize,
+}
+
+/// Script metadata consumed by Musea rules without reparsing an SFC.
+///
+/// Atlas-backed hosts should build this from their cached Croquis product and
+/// call [`MuseaLinter::lint_with_script_metadata`]. [`MuseaLinter::lint`]
+/// remains the standalone convenience entry point.
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq)]
+pub struct MuseaScriptMetadata {
+    pub has_title: bool,
+    pub has_component: bool,
 }
 
 impl MuseaLintResult {
@@ -125,11 +140,21 @@ impl MuseaLinter {
 
     /// Lint an Art file source using optimized single-pass scanning
     pub fn lint(&self, source: &str) -> MuseaLintResult {
+        self.lint_with_script_metadata(source, define_art_rule_info(source))
+    }
+
+    /// Lint an Art file while reusing script metadata from the caller's
+    /// parse-once frontend product.
+    pub fn lint_with_script_metadata(
+        &self,
+        source: &str,
+        script: MuseaScriptMetadata,
+    ) -> MuseaLintResult {
         let mut result = MuseaLintResult::default();
         let bytes = source.as_bytes();
 
         // Phase 1: Check <art> block (single scan)
-        self.check_art_block(source, bytes, &mut result);
+        self.check_art_block(bytes, script, &mut result);
 
         // Phase 2: Check <variant> blocks (single scan for all variant rules)
         self.check_variant_blocks(bytes, &mut result);
@@ -144,7 +169,12 @@ impl MuseaLinter {
 
     /// Check <art> block for required attributes
     #[inline]
-    fn check_art_block(&self, source: &str, bytes: &[u8], result: &mut MuseaLintResult) {
+    fn check_art_block(
+        &self,
+        bytes: &[u8],
+        script: MuseaScriptMetadata,
+        result: &mut MuseaLintResult,
+    ) {
         // Find <art tag
         let Some(art_start) = memmem::find(bytes, b"<art") else {
             return;
@@ -156,10 +186,8 @@ impl MuseaLinter {
         };
 
         let art_tag = &bytes[art_start..art_start + tag_end];
-        let define_art = define_art_rule_info(source);
-
         // Check for title attribute
-        if self.check_require_title && !has_attribute(art_tag, b"title=") && !define_art.has_title {
+        if self.check_require_title && !has_attribute(art_tag, b"title=") && !script.has_title {
             result.add_diagnostic(
                 LintDiagnostic::error(
                     "musea/require-title",
@@ -174,7 +202,7 @@ impl MuseaLinter {
         // Check for component attribute
         if self.check_require_component
             && !has_attribute(art_tag, b"component=")
-            && !define_art.has_component
+            && !script.has_component
         {
             result.add_diagnostic(
                 LintDiagnostic::warn(
@@ -288,146 +316,5 @@ impl Default for MuseaLinter {
     #[inline]
     fn default() -> Self {
         Self::new()
-    }
-}
-
-/// Check if a tag has an attribute (fast byte-level check)
-#[inline]
-fn has_attribute(tag: &[u8], attr: &[u8]) -> bool {
-    memmem::find(tag, attr).is_some()
-}
-
-#[derive(Default)]
-struct DefineArtRuleInfo {
-    has_title: bool,
-    has_component: bool,
-}
-
-fn define_art_rule_info(source: &str) -> DefineArtRuleInfo {
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, Default::default()) else {
-        return DefineArtRuleInfo::default();
-    };
-    let Some(script_setup) = descriptor.script_setup.as_ref() else {
-        return DefineArtRuleInfo::default();
-    };
-
-    let parsed = vize_croquis::script_parser::parse_script_setup(script_setup.content.as_ref());
-    let Some(art) = parsed.macros.define_art() else {
-        return DefineArtRuleInfo::default();
-    };
-
-    DefineArtRuleInfo {
-        has_title: art.title.is_some() || !art.component_name.is_empty(),
-        has_component: art.component_source.is_some(),
-    }
-}
-
-/// Extract the value of the name attribute from a tag (byte-level)
-#[inline]
-fn extract_name_attr_bytes(tag: &[u8]) -> Option<&[u8]> {
-    // Find name=" or name='
-    let name_pos = memmem::find(tag, b"name=")?;
-    let after_eq = &tag[name_pos + 5..];
-
-    // Skip whitespace
-    let mut i = 0;
-    while i < after_eq.len() && after_eq[i].is_ascii_whitespace() {
-        i += 1;
-    }
-
-    if i >= after_eq.len() {
-        return None;
-    }
-
-    let quote = after_eq[i];
-    if quote != b'"' && quote != b'\'' {
-        return None;
-    }
-
-    let after_quote = &after_eq[i + 1..];
-    let end_quote = memchr::memchr(quote, after_quote)?;
-
-    Some(&after_quote[..end_quote])
-}
-
-/// Check if bytes contain only whitespace
-#[inline]
-fn is_whitespace_only(bytes: &[u8]) -> bool {
-    bytes.iter().all(|b| b.is_ascii_whitespace())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{MuseaLinter, extract_name_attr_bytes};
-
-    #[test]
-    fn test_lint_valid_art_file() {
-        let source = r#"
-<art title="Button" component="./Button.vue">
-  <variant name="default">
-    <Button>Click me</Button>
-  </variant>
-</art>
-"#;
-        let linter = MuseaLinter::new();
-        let result = linter.lint(source);
-        assert!(!result.has_errors());
-    }
-
-    #[test]
-    fn test_lint_missing_title() {
-        let source = r#"
-<art component="./Button.vue">
-  <variant name="default">
-    <Button>Click me</Button>
-  </variant>
-</art>
-"#;
-        let linter = MuseaLinter::new();
-        let result = linter.lint(source);
-        assert!(result.has_errors());
-    }
-
-    #[test]
-    fn test_lint_duplicate_variant_names() {
-        let source = r#"
-<art title="Button" component="./Button.vue">
-  <variant name="same">
-    <Button>One</Button>
-  </variant>
-  <variant name="same">
-    <Button>Two</Button>
-  </variant>
-</art>
-"#;
-        let linter = MuseaLinter::new();
-        let result = linter.lint(source);
-        assert!(result.has_errors());
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_lint_empty_variant() {
-        let source = r#"
-<art title="Button" component="./Button.vue">
-  <variant name="empty"></variant>
-</art>
-"#;
-        let linter = MuseaLinter::new();
-        let result = linter.lint(source);
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_extract_name_attr() {
-        assert_eq!(
-            extract_name_attr_bytes(b"<variant name=\"test\""),
-            Some(b"test".as_slice())
-        );
-        assert_eq!(
-            extract_name_attr_bytes(b"<variant name='test'"),
-            Some(b"test".as_slice())
-        );
-        assert_eq!(extract_name_attr_bytes(b"<variant "), None);
     }
 }

@@ -1,10 +1,12 @@
 //! Vapor mode template compilation.
 
+mod bindings;
 mod output;
 mod shared;
 
 pub(crate) use shared::compile_template_block_vapor_from_syntax;
 
+use bindings::rewrite_bound_component_resolution;
 use output::{
     VaporTemplateModule, is_render_signature, rewrite_vapor_import, vapor_module_sections,
 };
@@ -14,6 +16,7 @@ use vize_atelier_vapor::{
     VaporCompilerOptions, compile_vapor_with_template_syntax_and_diagnostics,
 };
 use vize_carton::{Bump, String, ToCompactString};
+use vize_relief::CodegenOptions;
 use vize_relief::TemplateSyntaxMode;
 
 use crate::{
@@ -23,15 +26,29 @@ use crate::{
     types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions},
 };
 
+/// Borrowed inputs shared by direct and parse-once Vapor template compilation.
+#[derive(Clone, Copy)]
+pub(crate) struct VaporTemplateCompileContext<'a> {
+    pub(crate) scope_id: &'a str,
+    pub(crate) has_scoped: bool,
+    pub(crate) options: &'a TemplateCompileOptions,
+    pub(crate) template_syntax: TemplateSyntaxMode,
+    pub(crate) codegen_options: &'a CodegenOptions,
+}
+
 /// Compile template block using Vapor mode
 pub(crate) fn compile_template_block_vapor(
     template: &SfcTemplateBlock,
-    scope_id: &str,
-    has_scoped: bool,
+    context: VaporTemplateCompileContext<'_>,
     bindings: Option<&BindingMetadata>,
-    options: &TemplateCompileOptions,
-    template_syntax: TemplateSyntaxMode,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
+    let VaporTemplateCompileContext {
+        scope_id,
+        has_scoped,
+        options,
+        template_syntax,
+        codegen_options,
+    } = context;
     let allocator = Bump::new();
     let compiler_options = options.compiler_options.as_ref();
 
@@ -85,6 +102,7 @@ pub(crate) fn compile_template_block_vapor(
         has_scoped.then_some(scope_attr.as_str()),
         template,
         bindings,
+        codegen_options.runtime_module_name.as_str(),
     )?;
 
     Ok(TemplateBlockCompileResult {
@@ -133,8 +151,10 @@ pub(super) fn transform_vapor_template_output(
     scope_attr: Option<&str>,
     template: &SfcTemplateBlock,
     bindings: Option<&BindingMetadata>,
+    runtime_module_name: &str,
 ) -> Result<String, SfcError> {
-    transform_vapor_template_module(code, scope_attr, template, bindings).map(|module| module.code)
+    transform_vapor_template_module(code, scope_attr, template, bindings, runtime_module_name)
+        .map(|module| module.code)
 }
 
 fn transform_vapor_template_module(
@@ -142,6 +162,7 @@ fn transform_vapor_template_module(
     scope_attr: Option<&str>,
     template: &SfcTemplateBlock,
     bindings: Option<&BindingMetadata>,
+    runtime_module_name: &str,
 ) -> Result<VaporTemplateModule, SfcError> {
     let lines: Vec<&str> = code.lines().collect();
     let mut imports = String::default();
@@ -154,7 +175,7 @@ fn transform_vapor_template_module(
         let line = lines[index];
         let trimmed = line.trim();
         if trimmed.starts_with("import ") {
-            imports.push_str(&rewrite_vapor_import(line));
+            imports.push_str(&rewrite_vapor_import(line, runtime_module_name));
             imports.push('\n');
             index += 1;
             continue;
@@ -251,100 +272,4 @@ fn transform_vapor_template_module(
         code: module_code,
         module_sections,
     })
-}
-
-fn rewrite_bound_component_resolution(
-    line: &str,
-    bindings: Option<&BindingMetadata>,
-) -> Option<String> {
-    let bindings = bindings?;
-    let trimmed = line.trim_start();
-    if !trimmed.starts_with("const _component_") {
-        return None;
-    }
-
-    let resolve_start = trimmed.find(" = _resolveComponent(\"")?;
-    let tag_start = resolve_start + " = _resolveComponent(\"".len();
-    let tag_end = trimmed[tag_start..].find("\")")? + tag_start;
-    let tag = &trimmed[tag_start..tag_end];
-    let binding_name = resolve_component_binding_name(bindings, tag)?;
-
-    let indent_len = line.len().saturating_sub(trimmed.len());
-    let binding_expr = {
-        let mut expr = String::with_capacity(binding_name.len() + 5);
-        expr.push_str("_ctx.");
-        expr.push_str(&binding_name);
-        expr
-    };
-
-    let mut rewritten = String::with_capacity(line.len() + binding_expr.len());
-    rewritten.push_str(&line[..indent_len]);
-    rewritten.push_str(&trimmed[..resolve_start]);
-    rewritten.push_str(" = ");
-    rewritten.push_str(&binding_expr);
-    Some(rewritten)
-}
-
-fn resolve_component_binding_name(bindings: &BindingMetadata, tag: &str) -> Option<String> {
-    let resolve_base = |name: &str| {
-        if bindings.bindings.contains_key(name) {
-            return Some(name.to_compact_string());
-        }
-
-        let camel = camelize_component_name(name);
-        if bindings.bindings.contains_key(camel.as_str()) {
-            return Some(camel);
-        }
-
-        let pascal = capitalize_component_name(camel.as_str());
-        if bindings.bindings.contains_key(pascal.as_str()) {
-            return Some(pascal);
-        }
-
-        None
-    };
-
-    if let Some((base, suffix)) = tag.split_once('.') {
-        let resolved_base = resolve_base(base)?;
-        let mut resolved = String::with_capacity(resolved_base.len() + suffix.len() + 1);
-        resolved.push_str(resolved_base.as_str());
-        resolved.push('.');
-        resolved.push_str(suffix);
-        return Some(resolved);
-    }
-
-    resolve_base(tag)
-}
-
-fn camelize_component_name(tag: &str) -> String {
-    let mut result = String::with_capacity(tag.len());
-    let mut uppercase_next = false;
-    for ch in tag.chars() {
-        if ch == '-' {
-            uppercase_next = true;
-            continue;
-        }
-
-        if uppercase_next {
-            result.push(ch.to_ascii_uppercase());
-            uppercase_next = false;
-        } else {
-            result.push(ch);
-        }
-    }
-    result
-}
-
-fn capitalize_component_name(tag: &str) -> String {
-    let mut chars = tag.chars();
-    let Some(first) = chars.next() else {
-        return String::default();
-    };
-
-    let mut result = String::with_capacity(tag.len());
-    result.push(first.to_ascii_uppercase());
-    for ch in chars {
-        result.push(ch);
-    }
-    result
 }

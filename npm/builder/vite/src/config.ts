@@ -56,6 +56,9 @@ export const VIZE_CONFIG_FILE_ENV = "VIZE_CONFIG_FILE";
 /**
  * Shared config store for inter-plugin communication.
  * Key = project root, Value = resolved VizeConfig.
- * Used by musea() and other plugins to access the unified config.
+ *
+ * @deprecated Root identity cannot isolate parallel Vite client/SSR instances
+ * or servers. This export remains temporarily for compatibility; internal Vize
+ * integrations use an exact `ResolvedConfig`-scoped bridge instead.
  */
 export const vizeConfigStore = new Map<string, ResolvedVizeConfig>();

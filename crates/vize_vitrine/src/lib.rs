@@ -13,6 +13,10 @@ pub mod wasm;
 #[cfg(any(feature = "napi", feature = "wasm"))]
 mod artifact_graph;
 #[cfg(any(feature = "napi", feature = "wasm"))]
+mod lint_artifact;
+#[cfg(any(feature = "napi", feature = "wasm"))]
+mod template_artifact;
+#[cfg(any(feature = "napi", feature = "wasm"))]
 mod template_syntax;
 pub mod typecheck;
 pub mod types;

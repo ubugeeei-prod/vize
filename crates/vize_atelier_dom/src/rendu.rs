@@ -5,7 +5,8 @@ mod syntax;
 
 use vize_carton::{String, append, source_anchor::SourceAnchor};
 use vize_rendu::{
-    RenduEscapeMode, RenduNode, RenduNodeId, RenduProperty, RenduProvenance, RenduRoot, RenduSpan,
+    RenderEmitSettings, RenderOutputMode, RenduEscapeMode, RenduNode, RenduNodeId, RenduProperty,
+    RenduProvenance, RenduRoot, RenduSpan,
 };
 
 use self::syntax::quote;
@@ -20,22 +21,71 @@ pub struct RenduDomMapping {
 
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct RenduDomOutput {
+    /// Complete executable module/function source.
     pub code: String,
+    /// Typed helper-import or runtime-global section.
+    pub preamble: String,
+    /// Typed render-function body section.
+    pub body: String,
     pub mappings: Vec<RenduDomMapping>,
 }
 
 /// Emit a Vue VDOM render module without reaching back into a frontend AST.
 pub fn compile_rendu(root: &RenduRoot) -> RenduDomOutput {
+    compile_rendu_with_settings(root, &RenderEmitSettings::default())
+}
+
+/// Emit a Vue VDOM render output with explicit packaging settings.
+pub fn compile_rendu_with_settings(
+    root: &RenduRoot,
+    settings: &RenderEmitSettings,
+) -> RenduDomOutput {
     let mut emitter = DomEmitter {
         root,
         output: RenduDomOutput::default(),
     };
-    emitter.output.code.push_str(
-        "import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, h as _h, renderList as _renderList, renderSlot as _renderSlot, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, toDisplayString as _toDisplayString, vModelText as _vModelText, vShow as _vShow, withDirectives as _withDirectives, withModifiers as _withModifiers } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return ",
-    );
+    emitter.output.code.push_str(match settings.mode {
+        RenderOutputMode::Module => {
+            "export function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return "
+        }
+        RenderOutputMode::Function => {
+            "return function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return "
+        }
+    });
     emitter.emit_nodes(root.entry());
     emitter.output.code.push_str("\n}\n");
-    emitter.output
+    finish_output(emitter.output, settings)
+}
+
+const DOM_HELPERS: &str = "Fragment as _Fragment, createCommentVNode as _createCommentVNode, h as _h, renderList as _renderList, renderSlot as _renderSlot, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, toDisplayString as _toDisplayString, vModelText as _vModelText, vShow as _vShow, withDirectives as _withDirectives, withModifiers as _withModifiers";
+
+fn finish_output(mut output: RenduDomOutput, settings: &RenderEmitSettings) -> RenduDomOutput {
+    let body = output.code;
+    let preamble = match settings.mode {
+        RenderOutputMode::Module => vize_carton::cstr!(
+            "import {{ {DOM_HELPERS} }} from \"{}\"\n\n",
+            settings.runtime_module_name
+        ),
+        RenderOutputMode::Function => vize_carton::cstr!(
+            "const {{ {} }} = {}\n\n",
+            DOM_HELPERS.replace(" as ", ": "),
+            settings.runtime_global_name
+        ),
+    };
+    let offset = preamble.len();
+    for mapping in &mut output.mappings {
+        mapping.generated_start = mapping.generated_start.saturating_add(offset);
+        mapping.generated_end = mapping.generated_end.saturating_add(offset);
+    }
+    let mut code = String::with_capacity(offset + body.len());
+    code.push_str(&preamble);
+    code.push_str(&body);
+    RenduDomOutput {
+        code,
+        preamble,
+        body,
+        mappings: output.mappings,
+    }
 }
 
 pub(super) struct DomEmitter<'a> {

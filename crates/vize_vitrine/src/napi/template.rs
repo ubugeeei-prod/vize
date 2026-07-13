@@ -14,140 +14,59 @@ use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use vize_carton::Bump;
 
-use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
-use vize_armature::{parse_with_options, parse_with_options_and_template_syntax};
-use vize_atelier_core::{
-    codegen::generate,
-    lane::{transform, transform_with_template_syntax_quirks},
+use crate::{
+    CompileResult, CompilerOptions,
+    template_artifact::{TemplateHostDefaults, compile_template_product},
 };
-use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor_with_template_syntax};
-use vize_relief::{
-    CodegenMode, CodegenOptions, ExpressionNode, ParserOptions, RootNode, TemplateChildNode,
-    TransformOptions,
-};
+use vize_armature::parse_with_options;
+use vize_relief::{ExpressionNode, ParserOptions, RootNode, TemplateChildNode};
 
 /// Compile Vue template to VDom render function
 #[napi]
 pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<CompileResult> {
-    let opts = options.unwrap_or_default();
-    let allocator = Bump::new();
-    let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
-        .map_err(|message| Error::new(Status::InvalidArg, message))?;
-
-    // Parse
-    let parser_opts = ParserOptions {
-        custom_renderer: opts.custom_renderer.unwrap_or(false),
-        experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
-        ..Default::default()
-    };
-    let (mut root, errors) =
-        parse_with_options_and_template_syntax(&allocator, &template, parser_opts, template_syntax);
-
-    let fatal: Vec<_> = errors.iter().filter(|e| !e.is_recoverable()).collect();
-    if !fatal.is_empty() {
-        return Err(Error::new(
-            Status::GenericFailure,
-            format!("Parse errors: {:?}", fatal),
-        ));
-    }
-
-    // Determine mode
-    let is_module_mode = opts.mode.as_deref() == Some("module");
-
-    // Transform
-    // In module mode, prefix_identifiers defaults to true (like Vue)
-    let transform_opts = TransformOptions {
-        prefix_identifiers: opts.prefix_identifiers.unwrap_or(is_module_mode),
-        hoist_static: opts.hoist_static.unwrap_or(false),
-        cache_handlers: opts.cache_handlers.unwrap_or(false),
-        scope_id: opts.scope_id.clone().map(|s| s.into()),
-        ssr: opts.ssr.unwrap_or(false),
-        experimental_patterned_template: opts.experimental_patterned_template.unwrap_or(false),
-        ..Default::default()
-    };
-    let transformed = if template_syntax.is_quirks() {
-        transform_with_template_syntax_quirks(&allocator, &mut root, transform_opts, None)
-    } else {
-        transform(&allocator, &mut root, transform_opts, None)
-    };
-
-    // Codegen
-    let codegen_opts = CodegenOptions {
-        mode: if is_module_mode {
-            CodegenMode::Module
-        } else {
-            CodegenMode::Function
-        },
-        source_map: opts.source_map.unwrap_or(false),
-        ssr: opts.ssr.unwrap_or(false),
-        runtime_module_name: opts
-            .runtime_module_name
-            .clone()
-            .unwrap_or_else(|| "vue".to_string())
-            .into(),
-        runtime_global_name: opts
-            .runtime_global_name
-            .clone()
-            .unwrap_or_else(|| "Vue".to_string())
-            .into(),
-        ..Default::default()
-    };
-    let result = generate(&root, &transformed.hoists, codegen_opts);
-
-    // Collect helpers
-    let helpers: Vec<String> = root.helpers.iter().map(|h| h.name().to_string()).collect();
-
-    // Build AST JSON
-    let ast = build_ast_json(&root);
-
-    Ok(CompileResult {
-        code: result.code.to_string(),
-        preamble: result.preamble.to_string(),
-        ast,
-        map: None,
-        helpers,
-        templates: None,
-    })
+    compile_product(template.as_str(), &options.unwrap_or_default(), false)
 }
 
 /// Compile Vue template to Vapor mode
 #[napi(js_name = "compileVapor")]
 pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Result<CompileResult> {
-    let opts = options.unwrap_or_default();
-    let allocator = Bump::new();
-    let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
-        .map_err(|message| Error::new(Status::InvalidArg, message))?;
+    compile_product(template.as_str(), &options.unwrap_or_default(), true)
+}
 
-    // Use actual Vapor compiler
-    let vapor_opts = VaporCompilerOptions {
-        prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
-        ssr: opts.ssr.unwrap_or(false),
-        experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
-        experimental_patterned_template: opts.experimental_patterned_template.unwrap_or(false),
-        ..Default::default()
-    };
-    let result =
-        compile_vapor_with_template_syntax(&allocator, &template, vapor_opts, template_syntax);
-
-    if !result.error_messages.is_empty() {
-        return Err(Error::new(
-            Status::GenericFailure,
-            result
-                .error_messages
-                .iter()
-                .map(|s| s.as_str())
-                .collect::<Vec<_>>()
-                .join("\n"),
-        ));
+fn compile_product(
+    template: &str,
+    options: &CompilerOptions,
+    vapor: bool,
+) -> Result<CompileResult> {
+    let artifact =
+        compile_template_product(template, options, vapor, None, TemplateHostDefaults::Napi)
+            .map_err(|message| Error::new(Status::GenericFailure, message))?;
+    if vapor {
+        return Ok(CompileResult {
+            code: artifact.code.to_string(),
+            preamble: artifact.preamble.to_string(),
+            ast: serde_json::json!({}),
+            map: artifact.map.clone(),
+            helpers: vec![],
+            templates: artifact
+                .templates
+                .as_ref()
+                .map(|templates| templates.iter().map(ToString::to_string).collect()),
+        });
     }
-
+    let allocator = Bump::new();
+    let root = artifact.syntax.materialize(&allocator);
     Ok(CompileResult {
-        code: result.code.into(),
-        preamble: String::new(),
-        ast: serde_json::json!({}),
-        map: None,
-        helpers: vec![],
-        templates: Some(result.templates.iter().map(|s| s.to_string()).collect()),
+        code: artifact.code.to_string(),
+        preamble: artifact.preamble.to_string(),
+        ast: build_ast_json(&root),
+        map: artifact.map.clone(),
+        helpers: root
+            .helpers
+            .iter()
+            .map(|helper| helper.name().to_string())
+            .collect(),
+        templates: None,
     })
 }
 

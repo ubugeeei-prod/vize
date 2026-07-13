@@ -2,104 +2,32 @@
 
 #[path = "compile/backend.rs"]
 mod backend;
+#[path = "compile/settings.rs"]
+mod settings;
 
 pub use backend::{
     SfcRenderModuleArtifact, SfcRenderModuleProduct, SfcRenderModuleProvider, SfcRenderTarget,
 };
+pub use settings::{
+    SfcCompileRequest, SfcCompileSettings, SfcCompileSettingsInput, SfcParseSettingsInput,
+    SfcRenderRequest, SfcRenderSettingsInput, SfcTemplateFrontendRequest,
+    SfcTemplateFrontendSettingsInput, install_sfc_compile_request,
+};
 
 use vize_atlas::{
-    Compilation, CompilationInputError, PlanningContext, Product, ProductId, Provider,
-    ProviderContext, ProviderError, SourceId, SourceInput, SourceInputId,
+    PlanningContext, Product, ProductId, Provider, ProviderContext, ProviderError, SourceInputId,
 };
-use vize_carton::FxHashMap;
 use vize_carton::cstr;
-use vize_relief::TemplateSyntaxMode;
+use vize_module::ModuleSyntaxProduct;
 use vize_relief::TransformedReliefProduct;
 
+use crate::SfcCompileResult;
 use crate::compile::{GraphRenderModule, compile_sfc_with_graph_render};
-use crate::{SfcCompileOptions, SfcCompileResult};
 
-use super::{SfcDescriptorProduct, is_sfc_source, usable_descriptor};
-
-/// Complete output-affecting request for one SFC source.
-#[derive(Debug, Clone, Default)]
-pub struct SfcCompileRequest {
-    /// Complete public compiler options for this source.
-    pub options: SfcCompileOptions,
-    /// Parser compatibility mode for this source's template.
-    pub template_syntax: TemplateSyntaxMode,
-    /// Derive template/style scoped flags from the parsed descriptor before compilation.
-    pub infer_scoped_from_descriptor: bool,
-}
-
-impl SfcCompileRequest {
-    /// Create a request without descriptor-derived option normalization.
-    pub fn new(options: SfcCompileOptions, template_syntax: TemplateSyntaxMode) -> Self {
-        Self {
-            options,
-            template_syntax,
-            infer_scoped_from_descriptor: false,
-        }
-    }
-
-    /// Derive both template and style scoped flags from the cached descriptor.
-    pub fn with_inferred_scoped_from_descriptor(mut self) -> Self {
-        self.infer_scoped_from_descriptor = true;
-        self
-    }
-}
-
-/// Source-aware settings for a multi-file compilation.
-///
-/// Each request is installed as a source input. Updating one file therefore
-/// invalidates only that source's dependent products in a persistent batch.
-#[derive(Debug, Clone, Default)]
-pub struct SfcCompileSettings {
-    default: SfcCompileRequest,
-    sources: FxHashMap<SourceId, SfcCompileRequest>,
-}
-
-impl SfcCompileSettings {
-    /// Create settings with one fallback request for sources without overrides.
-    pub fn new(default: SfcCompileRequest) -> Self {
-        Self {
-            default,
-            sources: FxHashMap::default(),
-        }
-    }
-
-    /// Replace the fallback request.
-    pub fn set_default(&mut self, request: SfcCompileRequest) {
-        self.default = request;
-    }
-
-    /// Install or replace one source-specific request.
-    pub fn insert(&mut self, source: SourceId, request: SfcCompileRequest) {
-        self.sources.insert(source, request);
-    }
-
-    /// Resolve a source-specific request or the fallback request.
-    pub fn get(&self, source: SourceId) -> &SfcCompileRequest {
-        self.sources.get(&source).unwrap_or(&self.default)
-    }
-
-    /// Install all source overrides without globally invalidating other files.
-    pub fn install(&self, compilation: &mut Compilation) -> Result<(), CompilationInputError> {
-        for (source, request) in &self.sources {
-            compilation.set_source_input::<SfcCompileSettingsInput>(*source, request.clone())?;
-        }
-        Ok(())
-    }
-}
-
-/// Typed Atlas input carrying every public SFC compile option and syntax mode.
-pub struct SfcCompileSettingsInput;
-
-impl SourceInput for SfcCompileSettingsInput {
-    type Value = SfcCompileRequest;
-
-    const NAME: &'static str = "sfc.compile-settings";
-}
+use super::{
+    SfcDescriptorProduct, SfcScriptSyntaxProduct, is_sfc_source, source_structure,
+    usable_descriptor,
+};
 
 /// Complete compiled JavaScript, CSS, maps, diagnostics, and macro artifacts.
 pub struct SfcCompileProduct;
@@ -126,7 +54,15 @@ impl Provider for SfcCompileProvider {
 
     fn dependencies(&self, context: &PlanningContext<'_>) -> Vec<ProductId> {
         let mut dependencies = vec![ProductId::of::<SfcDescriptorProduct>()];
-        if context.source().text().contains("<template") {
+        // Planning cannot execute the descriptor product: classify the source
+        // once with the allocation-light container scanner, then declare the
+        // complete closure before any provider runs.
+        let structure = source_structure(context);
+        if structure.has_script {
+            dependencies.push(ProductId::of::<SfcScriptSyntaxProduct>());
+            dependencies.push(ProductId::of::<ModuleSyntaxProduct>());
+        }
+        if structure.has_template {
             dependencies.push(ProductId::of::<TransformedReliefProduct>());
             dependencies.push(ProductId::of::<SfcRenderModuleProduct>());
         }
@@ -162,16 +98,25 @@ impl Provider for SfcCompileProvider {
                 Vec::new(),
             )
         };
-        compile_sfc_with_graph_render(descriptor, request.options, render, warnings)
-            .map_err(|error| ProviderError::message(error.message))
+        let (script_syntax, modules) =
+            if descriptor.script.is_some() || descriptor.script_setup.is_some() {
+                (
+                    Some(context.get::<SfcScriptSyntaxProduct>()?),
+                    Some(context.get::<ModuleSyntaxProduct>()?),
+                )
+            } else {
+                (None, None)
+            };
+        compile_sfc_with_graph_render(
+            descriptor,
+            request.options,
+            render,
+            warnings,
+            modules.as_deref(),
+            script_syntax.as_deref(),
+        )
+        .map_err(|error| ProviderError::message(error.message))
     }
-}
-
-pub(super) fn planning_request(context: &PlanningContext<'_>) -> SfcCompileRequest {
-    context
-        .source_input::<SfcCompileSettingsInput>()
-        .cloned()
-        .unwrap_or_default()
 }
 
 fn recoverable_warnings(artifact: &vize_relief::TransformedReliefArtifact) -> Vec<crate::SfcError> {

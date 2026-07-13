@@ -21,6 +21,7 @@ use vize_croquis::{
     CroquisSemanticSnapshotBuilder, CroquisSourceSegment, SemanticSourceRange,
 };
 use vize_flow::FlowProduct;
+use vize_module::{ModuleDocument, ModuleSyntaxProduct, append_module_flow};
 use vize_rendu::{RenduModule, RenduProduct};
 
 use crate::{
@@ -162,6 +163,34 @@ impl Provider for JsxCroquisProvider {
     }
 }
 
+/// Reuse the JSX frontend's one OXC parse for neutral module facts and CFG.
+pub struct JsxModuleSyntaxProvider;
+
+impl Provider for JsxModuleSyntaxProvider {
+    type Product = ModuleSyntaxProduct;
+
+    fn supports(&self, context: &PlanningContext<'_>) -> bool {
+        is_jsx_source(context.source().name())
+    }
+
+    fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
+        vec![ProductId::of::<JsxSyntaxProduct>()]
+    }
+
+    fn provide(&self, context: &mut ProviderContext<'_>) -> Result<ModuleDocument, ProviderError> {
+        let syntax = context.get::<JsxSyntaxProduct>()?;
+        let mut module = syntax.module().clone();
+        let anchor = SourceAnchor::new(
+            context.source().id().get(),
+            context.source().revision().get(),
+        );
+        for syntax in &mut module.modules {
+            syntax.source_anchor = Some(anchor);
+        }
+        Ok(module)
+    }
+}
+
 /// JSX syntax to the peer frontend-neutral control/data/effect graph.
 pub struct JsxFlowProvider;
 
@@ -173,7 +202,10 @@ impl Provider for JsxFlowProvider {
     }
 
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
-        vec![ProductId::of::<JsxSyntaxProduct>()]
+        vec![
+            ProductId::of::<JsxSyntaxProduct>(),
+            ProductId::of::<ModuleSyntaxProduct>(),
+        ]
     }
 
     fn provide(
@@ -181,8 +213,12 @@ impl Provider for JsxFlowProvider {
         context: &mut ProviderContext<'_>,
     ) -> Result<<FlowProduct as Product>::Value, ProviderError> {
         let syntax = context.get::<JsxSyntaxProduct>()?;
-        crate::project_jsx_syntax_to_flow(syntax.as_ref())
-            .map_err(|error| ProviderError::message(cstr!("{error}")))
+        let modules = context.get::<ModuleSyntaxProduct>()?;
+        let mut graph = crate::project_jsx_syntax_to_flow(syntax.as_ref())
+            .map_err(|error| ProviderError::message(cstr!("{error}")))?;
+        append_module_flow(&modules, &mut graph)
+            .map_err(|error| ProviderError::message(cstr!("{error}")))?;
+        Ok(graph)
     }
 }
 
@@ -191,6 +227,7 @@ pub fn register_atlas_providers(
     compilation: &mut Compilation,
 ) -> Result<(), RegisterProviderError> {
     compilation.register_provider(JsxSyntaxProvider)?;
+    compilation.register_provider(JsxModuleSyntaxProvider)?;
     compilation.register_provider(JsxRenduProvider)?;
     compilation.register_provider(JsxCroquisProvider)?;
     compilation.register_provider(JsxFlowProvider)?;

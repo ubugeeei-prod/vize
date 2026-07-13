@@ -92,7 +92,7 @@ pub struct RaceConditionRisk {
 }
 
 /// Tracks race-condition risks found during script parsing.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct RaceConditionTracker {
     risks: Vec<RaceConditionRisk>,
 }

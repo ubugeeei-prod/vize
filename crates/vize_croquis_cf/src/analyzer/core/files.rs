@@ -5,6 +5,15 @@ use std::path::Path;
 use vize_croquis::{
     Croquis, EffectGraphScript, EffectGraphSummary, build_effect_graph_from_sfc_scripts,
 };
+use vize_module::ModuleDocument;
+
+use crate::rules::cross_file_reactivity::store_detection::StoreFactories;
+
+pub(crate) struct AtlasModuleFacts<'a> {
+    pub(crate) document: &'a ModuleDocument,
+    pub(crate) effect_summary: EffectGraphSummary,
+    pub(crate) store_factories: StoreFactories,
+}
 
 impl CrossFileAnalyzer {
     /// Add a raw JavaScript, JSX, TypeScript, or TSX module to be analyzed.
@@ -56,9 +65,65 @@ impl CrossFileAnalyzer {
         effect_summary: EffectGraphSummary,
     ) -> FileId {
         let path = path.as_ref();
-
-        // Register in module registry (takes ownership of analysis)
         let (file_id, is_new) = self.registry.register(path, source, analysis);
+        self.finish_file_registration(path, file_id, is_new, effect_summary)
+    }
+
+    /// Add one SFC with script and template sources kept in their own domains.
+    ///
+    /// Script text drives module facts while template text supplies structural
+    /// facts such as whether the component renders a slot outlet.
+    pub fn add_vue_file_with_analysis_and_effect_summary(
+        &mut self,
+        path: impl AsRef<Path>,
+        script_source: &str,
+        template_source: &str,
+        analysis: impl Into<vize_atlas::Shared<Croquis>>,
+        effect_summary: EffectGraphSummary,
+    ) -> FileId {
+        let path = path.as_ref();
+        let (file_id, is_new) = self.registry.register_with_template_source(
+            path,
+            script_source,
+            template_source,
+            analysis,
+        );
+        self.finish_file_registration(path, file_id, is_new, effect_summary)
+    }
+
+    /// Register a frontend-produced semantic document together with the
+    /// neutral module facts from the same Atlas source revision.
+    ///
+    /// Production project recipes use this path so dependency edges are built
+    /// from `ModuleDocument` rather than rediscovered from source text or
+    /// inferred indirectly from Croquis scopes.
+    pub(crate) fn add_atlas_file_with_analysis_and_effect_summary(
+        &mut self,
+        path: impl AsRef<Path>,
+        script_source: &str,
+        template_source: &str,
+        analysis: impl Into<vize_atlas::Shared<Croquis>>,
+        facts: AtlasModuleFacts<'_>,
+    ) -> FileId {
+        let path = path.as_ref();
+        let (file_id, is_new) = self.registry.register_with_module_document(
+            path,
+            script_source,
+            template_source,
+            analysis,
+            facts.document,
+            facts.store_factories,
+        );
+        self.finish_file_registration(path, file_id, is_new, facts.effect_summary)
+    }
+
+    fn finish_file_registration(
+        &mut self,
+        path: &Path,
+        file_id: FileId,
+        is_new: bool,
+        effect_summary: EffectGraphSummary,
+    ) -> FileId {
         self.record_effect_graph_summary(file_id, effect_summary);
 
         if is_new {

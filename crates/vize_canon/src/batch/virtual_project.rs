@@ -35,6 +35,11 @@ pub use document::{
     VueDocumentVirtualTs, VueDocumentVirtualTsOptions, generate_vue_document_virtual_ts,
     generate_vue_document_virtual_ts_with_options,
 };
+mod document_product;
+pub use document_product::{
+    CanonVueDocumentProduct, CanonVueDocumentProvider, CanonVueDocumentSettingsInput,
+    install_canon_vue_document_options, register_canon_vue_document_provider,
+};
 mod diagnostics;
 mod jsx_build;
 mod jsx_codegen;

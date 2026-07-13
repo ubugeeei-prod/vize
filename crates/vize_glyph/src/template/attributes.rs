@@ -1,5 +1,8 @@
-use crate::options::{AttributeSortOrder, FormatOptions};
-use vize_carton::{String, ToCompactString};
+use crate::{
+    attribute::write_attr_value,
+    options::{AttributeSortOrder, FormatOptions},
+};
+use vize_carton::String;
 
 use super::helpers::template_literal_state_after_line_from;
 
@@ -133,13 +136,14 @@ pub(crate) fn attribute_priority(name: &str) -> u8 {
 }
 
 /// Render an attribute back to its string representation.
-#[allow(clippy::disallowed_macros)]
 pub(crate) fn render_attribute(attr: &ParsedAttribute) -> String {
     match &attr.value {
         Some(value) => {
-            let quote = attribute_quote(value);
-            let value = escape_attribute_value(value, quote);
-            format!("{}={}{}{}", attr.name, quote, value, quote).into()
+            let mut rendered = String::with_capacity(attr.name.len() + value.len() + 3);
+            rendered.push_str(&attr.name);
+            rendered.push('=');
+            write_attr_value(value, |segment| rendered.push_str(segment));
+            rendered
         }
         None => attr.name.clone(),
     }
@@ -255,30 +259,6 @@ fn write_indent(output: &mut Vec<u8>, indent: &[u8], depth: usize) {
     for _ in 0..depth {
         output.extend_from_slice(indent);
     }
-}
-
-fn attribute_quote(value: &str) -> char {
-    if value.contains('"') && !value.contains('\'') {
-        '\''
-    } else {
-        '"'
-    }
-}
-
-fn escape_attribute_value(value: &str, quote: char) -> String {
-    if !value.contains(quote) {
-        return value.to_compact_string();
-    }
-
-    let mut escaped = String::default();
-    for ch in value.chars() {
-        match (quote, ch) {
-            ('"', '"') => escaped.push_str("&quot;"),
-            ('\'', '\'') => escaped.push_str("&#39;"),
-            _ => escaped.push(ch),
-        }
-    }
-    escaped
 }
 
 #[cfg(test)]

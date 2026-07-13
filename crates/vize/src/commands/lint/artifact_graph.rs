@@ -1,24 +1,45 @@
-//! Atlas-backed production lint queries for Vue documents.
+//! One persistent Atlas graph for the complete lint command run.
 
-use std::{path::Path, sync::Mutex};
+use std::{path::Path, sync::RwLock};
 
+use vize_atelier_template::{TemplateCompileRequest, TemplateCompileSettingsInput};
 use vize_atlas::{Compilation, CompilationSnapshot, Shared, SourceId};
 use vize_carton::config::VueVersion;
 #[cfg(test)]
 use vize_croquis::{CroquisDocument, CroquisDocumentProduct};
-use vize_patina::{LintResult, Linter, PatinaDocumentReportProduct};
+use vize_croquis_cf::{
+    CrossFileAnalysisArtifact, CrossFileAnalysisInput, CrossFileAnalysisProduct,
+    CrossFileAnalysisRequest, CrossFileOptions,
+};
+use vize_patina::{
+    LintResult, Linter, PatinaDocumentMode, PatinaDocumentReportProduct, PatinaTemplateLintRequest,
+    install_document_mode, install_template_lint_request,
+};
 use vize_relief::VueDialectInput;
+
+use super::collect::is_standalone_html_path;
 
 pub(super) struct ArtifactLintOutcome {
     pub(super) result: LintResult,
     #[cfg(test)]
     pub(super) semantics: Option<Shared<CroquisDocument>>,
+    #[cfg(test)]
+    pub(super) trace: vize_atlas::ExecutionTrace,
+    #[cfg(test)]
+    pub(super) counters: vize_atlas::ExecutionCounters,
+}
+
+pub(super) struct ArtifactCrossFileOutcome {
+    pub(super) artifact: Shared<CrossFileAnalysisArtifact>,
+    #[cfg(test)]
+    pub(super) trace: vize_atlas::ExecutionTrace,
+    #[cfg(test)]
+    pub(super) counters: vize_atlas::ExecutionCounters,
 }
 
 pub(super) struct LintArtifactGraph {
-    compilation: Mutex<Compilation>,
-    snapshot: CompilationSnapshot,
-    sources: Vec<Option<SourceId>>,
+    snapshot: RwLock<CompilationSnapshot>,
+    sources: Vec<SourceId>,
 }
 
 impl LintArtifactGraph {
@@ -28,52 +49,118 @@ impl LintArtifactGraph {
         inputs: impl IntoIterator<Item = (&'a Path, &'a str)>,
     ) -> Result<Self, vize_carton::String> {
         let mut compilation = configured_compilation(linter, dialect)?;
-        let sources = inputs
-            .into_iter()
-            .map(|(path, source)| {
-                is_artifact_path(path)
-                    .then(|| compilation.add_source(path.to_string_lossy().as_ref(), source))
-                    .transpose()
-            })
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|error| vize_carton::cstr!("failed to add lint source: {error}"))?;
+        let mut sources = Vec::new();
+        for (path, text) in inputs {
+            let filename = path.to_string_lossy();
+            let atlas_name = if is_standalone_html_path(path) {
+                vize_carton::cstr!("{filename}.vue-template")
+            } else {
+                filename.as_ref().into()
+            };
+            let source = compilation
+                .add_source(atlas_name.as_str(), text)
+                .map_err(|error| vize_carton::cstr!("failed to add lint source: {error}"))?;
+            if is_standalone_html_path(path) {
+                compilation
+                    .set_source_input::<TemplateCompileSettingsInput>(
+                        source,
+                        TemplateCompileRequest::default(),
+                    )
+                    .map_err(|error| {
+                        vize_carton::cstr!("failed to configure HTML frontend: {error}")
+                    })?;
+                install_template_lint_request(
+                    &mut compilation,
+                    source,
+                    PatinaTemplateLintRequest::standalone_html(filename.as_ref()),
+                )
+                .map_err(|error| vize_carton::cstr!("failed to configure HTML lint: {error}"))?;
+            }
+            if is_storybook_csf_path(path) {
+                install_document_mode(&mut compilation, source, PatinaDocumentMode::Disabled)
+                    .map_err(|error| {
+                        vize_carton::cstr!("failed to configure excluded lint source: {error}")
+                    })?;
+            }
+            sources.push(source);
+        }
         let snapshot = compilation.snapshot();
         Ok(Self {
-            compilation: Mutex::new(compilation),
-            snapshot,
+            snapshot: RwLock::new(snapshot),
             sources,
         })
     }
 
     pub(super) fn query(&self, index: usize) -> Result<ArtifactLintOutcome, vize_carton::String> {
-        let source =
-            self.sources.get(index).copied().flatten().ok_or_else(|| {
-                vize_carton::cstr!("source {index} is not an Atlas lint document")
-            })?;
-        query_snapshot(&self.snapshot, source)
+        let source = self.source(index)?;
+        query_snapshot(&self.current_snapshot()?, source)
     }
 
-    pub(super) fn query_revised(
+    pub(super) fn revise_sources(
         &self,
-        index: usize,
-        text: &str,
-    ) -> Result<ArtifactLintOutcome, vize_carton::String> {
-        let source =
-            self.sources.get(index).copied().flatten().ok_or_else(|| {
-                vize_carton::cstr!("source {index} is not an Atlas lint document")
-            })?;
-        let snapshot = {
-            let mut compilation = self
-                .compilation
-                .lock()
-                .map_err(|_| vize_carton::cstr!("lint compilation lock was poisoned"))?;
+        revisions: &[(usize, &str)],
+    ) -> Result<(), vize_carton::String> {
+        if revisions.is_empty() {
+            return Ok(());
+        }
+        let mut compilation = self.current_snapshot()?.fork();
+        for (index, text) in revisions {
+            let source = self.source(*index)?;
             compilation
-                .update_source(source, text)
+                .update_source(source, *text)
                 .map_err(|error| vize_carton::cstr!("failed to update lint source: {error}"))?;
-            compilation.snapshot()
-        };
-        query_snapshot(&snapshot, source)
+        }
+        let mut snapshot = self
+            .snapshot
+            .write()
+            .map_err(|_| vize_carton::cstr!("lint snapshot lock was poisoned"))?;
+        *snapshot = compilation.snapshot();
+        Ok(())
     }
+
+    pub(super) fn query_cross_file(
+        &self,
+        anchor_index: usize,
+    ) -> Result<ArtifactCrossFileOutcome, vize_carton::String> {
+        let source = self.source(anchor_index)?;
+        let snapshot = self.current_snapshot()?;
+        let mut session = snapshot.query_session();
+        let outcome = session
+            .query::<CrossFileAnalysisProduct>(source)
+            .map_err(|error| vize_carton::cstr!("Atlas cross-file query failed: {error}"))?;
+        Ok(ArtifactCrossFileOutcome {
+            artifact: outcome.shared(),
+            #[cfg(test)]
+            trace: outcome.trace().clone(),
+            #[cfg(test)]
+            counters: session.counters().clone(),
+        })
+    }
+
+    pub(super) fn source(&self, index: usize) -> Result<SourceId, vize_carton::String> {
+        self.sources
+            .get(index)
+            .copied()
+            .ok_or_else(|| vize_carton::cstr!("lint source index {index} is not registered"))
+    }
+
+    fn current_snapshot(&self) -> Result<CompilationSnapshot, vize_carton::String> {
+        self.snapshot
+            .read()
+            .map(|snapshot| snapshot.clone())
+            .map_err(|_| vize_carton::cstr!("lint snapshot lock was poisoned"))
+    }
+}
+
+fn is_storybook_csf_path(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            name.ends_with(".stories.jsx")
+                || name.ends_with(".stories.tsx")
+                || name.ends_with(".story.jsx")
+                || name.ends_with(".story.tsx")
+        })
 }
 
 fn configured_compilation(
@@ -88,9 +175,36 @@ fn configured_compilation(
         .map_err(|error| vize_carton::cstr!("failed to register SFC providers: {error}"))?;
     vize_atelier_jsx::register_atlas_providers(&mut compilation)
         .map_err(|error| vize_carton::cstr!("failed to register JSX providers: {error}"))?;
-    vize_patina::register_shared_document_lint_recipe(&mut compilation, linter)
+    compilation
+        .register_provider(vize_atelier_template::RawTemplateReliefProvider)
+        .map_err(|error| vize_carton::cstr!("failed to register raw-template provider: {error}"))?;
+    vize_patina::register_shared_document_lint_recipe(&mut compilation, Shared::clone(&linter))
         .map_err(|error| vize_carton::cstr!("failed to register Patina provider: {error}"))?;
+    vize_patina::register_shared_module_lint_recipe(&mut compilation, Shared::clone(&linter))
+        .map_err(|error| {
+            vize_carton::cstr!("failed to register Patina Module provider: {error}")
+        })?;
+    vize_patina::register_shared_template_lint_recipe(&mut compilation, linter).map_err(
+        |error| vize_carton::cstr!("failed to register Patina template provider: {error}"),
+    )?;
+    vize_croquis_cf::register_atlas_provider(&mut compilation)
+        .map_err(|error| vize_carton::cstr!("failed to register cross-file providers: {error}"))?;
+    compilation
+        .set_input::<CrossFileAnalysisInput>(
+            CrossFileAnalysisRequest::new(patina_cross_file_options())
+                .with_project_root(std::env::current_dir().unwrap_or_default()),
+        )
+        .map_err(|error| vize_carton::cstr!("failed to configure cross-file analysis: {error}"))?;
     Ok(compilation)
+}
+
+fn patina_cross_file_options() -> CrossFileOptions {
+    CrossFileOptions::minimal()
+        .with_provide_inject(true)
+        .with_unique_ids(true)
+        .with_server_client_boundary(true)
+        .with_reactivity_tracking(true)
+        .with_race_conditions(true)
 }
 
 fn query_snapshot(
@@ -128,128 +242,13 @@ fn query_snapshot(
         result: outcome.value().clone(),
         #[cfg(test)]
         semantics,
+        #[cfg(test)]
+        trace: outcome.trace().clone(),
+        #[cfg(test)]
+        counters: session.counters().clone(),
     })
 }
 
-pub(super) fn is_vue_path(path: &Path) -> bool {
-    path.extension().and_then(|extension| extension.to_str()) == Some("vue")
-}
-
-pub(super) fn is_artifact_path(path: &Path) -> bool {
-    if path
-        .file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| {
-            name.ends_with(".stories.jsx")
-                || name.ends_with(".stories.tsx")
-                || name.ends_with(".story.jsx")
-                || name.ends_with(".story.tsx")
-        })
-    {
-        return false;
-    }
-    is_vue_path(path)
-        || matches!(
-            path.extension().and_then(|extension| extension.to_str()),
-            Some("jsx" | "tsx")
-        )
-}
-
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use vize_atelier_jsx::JsxSyntaxProduct;
-    use vize_relief::ReliefProduct;
-    use vize_relief::TransformedReliefProduct;
-
-    #[test]
-    fn configured_graph_preserves_the_project_vue_dialect() {
-        let compilation =
-            configured_compilation(Shared::new(Linter::new()), VueVersion::V2).unwrap();
-
-        assert_eq!(
-            compilation.input::<VueDialectInput>(),
-            Some(&VueVersion::V2)
-        );
-    }
-
-    #[test]
-    fn production_graph_requests_parse_and_complete_semantic_products() {
-        let mut compilation =
-            configured_compilation(Shared::new(Linter::new()), VueVersion::V3).unwrap();
-        let source = compilation
-            .add_source(
-                "Component.vue",
-                "<script setup>const value = 1</script><template>{{ value }}</template>",
-            )
-            .unwrap();
-
-        let plan = compilation
-            .plan_for::<PatinaDocumentReportProduct>(source)
-            .unwrap();
-
-        assert!(plan.contains::<vize_relief::ReliefProduct>());
-        assert!(plan.contains::<CroquisDocumentProduct>());
-        assert!(!plan.contains::<TransformedReliefProduct>());
-        let outcome = query_snapshot(&compilation.snapshot(), source).unwrap();
-        assert_eq!(outcome.semantics.unwrap().sources().len(), 2);
-    }
-
-    #[test]
-    fn malformed_sfc_is_cached_once_and_still_produces_patina_diagnostics() {
-        let mut compilation =
-            configured_compilation(Shared::new(Linter::new()), VueVersion::V3).unwrap();
-        let source = compilation
-            .add_source(
-                "Malformed.vue",
-                "<template><div /></template><template><span /></template>",
-            )
-            .unwrap();
-        let snapshot = compilation.snapshot();
-        let mut session = snapshot.query_session();
-
-        let lint = session
-            .query::<PatinaDocumentReportProduct>(source)
-            .unwrap();
-        assert!(lint.value().error_count > 0);
-        assert!(
-            lint.value()
-                .diagnostics
-                .iter()
-                .any(|diagnostic| diagnostic.rule_name == "parser/sfc")
-        );
-        assert_eq!(
-            session
-                .counters()
-                .for_product::<vize_atelier_sfc::SfcDescriptorProduct>()
-                .executions(),
-            1
-        );
-        session
-            .query::<vize_atelier_sfc::SfcDescriptorProduct>(source)
-            .unwrap();
-        let counters = session
-            .counters()
-            .for_product::<vize_atelier_sfc::SfcDescriptorProduct>();
-        assert_eq!(counters.executions(), 1);
-        assert_eq!(counters.cache_hits(), 1);
-    }
-
-    #[test]
-    fn jsx_graph_uses_owned_syntax_and_never_plans_relief() {
-        let mut compilation =
-            configured_compilation(Shared::new(Linter::new()), VueVersion::V3).unwrap();
-        let source = compilation
-            .add_source("View.tsx", "const View = (): JSX.Element => <img />;")
-            .unwrap();
-        let plan = compilation
-            .plan_for::<PatinaDocumentReportProduct>(source)
-            .unwrap();
-
-        assert!(plan.contains::<JsxSyntaxProduct>());
-        assert!(plan.contains::<CroquisDocumentProduct>());
-        assert!(!plan.contains::<ReliefProduct>());
-        let outcome = query_snapshot(&compilation.snapshot(), source).unwrap();
-        assert!(outcome.semantics.is_some());
-    }
-}
+#[path = "artifact_graph/tests.rs"]
+mod tests;

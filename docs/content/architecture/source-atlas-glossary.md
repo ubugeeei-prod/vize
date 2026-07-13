@@ -29,17 +29,18 @@ trace are the source of observability.
 
 ## Representation terms
 
-| Term       | Definition                                                                                     |
-| ---------- | ---------------------------------------------------------------------------------------------- |
-| Relief     | Owned/source-faithful Vue-template syntax: authored shape and locations.                       |
-| Croquis    | Owned/frontend-neutral semantic facts: identity, scopes, bindings, usage, and reactivity.      |
-| Flow       | Frontend-neutral single-file control/data/effect graph with graph analyses.                    |
-| Croquis CF | Separately requested cross-file ownership: a lightweight project index and a distinct full analyzer product; neither is Flow. |
-| Rendu      | Owned/frontend-neutral structured render HIR consumed by DOM, SSR, Vapor, and custom backends. |
-| Virtual TS | Canon's mapped typecheck projection; a consumer product, not the canonical IR.                 |
-| DOM output | JavaScript module and mappings emitted from Rendu.                                             |
-| SSR output | Server-render module and mappings emitted from Rendu.                                          |
-| Vapor plan | Owned target plan lowered from Rendu; target specialization remains outside Rendu.             |
+| Term       | Definition                                                                                                                                                 |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Module     | Owned JS/TS imports, exports, declarations, references, diagnostics, and OXC CFG facts; independent of Croquis and Relief.                                 |
+| Relief     | Owned/source-faithful Vue-template syntax: authored shape and locations.                                                                                   |
+| Croquis    | Owned/frontend-neutral semantic facts: identity, scopes, bindings, usage, and reactivity.                                                                  |
+| Flow       | Frontend-neutral single-file control/data/effect graph with graph analyses.                                                                                |
+| Croquis CF | Separately requested cross-file module/component aggregation ownership: a lightweight project index and a distinct full analyzer product; neither is Flow. |
+| Rendu      | Owned/frontend-neutral structured render HIR consumed by DOM, SSR, Vapor, and custom backends.                                                             |
+| Virtual TS | Canon's mapped typecheck projection; a consumer product, not the canonical IR.                                                                             |
+| DOM output | JavaScript module and mappings emitted from Rendu.                                                                                                         |
+| SSR output | Server-render module and mappings emitted from Rendu.                                                                                                      |
+| Vapor plan | Owned target plan lowered from Rendu; target specialization remains outside Rendu.                                                                         |
 
 ## Boundary tests
 
@@ -47,6 +48,8 @@ Use these questions when placing a new type:
 
 - Is the fact authored syntax and location? It belongs to Relief or the owning
   frontend syntax product.
+- Is it a JavaScript/TypeScript module fact or OXC CFG projection? It belongs to
+  Module.
 - Is the fact derived identity, scope, binding, usage, or reactivity? It belongs
   to Croquis.
 - Is it a block/edge/value/effect relation used for analysis? It belongs to

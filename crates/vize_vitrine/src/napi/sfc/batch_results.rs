@@ -11,6 +11,7 @@ use vize_relief::VueDialectInput;
 
 use super::{
     experimentals::ExperimentalTemplateOptions,
+    thread_pool::BatchThreadPool,
     types::{
         BatchCompileOptionsNapi, BatchCompileResultWithFilesNapi, BatchFileInputNapi,
         BatchFileResultNapi, custom_blocks_to_napi, macro_artifacts_to_napi, style_blocks_to_napi,
@@ -23,21 +24,23 @@ pub fn compile_sfc_batch_with_results(
     files: Vec<BatchFileInputNapi>,
     options: Option<BatchCompileOptionsNapi>,
 ) -> Result<BatchCompileResultWithFilesNapi> {
+    let opts = options.unwrap_or_default();
+    BatchThreadPool::new(opts.threads)?
+        .install(|| compile_sfc_batch_with_results_inner(files, opts))
+}
+
+fn compile_sfc_batch_with_results_inner(
+    files: Vec<BatchFileInputNapi>,
+    opts: BatchCompileOptionsNapi,
+) -> Result<BatchCompileResultWithFilesNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcCompileProduct, SfcCompileRequest,
         SfcCompileSettings, SfcDescriptorProduct, SfcParseOptions, StyleCompileOptions,
         TemplateCompileOptions,
     };
 
-    let opts = options.unwrap_or_default();
     let dialect = resolve_vue_version(opts.vue_version.as_deref())
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
-    if let Some(threads) = opts.threads {
-        let _ = rayon::ThreadPoolBuilder::new()
-            .num_threads(threads as usize)
-            .build_global();
-    }
-
     let total_count = files.len();
     let success_count = AtomicUsize::new(0);
     let ssr = opts.ssr.unwrap_or(false);
@@ -61,7 +64,9 @@ pub fn compile_sfc_batch_with_results(
     // Snapshot the filesystem for this batch: imported-type resolution treats
     // every file it stats as stable for the batch's duration, so the second and
     // later hits of a shared types barrel skip their revalidation syscalls.
-    vize_atelier_sfc::begin_type_resolution_batch();
+    // The named guard must stay alive until the parallel collection has joined.
+    #[deny(let_underscore_drop)]
+    let _type_resolution_batch = vize_atelier_sfc::begin_type_resolution_batch();
 
     let mut compilation = Compilation::new();
     vize_atelier_sfc::register_atlas_providers(&mut compilation)

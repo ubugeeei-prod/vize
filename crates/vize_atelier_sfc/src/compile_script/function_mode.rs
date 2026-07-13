@@ -13,7 +13,7 @@ pub(crate) mod imports;
 mod prop_defaults;
 mod source;
 
-pub(crate) use compiler::compile_script_setup_from_source;
+pub(crate) use compiler::{compile_script_setup_from_source, compile_script_setup_with_context};
 pub use helpers::contains_top_level_await;
 pub use imports::dedupe_imports;
 pub use source::compile_script_setup;

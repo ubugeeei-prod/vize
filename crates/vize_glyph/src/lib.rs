@@ -32,12 +32,12 @@
 //!   <button @click="count++">{{count}}</button>
 //! </template>
 //! "#;
-//!
 //! let options = FormatOptions::default();
 //! let result = format_sfc(source, &options).unwrap();
 //! println!("{}", result.code);
 //! ```
 
+mod attribute;
 mod error;
 mod formatter;
 mod json;
@@ -59,13 +59,12 @@ use vize_carton::String;
 /// Uses arena allocation for efficient memory management.
 #[inline]
 pub fn format_sfc(source: &str, options: &FormatOptions) -> Result<FormatResult, FormatError> {
-    let allocator = Allocator::with_capacity(source.len() * 2);
-    format_sfc_with_allocator(source, options, &allocator)
+    formatter::format_with_atlas(source, options)
 }
 
 /// Format a Vue SFC source string with a provided allocator
 ///
-/// Use this when you want to reuse an allocator across multiple format operations.
+/// Production hosts should prefer [`format_sfc`]; this path honors caller-owned scratch storage.
 #[inline]
 pub fn format_sfc_with_allocator(
     source: &str,

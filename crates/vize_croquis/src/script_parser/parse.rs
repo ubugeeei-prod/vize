@@ -201,6 +201,18 @@ pub(crate) fn parse_script_with_options_source_type(
         return ScriptParseResult::default();
     }
 
+    analyze_script_program(&ret.program, source, options)
+}
+
+/// Analyze an already-parsed plain script program.
+///
+/// Frontends that retain one live OXC program for several owned projections
+/// can build Croquis facts without paying for another parser invocation.
+pub fn analyze_script_program(
+    program: &Program<'_>,
+    source: &str,
+    options: ScriptParserOptions,
+) -> ScriptParseResult {
     let source_len = source.len() as u32;
 
     let mut result = ScriptParseResult {
@@ -228,7 +240,7 @@ pub(crate) fn parse_script_with_options_source_type(
 
     process::collect_options_api_component_metadata(
         &mut result,
-        &ret.program,
+        program,
         source,
         options.options_api,
         options.legacy_vue2,
@@ -236,7 +248,7 @@ pub(crate) fn parse_script_with_options_source_type(
 
     // Process all statements
     profile!("croquis.script_plain.walk_statements", {
-        for stmt in ret.program.body.iter() {
+        for stmt in program.body.iter() {
             process::process_statement(&mut result, stmt, source);
         }
     });

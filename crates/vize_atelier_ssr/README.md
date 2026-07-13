@@ -1,5 +1,8 @@
 # vize_atelier_ssr
 
+Support and deprecation guarantees are defined in the
+[Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
 `vize_atelier_ssr` compiles Vue templates for server-side rendering output.
 
 ## Highlights
@@ -18,7 +21,7 @@
 ## Related Crates
 
 - `vize_atelier_core` provides shared parsing and lane infrastructure
-- `vize_atelier_sfc` can route template blocks through SSR compilation paths
+- `vize_atelier_template`, SFC, and JSX routes consume this frontend-neutral backend
 - `@vizejs/vite-plugin` and Nuxt integration rely on this backend for SSR builds
 
 ## License

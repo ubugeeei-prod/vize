@@ -28,12 +28,14 @@
 //!         - One per <style> block
 //! ```
 
+mod artifact;
 mod generator;
 mod script_code;
 mod source_map;
 mod style_code;
 mod template_code;
 
+pub(crate) use artifact::{VirtualDocumentsProduct, register_virtual_documents_provider};
 pub(crate) use generator::find_art_block_at_offset_with_descriptor;
 pub(crate) use generator::inline_art_variants;
 pub use generator::{
@@ -125,7 +127,7 @@ impl VirtualDocument {
 }
 
 /// Collection of virtual documents for an SFC.
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct VirtualDocuments {
     /// Template virtual document
     pub template: Option<VirtualDocument>,

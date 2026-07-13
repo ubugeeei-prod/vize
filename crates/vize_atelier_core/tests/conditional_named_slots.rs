@@ -1,6 +1,8 @@
-use vize_atelier_core::{TransformOptions, parse, transform};
+use vize_armature::parse;
+use vize_atelier_core::transform;
+use vize_relief::{CompilerError, TransformOptions};
 
-fn transform_errors(source: &str) -> std::vec::Vec<vize_atelier_core::CompilerError> {
+fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {
     let allocator = bumpalo::Bump::new();
     let (mut root, errors) = parse(&allocator, source);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);

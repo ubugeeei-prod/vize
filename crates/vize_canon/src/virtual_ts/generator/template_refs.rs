@@ -15,14 +15,14 @@ impl TemplateRefUnwraps {
         summary: &Croquis,
         options_api: bool,
         template_referenced_names: Option<&FxHashSet<String>>,
-        script_content: Option<&str>,
+        script_facts: Option<&vize_atelier_sfc::SfcScriptGeneratorFacts>,
     ) -> Self {
         let options_api_setup_bindings =
             crate::options_api_setup_spread::collect_template_setup_bindings(
                 summary,
                 options_api,
                 template_referenced_names,
-                script_content,
+                script_facts,
             );
         let options_api_setup_binding_names: FxHashSet<&str> = options_api_setup_bindings
             .iter()

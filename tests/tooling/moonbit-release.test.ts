@@ -4,7 +4,8 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { moonScriptPath, repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
+import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
+import { writeFakeCommand } from "./support/fake-command.ts";
 
 function writeTempFile(contents: string): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-test-"));
@@ -186,15 +187,161 @@ test("release script includes nested release packages in extra synced manifests"
   }
 });
 
-test("release script bypasses local git hooks when committing", () => {
-  const script = fs.readFileSync(moonScriptPath("release"), "utf8");
+test("release script creates immutable tags and pushes main and tag atomically", () => {
+  const fixture = runRepositoryGuardFixture({ branch: "main" });
 
-  assert.ok(
-    script.includes('["commit", "--allow-empty", "--no-verify", "-m", "chore: release \\{tag}"]'),
-    "force-tag release commits must bypass local hooks",
+  try {
+    assert.equal(fixture.result.status, 0, fixture.result.stderr);
+    assert.match(fixture.gitLog, /^commit --no-verify -m chore: release v0\.290\.1$/m);
+    assert.match(fixture.gitLog, /^tag -a v0\.290\.1 -m Release 0\.290\.1$/m);
+    assert.match(fixture.gitLog, /^push --atomic origin main refs\/tags\/v0\.290\.1$/m);
+    assert.doesNotMatch(fixture.gitLog, /--force-tag|(?:^|\s)--force(?:\s|$)|--allow-empty/);
+  } finally {
+    fs.rmSync(fixture.tempDir, { recursive: true, force: true });
+  }
+});
+
+test("release script explains local cleanup after an atomic push failure", () => {
+  const fixture = runRepositoryGuardFixture({ branch: "main", pushFails: true });
+
+  try {
+    assert.equal(fixture.result.status, 1);
+    assert.match(fixture.result.stderr, /Failed to atomically push main and the release tag/);
+    assert.match(fixture.result.stderr, /git tag -d v0\.290\.1/);
+    assert.match(fixture.result.stderr, /git reset --hard origin\/main/);
+  } finally {
+    fs.rmSync(fixture.tempDir, { recursive: true, force: true });
+  }
+});
+
+test("release script rejects the removed force-tag escape hatch", () => {
+  const result = runMoonScript("release", ["patch", "-y", "--force-tag"]);
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /--force-tag is not supported; published release tags are immutable/);
+});
+
+interface RepositoryGuardOptions {
+  branch: string;
+  dirty?: boolean;
+  ancestor?: boolean;
+  headSha?: string;
+  remoteSha?: string;
+  localTagExists?: boolean;
+  remoteTagExists?: boolean;
+  pushFails?: boolean;
+  stagedFiles?: boolean;
+  manifestTestFails?: boolean;
+}
+
+function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-guard-"));
+  const binDir = path.join(tempDir, "bin");
+  const gitLogPath = path.join(tempDir, "git.log");
+  const cargoTomlPath = path.join(tempDir, "Cargo.toml");
+  const cargoToml = '[workspace.package]\nversion = "0.290.0"\n';
+  fs.mkdirSync(binDir, { recursive: true });
+  fs.mkdirSync(path.join(tempDir, "npm"));
+  fs.mkdirSync(path.join(tempDir, "tests/tooling"), { recursive: true });
+  fs.writeFileSync(gitLogPath, "");
+  fs.writeFileSync(cargoTomlPath, cargoToml);
+  fs.writeFileSync(path.join(tempDir, "pnpm-workspace.yaml"), "");
+  fs.writeFileSync(path.join(tempDir, "pnpm-lock.yaml"), "");
+  fs.writeFileSync(
+    path.join(tempDir, "tests/tooling/package-manifests.test.ts"),
+    options.manifestTestFails ? 'throw new Error("manifest drift");\n' : "",
   );
-  assert.ok(
-    script.includes('["commit", "--no-verify", "-m", "chore: release \\{tag}"]'),
-    "normal release commits must bypass local hooks",
+  writeFakeCommand(binDir, "cargo", "process.exit(0);");
+  writeFakeCommand(
+    binDir,
+    "git",
+    [
+      "const fs = require('node:fs');",
+      "const args = process.argv.slice(2);",
+      "fs.appendFileSync(process.env.GIT_LOG, args.join(' ') + '\\n');",
+      "if (args[0] === 'branch') { console.log(process.env.TEST_BRANCH); process.exit(0); }",
+      "if (args[0] === 'status') { if (process.env.TEST_DIRTY === 'true') console.log(' M Cargo.toml'); process.exit(0); }",
+      "if (args[0] === 'fetch') process.exit(0);",
+      "if (args[0] === 'merge-base') process.exit(process.env.TEST_ANCESTOR === 'false' ? 1 : 0);",
+      "if (args[0] === 'rev-parse' && args.includes('--verify')) process.exit(process.env.LOCAL_TAG_EXISTS === 'true' ? 0 : 1);",
+      "if (args[0] === 'rev-parse') { console.log(args.at(-1) === 'HEAD' ? process.env.TEST_HEAD_SHA : process.env.TEST_REMOTE_SHA); process.exit(0); }",
+      "if (args[0] === 'ls-remote' && process.env.REMOTE_TAG_EXISTS === 'true') { console.log('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\\t' + args.at(-1)); process.exit(0); }",
+      "if (args[0] === 'ls-remote') process.exit(2);",
+      "if (args[0] === 'diff' && args.includes('--cached')) { if (process.env.TEST_STAGED_FILES !== 'false') console.log('Cargo.toml'); process.exit(0); }",
+      "if (args[0] === 'push') process.exit(process.env.TEST_PUSH_FAIL === 'true' ? 1 : 0);",
+      "if (['add', 'commit', 'tag'].includes(args[0])) process.exit(0);",
+      "process.exit(1);",
+    ].join("\n"),
   );
+
+  const result = runMoonScript("release", ["patch", "-y"], {
+    cwd: tempDir,
+    env: {
+      PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+      GIT_LOG: gitLogPath,
+      TEST_BRANCH: options.branch,
+      TEST_DIRTY: String(options.dirty ?? false),
+      TEST_ANCESTOR: String(options.ancestor ?? true),
+      TEST_HEAD_SHA: options.headSha ?? "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      TEST_REMOTE_SHA: options.remoteSha ?? "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      LOCAL_TAG_EXISTS: String(options.localTagExists ?? false),
+      REMOTE_TAG_EXISTS: String(options.remoteTagExists),
+      TEST_PUSH_FAIL: String(options.pushFails ?? false),
+      TEST_STAGED_FILES: String(options.stagedFiles ?? true),
+      VIZE_RELEASE_GUARD_SCRIPT: path.join(repoRoot, "tools/github/release-local-guard.mjs"),
+    },
+  });
+  const gitLog = fs.readFileSync(gitLogPath, "utf8");
+  return { cargoToml, cargoTomlPath, gitLog, result, tempDir };
+}
+
+test("release script refuses to create an empty release commit", () => {
+  const fixture = runRepositoryGuardFixture({ branch: "main", stagedFiles: false });
+
+  try {
+    assert.equal(fixture.result.status, 1);
+    assert.match(fixture.result.stderr, /No release changes were staged/);
+    assert.doesNotMatch(fixture.gitLog, /^(?:commit|tag|push)\b/m);
+  } finally {
+    fs.rmSync(fixture.tempDir, { recursive: true, force: true });
+  }
+});
+
+test("release script explains cleanup after manifest verification fails", () => {
+  const fixture = runRepositoryGuardFixture({ branch: "main", manifestTestFails: true });
+
+  try {
+    assert.equal(fixture.result.status, 1);
+    assert.match(fixture.result.stderr, /package manifest alignment tests failed/);
+    assert.match(fixture.result.stderr, /git reset --hard origin\/main/);
+    assert.doesNotMatch(fixture.gitLog, /^(?:tag|push)\b/m);
+  } finally {
+    fs.rmSync(fixture.tempDir, { recursive: true, force: true });
+  }
+});
+
+test("release repository guard rejects unsafe refs before mutation", () => {
+  const cases: Array<[RepositoryGuardOptions, RegExp]> = [
+    [{ branch: "feature/unsafe-release" }, /must be prepared from the local main branch/],
+    [{ branch: "" }, /must be prepared from the local main branch/],
+    [{ branch: "main", dirty: true }, /uncommitted changes/],
+    [{ branch: "main", ancestor: false }, /HEAD is not reachable from the current origin\/main/],
+    [
+      { branch: "main", remoteSha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
+      /HEAD must exactly match the current origin\/main/,
+    ],
+    [{ branch: "main", localTagExists: true }, /Tag v0\.290\.1 already exists locally/],
+    [{ branch: "main", remoteTagExists: true }, /Remote tag v0\.290\.1 already exists/],
+  ];
+  for (const [options, message] of cases) {
+    const fixture = runRepositoryGuardFixture(options);
+    try {
+      assert.equal(fixture.result.status, 1);
+      assert.match(fixture.result.stderr, message);
+      assert.doesNotMatch(fixture.gitLog, /^(?:add|commit|tag|push)\b/m);
+      assert.equal(fs.readFileSync(fixture.cargoTomlPath, "utf8"), fixture.cargoToml);
+    } finally {
+      fs.rmSync(fixture.tempDir, { recursive: true, force: true });
+    }
+  }
 });

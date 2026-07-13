@@ -34,9 +34,11 @@ pub use type_checker::{
     DeclarationOutput, TypeCheckResult, TypeChecker,
 };
 pub use virtual_project::{
+    CanonVueDocumentProduct, CanonVueDocumentProvider, CanonVueDocumentSettingsInput,
     OriginalPosition, VirtualFile, VirtualProject, VueDocumentVirtualTs,
     VueDocumentVirtualTsOptions, generate_vue_document_virtual_ts,
-    generate_vue_document_virtual_ts_with_options,
+    generate_vue_document_virtual_ts_with_options, install_canon_vue_document_options,
+    register_canon_vue_document_provider,
 };
 pub use virtual_ts::VirtualTsGenerator;
 

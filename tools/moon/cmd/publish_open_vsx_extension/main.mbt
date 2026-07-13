@@ -1,23 +1,23 @@
+///|
 /// Publishes the VS Code extension to Open VSX in a rerun-safe way.
 /// Release retries are common when a tag is force-pushed to re-run a partially
 /// completed workflow. This script mirrors the VS Code Marketplace publish
 /// guard by checking Open VSX metadata before publishing and after any non-zero
 /// publish exit.
-
 struct ExtensionInfo {
   extension_id : String
   publisher : String
   version : String
 }
 
+///|
 fn parse_int(value : String) -> Int? {
-  try {
-    Some(@string.parse_int(value))
-  } catch {
+  Some(@string.parse_int(value)) catch {
     _ => None
   }
 }
 
+///|
 fn int_at_least_or(value : String, minimum : Int, fallback : Int) -> Int {
   match parse_int(value) {
     Some(parsed) if parsed >= minimum => parsed
@@ -25,6 +25,7 @@ fn int_at_least_or(value : String, minimum : Int, fallback : Int) -> Int {
   }
 }
 
+///|
 fn env_int_at_least(name : String, minimum : Int, fallback : Int) -> Int {
   match @sys.get_env_var(name) {
     Some(value) if value != "" => int_at_least_or(value, minimum, fallback)
@@ -32,23 +33,28 @@ fn env_int_at_least(name : String, minimum : Int, fallback : Int) -> Int {
   }
 }
 
+///|
 fn read_package_json(path : String) -> Json? {
-  try {
-    Some(@json.parse(@xfs.read_file_to_string(path)))
-  } catch {
+  Some(@json.parse(@xfs.read_file_to_string(path))) catch {
     _ => None
   }
 }
 
+///|
 fn extension_info_from_package_json(value : Json) -> ExtensionInfo? {
   guard value is Object(obj) else { return None }
   guard obj.get("publisher") is Some(String(publisher)) else { return None }
   guard obj.get("name") is Some(String(name)) else { return None }
   guard obj.get("version") is Some(String(version)) else { return None }
   guard publisher != "" && name != "" && version != "" else { return None }
-  Some(ExtensionInfo::{ extension_id: publisher + "." + name, publisher, version })
+  Some(ExtensionInfo::{
+    extension_id: publisher + "." + name,
+    publisher,
+    version,
+  })
 }
 
+///|
 fn json_has_extension_version(value : Json, expected : String) -> Bool {
   guard value is Object(obj) else { return false }
   if obj.get("version") is Some(String(version)) && version == expected {
@@ -57,28 +63,24 @@ fn json_has_extension_version(value : Json, expected : String) -> Bool {
   guard obj.get("versions") is Some(Array(versions)) else { return false }
   for item in versions {
     guard item is Object(version_obj) else { continue }
-    if version_obj.get("version") is Some(String(version)) && version == expected {
+    if version_obj.get("version") is Some(String(version)) &&
+      version == expected {
       return true
     }
   }
   false
 }
 
-async fn extension_version_is_visible(vp_bin : String, extension_id : String, version : String) -> Bool {
-  let (exit_code, stdout, _) = @process.collect_output(
-    vp_bin,
-    [
-      "dlx",
-      "-p",
-      "ovsx@^1.0.0",
-      "ovsx",
-      "get",
-      extension_id,
-      "--metadata",
-      "--versionRange",
-      version,
-    ],
-  )
+///|
+async fn extension_version_is_visible(
+  vp_bin : String,
+  extension_id : String,
+  version : String,
+) -> Bool {
+  let (exit_code, stdout, _) = @process.collect_output(vp_bin, [
+    "dlx", "-p", "ovsx@^1.0.0", "ovsx", "get", extension_id, "--metadata", "--versionRange",
+    version,
+  ])
   if exit_code != 0 {
     return false
   }
@@ -86,14 +88,11 @@ async fn extension_version_is_visible(vp_bin : String, extension_id : String, ve
   if body == "" {
     return false
   }
-  let parsed = try {
-    @json.parse(body)
-  } catch {
-    _ => return false
-  }
+  let parsed = @json.parse(body) catch { _ => return false }
   json_has_extension_version(parsed, version)
 }
 
+///|
 async fn wait_for_extension_visibility(
   vp_bin : String,
   extension_id : String,
@@ -119,16 +118,34 @@ async fn wait_for_extension_visibility(
   false
 }
 
-async fn ensure_namespace(vp_bin : String, publisher : String) -> Unit {
-  let exit_code = @process.run(
-    vp_bin,
-    ["dlx", "-p", "ovsx@^1.0.0", "ovsx", "create-namespace", publisher],
-  )
-  if exit_code != 0 {
-    println("Open VSX namespace \{publisher} may already exist; continuing to publish.")
+///|
+async fn ensure_namespace(vp_bin : String, publisher : String) -> Bool {
+  let (exit_code, stdout, stderr) = @process.collect_output(vp_bin, [
+    "dlx", "-p", "ovsx@^1.0.0", "ovsx", "create-namespace", publisher,
+  ])
+  if exit_code == 0 {
+    return true
   }
+  let detail = [
+      stdout.text().trim().to_owned(),
+      stderr.text().trim().to_owned(),
+    ]
+    .filter(text => text != "")
+    .join("\n")
+  if detail.to_lower().contains("already exists") {
+    println(
+      "Open VSX namespace \{publisher} already exists; continuing to publish.",
+    )
+    return true
+  }
+  let suffix = if detail == "" { "" } else { "\n" + detail }
+  @stdio.stderr.write(
+    "Failed to ensure Open VSX namespace \{publisher} (exit \{exit_code}).\{suffix}\n",
+  )
+  false
 }
 
+///|
 async fn run_app() -> Int {
   let args = @tool.cli_args()
   if args.is_empty() || args.length() > 2 {
@@ -147,7 +164,9 @@ async fn run_app() -> Int {
       match extension_info_from_package_json(value) {
         Some(info) => info
         None => {
-          @stdio.stderr.write("Failed to read extension metadata from \{package_json_path}\n")
+          @stdio.stderr.write(
+            "Failed to read extension metadata from \{package_json_path}\n",
+          )
           return 1
         }
       }
@@ -160,49 +179,58 @@ async fn run_app() -> Int {
     Some(value) if value != "" => value
     _ => "vp"
   }
-  let resolution_attempts = env_int_at_least("PUBLISH_RESOLUTION_RETRY_LIMIT", 1, 24)
-  let resolution_delay_seconds = env_int_at_least("PUBLISH_RESOLUTION_RETRY_DELAY", 0, 10)
+  let resolution_attempts = env_int_at_least(
+    "PUBLISH_RESOLUTION_RETRY_LIMIT", 1, 24,
+  )
+  let resolution_delay_seconds = env_int_at_least(
+    "PUBLISH_RESOLUTION_RETRY_DELAY", 0, 10,
+  )
   if extension_version_is_visible(
-    vp_bin,
-    extension_info.extension_id,
-    extension_info.version,
-  ) {
+      vp_bin,
+      extension_info.extension_id,
+      extension_info.version,
+    ) {
     println(
       "\{extension_info.extension_id} \{extension_info.version} is already published, skipping Open VSX publish.",
     )
     return 0
   }
-  ensure_namespace(vp_bin, extension_info.publisher)
+  if !ensure_namespace(vp_bin, extension_info.publisher) {
+    return 1
+  }
 
-  let exit_code = @process.run(
-    vp_bin,
-    [
-      "dlx",
-      "-p",
-      "ovsx@^1.0.0",
-      "ovsx",
-      "publish",
-      @tool.resolve_path(args[0]),
-    ],
-  )
-  if exit_code == 0 {
+  let exit_code = @process.run(vp_bin, [
+    "dlx",
+    "-p",
+    "ovsx@^1.0.0",
+    "ovsx",
+    "publish",
+    @tool.resolve_path(args[0]),
+  ])
+  if wait_for_extension_visibility(
+      vp_bin,
+      extension_info.extension_id,
+      extension_info.version,
+      resolution_attempts,
+      resolution_delay_seconds,
+    ) {
+    if exit_code != 0 {
+      println(
+        "\{extension_info.extension_id} \{extension_info.version} was published despite a non-zero ovsx publish exit.",
+      )
+    }
     return 0
   }
-  if wait_for_extension_visibility(
-    vp_bin,
-    extension_info.extension_id,
-    extension_info.version,
-    resolution_attempts,
-    resolution_delay_seconds,
-  ) {
-    println(
-      "\{extension_info.extension_id} \{extension_info.version} was published despite a non-zero ovsx publish exit.",
+  if exit_code == 0 {
+    @stdio.stderr.write(
+      "Open VSX did not expose \{extension_info.extension_id} \{extension_info.version} before the visibility deadline.\n",
     )
-    return 0
+    return 1
   }
   exit_code
 }
 
+///|
 async fn main {
   @sys.exit(run_app())
 }

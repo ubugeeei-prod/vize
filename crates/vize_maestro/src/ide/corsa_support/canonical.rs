@@ -25,14 +25,21 @@ pub(crate) async fn open_canonical_virtual_document(
     }
 
     let source_path = ctx.uri.to_file_path().ok()?;
+    let options = CorsaVueVirtualDocumentOptions {
+        options_api: ctx.state.options_api_enabled(),
+        legacy_vue2: ctx.state.legacy_vue2_enabled(),
+    };
+    let generated = ctx
+        .state
+        .canon_vue_document_for(ctx.uri, &ctx.content, options)?;
+    let overlays = ctx.state.canon_vue_overlays(ctx.uri, &generated, options);
     let opened = bridge
-        .open_vue_virtual_document(
+        .open_prebuilt_vue_virtual_document_with_overlays(
             &source_path,
-            &ctx.content,
-            CorsaVueVirtualDocumentOptions {
-                options_api: ctx.state.options_api_enabled(),
-                legacy_vue2: ctx.state.legacy_vue2_enabled(),
-            },
+            &generated,
+            options,
+            &overlays.sources,
+            &overlays.generated,
         )
         .await
         .ok()?;

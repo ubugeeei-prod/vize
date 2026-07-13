@@ -71,6 +71,14 @@ pub fn register_glyph_atlas_provider(
     compilation: &mut Compilation,
 ) -> Result<(), RegisterProviderError> {
     register_atlas_providers(compilation)?;
+    register_glyph_format_provider(compilation)
+}
+
+/// Register only Glyph's formatter root in a compilation that already owns
+/// the SFC frontend providers.
+pub fn register_glyph_format_provider(
+    compilation: &mut Compilation,
+) -> Result<(), RegisterProviderError> {
     if !compilation.has_provider::<GlyphFormatProduct>() {
         compilation.register_provider(GlyphFormatProvider)?;
     }

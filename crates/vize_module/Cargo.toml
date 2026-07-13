@@ -1,0 +1,26 @@
+[package]
+name = "vize_module"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Parser-independent JavaScript and TypeScript module facts and control flow for Vize"
+metadata.vize.stability = "compatibility-preview"
+
+[dependencies]
+vize_atlas.workspace = true
+vize_carton.workspace = true
+vize_flow.workspace = true
+oxc_allocator.workspace = true
+oxc_ast.workspace = true
+oxc_ast_visit.workspace = true
+oxc_cfg.workspace = true
+oxc_diagnostics.workspace = true
+oxc_parser.workspace = true
+oxc_semantic = { workspace = true, features = ["cfg"] }
+oxc_span.workspace = true
+oxc_syntax.workspace = true
+
+[dev-dependencies]
+insta.workspace = true

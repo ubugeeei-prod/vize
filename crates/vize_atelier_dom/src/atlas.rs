@@ -3,12 +3,12 @@
 use std::ops::Deref;
 use vize_atlas::{
     Compilation, InputId, PlanningContext, Product, ProductId, Provider, ProviderContext,
-    ProviderError, RegisterProviderError,
+    ProviderError, RegisterProviderError, SourceInputId,
 };
 
-use vize_rendu::{RenderCapabilitiesInput, RenduProduct};
+use vize_rendu::{RenderCapabilitiesInput, RenderEmitSettingsInput, RenduProduct};
 
-use crate::{RenduDomOutput, compile_rendu};
+use crate::{RenduDomOutput, compile_rendu_with_settings};
 
 /// DOM outputs preserving the frontend module's root boundaries.
 #[derive(Debug, Clone)]
@@ -49,6 +49,10 @@ impl Provider for DomProvider {
         vec![InputId::of::<RenderCapabilitiesInput>()]
     }
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<RenderEmitSettingsInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
         context
             .input::<RenderCapabilitiesInput>()
@@ -64,8 +68,16 @@ impl Provider for DomProvider {
         context: &mut ProviderContext<'_>,
     ) -> Result<DomOutputArtifact, ProviderError> {
         let rendu = context.get::<RenduProduct>()?;
+        let settings = context
+            .source_input::<RenderEmitSettingsInput>()
+            .cloned()
+            .unwrap_or_default();
         Ok(DomOutputArtifact {
-            outputs: rendu.roots().iter().map(compile_rendu).collect(),
+            outputs: rendu
+                .roots()
+                .iter()
+                .map(|root| compile_rendu_with_settings(root, &settings))
+                .collect(),
         })
     }
 }

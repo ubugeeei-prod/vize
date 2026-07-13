@@ -1,5 +1,12 @@
 use super::*;
+use std::sync::atomic::Ordering;
 use vize_atlas::ProductStatus;
+
+#[cfg(feature = "native")]
+#[path = "tests/corsa_query_sharing.rs"]
+mod corsa_query_sharing;
+#[path = "tests/editor_query_sharing.rs"]
+mod editor_query_sharing;
 
 #[test]
 fn open_update_query_and_close_preserve_one_source_identity() {
@@ -192,4 +199,141 @@ fn croquis_mode_refresh_invalidates_only_dependent_open_source_products() {
             .status(),
         ProductStatus::CacheHit
     );
+}
+
+#[test]
+fn virtual_documents_share_relief_and_invalidate_with_the_source() {
+    let state = ServerState::new();
+    let uri = Url::parse("file:///tmp/Virtual.vue").unwrap();
+    let first = r#"<script setup>const one = 1</script><template>{{ one }}</template>"#;
+    let source = state.upsert_artifact_source(&uri, first).unwrap();
+
+    let first = state.virtual_documents(&uri).unwrap();
+    assert!(first.template.as_ref().unwrap().content.contains("one"));
+    assert_eq!(
+        state
+            .artifact_compilation
+            .read()
+            .counters()
+            .for_product::<crate::virtual_code::VirtualDocumentsProduct>()
+            .executions(),
+        1
+    );
+    assert!(state.virtual_documents(&uri).is_some());
+    assert_eq!(
+        state
+            .artifact_compilation
+            .read()
+            .counters()
+            .for_product::<crate::virtual_code::VirtualDocumentsProduct>()
+            .cache_hits(),
+        1
+    );
+
+    state
+        .upsert_artifact_source(
+            &uri,
+            r#"<script setup>const two = 2</script><template>{{ two }}</template>"#,
+        )
+        .unwrap();
+    let revised = state.virtual_documents(&uri).unwrap();
+    assert!(revised.template.as_ref().unwrap().content.contains("two"));
+    assert_eq!(
+        state.artifact_sources.get(&uri).map(|entry| *entry),
+        Some(source)
+    );
+}
+
+#[test]
+fn lint_configuration_invalidates_only_patina_report() {
+    let state = ServerState::new();
+    let uri = Url::parse("file:///tmp/Linted.vue").unwrap();
+    let content = r#"<script setup>const value = 1</script><template>{{ value }}</template>"#;
+
+    assert!(state.lint_report_for(&uri, content, false).is_some());
+    assert!(state.lint_report_for(&uri, content, false).is_some());
+    let before = state.artifact_compilation.read();
+    assert_eq!(
+        before
+            .counters()
+            .for_product::<vize_patina::PatinaDocumentReportProduct>()
+            .executions(),
+        1
+    );
+    assert_eq!(
+        before
+            .counters()
+            .for_product::<vize_patina::PatinaDocumentReportProduct>()
+            .cache_hits(),
+        1
+    );
+    drop(before);
+
+    state.linter_config.write().preset = Some("opinionated".into());
+    state.linter_generation.fetch_add(1, Ordering::SeqCst);
+    assert!(state.lint_report_for(&uri, content, false).is_some());
+
+    let after = state.artifact_compilation.read();
+    assert_eq!(
+        after
+            .counters()
+            .for_product::<vize_patina::PatinaDocumentReportProduct>()
+            .executions(),
+        2
+    );
+    assert_eq!(
+        after
+            .counters()
+            .for_product::<vize_relief::ReliefProduct>()
+            .executions(),
+        1
+    );
+    assert_eq!(
+        after
+            .counters()
+            .for_product::<vize_croquis::CroquisDocumentProduct>()
+            .executions(),
+        1
+    );
+}
+
+#[test]
+fn standard_vue_editor_paths_do_not_reparse_frontend_artifacts() {
+    for source in [
+        include_str!("../../../ide/references/template.rs"),
+        include_str!("../../../ide/hover/template.rs"),
+        include_str!("../../../ide/diagnostics/collectors.rs"),
+        include_str!("../../../ide/diagnostics/collectors/script.rs"),
+        include_str!("../../../ide/diagnostics/collectors/musea.rs"),
+        include_str!("../../../ide/diagnostics/component_props.rs"),
+    ] {
+        assert!(!source.contains("vize_armature::parse"));
+        assert!(!source.contains("Parser::new"));
+        assert!(!source.contains("parse_sfc("));
+        assert!(!source.contains(".lint_sfc(content"));
+    }
+}
+
+#[test]
+fn standalone_html_editor_paths_do_not_bypass_raw_template_products() {
+    let lint = include_str!("../../../ide/diagnostics/collectors/lint.rs");
+    assert!(!lint.contains(".lint_standalone_html("));
+    assert!(lint.contains("state.lint_report_for("));
+
+    for source in [
+        include_str!("../../../ide/completion/template/bindings.rs"),
+        include_str!("../../../ide/hover/petite_vue.rs"),
+    ] {
+        assert!(!source.contains("vize_armature::parse"));
+        assert!(!source.contains("Drawer::"));
+        assert!(source.contains("raw_template_croquis"));
+    }
+
+    let component_hover = include_str!("../../../ide/hover/component_tag.rs");
+    assert!(component_hover.contains("raw_template_croquis"));
+    assert!(!component_hover.contains("parse_document"));
+
+    let standalone = include_str!("../virtual_docs/raw_template.rs");
+    assert!(standalone.contains("raw_template_relief"));
+    assert!(!standalone.contains("vize_armature::parse"));
 }

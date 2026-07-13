@@ -360,7 +360,7 @@ pub enum MacroBindingKind {
 }
 
 /// Tracks compiler macros during analysis
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct MacroTracker {
     calls: Vec<MacroCall>,
     props: Vec<PropDefinition>,

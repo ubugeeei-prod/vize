@@ -35,7 +35,7 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { appendFileSync, existsSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -194,10 +194,46 @@ export function parseCritcmpRegressions(table, thresholdPercent) {
   return regressions;
 }
 
-export function renderSummary({ table, threshold, regressions }) {
+export function resolveSuiteSelection(selection) {
+  const inventory = CRITERION_SUITES.map((suite) => suite.package);
+  if (selection == null) {
+    return {
+      selected: inventory,
+      skipped: [],
+      reason: "Full inventory selected (no impact manifest supplied).",
+    };
+  }
+  if (!Array.isArray(selection.selected) || typeof selection.reason !== "string") {
+    throw new Error("Criterion impact manifest must contain selected[] and reason");
+  }
+  if (new Set(selection.selected).size !== selection.selected.length) {
+    throw new Error("Criterion impact manifest contains duplicate suites");
+  }
+  const unknown = selection.selected.filter((name) => !inventory.includes(name));
+  if (unknown.length > 0) {
+    throw new Error(`Criterion impact manifest contains unknown suites: ${unknown.join(", ")}`);
+  }
+  return {
+    selected: inventory.filter((name) => selection.selected.includes(name)),
+    skipped: inventory.filter((name) => !selection.selected.includes(name)),
+    reason: selection.reason,
+  };
+}
+
+export function renderSummary({ table, threshold, regressions, selection }) {
   const lines = [];
   lines.push("## Criterion A/B");
   lines.push("");
+  lines.push(`Selection: ${selection.reason}`);
+  lines.push("");
+  lines.push(`- Ran: ${selection.selected.join(", ") || "none"}`);
+  lines.push(`- Skipped: ${selection.skipped.join(", ") || "none"}`);
+  lines.push("");
+  if (selection.selected.length === 0) {
+    lines.push("No configured Criterion suite is affected; timing execution was skipped.");
+    lines.push("");
+    return `${lines.join("\n")}\n`;
+  }
   lines.push(
     threshold == null
       ? "Report-only: micro-benchmark medians for base vs head (no gate)."
@@ -225,6 +261,9 @@ export function main(argv = process.argv.slice(2)) {
   const targetDir = resolve(requireArg(args, "target-dir"));
   const criterionHome = resolve(targetDir, "criterion");
   const threshold = parsePositiveFloat(args.threshold);
+  const selection = resolveSuiteSelection(
+    args.selection ? JSON.parse(readFileSync(resolve(args.selection), "utf8")) : undefined,
+  );
 
   if (!existsSync(baseDir)) {
     throw new Error(`Base checkout not found: ${baseDir}`);
@@ -233,30 +272,33 @@ export function main(argv = process.argv.slice(2)) {
     throw new Error(`Head checkout not found: ${headDir}`);
   }
 
+  const suites = CRITERION_SUITES.filter((suite) => selection.selected.includes(suite.package));
   // Build outputs must stay isolated: the two checkouts intentionally carry
   // the same workspace package versions, so one Cargo target directory can
   // otherwise reuse a base rmeta that does not expose a new head API. Criterion
   // results remain shared explicitly through CRITERION_HOME.
-  benchSide({
-    side: "base",
-    checkoutDir: baseDir,
-    baseline: "base",
-    targetDir: resolve(targetDir, "base-build"),
-    criterionHome,
-    suites: CRITERION_SUITES,
-  });
-  benchSide({
-    side: "head",
-    checkoutDir: headDir,
-    baseline: "head",
-    targetDir: resolve(targetDir, "head-build"),
-    criterionHome,
-    suites: CRITERION_SUITES,
-  });
+  if (suites.length > 0) {
+    benchSide({
+      side: "base",
+      checkoutDir: baseDir,
+      baseline: "base",
+      targetDir: resolve(targetDir, "base-build"),
+      criterionHome,
+      suites,
+    });
+    benchSide({
+      side: "head",
+      checkoutDir: headDir,
+      baseline: "head",
+      targetDir: resolve(targetDir, "head-build"),
+      criterionHome,
+      suites,
+    });
+  }
 
-  const table = critcmpCompare({ criterionHome, threshold });
+  const table = suites.length > 0 ? critcmpCompare({ criterionHome, threshold }) : "";
   const regressions = parseCritcmpRegressions(table, threshold);
-  const summary = renderSummary({ table, threshold, regressions });
+  const summary = renderSummary({ table, threshold, regressions, selection });
 
   if (args.out) {
     writeFileSync(resolve(args.out), summary);

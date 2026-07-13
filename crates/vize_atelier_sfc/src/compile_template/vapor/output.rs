@@ -47,15 +47,21 @@ pub(super) fn vapor_module_sections(
     }
 }
 
-/// Rewrite Vapor runtime imports onto the public Vue runtime surface.
-pub(super) fn rewrite_vapor_import(line: &str) -> String {
-    if line.contains("'vue/vapor'") {
-        line.replace("'vue/vapor'", "'vue'").into()
+/// Rewrite Vapor runtime imports onto the adapter-selected runtime surface.
+pub(super) fn rewrite_vapor_import(line: &str, runtime_module_name: &str) -> String {
+    let (source, quote) = if line.contains("'vue/vapor'") {
+        ("'vue/vapor'", '\'')
     } else if line.contains("\"vue/vapor\"") {
-        line.replace("\"vue/vapor\"", "\"vue\"").into()
+        ("\"vue/vapor\"", '"')
+    } else if line.contains("'vue'") {
+        ("'vue'", '\'')
+    } else if line.contains("\"vue\"") {
+        ("\"vue\"", '"')
     } else {
-        line.to_compact_string()
-    }
+        return line.to_compact_string();
+    };
+    let replacement = vize_carton::cstr!("{quote}{runtime_module_name}{quote}");
+    line.replace(source, replacement.as_str()).into()
 }
 
 /// Detect render signatures emitted by current and legacy Vapor codegen.

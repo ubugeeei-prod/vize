@@ -45,10 +45,14 @@ export function render(_ctx) {
   return n0
 }"#;
 
-    let result =
-        transform_vapor_template_output(vapor_code, None, &template("<div>{{ msg }}</div>"), None)
-            .expect("current Vapor output should be transformed");
-
+    let result = transform_vapor_template_output(
+        vapor_code,
+        None,
+        &template("<div>{{ msg }}</div>"),
+        None,
+        "vue",
+    )
+    .expect("current Vapor output should be transformed");
     insta::assert_snapshot!(result.as_str());
 }
 
@@ -189,6 +193,7 @@ fn dom_inline_parts_are_sliced_from_sections_for_template_matrix() {
                 croquis: None,
             },
             vize_relief::TemplateSyntaxMode::Standard,
+            &vize_relief::CodegenOptions::default(),
         )
         .expect("template should compile");
 

@@ -10,6 +10,8 @@
     clippy::disallowed_macros
 )]
 
+mod module_symbols;
+
 use tower_lsp::lsp_types::{Location, Position, Range, SymbolInformation, SymbolKind, Url};
 
 use crate::server::ServerState;
@@ -41,7 +43,18 @@ impl WorkspaceSymbolsService {
             let Some(descriptor) = artifact.descriptor() else {
                 continue;
             };
-            Self::collect_symbols_from_document(uri, descriptor, &query_lower, &mut symbols);
+            let Some(croquis) = state.sfc_croquis(uri) else {
+                continue;
+            };
+            let modules = state.sfc_modules(uri);
+            Self::collect_symbols_from_document(
+                uri,
+                descriptor,
+                modules.as_deref(),
+                croquis.analysis(),
+                &query_lower,
+                &mut symbols,
+            );
         }
 
         // Sort by relevance (exact match first, then prefix match, then contains)
@@ -77,6 +90,8 @@ impl WorkspaceSymbolsService {
     fn collect_symbols_from_document(
         uri: &Url,
         descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+        modules: Option<&vize_module::ModuleDocument>,
+        croquis: &vize_croquis::Croquis,
         query: &str,
         symbols: &mut Vec<SymbolInformation>,
     ) {
@@ -106,26 +121,13 @@ impl WorkspaceSymbolsService {
             });
         }
 
-        // Collect from script setup
-        if let Some(ref script_setup) = descriptor.script_setup {
-            Self::collect_script_symbols(
+        if let Some(modules) = modules {
+            module_symbols::collect(
                 uri,
-                &script_setup.content,
-                script_setup.loc.start_line as u32,
+                descriptor.source.as_ref(),
+                modules,
+                croquis,
                 query,
-                Some("script setup"),
-                symbols,
-            );
-        }
-
-        // Collect from script
-        if let Some(ref script) = descriptor.script {
-            Self::collect_script_symbols(
-                uri,
-                &script.content,
-                script.loc.start_line as u32,
-                query,
-                Some("script"),
                 symbols,
             );
         }
@@ -146,7 +148,7 @@ impl WorkspaceSymbolsService {
         // workspace symbol search surfaces component contracts, not just
         // script bindings. Foundation for #697 — currently covers emits and
         // slot names; provide/inject and template refs follow the same shape.
-        Self::collect_vue_specific_symbols(uri, &descriptor, query, symbols);
+        Self::collect_vue_specific_symbols(uri, descriptor, croquis, query, symbols);
     }
 
     /// Surface Vue-specific entities (emits, slots) discovered by Croquis.
@@ -154,19 +156,13 @@ impl WorkspaceSymbolsService {
     fn collect_vue_specific_symbols(
         uri: &Url,
         descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+        croquis: &vize_croquis::Croquis,
         query: &str,
         symbols: &mut Vec<SymbolInformation>,
     ) {
         let Some(ref script_setup) = descriptor.script_setup else {
             return;
         };
-
-        let mut analyzer = vize_croquis::Drawer::with_options(vize_croquis::DrawerOptions {
-            analyze_script: true,
-            ..Default::default()
-        });
-        analyzer.analyze_script_setup(&script_setup.content);
-        let croquis = analyzer.finish();
 
         let container = Self::extract_component_name(uri);
 
@@ -267,135 +263,6 @@ impl WorkspaceSymbolsService {
         result
     }
 
-    /// Collect symbols from script content.
-    fn collect_script_symbols(
-        uri: &Url,
-        script: &str,
-        base_line: u32,
-        query: &str,
-        container: Option<&str>,
-        symbols: &mut Vec<SymbolInformation>,
-    ) {
-        let lines: Vec<&str> = script.lines().collect();
-
-        for (line_idx, line) in lines.iter().enumerate() {
-            let line_num = base_line + line_idx as u32;
-            let trimmed = line.trim_start();
-
-            // const name = ...
-            if let Some(rest) = trimmed.strip_prefix("const ") {
-                if let Some((name, kind)) = Self::parse_declaration(rest)
-                    && name.to_lowercase().contains(query)
-                {
-                    symbols.push(Self::create_symbol(
-                        name,
-                        kind,
-                        uri.clone(),
-                        line_num - 1,
-                        container,
-                    ));
-                }
-            }
-            // let name = ...
-            else if let Some(rest) = trimmed.strip_prefix("let ") {
-                if let Some((name, kind)) = Self::parse_declaration(rest)
-                    && name.to_lowercase().contains(query)
-                {
-                    symbols.push(Self::create_symbol(
-                        name,
-                        kind,
-                        uri.clone(),
-                        line_num - 1,
-                        container,
-                    ));
-                }
-            }
-            // function name(...) { ... }
-            else if let Some(rest) = trimmed.strip_prefix("function ") {
-                if let Some(name) = Self::extract_identifier(rest)
-                    && name.to_lowercase().contains(query)
-                {
-                    symbols.push(Self::create_symbol(
-                        name,
-                        SymbolKind::FUNCTION,
-                        uri.clone(),
-                        line_num - 1,
-                        container,
-                    ));
-                }
-            }
-            // async function name(...) { ... }
-            else if let Some(rest) = trimmed.strip_prefix("async function ") {
-                if let Some(name) = Self::extract_identifier(rest)
-                    && name.to_lowercase().contains(query)
-                {
-                    symbols.push(Self::create_symbol(
-                        name,
-                        SymbolKind::FUNCTION,
-                        uri.clone(),
-                        line_num - 1,
-                        container,
-                    ));
-                }
-            }
-            // class Name { ... }
-            else if let Some(rest) = trimmed.strip_prefix("class ") {
-                if let Some(name) = Self::extract_identifier(rest)
-                    && name.to_lowercase().contains(query)
-                {
-                    symbols.push(Self::create_symbol(
-                        name,
-                        SymbolKind::CLASS,
-                        uri.clone(),
-                        line_num - 1,
-                        container,
-                    ));
-                }
-            }
-            // interface Name { ... }
-            else if let Some(rest) = trimmed.strip_prefix("interface ") {
-                if let Some(name) = Self::extract_identifier(rest)
-                    && name.to_lowercase().contains(query)
-                {
-                    symbols.push(Self::create_symbol(
-                        name,
-                        SymbolKind::INTERFACE,
-                        uri.clone(),
-                        line_num - 1,
-                        container,
-                    ));
-                }
-            }
-            // type Name = ...
-            else if let Some(rest) = trimmed.strip_prefix("type ") {
-                if let Some(name) = Self::extract_identifier(rest)
-                    && name.to_lowercase().contains(query)
-                {
-                    symbols.push(Self::create_symbol(
-                        name,
-                        SymbolKind::TYPE_PARAMETER,
-                        uri.clone(),
-                        line_num - 1,
-                        container,
-                    ));
-                }
-            }
-            // enum Name { ... }
-            else if let Some(rest) = trimmed.strip_prefix("enum ")
-                && let Some(name) = Self::extract_identifier(rest)
-                && name.to_lowercase().contains(query)
-            {
-                symbols.push(Self::create_symbol(
-                    name,
-                    SymbolKind::ENUM,
-                    uri.clone(),
-                    line_num - 1,
-                    container,
-                ));
-            }
-        }
-    }
-
     /// Collect symbols from style content.
     fn collect_style_symbols(
         uri: &Url,
@@ -439,49 +306,6 @@ impl WorkspaceSymbolsService {
                 }
             }
         }
-    }
-
-    /// Parse a declaration and return name and kind.
-    fn parse_declaration(s: &str) -> Option<(String, SymbolKind)> {
-        let name = Self::extract_identifier(s)?;
-
-        // Determine kind based on initialization
-        let kind = if s.contains("ref(") || s.contains("computed(") || s.contains("reactive(") {
-            SymbolKind::VARIABLE
-        } else if s.contains("=>") || s.contains("function") {
-            SymbolKind::FUNCTION
-        } else {
-            SymbolKind::CONSTANT
-        };
-
-        Some((name, kind))
-    }
-
-    /// Extract identifier from string.
-    fn extract_identifier(s: &str) -> Option<String> {
-        let s = s.trim_start();
-        if s.is_empty() {
-            return None;
-        }
-
-        let bytes = s.as_bytes();
-        let first = bytes[0] as char;
-
-        // Skip destructuring
-        if first == '{' || first == '[' {
-            return None;
-        }
-
-        if !Self::is_ident_start(first) {
-            return None;
-        }
-
-        let mut end = 1;
-        while end < bytes.len() && Self::is_ident_char(bytes[end] as char) {
-            end += 1;
-        }
-
-        Some(s[..end].to_string())
     }
 
     /// Extract CSS class names from a selector line.
@@ -560,20 +384,11 @@ impl WorkspaceSymbolsService {
             container_name: container.map(|s| s.to_string()),
         }
     }
-
-    fn is_ident_start(c: char) -> bool {
-        c.is_ascii_alphabetic() || c == '_' || c == '$'
-    }
-
-    fn is_ident_char(c: char) -> bool {
-        c.is_ascii_alphanumeric() || c == '_' || c == '$'
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::WorkspaceSymbolsService;
-    use tower_lsp::lsp_types::SymbolKind;
 
     #[test]
     fn test_to_pascal_case() {
@@ -589,22 +404,6 @@ mod tests {
     }
 
     #[test]
-    fn test_extract_identifier() {
-        assert_eq!(
-            WorkspaceSymbolsService::extract_identifier("count = 0"),
-            Some("count".to_string())
-        );
-        assert_eq!(
-            WorkspaceSymbolsService::extract_identifier("MyClass extends Base"),
-            Some("MyClass".to_string())
-        );
-        assert_eq!(
-            WorkspaceSymbolsService::extract_identifier("{ a, b } = obj"),
-            None
-        );
-    }
-
-    #[test]
     fn test_extract_css_classes() {
         let classes = WorkspaceSymbolsService::extract_css_classes(".container .item-active { }");
         assert_eq!(classes, vec!["container", "item-active"]);
@@ -614,17 +413,5 @@ mod tests {
     fn test_extract_css_ids() {
         let ids = WorkspaceSymbolsService::extract_css_ids("#app #main-content { }");
         assert_eq!(ids, vec!["app", "main-content"]);
-    }
-
-    #[test]
-    fn test_parse_declaration() {
-        let (name, kind) = WorkspaceSymbolsService::parse_declaration("count = ref(0)").unwrap();
-        assert_eq!(name, "count");
-        assert_eq!(kind, SymbolKind::VARIABLE);
-
-        let (name, kind) =
-            WorkspaceSymbolsService::parse_declaration("handleClick = () => {}").unwrap();
-        assert_eq!(name, "handleClick");
-        assert_eq!(kind, SymbolKind::FUNCTION);
     }
 }

@@ -16,8 +16,10 @@ use vize_carton::cstr;
 /// Find definition for a symbol in script context.
 pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionResponse> {
     if ctx.uri.path().ends_with(".art.vue")
-        && let Some(source) = crate::ide::musea::define_art_source_at_offset_from_descriptor(
-            ctx.sfc_descriptor()?,
+        && let Some(source) = crate::ide::musea::define_art_source_at_offset_from_state(
+            ctx.state,
+            &ctx.content,
+            ctx.uri,
             ctx.offset,
         )
         && let Some(target) = crate::ide::musea::resolve_define_art_source(ctx.uri, &source.source)

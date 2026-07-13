@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Patina - The quality checker for Vize code linting"
+metadata.vize.stability = "compatibility-preview"
 
 [dependencies]
 # Internal crates
@@ -14,6 +15,7 @@ vize_armature.workspace = true
 vize_atlas.workspace = true
 vize_carton.workspace = true
 vize_croquis = { workspace = true, features = ["relief-compat"] }
+vize_module.workspace = true
 vize_atelier_sfc.workspace = true
 vize_atelier_jsx.workspace = true
 
@@ -46,6 +48,7 @@ corsa.workspace = true
 libc.workspace = true
 
 [dev-dependencies]
+vize_atelier_template.workspace = true
 insta.workspace = true
 criterion.workspace = true
 

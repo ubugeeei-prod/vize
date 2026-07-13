@@ -4,7 +4,7 @@
 
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
-use vize_glyph::{Allocator, FormatOptions, format_sfc_with_allocator};
+use vize_glyph::{FormatOptions, format_sfc};
 
 /// Format options for NAPI.
 #[napi(object)]
@@ -69,8 +69,7 @@ pub fn format_sfc_napi(
     options: Option<FormatOptionsNapi>,
 ) -> Result<FormatResultNapi> {
     let options = apply_options(options.unwrap_or_default());
-    let allocator = Allocator::with_capacity(source.len() * 2);
-    let result = format_sfc_with_allocator(&source, &options, &allocator)
+    let result = format_sfc(&source, &options)
         .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))?;
 
     Ok(FormatResultNapi {

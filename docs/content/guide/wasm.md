@@ -20,6 +20,18 @@ vp install @vizejs/wasm
 
 ## API
 
+### Compiler option compatibility
+
+The `CompilerOptions` type is the supported option inventory for `compile`, `compileVapor`,
+`parseTemplate`, and `compileSfc`. Unknown object keys are ignored at the JavaScript boundary and
+are not compatibility promises. `vueParserQuirks` remains as a deprecated alias for
+`templateSyntax: "quirks"`; an explicit `templateSyntax` always takes precedence. The shared Rust
+field `experimentalServerScript` is reserved and is not exposed until a WASM compiler stage
+implements it. Each facade ignores supported fields that do not apply to its compiler stage:
+`bindingMetadata` only applies to direct template compilation. Runtime names apply to generated
+VDOM modules and SFC client output (VDOM or Vapor); source maps apply to VDOM output, including the
+template result returned by `compileSfc`. `outputMode` and `scriptExt` only apply to SFC compilation.
+
 ### Compile SFC
 
 Compile a Vue Single File Component into JavaScript:
@@ -40,9 +52,9 @@ const result = compileSfc(
   { filename: "App.vue" },
 );
 
-console.log(result.code);
-// → import { ref, toDisplayString, ... } from 'vue'
-// → ...compiled render function...
+console.log(result.script.code); // compiled <script> / <script setup>
+console.log(result.template?.code); // compiled render function, when a template exists
+console.log(result.css); // compiled styles, when styles exist
 ```
 
 ### Lint SFC
@@ -54,13 +66,15 @@ import init, { lintSfc } from "@vizejs/wasm";
 
 await init();
 
-const diagnostics = lintSfc(source, {
+const result = lintSfc(source, {
   filename: "App.vue",
   locale: "en", // 'en' | 'ja' | 'zh'
 });
 
-for (const d of diagnostics) {
-  console.log(`${d.severity}: ${d.message} (line ${d.line})`);
+for (const diagnostic of result.diagnostics) {
+  console.log(
+    `${diagnostic.severity}: ${diagnostic.message} (line ${diagnostic.location.start.line})`,
+  );
 }
 ```
 
@@ -73,11 +87,9 @@ import init, { formatSfc } from "@vizejs/wasm";
 
 await init();
 
-const formatted = formatSfc(source, {
-  filename: "App.vue",
-});
+const formatted = formatSfc(source, { printWidth: 80 });
 
-console.log(formatted);
+console.log(formatted.code);
 ```
 
 ## Initialization
@@ -103,14 +115,18 @@ Build interactive Vue compilation playgrounds that run entirely in the browser. 
 ```javascript
 // React to editor changes and compile in real-time
 editor.onChange((source) => {
-  const { code, errors } = compileSfc(source, {
+  const result = compileSfc(source, {
     filename: "Playground.vue",
   });
 
-  if (errors.length === 0) {
-    preview.update(code);
+  if (result.errors.length === 0) {
+    preview.update({
+      script: result.script.code,
+      template: result.template?.code,
+      css: result.css,
+    });
   } else {
-    diagnostics.show(errors);
+    diagnostics.show(result.errors);
   }
 });
 ```
@@ -123,10 +139,10 @@ Embed live, editable Vue examples in your documentation:
 // Compile documentation examples on the fly
 const examples = document.querySelectorAll("[data-vue-example]");
 for (const el of examples) {
-  const { code } = compileSfc(el.textContent, {
+  const result = compileSfc(el.textContent, {
     filename: `example-${el.id}.vue`,
   });
-  // Mount the compiled component...
+  // Use result.script.code, result.template?.code, and result.css to mount it.
 }
 ```
 
@@ -170,10 +186,12 @@ All WASM APIs that produce diagnostics (lint, compile errors) support localized 
 Pass the `locale` option to any API that produces diagnostics:
 
 ```javascript
-const diagnostics = lintSfc(source, {
+const result = lintSfc(source, {
   filename: "App.vue",
   locale: "ja", // Lint messages in Japanese
 });
+
+console.log(result.diagnostics);
 ```
 
 ## Bundle Size
@@ -186,5 +204,6 @@ For production use, consider lazy-loading the WASM module:
 // Lazy-load the compiler only when needed
 const compiler = await import("@vizejs/wasm");
 await compiler.default(); // init()
-const { code } = compiler.compileSfc(source, opts);
+const result = compiler.compileSfc(source, opts);
+console.log(result.script.code, result.template?.code, result.css);
 ```

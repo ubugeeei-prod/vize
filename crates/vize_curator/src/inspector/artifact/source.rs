@@ -5,6 +5,7 @@ use vize_atlas::{
     Compilation, PlanningContext, Product, ProductId, Provider, ProviderContext, ProviderError,
 };
 use vize_croquis::{CroquisDocumentProduct, CroquisSemanticSnapshot};
+use vize_module::ModuleSyntaxProduct;
 use vize_relief::ReliefProduct;
 
 use super::super::imports::{FileAnalysis, analyze_script_file, analyze_sfc_file};
@@ -40,12 +41,13 @@ impl Provider for InspectorSourceAnalysisProvider {
     fn dependencies(&self, context: &PlanningContext<'_>) -> Vec<ProductId> {
         if context.source().name().ends_with(".vue") {
             vec![
+                ProductId::of::<ModuleSyntaxProduct>(),
                 ProductId::of::<SfcDescriptorProduct>(),
                 ProductId::of::<ReliefProduct>(),
                 ProductId::of::<CroquisDocumentProduct>(),
             ]
         } else {
-            Vec::new()
+            vec![ProductId::of::<ModuleSyntaxProduct>()]
         }
     }
 
@@ -53,9 +55,10 @@ impl Provider for InspectorSourceAnalysisProvider {
         &self,
         context: &mut ProviderContext<'_>,
     ) -> Result<InspectorSourceAnalysis, ProviderError> {
+        let modules = context.get::<ModuleSyntaxProduct>()?;
         if !context.source().name().ends_with(".vue") {
             return Ok(InspectorSourceAnalysis {
-                graph: analyze_script_file(context.source().name(), context.source().text()),
+                graph: analyze_script_file(&modules),
                 ..Default::default()
             });
         }
@@ -63,15 +66,15 @@ impl Provider for InspectorSourceAnalysisProvider {
         let descriptor = context.get::<SfcDescriptorProduct>()?;
         let relief = context.get::<ReliefProduct>()?;
         let document = context.get::<CroquisDocumentProduct>()?;
-        let Some(descriptor) = descriptor.descriptor() else {
+        if descriptor.descriptor().is_none() {
             return Ok(InspectorSourceAnalysis {
                 sfc_parse_error: true,
                 ..Default::default()
             });
-        };
+        }
         let semantic = document.semantic_snapshot();
         Ok(InspectorSourceAnalysis {
-            graph: analyze_sfc_file(descriptor, &semantic),
+            graph: analyze_sfc_file(&modules, &semantic),
             semantic: Some(semantic),
             template_parse_error: relief
                 .as_ref()

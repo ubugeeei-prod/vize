@@ -69,7 +69,6 @@ struct GraphFileReport {
     vapor_blocks: Option<usize>,
     lint_diagnostics: Option<usize>,
     virtual_ts_bytes: Option<usize>,
-    flow_reachable_blocks: Option<usize>,
 }
 
 #[derive(Serialize)]
@@ -113,20 +112,31 @@ fn execute(args: &GraphArgs) -> Result<GraphReport, String> {
         let source = compilation
             .add_source(name.clone(), text)
             .map_err(|error| error.to_compact_string())?;
-        registered.push((name, source));
+        let is_vue = path.extension().and_then(|extension| extension.to_str()) == Some("vue");
+        if is_vue && !args.no_typecheck {
+            vize_canon::install_sfc_typecheck_request(
+                &mut compilation,
+                source,
+                vize_canon::SfcTypeCheckRequest::new(
+                    vize_canon::SfcTypeCheckOptions::new(name.clone()).with_virtual_ts(),
+                    vize_atelier_sfc::SfcCroquisMode::Full,
+                ),
+            )
+            .map_err(|error| error.to_compact_string())?;
+        }
+        registered.push((name, source, is_vue));
     }
 
     let snapshot = compilation.snapshot();
     let mut execution = snapshot.fork();
-    let roots = requested_roots(args);
-    if roots.is_empty() && !args.project {
+    if args.no_compiler && args.no_lint && args.no_typecheck && !args.project {
         return Err("at least one compiler, lint, typecheck, or project root is required".into());
     }
 
     let mut files = Vec::with_capacity(registered.len());
     let mut observed_products = Vec::new();
-    for (index, (path, source)) in registered.into_iter().enumerate() {
-        let mut source_roots = roots.clone();
+    for (index, (path, source, is_vue)) in registered.into_iter().enumerate() {
+        let mut source_roots = requested_roots(args, is_vue);
         if args.project && index == 0 {
             source_roots.extend(project_roots(true));
         }
@@ -166,14 +176,14 @@ fn execute(args: &GraphArgs) -> Result<GraphReport, String> {
     })
 }
 
-fn requested_roots(args: &GraphArgs) -> Vec<ProductId> {
+fn requested_roots(args: &GraphArgs, is_vue: bool) -> Vec<ProductId> {
     let (dom, ssr, vapor) = match args.target {
         GraphTarget::Dom => (!args.no_compiler, false, false),
         GraphTarget::Ssr => (false, !args.no_compiler, false),
         GraphTarget::Vapor => (false, false, !args.no_compiler),
     };
     let mut roots = compiler_roots(dom, ssr, vapor);
-    roots.extend(analysis_roots(!args.no_lint, !args.no_typecheck));
+    roots.extend(analysis_roots(!args.no_lint, !args.no_typecheck && is_vue));
     roots
 }
 
@@ -186,11 +196,11 @@ fn file_report(path: String, outcome: &ExecutionOutcome) -> Result<GraphFileRepo
         .collect::<Result<Vec<_>, _>>()?;
     let (compiler_bytes, vapor_blocks) = compiler_output_size(outcome)?;
     let lint_diagnostics = outcome
-        .get::<vize_patina::PatinaSemanticReportProduct>()
+        .get::<vize_patina::PatinaDocumentReportProduct>()
         .map_err(|error| error.to_compact_string())?
         .map(|report| report.diagnostics.len());
     let virtual_ts = outcome
-        .get::<vize_canon::CanonSemanticVirtualTsProduct>()
+        .get::<vize_canon::SfcTypeCheckProduct>()
         .map_err(|error| error.to_compact_string())?;
 
     Ok(GraphFileReport {
@@ -203,10 +213,10 @@ fn file_report(path: String, outcome: &ExecutionOutcome) -> Result<GraphFileRepo
         compiler_bytes,
         vapor_blocks,
         lint_diagnostics,
-        virtual_ts_bytes: virtual_ts.as_ref().map(|output| output.code.len()),
-        flow_reachable_blocks: virtual_ts
+        virtual_ts_bytes: virtual_ts
             .as_ref()
-            .map(|output| output.reachable_block_count),
+            .and_then(|output| output.virtual_ts.as_ref())
+            .map(|output| output.len()),
     })
 }
 

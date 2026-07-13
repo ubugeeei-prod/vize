@@ -5,6 +5,7 @@
 
 use std::{error::Error, fmt};
 
+use vize_atlas::Shared;
 use vize_atlas::{Compilation, CompilationInputError, ProductId, RegisterProviderError};
 use vize_carton::config::VueVersion;
 use vize_relief::VueDialectInput;
@@ -78,8 +79,11 @@ pub fn register_providers(compilation: &mut Compilation) -> Result<(), RegisterP
     vize_atelier_dom::register_atlas_provider(compilation)?;
     vize_atelier_ssr::register_atlas_provider(compilation)?;
     vize_atelier_vapor::register_atlas_provider(compilation)?;
-    vize_patina::register_semantic_lint_recipe(compilation)?;
-    vize_canon::register_semantic_virtual_ts_recipe(compilation)?;
+    vize_patina::register_shared_document_lint_recipe(
+        compilation,
+        Shared::new(vize_patina::Linter::new()),
+    )?;
+    vize_canon::register_sfc_typecheck_provider(compilation)?;
     vize_croquis_cf::register_atlas_provider(compilation)
 }
 
@@ -102,10 +106,10 @@ pub fn compiler_roots(dom: bool, ssr: bool, vapor: bool) -> Vec<ProductId> {
 pub fn analysis_roots(lint: bool, typecheck: bool) -> Vec<ProductId> {
     let mut roots = Vec::with_capacity(2);
     if lint {
-        roots.push(ProductId::of::<vize_patina::PatinaSemanticReportProduct>());
+        roots.push(ProductId::of::<vize_patina::PatinaDocumentReportProduct>());
     }
     if typecheck {
-        roots.push(ProductId::of::<vize_canon::CanonSemanticVirtualTsProduct>());
+        roots.push(ProductId::of::<vize_canon::SfcTypeCheckProduct>());
     }
     roots
 }

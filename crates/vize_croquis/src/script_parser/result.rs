@@ -59,7 +59,7 @@ pub(crate) struct RuntimeObjectLiteral {
 }
 
 /// Result of parsing a script setup block
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ScriptParseResult {
     pub bindings: BindingMetadata,
     pub macros: MacroTracker,

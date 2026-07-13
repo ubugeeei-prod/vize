@@ -52,7 +52,12 @@ impl From<TemplateSyntaxArg> for vize_relief::TemplateSyntaxMode {
 #[derive(Args, Default)]
 #[allow(clippy::disallowed_types)]
 pub struct BuildArgs {
-    /// Glob pattern(s) to match .vue files (default: ./**/*.vue)
+    /// File, directory, or glob inputs (output paths stay relative to their common root)
+    ///
+    /// Existing paths are literal. Globs support *, ?, [...], and recursive **;
+    /// quote patterns in the shell.
+    /// Backslashes are separators, not escapes. Use [*], [?], [[], or []] for
+    /// literal *, ?, [, or ].
     #[arg(default_value = "./**/*.vue")]
     pub patterns: Vec<String>,
 

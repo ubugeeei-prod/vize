@@ -133,7 +133,6 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -178,7 +177,7 @@ jobs:
   release-vscode-extension:
     name: Release VS Code extension
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    needs: build-editor-extensions
+    needs: [build-editor-extensions, release-preflight]
     timeout-minutes: 15
     environment: vscode-marketplace
     permissions:
@@ -194,7 +193,6 @@ jobs:
           node-version-file: ".node-version"
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-
       - name: Cache pnpm store for VS Code extension tooling
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
@@ -202,20 +200,18 @@ jobs:
           key: ${{ runner.os }}-pnpm-vscode-release-${{ hashFiles('.node-version') }}-v1
           restore-keys: |
             ${{ runner.os }}-pnpm-vscode-release-
-
       - name: Download editor extension artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: editor-extensions
           path: editor-extension-artifacts
-
-      - name: Skip publish when VSCE_PAT is absent
-        if: env.VSCE_PAT == ''
-        run: echo "VSCE_PAT is not configured; skipping VS Code Marketplace publish."
-
+      - name: Require VS Code Marketplace credentials
+        run: |
+          if [ -z "${VSCE_PAT:-}" ]; then
+            echo "::error::VSCE_PAT is required in the protected vscode-marketplace environment."
+            exit 1
+          fi
       - name: Publish VS Code extension
-        if: env.VSCE_PAT != ''
-        continue-on-error: true
         run: moon run --target native tools/moon/cmd/publish_vscode_extension -- editor-extension-artifacts/editors/vscode/dist/vize.vsix
 
   build-release-packages:
@@ -342,7 +338,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: npm/wasm
-          key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/wasm/package.json', 'npm/wasm/index.js', 'npm/wasm/index.d.ts', 'tools/moon/cmd/build_vize_wasm_package') }}
+          key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/wasm/package.json', 'npm/wasm/index.js', 'npm/wasm/index.d.ts', 'npm/wasm/lint-format.d.ts', 'tools/moon/cmd/build_vize_wasm_package') }}
 
       - name: Install wasm-bindgen-cli
         if: steps.cache-wasm.outputs.cache-hit != 'true'
@@ -596,12 +592,18 @@ jobs:
             npm/framework/musea-nuxt \
             npm/framework/nuxt
 
+  release-preflight:
+    permissions:
+      actions: write
+      contents: read
+      issues: read
+    uses: ./.github/workflows/release-preflight.yml
   # npm Trusted Publishing/provenance currently rejects self-hosted runners.
   # Keep the publish edge on GitHub-hosted runners; build and smoke jobs stay on Blacksmith.
   release-npm-native:
     name: Release @vizejs/native to npm
     runs-on: ubuntu-24.04
-    needs: [plan-release-platforms, build-native-all]
+    needs: [plan-release-platforms, build-native-all, release-preflight]
     timeout-minutes: 30
     environment: npm
     permissions:
@@ -609,7 +611,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -657,7 +658,7 @@ jobs:
   release-npm-fresco-native:
     name: Release @vizejs/fresco-native to npm
     runs-on: ubuntu-24.04
-    needs: build-native-all
+    needs: [build-native-all, release-preflight]
     timeout-minutes: 20
     environment: npm
     permissions:
@@ -665,7 +666,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -699,7 +699,7 @@ jobs:
   release-npm-wasm:
     name: Release @vizejs/wasm to npm
     runs-on: ubuntu-24.04
-    needs: build-wasm-package
+    needs: [build-wasm-package, release-preflight]
     timeout-minutes: 30
     environment: npm
     permissions:
@@ -708,7 +708,6 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/setup-moonbit
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -733,7 +732,14 @@ jobs:
   release-npm-vite-plugin:
     name: Release @vizejs/vite-plugin to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, release-npm-cli, smoke-release-packages]
+    needs:
+      [
+        build-release-packages,
+        release-npm-native,
+        release-npm-cli,
+        smoke-release-packages,
+        release-preflight,
+      ]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -741,7 +747,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -762,10 +767,13 @@ jobs:
     name: Release oxlint-plugin-vize to npm
     runs-on: ubuntu-24.04
     needs:
-      - plan-release-platforms
-      - build-release-packages
-      - release-npm-native
-      - smoke-release-packages
+      [
+        plan-release-platforms,
+        build-release-packages,
+        release-npm-native,
+        smoke-release-packages,
+        release-preflight,
+      ]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -773,7 +781,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -800,7 +807,7 @@ jobs:
   release-npm-unplugin:
     name: Release @vizejs/unplugin to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -808,7 +815,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -829,7 +835,8 @@ jobs:
   release-npm-fresco:
     name: Release @vizejs/fresco to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-fresco-native, smoke-release-packages]
+    needs:
+      [build-release-packages, release-npm-fresco-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -837,7 +844,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -858,7 +864,7 @@ jobs:
   release-npm-musea-mcp-server:
     name: Release @vizejs/musea-mcp-server to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -866,7 +872,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -887,7 +892,7 @@ jobs:
   release-npm-vite-plugin-musea:
     name: Release @vizejs/vite-plugin-musea to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -895,7 +900,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -916,7 +920,7 @@ jobs:
   release-npm-rspack-plugin:
     name: Release @vizejs/rspack-plugin to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -924,7 +928,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -945,7 +948,7 @@ jobs:
   release-npm-musea-nuxt:
     name: Release @vizejs/musea-nuxt to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -953,7 +956,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -975,12 +977,15 @@ jobs:
     name: Release @vizejs/nuxt to npm
     runs-on: ubuntu-24.04
     needs:
-      - build-release-packages
-      - release-npm-vite-plugin
-      - release-npm-vite-plugin-musea
-      - release-npm-musea-nuxt
-      - release-npm-cli
-      - smoke-release-packages
+      [
+        build-release-packages,
+        release-npm-vite-plugin,
+        release-npm-vite-plugin-musea,
+        release-npm-musea-nuxt,
+        release-npm-cli,
+        smoke-release-packages,
+        release-preflight,
+      ]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -988,7 +993,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -1009,6 +1013,7 @@ jobs:
   release-crates:
     name: Release crates to crates.io
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    needs: release-preflight
     timeout-minutes: 30
     environment: crates-io
     permissions:
@@ -1017,19 +1022,15 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/setup-moonbit
-
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: release-crates
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
-
       - name: Get crates.io token via Trusted Publishing
         id: crates-io-auth
         uses: rust-lang/crates-io-auth-action@b7e9a28eded4986ec6b1fa40eeee8f8f165559ec # v1
-
       - name: Publish to crates.io
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.crates-io-auth.outputs.token }}
@@ -1057,6 +1058,7 @@ jobs:
       - release-npm-musea-nuxt
       - release-npm-nuxt
       - release-crates
+      - release-preflight
     timeout-minutes: 20
     # `id-token: write` is required by sigstore/cosign-installer to mint the
     # keyless signing certificate, and by anchore/sbom-action when it uploads
@@ -1066,7 +1068,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Download CLI artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -1187,7 +1188,7 @@ jobs:
   release-npm-cli:
     name: Release vize CLI to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -1195,7 +1196,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:

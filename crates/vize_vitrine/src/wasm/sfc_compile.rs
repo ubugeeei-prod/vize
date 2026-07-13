@@ -93,9 +93,7 @@ impl Compiler {
             .descriptor_artifact()
             .as_result()
             .map_err(|error| JsValue::from_str(&error.message))?;
-        let result = artifacts
-            .compiled()
-            .map_err(|message| JsValue::from_str(message))?;
+        let result = artifacts.compiled().map_err(JsValue::from_str)?;
         let source_is_ts = descriptor
             .script_setup
             .as_ref()
@@ -104,7 +102,7 @@ impl Compiler {
             .is_some_and(|lang| matches!(lang, "ts" | "tsx"));
         let mut template_result = artifacts
             .render()
-            .map_err(|message| JsValue::from_str(message))?
+            .map_err(JsValue::from_str)?
             .map(|render| crate::CompileResult {
                 code: render.code().to_string(),
                 preamble: String::new(),
@@ -115,10 +113,11 @@ impl Compiler {
                     .templates()
                     .map(|templates| templates.iter().map(ToString::to_string).collect()),
             });
-        if source_is_ts && !output_is_ts {
-            if let Some(template) = template_result.as_mut() {
-                template.code = transform_typescript_to_js(&template.code).to_string();
-            }
+        if source_is_ts
+            && !output_is_ts
+            && let Some(template) = template_result.as_mut()
+        {
+            template.code = transform_typescript_to_js(&template.code).to_string();
         }
         let script_code = if source_is_ts && !output_is_ts {
             transform_typescript_to_js(&result.code).to_string()

@@ -1,6 +1,8 @@
 use std::fs;
 
-use tower_lsp::lsp_types::{CompletionResponse, CompletionTextEdit, Documentation, Url};
+use tower_lsp::lsp_types::{
+    CompletionResponse, CompletionTextEdit, Documentation, TextDocumentContentChangeEvent, Url,
+};
 
 use super::CompletionService;
 use crate::{ide::IdeContext, server::ServerState};
@@ -109,6 +111,72 @@ import Child from './Child.vue'
         CompletionTextEdit::InsertAndReplace(_) => panic!("expected a simple text edit"),
     };
     assert_eq!(edit.new_text, ":someMessage=\"$1\"");
+}
+
+#[test]
+fn template_component_prop_completion_tracks_open_child_buffer() {
+    let dir = tempfile::tempdir().unwrap();
+    let child_path = dir.path().join("Child.vue");
+    fs::write(
+        &child_path,
+        "<script setup lang=\"ts\">defineProps<{ staleProp: string }>()</script>",
+    )
+    .unwrap();
+    let source = r#"<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+<template><Child  /></template>
+"#;
+    let parent_path = dir.path().join("Parent.vue");
+    fs::write(&parent_path, source).unwrap();
+
+    let parent_uri = Url::from_file_path(&parent_path).unwrap();
+    let child_uri = Url::from_file_path(&child_path).unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(parent_uri.clone(), source.to_string(), 1, "vue".to_string());
+    state.documents.open(
+        child_uri.clone(),
+        "<script setup lang=\"ts\">defineProps<{ freshProp: string }>()</script>".to_string(),
+        3,
+        "vue".to_string(),
+    );
+
+    let offset = source.find("<Child  />").unwrap() + "<Child ".len();
+    let ctx = IdeContext::new(&state, &parent_uri, offset).unwrap();
+    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+    assert!(has_label(&labels, "fresh-prop"), "{labels:?}");
+    assert!(!has_label(&labels, "stale-prop"), "{labels:?}");
+
+    state.documents.apply_changes(
+        &child_uri,
+        vec![TextDocumentContentChangeEvent {
+            range: None,
+            range_length: None,
+            text: "<script setup lang=\"ts\">defineProps<{ newerProp: string }>()</script>"
+                .to_string(),
+        }],
+        4,
+    );
+    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+    assert!(has_label(&labels, "newer-prop"), "{labels:?}");
+    assert!(!has_label(&labels, "fresh-prop"), "{labels:?}");
+
+    state.documents.close(&child_uri);
+    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+    assert!(has_label(&labels, "stale-prop"), "{labels:?}");
+    assert!(!has_label(&labels, "newer-prop"), "{labels:?}");
+
+    state.documents.open(
+        child_uri,
+        "<script setup lang=\"ts\">defineProps<{ otherProp: string }>()</script>".to_string(),
+        4,
+        "vue".to_string(),
+    );
+    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+    assert!(has_label(&labels, "other-prop"), "{labels:?}");
+    assert!(!has_label(&labels, "newer-prop"), "{labels:?}");
 }
 
 #[cfg(feature = "native")]

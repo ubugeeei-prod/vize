@@ -4,6 +4,8 @@
 mod components;
 #[path = "emit/directive.rs"]
 mod directive;
+#[path = "emit/output.rs"]
+mod output;
 #[path = "emit/property.rs"]
 mod property;
 
@@ -12,17 +14,12 @@ mod property;
 mod tests;
 
 use vize_carton::{String, ToCompactString, appendln, cstr};
-use vize_rendu::{RenduEscapeMode, RenduRoot};
+use vize_rendu::{RenderEmitSettings, RenderOutputMode, RenduEscapeMode, RenduRoot};
 
 use super::{VaporBlockId, VaporBranch, VaporOperation, VaporPlan, VaporProperty, plan_rendu};
 use property::{emit_element_properties, expression, quote_js, use_helper};
 
-/// Owned JavaScript and the static HTML templates referenced by it.
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct VaporEmitResult {
-    pub code: String,
-    pub templates: Vec<String>,
-}
+pub use output::VaporEmitResult;
 
 /// Plan and emit a validated Rendu root without materializing a frontend AST.
 pub fn emit_rendu(root: &RenduRoot) -> VaporEmitResult {
@@ -31,7 +28,14 @@ pub fn emit_rendu(root: &RenduRoot) -> VaporEmitResult {
 
 /// Emit executable Vue Vapor-shaped JavaScript from an owned Vapor plan.
 pub fn emit_vapor_plan(plan: &VaporPlan) -> VaporEmitResult {
-    Emitter::new(plan).emit()
+    emit_vapor_plan_with_settings(plan, &RenderEmitSettings::default())
+}
+
+pub fn emit_vapor_plan_with_settings(
+    plan: &VaporPlan,
+    settings: &RenderEmitSettings,
+) -> VaporEmitResult {
+    Emitter::new(plan).emit(settings)
 }
 
 struct Emitter<'a> {
@@ -51,21 +55,13 @@ impl<'a> Emitter<'a> {
         }
     }
 
-    fn emit(mut self) -> VaporEmitResult {
+    fn emit(mut self, settings: &RenderEmitSettings) -> VaporEmitResult {
         let (body, value) = self.emit_block(self.plan.entry(), 1);
-        let mut code = String::default();
-        if !self.helpers.is_empty() {
-            let imports = self
-                .helpers
-                .iter()
-                .map(|helper| cstr!("{helper} as _{helper}"))
-                .collect::<Vec<_>>()
-                .join(", ");
-            appendln!(code, "import { ", imports.as_str(), " } from 'vue';");
-        }
+        let preamble = output::preamble(&self.helpers, settings);
+        let mut render = String::default();
         for (index, html) in self.templates.iter().enumerate() {
             appendln!(
-                code,
+                render,
                 "const t",
                 @index,
                 " = _template(",
@@ -73,16 +69,26 @@ impl<'a> Emitter<'a> {
                 ", true)"
             );
         }
-        code.push_str(
-            "export function render(_ctx = {}, _cache, $props, $setup, $data, $options) {\n",
-        );
-        code.push_str("  const $slots = _ctx.$slots || {}\n");
-        code.push_str("  const _hoisted = _ctx._hoisted || []\n");
-        code.push_str(&body);
-        appendln!(code, "  return ", value.as_str());
-        appendln!(code, "}");
+        render.push_str(match settings.mode {
+            RenderOutputMode::Module => {
+                "export function render(_ctx = {}, _cache, $props, $setup, $data, $options) {\n"
+            }
+            RenderOutputMode::Function => {
+                "return function render(_ctx = {}, _cache, $props, $setup, $data, $options) {\n"
+            }
+        });
+        render.push_str("  const $slots = _ctx.$slots || {}\n");
+        render.push_str("  const _hoisted = _ctx._hoisted || []\n");
+        render.push_str(&body);
+        appendln!(render, "  return ", value.as_str());
+        appendln!(render, "}");
+        let mut code = String::with_capacity(preamble.len() + render.len());
+        code.push_str(&preamble);
+        code.push_str(&render);
         VaporEmitResult {
             code,
+            preamble,
+            body: render,
             templates: self.templates,
         }
     }

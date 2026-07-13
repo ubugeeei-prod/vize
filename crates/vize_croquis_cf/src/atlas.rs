@@ -2,6 +2,8 @@
 
 #[path = "atlas/analysis.rs"]
 mod analysis;
+#[path = "atlas/module_facts.rs"]
+mod module_facts;
 
 pub use analysis::{
     CrossFileAnalysisArtifact, CrossFileAnalysisInput, CrossFileAnalysisProduct,

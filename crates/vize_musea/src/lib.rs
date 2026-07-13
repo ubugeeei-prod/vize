@@ -2,6 +2,11 @@
 //!
 //! Musea - Component gallery and documentation for Vize.
 //!
+//! ## Stability
+//!
+//! **Experimental.** Public APIs may change or disappear in any release. See the
+//! [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+//!
 //! ## Name Origin
 //!
 //! **Musea** (plural of museum) represents a gallery space where art is

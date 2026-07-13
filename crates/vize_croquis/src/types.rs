@@ -35,7 +35,7 @@ pub struct TypeProperty {
 }
 
 /// Type definitions collected from script
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TypeDefinitions {
     /// Interface definitions (name -> body)
     pub interfaces: FxHashMap<CompactString, CompactString>,
@@ -155,7 +155,7 @@ impl TypeDefinitions {
 }
 
 /// Type resolver for Vue compiler macros
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TypeResolver {
     /// Collected type definitions
     definitions: TypeDefinitions,

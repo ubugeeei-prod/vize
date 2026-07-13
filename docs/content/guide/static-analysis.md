@@ -4,26 +4,26 @@ title: Static Analysis
 
 # Static Analysis
 
-Vize's analysis stack is shared by the compiler, linter, type checker, editor server, and Musea
-tooling. The goal is to parse a Vue SFC once, keep rich semantic information around, and reuse it
-for diagnostics and code generation instead of treating each command as a separate tool.
+Vize shares typed compiler, lint, typecheck, editor, and Musea products through Atlas, an execution substrate rather than a universal AST; each source shape keeps its own representations.
+For an SFC script, the frontend parses each authored block once and projects its live OXC `Program` into owned Module facts, Croquis analysis, and compiler preanalysis for later roots to reuse.
+Template parsing remains a separate, demand-selected product.
 
 The examples below assume the `vize` npm package is installed and called from project scripts, which
 is the recommended workflow for applications.
 
 ## Pipeline
 
-| Layer    | What it does                                                              | Used by                                        |
-| -------- | ------------------------------------------------------------------------- | ---------------------------------------------- |
-| Armature | Tokenizes and parses Vue templates and SFC structure                      | compiler, linter, formatter                    |
-| Croquis  | Builds scopes, binding metadata, macro information, and cross-file graphs | compiler, lint, type-aware checks              |
-| Patina   | Runs Vue, script, CSS, a11y, SSR, Vapor, Musea, and type-aware lint rules | `vize lint`, editor diagnostics, Oxlint bridge |
-| Canon    | Generates virtual TypeScript and maps diagnostics back to Vue files       | `vize check`, editor type checking             |
-| Maestro  | Exposes diagnostics and editor features through LSP                       | `vize lsp`, VS Code, Zed                       |
+| Layer          | What it owns                                                                                                            | Used by                                                  |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Atlas          | Source identity, typed planning, cache, invalidation, counters, and traces; no compiler IR                              | every production recipe                                  |
+| Frontends      | SFC decomposition and parse-once scripts; Armature/Relief for Vue-template syntax; Module for owned JS/TS facts and CFG | compiler and tool roots selected by source shape         |
+| Analysis       | Croquis identity/scopes/bindings/reactivity; independent Flow graphs; Croquis CF project analysis                       | lint, type checking, Inspector, cross-file reports       |
+| Patina / Canon | Source-shaped diagnostics; Virtual TS from descriptor/Croquis plus conditional Relief/Module                            | CLI, Oxlint bridge, editor diagnostics and type checking |
+| Maestro        | One URI-keyed mutable compilation queried directly through LSP                                                          | `vize lsp`, VS Code, Zed                                 |
 
-This means static analysis is not only linting. Template bindings, compiler macros, component
-metadata, provide/inject relationships, reactivity flow, generated virtual TypeScript, and
-component gallery metadata all depend on the same lower-level analysis work.
+Static analysis is not only linting: template bindings, compiler macros, component metadata,
+provide/inject relationships, reactivity, Virtual TS, and Musea can share upstream products without
+one fixed pipeline. Raw templates request Relief/Croquis directly; script-only work omits Relief.
 
 For the concrete rule names, defaults, and cross-file diagnostic codes that can be emitted, see
 [Rules](../rules/index.md).
@@ -176,9 +176,9 @@ off until configured and flags `<object>.<property>` accesses from a `members` l
 
 ## Cross-File Rules
 
-Cross-file analysis lives in Croquis and is exposed to linting through Patina diagnostics. It is
-opt-in because it builds a module registry, import graph, component-usage graph, and additional
-indexes across all analyzed Vue files.
+Cross-file analysis lives in `vize_croquis_cf`, separate from single-document Croquis and Flow.
+Patina exposes it as an opt-in because it builds a module registry, import graph, component-usage
+graph, and additional indexes across the requested source set.
 
 Today, `vize lint --cross-file` enables provide/inject matching, unique element ID checks,
 reactivity tracking, and async race-condition analysis. `--cross-file-tree` prints the
@@ -212,9 +212,9 @@ CLI, Oxlint bridge, and editor server.
 
 ## Type Checking
 
-`vize check` generates virtual TypeScript for Vue SFCs and asks Corsa project sessions for
-diagnostics. It checks `.vue`, `.ts`, `.tsx`, and `.d.ts` inputs and maps diagnostics back to the
-original source files.
+`vize check` generates Virtual TS and asks Corsa project sessions for diagnostics across `.vue`,
+`.ts`, `.tsx`, and `.d.ts`. SFC Canon requests descriptor/Croquis, adds Relief only for a template
+and Module only for a script, never fabricates Flow, and maps diagnostics to authored files.
 
 ```json
 {

@@ -13,6 +13,15 @@ const configSource = fs.readFileSync(
   fileURLToPath(new URL("./config.ts", import.meta.url)),
   "utf8",
 );
+const packageJson = JSON.parse(
+  fs.readFileSync(fileURLToPath(new URL("../package.json", import.meta.url)), "utf8"),
+);
+
+assert.deepEqual(packageJson.exports?.["./internal/config-bridge"], {
+  types: "./dist/internal/config-bridge.d.mts",
+  import: "./dist/internal/config-bridge.mjs",
+  default: "./dist/internal/config-bridge.mjs",
+});
 
 assert.doesNotMatch(
   configSource,

@@ -1,5 +1,8 @@
 # vize_atelier_dom
 
+Support and deprecation guarantees are defined in the
+[Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
 `vize_atelier_dom` compiles Vue templates for the DOM runtime.
 
 ## Highlights
@@ -18,7 +21,7 @@
 
 - `vize_atelier_core` provides shared steps and codegen
 - `vize_croquis` can be passed in through compiler options for semantic context
-- `vize_atelier_sfc` uses this crate for standard template compilation
+- `vize_atelier_template`, SFC, and JSX routes consume this frontend-neutral backend
 
 ## License
 

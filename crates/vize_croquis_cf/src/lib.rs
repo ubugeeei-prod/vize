@@ -1,5 +1,10 @@
 //! Cross-file semantic analysis for Vue projects.
 //!
+//! ## Stability
+//!
+//! **Experimental.** Public APIs may change or disappear in any release. See the
+//! [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+//!
 //! This module provides cross-file analysis capabilities that track relationships
 //! between Vue components across multiple files. These analyses are **opt-in** due
 //! to their performance overhead.

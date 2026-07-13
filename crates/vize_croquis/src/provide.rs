@@ -97,7 +97,7 @@ pub struct ComposableCall {
 }
 
 /// Tracks provide/inject during analysis
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ProvideInjectTracker {
     provides: Vec<ProvideEntry>,
     injects: Vec<InjectEntry>,

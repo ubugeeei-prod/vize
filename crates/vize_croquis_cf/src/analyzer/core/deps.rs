@@ -3,7 +3,7 @@ use super::paths::{component_names_match, import_candidates};
 use crate::graph::DependencyEdge;
 use crate::registry::FileId;
 use std::path::Path;
-use vize_carton::{CompactString, String};
+use vize_carton::String;
 
 impl CrossFileAnalyzer {
     pub(super) fn update_dependency_edges(&mut self, file_id: FileId) {
@@ -12,43 +12,26 @@ impl CrossFileAnalyzer {
         };
 
         let current_dir = entry.path.parent().map(Path::to_path_buf);
-        let imports_data: Vec<_> = entry
-            .analysis
-            .scopes
-            .iter()
-            .filter_map(|scope| {
-                if let vize_croquis::ScopeData::ExternalModule(data) = scope.data() {
-                    Some((
-                        data.source.clone(),
-                        data.is_type_only,
-                        scope
-                            .bindings()
-                            .map(|(name, _)| CompactString::new(name))
-                            .collect::<Vec<_>>(),
-                    ))
-                } else {
-                    None
-                }
-            })
-            .collect();
+        let imports_data = entry.module_imports.clone();
         let used_components: Vec<_> = entry.analysis.used_components.iter().cloned().collect();
 
         let mut import_bindings = Vec::new();
-        for (source, is_type_only, local_bindings) in imports_data {
-            let Some(target_id) = self.resolve_import(source.as_str(), current_dir.as_deref())
+        for import in imports_data {
+            let Some(target_id) =
+                self.resolve_import(import.source.as_str(), current_dir.as_deref())
             else {
                 continue;
             };
 
-            let edge_type = if is_type_only {
+            let edge_type = if import.is_type_only {
                 DependencyEdge::TypeImport
             } else {
                 DependencyEdge::Import
             };
             self.graph.add_edge(file_id, target_id, edge_type);
 
-            if !is_type_only {
-                for local in local_bindings {
+            if !import.is_type_only {
+                for local in import.local_bindings {
                     import_bindings.push((local, target_id));
                 }
             }

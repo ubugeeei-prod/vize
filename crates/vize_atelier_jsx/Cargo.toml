@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Atelier JSX - Graph-native JSX/TSX frontend for Vize"
+metadata.vize.stability = "compatibility-preview"
 
 [dependencies]
 # Internal crates
@@ -14,6 +15,7 @@ vize_atlas = { workspace = true }
 vize_relief = { workspace = true }
 vize_croquis = { workspace = true, default-features = false, features = ["analysis"] }
 vize_flow = { workspace = true }
+vize_module = { workspace = true }
 vize_rendu = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_dom = { workspace = true }

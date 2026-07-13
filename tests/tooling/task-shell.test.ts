@@ -91,7 +91,7 @@ test("MoonBit task commands initialize the workspace registry index", () => {
       {},
       (candidate) => candidate === ".cache/moonbit/bin/moon",
     ),
-    "( [ -d .cache/moonbit/registry/index/.git ] || (cd tools/moon && env MOON_HOME=.cache/moonbit MOON_BIN=.cache/moonbit/bin/moon .cache/moonbit/bin/moon update) )",
+    "( [ -d .cache/moonbit/registry/index/.git ] || env MOON_HOME=.cache/moonbit MOON_BIN=.cache/moonbit/bin/moon .cache/moonbit/bin/moon update )",
   );
 });
 

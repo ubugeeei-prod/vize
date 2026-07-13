@@ -7,8 +7,8 @@ use crate::{SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError};
 
 use super::{
     RenderFunctionName, append_component_render_export, compile_styles,
-    extract_descriptor_macro_artifacts, extract_normal_script_content, finalize_output_mode,
-    generate_scope_id, is_ts_lang, rewrite_default, trim_trailing_newlines,
+    extract_descriptor_macro_artifacts, finalize_output_mode, generate_scope_id, is_ts_lang,
+    trim_trailing_newlines,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -31,7 +31,10 @@ pub(crate) fn compile_sfc_with_graph_render(
     options: SfcCompileOptions,
     render: GraphRenderModule,
     mut warnings: Vec<SfcError>,
+    modules: Option<&vize_module::ModuleDocument>,
+    script_syntax: Option<&crate::SfcScriptSyntaxSnapshot>,
 ) -> Result<SfcCompileResult, SfcError> {
+    validate_script_modules(descriptor, modules)?;
     let filename = if options.parse.filename.is_empty() {
         options.script.id.as_deref().unwrap_or("anonymous.vue")
     } else {
@@ -58,6 +61,8 @@ pub(crate) fn compile_sfc_with_graph_render(
         component_name.as_str(),
         render.vapor,
         filename,
+        modules,
+        script_syntax,
     )?;
     let render_offset = code.len();
     code.push_str(render.code.as_str());
@@ -83,7 +88,12 @@ pub(crate) fn compile_sfc_with_graph_render(
         super::append_css_modules_assignment(&mut code, "_sfc_main", &styles.css_modules);
         code.push_str("export default _sfc_main\n");
     }
-    finalize_output_mode(&mut code, &mut warnings, &options);
+    finalize_output_mode(
+        &mut code,
+        &mut warnings,
+        &options,
+        &vize_relief::CodegenOptions::default(),
+    );
     trim_trailing_newlines(&mut code);
     let map = source_map(
         &render,
@@ -101,7 +111,9 @@ pub(crate) fn compile_sfc_with_graph_render(
         errors: Vec::new(),
         warnings,
         bindings,
-        macro_artifacts: extract_descriptor_macro_artifacts(descriptor),
+        macro_artifacts: script_syntax
+            .map(crate::SfcScriptSyntaxSnapshot::macro_artifacts)
+            .unwrap_or_else(|| extract_descriptor_macro_artifacts(descriptor)),
     })
 }
 
@@ -111,6 +123,8 @@ fn compile_graph_script(
     component_name: &str,
     vapor: bool,
     filename: &str,
+    modules: Option<&vize_module::ModuleDocument>,
+    script_syntax: Option<&crate::SfcScriptSyntaxSnapshot>,
 ) -> Result<(String, Option<crate::BindingMetadata>), SfcError> {
     let preserve_types = options.script.is_ts || options.template.is_ts;
     if descriptor.script_setup.is_some() {
@@ -120,21 +134,31 @@ fn compile_graph_script(
             .as_deref()
             .filter(|filename| !filename.is_empty())
             .unwrap_or(filename);
-        let compiled = crate::compile_script::compile_script_from_source(
-            descriptor,
-            &options.script,
+        let projection = script_syntax
+            .and_then(crate::SfcScriptSyntaxSnapshot::setup_compiler)
+            .ok_or_else(|| script_module_error("SFC script compiler projection is missing"))?;
+        let compiled = crate::compile_script::compile_preanalyzed_script_setup(
+            projection,
             component_name,
             vapor,
             preserve_types,
+            descriptor
+                .template
+                .as_ref()
+                .map(|template| template.content.as_ref()),
             Some(source_filename),
         )?;
         let mut code = String::default();
-        if let Some(normal) = descriptor.script.as_ref() {
-            let mut content = extract_normal_script_content(
-                normal.content.as_ref(),
-                is_ts_lang(normal.lang.as_deref()),
-                preserve_types,
-            );
+        if descriptor.script.is_some() {
+            let normal_projection = script_syntax
+                .and_then(crate::SfcScriptSyntaxSnapshot::normal_compiler)
+                .ok_or_else(|| {
+                    script_module_error("normal script compiler projection is missing")
+                })?;
+            let mut content = String::from(normal_projection.dual_content());
+            if normal_projection.source_is_ts() && !preserve_types {
+                content = crate::compile_script::typescript::transform_typescript_to_js(&content);
+            }
             if !content.contains("const __default__") {
                 content.push_str("\nconst __default__ = {}\n");
             }
@@ -152,12 +176,13 @@ fn compile_graph_script(
     }
 
     if let Some(normal) = descriptor.script.as_ref() {
-        let (mut code, _) = rewrite_default(
-            normal.content.as_ref(),
-            "_sfc_main",
-            is_ts_lang(normal.lang.as_deref()),
-        );
-        if is_ts_lang(normal.lang.as_deref()) && !preserve_types {
+        let normal_projection = script_syntax
+            .and_then(crate::SfcScriptSyntaxSnapshot::normal_compiler)
+            .ok_or_else(|| script_module_error("normal script compiler projection is missing"))?;
+        let normal_is_ts =
+            module_is_ts(modules, "script").unwrap_or_else(|| is_ts_lang(normal.lang.as_deref()));
+        let mut code = String::from(normal_projection.rewritten_default());
+        if normal_is_ts && !preserve_types {
             code = crate::compile_script::typescript::transform_typescript_to_js(&code);
         }
         code.push('\n');
@@ -170,6 +195,71 @@ fn compile_graph_script(
         "const _sfc_main = {}\n"
     };
     Ok((component.to_compact_string(), None))
+}
+
+fn validate_script_modules(
+    descriptor: &SfcDescriptor<'_>,
+    modules: Option<&vize_module::ModuleDocument>,
+) -> Result<(), SfcError> {
+    let expected =
+        usize::from(descriptor.script.is_some()) + usize::from(descriptor.script_setup.is_some());
+    if expected == 0 {
+        return Ok(());
+    }
+    let Some(modules) = modules else {
+        return Err(script_module_error("SFC script module product is missing"));
+    };
+    if modules.modules.len() != expected {
+        return Err(script_module_error(
+            "SFC script module count is inconsistent",
+        ));
+    }
+    for (role, block) in [
+        ("script", descriptor.script.as_ref()),
+        ("script-setup", descriptor.script_setup.as_ref()),
+    ] {
+        let Some(block) = block else { continue };
+        if module_source(Some(modules), role) != Some(block.content.as_ref()) {
+            return Err(script_module_error(
+                "SFC script module bytes are inconsistent",
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn module_source<'a>(
+    modules: Option<&'a vize_module::ModuleDocument>,
+    role: &str,
+) -> Option<&'a str> {
+    let suffix = vize_carton::cstr!("#{role}");
+    modules?
+        .modules
+        .iter()
+        .find(|module| module.name.ends_with(suffix.as_str()))
+        .map(|module| module.source.as_ref())
+}
+
+fn module_is_ts(modules: Option<&vize_module::ModuleDocument>, role: &str) -> Option<bool> {
+    let suffix = vize_carton::cstr!("#{role}");
+    modules?
+        .modules
+        .iter()
+        .find(|module| module.name.ends_with(suffix.as_str()))
+        .map(|module| {
+            matches!(
+                module.language,
+                vize_module::ModuleLanguage::TypeScript | vize_module::ModuleLanguage::Tsx
+            )
+        })
+}
+
+fn script_module_error(message: &str) -> SfcError {
+    SfcError {
+        message: message.into(),
+        code: Some("INCONSISTENT_SCRIPT_MODULE_ARTIFACTS".into()),
+        loc: None,
+    }
 }
 
 fn source_map_requested(options: &SfcCompileOptions) -> bool {

@@ -3,7 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::{String, cstr};
+use vize_carton::{FxHashMap, String, cstr};
 
 use super::bridge::CorsaBridge;
 use super::types::CorsaBridgeError;
@@ -32,6 +32,7 @@ pub struct CorsaVueVirtualDocument {
     pub source_type: SourceType,
     pub virtual_suffix: &'static str,
     pub(crate) descriptor: vize_atlas::Shared<vize_atelier_sfc::SfcDescriptorArtifact>,
+    pub(crate) script_syntax: Option<vize_atlas::Shared<vize_atelier_sfc::SfcScriptSyntaxSnapshot>>,
 }
 
 pub(crate) struct CorsaVueVirtualProject {
@@ -54,7 +55,60 @@ impl CorsaBridge {
         content: &str,
         options: CorsaVueVirtualDocumentOptions,
     ) -> Result<CorsaVueVirtualDocument, CorsaBridgeError> {
-        let project = build_vue_virtual_project(source_path, content, options)?;
+        self.open_vue_virtual_document_with_overlays(source_path, content, options, &[])
+            .await
+    }
+
+    /// Generate and sync a Vue document while preferring unsaved dependency
+    /// buffers over their on-disk contents.
+    pub async fn open_vue_virtual_document_with_overlays(
+        &self,
+        source_path: &Path,
+        content: &str,
+        options: CorsaVueVirtualDocumentOptions,
+        overlays: &[(PathBuf, String)],
+    ) -> Result<CorsaVueVirtualDocument, CorsaBridgeError> {
+        let project =
+            build_vue_virtual_project_with_overlays(source_path, content, options, overlays)?;
+        self.open_virtual_documents_batch(&project.documents)
+            .await?;
+        Ok(project.host)
+    }
+
+    /// Sync an Atlas-produced host without regenerating or reparsing it.
+    pub async fn open_prebuilt_vue_virtual_document(
+        &self,
+        source_path: &Path,
+        generated: &VueDocumentVirtualTs,
+        options: CorsaVueVirtualDocumentOptions,
+    ) -> Result<CorsaVueVirtualDocument, CorsaBridgeError> {
+        self.open_prebuilt_vue_virtual_document_with_overlays(
+            source_path,
+            generated,
+            options,
+            &[],
+            &[],
+        )
+        .await
+    }
+
+    /// Sync an Atlas-produced host and its dependency overlays without
+    /// regenerating the host document in a private compilation.
+    pub async fn open_prebuilt_vue_virtual_document_with_overlays(
+        &self,
+        source_path: &Path,
+        generated: &VueDocumentVirtualTs,
+        options: CorsaVueVirtualDocumentOptions,
+        overlays: &[(PathBuf, String)],
+        prebuilt_vue_overlays: &[(PathBuf, vize_atlas::Shared<VueDocumentVirtualTs>)],
+    ) -> Result<CorsaVueVirtualDocument, CorsaBridgeError> {
+        let project = build_prebuilt_vue_virtual_project_with_overlays(
+            source_path,
+            generated.clone(),
+            options,
+            overlays,
+            prebuilt_vue_overlays,
+        );
         self.open_virtual_documents_batch(&project.documents)
             .await?;
         Ok(project.host)
@@ -86,16 +140,84 @@ pub(crate) fn build_vue_virtual_project(
     content: &str,
     options: CorsaVueVirtualDocumentOptions,
 ) -> Result<CorsaVueVirtualProject, CorsaBridgeError> {
+    build_vue_virtual_project_with_overlays(source_path, content, options, &[])
+}
+
+pub(crate) fn build_vue_virtual_project_with_overlays(
+    source_path: &Path,
+    content: &str,
+    options: CorsaVueVirtualDocumentOptions,
+    overlays: &[(PathBuf, String)],
+) -> Result<CorsaVueVirtualProject, CorsaBridgeError> {
     let rewriter = ImportRewriter::new();
     let host = generate_vue_document(source_path, content, options, &rewriter)?;
+    Ok(build_vue_virtual_project_from_generated(
+        host,
+        options,
+        overlays,
+        &FxHashMap::default(),
+        true,
+        &rewriter,
+    ))
+}
+
+pub(super) fn build_prebuilt_vue_virtual_project_with_overlays(
+    source_path: &Path,
+    generated: VueDocumentVirtualTs,
+    options: CorsaVueVirtualDocumentOptions,
+    overlays: &[(PathBuf, String)],
+    prebuilt_vue_overlays: &[(PathBuf, vize_atlas::Shared<VueDocumentVirtualTs>)],
+) -> CorsaVueVirtualProject {
+    let rewriter = ImportRewriter::new();
+    let host = generated_vue_document(source_path, generated);
+    let prebuilt_vue_overlays = prebuilt_vue_overlays
+        .iter()
+        .map(|(path, generated)| {
+            let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.clone());
+            (key, generated.as_ref())
+        })
+        .collect::<FxHashMap<_, _>>();
+    build_vue_virtual_project_from_generated(
+        host,
+        options,
+        overlays,
+        &prebuilt_vue_overlays,
+        false,
+        &rewriter,
+    )
+}
+
+fn build_vue_virtual_project_from_generated(
+    host: GeneratedVueDocument,
+    options: CorsaVueVirtualDocumentOptions,
+    overlays: &[(PathBuf, String)],
+    prebuilt_vue_overlays: &FxHashMap<PathBuf, &VueDocumentVirtualTs>,
+    generate_missing_vue: bool,
+    rewriter: &ImportRewriter,
+) -> CorsaVueVirtualProject {
     let mut documents = vec![(host.virtual_uri.clone(), host.generated.code.clone())];
     if host.generated.virtual_suffix == ".tsx" {
         documents.push(tsx_vue_import_shim(&host.source_path));
     }
-    collect_dependency_documents(&mut documents, &host, options, &rewriter);
+    let overlays = overlays
+        .iter()
+        .map(|(path, content)| {
+            let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.clone());
+            (key, content.as_str())
+        })
+        .collect::<FxHashMap<_, _>>();
+    collect_dependency_documents(
+        &mut documents,
+        &host,
+        options,
+        rewriter,
+        &overlays,
+        prebuilt_vue_overlays,
+        generate_missing_vue,
+    );
 
     let generated = host.generated;
-    Ok(CorsaVueVirtualProject {
+    CorsaVueVirtualProject {
         host: CorsaVueVirtualDocument {
             request_uri: host.virtual_uri,
             code: generated.code,
@@ -105,9 +227,10 @@ pub(crate) fn build_vue_virtual_project(
             source_type: generated.source_type,
             virtual_suffix: generated.virtual_suffix,
             descriptor: generated.descriptor,
+            script_syntax: generated.script_syntax,
         },
         documents,
-    })
+    }
 }
 
 pub(super) fn generate_vue_document(
@@ -128,6 +251,13 @@ pub(super) fn generate_vue_document(
         },
     )
     .map_err(|error| CorsaBridgeError::CommunicationError(cstr!("{error}")))?;
+    Ok(generated_vue_document(source_path, generated))
+}
+
+pub(super) fn generated_vue_document(
+    source_path: &Path,
+    generated: VueDocumentVirtualTs,
+) -> GeneratedVueDocument {
     let virtual_path = source_path.with_file_name(cstr!(
         "{}{}",
         source_path
@@ -138,9 +268,9 @@ pub(super) fn generate_vue_document(
     ));
     let virtual_uri = path_to_file_uri(&virtual_path);
 
-    Ok(GeneratedVueDocument {
+    GeneratedVueDocument {
         source_path: source_path.to_path_buf(),
         virtual_uri,
         generated,
-    })
+    }
 }

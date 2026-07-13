@@ -7,6 +7,23 @@ use vize_croquis::analyzer::extract_identifiers_oxc;
 use super::TemplateExpression;
 use super::extract_simple_bindings;
 
+pub(super) fn template_used_croquis_bindings(croquis: &vize_croquis::Croquis) -> Vec<String> {
+    let script_bindings = croquis
+        .bindings
+        .iter()
+        .map(|(name, _)| name)
+        .collect::<BTreeSet<_>>();
+    let mut used = BTreeSet::new();
+    for expression in &croquis.template_expressions {
+        for identifier in extract_identifiers_oxc(&expression.content) {
+            if script_bindings.contains(identifier.as_str()) {
+                used.insert(identifier.to_string());
+            }
+        }
+    }
+    used.into_iter().collect()
+}
+
 pub(super) fn template_used_script_bindings(
     script_content: &str,
     expressions: &[TemplateExpression],

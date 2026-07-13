@@ -22,6 +22,7 @@ vize_carton = { workspace = true }
 vize_croquis = { workspace = true, default-features = false }
 vize_croquis_cf = { workspace = true }
 vize_relief = { workspace = true }
+vize_module = { workspace = true }
 
 [dev-dependencies]
 insta.workspace = true

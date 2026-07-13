@@ -4,19 +4,16 @@
 use vize_carton::Bump;
 use wasm_bindgen::prelude::*;
 
-use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
-use vize_armature::parse_with_options;
-use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
+use crate::{
+    CompileResult, CompilerOptions,
+    template_artifact::{TemplateHostDefaults, compile_template_product},
+    template_syntax::resolve_template_syntax,
+};
+use vize_armature::parse_with_options_and_template_syntax;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_template_syntax};
-use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor_with_template_syntax};
-use vize_relief::{
-    CodegenMode, ExpressionNode, PropNode, RootNode, SimpleExpressionNode, TemplateChildNode,
-};
 
-use super::experimentals::{
-    experimental_dom_options, experimental_flags, experimental_parser_options,
-};
+use super::ast::build_ast_json;
+use super::experimentals::compiler_parser_options;
 use super::options::{parse_compiler_options, parse_css_options};
 use super::serde::{to_js_value, to_json_js_value};
 use super::sfc_types::descriptor_to_wasm;
@@ -37,7 +34,7 @@ impl Compiler {
     pub fn compile(&self, template: &str, options: JsValue) -> Result<JsValue, JsValue> {
         let parsed = parse_compiler_options(&options);
 
-        match compile_internal(template, &parsed.options, false, parsed.binding_metadata) {
+        match compile_template_query(template, &parsed.options, false, parsed.binding_metadata) {
             Ok(result) => to_json_js_value(&result),
             Err(e) => Err(JsValue::from_str(&e)),
         }
@@ -48,7 +45,7 @@ impl Compiler {
     pub fn compile_vapor(&self, template: &str, options: JsValue) -> Result<JsValue, JsValue> {
         let parsed = parse_compiler_options(&options);
 
-        match compile_internal(template, &parsed.options, true, None) {
+        match compile_template_query(template, &parsed.options, true, None) {
             Ok(result) => to_json_js_value(&result),
             Err(e) => Err(JsValue::from_str(&e)),
         }
@@ -59,11 +56,14 @@ impl Compiler {
     pub fn parse(&self, template: &str, options: JsValue) -> Result<JsValue, JsValue> {
         let parsed = parse_compiler_options(&options);
         let allocator = Bump::new();
+        let template_syntax = resolve_template_syntax(parsed.options.template_syntax.as_deref())
+            .map_err(|message| JsValue::from_str(&message))?;
 
-        let (root, errors) = parse_with_options(
+        let (root, errors) = parse_with_options_and_template_syntax(
             &allocator,
             template,
-            experimental_parser_options(&parsed.options),
+            compiler_parser_options(&parsed.options),
+            template_syntax,
         );
 
         if !errors.is_empty() {
@@ -131,225 +131,48 @@ impl Default for Compiler {
     }
 }
 
-/// Internal compile function
-pub(super) fn compile_internal(
+/// Query the complete raw-template product and project it to the WASM ABI.
+pub(super) fn compile_template_query(
     template: &str,
     opts: &CompilerOptions,
     vapor: bool,
     binding_metadata: Option<vize_carton::BindingMetadata>,
 ) -> Result<CompileResult, String> {
-    let allocator = Bump::new();
-    let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())?;
-    let (experimental_in_tag_comments, experimental_patterned_template) = experimental_flags(opts);
-    let binding_metadata = backend_binding_metadata(binding_metadata);
-
-    if opts.ssr.unwrap_or(false) && !vapor && binding_metadata.is_none() {
-        let ssr_opts = SsrCompilerOptions {
-            is_ts: opts.is_ts.unwrap_or(false),
-            custom_renderer: opts.custom_renderer.unwrap_or(false),
-            experimental_in_tag_comments,
-            experimental_patterned_template,
-            ..Default::default()
-        };
-        let (root, errors, result) =
-            compile_ssr_with_template_syntax(&allocator, template, ssr_opts, template_syntax);
-
-        let fatal: Vec<_> = errors
-            .iter()
-            .filter(|error| !error.is_recoverable())
-            .collect();
-        if !fatal.is_empty() {
-            return Err(format!("SSR compile errors: {:?}", fatal));
-        }
-
-        // Collect helpers
-        let helpers: Vec<String> = root.helpers.iter().map(|h| h.name().to_string()).collect();
-
-        // Build AST JSON
-        let ast = build_ast_json(&root);
-
-        return Ok(CompileResult {
-            code: result.code.to_string(),
-            preamble: result.preamble.to_string(),
-            ast,
-            map: None,
-            helpers,
-            templates: None,
-        });
-    }
-
-    if vapor {
-        // Use actual Vapor compiler
-        let vapor_opts = VaporCompilerOptions {
-            prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
-            ssr: opts.ssr.unwrap_or(false),
-            custom_renderer: opts.custom_renderer.unwrap_or(false),
-            experimental_in_tag_comments,
-            experimental_patterned_template,
-            binding_metadata,
-            ..Default::default()
-        };
-        let result =
-            compile_vapor_with_template_syntax(&allocator, template, vapor_opts, template_syntax);
-
-        if !result.error_messages.is_empty() {
-            return Err(result
-                .error_messages
-                .iter()
-                .map(|s| s.as_str())
-                .collect::<Vec<_>>()
-                .join("\n"));
-        }
-
-        return Ok(CompileResult {
-            code: result.code.to_string(),
-            preamble: String::new(),
-            ast: serde_json::json!({}),
-            map: None,
-            helpers: vec![],
-            templates: Some(
-                result
-                    .templates
-                    .into_iter()
-                    .map(|t| t.to_string())
-                    .collect(),
-            ),
-        });
-    }
-
-    // VDOM mode - use vize_atelier_dom which includes proper v-model transform
-    let has_binding_metadata = binding_metadata.is_some();
-    let dom_opts = DomCompilerOptions {
-        mode: match opts.mode.as_deref() {
-            Some("module") => CodegenMode::Module,
-            _ => CodegenMode::Function,
-        },
-        prefix_identifiers: opts.prefix_identifiers.unwrap_or(has_binding_metadata),
-        hoist_static: opts.hoist_static.unwrap_or(has_binding_metadata),
-        cache_handlers: opts.cache_handlers.unwrap_or(has_binding_metadata),
-        scope_id: opts.scope_id.clone().map(|s| s.into()),
-        ssr: opts.ssr.unwrap_or(false),
-        source_map: opts.source_map.unwrap_or(false),
-        is_ts: opts.is_ts.unwrap_or(false),
-        custom_renderer: opts.custom_renderer.unwrap_or(false),
+    let artifact = compile_template_product(
+        template,
+        opts,
+        vapor,
         binding_metadata,
-        inline: has_binding_metadata,
-        ..experimental_dom_options(opts)
-    };
-
-    let (root, errors, result) =
-        compile_template_with_template_syntax(&allocator, template, dom_opts, template_syntax);
-
-    let fatal: Vec<_> = errors
-        .iter()
-        .filter(|error| !error.is_recoverable())
-        .collect();
-    if !fatal.is_empty() {
-        return Err(format!("Compile errors: {:?}", fatal));
+        TemplateHostDefaults::Wasm,
+    )?;
+    if vapor {
+        return Ok(CompileResult {
+            code: artifact.code.to_string(),
+            preamble: artifact.preamble.to_string(),
+            ast: serde_json::json!({}),
+            map: artifact.map.clone(),
+            helpers: vec![],
+            templates: artifact
+                .templates
+                .as_ref()
+                .map(|templates| templates.iter().map(ToString::to_string).collect()),
+        });
     }
-
-    // Collect helpers
-    let helpers: Vec<String> = root.helpers.iter().map(|h| h.name().to_string()).collect();
-
-    // Build AST JSON
-    let ast = build_ast_json(&root);
-
+    let allocator = Bump::new();
+    let root = artifact.syntax.materialize(&allocator);
     Ok(CompileResult {
-        code: result.code.to_string(),
-        preamble: result.preamble.to_string(),
-        ast,
-        map: None,
-        helpers,
+        code: artifact.code.to_string(),
+        preamble: artifact.preamble.to_string(),
+        ast: build_ast_json(&root),
+        map: artifact.map.clone(),
+        helpers: root
+            .helpers
+            .iter()
+            .map(|helper| helper.name().to_string())
+            .collect(),
         templates: None,
     })
 }
-
-/// Lossless compatibility projection for standalone low-level template APIs.
-#[allow(deprecated)]
-fn backend_binding_metadata(
-    metadata: Option<vize_carton::BindingMetadata>,
-) -> Option<vize_relief::BindingMetadata> {
-    metadata.map(Into::into)
-}
-
-/// Build AST JSON from root node
-fn build_ast_json(root: &RootNode<'_>) -> serde_json::Value {
-    fn build_children(children: &[TemplateChildNode<'_>]) -> Vec<serde_json::Value> {
-        children
-            .iter()
-            .map(|child| build_child_json(child))
-            .collect()
-    }
-
-    fn build_child_json(child: &TemplateChildNode<'_>) -> serde_json::Value {
-        match child {
-            TemplateChildNode::Element(el) => {
-                let props: Vec<serde_json::Value> = el
-                    .props
-                    .iter()
-                    .map(|prop| match prop {
-                        PropNode::Attribute(attr) => serde_json::json!({
-                            "type": "ATTRIBUTE",
-                            "name": attr.name.as_str(),
-                            "value": attr.value.as_ref().map(|v| v.content.as_str()),
-                        }),
-                        PropNode::Directive(dir) => serde_json::json!({
-                            "type": "DIRECTIVE",
-                            "name": dir.name.as_str(),
-                            "arg": dir.arg.as_ref().map(|a| match a {
-                                ExpressionNode::Simple(exp) => exp.content.as_str().to_string(),
-                                _ => "<compound>".to_string(),
-                            }),
-                            "exp": dir.exp.as_ref().map(|e| match e {
-                                ExpressionNode::Simple(exp) => exp.content.as_str().to_string(),
-                                _ => "<compound>".to_string(),
-                            }),
-                            "modifiers": dir.modifiers.iter().map(|m: &SimpleExpressionNode| m.content.as_str()).collect::<Vec<_>>(),
-                        }),
-                    })
-                    .collect();
-
-                serde_json::json!({
-                    "type": "ELEMENT",
-                    "tag": el.tag.as_str(),
-                    "tagType": format!("{:?}", el.tag_type),
-                    "props": props,
-                    "children": build_children(&el.children),
-                    "isSelfClosing": el.is_self_closing,
-                })
-            }
-            TemplateChildNode::Text(text) => serde_json::json!({
-                "type": "TEXT",
-                "content": text.content.as_str(),
-            }),
-            TemplateChildNode::Comment(comment) => serde_json::json!({
-                "type": "COMMENT",
-                "content": comment.content.as_str(),
-            }),
-            TemplateChildNode::Interpolation(interp) => serde_json::json!({
-                "type": "INTERPOLATION",
-                "content": match &interp.content {
-                    ExpressionNode::Simple(exp) => exp.content.as_str(),
-                    _ => "<compound>",
-                }
-            }),
-            _ => serde_json::json!({
-                "type": "UNKNOWN"
-            }),
-        }
-    }
-
-    let children = build_children(&root.children);
-
-    serde_json::json!({
-        "type": "ROOT",
-        "children": children,
-        "helpers": root.helpers.iter().map(|h| h.name()).collect::<Vec<_>>(),
-        "components": root.components.iter().map(|c| c.as_str()).collect::<Vec<_>>(),
-        "directives": root.directives.iter().map(|d| d.as_str()).collect::<Vec<_>>(),
-    })
-}
-
 /// Compile template to VDom (free function)
 #[wasm_bindgen]
 pub fn compile(template: &str, options: JsValue) -> Result<JsValue, JsValue> {

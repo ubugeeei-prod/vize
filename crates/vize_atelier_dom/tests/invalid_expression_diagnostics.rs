@@ -13,9 +13,9 @@
     clippy::disallowed_methods
 )]
 
-use vize_atelier_core::{CompilerError, ErrorCode};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_carton::Bump;
+use vize_relief::{CompilerError, ErrorCode};
 
 fn analyzed_options() -> DomCompilerOptions {
     DomCompilerOptions {

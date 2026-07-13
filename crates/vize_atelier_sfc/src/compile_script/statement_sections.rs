@@ -20,10 +20,9 @@ enum StatementBucket {
     Setup,
 }
 
-pub(crate) fn extract_script_sections(
-    content: &str,
-    is_ts: bool,
-) -> Option<(Vec<String>, Vec<String>, Vec<String>)> {
+pub(crate) type ScriptSections = (Vec<String>, Vec<String>, Vec<String>);
+
+pub(crate) fn extract_script_sections(content: &str, is_ts: bool) -> Option<ScriptSections> {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
     let ret = Parser::new(&allocator, content, source_type).parse();
@@ -42,7 +41,7 @@ pub(crate) fn extract_script_sections_from_program(
     program: &Program<'_>,
     content: &str,
     is_ts: bool,
-) -> Option<(Vec<String>, Vec<String>, Vec<String>)> {
+) -> Option<ScriptSections> {
     extract_script_sections_from_program_with_options(program, content, is_ts, false)
 }
 
@@ -51,7 +50,7 @@ pub(crate) fn extract_script_sections_from_program_with_options(
     content: &str,
     is_ts: bool,
     preserve_runtime_erased_macros: bool,
-) -> Option<(Vec<String>, Vec<String>, Vec<String>)> {
+) -> Option<ScriptSections> {
     let mut user_imports = Vec::new();
     let mut setup_lines = Vec::new();
     let mut ts_declarations = Vec::new();

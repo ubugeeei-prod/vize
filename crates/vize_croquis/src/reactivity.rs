@@ -163,7 +163,7 @@ pub struct ReactivityLoss {
 }
 
 /// Tracks reactive sources during analysis
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ReactivityTracker {
     sources: Vec<ReactiveSource>,
     by_name: FxHashMap<CompactString, ReactiveId>,

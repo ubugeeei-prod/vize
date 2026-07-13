@@ -37,6 +37,36 @@ pub(super) fn script_content_and_offset_for_context(
     }
 }
 
+/// Translate a block-local cursor into the merged Croquis script coordinate
+/// space. A setup block follows the plain module when both are authored.
+pub(super) fn script_analysis_offset_for_context(
+    ctx: &IdeContext<'_>,
+    is_setup: bool,
+    local_offset: u32,
+) -> u32 {
+    if !is_setup {
+        return local_offset;
+    }
+    let Some(modules) = ctx.state.sfc_modules(ctx.uri) else {
+        return local_offset;
+    };
+    let Some(setup_index) = modules
+        .modules
+        .iter()
+        .position(|module| module.name.ends_with("#script-setup"))
+    else {
+        return local_offset;
+    };
+    modules.modules[..setup_index]
+        .iter()
+        .fold(0u32, |offset, module| {
+            offset
+                .saturating_add(u32::try_from(module.source.len()).unwrap_or(u32::MAX))
+                .saturating_add(1)
+        })
+        .saturating_add(local_offset)
+}
+
 /// True for scope kinds that only become visible from inside the script setup
 /// body (closures, blocks, v-for, etc.). Module-level and global scopes are
 /// excluded so we don't re-add Vue Composition API names that

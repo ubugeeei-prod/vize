@@ -3,6 +3,11 @@
 //! A high-performance Terminal User Interface framework for Vue.js,
 //! similar to React Ink but built with Rust for performance.
 //!
+//! ## Stability
+//!
+//! **Incubating.** The API or crate may be replaced or removed in any release. See the
+//! [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+//!
 //! # Features
 //!
 //! - **Terminal Control**: Cross-platform terminal handling via crossterm

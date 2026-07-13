@@ -38,10 +38,13 @@ pub use atlas::{DomOutputArtifact, DomOutputProduct, DomProvider, register_atlas
 pub use compile::{
     compile_template,
     compile_template_root_with_template_syntax_and_hoisted_scope_id_with_sections,
+    compile_template_root_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
     compile_template_with_options, compile_template_with_options_and_hoisted_scope_id,
     compile_template_with_template_syntax,
+    compile_template_with_template_syntax_and_codegen_options,
     compile_template_with_template_syntax_and_hoisted_scope_id,
     compile_template_with_template_syntax_and_hoisted_scope_id_with_sections,
+    compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
 };
 #[cfg(feature = "legacy")]
 #[allow(deprecated)]
@@ -52,7 +55,7 @@ pub use compile::{
 #[cfg(feature = "legacy")]
 pub use options::{DomCompilerOptions, element_checks, event_modifiers};
 #[cfg(feature = "graph")]
-pub use rendu::{RenduDomMapping, RenduDomOutput, compile_rendu};
+pub use rendu::{RenduDomMapping, RenduDomOutput, compile_rendu, compile_rendu_with_settings};
 #[cfg(feature = "legacy")]
 pub use steps::{
     EventModifiers, EventOptions, MouseModifiers, PropagationModifiers, SystemModifiers, V_SHOW,

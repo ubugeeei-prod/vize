@@ -3,12 +3,12 @@
 use std::ops::Deref;
 use vize_atlas::{
     Compilation, InputId, PlanningContext, Product, ProductId, Provider, ProviderContext,
-    ProviderError, RegisterProviderError,
+    ProviderError, RegisterProviderError, SourceInputId,
 };
 
-use vize_rendu::{RenderCapabilitiesInput, RenduProduct};
+use vize_rendu::{RenderCapabilitiesInput, RenderEmitSettingsInput, RenduProduct};
 
-use crate::{RenduSsrOutput, compile_rendu};
+use crate::{RenduSsrOutput, compile_rendu_with_settings};
 
 /// SSR outputs preserving the frontend module's root boundaries.
 #[derive(Debug, Clone)]
@@ -49,6 +49,10 @@ impl Provider for SsrProvider {
         vec![InputId::of::<RenderCapabilitiesInput>()]
     }
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<RenderEmitSettingsInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
         context
             .input::<RenderCapabilitiesInput>()
@@ -64,8 +68,16 @@ impl Provider for SsrProvider {
         context: &mut ProviderContext<'_>,
     ) -> Result<SsrOutputArtifact, ProviderError> {
         let rendu = context.get::<RenduProduct>()?;
+        let settings = context
+            .source_input::<RenderEmitSettingsInput>()
+            .cloned()
+            .unwrap_or_default();
         Ok(SsrOutputArtifact {
-            outputs: rendu.roots().iter().map(compile_rendu).collect(),
+            outputs: rendu
+                .roots()
+                .iter()
+                .map(|root| compile_rendu_with_settings(root, &settings))
+                .collect(),
         })
     }
 }

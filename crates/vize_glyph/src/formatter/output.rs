@@ -49,8 +49,9 @@ pub(super) fn write_attr(output: &mut Vec<u8>, name: &str, value: Option<&str>) 
     output.push(b' ');
     output.extend_from_slice(name.as_bytes());
     if let Some(value) = value {
-        output.extend_from_slice(b"=\"");
-        output.extend_from_slice(value.as_bytes());
-        output.push(b'"');
+        output.push(b'=');
+        crate::attribute::write_attr_value(value, |text| {
+            output.extend_from_slice(text.as_bytes());
+        });
     }
 }

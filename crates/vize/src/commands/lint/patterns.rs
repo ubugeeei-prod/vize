@@ -33,11 +33,6 @@ pub(super) fn is_standalone_html_extension(extension: &str) -> bool {
     matches!(extension, "html" | "htm")
 }
 
-#[inline]
-pub(super) fn is_plain_script_extension(extension: &str) -> bool {
-    matches!(extension, "js" | "mjs" | "cjs" | "ts" | "mts" | "cts")
-}
-
 #[cfg(test)]
 mod tests {
     use super::{LINT_DEFAULT_PATTERNS, LINT_EXTENSIONS, LINT_EXTENSIONS_DISPLAY};

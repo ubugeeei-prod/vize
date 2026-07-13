@@ -18,6 +18,11 @@
 //! [`crate::finder`]). Unrelated prologues such as `"use strict"` are left
 //! untouched.
 
+#[path = "mode/directive_prologue.rs"]
+mod directive_prologue;
+
+pub(crate) use directive_prologue::classify_source_directives;
+
 /// The prefix shared by every Vize JSX-mode directive (`"use vue:vapor"`,
 /// `"use vue:vdom"`).
 const VUE_DIRECTIVE_PREFIX: &str = "use vue:";

@@ -117,6 +117,10 @@ pub enum ControlEdgeKind {
     Continue,
     Return,
     Exception,
+    /// Declares the entry of a nested function subgraph, not an invocation.
+    FunctionEntry,
+    /// Records an OXC CFG relationship that cannot execute from this block.
+    Unreachable,
 }
 
 /// Directed control-flow edge between blocks.

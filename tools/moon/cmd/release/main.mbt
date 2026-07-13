@@ -419,16 +419,42 @@ fn stage_files(files : Array[String]) -> Array[String] {
   staged
 }
 
+/// Runs the shared immutable-tag and current-main guard before any mutation.
+/// Tests may override the script path while exercising isolated repositories.
+async fn run_local_release_guard(tag : String) -> Bool {
+  let script = match @sys.get_env_var(
+    "VIZE_RELEASE_GUARD_SCRIPT",
+  ) {
+    Some(value) if value != "" => value
+    _ => "tools/github/release-local-guard.mjs"
+  }
+  if !@tool.path_exists(script) {
+    @stdio.stderr.write(
+      "Release preflight script not found: " + script + "\n",
+    )
+    return false
+  }
+
+  let exit_code = @process.run(
+    "node",
+    [script, tag],
+  )
+  if exit_code != 0 {
+    @stdio.stderr.write(
+      "Release preflight failed before repository mutation.\n",
+    )
+    return false
+  }
+
+  true
+}
+
 /// Main entry point for release preparation and publication kickoff.
 /// The function computes the next version, confirms the operation when running
 /// interactively, verifies the repository is in a publishable state, updates
 /// all synchronized manifests, creates the release commit, tags it, and pushes
-/// both the branch and the tag so the tag-triggered publishing workflow can
-/// take over.
-/// When `--force-tag` is passed, an existing release tag is rewritten and
-/// force-pushed. This is useful when the release workflow itself needs a fix
-/// and the same release version must be re-driven through GitHub Actions
-/// without publishing duplicate packages.
+/// the branch and immutable tag atomically so the tag-triggered publishing
+/// workflow can take over without exposing a partially-updated release.
 async fn run_app() -> Int {
   let args = @tool.cli_args()
   if args.length() == 3 && args[0] == "--print-bump" {
@@ -474,22 +500,23 @@ async fn run_app() -> Int {
   }
   if args.is_empty() {
     @stdio.stderr.write(
-      "Usage: moon run --target native tools/moon/cmd/release -- <patch|minor|major|alpha|beta|rc|release> [-y] [--force-tag]\n",
+      "Usage: moon run --target native tools/moon/cmd/release -- <patch|minor|major|alpha|beta|rc|release> [-y]\n",
     )
     return 1
   }
 
   let bump = args[0]
   let mut auto_confirm = false
-  let mut force_tag = false
   for i in 1..<args.length() {
     if args[i] == "-y" {
       auto_confirm = true
       continue
     }
     if args[i] == "--force-tag" {
-      force_tag = true
-      continue
+      @stdio.stderr.write(
+        "Error: --force-tag is not supported; published release tags are immutable.\n",
+      )
+      return 1
     }
     if args[i] != "-y" {
       @stdio.stderr.write("Unknown release arguments\n")
@@ -543,25 +570,8 @@ async fn run_app() -> Int {
     }
   }
 
-  let (status_exit, status_output) = @process.collect_stdout("git", ["status", "--porcelain"])
-  if status_exit != 0 {
-    @stdio.stderr.write("Failed to inspect git status\n")
+  if !run_local_release_guard(tag) {
     return 1
-  }
-  if status_output.text().trim() != "" {
-    @stdio.stderr.write(
-      "Error: There are uncommitted changes. Please commit or stash them first.\n",
-    )
-    return 1
-  }
-
-  let (tag_exit, _, _) = @process.collect_output("git", ["rev-parse", tag])
-  if tag_exit == 0 && !force_tag {
-    @stdio.stderr.write("Error: Tag \{tag} already exists.\n")
-    return 1
-  }
-  if tag_exit == 0 && force_tag {
-    println("Tag \{tag} already exists and will be force-updated.")
   }
 
   println("Updating Cargo.toml...")
@@ -789,11 +799,11 @@ async fn run_app() -> Int {
     @stdio.stderr.write("Failed to inspect staged release files\n")
     return 1
   }
-  let commit_args = if staged_output.text().trim() == "" && force_tag {
-    ["commit", "--allow-empty", "--no-verify", "-m", "chore: release \{tag}"]
-  } else {
-    ["commit", "--no-verify", "-m", "chore: release \{tag}"]
+  if staged_output.text().trim() == "" {
+    @stdio.stderr.write("No release changes were staged; refusing to create an empty release.\n")
+    return 1
   }
+  let commit_args = ["commit", "--no-verify", "-m", "chore: release \{tag}"]
   if @process.run("git", commit_args) != 0 {
     @stdio.stderr.write("Failed to create the release commit\n")
     return 1
@@ -802,34 +812,24 @@ async fn run_app() -> Int {
   println("Verifying manifest alignment with tests/tooling/package-manifests.test.ts...")
   if @process.run("node", ["--test", "tests/tooling/package-manifests.test.ts"]) != 0 {
     @stdio.stderr.write(
-      "Error: package manifest alignment tests failed against the release commit. Inspect tests/tooling/package-manifests.test.ts, fix the drift, amend the release commit, and retry.\n",
+      "Error: package manifest alignment tests failed against the release commit. Inspect tests/tooling/package-manifests.test.ts, then run `git reset --hard origin/main` after confirming there is no work to keep, fix the drift, and retry.\n",
     )
     return 1
   }
 
   println("Creating tag \{tag}...")
-  let git_tag_args = if force_tag {
-    ["tag", "-fa", tag, "-m", "Release \{new_version}"]
-  } else {
-    ["tag", "-a", tag, "-m", "Release \{new_version}"]
-  }
+  let git_tag_args = ["tag", "-a", tag, "-m", "Release \{new_version}"]
   if @process.run("git", git_tag_args) != 0 {
     @stdio.stderr.write("Failed to create the git tag\n")
     return 1
   }
 
-  println("Pushing to remote...")
-  if @process.run("git", ["push", "origin", "main"]) != 0 {
-    @stdio.stderr.write("Failed to push main\n")
-    return 1
-  }
-  let git_push_tag_args = if force_tag {
-    ["push", "--force", "origin", "refs/tags/" + tag]
-  } else {
-    ["push", "origin", tag]
-  }
-  if @process.run("git", git_push_tag_args) != 0 {
-    @stdio.stderr.write("Failed to push the release tag\n")
+  println("Pushing main and tag atomically...")
+  if @process.run(
+    "git",
+    ["push", "--atomic", "origin", "main", "refs/tags/" + tag],
+  ) != 0 {
+    @stdio.stderr.write("Failed to atomically push main and the release tag\nRemote refs were unchanged. Before retrying, run `git tag -d \{tag}`, fetch origin/main, and remove the generated release commit (for example, `git reset --hard origin/main` after confirming there is no work to keep).\n")
     return 1
   }
 

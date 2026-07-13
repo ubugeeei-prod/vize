@@ -40,10 +40,12 @@ vize_atelier_core = { workspace = true }
 vize_atelier_dom = { workspace = true }
 vize_atelier_ssr = { workspace = true }
 vize_atelier_vapor = { workspace = true }
+vize_atelier_template = { workspace = true }
 vize_atelier_sfc = { workspace = true, features = ["native"] }
 vize_atelier_jsx = { workspace = true }
 vize_rendu = { workspace = true }
 vize_flow = { workspace = true }
+vize_module = { workspace = true }
 vize_glyph = { workspace = true, optional = true }
 vize_patina = { workspace = true }
 vize_canon = { workspace = true, features = ["native"] }
@@ -89,8 +91,10 @@ dirs.workspace = true
 # Process allocator for native CLI hot paths
 mimalloc.workspace = true
 
-[dev-dependencies]
+# Exclusive same-directory temporary files for atomic source replacement
 tempfile.workspace = true
+
+[dev-dependencies]
 insta.workspace = true
 criterion.workspace = true
 

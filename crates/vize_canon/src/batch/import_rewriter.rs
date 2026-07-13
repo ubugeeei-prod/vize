@@ -28,13 +28,13 @@ pub struct OffsetAdjustment {
     pub adjustment: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RewriteResult {
     pub code: String,
     pub source_map: ImportSourceMap,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ImportSourceMap {
     adjustments: Vec<OffsetAdjustment>,
 }

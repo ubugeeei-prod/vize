@@ -1,5 +1,7 @@
 # vize_atlas
 
+Compatibility follows the [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
 Source Atlas is Vize's representation-independent, demand-driven artifact graph.
 It is the common execution substrate on which compilers, linters, typecheckers,
 language-server features, and inspectors can request typed products.

@@ -4,9 +4,7 @@ use std::collections::BTreeSet;
 
 use vize_relief::{ElementNode, PropNode, TemplateChildNode};
 
-pub(super) fn extract_template_slot_names(template: &str) -> Vec<String> {
-    let allocator = vize_carton::Bump::new();
-    let (root, _) = vize_armature::parse(&allocator, template);
+pub(super) fn extract_template_slot_names(root: &vize_relief::RootNode<'_>) -> Vec<String> {
     let mut names = Vec::new();
     let mut seen = BTreeSet::new();
 
@@ -15,6 +13,13 @@ pub(super) fn extract_template_slot_names(template: &str) -> Vec<String> {
     }
 
     names
+}
+
+#[cfg(test)]
+fn extract_template_slot_names_from_source(template: &str) -> Vec<String> {
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    extract_template_slot_names(&root)
 }
 
 fn collect_template_slot_outlets(
@@ -81,7 +86,7 @@ fn static_slot_outlet_name(el: &ElementNode<'_>) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::extract_template_slot_names;
+    use super::extract_template_slot_names_from_source as extract_template_slot_names;
 
     #[test]
     fn extracts_slot_outlets_from_template_ast() {

@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { parse } from "yaml";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fuzzWorkspace = "tests/fuzz";
@@ -37,8 +40,26 @@ test("fuzz workspace declares libfuzzer-sys and an isolated [workspace]", () => 
 
 test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () => {
   const workflow = readRepoFile(".github/workflows/fuzz.yml");
+  const parsed = parse(workflow) as {
+    jobs: {
+      fuzz: {
+        "continue-on-error": string;
+        steps: Array<{
+          "continue-on-error"?: boolean;
+          env?: Record<string, string>;
+          id?: string;
+          if?: string;
+          run?: string;
+        }>;
+      };
+    };
+  };
 
   assert.match(workflow, /name:\s*Fuzz/);
+  assert.match(
+    workflow,
+    /^run-name:\s*Fuzz\s+\$\{\{\s*github\.event_name\s*==\s*'workflow_dispatch'\s*&&\s*format\(\s*'\{0\}s'\s*,\s*inputs\.max-total-time\s*\)\s*\|\|\s*github\.event_name\s*\}\}\s+@\s+\$\{\{\s*github\.sha\s*\}\}\s*$/m,
+  );
   assert.match(workflow, /schedule:[\s\S]*?-\s*cron:/);
   assert.match(workflow, /pull_request:[\s\S]*paths:/);
   assert.match(workflow, /"tests\/fuzz\/\*\*"/);
@@ -57,12 +78,71 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
 
   assert.match(workflow, /cargo \+nightly fuzz run/);
   assert.match(workflow, /-max_total_time=/);
+  const fuzzJob = parsed.jobs.fuzz;
+  assert.equal(fuzzJob["continue-on-error"], "${{ github.event_name == 'pull_request' }}");
+  const budgetStep = fuzzJob.steps.find((step) => step.id === "budget");
+  assert.deepEqual(budgetStep?.env, {
+    REQUESTED_MAX_TOTAL_TIME: "${{ inputs.max-total-time }}",
+  });
+  assert.match(budgetStep?.run ?? "", /seconds="\$REQUESTED_MAX_TOTAL_TIME"/);
+  assert.match(budgetStep?.run ?? "", /max-total-time must be an integer from 1 to 3600 seconds/);
+  assert.doesNotMatch(budgetStep?.run ?? "", /seconds=\$\{\{/);
+  const dispatchBudgetScript = (budgetStep?.run ?? "").replaceAll(
+    "${{ github.event_name }}",
+    "workflow_dispatch",
+  );
+  for (const [input, expectedStatus] of [
+    ["abc", 1],
+    ["0", 1],
+    ["3601", 1],
+    ["1", 0],
+    ["3600", 0],
+  ] as const) {
+    const output = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "vize-fuzz-budget-")), "output");
+    const result = spawnSync("bash", ["-c", dispatchBudgetScript], {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        GITHUB_OUTPUT: output,
+        REQUESTED_MAX_TOTAL_TIME: input,
+      },
+    });
+    assert.equal(result.status, expectedStatus, `${input}: ${result.stderr}${result.stdout}`);
+    if (expectedStatus === 0) {
+      assert.equal(fs.readFileSync(output, "utf8"), `seconds=${input}\n`);
+    } else {
+      assert.match(`${result.stderr}${result.stdout}`, /Invalid fuzz budget/);
+    }
+  }
+  const fuzzStep = fuzzJob.steps.find((step) => step.id === "fuzz");
+  assert.equal(fuzzStep?.["continue-on-error"], true);
+  assert.match(fuzzStep?.run ?? "", /cargo \+nightly fuzz run "\$FUZZ_TARGET"/);
+  assert.deepEqual(fuzzStep?.env, {
+    FUZZ_MAX_TOTAL_TIME: "${{ steps.budget.outputs.seconds }}",
+    FUZZ_TARGET: "${{ matrix.target }}",
+  });
+  const enforceStep = fuzzJob.steps.find((step) => step.id === "enforce");
+  assert.match(enforceStep?.run ?? "", /tools\/fuzz\/enforce-result\.mjs/);
+  assert.deepEqual(enforceStep?.env, {
+    FUZZ_EVENT_NAME: "${{ github.event_name }}",
+    FUZZ_OUTCOME: "${{ steps.fuzz.outcome || 'skipped' }}",
+    FUZZ_TARGET: "${{ matrix.target }}",
+  });
 
   // Reproducers on failure must be uploaded so triage does not have to
   // re-run the fuzzer to recover the failing input.
   assert.match(workflow, /upload-artifact[\s\S]*tests\/fuzz\/artifacts\//);
   assert.match(workflow, /issues:\s*write/);
-  assert.match(workflow, /github\.event_name != 'pull_request'/);
+  const uploadStep = fuzzJob.steps.find((step) => step.id === "upload-reproducers");
+  assert.equal(
+    uploadStep?.if,
+    "always() && hashFiles(format('tests/fuzz/artifacts/{0}/**', matrix.target)) != ''",
+  );
+  const triageStep = fuzzJob.steps.find((step) => step.id === "triage");
+  assert.equal(
+    triageStep?.if,
+    "always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && hashFiles(format('tests/fuzz/artifacts/{0}/**', matrix.target)) != ''",
+  );
   assert.match(workflow, /gh issue (create|comment)/);
 });
 

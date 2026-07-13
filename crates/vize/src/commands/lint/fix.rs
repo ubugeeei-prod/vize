@@ -1,27 +1,7 @@
-//! Lint source selection and fix application.
+//! Lint fix application.
 
-use std::path::Path;
-
-use super::collect::{is_plain_script_path, is_standalone_html_path};
 use vize_carton::{String, ToCompactString};
-use vize_patina::{LintResult, Linter, TextEdit};
-
-pub(super) fn lint_source(
-    linter: &Linter,
-    path: &Path,
-    source: &str,
-    filename: &str,
-) -> LintResult {
-    if is_standalone_html_path(path) {
-        linter.lint_standalone_html(source, filename)
-    } else if is_plain_script_path(path) {
-        linter.lint_script(source, filename)
-    } else if is_storybook_csf_path(path) {
-        empty_lint_result(filename)
-    } else {
-        unreachable!("Vue and JSX lint must be served by the Atlas artifact graph")
-    }
-}
+use vize_patina::{LintResult, TextEdit};
 
 pub(super) fn apply_lint_fixes(source: &str, result: &LintResult) -> Option<String> {
     let mut edits: Vec<&TextEdit> = result
@@ -63,23 +43,4 @@ pub(super) fn apply_lint_fixes(source: &str, result: &LintResult) -> Option<Stri
         fixed.replace_range(edit.start as usize..edit.end as usize, &edit.new_text);
     }
     Some(fixed)
-}
-
-fn is_storybook_csf_path(path: &Path) -> bool {
-    let Some(file_name) = path.file_name().and_then(|file_name| file_name.to_str()) else {
-        return false;
-    };
-    file_name.ends_with(".stories.jsx")
-        || file_name.ends_with(".stories.tsx")
-        || file_name.ends_with(".story.jsx")
-        || file_name.ends_with(".story.tsx")
-}
-
-fn empty_lint_result(filename: &str) -> LintResult {
-    LintResult {
-        filename: filename.to_compact_string(),
-        diagnostics: Vec::new(),
-        error_count: 0,
-        warning_count: 0,
-    }
 }

@@ -35,3 +35,44 @@ fn reverse_postorder_is_stable_and_omits_unreachable_blocks() {
         [graph.entry_block(), right, left, merge]
     );
 }
+
+#[test]
+fn declaration_and_impossible_edges_are_not_entry_execution_paths() {
+    let mut graph = FlowGraph::new();
+    let live = graph.add_block(Provenance::Synthetic).unwrap();
+    let function = graph.add_block(Provenance::Synthetic).unwrap();
+    let dead = graph.add_block(Provenance::Synthetic).unwrap();
+    graph
+        .add_control_edge(
+            graph.entry_block(),
+            live,
+            ControlEdgeKind::Normal,
+            Provenance::Synthetic,
+        )
+        .unwrap();
+    graph
+        .add_control_edge(
+            graph.entry_block(),
+            function,
+            ControlEdgeKind::FunctionEntry,
+            Provenance::Synthetic,
+        )
+        .unwrap();
+    graph
+        .add_control_edge(
+            graph.entry_block(),
+            dead,
+            ControlEdgeKind::Unreachable,
+            Provenance::Synthetic,
+        )
+        .unwrap();
+
+    let reachable = graph.reachability();
+    assert!(reachable.contains(live));
+    assert!(!reachable.contains(function));
+    assert!(!reachable.contains(dead));
+    assert_eq!(graph.reverse_postorder(), [graph.entry_block(), live]);
+    let dominators = graph.dominators();
+    assert!(!dominators.is_reachable(function));
+    assert!(!dominators.is_reachable(dead));
+}

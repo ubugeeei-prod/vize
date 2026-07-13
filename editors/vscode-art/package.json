@@ -1,7 +1,7 @@
 {
   "name": "vize-art",
   "displayName": "Vize Art",
-  "version": "0.290.0",
+  "version": "0.291.0",
   "description": "Syntax highlighting for Vize Art files (*.art.vue)",
   "categories": [
     "Programming Languages"

@@ -1,5 +1,18 @@
 //! Persistent Atlas ownership for open editor documents.
 
+#[cfg(feature = "native")]
+#[path = "atlas/canon.rs"]
+mod canon;
+#[cfg(feature = "glyph")]
+#[path = "atlas/format.rs"]
+mod format;
+#[path = "atlas/script.rs"]
+mod script;
+#[path = "atlas/typecheck.rs"]
+mod typecheck;
+
+use std::sync::atomic::Ordering;
+
 use tower_lsp::lsp_types::Url;
 use vize_atlas::{Compilation, Product, Shared, SourceId};
 
@@ -10,10 +23,29 @@ impl ServerState {
         let mut compilation = Compilation::new();
         vize_atelier_sfc::register_atlas_providers(&mut compilation)
             .expect("Maestro must register the SFC artifact providers once");
+        #[cfg(feature = "glyph")]
+        vize_glyph::register_glyph_format_provider(&mut compilation)
+            .expect("Maestro must register Glyph's formatter root once");
         vize_atelier_jsx::register_atlas_providers(&mut compilation)
             .expect("Maestro must register the JSX artifact providers once");
+        compilation
+            .register_provider(vize_atelier_template::RawTemplateReliefProvider)
+            .expect("Maestro must register the raw-template Relief provider once");
+        compilation
+            .register_provider(vize_atelier_template::RawTemplateCroquisProvider)
+            .expect("Maestro must register the raw-template Croquis provider once");
         vize_canon::register_sfc_typecheck_provider(&mut compilation)
             .expect("Maestro must register Canon's SFC typecheck provider once");
+        #[cfg(feature = "native")]
+        vize_canon::batch::register_canon_vue_document_provider(&mut compilation)
+            .expect("Maestro must register Canon's Vue document root once");
+        let linter = Shared::new(vize_patina::Linter::new());
+        vize_patina::register_shared_document_lint_recipe(&mut compilation, Shared::clone(&linter))
+            .expect("Maestro must register Patina's document root once");
+        vize_patina::register_shared_template_lint_recipe(&mut compilation, linter)
+            .expect("Maestro must register Patina's raw-template root once");
+        crate::virtual_code::register_virtual_documents_provider(&mut compilation)
+            .expect("Maestro must register its virtual-document root once");
         compilation
     }
 
@@ -21,6 +53,12 @@ impl ServerState {
         let mode = self.artifact_croquis_mode();
         let mut compilation = self.artifact_compilation.write();
         for source in self.artifact_sources.iter().map(|entry| *entry.value()) {
+            if !compilation
+                .source(source)
+                .is_some_and(|snapshot| snapshot.name().ends_with(".vue"))
+            {
+                continue;
+            }
             if let Err(error) = compilation
                 .set_source_input::<vize_atelier_sfc::SfcCroquisSettingsInput>(
                     source,
@@ -46,6 +84,12 @@ impl ServerState {
     pub(crate) fn upsert_artifact_source(&self, uri: &Url, content: &str) -> Option<SourceId> {
         let mut compilation = self.artifact_compilation.write();
         if let Some(source) = self.artifact_sources.get(uri).map(|entry| *entry) {
+            if compilation
+                .source(source)
+                .is_some_and(|snapshot| snapshot.text() == content)
+            {
+                return Some(source);
+            }
             if let Err(error) = compilation.update_source(source, content) {
                 tracing::warn!(%uri, %error, "failed to update Atlas editor source");
                 return None;
@@ -55,12 +99,8 @@ impl ServerState {
 
         match compilation.add_source(uri.path(), content) {
             Ok(source) => {
-                let mode = self.artifact_croquis_mode();
-                if let Err(error) = compilation
-                    .set_source_input::<vize_atelier_sfc::SfcCroquisSettingsInput>(
-                        source,
-                        croquis_request(mode),
-                    )
+                if let Err(error) =
+                    self.install_artifact_source_inputs(&mut compilation, source, uri)
                 {
                     tracing::warn!(%uri, %error, "failed to install Atlas editor semantics");
                     let _ = compilation.remove_source(source);
@@ -78,10 +118,7 @@ impl ServerState {
 
     /// Ensure detached test/tool contexts join the same persistent graph.
     pub(crate) fn ensure_artifact_source(&self, uri: &Url, content: &str) -> Option<SourceId> {
-        self.artifact_sources
-            .get(uri)
-            .map(|entry| *entry)
-            .or_else(|| self.upsert_artifact_source(uri, content))
+        self.upsert_artifact_source(uri, content)
     }
 
     /// Remove an editor document and all memoized products derived from it.
@@ -123,6 +160,15 @@ impl ServerState {
         }
     }
 
+    #[cfg(test)]
+    pub(crate) fn artifact_product_executions<P: Product>(&self) -> u64 {
+        self.artifact_compilation
+            .read()
+            .counters()
+            .for_product::<P>()
+            .executions()
+    }
+
     pub(crate) fn jsx_syntax(
         &self,
         uri: &Url,
@@ -151,38 +197,125 @@ impl ServerState {
         self.artifact::<vize_croquis::CroquisDocumentProduct>(uri)
     }
 
-    /// Query Canon diagnostics from the same persistent editor compilation.
-    pub(crate) fn sfc_typecheck_for(
+    pub(crate) fn raw_template_croquis(
+        &self,
+        uri: &Url,
+    ) -> Option<Shared<vize_croquis::CroquisDocument>> {
+        self.artifact::<vize_croquis::CroquisDocumentProduct>(uri)
+    }
+
+    pub(crate) fn sfc_relief(
+        &self,
+        uri: &Url,
+    ) -> Option<Shared<Option<vize_relief::ReliefArtifact>>> {
+        self.artifact::<vize_relief::ReliefProduct>(uri)
+    }
+
+    pub(crate) fn raw_template_relief(
+        &self,
+        uri: &Url,
+    ) -> Option<Shared<Option<vize_relief::ReliefArtifact>>> {
+        self.artifact::<vize_relief::ReliefProduct>(uri)
+    }
+
+    pub(crate) fn virtual_documents(
+        &self,
+        uri: &Url,
+    ) -> Option<Shared<crate::virtual_code::VirtualDocuments>> {
+        self.artifact::<crate::virtual_code::VirtualDocumentsProduct>(uri)
+    }
+
+    /// Query Patina from the persistent graph with the latest workspace config.
+    pub(crate) fn lint_report_for(
         &self,
         uri: &Url,
         content: &str,
-        request: vize_canon::SfcTypeCheckRequest,
-    ) -> Option<Shared<vize_canon::SfcTypeCheckResult>> {
+        ecosystem_enabled: bool,
+    ) -> Option<Shared<vize_patina::LintResult>> {
         let source = self.ensure_artifact_source(uri, content)?;
+        let generation = self.linter_generation.load(Ordering::SeqCst);
         let mut compilation = self.artifact_compilation.write();
-        let typecheck_changed = compilation
-            .source_input::<vize_canon::SfcTypeCheckSettingsInput>(source)
-            != Some(&request);
-        let croquis_changed = compilation
-            .source_input::<vize_atelier_sfc::SfcCroquisSettingsInput>(source)
-            .is_none_or(|configured| {
-                configured.mode != request.mode
-                    || configured.resolved_filename.as_deref() != Some(uri.path())
-            });
-        if (typecheck_changed || croquis_changed)
-            && let Err(error) =
-                vize_canon::install_sfc_typecheck_request(&mut compilation, source, request)
-        {
-            tracing::warn!(%uri, %error, "failed to configure Atlas typecheck request");
-            return None;
+        if self.artifact_linter_generation.load(Ordering::SeqCst) != generation {
+            let linter = Shared::new(self.configured_linter(ecosystem_enabled));
+            if let Err(error) = vize_patina::install_document_linter(&mut compilation, linter) {
+                tracing::warn!(%uri, %error, "failed to configure Atlas lint root");
+                return None;
+            }
+            self.artifact_linter_generation
+                .store(generation, Ordering::SeqCst);
         }
-        match compilation.query::<vize_canon::SfcTypeCheckProduct>(source) {
+        match compilation.query::<vize_patina::PatinaDocumentReportProduct>(source) {
             Ok(outcome) => Some(outcome.shared()),
             Err(error) => {
-                tracing::warn!(%uri, %error, "Atlas typecheck query failed");
+                tracing::warn!(%uri, %error, "Atlas lint query failed");
                 None
             }
         }
+    }
+
+    fn configured_linter(&self, ecosystem_enabled: bool) -> vize_patina::Linter {
+        use vize_patina::LintPreset;
+
+        let config = self.get_linter_config();
+        let options = self.get_linter_rule_options();
+        let preset = config
+            .preset
+            .as_deref()
+            .and_then(LintPreset::parse)
+            .unwrap_or_default();
+        let linter = if ecosystem_enabled && config.preset.is_none() {
+            vize_patina::Linter::with_ecosystem()
+        } else {
+            vize_patina::Linter::with_preset(preset)
+        }
+        .with_additional_rules(config.enabled_rules())
+        .with_disabled_rules(config.disabled_rules())
+        .with_restricted_globals(options.restricted_globals())
+        .with_restricted_members(options.restricted_members());
+
+        #[cfg(not(target_arch = "wasm32"))]
+        let linter = if config.strict_reactivity_enabled() {
+            linter.with_rule(Box::new(
+                vize_patina::rules::type_aware::NoReactivityLoss::new(),
+            ))
+        } else {
+            linter
+        };
+        linter
+    }
+}
+
+impl ServerState {
+    fn install_artifact_source_inputs(
+        &self,
+        compilation: &mut Compilation,
+        source: SourceId,
+        uri: &Url,
+    ) -> Result<(), vize_atlas::CompilationInputError> {
+        if crate::utils::is_standalone_html_path(uri.path()) {
+            vize_atelier_template::install_template_compile_request(
+                compilation,
+                source,
+                vize_atelier_template::TemplateCompileRequest::default(),
+            )?;
+            vize_atelier_template::install_template_parse_mode(
+                compilation,
+                source,
+                vize_atelier_template::TemplateParseMode::Document,
+            )?;
+            vize_patina::install_template_lint_request(
+                compilation,
+                source,
+                vize_patina::PatinaTemplateLintRequest::standalone_html(uri.path()),
+            )?;
+            return Ok(());
+        }
+        compilation
+            .set_source_input::<vize_atelier_sfc::SfcCroquisSettingsInput>(
+                source,
+                croquis_request(self.artifact_croquis_mode()),
+            )
+            .map(|_| ())
     }
 }
 

@@ -1,10 +1,25 @@
 //! Production Patina recipes over shared SFC and JSX/TSX artifacts.
 
+mod mode;
+mod registration;
+mod script;
+mod template;
+
+pub use mode::{PatinaDocumentMode, PatinaDocumentModeInput, install_document_mode};
+pub use registration::{
+    install_document_linter, register_document_lint_recipe, register_shared_document_lint_recipe,
+};
+pub use script::{PatinaModuleLintProvider, register_shared_module_lint_recipe};
+pub use template::{
+    PatinaTemplateDocumentKind, PatinaTemplateLintInput, PatinaTemplateLintProvider,
+    PatinaTemplateLintRequest, install_template_lint_request, register_shared_template_lint_recipe,
+};
+
 use vize_atelier_jsx::JsxSyntaxProduct;
-use vize_atelier_sfc::SfcDescriptorProduct;
+use vize_atelier_sfc::{SfcDescriptorProduct, sfc_source_structure};
 use vize_atlas::{
-    Compilation, PlanningContext, Product, ProductId, Provider, ProviderContext, ProviderError,
-    RegisterProviderError, Shared,
+    CompilationInput, InputId, PlanningContext, Product, ProductId, Provider, ProviderContext,
+    ProviderError, Shared, SourceInputId,
 };
 use vize_croquis::CroquisDocumentProduct;
 use vize_relief::ReliefProduct;
@@ -18,6 +33,19 @@ impl Product for PatinaDocumentReportProduct {
     type Value = LintResult;
 
     const NAME: &'static str = "patina.document-report";
+}
+
+/// Active production linter configuration for an Atlas compilation.
+///
+/// Hosts may replace this input when workspace configuration changes. Atlas
+/// then invalidates only Patina report products, while retaining the shared
+/// frontend and semantic artifacts they consume.
+pub struct PatinaLinterInput;
+
+impl CompilationInput for PatinaLinterInput {
+    type Value = Shared<Linter>;
+
+    const NAME: &'static str = "patina.linter";
 }
 
 /// Configured production linter consuming frontend-owned syntax and complete
@@ -40,18 +68,32 @@ impl PatinaDocumentProvider {
 impl Provider for PatinaDocumentProvider {
     type Product = PatinaDocumentReportProduct;
 
+    fn input_dependencies(&self) -> Vec<InputId> {
+        vec![InputId::of::<PatinaLinterInput>()]
+    }
+
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<PatinaDocumentModeInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
         let name = context.source().name();
         name.ends_with(".vue") || name.ends_with(".jsx") || name.ends_with(".tsx")
     }
 
     fn dependencies(&self, context: &PlanningContext<'_>) -> Vec<ProductId> {
+        if mode::is_disabled_in_plan(context) {
+            return Vec::new();
+        }
         if context.source().name().ends_with(".vue") {
-            vec![
+            let mut dependencies = vec![
                 ProductId::of::<SfcDescriptorProduct>(),
-                ProductId::of::<ReliefProduct>(),
                 ProductId::of::<CroquisDocumentProduct>(),
-            ]
+            ];
+            if sfc_source_structure(context.source().text()).has_template {
+                dependencies.push(ProductId::of::<ReliefProduct>());
+            }
+            dependencies
         } else {
             vec![
                 ProductId::of::<JsxSyntaxProduct>(),
@@ -61,10 +103,22 @@ impl Provider for PatinaDocumentProvider {
     }
 
     fn provide(&self, context: &mut ProviderContext<'_>) -> Result<LintResult, ProviderError> {
+        let linter = context
+            .input::<PatinaLinterInput>()
+            .map(Shared::clone)
+            .unwrap_or_else(|| Shared::clone(&self.linter));
+        if mode::is_disabled_in_provider(context) {
+            return Ok(LintResult {
+                filename: context.source().name().into(),
+                diagnostics: Vec::new(),
+                error_count: 0,
+                warning_count: 0,
+            });
+        }
         if !context.source().name().ends_with(".vue") {
             let syntax = context.get::<JsxSyntaxProduct>()?;
             let semantics = context.get::<CroquisDocumentProduct>()?;
-            return Ok(self.linter.lint_jsx_with_shared_artifacts(
+            return Ok(linter.lint_jsx_with_shared_artifacts(
                 context.source().text(),
                 context.source().name(),
                 syntax.as_ref(),
@@ -72,20 +126,31 @@ impl Provider for PatinaDocumentProvider {
             ));
         }
         let descriptor_artifact = context.get::<SfcDescriptorProduct>()?;
-        let syntax = context.get::<ReliefProduct>()?;
         let semantics = context.get::<CroquisDocumentProduct>()?;
         let descriptor = match descriptor_artifact.as_result() {
             Ok(descriptor) => descriptor,
             Err(error) => {
-                return Ok(self.linter.lint_sfc_with_shared_parse_error(
+                return Ok(linter.lint_sfc_with_shared_parse_error(
                     context.source().text(),
                     context.source().name(),
                     error,
                 ));
             }
         };
+        let syntax = if descriptor.template.is_some() {
+            Some(context.get::<ReliefProduct>()?)
+        } else {
+            None
+        };
         let template_syntax = match (descriptor.template.as_ref(), syntax.as_ref()) {
-            (Some(_), Some(syntax)) => Some((syntax.snapshot(), syntax.parse_diagnostics())),
+            (Some(_), Some(syntax)) => {
+                let Some(syntax) = syntax.as_ref() else {
+                    return Err(ProviderError::message(
+                        "SFC descriptor and Relief syntax disagree about template presence",
+                    ));
+                };
+                Some((syntax.snapshot(), syntax.parse_diagnostics()))
+            }
             (None, None) => None,
             _ => {
                 return Err(ProviderError::message(
@@ -93,7 +158,7 @@ impl Provider for PatinaDocumentProvider {
                 ));
             }
         };
-        Ok(self.linter.lint_sfc_with_shared_artifacts(
+        Ok(linter.lint_sfc_with_shared_artifacts(
             context.source().text(),
             context.source().name(),
             descriptor,
@@ -103,30 +168,16 @@ impl Provider for PatinaDocumentProvider {
     }
 }
 
-/// Register one configured production Patina root.
-pub fn register_document_lint_recipe(
-    compilation: &mut Compilation,
-    linter: Linter,
-) -> Result<(), RegisterProviderError> {
-    compilation.register_provider(PatinaDocumentProvider::new(linter))
-}
-
-/// Register a production Patina root backed by one shared configured linter.
-pub fn register_shared_document_lint_recipe(
-    compilation: &mut Compilation,
-    linter: Shared<Linter>,
-) -> Result<(), RegisterProviderError> {
-    compilation.register_provider(PatinaDocumentProvider::from_shared(linter))
-}
-
 #[cfg(test)]
 mod tests {
-    use vize_atelier_jsx::JsxSyntaxProduct;
+    use vize_atlas::Compilation;
     use vize_atlas::{ProductStatus, SourceId};
     use vize_croquis::{CroquisDocumentProduct, CroquisSemanticProduct};
     use vize_relief::{ReliefProduct, TransformedReliefProduct, VueDialectInput};
 
     use super::*;
+
+    mod jsx;
 
     const SOURCE: &str = r#"<script setup>const items = []</script>
 <template><p v-for="(item, index) in items">{{ item }}</p></template>"#;
@@ -209,103 +260,5 @@ mod tests {
             vize_carton::cstr!("{:?}", outcome.value().diagnostics),
             vize_carton::cstr!("{:?}", expected.diagnostics)
         );
-    }
-
-    fn jsx_linter() -> Linter {
-        let mut rules = crate::RuleRegistry::new();
-        rules.register(Box::new(crate::rules::a11y::ImgAlt));
-        rules.register(Box::new(crate::rules::vue::RequireVForKey));
-        Linter::with_registry(rules)
-    }
-
-    #[test]
-    fn jsx_recipe_parses_once_without_relief_and_reuses_cache() {
-        let source_text = "const App = () => <img />;";
-        let expected =
-            jsx_linter().lint_jsx(source_text, "App.jsx", vize_atelier_jsx::JsxLang::Jsx);
-        let mut compilation = Compilation::new();
-        vize_atelier_jsx::register_atlas_providers(&mut compilation).unwrap();
-        register_document_lint_recipe(&mut compilation, jsx_linter()).unwrap();
-        let source = compilation.add_source("App.jsx", source_text).unwrap();
-        let plan = compilation
-            .plan_for::<PatinaDocumentReportProduct>(source)
-            .unwrap();
-
-        assert!(plan.contains::<JsxSyntaxProduct>());
-        assert!(plan.contains::<CroquisDocumentProduct>());
-        assert!(!plan.contains::<ReliefProduct>());
-        let snapshot = compilation.snapshot();
-        let mut session = snapshot.query_session();
-        let first = session
-            .query::<PatinaDocumentReportProduct>(source)
-            .unwrap();
-        let second = session
-            .query::<PatinaDocumentReportProduct>(source)
-            .unwrap();
-        assert_eq!(
-            first.value().warning_count,
-            expected.warning_count,
-            "{:?}",
-            first.value().diagnostics
-        );
-        assert_eq!(first.value().error_count, expected.error_count);
-        assert_eq!(second.status(), ProductStatus::CacheHit);
-        assert_eq!(
-            session
-                .counters()
-                .for_product::<JsxSyntaxProduct>()
-                .executions(),
-            1
-        );
-        assert_eq!(
-            session
-                .counters()
-                .for_product::<PatinaDocumentReportProduct>()
-                .cache_hits(),
-            1
-        );
-    }
-
-    #[test]
-    fn tsx_recipe_uses_owned_syntax_projection() {
-        let mut compilation = Compilation::new();
-        vize_atelier_jsx::register_atlas_providers(&mut compilation).unwrap();
-        register_document_lint_recipe(&mut compilation, jsx_linter()).unwrap();
-        let source = compilation
-            .add_source(
-                "App.tsx",
-                "const App = (p: Props): JSX.Element => <img src={p.src} />;",
-            )
-            .unwrap();
-
-        let outcome = compilation
-            .query::<PatinaDocumentReportProduct>(source)
-            .unwrap();
-
-        assert_eq!(outcome.value().warning_count, 1);
-        assert!(outcome.plan().contains::<JsxSyntaxProduct>());
-        assert!(!outcome.plan().contains::<ReliefProduct>());
-    }
-
-    #[test]
-    fn jsx_structural_rule_consumes_owned_for_projection() {
-        let mut rules = crate::RuleRegistry::new();
-        rules.register(Box::new(crate::rules::vue::RequireVForKey));
-        let mut compilation = Compilation::new();
-        vize_atelier_jsx::register_atlas_providers(&mut compilation).unwrap();
-        register_document_lint_recipe(&mut compilation, Linter::with_registry(rules)).unwrap();
-        let source = compilation
-            .add_source(
-                "List.jsx",
-                "const List = () => <ul>{items.map(item => <li>{item}</li>)}</ul>;",
-            )
-            .unwrap();
-
-        let outcome = compilation
-            .query::<PatinaDocumentReportProduct>(source)
-            .unwrap();
-
-        assert_eq!(outcome.value().error_count, 1);
-        assert!(!outcome.plan().contains::<ReliefProduct>());
     }
 }

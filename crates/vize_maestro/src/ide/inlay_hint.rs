@@ -38,14 +38,16 @@ impl InlayHintService {
         let Some(descriptor) = artifact.descriptor() else {
             return Vec::new();
         };
-        let Some(script_setup) = descriptor.script_setup.as_ref() else {
-            return Vec::new();
-        };
         let mut analyzer = Drawer::with_options(DrawerOptions {
             analyze_script: true,
             ..Default::default()
         });
-        analyzer.analyze_script_setup(&script_setup.content);
+        if let Some(script) = descriptor.script.as_ref() {
+            analyzer.analyze_script_plain(&script.content);
+        }
+        if let Some(script_setup) = descriptor.script_setup.as_ref() {
+            analyzer.analyze_script_setup(&script_setup.content);
+        }
         let croquis = analyzer.finish();
         Self::get_hints_from_products(content, uri, range, ecosystem_enabled, descriptor, &croquis)
     }

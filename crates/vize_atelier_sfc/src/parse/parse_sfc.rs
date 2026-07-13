@@ -7,6 +7,16 @@ use std::borrow::Cow;
 
 use super::block::{parse_block_fast, tag_name_eq};
 
+#[cfg(test)]
+std::thread_local! {
+    static PARSE_SFC_CALLS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+#[cfg(test)]
+pub(crate) fn parse_sfc_call_count() -> usize {
+    PARSE_SFC_CALLS.get()
+}
+
 // Tag name bytes for fast comparison
 const TAG_TEMPLATE: &[u8] = b"template";
 const TAG_SCRIPT: &[u8] = b"script";
@@ -37,6 +47,9 @@ pub fn parse_sfc<'a>(
     source: &'a str,
     options: SfcParseOptions,
 ) -> Result<SfcDescriptor<'a>, SfcError> {
+    #[cfg(test)]
+    PARSE_SFC_CALLS.set(PARSE_SFC_CALLS.get() + 1);
+
     let mut descriptor = SfcDescriptor {
         filename: Cow::Owned(options.filename.into()),
         source: Cow::Borrowed(source),

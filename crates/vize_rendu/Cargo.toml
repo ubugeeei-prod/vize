@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Rendu - Frontend-neutral owned render HIR for Vize"
+metadata.vize.stability = "compatibility-preview"
 
 [features]
 # Transitional feature name retained for workspace feature resolution. Rendu's

@@ -40,6 +40,8 @@ explicit local Cargo installs.
 - `vize_atelier_core` as `vize::atelier_core`
 - `vize_atelier_dom` as `vize::atelier_dom`
 - `vize_atelier_vapor` as `vize::atelier_vapor`
+- `vize_atelier_template` as `vize::atelier_template`
+- `vize_module` as `vize::module`
 - `vize_atelier_sfc` as `vize::atelier_sfc`
 - `vize_patina` as `vize::patina`
 - `vize_canon` as `vize::canon`
@@ -49,7 +51,8 @@ explicit local Cargo installs.
 
 ## Related Crates
 
-- `vize_atelier_sfc` powers the build pipeline.
+- `vize_atelier_template` powers standalone template compilation without synthetic SFCs.
+- `vize_atelier_sfc` powers the SFC build pipeline.
 - `vize_patina`, `vize_glyph`, and `vize_canon` power lint, format, and typecheck.
 - `vize_maestro` powers `vize lsp`.
 

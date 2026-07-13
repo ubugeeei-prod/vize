@@ -1,6 +1,8 @@
 //! Linting from Atlas-owned SFC artifacts.
 
-use vize_carton::{Allocator, ToCompactString, profile};
+use vize_carton::{
+    Allocator, ToCompactString, dialect::VueDialect, dialect::standalone_html_dialect, profile,
+};
 use vize_croquis::Croquis;
 use vize_relief::{CompilerError, ReliefSnapshot};
 
@@ -8,7 +10,147 @@ use super::{SfcTemplateLintInput, TemplateAnalysis, analyze_descriptor_for_lint,
 use crate::linter::config::{LintResult, Linter};
 use crate::markup::{MarkupContext, MarkupDocument};
 
+struct SharedTemplateOptions {
+    report_parse_errors: bool,
+    gate_semantic_on_fatal_parse: bool,
+    dialect: VueDialect,
+}
+
+impl SharedTemplateOptions {
+    const VUE_TEMPLATE: Self = Self {
+        report_parse_errors: true,
+        gate_semantic_on_fatal_parse: true,
+        dialect: VueDialect::Vue,
+    };
+
+    fn standalone_html(source: &str) -> Self {
+        Self {
+            report_parse_errors: false,
+            gate_semantic_on_fatal_parse: false,
+            dialect: standalone_html_dialect(None, source),
+        }
+    }
+}
+
 impl Linter {
+    /// Lint a raw Vue template from Atlas-owned Relief syntax.
+    ///
+    /// The syntax snapshot is materialized into this call's arena without
+    /// parsing the source again. Parse diagnostics remain identical to the
+    /// direct template API.
+    pub fn lint_template_with_shared_artifacts(
+        &self,
+        source: &str,
+        filename: &str,
+        syntax: &ReliefSnapshot,
+        parse_errors: &[CompilerError],
+    ) -> LintResult {
+        self.lint_template_with_shared_products(source, filename, syntax, parse_errors, None)
+    }
+
+    /// Lint a raw Vue template from Atlas-owned syntax and semantics.
+    pub fn lint_template_with_shared_products(
+        &self,
+        source: &str,
+        filename: &str,
+        syntax: &ReliefSnapshot,
+        parse_errors: &[CompilerError],
+        analysis: Option<&Croquis>,
+    ) -> LintResult {
+        self.lint_shared_template(
+            source,
+            filename,
+            syntax,
+            parse_errors,
+            SharedTemplateOptions::VUE_TEMPLATE,
+            analysis,
+        )
+    }
+
+    /// Lint standalone HTML from Atlas-owned Relief syntax.
+    ///
+    /// Standalone HTML intentionally suppresses parser diagnostics and keeps
+    /// semantic rules enabled for recoverable browser-shaped documents, just
+    /// like [`Linter::lint_standalone_html`].
+    pub fn lint_standalone_html_with_shared_artifacts(
+        &self,
+        source: &str,
+        filename: &str,
+        syntax: &ReliefSnapshot,
+        parse_errors: &[CompilerError],
+    ) -> LintResult {
+        self.lint_standalone_html_with_shared_products(source, filename, syntax, parse_errors, None)
+    }
+
+    /// Lint standalone HTML from Atlas-owned syntax and semantics.
+    pub fn lint_standalone_html_with_shared_products(
+        &self,
+        source: &str,
+        filename: &str,
+        syntax: &ReliefSnapshot,
+        parse_errors: &[CompilerError],
+        analysis: Option<&Croquis>,
+    ) -> LintResult {
+        let mut result = self.lint_shared_template(
+            source,
+            filename,
+            syntax,
+            parse_errors,
+            SharedTemplateOptions::standalone_html(source),
+            analysis,
+        );
+        if crate::linter::script_rules::has_active_builtin_script_rules(self) {
+            crate::linter::script_rules::append_builtin_script_diagnostics_from_html(
+                self,
+                source,
+                &mut result,
+            );
+            result
+                .diagnostics
+                .sort_unstable_by_key(|diagnostic| (diagnostic.start, diagnostic.end));
+        }
+        result
+    }
+
+    fn lint_shared_template(
+        &self,
+        source: &str,
+        filename: &str,
+        syntax: &ReliefSnapshot,
+        parse_errors: &[CompilerError],
+        options: SharedTemplateOptions,
+        analysis: Option<&Croquis>,
+    ) -> LintResult {
+        let allocator = Allocator::with_capacity((source.len() * 4).max(self.initial_capacity));
+        let root = syntax.materialize(allocator.as_bump());
+        let has_fatal_parse_errors = Self::has_fatal_template_parse_errors(parse_errors);
+        let lint_result = self.lint_template_root(
+            &allocator,
+            source,
+            filename,
+            &root,
+            if options.gate_semantic_on_fatal_parse && has_fatal_parse_errors {
+                TemplateAnalysis::Disabled
+            } else if let Some(analysis) = analysis {
+                TemplateAnalysis::Precomputed(analysis)
+            } else {
+                TemplateAnalysis::Lazy
+            },
+            super::TemplateRuleEnv {
+                sfc_descriptor: None,
+                dialect: options.dialect,
+            },
+        );
+        if options.report_parse_errors {
+            Self::merge_lint_results(
+                Self::template_parse_lint_result(filename, source.len(), parse_errors),
+                lint_result,
+            )
+        } else {
+            lint_result
+        }
+    }
+
     /// Lint JSX/TSX from Atlas's owned syntax and Croquis products.
     ///
     /// Only rules with an explicit markup projection run on JSX. Rules without

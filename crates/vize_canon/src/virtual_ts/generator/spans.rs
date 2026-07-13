@@ -235,14 +235,12 @@ pub(super) fn is_local_setup_binding(summary: &Croquis, name: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::rewrite_export_default_for_module_scope;
-    use crate::virtual_ts::generator::options_api::find_default_export_targets;
 
-    /// Drive the rewrite exactly as the generator does: classify the default
-    /// export with the shared single-parse `find_default_export_targets`, then
-    /// feed the resulting AST byte offsets (here the whole script is one span,
-    /// so offsets need no re-basing) into the rewrite.
+    /// Drive the rewrite exactly as the generator does: consume the owned
+    /// default-export projection, then feed its byte offsets into the rewrite.
     fn rewrite(script: &str) -> super::String {
-        let targets = find_default_export_targets(script);
+        let facts = vize_atelier_sfc::SfcScriptGeneratorFacts::from_source(script);
+        let targets = facts.default_export_targets();
         rewrite_export_default_for_module_scope(script, targets.object, targets.expr)
     }
 

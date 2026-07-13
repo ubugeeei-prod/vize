@@ -19,6 +19,7 @@ pub struct IdeContext<'a> {
     pub offset: usize,
     pub block_type: Option<BlockType>,
     pub sfc_artifact: Option<Shared<vize_atelier_sfc::SfcDescriptorArtifact>>,
+    relief_artifact: Option<Shared<Option<vize_relief::ReliefArtifact>>>,
     pub virtual_docs: Option<Ref<'a, Url, VirtualDocuments>>,
 }
 
@@ -34,13 +35,19 @@ impl<'a> IdeContext<'a> {
         offset: usize,
         content: String,
     ) -> Self {
-        let sfc_artifact = uri
-            .path()
-            .ends_with(".vue")
+        let is_sfc = uri.path().ends_with(".vue");
+        let is_standalone_html = is_standalone_html_path(uri.path());
+        if is_standalone_html {
+            state.ensure_artifact_source(uri, &content);
+        }
+        let sfc_artifact = is_sfc
             .then(|| {
                 state.ensure_artifact_source(uri, &content);
                 state.sfc_descriptor(uri)
             })
+            .flatten();
+        let relief_artifact = (is_sfc && !uri.path().ends_with(".art.vue"))
+            .then(|| state.sfc_relief(uri))
             .flatten();
         let block_type = if uri.path().ends_with(".art.vue") {
             find_art_block_at_offset_with_descriptor(
@@ -50,7 +57,7 @@ impl<'a> IdeContext<'a> {
                     .as_ref()
                     .and_then(|artifact| artifact.descriptor()),
             )
-        } else if is_standalone_html_path(uri.path()) {
+        } else if is_standalone_html {
             Some(standalone_html_block_at_offset(&content, offset))
         } else {
             sfc_artifact
@@ -66,6 +73,7 @@ impl<'a> IdeContext<'a> {
             offset,
             block_type,
             sfc_artifact,
+            relief_artifact,
             virtual_docs,
         }
     }
@@ -76,6 +84,14 @@ impl<'a> IdeContext<'a> {
 
     pub fn sfc_croquis(&self) -> Option<Shared<vize_croquis::CroquisDocument>> {
         self.state.sfc_croquis(self.uri)
+    }
+
+    pub fn relief_snapshot(&self) -> Option<&vize_relief::ReliefSnapshot> {
+        self.relief_artifact
+            .as_ref()?
+            .as_ref()
+            .as_ref()
+            .map(|syntax| syntax.snapshot())
     }
 
     pub fn dialect(&self) -> vize_carton::dialect::VueDialect {

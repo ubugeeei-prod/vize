@@ -23,11 +23,14 @@ import { performance } from "node:perf_hooks";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
 
+import { createNativeBatchSequenceVariants, measureNativeBatchCompile } from "./native-batch.mjs";
+
 const require = createRequire(import.meta.url);
 const benchDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = dirname(benchDir);
 const workRoot = join(rootDir, "target", "tool-benchmark");
 const cpuCount = os.cpus().length;
+const explicitMaxThreads = Math.max(1, Math.min(os.availableParallelism(), 256));
 
 const DEFAULT_RUNS = 5;
 const DEFAULT_WARMUPS = 1;
@@ -732,23 +735,6 @@ function loadNativeBindings() {
   }
 }
 
-function assertNativeBatchResult(result, expectedFiles) {
-  if (!result || typeof result !== "object") {
-    throw new Error("Vize native batch compile returned an invalid result.");
-  }
-  if (result.failed !== 0) {
-    throw new Error(`Vize native batch compile failed for ${result.failed} file(s).`);
-  }
-  if (result.success !== expectedFiles) {
-    throw new Error(
-      `Vize native batch compiled ${result.success} files, expected ${expectedFiles}.`,
-    );
-  }
-  if (!Number.isFinite(result.timeMs) || result.timeMs <= 0) {
-    throw new Error(`Vize native batch returned an invalid time: ${result.timeMs}.`);
-  }
-}
-
 function assertNativeCompileResult(result, filename) {
   if (!result || typeof result !== "object") {
     throw new Error(`Vize native compile returned an invalid result for ${filename}.`);
@@ -756,12 +742,6 @@ function assertNativeCompileResult(result, filename) {
   if (Array.isArray(result.errors) && result.errors.length > 0) {
     throw new Error(`Vize native compile failed for ${filename}: ${result.errors.join("; ")}`);
   }
-}
-
-function measureNativeBatchCompile(native, pattern, expectedFiles) {
-  const result = native.compileSfcBatch(pattern);
-  assertNativeBatchResult(result, expectedFiles);
-  return result.timeMs;
 }
 
 function measureNativeBatchResultsCompile(native, sources, expectedFiles) {
@@ -840,6 +820,12 @@ async function measureCompile(inputDir, files, options) {
       files: files.length,
       measure: () => measureNativeBatchCompile(native, pattern, files.length),
     },
+    ...createNativeBatchSequenceVariants({
+      native,
+      pattern,
+      expectedFiles: files.length,
+      maxThreads: explicitMaxThreads,
+    }),
   ];
 
   return createSurface({
@@ -1271,7 +1257,7 @@ function buildMetadata(args, inputDir, files, taskList, options) {
       "The 15,000-SFC rows are the many-file workload; the large-SFC rows isolate one large component.",
       "Reported times are medians; measured runs alternate variant order after warmup runs.",
       "Destructive formatter runs receive a fresh copy of the same input before each invocation.",
-      "SFC compile Vize max uses `compileSfcBatchWithResults` wall time so the primary number includes generated output crossing the JS/native boundary; the stats-only native `timeMs` is shown only in variant details.",
+      "SFC compile Vize max uses `compileSfcBatchWithResults` wall time so the primary number includes generated output crossing the JS/native boundary; the stats-only native `timeMs` is shown only in variant details. Explicit sequence variants run 1→max and max→1 in one Node process and measure the second call's full JavaScript wall time, including scoped pool creation.",
       "Vite build timings exclude fixture copy/setup; the Vize max lane sets `precompileBatchSize` to the benchmark file count so Blacksmith max runs one native precompile batch instead of the memory-safe default chunks.",
       "Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed.",
       "Single-thread lanes are shown where useful, and the primary speedup compares the incumbent default/single-thread lane with Vize's max runner lane.",

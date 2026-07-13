@@ -15,6 +15,14 @@ Use the Node.js version from `.node-version` and the Rust version from `rust-too
 workspace declares a minimum supported Rust version (MSRV) of `1.95.0` in `Cargo.toml`
 (`[workspace.package].rust-version`); contributions must compile under that version.
 
+The default Nix shell contains the reproducible local toolchain. Blacksmith Testbox support is
+optional and lives in a separate shell with the pinned Blacksmith CLI, `rsync`, and GitHub CLI:
+
+```sh
+nix develop             # local development
+nix develop .#testbox   # hosted Testbox workflows
+```
+
 Install dependencies from the workspace root:
 
 ```sh
@@ -36,6 +44,70 @@ cargo test -p <crate>
 
 Before opening a PR that changes shared tooling, release automation, native bindings, or compiler
 behavior, run the relevant workspace task from CI locally when practical.
+
+The root build, test, and lint workflows are local by default and need no hosted credentials:
+
+```sh
+vp run --workspace-root build
+vp run --workspace-root test
+vp run --workspace-root lint
+```
+
+Inside the Nix development shell, `vp build`, `vp test`, and `vp lint` are shorthand for these
+workspace tasks.
+
+For one-command Linux CI parity, enter the dedicated Testbox shell. The default `nix develop` shell
+intentionally omits Blacksmith and does not need its hosted artifact or credentials:
+
+```sh
+nix develop .#testbox
+```
+
+Then run the guarded lifecycle below. It clears any old box ID before warmup, skips remote tasks if
+authentication, push, or warmup fails, and always attempts to stop a successfully warmed box even
+when a task fails:
+
+```sh
+run_testbox_checks() {
+  unset BLACKSMITH_TESTBOX_ID testbox_output
+  "$VIZE_BLACKSMITH_BIN" auth login || return
+  git push --set-upstream origin "$(git branch --show-current)" || return
+
+  if testbox_output="$(vp run --workspace-root testbox:warmup)"; then
+    BLACKSMITH_TESTBOX_ID="$(printf '%s\n' "$testbox_output" | tail -n1)"
+  else
+    warmup_status=$?
+    unset testbox_output
+    return "$warmup_status"
+  fi
+  if [ -z "$BLACKSMITH_TESTBOX_ID" ]; then
+    printf '%s\n' "Testbox warmup returned no box id." >&2
+    unset BLACKSMITH_TESTBOX_ID testbox_output
+    return 1
+  fi
+  export BLACKSMITH_TESTBOX_ID
+
+  if vp run --workspace-root build:testbox &&
+    vp run --workspace-root test:testbox &&
+    vp run --workspace-root lint:testbox; then
+    testbox_status=0
+  else
+    testbox_status=$?
+  fi
+  if vp run --workspace-root testbox:stop; then
+    stop_status=0
+  else
+    stop_status=$?
+  fi
+  unset BLACKSMITH_TESTBOX_ID testbox_output
+
+  if [ "$testbox_status" -ne 0 ]; then
+    return "$testbox_status"
+  fi
+  return "$stop_status"
+}
+run_testbox_checks
+```
 
 For GitHub Actions changes, use `actrun` to lint or preview the workflow graph before pushing:
 

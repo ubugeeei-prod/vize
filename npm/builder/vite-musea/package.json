@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/vite-plugin-musea",
-  "version": "0.290.0",
+  "version": "0.291.0",
   "description": "Vite plugin for Musea - Component gallery for Vue components",
   "keywords": [
     "component-gallery",
@@ -65,7 +65,7 @@
     "build": "vp pack && vp build --config gallery-vite.config.ts",
     "build:gallery": "vp build --config gallery-vite.config.ts",
     "dev": "vp pack --watch",
-    "test": "vp exec tsx --test src/*.test.ts src/**/*.test.ts",
+    "test": "pnpm --dir ../vite build && vp exec tsx --test src/*.test.ts src/**/*.test.ts",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"

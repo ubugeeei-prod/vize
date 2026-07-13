@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Fresco - Vue TUI framework (Terminal User Interface)"
+metadata.vize.stability = "incubating"
 
 [lib]
 name = "vize_fresco"

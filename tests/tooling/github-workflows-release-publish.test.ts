@@ -1,7 +1,79 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parse } from "yaml";
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+
+type ReleaseJob = {
+  environment?: string;
+  needs?: string | string[];
+  permissions?: Record<string, string>;
+  "runs-on"?: string;
+  steps?: Array<{
+    env?: Record<string, string>;
+    run?: string;
+    uses?: string;
+    with?: Record<string, unknown>;
+  }>;
+  "timeout-minutes"?: number;
+  uses?: string;
+};
+
+function jobNeeds(job: ReleaseJob): string[] {
+  if (job.needs == null) return [];
+  return Array.isArray(job.needs) ? job.needs : [job.needs];
+}
+
+test("every publication edge waits for credential-free release preflight", () => {
+  const source = readRepoFile(".github", "workflows", "release.yml");
+  const workflow = parse(source) as { jobs?: Record<string, ReleaseJob> };
+  const jobs = workflow.jobs ?? {};
+  const publishJobs = Object.entries(jobs)
+    .filter(([, job]) => {
+      const serialized = JSON.stringify(job);
+      return (
+        ["npm", "crates-io", "vscode-marketplace"].includes(job.environment ?? "") ||
+        /publish_npm_package|npm publish|cargo publish|vsce publish|crates-io-auth-action@|softprops\/action-gh-release@/.test(
+          serialized,
+        )
+      );
+    })
+    .map(([name]) => name)
+    .sort();
+
+  assert.deepEqual(publishJobs, [
+    "create-github-release",
+    "release-crates",
+    "release-npm-cli",
+    "release-npm-fresco",
+    "release-npm-fresco-native",
+    "release-npm-musea-mcp-server",
+    "release-npm-musea-nuxt",
+    "release-npm-native",
+    "release-npm-nuxt",
+    "release-npm-oxlint-plugin",
+    "release-npm-rspack-plugin",
+    "release-npm-unplugin",
+    "release-npm-vite-plugin",
+    "release-npm-vite-plugin-musea",
+    "release-npm-wasm",
+    "release-vscode-extension",
+  ]);
+  for (const jobName of publishJobs) {
+    assert.ok(jobNeeds(jobs[jobName]).includes("release-preflight"), jobName);
+  }
+
+  const preflight = jobs["release-preflight"];
+  assert.ok(preflight);
+  assert.equal(preflight.uses, "./.github/workflows/release-preflight.yml");
+  assert.deepEqual(preflight.permissions, {
+    actions: "write",
+    contents: "read",
+    issues: "read",
+  });
+  assert.deepEqual(jobNeeds(preflight), []);
+  assert.doesNotMatch(JSON.stringify(preflight), /environment|id-token|secrets\./);
+});
 
 test("release workflow does not pin a separate hard-coded Node version for VS Code publishing", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
@@ -114,7 +186,11 @@ test("release workflow smokes the wasm package wrapper before publishing", () =>
   assert.match(buildJob, /npm\/wasm\/index\.d\.ts/);
   assert.match(buildJob, /moon run --target native tools\/moon\/cmd\/build_vize_wasm_package --/);
   assert.match(buildJob, /name:\s*release-package-vize-wasm/);
-  assert.match(publishJob, /needs:\s*build-wasm-package/);
+  const publishWorkflow = parse(workflow) as { jobs?: Record<string, ReleaseJob> };
+  const publishWasm = publishWorkflow.jobs?.["release-npm-wasm"];
+  assert.ok(publishWasm);
+  assert.ok(jobNeeds(publishWasm).includes("build-wasm-package"));
+  assert.ok(jobNeeds(publishWasm).includes("release-preflight"));
   assert.match(publishJob, /name:\s*release-package-vize-wasm/);
   assert.match(publishJob, /path:\s*npm\/wasm/);
 
@@ -161,41 +237,49 @@ test("release workflow creates GitHub Releases only after registry publishing su
   assert.notEqual(createRelease, -1);
 });
 
-test("release workflow does not block GitHub releases on VS Code Marketplace token expiry", () => {
+test("release workflow requires VS Code Marketplace publication", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const publishJob = workflowJobBody(workflow, "release-vscode-extension");
 
-  assert.match(publishJob, /name:\s*Skip publish when VSCE_PAT is absent/);
-  assert.match(
-    publishJob,
-    /name:\s*Publish VS Code extension[\s\S]*if:\s*env\.VSCE_PAT != ''[\s\S]*continue-on-error:\s*true[\s\S]*tools\/moon\/cmd\/publish_vscode_extension/,
-  );
+  assert.match(publishJob, /environment:\s*vscode-marketplace/);
+  assert.match(publishJob, /VSCE_PAT:\s*\$\{\{ secrets\.VSCE_PAT \}\}/);
+  assert.match(publishJob, /name:\s*Require VS Code Marketplace credentials/);
+  assert.match(publishJob, /if \[ -z "\$\{VSCE_PAT:-\}" \]/);
+  assert.match(publishJob, /VSCE_PAT is required in the protected vscode-marketplace environment/);
+  assert.match(publishJob, /name:\s*Publish VS Code extension/);
+  assert.match(publishJob, /tools\/moon\/cmd\/publish_vscode_extension/);
+  assert.doesNotMatch(publishJob, /Skip publish|continue-on-error|if:\s*env\.VSCE_PAT/);
 });
 
-test("Open VSX workflow publishes the VS Code extension when configured", () => {
+test("Open VSX publication is an explicit, fail-closed opt-in", () => {
   const workflow = readRepoFile(".github", "workflows", "release-open-vsx.yml");
   const publishJob = workflowJobBody(workflow, "release-open-vsx-extension");
 
-  assert.match(workflow, /on:\s*\n\s*release:\s*\n\s*types:\s*\[published\]/);
+  assert.match(workflow, /name:\s*Publish Open VSX \(optional\)/);
+  assert.match(workflow, /group:\s*publish-open-vsx-\$\{\{ inputs\.tag_name \}\}/);
+  assert.match(workflow, /cancel-in-progress:\s*false/);
+  assert.doesNotMatch(workflow, /\n\s*release:\s*\n\s*types:\s*\[published\]/);
   assert.match(
     workflow,
-    /workflow_dispatch:\s*\n\s*inputs:\s*\n\s*tag_name:\s*\n\s*description:\s*Release tag to publish to Open VSX[\s\S]*required:\s*true[\s\S]*type:\s*string/,
+    /workflow_dispatch:\s*\n\s*inputs:\s*\n\s*tag_name:\s*\n\s*description:\s*Published GitHub Release tag to publish to Open VSX[\s\S]*required:\s*true[\s\S]*type:\s*string/,
   );
   assert.match(publishJob, /environment:\s*open-vsx-registry/);
-  assert.match(workflow, /OVSX_PAT:\s*\$\{\{ secrets\.OVSX_PAT \}\}/);
+  assert.match(publishJob, /OVSX_PAT:\s*\$\{\{ secrets\.OVSX_PAT \}\}/);
   assert.match(publishJob, /name:\s*Resolve release tag/);
-  assert.match(
-    publishJob,
-    /RELEASE_TAG_NAME:\s*\$\{\{ github\.event\.release\.tag_name \|\| inputs\.tag_name \}\}/,
-  );
+  assert.match(publishJob, /RELEASE_TAG_NAME:\s*\$\{\{ inputs\.tag_name \}\}/);
+  assert.match(publishJob, /gh release view "\$RELEASE_TAG_NAME" --repo "\$GITHUB_REPOSITORY"/);
+  assert.match(publishJob, /--json isDraft,tagName/);
+  assert.match(publishJob, /select\(\.isDraft == false\)/);
   assert.match(publishJob, /tag_name=%s\\n/);
+  assert.match(publishJob, /name:\s*Require Open VSX credentials/);
+  assert.match(publishJob, /if \[ -z "\$\{OVSX_PAT:-\}" \]/);
+  assert.match(publishJob, /OVSX_PAT is required in the protected open-vsx-registry environment/);
+  assert.match(publishJob, /ref:\s*\$\{\{ steps\.release\.outputs\.tag_name \}\}/);
+  assert.match(publishJob, /persist-credentials:\s*false/);
   assert.match(publishJob, /name:\s*Download VSIX from GitHub Release/);
   assert.match(publishJob, /gh release download "\$\{\{ steps\.release\.outputs\.tag_name \}\}"/);
   assert.match(publishJob, /--pattern "\*\.vsix"/);
-  assert.match(publishJob, /name:\s*Skip publish when OVSX_PAT is absent/);
-  assert.match(
-    publishJob,
-    /name:\s*Publish Open VSX extension[\s\S]*if:\s*env\.OVSX_PAT != ''[\s\S]*tools\/moon\/cmd\/publish_open_vsx_extension/,
-  );
-  assert.doesNotMatch(publishJob, /continue-on-error:\s*true/);
+  assert.match(publishJob, /test "\$\{#vsix_files\[@\]\}" -eq 1/);
+  assert.match(publishJob, /tools\/moon\/cmd\/publish_open_vsx_extension/);
+  assert.doesNotMatch(publishJob, /Skip publish|continue-on-error|if:\s*env\.OVSX_PAT/);
 });

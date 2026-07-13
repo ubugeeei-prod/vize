@@ -19,6 +19,7 @@ mod compile;
 mod css;
 mod experimentals;
 mod parse;
+mod thread_pool;
 mod types;
 
 pub use batch::*;

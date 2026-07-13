@@ -13,8 +13,9 @@ Measured on 2026-07-10 from the canary working tree based on
 `80191eac4fc7cc0d5e19609515345e843ea62259`, using `rustc 1.95.0` on an Apple
 M5 Pro (`aarch64-apple-darwin`). This run includes request-keyed multi-source
 planning, immutable snapshots, project-provider registration, and cached
-transitive provider observations. Canon consumes both Croquis semantics and
-Flow analysis in this measurement. Command:
+transitive provider observations. Canon consumes the descriptor, Relief syntax,
+and Croquis semantics; Flow is an independent product and is not fabricated as
+a type-check dependency. Command:
 
 ```sh
 cargo bench -p vize --bench artifact_graph -- \

@@ -12,6 +12,7 @@ const __sfc__ = /* @__PURE__ */ _defineComponent({
     const isButton = props.type === "button";
     const __returned__ = {
       isButton,
+      props,
       type
     };
     Object.defineProperty(__returned__, "__isScriptSetup", {

@@ -1,5 +1,5 @@
 use tower_lsp::lsp_types::Hover;
-use vize_croquis::{Drawer, DrawerOptions, ScopeKind};
+use vize_croquis::ScopeKind;
 
 use super::{HoverBuilder, HoverService};
 use crate::ide::IdeContext;
@@ -13,12 +13,8 @@ impl HoverService {
             return None;
         }
 
-        let allocator = vize_carton::Bump::new();
-        let (root, _errors) = vize_armature::parse_document(&allocator, &ctx.content);
-
-        let mut drawer = Drawer::with_options(DrawerOptions::full());
-        drawer.draw_template(&root);
-        let croquis = drawer.finish();
+        let document = ctx.state.raw_template_croquis(ctx.uri)?;
+        let croquis = document.analysis();
 
         let offset = ctx.offset.min(ctx.content.len()) as u32;
         let (binding, scope_kind) = croquis

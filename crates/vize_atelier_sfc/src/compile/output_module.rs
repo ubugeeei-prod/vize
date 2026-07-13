@@ -1,5 +1,7 @@
 //! Shared SFC render output assembly.
 
+mod standalone;
+
 use crate::types::{CssModuleMapping, css_modules_object_literal};
 use vize_atelier_core::{
     atelier_output::{
@@ -10,6 +12,8 @@ use vize_atelier_core::{
 };
 use vize_atelier_ssr::SsrCodegenResult;
 use vize_carton::{String, ToCompactString};
+
+pub(super) use standalone::finalize_output_mode;
 
 pub(crate) type OutputRange = AtelierRange;
 

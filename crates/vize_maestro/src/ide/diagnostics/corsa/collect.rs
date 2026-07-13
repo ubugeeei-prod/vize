@@ -33,6 +33,7 @@ impl DiagnosticService {
             return vec![];
         };
         let content = doc.text();
+        drop(doc);
         let Some(artifact) = state.sfc_descriptor_for(uri, &content) else {
             return vec![];
         };
@@ -81,14 +82,22 @@ impl DiagnosticService {
                 tracing::warn!("cannot derive source path for {}", uri);
                 return vec![];
             };
+            let options = CorsaVueVirtualDocumentOptions {
+                options_api,
+                legacy_vue2,
+            };
+            let Some(generated) = state.canon_vue_document_for(uri, &content, options) else {
+                tracing::warn!("failed to query persistent Canon document for {}", uri);
+                return vec![];
+            };
+            let overlays = state.canon_vue_overlays(uri, &generated, options);
             let opened = match bridge
-                .open_vue_virtual_document(
+                .open_prebuilt_vue_virtual_document_with_overlays(
                     &source_path,
-                    &content,
-                    CorsaVueVirtualDocumentOptions {
-                        options_api,
-                        legacy_vue2,
-                    },
+                    &generated,
+                    options,
+                    &overlays.sources,
+                    &overlays.generated,
                 )
                 .await
             {

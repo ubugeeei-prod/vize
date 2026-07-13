@@ -5,12 +5,13 @@ use std::path::Path;
 use oxc_span::SourceType;
 use vize_atelier_sfc::{
     SfcCompileOptions, SfcCompileRequest, SfcCompileSettings, SfcCroquisMode, SfcCroquisSettings,
-    SfcDescriptorArtifact, SfcDescriptorProduct, SfcResolvedPropsPolicy,
+    SfcDescriptorArtifact, SfcDescriptorProduct, SfcResolvedPropsPolicy, SfcScriptSyntaxProduct,
+    SfcScriptSyntaxSnapshot, sfc_source_structure,
 };
 use vize_atlas::{Compilation, Shared};
 use vize_carton::{String as CompactString, ToCompactString};
 use vize_croquis::CroquisDocumentProduct;
-use vize_flow::FlowProduct;
+use vize_module::ModuleSyntaxProduct;
 use vize_relief::{ReliefProduct, TemplateSyntaxMode};
 
 use crate::batch::error::{CorsaError, CorsaResult};
@@ -24,6 +25,7 @@ use super::vue_artifact_codegen::{VueArtifactInputs, generate_vue_virtual_ts_fro
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions};
 
 /// Rewritten virtual TypeScript for a single in-memory `.vue` document.
+#[derive(Clone)]
 pub struct VueDocumentVirtualTs {
     /// `.vue.ts` source after `.vue -> .vue.ts` import rewriting.
     pub code: CompactString,
@@ -38,10 +40,11 @@ pub struct VueDocumentVirtualTs {
     /// Suffix appended to the original `.vue` URI/path for socket-mode Corsa.
     pub virtual_suffix: &'static str,
     pub(crate) descriptor: Shared<SfcDescriptorArtifact>,
+    pub(crate) script_syntax: Option<Shared<SfcScriptSyntaxSnapshot>>,
 }
 
 /// Vue single-document generation options used by editor/socket callers.
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct VueDocumentVirtualTsOptions {
     pub options_api: bool,
     pub legacy_vue2: bool,
@@ -115,16 +118,38 @@ pub fn generate_vue_document_virtual_ts_with_options(
     let descriptor = descriptor_artifact
         .as_result()
         .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))?;
-    let syntax = session
-        .query::<ReliefProduct>(source)
-        .map_err(graph_error)?;
+    let structure = sfc_source_structure(content);
+    let syntax = if structure.has_template {
+        Some(
+            session
+                .query::<ReliefProduct>(source)
+                .map_err(graph_error)?,
+        )
+    } else {
+        None
+    };
     let semantics = session
         .query::<CroquisDocumentProduct>(source)
         .map_err(graph_error)?;
-    // Corsa keeps the same recoverable control-flow product as the AST checker
-    // so diagnostics and editor mappings share one production plan.
-    session.query::<FlowProduct>(source).map_err(graph_error)?;
-
+    let modules = if structure.has_script {
+        Some(
+            session
+                .query::<ModuleSyntaxProduct>(source)
+                .map_err(graph_error)?,
+        )
+    } else {
+        None
+    };
+    let script_syntax = if structure.has_script {
+        Some(
+            session
+                .query::<SfcScriptSyntaxProduct>(source)
+                .map_err(graph_error)?
+                .shared(),
+        )
+    } else {
+        None
+    };
     let effective_options = virtual_ts_options_for_descriptor(options, descriptor);
     let use_tsx_virtual = descriptor_uses_jsx_script(descriptor);
     let source_type = if use_tsx_virtual {
@@ -141,8 +166,10 @@ pub fn generate_vue_document_virtual_ts_with_options(
         content,
         VueArtifactInputs {
             descriptor,
-            syntax: syntax.value().as_ref(),
+            syntax: syntax.as_ref().and_then(|syntax| syntax.value().as_ref()),
             semantics: semantics.value(),
+            modules: modules.as_ref().map(|modules| modules.value()),
+            script_syntax: script_syntax.as_deref(),
             extra_template_referenced_names: None,
         },
         &effective_options,
@@ -169,6 +196,7 @@ pub fn generate_vue_document_virtual_ts_with_options(
         source_type,
         virtual_suffix: if use_tsx_virtual { ".tsx" } else { ".ts" },
         descriptor: descriptor_artifact,
+        script_syntax,
     })
 }
 

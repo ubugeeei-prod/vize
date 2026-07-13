@@ -29,9 +29,10 @@ pub mod lane;
 pub mod steps;
 
 // Re-export from vize_relief (AST, errors, options)
-pub use vize_relief::errors::{CompilerError, CompilerResult, ErrorCode};
-#[allow(deprecated)]
-pub use vize_relief::options::{
+#[allow(deprecated, unused_imports)]
+pub(crate) use vize_relief::errors::{CompilerError, CompilerResult, ErrorCode};
+#[allow(deprecated, unused_imports)]
+pub(crate) use vize_relief::options::{
     BindingMetadata, BindingType, CodegenMode, CodegenOptions, CompilerOptions, ParseMode,
     ParserOptions, TemplateSyntaxMode, TextMode, TransformOptions, WhitespaceStrategy,
 };
@@ -47,20 +48,23 @@ pub use render_ir_ssr::{
     AssignmentExpression, BlockStatement, BlockStatementBody, IfStatement, IfStatementAlternate,
     ReturnStatement, ReturnValue, SequenceExpression, TemplateLiteral, TemplateLiteralElement,
 };
-pub use vize_relief::{
+#[allow(unused_imports)]
+pub(crate) use vize_relief::{
     AttributeNode, CommentNode, CompoundExpressionChild, CompoundExpressionNode, ConstantType,
     DirectiveNode, ElementNode, ElementType, ExpressionNode, ForNode, ForParseResult, IfBranchNode,
     IfNode, ImportItem, InterpolationNode, JsExpression, Namespace, NodeType, Position, PropNode,
     RootNode, RuntimeHelper, SimpleExpressionNode, SourceLocation, TemplateChildNode,
     TextCallContent, TextCallNode, TextNode,
 };
-pub use vize_relief::{errors, options};
+pub(crate) use vize_relief::{errors, options};
 
 // Re-export from vize_armature (parser, tokenizer)
-pub use vize_armature as parser;
-pub use vize_armature::tokenizer;
-#[allow(deprecated)]
-pub use vize_armature::{
+#[allow(unused_imports)]
+pub(crate) use vize_armature as parser;
+#[allow(unused_imports)]
+pub(crate) use vize_armature::tokenizer;
+#[allow(deprecated, unused_imports)]
+pub(crate) use vize_armature::{
     Parser, parse, parse_with_options, parse_with_options_and_invalid_html_self_closing,
     parse_with_options_and_template_syntax,
 };
@@ -97,4 +101,5 @@ pub use steps::{
 };
 
 /// Re-export allocator types for convenience
-pub use vize_carton::{Allocator, Box as AllocBox, CloneIn, Vec as AllocVec};
+#[allow(unused_imports)]
+pub(crate) use vize_carton::{Allocator, Box as AllocBox, CloneIn, Vec as AllocVec};

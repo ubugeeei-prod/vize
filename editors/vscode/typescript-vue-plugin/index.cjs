@@ -1,6 +1,7 @@
 "use strict";
 
 const path = require("node:path");
+const { installVueVirtualModules } = require("./virtual-modules.cjs");
 
 const vueExtension = ".vue";
 
@@ -36,6 +37,8 @@ function createVueImportSupport(ts, info) {
   if (!originalFileExists || !originalReadFile) {
     return undefined;
   }
+
+  installVueVirtualModules(ts, info);
 
   return {
     fileExists: originalFileExists,

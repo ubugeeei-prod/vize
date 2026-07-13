@@ -17,7 +17,7 @@ mod config_tests;
 mod tests;
 
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
 use dashmap::DashMap;
 use parking_lot::RwLock;
@@ -37,7 +37,7 @@ use futures::lock::Mutex as AsyncMutex;
 use vize_canon::{BatchTypeChecker, CorsaBridge};
 
 use crate::document::DocumentStore;
-use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
+use crate::virtual_code::VirtualDocuments;
 
 pub use features::LspFeatureConfig;
 
@@ -52,10 +52,12 @@ pub struct ServerState {
     artifact_compilation: RwLock<vize_atlas::Compilation>,
     /// Stable Atlas source identity owned by each open document URI.
     artifact_sources: DashMap<Url, vize_atlas::SourceId>,
-    /// Virtual code generator (reusable)
-    virtual_gen: RwLock<VirtualCodeGenerator>,
+    /// Workspace lint configuration generation installed into Atlas.
+    linter_generation: AtomicU64,
+    artifact_linter_generation: AtomicU64,
     /// Cached virtual documents per file
     virtual_docs_cache: DashMap<Url, VirtualDocuments>,
+    pub(super) open_vue_imports: super::importers::OpenVueImportIndex,
     /// Parsed metadata for imported components, keyed by resolved path.
     /// Lets template completion skip re-reading + re-parsing + re-analyzing an
     /// imported component on every keystroke; entries are invalidated by the
@@ -131,8 +133,10 @@ impl ServerState {
             documents: DocumentStore::new(),
             artifact_compilation: RwLock::new(Self::new_artifact_compilation()),
             artifact_sources: DashMap::new(),
-            virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
+            linter_generation: AtomicU64::new(1),
+            artifact_linter_generation: AtomicU64::new(0),
             virtual_docs_cache: DashMap::new(),
+            open_vue_imports: super::importers::OpenVueImportIndex::default(),
             component_metadata_cache: DashMap::new(),
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),

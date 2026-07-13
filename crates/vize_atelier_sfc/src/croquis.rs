@@ -218,10 +218,37 @@ fn analyze_sfc_descriptor_resolved_impl(
     resolve_filename: Option<&str>,
     preserve_canon_after_template: bool,
 ) -> SfcCroquisAnalysis {
+    let summary = analyze_scripts(descriptor, options, options_api, legacy_vue2);
+    analyze_sfc_descriptor_with_script_analysis(
+        descriptor,
+        template_ast,
+        options,
+        options_api,
+        legacy_vue2,
+        resolve_filename,
+        preserve_canon_after_template,
+        summary,
+    )
+}
+
+/// Finish descriptor/template analysis from an Atlas-cached script projection.
+///
+/// The script summary must have been produced for the requested Vue mode. This
+/// entry point deliberately performs no JavaScript/TypeScript parse.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn analyze_sfc_descriptor_with_script_analysis(
+    descriptor: &SfcDescriptor<'_>,
+    template_ast: Option<&RootNode<'_>>,
+    options: SfcCroquisOptions,
+    options_api: bool,
+    legacy_vue2: bool,
+    resolve_filename: Option<&str>,
+    preserve_canon_after_template: bool,
+    mut summary: Croquis,
+) -> SfcCroquisAnalysis {
     let drawer_options = options.analyzer_options;
     let script_analyzed = drawer_options.analyze_script
         && (descriptor.script.is_some() || descriptor.script_setup.is_some());
-    let mut summary = analyze_scripts(descriptor, options, options_api, legacy_vue2);
     if !preserve_canon_after_template && let Some(filename) = resolve_filename {
         merge_resolved_props_into_croquis(&mut summary, descriptor, filename);
     }

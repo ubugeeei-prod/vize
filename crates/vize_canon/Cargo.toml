@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Canon - The standard of correctness for Vize type checking"
+metadata.vize.stability = "compatibility-preview"
 
 [features]
 default = ["native"]
@@ -21,6 +22,7 @@ vize_flow.workspace = true
 vize_relief.workspace = true
 vize_armature.workspace = true
 vize_atlas.workspace = true
+vize_module.workspace = true
 vize_atelier_core.workspace = true
 vize_atelier_dom.workspace = true
 vize_atelier_jsx.workspace = true

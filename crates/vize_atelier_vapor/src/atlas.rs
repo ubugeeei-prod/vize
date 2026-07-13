@@ -4,12 +4,12 @@ use std::ops::Deref;
 
 use vize_atlas::{
     Compilation, InputId, PlanningContext, Product, ProductId, Provider, ProviderContext,
-    ProviderError, RegisterProviderError,
+    ProviderError, RegisterProviderError, SourceInputId,
 };
 use vize_carton::String;
-use vize_rendu::{RenderCapabilitiesInput, RenduProduct, RenduSpan};
+use vize_rendu::{RenderCapabilitiesInput, RenderEmitSettingsInput, RenduProduct, RenduSpan};
 
-use crate::{VaporEmitResult, VaporPlan, emit_vapor_plan, plan_rendu};
+use crate::{VaporEmitResult, VaporPlan, emit_vapor_plan_with_settings, plan_rendu};
 
 /// Per-root Vapor plans preserving frontend component boundaries.
 #[derive(Debug, Clone)]
@@ -35,6 +35,7 @@ impl Deref for VaporPlanArtifact {
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub struct VaporOutputMapping {
     pub generated_start: usize,
+    pub generated_end: usize,
     pub source: RenduSpan,
 }
 
@@ -42,6 +43,8 @@ pub struct VaporOutputMapping {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct VaporOutput {
     pub code: String,
+    pub preamble: String,
+    pub body: String,
     pub templates: Vec<String>,
     pub mappings: Vec<VaporOutputMapping>,
 }
@@ -127,6 +130,10 @@ impl Provider for VaporOutputProvider {
             .is_none_or(|capabilities| capabilities.vapor)
     }
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<RenderEmitSettingsInput>()]
+    }
+
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
         vec![ProductId::of::<VaporPlanProduct>()]
     }
@@ -136,14 +143,27 @@ impl Provider for VaporOutputProvider {
         context: &mut ProviderContext<'_>,
     ) -> Result<VaporOutputArtifact, ProviderError> {
         let plans = context.get::<VaporPlanProduct>()?;
+        let settings = context
+            .source_input::<RenderEmitSettingsInput>()
+            .cloned()
+            .unwrap_or_default();
         Ok(VaporOutputArtifact {
-            outputs: plans.plans().iter().map(emit_plan).collect(),
+            outputs: plans
+                .plans()
+                .iter()
+                .map(|plan| emit_plan(plan, &settings))
+                .collect(),
         })
     }
 }
 
-fn emit_plan(plan: &VaporPlan) -> VaporOutput {
-    let VaporEmitResult { code, templates } = emit_vapor_plan(plan);
+fn emit_plan(plan: &VaporPlan, settings: &vize_rendu::RenderEmitSettings) -> VaporOutput {
+    let VaporEmitResult {
+        code,
+        preamble,
+        body,
+        templates,
+    } = emit_vapor_plan_with_settings(plan, settings);
     let mut mappings = Vec::new();
     let mut cursor = 0;
     for expression in plan.expressions() {
@@ -156,12 +176,15 @@ fn emit_plan(plan: &VaporPlan) -> VaporOutput {
         let generated_start = cursor + relative;
         mappings.push(VaporOutputMapping {
             generated_start,
+            generated_end: generated_start.saturating_add(expression.code.len()),
             source,
         });
         cursor = generated_start.saturating_add(expression.code.len());
     }
     VaporOutput {
         code,
+        preamble,
+        body,
         templates,
         mappings,
     }

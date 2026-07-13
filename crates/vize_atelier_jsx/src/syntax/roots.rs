@@ -1,5 +1,3 @@
-//! Root/component metadata captured directly from the live OXC program.
-
 use oxc_ast::ast::{
     ArrowFunctionExpression, Expression, Function, FunctionBody, JSXAttributeItem,
     JSXAttributeName, JSXChild, JSXElement, JSXExpression, Program, Statement, VariableDeclaration,

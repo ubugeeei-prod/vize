@@ -16,14 +16,14 @@ use vize_carton::line_index::offset_to_line_col;
 /// Code action service for providing quick fixes and refactorings.
 pub struct CodeActionService;
 
-/// One SFC parse + template lint pass, shared across the lint-based collectors
-/// so a single code-action request doesn't parse and lint the same file twice.
+/// One Atlas document report, restricted to the SFC template block and shared
+/// across the lint-based collectors.
 struct TemplateLint {
-    /// Template block content (the text the linter ran against).
+    /// Full SFC source. Atlas diagnostics and fixes use document offsets.
     content: String,
-    /// 1-indexed line where the template block starts inside the SFC.
+    /// Kept as one so the existing position helper maps document offsets.
     start_line: u32,
-    /// Lint diagnostics for the template block.
+    /// Cached Patina product with non-template diagnostics removed.
     result: vize_patina::LintResult,
 }
 
@@ -32,9 +32,7 @@ impl CodeActionService {
     pub fn code_actions(ctx: &IdeContext, range: Range) -> Vec<CodeActionOrCommand> {
         let mut actions = Vec::new();
 
-        // Parse the SFC and run the template linter exactly once; both the
-        // lint-fix and `@vize:forget` collectors below operate on this shared
-        // result instead of re-parsing + re-linting the same content twice.
+        // Query Patina once; both collectors operate on the same cached product.
         if let Some(lint) = Self::lint_template_once(ctx) {
             actions.extend(Self::collect_lint_fixes(ctx, range, &lint));
             actions.extend(Self::collect_forget_suppress(ctx, range, &lint));
@@ -295,18 +293,23 @@ impl CodeActionService {
         vec![CodeActionOrCommand::CodeAction(action)]
     }
 
-    /// Parse the SFC and run the template linter once, returning the template
-    /// content, its starting line in the SFC, and the lint result. Shared by
-    /// the lint-fix and `@vize:forget` collectors so the (expensive) SFC parse
-    /// and template lint run a single time per code-action request.
+    /// Query the persistent document report once and retain template diagnostics.
     fn lint_template_once(ctx: &IdeContext) -> Option<TemplateLint> {
         let descriptor = ctx.sfc_descriptor()?;
         let template = descriptor.template.as_ref()?;
-        let linter = vize_patina::Linter::new();
-        let result = linter.lint_template(&template.content, ctx.uri.path());
+        let mut result = ctx
+            .state
+            .lint_report_for(ctx.uri, &ctx.content, ctx.state.lsp_features().ecosystem)?
+            .as_ref()
+            .clone();
+        let template_range = template.loc.start..template.loc.end;
+        result.diagnostics.retain(|diagnostic| {
+            template_range.contains(&(diagnostic.start as usize))
+                || template_range.contains(&(diagnostic.end.saturating_sub(1) as usize))
+        });
         Some(TemplateLint {
-            content: template.content.to_string(),
-            start_line: template.loc.start_line as u32,
+            content: ctx.content.clone(),
+            start_line: 1,
             result,
         })
     }
@@ -479,23 +482,18 @@ impl CodeActionService {
 
     /// Get all available fixes for a document (for "fix all" actions).
     pub fn get_all_fixes(ctx: &IdeContext) -> Option<WorkspaceEdit> {
-        let descriptor = ctx.sfc_descriptor()?;
-        let template = descriptor.template.as_ref()?;
-
-        let linter = vize_patina::Linter::new();
-        let result = linter.lint_template(&template.content, ctx.uri.path());
-
-        let template_start_line = template.loc.start_line as u32;
+        let lint = Self::lint_template_once(ctx)?;
+        let template_start_line = lint.start_line;
 
         let mut all_edits: Vec<TextEdit> = Vec::new();
 
-        for lint_diag in result.diagnostics {
+        for lint_diag in lint.result.diagnostics {
             if let Some(ref fix) = lint_diag.fix {
                 for edit in &fix.edits {
                     let (edit_start_line, edit_start_col) =
-                        offset_to_line_col(&template.content, edit.start as usize);
+                        offset_to_line_col(&lint.content, edit.start as usize);
                     let (edit_end_line, edit_end_col) =
-                        offset_to_line_col(&template.content, edit.end as usize);
+                        offset_to_line_col(&lint.content, edit.end as usize);
 
                     all_edits.push(TextEdit {
                         range: Range {

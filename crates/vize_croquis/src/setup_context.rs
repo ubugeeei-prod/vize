@@ -136,7 +136,7 @@ pub struct SetupContextViolation {
 }
 
 /// Tracks setup context violations during analysis
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct SetupContextTracker {
     violations: Vec<SetupContextViolation>,
 }

@@ -1,11 +1,12 @@
 //! Full SFC compilation over an Atlas-owned parse-only template artifact.
 
+use vize_relief::CodegenOptions;
 use vize_relief::ReliefArtifact;
 use vize_relief::TemplateSyntaxMode;
 
 use crate::{
     compile_template::{
-        TemplateBlockCompileContext, TemplateBlockCompileResult,
+        TemplateBlockCompileContext, TemplateBlockCompileResult, VaporTemplateCompileContext,
         compile_template_block as compile_template_block_direct,
         compile_template_block_from_syntax,
         compile_template_block_vapor as compile_template_block_vapor_direct,
@@ -38,7 +39,13 @@ pub fn compile_sfc_with_shared_syntax(
                 .map(|template| template.loc.clone()),
         });
     }
-    super::compile_sfc_inner(descriptor, options, template_syntax, syntax)
+    super::compile_sfc_inner(
+        descriptor,
+        options,
+        template_syntax,
+        syntax,
+        CodegenOptions::default(),
+    )
 }
 
 pub(super) fn compile_template_block(
@@ -47,41 +54,37 @@ pub(super) fn compile_template_block(
     context: TemplateBlockCompileContext<'_>,
     template_syntax: TemplateSyntaxMode,
     syntax: Option<&ReliefArtifact>,
+    codegen_options: &CodegenOptions,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
     match syntax {
-        Some(syntax) => {
-            compile_template_block_from_syntax(template, options, context, template_syntax, syntax)
-        }
-        None => compile_template_block_direct(template, options, context, template_syntax),
+        Some(syntax) => compile_template_block_from_syntax(
+            template,
+            options,
+            context,
+            template_syntax,
+            syntax,
+            codegen_options,
+        ),
+        None => compile_template_block_direct(
+            template,
+            options,
+            context,
+            template_syntax,
+            codegen_options,
+        ),
     }
 }
 
 pub(super) fn compile_template_block_vapor(
     template: &SfcTemplateBlock,
-    scope_id: &str,
-    has_scoped: bool,
+    context: VaporTemplateCompileContext<'_>,
     bindings: Option<&BindingMetadata>,
-    options: &TemplateCompileOptions,
-    template_syntax: TemplateSyntaxMode,
     syntax: Option<&ReliefArtifact>,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
     match syntax {
-        Some(syntax) => compile_template_block_vapor_from_syntax(
-            template,
-            scope_id,
-            has_scoped,
-            bindings,
-            options,
-            template_syntax,
-            syntax,
-        ),
-        None => compile_template_block_vapor_direct(
-            template,
-            scope_id,
-            has_scoped,
-            bindings,
-            options,
-            template_syntax,
-        ),
+        Some(syntax) => {
+            compile_template_block_vapor_from_syntax(template, syntax, context, bindings)
+        }
+        None => compile_template_block_vapor_direct(template, context, bindings),
     }
 }

@@ -178,6 +178,31 @@ fn ffi_sfc_hosts_do_not_call_shadow_template_compilers() {
 }
 
 #[test]
+fn standalone_template_hosts_query_the_raw_frontend_without_legacy_compile_lanes() {
+    let wasm = include_str!("../wasm/compiler.rs");
+    let napi = include_str!("../napi/template.rs");
+    for source in [wasm, napi] {
+        assert!(source.contains("compile_template_product"));
+        assert!(!source.contains("compile_template_with_template_syntax"));
+        assert!(!source.contains("compile_vapor_with_template_syntax"));
+        assert!(!source.contains("compile_ssr_with_template_syntax"));
+        assert!(!source.contains("transform_with_template_syntax_quirks"));
+    }
+    assert!(!wasm.contains("compile_internal"));
+}
+
+#[test]
+fn ffi_format_hosts_query_glyph_instead_of_the_direct_allocator_lane() {
+    let napi = include_str!("../napi/format.rs");
+    let wasm = include_str!("../wasm/format.rs");
+    for source in [napi, wasm] {
+        assert!(source.contains("format_sfc("));
+        assert!(!source.contains("format_sfc_with_allocator"));
+        assert!(!source.contains("parse_sfc("));
+    }
+}
+
+#[test]
 fn ffi_typecheck_is_parity_preserving_and_plans_full_shared_artifacts() {
     let source = r#"<script setup lang="ts">
 const count = 1

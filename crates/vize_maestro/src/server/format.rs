@@ -3,7 +3,10 @@
 //! Provides SFC document formatting via the vize_glyph formatter.
 
 #[cfg(feature = "glyph")]
-use tower_lsp::lsp_types::{Position, Range, TextEdit};
+use tower_lsp::lsp_types::{Position, Range, TextEdit, Url};
+
+#[cfg(feature = "glyph")]
+use super::ServerState;
 
 /// Format a document and return TextEdits for the LSP client.
 ///
@@ -11,15 +14,12 @@ use tower_lsp::lsp_types::{Position, Range, TextEdit};
 /// full-document replacement, or `None` on formatting error.
 #[cfg(feature = "glyph")]
 pub(crate) fn format_document(
+    state: &ServerState,
+    uri: &Url,
     content: &str,
     options: &vize_glyph::FormatOptions,
 ) -> Option<Vec<TextEdit>> {
-    let allocator = vize_glyph::Allocator::with_capacity(content.len());
-
-    let formatted = match vize_glyph::format_sfc_with_allocator(content, options, &allocator) {
-        Ok(result) => result,
-        Err(_) => return None,
-    };
+    let formatted = state.formatted_sfc_for(uri, content, options)?;
 
     if !formatted.changed {
         return Some(vec![]);
@@ -60,20 +60,30 @@ fn eof_position(content: &str) -> Position {
 mod tests {
     use super::{eof_position, format_document};
     use crate::server::ServerState;
-    use tower_lsp::lsp_types::Position;
+    use tower_lsp::lsp_types::{Position, Url};
+
+    fn format(
+        state: &ServerState,
+        source: &str,
+        options: &vize_glyph::FormatOptions,
+    ) -> Option<Vec<tower_lsp::lsp_types::TextEdit>> {
+        let uri = Url::parse("file:///tmp/Format.vue").unwrap();
+        format_document(state, &uri, source, options)
+    }
 
     #[test]
     fn format_document_is_idempotent() {
         let source = "<template>\n<div>hello</div>\n</template>\n";
         let options = vize_glyph::FormatOptions::default();
+        let state = ServerState::new();
 
-        let result = format_document(source, &options);
+        let result = format(&state, source, &options);
         assert!(result.is_some());
         let edits = result.unwrap();
         assert!(!edits.is_empty(), "expected edits on first format");
 
         let formatted = &edits[0].new_text;
-        let result2 = format_document(formatted, &options);
+        let result2 = format(&state, formatted, &options);
         assert!(result2.is_some());
         let edits2 = result2.unwrap();
         assert!(
@@ -86,7 +96,7 @@ mod tests {
     fn format_document_returns_edit_for_unformatted() {
         let source = "<template>\n<div>hello</div>\n</template>\n";
         let options = vize_glyph::FormatOptions::default();
-        let result = format_document(source, &options);
+        let result = format(&ServerState::new(), source, &options);
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
@@ -104,7 +114,7 @@ mod tests {
             semi: false,
             ..Default::default()
         };
-        let result = format_document(source, &options);
+        let result = format(&ServerState::new(), source, &options);
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
@@ -116,7 +126,7 @@ mod tests {
     fn format_document_edit_covers_full_range() {
         let source = "<template>\n<div   class=\"a\"   id=\"b\" >\nhello\n</div>\n</template>\n";
         let options = vize_glyph::FormatOptions::default();
-        let result = format_document(source, &options);
+        let result = format(&ServerState::new(), source, &options);
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
@@ -130,7 +140,7 @@ mod tests {
     fn format_document_edit_uses_real_eof_for_trailing_newline() {
         let source = "<template>\n<div>hello</div>\n</template>\n";
         let options = vize_glyph::FormatOptions::default();
-        let result = format_document(source, &options);
+        let result = format(&ServerState::new(), source, &options);
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
@@ -142,7 +152,7 @@ mod tests {
     fn format_document_edit_uses_utf16_columns() {
         let source = "<template><div>😀</div></template>";
         let options = vize_glyph::FormatOptions::default();
-        let result = format_document(source, &options);
+        let result = format(&ServerState::new(), source, &options);
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
@@ -157,7 +167,7 @@ mod tests {
             single_quote: true,
             ..Default::default()
         };
-        let result = format_document(source, &options);
+        let result = format(&ServerState::new(), source, &options);
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
@@ -180,7 +190,7 @@ mod tests {
         assert!(options.single_quote);
 
         let source = "<script>\nconst x = \"hello\";\n</script>\n";
-        let result = format_document(source, &options);
+        let result = format(&state, source, &options);
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {

@@ -319,21 +319,13 @@ impl RenameService {
             return false;
         }
 
-        // Check if it's defined in the script
-        if let Some(ref virtual_docs) = ctx.virtual_docs {
-            if let Some(ref script_setup) = virtual_docs.script_setup {
-                let bindings =
-                    crate::virtual_code::extract_simple_bindings(&script_setup.content, true);
-                if bindings.iter().any(|b| b == word) {
-                    return true;
-                }
-            }
-            if let Some(ref script) = virtual_docs.script {
-                let bindings = crate::virtual_code::extract_simple_bindings(&script.content, false);
-                if bindings.iter().any(|b| b == word) {
-                    return true;
-                }
-            }
+        // The persistent Croquis product already contains the bindings projected
+        // from the SFC's one authored-script parse.
+        if ctx
+            .sfc_croquis()
+            .is_some_and(|document| document.analysis().bindings.contains(word))
+        {
+            return true;
         }
 
         // Allow renaming any valid identifier in template context

@@ -6,10 +6,13 @@ use oxc_parser::Parser;
 use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
 use vize_carton::profile;
 
+mod dispatch;
 mod html_scripts;
+mod prefilter;
 mod registry;
 
 use html_scripts::extract_inline_scripts;
+use prefilter::script_rule_may_match;
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
     ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry,
@@ -265,57 +268,6 @@ fn merge_script_result(linter: &Linter, result: &mut LintResult, script_result: 
 /// byte prefilter, runs into its own [`ScriptLintResult`], and is merged in the
 /// original rule order. Active AST rules share one oxc parse; byte rules run
 /// directly against the source.
-pub(crate) fn append_builtin_script_rules_for_source(
-    linter: &Linter,
-    source: &str,
-    offset: usize,
-    result: &mut LintResult,
-) {
-    // Skip work entirely when no enabled rule could match this block.
-    if !block_has_active_rule(linter, source) {
-        return;
-    }
-
-    let allocator = Allocator::default();
-    let parsed = block_has_active_ast_rule(linter, source).then(|| {
-        profile!(
-            "patina.script_rule.parse",
-            Parser::new(&allocator, source, script_source_type()).parse()
-        )
-    });
-
-    for entry in active_builtin_script_rule_entries(linter) {
-        let rule = resolved_rule(linter, entry);
-        run_builtin_script_rule(linter, entry, rule, source, offset, parsed.as_ref(), result);
-    }
-}
-
-fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
-    let bytes = source.as_bytes();
-    match rule_name {
-        RULE_PINIA_PREFER_STORE_TO_REFS => memmem::find(bytes, b"Store").is_some(),
-        RULE_VUE_ROUTER_PREFER_NAMED_PUSH => {
-            (memmem::find(bytes, b".push").is_some() || memmem::find(bytes, b".replace").is_some())
-                && (memmem::find(bytes, b"'/").is_some() || memmem::find(bytes, b"\"/").is_some())
-                && (memmem::find(bytes, b"router").is_some()
-                    || memmem::find(bytes, b"Router").is_some())
-        }
-        RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT => {
-            memmem::find(bytes, b"toMatchSnapshot").is_some()
-                && memmem::find(bytes, b".html").is_some()
-        }
-        RULE_PREFER_COMPUTED => memmem::find(bytes, b"watch").is_some(),
-        RULE_PREFER_IMPORT_FROM_VUE => memmem::find(bytes, b"@vue/").is_some(),
-        RULE_NO_RESTRICTED_GLOBALS => {
-            memmem::find(bytes, b"process").is_some()
-                || memmem::find(bytes, b"localStorage").is_some()
-                || memmem::find(bytes, b"sessionStorage").is_some()
-        }
-        RULE_NO_RESTRICTED_MEMBERS => false,
-        _ => true,
-    }
-}
-
 fn descriptor_scripts_may_match_ecosystem_rule(descriptor: &SfcDescriptor<'_>) -> bool {
     descriptor
         .script
@@ -351,3 +303,6 @@ fn source_may_match_ecosystem_rule(source: &str) -> bool {
         || (memmem::find(bytes, b"toMatchSnapshot").is_some()
             && memmem::find(bytes, b".html").is_some())
 }
+pub(crate) use dispatch::{
+    append_builtin_script_rules_for_module, append_builtin_script_rules_for_source,
+};

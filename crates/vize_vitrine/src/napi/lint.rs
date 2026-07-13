@@ -10,20 +10,19 @@
     clippy::disallowed_macros
 )]
 
-use glob::glob;
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
-use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use serde_json::{Value, json};
-use std::sync::atomic::{AtomicUsize, Ordering};
-use vize_carton::append;
 
-use super::lint_fix::{is_lintable_extension, lint_file_with_optional_fix, lint_source};
+use crate::lint_artifact::{LintGraphSource, LintSourceKind, PatinaLintGraph};
+use crate::napi::lint_fix::is_standalone_html_filename;
+
+mod batch;
 mod lint_options;
+pub use batch::lint;
 use lint_options::{
-    LintOptionsNapi, LintResultNapi, PatinaLintOptionsNapi, configure_type_aware_lint,
-    create_patina_linter, patina_help_level_from_option, patina_locale_from_option,
-    patina_preset_from_option,
+    PatinaLintOptionsNapi, configure_type_aware_lint, create_patina_linter,
+    patina_help_level_from_option, patina_locale_from_option, patina_preset_from_option,
 };
 
 struct PatinaRuleMetaNapi<'a> {
@@ -212,15 +211,33 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
     let enabled_rules = opts
         .enabled_rules
         .map(|rules| rules.into_iter().map(Into::into).collect());
-    let linter = configure_type_aware_lint(
-        create_patina_linter(preset)
-            .with_locale(locale)
-            .with_help_level(help_level),
-        opts.type_aware,
-        opts.corsa_path,
+    let linter = vize_atlas::Shared::new(
+        configure_type_aware_lint(
+            create_patina_linter(preset)
+                .with_locale(locale)
+                .with_help_level(help_level),
+            opts.type_aware,
+            opts.corsa_path,
+        )
+        .with_enabled_rules(enabled_rules),
+    );
+    let graph = PatinaLintGraph::new(
+        linter,
+        [LintGraphSource {
+            name: &filename,
+            text: &source,
+            kind: if is_standalone_html_filename(&filename) {
+                LintSourceKind::StandaloneHtml
+            } else {
+                LintSourceKind::Sfc
+            },
+        }],
     )
-    .with_enabled_rules(enabled_rules);
-    let result = lint_source(&linter, &source, &filename);
+    .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))?;
+    let result = graph
+        .query(0)
+        .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))?
+        .result;
     let lsp_diagnostics = LspEmitter::to_lsp_diagnostics_with_source(&result, &source);
 
     if result.diagnostics.len() != lsp_diagnostics.len() {
@@ -287,139 +304,6 @@ pub fn get_patina_rules() -> Result<Value> {
             }))
             .collect::<Vec<_>>()
     ))
-}
-
-/// Lint Vue SFC files matching patterns (native multithreading, .gitignore-aware)
-#[napi]
-pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<LintResultNapi> {
-    use ignore::Walk;
-    use std::time::Instant;
-    use vize_patina::{HelpLevel, OutputFormat, format_results, format_summary};
-
-    let opts = options.unwrap_or_default();
-    let start = Instant::now();
-
-    // Collect .vue files using glob patterns or directory walking
-    let files: Vec<std::path::PathBuf> = patterns
-        .iter()
-        .flat_map(|pattern| {
-            if pattern.contains('*') || pattern.contains('?') || pattern.contains('[') {
-                // Use glob for pattern matching
-                glob(pattern)
-                    .ok()
-                    .into_iter()
-                    .flatten()
-                    .filter_map(|r| r.ok())
-                    .filter(|p| {
-                        p.extension()
-                            .and_then(|ext| ext.to_str())
-                            .is_some_and(is_lintable_extension)
-                            && !p.components().any(|c| c.as_os_str() == "node_modules")
-                    })
-                    .collect::<Vec<_>>()
-            } else {
-                // Use directory walking for paths (respects .gitignore)
-                Walk::new(pattern)
-                    .filter_map(|e| e.ok())
-                    .filter(|e| {
-                        e.path()
-                            .extension()
-                            .and_then(|ext| ext.to_str())
-                            .is_some_and(is_lintable_extension)
-                    })
-                    .map(|e| e.path().to_path_buf())
-                    .collect::<Vec<_>>()
-            }
-        })
-        .collect();
-
-    if files.is_empty() {
-        return Ok(LintResultNapi {
-            output: format!(
-                "No .vue or .html files found matching patterns: {:?}",
-                patterns
-            ),
-            error_count: 0,
-            warning_count: 0,
-            file_count: 0,
-            time_ms: start.elapsed().as_secs_f64() * 1000.0,
-        });
-    }
-
-    let help_level = match opts.help_level.as_deref() {
-        Some("none") => HelpLevel::None,
-        Some("short") => HelpLevel::Short,
-        _ => HelpLevel::Full,
-    };
-    let preset = patina_preset_from_option(opts.preset.as_deref());
-    let linter = configure_type_aware_lint(
-        create_patina_linter(preset).with_help_level(help_level),
-        opts.type_aware,
-        opts.corsa_path,
-    );
-    let error_count = AtomicUsize::new(0);
-    let warning_count = AtomicUsize::new(0);
-
-    // Lint all files in parallel and collect results
-    let should_fix = opts.fix.unwrap_or(false);
-    let results: Vec<_> = files
-        .par_iter()
-        .filter_map(|path| {
-            let item = lint_file_with_optional_fix(&linter, path, should_fix)?;
-            error_count.fetch_add(item.2.error_count, Ordering::Relaxed);
-            warning_count.fetch_add(item.2.warning_count, Ordering::Relaxed);
-            Some(item)
-        })
-        .collect();
-
-    let total_errors = error_count.load(Ordering::Relaxed);
-    let total_warnings = warning_count.load(Ordering::Relaxed);
-
-    let format = opts
-        .format
-        .as_deref()
-        .and_then(OutputFormat::parse)
-        .unwrap_or(OutputFormat::Text);
-
-    let quiet = opts.quiet.unwrap_or(false);
-
-    // Format output
-    let mut output = vize_carton::CompactString::default();
-    if format.renders_details_when_quiet() || !quiet || total_errors > 0 || total_warnings > 0 {
-        let lint_results: Vec<_> = results.iter().map(|(_, _, r)| r).cloned().collect();
-        let sources: Vec<_> = results
-            .iter()
-            .map(|(f, s, _)| {
-                (
-                    vize_carton::CompactString::from(f.as_str()),
-                    vize_carton::CompactString::from(s.as_str()),
-                )
-            })
-            .collect();
-
-        let formatted = format_results(&lint_results, &sources, format);
-        if !formatted.trim().is_empty() {
-            output.push_str(&formatted);
-        }
-    }
-
-    let elapsed = start.elapsed();
-    if format == OutputFormat::Text {
-        append!(
-            output,
-            "\n{}\n",
-            format_summary(total_errors, total_warnings, files.len())
-        );
-        append!(output, "Linted {} files in {:.4?}", files.len(), elapsed);
-    }
-
-    Ok(LintResultNapi {
-        output: output.into(),
-        error_count: total_errors as u32,
-        warning_count: total_warnings as u32,
-        file_count: files.len() as u32,
-        time_ms: elapsed.as_secs_f64() * 1000.0,
-    })
 }
 
 #[cfg(test)]

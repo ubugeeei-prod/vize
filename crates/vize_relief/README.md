@@ -1,5 +1,8 @@
 # vize_relief
 
+Support and deprecation guarantees are defined in the
+[Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
 `vize_relief` owns the source-faithful Vue-template syntax product plus its
 parser-facing errors and options. It is not Vize's universal IR and is not used
 by the JSX/TSX frontend.

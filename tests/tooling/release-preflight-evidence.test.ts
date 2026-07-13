@@ -1,0 +1,149 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import {
+  assertRequiredWorkflowJobs,
+  requiredReleaseWorkflowEvidence,
+  requiredReleaseWorkflows,
+  selectRequiredWorkflowRuns,
+} from "../../tools/github/release-preflight-evidence.mjs";
+import { readRepoFile } from "./support/github-workflows.ts";
+import {
+  releaseSha,
+  successfulReleaseJob,
+  successfulReleaseRun,
+} from "./support/release-preflight.ts";
+
+test("release evidence paths identify the declared workflow names", () => {
+  for (const [workflowName, evidence] of requiredReleaseWorkflowEvidence) {
+    const workflow = readRepoFile(...evidence.path.split("/"));
+    assert.match(workflow, new RegExp(`^name: ${workflowName}$`, "m"));
+  }
+});
+
+test("required workflow selection fails closed for missing, stale, red, or wrong-origin gates", () => {
+  const greenRuns = requiredReleaseWorkflows.map((name, index) =>
+    successfulReleaseRun(name, index + 1),
+  );
+  assert.deepEqual(
+    [...selectRequiredWorkflowRuns(greenRuns, releaseSha).keys()],
+    requiredReleaseWorkflows,
+  );
+
+  assert.throws(
+    () =>
+      selectRequiredWorkflowRuns(
+        greenRuns.filter((run) => run.path !== ".github/workflows/fuzz.yml"),
+        releaseSha,
+      ),
+    /Fuzz: missing/,
+  );
+  assert.throws(
+    () =>
+      selectRequiredWorkflowRuns(
+        greenRuns.map((run) =>
+          run.path === ".github/workflows/miri.yml" ? { ...run, head_sha: "b".repeat(40) } : run,
+        ),
+        releaseSha,
+      ),
+    /Miri: missing/,
+  );
+  assert.throws(
+    () =>
+      selectRequiredWorkflowRuns(
+        greenRuns.map((run) =>
+          run.path === ".github/workflows/check.yml" ? { ...run, conclusion: "failure" } : run,
+        ),
+        releaseSha,
+      ),
+    /Check: completed\/failure/,
+  );
+  assert.throws(
+    () =>
+      selectRequiredWorkflowRuns(
+        greenRuns.map((run) =>
+          run.path === ".github/workflows/check.yml"
+            ? { ...run, head_branch: "release-candidate" }
+            : run,
+        ),
+        releaseSha,
+      ),
+    /Check: missing push run/,
+  );
+});
+
+test("newest matching run wins across cancellation, reruns, and concurrent runs", () => {
+  const greenRuns = requiredReleaseWorkflows
+    .filter((name) => name !== "App E2E")
+    .map((name, index) => successfulReleaseRun(name, index + 1));
+  const olderSuccess = {
+    ...successfulReleaseRun("App E2E", 50),
+    run_started_at: "2026-07-12T00:50:00Z",
+  };
+  const newerCancellation = {
+    ...successfulReleaseRun("App E2E", 51),
+    run_started_at: "2026-07-12T00:51:00Z",
+    conclusion: "cancelled",
+  };
+  assert.throws(
+    () => selectRequiredWorkflowRuns([...greenRuns, olderSuccess, newerCancellation], releaseSha),
+    /App E2E: completed\/cancelled/,
+  );
+
+  const rerunSuccess = {
+    ...olderSuccess,
+    run_attempt: 2,
+    run_started_at: "2026-07-12T01:00:00Z",
+  };
+  assert.doesNotThrow(() =>
+    selectRequiredWorkflowRuns([...greenRuns, rerunSuccess, newerCancellation], releaseSha),
+  );
+
+  const supersededPending = {
+    ...olderSuccess,
+    status: "queued",
+    conclusion: null,
+    run_started_at: "2026-07-12T00:40:00Z",
+  };
+  assert.doesNotThrow(() =>
+    selectRequiredWorkflowRuns(
+      [...greenRuns, supersededPending, successfulReleaseRun("App E2E", 52)],
+      releaseSha,
+    ),
+  );
+});
+
+test("matrix-sensitive release gates require every successful job", () => {
+  assert.doesNotThrow(() =>
+    assertRequiredWorkflowJobs("Check", [successfulReleaseJob("test-scripts")]),
+  );
+  assert.throws(() => assertRequiredWorkflowJobs("Check", []), /test-scripts/);
+
+  const appJobs = ["dev", "vrt", "preview", "build", "check", "lint"].map((suite) =>
+    successfulReleaseJob(`app-e2e (${suite})`),
+  );
+  assert.doesNotThrow(() => assertRequiredWorkflowJobs("App E2E", appJobs));
+  assert.throws(() => assertRequiredWorkflowJobs("App E2E", appJobs.slice(1)), /app-e2e \(dev\)/);
+
+  const targets = [
+    "linux-x64-gnu",
+    "linux-arm64-gnu",
+    "darwin-x64",
+    "darwin-arm64",
+    "win32-x64-msvc",
+    "win32-arm64-msvc",
+  ];
+  const nativeJobs = [
+    ...targets.map((target) => successfulReleaseJob(`Native host smoke (${target})`)),
+    ...targets.flatMap((target) =>
+      ["22", "24"].map((node) =>
+        successfulReleaseJob(`Fresh install smoke (${target}, Node ${node})`),
+      ),
+    ),
+  ];
+  assert.doesNotThrow(() => assertRequiredWorkflowJobs("Native Smoke", nativeJobs));
+  assert.throws(
+    () => assertRequiredWorkflowJobs("Native Smoke", nativeJobs.slice(1)),
+    /Native host smoke \(linux-x64-gnu\)/,
+  );
+});

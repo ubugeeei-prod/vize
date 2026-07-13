@@ -4,15 +4,13 @@
 //! document as quickfix code actions, the JSX parallel to the SFC
 //! [`CodeActionService`](crate::ide::CodeActionService) lint-fix collector.
 //!
-//! It reuses the **same** plumbing: [`vize_patina::lint_jsx`] runs the shared
-//! template lint rules over the lowered JSX (so e.g. a `v-for` missing `:key`
-//! yields the identical fixable diagnostic an SFC template would), and each
+//! It consumes the persistent Atlas Patina product, whose shared JSX frontend
+//! runs template lint rules over parsed JSX (so e.g. a `v-for` missing `:key`
+//! yields the identical fixable diagnostic an SFC template would). Each
 //! diagnostic carrying a [`Fix`](vize_patina) becomes a
-//! [`CodeActionKind::QUICKFIX`] whose edits are the fix edits. Crucially —
-//! unlike the SFC template path, whose lint offsets are relative to the
-//! `<template>` block — `lint_jsx` reports offsets in the **original source**,
-//! so the edits map straight onto `.jsx`/`.tsx` coordinates with no block-offset
-//! translation.
+//! [`CodeActionKind::QUICKFIX`] whose edits are the fix edits. The cached
+//! product reports original-source offsets, so edits map straight onto
+//! `.jsx`/`.tsx` coordinates with no block-offset translation.
 //!
 //! This is a lint-based (parse-only) provider, like the SFC code-action handler;
 //! it needs no Corsa bridge and is not gated on `typeChecker.jsxTypecheck`.
@@ -23,7 +21,6 @@ use std::collections::HashMap;
 use tower_lsp::lsp_types::{
     CodeAction, CodeActionKind, CodeActionOrCommand, Position, Range, TextEdit, Url, WorkspaceEdit,
 };
-use vize_atelier_jsx::JsxLang;
 use vize_carton::line_index::offset_to_line_col;
 
 /// Code-action provider for `.jsx`/`.tsx` components.
@@ -32,10 +29,12 @@ pub struct JsxCodeActionService;
 impl JsxCodeActionService {
     /// Collect quickfix code actions for the fixable diagnostics overlapping
     /// `range` in a `.jsx`/`.tsx` document.
-    pub fn code_actions(content: &str, uri: &Url, range: Range) -> Vec<CodeActionOrCommand> {
-        let lang = JsxLang::from_path(uri.path());
-        let result = vize_patina::lint_jsx(content, uri.path(), lang);
-
+    pub fn code_actions(
+        content: &str,
+        uri: &Url,
+        range: Range,
+        result: &vize_patina::LintResult,
+    ) -> Vec<CodeActionOrCommand> {
         let mut actions = Vec::new();
         for diag in &result.diagnostics {
             let Some(ref fix) = diag.fix else {
@@ -114,7 +113,12 @@ mod tests {
 
     fn quickfixes(source: &str, range: Range) -> Vec<CodeActionOrCommand> {
         let uri = Url::parse("file:///tmp/Comp.tsx").unwrap();
-        JsxCodeActionService::code_actions(source, &uri, range)
+        let result = vize_patina::lint_jsx(
+            source,
+            uri.path(),
+            vize_atelier_jsx::JsxLang::from_path(uri.path()),
+        );
+        JsxCodeActionService::code_actions(source, &uri, range, &result)
     }
 
     fn whole_doc_range() -> Range {

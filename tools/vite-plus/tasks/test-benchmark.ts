@@ -19,6 +19,12 @@ const packageVscodeExtension = [
   "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
   injectVscodeTypeScriptPlugin,
 ].join(" && ");
+const localTestCommand = runTasks(
+  "test:rust",
+  "test:js",
+  "test:scripts",
+  "test:zed-extension:unit",
+);
 
 const jsPackageTestCommand = runInPackages("test", testedPackages, {
   concurrencyLimit: 1,
@@ -84,11 +90,8 @@ const rustBranchCoverageCommand = [
  * performance regressions difficult to miss.
  */
 export const testAndBenchmarkTasks = defineTasks({
-  // `vp test` runs inside a Blacksmith Testbox; the underlying test:* tasks
-  // stay local. See tools/vite-plus/tasks/testbox.ts.
-  test: noCacheTask(
-    inTestbox(runTasks("test:rust", "test:js", "test:scripts", "test:zed-extension:unit")),
-  ),
+  test: noCacheTask(localTestCommand),
+  "test:testbox": noCacheTask(inTestbox(localTestCommand)),
   "test:rust": task("cargo test --workspace", { input: cacheInputs.rust }),
   // Use the CI-profile native build instead of the release-profile one.
   // The release build was ~3m+ on GitHub Actions and was being immediately

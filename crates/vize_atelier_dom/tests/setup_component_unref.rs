@@ -1,6 +1,6 @@
-use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
-use vize_carton::{Bump, FxHashMap, String};
+use vize_carton::{BindingMetadata, BindingType, Bump, FxHashMap, String};
+use vize_relief::CodegenMode;
 
 fn full_output(preamble: &str, code: &str) -> String {
     let mut full = String::with_capacity(preamble.len() + code.len() + 1);
@@ -22,11 +22,14 @@ fn inline_setup_ref_component_tag_uses_unref() {
         mode: CodegenMode::Module,
         prefix_identifiers: true,
         inline: true,
-        binding_metadata: Some(BindingMetadata {
-            bindings,
-            props_aliases: FxHashMap::default(),
-            is_script_setup: true,
-        }),
+        binding_metadata: Some(
+            BindingMetadata {
+                bindings,
+                props_aliases: FxHashMap::default(),
+                is_script_setup: true,
+            }
+            .into(),
+        ),
         ..Default::default()
     };
 
@@ -106,7 +109,7 @@ fn setup_component_tag_binding_matrix_matches_dom_modes() {
         mode: CodegenMode::Module,
         prefix_identifiers: true,
         inline: true,
-        binding_metadata: Some(binding_matrix()),
+        binding_metadata: Some(binding_matrix().into()),
         ..Default::default()
     };
     let (_, inline_errors, inline_result) =
@@ -130,7 +133,7 @@ fn setup_component_tag_binding_matrix_matches_dom_modes() {
         mode: CodegenMode::Function,
         prefix_identifiers: true,
         inline: false,
-        binding_metadata: Some(binding_matrix()),
+        binding_metadata: Some(binding_matrix().into()),
         ..Default::default()
     };
     let (_, function_errors, function_result) =

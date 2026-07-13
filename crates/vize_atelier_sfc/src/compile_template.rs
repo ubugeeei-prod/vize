@@ -16,14 +16,17 @@ mod parts_tests;
 #[cfg(test)]
 mod tests;
 
-pub(crate) use vapor::{compile_template_block_vapor, compile_template_block_vapor_from_syntax};
+pub(crate) use vapor::{
+    VaporTemplateCompileContext, compile_template_block_vapor,
+    compile_template_block_vapor_from_syntax,
+};
 
 use vize_atelier_core::{
     atelier_output::AtelierRange,
     source_map::{SourceMapRegistration, SourceMapRegistrationState},
 };
 use vize_carton::Bump;
-use vize_relief::{CodegenMode, CompilerError, ReliefArtifact, TemplateSyntaxMode};
+use vize_relief::{CodegenMode, CodegenOptions, CompilerError, ReliefArtifact, TemplateSyntaxMode};
 
 use crate::compile::output_module::{
     AtelierModuleSections, AtelierOutputMaps, AtelierOutputSections, OutputModule,
@@ -116,8 +119,16 @@ pub(crate) fn compile_template_block(
     options: &TemplateCompileOptions,
     ctx: TemplateBlockCompileContext<'_>,
     template_syntax: TemplateSyntaxMode,
+    codegen_options: &CodegenOptions,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
-    compile_template_block_inner(template, options, ctx, template_syntax, None)
+    compile_template_block_inner(
+        template,
+        options,
+        ctx,
+        template_syntax,
+        None,
+        codegen_options,
+    )
 }
 
 pub(crate) fn compile_template_block_from_syntax(
@@ -126,8 +137,16 @@ pub(crate) fn compile_template_block_from_syntax(
     ctx: TemplateBlockCompileContext<'_>,
     template_syntax: TemplateSyntaxMode,
     syntax: &ReliefArtifact,
+    codegen_options: &CodegenOptions,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
-    compile_template_block_inner(template, options, ctx, template_syntax, Some(syntax))
+    compile_template_block_inner(
+        template,
+        options,
+        ctx,
+        template_syntax,
+        Some(syntax),
+        codegen_options,
+    )
 }
 
 fn compile_template_block_inner(
@@ -136,6 +155,7 @@ fn compile_template_block_inner(
     ctx: TemplateBlockCompileContext<'_>,
     template_syntax: TemplateSyntaxMode,
     syntax: Option<&ReliefArtifact>,
+    codegen_options: &CodegenOptions,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
     let TemplateBlockCompileContext {
         scope_id,
@@ -267,21 +287,23 @@ fn compile_template_block_inner(
     // Compile template
     let (_, errors, result) = profile!("atelier.sfc.template.dom", {
         if let Some(syntax) = syntax {
-            vize_atelier_dom::compile_template_root_with_template_syntax_and_hoisted_scope_id_with_sections(
+            vize_atelier_dom::compile_template_root_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options(
                 &allocator,
                 syntax.snapshot().materialize(&allocator),
                 syntax.parse_diagnostics().to_vec(),
                 dom_opts,
                 template_syntax,
                 hoisted_scope_attr,
+                codegen_options.clone(),
             )
         } else {
-            vize_atelier_dom::compile_template_with_template_syntax_and_hoisted_scope_id_with_sections(
+            vize_atelier_dom::compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options(
                 &allocator,
                 &template.content,
                 dom_opts,
                 template_syntax,
                 hoisted_scope_attr,
+                codegen_options.clone(),
             )
         }
     });

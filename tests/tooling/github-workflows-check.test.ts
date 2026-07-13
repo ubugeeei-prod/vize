@@ -11,6 +11,7 @@ import { readRepoFile, root, workflowJobBody } from "./support/github-workflows.
 test("PR CI jobs cap runtime with explicit timeouts", () => {
   const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
   const benchmarkWorkflow = readRepoFile(".github", "workflows", "benchmark.yml");
+  const e2eWorkflow = readRepoFile(".github", "workflows", "e2e.yml");
   const toolBenchmarkWorkflow = readRepoFile(".github", "workflows", "tool-benchmark.yml");
 
   for (const [jobName, minutes] of [
@@ -39,6 +40,8 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
       new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
     );
   }
+
+  assert.match(workflowJobBody(e2eWorkflow, "app-readiness"), /timeout-minutes:\s*15\b/);
 
   for (const [jobName, minutes] of [
     ["pr-benchmark", 30],
@@ -75,6 +78,20 @@ test("check workflow runs declared Node engine compatibility matrix", () => {
     /node --test tests\/tooling\/node-engine-matrix\.test\.ts tests\/tooling\/package-manifests\.test\.ts/,
   );
   assert.doesNotMatch(job, /vscode-typescript-vue-plugin\.test\.ts/);
+});
+
+test("check workflow only runs SemVer checks with an exact Git event baseline", () => {
+  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const job = workflowJobBody(workflow, "semver-checks");
+
+  assert.match(
+    job,
+    /if:\s*\$\{\{\s*github\.event_name == 'pull_request' \|\| github\.event_name == 'push'\s*\}\}/,
+  );
+  assert.match(
+    job,
+    /BASELINE_REV:\s*\$\{\{\s*github\.event_name == 'pull_request' && github\.event\.pull_request\.base\.sha \|\| \(github\.event_name == 'push' && github\.event\.before \|\| ''\)\s*\}\}/,
+  );
 });
 
 test("check workflow comments a detailed PR test report for each head push", () => {

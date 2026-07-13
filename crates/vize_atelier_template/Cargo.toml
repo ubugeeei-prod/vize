@@ -1,0 +1,24 @@
+[package]
+name = "vize_atelier_template"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Raw Vue template frontend for Vize"
+metadata.vize.stability = "alpha-supported"
+
+[dependencies]
+vize_armature = { workspace = true }
+vize_atelier_core = { workspace = true }
+vize_atelier_dom = { workspace = true, features = ["graph"] }
+vize_atelier_ssr = { workspace = true, features = ["graph"] }
+vize_atelier_vapor = { workspace = true, features = ["graph"] }
+vize_atlas = { workspace = true }
+vize_carton = { workspace = true }
+vize_croquis = { workspace = true, features = ["relief-compat"] }
+vize_flow = { workspace = true }
+vize_relief = { workspace = true }
+vize_rendu = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }

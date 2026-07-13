@@ -1,5 +1,8 @@
 # vize_atelier_core
 
+Support and deprecation guarantees are defined in the
+[Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
 `vize_atelier_core` contains only the shared Vue-template transform lane and
 legacy emission helpers used by the DOM, Vapor, and SSR compilers.
 
@@ -8,25 +11,25 @@ execution, `vize_relief` owns Vue-template syntax, `vize_croquis` owns semantic
 contracts, `vize_flow` owns CFG/data/effect graphs, and `vize_rendu` owns the
 frontend-neutral render HIR. Atelier Core does not depend on Atlas or Rendu.
 
-The root-level Relief AST, Armature parser, and Carton allocator re-exports are
-compatibility aliases for existing downstream users. They are not the canonical
-workspace API and do not make Atelier Core the owner of those representations.
+Relief AST, Armature parser, and Carton allocator aliases are crate-private
+implementation details. Downstream code imports them from their owning crates;
+Atelier Core is not a public facade for those representations.
 Production workspace crates import each owner directly:
 
-| Concern | Owning crate |
-| --- | --- |
-| Vue-template syntax, locations, and compiler options | `vize_relief` |
-| Vue-template tokenization and parsing | `vize_armature` |
-| Arena allocation and shared utility primitives | `vize_carton` |
-| Semantic identity, scopes, bindings, and usage | `vize_croquis` |
-| Shared legacy transform and emission mechanics | `vize_atelier_core` |
+| Concern                                              | Owning crate        |
+| ---------------------------------------------------- | ------------------- |
+| Vue-template syntax, locations, and compiler options | `vize_relief`       |
+| Vue-template tokenization and parsing                | `vize_armature`     |
+| Arena allocation and shared utility primitives       | `vize_carton`       |
+| Semantic identity, scopes, bindings, and usage       | `vize_croquis`      |
+| Shared legacy transform and emission mechanics       | `vize_atelier_core` |
 
 ## Highlights
 
 - Core lane and step APIs
 - Shared Vue template code generation
 - Runtime helper resolution
-- Compatibility-only re-exports for Relief, Armature, and Carton APIs
+- Crate-private aliases used by the legacy transform/codegen implementation
 
 Atelier Core does not register Atlas products, own syntax or semantic
 snapshots, select compiler frontends or backends, or orchestrate production

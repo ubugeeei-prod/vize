@@ -163,3 +163,74 @@ const Stable = () => <aside/>;"#,
             .contains("_createElementBlock(\"aside\"")
     );
 }
+
+#[test]
+fn planning_classifies_directive_prologues_without_running_oxc() {
+    crate::syntax::reset_frontend_counters();
+    let mut compilation = Compilation::new();
+    super::super::register_atlas_providers(&mut compilation).unwrap();
+    let source = compilation
+        .add_source(
+            "Planning.jsx",
+            r#"// "use vue:vapor"
+const label = "use vue:vapor";
+const Stable = () => { /* before */ "use vue:vdom"; return <main/>; };
+const Fast = () => { "use vue:vapor"; return <aside/>; };"#,
+        )
+        .unwrap();
+    let plan = compilation.plan_for::<JsxCompileProduct>(source).unwrap();
+    assert!(plan.contains::<DomOutputProduct>());
+    assert!(plan.contains::<VaporOutputProduct>());
+    assert_eq!(crate::syntax::frontend_counters(), (0, 0, 0));
+    assert_eq!(
+        compilation
+            .counters()
+            .for_product::<JsxSyntaxProduct>()
+            .executions(),
+        0
+    );
+}
+
+#[test]
+fn non_prologue_and_escaped_mode_strings_do_not_select_vapor() {
+    let mut compilation = Compilation::new();
+    super::super::register_atlas_providers(&mut compilation).unwrap();
+    let source = compilation
+        .add_source(
+            "Stable.jsx",
+            r#"// const Fake = () => { "use vue:vapor"; return <i/>; };
+const text = "const Fake = () => { 'use vue:vapor'; }";
+const template = `() => { "use vue:vapor"; }`;
+const regex = /=>\{"use vue:vapor";\}/;
+const Escaped = () => { "use vue:\x76apor"; return <i/>; };
+const Late = () => { const marker = 1; "use vue:vapor"; return <b/>; };"#,
+        )
+        .unwrap();
+    let plan = compilation.plan_for::<JsxCompileProduct>(source).unwrap();
+    assert!(plan.contains::<DomOutputProduct>());
+    assert!(!plan.contains::<VaporOutputProduct>());
+}
+
+#[test]
+fn conflicting_mode_directives_plan_both_backends_and_retain_diagnostic() {
+    let mut compilation = Compilation::new();
+    super::super::register_atlas_providers(&mut compilation).unwrap();
+    let source = compilation
+        .add_source(
+            "Conflict.jsx",
+            r#"const Conflict = () => {
+  "use vue:vdom";
+  "use vue:vapor";
+  return <main/>;
+};"#,
+        )
+        .unwrap();
+    let output = compilation.query::<JsxCompileProduct>(source).unwrap();
+    assert!(output.plan().contains::<DomOutputProduct>());
+    assert!(output.plan().contains::<VaporOutputProduct>());
+    assert!(output.value().diagnostics.iter().any(|diagnostic| {
+        diagnostic
+            .message
+            .contains("conflicting JSX mode directives")
+    }));
+}

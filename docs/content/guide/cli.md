@@ -106,15 +106,15 @@ vize build --profile src
 
 Key options:
 
-| Option                | Description                                   |
-| --------------------- | --------------------------------------------- |
-| `-o, --output`        | Output directory                              |
-| `-f, --format`        | Output format: `js`, `json`, `stats`          |
-| `--ssr`               | Enable SSR compilation                        |
-| `--script-ext`        | `preserve` or `downcompile`                   |
-| `-j, --threads`       | Thread count override                         |
-| `--profile`           | Print timing profile                          |
-| `--continue-on-error` | Keep compiling and report failures at the end |
+| Option                | Description                                                            |
+| --------------------- | ---------------------------------------------------------------------- |
+| `-o, --output`        | Source-relative output below the common input root; rejects collisions |
+| `-f, --format`        | Output format: `js`, `json`, `stats`                                   |
+| `--ssr`               | Enable SSR compilation                                                 |
+| `--script-ext`        | `preserve` or `downcompile`                                            |
+| `-j, --threads`       | Thread count override                                                  |
+| `--profile`           | Print timing profile                                                   |
+| `--continue-on-error` | Keep compiling and report failures at the end                          |
 
 ## Format
 

@@ -1,5 +1,7 @@
 //! Virtual document generation and caching.
 
+mod raw_template;
+
 use std::path::PathBuf;
 
 use dashmap::DashMap;
@@ -28,37 +30,28 @@ impl ServerState {
             return;
         }
 
-        let Some(artifact) = self.sfc_descriptor_for(uri, content) else {
+        self.ensure_artifact_source(uri, content);
+        let Some(virtual_documents) = self.virtual_documents(uri) else {
+            self.remove_virtual_docs(uri);
+            return;
+        };
+        let Some(artifact) = self.sfc_descriptor(uri) else {
             self.remove_virtual_docs(uri);
             return;
         };
         let Some(descriptor) = artifact.descriptor() else {
+            self.open_vue_imports.update(uri, None);
             self.remove_virtual_docs(uri);
             return;
         };
+        let modules = self.sfc_modules(uri);
+        self.open_vue_imports
+            .update(uri, modules.as_ref().map(AsRef::as_ref));
 
         let base_uri = uri.path();
-        let mut virtual_docs = self.virtual_gen.write().generate(descriptor, base_uri);
+        let mut virtual_docs = virtual_documents.as_ref().clone();
         add_inline_art_template_virtual_docs(&mut virtual_docs, descriptor, base_uri);
         self.virtual_docs_cache.insert(uri.clone(), virtual_docs);
-    }
-
-    /// Generate and cache virtual documents for standalone HTML files.
-    fn update_standalone_html_virtual_docs(&self, uri: &Url, content: &str) {
-        use crate::virtual_code::{TemplateCodeGenerator, VirtualDocuments};
-
-        let allocator = vize_carton::Bump::new();
-        let (ast, _errors) = vize_armature::parse(&allocator, content);
-        let base_uri = uri.path();
-
-        let mut template_gen = TemplateCodeGenerator::new();
-        template_gen.set_block_offset(0);
-        let mut template_doc = template_gen.generate(&ast, content);
-        template_doc.uri = vize_carton::cstr!("{base_uri}.__template.ts").to_string();
-
-        let mut docs = VirtualDocuments::new();
-        docs.template = Some(template_doc);
-        self.virtual_docs_cache.insert(uri.clone(), docs);
     }
 
     /// Generate and cache virtual documents for a `.jsx`/`.tsx` document.
@@ -140,6 +133,9 @@ impl ServerState {
         if let Some(artifact) = self.sfc_descriptor_for(uri, content)
             && let Some(descriptor) = artifact.descriptor()
         {
+            let modules = self.sfc_modules(uri);
+            self.open_vue_imports
+                .update(uri, modules.as_ref().map(AsRef::as_ref));
             if let Some(ref script_setup) = descriptor.script_setup {
                 let isolate = art_script_setup_isolated(script_setup);
                 let mut script_doc = generate_art_script_setup_virtual_doc(
@@ -158,6 +154,8 @@ impl ServerState {
                 script_doc.uri = vize_carton::cstr!("{base_uri}.__script.ts").to_string();
                 docs.script = Some(script_doc);
             }
+        } else {
+            self.open_vue_imports.update(uri, None);
         }
 
         self.virtual_docs_cache.insert(uri.clone(), docs);
@@ -173,11 +171,13 @@ impl ServerState {
 
     /// Remove cached virtual documents when a document is closed.
     pub fn remove_virtual_docs(&self, uri: &Url) {
+        self.open_vue_imports.remove(uri);
         self.virtual_docs_cache.remove(uri);
     }
 
     /// Clear all cached virtual documents.
     pub fn clear_virtual_docs(&self) {
+        self.open_vue_imports.clear();
         self.virtual_docs_cache.clear();
     }
 

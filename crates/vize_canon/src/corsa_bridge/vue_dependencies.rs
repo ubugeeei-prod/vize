@@ -4,24 +4,34 @@ use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, String, cstr};
+use vize_carton::{FxHashMap, FxHashSet, String, cstr};
 
 use super::bridge::normalize_document_uri;
 use super::vue_dependency_specifiers::collect_relative_ts_specifiers;
 use super::vue_document::{
     CorsaVueVirtualDocumentOptions, GeneratedVueDocument, generate_vue_document,
+    generated_vue_document,
 };
-use crate::batch::ImportRewriter;
+use crate::batch::{ImportRewriter, VueDocumentVirtualTs};
 use crate::file_uri::path_to_file_uri;
 
-const VUE_DEPENDENCY_FALLBACK: &str =
-    "const component: any = undefined;\nexport default component;\n";
+#[path = "vue_dependencies/scan.rs"]
+mod scan;
+pub use scan::{
+    CorsaRelativeDependencies, CorsaScriptDependency, collect_corsa_relative_dependencies,
+};
+#[path = "vue_dependencies/fallback.rs"]
+mod fallback;
+use fallback::{VUE_DEPENDENCY_FALLBACK, fallback_vue_virtual_uri};
 
 pub(super) fn collect_dependency_documents(
     documents: &mut Vec<(String, String)>,
     host: &GeneratedVueDocument,
     options: CorsaVueVirtualDocumentOptions,
     rewriter: &ImportRewriter,
+    overlays: &FxHashMap<PathBuf, &str>,
+    prebuilt_vue_documents: &FxHashMap<PathBuf, &VueDocumentVirtualTs>,
+    generate_missing_vue: bool,
 ) {
     let mut visited_vue = FxHashSet::<PathBuf>::default();
     visited_vue.insert(host.source_path.clone());
@@ -45,6 +55,9 @@ pub(super) fn collect_dependency_documents(
                     queue: &mut queue,
                     visited_vue: &mut visited_vue,
                     visited_ts: &mut visited_ts,
+                    overlays,
+                    prebuilt_vue_documents,
+                    generate_missing_vue,
                 },
                 options,
                 rewriter,
@@ -62,6 +75,9 @@ pub(super) fn collect_dependency_documents(
                     queue: &mut queue,
                     visited_vue: &mut visited_vue,
                     visited_ts: &mut visited_ts,
+                    overlays,
+                    prebuilt_vue_documents,
+                    generate_missing_vue,
                 },
                 options,
                 rewriter,
@@ -78,6 +94,9 @@ struct ImportQueue<'a> {
     queue: &'a mut VecDeque<DependencyScan>,
     visited_vue: &'a mut FxHashSet<PathBuf>,
     visited_ts: &'a mut FxHashSet<PathBuf>,
+    overlays: &'a FxHashMap<PathBuf, &'a str>,
+    prebuilt_vue_documents: &'a FxHashMap<PathBuf, &'a VueDocumentVirtualTs>,
+    generate_missing_vue: bool,
 }
 
 enum DependencyScan {
@@ -116,21 +135,31 @@ fn queue_vue_imports(
     for specifier in rewriter.collect_relative_vue_specifiers(code, source_type) {
         let path = normalize_path(&dir.join(specifier.as_str()));
         let key = std::fs::canonicalize(&path).unwrap_or_else(|_| path.clone());
-        if !imports.visited_vue.insert(key) {
+        if !imports.visited_vue.insert(key.clone()) {
             continue;
         }
-        let Ok(content) = std::fs::read_to_string(&path) else {
-            continue;
-        };
-        let generated = match generate_vue_document(&path, &content, options, rewriter) {
-            Ok(generated) => generated,
-            Err(_) => {
-                imports.documents.push((
-                    fallback_vue_virtual_uri(&path),
-                    VUE_DEPENDENCY_FALLBACK.into(),
-                ));
+        let generated = if let Some(generated) = imports.prebuilt_vue_documents.get(&key) {
+            generated_vue_document(&path, (*generated).clone())
+        } else if imports.generate_missing_vue {
+            let Some(content) = dependency_content(&path, imports.overlays) else {
                 continue;
+            };
+            match generate_vue_document(&path, &content, options, rewriter) {
+                Ok(generated) => generated,
+                Err(_) => {
+                    imports.documents.push((
+                        fallback_vue_virtual_uri(&path),
+                        VUE_DEPENDENCY_FALLBACK.into(),
+                    ));
+                    continue;
+                }
             }
+        } else {
+            imports.documents.push((
+                fallback_vue_virtual_uri(&path),
+                VUE_DEPENDENCY_FALLBACK.into(),
+            ));
+            continue;
         };
         imports.documents.push((
             generated.virtual_uri.clone(),
@@ -145,16 +174,6 @@ fn queue_vue_imports(
             pre_rewrite_code: generated.generated.pre_rewrite_code,
         });
     }
-}
-
-fn fallback_vue_virtual_uri(path: &Path) -> String {
-    let virtual_path = path.with_file_name(cstr!(
-        "{}.ts",
-        path.file_name()
-            .and_then(|name| name.to_str())
-            .unwrap_or_default()
-    ));
-    path_to_file_uri(&virtual_path)
 }
 
 pub(super) fn tsx_vue_import_shim(path: &Path) -> (String, String) {
@@ -192,7 +211,7 @@ fn queue_ts_imports(
         if !imports.visited_ts.insert(key) {
             continue;
         }
-        let Ok(content) = std::fs::read_to_string(&path) else {
+        let Some(content) = dependency_content(&path, imports.overlays) else {
             continue;
         };
         let dependency_source_type = source_type_for_path(&path);
@@ -202,9 +221,17 @@ fn queue_ts_imports(
         imports.queue.push_back(DependencyScan::Script {
             path: path.clone(),
             source_type: dependency_source_type,
-            content: content.into(),
+            content,
         });
     }
+}
+
+fn dependency_content(path: &Path, overlays: &FxHashMap<PathBuf, &str>) -> Option<String> {
+    let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    overlays
+        .get(&key)
+        .map(|content| String::from(*content))
+        .or_else(|| std::fs::read_to_string(path).ok().map(Into::into))
 }
 
 fn resolve_relative_script_import(dir: &Path, specifier: &str) -> Option<PathBuf> {

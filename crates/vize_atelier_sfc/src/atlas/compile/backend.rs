@@ -6,8 +6,8 @@ use vize_atlas::{
 
 use crate::compile::{GraphRenderMapping, GraphRenderModule, output_module::RenderFunctionName};
 
-use super::super::{SfcDescriptorProduct, is_sfc_source, usable_descriptor};
-use super::{SfcCompileRequest, SfcCompileSettingsInput, planning_request, request_for};
+use super::super::{SfcDescriptorProduct, is_sfc_source, source_structure, usable_descriptor};
+use super::{SfcRenderRequest, SfcRenderSettingsInput};
 
 /// Selected graph backend for one SFC render module.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -55,15 +55,21 @@ impl Provider for SfcRenderModuleProvider {
     type Product = SfcRenderModuleProduct;
 
     fn source_input_dependencies(&self) -> Vec<SourceInputId> {
-        vec![SourceInputId::of::<SfcCompileSettingsInput>()]
+        vec![SourceInputId::of::<SfcRenderSettingsInput>()]
     }
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name()) && context.source().text().contains("<template")
+        is_sfc_source(context.source().name()) && source_structure(context).has_template
     }
 
     fn dependencies(&self, context: &PlanningContext<'_>) -> Vec<ProductId> {
-        let target = render_target(&planning_request(context), context.source().text());
+        let target = render_target(
+            context
+                .source_input::<SfcRenderSettingsInput>()
+                .copied()
+                .unwrap_or_default(),
+            source_structure(context).vapor_script,
+        );
         vec![
             ProductId::of::<SfcDescriptorProduct>(),
             backend_product(target),
@@ -74,16 +80,18 @@ impl Provider for SfcRenderModuleProvider {
         &self,
         context: &mut ProviderContext<'_>,
     ) -> Result<SfcRenderModuleArtifact, ProviderError> {
-        let request = request_for(context);
+        let request = context
+            .source_input::<SfcRenderSettingsInput>()
+            .copied()
+            .unwrap_or_default();
         let descriptor = context.get::<SfcDescriptorProduct>()?;
         let descriptor = usable_descriptor(&descriptor)?;
-        let target = render_target(&request, context.source().text());
+        let target = render_target_from_descriptor(request, descriptor);
         let render = match target {
             SfcRenderTarget::Dom => dom_render(context)?,
             SfcRenderTarget::Ssr => ssr_render(context)?,
             SfcRenderTarget::Vapor => vapor_render(context)?,
         };
-        debug_assert_eq!(target, render_target_from_descriptor(&request, descriptor));
         Ok(SfcRenderModuleArtifact { render, target })
     }
 }
@@ -142,10 +150,10 @@ fn vapor_render(context: &mut ProviderContext<'_>) -> Result<GraphRenderModule, 
     })
 }
 
-fn render_target(request: &SfcCompileRequest, source: &str) -> SfcRenderTarget {
-    if request.options.template.ssr {
+fn render_target(request: SfcRenderRequest, vapor_script: bool) -> SfcRenderTarget {
+    if request.ssr {
         SfcRenderTarget::Ssr
-    } else if request.options.vapor || has_vapor_script_attr(source) {
+    } else if request.vapor || vapor_script {
         SfcRenderTarget::Vapor
     } else {
         SfcRenderTarget::Dom
@@ -153,13 +161,13 @@ fn render_target(request: &SfcCompileRequest, source: &str) -> SfcRenderTarget {
 }
 
 fn render_target_from_descriptor(
-    request: &SfcCompileRequest,
+    request: SfcRenderRequest,
     descriptor: &crate::SfcDescriptor<'_>,
 ) -> SfcRenderTarget {
-    if request.options.template.ssr {
+    if request.ssr {
         return SfcRenderTarget::Ssr;
     }
-    let vapor = request.options.vapor
+    let vapor = request.vapor
         || descriptor
             .script_setup
             .as_ref()
@@ -173,23 +181,6 @@ fn render_target_from_descriptor(
     } else {
         SfcRenderTarget::Dom
     }
-}
-
-fn has_vapor_script_attr(mut source: &str) -> bool {
-    while let Some(start) = source.find("<script") {
-        source = &source[start + "<script".len()..];
-        let Some(end) = source.find('>') else {
-            return false;
-        };
-        if source[..end]
-            .split_ascii_whitespace()
-            .any(|attribute| attribute.split('=').next() == Some("vapor"))
-        {
-            return true;
-        }
-        source = &source[end + 1..];
-    }
-    false
 }
 
 fn backend_product(target: SfcRenderTarget) -> ProductId {

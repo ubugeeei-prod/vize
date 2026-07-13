@@ -22,11 +22,10 @@ use tower_lsp::lsp_types::{
 };
 use vize_carton::BindingType;
 use vize_croquis::ScopeKind;
-use vize_croquis::{Drawer, DrawerOptions};
 
 use self::context::{
     is_nested_user_scope, receiver_is_member_chain, scope_kind_short_label,
-    script_content_and_offset_for_context,
+    script_analysis_offset_for_context, script_content_and_offset_for_context,
 };
 use self::lists::import_completions;
 use self::member_access::complete_member_access;
@@ -88,29 +87,20 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
     // Add common imports
     items_vec.extend(import_completions());
 
-    // Use vize_croquis for accurate bindings in script
+    // Use the persistent SFC Croquis for accurate bindings in script.
     if let Some((script_content, script_offset)) =
         script_content_and_offset_for_context(ctx, is_setup)
+        && let Some(document) = ctx.sfc_croquis()
     {
-        let mut analyzer = Drawer::with_options(DrawerOptions {
-            analyze_script: true,
-            ..Default::default()
-        });
-
-        if is_setup {
-            analyzer.analyze_script_setup(&script_content);
-        } else {
-            analyzer.analyze_script_plain(&script_content);
-        }
-
-        let croquis = analyzer.finish();
+        let croquis = document.analysis();
 
         // Scope-aware completion: include nested bindings (closures, blocks,
         // v-for params, etc.) that are visible at the cursor. We avoid
         // duplicating top-level bindings that the loop below already adds.
         let local_offset = ctx.offset.saturating_sub(script_offset) as u32;
+        let analysis_offset = script_analysis_offset_for_context(ctx, is_setup, local_offset);
         if local_offset <= script_content.len() as u32 {
-            for (name, binding, scope_kind) in croquis.scopes.bindings_visible_at(local_offset) {
+            for (name, binding, scope_kind) in croquis.scopes.bindings_visible_at(analysis_offset) {
                 if croquis.bindings.contains(name) {
                     continue;
                 }

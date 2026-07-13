@@ -1,5 +1,5 @@
-use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
+use vize_carton::{BindingMetadata, BindingType};
 use vize_carton::{Bump, FxHashMap};
 
 fn binding_matrix() -> BindingMetadata {
@@ -56,7 +56,7 @@ fn setup_component_tag_binding_matrix_matches_ssr_modes() {
         source,
         SsrCompilerOptions {
             inline: true,
-            binding_metadata: Some(binding_matrix()),
+            binding_metadata: Some(binding_matrix().into()),
             ..Default::default()
         },
     );
@@ -79,7 +79,7 @@ fn setup_component_tag_binding_matrix_matches_ssr_modes() {
         source,
         SsrCompilerOptions {
             inline: false,
-            binding_metadata: Some(binding_matrix()),
+            binding_metadata: Some(binding_matrix().into()),
             ..Default::default()
         },
     );

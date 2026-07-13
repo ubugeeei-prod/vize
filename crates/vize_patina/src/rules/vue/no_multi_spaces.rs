@@ -18,6 +18,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
+use crate::markup::{MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
@@ -43,9 +44,34 @@ impl Default for NoMultiSpaces {
     }
 }
 
+impl MarkupRule for NoMultiSpaces {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        let mut ranges = Vec::new();
+        element.walk_bindings(&mut |binding| ranges.push(binding.range()));
+        if ranges.is_empty() {
+            return;
+        }
+        ranges.sort_unstable_by_key(|range| (range.start, range.end));
+
+        let tag_end = element.range().start as usize + 1 + element.tag().len();
+        self.check_gap(ctx.lint(), tag_end, ranges[0].start as usize);
+        for pair in ranges.windows(2) {
+            self.check_gap(ctx.lint(), pair[0].end as usize, pair[1].start as usize);
+        }
+    }
+}
+
 impl Rule for NoMultiSpaces {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

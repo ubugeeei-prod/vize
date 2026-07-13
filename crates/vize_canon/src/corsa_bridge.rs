@@ -19,6 +19,9 @@ pub use types::{
     LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspPosition,
     LspRange, TypeCheckResult, VIRTUAL_URI_SCHEME,
 };
+pub use vue_dependencies::{
+    CorsaRelativeDependencies, CorsaScriptDependency, collect_corsa_relative_dependencies,
+};
 pub use vue_document::{CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions};
 pub(crate) use vue_document::{CorsaVueVirtualProject, build_vue_virtual_project};
 

@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use vize_carton::{FxHashSet, String};
 
 use super::LintArgs;
-use super::patterns::{is_lint_extension, is_plain_script_extension, is_standalone_html_extension};
+use super::patterns::{is_lint_extension, is_standalone_html_extension};
 use crate::config;
 
 pub(super) struct LintIgnoreSet {
@@ -120,12 +120,6 @@ pub(super) fn is_standalone_html_path(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
         .is_some_and(is_standalone_html_extension)
-}
-
-pub(super) fn is_plain_script_path(path: &Path) -> bool {
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(is_plain_script_extension)
 }
 
 fn base_dir_from_lint_pattern(pattern: &str) -> PathBuf {

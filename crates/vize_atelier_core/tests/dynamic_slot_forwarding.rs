@@ -1,6 +1,6 @@
-use vize_atelier_core::{
-    CodegenOptions, CodegenResult, TransformOptions, generate, parse, transform,
-};
+use vize_armature::parse;
+use vize_atelier_core::{CodegenResult, generate, transform};
+use vize_relief::{CodegenOptions, TransformOptions};
 
 fn result_output(result: &CodegenResult) -> String {
     let mut output = String::with_capacity(result.preamble.len() + result.code.len() + 1);

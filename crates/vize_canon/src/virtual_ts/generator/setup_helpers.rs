@@ -10,13 +10,12 @@ use vize_carton::{String, append};
 
 use crate::virtual_ts::helpers::{VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED};
 
+#[cfg(test)]
 mod boolean_keys;
-
-use boolean_keys::collect_define_props_boolean_keys;
 
 pub(super) fn emit_setup_helpers(
     ts: &mut String,
-    script_content: Option<&str>,
+    script_facts: Option<&vize_atelier_sfc::SfcScriptGeneratorFacts>,
     generic_param: Option<&str>,
     hoist_shared_preamble: bool,
 ) {
@@ -29,7 +28,8 @@ pub(super) fn emit_setup_helpers(
         return;
     }
 
-    let Some(boolean_keys) = script_content.and_then(collect_define_props_boolean_keys) else {
+    let Some(boolean_keys) = script_facts.and_then(|facts| facts.define_props_boolean_keys())
+    else {
         ts.push_str(if hoist_shared_preamble {
             VUE_SETUP_HELPERS_HOISTED
         } else {
@@ -37,7 +37,7 @@ pub(super) fn emit_setup_helpers(
         });
         return;
     };
-    emit_define_props_boolean_keys_type(ts, &boolean_keys);
+    emit_define_props_boolean_keys_type(ts, boolean_keys);
     if hoist_shared_preamble {
         emit_hoisted_setup_helpers(ts);
     } else {

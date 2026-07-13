@@ -10,6 +10,7 @@ use vize_atlas::{
 use vize_carton::{FxHashMap, String, cstr};
 use vize_rendu::{RenderCapabilities, RenderCapabilitiesInput};
 
+use crate::mode::classify_source_directives;
 use crate::{JsxCompileConfig, JsxDiagnostic, JsxLang, ScopedStyle};
 
 use super::{JsxRenderModuleProduct, is_jsx_source};
@@ -133,6 +134,7 @@ impl Provider for JsxCompileProvider {
             .cloned()
             .unwrap_or_default();
         let backends = backend_selection(&request.config, context.source().text());
+        validate_backend_selection(backends, render.as_ref(), &request.config)?;
         let dom = backends
             .dom
             .then(|| context.get::<vize_atelier_dom::DomOutputProduct>())
@@ -226,13 +228,45 @@ fn backend_selection(config: &JsxCompileConfig, source: &str) -> BackendSelectio
             vapor: false,
         };
     }
-    let explicit_vdom = source.contains("\"use vue:vdom\"") || source.contains("'use vue:vdom'");
-    let explicit_vapor = source.contains("\"use vue:vapor\"") || source.contains("'use vue:vapor'");
+    // The product graph must be complete before JsxSyntaxProduct executes, so
+    // planning uses the same allocation-light source classifier as execution.
+    // `provide` then validates this conservative closure against OXC-derived
+    // root metadata before consuming backend results.
+    let directives = classify_source_directives(source);
     BackendSelection {
-        dom: config.default_mode == crate::JsxOutputMode::Vdom || explicit_vdom,
+        dom: config.default_mode == crate::JsxOutputMode::Vdom || directives.vdom,
         ssr: false,
-        vapor: config.default_mode == crate::JsxOutputMode::Vapor || explicit_vapor,
+        vapor: config.default_mode == crate::JsxOutputMode::Vapor || directives.vapor,
     }
+}
+
+fn validate_backend_selection(
+    selection: BackendSelection,
+    render: &super::JsxRenderModule,
+    config: &JsxCompileConfig,
+) -> Result<(), ProviderError> {
+    if config.ssr {
+        return selection
+            .ssr
+            .then_some(())
+            .ok_or_else(|| ProviderError::message("JSX planning omitted the SSR backend"));
+    }
+    for root in &render.roots {
+        match root.metadata.mode.unwrap_or(config.default_mode) {
+            crate::JsxOutputMode::Vdom if !selection.dom => {
+                return Err(ProviderError::message(
+                    "JSX directive planning omitted a DOM backend required by parsed root metadata",
+                ));
+            }
+            crate::JsxOutputMode::Vapor if !selection.vapor => {
+                return Err(ProviderError::message(
+                    "JSX directive planning omitted a Vapor backend required by parsed root metadata",
+                ));
+            }
+            _ => {}
+        }
+    }
+    Ok(())
 }
 
 #[cfg(test)]

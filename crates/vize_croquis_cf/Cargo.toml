@@ -6,11 +6,14 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Cross-file semantic analysis for Vize Croquis"
+metadata.vize.stability = "experimental"
 
 [dependencies]
 vize_atlas.workspace = true
+vize_atelier_sfc = { workspace = true, default-features = false }
 vize_carton.workspace = true
 vize_croquis = { workspace = true, default-features = false, features = ["analysis"] }
+vize_module.workspace = true
 rustc-hash.workspace = true
 oxc_allocator.workspace = true
 oxc_ast.workspace = true

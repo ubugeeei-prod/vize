@@ -1,39 +1,61 @@
 //! Lint text-edit application for the native API.
 
-use std::{fs, path::Path};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 use vize_carton::{String, ToCompactString};
 
+use crate::lint_artifact::{LintGraphSource, LintSourceKind, PatinaLintGraph};
+
+pub(super) struct LintFileInput {
+    path: PathBuf,
+    filename: String,
+    source: String,
+}
+
+impl LintFileInput {
+    pub(super) fn read(path: &Path) -> Option<Self> {
+        Some(Self {
+            path: path.to_path_buf(),
+            filename: path.to_string_lossy().to_compact_string(),
+            source: fs::read_to_string(path).ok()?.into(),
+        })
+    }
+
+    pub(super) fn graph_source(&self) -> LintGraphSource<'_> {
+        LintGraphSource {
+            name: &self.filename,
+            text: &self.source,
+            kind: if is_standalone_html_filename(&self.filename) {
+                LintSourceKind::StandaloneHtml
+            } else {
+                LintSourceKind::Sfc
+            },
+        }
+    }
+}
+
 pub(super) fn lint_file_with_optional_fix(
-    linter: &vize_patina::Linter,
-    path: &Path,
+    graph: &PatinaLintGraph,
+    source_index: usize,
+    input: &LintFileInput,
     should_fix: bool,
 ) -> Option<(String, String, vize_patina::LintResult)> {
-    let mut source: String = fs::read_to_string(path).ok()?.into();
-    let filename = path.to_string_lossy().to_compact_string();
-    let initial_result = lint_source(linter, &source, &filename);
+    let mut source = input.source.clone();
+    let initial_result = graph.query(source_index).ok()?.result;
     let result = if should_fix
         && let Some(fixed_source) = apply_lint_fixes(&source, &initial_result)
         && fixed_source != source
-        && fs::write(path, fixed_source.as_bytes()).is_ok()
+        && fs::write(&input.path, fixed_source.as_bytes()).is_ok()
     {
         source = fixed_source;
-        lint_source(linter, &source, &filename)
+        graph.revise_source(source_index, &source).ok()?;
+        graph.query(source_index).ok()?.result
     } else {
         initial_result
     };
-    Some((filename, source, result))
-}
-
-pub(super) fn lint_source(
-    linter: &vize_patina::Linter,
-    source: &str,
-    filename: &str,
-) -> vize_patina::LintResult {
-    if is_standalone_html_filename(filename) {
-        linter.lint_standalone_html(source, filename)
-    } else {
-        linter.lint_sfc(source, filename)
-    }
+    Some((input.filename.clone(), source, result))
 }
 
 pub(super) fn is_standalone_html_filename(filename: &str) -> bool {

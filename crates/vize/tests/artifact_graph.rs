@@ -4,15 +4,15 @@ use vize::atelier_jsx::JsxSyntaxProduct;
 use vize::atelier_sfc::{SfcDescriptorProduct, SfcTemplateProduct};
 use vize::atelier_ssr::SsrOutputProduct;
 use vize::atelier_vapor::VaporPlanProduct;
-use vize::canon::CanonSemanticVirtualTsProduct;
+use vize::canon::SfcTypeCheckProduct;
 use vize::croquis_cf::{CroquisProjectProduct, CrossFileAnalysisProduct};
 use vize::flow::FlowProduct;
-use vize::patina::PatinaSemanticReportProduct;
+use vize::patina::PatinaDocumentReportProduct;
 use vize::relief::{ReliefProduct, TransformedReliefProduct, VueDialectInput};
 use vize::rendu::{RenderCapabilities, RenderCapabilitiesInput, RenduProduct};
 use vize_atlas::{ObservationKind, PlanError, ProductId, SourceProvenance};
 use vize_carton::config::VueVersion;
-use vize_croquis::CroquisSemanticProduct;
+use vize_croquis::{CroquisDocumentProduct, CroquisSemanticProduct};
 
 #[path = "artifact_graph/cross_file.rs"]
 mod cross_file;
@@ -140,37 +140,37 @@ fn tsx_multi_backend_request_never_constructs_relief() {
 
 #[test]
 fn combined_lint_and_typecheck_share_semantics_without_render_work() {
-    for (name, source_text, expects_relief) in [("App.vue", SFC, true), ("App.tsx", TSX, false)] {
+    for (name, source_text, is_vue) in [("App.vue", SFC, true), ("App.tsx", TSX, false)] {
         let mut compilation = create_compilation(VizeGraphConfig::default()).unwrap();
         let source = compilation.add_source(name, source_text).unwrap();
         let plan = compilation
-            .plan(source, analysis_roots(true, true))
+            .plan(source, analysis_roots(true, is_vue))
             .unwrap();
 
-        assert!(plan.contains::<CroquisSemanticProduct>());
-        assert!(plan.contains::<FlowProduct>());
-        assert_eq!(plan.contains::<ReliefProduct>(), expects_relief);
-        assert_eq!(plan.contains::<TransformedReliefProduct>(), expects_relief);
+        assert!(plan.contains::<CroquisDocumentProduct>());
+        assert!(!plan.contains::<FlowProduct>());
+        assert_eq!(plan.contains::<ReliefProduct>(), is_vue);
+        assert!(!plan.contains::<TransformedReliefProduct>());
         assert!(!plan.contains::<RenduProduct>());
         assert!(!plan.contains::<DomOutputProduct>());
 
         let output = compilation.execute(plan).unwrap();
         assert!(
             output
-                .get::<PatinaSemanticReportProduct>()
+                .get::<PatinaDocumentReportProduct>()
                 .unwrap()
                 .is_some()
         );
-        let virtual_ts = output
-            .get::<CanonSemanticVirtualTsProduct>()
-            .unwrap()
-            .unwrap();
-        assert!(virtual_ts.expression_guard_count > 0);
-        assert!(virtual_ts.reachable_block_count > 0);
-        assert!(virtual_ts.flow_mapped_expression_count > 0);
-        assert_eq!(executions::<CroquisSemanticProduct>(&compilation), 1);
-        assert_eq!(executions::<FlowProduct>(&compilation), 1);
-        assert_eq!(queries::<CroquisSemanticProduct>(&compilation), 2);
+        assert_eq!(
+            output.get::<SfcTypeCheckProduct>().unwrap().is_some(),
+            is_vue
+        );
+        assert_eq!(executions::<CroquisDocumentProduct>(&compilation), 1);
+        assert_eq!(executions::<FlowProduct>(&compilation), 0);
+        assert_eq!(
+            queries::<CroquisDocumentProduct>(&compilation),
+            if is_vue { 2 } else { 1 }
+        );
         assert_eq!(executions::<RenduProduct>(&compilation), 0);
     }
 }

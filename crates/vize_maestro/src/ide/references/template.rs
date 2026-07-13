@@ -29,9 +29,12 @@ impl ReferencesService {
         // - Interpolations: {{ word }}
         // - Directive expressions: v-if="word", :prop="word", @event="word"
 
-        // Parse template to find expressions
+        // Materialize the persistent Relief syntax to inspect expressions.
         let allocator = vize_carton::Bump::new();
-        let (ast, _) = vize_armature::parse(&allocator, template_content);
+        let Some(syntax) = ctx.relief_snapshot() else {
+            return locations;
+        };
+        let ast = syntax.materialize(&allocator);
 
         // Extract expression locations from the AST
         let expressions = Self::extract_template_expressions(&ast);

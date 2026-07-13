@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/unplugin",
-  "version": "0.290.0",
+  "version": "0.291.0",
   "description": "Experimental Vue SFC integrations for Rollup, Rolldown, Webpack, esbuild, and Babel powered by Vize",
   "keywords": [
     "babel",
@@ -77,8 +77,8 @@
     "test:update": "node --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
   },
   "dependencies": {
-    "@vizejs/source-map": "workspace:*",
     "@vizejs/native": "workspace:*",
+    "@vizejs/source-map": "workspace:*",
     "oxc-transform": "catalog:oxc",
     "unplugin": "catalog:vite-stack"
   },

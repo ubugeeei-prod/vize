@@ -1,9 +1,9 @@
 //! Vue-specific script-setup semantic validation for props.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Expression, PropertyKey, Statement};
+use oxc_ast::ast::{Expression, Statement};
 use oxc_parser::Parser;
-use oxc_span::{GetSpan, SourceType};
+use oxc_span::SourceType;
 use vize_carton::String;
 
 use crate::script::ScriptCompileContext;
@@ -81,59 +81,6 @@ fn block_location_for_span(source: &str, start: usize, end: usize) -> crate::typ
     }
 }
 
-/// Locate the byte span `(start, end)` of a reactive props-destructure
-/// default's value expression for `prop_key`, relative to
-/// `script_setup_content` (e.g. the `0` in `const { msg = 0 } = defineProps<…>()`).
-///
-/// Used to point the default-type-mismatch diagnostic at the offending
-/// default rather than the start of the `<script setup>` block. Re-parses the
-/// script-setup content; only the rare diagnostic error path calls this, so
-/// the extra parse is not on the hot path. The span lives on the AST, not on
-/// the public `PropsDestructureBinding`, to keep that type's API stable.
-fn props_destructure_default_span(
-    script_setup_content: &str,
-    prop_key: &str,
-) -> Option<(u32, u32)> {
-    use oxc_ast::ast::BindingPattern;
-
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script_setup_content, SourceType::ts()).parse();
-    for stmt in &parsed.program.body {
-        let Statement::VariableDeclaration(var_decl) = stmt else {
-            continue;
-        };
-        for decl in &var_decl.declarations {
-            // Match `const { … } = defineProps(…)`.
-            let BindingPattern::ObjectPattern(obj_pat) = &decl.id else {
-                continue;
-            };
-            let is_define_props = matches!(
-                &decl.init,
-                Some(Expression::CallExpression(call))
-                    if matches!(&call.callee, Expression::Identifier(id) if id.name == "defineProps")
-            );
-            if !is_define_props {
-                continue;
-            }
-            for prop in obj_pat.properties.iter() {
-                let key = match &prop.key {
-                    PropertyKey::StaticIdentifier(id) => id.name.as_str(),
-                    PropertyKey::StringLiteral(lit) => lit.value.as_str(),
-                    _ => continue,
-                };
-                if key != prop_key {
-                    continue;
-                }
-                if let BindingPattern::AssignmentPattern(assign) = &prop.value {
-                    let span = assign.right.span();
-                    return Some((span.start, span.end));
-                }
-            }
-        }
-    }
-    None
-}
-
 /// Validate reactive props destructure defaults against inferred runtime prop types.
 pub(crate) fn validate_props_destructure_default_types(
     ctx: &ScriptCompileContext,
@@ -193,8 +140,11 @@ pub(crate) fn validate_props_destructure_default_types(
             // can locate it, rebasing the block-relative span onto the full
             // SFC. Falls back to no location (callers then pick a block-start
             // fallback) only when the span cannot be resolved.
-            let loc =
-                props_destructure_default_span(&ctx.source, name).map(|(rel_start, rel_end)| {
+            let loc = ctx
+                .props_destructure_default_spans
+                .get(name.as_str())
+                .copied()
+                .map(|(rel_start, rel_end)| {
                     block_location_for_span(
                         sfc_source,
                         block_start + rel_start as usize,

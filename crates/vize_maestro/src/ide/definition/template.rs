@@ -3,7 +3,6 @@
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range};
 use vize_carton::BindingType;
-use vize_croquis::{Drawer, DrawerOptions};
 
 use super::{IdeContext, helpers};
 use crate::ide::{is_component_tag, kebab_to_pascal};
@@ -495,16 +494,8 @@ pub(crate) fn find_component_definition(
         return super::inline_art::self_component_definition(ctx);
     }
 
-    let mut analyzer = Drawer::with_options(DrawerOptions::full());
-    let descriptor = ctx.sfc_descriptor()?;
-
-    if let Some(ref script_setup) = descriptor.script_setup {
-        analyzer.analyze_script_setup(&script_setup.content);
-    } else if let Some(ref script) = descriptor.script {
-        analyzer.analyze_script_plain(&script.content);
-    }
-
-    let summary = analyzer.finish();
+    let document = ctx.sfc_croquis()?;
+    let summary = document.analysis();
 
     let pascal_name = kebab_to_pascal(tag_name);
     let names_to_try = [tag_name.to_string(), pascal_name];
@@ -614,12 +605,8 @@ pub(crate) fn find_prop_definition_by_name(
 ) -> Option<GotoDefinitionResponse> {
     let script_setup = descriptor.script_setup.as_ref()?;
 
-    let mut analyzer = Drawer::with_options(DrawerOptions {
-        analyze_script: true,
-        ..Default::default()
-    });
-    analyzer.analyze_script_setup(&script_setup.content);
-    let croquis = analyzer.finish();
+    let document = ctx.sfc_croquis()?;
+    let croquis = document.analysis();
 
     let props = croquis.macros.props();
     let is_prop = props.iter().any(|p| p.name.as_str() == prop_name);

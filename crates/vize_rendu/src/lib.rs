@@ -24,7 +24,10 @@ pub use ids::{RenduExpressionId, RenduNodeId, RenduSourceId};
 pub use node::{
     RenduBinding, RenduEscapeMode, RenduIfBranch, RenduName, RenduNamespace, RenduNode,
 };
-pub use product::{RenderCapabilities, RenderCapabilitiesInput, RenduModule, RenduProduct};
+pub use product::{
+    RenderCapabilities, RenderCapabilitiesInput, RenderEmitSettings, RenderEmitSettingsInput,
+    RenderOutputMode, RenduModule, RenduProduct,
+};
 pub use property::{RenduAttribute, RenduAttributeValue, RenduDirective, RenduProperty};
 pub use root::RenduRoot;
 pub use source::{RenduPosition, RenduProvenance, RenduSource, RenduSpan};

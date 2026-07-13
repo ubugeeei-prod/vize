@@ -22,14 +22,16 @@ fn production_cross_file_path_queries_the_full_atlas_product() {
         .map(|path| (path.clone(), fs::read_to_string(path).unwrap()))
         .collect();
     let expected = build_cross_file_lint_output(&raw_inputs, HelpLevel::Short, false);
-    let mut files = super::super::pipeline::lint_inputs(
+    let run = super::super::pipeline::lint_inputs(
         super::super::pipeline::read_lint_inputs(&paths, false),
         Shared::new(Linter::new()),
         vize_carton::config::VueVersion::V3,
         false,
         false,
+        true,
     );
-    apply_sfc_cross_file_lint(&mut files, HelpLevel::Short, false, false);
+    let (graph, mut files, _) = run.into_parts();
+    apply_sfc_cross_file_lint(&graph, &mut files, HelpLevel::Short, false, false);
 
     assert!(files.iter().all(|file| file.semantics.is_some()));
     let actual: Vec<_> = files
@@ -66,16 +68,18 @@ fn malformed_atlas_sfc_keeps_cross_file_analysis_recoverable() {
         "<template><div /></template><template><span /></template>",
     )
     .unwrap();
-    let mut files = super::super::pipeline::lint_inputs(
+    let run = super::super::pipeline::lint_inputs(
         super::super::pipeline::read_lint_inputs(std::slice::from_ref(&path), false),
         Shared::new(Linter::new()),
         vize_carton::config::VueVersion::V3,
         false,
         false,
+        true,
     );
+    let (graph, mut files, _) = run.into_parts();
     assert!(files[0].artifact_backed);
     assert!(files[0].semantics.is_none());
-    apply_sfc_cross_file_lint(&mut files, HelpLevel::Short, false, false);
+    apply_sfc_cross_file_lint(&graph, &mut files, HelpLevel::Short, false, false);
 
     assert!(files[0].artifact_backed);
 }

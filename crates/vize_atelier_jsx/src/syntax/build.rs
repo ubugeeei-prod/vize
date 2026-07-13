@@ -11,6 +11,7 @@ use super::{
 };
 use crate::{JsxLang, parse};
 use vize_atlas::Shared;
+use vize_module::{ModuleDocument, ModuleLanguage, snapshot_program};
 
 pub(super) fn snapshot(
     filename: Option<Box<str>>,
@@ -27,6 +28,18 @@ pub(super) fn snapshot(
     let mut diagnostics = parsed.diagnostics;
     diagnostics.extend(collected.diagnostics);
     let analysis = Shared::new(crate::analyze_jsx_program(&parsed.program, source));
+    let module = snapshot_program(
+        filename.as_deref().unwrap_or("<jsx>"),
+        source,
+        match lang {
+            JsxLang::Jsx => ModuleLanguage::Jsx,
+            JsxLang::Tsx => ModuleLanguage::Tsx,
+        },
+        0,
+        None,
+        &parsed.program,
+        &[],
+    );
     JsxSyntaxSnapshot {
         filename,
         source: source.into(),
@@ -38,6 +51,7 @@ pub(super) fn snapshot(
         panicked: parsed.panicked,
         source_anchor: None,
         analysis,
+        module: ModuleDocument::from_module(module),
     }
 }
 

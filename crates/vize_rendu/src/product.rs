@@ -2,7 +2,8 @@
 
 use std::ops::Deref;
 
-use vize_atlas::{CompilationInput, Product};
+use vize_atlas::{CompilationInput, Product, SourceInput};
+use vize_carton::String;
 
 use crate::RenduRoot;
 
@@ -81,4 +82,39 @@ impl CompilationInput for RenderCapabilitiesInput {
     type Value = RenderCapabilities;
 
     const NAME: &'static str = "render.capabilities";
+}
+
+/// JavaScript packaging mode requested from a render backend.
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq)]
+pub enum RenderOutputMode {
+    Function,
+    #[default]
+    Module,
+}
+
+/// Source-scoped output settings shared by frontend-neutral backends.
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct RenderEmitSettings {
+    pub mode: RenderOutputMode,
+    pub runtime_module_name: String,
+    pub runtime_global_name: String,
+}
+
+impl Default for RenderEmitSettings {
+    fn default() -> Self {
+        Self {
+            mode: RenderOutputMode::Module,
+            runtime_module_name: "vue".into(),
+            runtime_global_name: "Vue".into(),
+        }
+    }
+}
+
+/// Open per-source backend packaging configuration.
+pub struct RenderEmitSettingsInput;
+
+impl SourceInput for RenderEmitSettingsInput {
+    type Value = RenderEmitSettings;
+
+    const NAME: &'static str = "render.emit-settings";
 }

@@ -5,9 +5,9 @@
 
 use bumpalo::Bump;
 use vize_atelier_core::{
-    ArrayExpression, BlockStatement, CallExpression, Callee, NodeType, ObjectExpression,
-    RuntimeHelper, SourceLocation,
+    ArrayExpression, BlockStatement, CallExpression, Callee, ObjectExpression,
 };
+use vize_relief::{NodeType, RuntimeHelper, SourceLocation};
 
 #[test]
 fn call_expression_new() {

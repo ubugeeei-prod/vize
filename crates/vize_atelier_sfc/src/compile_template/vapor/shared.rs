@@ -5,24 +5,29 @@ use vize_atelier_vapor::{
 };
 use vize_carton::{Bump, String, ToCompactString};
 use vize_relief::ReliefArtifact;
-use vize_relief::TemplateSyntaxMode;
 
 use super::super::{TemplateBlockCompileResult, recoverable_template_warnings};
-use super::{record_unsupported_vapor_shape, transform_vapor_template_module};
+use super::{
+    VaporTemplateCompileContext, record_unsupported_vapor_shape, transform_vapor_template_module,
+};
 use crate::{
     compile::output_module::AtelierOutputMaps,
-    types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions},
+    types::{BindingMetadata, SfcError, SfcTemplateBlock},
 };
 
 pub(crate) fn compile_template_block_vapor_from_syntax(
     template: &SfcTemplateBlock,
-    scope_id: &str,
-    has_scoped: bool,
-    bindings: Option<&BindingMetadata>,
-    options: &TemplateCompileOptions,
-    template_syntax: TemplateSyntaxMode,
     syntax: &ReliefArtifact,
+    context: VaporTemplateCompileContext<'_>,
+    bindings: Option<&BindingMetadata>,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
+    let VaporTemplateCompileContext {
+        scope_id,
+        has_scoped,
+        options,
+        template_syntax,
+        codegen_options,
+    } = context;
     let allocator = Bump::new();
     let compiler_options = options.compiler_options.as_ref();
     let vapor_options = VaporCompilerOptions {
@@ -60,8 +65,13 @@ pub(crate) fn compile_template_block_vapor_from_syntax(
         attribute.push_str(scope_id);
         attribute
     });
-    let output =
-        transform_vapor_template_module(&result.code, scope_attr.as_deref(), template, bindings)?;
+    let output = transform_vapor_template_module(
+        &result.code,
+        scope_attr.as_deref(),
+        template,
+        bindings,
+        codegen_options.runtime_module_name.as_str(),
+    )?;
     Ok(TemplateBlockCompileResult {
         code: output.code,
         warnings: recoverable_template_warnings(&diagnostics),

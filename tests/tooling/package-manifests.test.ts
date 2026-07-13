@@ -546,6 +546,7 @@ test("wasm package publishes the wrapper entrypoint and raw wasm assets", () => 
   for (const file of [
     "index.js",
     "index.d.ts",
+    "lint-format.d.ts",
     "vize_vitrine.js",
     "vize_vitrine.d.ts",
     "vize_vitrine_bg.wasm",
@@ -553,7 +554,6 @@ test("wasm package publishes the wrapper entrypoint and raw wasm assets", () => 
     assert.ok(wasmPackage.files?.includes(file), `@vizejs/wasm files include ${file}`);
   }
 });
-
 test("workspace TypeScript package builds use vp pack", () => {
   const packages = [
     ["npm/fresco", "vp pack", "vp pack --watch"],
@@ -587,8 +587,8 @@ test("workspace TypeScript package builds use vp pack", () => {
     scripts?: Record<string, string>;
   };
   assert.equal(oxlintPackage.engines?.node, "^22 || >= 24");
-  assert.equal(oxlintPackage.scripts?.test, "vp pack && node src/test.ts");
-
+  const oxlintTest = "vp pack && vp test run src/file-state.test.ts && node src/test.ts";
+  assert.equal(oxlintPackage.scripts?.test, oxlintTest);
   const rootTasks = fs.readFileSync(path.join(root, "tools/vite-plus/tasks/build.ts"), "utf-8");
   assert.match(rootTasks, /pnpm exec vp pack/);
 });
@@ -614,7 +614,7 @@ test("fresco-native publishes bundled binaries directly from the root package", 
   );
   assert.equal(
     vizeNativePackage.scripts?.["build:ci"],
-    "napi build --platform --profile ci --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi,legacy --output-dir .",
+    "napi build --platform --profile ci --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi,legacy --output-dir . && node ./scripts/sync-entrypoint.mjs",
   );
 
   const frescoNativeLoader = fs.readFileSync(

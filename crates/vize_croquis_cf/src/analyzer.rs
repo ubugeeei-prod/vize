@@ -6,6 +6,7 @@
 mod core;
 mod types;
 
+pub(crate) use core::AtlasModuleFacts;
 pub use core::CrossFileAnalyzer;
 pub use types::{CrossFileOptions, CrossFileResult, CrossFileStats};
 

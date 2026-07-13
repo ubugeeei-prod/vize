@@ -9,8 +9,15 @@ mod raw_mask;
 
 pub use artifact::{
     GlyphFormatProduct, GlyphFormatProvider, GlyphFormatSettingsInput,
-    register_glyph_atlas_provider,
+    register_glyph_atlas_provider, register_glyph_format_provider,
 };
+
+pub(crate) fn format_with_atlas(
+    source: &str,
+    options: &FormatOptions,
+) -> Result<FormatResult, FormatError> {
+    artifact::FormatterArtifactGraph::new(source, options)?.format()
+}
 
 use crate::error::FormatError;
 use crate::options::FormatOptions;
@@ -55,7 +62,9 @@ impl<'a> GlyphFormatter<'a> {
 
     /// Format a Vue SFC source string
     pub fn format(&self, source: &str) -> Result<FormatResult, FormatError> {
-        artifact::FormatterArtifactGraph::new(source, self.options)?.format()
+        let arena_source = self.allocator.alloc_str(source);
+        let descriptor = vize_atelier_sfc::parse_sfc(arena_source, Default::default())?;
+        self.format_descriptor_core(arena_source, &descriptor)
     }
 
     fn format_descriptor_core(

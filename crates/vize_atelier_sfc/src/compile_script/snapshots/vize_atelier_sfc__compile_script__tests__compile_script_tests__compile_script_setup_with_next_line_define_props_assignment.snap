@@ -6,14 +6,18 @@ import { defineComponent as _defineComponent } from "vue";
 import { computed } from "vue";
 const __sfc__ = /* @__PURE__ */ _defineComponent({
   __name: "Test",
-  props: { name: { type: String } },
+  props: { name: {
+    type: String,
+    required: true
+  } },
   setup(__props, { expose: __expose, emit: __emit }) {
     __expose();
     const props = __props;
     const greeting = computed(() => props.name);
     const __returned__ = {
       computed,
-      greeting
+      greeting,
+      props
     };
     Object.defineProperty(__returned__, "__isScriptSetup", {
       enumerable: false,

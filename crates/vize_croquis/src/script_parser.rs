@@ -26,7 +26,7 @@ mod typeof_refs;
 mod walk;
 
 pub use parse::{
-    analyze_script_setup_program, parse_script, parse_script_setup,
+    analyze_script_program, analyze_script_setup_program, parse_script, parse_script_setup,
     parse_script_setup_with_generic, parse_script_setup_with_generic_and_jsx,
     parse_script_with_options, parse_script_with_options_and_jsx,
 };

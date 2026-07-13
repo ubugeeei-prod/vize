@@ -9,16 +9,17 @@ use vize_atlas::{
 };
 use vize_carton::{Bump, source_anchor::SourceAnchor, source_range::SourceRange};
 use vize_croquis::{CroquisDocument, CroquisDocumentProduct, CroquisSourceSegment};
+use vize_module::{ModuleLanguage, ModuleSyntaxProduct};
 use vize_relief::ReliefProduct;
 
+use crate::croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_script_analysis};
+#[cfg(test)]
 use crate::croquis::{
-    SfcCroquisOptions, analyze_sfc_descriptor, analyze_sfc_descriptor_resolved,
-    analyze_sfc_descriptor_resolved_for_canon_compatibility,
-    analyze_sfc_descriptor_with_context_legacy_vue2,
+    analyze_sfc_descriptor, analyze_sfc_descriptor_with_context_legacy_vue2,
     analyze_sfc_descriptor_with_context_options_api,
 };
 
-use super::{SfcDescriptorProduct, is_sfc_source};
+use super::{SfcDescriptorProduct, SfcScriptSyntaxProduct, is_sfc_source, source_structure};
 pub use settings::{
     SfcCroquisMode, SfcCroquisRequest, SfcCroquisSettings, SfcCroquisSettingsInput,
     SfcResolvedPropsPolicy,
@@ -47,8 +48,13 @@ impl Provider for SfcCroquisProvider {
             .source_input::<SfcCroquisSettingsInput>()
             .map(|request| request.mode)
             .unwrap_or_default();
+        let structure = source_structure(context);
         let mut dependencies = vec![ProductId::of::<SfcDescriptorProduct>()];
-        if mode != SfcCroquisMode::Declaration {
+        if structure.has_script {
+            dependencies.push(ProductId::of::<SfcScriptSyntaxProduct>());
+            dependencies.push(ProductId::of::<ModuleSyntaxProduct>());
+        }
+        if mode != SfcCroquisMode::Declaration && structure.has_template {
             dependencies.push(ProductId::of::<ReliefProduct>());
         }
         dependencies
@@ -75,7 +81,7 @@ impl Provider for SfcCroquisProvider {
             .map(|request| request.resolved_props_policy)
             .unwrap_or_default();
         let allocator = Bump::new();
-        let root = if mode == SfcCroquisMode::Declaration {
+        let root = if mode == SfcCroquisMode::Declaration || descriptor.template.is_none() {
             None
         } else {
             let syntax = context.get::<ReliefProduct>()?;
@@ -91,12 +97,21 @@ impl Provider for SfcCroquisProvider {
                 }
             }
         };
+        let (script_analysis, modules) =
+            if descriptor.script.is_some() || descriptor.script_setup.is_some() {
+                let syntax = context.get::<SfcScriptSyntaxProduct>()?;
+                let modules = context.get::<ModuleSyntaxProduct>()?;
+                (syntax.croquis(mode, true), Some(modules))
+            } else {
+                (vize_croquis::Croquis::new(), None)
+            };
         let analysis = analyze_document(
             descriptor,
             root.as_ref(),
             mode,
             resolved_filename.as_deref(),
             resolved_policy,
+            script_analysis,
         );
         let mut semantics = analysis.semantic_snapshot();
         if let Some(template) = descriptor.template.as_ref() {
@@ -106,29 +121,10 @@ impl Provider for SfcCroquisProvider {
             .with_source_anchor(root_anchor)
             .with_semantic_snapshot(semantics);
 
-        if let Some(block) = descriptor.script.as_ref() {
-            document = add_segment(
-                document,
-                "script",
-                block.content.as_ref(),
-                block.lang.as_deref(),
-                source_id,
-                source_revision,
-                block.loc.start,
-                block.loc.end,
-            )?;
-        }
-        if let Some(block) = descriptor.script_setup.as_ref() {
-            document = add_segment(
-                document,
-                "script-setup",
-                block.content.as_ref(),
-                block.lang.as_deref(),
-                source_id,
-                source_revision,
-                block.loc.start,
-                block.loc.end,
-            )?;
+        if let Some(modules) = modules.as_ref() {
+            for module in &modules.modules {
+                document = add_module_segment(document, module)?;
+            }
         }
         if let Some(block) = descriptor.template.as_ref() {
             document = add_segment(
@@ -152,45 +148,52 @@ fn analyze_document(
     mode: SfcCroquisMode,
     resolved_filename: Option<&str>,
     resolved_policy: SfcResolvedPropsPolicy,
+    script_analysis: vize_croquis::Croquis,
 ) -> vize_croquis::Croquis {
-    if let Some(filename) = resolved_filename {
-        let analyze = match resolved_policy {
-            SfcResolvedPropsPolicy::BeforeTemplate => analyze_sfc_descriptor_resolved,
-            SfcResolvedPropsPolicy::PreserveCanonAfterTemplate => {
-                analyze_sfc_descriptor_resolved_for_canon_compatibility
-            }
-        };
-        return analyze(
-            descriptor,
-            root,
-            SfcCroquisOptions::full(),
-            matches!(mode, SfcCroquisMode::OptionsApi),
-            matches!(mode, SfcCroquisMode::LegacyVue2),
-            filename,
-        )
-        .croquis;
-    }
-    match mode {
-        SfcCroquisMode::Full => analyze_sfc_descriptor(descriptor, root, SfcCroquisOptions::full()),
-        SfcCroquisMode::OptionsApi => {
-            analyze_sfc_descriptor_with_context_options_api(
-                descriptor,
-                root,
-                SfcCroquisOptions::full(),
-            )
-            .croquis
-        }
-        SfcCroquisMode::LegacyVue2 => {
-            analyze_sfc_descriptor_with_context_legacy_vue2(
-                descriptor,
-                root,
-                SfcCroquisOptions::full(),
-            )
-            .croquis
-        }
-        SfcCroquisMode::Declaration => {
-            analyze_sfc_descriptor(descriptor, None, SfcCroquisOptions::for_declaration())
-        }
+    let options = if mode == SfcCroquisMode::Declaration {
+        SfcCroquisOptions::for_declaration()
+    } else {
+        SfcCroquisOptions::full()
+    };
+    analyze_sfc_descriptor_with_script_analysis(
+        descriptor,
+        (mode != SfcCroquisMode::Declaration)
+            .then_some(root)
+            .flatten(),
+        options,
+        matches!(mode, SfcCroquisMode::OptionsApi),
+        matches!(mode, SfcCroquisMode::LegacyVue2),
+        resolved_filename,
+        resolved_policy == SfcResolvedPropsPolicy::PreserveCanonAfterTemplate,
+        script_analysis,
+    )
+    .croquis
+}
+
+fn add_module_segment(
+    document: CroquisDocument,
+    module: &vize_module::ModuleSyntax,
+) -> Result<CroquisDocument, ProviderError> {
+    let role = if module.name.ends_with("#script-setup") {
+        "script-setup"
+    } else {
+        "script"
+    };
+    let anchor = module
+        .source_anchor
+        .ok_or_else(|| ProviderError::message("SFC module is missing source provenance"))?;
+    Ok(document.with_source(
+        CroquisSourceSegment::new(role, module.source.as_ref(), anchor)
+            .with_language(module_language(module.language)),
+    ))
+}
+
+fn module_language(language: ModuleLanguage) -> &'static str {
+    match language {
+        ModuleLanguage::JavaScript => "js",
+        ModuleLanguage::TypeScript => "ts",
+        ModuleLanguage::Jsx => "jsx",
+        ModuleLanguage::Tsx => "tsx",
     }
 }
 

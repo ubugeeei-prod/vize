@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Frontend-neutral single-file control-flow, data-flow, and effect graphs for Vize"
+metadata.vize.stability = "compatibility-preview"
 
 [dependencies]
 vize_carton.workspace = true

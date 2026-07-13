@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use vize_carton::{String, ToCompactString};
 
 /// Formatting options for Vue SFC
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FormatOptions {
     /// Maximum line width (default: 100)

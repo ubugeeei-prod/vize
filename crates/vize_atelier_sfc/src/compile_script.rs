@@ -3,12 +3,15 @@
 //! This module handles compilation of `<script>` and `<script setup>` blocks,
 //! following the Vue.js core output format.
 
+use std::cell::Cell;
+
 pub(crate) mod artifacts;
 pub mod function_mode;
 pub mod import_utils;
 pub mod inline;
 pub(crate) mod lazy_hydration;
 pub mod macros;
+mod preanalysis;
 pub mod props;
 pub(crate) mod runtime_bindings;
 pub mod statement_sections;
@@ -21,6 +24,10 @@ use crate::types::{BindingMetadata, ScriptCompileOptions, SfcDescriptor, SfcErro
 use self::artifacts::erase_artifact_macro_statements;
 use self::function_mode::compile_script_setup_from_source;
 use self::lazy_hydration::transform_lazy_hydration_macros;
+pub(crate) use self::preanalysis::{
+    NormalScriptCompilerFacts, PreanalyzedScriptSetup, analyze_normal_script_program,
+    compile_preanalyzed_script_setup, preanalyze_script_setup_program,
+};
 use self::typescript::transform_typescript_to_js;
 
 // Re-export commonly used items
@@ -36,6 +43,28 @@ pub use self::props::{
     extract_with_defaults_defaults, is_valid_identifier,
 };
 use vize_carton::{String, ToCompactString};
+
+thread_local! {
+    static LEGACY_FROM_SOURCE_COMPILE_INVOCATIONS: Cell<u64> = const { Cell::new(0) };
+}
+
+#[doc(hidden)]
+pub fn legacy_from_source_compile_invocations() -> u64 {
+    LEGACY_FROM_SOURCE_COMPILE_INVOCATIONS.get()
+}
+
+#[doc(hidden)]
+pub fn reset_legacy_from_source_compile_invocations() {
+    LEGACY_FROM_SOURCE_COMPILE_INVOCATIONS.set(0);
+}
+
+pub(crate) fn record_legacy_from_source_compile() {
+    LEGACY_FROM_SOURCE_COMPILE_INVOCATIONS.set(
+        LEGACY_FROM_SOURCE_COMPILE_INVOCATIONS
+            .get()
+            .saturating_add(1),
+    );
+}
 
 /// Script compilation result
 pub struct ScriptCompileResult {

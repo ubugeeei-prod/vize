@@ -39,7 +39,7 @@ pub use options::SsrCompilerOptions;
 #[cfg(feature = "graph")]
 pub use rendu::{
     RenduSsrMapping, RenduSsrMappingKind, RenduSsrOutput, compile_rendu,
-    compile_rendu as compile_rendu_ssr,
+    compile_rendu as compile_rendu_ssr, compile_rendu_with_settings,
 };
 #[cfg(feature = "legacy")]
 pub use steps::{

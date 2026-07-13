@@ -8,6 +8,7 @@ pub(super) fn emit_setup_binding_anchors(
     ts: &mut String,
     summary: &Croquis,
     script_content: Option<&str>,
+    script_facts: Option<&vize_atelier_sfc::SfcScriptGeneratorFacts>,
     template_referenced_names: Option<&FxHashSet<String>>,
     comment: &str,
 ) {
@@ -15,8 +16,12 @@ pub(super) fn emit_setup_binding_anchors(
         return;
     }
 
-    let binding_names =
-        collect_setup_binding_anchor_names(summary, script_content, template_referenced_names);
+    let binding_names = collect_setup_binding_anchor_names(
+        summary,
+        script_content,
+        script_facts,
+        template_referenced_names,
+    );
     let mut first = true;
     for name in binding_names {
         if is_reserved_anchor_name(name) {

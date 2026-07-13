@@ -9,8 +9,9 @@ pub(super) fn experimental_flags(opts: &CompilerOptions) -> (bool, bool) {
     )
 }
 
-pub(super) fn experimental_parser_options(opts: &CompilerOptions) -> ParserOptions {
+pub(super) fn compiler_parser_options(opts: &CompilerOptions) -> ParserOptions {
     ParserOptions {
+        custom_renderer: opts.custom_renderer.unwrap_or(false),
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         ..Default::default()
     }

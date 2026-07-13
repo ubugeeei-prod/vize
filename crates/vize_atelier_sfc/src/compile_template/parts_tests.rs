@@ -18,8 +18,8 @@ use vize_carton::String;
 use vize_relief::TemplateSyntaxMode;
 
 use super::{
-    TemplateBlockCompileContext, TemplateBlockCompileResult, compile_template_block,
-    compile_template_block_vapor,
+    TemplateBlockCompileContext, TemplateBlockCompileResult, VaporTemplateCompileContext,
+    compile_template_block, compile_template_block_vapor,
 };
 use crate::{
     compile::output_module::AtelierOutputMaps,
@@ -63,6 +63,7 @@ fn dom_compile_records_fine_sections_for_inline_body_extraction() {
             croquis: None,
         },
         TemplateSyntaxMode::Standard,
+        &vize_relief::CodegenOptions::default(),
     )
     .expect("DOM template should compile");
 
@@ -91,11 +92,14 @@ fn vapor_compile_records_module_sections_for_inline_full_function_extraction() {
 
     let result = compile_template_block_vapor(
         &template,
-        "abc123",
-        true,
+        VaporTemplateCompileContext {
+            scope_id: "abc123",
+            has_scoped: true,
+            options: &TemplateCompileOptions::default(),
+            template_syntax: TemplateSyntaxMode::Standard,
+            codegen_options: &vize_relief::CodegenOptions::default(),
+        },
         Some(&bindings),
-        &TemplateCompileOptions::default(),
-        TemplateSyntaxMode::Standard,
     )
     .expect("Vapor template should compile");
 
@@ -133,6 +137,7 @@ fn ssr_compile_records_module_sections_for_inline_full_function_extraction() {
             croquis: None,
         },
         TemplateSyntaxMode::Standard,
+        &vize_relief::CodegenOptions::default(),
     )
     .expect("SSR template should compile");
 

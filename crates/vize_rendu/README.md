@@ -1,5 +1,7 @@
 # vize_rendu
 
+Compatibility follows the [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
 Rendu is Vize's frontend-neutral render HIR. A frontend lowers its own syntax
 directly into this owned, indexed representation; render backends consume it
 without depending on the frontend AST that produced it.

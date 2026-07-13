@@ -9,7 +9,7 @@ use vize_carton::{String, ToCompactString};
 use vize_croquis::macros::runtime_erased_macro_names;
 
 /// Macro definitions found in script setup
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ScriptSetupMacros {
     /// defineProps call info
     pub define_props: Option<MacroCall>,

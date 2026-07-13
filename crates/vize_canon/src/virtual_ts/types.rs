@@ -125,6 +125,10 @@ impl Default for VirtualTsCheckOptions {
 
 #[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct VirtualTsGenerationOptions<'a> {
+    /// Neutral module facts projected from the same frontend parse as Croquis.
+    pub(crate) module_document: Option<&'a vize_module::ModuleDocument>,
+    /// Canon-specific owned facts projected while the authored SFC Program was live.
+    pub(crate) script_facts: Option<&'a vize_atelier_sfc::SfcScriptGeneratorFacts>,
     pub(crate) check_options: VirtualTsCheckOptions,
     /// Configured Vue dialect for this project (default [`VueVersion::V3`]).
     ///

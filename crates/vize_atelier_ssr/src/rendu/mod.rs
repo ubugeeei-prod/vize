@@ -8,7 +8,7 @@ mod parity_tests;
 mod tests;
 
 use vize_carton::{String, source_anchor::SourceAnchor};
-use vize_rendu::{RenduRoot, RenduSpan};
+use vize_rendu::{RenderEmitSettings, RenderOutputMode, RenduRoot, RenduSpan};
 
 /// Kind of Rendu artifact represented by one generated-code mapping.
 #[non_exhaustive]
@@ -36,10 +36,59 @@ pub struct RenduSsrMapping {
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct RenduSsrOutput {
     pub code: String,
+    pub preamble: String,
+    pub body: String,
     pub mappings: Vec<RenduSsrMapping>,
 }
 
 /// Compile a validated Rendu graph without consulting its producer AST.
 pub fn compile_rendu(root: &RenduRoot) -> RenduSsrOutput {
-    emit::SsrEmitter::new(root).emit()
+    compile_rendu_with_settings(root, &RenderEmitSettings::default())
+}
+
+pub fn compile_rendu_with_settings(
+    root: &RenduRoot,
+    settings: &RenderEmitSettings,
+) -> RenduSsrOutput {
+    finish_output(emit::SsrEmitter::new(root).emit(settings), settings)
+}
+
+const CORE_HELPERS: &str = "mergeProps as _mergeProps, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withModifiers as _withModifiers";
+const SSR_HELPERS: &str = "ssrGetDirectiveProps as _ssrGetDirectiveProps, ssrInterpolate as _ssrInterpolate, ssrRenderAttr as _ssrRenderAttr, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderComponent as _ssrRenderComponent, ssrRenderDynamicAttr as _ssrRenderDynamicAttr, ssrRenderList as _ssrRenderList, ssrRenderSlot as _ssrRenderSlot";
+
+fn finish_output(mut output: RenduSsrOutput, settings: &RenderEmitSettings) -> RenduSsrOutput {
+    let body = output.code;
+    let server_runtime = if settings.runtime_module_name == "vue" {
+        String::from("@vue/server-renderer")
+    } else {
+        vize_carton::cstr!("{}/server-renderer", settings.runtime_module_name)
+    };
+    let preamble = match settings.mode {
+        RenderOutputMode::Module => vize_carton::cstr!(
+            "import {{ {CORE_HELPERS} }} from \"{}\"\nimport {{ {SSR_HELPERS} }} from \"{}\"\n\n",
+            settings.runtime_module_name,
+            server_runtime
+        ),
+        RenderOutputMode::Function => vize_carton::cstr!(
+            "const {{ {} }} = {}\nconst {{ {} }} = {}\n\n",
+            CORE_HELPERS.replace(" as ", ": "),
+            settings.runtime_global_name,
+            SSR_HELPERS.replace(" as ", ": "),
+            settings.runtime_global_name
+        ),
+    };
+    let offset = preamble.len();
+    for mapping in &mut output.mappings {
+        mapping.generated_start = mapping.generated_start.saturating_add(offset);
+        mapping.generated_end = mapping.generated_end.saturating_add(offset);
+    }
+    let mut code = String::with_capacity(offset + body.len());
+    code.push_str(&preamble);
+    code.push_str(&body);
+    RenduSsrOutput {
+        code,
+        preamble,
+        body,
+        mappings: output.mappings,
+    }
 }

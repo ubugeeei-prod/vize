@@ -1,5 +1,8 @@
 # vize_croquis_cf
 
+Support and deprecation guarantees are defined in the
+[Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
 `vize_croquis_cf` is the opt-in cross-file companion to `vize_croquis`.
 
 It aggregates semantic facts across module and component boundaries: dependency
@@ -16,3 +19,16 @@ for it. The provider declares one cross-source `CroquisSemanticProduct` request
 per supported `.vue`, `.jsx`, or `.tsx` source before execution, then builds an
 owned deterministic project snapshot. Ordinary compiler, lint, and typecheck
 recipes create neither the project product nor project-level cache state.
+
+## Key Entry Points
+
+- `CroquisProjectProduct`
+- `CrossFileAnalysisProduct`
+- `CrossFileAnalyzer`
+- `CrossFileOptions`
+- `DependencyGraph`
+- `ModuleRegistry`
+
+## License
+
+MIT

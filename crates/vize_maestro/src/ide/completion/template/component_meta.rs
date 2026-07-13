@@ -7,11 +7,11 @@ use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, CompletionItemLabelDetails, InsertTextFormat,
 };
 use vize_carton::BindingType;
-use vize_croquis::{Drawer, DrawerOptions};
 
 use crate::ide::definition::helpers as definition_helpers;
 use crate::ide::{IdeContext, is_component_tag, kebab_to_pascal, pascal_to_kebab};
 
+use super::component_cache::cached_component_metadata;
 use super::component_docs;
 use super::tag_context::{
     is_dynamic_prop_prefix, is_prop_completion_prefix, is_slot_completion_prefix,
@@ -69,15 +69,6 @@ pub(crate) struct ComponentMetadata {
     slots: Vec<ComponentSlot>,
 }
 
-/// Cached metadata for an imported component, keyed by resolved path.
-/// `len` + `modified` invalidate the entry when the file changes on disk.
-#[derive(Clone)]
-pub(crate) struct CachedComponentMetadata {
-    pub len: u64,
-    pub modified: Option<std::time::SystemTime>,
-    pub metadata: Arc<ComponentMetadata>,
-}
-
 #[derive(Debug, Clone)]
 pub(crate) struct ComponentProp {
     pub(crate) name: String,
@@ -123,45 +114,6 @@ pub(crate) fn component_metadata(
     None
 }
 
-/// Return parsed metadata, reusing it while length + mtime stay unchanged.
-pub(super) fn cached_component_metadata(
-    ctx: &IdeContext,
-    resolved: &std::path::Path,
-) -> Option<Arc<ComponentMetadata>> {
-    let cache = ctx.state.component_metadata_cache();
-    let (len, modified) = std::fs::metadata(resolved)
-        .map(|meta| (meta.len(), meta.modified().ok()))
-        .unwrap_or((0, None));
-
-    if let Some(entry) = cache.get(resolved)
-        && entry.len == len
-        && entry.modified == modified
-    {
-        return Some(entry.metadata.clone());
-    }
-
-    let component_content = std::fs::read_to_string(resolved).ok()?;
-    let component_uri = tower_lsp::lsp_types::Url::from_file_path(resolved).ok()?;
-    let artifact = ctx
-        .state
-        .sfc_descriptor_for(&component_uri, &component_content)?;
-    let descriptor = artifact.descriptor()?;
-    let metadata = Arc::new(extract_component_metadata(
-        descriptor,
-        ctx.state.options_api_enabled(),
-        ctx.state.legacy_vue2_enabled(),
-    ));
-    cache.insert(
-        resolved.to_path_buf(),
-        CachedComponentMetadata {
-            len,
-            modified,
-            metadata: metadata.clone(),
-        },
-    );
-    Some(metadata)
-}
-
 fn art_component_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<String> {
     if !ctx.uri.path().ends_with(".art.vue") {
         return None;
@@ -197,9 +149,10 @@ fn art_component_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<Stri
     (component_name == stem || pascal_component == pascal_stem).then(|| component_path.to_string())
 }
 
-fn extract_component_metadata(
+pub(super) fn extract_component_metadata(
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
-    options_api: bool,
+    analysis: Option<&vize_croquis::Croquis>,
+    syntax: Option<&vize_relief::ReliefSnapshot>,
     legacy_vue2: bool,
 ) -> ComponentMetadata {
     let mut props = Vec::new();
@@ -207,34 +160,7 @@ fn extract_component_metadata(
     let mut seen_props = BTreeSet::new();
     let mut seen_slots = BTreeSet::new();
 
-    if let Some(script_content) = descriptor
-        .script_setup
-        .as_ref()
-        .map(|script| script.content.as_ref())
-        .or_else(|| {
-            descriptor
-                .script
-                .as_ref()
-                .map(|script| script.content.as_ref())
-        })
-    {
-        let drawer_options = DrawerOptions {
-            analyze_script: true,
-            ..Default::default()
-        };
-        let mut drawer = Drawer::with_options(drawer_options);
-        if legacy_vue2 {
-            drawer = drawer.with_legacy_vue2();
-        } else if options_api {
-            drawer = drawer.with_options_api();
-        }
-        if descriptor.script_setup.is_some() {
-            drawer.analyze_script_setup(script_content);
-        } else {
-            drawer.analyze_script_plain(script_content);
-        }
-        let summary = drawer.finish();
-
+    if let Some(summary) = analysis {
         for prop in summary.macros.props() {
             if seen_props.insert(prop.name.to_string()) {
                 props.push(ComponentProp {
@@ -285,8 +211,12 @@ fn extract_component_metadata(
         }
     }
 
-    if let Some(template) = descriptor.template.as_ref() {
-        for name in super::slot_outlets::extract_template_slot_names(template.content.as_ref()) {
+    if descriptor.template.is_some()
+        && let Some(syntax) = syntax
+    {
+        let allocator = vize_carton::Bump::new();
+        let root = syntax.materialize(&allocator);
+        for name in super::slot_outlets::extract_template_slot_names(&root) {
             if seen_slots.insert(name.clone()) {
                 slots.push(ComponentSlot {
                     name,
@@ -491,69 +421,5 @@ mod slot_prop_name_tests {
     #[test]
     fn returns_none_for_non_object_slot_props() {
         assert_eq!(extract_slot_prop_names("Props"), None);
-    }
-}
-
-#[cfg(test)]
-mod cache_tests {
-    use super::cached_component_metadata;
-    use crate::ide::IdeContext;
-    use crate::server::ServerState;
-    use tower_lsp::lsp_types::Url;
-
-    #[test]
-    fn component_metadata_cache_hits_then_invalidates_on_change() {
-        let dir = tempfile::tempdir().unwrap();
-        let component = dir.path().join("Widget.vue");
-        std::fs::write(
-            &component,
-            "<script setup lang=\"ts\">\nconst props = defineProps<{ a: string }>()\n</script>\n",
-        )
-        .unwrap();
-
-        let state = ServerState::new();
-        let uri = Url::parse("file:///host.vue").unwrap();
-        state.documents.open(
-            uri.clone(),
-            "<template></template>".to_string(),
-            1,
-            "vue".to_string(),
-        );
-        let ctx = IdeContext::new(&state, &uri, 0).unwrap();
-
-        let first = cached_component_metadata(&ctx, &component).unwrap();
-        let second = cached_component_metadata(&ctx, &component).unwrap();
-        let prop = first
-            .props
-            .iter()
-            .find(|prop| prop.name == "a")
-            .expect("defineProps type member should be extracted");
-        assert_eq!(prop.type_detail.as_deref(), Some("string"));
-        assert!(prop.required);
-        assert!(
-            std::sync::Arc::ptr_eq(&first, &second),
-            "an unchanged component file should hit the cache (same Arc, no re-parse)",
-        );
-        let first_prop_count = first.props.len();
-
-        // Rewrite with a different length so the file stamp changes; the next
-        // lookup must recompute rather than serve the stale cached parse.
-        std::fs::write(
-            &component,
-            "<script setup lang=\"ts\">\nconst props = defineProps<{ a: string; bb: number }>()\n</script>\n",
-        )
-        .unwrap();
-
-        let third = cached_component_metadata(&ctx, &component).unwrap();
-        assert!(
-            !std::sync::Arc::ptr_eq(&first, &third),
-            "a changed component file must invalidate the cached entry",
-        );
-        assert!(
-            third.props.len() > first_prop_count,
-            "recomputed metadata should reflect the added prop ({} -> {})",
-            first_prop_count,
-            third.props.len(),
-        );
     }
 }

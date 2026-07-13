@@ -1,15 +1,16 @@
 //! Typed Atlas request and product for one AST-based SFC typecheck.
 
 use vize_atelier_sfc::{
-    SfcCompileOptions, SfcCompileRequest, SfcCompileSettingsInput, SfcCroquisMode,
-    SfcCroquisRequest, SfcCroquisSettingsInput, SfcDescriptorProduct, SfcResolvedPropsPolicy,
+    SfcCompileOptions, SfcCompileRequest, SfcCroquisMode, SfcCroquisRequest,
+    SfcCroquisSettingsInput, SfcDescriptorProduct, SfcResolvedPropsPolicy, SfcScriptSyntaxProduct,
+    install_sfc_compile_request, sfc_source_structure,
 };
 use vize_atlas::{
     Compilation, CompilationInputError, PlanningContext, Product, ProductId, Provider,
     ProviderContext, ProviderError, RegisterProviderError, SourceId, SourceInput, SourceInputId,
 };
 use vize_croquis::CroquisDocumentProduct;
-use vize_flow::FlowProduct;
+use vize_module::ModuleSyntaxProduct;
 use vize_relief::ReliefProduct;
 
 use super::{SfcTypeCheckOptions, SfcTypeCheckResult, engine::type_check_from_artifacts};
@@ -60,13 +61,20 @@ impl Provider for SfcTypeCheckProvider {
         context.source().name().ends_with(".vue")
     }
 
-    fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
-        vec![
+    fn dependencies(&self, context: &PlanningContext<'_>) -> Vec<ProductId> {
+        let structure = sfc_source_structure(context.source().text());
+        let mut dependencies = vec![
             ProductId::of::<SfcDescriptorProduct>(),
-            ProductId::of::<ReliefProduct>(),
             ProductId::of::<CroquisDocumentProduct>(),
-            ProductId::of::<FlowProduct>(),
-        ]
+        ];
+        if structure.has_template {
+            dependencies.push(ProductId::of::<ReliefProduct>());
+        }
+        if structure.has_script {
+            dependencies.push(ProductId::of::<SfcScriptSyntaxProduct>());
+            dependencies.push(ProductId::of::<ModuleSyntaxProduct>());
+        }
+        dependencies
     }
 
     fn provide(
@@ -77,16 +85,31 @@ impl Provider for SfcTypeCheckProvider {
             .source_input::<SfcTypeCheckSettingsInput>()
             .cloned()
             .unwrap_or_else(|| default_request(context.source().name()));
+        let structure = sfc_source_structure(context.source().text());
         let descriptor = context.get::<SfcDescriptorProduct>()?;
-        let relief = context.get::<ReliefProduct>()?;
         let semantics = context.get::<CroquisDocumentProduct>()?;
-        let flow = context.get::<FlowProduct>()?;
+        let relief = if structure.has_template {
+            Some(context.get::<ReliefProduct>()?)
+        } else {
+            None
+        };
+        let modules = if structure.has_script {
+            Some(context.get::<ModuleSyntaxProduct>()?)
+        } else {
+            None
+        };
+        let script_syntax = if structure.has_script {
+            Some(context.get::<SfcScriptSyntaxProduct>()?)
+        } else {
+            None
+        };
         Ok(type_check_from_artifacts(
             &request,
             &descriptor,
-            relief.as_ref().as_ref(),
+            relief.as_deref().and_then(Option::as_ref),
             &semantics,
-            &flow,
+            modules.as_deref(),
+            script_syntax.as_deref(),
         ))
     }
 }
@@ -107,7 +130,8 @@ pub fn install_sfc_typecheck_request(
     let filename = request.options.filename.clone();
     let mut compile_options = SfcCompileOptions::default();
     compile_options.parse.filename = filename.clone();
-    compilation.set_source_input::<SfcCompileSettingsInput>(
+    install_sfc_compile_request(
+        compilation,
         source,
         SfcCompileRequest::new(compile_options, Default::default()),
     )?;

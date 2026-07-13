@@ -10,7 +10,6 @@
 
 use tower_lsp::lsp_types::{Hover, HoverContents};
 use vize_carton::BindingType;
-use vize_croquis::{Drawer, DrawerOptions};
 
 #[cfg(feature = "native")]
 use std::sync::Arc;
@@ -109,23 +108,8 @@ impl HoverService {
             .map(|s| s.content.as_ref())
             .or_else(|| descriptor.script.as_ref().map(|s| s.content.as_ref()));
 
-        // Create a drawer and analyze script.
-        let drawer_options = DrawerOptions::full();
-        let mut drawer = Drawer::with_options(drawer_options);
-        if ctx.state.lsp_features().legacy_vue2 {
-            drawer = drawer.with_legacy_vue2();
-        } else if ctx.state.options_api_enabled() {
-            drawer = drawer.with_options_api();
-        }
-
-        if let Some(ref script) = descriptor.script {
-            drawer.analyze_script_plain(&script.content);
-        }
-        if let Some(ref script_setup) = descriptor.script_setup {
-            drawer.analyze_script_setup(&script_setup.content);
-        }
-
-        let summary = drawer.finish();
+        let document = ctx.sfc_croquis()?;
+        let summary = document.analysis();
 
         // Look up the binding in the analysis summary
         let binding_type = summary.get_binding_type(word)?;

@@ -1,6 +1,10 @@
 # vize_patina
 
-`vize_patina` lints Vue Single File Components.
+Support and deprecation guarantees are defined in the
+[Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+
+`vize_patina` owns Vue-aware lint products for SFCs, raw templates and HTML,
+JavaScript/TypeScript modules, and JSX/TSX.
 
 ## Highlights
 
@@ -8,6 +12,7 @@
 - Built-in presets: `happy-path`, `opinionated`, `essential`, `incremental`, `ecosystem`, `nuxt`
 - Human-readable and machine-readable reporting helpers
 - Locale support through `vize_carton::i18n::Locale`
+- Atlas providers that reuse source-shaped Relief, Module, JSX syntax, and Croquis products instead of rebuilding a document frontend
 
 ## Key Entry Points
 
@@ -20,16 +25,18 @@
 
 ## Rule IR (template + JSX)
 
-The `markup` module is a zero-copy, rule-facing IR that lets one rule body run
-over **both** Vue templates and JSX/TSX without materializing a synthetic AST.
-Wrappers borrow the live parser nodes (`vize_relief` for templates, OXC for
-JSX/TSX) and the original source; names and values are `&str` slices, so nothing
-allocates unless a rule asks for normalized owned data.
+The `markup` module is a borrow-based, rule-facing facade that lets one rule
+body run over **both** Vue templates and JSX/TSX without materializing a
+synthetic cross-syntax AST. It can project a materialized Relief tree, a live
+OXC program for compatibility callers, or Atlas's owned JSX syntax snapshot.
+Production Atlas recipes consume cached Relief and Croquis for templates and
+owned JSX syntax plus Croquis for JSX/TSX, so they do not reparse authored input.
 
 Core types:
 
-- `MarkupDocument` — document over a template root or a JSX/TSX program, with an
-  optional `vize_croquis::Croquis` for semantic / type-aware rules.
+- `MarkupDocument` — document over a template root, JSX/TSX program, or owned
+  JSX syntax snapshot, with optional `vize_croquis::Croquis` for semantic and
+  type-aware rules.
 - `MarkupElement`, `MarkupAttribute`, `MarkupText` — element / attribute / text
   facades; `MarkupDirective` covers Vue `v-*` directives **and** directive-like
   JSX attributes.
@@ -50,7 +57,8 @@ legacy `Rule` impl; full per-rule migration is tracked in follow-up work.
 
 - `vize` exposes Patina through `vize lint`
 - `oxlint-plugin-vize` bridges Patina diagnostics into Oxlint
-- `vize_maestro` reuses Patina for editor diagnostics
+- `vize_maestro` queries Patina from its persistent URI-keyed Atlas compilation
+- `vize_atelier_template` provides raw-template Relief and Croquis products
 
 ## License
 
