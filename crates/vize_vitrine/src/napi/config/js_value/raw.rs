@@ -11,6 +11,9 @@ use napi::{
     bindgen_prelude::{Error, FromNapiValue, Result, Unknown, check_status, sys},
 };
 
+// `napi` implements `FromNapiValue` for `std::String`; keep that exact ABI
+// conversion at this boundary instead of round-tripping through another type.
+#[allow(clippy::disallowed_types)]
 pub(super) fn enumerable_keys(value: Unknown<'_>) -> Result<Vec<(String, sys::napi_value)>> {
     let env = value.value().env;
     let mut keys = std::ptr::null_mut();

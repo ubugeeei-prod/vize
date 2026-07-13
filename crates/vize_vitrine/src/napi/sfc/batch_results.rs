@@ -162,12 +162,16 @@ fn compile_sfc_batch_with_results_inner(
             } else {
                 (None, None, None)
             };
-            let styles = include_styles
-                .then(|| style_blocks_to_napi(&descriptor.styles))
-                .unwrap_or_default();
-            let custom_blocks = include_custom_blocks
-                .then(|| custom_blocks_to_napi(&descriptor.custom_blocks))
-                .unwrap_or_default();
+            let styles = if include_styles {
+                style_blocks_to_napi(&descriptor.styles)
+            } else {
+                Vec::new()
+            };
+            let custom_blocks = if include_custom_blocks {
+                custom_blocks_to_napi(&descriptor.custom_blocks)
+            } else {
+                Vec::new()
+            };
             let has_scoped = descriptor.styles.iter().any(|style| style.scoped);
 
             match session.query::<SfcCompileProduct>(source_id) {
