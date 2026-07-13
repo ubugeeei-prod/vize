@@ -11,8 +11,7 @@ use vize_carton::cstr;
 impl ReferencesService {
     /// Find the definition location of a symbol.
     pub(super) fn find_definition_location(ctx: &IdeContext, word: &str) -> Option<Location> {
-        let options = vize_atelier_sfc::SfcParseOptions::default();
-        let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+        let descriptor = ctx.sfc_descriptor()?;
 
         if ctx.state.options_api_enabled()
             && let Some(location) =
@@ -63,8 +62,7 @@ impl ReferencesService {
     pub(super) fn find_references_in_script(ctx: &IdeContext, word: &str) -> Vec<Location> {
         let mut locations = Vec::new();
 
-        let options = vize_atelier_sfc::SfcParseOptions::default();
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+        let Some(descriptor) = ctx.sfc_descriptor() else {
             return locations;
         };
 
@@ -121,8 +119,7 @@ impl ReferencesService {
     pub(super) fn find_references_in_style(ctx: &IdeContext, word: &str) -> Vec<Location> {
         let mut locations = Vec::new();
 
-        let options = vize_atelier_sfc::SfcParseOptions::default();
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+        let Some(descriptor) = ctx.sfc_descriptor() else {
             return locations;
         };
 

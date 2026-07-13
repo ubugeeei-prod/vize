@@ -39,6 +39,8 @@
 #![cfg_attr(test, allow(clippy::disallowed_macros, clippy::disallowed_types))]
 
 // Core modules
+#[cfg(feature = "analysis")]
+mod document;
 mod product;
 #[cfg(feature = "analysis")]
 mod scope;
@@ -113,7 +115,13 @@ pub use vize_carton::{
 };
 
 // Re-export core types
+#[cfg(feature = "analysis")]
+pub use document::{CroquisDocument, CroquisSourceSegment};
 pub use product::CroquisSemanticProduct;
+#[cfg(feature = "analysis")]
+pub use product::{
+    CroquisDocumentProduct, CroquisSemanticProjectionProvider, register_semantic_projection,
+};
 #[cfg(feature = "analysis")]
 pub use scope::{
     BindingFlags, BlockKind, BlockScopeData, CallbackScopeData, ClientOnlyScopeData,

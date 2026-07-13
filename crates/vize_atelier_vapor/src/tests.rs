@@ -4,8 +4,8 @@ use super::{compile_vapor, compile_vapor_with_template_syntax};
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::Bump;
+use vize_relief::TemplateSyntaxMode;
 
 fn normalize_code(code: &str) -> String {
     code.lines()

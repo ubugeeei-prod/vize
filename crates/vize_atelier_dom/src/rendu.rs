@@ -1,19 +1,20 @@
 //! DOM/VDOM emission from the frontend-neutral Rendu artifact.
 
-use std::fmt::Write as _;
+mod property;
+mod syntax;
 
-use vize_carton::{String, source_anchor::SourceAnchor};
+use vize_carton::{String, append, source_anchor::SourceAnchor};
 use vize_rendu::{
-    RenduAttributeValue, RenduEscapeMode, RenduName, RenduNode, RenduNodeId, RenduProperty,
-    RenduRoot, RenduSpan,
+    RenduEscapeMode, RenduNode, RenduNodeId, RenduProperty, RenduProvenance, RenduRoot, RenduSpan,
 };
+
+use self::syntax::quote;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct RenduDomMapping {
     pub generated_start: usize,
     pub generated_end: usize,
     pub source: RenduSpan,
-    /// Stable compilation source identity behind the Rendu-local span.
     pub anchor: Option<SourceAnchor>,
 }
 
@@ -30,20 +31,20 @@ pub fn compile_rendu(root: &RenduRoot) -> RenduDomOutput {
         output: RenduDomOutput::default(),
     };
     emitter.output.code.push_str(
-        "import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, h as _h, renderList as _renderList, renderSlot as _renderSlot, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, toDisplayString as _toDisplayString, withDirectives as _withDirectives } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return ",
+        "import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, h as _h, renderList as _renderList, renderSlot as _renderSlot, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, toDisplayString as _toDisplayString, vModelText as _vModelText, vShow as _vShow, withDirectives as _withDirectives, withModifiers as _withModifiers } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return ",
     );
     emitter.emit_nodes(root.entry());
     emitter.output.code.push_str("\n}\n");
     emitter.output
 }
 
-struct DomEmitter<'a> {
-    root: &'a RenduRoot,
-    output: RenduDomOutput,
+pub(super) struct DomEmitter<'a> {
+    pub(super) root: &'a RenduRoot,
+    pub(super) output: RenduDomOutput,
 }
 
 impl DomEmitter<'_> {
-    fn emit_nodes(&mut self, nodes: &[RenduNodeId]) {
+    pub(super) fn emit_nodes(&mut self, nodes: &[RenduNodeId]) {
         match nodes {
             [] => self.output.code.push_str("null"),
             [node] => self.emit_node(*node),
@@ -55,7 +56,7 @@ impl DomEmitter<'_> {
         }
     }
 
-    fn emit_node_list(&mut self, nodes: &[RenduNodeId]) {
+    pub(super) fn emit_node_list(&mut self, nodes: &[RenduNodeId]) {
         for (index, node) in nodes.iter().enumerate() {
             if index > 0 {
                 self.output.code.push_str(", ");
@@ -78,7 +79,7 @@ impl DomEmitter<'_> {
                 properties,
                 children,
                 ..
-            } => self.emit_vnode(tag, false, properties, children),
+            } => self.emit_vnode(tag, properties, children),
             RenduNode::Component {
                 name,
                 properties,
@@ -88,11 +89,11 @@ impl DomEmitter<'_> {
                 self.output.code.push_str("_h(");
                 self.emit_component_name(name);
                 self.output.code.push_str(", ");
-                self.emit_properties(properties);
-                self.output.code.push_str(", [");
-                self.emit_node_list(children);
-                self.output.code.push_str("])");
-                self.wrap_directives(generated_start, properties);
+                self.emit_properties(properties, true);
+                self.output.code.push_str(", ");
+                self.emit_component_slots(children);
+                self.output.code.push(')');
+                self.wrap_directives(generated_start, properties, true);
             }
             RenduNode::SlotOutlet {
                 name,
@@ -101,9 +102,9 @@ impl DomEmitter<'_> {
                 ..
             } => {
                 self.output.code.push_str("_renderSlot(_ctx.$slots, ");
-                self.emit_name(name);
+                self.emit_name_value(name);
                 self.output.code.push_str(", ");
-                self.emit_properties(properties);
+                self.emit_properties(properties, false);
                 self.output.code.push_str(", () => [");
                 self.emit_node_list(fallback);
                 self.output.code.push_str("])");
@@ -126,30 +127,13 @@ impl DomEmitter<'_> {
                 quote(&mut self.output.code, value);
                 self.output.code.push(')');
             }
-            RenduNode::If { branches, .. } => {
-                for (index, branch) in branches.iter().enumerate() {
-                    if let Some(condition) = branch.condition {
-                        self.output.code.push('(');
-                        self.emit_expression(condition);
-                        self.output.code.push_str(") ? ");
-                    }
-                    self.emit_nodes(&branch.body);
-                    if index + 1 < branches.len() {
-                        self.output.code.push_str(" : ");
-                    }
-                }
-                if branches
-                    .last()
-                    .is_some_and(|branch| branch.condition.is_some())
-                {
-                    self.output.code.push_str(" : null");
-                }
-            }
+            RenduNode::If { branches, .. } => self.emit_if(branches),
             RenduNode::For {
                 source,
                 value,
                 key,
                 index,
+                key_expression,
                 body,
                 ..
             } => {
@@ -158,174 +142,79 @@ impl DomEmitter<'_> {
                 self.output.code.push_str(", (");
                 self.output.code.push_str(&value.pattern);
                 if let Some(key) = key {
-                    let _ = write!(self.output.code, ", {}", key.pattern);
+                    append!(self.output.code, ", {}", key.pattern);
                 }
                 if let Some(index) = index {
-                    let _ = write!(self.output.code, ", {}", index.pattern);
+                    append!(self.output.code, ", {}", index.pattern);
                 }
                 self.output.code.push_str(") => ");
-                self.emit_nodes(body);
+                if let Some(key) = key_expression {
+                    self.output.code.push_str("_h(_Fragment, { key: ");
+                    self.emit_expression(*key);
+                    self.output.code.push_str(" }, [");
+                    self.emit_node_list(body);
+                    self.output.code.push_str("])");
+                } else {
+                    self.emit_nodes(body);
+                }
                 self.output.code.push(')');
             }
             RenduNode::HoistRef { index, .. } => {
-                let _ = write!(self.output.code, "_hoisted_{index}");
+                append!(self.output.code, "_ctx._hoisted?.[{index}] ?? null");
             }
-            _ => self
-                .output
-                .code
-                .push_str("_createCommentVNode(\"unsupported Rendu node\")"),
+            _ => unreachable!("RenduNode is non-exhaustive across backend crates"),
         }
-        if let Some(span) = node.provenance().primary {
-            self.output.mappings.push(RenduDomMapping {
-                generated_start,
-                generated_end: self.output.code.len(),
-                source: span,
-                anchor: self
-                    .root
-                    .source(span.source)
-                    .and_then(|source| source.anchor()),
-            });
-        }
+        self.map(generated_start, node.provenance());
     }
 
-    fn emit_vnode(
-        &mut self,
-        tag: &str,
-        _component: bool,
-        properties: &[RenduProperty],
-        children: &[RenduNodeId],
-    ) {
+    fn emit_vnode(&mut self, tag: &str, properties: &[RenduProperty], children: &[RenduNodeId]) {
         let start = self.output.code.len();
         self.output.code.push_str("_h(");
         quote(&mut self.output.code, tag);
         self.output.code.push_str(", ");
-        self.emit_properties(properties);
+        self.emit_properties(properties, false);
         self.output.code.push_str(", [");
         self.emit_node_list(children);
         self.output.code.push_str("])");
-        self.wrap_directives(start, properties);
+        self.wrap_directives(start, properties, false);
     }
 
-    fn wrap_directives(&mut self, vnode_start: usize, properties: &[RenduProperty]) {
-        let directives: Vec<_> = properties
-            .iter()
-            .filter_map(|property| match property {
-                RenduProperty::Directive(directive) => Some(directive),
-                _ => None,
-            })
-            .collect();
-        if directives.is_empty() {
-            return;
-        }
-        const PREFIX: &str = "_withDirectives(";
-        self.output.code.insert_str(vnode_start, PREFIX);
-        for mapping in &mut self.output.mappings {
-            if mapping.generated_start >= vnode_start {
-                mapping.generated_start += PREFIX.len();
-                mapping.generated_end += PREFIX.len();
+    fn emit_if(&mut self, branches: &[vize_rendu::RenduIfBranch]) {
+        for (index, branch) in branches.iter().enumerate() {
+            if let Some(condition) = branch.condition {
+                self.output.code.push('(');
+                self.emit_expression(condition);
+                self.output.code.push_str(") ? ");
+            }
+            self.emit_nodes(&branch.body);
+            if index + 1 < branches.len() {
+                self.output.code.push_str(" : ");
             }
         }
-        self.output.code.push_str(", [");
-        for (index, directive) in directives.iter().enumerate() {
-            if index > 0 {
-                self.output.code.push_str(", ");
-            }
-            self.output.code.push_str("[_resolveDirective(");
-            quote(&mut self.output.code, &directive.name);
-            self.output.code.push(')');
-            if let Some(expression) = directive.expression {
-                self.output.code.push_str(", ");
-                self.emit_expression(expression);
-            }
-            self.output.code.push(']');
+        if branches
+            .last()
+            .is_some_and(|branch| branch.condition.is_some())
+        {
+            self.output.code.push_str(" : null");
         }
-        self.output.code.push_str("])");
     }
 
-    fn emit_properties(&mut self, properties: &[RenduProperty]) {
-        self.output.code.push_str("{");
-        let mut first = true;
-        for property in properties {
-            match property {
-                RenduProperty::Attribute(attribute) => {
-                    comma(&mut self.output.code, &mut first);
-                    self.emit_name(&attribute.name);
-                    self.output.code.push_str(": ");
-                    match &attribute.value {
-                        None => self.output.code.push_str("true"),
-                        Some(RenduAttributeValue::Static(value)) => {
-                            quote(&mut self.output.code, value)
-                        }
-                        Some(RenduAttributeValue::Expression(expression)) => {
-                            self.emit_expression(*expression)
-                        }
-                    }
+    pub(super) fn map(&mut self, start: usize, provenance: &RenduProvenance) {
+        let end = self.output.code.len();
+        self.output
+            .mappings
+            .extend(provenance.spans().map(|source| {
+                RenduDomMapping {
+                    generated_start: start,
+                    generated_end: end,
+                    source,
+                    anchor: self
+                        .root
+                        .source(source.source)
+                        .and_then(|source| source.anchor()),
                 }
-                RenduProperty::Spread { expression, .. } => {
-                    comma(&mut self.output.code, &mut first);
-                    self.output.code.push_str("...");
-                    self.emit_expression(*expression);
-                }
-                RenduProperty::Directive(_) => {}
-            }
-        }
-        self.output.code.push('}');
+            }));
     }
-
-    fn emit_component_name(&mut self, name: &RenduName) {
-        match name {
-            RenduName::Static(name) => {
-                self.output.code.push_str("_resolveComponent(");
-                quote(&mut self.output.code, name);
-                self.output.code.push(')');
-            }
-            RenduName::Dynamic(expression) => self.emit_expression(*expression),
-        }
-    }
-
-    fn emit_name(&mut self, name: &RenduName) {
-        match name {
-            RenduName::Static(name) => quote(&mut self.output.code, name),
-            RenduName::Dynamic(expression) => {
-                self.output.code.push('[');
-                self.emit_expression(*expression);
-                self.output.code.push(']');
-            }
-        }
-    }
-
-    fn emit_expression(&mut self, id: vize_rendu::RenduExpressionId) {
-        self.output.code.push_str(
-            &self
-                .root
-                .expression(id)
-                .expect("validated Rendu expression")
-                .code,
-        );
-    }
-}
-
-fn comma(output: &mut String, first: &mut bool) {
-    if *first {
-        *first = false;
-    } else {
-        output.push_str(", ");
-    }
-}
-
-fn quote(output: &mut String, value: &str) {
-    output.push('"');
-    for character in value.chars() {
-        match character {
-            '"' => output.push_str("\\\""),
-            '\\' => output.push_str("\\\\"),
-            '\n' => output.push_str("\\n"),
-            '\r' => output.push_str("\\r"),
-            '\t' => output.push_str("\\t"),
-            character => output.push(character),
-        }
-    }
-    output.push('"');
 }
 
 #[cfg(test)]

@@ -102,6 +102,13 @@ catalogs:
     oxc-transform:
       specifier: 0.130.0
       version: 0.130.0
+  source-maps:
+    '@jridgewell/remapping':
+      specifier: 2.3.5
+      version: 2.3.5
+    '@jridgewell/trace-mapping':
+      specifier: 0.3.31
+      version: 0.3.31
   repo-tooling:
     '@iarna/toml':
       specifier: 2.2.5
@@ -612,11 +619,23 @@ importers:
         specifier: workspace:*
         version: link:../../../cli
 
+  npm/builder/source-map:
+    dependencies:
+      '@jridgewell/remapping':
+        specifier: catalog:source-maps
+        version: 2.3.5
+      '@jridgewell/trace-mapping':
+        specifier: catalog:source-maps
+        version: 0.3.31
+
   npm/builder/unplugin:
     dependencies:
       '@vizejs/native':
         specifier: workspace:*
         version: link:../../native
+      '@vizejs/source-map':
+        specifier: workspace:*
+        version: link:../source-map
       oxc-transform:
         specifier: catalog:oxc
         version: 0.130.0
@@ -715,6 +734,9 @@ importers:
       '@vizejs/native':
         specifier: workspace:*
         version: link:../../native
+      '@vizejs/source-map':
+        specifier: workspace:*
+        version: link:../source-map
       tinyglobby:
         specifier: catalog:repo-tooling
         version: 0.2.16
@@ -722,6 +744,9 @@ importers:
         specifier: workspace:*
         version: link:../../cli
     devDependencies:
+      '@jridgewell/trace-mapping':
+        specifier: catalog:source-maps
+        version: 0.3.31
       '@types/node':
         specifier: catalog:typescript
         version: 25.9.2

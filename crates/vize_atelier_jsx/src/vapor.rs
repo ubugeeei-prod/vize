@@ -13,10 +13,10 @@
 //! of being `_ctx.`-prefixed, matching `vue-jsx-vapor`.
 
 use vize_atelier_core::lane::transform;
-use vize_atelier_core::options::TransformOptions;
 use vize_atelier_vapor::{VaporGenerateOptions, generate_vapor_with_options, transform_to_ir};
 use vize_carton::{Bump, String};
 use vize_croquis::Croquis;
+use vize_relief::TransformOptions;
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::scoped::{ScopedStyle, build_scoped_style};

@@ -1,6 +1,6 @@
 #![allow(clippy::disallowed_macros, clippy::disallowed_types)]
 
-use vize_atelier_core::TemplateSyntaxMode;
+use vize_relief::TemplateSyntaxMode;
 
 pub(crate) fn resolve_template_syntax(
     template_syntax: Option<&str>,

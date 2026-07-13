@@ -1,6 +1,9 @@
 //! Typed providers and their constrained execution context.
 
+mod erased;
 mod observations;
+
+pub(crate) use erased::{ErasedProvider, ProviderAdapter};
 
 use std::{
     any::{Any, TypeId, type_name},
@@ -9,9 +12,9 @@ use std::{
 use vize_carton::FxHashMap;
 
 use crate::{
-    CachePolicy, CompilationInput, CompilationInputs, ExecutionCounters, ExecutionTrace, InputId,
-    Product, ProductId, ProductRequest, ProviderError, ProviderObservation, Shared, SourceId,
-    SourceSnapshot, SourceStore, TraceEvent,
+    CompilationInput, CompilationInputs, ExecutionCounters, ExecutionTrace, InputId, Product,
+    ProductId, ProductRequest, ProviderError, ProviderObservation, Shared, SourceId, SourceInput,
+    SourceInputId, SourceSnapshot, SourceStore, TraceEvent,
 };
 
 pub(crate) type ErasedValue = Shared<dyn Any + Send + Sync>;
@@ -96,6 +99,11 @@ impl<'a> PlanningContext<'a> {
     pub fn input<I: CompilationInput>(&self) -> Option<&I::Value> {
         self.inputs.get::<I>()
     }
+
+    /// Read an open typed option scoped to the source being planned.
+    pub fn source_input<I: SourceInput>(&self) -> Option<&I::Value> {
+        self.inputs.get_source::<I>(self.source.id())
+    }
 }
 
 /// Open contract for constructing one typed product.
@@ -113,6 +121,16 @@ pub trait Provider: Send + Sync + 'static {
     /// or execution context. The declaration itself must not depend on input
     /// values.
     fn input_dependencies(&self) -> Vec<InputId> {
+        Vec::new()
+    }
+
+    /// Source-scoped inputs that can affect this provider.
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        Vec::new()
+    }
+
+    /// Additional raw source revisions read without requesting a product.
+    fn source_dependencies(&self, _context: &PlanningContext<'_>) -> Vec<SourceId> {
         Vec::new()
     }
 
@@ -230,6 +248,11 @@ impl<'a> ProviderContext<'a> {
         self.inputs.get::<I>()
     }
 
+    /// Read the typed option attached to the current source identity.
+    pub fn source_input<I: SourceInput>(&self) -> Option<&I::Value> {
+        self.inputs.get_source::<I>(self.source.id())
+    }
+
     /// Query a declared, already-planned typed dependency.
     pub fn get<P: Product>(&mut self) -> Result<Shared<P::Value>, ProviderError> {
         let dependency = ProductId::of::<P>();
@@ -289,51 +312,5 @@ impl<'a> ProviderContext<'a> {
                     dependency: request,
                 })?;
         Shared::downcast::<P::Value>(value).map_err(|_| ProviderError::RequestTypeMismatch(request))
-    }
-}
-
-pub(crate) trait ErasedProvider: Send + Sync {
-    fn cache_policy(&self) -> CachePolicy;
-
-    fn input_dependencies(&self) -> Vec<InputId>;
-
-    fn supports(&self, context: &PlanningContext<'_>) -> bool;
-
-    fn dependency_requests(&self, context: &PlanningContext<'_>) -> Vec<ProductRequest>;
-
-    fn provide(&self, context: &mut ProviderContext<'_>) -> Result<ErasedValue, ProviderError>;
-}
-
-pub(crate) struct ProviderAdapter<T: Provider> {
-    provider: T,
-}
-
-impl<T: Provider> ProviderAdapter<T> {
-    pub(crate) const fn new(provider: T) -> Self {
-        Self { provider }
-    }
-}
-
-impl<T: Provider> ErasedProvider for ProviderAdapter<T> {
-    fn cache_policy(&self) -> CachePolicy {
-        T::Product::CACHE_POLICY
-    }
-
-    fn input_dependencies(&self) -> Vec<InputId> {
-        self.provider.input_dependencies()
-    }
-
-    fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        self.provider.supports(context)
-    }
-
-    fn dependency_requests(&self, context: &PlanningContext<'_>) -> Vec<ProductRequest> {
-        self.provider.dependency_requests(context)
-    }
-
-    fn provide(&self, context: &mut ProviderContext<'_>) -> Result<ErasedValue, ProviderError> {
-        self.provider
-            .provide(context)
-            .map(|value| Shared::new(value) as ErasedValue)
     }
 }

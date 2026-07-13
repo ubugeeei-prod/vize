@@ -1,5 +1,6 @@
 //! Virtual TypeScript generation from Vue SFCs and `.art.vue` files.
 
+#[cfg(test)]
 use tower_lsp::lsp_types::Url;
 
 use super::super::{DiagnosticService, SourceMapping, VirtualTsResult};
@@ -30,12 +31,26 @@ pub(super) fn rewrite_vue_imports(code: &str) -> (std::string::String, ImportSou
 }
 
 impl DiagnosticService {
+    #[cfg(test)]
     pub(in crate::ide) fn virtual_ts_result_from_corsa_vue_document(
         uri: &Url,
         content: &str,
         opened: CorsaVueVirtualDocument,
     ) -> Option<(std::string::String, VirtualTsResult)> {
-        let metadata = Self::virtual_ts_metadata(uri, content, &opened.pre_rewrite_code)?;
+        let artifact = crate::ide::sfc_descriptor_compatibility(content, uri)?;
+        Self::virtual_ts_result_from_corsa_vue_document_and_descriptor(
+            content,
+            artifact.descriptor()?,
+            opened,
+        )
+    }
+
+    pub(in crate::ide) fn virtual_ts_result_from_corsa_vue_document_and_descriptor(
+        content: &str,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+        opened: CorsaVueVirtualDocument,
+    ) -> Option<(std::string::String, VirtualTsResult)> {
+        let metadata = Self::virtual_ts_metadata(content, descriptor, &opened.pre_rewrite_code)?;
         Some((
             opened.request_uri.to_string(),
             VirtualTsResult {
@@ -80,7 +95,8 @@ impl DiagnosticService {
         )
         .ok()?;
         let code = generated.pre_rewrite_code;
-        let metadata = Self::virtual_ts_metadata(uri, content, &code)?;
+        let artifact = crate::ide::sfc_descriptor_compatibility(content, uri)?;
+        let metadata = Self::virtual_ts_metadata(content, artifact.descriptor()?, &code)?;
 
         // The generated code is the same rewritten `.vue.ts` document that
         // CorsaBridge syncs for editor sessions; this helper keeps the mapping
@@ -98,23 +114,13 @@ impl DiagnosticService {
     }
 
     fn virtual_ts_metadata(
-        uri: &Url,
         content: &str,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
         pre_rewrite_code: &str,
     ) -> Option<VirtualTsMetadata> {
-        use vize_atelier_sfc::{
-            SfcParseOptions,
-            croquis::{SfcCroquisOptions, script_content_for_descriptor},
-            parse_sfc,
-        };
-
-        let options = SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-        let descriptor = parse_sfc(content, options).ok()?;
+        use vize_atelier_sfc::croquis::{SfcCroquisOptions, script_content_for_descriptor};
         let (script_content, script_offset) =
-            script_content_for_descriptor(&descriptor, SfcCroquisOptions::full());
+            script_content_for_descriptor(descriptor, SfcCroquisOptions::full());
         let sfc_script_start_line = if script_content.as_ref().is_some_and(|s| s.is_empty()) {
             1
         } else {

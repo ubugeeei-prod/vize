@@ -94,7 +94,7 @@ impl SfcTypeCheckResult {
 }
 
 /// Type checking options.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct SfcTypeCheckOptions {
     /// Filename for error reporting
     pub filename: String,

@@ -1,9 +1,8 @@
 //! Compiler options.
-
-use vize_carton::String;
+#![allow(deprecated)]
+mod binding_compat;
 use vize_carton::config::VueVersion;
-pub use vize_carton::{BindingMetadata, BindingType};
-
+use vize_carton::{FxHashMap, String};
 /// Parse mode for the tokenizer
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum ParseMode {
@@ -174,6 +173,135 @@ impl Default for TransformOptions {
             custom_renderer: false,
             experimental_patterned_template: false,
             dialect: VueVersion::V3,
+        }
+    }
+}
+
+/// Binding metadata from script setup
+#[deprecated(note = "binding semantics moved to vize_carton::BindingMetadata")]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BindingMetadata {
+    /// Setup bindings with their types
+    pub bindings: FxHashMap<String, BindingType>,
+    /// Props aliases (local name -> prop key)
+    /// For destructured props with aliases like: const { foo: bar } = defineProps()
+    /// This maps "bar" -> "foo"
+    pub props_aliases: FxHashMap<String, String>,
+    /// Whether these bindings are from script setup
+    /// If false, components/directives won't be resolved from these bindings
+    pub is_script_setup: bool,
+}
+
+/// Binding type from script setup.
+///
+/// Optimized with `#[repr(u8)]` for minimal memory footprint.
+/// Each variant fits in a single byte, reducing cache pressure
+/// when stored in large collections.
+#[deprecated(note = "binding semantics moved to vize_carton::BindingType")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+#[repr(u8)]
+pub enum BindingType {
+    /// Variable declared with let in setup
+    SetupLet = 0,
+    /// Const binding that may be a ref
+    SetupMaybeRef = 1,
+    /// Const binding that is definitely a ref
+    SetupRef = 2,
+    /// Reactive const binding (reactive(), shallowReactive())
+    SetupReactiveConst = 3,
+    /// Const binding (functions, classes, non-reactive values)
+    SetupConst = 4,
+    /// Binding from props
+    Props = 5,
+    /// Binding from props with alias
+    PropsAliased = 6,
+    /// Data binding from data()
+    Data = 7,
+    /// Options API binding (computed, methods, inject)
+    Options = 8,
+    /// Literal constant (string, number, boolean literals)
+    LiteralConst = 9,
+    /// Universal JavaScript global (works in all runtimes: console, Math, Object, Array, JSON, etc.)
+    JsGlobalUniversal = 10,
+    /// Browser-only JavaScript global (window, document, navigator, localStorage, etc.)
+    /// WARNING: Not available in SSR server context
+    JsGlobalBrowser = 11,
+    /// Node.js-only JavaScript global (process, Buffer, __dirname, __filename, require, etc.)
+    /// WARNING: Not available in browser context
+    JsGlobalNode = 12,
+    /// Deno-only JavaScript global (Deno namespace)
+    JsGlobalDeno = 13,
+    /// Bun-only JavaScript global (Bun namespace)
+    JsGlobalBun = 14,
+    /// Vue global ($refs, $emit, $slots, $attrs, $el, etc.)
+    VueGlobal = 15,
+    /// Imported from external module
+    ExternalModule = 16,
+}
+
+impl BindingType {
+    /// Short display code for VIR output (zero allocation)
+    /// - st = state (ref, needs .value)
+    /// - ist = implicit state (reactive, props - no .value needed)
+    /// - drv = derived (computed)
+    #[inline]
+    pub const fn to_vir(self) -> &'static str {
+        match self {
+            Self::SetupLet => "let",
+            Self::SetupMaybeRef => "st?",
+            Self::SetupRef => "st",
+            Self::SetupReactiveConst => "ist",
+            Self::SetupConst => "c",
+            Self::Props => "ist",        // props are implicit state (no .value)
+            Self::PropsAliased => "ist", // aliased props too
+            Self::Data => "data",
+            Self::Options => "opt",
+            Self::LiteralConst => "lit",
+            Self::JsGlobalUniversal => "~js",
+            Self::JsGlobalBrowser => "!js",
+            Self::JsGlobalNode => "#js",
+            Self::JsGlobalDeno => "#deno",
+            Self::JsGlobalBun => "#bun",
+            Self::VueGlobal => "vue",
+            Self::ExternalModule => "ext",
+        }
+    }
+
+    /// Render-function prefix for this binding in non-inline (function) mode,
+    /// matching `@vue/compiler-core`'s `rewriteIdentifier`:
+    ///
+    /// - setup-* bindings and `literal-const` → `$setup.`
+    /// - `props` → `$props.`
+    /// - `data` → `$data.`
+    /// - `options` (computed / methods / inject) → `$options.`
+    ///
+    /// `props-aliased` is intentionally not handled here: it rewrites to
+    /// `$props['<original-key>']` and must be resolved via the props-alias map
+    /// by the caller. Globals/external bindings fall back to `_ctx.` at the call
+    /// site and are not represented here.
+    #[inline]
+    pub const fn non_inline_template_prefix(self) -> &'static str {
+        match self {
+            Self::SetupLet
+            | Self::SetupMaybeRef
+            | Self::SetupRef
+            | Self::SetupReactiveConst
+            | Self::SetupConst
+            | Self::LiteralConst => "$setup.",
+            Self::Props | Self::PropsAliased => "$props.",
+            Self::Data => "$data.",
+            Self::Options => "$options.",
+            // Globals and external-module bindings are resolved to `_ctx.` by the
+            // caller; this arm keeps the match exhaustive and conservative.
+            Self::JsGlobalUniversal
+            | Self::JsGlobalBrowser
+            | Self::JsGlobalNode
+            | Self::JsGlobalDeno
+            | Self::JsGlobalBun
+            | Self::VueGlobal
+            | Self::ExternalModule => "$setup.",
         }
     }
 }

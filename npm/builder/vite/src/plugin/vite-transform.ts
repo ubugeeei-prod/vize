@@ -5,10 +5,11 @@ import type { TransformResult } from "vite";
 
 import type { VizePluginState } from "./state.ts";
 import { applyDefineReplacements } from "../transform.ts";
+import { parseSourceMap } from "@vizejs/source-map";
 
 type TransformOutput = { code: string; map?: unknown };
-type OxcOptions = { lang: "ts"; sourcemap: false; target: "esnext" };
-type EsbuildOptions = { loader: "ts"; sourcemap: false; target: "esnext" };
+type OxcOptions = { lang: "ts"; sourcemap: boolean; target: "esnext" };
+type EsbuildOptions = { loader: "ts"; sourcemap: boolean; target: "esnext" };
 type TransformWithOxc = (
   code: string,
   id: string,
@@ -26,20 +27,20 @@ interface ViteTransformApi {
 }
 
 export function createVirtualTypeScriptTransformer(viteApi: ViteTransformApi) {
-  return async (code: string, id: string): Promise<TransformOutput> => {
+  return async (code: string, id: string, sourceMap = false): Promise<TransformOutput> => {
     // This pass only strips TypeScript from Vize virtual Vue modules.
     // Syntax lowering belongs to Vite's normal build target transform.
     if (typeof viteApi.transformWithOxc === "function") {
       return viteApi.transformWithOxc(code, id, {
         lang: "ts",
-        sourcemap: false,
+        sourcemap: sourceMap,
         target: "esnext",
       });
     }
     if (typeof viteApi.transformWithEsbuild === "function") {
       return viteApi.transformWithEsbuild(code, id, {
         loader: "ts",
-        sourcemap: false,
+        sourcemap: sourceMap,
         target: "esnext",
       });
     }
@@ -173,13 +174,19 @@ export async function transformVizeVirtualModule(
   forceTypeScriptTransform = false,
 ): Promise<TransformResult | null> {
   const needsTsTransform = forceTypeScriptTransform || needsVirtualTypeScriptTransform(code);
+  const sourceMap = state.mergedOptions.sourceMap ?? !state.isProduction;
   try {
-    const result = needsTsTransform ? await transformVirtualTypeScript(code, realPath) : { code };
+    const result = needsTsTransform
+      ? await transformVirtualTypeScript(code, realPath, sourceMap)
+      : { code };
     let transformed = result.code;
+    let map = result.map;
     if (transformed.includes("import.meta.")) {
-      transformed = applyDefineReplacements(transformed, getVirtualModuleDefines(state, ssr));
+      const replaced = applyDefineReplacements(transformed, getVirtualModuleDefines(state, ssr));
+      if (replaced !== transformed) map = undefined;
+      transformed = replaced;
     }
-    return transformed === code ? null : { code: transformed, map: null };
+    return transformed === code ? null : { code: transformed, map: parseSourceMap(map) };
   } catch (e: unknown) {
     state.logger.error(`transformWithOxc failed for ${realPath}:`, e);
     let dumpPath: string | null = null;

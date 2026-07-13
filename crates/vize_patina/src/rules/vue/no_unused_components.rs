@@ -36,10 +36,9 @@ use oxc_ast::ast::{IdentifierReference, ImportDeclaration, ImportDeclarationSpec
 use oxc_ast_visit::{Visit, walk::walk_ts_type};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{CompactString, FxHashSet, String, ToCompactString};
+use vize_carton::{BindingType, CompactString, FxHashSet, String, ToCompactString};
 use vize_croquis::naming::{is_pascal_case, to_pascal_case};
 use vize_croquis::{Croquis, ScopeData};
-use vize_relief::BindingType;
 use vize_relief::RootNode;
 
 static META: RuleMeta = RuleMeta {

@@ -243,14 +243,18 @@ The plugin intercepts `.vue` file requests and compiles them using Vize's Rust-n
 
 ```
 .vue file
-  → Armature (Parser)          — Tokenizes and parses the SFC structure
-  → Croquis (Semantic Analysis) — Analyzes template expressions and bindings
-  → Atelier (Compilation)       — Generates optimized JavaScript output
-  → Vitrine (NAPI Binding)      — Delivers the result to Node.js
-  → Vite module graph            — Served as a virtual module
+  → Atlas Compilation          — Owns source identity and plans requested products
+  → SFC descriptor + Relief    — Decomposes the container and preserves template syntax
+  → Croquis when required      — Resolves script/template binding meaning
+  → Rendu                      — Carries frontend-neutral render intent
+  → DOM / SSR / Vapor backend  — Emits the requested target
+  → Vitrine + Vite             — Delivers the module, CSS, diagnostics, and source map
 ```
 
-The same semantic analysis layer is reused by linting and type checking. See
+Batch compilation registers all SFCs in one immutable snapshot. A script-only
+SFC does not request template products, and multiple consumers share cached
+upstream products. The same semantic product is reused by linting and type
+checking when those recipes request it. See
 [Static Analysis](./static-analysis.md) for the diagnostic side of the pipeline.
 
 ## Comparison

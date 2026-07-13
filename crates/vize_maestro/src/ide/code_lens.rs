@@ -14,23 +14,26 @@ pub struct CodeLensService;
 impl CodeLensService {
     /// Get code lenses for a document.
     pub fn get_lenses(content: &str, uri: &Url) -> Vec<CodeLens> {
+        crate::ide::sfc_descriptor_compatibility(content, uri)
+            .and_then(|artifact| {
+                artifact
+                    .descriptor()
+                    .map(|descriptor| Self::get_lenses_from_descriptor(descriptor))
+            })
+            .unwrap_or_default()
+    }
+
+    pub(crate) fn get_lenses_from_descriptor(
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    ) -> Vec<CodeLens> {
         let mut lenses = Vec::new();
-
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-            return lenses;
-        };
 
         // Add lenses for script setup bindings
         if let Some(ref script_setup) = descriptor.script_setup {
             Self::collect_binding_lenses(
                 &script_setup.content,
                 script_setup.loc.start_line as u32,
-                &descriptor,
+                descriptor,
                 &mut lenses,
             );
         }
@@ -40,7 +43,7 @@ impl CodeLensService {
             Self::collect_binding_lenses(
                 &script.content,
                 script.loc.start_line as u32,
-                &descriptor,
+                descriptor,
                 &mut lenses,
             );
         }

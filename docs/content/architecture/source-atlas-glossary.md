@@ -34,7 +34,7 @@ trace are the source of observability.
 | Relief     | Owned/source-faithful Vue-template syntax: authored shape and locations.                       |
 | Croquis    | Owned/frontend-neutral semantic facts: identity, scopes, bindings, usage, and reactivity.      |
 | Flow       | Frontend-neutral single-file control/data/effect graph with graph analyses.                    |
-| Croquis CF | Separately requested cross-file module/component aggregation; not the Flow graph.              |
+| Croquis CF | Separately requested cross-file ownership: a lightweight project index and a distinct full analyzer product; neither is Flow. |
 | Rendu      | Owned/frontend-neutral structured render HIR consumed by DOM, SSR, Vapor, and custom backends. |
 | Virtual TS | Canon's mapped typecheck projection; a consumer product, not the canonical IR.                 |
 | DOM output | JavaScript module and mappings emitted from Rendu.                                             |

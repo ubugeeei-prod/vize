@@ -1,17 +1,20 @@
 //! Vapor mode template compilation.
 
 mod output;
+mod shared;
+
+pub(crate) use shared::compile_template_block_vapor_from_syntax;
 
 use output::{
     VaporTemplateModule, is_render_signature, rewrite_vapor_import, vapor_module_sections,
 };
 
 use super::string_tracking::{StringTrackState, count_braces_with_state};
-use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_vapor::{
     VaporCompilerOptions, compile_vapor_with_template_syntax_and_diagnostics,
 };
 use vize_carton::{Bump, String, ToCompactString};
+use vize_relief::TemplateSyntaxMode;
 
 use crate::{
     compile::fallbacks::record_unsupported_vapor_shape,

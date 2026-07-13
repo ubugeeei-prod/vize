@@ -15,15 +15,15 @@ For the new multi-source / multi-target architecture, see the
 treating SFC blocks, templates, JSX/TSX, semantics, Flow, Rendu, Virtual TS,
 DOM/VDOM, SSR, Vapor, linting, and typechecking as peer typed products.
 
-## Canary Graph Relationship Map
+## Artifact Graph Relationship Map
 
-The graph-native canary enters through the hidden `vize graph` command. Existing
-`build`, `lint`, `check`, Vite, Nuxt, editor, NAPI, and WASM entry points remain
-on their production paths until their incremental cutover.
+The hidden `vize graph` command exposes the plan and trace, while `build`,
+`lint`, `check`, Vite, Nuxt, editor, NAPI, and WASM entry points request the
+same typed products through their production recipes.
 
 ```mermaid
 graph TD
-    Canary["vize graph<br/>hidden canary command"] --> Atlas["vize_atlas<br/>typed compilation graph"]
+    Canary["vize graph<br/>plan/trace diagnostic"] --> Atlas["vize_atlas<br/>typed compilation graph"]
 
     Atlas --> Sfc["vize_atelier_sfc<br/>SFC providers"]
     Atlas --> Jsx["vize_atelier_jsx<br/>JSX / TSX providers"]
@@ -86,10 +86,9 @@ flowchart LR
 8. **Tool products** — Patina diagnostics and Canon Virtual TS request the
    shared semantic product; they do not build Rendu unless another root needs it.
 
-The backend crates also retain legacy frontend-coupled compilation entry points;
-those paths are not represented by this graph and will be removed or migrated
-incrementally. Within the canary, the executable contract is negative as well
-as positive: TSX render/lint/type closures never construct Relief,
+The backend crates retain legacy frontend-coupled entry points only for public
+compatibility; production recipes do not invoke them. The executable contract
+is negative as well as positive: TSX render/lint/type closures never construct Relief,
 lint/typecheck closures never construct Rendu, and multi-root requests execute
 shared upstream products once.
 
@@ -99,11 +98,10 @@ The broader design and measurements are documented in
 ## Tool Lanes
 
 Beyond compilation, Vize provides additional tools that reuse parsing and
-analysis infrastructure. In the current canary, the graph-native Patina
-semantic report and Canon Virtual TS recipe share Croquis, Flow, and Atlas
-source identity without sharing one frontend parser AST. Maestro, Glyph,
-editor integrations, and other production tool entry points have not yet been
-migrated to Atlas recipes.
+analysis infrastructure. Patina and Canon share Croquis, Flow, and Atlas source
+identity without sharing one frontend parser AST. Maestro keeps a URI-keyed
+compilation alive across document revisions, while Glyph and Inspector request
+only their own roots from immutable snapshots.
 
 For type checking, `vize_canon` adds one more step: it generates virtual TypeScript from Vue SFCs and asks Corsa project sessions from [`corsa-bind`](https://github.com/ubugeeei/corsa-bind) for native diagnostics, then maps those results back onto the original files.
 
@@ -121,9 +119,10 @@ parity, benchmark, and readiness evidence expected for review.
 | AST           | `vize_relief`        | AST node definitions, error types, compiler options      |
 | Parsing       | `vize_armature`      | Tokenizer + recursive descent parser                     |
 | Analysis      | `vize_croquis`       | Semantic analysis, scope tracking, binding detection     |
-| Analysis      | `vize_croquis_cf`    | Opt-in cross-file semantic and dependency aggregation    |
+| Analysis      | `vize_croquis_cf`    | Lightweight project index and full opt-in cross-file analysis |
+| Analysis      | `vize_flow`          | Single-file control, data, and effect graphs             |
 | Render        | `vize_rendu`         | Owned, indexed, frontend-neutral render HIR              |
-| Compilation   | `vize_atelier_core`  | Shared transform lane, codegen utilities, source maps    |
+| Compilation   | `vize_atelier_core`  | Narrow shared Vue-template transform/codegen helpers     |
 | Compilation   | `vize_atelier_dom`   | VDOM code generation                                     |
 | Compilation   | `vize_atelier_vapor` | Vapor mode code generation                               |
 | Compilation   | `vize_atelier_sfc`   | SFC orchestration (script + template + style + HMR)      |

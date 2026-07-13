@@ -144,8 +144,13 @@ void test("a .tsx transform carries the runtime-helper preamble and a source map
     /import \{[^}]*createElementBlock[^}]*\} from "vue"/,
     "the emitted module imports its runtime helpers",
   );
-  t.assert.equal(typeof result.map, "string", "a source map is surfaced when requested");
-  t.assert.match(String(result.map), /"version":\s*3/, "the surfaced source map is v3");
+  t.assert.equal(typeof result.map, "object", "a source map is surfaced when requested");
+  const map = result.map as { version?: number; sources?: string[] };
+  t.assert.equal(map.version, 3, "the surfaced source map is v3");
+  t.assert.ok(
+    map.sources?.some((source) => source.endsWith("App.tsx")),
+    "the composed map should retain the authored TSX source",
+  );
 });
 
 void test("a .tsx <style scoped> block emits scope-rewritten CSS through the plugin", async (t) => {

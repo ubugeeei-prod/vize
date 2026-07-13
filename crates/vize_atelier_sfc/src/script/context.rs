@@ -117,7 +117,7 @@ impl ScriptCompileContext {
         // Convert bindings
         summary.bindings.is_script_setup = true;
         for (name, binding_type) in &self.bindings.bindings {
-            summary.bindings.add(name.as_str(), *binding_type);
+            summary.bindings.add(name.as_str(), (*binding_type).into());
         }
 
         // Convert props aliases

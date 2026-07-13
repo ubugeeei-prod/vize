@@ -1,10 +1,10 @@
 //! VDOM compiler options.
 
 use serde::{Deserialize, Serialize};
-use vize_atelier_core::options::{BindingMetadata, CodegenMode};
 use vize_carton::String;
 use vize_carton::config::VueVersion;
 use vize_croquis::Croquis;
+use vize_relief::{BindingMetadata, CodegenMode};
 
 /// VDOM compiler options
 #[derive(Debug, Serialize, Deserialize)]
@@ -75,8 +75,8 @@ pub struct DomCompilerOptions {
     /// so legacy-capable builds can resolve dialect behavior. Internal-only, so
     /// it is not part of the serialized option surface.
     ///
-    /// [`ParserOptions`]: vize_atelier_core::options::ParserOptions
-    /// [`TransformOptions`]: vize_atelier_core::options::TransformOptions
+    /// [`ParserOptions`]: vize_relief::ParserOptions
+    /// [`TransformOptions`]: vize_relief::TransformOptions
     #[serde(skip)]
     pub dialect: VueVersion,
 

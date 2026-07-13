@@ -1,6 +1,7 @@
 use vize_atlas::{
-    Compilation, InvalidationPolicy, PlanError, Product, ProductId, ProductStatus, Provider,
-    ProviderContext, ProviderError, QueryError, SourceProvenance, SourceRange, SourceRevision,
+    Compilation, InvalidationPolicy, PlanError, PlanningContext, Product, ProductId, ProductStatus,
+    Provider, ProviderContext, ProviderError, QueryError, SourceProvenance, SourceRange,
+    SourceRevision,
 };
 
 struct Length;
@@ -160,4 +161,73 @@ fn source_change_stales_a_preexisting_plan() {
         compilation.execute(plan),
         Err(QueryError::StaleSourcePlan { source: stale, .. }) if stale == source
     ));
+}
+
+struct TypeScriptLengthProvider;
+
+impl Provider for TypeScriptLengthProvider {
+    type Product = Length;
+
+    fn supports(&self, context: &PlanningContext<'_>) -> bool {
+        context.source().name().ends_with(".ts")
+    }
+
+    fn provide(&self, context: &mut ProviderContext<'_>) -> Result<usize, ProviderError> {
+        Ok(context.source().text().len())
+    }
+}
+
+#[test]
+fn source_rename_preserves_identity_and_replans_provider_applicability() {
+    let mut compilation = Compilation::new();
+    compilation
+        .register_provider(TypeScriptLengthProvider)
+        .unwrap();
+    let source = compilation.add_source("a.ts", "one").unwrap();
+    compilation.query::<Length>(source).unwrap();
+
+    let report = compilation.rename_source(source, "a.vue").unwrap();
+
+    assert_eq!(compilation.source(source).unwrap().id(), source);
+    assert_eq!(compilation.source(source).unwrap().name(), "a.vue");
+    assert_eq!(report.revisions().len(), 1);
+    assert_eq!(report.evicted().len(), 1);
+    assert!(compilation.plan_for::<Length>(source).is_err());
+}
+
+#[test]
+fn source_removal_drops_embedded_descendants_and_keeps_unrelated_cache() {
+    let mut compilation = Compilation::new();
+    compilation.register_provider(LengthProvider).unwrap();
+    let parent = compilation
+        .add_source("component.vue", "<script>one</script>")
+        .unwrap();
+    let embedded = compilation
+        .add_embedded_source(
+            parent,
+            SourceRange::new(8, 11),
+            "component.vue?script",
+            "one",
+        )
+        .unwrap();
+    let unrelated = compilation.add_source("other.ts", "other").unwrap();
+    compilation.query::<Length>(parent).unwrap();
+    compilation.query::<Length>(embedded).unwrap();
+    compilation.query::<Length>(unrelated).unwrap();
+
+    let report = compilation.remove_source(parent).unwrap();
+
+    assert_eq!(
+        report.policy(),
+        InvalidationPolicy::RemovedSourceAndEmbeddedDescendants
+    );
+    assert_eq!(report.removed(), [parent, embedded]);
+    assert_eq!(report.evicted().len(), 2);
+    assert!(compilation.source(parent).is_none());
+    assert!(compilation.source(embedded).is_none());
+    assert_eq!(compilation.sources().len(), 1);
+    assert_eq!(
+        compilation.query::<Length>(unrelated).unwrap().status(),
+        ProductStatus::CacheHit
+    );
 }

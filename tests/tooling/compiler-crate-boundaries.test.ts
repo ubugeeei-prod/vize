@@ -143,4 +143,38 @@ test("representation contracts stay independent of frontend producers", () => {
   const projectProvider = read("crates/vize_croquis_cf/src/atlas.rs");
   assert.match(projectProvider, /fn dependency_requests/);
   assert.match(projectProvider, /get_for_source::<CroquisSemanticProduct>/);
+
+  const fullProvider = read("crates/vize_croquis_cf/src/atlas/analysis.rs");
+  const fullModel = read("crates/vize_croquis_cf/src/atlas/analysis/model.rs");
+  assert.match(fullProvider, /type Product = CrossFileAnalysisProduct/);
+  assert.match(fullProvider, /get_for_source::<CroquisDocumentProduct>/);
+  assert.match(fullProvider, /fn source_dependencies/);
+  assert.match(fullProvider, /CrossFileAnalyzer::/);
+  assert.match(fullModel, /const NAME: &'static str = "croquis\.cross-file-analysis"/);
+
+  for (const host of [
+    "crates/vize/src/commands/lint/cross_file.rs",
+    "crates/vize_vitrine/src/wasm/cross_file.rs",
+  ]) {
+    assert.doesNotMatch(read(host), /CrossFileAnalyzer/);
+    assert.match(read(host), /CrossFileAnalysisProduct/);
+  }
+});
+
+test("graph backend dependency boundaries are feature-gated and executable", () => {
+  for (const crateName of ["vize_atelier_dom", "vize_atelier_ssr", "vize_atelier_vapor"]) {
+    const manifest = read(`crates/${crateName}/Cargo.toml`);
+    assert.match(manifest, /default = \["legacy"\]/);
+    assert.match(manifest, /graph = \["dep:vize_atlas", "dep:vize_rendu"\]/);
+    assert.match(manifest, /legacy = \[\s*"graph",/);
+  }
+
+  const boundaryCheck = read("tools/check-graph-backend-boundaries.sh");
+  assert.match(boundaryCheck, /cargo check -p "\$crate" --no-default-features --features graph/);
+  assert.match(boundaryCheck, /cargo tree/);
+  assert.match(boundaryCheck, /vize_\(armature\|atelier_core\|croquis\|relief\)\|oxc_/);
+  assert.match(
+    read(".github/workflows/check.yml"),
+    /run: \.\/tools\/check-graph-backend-boundaries\.sh/,
+  );
 });

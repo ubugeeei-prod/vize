@@ -45,7 +45,10 @@ mod finder;
 
 pub use analyze::analyze_program as analyze_jsx_program;
 pub use atlas::{
-    JsxFlowProvider, JsxRenduProvider, JsxSemanticProvider, JsxSyntaxProduct, JsxSyntaxProvider,
+    JsxCompileArtifact, JsxCompileProduct, JsxCompileProvider, JsxCompileRequest,
+    JsxCompileSettings, JsxCompileSettingsInput, JsxCroquisProvider, JsxFlowProvider,
+    JsxRenderModule, JsxRenderModuleProduct, JsxRenderModuleProvider, JsxRenderRoot,
+    JsxRenduProvider, JsxSyntaxProduct, JsxSyntaxProvider, compile_jsx_with_atlas,
     register_atlas_providers,
 };
 
@@ -67,8 +70,9 @@ pub use span::SpanMapper;
 pub use ssr::{SsrCompileOptions, SsrComponent, SsrOutput, compile_to_ssr};
 pub use syntax::{
     JsxSyntaxAttribute, JsxSyntaxAttributeValue, JsxSyntaxBinding, JsxSyntaxBranch,
-    JsxSyntaxElement, JsxSyntaxExpression, JsxSyntaxNode, JsxSyntaxSnapshot, JsxSyntaxSpan,
-    snapshot_jsx, snapshot_jsx_named,
+    JsxSyntaxElement, JsxSyntaxExpression, JsxSyntaxNode, JsxSyntaxRootMetadata, JsxSyntaxSnapshot,
+    JsxSyntaxSpan, JsxTypecheckEmit, JsxTypecheckExpression, JsxTypecheckRoot, snapshot_jsx,
+    snapshot_jsx_named,
 };
 pub use vapor::{VaporCompileOptions, VaporComponent, VaporOutput, compile_to_vapor};
 pub use vdom::{VdomCompileOptions, VdomComponent, VdomOutput, compile_to_vdom};
@@ -171,6 +175,8 @@ impl<'a> LowerOutput<'a> {
 /// allocator used for parsing is dropped before returning, so the result only
 /// borrows `bump`.
 pub fn lower_source<'a>(bump: &'a Bump, source: &str, lang: JsxLang) -> LowerOutput<'a> {
+    #[cfg(test)]
+    syntax::record_direct_fallback();
     let allocator = oxc_allocator::Allocator::default();
     let parse_source = parse::prepare_source_for_parse(source, lang);
     let parsed = parse::parse_module(&allocator, parse_source.as_ref(), lang);

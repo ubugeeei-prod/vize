@@ -5,7 +5,9 @@
 use vize_carton::{Box, Bump, String, Vec, cstr};
 
 use crate::ir::{OperationNode, SetTextIRNode};
-use vize_atelier_core::{ExpressionNode, InterpolationNode, SimpleExpressionNode, TextNode};
+use vize_relief::{
+    ExpressionNode, InterpolationNode, SimpleExpressionNode, TemplateChildNode, TextNode,
+};
 
 /// Transform interpolation to SetTextIRNode
 pub fn transform_interpolation<'a>(
@@ -65,12 +67,11 @@ fn extract_text_values<'a>(
 }
 
 /// Merge consecutive text/interpolation nodes
-pub fn should_merge_text_nodes(children: &[vize_atelier_core::TemplateChildNode<'_>]) -> bool {
+pub fn should_merge_text_nodes(children: &[TemplateChildNode<'_>]) -> bool {
     let mut consecutive_count = 0;
     for child in children {
         match child {
-            vize_atelier_core::TemplateChildNode::Text(_)
-            | vize_atelier_core::TemplateChildNode::Interpolation(_) => {
+            TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_) => {
                 consecutive_count += 1;
                 if consecutive_count >= 2 {
                     return true;

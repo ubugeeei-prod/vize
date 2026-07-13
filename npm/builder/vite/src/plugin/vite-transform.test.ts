@@ -27,6 +27,18 @@ import {
 }
 
 {
+  const map = { version: 3, names: [], sources: ["App.vue"], mappings: "AAAA" };
+  const transform = createVirtualTypeScriptTransformer({
+    transformWithOxc: async (_code, _id, options) => {
+      assert.equal(options.sourcemap, true);
+      return { code: "const value = 1;", map };
+    },
+  });
+  const result = await transform("const value: number = 1", "/src/App.vue", true);
+  assert.deepEqual(result.map, map);
+}
+
+{
   let used = "";
   const transform = createVirtualTypeScriptTransformer({
     transformWithEsbuild: async (code, id, options) => {

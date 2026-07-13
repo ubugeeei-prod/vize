@@ -13,8 +13,7 @@ impl ReferencesService {
     pub(super) fn find_references_in_template(ctx: &IdeContext, word: &str) -> Vec<Location> {
         let mut locations = Vec::new();
 
-        let options = vize_atelier_sfc::SfcParseOptions::default();
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+        let Some(descriptor) = ctx.sfc_descriptor() else {
             return locations;
         };
 

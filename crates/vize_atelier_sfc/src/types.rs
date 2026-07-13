@@ -7,7 +7,7 @@ use std::borrow::Cow;
 use vize_carton::{FxHashMap, String};
 
 // Re-export from vize_relief to avoid duplication
-pub use vize_atelier_core::options::{BindingMetadata, BindingType};
+pub use vize_relief::{BindingMetadata, BindingType};
 
 /// SFC Descriptor - parsed result of a .vue file
 /// Uses Cow<str> for zero-copy parsing with optional ownership
@@ -424,7 +424,7 @@ pub struct SfcParseOptions {
     pub ignore_empty: bool,
 
     /// Compiler options for template
-    pub template_parse_options: Option<vize_atelier_core::options::ParserOptions>,
+    pub template_parse_options: Option<vize_relief::ParserOptions>,
 }
 
 /// Padding option for source map alignment
@@ -622,8 +622,8 @@ pub struct SfcError {
     pub loc: Option<BlockLocation>,
 }
 
-impl From<vize_atelier_core::CompilerError> for SfcError {
-    fn from(err: vize_atelier_core::CompilerError) -> Self {
+impl From<vize_relief::CompilerError> for SfcError {
+    fn from(err: vize_relief::CompilerError) -> Self {
         let mut code = vize_carton::String::default();
         use std::fmt::Write as _;
         let _ = write!(&mut code, "{:?}", err.code);

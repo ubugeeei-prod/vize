@@ -12,8 +12,8 @@ mod setup;
 use std::fmt::Write;
 
 use crate::ir::{BlockIRNode, CreateComponentIRNode, NegativeBranch, OperationNode, RootIRNode};
-use vize_atelier_core::options::BindingMetadata;
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
+use vize_relief::BindingMetadata;
 
 use context::GenerateContext;
 use helpers::generate_effect;
@@ -437,7 +437,7 @@ fn collect_root_if_templates(
 mod tests {
     use super::{generate_vapor, setup::escape_template};
     use crate::lower::transform_to_ir;
-    use vize_atelier_core::parser::parse;
+    use vize_armature::parse;
     use vize_carton::Bump;
 
     #[test]

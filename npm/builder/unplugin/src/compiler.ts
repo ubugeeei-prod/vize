@@ -8,6 +8,7 @@ import type {
   SfcCompileResultNapi,
 } from "./types.ts";
 import { generateScopeId, prependInlineStyleInjection, toStyleBlockInfo } from "./style.ts";
+import { offsetEmbeddedSourceMap, parseSourceMap, type RawSourceMap } from "@vizejs/source-map";
 
 const { compileSfc, compileJsx } = native as {
   compileSfc: (source: string, options?: Record<string, unknown>) => SfcCompileResultNapi;
@@ -76,6 +77,7 @@ export function compileVueModule(
 
   const compiled: CompiledModule = {
     code: result.code,
+    map: parseSourceMap(result.map),
     css: result.css,
     scopeId,
     hasScoped: result.hasScoped,
@@ -102,7 +104,7 @@ export function compileJsxModule(
   filePath: string,
   source: string,
   options: NormalizedVizeUnpluginOptions,
-): { code: string; map: string | null; warnings: string[] } {
+): { code: string; map: RawSourceMap | null; warnings: string[] } {
   const result = compileJsx(source, {
     filename: filePath,
     lang: filePath.endsWith(".tsx") ? "tsx" : "jsx",
@@ -122,14 +124,11 @@ export function compileJsxModule(
   // are concatenated and emitted verbatim.
   const css = (result.scopedStyles ?? []).map((style) => style.css).join("\n");
   let code = result.code;
-  // The native v3 map targets the unshifted render code, so it is dropped once
-  // the inline-style injection prepends to `code` (#1533).
-  let map = result.map ?? null;
   if (css) {
     const styleKey = result.scopedStyles[0].scopeId.replace(/^data-v-/, "");
     code = prependInlineStyleInjection(code, css, styleKey);
-    map = null;
   }
+  const map = offsetEmbeddedSourceMap(result.code, code, result.map);
 
   return {
     code,

@@ -21,7 +21,7 @@ impl CrossFileAnalyzer {
 
     /// Get analysis for a specific file.
     pub fn get_analysis(&self, file_id: FileId) -> Option<&Croquis> {
-        self.registry.get(file_id).map(|e| &e.analysis)
+        self.registry.get(file_id).map(|e| e.analysis.as_ref())
     }
 
     /// Get file path by ID.

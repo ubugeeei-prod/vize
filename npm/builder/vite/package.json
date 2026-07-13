@@ -48,11 +48,13 @@
     "test": "pnpm --dir ../../native build:debug && node src/test.ts"
   },
   "dependencies": {
+    "@vizejs/source-map": "workspace:*",
     "@vizejs/native": "workspace:*",
     "tinyglobby": "catalog:repo-tooling",
     "vize": "workspace:*"
   },
   "devDependencies": {
+    "@jridgewell/trace-mapping": "catalog:source-maps",
     "@types/node": "catalog:typescript",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",

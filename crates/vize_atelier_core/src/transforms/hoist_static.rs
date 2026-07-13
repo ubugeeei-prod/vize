@@ -1,9 +1,6 @@
 //! Static hoisting transform.
 //!
 //! Hoists static nodes to reduce runtime overhead.
-
-use vize_carton::{Box, Bump, String, ToCompactString, Vec, camelize};
-
 use crate::codegen::is_constant_simple_expression;
 use crate::lane::TransformContext;
 use crate::{
@@ -12,6 +9,7 @@ use crate::{
     SourceLocation, TemplateChildNode, TemplateTextChildNode, TextNode, VNodeCall, VNodeChildren,
     VNodeTag,
 };
+use vize_carton::{Box, Bump, String, ToCompactString, Vec, camelize};
 
 /// Check if a node is fully static (can be hoisted)
 pub fn is_static_node(node: &TemplateChildNode<'_>) -> bool {
@@ -330,6 +328,7 @@ fn create_props_expression<'a>(
                     const_type: exp.const_type,
                     loc: exp.loc.clone(),
                     js_ast: None,
+                    hoisted: None,
                     identifiers: None,
                     is_handler_key: false,
                     is_ref_transformed: false,
@@ -645,6 +644,7 @@ fn hoist_element_props<'a>(
                     const_type: exp.const_type,
                     loc: exp.loc.clone(),
                     js_ast: None,
+                    hoisted: None,
                     identifiers: None,
                     is_handler_key: false,
                     is_ref_transformed: false,

@@ -2,9 +2,9 @@
 //!
 //! Handles event modifiers and key modifiers.
 
-use vize_atelier_core::DirectiveNode;
 use vize_carton::String;
 use vize_carton::cstr;
+use vize_relief::DirectiveNode;
 
 /// Parsed event modifiers
 #[derive(Debug, Default, Clone)]

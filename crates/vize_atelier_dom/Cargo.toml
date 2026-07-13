@@ -7,16 +7,36 @@ license.workspace = true
 repository.workspace = true
 description = "Atelier DOM - The DOM compiler workshop for Vize"
 
+[features]
+default = ["legacy"]
+# The frontend-neutral Atlas provider and Rendu emitter. This boundary must not
+# acquire parser, semantic-analysis, or legacy template dependencies.
+graph = ["dep:vize_atlas", "dep:vize_rendu"]
+# Preserve the production template compiler API while its callers migrate to
+# graph products. Legacy includes graph so default builds retain every export.
+legacy = [
+  "graph",
+  "dep:vize_atelier_core",
+  "dep:vize_armature",
+  "dep:vize_croquis",
+  "dep:vize_relief",
+  "dep:phf",
+  "dep:serde",
+  "dep:thiserror",
+]
+
 [dependencies]
 vize_carton = { workspace = true }
-vize_atlas = { workspace = true }
-vize_atelier_core = { workspace = true }
-vize_croquis = { workspace = true, features = ["relief-compat"] }
-vize_rendu = { workspace = true }
+vize_atlas = { workspace = true, optional = true }
+vize_atelier_core = { workspace = true, optional = true }
+vize_armature = { workspace = true, optional = true }
+vize_croquis = { workspace = true, optional = true, features = ["relief-compat"] }
+vize_relief = { workspace = true, optional = true }
+vize_rendu = { workspace = true, optional = true }
 
-phf = { workspace = true }
-serde = { workspace = true }
-thiserror = { workspace = true }
+phf = { workspace = true, optional = true }
+serde = { workspace = true, optional = true }
+thiserror = { workspace = true, optional = true }
 
 [dev-dependencies]
 insta = { workspace = true }

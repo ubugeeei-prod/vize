@@ -300,7 +300,7 @@ pub(super) fn transform_component<'a>(
 /// Transform v-model on component (helper for transform_component)
 pub(super) fn transform_component_v_model<'a>(
     ctx: &mut TransformContext<'a>,
-    dir: &vize_atelier_core::DirectiveNode<'a>,
+    dir: &vize_relief::DirectiveNode<'a>,
     props: &mut Vec<'a, IRProp<'a>>,
 ) {
     let binding = if let Some(ref exp) = dir.exp {

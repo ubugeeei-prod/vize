@@ -55,7 +55,7 @@ pub struct ModuleEntry {
     /// Last modification time (for cache invalidation).
     pub mtime: Option<SystemTime>,
     /// Analysis result.
-    pub analysis: Croquis,
+    pub analysis: vize_atlas::Shared<Croquis>,
     /// Source code hash for change detection.
     pub source_hash: u64,
     /// Whether this is a Vue SFC.
@@ -117,9 +117,10 @@ impl ModuleRegistry {
         &mut self,
         path: impl AsRef<Path>,
         source: &str,
-        analysis: Croquis,
+        analysis: impl Into<vize_atlas::Shared<Croquis>>,
     ) -> (FileId, bool) {
         let path = path.as_ref();
+        let analysis: vize_atlas::Shared<Croquis> = analysis.into();
         let abs_path = if path.is_absolute() {
             path.to_path_buf()
         } else if let Some(ref root) = self.project_root {
@@ -127,7 +128,6 @@ impl ModuleRegistry {
         } else {
             path.to_path_buf()
         };
-
         let source_hash = hash_source(source);
 
         if let Some(&existing_id) = self.path_to_id.get(&abs_path) {

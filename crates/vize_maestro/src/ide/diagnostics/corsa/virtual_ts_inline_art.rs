@@ -26,26 +26,38 @@ fn add_inline_self_component_binding(
 }
 
 impl DiagnosticService {
+    #[cfg(test)]
     pub(in crate::ide::diagnostics) fn generate_virtual_ts_for_inline_art_variants(
         uri: &Url,
         content: &str,
         options_api: bool,
         legacy_vue2: bool,
     ) -> Vec<(usize, VirtualTsResult)> {
+        let Some(artifact) = crate::ide::sfc_descriptor_compatibility(content, uri) else {
+            return Vec::new();
+        };
+        let Some(descriptor) = artifact.descriptor() else {
+            return Vec::new();
+        };
+        Self::generate_virtual_ts_for_inline_art_variants_from_descriptor(
+            uri,
+            content,
+            descriptor,
+            options_api,
+            legacy_vue2,
+        )
+    }
+
+    pub(in crate::ide::diagnostics) fn generate_virtual_ts_for_inline_art_variants_from_descriptor(
+        uri: &Url,
+        content: &str,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+        options_api: bool,
+        legacy_vue2: bool,
+    ) -> Vec<(usize, VirtualTsResult)> {
         if uri.path().ends_with(".art.vue") || !content.contains("<art") {
             return Vec::new();
         }
-
-        let descriptor = match vize_atelier_sfc::parse_sfc(
-            content,
-            vize_atelier_sfc::SfcParseOptions {
-                filename: uri.path().to_string().into(),
-                ..Default::default()
-            },
-        ) {
-            Ok(descriptor) => descriptor,
-            Err(_) => return Vec::new(),
-        };
 
         let mut results = Vec::new();
         let mut variant_index = 0usize;

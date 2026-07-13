@@ -5,7 +5,7 @@
 use vize_carton::{Box, Bump, String, Vec};
 
 use crate::ir::{BlockIRNode, IRSlot, OperationNode, SlotOutletIRNode};
-use vize_atelier_core::{
+use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, SimpleExpressionNode, SourceLocation,
     TemplateChildNode,
 };
@@ -237,8 +237,9 @@ fn extract_expression<'a>(
 #[cfg(test)]
 mod tests {
     use super::has_v_slot;
-    use vize_atelier_core::{TemplateChildNode, parser::parse};
+    use vize_armature::parse;
     use vize_carton::Bump;
+    use vize_relief::TemplateChildNode;
 
     #[test]
     fn test_has_v_slot() {

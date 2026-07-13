@@ -1,21 +1,22 @@
 use glob::glob;
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
-use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
+use rayon::prelude::*;
 use std::{
     fs,
     path::{Path, PathBuf},
     time::Instant,
 };
-use vize_atelier_core::TemplateSyntaxMode;
+use vize_atlas::Compilation;
 use vize_carton::{FxHashMap, hash::hash_str};
+use vize_relief::TemplateSyntaxMode;
+use vize_relief::VueDialectInput;
 
 use super::{
     experimentals::ExperimentalTemplateOptions,
     types::{BatchCompileOptionsNapi, BatchCompileResultNapi},
 };
-use crate::template_syntax::resolve_template_syntax;
-
+use crate::{artifact_graph::resolve_vue_version, template_syntax::resolve_template_syntax};
 /// Aggregate counters for the native batch stats surface.
 #[derive(Default)]
 struct BatchStats {
@@ -172,13 +173,13 @@ pub fn compile_sfc_batch(
     options: Option<BatchCompileOptionsNapi>,
 ) -> Result<BatchCompileResultNapi> {
     use vize_atelier_sfc::{
-        ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-        TemplateCompileOptions,
-        compile_sfc_with_template_syntax as sfc_compile_with_template_syntax,
-        parse_sfc as sfc_parse,
+        ScriptCompileOptions, SfcCompileOptions, SfcCompileProduct, SfcCompileRequest,
+        SfcCompileSettings, SfcParseOptions, StyleCompileOptions, TemplateCompileOptions,
     };
 
     let opts = options.unwrap_or_default();
+    let dialect = resolve_vue_version(opts.vue_version.as_deref())
+        .map_err(|message| Error::new(Status::InvalidArg, message))?;
     if let Some(threads) = opts.threads {
         let _ = rayon::ThreadPoolBuilder::new()
             .num_threads(threads as usize)
@@ -267,63 +268,73 @@ pub fn compile_sfc_batch(
 
         jobs.push(BatchCompileJob::single(path, source));
     }
-
-    let compile_stats = jobs
-        .par_iter()
-        .map(|job| {
-            let source_len = job.input_bytes;
-            let filename: vize_carton::CompactString = job.path.to_string_lossy().as_ref().into();
-            let parse_opts = SfcParseOptions {
+    let mut compilation = Compilation::new();
+    vize_atelier_sfc::register_atlas_providers(&mut compilation).map_err(|error| {
+        Error::new(
+            Status::GenericFailure,
+            format!("Atlas setup failed: {error}"),
+        )
+    })?;
+    let mut settings = SfcCompileSettings::default();
+    let mut source_ids = Vec::with_capacity(jobs.len());
+    for job in &jobs {
+        let filename: vize_carton::CompactString = job.path.to_string_lossy().as_ref().into();
+        let source_id = compilation
+            .add_source(filename.as_str(), job.source.as_str())
+            .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))?;
+        let compile_options = SfcCompileOptions {
+            parse: SfcParseOptions {
                 filename: filename.clone(),
                 ..Default::default()
-            };
-            let descriptor = match sfc_parse(&job.source, parse_opts) {
-                Ok(d) => d,
-                Err(_) => {
-                    return BatchStats {
-                        failed: job.repeats,
-                        input_bytes: source_len,
-                        ..Default::default()
-                    };
-                }
-            };
-            let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
-            let compile_opts = SfcCompileOptions {
-                parse: SfcParseOptions {
-                    filename: filename.clone(),
-                    ..Default::default()
-                },
-                script: ScriptCompileOptions {
-                    id: Some(filename.clone()),
-                    inline_template: standalone,
-                    is_ts,
-                    ..Default::default()
-                },
-                template: TemplateCompileOptions {
-                    id: Some(filename.clone()),
-                    scoped: has_scoped,
-                    ssr,
-                    is_ts,
-                    compiler_options: Some(experimentals.dom_options()),
-                    ..Default::default()
-                },
-                style: StyleCompileOptions {
-                    id: filename,
-                    scoped: has_scoped,
-                    ..Default::default()
-                },
-                vapor,
-                scope_id: None,
-            };
-
-            let compile_result =
-                sfc_compile_with_template_syntax(&descriptor, compile_opts, template_syntax);
+            },
+            script: ScriptCompileOptions {
+                id: Some(filename.clone()),
+                inline_template: standalone,
+                is_ts,
+                ..Default::default()
+            },
+            template: TemplateCompileOptions {
+                id: Some(filename.clone()),
+                ssr,
+                is_ts,
+                dialect,
+                compiler_options: Some(experimentals.dom_options()),
+                ..Default::default()
+            },
+            style: StyleCompileOptions {
+                id: filename,
+                ..Default::default()
+            },
+            vapor,
+            scope_id: None,
+        };
+        settings.insert(
+            source_id,
+            SfcCompileRequest::new(compile_options, template_syntax)
+                .with_inferred_scoped_from_descriptor(),
+        );
+        source_ids.push(source_id);
+    }
+    settings
+        .install(&mut compilation)
+        .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))?;
+    compilation
+        .set_input::<VueDialectInput>(dialect)
+        .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))?;
+    let snapshot = compilation.snapshot();
+    let compile_stats = jobs
+        .into_par_iter()
+        .zip(source_ids.into_par_iter())
+        .map(|(job, source_id)| {
+            let source_len = job.input_bytes;
+            let mut session = snapshot.query_session();
+            let compile_result = session.query::<SfcCompileProduct>(source_id);
 
             match compile_result {
-                Ok(result) => BatchStats {
+                Ok(outcome) => BatchStats {
                     success: job.repeats,
                     input_bytes: source_len,
-                    output_bytes: result.code.len() * job.repeats,
+                    output_bytes: outcome.value().code.len() * job.repeats,
                     failed: 0,
                 },
                 Err(_) => BatchStats {
@@ -335,7 +346,6 @@ pub fn compile_sfc_batch(
         })
         .reduce(BatchStats::default, BatchStats::add);
     stats = stats.add(compile_stats);
-
     Ok(BatchCompileResultNapi {
         success: stats.success as u32,
         failed: stats.failed as u32,

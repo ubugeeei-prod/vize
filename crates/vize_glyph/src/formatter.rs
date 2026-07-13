@@ -2,18 +2,24 @@
 //!
 //! Uses arena allocation and zero-copy techniques for maximum performance.
 
+mod artifact;
 mod custom_block;
+mod output;
 mod raw_mask;
+
+pub use artifact::{
+    GlyphFormatProduct, GlyphFormatProvider, GlyphFormatSettingsInput,
+    register_glyph_atlas_provider,
+};
 
 use crate::error::FormatError;
 use crate::options::FormatOptions;
 use crate::script;
 use crate::style;
 use crate::template;
+use output::{document_prologue, write_attr, write_remaining_attrs};
 use raw_mask::compute_raw_line_mask;
-use std::borrow::Cow;
-use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_carton::{Allocator, FxHashMap, String, ToCompactString};
+use vize_carton::{Allocator, String, ToCompactString};
 
 /// Result of formatting a Vue SFC
 #[derive(Debug, Clone)]
@@ -49,12 +55,18 @@ impl<'a> GlyphFormatter<'a> {
 
     /// Format a Vue SFC source string
     pub fn format(&self, source: &str) -> Result<FormatResult, FormatError> {
-        // Parse the SFC
-        let descriptor = parse_sfc(source, SfcParseOptions::default())?;
+        artifact::FormatterArtifactGraph::new(source, self.options)?.format()
+    }
+
+    fn format_descriptor_core(
+        &self,
+        source: &str,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    ) -> Result<FormatResult, FormatError> {
         let newline = self.options.newline_bytes();
 
         // Pre-calculate output size for efficient allocation
-        let estimated_size = self.estimate_output_size(source, &descriptor);
+        let estimated_size = self.estimate_output_size(source, descriptor);
         let mut output = Vec::with_capacity(estimated_size);
 
         // Collect all blocks with their sort keys
@@ -328,51 +340,5 @@ impl<'a> GlyphFormatter<'a> {
         output.extend_from_slice(b"</style>");
 
         Ok(())
-    }
-}
-
-fn document_prologue<'a>(source: &'a str, blocks: &[(usize, Block<'_>)]) -> Option<&'a str> {
-    let first_tag_start = blocks
-        .iter()
-        .map(|(_, block)| match block {
-            Block::Script(block) => block.loc.tag_start,
-            Block::Template(block) => block.loc.tag_start,
-            Block::Style(block) => block.loc.tag_start,
-            Block::Custom(block) => block.loc.tag_start,
-        })
-        .min()
-        .unwrap_or(source.len());
-    let prologue = source[..first_tag_start].trim();
-    (!prologue.is_empty()).then_some(prologue)
-}
-
-fn write_remaining_attrs(
-    output: &mut Vec<u8>,
-    attrs: &FxHashMap<Cow<'_, str>, Cow<'_, str>>,
-    handled: &[&str],
-) {
-    let mut remaining_attrs: Vec<_> = attrs
-        .iter()
-        .filter(|(name, _)| !handled.contains(&name.as_ref()))
-        .collect();
-    remaining_attrs.sort_by(|(a, _), (b, _)| a.as_ref().cmp(b.as_ref()));
-
-    for (name, value) in remaining_attrs {
-        let value = if value.is_empty() {
-            None
-        } else {
-            Some(value.as_ref())
-        };
-        write_attr(output, name, value);
-    }
-}
-
-fn write_attr(output: &mut Vec<u8>, name: &str, value: Option<&str>) {
-    output.push(b' ');
-    output.extend_from_slice(name.as_bytes());
-    if let Some(value) = value {
-        output.extend_from_slice(b"=\"");
-        output.extend_from_slice(value.as_bytes());
-        output.push(b'"');
     }
 }

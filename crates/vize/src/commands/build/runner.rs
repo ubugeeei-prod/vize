@@ -1,20 +1,21 @@
 //! Build command execution logic.
 
+mod artifact_graph;
 mod cache;
 mod collect;
 mod compile;
 mod compile_stats;
+mod execution;
 mod profile_facts;
 mod settings;
 
 use std::{
     fs,
     path::PathBuf,
-    sync::{Mutex, atomic::Ordering},
+    sync::atomic::Ordering,
     time::{Duration, Instant},
 };
 
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use vize_carton::String;
 use vize_carton::cstr;
 use vize_carton::profile;
@@ -27,13 +28,11 @@ use vize_curator::profile::{
 
 use super::{
     BuildArgs, OutputFormat,
-    config::{CompileError, CompileStats, ErrorPhase, FileProfile, get_output_extension},
+    config::{CompileStats, ErrorPhase, get_output_extension},
 };
 
-use cache::StatsCompileCache;
 use collect::collect_files;
-use compile::compile_file_with_profile;
-use compile_stats::compile_file_stats_with_cache;
+use execution::{CompileExecution, execute};
 use settings::{CompileFileSettings, load_build_config, template_syntax_mode};
 
 /// Main entry point for the build command.
@@ -91,12 +90,6 @@ pub(crate) fn run(args: BuildArgs) {
         eprintln!();
     }
 
-    // Collect errors and slow files
-    let errors: Mutex<Vec<CompileError>> = Mutex::new(Vec::new());
-    let slow_files: Mutex<Vec<FileProfile>> = Mutex::new(Vec::new());
-    let profiles: Mutex<Vec<FileProfile>> = Mutex::new(Vec::new());
-
-    let compile_start = Instant::now();
     let compile_settings = CompileFileSettings {
         ssr: args.ssr,
         vapor: args.vapor || build_config.vapor.unwrap_or(false),
@@ -111,80 +104,27 @@ pub(crate) fn run(args: BuildArgs) {
         script_ext: args.script_ext,
         record_profile_totals: args.profile,
     };
-
-    let stats_only = matches!(args.format, OutputFormat::Stats);
-    let results: Vec<_> = if stats_only {
-        let compile_cache = StatsCompileCache::default();
-        files.par_iter().for_each(|path| {
-            match compile_file_stats_with_cache(path, compile_settings, &stats, &compile_cache) {
-                Ok((output_bytes, profile)) => {
-                    stats.success.fetch_add(1, Ordering::Relaxed);
-                    stats
-                        .output_bytes
-                        .fetch_add(output_bytes, Ordering::Relaxed);
-
-                    if profile.is_slow(slow_threshold)
-                        && let Ok(mut slow) = slow_files.lock()
-                    {
-                        slow.push(profile.clone());
-                    }
-
-                    if args.profile
-                        && let Ok(mut p) = profiles.lock()
-                    {
-                        p.push(profile);
-                    }
-                }
-                Err(err) => {
-                    stats.failed.fetch_add(1, Ordering::Relaxed);
-
-                    if let Ok(mut errs) = errors.lock() {
-                        errs.push(err);
-                    }
-                }
-            }
-        });
-        Vec::new()
-    } else {
-        files
-            .par_iter()
-            .map(
-                |path| match compile_file_with_profile(path, compile_settings, &stats) {
-                    Ok((output, profile)) => {
-                        stats.success.fetch_add(1, Ordering::Relaxed);
-                        stats
-                            .output_bytes
-                            .fetch_add(output.code.len(), Ordering::Relaxed);
-
-                        // Check for slow files
-                        if profile.is_slow(slow_threshold)
-                            && let Ok(mut slow) = slow_files.lock()
-                        {
-                            slow.push(profile.clone());
-                        }
-
-                        if args.profile
-                            && let Ok(mut p) = profiles.lock()
-                        {
-                            p.push(profile);
-                        }
-
-                        Some((path.clone(), output))
-                    }
-                    Err(err) => {
-                        stats.failed.fetch_add(1, Ordering::Relaxed);
-
-                        if let Ok(mut errs) = errors.lock() {
-                            errs.push(err);
-                        }
-
-                        None
-                    }
-                },
-            )
-            .collect()
+    let execution = match execute(
+        &files,
+        compile_settings,
+        &stats,
+        matches!(args.format, OutputFormat::Stats),
+        args.profile,
+        slow_threshold,
+    ) {
+        Ok(execution) => execution,
+        Err(error) => {
+            eprintln!("\x1b[31mError:\x1b[0m {error}");
+            std::process::exit(1);
+        }
     };
-    let compile_elapsed = compile_start.elapsed();
+    let CompileExecution {
+        results,
+        errors,
+        slow_files,
+        profiles,
+        elapsed: compile_elapsed,
+    } = execution;
 
     let io_start = Instant::now();
     match args.format {
@@ -260,7 +200,6 @@ pub(crate) fn run(args: BuildArgs) {
     let failed = stats.failed.load(Ordering::Relaxed);
 
     // Show slow file warnings
-    let slow_files = slow_files.into_inner().unwrap_or_default();
     if !slow_files.is_empty() {
         eprintln!();
         eprintln!(
@@ -295,7 +234,6 @@ pub(crate) fn run(args: BuildArgs) {
     }
 
     // Show collected errors
-    let errors = errors.into_inner().unwrap_or_default();
     if !errors.is_empty() {
         eprintln!();
         eprintln!(
@@ -362,7 +300,7 @@ pub(crate) fn run(args: BuildArgs) {
         let total_parse = stats.total_parse_time();
         let total_compile = stats.total_compile_time();
 
-        let mut all_profiles = profiles.into_inner().unwrap_or_default();
+        let mut all_profiles = profiles;
         all_profiles.sort_by_key(|profile| std::cmp::Reverse(profile.total_time));
 
         let phases = [

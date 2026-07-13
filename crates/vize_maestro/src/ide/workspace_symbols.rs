@@ -35,7 +35,13 @@ impl WorkspaceSymbolsService {
                 continue;
             }
 
-            Self::collect_symbols_from_document(uri, &content, &query_lower, &mut symbols);
+            let Some(artifact) = state.sfc_descriptor_for(uri, &content) else {
+                continue;
+            };
+            let Some(descriptor) = artifact.descriptor() else {
+                continue;
+            };
+            Self::collect_symbols_from_document(uri, descriptor, &query_lower, &mut symbols);
         }
 
         // Sort by relevance (exact match first, then prefix match, then contains)
@@ -70,19 +76,10 @@ impl WorkspaceSymbolsService {
     #[allow(deprecated)] // SymbolInformation.deprecated is deprecated in favor of tags
     fn collect_symbols_from_document(
         uri: &Url,
-        content: &str,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
         query: &str,
         symbols: &mut Vec<SymbolInformation>,
     ) {
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-            return;
-        };
-
         // Extract component name from file path
         if let Some(component_name) = Self::extract_component_name(uri)
             && component_name.to_lowercase().contains(query)

@@ -30,7 +30,8 @@ import {
   rewriteStaticAssetUrls,
 } from "../transform.ts";
 import { transformVizeVirtualModule } from "./vite-transform.ts";
-
+import { offsetEmbeddedSourceMap, type RawSourceMap } from "@vizejs/source-map";
+type LoadedTransform = { code: string; map: RawSourceMap | null };
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
   name: "ServerPlaceholder",
@@ -39,7 +40,6 @@ export default defineComponent({
   }
 });
 `;
-
 export function getBoundaryPlaceholderCode(realPath: string, ssr: boolean): string | null {
   const boundaryKind = classifyVitePluginRequest(realPath).boundaryKind;
   if (ssr && boundaryKind === "client") {
@@ -90,7 +90,7 @@ function loadCompiledSfcModule(
   isSsr: boolean,
   currentBase: string,
   loadOptions?: { ssr?: boolean; addWatchFile?: (id: string) => void },
-): { code: string; map: null } | string | null {
+): LoadedTransform | string | null {
   const placeholderCode = getBoundaryPlaceholderCode(realPath, !!loadOptions?.ssr);
   if (placeholderCode) {
     state.logger.log(`load: using boundary placeholder for ${realPath}`);
@@ -158,7 +158,7 @@ function loadCompiledSfcModule(
   }
   return {
     code: normalizedOutput,
-    map: null,
+    map: offsetEmbeddedSourceMap(compiled.code, normalizedOutput, compiled.map),
   };
 }
 
@@ -187,7 +187,7 @@ export function loadHook(
   state: VizePluginState,
   id: string,
   loadOptions?: { ssr?: boolean; addWatchFile?: (id: string) => void },
-): string | { code: string; map: null } | null {
+): string | LoadedTransform | null {
   if (id !== RESOLVED_CSS_MODULE && !id.startsWith("\0") && !id.includes(".vue")) return null;
 
   const request = classifyVitePluginRequest(id);

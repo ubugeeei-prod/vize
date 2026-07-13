@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import path from "node:path";
 import * as native from "@vizejs/native";
 import type {
   CompiledModule,
@@ -16,6 +15,10 @@ import {
 } from "./compile-options.ts";
 import { generateScopeId, prependInlineStyleInjection } from "./utils/index.ts";
 import type { CompileJsxFn } from "./types.ts";
+import { applySourceProvenance, offsetEmbeddedSourceMap } from "@vizejs/source-map";
+import { resolveSfcSrcImports } from "./sfc-src.ts";
+
+export { resolveSfcSrcImports, type ResolvedSfcSrcImports } from "./sfc-src.ts";
 
 const { compileSfc, compileSfcBatchWithResults } = native;
 const compileJsx = (native as { compileJsx: CompileJsxFn }).compileJsx;
@@ -55,102 +58,6 @@ function normalizeStyleBlocks(styles: NativeStyleBlockInfo[] | undefined): Style
   }));
 }
 
-export interface ResolvedSfcSrcImports {
-  source: string;
-  dependencies: string[];
-}
-
-function resolveRelativeSrc(filePath: string, src: string): string {
-  return path.isAbsolute(src) ? src : path.resolve(path.dirname(filePath), src);
-}
-
-function readSrcImport(
-  filePath: string,
-  tag: string,
-  src: string,
-): { path: string; content: string } {
-  const resolvedPath = resolveRelativeSrc(filePath, src);
-  try {
-    return {
-      path: resolvedPath,
-      content: fs.readFileSync(resolvedPath, "utf-8"),
-    };
-  } catch {
-    throw new Error(
-      `[vize] <${tag} src="${src}"> not found (resolved: ${resolvedPath}) in ${filePath}`,
-    );
-  }
-}
-
-function stripSrcAttribute(attrs: string): string {
-  return attrs.replace(/\s*\bsrc\s*=\s*(?:"[^"]*"|'[^']*')/i, "");
-}
-
-function inlineSingleSrcBlock(
-  source: string,
-  filePath: string,
-  tag: "script" | "template",
-  src: string | undefined,
-  dependencies: string[],
-): string {
-  if (!src) {
-    return source;
-  }
-
-  const imported = readSrcImport(filePath, tag, src);
-  dependencies.push(imported.path);
-  const pattern = new RegExp(
-    `<${tag}\\b([^>]*)\\bsrc\\s*=\\s*(['"])[^'"]+\\2([^>]*)>[\\s\\S]*?<\\/${tag}>`,
-    "i",
-  );
-
-  return source.replace(pattern, (_match, beforeSrc: string, _quote: string, afterSrc: string) => {
-    const attrs = stripSrcAttribute(`${beforeSrc}${afterSrc}`);
-    return `<${tag}${attrs}>\n${imported.content}\n</${tag}>`;
-  });
-}
-
-function inlineStyleSrcBlocks(source: string, filePath: string, dependencies: string[]): string {
-  const pattern = /<style\b([^>]*)\bsrc\s*=\s*(['"])([^'"]+)\2([^>]*)>[\s\S]*?<\/style>/gi;
-
-  return source.replace(
-    pattern,
-    (_match, beforeSrc: string, _quote: string, src: string, afterSrc: string) => {
-      const imported = readSrcImport(filePath, "style", src);
-      dependencies.push(imported.path);
-      const attrs = stripSrcAttribute(`${beforeSrc}${afterSrc}`);
-      return `<style${attrs}>\n${imported.content}\n</style>`;
-    },
-  );
-}
-
-export function resolveSfcSrcImports(filePath: string, source: string): ResolvedSfcSrcImports {
-  const dependencies: string[] = [];
-  const srcInfo = native.extractSfcSrcInfo(source, filePath);
-  let resolvedSource = source;
-
-  resolvedSource = inlineSingleSrcBlock(
-    resolvedSource,
-    filePath,
-    "script",
-    srcInfo.scriptSrc,
-    dependencies,
-  );
-  resolvedSource = inlineSingleSrcBlock(
-    resolvedSource,
-    filePath,
-    "template",
-    srcInfo.templateSrc,
-    dependencies,
-  );
-  resolvedSource = inlineStyleSrcBlocks(resolvedSource, filePath, dependencies);
-
-  return {
-    source: resolvedSource,
-    dependencies,
-  };
-}
-
 export function compileFile(
   filePath: string,
   cache: Map<string, CompiledModule>,
@@ -176,6 +83,7 @@ export function compileFile(
 
   const compiled: CompiledModule = {
     code: result.code,
+    map: applySourceProvenance(result.map, resolved.source, resolved.provenance),
     css: result.css,
     scopeId,
     hasScoped: result.hasScoped,
@@ -242,18 +150,15 @@ export function compileJsxModule(
   // verbatim. Skipped under SSR, matching the SFC inline-CSS path.
   const css = (result.scopedStyles ?? []).map((style) => style.css).join("\n");
   let code = result.code;
-  // Prepending the inline-style injection shifts the render code, so the v3 map
-  // (which targets the unshifted render code) is dropped once we mutate `code`.
-  let map = result.map ?? null;
   if (css && !options.ssr) {
     const styleKey = result.scopedStyles[0].scopeId.replace(/^data-v-/, "");
     code = prependInlineStyleInjection(code, css, styleKey);
-    map = null;
   }
+  const map = offsetEmbeddedSourceMap(result.code, code, result.map);
 
   return {
     code,
-    map,
+    map: map ? JSON.stringify(map) : null,
     warnings: result.warnings,
   };
 }
@@ -268,9 +173,11 @@ export function compileBatch(
   options: CompileBatchOptions,
 ): BatchCompileResultWithFiles {
   const dependenciesByPath = new Map<string, string[]>();
+  const sourceByPath = new Map<string, ReturnType<typeof resolveSfcSrcImports>>();
   const resolvedFiles = files.map((file) => {
     const resolved = resolveSfcSrcImports(file.path, file.source);
     dependenciesByPath.set(file.path, resolved.dependencies);
+    sourceByPath.set(file.path, resolved);
     return {
       path: file.path,
       source: resolved.source,
@@ -285,8 +192,12 @@ export function compileBatch(
   // Update cache with results
   for (const fileResult of result.results) {
     if (fileResult.errors.length === 0) {
+      const resolved = sourceByPath.get(fileResult.path);
       cache.set(fileResult.path, {
         code: fileResult.code,
+        map: resolved
+          ? applySourceProvenance(fileResult.map, resolved.source, resolved.provenance)
+          : null,
         css: fileResult.css,
         scopeId: fileResult.scopeId,
         hasScoped: fileResult.hasScoped,

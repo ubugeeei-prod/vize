@@ -34,6 +34,7 @@ mod source_map;
 mod style_code;
 mod template_code;
 
+pub(crate) use generator::find_art_block_at_offset_with_descriptor;
 pub(crate) use generator::inline_art_variants;
 pub use generator::{
     ArtCursorPosition, ArtScriptChunk, ArtScriptSetupParts, ArtTargetComponent, ArtVariantInfo,

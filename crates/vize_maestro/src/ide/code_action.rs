@@ -70,7 +70,7 @@ impl CodeActionService {
         // Skip names that the SFC already binds. Looking only at script
         // setup is sufficient for the common case; the broader Croquis
         // resolution moves in a follow-up.
-        if sfc_script_declares(&ctx.content, identifier) {
+        if sfc_script_declares(ctx, identifier) {
             return Vec::new();
         }
 
@@ -108,11 +108,7 @@ impl CodeActionService {
 
         // Insert at the start of script setup if present, otherwise at the
         // start of the regular script block.
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+        let Some(descriptor) = ctx.sfc_descriptor() else {
             return Vec::new();
         };
         let insert_offset = descriptor
@@ -191,7 +187,7 @@ impl CodeActionService {
             start -= 1;
         }
         let receiver = &ctx.content[start..dot_pos];
-        if !is_reactive_ref_in_script(&ctx.content, ctx.uri, receiver) {
+        if !is_reactive_ref_in_script(ctx, receiver) {
             return Vec::new();
         }
 
@@ -255,7 +251,7 @@ impl CodeActionService {
             return Vec::new();
         };
         let identifier = &ctx.content[identifier_range.clone()];
-        if !is_reactive_ref_in_script(&ctx.content, ctx.uri, identifier) {
+        if !is_reactive_ref_in_script(ctx, identifier) {
             return Vec::new();
         }
 
@@ -304,12 +300,7 @@ impl CodeActionService {
     /// the lint-fix and `@vize:forget` collectors so the (expensive) SFC parse
     /// and template lint run a single time per code-action request.
     fn lint_template_once(ctx: &IdeContext) -> Option<TemplateLint> {
-        #[allow(clippy::disallowed_methods)]
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-        let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+        let descriptor = ctx.sfc_descriptor()?;
         let template = descriptor.template.as_ref()?;
         let linter = vize_patina::Linter::new();
         let result = linter.lint_template(&template.content, ctx.uri.path());
@@ -488,13 +479,7 @@ impl CodeActionService {
 
     /// Get all available fixes for a document (for "fix all" actions).
     pub fn get_all_fixes(ctx: &IdeContext) -> Option<WorkspaceEdit> {
-        #[allow(clippy::disallowed_methods)]
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+        let descriptor = ctx.sfc_descriptor()?;
         let template = descriptor.template.as_ref()?;
 
         let linter = vize_patina::Linter::new();
@@ -605,29 +590,9 @@ fn get_line_indent(source: &str, offset: usize) -> &str {
 /// True when the SFC's script (setup or plain) declares `name` via Croquis'
 /// binding analysis. Used by the auto-import code action to skip names the
 /// user already imported / declared.
-fn sfc_script_declares(content: &str, name: &str) -> bool {
-    let options = vize_atelier_sfc::SfcParseOptions::default();
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-        return false;
-    };
-    let script_content = descriptor
-        .script_setup
-        .as_ref()
-        .map(|s| s.content.to_string())
-        .or_else(|| descriptor.script.as_ref().map(|s| s.content.to_string()));
-    let Some(script_content) = script_content else {
-        return false;
-    };
-    let mut analyzer = vize_croquis::Drawer::with_options(vize_croquis::DrawerOptions {
-        analyze_script: true,
-        ..Default::default()
-    });
-    if descriptor.script_setup.is_some() {
-        analyzer.analyze_script_setup(&script_content);
-    } else {
-        analyzer.analyze_script_plain(&script_content);
-    }
-    analyzer.finish().bindings.contains(name)
+fn sfc_script_declares(ctx: &IdeContext<'_>, name: &str) -> bool {
+    ctx.sfc_croquis()
+        .is_some_and(|document| document.analysis().bindings.contains(name))
 }
 
 /// Convert an absolute path to a relative module specifier suitable for an
@@ -715,33 +680,24 @@ fn is_ident_byte(b: u8) -> bool {
 /// True when `name` resolves to a Vue ref (Ref / ShallowRef / ToRef /
 /// ComputedRef) declared anywhere in the SFC's script-setup block. Used to
 /// decide whether "Wrap with `.value`" makes sense at the cursor.
-fn is_reactive_ref_in_script(content: &str, uri: &tower_lsp::lsp_types::Url, name: &str) -> bool {
+fn is_reactive_ref_in_script(ctx: &IdeContext<'_>, name: &str) -> bool {
     use vize_croquis::reactivity::ReactiveKind;
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: uri.path().to_string().into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+    let Some(document) = ctx.sfc_croquis() else {
         return false;
     };
-    let Some(ref script_setup) = descriptor.script_setup else {
-        return false;
-    };
-    let mut analyzer = vize_croquis::Drawer::with_options(vize_croquis::DrawerOptions {
-        analyze_script: true,
-        ..Default::default()
-    });
-    analyzer.analyze_script_setup(&script_setup.content);
-    let croquis = analyzer.finish();
-    croquis.reactivity.lookup(name).is_some_and(|source| {
-        matches!(
-            source.kind,
-            ReactiveKind::Ref
-                | ReactiveKind::ShallowRef
-                | ReactiveKind::ToRef
-                | ReactiveKind::Computed
-        )
-    })
+    document
+        .analysis()
+        .reactivity
+        .lookup(name)
+        .is_some_and(|source| {
+            matches!(
+                source.kind,
+                ReactiveKind::Ref
+                    | ReactiveKind::ShallowRef
+                    | ReactiveKind::ToRef
+                    | ReactiveKind::Computed
+            )
+        })
 }
 
 fn ranges_overlap(a: &Range, b: &Range) -> bool {

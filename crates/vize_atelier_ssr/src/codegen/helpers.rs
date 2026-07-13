@@ -1,6 +1,6 @@
 //! HTML escaping utilities and child/control-flow processing for SSR codegen.
 
-use vize_atelier_core::{
+use vize_relief::{
     CommentNode, ElementType, ForNode, IfNode, InterpolationNode, PropNode, RuntimeHelper,
     TemplateChildNode, TextNode,
 };
@@ -140,7 +140,7 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// Process an interpolation node ({{ expr }})
     fn process_interpolation(&mut self, interp: &InterpolationNode) {
-        use vize_atelier_core::ExpressionNode;
+        use vize_relief::ExpressionNode;
 
         self.use_ssr_helper(RuntimeHelper::SsrInterpolate);
 
@@ -276,8 +276,8 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Push an expression node
-    pub(crate) fn push_expression(&mut self, expr: &vize_atelier_core::ExpressionNode) {
-        use vize_atelier_core::ExpressionNode;
+    pub(crate) fn push_expression(&mut self, expr: &vize_relief::ExpressionNode) {
+        use vize_relief::ExpressionNode;
 
         match expr {
             ExpressionNode::Simple(simple) => {
@@ -288,7 +288,7 @@ impl<'a> SsrCodegenContext<'a> {
                 // Flatten compound expression
                 let mut content = String::default();
                 for child in &compound.children {
-                    use vize_atelier_core::CompoundExpressionChild;
+                    use vize_relief::CompoundExpressionChild;
                     match child {
                         CompoundExpressionChild::Simple(s) => content.push_str(&s.content),
                         CompoundExpressionChild::String(s) => content.push_str(s),
@@ -323,15 +323,15 @@ pub(crate) fn collect_for_scoped_params(for_node: &ForNode) -> FxHashSet<String>
 }
 
 pub(crate) fn collect_expression_params(
-    expr: &vize_atelier_core::ExpressionNode,
+    expr: &vize_relief::ExpressionNode,
     params: &mut FxHashSet<String>,
 ) {
     let content = match expr {
-        vize_atelier_core::ExpressionNode::Simple(simple) => simple.content.clone(),
-        vize_atelier_core::ExpressionNode::Compound(compound) => {
+        vize_relief::ExpressionNode::Simple(simple) => simple.content.clone(),
+        vize_relief::ExpressionNode::Compound(compound) => {
             let mut content = String::default();
             for child in &compound.children {
-                use vize_atelier_core::CompoundExpressionChild;
+                use vize_relief::CompoundExpressionChild;
                 match child {
                     CompoundExpressionChild::Simple(simple) => content.push_str(&simple.content),
                     CompoundExpressionChild::String(value) => content.push_str(value),
@@ -507,7 +507,7 @@ fn has_keyed_template_v_for_child(for_node: &ForNode) -> bool {
         && !has_single_plain_element_child(el)
 }
 
-fn has_single_plain_element_child(el: &vize_atelier_core::ElementNode) -> bool {
+fn has_single_plain_element_child(el: &vize_relief::ElementNode) -> bool {
     if el.children.len() != 1 {
         return false;
     }
@@ -524,7 +524,7 @@ fn is_key_prop(prop: &PropNode) -> bool {
         PropNode::Directive(dir) if dir.name == "bind" => {
             matches!(
                 &dir.arg,
-                Some(vize_atelier_core::ExpressionNode::Simple(arg)) if arg.content == "key"
+                Some(vize_relief::ExpressionNode::Simple(arg)) if arg.content == "key"
             )
         }
         _ => false,

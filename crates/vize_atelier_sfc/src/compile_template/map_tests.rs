@@ -46,7 +46,7 @@ fn compile_with_source_map(source_map: bool) -> super::TemplateBlockCompileResul
             bindings: None,
             croquis: None,
         },
-        vize_atelier_core::TemplateSyntaxMode::Standard,
+        vize_relief::TemplateSyntaxMode::Standard,
     )
     .expect("template should compile")
 }
@@ -140,11 +140,17 @@ fn template_only_sfc_surfaces_template_source_map_when_requested() {
         .map
         .expect("template-only SFC should surface a map");
     assert_eq!(map["version"], 3);
-    assert_eq!(map["sources"][0], "template.vue");
+    assert_eq!(map["sources"][0], "anonymous.vue");
+    assert_eq!(map["sourcesContent"][0], source);
+    assert!(
+        map["mappings"]
+            .as_str()
+            .is_some_and(|value| !value.is_empty())
+    );
 }
 
 #[test]
-fn normal_script_sfc_waits_to_surface_template_map_until_composed() {
+fn normal_script_sfc_surfaces_a_composed_template_map() {
     let source = r#"<template><div>{{ msg }}</div></template>
 <script>
 export default {
@@ -161,14 +167,19 @@ export default {
         with_map.code, without_map.code,
         "requesting a source map must not change assembled SFC code"
     );
+    let map = with_map
+        .map
+        .expect("normal script/template map is composed");
+    assert_eq!(map["sourcesContent"][0], source);
     assert!(
-        with_map.map.is_none(),
-        "normal script/template assembly must not expose an uncomposed template map"
+        map["mappings"]
+            .as_str()
+            .is_some_and(|value| !value.is_empty())
     );
 }
 
 #[test]
-fn script_setup_sfc_waits_to_surface_template_map_until_composed() {
+fn script_setup_sfc_surfaces_a_composed_template_map() {
     let source = r#"<template><button @click="inc">{{ count }}</button></template>
 <script setup>
 import { ref } from "vue"
@@ -183,8 +194,11 @@ const inc = () => count.value++
         with_map.code, without_map.code,
         "requesting a source map must not change inline script setup output"
     );
+    let map = with_map.map.expect("script setup/template map is composed");
+    assert_eq!(map["sourcesContent"][0], source);
     assert!(
-        with_map.map.is_none(),
-        "inline script setup assembly must not expose an uncomposed template map"
+        map["mappings"]
+            .as_str()
+            .is_some_and(|value| !value.is_empty())
     );
 }

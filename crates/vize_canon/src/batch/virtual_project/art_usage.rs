@@ -1,8 +1,61 @@
-use vize_atelier_core::{
-    ParserOptions, TemplateSyntaxMode, parser::parse_with_options_and_template_syntax,
-};
+use vize_armature::parse_with_options_and_template_syntax;
 use vize_atelier_sfc::{SfcDescriptor, script::resolve_template_used_identifiers};
+use vize_atlas::{PlanningContext, Product, ProductId, Provider, ProviderContext, ProviderError};
 use vize_carton::{Bump, FxHashSet, String as CompactString};
+use vize_relief::{ParserOptions, TemplateSyntaxMode};
+
+/// Names referenced by template-shaped Musea `<art><variant>` custom blocks.
+pub(super) struct ArtTemplateUsageProduct;
+
+impl Product for ArtTemplateUsageProduct {
+    type Value = FxHashSet<CompactString>;
+
+    const NAME: &'static str = "canon.art-template-usage";
+}
+
+pub(super) struct ArtTemplateUsageProvider {
+    template_syntax: TemplateSyntaxMode,
+    experimental_in_tag_comments: bool,
+}
+
+impl ArtTemplateUsageProvider {
+    pub(super) const fn new(
+        template_syntax: TemplateSyntaxMode,
+        experimental_in_tag_comments: bool,
+    ) -> Self {
+        Self {
+            template_syntax,
+            experimental_in_tag_comments,
+        }
+    }
+}
+
+impl Provider for ArtTemplateUsageProvider {
+    type Product = ArtTemplateUsageProduct;
+
+    fn supports(&self, context: &PlanningContext<'_>) -> bool {
+        context.source().name().ends_with(".vue")
+    }
+
+    fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
+        vec![ProductId::of::<vize_atelier_sfc::SfcDescriptorProduct>()]
+    }
+
+    fn provide(
+        &self,
+        context: &mut ProviderContext<'_>,
+    ) -> Result<FxHashSet<CompactString>, ProviderError> {
+        let descriptor = context.get::<vize_atelier_sfc::SfcDescriptorProduct>()?;
+        let Some(descriptor) = descriptor.descriptor() else {
+            return Ok(FxHashSet::default());
+        };
+        Ok(collect_art_template_referenced_names(
+            descriptor,
+            self.template_syntax,
+            self.experimental_in_tag_comments,
+        ))
+    }
+}
 
 pub(super) fn collect_art_template_referenced_names(
     descriptor: &SfcDescriptor<'_>,

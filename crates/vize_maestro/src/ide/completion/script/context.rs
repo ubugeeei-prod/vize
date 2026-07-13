@@ -23,20 +23,17 @@ pub(super) fn script_content_and_offset_for_context(
     ctx: &IdeContext<'_>,
     is_setup: bool,
 ) -> Option<(String, usize)> {
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-
-    let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+    let descriptor = ctx.sfc_descriptor()?;
     if is_setup {
         descriptor
             .script_setup
-            .map(|script| (script.content.into_owned(), script.loc.start))
+            .as_ref()
+            .map(|script| (script.content.to_string(), script.loc.start))
     } else {
         descriptor
             .script
-            .map(|script| (script.content.into_owned(), script.loc.start))
+            .as_ref()
+            .map(|script| (script.content.to_string(), script.loc.start))
     }
 }
 

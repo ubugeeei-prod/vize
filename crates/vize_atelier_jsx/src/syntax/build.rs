@@ -1,9 +1,8 @@
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    Expression, JSXAttributeItem, JSXAttributeValue, JSXChild, JSXElement, JSXElementName,
-    JSXExpression, JSXExpressionContainer, JSXFragment,
+    JSXAttributeItem, JSXAttributeValue, JSXChild, JSXElement, JSXElementName, JSXExpression,
+    JSXExpressionContainer, JSXFragment,
 };
-use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
 
 use super::{
@@ -11,6 +10,7 @@ use super::{
     JsxSyntaxNode, JsxSyntaxSnapshot,
 };
 use crate::{JsxLang, parse};
+use vize_atlas::Shared;
 
 pub(super) fn snapshot(
     filename: Option<Box<str>>,
@@ -20,24 +20,33 @@ pub(super) fn snapshot(
     let allocator = Allocator::default();
     let parser_source = parse::prepare_source_for_parse(source, lang);
     let parsed = parse::parse_module(&allocator, parser_source.as_ref(), lang);
-    let roots = RootCollector::collect(source, &parsed.program);
+    let collected = super::roots::collect(source, &parsed.program);
+    #[cfg(test)]
+    super::typecheck::record_lowering();
+    let typecheck_roots = super::typecheck::project_roots(&collected.roots, &collected.metadata);
+    let mut diagnostics = parsed.diagnostics;
+    diagnostics.extend(collected.diagnostics);
+    let analysis = Shared::new(crate::analyze_jsx_program(&parsed.program, source));
     JsxSyntaxSnapshot {
         filename,
         source: source.into(),
         lang,
-        roots,
-        diagnostics: parsed.diagnostics,
+        roots: collected.roots,
+        root_metadata: collected.metadata,
+        typecheck_roots,
+        diagnostics,
         panicked: parsed.panicked,
         source_anchor: None,
+        analysis,
     }
 }
 
 pub(super) struct SyntaxBuilder<'s> {
-    source: &'s str,
+    pub(super) source: &'s str,
 }
 
 impl<'s> SyntaxBuilder<'s> {
-    fn new(source: &'s str) -> Self {
+    pub(super) fn new(source: &'s str) -> Self {
         Self { source }
     }
 
@@ -174,32 +183,6 @@ impl<'s> SyntaxBuilder<'s> {
             Some(JSXAttributeValue::Fragment(fragment)) => {
                 JsxSyntaxAttributeValue::Expression(self.expression(fragment.span))
             }
-        }
-    }
-}
-
-struct RootCollector<'s> {
-    builder: SyntaxBuilder<'s>,
-    roots: Vec<JsxSyntaxNode>,
-}
-
-impl<'s> RootCollector<'s> {
-    fn collect(source: &'s str, program: &oxc_ast::ast::Program<'_>) -> Vec<JsxSyntaxNode> {
-        let mut collector = Self {
-            builder: SyntaxBuilder::new(source),
-            roots: Vec::new(),
-        };
-        collector.visit_program(program);
-        collector.roots
-    }
-}
-
-impl<'ast> Visit<'ast> for RootCollector<'_> {
-    fn visit_expression(&mut self, expression: &Expression<'ast>) {
-        if let Some(root) = self.builder.render_expression(expression) {
-            self.roots.push(root);
-        } else {
-            walk::walk_expression(self, expression);
         }
     }
 }

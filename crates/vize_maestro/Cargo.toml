@@ -48,6 +48,7 @@ oxc_span.workspace = true
 oxc_diagnostics.workspace = true
 
 # Internal crates
+vize_atlas.workspace = true
 vize_carton.workspace = true
 vize_relief.workspace = true
 vize_armature.workspace = true

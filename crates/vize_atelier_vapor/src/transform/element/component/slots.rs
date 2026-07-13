@@ -1,8 +1,8 @@
 //! Resolve named-slot identifiers for components, preserving static
 //! `.modifier` segments so dotted slot names stay distinct.
 
-use vize_atelier_core::{DirectiveNode, ExpressionNode};
 use vize_carton::String;
+use vize_relief::{DirectiveNode, ExpressionNode};
 
 /// Resolve a `<template #name.modifiers>` directive into its slot name and
 /// whether that name is statically known.

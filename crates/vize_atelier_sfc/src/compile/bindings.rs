@@ -18,7 +18,7 @@ pub(super) fn croquis_to_legacy_bindings(
     let mut dst = BindingMetadata::default();
     dst.is_script_setup = src.is_script_setup;
     for (name, bt) in src.iter() {
-        dst.bindings.insert(name.to_compact_string(), bt);
+        dst.bindings.insert(name.to_compact_string(), bt.into());
     }
     for (local, key) in &src.props_aliases {
         dst.props_aliases

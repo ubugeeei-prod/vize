@@ -50,14 +50,11 @@ pub(super) fn hover_attribute(ctx: &IdeContext<'_>) -> Option<Hover> {
     let resolved_path =
         crate::ide::definition::helpers::resolve_import_path(ctx.uri, &import_path)?;
     let component_content = std::fs::read_to_string(&resolved_path).ok()?;
-    let descriptor = vize_atelier_sfc::parse_sfc(
-        &component_content,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: resolved_path.to_string_lossy().to_string().into(),
-            ..Default::default()
-        },
-    )
-    .ok()?;
+    let component_uri = tower_lsp::lsp_types::Url::from_file_path(&resolved_path).ok()?;
+    let artifact = ctx
+        .state
+        .sfc_descriptor_for(&component_uri, &component_content)?;
+    let descriptor = artifact.descriptor()?;
     let script_setup = descriptor.script_setup.as_ref()?;
     let script = script_setup.content.as_ref();
     let define_props_pos = script.find("defineProps")?;

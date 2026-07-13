@@ -8,46 +8,22 @@
 )]
 
 use super::{to_js_value, utf8_byte_to_utf16_offset};
-use vize_carton::Bump;
-use vize_croquis_cf::CrossFileDiagnosticKind::{
-    ArrayMutationNotTriggering, AsyncBoundaryCrossing, AsyncWithoutSuspense, BrowserApiInSsr,
-    CircularDependency, CircularReactiveDependency, ClosureCapturesReactive,
-    ComposableOutsideSetup, ComputedHasSideEffects, DeepImportChain,
-    DependencyInjectionOutsideSetup, DestructuringBreaksReactivity, DomAccessWithoutNextTick,
-    DuplicateElementId, EventListenerWithoutCleanup, EventModifierIssue, HydrationMismatchRisk,
-    InheritAttrsDisabledUnused, InjectedAsyncMutationRace, LifecycleHookWithoutCleanup,
-    LifecycleOutsideSetup, MissingRequiredProp, MissingSuspenseBoundary, MultiRootMissingAttrs,
-    NonReactiveProvideValue, NonUniqueIdInLoop, ObjectIdentityComparison,
-    PiniaGetterWithoutStoreToRefs, PropTypeMismatch, ProvideInjectTypeMismatch,
-    ProvideInjectWithoutSymbol, ReactiveObjectMutatedAfterEscape, ReactiveReferenceEscapes,
-    ReactiveStateAtModuleScope, ReactiveStateExported, ReactivityOutsideSetup,
-    ReassignmentBreaksReactivity, SetupContextViolation, ShallowReactiveDeepAccess,
-    SpreadBreaksReactivity, SuspenseWithoutFallback, TemplateRefAccessedBeforeMount, ToRawMutation,
-    UncaughtErrorBoundary, UndeclaredEmit, UndeclaredProp, UndefinedSlot, UnhandledEvent,
-    UnmatchedEventListener, UnmatchedInject, UnregisteredComponent, UnresolvedImport, UnusedEmit,
-    UnusedFallthroughAttrs, UnusedProvide, ValueExtractionBreaksReactivity, WatchEffectWithAsync,
-    WatchMutationCanBeComputed, WatcherOutsideSetup,
-};
 use wasm_bindgen::prelude::*;
+
+#[path = "cross_file/diagnostic_kind.rs"]
+mod diagnostic_kind;
+
+use diagnostic_kind::diagnostic_kind_to_string;
 
 /// Analyze multiple Vue SFC files for cross-file issues
 #[wasm_bindgen(js_name = "analyzeCrossFile")]
 pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsValue, JsValue> {
-    use vize_atelier_core::parser::parse;
-    use vize_atelier_sfc::{
-        SfcParseOptions,
-        croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
-        parse_sfc,
+    use vize_atlas::Compilation;
+    use vize_croquis_cf::{
+        CrossFileAnalysisInput, CrossFileAnalysisProduct, CrossFileAnalysisRequest,
     };
-    use vize_croquis_cf::CrossFileAnalyzer;
 
-    // Parse options
     let cross_file_opts = parse_cross_file_options(&options);
-
-    // Create analyzer
-    let mut analyzer = CrossFileAnalyzer::new(cross_file_opts);
-
-    // Parse files array from JsValue
     let files_array = js_sys::Array::from(&files);
     let mut file_data: Vec<(String, String)> = Vec::new();
 
@@ -65,193 +41,79 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
         file_data.push((path, source));
     }
 
-    // Process each file - for .vue files, analyze both script and template
-    // Track script and template offsets for adjusting diagnostic positions later
-    let mut script_offsets: std::collections::HashMap<u32, usize> =
-        std::collections::HashMap::new();
-    // Template spans: (tag_start, content_start) for template positioning
-    // - tag_start: position of '<' in <template>
-    // - content_start: position right after '>' in <template> (where content begins)
-    let mut template_spans: std::collections::HashMap<u32, (usize, usize)> =
-        std::collections::HashMap::new();
-
-    for (path, source) in &file_data {
-        let std_path = std::path::Path::new(path);
-        let is_vue = std_path
-            .extension()
-            .is_some_and(|e| e.eq_ignore_ascii_case("vue"));
-
-        if is_vue {
-            // Parse SFC to extract script and template content
-            let parse_opts = SfcParseOptions {
-                filename: path.clone().into(),
-                ..Default::default()
-            };
-            if let Ok(descriptor) = parse_sfc(source, parse_opts) {
-                let analysis = if let Some(ref template) = descriptor.template {
-                    let allocator = Bump::new();
-                    let (root, _errors) = parse(&allocator, &template.content);
-                    analyze_sfc_descriptor_with_context(
-                        &descriptor,
-                        Some(&root),
-                        SfcCroquisOptions::full(),
-                    )
-                } else {
-                    analyze_sfc_descriptor_with_context(
-                        &descriptor,
-                        None,
-                        SfcCroquisOptions::full(),
-                    )
-                };
-
-                // Record template opening tag span before adding file
-                // Use tag_start and content start (which is right after '>') to cover just <template...>
-                let template_span = descriptor
-                    .template
-                    .as_ref()
-                    .map(|t| (t.loc.tag_start, t.loc.start))
-                    .unwrap_or((0, 0));
-
-                // Add file with pre-computed analysis
-                let script_start = analysis.script_offset as usize;
-                let script_content = analysis.script_content.unwrap_or_default();
-                let file_id =
-                    analyzer.add_file_with_analysis(std_path, &script_content, analysis.croquis);
-
-                // Record the script and template offsets for this file
-                script_offsets.insert(file_id.as_u32(), script_start);
-                template_spans.insert(file_id.as_u32(), template_span);
-            }
-        } else {
-            // For .ts/.js files, use directly
-            analyzer.add_file(std_path, source);
-        }
+    let mut compilation = Compilation::new();
+    vize_atelier_sfc::register_atlas_providers(&mut compilation)
+        .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    vize_atelier_jsx::register_atlas_providers(&mut compilation)
+        .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    vize_croquis_cf::register_atlas_provider(&mut compilation)
+        .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    compilation
+        .set_input::<CrossFileAnalysisInput>(CrossFileAnalysisRequest::new(cross_file_opts))
+        .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    let mut source_to_index = std::collections::HashMap::new();
+    let mut anchor = None;
+    for (index, (path, source)) in file_data.iter().enumerate() {
+        let source_id = compilation
+            .add_source(path.as_str(), source.as_str())
+            .map_err(|error| JsValue::from_str(&error.to_string()))?;
+        anchor.get_or_insert(source_id);
+        source_to_index.insert(source_id, index);
     }
+    let anchor = match anchor {
+        Some(anchor) => anchor,
+        None => compilation
+            .add_source("<cross-file-anchor>", "")
+            .map_err(|error| JsValue::from_str(&error.to_string()))?,
+    };
+    let artifact = compilation
+        .query::<CrossFileAnalysisProduct>(anchor)
+        .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    let artifact = artifact.value();
+    let result = artifact.result();
+    let file_paths: Vec<_> = file_data.iter().map(|(path, _)| path.clone()).collect();
+    let file_contents: Vec<_> = file_data.iter().map(|(_, source)| source.clone()).collect();
 
-    // Rebuild import and component usage edges after all files are added.
-    // This ensures edges are created even when files are processed out of order.
-    analyzer.rebuild_import_edges();
-    analyzer.rebuild_component_edges();
-
-    // Run cross-file analysis
-    let result = analyzer.analyze();
-
-    // Build file path map and content map for JSON output and offset conversion
-    let mut file_paths: Vec<String> = Vec::new();
-    let mut file_contents: Vec<String> = Vec::new();
-    for (path, source) in &file_data {
-        file_paths.push(path.clone());
-        file_contents.push(source.clone());
-    }
-    // Also create a map from file_id to index in file_data
-    let mut file_id_to_index: std::collections::HashMap<u32, usize> =
-        std::collections::HashMap::new();
-    for entry in analyzer.registry().iter() {
-        // Find the matching file in file_data by path
-        let entry_path = entry.path.to_string_lossy();
-        for (idx, (path, _)) in file_data.iter().enumerate() {
-            if path == entry_path.as_ref() || path.ends_with(entry_path.as_ref()) {
-                file_id_to_index.insert(entry.id.as_u32(), idx);
-                break;
-            }
-        }
-    }
-
-    // Convert diagnostics to JSON
-    // Adjust offsets for .vue files to account for script/template block position
     let diagnostics: Vec<serde_json::Value> = result
         .diagnostics
         .iter()
         .map(|d| {
-            let primary_file = file_paths
-                .get(d.primary_file.as_u32() as usize)
+            let (primary_source, utf8_start, utf8_end) = artifact
+                .diagnostic_range(d)
+                .expect("analyzed diagnostic must retain an Atlas source layout");
+            let primary_index = source_to_index.get(&primary_source).copied();
+            let primary_file = primary_index
+                .and_then(|index| file_paths.get(index))
                 .cloned()
                 .unwrap_or_default();
-
-            // Determine if this diagnostic is template-related or script-related
-            // Template-related diagnostics need template offset, script-related need script offset
-            let is_template_diagnostic = is_template_related_diagnostic(&d.kind);
-            // Some template diagnostics cover the entire <template> tag (e.g., multi-root)
-            let is_template_tag_diagnostic = is_template_tag_span_diagnostic(&d.kind);
-
-            // Adjust primary offset for SFC position (template or script)
-            let (adjusted_primary_offset, adjusted_primary_end_offset) =
-                if is_template_tag_diagnostic {
-                    // For diagnostics that span the entire template tag, use tag_start and tag_end directly
-                    let (tag_start, tag_end) = template_spans
-                        .get(&d.primary_file.as_u32())
-                        .copied()
-                        .unwrap_or((0, 0));
-                    (tag_start as u32, tag_end as u32)
-                } else if is_template_diagnostic {
-                    // For template-content diagnostics, add content_start offset
-                    // (content_start is the position right after <template>)
-                    let (_, content_start) = template_spans
-                        .get(&d.primary_file.as_u32())
-                        .copied()
-                        .unwrap_or((0, 0));
-                    (
-                        d.primary_offset + content_start as u32,
-                        d.primary_end_offset + content_start as u32,
-                    )
-                } else {
-                    // For script diagnostics, add script offset and convert UTF-8 byte offset to char offset
-                    let script_offset = script_offsets
-                        .get(&d.primary_file.as_u32())
-                        .copied()
-                        .unwrap_or(0) as u32;
-
-                    // Get the file content for UTF-8 to char offset conversion
-                    let file_content = file_id_to_index
-                        .get(&d.primary_file.as_u32())
-                        .and_then(|idx| file_contents.get(*idx))
-                        .map(|s| s.as_str())
-                        .unwrap_or("");
-
-                    // Calculate UTF-8 byte offsets first
-                    let utf8_start = d.primary_offset + script_offset;
-                    let utf8_end = d.primary_end_offset + script_offset;
-
-                    // Convert to character offsets (handles emojis and multi-byte chars)
-                    let char_start = utf8_byte_to_utf16_offset(file_content, utf8_start);
-                    let char_end = utf8_byte_to_utf16_offset(file_content, utf8_end);
-
-                    (char_start, char_end)
-                };
+            let primary_content = primary_index
+                .and_then(|index| file_contents.get(index))
+                .map_or("", String::as_str);
+            let adjusted_primary_offset = utf8_byte_to_utf16_offset(primary_content, utf8_start);
+            let adjusted_primary_end_offset = utf8_byte_to_utf16_offset(primary_content, utf8_end);
 
             let related_locations: Vec<serde_json::Value> = d
                 .related_files
                 .iter()
-                .map(
+                .filter_map(
                     |(file_id, offset, message): &(
                         vize_croquis_cf::FileId,
                         u32,
                         vize_carton::CompactString,
                     )| {
-                        let file_path = file_paths
-                            .get(file_id.as_u32() as usize)
-                            .cloned()
-                            .unwrap_or_default();
-
-                        // Related locations use script offsets (they reference components, not template positions)
-                        let offset_adjustment =
-                            script_offsets.get(&file_id.as_u32()).copied().unwrap_or(0) as u32;
-                        let utf8_offset = offset + offset_adjustment;
-
-                        // Convert to character offset
-                        let related_content = file_id_to_index
-                            .get(&file_id.as_u32())
-                            .and_then(|idx| file_contents.get(*idx))
-                            .map(|s| s.as_str())
-                            .unwrap_or("");
+                        let (source, utf8_offset) =
+                            artifact.diagnostic_related_offset(d, *file_id, *offset)?;
+                        let index = source_to_index.get(&source).copied()?;
+                        let file_path = file_paths.get(index)?.clone();
+                        let related_content = file_contents.get(index).map_or("", String::as_str);
                         let adjusted_offset =
                             utf8_byte_to_utf16_offset(related_content, utf8_offset);
 
-                        serde_json::json!({
+                        Some(serde_json::json!({
                             "file": file_path,
                             "offset": adjusted_offset,
                             "message": message.as_str(),
-                        })
+                        }))
                     },
                 )
                 .collect();
@@ -280,7 +142,7 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
         .map(|cycle| {
             cycle
                 .iter()
-                .filter_map(|id| file_paths.get(id.as_u32() as usize).cloned())
+                .filter_map(|id| artifact.layout(*id).map(|layout| layout.path().to_owned()))
                 .collect()
         })
         .collect();
@@ -340,129 +202,4 @@ fn parse_cross_file_options(options: &JsValue) -> vize_croquis_cf::CrossFileOpti
         component_resolution: get_bool("componentResolution"),
         props_validation: get_bool("propsValidation"),
     }
-}
-
-/// Convert diagnostic kind to string type
-fn diagnostic_kind_to_string(kind: &vize_croquis_cf::CrossFileDiagnosticKind) -> &'static str {
-    match kind {
-        // Fallthrough attributes
-        UnusedFallthroughAttrs { .. } => "fallthrough-attrs",
-        InheritAttrsDisabledUnused => "fallthrough-attrs",
-        MultiRootMissingAttrs => "fallthrough-attrs",
-        // Component emits
-        UndeclaredEmit { .. } => "component-emit",
-        UnusedEmit { .. } => "component-emit",
-        UnmatchedEventListener { .. } => "component-emit",
-        // Event bubbling
-        UnhandledEvent { .. } => "event-bubbling",
-        EventModifierIssue { .. } => "event-bubbling",
-        // Provide/Inject
-        UnmatchedInject { .. } => "provide-inject",
-        UnusedProvide { .. } => "provide-inject",
-        ProvideInjectTypeMismatch { .. } => "provide-inject",
-        ProvideInjectWithoutSymbol { .. } => "provide-inject",
-        NonReactiveProvideValue { .. } => "provide-inject",
-        // Unique IDs
-        DuplicateElementId { .. } => "unique-ids",
-        NonUniqueIdInLoop { .. } => "unique-ids",
-        // SSR boundary
-        BrowserApiInSsr { .. } => "ssr-boundary",
-        AsyncWithoutSuspense { .. } => "ssr-boundary",
-        HydrationMismatchRisk { .. } => "ssr-boundary",
-        // Error boundary
-        UncaughtErrorBoundary => "error-boundary",
-        MissingSuspenseBoundary => "error-boundary",
-        SuspenseWithoutFallback => "error-boundary",
-        // Circular dependency
-        CircularDependency { .. } => "circular-dependency",
-        DeepImportChain { .. } => "circular-dependency",
-        // Component resolution
-        UnregisteredComponent { .. } => "component-resolution",
-        UnresolvedImport { .. } => "component-resolution",
-        // Props validation
-        UndeclaredProp { .. } => "props-validation",
-        MissingRequiredProp { .. } => "props-validation",
-        PropTypeMismatch { .. } => "props-validation",
-        // Slot validation
-        UndefinedSlot { .. } => "slot-validation",
-        // Setup context violations
-        ReactivityOutsideSetup { .. } => "setup-context",
-        LifecycleOutsideSetup { .. } => "setup-context",
-        WatcherOutsideSetup { .. } => "setup-context",
-        DependencyInjectionOutsideSetup { .. } => "setup-context",
-        ComposableOutsideSetup { .. } => "setup-context",
-        // Reactivity loss
-        SpreadBreaksReactivity { .. } => "reactivity-loss",
-        ReassignmentBreaksReactivity { .. } => "reactivity-loss",
-        ValueExtractionBreaksReactivity { .. } => "reactivity-loss",
-        DestructuringBreaksReactivity { .. } => "reactivity-loss",
-        // Reference escape
-        ReactiveReferenceEscapes { .. } => "reference-escape",
-        ReactiveObjectMutatedAfterEscape { .. } => "reference-escape",
-        // Circular reactive dependency
-        CircularReactiveDependency { .. } => "circular-reactive",
-        // Watch patterns
-        WatchMutationCanBeComputed { .. } => "watch-pattern",
-        // DOM access
-        DomAccessWithoutNextTick { .. } => "dom-access",
-        // Ultra-strict: computed purity
-        ComputedHasSideEffects { .. } => "computed-purity",
-        // Ultra-strict: module scope
-        ReactiveStateAtModuleScope { .. } => "module-scope",
-        // Ultra-strict: template ref timing
-        TemplateRefAccessedBeforeMount { .. } => "template-ref-timing",
-        // Ultra-strict: async boundary
-        AsyncBoundaryCrossing { .. } => "async-boundary",
-        InjectedAsyncMutationRace { .. } => "race-condition",
-        // Ultra-strict: closure capture
-        ClosureCapturesReactive { .. } => "closure-capture",
-        // Ultra-strict: object identity
-        ObjectIdentityComparison { .. } => "object-identity",
-        // Ultra-strict: state export
-        ReactiveStateExported { .. } => "state-export",
-        // Ultra-strict: shallow reactive
-        ShallowReactiveDeepAccess { .. } => "shallow-reactive",
-        // Ultra-strict: toRaw mutation
-        ToRawMutation { .. } => "to-raw-mutation",
-        // Ultra-strict: event listener
-        EventListenerWithoutCleanup { .. } => "event-listener-cleanup",
-        // Lifecycle hook cleanup
-        LifecycleHookWithoutCleanup { .. } => "lifecycle-cleanup",
-        // Ultra-strict: array mutation
-        ArrayMutationNotTriggering { .. } => "array-mutation",
-        // Ultra-strict: Pinia
-        PiniaGetterWithoutStoreToRefs { .. } => "pinia-store-refs",
-        // Ultra-strict: watchEffect
-        WatchEffectWithAsync { .. } => "watch-effect-async",
-        // Setup context violation (unified)
-        SetupContextViolation { .. } => "setup-context",
-    }
-}
-
-/// Determine if a diagnostic is template-related (uses template offsets)
-/// vs script-related (uses script offsets)
-fn is_template_related_diagnostic(kind: &vize_croquis_cf::CrossFileDiagnosticKind) -> bool {
-    matches!(
-        kind,
-        // Template-based diagnostics (positions in template block)
-        UnmatchedEventListener { .. }
-            | UndeclaredProp { .. }
-            | MissingRequiredProp { .. }
-            | PropTypeMismatch { .. }
-            | UndefinedSlot { .. }
-            | UnregisteredComponent { .. }
-            | UnusedFallthroughAttrs { .. }
-            | MultiRootMissingAttrs
-            | InheritAttrsDisabledUnused
-    )
-}
-
-/// Determine if a diagnostic should span the entire <template> tag
-/// (uses tag_start and tag_end directly, not relative offsets)
-fn is_template_tag_span_diagnostic(kind: &vize_croquis_cf::CrossFileDiagnosticKind) -> bool {
-    matches!(
-        kind,
-        // These diagnostics apply to the entire template, not a specific location
-        MultiRootMissingAttrs | InheritAttrsDisabledUnused | UnusedFallthroughAttrs { .. }
-    )
 }

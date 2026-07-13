@@ -111,8 +111,9 @@ Vue-specific addition is the `<style scoped>` element described [below](#scoped-
 
 ## Supported JSX surface
 
-The compiler lowers JSX to the same Relief IR used by SFC templates, then sends that IR to the VDOM
-or Vapor backend. These forms are covered by the JSX/TSX test matrix:
+The compiler parses JSX once into a JSX-owned syntax snapshot, then derives frontend-neutral Rendu
+render HIR for the VDOM, SSR, or Vapor backend. It does not construct the Vue-template-specific
+Relief representation. These forms are covered by the JSX/TSX test matrix:
 
 - fragments and nested elements
 - component tags, member-expression tags, and intrinsic HTML/SVG tags
@@ -439,10 +440,9 @@ enabled, so React `.tsx` files are never treated as Vue JSX in the editor either
 ## Linting
 
 Vize's Patina lint rules run on JSX/TSX through a **zero-cost rule IR projected straight from the OXC
-AST**. Markup-oriented rules do not reconstruct a synthetic SFC template; they read JSX elements and
-attributes directly. Rules that need the Vue template shape, such as `.map(...)` list key checks, run
-over the lowered Relief tree. Semantic rules are backed by Croquis, the same analysis layer used for
-SFCs.
+AST**. Markup-oriented rules, including `.map(...)` list key checks, read the JSX-owned syntax
+product. Semantic rules use the frontend-neutral Croquis product, the same semantic contract used
+for SFCs; neither path materializes Relief.
 
 This means JSX/TSX linting catches the same classes of problems without relying on partial string
 matching:

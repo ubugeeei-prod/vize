@@ -1,10 +1,11 @@
 use std::borrow::Cow;
 
-use vize_atelier_core::{
-    BindingMetadata, ExpressionNode, Position, SimpleExpressionNode, SourceLocation,
-    TransformContext, TransformOptions, process_expression,
-};
+use vize_atelier_core::{TransformContext, process_expression};
 use vize_carton::{Box as CoreBox, String, profile};
+use vize_relief::{
+    BindingMetadata, ExpressionNode, Position, SimpleExpressionNode, SourceLocation,
+    TransformOptions,
+};
 
 use crate::script::{ScriptCompileContext, gen_props_access_exp};
 

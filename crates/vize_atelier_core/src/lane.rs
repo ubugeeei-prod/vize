@@ -1,6 +1,7 @@
 //! Template transform lane for Vue template AST.
 //!
 //! This module provides the transform context, traversal, and base transform traits.
+#![allow(deprecated)]
 
 #[path = "transform/context.rs"]
 mod context;
@@ -12,7 +13,6 @@ pub mod patterned_template;
 pub mod structural;
 #[path = "transform/traverse.rs"]
 pub mod traverse;
-
 use vize_carton::{Bump, SmallVec, String, Vec, profile};
 use vize_croquis::{Croquis, ScopeChain};
 

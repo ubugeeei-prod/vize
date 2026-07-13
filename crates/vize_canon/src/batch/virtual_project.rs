@@ -16,15 +16,18 @@
 
 use std::path::PathBuf;
 
-use vize_atelier_core::TemplateSyntaxMode;
+use vize_atlas::Shared;
 use vize_carton::{FxHashMap, String as CompactString};
+use vize_relief::TemplateSyntaxMode;
 
-use super::import_rewriter::ImportRewriter;
 use super::source_map::CompositeSourceMap;
 use super::{Diagnostic, SfcBlockType};
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
 mod art_usage;
+mod artifact_product;
+mod artifact_recipe;
+mod artifact_source;
 mod build;
 mod declaration_emit;
 mod document;
@@ -40,9 +43,9 @@ mod materialize;
 mod passthrough;
 mod paths;
 mod project;
-mod setup_props;
 mod tsconfig_gen;
 mod tsconfig_paths;
+mod vue_artifact_codegen;
 mod vue_codegen;
 
 #[cfg(test)]
@@ -126,7 +129,7 @@ pub struct VirtualProject {
     experimental_in_tag_comments: bool,
 
     /// Virtual files keyed by materialized path.
-    virtual_files: FxHashMap<PathBuf, VirtualFile>,
+    virtual_files: FxHashMap<PathBuf, Shared<VirtualFile>>,
 
     /// Non-TS module files that must exist in the virtual mirror for TypeScript
     /// module resolution, keyed by materialized path.
@@ -148,7 +151,4 @@ pub struct VirtualProject {
 
     /// Parser diagnostics collected before Corsa runs.
     diagnostics: Vec<Diagnostic>,
-
-    /// Import rewriter for `.vue` specifiers inside TypeScript sources.
-    rewriter: ImportRewriter,
 }

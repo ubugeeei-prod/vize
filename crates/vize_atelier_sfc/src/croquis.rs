@@ -5,12 +5,16 @@
 //! merging, generic extraction, and virtual-script offsets.
 
 mod drawer;
+#[path = "croquis/resolved_props.rs"]
+mod resolved_props;
+
+pub use resolved_props::merge_resolved_props_into_croquis;
 
 use self::drawer::{analyze_scripts, apply_options_api_mode};
 use crate::types::SfcDescriptor;
-use vize_atelier_core::RootNode;
 use vize_carton::{String, ToCompactString, cstr, profile};
 use vize_croquis::{Croquis, Drawer, DrawerOptions};
+use vize_relief::RootNode;
 
 /// Options for descriptor-level Croquis analysis.
 #[derive(Debug, Clone, Copy)]
@@ -148,6 +152,7 @@ fn analyze_sfc_descriptor_with_context_impl(
         options_api,
         legacy_vue2,
         None,
+        false,
     )
 }
 
@@ -175,6 +180,32 @@ pub fn analyze_sfc_descriptor_resolved(
         options_api,
         legacy_vue2,
         Some(filename),
+        false,
+    )
+}
+
+/// Resolve props after template traversal to preserve legacy Canon bytes.
+///
+/// The old batch type checker retained stale undefined-reference guards for
+/// imported props because its resolver ran after Croquis drew the template.
+/// This compatibility entry point keeps that exact output during the Atlas
+/// migration while still performing one traversal and one resolution pass.
+pub fn analyze_sfc_descriptor_resolved_for_canon_compatibility(
+    descriptor: &SfcDescriptor<'_>,
+    template_ast: Option<&RootNode<'_>>,
+    options: SfcCroquisOptions,
+    options_api: bool,
+    legacy_vue2: bool,
+    filename: &str,
+) -> SfcCroquisAnalysis {
+    analyze_sfc_descriptor_resolved_impl(
+        descriptor,
+        template_ast,
+        options,
+        options_api,
+        legacy_vue2,
+        Some(filename),
+        true,
     )
 }
 
@@ -185,12 +216,13 @@ fn analyze_sfc_descriptor_resolved_impl(
     options_api: bool,
     legacy_vue2: bool,
     resolve_filename: Option<&str>,
+    preserve_canon_after_template: bool,
 ) -> SfcCroquisAnalysis {
     let drawer_options = options.analyzer_options;
     let script_analyzed = drawer_options.analyze_script
         && (descriptor.script.is_some() || descriptor.script_setup.is_some());
     let mut summary = analyze_scripts(descriptor, options, options_api, legacy_vue2);
-    if let Some(filename) = resolve_filename {
+    if !preserve_canon_after_template && let Some(filename) = resolve_filename {
         merge_resolved_props_into_croquis(&mut summary, descriptor, filename);
     }
     let drawer = Drawer::with_summary(drawer_options, summary, script_analyzed);
@@ -200,9 +232,13 @@ fn analyze_sfc_descriptor_resolved_impl(
         profile!("atelier.sfc.croquis.template", drawer.draw_template(root));
     }
 
+    let mut croquis = drawer.finish();
+    if preserve_canon_after_template && let Some(filename) = resolve_filename {
+        merge_resolved_props_into_croquis(&mut croquis, descriptor, filename);
+    }
     let (script_content, script_offset) = script_content_for_descriptor(descriptor, options);
     SfcCroquisAnalysis {
-        croquis: drawer.finish(),
+        croquis,
         script_content,
         script_offset,
     }
@@ -227,56 +263,6 @@ pub fn script_content_for_descriptor(
             script.loc.start as u32,
         ),
         (None, None) => (None, 0),
-    }
-}
-
-/// Merge props resolved by the script compile context — which performs
-/// cross-file and node_modules type resolution — into a Croquis summary.
-///
-/// Croquis alone cannot resolve props inherited through imported or heritage
-/// types (`interface Props extends Omit<ImportedProps, ...>`), so
-/// template-binding checks and virtual TS generation would treat those props
-/// as undefined references. This mirrors the merge the compiler performs in
-/// `compile.rs`.
-pub fn merge_resolved_props_into_croquis(
-    croquis: &mut Croquis,
-    descriptor: &SfcDescriptor<'_>,
-    filename: &str,
-) {
-    use crate::compile::is_ts_lang;
-    use crate::script::ScriptCompileContext;
-    use crate::types::BindingType;
-
-    let Some(script_setup) = descriptor.script_setup.as_ref() else {
-        return;
-    };
-
-    let mut ctx = ScriptCompileContext::new(&script_setup.content);
-    if let Some(ref script) = descriptor.script {
-        ctx.collect_types_from(&script.content);
-    }
-    if !filename.is_empty() {
-        ctx.collect_imported_types_from_path(
-            &script_setup.content,
-            filename,
-            is_ts_lang(script_setup.lang.as_deref()),
-        );
-        if let Some(ref script) = descriptor.script {
-            ctx.collect_imported_types_from_path(
-                &script.content,
-                filename,
-                is_ts_lang(script.lang.as_deref()),
-            );
-        }
-    }
-    ctx.analyze();
-
-    for (name, binding_type) in &ctx.bindings.bindings {
-        if matches!(binding_type, BindingType::Props | BindingType::PropsAliased)
-            && !croquis.bindings.contains(name.as_str())
-        {
-            croquis.bindings.add(name.as_str(), *binding_type);
-        }
     }
 }
 

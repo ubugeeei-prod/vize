@@ -6,7 +6,7 @@ use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 
-use vize_atelier_core::{ElementNode, ElementType, PropNode, TemplateChildNode};
+use vize_relief::{ElementNode, ElementType, PropNode, TemplateChildNode};
 
 /// Generate static template string for an element
 pub fn generate_element_template(el: &ElementNode<'_>) -> String {

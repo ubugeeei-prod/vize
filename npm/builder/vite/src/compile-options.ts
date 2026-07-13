@@ -17,6 +17,7 @@ export interface CompileFileOptions {
 }
 
 export interface CompileBatchOptions {
+  sourceMap?: boolean;
   ssr: boolean;
   vapor: boolean;
   mode?: "module" | "function";
@@ -58,6 +59,7 @@ export function buildCompileFileOptions(
 
 export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCompileOptionsNapi {
   return {
+    sourceMap: options.sourceMap ?? false,
     ssr: options.ssr,
     vapor: options.vapor,
     customRenderer: options.customRenderer ?? false,

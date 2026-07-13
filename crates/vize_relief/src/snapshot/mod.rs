@@ -15,6 +15,7 @@ mod convert;
 mod copy;
 mod expression;
 mod ids;
+mod materialize;
 mod node;
 mod property;
 mod root;

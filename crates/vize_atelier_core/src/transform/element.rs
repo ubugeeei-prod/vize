@@ -1,5 +1,4 @@
 //! Element transformation functions.
-
 use vize_carton::{Box, String, Vec, capitalize, is_builtin_directive, is_native_tag};
 
 use crate::errors::ErrorCode;
@@ -482,6 +481,7 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                             const_type: ConstantType::NotConstant,
                             loc: data.dir_loc.clone(),
                             js_ast: None,
+                            hoisted: None,
                             identifiers: None,
                             is_handler_key: false,
                             is_ref_transformed: true, // Already processed for ref .value

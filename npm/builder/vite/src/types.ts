@@ -1,4 +1,5 @@
 import type { UserConfigExport } from "../../../cli/src/types/index.ts";
+import type { RawSourceMap } from "@vizejs/source-map";
 import type {
   ExperimentalCompileFlags,
   ExperimentalPluginOptions,
@@ -39,6 +40,7 @@ export interface MacroArtifact {
 export interface SfcCompileResultNapi {
   code: string;
   css?: string;
+  map?: string;
   errors: string[];
   warnings: string[];
   templateHash?: string;
@@ -308,7 +310,6 @@ export interface StyleBlockInfo {
   /** Index of this style block in the SFC */
   index: number;
 }
-
 export interface NativeStyleBlockInfo {
   /** Raw style content (uncompiled for preprocessor langs) */
   content: string;
@@ -325,9 +326,9 @@ export interface NativeStyleBlockInfo {
   /** Index of this style block in the SFC */
   index: number;
 }
-
 export interface CompiledModule {
   code: string;
+  map?: RawSourceMap | null;
   css?: string;
   scopeId: string;
   hasScoped: boolean;
@@ -341,15 +342,14 @@ export interface CompiledModule {
   /** Files loaded through SFC `src` imports */
   dependencies?: string[];
 }
-
 export interface BatchFileInput {
   path: string;
   source: string;
 }
-
 export interface BatchFileResult {
   path: string;
   code: string;
+  map?: string;
   css?: string;
   scopeId: string;
   hasScoped: boolean;
@@ -363,9 +363,9 @@ export interface BatchFileResult {
   /** Per-block style metadata extracted from the source SFC */
   styles?: NativeStyleBlockInfo[];
 }
-
 export interface BatchCompileOptionsNapi extends ExperimentalCompileFlags {
   mode?: "module" | "function";
+  sourceMap?: boolean;
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;

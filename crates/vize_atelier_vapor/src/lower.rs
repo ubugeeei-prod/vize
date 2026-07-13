@@ -16,7 +16,7 @@ mod text;
 use vize_carton::{Bump, String, Vec};
 
 use crate::ir::{BlockIRNode, RootIRNode};
-use vize_atelier_core::{RootNode, TemplateChildNode};
+use vize_relief::{RootNode, TemplateChildNode};
 
 use context::TransformContext;
 use control::{transform_for_node, transform_if_node};
@@ -119,8 +119,8 @@ fn transform_combined_block_text<'a>(
     block: &mut BlockIRNode<'a>,
 ) {
     use crate::ir::{OperationNode, SetTextIRNode};
-    use vize_atelier_core::{ExpressionNode, SimpleExpressionNode, SourceLocation};
     use vize_carton::{Box, Vec};
+    use vize_relief::{ExpressionNode, SimpleExpressionNode, SourceLocation};
 
     let element_id = ctx.next_id();
 
@@ -168,7 +168,7 @@ fn transform_combined_block_text<'a>(
 #[cfg(test)]
 mod tests {
     use super::transform_to_ir;
-    use vize_atelier_core::parser::parse;
+    use vize_armature::parse;
     use vize_carton::Bump;
 
     #[test]

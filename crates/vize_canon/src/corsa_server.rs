@@ -309,8 +309,6 @@ impl CorsaServer {
 
     /// Check a Vue SFC and return diagnostics.
     fn check_vue_sfc(&mut self, uri: &str, content: &str) -> Result<CheckResult, String> {
-        use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-
         let source_path =
             uri_to_path(uri, &self.working_dir()).unwrap_or_else(|| PathBuf::from(uri));
         let project = crate::corsa_bridge::build_vue_virtual_project(
@@ -322,23 +320,18 @@ impl CorsaServer {
         let virtual_ts = project.host.code.clone();
         self.cache.insert(uri.into(), virtual_ts.clone());
 
-        // The SFC compile diagnostic still needs the descriptor; parse it once
-        // here for that merge below.
-        let descriptor = parse_sfc(
-            content,
-            SfcParseOptions {
-                filename: uri.into(),
-                ..Default::default()
-            },
-        )
-        .map_err(|e| cstr!("Failed to parse SFC: {}", e.message))?;
+        let descriptor = project
+            .host
+            .descriptor
+            .descriptor()
+            .ok_or_else(|| cstr!("Failed to parse SFC through the artifact graph"))?;
 
         // Run Corsa on the virtual TypeScript through the project-session API.
         let mut diagnostics = self.run_corsa(&project)?;
 
         // Merge in Vue-specific compile errors (e.g. props destructure default type
         // mismatch) so the socket-mode check matches the direct `vize check` runner.
-        if let Some(sfc_diagnostic) = collect_sfc_compile_diagnostic(uri, content, &descriptor) {
+        if let Some(sfc_diagnostic) = collect_sfc_compile_diagnostic(uri, content, descriptor) {
             diagnostics.push(sfc_diagnostic);
         }
 

@@ -36,7 +36,16 @@ pub fn lower_source_to_rendu(
 impl JsxSyntaxSnapshot {
     /// Lower this parser-independent snapshot directly into an owned Rendu HIR.
     pub fn lower_rendu(&self) -> Result<RenduRoot, RenduValidationErrors> {
-        RenduLowerer::new(self).lower()
+        RenduLowerer::new(self).lower(self.roots.iter())
+    }
+
+    /// Lower one outermost component root while preserving module boundaries.
+    pub fn lower_rendu_root(
+        &self,
+        index: usize,
+    ) -> Option<Result<RenduRoot, RenduValidationErrors>> {
+        let root = self.roots.get(index)?;
+        Some(RenduLowerer::new(self).lower(std::iter::once(root)))
     }
 }
 
@@ -48,7 +57,6 @@ enum Namespace {
 }
 
 struct RenduLowerer<'s> {
-    snapshot: &'s JsxSyntaxSnapshot,
     line_index: LineIndex<'s>,
     builder: RenduBuilder,
     source: RenduSourceId,
@@ -71,18 +79,17 @@ impl<'s> RenduLowerer<'s> {
         }
         let source = builder.add_source(source);
         Self {
-            snapshot,
             line_index: LineIndex::new(&snapshot.source),
             builder,
             source,
         }
     }
 
-    fn lower(mut self) -> Result<RenduRoot, RenduValidationErrors> {
-        let snapshot = self.snapshot;
-        let entries = snapshot
-            .roots
-            .iter()
+    fn lower<'n>(
+        mut self,
+        nodes: impl Iterator<Item = &'n JsxSyntaxNode>,
+    ) -> Result<RenduRoot, RenduValidationErrors> {
+        let entries = nodes
             .map(|node| self.node(node, Namespace::Html))
             .collect::<Vec<_>>();
         self.builder.set_entry(entries);
@@ -102,8 +109,12 @@ impl<'s> RenduLowerer<'s> {
                     .collect();
                 let provenance = self.provenance(element.span);
                 if element.component {
+                    let name = self.builder.add_expression(
+                        RenduExpression::new(element.name.clone(), RenduExpressionKind::Reference)
+                            .with_provenance(self.provenance(element.span)),
+                    );
                     self.builder.add_node(RenduNode::Component {
-                        name: RenduName::static_name(element.name.clone()),
+                        name: RenduName::Dynamic(name),
                         properties,
                         children,
                         provenance,

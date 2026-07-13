@@ -1,10 +1,12 @@
 //! Lint command - Lint Vue and script files
 
 mod args;
+mod artifact_graph;
 mod collect;
 mod cross_file;
 mod fix;
 mod patterns;
+mod pipeline;
 mod stdout;
 
 #[cfg(test)]
@@ -15,17 +17,13 @@ pub use args::LintArgs;
 use crate::profile_support;
 use collect::{collect_lint_files, load_lint_ignore_set, resolve_lint_config_path};
 use cross_file::apply_sfc_cross_file_lint;
-use fix::lint_source_with_optional_fix;
-use rayon::prelude::*;
-use std::fs;
+use pipeline::{lint_inputs, read_lint_inputs};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
-use vize_carton::{
-    String, ToCompactString, config::LintRuleSeverity, cstr, profile, profiler::global_profiler,
-};
+use vize_atlas::Shared;
+use vize_carton::{String, config::LintRuleSeverity, cstr, profile, profiler::global_profiler};
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
@@ -125,8 +123,6 @@ pub fn run(args: LintArgs) {
             vize_patina::rules::type_aware::NoReactivityLoss::new(),
         ));
     }
-    let error_count = AtomicUsize::new(0);
-    let warning_count = AtomicUsize::new(0);
     let profile_rows = args.profile.then(|| Mutex::new(Vec::new()));
     if args.profile {
         let profiler = global_profiler();
@@ -135,70 +131,43 @@ pub fn run(args: LintArgs) {
     }
 
     let lint_start = Instant::now();
-    let mut results: Vec<_> = files
-        .par_iter()
-        .filter_map(|path| {
-            let file_start = args.profile.then(Instant::now);
-            let read_start = args.profile.then(Instant::now);
-            let source: String = match profile!("cli.lint.file.read", fs::read_to_string(path)) {
-                Ok(source) => {
-                    global_profiler().record_fs_read_to_string(source.len());
-                    source.into()
-                }
-                Err(e) => {
-                    global_profiler().record_fs_read_to_string_failure();
-                    eprintln!("Failed to read {}: {}", path.display(), e);
-                    return None;
-                }
+    let inputs = read_lint_inputs(&files, args.profile);
+    let mut results = lint_inputs(
+        inputs,
+        Shared::new(linter),
+        linter_features.vue_version.unwrap_or_default(),
+        args.fix,
+        args.profile,
+    );
+    if let Some(profile_rows) = profile_rows.as_ref()
+        && let Ok(mut rows) = profile_rows.lock()
+    {
+        rows.extend(results.iter().map(|file| {
+            let note = if file.fixed {
+                cstr!(
+                    "{} error(s), {} warning(s), fixed",
+                    file.result.error_count,
+                    file.result.warning_count
+                )
+            } else {
+                cstr!(
+                    "{} error(s), {} warning(s)",
+                    file.result.error_count,
+                    file.result.warning_count
+                )
             };
-            let read_time = read_start
-                .map(|start| start.elapsed())
-                .unwrap_or(Duration::ZERO);
-
-            let filename = path.to_string_lossy().to_compact_string();
-            let lint_file_start = args.profile.then(Instant::now);
-            let result = profile!("cli.lint.file.lint", {
-                lint_source_with_optional_fix(&linter, path, source, &filename, args.fix)
-            });
-            let (source, result, fixed) = result;
-            let lint_time = lint_file_start
-                .map(|start| start.elapsed())
-                .unwrap_or(Duration::ZERO);
-
-            error_count.fetch_add(result.error_count, Ordering::Relaxed);
-            warning_count.fetch_add(result.warning_count, Ordering::Relaxed);
-
-            if let (Some(file_start), Some(profile_rows)) = (file_start, profile_rows.as_ref()) {
-                let note = if fixed {
-                    cstr!(
-                        "{} error(s), {} warning(s), fixed",
-                        result.error_count,
-                        result.warning_count
-                    )
-                } else {
-                    cstr!(
-                        "{} error(s), {} warning(s)",
-                        result.error_count,
-                        result.warning_count
-                    )
-                };
-                if let Ok(mut rows) = profile_rows.lock() {
-                    rows.push(ProfileFileRow {
-                        path: path.clone(),
-                        bytes: source.len(),
-                        total: file_start.elapsed(),
-                        primary_label: "read",
-                        primary: read_time,
-                        secondary_label: "lint",
-                        secondary: lint_time,
-                        note: Some(note),
-                    });
-                }
+            ProfileFileRow {
+                path: file.path.clone(),
+                bytes: file.source.len(),
+                total: file.read_time + file.lint_time,
+                primary_label: "read",
+                primary: file.read_time,
+                secondary_label: "lint",
+                secondary: file.lint_time,
+                note: Some(note),
             }
-
-            Some((path.clone(), filename, source, result))
-        })
-        .collect();
+        }));
+    }
     let lint_time = lint_start.elapsed();
 
     let mut cross_file_report = None;
@@ -219,26 +188,25 @@ pub fn run(args: LintArgs) {
         .map(|start| start.elapsed())
         .unwrap_or(Duration::ZERO);
 
-    let total_errors: usize = results
-        .iter()
-        .map(|(_, _, _, result)| result.error_count)
-        .sum();
-    let total_warnings: usize = results
-        .iter()
-        .map(|(_, _, _, result)| result.warning_count)
-        .sum();
+    let total_errors: usize = results.iter().map(|file| file.result.error_count).sum();
+    let total_warnings: usize = results.iter().map(|file| file.result.warning_count).sum();
 
     let output_start = Instant::now();
     if render_details {
         let lint_results: Vec<_> = profile!(
             "cli.lint.output.clone_results",
-            results.iter().map(|(_, _, _, r)| r).cloned().collect()
+            results.iter().map(|file| &file.result).cloned().collect()
         );
         let sources: Vec<_> = profile!(
             "cli.lint.output.clone_sources",
             results
                 .iter()
-                .map(|(_, f, s, _)| (f.clone(), vize_carton::String::from(s.as_str())))
+                .map(|file| {
+                    (
+                        file.filename.clone(),
+                        vize_carton::String::from(file.source.as_str()),
+                    )
+                })
                 .collect()
         );
 

@@ -1,13 +1,11 @@
 //! Inspector payload, agent report, and playground URL helpers.
 
 use std::fmt::Write as _;
+use vize_atlas::{Shared, SourceSnapshot};
 use vize_carton::{String, ToCompactString};
 
-use super::graph::{InspectorGraph, build_graph, line_count};
-use vize_atelier_core::Allocator;
-use vize_atelier_sfc::{
-    SfcParseOptions, croquis::SfcCroquisOptions, croquis::analyze_sfc_descriptor, parse_sfc,
-};
+use super::artifact::{InspectorReportGraph, InspectorSourceAnalysis};
+use super::graph::{InspectorGraph, build_graph_from_analyses, line_count, normalize_path};
 use vize_croquis::{CroquisSemanticSnapshot, CroquisSemanticSummary};
 
 #[derive(Debug, Clone, Copy, serde::Serialize)]
@@ -49,7 +47,7 @@ pub struct InspectorSourceFile {
     pub source: String,
 }
 
-#[derive(serde::Serialize)]
+#[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InspectorPayload {
     version: u8,
@@ -59,20 +57,20 @@ pub struct InspectorPayload {
     files: Vec<InspectorPayloadFile>,
 }
 
-#[derive(serde::Serialize)]
+#[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 struct InspectorPayloadOptions {
     custom_renderer: bool,
     template_syntax: InspectorTemplateSyntax,
 }
 
-#[derive(serde::Serialize)]
+#[derive(Clone, serde::Serialize)]
 struct InspectorPayloadFile {
     path: String,
     source: String,
 }
 
-#[derive(serde::Serialize)]
+#[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InspectorAgentReport {
     schema: &'static str,
@@ -85,7 +83,7 @@ pub struct InspectorAgentReport {
     payload: InspectorPayload,
 }
 
-#[derive(serde::Serialize)]
+#[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 struct InspectorAgentSummary {
     target: &'static str,
@@ -128,7 +126,7 @@ struct InspectorSemanticSummary {
     fallthrough_attr_risk_files: usize,
 }
 
-#[derive(serde::Serialize)]
+#[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 struct InspectorSemanticFile {
     path: String,
@@ -167,13 +165,37 @@ pub fn build_agent_report(
     playground_url: String,
     files: Vec<InspectorSourceFile>,
 ) -> InspectorAgentReport {
-    let source_bytes = files.iter().map(|file| file.source.len()).sum();
-    let source_lines = files
+    let mut graph = InspectorReportGraph::new(payload, playground_url, &files)
+        .unwrap_or_else(|error| panic!("failed to prepare inspector report graph: {error}"));
+    graph
+        .query()
+        .unwrap_or_else(|error| panic!("failed to build inspector report: {error}"))
+        .value()
+        .clone()
+}
+
+pub(super) fn build_agent_report_from_analyses(
+    payload: InspectorPayload,
+    playground_url: String,
+    analyzed: &[(SourceSnapshot, Shared<InspectorSourceAnalysis>)],
+) -> InspectorAgentReport {
+    let source_bytes = analyzed.iter().map(|(source, _)| source.text().len()).sum();
+    let source_lines = analyzed
         .iter()
-        .map(|file| line_count(file.source.as_str()))
+        .map(|(source, _)| line_count(source.text()))
         .sum();
-    let graph = build_graph(&files);
-    let (semantic, semantic_files) = build_semantic_report(&files);
+    let graph_inputs: Vec<_> = analyzed
+        .iter()
+        .map(|(source, analysis)| {
+            (
+                normalize_path(source.name()),
+                source.text(),
+                analysis.graph.clone(),
+            )
+        })
+        .collect();
+    let graph = build_graph_from_analyses(&graph_inputs);
+    let (semantic, semantic_files) = build_semantic_report(analyzed);
     let summary = InspectorAgentSummary {
         target: payload.target,
         selected_file: payload.selected_file.clone(),
@@ -200,41 +222,32 @@ pub fn build_agent_report(
 }
 
 fn build_semantic_report(
-    files: &[InspectorSourceFile],
+    files: &[(SourceSnapshot, Shared<InspectorSourceAnalysis>)],
 ) -> (InspectorSemanticSummary, Vec<InspectorSemanticFile>) {
     let mut summary = InspectorSemanticSummary::default();
     let mut semantic_files = Vec::new();
-    for file in files {
-        if !file.path.ends_with(".vue") {
+    for (source, analysis) in files {
+        if !source.name().ends_with(".vue") {
             summary.skipped_files += 1;
             continue;
         }
-
-        let Ok(descriptor) = parse_sfc(file.source.as_str(), SfcParseOptions::default()) else {
+        if analysis.sfc_parse_error {
             summary.sfc_parse_error_files += 1;
+            continue;
+        }
+        if analysis.template_parse_error {
+            summary.template_parse_error_files += 1;
+        }
+        let Some(semantic) = analysis.semantic.clone() else {
+            summary.skipped_files += 1;
             continue;
         };
 
-        let template_allocator = Allocator::default();
-        let template_root = descriptor.template.as_ref().map(|template| {
-            let (root, parse_errors) =
-                vize_atelier_core::parser::parse(&template_allocator, template.content.as_ref());
-            if !parse_errors.is_empty() {
-                summary.template_parse_error_files += 1;
-            }
-            root
-        });
-        let mut croquis_options = SfcCroquisOptions::for_lint();
-        croquis_options
-            .analyzer_options
-            .collect_template_expressions = true;
-        let croquis = analyze_sfc_descriptor(&descriptor, template_root.as_ref(), croquis_options);
-
         summary.analyzed_files += 1;
-        let snapshot = compact_semantic_snapshot(croquis.semantic_snapshot());
+        let snapshot = compact_semantic_snapshot(semantic);
         summary.add_croquis(snapshot.summary);
         semantic_files.push(InspectorSemanticFile {
-            path: file.path.clone(),
+            path: source.name().into(),
             snapshot,
         });
     }

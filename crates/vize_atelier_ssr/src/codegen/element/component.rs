@@ -915,7 +915,7 @@ impl<'a> SsrCodegenContext<'a> {
             ExpressionNode::Compound(compound) => {
                 let mut out = String::default();
                 for child in &compound.children {
-                    use vize_atelier_core::CompoundExpressionChild;
+                    use vize_relief::CompoundExpressionChild;
                     match child {
                         CompoundExpressionChild::Simple(simple) => out.push_str(&simple.content),
                         CompoundExpressionChild::String(value) => out.push_str(value),

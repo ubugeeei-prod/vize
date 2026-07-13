@@ -1,16 +1,27 @@
 //! Independently registered Atlas providers for JSX and TSX sources.
 
+#[path = "atlas/compile.rs"]
+mod compile;
+#[path = "atlas/render.rs"]
+mod render;
+
+pub use compile::{
+    JsxCompileArtifact, JsxCompileProduct, JsxCompileProvider, JsxCompileRequest,
+    JsxCompileSettings, JsxCompileSettingsInput, compile_jsx_with_atlas,
+};
+pub use render::{JsxRenderModule, JsxRenderModuleProduct, JsxRenderModuleProvider, JsxRenderRoot};
+
 use vize_atlas::{
     Compilation, ObservationKind, PlanningContext, Product, ProductId, Provider, ProviderContext,
-    ProviderError, RegisterProviderError, SourceRange,
+    ProviderError, RegisterProviderError, SourceInputId, SourceRange,
 };
 use vize_carton::{cstr, source_anchor::SourceAnchor};
 use vize_croquis::{
-    CroquisSemanticProduct, CroquisSemanticSnapshot, CroquisSemanticSnapshotBuilder,
-    SemanticSourceRange,
+    CroquisDocument, CroquisDocumentProduct, CroquisSemanticProduct, CroquisSemanticSnapshot,
+    CroquisSemanticSnapshotBuilder, CroquisSourceSegment, SemanticSourceRange,
 };
 use vize_flow::FlowProduct;
-use vize_rendu::RenduProduct;
+use vize_rendu::{RenduModule, RenduProduct};
 
 use crate::{
     JsxLang, JsxSyntaxAttribute, JsxSyntaxNode, JsxSyntaxSnapshot, JsxSyntaxSpan, Severity,
@@ -32,6 +43,10 @@ pub struct JsxSyntaxProvider;
 impl Provider for JsxSyntaxProvider {
     type Product = JsxSyntaxProduct;
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<JsxCompileSettingsInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
         is_jsx_source(context.source().name())
     }
@@ -41,11 +56,11 @@ impl Provider for JsxSyntaxProvider {
         context: &mut ProviderContext<'_>,
     ) -> Result<JsxSyntaxSnapshot, ProviderError> {
         let source = context.source();
-        let mut snapshot = snapshot_jsx_named(
-            source.name(),
-            source.text(),
-            JsxLang::from_path(source.name()),
-        );
+        let lang = context
+            .source_input::<JsxCompileSettingsInput>()
+            .and_then(|request| request.lang)
+            .unwrap_or_else(|| JsxLang::from_path(source.name()));
+        let mut snapshot = snapshot_jsx_named(source.name(), source.text(), lang);
         snapshot.source_anchor = Some(SourceAnchor::new(
             source.id().get(),
             source.revision().get(),
@@ -94,18 +109,30 @@ impl Provider for JsxRenduProvider {
         &self,
         context: &mut ProviderContext<'_>,
     ) -> Result<<RenduProduct as Product>::Value, ProviderError> {
-        context
-            .get::<JsxSyntaxProduct>()?
-            .lower_rendu()
-            .map_err(|error| ProviderError::message(cstr!("{error}")))
+        let syntax = context.get::<JsxSyntaxProduct>()?;
+        let roots = (0..syntax.roots.len())
+            .map(|index| {
+                syntax
+                    .lower_rendu_root(index)
+                    .ok_or_else(|| ProviderError::message("JSX root metadata is misaligned"))?
+                    .map_err(|error| ProviderError::message(cstr!("{error}")))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        if roots.is_empty() {
+            return vize_rendu::RenduBuilder::new()
+                .finish()
+                .map(RenduModule::from_root)
+                .map_err(|error| ProviderError::message(cstr!("{error}")));
+        }
+        Ok(RenduModule::new(roots))
     }
 }
 
-/// JSX syntax to owned Croquis semantic facts without a second parse.
-pub struct JsxSemanticProvider;
+/// JSX syntax to the complete Croquis document without a second parse.
+pub struct JsxCroquisProvider;
 
-impl Provider for JsxSemanticProvider {
-    type Product = CroquisSemanticProduct;
+impl Provider for JsxCroquisProvider {
+    type Product = CroquisDocumentProduct;
 
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
         is_jsx_source(context.source().name())
@@ -115,12 +142,23 @@ impl Provider for JsxSemanticProvider {
         vec![ProductId::of::<JsxSyntaxProduct>()]
     }
 
-    fn provide(
-        &self,
-        context: &mut ProviderContext<'_>,
-    ) -> Result<CroquisSemanticSnapshot, ProviderError> {
+    fn provide(&self, context: &mut ProviderContext<'_>) -> Result<CroquisDocument, ProviderError> {
         let syntax = context.get::<JsxSyntaxProduct>()?;
-        Ok(project_semantics(syntax.as_ref()))
+        let anchor = syntax.source_anchor.ok_or_else(|| {
+            ProviderError::message("Atlas JSX syntax is missing its source anchor")
+        })?;
+        let role = match syntax.lang {
+            JsxLang::Jsx => "jsx",
+            JsxLang::Tsx => "tsx",
+        };
+        Ok(CroquisDocument::from_shared(syntax.shared_analysis())
+            .with_source_anchor(anchor)
+            .with_semantic_snapshot(project_semantics(syntax.as_ref()))
+            .with_source(CroquisSourceSegment::new(
+                role,
+                syntax.source.as_ref(),
+                anchor,
+            )))
     }
 }
 
@@ -154,8 +192,17 @@ pub fn register_atlas_providers(
 ) -> Result<(), RegisterProviderError> {
     compilation.register_provider(JsxSyntaxProvider)?;
     compilation.register_provider(JsxRenduProvider)?;
-    compilation.register_provider(JsxSemanticProvider)?;
-    compilation.register_provider(JsxFlowProvider)
+    compilation.register_provider(JsxCroquisProvider)?;
+    compilation.register_provider(JsxFlowProvider)?;
+    compilation.register_provider(JsxRenderModuleProvider)?;
+    vize_atelier_dom::register_atlas_provider(compilation)?;
+    vize_atelier_ssr::register_atlas_provider(compilation)?;
+    vize_atelier_vapor::register_atlas_provider(compilation)?;
+    compilation.register_provider(JsxCompileProvider)?;
+    if !compilation.has_provider::<CroquisSemanticProduct>() {
+        vize_croquis::register_semantic_projection(compilation)?;
+    }
+    Ok(())
 }
 
 fn is_jsx_source(name: &str) -> bool {

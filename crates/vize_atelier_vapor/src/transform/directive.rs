@@ -8,7 +8,7 @@ use crate::ir::{
     BlockIRNode, DirectiveIRNode, ForIRNode, IRProp, IfIRNode, OperationNode, SetEventIRNode,
     SetHtmlIRNode, SetPropIRNode, SetTextIRNode,
 };
-use vize_atelier_core::{
+use vize_relief::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, SimpleExpressionNode,
     SourceLocation,
 };

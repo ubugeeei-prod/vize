@@ -646,7 +646,7 @@ function eventHandler(event: Event) {
             return;
         }
     };
-    checker.set_template_syntax(vize_atelier_core::TemplateSyntaxMode::Quirks);
+    checker.set_template_syntax(vize_relief::TemplateSyntaxMode::Quirks);
     checker.scan_project().unwrap();
 
     let result = match checker.check_project() {

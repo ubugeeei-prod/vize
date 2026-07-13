@@ -17,9 +17,19 @@ pub(in crate::ide::diagnostics) struct ArtVirtualTsResult {
 }
 
 impl DiagnosticService {
+    #[cfg(test)]
     pub(in crate::ide::diagnostics) fn generate_virtual_ts_for_art_with_dependencies(
         uri: &Url,
         content: &str,
+    ) -> Option<ArtVirtualTsResult> {
+        let artifact = crate::ide::sfc_descriptor_compatibility(content, uri)?;
+        Self::generate_virtual_ts_for_art_with_descriptor(uri, content, artifact.descriptor()?)
+    }
+
+    pub(in crate::ide::diagnostics) fn generate_virtual_ts_for_art_with_descriptor(
+        uri: &Url,
+        content: &str,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
     ) -> Option<ArtVirtualTsResult> {
         let art_allocator = vize_carton::Bump::new();
         let art_desc = vize_musea::parse_art(
@@ -43,15 +53,6 @@ impl DiagnosticService {
         let template_ptr = template_content.as_ptr() as usize;
         let source_ptr = content.as_ptr() as usize;
         let template_offset = (template_ptr - source_ptr) as u32;
-
-        let descriptor = vize_atelier_sfc::parse_sfc(
-            content,
-            vize_atelier_sfc::SfcParseOptions {
-                filename: uri.path().to_string().into(),
-                ..Default::default()
-            },
-        )
-        .ok()?;
 
         let target_component = descriptor
             .script_setup

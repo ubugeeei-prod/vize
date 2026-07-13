@@ -26,9 +26,10 @@ When a change crosses directories, the owner is usually the layer that creates t
 behavior. For example, a compiler output change belongs in `crates/`, even when the repro comes from
 an npm package test.
 
-## Canary Graph-Native Pipeline
+## Production Artifact Graph
 
-The hidden `vize graph` canary follows demand-selected provider edges:
+The hidden `vize graph` diagnostic route exposes the same demand-selected
+provider edges used by production recipes:
 
 ```mermaid
 flowchart LR
@@ -47,11 +48,11 @@ flowchart LR
     Flow --> Canon
 ```
 
-Within this canary, one Atlas compilation owns source identity and executes each
-requested typed product once. SFC and JSX keep their own syntax; consumers
-share only the stable semantic, Flow, or Rendu products they need. Production
-commands, Maestro, Glyph, package hosts, and editor integrations continue to
-use their existing entry points until later migration slices.
+One Atlas compilation owns source identity and executes each requested typed
+product once. SFC and JSX keep their own syntax; consumers share only the
+stable semantic, Flow, or Rendu products they request. Production commands,
+Maestro, Glyph, Inspector, and package hosts now enter through these recipes;
+legacy public functions are compatibility APIs rather than host orchestration.
 
 ## Crate Entry Points
 

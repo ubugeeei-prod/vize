@@ -2,7 +2,10 @@
 
 use vize_carton::FxHashMap;
 
-use crate::{InputId, Product, ProductId, ProductRequest, ProviderId, SourceId, SourceRevision};
+use crate::{
+    InputId, Product, ProductId, ProductRequest, ProviderId, SourceId, SourceInputId,
+    SourceRevision,
+};
 
 /// Topologically ordered dependency closure for one or more requested roots.
 ///
@@ -18,6 +21,7 @@ pub struct Plan {
     pub(crate) source_revisions: Vec<(SourceId, SourceRevision)>,
     pub(crate) provider_generation: u64,
     pub(crate) input_revisions: Vec<(InputId, u64)>,
+    pub(crate) source_input_revisions: Vec<(SourceId, SourceInputId, u64)>,
     pub(crate) roots: Vec<ProductId>,
     pub(crate) products: Vec<ProductId>,
     pub(crate) root_requests: Vec<ProductRequest>,
@@ -26,6 +30,7 @@ pub struct Plan {
     pub(crate) dependencies: FxHashMap<ProductRequest, Vec<ProductRequest>>,
     pub(crate) providers: FxHashMap<ProductRequest, ProviderId>,
     pub(crate) input_dependencies: FxHashMap<ProductRequest, Vec<InputId>>,
+    pub(crate) source_input_dependencies: FxHashMap<ProductRequest, Vec<(SourceId, SourceInputId)>>,
     pub(crate) source_dependencies: FxHashMap<ProductRequest, Vec<(SourceId, SourceRevision)>>,
 }
 
@@ -111,6 +116,16 @@ impl Plan {
         self.input_dependencies.get(&request).map(Vec::as_slice)
     }
 
+    /// Source-scoped inputs that can affect a request or any dependency.
+    pub fn source_input_dependencies_for_request(
+        &self,
+        request: ProductRequest,
+    ) -> Option<&[(SourceId, SourceInputId)]> {
+        self.source_input_dependencies
+            .get(&request)
+            .map(Vec::as_slice)
+    }
+
     /// Sources whose revisions contribute transitively to one request.
     pub fn source_dependencies_for_request(
         &self,
@@ -122,6 +137,11 @@ impl Plan {
     /// Inputs relevant to the complete plan and the revisions it captured.
     pub fn input_revisions(&self) -> &[(InputId, u64)] {
         &self.input_revisions
+    }
+
+    /// Source-scoped inputs relevant to the plan and captured revisions.
+    pub fn source_input_revisions(&self) -> &[(SourceId, SourceInputId, u64)] {
+        &self.source_input_revisions
     }
 
     /// Whether the plan contains typed product `P` for any source.

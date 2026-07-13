@@ -1,6 +1,6 @@
 use super::executions;
 use vize::artifact_graph::{VizeGraphConfig, create_compilation, project_roots};
-use vize::croquis_cf::CroquisProjectProduct;
+use vize::croquis_cf::{CroquisProjectProduct, CrossFileAnalysisProduct};
 use vize::rendu::RenduProduct;
 use vize_atlas::ProductStatus;
 use vize_croquis::CroquisSemanticProduct;
@@ -25,6 +25,7 @@ fn project_analysis_is_opt_in_and_reuses_cross_source_semantics() {
 
     let plan = compilation.plan(app, project_roots(true)).unwrap();
     assert!(plan.contains::<CroquisProjectProduct>());
+    assert!(!plan.contains::<CrossFileAnalysisProduct>());
     assert!(plan.contains::<CroquisSemanticProduct>());
     assert!(!plan.contains::<RenduProduct>());
     let output = compilation.execute(plan).unwrap();

@@ -5,15 +5,17 @@ use vize::atelier_sfc::{SfcDescriptorProduct, SfcTemplateProduct};
 use vize::atelier_ssr::SsrOutputProduct;
 use vize::atelier_vapor::VaporPlanProduct;
 use vize::canon::CanonSemanticVirtualTsProduct;
-use vize::croquis_cf::CroquisProjectProduct;
+use vize::croquis_cf::{CroquisProjectProduct, CrossFileAnalysisProduct};
 use vize::flow::FlowProduct;
 use vize::patina::PatinaSemanticReportProduct;
-use vize::relief::{ReliefProduct, VueDialectInput};
+use vize::relief::{ReliefProduct, TransformedReliefProduct, VueDialectInput};
 use vize::rendu::{RenderCapabilities, RenderCapabilitiesInput, RenduProduct};
 use vize_atlas::{ObservationKind, PlanError, ProductId, SourceProvenance};
 use vize_carton::config::VueVersion;
 use vize_croquis::CroquisSemanticProduct;
 
+#[path = "artifact_graph/cross_file.rs"]
+mod cross_file;
 #[path = "artifact_graph/project.rs"]
 mod project;
 
@@ -46,6 +48,7 @@ fn registration_and_source_insertion_create_no_artifacts() {
         ProductId::of::<FlowProduct>(),
         ProductId::of::<RenduProduct>(),
         ProductId::of::<CroquisProjectProduct>(),
+        ProductId::of::<CrossFileAnalysisProduct>(),
     ] {
         assert_eq!(compilation.counters().for_id(product).executions(), 0);
     }
@@ -61,9 +64,11 @@ fn sfc_multi_backend_request_shares_frontend_and_rendu_once() {
 
     assert!(plan.contains::<SfcDescriptorProduct>());
     assert!(plan.contains::<ReliefProduct>());
+    assert!(plan.contains::<TransformedReliefProduct>());
     assert!(plan.contains::<RenduProduct>());
     assert!(!plan.contains::<JsxSyntaxProduct>());
     assert!(!plan.contains::<CroquisProjectProduct>());
+    assert!(!plan.contains::<CrossFileAnalysisProduct>());
 
     let output = compilation.execute(plan).unwrap();
     assert!(
@@ -91,13 +96,20 @@ fn sfc_multi_backend_request_shares_frontend_and_rendu_once() {
             .is_empty()
     );
     assert_eq!(executions::<ReliefProduct>(&compilation), 1);
+    assert_eq!(executions::<TransformedReliefProduct>(&compilation), 1);
     assert_eq!(executions::<RenduProduct>(&compilation), 1);
     assert_eq!(executions::<JsxSyntaxProduct>(&compilation), 0);
     assert_eq!(executions::<CroquisProjectProduct>(&compilation), 0);
+    assert_eq!(executions::<CrossFileAnalysisProduct>(&compilation), 0);
     assert!(
         !compilation
             .cache()
             .contains::<CroquisProjectProduct>(source)
+    );
+    assert!(
+        !compilation
+            .cache()
+            .contains::<CrossFileAnalysisProduct>(source)
     );
 }
 
@@ -113,6 +125,7 @@ fn tsx_multi_backend_request_never_constructs_relief() {
     assert!(plan.contains::<RenduProduct>());
     assert!(!plan.contains::<SfcDescriptorProduct>());
     assert!(!plan.contains::<ReliefProduct>());
+    assert!(!plan.contains::<TransformedReliefProduct>());
 
     let output = compilation.execute(plan).unwrap();
     assert!(output.get::<DomOutputProduct>().unwrap().is_some());
@@ -121,6 +134,7 @@ fn tsx_multi_backend_request_never_constructs_relief() {
     assert_eq!(executions::<JsxSyntaxProduct>(&compilation), 1);
     assert_eq!(executions::<RenduProduct>(&compilation), 1);
     assert_eq!(executions::<ReliefProduct>(&compilation), 0);
+    assert_eq!(executions::<TransformedReliefProduct>(&compilation), 0);
     assert!(!compilation.cache().contains::<ReliefProduct>(source));
 }
 
@@ -136,6 +150,7 @@ fn combined_lint_and_typecheck_share_semantics_without_render_work() {
         assert!(plan.contains::<CroquisSemanticProduct>());
         assert!(plan.contains::<FlowProduct>());
         assert_eq!(plan.contains::<ReliefProduct>(), expects_relief);
+        assert_eq!(plan.contains::<TransformedReliefProduct>(), expects_relief);
         assert!(!plan.contains::<RenduProduct>());
         assert!(!plan.contains::<DomOutputProduct>());
 
@@ -169,6 +184,7 @@ fn sfc_and_tsx_produce_the_same_peer_flow_product() {
 
         assert_eq!(plan.contains::<JsxSyntaxProduct>(), is_jsx);
         assert_eq!(plan.contains::<ReliefProduct>(), !is_jsx);
+        assert_eq!(plan.contains::<TransformedReliefProduct>(), !is_jsx);
         assert!(!plan.contains::<RenduProduct>());
         let output = compilation.execute(plan).unwrap();
         let flow = output.get::<FlowProduct>().unwrap().unwrap();
@@ -211,7 +227,8 @@ fn sfc_template_product_preserves_embedded_source_identity() {
         .query::<SfcTemplateProduct>(parent)
         .unwrap()
         .value()
-        .clone();
+        .clone()
+        .expect("template block");
     let embedded = compilation
         .add_embedded_source(
             template.parent,
@@ -247,14 +264,21 @@ fn typed_dimensions_invalidate_only_relevant_cached_products() {
     assert!(evicted::<DomOutputProduct>(&render_change));
     assert!(!evicted::<RenduProduct>(&render_change));
     assert!(!evicted::<ReliefProduct>(&render_change));
+    assert!(!evicted::<TransformedReliefProduct>(&render_change));
     assert!(compilation.cache().contains::<RenduProduct>(source));
     assert!(compilation.cache().contains::<ReliefProduct>(source));
+    assert!(
+        compilation
+            .cache()
+            .contains::<TransformedReliefProduct>(source)
+    );
 
     compilation.query::<DomOutputProduct>(source).unwrap();
     let dialect_change = compilation
         .set_input::<VueDialectInput>(VueVersion::V2_7)
         .unwrap();
     assert!(evicted::<ReliefProduct>(&dialect_change));
+    assert!(evicted::<TransformedReliefProduct>(&dialect_change));
     assert!(evicted::<RenduProduct>(&dialect_change));
     assert!(evicted::<DomOutputProduct>(&dialect_change));
     assert!(!evicted::<SfcDescriptorProduct>(&dialect_change));

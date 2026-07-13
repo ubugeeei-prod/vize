@@ -1,19 +1,20 @@
 //! DOM template compilation: parse, transform, and codegen entry points.
 
+use vize_armature::parse_with_options_and_template_syntax;
 use vize_atelier_core::codegen::{CodegenResult, CodegenResultWithSections};
 use vize_atelier_core::{
-    CompilerError, RootNode,
     codegen::generate_with_sections,
     lane::{
         transform as do_transform, transform_with_hoisted_scope_id,
         transform_with_template_syntax_quirks,
         transform_with_template_syntax_quirks_and_hoisted_scope_id,
     },
-    options::{CodegenOptions, ParserOptions, TemplateSyntaxMode, TransformOptions},
-    parser::parse_with_options_and_template_syntax,
 };
 use vize_carton::{Bump, String, profile};
 use vize_croquis::Croquis;
+use vize_relief::{
+    CodegenOptions, CompilerError, ParserOptions, RootNode, TemplateSyntaxMode, TransformOptions,
+};
 
 use crate::namespace::get_namespace;
 use crate::options::DomCompilerOptions;
@@ -134,6 +135,30 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections<
     )
 }
 
+/// Transform and emit a template from an already parsed Relief root.
+///
+/// This is the production bridge for Atlas syntax products: parsing and parse
+/// diagnostics are shared upstream, while each backend still applies its own
+/// transform and codegen options to an independently materialized arena tree.
+#[doc(hidden)]
+pub fn compile_template_root_with_template_syntax_and_hoisted_scope_id_with_sections<'a>(
+    allocator: &'a Bump,
+    root: RootNode<'a>,
+    parse_errors: Vec<CompilerError>,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResultWithSections) {
+    compile_template_root_with_sections(
+        allocator,
+        root,
+        parse_errors,
+        options,
+        template_syntax,
+        hoisted_scope_id,
+    )
+}
+
 fn compile_template_inner<'a>(
     allocator: &'a Bump,
     source: &'a str,
@@ -172,11 +197,29 @@ fn compile_template_inner_with_sections<'a>(
     };
 
     // Parse
-    let (mut root, errors) = profile!(
+    let (root, errors) = profile!(
         "atelier.dom.template.parse",
         parse_with_options_and_template_syntax(allocator, source, parser_opts, template_syntax)
     );
 
+    compile_template_root_with_sections(
+        allocator,
+        root,
+        errors.to_vec(),
+        options,
+        template_syntax,
+        hoisted_scope_id,
+    )
+}
+
+fn compile_template_root_with_sections<'a>(
+    allocator: &'a Bump,
+    mut root: RootNode<'a>,
+    mut errors: Vec<CompilerError>,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResultWithSections) {
     // Parser-level diagnostics that are recoverable (e.g. duplicate
     // attribute — Vue keeps the first and continues) must NOT gate
     // codegen, or downstream callers see a 0-byte module reported as a
@@ -192,7 +235,7 @@ fn compile_template_inner_with_sections<'a>(
         };
         return (
             root,
-            errors.to_vec(),
+            errors,
             CodegenResultWithSections {
                 result: codegen_result,
                 sections: None,
@@ -254,7 +297,6 @@ fn compile_template_inner_with_sections<'a>(
     // Surface transform diagnostics (e.g. invalid expressions) alongside
     // parse errors instead of dropping them — the official compiler reports
     // both through the same `errors` channel.
-    let mut errors = errors.to_vec();
     errors.extend(transform_errors.errors);
 
     // Codegen

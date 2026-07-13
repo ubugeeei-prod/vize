@@ -16,7 +16,8 @@
 //! lint pass — see the `*_ref` SAFETY notes). Names and values are returned as
 //! `&str` slices that borrow the original source; nothing allocates unless a
 //! rule explicitly asks for normalized owned data (e.g.
-//! [`MarkupElement::direct_text_content`]).
+//! [`MarkupElement::direct_text_content`]). Atlas consumers instead borrow the
+//! cached owned JSX snapshot, preserving the same ranges without a reparse.
 //!
 //! # Shape
 //!
@@ -40,9 +41,9 @@
 //!
 //! Implement [`MarkupRule`] (default-empty `enter_*` hooks) and run it with
 //! [`MarkupDocumentVisitor`], which projects the hooks from either backend. The
-//! visitor threads a [`MarkupContext`] wrapping the existing [`LintContext`], so
-//! rules keep using the same diagnostic/fix APIs and all source ranges map back
-//! to the original syntax.
+//! visitor threads a [`MarkupContext`] wrapping the existing [`LintContext`].
+//! Production JSX can borrow Atlas's owned syntax snapshot directly, while the
+//! compatibility API can still borrow a live OXC program.
 
 use crate::context::LintContext;
 use crate::ir::{ByteRange, TemplateSyntax};
@@ -56,6 +57,9 @@ use oxc_ast_visit::{
 };
 use oxc_span::Span;
 use std::marker::PhantomData;
+use vize_atelier_jsx::{
+    JsxSyntaxAttribute, JsxSyntaxAttributeValue, JsxSyntaxNode, JsxSyntaxSnapshot, JsxSyntaxSpan,
+};
 use vize_carton::String;
 use vize_carton::profile;
 use vize_croquis::Croquis;
@@ -63,6 +67,10 @@ use vize_relief::{
     AttributeNode, DirectiveNode, ElementNode, ElementType, ExpressionNode, ForNode, IfNode,
     PropNode, RootNode, SourceLocation, TemplateChildNode, TextNode,
 };
+
+#[path = "markup/snapshot.rs"]
+mod snapshot;
+use snapshot::*;
 
 /// High-level classification for a markup element.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -84,6 +92,7 @@ enum MarkupDocumentInner<'a> {
         program: &'a Program<'a>,
         offset: u32,
     },
+    JsxSnapshot(&'a JsxSyntaxSnapshot),
 }
 
 /// Document-level markup view.
@@ -117,6 +126,15 @@ impl<'a> MarkupDocument<'a> {
         }
     }
 
+    /// Create a markup document from Atlas's owned, single-parse JSX product.
+    pub fn from_jsx_snapshot(snapshot: &'a JsxSyntaxSnapshot) -> Self {
+        Self {
+            inner: MarkupDocumentInner::JsxSnapshot(snapshot),
+            syntax: TemplateSyntax::Vue,
+            analysis: Some(snapshot.analysis()),
+        }
+    }
+
     /// Attach optional [`Croquis`] semantic analysis to this document.
     ///
     /// Carried through to [`MarkupContext::analysis`] so type-aware and
@@ -141,7 +159,10 @@ impl<'a> MarkupDocument<'a> {
 
     /// Whether this document was projected from JSX/TSX.
     pub const fn is_jsx(&self) -> bool {
-        matches!(self.inner, MarkupDocumentInner::Jsx { .. })
+        matches!(
+            self.inner,
+            MarkupDocumentInner::Jsx { .. } | MarkupDocumentInner::JsxSnapshot(_)
+        )
     }
 
     /// Template syntax used by this document.
@@ -164,6 +185,9 @@ impl<'a> MarkupDocument<'a> {
             MarkupDocumentInner::Relief(root) => walk_relief_children(&root.children, enter, exit),
             MarkupDocumentInner::Jsx { program, offset } => {
                 walk_jsx_program(program, offset, enter, exit)
+            }
+            MarkupDocumentInner::JsxSnapshot(snapshot) => {
+                walk_snapshot_nodes(&snapshot.roots, enter, exit)
             }
         }
     }
@@ -191,6 +215,7 @@ enum MarkupElementInner<'a> {
         node: *const JSXFragment<'a>,
         offset: u32,
     },
+    JsxSnapshot(&'a JsxSyntaxNode),
 }
 
 /// Wrapper around a concrete element node.
@@ -223,6 +248,13 @@ impl<'a> MarkupElement<'a> {
         }
     }
 
+    const fn from_jsx_snapshot(node: &'a JsxSyntaxNode) -> Self {
+        Self {
+            inner: MarkupElementInner::JsxSnapshot(node),
+            _marker: PhantomData,
+        }
+    }
+
     /// Tag name.
     pub fn tag(&self) -> &str {
         match self.inner {
@@ -231,6 +263,10 @@ impl<'a> MarkupElement<'a> {
                 jsx_element_name(&jsx_element_ref(node).opening_element.name)
             }
             MarkupElementInner::JsxFragment { .. } => "",
+            MarkupElementInner::JsxSnapshot(node) => match node {
+                JsxSyntaxNode::Element(element) => &element.name,
+                _ => "",
+            },
         }
     }
 
@@ -247,6 +283,13 @@ impl<'a> MarkupElement<'a> {
                 jsx_element_kind(&jsx_element_ref(node).opening_element.name)
             }
             MarkupElementInner::JsxFragment { .. } => MarkupElementKind::Template,
+            MarkupElementInner::JsxSnapshot(node) => match node {
+                JsxSyntaxNode::Element(element) if element.component => {
+                    MarkupElementKind::Component
+                }
+                JsxSyntaxNode::Element(_) => MarkupElementKind::Element,
+                _ => MarkupElementKind::Template,
+            },
         }
     }
 
@@ -265,6 +308,7 @@ impl<'a> MarkupElement<'a> {
             MarkupElementInner::JsxFragment { node, offset } => {
                 span_to_range(jsx_fragment_ref(node).span, offset)
             }
+            MarkupElementInner::JsxSnapshot(node) => snapshot_range(node.span()),
         }
     }
 
@@ -284,6 +328,11 @@ impl<'a> MarkupElement<'a> {
             MarkupElementInner::JsxFragment { node, offset } => {
                 for child in jsx_children(jsx_fragment_ref(node), offset) {
                     visitor(child);
+                }
+            }
+            MarkupElementInner::JsxSnapshot(node) => {
+                for child in snapshot_children(node) {
+                    visitor(MarkupNode::from_jsx_snapshot(child));
                 }
             }
         }
@@ -307,6 +356,14 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxFragment { .. } => {}
+            MarkupElementInner::JsxSnapshot(JsxSyntaxNode::Element(element)) => {
+                for attribute in &element.attributes {
+                    if matches!(attribute, JsxSyntaxAttribute::Attribute { .. }) {
+                        visitor(MarkupAttribute::from_jsx_snapshot(attribute));
+                    }
+                }
+            }
+            MarkupElementInner::JsxSnapshot(_) => {}
         }
     }
 
@@ -338,6 +395,14 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxFragment { .. } => {}
+            MarkupElementInner::JsxSnapshot(JsxSyntaxNode::Element(element)) => {
+                for attribute in &element.attributes {
+                    if snapshot_attribute_kind(attribute) != Some(MarkupBindingKind::Attribute) {
+                        visitor(MarkupDirective::from_jsx_snapshot(attribute));
+                    }
+                }
+            }
+            MarkupElementInner::JsxSnapshot(_) => {}
         }
     }
 
@@ -370,6 +435,14 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxFragment { .. } => {}
+            MarkupElementInner::JsxSnapshot(JsxSyntaxNode::Element(element)) => {
+                for attribute in &element.attributes {
+                    if matches!(attribute, JsxSyntaxAttribute::Attribute { .. }) {
+                        visitor(MarkupBinding::from_jsx_snapshot(attribute));
+                    }
+                }
+            }
+            MarkupElementInner::JsxSnapshot(_) => {}
         }
     }
 
@@ -442,7 +515,7 @@ impl<'a> MarkupElement<'a> {
                 });
                 found
             }
-            MarkupElementInner::JsxElement { .. } => {
+            MarkupElementInner::JsxElement { .. } | MarkupElementInner::JsxSnapshot(_) => {
                 let mut found = false;
                 self.walk_attributes(&mut |attr| {
                     if attr.name_eq(name) && attr.is_dynamic() {
@@ -474,6 +547,7 @@ enum MarkupAttributeInner<'a> {
         node: *const JSXAttribute<'a>,
         offset: u32,
     },
+    JsxSnapshot(&'a JsxSyntaxAttribute),
 }
 
 /// Static attribute view.
@@ -498,6 +572,13 @@ impl<'a> MarkupAttribute<'a> {
         }
     }
 
+    const fn from_jsx_snapshot(node: &'a JsxSyntaxAttribute) -> Self {
+        Self {
+            inner: MarkupAttributeInner::JsxSnapshot(node),
+            _marker: PhantomData,
+        }
+    }
+
     /// Attribute name as written in source.
     pub fn name(&self) -> &str {
         match self.inner {
@@ -505,6 +586,7 @@ impl<'a> MarkupAttribute<'a> {
             MarkupAttributeInner::Jsx { node, .. } => {
                 jsx_attribute_name(&jsx_attribute_ref(node).name)
             }
+            MarkupAttributeInner::JsxSnapshot(node) => snapshot_attribute_name(node).unwrap_or(""),
         }
     }
 
@@ -525,6 +607,13 @@ impl<'a> MarkupAttribute<'a> {
                     _ => None,
                 }
             }
+            MarkupAttributeInner::JsxSnapshot(JsxSyntaxAttribute::Attribute { value, .. }) => {
+                match value {
+                    JsxSyntaxAttributeValue::Static { value, .. } => Some(value),
+                    _ => None,
+                }
+            }
+            MarkupAttributeInner::JsxSnapshot(_) => None,
         }
     }
 
@@ -540,6 +629,7 @@ impl<'a> MarkupAttribute<'a> {
                         | JSXAttributeValue::Fragment(_)
                 )
             ),
+            MarkupAttributeInner::JsxSnapshot(node) => snapshot_attribute_dynamic(node),
         }
     }
 
@@ -549,6 +639,9 @@ impl<'a> MarkupAttribute<'a> {
             MarkupAttributeInner::Relief(node) => loc_to_range(&node.loc),
             MarkupAttributeInner::Jsx { node, offset } => {
                 span_to_range(jsx_attribute_ref(node).span, offset)
+            }
+            MarkupAttributeInner::JsxSnapshot(node) => {
+                snapshot_range(snapshot_attribute_span(node))
             }
         }
     }
@@ -588,6 +681,7 @@ enum MarkupDirectiveInner<'a> {
         node: *const JSXAttribute<'a>,
         offset: u32,
     },
+    JsxSnapshot(&'a JsxSyntaxAttribute),
 }
 
 /// Directive view: a Vue `v-*` directive or a directive-like JSX attribute.
@@ -609,6 +703,12 @@ impl<'a> MarkupDirective<'a> {
         }
     }
 
+    const fn from_jsx_snapshot(node: &'a JsxSyntaxAttribute) -> Self {
+        Self {
+            inner: MarkupDirectiveInner::JsxSnapshot(node),
+        }
+    }
+
     /// Normalized directive name without the `v-` prefix (`bind`, `on`, `for`,
     /// `model`, …). For a JSX `onClick` this is `on`; for a dynamic JSX
     /// attribute such as `class={…}` it is `bind`.
@@ -621,6 +721,10 @@ impl<'a> MarkupDirective<'a> {
                     _ => "bind",
                 }
             }
+            MarkupDirectiveInner::JsxSnapshot(node) => match snapshot_attribute_kind(node) {
+                Some(MarkupBindingKind::On) => "on",
+                _ => "bind",
+            },
         }
     }
 
@@ -637,6 +741,9 @@ impl<'a> MarkupDirective<'a> {
                 jsx_attribute_directive_kind(jsx_attribute_ref(node))
                     .unwrap_or(MarkupBindingKind::Bind)
             }
+            MarkupDirectiveInner::JsxSnapshot(node) => {
+                snapshot_attribute_kind(node).unwrap_or(MarkupBindingKind::Bind)
+            }
         }
     }
 
@@ -651,6 +758,7 @@ impl<'a> MarkupDirective<'a> {
             MarkupDirectiveInner::Jsx { node, .. } => {
                 jsx_attribute_arg_name(jsx_attribute_ref(node))
             }
+            MarkupDirectiveInner::JsxSnapshot(node) => snapshot_attribute_arg(node),
         }
     }
 
@@ -689,6 +797,9 @@ impl<'a> MarkupDirective<'a> {
             MarkupDirectiveInner::Jsx { node, offset } => {
                 span_to_range(jsx_attribute_ref(node).span, offset)
             }
+            MarkupDirectiveInner::JsxSnapshot(node) => {
+                snapshot_range(snapshot_attribute_span(node))
+            }
         }
     }
 }
@@ -701,6 +812,7 @@ enum MarkupBindingInner<'a> {
         node: *const JSXAttribute<'a>,
         offset: u32,
     },
+    JsxSnapshot(&'a JsxSyntaxAttribute),
 }
 
 /// Normalized binding view — anything written on an opening tag.
@@ -739,6 +851,13 @@ impl<'a> MarkupBinding<'a> {
         }
     }
 
+    const fn from_jsx_snapshot(node: &'a JsxSyntaxAttribute) -> Self {
+        Self {
+            inner: MarkupBindingInner::JsxSnapshot(node),
+            _marker: PhantomData,
+        }
+    }
+
     /// The normalized class of this binding.
     pub fn kind(&self) -> MarkupBindingKind {
         match self.inner {
@@ -746,6 +865,9 @@ impl<'a> MarkupBinding<'a> {
             MarkupBindingInner::ReliefDirective(node) => relief_directive_kind(node),
             MarkupBindingInner::Jsx { node, .. } => {
                 jsx_attribute_binding_kind(jsx_attribute_ref(node))
+            }
+            MarkupBindingInner::JsxSnapshot(node) => {
+                snapshot_attribute_kind(node).unwrap_or(MarkupBindingKind::Bind)
             }
         }
     }
@@ -775,6 +897,10 @@ impl<'a> MarkupBinding<'a> {
                     _ => Some(jsx_attribute_name(&attr.name)),
                 }
             }
+            MarkupBindingInner::JsxSnapshot(node) => match snapshot_attribute_kind(node) {
+                Some(MarkupBindingKind::On) => snapshot_attribute_arg(node),
+                _ => snapshot_attribute_name(node),
+            },
         }
     }
 
@@ -807,6 +933,7 @@ impl<'a> MarkupBinding<'a> {
                         | JSXAttributeValue::Fragment(_)
                 )
             ),
+            MarkupBindingInner::JsxSnapshot(node) => snapshot_attribute_dynamic(node),
         }
     }
 
@@ -822,6 +949,13 @@ impl<'a> MarkupBinding<'a> {
                 Some(JSXAttributeValue::StringLiteral(value)) => Some(value.value.as_str()),
                 _ => None,
             },
+            MarkupBindingInner::JsxSnapshot(JsxSyntaxAttribute::Attribute { value, .. }) => {
+                match value {
+                    JsxSyntaxAttributeValue::Static { value, .. } => Some(value),
+                    _ => None,
+                }
+            }
+            MarkupBindingInner::JsxSnapshot(_) => None,
         }
     }
 
@@ -839,6 +973,14 @@ impl<'a> MarkupBinding<'a> {
             MarkupBindingInner::ReliefAttribute(_) => None,
             MarkupBindingInner::ReliefDirective(node) => simple_expression_text(node.exp.as_ref()),
             MarkupBindingInner::Jsx { .. } => None,
+            MarkupBindingInner::JsxSnapshot(JsxSyntaxAttribute::Attribute {
+                value: JsxSyntaxAttributeValue::Expression(expression),
+                ..
+            }) => Some(&expression.code),
+            MarkupBindingInner::JsxSnapshot(JsxSyntaxAttribute::Spread { expression, .. }) => {
+                Some(&expression.code)
+            }
+            MarkupBindingInner::JsxSnapshot(_) => None,
         }
     }
 
@@ -872,6 +1014,7 @@ impl<'a> MarkupBinding<'a> {
             MarkupBindingInner::Jsx { node, offset } => {
                 span_to_range(jsx_attribute_ref(node).span, offset)
             }
+            MarkupBindingInner::JsxSnapshot(node) => snapshot_range(snapshot_attribute_span(node)),
         }
     }
 }
@@ -882,6 +1025,10 @@ enum MarkupTextInner<'a> {
     Jsx {
         node: *const JSXText<'a>,
         offset: u32,
+    },
+    JsxSnapshot {
+        value: &'a str,
+        span: JsxSyntaxSpan,
     },
 }
 
@@ -907,11 +1054,19 @@ impl<'a> MarkupText<'a> {
         }
     }
 
+    const fn from_jsx_snapshot(value: &'a str, span: JsxSyntaxSpan) -> Self {
+        Self {
+            inner: MarkupTextInner::JsxSnapshot { value, span },
+            _marker: PhantomData,
+        }
+    }
+
     /// Raw text content.
     pub fn content(&self) -> &'a str {
         match self.inner {
             MarkupTextInner::Relief(node) => node.content.as_str(),
             MarkupTextInner::Jsx { node, .. } => jsx_text_ref(node).value.as_str(),
+            MarkupTextInner::JsxSnapshot { value, .. } => value,
         }
     }
 
@@ -920,6 +1075,7 @@ impl<'a> MarkupText<'a> {
         match self.inner {
             MarkupTextInner::Relief(node) => loc_to_range(&node.loc),
             MarkupTextInner::Jsx { node, offset } => span_to_range(jsx_text_ref(node).span, offset),
+            MarkupTextInner::JsxSnapshot { span, .. } => snapshot_range(span),
         }
     }
 
@@ -981,6 +1137,22 @@ impl<'a> MarkupNode<'a> {
                 _ => Self::Interpolation(span_to_range(container.span, offset)),
             },
             JSXChild::Spread(spread) => Self::Interpolation(span_to_range(spread.span, offset)),
+        }
+    }
+
+    fn from_jsx_snapshot(node: &'a JsxSyntaxNode) -> Self {
+        match node {
+            JsxSyntaxNode::Element(_) | JsxSyntaxNode::Fragment { .. } => {
+                Self::Element(MarkupElement::from_jsx_snapshot(node))
+            }
+            JsxSyntaxNode::Text { value, span } => {
+                Self::Text(MarkupText::from_jsx_snapshot(value, *span))
+            }
+            JsxSyntaxNode::Comment { span, .. } => Self::Comment(snapshot_range(*span)),
+            JsxSyntaxNode::Expression { span, .. } => Self::Interpolation(snapshot_range(*span)),
+            JsxSyntaxNode::If { span, .. } => Self::If(snapshot_range(*span)),
+            JsxSyntaxNode::For { span, .. } => Self::For(snapshot_range(*span)),
+            _ => Self::Other(snapshot_range(node.span())),
         }
     }
 }
@@ -1237,7 +1409,6 @@ fn span_to_range(span: Span, offset: u32) -> ByteRange {
     ByteRange::new(offset + span.start, offset + span.end)
 }
 
-#[inline]
 fn loc_to_range(loc: &SourceLocation) -> ByteRange {
     ByteRange::new(loc.start.offset, loc.end.offset)
 }
@@ -1248,67 +1419,115 @@ fn loc_to_range(loc: &SourceLocation) -> ByteRange {
 
 /// A conditional scope: a Vue `v-if` / `v-else-if` / `v-else` chain.
 ///
-/// JSX conditionals (`cond && <x/>`) are expressions, not markup nodes, so the
-/// projection visitor only surfaces this for the template backend; the element
-/// it guards is still visited as a normal [`MarkupElement`].
+/// Atlas's owned JSX projection normalizes `cond && <x/>` and ternaries into
+/// the same branch-facing interface without lowering through Relief.
 #[derive(Clone, Copy)]
 pub struct MarkupConditional<'a> {
-    node: &'a IfNode<'a>,
+    inner: MarkupConditionalInner<'a>,
+}
+
+#[derive(Clone, Copy)]
+enum MarkupConditionalInner<'a> {
+    Relief(&'a IfNode<'a>),
+    Jsx(&'a JsxSyntaxNode),
 }
 
 impl<'a> MarkupConditional<'a> {
     const fn from_relief(node: &'a IfNode<'a>) -> Self {
-        Self { node }
+        Self {
+            inner: MarkupConditionalInner::Relief(node),
+        }
+    }
+
+    const fn from_jsx(node: &'a JsxSyntaxNode) -> Self {
+        Self {
+            inner: MarkupConditionalInner::Jsx(node),
+        }
     }
 
     /// Number of branches in the chain (`v-if` + each `v-else-if` + optional
     /// `v-else`).
     pub fn branch_count(&self) -> usize {
-        self.node.branches.len()
+        match self.inner {
+            MarkupConditionalInner::Relief(node) => node.branches.len(),
+            MarkupConditionalInner::Jsx(JsxSyntaxNode::If { branches, .. }) => branches.len(),
+            _ => 0,
+        }
     }
 
     /// Whether the chain has a terminal `v-else` branch (one whose condition is
     /// absent).
     pub fn has_else(&self) -> bool {
-        self.node
-            .branches
-            .iter()
-            .any(|branch| branch.condition.is_none())
+        match self.inner {
+            MarkupConditionalInner::Relief(node) => node
+                .branches
+                .iter()
+                .any(|branch| branch.condition.is_none()),
+            MarkupConditionalInner::Jsx(JsxSyntaxNode::If { branches, .. }) => {
+                branches.iter().any(|branch| branch.condition.is_none())
+            }
+            _ => false,
+        }
     }
 
     /// The byte range of the whole conditional in the original source.
     pub fn range(&self) -> ByteRange {
-        loc_to_range(&self.node.loc)
+        match self.inner {
+            MarkupConditionalInner::Relief(node) => loc_to_range(&node.loc),
+            MarkupConditionalInner::Jsx(node) => snapshot_range(node.span()),
+        }
     }
 }
 
 /// A list scope: a Vue `v-for`.
 ///
-/// JSX lists (`items.map(...)`) lower structurally rather than as a directive,
-/// so the projection visitor surfaces this for the template backend; the
-/// repeated element is still visited as a normal [`MarkupElement`], and JSX
-/// rules can assert on its [`MarkupElement::has_key_binding`] directly.
+/// Atlas's owned JSX projection normalizes `items.map(...)` into this list
+/// interface; rules can inspect repeated elements without Relief lowering.
 #[derive(Clone, Copy)]
 pub struct MarkupList<'a> {
-    node: &'a ForNode<'a>,
+    inner: MarkupListInner<'a>,
+}
+
+#[derive(Clone, Copy)]
+enum MarkupListInner<'a> {
+    Relief(&'a ForNode<'a>),
+    Jsx(&'a JsxSyntaxNode),
 }
 
 impl<'a> MarkupList<'a> {
     const fn from_relief(node: &'a ForNode<'a>) -> Self {
-        Self { node }
+        Self {
+            inner: MarkupListInner::Relief(node),
+        }
+    }
+
+    const fn from_jsx(node: &'a JsxSyntaxNode) -> Self {
+        Self {
+            inner: MarkupListInner::Jsx(node),
+        }
     }
 
     /// The source iterable expression text (`items` in `item in items`).
     pub fn source_expression(&self) -> Option<&'a str> {
-        match &self.node.source {
-            ExpressionNode::Simple(simple) => Some(simple.content.as_str()),
-            ExpressionNode::Compound(_) => None,
+        match self.inner {
+            MarkupListInner::Relief(node) => match &node.source {
+                ExpressionNode::Simple(simple) => Some(simple.content.as_str()),
+                ExpressionNode::Compound(_) => None,
+            },
+            MarkupListInner::Jsx(JsxSyntaxNode::For { source, .. }) => Some(&source.code),
+            _ => None,
         }
     }
 
     /// The value-alias expression text (`item` in `item in items`).
     pub fn value_alias(&self) -> Option<&'a str> {
-        simple_expression_text(self.node.value_alias.as_ref())
+        match self.inner {
+            MarkupListInner::Relief(node) => simple_expression_text(node.value_alias.as_ref()),
+            MarkupListInner::Jsx(JsxSyntaxNode::For { value, .. }) => {
+                value.as_ref().map(|value| &*value.pattern)
+            }
+            _ => None,
+        }
     }
 
     /// Visit the direct element children repeated by this list — the elements a
@@ -1317,16 +1536,34 @@ impl<'a> MarkupList<'a> {
     /// repeated element is wrapped by the `ForNode` rather than carrying the
     /// `v-for` directive itself.
     pub fn walk_elements(&self, visitor: &mut impl FnMut(MarkupElement<'a>)) {
-        for child in &self.node.children {
-            if let TemplateChildNode::Element(element) = child {
-                visitor(MarkupElement::new(element));
+        match self.inner {
+            MarkupListInner::Relief(node) => {
+                for child in &node.children {
+                    if let TemplateChildNode::Element(element) = child {
+                        visitor(MarkupElement::new(element));
+                    }
+                }
             }
+            MarkupListInner::Jsx(JsxSyntaxNode::For { body, .. }) => {
+                for child in body {
+                    if matches!(
+                        child,
+                        JsxSyntaxNode::Element(_) | JsxSyntaxNode::Fragment { .. }
+                    ) {
+                        visitor(MarkupElement::from_jsx_snapshot(child));
+                    }
+                }
+            }
+            _ => {}
         }
     }
 
     /// The byte range of the whole `v-for` node in the original source.
     pub fn range(&self) -> ByteRange {
-        loc_to_range(&self.node.loc)
+        match self.inner {
+            MarkupListInner::Relief(node) => loc_to_range(&node.loc),
+            MarkupListInner::Jsx(node) => snapshot_range(node.span()),
+        }
     }
 }
 
@@ -1347,7 +1584,7 @@ impl<'a> MarkupDirective<'a> {
     pub fn as_relief(&self) -> Option<&'a DirectiveNode<'a>> {
         match self.inner {
             MarkupDirectiveInner::Relief(node) => Some(node),
-            MarkupDirectiveInner::Jsx { .. } => None,
+            MarkupDirectiveInner::Jsx { .. } | MarkupDirectiveInner::JsxSnapshot(_) => None,
         }
     }
 }
@@ -1536,6 +1773,9 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                 MarkupDocumentInner::Jsx { program, offset } => {
                     self.visit_jsx_program(program, offset)
                 }
+                MarkupDocumentInner::JsxSnapshot(snapshot) => {
+                    self.visit_jsx_snapshot_nodes(&snapshot.roots)
+                }
             }
         });
     }
@@ -1598,6 +1838,9 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             MarkupElementInner::JsxFragment { node, offset } => {
                 self.visit_jsx_children(jsx_fragment_ref(node).jsx_children(), offset)
             }
+            MarkupElementInner::JsxSnapshot(node) => {
+                self.visit_jsx_snapshot_nodes(snapshot_children(node))
+            }
         }
 
         self.set_rule();
@@ -1627,6 +1870,41 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                     self.set_rule();
                     self.rule.enter_interpolation(self.ctx, range);
                 }
+                _ => {}
+            }
+        }
+    }
+
+    fn visit_jsx_snapshot_nodes(&mut self, nodes: &'a [JsxSyntaxNode]) {
+        for node in nodes {
+            match node {
+                JsxSyntaxNode::Element(_) | JsxSyntaxNode::Fragment { .. } => {
+                    self.visit_element(MarkupElement::from_jsx_snapshot(node));
+                }
+                JsxSyntaxNode::Text { value, span } => {
+                    self.set_rule();
+                    self.rule
+                        .enter_text(self.ctx, &MarkupText::from_jsx_snapshot(value, *span));
+                }
+                JsxSyntaxNode::Expression { span, .. } => {
+                    self.set_rule();
+                    self.rule
+                        .enter_interpolation(self.ctx, snapshot_range(*span));
+                }
+                JsxSyntaxNode::If { branches, .. } => {
+                    self.set_rule();
+                    self.rule
+                        .enter_conditional(self.ctx, &MarkupConditional::from_jsx(node));
+                    for branch in branches {
+                        self.visit_jsx_snapshot_nodes(&branch.body);
+                    }
+                }
+                JsxSyntaxNode::For { body, .. } => {
+                    self.set_rule();
+                    self.rule.enter_list(self.ctx, &MarkupList::from_jsx(node));
+                    self.visit_jsx_snapshot_nodes(body);
+                }
+                JsxSyntaxNode::Comment { .. } => {}
                 _ => {}
             }
         }
@@ -1667,294 +1945,5 @@ fn collect_jsx_roots<'a>(program: &'a Program<'a>, offset: u32) -> Vec<MarkupEle
 }
 
 #[cfg(test)]
-mod tests {
-    //! Cross-backend verification for the rule IR.
-    //!
-    //! Each test drives a [`MarkupRule`] over a Vue template fixture **and** a
-    //! JSX fixture and asserts the diagnostic count, proving one rule body runs
-    //! over both backends through the zero-copy facade.
-
-    use super::*;
-    use crate::context::LintContext;
-    use crate::rules::a11y::ImgAlt;
-    use crate::rules::vapor::{NoVueLifecycleEvents, PreferStaticClass};
-    use crate::rules::vue::RequireVForKey;
-    use vize_atelier_jsx::JsxLang;
-    use vize_carton::Allocator;
-
-    /// Run a markup rule over a Vue template and return the diagnostic count.
-    fn run_over_template<R: MarkupRule>(rule: &R, source: &str) -> usize {
-        let allocator = Allocator::with_capacity(source.len() * 4 + 1024);
-        let parser = vize_armature::Parser::new(allocator.as_bump(), source);
-        let (root, _errors) = parser.parse();
-        let document = MarkupDocument::new(&root, TemplateSyntax::Vue);
-
-        let mut lint = LintContext::new(&allocator, source, "test.vue");
-        let mut ctx = MarkupContext::new(&mut lint, &document);
-        document.visit_with(rule, &mut ctx);
-        lint.diagnostics().len()
-    }
-
-    /// Run a markup rule over JSX/TSX **lowered to the shared relief AST**, the
-    /// path directive-shaped rules use (so `.map()`/`key={…}` surface as
-    /// `v-for`/`:key`). Returns the diagnostic count.
-    fn run_over_jsx_lowered<R: MarkupRule>(rule: &R, source: &str) -> usize {
-        let allocator = Allocator::with_capacity(source.len() * 4 + 1024);
-        let lowered = vize_atelier_jsx::lower_source(allocator.as_bump(), source, JsxLang::Jsx);
-
-        let mut total = 0;
-        for lowered_root in &lowered.roots {
-            let document = MarkupDocument::new(&lowered_root.root, TemplateSyntax::Vue);
-            let mut lint = LintContext::new(&allocator, source, "test.jsx");
-            let mut ctx = MarkupContext::new(&mut lint, &document);
-            document.visit_with(rule, &mut ctx);
-            total += lint.diagnostics().len();
-        }
-        total
-    }
-
-    /// Run a markup rule over JSX projected **directly from the OXC AST** (no
-    /// relief lowering), the path HTML-shaped rules use. Returns the diagnostic
-    /// count.
-    fn run_over_jsx_oxc<R: MarkupRule>(rule: &R, source: &str) -> usize {
-        let oxc_allocator = oxc_allocator::Allocator::default();
-        let parsed = vize_atelier_jsx::parse_module(&oxc_allocator, source, JsxLang::Jsx);
-        let document = MarkupDocument::from_jsx(&parsed.program, TemplateSyntax::Vue, 0);
-
-        // The lint context still needs an arena; reuse a fresh carton allocator.
-        let lint_allocator = Allocator::with_capacity(source.len() * 4 + 1024);
-        let mut lint = LintContext::new(&lint_allocator, source, "test.jsx");
-        let mut ctx = MarkupContext::new(&mut lint, &document);
-        document.visit_with(rule, &mut ctx);
-        lint.diagnostics().len()
-    }
-
-    // ---- vue/require-v-for-key (Vue correctness) ----------------------------
-
-    #[test]
-    fn require_v_for_key_template() {
-        let rule = RequireVForKey;
-        assert_eq!(
-            run_over_template(
-                &rule,
-                r#"<ul><li v-for="item in items">{{ item }}</li></ul>"#
-            ),
-            1,
-            "template v-for without :key must report through the IR"
-        );
-        assert_eq!(
-            run_over_template(
-                &rule,
-                r#"<ul><li v-for="item in items" :key="item.id">{{ item }}</li></ul>"#
-            ),
-            0,
-            "template v-for with :key must be clean"
-        );
-    }
-
-    #[test]
-    fn require_v_for_key_jsx() {
-        let rule = RequireVForKey;
-        // `.map()` lowers to v-for; missing key must report.
-        assert_eq!(
-            run_over_jsx_lowered(
-                &rule,
-                "const L = () => <ul>{items.map((item) => <li>{item}</li>)}</ul>;",
-            ),
-            1,
-            "JSX .map() without key must report through the IR"
-        );
-        // With a key it is clean.
-        assert_eq!(
-            run_over_jsx_lowered(
-                &rule,
-                "const L = () => <ul>{items.map((item) => <li key={item.id}>{item}</li>)}</ul>;",
-            ),
-            0,
-            "JSX .map() with key={{…}} must be clean"
-        );
-    }
-
-    // ---- a11y/img-alt (accessibility / HTML) --------------------------------
-
-    #[test]
-    fn img_alt_template() {
-        let rule = ImgAlt;
-        assert_eq!(
-            run_over_template(&rule, r#"<img src="/photo.jpg" />"#),
-            1,
-            "template <img> without alt must warn through the IR"
-        );
-        assert_eq!(
-            run_over_template(&rule, r#"<img src="/photo.jpg" alt="Team photo" />"#),
-            0,
-            "template <img> with alt must be clean"
-        );
-        assert_eq!(
-            run_over_template(&rule, r#"<img :src="photo" :alt="caption" />"#),
-            0,
-            "template <img> with dynamic :alt must be clean"
-        );
-    }
-
-    #[test]
-    fn img_alt_jsx_oxc() {
-        let rule = ImgAlt;
-        // Projected straight from the OXC AST — no synthetic template AST.
-        assert_eq!(
-            run_over_jsx_oxc(&rule, "const I = () => <img src=\"/photo.jpg\" />;"),
-            1,
-            "JSX <img> without alt must warn through the OXC IR path"
-        );
-        assert_eq!(
-            run_over_jsx_oxc(
-                &rule,
-                "const I = () => <img src=\"/photo.jpg\" alt=\"Team\" />;"
-            ),
-            0,
-            "JSX <img> with static alt must be clean"
-        );
-        assert_eq!(
-            run_over_jsx_oxc(&rule, "const I = () => <img src={photo} alt={caption} />;"),
-            0,
-            "JSX <img> with dynamic alt={{…}} must be clean"
-        );
-    }
-
-    // ---- vapor/prefer-static-class (Vapor) ----------------------------------
-
-    #[test]
-    fn prefer_static_class_template() {
-        let rule = PreferStaticClass;
-        assert_eq!(
-            run_over_template(&rule, r#"<div :class="'static'"></div>"#),
-            1,
-            "template :class with a string literal must warn through the IR"
-        );
-        assert_eq!(
-            run_over_template(&rule, r#"<div :class="dynamic"></div>"#),
-            0,
-            "template :class with a real expression must be clean"
-        );
-        assert_eq!(
-            run_over_template(&rule, r#"<div class="static"></div>"#),
-            0,
-            "template static class must be clean"
-        );
-    }
-
-    #[test]
-    fn prefer_static_class_jsx() {
-        let rule = PreferStaticClass;
-        // `class={'static'}` lowers to the same `:class="'static'"` string
-        // literal a Vue template produces.
-        assert_eq!(
-            run_over_jsx_lowered(&rule, "const C = () => <div class={'static'} />;"),
-            1,
-            "JSX class={{'static'}} must warn through the IR"
-        );
-        assert_eq!(
-            run_over_jsx_lowered(&rule, "const C = () => <div class={dynamic} />;"),
-            0,
-            "JSX class={{dynamic}} must be clean"
-        );
-    }
-
-    // ---- vapor/no-vue-lifecycle-events (Vapor, template-native bonus) -------
-
-    #[test]
-    fn no_vue_lifecycle_events_template() {
-        let rule = NoVueLifecycleEvents;
-        assert_eq!(
-            run_over_template(&rule, r#"<div @vue:mounted="onMounted"></div>"#),
-            1,
-            "template @vue:mounted must report through the IR"
-        );
-        assert_eq!(
-            run_over_template(&rule, r#"<div @click="onClick"></div>"#),
-            0,
-            "template @click must be clean"
-        );
-    }
-
-    // ---- Facade unit coverage ----------------------------------------------
-
-    #[test]
-    fn jsx_binding_classification() {
-        // `onClick` is an event, `class={…}` is a bind, `id="x"` is a plain
-        // attribute, `key={…}` is a key binding.
-        let oxc_allocator = oxc_allocator::Allocator::default();
-        let source = "const C = () => <li id=\"a\" class={cls} key={k} onClick={f} />;";
-        let parsed = vize_atelier_jsx::parse_module(&oxc_allocator, source, JsxLang::Jsx);
-        let document = MarkupDocument::from_jsx(&parsed.program, TemplateSyntax::Vue, 0);
-
-        let mut kinds = Vec::new();
-        let mut has_key = false;
-        let mut click_is_event = false;
-        document.walk_elements(&mut |element| {
-            if element.is_tag("li") {
-                has_key = element.has_key_binding();
-                element.walk_bindings(&mut |binding| {
-                    kinds.push((binding.arg_name().map(str::to_owned), binding.kind()));
-                    // `onClick` is an event; its argument matches `click`
-                    // case-insensitively (JSX event names are PascalCase).
-                    if binding.kind() == MarkupBindingKind::On && binding.arg_name_eq("click") {
-                        click_is_event = true;
-                    }
-                });
-            }
-        });
-
-        assert!(has_key, "key={{k}} must be detected as a key binding");
-        assert!(
-            click_is_event,
-            "onClick must be an event binding with arg `click`"
-        );
-        assert!(kinds.contains(&(Some("id".to_owned()), MarkupBindingKind::Attribute)));
-        assert!(kinds.contains(&(Some("class".to_owned()), MarkupBindingKind::Bind)));
-        assert!(kinds.contains(&(Some("key".to_owned()), MarkupBindingKind::Bind)));
-    }
-
-    #[test]
-    fn template_event_modifiers_are_exposed() {
-        // Modifiers come through the normalized binding view for templates.
-        let allocator = Allocator::with_capacity(1024);
-        let source = r#"<button @click.stop.prevent="f"></button>"#;
-        let parser = vize_armature::Parser::new(allocator.as_bump(), source);
-        let (root, _errors) = parser.parse();
-        let document = MarkupDocument::new(&root, TemplateSyntax::Vue);
-
-        let mut modifiers = Vec::new();
-        document.walk_elements(&mut |element| {
-            element.walk_bindings(&mut |binding| {
-                if binding.kind() == MarkupBindingKind::On {
-                    binding.walk_modifiers(&mut |m| modifiers.push(m.to_owned()));
-                }
-            });
-        });
-        assert_eq!(modifiers, vec!["stop".to_owned(), "prevent".to_owned()]);
-    }
-
-    #[test]
-    fn diagnostics_map_to_original_source_offsets() {
-        // The reported range must fall inside the original source for both
-        // backends — this is what makes fixes map back to written syntax.
-        let rule = ImgAlt;
-        let allocator = Allocator::with_capacity(1024);
-        let source = r#"<div><img src="/p.jpg" /></div>"#;
-        let parser = vize_armature::Parser::new(allocator.as_bump(), source);
-        let (root, _errors) = parser.parse();
-        let document = MarkupDocument::new(&root, TemplateSyntax::Vue);
-        let mut lint = LintContext::new(&allocator, source, "test.vue");
-        let mut ctx = MarkupContext::new(&mut lint, &document);
-        document.visit_with(&rule, &mut ctx);
-
-        let diagnostics = lint.diagnostics();
-        assert_eq!(diagnostics.len(), 1);
-        let diag = &diagnostics[0];
-        let img_start = source.find("<img").unwrap() as u32;
-        assert_eq!(diag.start, img_start, "range must point at the <img> tag");
-        assert!(diag.end <= source.len() as u32);
-        assert_eq!(&source[diag.start as usize..diag.end as usize][..4], "<img");
-    }
-}
+#[path = "markup/tests.rs"]
+mod tests;

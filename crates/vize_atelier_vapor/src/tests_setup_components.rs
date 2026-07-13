@@ -1,6 +1,6 @@
 use super::{VaporCompilerOptions, compile_vapor};
-use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_carton::{Bump, FxHashMap};
+use vize_relief::{BindingMetadata, BindingType};
 
 fn component_resolution_lines(code: &str) -> Vec<String> {
     code.lines()

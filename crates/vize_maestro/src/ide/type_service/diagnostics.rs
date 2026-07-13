@@ -10,8 +10,7 @@ use tower_lsp::lsp_types::{
     NumberOrString, Position, Range, Url,
 };
 use vize_canon::{
-    SfcTypeCheckOptions as TypeCheckOptions, SfcTypeSeverity as TypeSeverity, type_check_sfc,
-    type_check_sfc_with_legacy_vue2, type_check_sfc_with_options_api,
+    SfcTypeCheckOptions as TypeCheckOptions, SfcTypeCheckRequest, SfcTypeSeverity as TypeSeverity,
 };
 
 use super::{LspTypeCheckOptions, TypeService};
@@ -48,10 +47,7 @@ impl TypeService {
         let Some(doc) = state.documents.get(uri) else {
             return vec![];
         };
-
         let content = doc.text();
-
-        // Use vize_canon's strict type checker
         let options = TypeCheckOptions {
             filename: uri.path().to_string().into(),
             strict: lsp_options.strict,
@@ -65,18 +61,21 @@ impl TypeService {
             include_virtual_ts: false,
         };
 
-        let result = if lsp_options.legacy_vue2 {
-            type_check_sfc_with_legacy_vue2(&content, &options)
+        let mode = if lsp_options.legacy_vue2 {
+            vize_atelier_sfc::SfcCroquisMode::LegacyVue2
         } else if lsp_options.options_api {
-            type_check_sfc_with_options_api(&content, &options)
+            vize_atelier_sfc::SfcCroquisMode::OptionsApi
         } else {
-            type_check_sfc(&content, &options)
+            vize_atelier_sfc::SfcCroquisMode::Full
         };
-
-        // Convert to LSP diagnostics
+        let Some(result) =
+            state.sfc_typecheck_for(uri, &content, SfcTypeCheckRequest::new(options, mode))
+        else {
+            return Vec::new();
+        };
         result
             .diagnostics
-            .into_iter()
+            .iter()
             .map(|diag| {
                 let (start_line, start_col) = offset_to_line_col(&content, diag.start as usize);
                 let (end_line, end_col) = offset_to_line_col(&content, diag.end as usize);
@@ -163,7 +162,10 @@ impl TypeService {
                         TypeSeverity::Hint => DiagnosticSeverity::HINT,
                     }),
                     #[allow(clippy::disallowed_methods)]
-                    code: diag.code.map(|c| NumberOrString::String(c.to_string())),
+                    code: diag
+                        .code
+                        .as_ref()
+                        .map(|c| NumberOrString::String(c.to_string())),
                     code_description,
                     source: Some("vize/types".to_string()),
                     message,
@@ -184,12 +186,10 @@ impl TypeService {
 
         let content = doc.text();
 
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
+        let Some(artifact) = state.sfc_descriptor_for(uri, &content) else {
+            return vec![];
         };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) else {
+        let Some(descriptor) = artifact.descriptor() else {
             return vec![];
         };
 
@@ -198,7 +198,7 @@ impl TypeService {
         };
 
         // Build type context from script
-        let ctx = Self::build_type_context(&descriptor);
+        let ctx = Self::build_type_context(descriptor);
 
         // Run type checker
         let checker = vize_canon::TypeChecker::new();

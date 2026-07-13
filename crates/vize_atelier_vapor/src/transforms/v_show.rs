@@ -5,7 +5,7 @@
 use vize_carton::{Box, Bump, String, cstr};
 
 use crate::ir::{DirectiveIRNode, OperationNode};
-use vize_atelier_core::{DirectiveNode, ExpressionNode};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
 /// Transform v-show directive to IR
 pub fn transform_v_show<'a>(
@@ -37,7 +37,7 @@ pub fn get_show_condition(dir: &DirectiveNode<'_>) -> Option<String> {
 }
 
 /// Check if v-show needs transition handling
-pub fn needs_transition(_el: &vize_atelier_core::ElementNode<'_>) -> bool {
+pub fn needs_transition(_el: &ElementNode<'_>) -> bool {
     // Check if element has transition wrapper
     false
 }

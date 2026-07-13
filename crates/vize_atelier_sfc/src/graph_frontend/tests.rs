@@ -1,8 +1,10 @@
 use std::mem::{needs_drop, size_of, size_of_val};
 
-use vize_atelier_core::{TransformOptions, parse, transform};
+use vize_armature::parse;
+use vize_atelier_core::transform;
 use vize_carton::Bump;
 use vize_flow::{ControlEdgeKind, DataEdgeKind, EffectKind};
+use vize_relief::TransformOptions;
 use vize_relief::{ReliefSnapshot, RootNode, SnapshotProp, TemplateChildNode};
 use vize_rendu::{RenduCapability, RenduNode, RenduProperty};
 

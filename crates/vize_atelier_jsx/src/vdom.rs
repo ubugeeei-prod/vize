@@ -13,13 +13,12 @@
 
 use vize_atelier_core::codegen::generate;
 use vize_atelier_core::lane::transform;
-use vize_atelier_core::options::{CodegenMode, CodegenOptions, TransformOptions};
 // `CodegenMode::Module` is the only supported JSX target: JSX/TSX is authored
 // for bundlers, and the runtime `Function` (with-block) mode emits an empty
 // body under JSX's no-prefix closure model.
-use vize_atelier_core::CompilerError;
 use vize_carton::{Bump, String};
 use vize_croquis::Croquis;
+use vize_relief::{CodegenMode, CodegenOptions, CompilerError, TransformOptions};
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::scoped::{ScopedStyle, build_scoped_style};

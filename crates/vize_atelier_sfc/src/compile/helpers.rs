@@ -4,7 +4,8 @@ use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast::{BindingPattern, Expression, Statement, VariableDeclarationKind};
 use oxc_parser::Parser as OxcParser;
 use oxc_span::SourceType;
-use vize_atelier_core::Allocator as TemplateAllocator;
+use vize_armature::parse;
+use vize_carton::Allocator as TemplateAllocator;
 use vize_carton::{String, ToCompactString};
 
 use crate::script::{ScriptCompileContext, resolve_template_v_model_identifiers};
@@ -67,7 +68,7 @@ pub(super) fn demote_v_model_reactive_const_bindings(
     }
 
     let template_allocator = TemplateAllocator::default();
-    let (root, _) = vize_atelier_core::parse(&template_allocator, template_content);
+    let (root, _) = parse(&template_allocator, template_content);
     let v_model_ids = resolve_template_v_model_identifiers(&root);
 
     if v_model_ids.is_empty() {
@@ -188,8 +189,8 @@ fn update_binding_to_setup_let(
     ctx.bindings
         .bindings
         .insert(binding_name.to_compact_string(), BindingType::SetupLet);
-    croquis
-        .bindings
-        .bindings
-        .insert(binding_name.to_compact_string(), BindingType::SetupLet);
+    croquis.bindings.bindings.insert(
+        binding_name.to_compact_string(),
+        BindingType::SetupLet.into(),
+    );
 }

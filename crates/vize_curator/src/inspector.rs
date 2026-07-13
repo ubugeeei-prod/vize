@@ -1,5 +1,6 @@
 //! Compiler inspector payload helpers.
 
+mod artifact;
 mod diff;
 mod graph;
 mod imports;
@@ -12,6 +13,11 @@ mod tests;
 #[path = "inspector/tests_semantic.rs"]
 mod tests_semantic;
 
+pub use artifact::{
+    InspectorAgentReportProduct, InspectorAgentReportProvider, InspectorAgentRequest,
+    InspectorAgentRequestInput, InspectorSourceAnalysis, InspectorSourceAnalysisProduct,
+    register_inspector_atlas_providers,
+};
 pub use diff::{
     InspectorDiff, InspectorDiffLine, InspectorDiffStats, build_diff, build_line_diff, diff_stats,
 };

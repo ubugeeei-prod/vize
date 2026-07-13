@@ -1,5 +1,10 @@
 //! Source-map bookkeeping for SFC output assembly.
 
+mod composition;
+pub(super) mod vlq;
+
+use composition::TemplateSourceMapArtifact;
+
 use crate::compile_template::TemplateBlockCompileResult;
 use vize_atelier_core::{
     atelier_output::AtelierFallback,
@@ -28,13 +33,14 @@ pub(crate) enum SourceMapComposition {
 pub(crate) fn record_template_source_map_fact(
     template_output: &TemplateBlockCompileResult,
     composition: SourceMapComposition,
-) {
+) -> Option<TemplateSourceMapArtifact> {
+    let artifact = TemplateSourceMapArtifact::capture(template_output);
     let Some(registration) = template_source_map_registration(template_output, composition) else {
         // No fragment was produced (DOM without source maps, or SSR/Vapor
         // which emit no template fragment yet). Report the omission instead of
         // losing the intent silently.
         record_missing_template_fragment();
-        return;
+        return artifact;
     };
 
     let profiler = global_profiler();
@@ -46,6 +52,22 @@ pub(crate) fn record_template_source_map_fact(
         usize_to_counter(registration.generated_len()),
     );
     profiler.record_counter(registration.section.profile_counter(), 1);
+    artifact
+}
+
+/// Finish a captured template map against the fully assembled SFC module.
+pub(crate) fn compose_template_source_map(
+    artifact: Option<TemplateSourceMapArtifact>,
+    final_code: &str,
+    descriptor: &crate::types::SfcDescriptor<'_>,
+    filename: &str,
+) -> Option<serde_json::Value> {
+    artifact?.compose(
+        final_code,
+        descriptor.template.as_ref()?,
+        filename,
+        descriptor.source.as_ref(),
+    )
 }
 
 /// Report that a template lane produced no source-map fragment to compose.

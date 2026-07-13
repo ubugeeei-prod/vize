@@ -65,14 +65,26 @@ impl SsrEmitter<'_> {
                 self.emit_expression(*expression);
                 self.output.code.push_str("))\n");
             }
-            RenduProperty::Directive(directive) => self.emit_element_directive(directive),
+            RenduProperty::Directive(directive) => self.emit_element_directive(tag, directive),
         }
         self.map(start, property.provenance(), RenduSsrMappingKind::Property);
     }
 
-    fn emit_element_directive(&mut self, directive: &RenduDirective) {
+    fn emit_element_directive(&mut self, tag: &str, directive: &RenduDirective) {
         match directive.name.as_ref() {
             "html" | "text" | "on" => {}
+            "bind" => self.emit_bind_directive(tag, directive),
+            "model" => {
+                let Some(expression) = directive.expression else {
+                    return;
+                };
+                self.indent();
+                self.output
+                    .code
+                    .push_str("_push(_ssrRenderAttr(\"value\", ");
+                self.emit_expression(expression);
+                self.output.code.push_str("))\n");
+            }
             "show" => {
                 let Some(expression) = directive.expression else {
                     return;
@@ -91,6 +103,36 @@ impl SsrEmitter<'_> {
                     .push_str("_push(_ssrRenderAttrs(_ssrGetDirectiveProps(_ctx, ");
                 self.emit_directive(directive);
                 self.output.code.push_str(")))\n");
+            }
+        }
+    }
+
+    fn emit_bind_directive(&mut self, tag: &str, directive: &RenduDirective) {
+        let Some(expression) = directive.expression else {
+            return;
+        };
+        self.indent();
+        match directive.argument.as_ref() {
+            None => {
+                self.output.code.push_str("_push(_ssrRenderAttrs(");
+                self.emit_expression(expression);
+                self.output.code.push_str("))\n");
+            }
+            Some(RenduName::Static(name)) => {
+                self.output.code.push_str("_push(_ssrRenderAttr(");
+                quote_js(&mut self.output.code, name);
+                self.output.code.push_str(", ");
+                self.emit_expression(expression);
+                self.output.code.push_str("))\n");
+            }
+            Some(RenduName::Dynamic(name)) => {
+                self.output.code.push_str("_push(_ssrRenderDynamicAttr(");
+                self.emit_expression(*name);
+                self.output.code.push_str(", ");
+                self.emit_expression(expression);
+                self.output.code.push_str(", ");
+                quote_js(&mut self.output.code, tag);
+                self.output.code.push_str("))\n");
             }
         }
     }

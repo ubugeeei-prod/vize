@@ -7,7 +7,9 @@ pub use plan::PlanError;
 use std::{error::Error, fmt};
 use vize_carton::String;
 
-use crate::{InputId, ProductId, ProductRequest, ProviderId, SourceId, SourceRevision};
+use crate::{
+    InputId, ProductId, ProductRequest, ProviderId, SourceId, SourceInputId, SourceRevision,
+};
 
 /// A provider could not be registered.
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -146,6 +148,13 @@ pub enum QueryError {
         planned: u64,
         current: u64,
     },
+    /// A typed source input changed after this plan was created.
+    StaleSourceInputPlan {
+        source: SourceId,
+        input: SourceInputId,
+        planned: u64,
+        current: u64,
+    },
     /// One provider invocation failed.
     ProviderFailed {
         source: SourceId,
@@ -192,6 +201,15 @@ impl fmt::Display for QueryError {
             } => write!(
                 formatter,
                 "plan used input {input} at revision {planned}, but it is now {current}"
+            ),
+            Self::StaleSourceInputPlan {
+                source,
+                input,
+                planned,
+                current,
+            } => write!(
+                formatter,
+                "plan used source input {input} for {source} at revision {planned}, but it is now {current}"
             ),
             Self::ProviderFailed {
                 source,

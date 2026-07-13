@@ -1,4 +1,13 @@
-//! Atlas provider for demand-driven cross-file semantic aggregation.
+//! Atlas providers for demand-driven cross-file semantic analysis.
+
+#[path = "atlas/analysis.rs"]
+mod analysis;
+
+pub use analysis::{
+    CrossFileAnalysisArtifact, CrossFileAnalysisInput, CrossFileAnalysisProduct,
+    CrossFileAnalysisProvider, CrossFileAnalysisRequest, CrossFileOffsetRegion,
+    CrossFileSourceLayout,
+};
 
 use std::{collections::BTreeMap, path::Path};
 
@@ -53,7 +62,8 @@ impl Provider for CroquisProjectProvider {
 
 /// Register opt-in project aggregation without allocating per-source state.
 pub fn register_atlas_provider(compilation: &mut Compilation) -> Result<(), RegisterProviderError> {
-    compilation.register_provider(CroquisProjectProvider)
+    compilation.register_provider(CroquisProjectProvider)?;
+    compilation.register_provider(CrossFileAnalysisProvider)
 }
 
 fn semantic_source_ids(context: &PlanningContext<'_>) -> Vec<SourceId> {

@@ -103,9 +103,10 @@ pub use intelligence::{
     DiagnosticSeverity, HoverInfo, Location, TypeIntelligence,
 };
 pub use sfc_typecheck::{
-    SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic,
-    SfcTypeSeverity, type_check_sfc, type_check_sfc_with_legacy_vue2,
-    type_check_sfc_with_options_api,
+    SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckProduct, SfcTypeCheckProvider,
+    SfcTypeCheckRequest, SfcTypeCheckResult, SfcTypeCheckSettingsInput, SfcTypeDiagnostic,
+    SfcTypeSeverity, install_sfc_typecheck_request, register_sfc_typecheck_provider,
+    type_check_sfc, type_check_sfc_with_legacy_vue2, type_check_sfc_with_options_api,
 };
 pub use source_map::{
     Mapping, MappingFlags, MappingKind, Position, SourceMap, Span, offset_to_position,

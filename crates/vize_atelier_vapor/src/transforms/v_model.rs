@@ -5,7 +5,7 @@
 use vize_carton::{Box, Bump, String, ToCompactString, cstr};
 
 use crate::ir::{DirectiveIRNode, OperationNode};
-use vize_atelier_core::{DirectiveNode, ElementNode, ExpressionNode};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
 /// Transform v-model directive to IR
 pub fn transform_v_model<'a>(

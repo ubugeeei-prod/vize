@@ -9,7 +9,7 @@
 
 use wasm_bindgen::prelude::*;
 
-use crate::typecheck::{TypeCheckOptions, type_check_sfc, type_check_sfc_with_legacy_vue2};
+use crate::{artifact_graph::SfcTypeCheckGraph, typecheck::TypeCheckOptions};
 
 /// Helper function to serialize values to JsValue with maps as objects
 fn to_js_value<T: serde::Serialize>(value: &T) -> Result<JsValue, JsValue> {
@@ -71,11 +71,17 @@ pub fn type_check_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValu
     opts.check_emits = check_emits;
     opts.check_template_bindings = check_template_bindings;
 
-    let result = if legacy_vue2 {
-        type_check_sfc_with_legacy_vue2(source, &opts)
+    let mode = if legacy_vue2 {
+        vize_atelier_sfc::SfcCroquisMode::LegacyVue2
     } else {
-        type_check_sfc(source, &opts)
+        vize_atelier_sfc::SfcCroquisMode::Full
     };
+    let name = opts.filename.to_string();
+    let graph = SfcTypeCheckGraph::new(vec![(name.clone().into(), source.into(), opts)], mode)
+        .map_err(|error| JsValue::from_str(&error))?;
+    let result = graph
+        .query(&name)
+        .map_err(|error| JsValue::from_str(&error))?;
 
     // Convert to JSON-friendly format
     let output = serde_json::json!({

@@ -67,6 +67,8 @@ fn build_stats_profile_reports_source_plate_facts() {
         "cache.stats_compile.stores",
         "cache.stats_compile.bypasses",
         "cache.stats_compile.bypass.self_component",
+        "Atlas artifact graph",
+        "atlas.query.requests",
         "Atelier cache decisions",
         "atelier.cache.stats_compile.eligible",
         "Atelier profile facts",
@@ -93,8 +95,8 @@ fn build_stats_profile_reports_source_plate_facts() {
 }
 
 #[test]
-fn build_profile_reports_atelier_fallback_counters() {
-    let project_root = temp_project_dir("atelier-fallback-counters");
+fn build_profile_reports_atlas_backend_selection_without_fallback() {
+    let project_root = temp_project_dir("atlas-backend-selection");
     write_project_file(
         &project_root,
         "src/App.vue",
@@ -130,8 +132,10 @@ const count = 1
 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("Atelier profile facts"), "{stderr}");
+    assert!(stderr.contains("Atlas artifact graph"), "{stderr}");
+    assert!(stderr.contains("atlas.query.requests"), "{stderr}");
     assert!(
-        stderr.contains("atelier.profile.fallback.vapor_ssr"),
+        !stderr.contains("atelier.profile.fallback.vapor_ssr"),
         "{stderr}"
     );
 

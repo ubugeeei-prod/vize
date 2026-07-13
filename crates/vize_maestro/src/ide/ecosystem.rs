@@ -23,17 +23,13 @@ pub(crate) fn completions(ctx: &IdeContext<'_>) -> Vec<CompletionItem> {
         return Vec::new();
     }
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+    let Some(descriptor) = ctx.sfc_descriptor() else {
         return Vec::new();
     };
 
-    let mut items = i18n::completions(ctx, &descriptor);
+    let mut items = i18n::completions(ctx, descriptor);
     if items.is_empty() {
-        items = router::completions(ctx, &descriptor);
+        items = router::completions(ctx, descriptor);
     }
     if items.is_empty() {
         items = void::completions(ctx);
@@ -41,18 +37,29 @@ pub(crate) fn completions(ctx: &IdeContext<'_>) -> Vec<CompletionItem> {
     items
 }
 
-pub(crate) fn diagnostics(content: &str, uri: &Url) -> Vec<Diagnostic> {
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: uri.path().to_string().into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = router::route_param_diagnostics(content, uri, &descriptor);
-    diagnostics.extend(i18n::missing_key_diagnostics(content, &descriptor, uri));
+pub(crate) fn diagnostics(
+    content: &str,
+    uri: &Url,
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+) -> Vec<Diagnostic> {
+    let mut diagnostics = router::route_param_diagnostics(content, uri, descriptor);
+    diagnostics.extend(i18n::missing_key_diagnostics(content, descriptor, uri));
     diagnostics
+}
+
+pub(crate) fn diagnostics_from_state(
+    state: &crate::server::ServerState,
+    content: &str,
+    uri: &Url,
+) -> Vec<Diagnostic> {
+    state
+        .sfc_descriptor_for(uri, content)
+        .and_then(|artifact| {
+            artifact
+                .descriptor()
+                .map(|descriptor| diagnostics(content, uri, descriptor))
+        })
+        .unwrap_or_default()
 }
 
 pub(crate) fn warning_diagnostic(

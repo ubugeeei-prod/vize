@@ -3,7 +3,7 @@
 //! This module contains SSR-specific transform steps that modify the AST
 //! for optimal SSR code generation.
 
-use vize_atelier_core::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 // For now, most SSR-specific transforms are integrated directly into the codegen.
 // This module will be expanded as we add more sophisticated transforms.
@@ -87,10 +87,10 @@ pub fn get_v_text_exp<'a>(el: &'a ElementNode<'a>) -> Option<&'a ExpressionNode<
 #[cfg(test)]
 mod tests {
     use super::{get_v_model_exp, get_v_show_exp, has_v_html, has_v_model, has_v_show, has_v_text};
-    use vize_atelier_core::{
+    use vize_carton::{Box, Bump};
+    use vize_relief::{
         DirectiveNode, ElementNode, ExpressionNode, PropNode, SimpleExpressionNode, SourceLocation,
     };
-    use vize_carton::{Box, Bump};
 
     fn make_element_with_directive<'a>(
         allocator: &'a Bump,

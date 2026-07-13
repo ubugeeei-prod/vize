@@ -7,22 +7,45 @@ license.workspace = true
 repository.workspace = true
 description = "Atelier Vapor - The Vapor mode compiler workshop for Vize"
 
+[features]
+default = ["legacy"]
+# The frontend-neutral Atlas provider and Rendu-to-Vapor planner.
+graph = ["dep:vize_atlas", "dep:vize_rendu"]
+# Preserve the production template compiler and generator API by default.
+legacy = [
+  "graph",
+  "dep:vize_atelier_core",
+  "dep:vize_armature",
+  "dep:vize_croquis",
+  "dep:vize_relief",
+  "dep:oxc_allocator",
+  "dep:oxc_ast",
+  "dep:oxc_ast_visit",
+  "dep:oxc_parser",
+  "dep:oxc_span",
+  "dep:oxc_syntax",
+  "dep:serde",
+  "dep:thiserror",
+]
+
 [dependencies]
 vize_carton = { workspace = true }
-vize_atlas = { workspace = true }
-vize_atelier_core = { workspace = true }
-vize_croquis = { workspace = true, features = ["relief-compat"] }
-vize_rendu = { workspace = true }
+vize_atlas = { workspace = true, optional = true }
+vize_atelier_core = { workspace = true, optional = true }
+vize_armature = { workspace = true, optional = true }
+vize_croquis = { workspace = true, optional = true, features = ["relief-compat"] }
+vize_relief = { workspace = true, optional = true }
+vize_rendu = { workspace = true, optional = true }
 
-oxc_allocator = { workspace = true }
-oxc_ast = { workspace = true }
-oxc_ast_visit = { workspace = true }
-oxc_parser = { workspace = true }
-oxc_span = { workspace = true }
-oxc_syntax = { workspace = true }
+oxc_allocator = { workspace = true, optional = true }
+oxc_ast = { workspace = true, optional = true }
+oxc_ast_visit = { workspace = true, optional = true }
+oxc_parser = { workspace = true, optional = true }
+oxc_span = { workspace = true, optional = true }
+oxc_syntax = { workspace = true, optional = true }
 
-serde = { workspace = true }
-thiserror = { workspace = true }
+serde = { workspace = true, optional = true }
+thiserror = { workspace = true, optional = true }
 
 [dev-dependencies]
 insta = { workspace = true }

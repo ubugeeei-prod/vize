@@ -6,13 +6,14 @@
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_atelier_core::TemplateSyntaxMode;
+use vize_atlas::Shared;
 use vize_carton::{String as CompactString, ToCompactString, cstr, profile};
+use vize_croquis::CroquisDocument;
+use vize_relief::{ReliefArtifact, TemplateSyntaxMode};
 
-use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
+use vize_atelier_sfc::SfcDescriptor;
 
 use crate::batch::Diagnostic;
-use crate::batch::declaration_path::is_declaration_file;
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::import_rewriter::ImportRewriter;
 use crate::batch::source_map::{CompositeSourceMap, SfcSourceMap};
@@ -20,17 +21,18 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
 
 use super::VirtualFile;
 use super::diagnostics::collect_sfc_block_ranges;
-use super::jsx_build::build_jsx_registered_file;
 use super::passthrough::collect_passthrough_modules;
-use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
+use super::vue_artifact_codegen::{VueArtifactInputs, generate_vue_virtual_ts_from_artifacts};
+use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions};
 
 pub(super) const VUE_JSX_REFERENCE_DIRECTIVE: &str = "/// <reference types=\"vue/jsx\" />\n";
 
 /// Result of building a virtual file for a registered path, owned and
 /// independent of any `&mut VirtualProject` so it can be produced in parallel.
+#[derive(Clone)]
 pub(super) struct RegisteredFile {
-    pub(super) file: VirtualFile,
-    pub(super) extra_virtual_files: Vec<VirtualFile>,
+    pub(super) file: Shared<VirtualFile>,
+    pub(super) extra_virtual_files: Vec<Shared<VirtualFile>>,
     /// Original source text as registered, retained for offset<->line/col
     /// mapping without a disk re-read. Stored on the project, not the public
     /// `VirtualFile`.
@@ -48,87 +50,33 @@ pub(super) struct VirtualBuildContext<'a> {
     pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
-    /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497).
-    /// Otherwise JSX/TSX files pass through to TypeScript verbatim.
-    pub(super) jsx_typecheck: bool,
     pub(super) dialect: vize_carton::config::VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
-    pub(super) experimental_in_tag_comments: bool,
     pub(super) rewriter: &'a ImportRewriter,
 }
 
-pub(super) fn build_registered_file(
+pub(super) fn build_vue_registered_file_from_artifacts(
     path: &Path,
     content: &str,
+    descriptor: &SfcDescriptor<'_>,
+    syntax: Option<&ReliefArtifact>,
+    semantics: &CroquisDocument,
+    extra_template_referenced_names: Option<&vize_carton::FxHashSet<CompactString>>,
     context: VirtualBuildContext<'_>,
 ) -> CorsaResult<RegisteredFile> {
-    if path.extension().and_then(|extension| extension.to_str()) == Some("vue") {
-        return build_vue_registered_file(path, content, context);
-    }
-
-    if is_declaration_file(path) {
-        return build_script_registered_file(
-            path,
-            content,
-            SourceType::ts(),
-            (context.project_root, context.virtual_root),
-            context.rewriter,
-        );
-    }
-
-    // Opt-in Vize JSX/TSX type-checking (#1497). Only when the user explicitly
-    // enabled `typeChecker.jsxTypecheck`: otherwise `.jsx`/`.tsx` is passed to
-    // TypeScript verbatim (React passthrough) by the script path below.
-    if context.jsx_typecheck
-        && let Some(name) = path.file_name().and_then(|name| name.to_str())
-        && (name.ends_with(".jsx") || name.ends_with(".tsx"))
-    {
-        return build_jsx_registered_file(path, content, context);
-    }
-
-    let source_type = source_type_for_path(path).ok_or_else(|| CorsaError::PathError {
-        path: path.to_path_buf(),
-    })?;
-    build_script_registered_file(
-        path,
-        content,
-        source_type,
-        (context.project_root, context.virtual_root),
-        context.rewriter,
-    )
-}
-
-pub(super) fn build_vue_registered_file(
-    path: &Path,
-    content: &str,
-    context: VirtualBuildContext<'_>,
-) -> CorsaResult<RegisteredFile> {
-    let descriptor = profile!(
-        "canon.sfc.parse",
-        parse_sfc(
-            content,
-            SfcParseOptions {
-                filename: path.to_string_lossy().to_compact_string(),
-                ..Default::default()
-            },
-        )
-        .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))
-    )?;
-
     let effective_options =
-        virtual_ts_options_for_descriptor(context.virtual_ts_options, &descriptor);
-    let use_tsx_virtual = descriptor_uses_jsx_script(&descriptor);
-    let virtual_source_type = if use_tsx_virtual {
-        SourceType::tsx()
-    } else {
-        SourceType::ts()
-    };
+        virtual_ts_options_for_descriptor(context.virtual_ts_options, descriptor);
     let generated = profile!(
-        "canon.vue.virtual_ts",
-        generate_vue_virtual_ts(
+        "canon.vue.virtual_ts.shared",
+        generate_vue_virtual_ts_from_artifacts(
             path,
             content,
-            &descriptor,
+            VueArtifactInputs {
+                descriptor,
+                syntax,
+                semantics,
+                extra_template_referenced_names,
+            },
             &effective_options,
             VueCodegenOptions {
                 check_options: context.virtual_ts_check_options,
@@ -137,16 +85,31 @@ pub(super) fn build_vue_registered_file(
                 legacy_vue2: context.legacy_vue2,
                 dialect: context.dialect,
                 template_syntax: context.template_syntax,
-                experimental_in_tag_comments: context.experimental_in_tag_comments,
                 hoist_shared_preamble: true,
             },
         )
     )?;
+    assemble_vue_registered_file(path, content, descriptor, generated, context)
+}
+
+fn assemble_vue_registered_file(
+    path: &Path,
+    content: &str,
+    descriptor: &SfcDescriptor<'_>,
+    generated: GeneratedVueFile,
+    context: VirtualBuildContext<'_>,
+) -> CorsaResult<RegisteredFile> {
     let GeneratedVueFile {
         mut code,
         mut mappings,
         diagnostics,
     } = generated;
+    let use_tsx_virtual = descriptor_uses_jsx_script(descriptor);
+    let virtual_source_type = if use_tsx_virtual {
+        SourceType::tsx()
+    } else {
+        SourceType::ts()
+    };
     if use_tsx_virtual {
         prepend_vue_jsx_reference(&mut code, &mut mappings);
     }
@@ -155,7 +118,7 @@ pub(super) fn build_vue_registered_file(
         context.rewriter.rewrite(&code, virtual_source_type)
     );
     let source_map = CompositeSourceMap::new_vue(
-        SfcSourceMap::new(mappings, collect_sfc_block_ranges(&descriptor)),
+        SfcSourceMap::new(mappings, collect_sfc_block_ranges(descriptor)),
         rewritten.source_map,
     );
     let virtual_path = virtual_vue_path(
@@ -165,23 +128,23 @@ pub(super) fn build_vue_registered_file(
         use_tsx_virtual,
     )?;
     let extra_virtual_files = if use_tsx_virtual {
-        vec![build_tsx_vue_import_shim(
+        vec![Shared::new(build_tsx_vue_import_shim(
             context.project_root,
             context.virtual_root,
             path,
             &virtual_path,
-        )?]
+        )?)]
     } else {
         Vec::new()
     };
 
     Ok(RegisteredFile {
-        file: VirtualFile {
+        file: Shared::new(VirtualFile {
             content: rewritten.code,
             source_map,
             original_path: path.to_path_buf(),
             virtual_path,
-        },
+        }),
         extra_virtual_files,
         original_content: content.to_compact_string(),
         passthrough_files: collect_passthrough_modules(
@@ -208,12 +171,12 @@ pub(super) fn build_script_registered_file(
     let virtual_path = super::paths::script_virtual_path(roots.0, roots.1, path)?;
 
     Ok(RegisteredFile {
-        file: VirtualFile {
+        file: Shared::new(VirtualFile {
             content: rewritten.code,
             source_map: CompositeSourceMap::new_script(rewritten.source_map),
             original_path: path.to_path_buf(),
             virtual_path,
-        },
+        }),
         extra_virtual_files: Vec::new(),
         original_content: content.to_compact_string(),
         passthrough_files: collect_passthrough_modules(path, content, roots.0, roots.1),

@@ -12,7 +12,7 @@ use super::{
     RuntimeHelper, SsrCodegenContext, String, TemplateChildNode, ToCompactString, VNodePropEntry,
     extract_destructure_params,
 };
-use vize_atelier_core::ForNode;
+use vize_relief::ForNode;
 
 impl<'a> SsrCodegenContext<'a> {
     fn vnode_children_expression(&mut self, children: &[TemplateChildNode<'a>]) -> String {
@@ -406,7 +406,7 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    fn vnode_conditional_slot_entry(&mut self, if_node: &vize_atelier_core::IfNode<'a>) -> String {
+    fn vnode_conditional_slot_entry(&mut self, if_node: &vize_relief::IfNode<'a>) -> String {
         let mut out = String::default();
         for (index, branch) in if_node.branches.iter().enumerate() {
             if index > 0 {
@@ -484,7 +484,7 @@ impl<'a> SsrCodegenContext<'a> {
     fn slot_directive<'node>(
         &self,
         el: &'node ElementNode<'a>,
-    ) -> Option<&'node vize_atelier_core::DirectiveNode<'a>> {
+    ) -> Option<&'node vize_relief::DirectiveNode<'a>> {
         el.props.iter().find_map(|prop| match prop {
             PropNode::Directive(dir) if dir.name == "slot" => Some(dir.as_ref()),
             _ => None,
@@ -548,7 +548,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.vnode_children_expression(children)
     }
 
-    fn vnode_if_expression(&mut self, if_node: &vize_atelier_core::IfNode<'a>) -> String {
+    fn vnode_if_expression(&mut self, if_node: &vize_relief::IfNode<'a>) -> String {
         self.use_core_helper(RuntimeHelper::CreateComment);
 
         let mut out = String::default();

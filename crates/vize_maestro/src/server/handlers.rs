@@ -13,14 +13,13 @@ use tower_lsp::{
         DidChangeTextDocumentParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams,
         DidSaveTextDocumentParams, DocumentFormattingParams, DocumentHighlight,
         DocumentHighlightParams, DocumentLink, DocumentLinkParams, DocumentRangeFormattingParams,
-        DocumentSymbol, DocumentSymbolParams, DocumentSymbolResponse, FoldingRange,
-        FoldingRangeKind, FoldingRangeParams, GotoDefinitionParams, GotoDefinitionResponse, Hover,
-        HoverParams, InitializeParams, InitializeResult, InitializedParams, InlayHint,
-        InlayHintParams, Location, MessageType, Position, PrepareRenameResponse, Range,
-        ReferenceParams, RenameFilesParams, RenameParams, SemanticTokensParams,
-        SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult, ServerInfo,
-        SymbolInformation, SymbolKind, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
-        WorkspaceSymbolParams,
+        DocumentSymbolParams, DocumentSymbolResponse, FoldingRange, FoldingRangeParams,
+        GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams, InitializeParams,
+        InitializeResult, InitializedParams, InlayHint, InlayHintParams, Location, MessageType,
+        Position, PrepareRenameResponse, ReferenceParams, RenameFilesParams, RenameParams,
+        SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
+        SemanticTokensResult, ServerInfo, SymbolInformation, TextDocumentPositionParams, TextEdit,
+        WorkspaceEdit, WorkspaceSymbolParams,
     },
 };
 
@@ -31,6 +30,8 @@ use crate::ide::{
     InlayHintService, ReferencesService, RenameService, SemanticTokensService,
     WorkspaceSymbolsService, position_to_offset,
 };
+#[cfg(test)]
+use tower_lsp::lsp_types::Range;
 
 #[tower_lsp::async_trait]
 impl LanguageServer for MaestroServer {
@@ -98,6 +99,7 @@ impl LanguageServer for MaestroServer {
             .documents
             .open(uri.clone(), content.clone(), version, language_id);
 
+        self.state.upsert_artifact_source(&uri, &content);
         self.state.update_virtual_docs(&uri, &content);
 
         self.publish_diagnostics(&uri).await;
@@ -113,6 +115,7 @@ impl LanguageServer for MaestroServer {
 
         if let Some(doc) = self.state.documents.get(&uri) {
             let content = doc.text();
+            self.state.upsert_artifact_source(&uri, &content);
             self.state.update_virtual_docs(&uri, &content);
         }
 
@@ -127,6 +130,7 @@ impl LanguageServer for MaestroServer {
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
         let uri = params.text_document.uri;
         self.state.documents.close(&uri);
+        self.state.remove_artifact_source(&uri);
 
         // Clean up virtual documents cache
         self.state.remove_virtual_docs(&uri);
@@ -414,157 +418,26 @@ impl LanguageServer for MaestroServer {
         // functions instead. Structural (parse-based), so it is not gated on
         // `typeChecker.jsxTypecheck`.
         if crate::utils::is_jsx_path(uri.path()) {
+            self.state.ensure_artifact_source(uri, &content);
+            let Some(syntax) = self.state.jsx_syntax(uri) else {
+                return Ok(None);
+            };
             return Ok(
-                crate::ide::JsxDocumentSymbolsService::symbols(&content, uri)
+                crate::ide::JsxDocumentSymbolsService::symbols_from_snapshot(syntax.as_ref())
                     .map(DocumentSymbolResponse::Nested),
             );
         }
 
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
+        let Some(artifact) = self.state.sfc_descriptor_for(uri, &content) else {
+            return Ok(None);
         };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) else {
+        let Some(descriptor) = artifact.descriptor() else {
             return Ok(None);
         };
 
-        let mut symbols = Vec::new();
-
-        if let Some(ref template) = descriptor.template {
-            symbols.push(DocumentSymbol {
-                name: "template".to_string(),
-                kind: SymbolKind::MODULE,
-                tags: None,
-                deprecated: None,
-                range: Range {
-                    start: Position {
-                        line: template.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: template.loc.end_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                },
-                selection_range: Range {
-                    start: Position {
-                        line: template.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: template.loc.start_line.saturating_sub(1) as u32,
-                        character: 10,
-                    },
-                },
-                detail: template.lang.as_ref().map(|l| l.to_string()),
-                children: None,
-            });
-        }
-
-        if let Some(ref script) = descriptor.script {
-            symbols.push(DocumentSymbol {
-                name: "script".to_string(),
-                kind: SymbolKind::MODULE,
-                tags: None,
-                deprecated: None,
-                range: Range {
-                    start: Position {
-                        line: script.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: script.loc.end_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                },
-                selection_range: Range {
-                    start: Position {
-                        line: script.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: script.loc.start_line.saturating_sub(1) as u32,
-                        character: 8,
-                    },
-                },
-                detail: script.lang.as_ref().map(|l| l.to_string()),
-                children: None,
-            });
-        }
-
-        if let Some(ref script_setup) = descriptor.script_setup {
-            symbols.push(DocumentSymbol {
-                name: "script setup".to_string(),
-                kind: SymbolKind::MODULE,
-                tags: None,
-                deprecated: None,
-                range: Range {
-                    start: Position {
-                        line: script_setup.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: script_setup.loc.end_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                },
-                selection_range: Range {
-                    start: Position {
-                        line: script_setup.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: script_setup.loc.start_line.saturating_sub(1) as u32,
-                        character: 14,
-                    },
-                },
-                detail: script_setup.lang.as_ref().map(|l| l.to_string()),
-                children: None,
-            });
-        }
-
-        for (i, style) in descriptor.styles.iter().enumerate() {
-            #[allow(clippy::disallowed_macros)]
-            let name = if let Some(ref module) = style.module {
-                format!("style module={}", module)
-            } else if style.scoped {
-                "style scoped".to_string()
-            } else {
-                format!("style[{}]", i)
-            };
-
-            symbols.push(DocumentSymbol {
-                name,
-                kind: SymbolKind::MODULE,
-                tags: None,
-                deprecated: None,
-                range: Range {
-                    start: Position {
-                        line: style.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: style.loc.end_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                },
-                selection_range: Range {
-                    start: Position {
-                        line: style.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: style.loc.start_line.saturating_sub(1) as u32,
-                        character: 7,
-                    },
-                },
-                detail: style.lang.as_ref().map(|l| l.to_string()),
-                children: None,
-            });
-        }
-
-        Ok(Some(DocumentSymbolResponse::Nested(symbols)))
+        Ok(Some(DocumentSymbolResponse::Nested(
+            crate::ide::SfcDocumentStructureService::symbols(descriptor),
+        )))
     }
 
     async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
@@ -715,10 +588,24 @@ impl LanguageServer for MaestroServer {
         // `.jsx`/`.tsx`: highlight the dynamic JSX expressions. Structural, so
         // not gated on `typeChecker.jsxTypecheck`.
         if crate::utils::is_jsx_path(uri.path()) {
-            return Ok(crate::ide::JsxSemanticTokensService::tokens(&content, uri));
+            self.state.ensure_artifact_source(uri, &content);
+            let Some(syntax) = self.state.jsx_syntax(uri) else {
+                return Ok(None);
+            };
+            return Ok(crate::ide::JsxSemanticTokensService::tokens_from_snapshot(
+                syntax.as_ref(),
+            ));
         }
 
-        Ok(SemanticTokensService::get_tokens(&content, uri))
+        let Some(artifact) = self.state.sfc_descriptor_for(uri, &content) else {
+            return Ok(None);
+        };
+        let Some(descriptor) = artifact.descriptor() else {
+            return Ok(None);
+        };
+        Ok(SemanticTokensService::get_tokens_from_descriptor(
+            &content, uri, descriptor,
+        ))
     }
 
     async fn semantic_tokens_range(
@@ -738,16 +625,28 @@ impl LanguageServer for MaestroServer {
         let content = doc.text();
 
         if crate::utils::is_jsx_path(uri.path()) {
-            return Ok(crate::ide::JsxSemanticTokensService::tokens_range(
-                &content,
-                uri,
-                params.range,
-            ));
+            self.state.ensure_artifact_source(uri, &content);
+            let Some(syntax) = self.state.jsx_syntax(uri) else {
+                return Ok(None);
+            };
+            return Ok(
+                crate::ide::JsxSemanticTokensService::tokens_range_from_snapshot(
+                    syntax.as_ref(),
+                    params.range,
+                ),
+            );
         }
 
-        Ok(SemanticTokensService::get_tokens_range(
+        let Some(artifact) = self.state.sfc_descriptor_for(uri, &content) else {
+            return Ok(None);
+        };
+        let Some(descriptor) = artifact.descriptor() else {
+            return Ok(None);
+        };
+        Ok(SemanticTokensService::get_tokens_range_from_descriptor(
             &content,
             uri,
+            descriptor,
             params.range,
         ))
     }
@@ -764,7 +663,13 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let lenses = CodeLensService::get_lenses(&content, uri);
+        let Some(artifact) = self.state.sfc_descriptor_for(uri, &content) else {
+            return Ok(None);
+        };
+        let Some(descriptor) = artifact.descriptor() else {
+            return Ok(None);
+        };
+        let lenses = CodeLensService::get_lenses_from_descriptor(descriptor);
 
         if lenses.is_empty() {
             Ok(None)
@@ -824,7 +729,13 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let links = DocumentLinkService::get_links(&content, uri);
+        let Some(artifact) = self.state.sfc_descriptor_for(uri, &content) else {
+            return Ok(None);
+        };
+        let Some(descriptor) = artifact.descriptor() else {
+            return Ok(None);
+        };
+        let links = DocumentLinkService::get_links_from_descriptor(&content, uri, descriptor);
 
         if links.is_empty() {
             Ok(None)
@@ -847,8 +758,23 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let hints =
-            InlayHintService::get_hints_with_ecosystem(&content, uri, range, features.ecosystem);
+        let Some(artifact) = self.state.sfc_descriptor_for(uri, &content) else {
+            return Ok(None);
+        };
+        let Some(descriptor) = artifact.descriptor() else {
+            return Ok(None);
+        };
+        let Some(croquis) = self.state.sfc_croquis(uri) else {
+            return Ok(None);
+        };
+        let hints = InlayHintService::get_hints_from_products(
+            &content,
+            uri,
+            range,
+            features.ecosystem,
+            descriptor,
+            croquis.analysis(),
+        );
 
         if hints.is_empty() {
             Ok(None)
@@ -869,66 +795,16 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let mut ranges = Vec::new();
 
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) {
-            if let Some(ref template) = descriptor.template
-                && template.loc.start_line < template.loc.end_line
-            {
-                ranges.push(FoldingRange {
-                    start_line: template.loc.start_line.saturating_sub(1) as u32,
-                    start_character: None,
-                    end_line: template.loc.end_line.saturating_sub(1) as u32,
-                    end_character: None,
-                    kind: Some(FoldingRangeKind::Region),
-                    collapsed_text: Some("template".to_string()),
-                });
-            }
-
-            if let Some(ref script) = descriptor.script_setup
-                && script.loc.start_line < script.loc.end_line
-            {
-                ranges.push(FoldingRange {
-                    start_line: script.loc.start_line.saturating_sub(1) as u32,
-                    start_character: None,
-                    end_line: script.loc.end_line.saturating_sub(1) as u32,
-                    end_character: None,
-                    kind: Some(FoldingRangeKind::Region),
-                    collapsed_text: Some("script setup".to_string()),
-                });
-            }
-
-            if let Some(ref script) = descriptor.script
-                && script.loc.start_line < script.loc.end_line
-            {
-                ranges.push(FoldingRange {
-                    start_line: script.loc.start_line.saturating_sub(1) as u32,
-                    start_character: None,
-                    end_line: script.loc.end_line.saturating_sub(1) as u32,
-                    end_character: None,
-                    kind: Some(FoldingRangeKind::Region),
-                    collapsed_text: Some("script".to_string()),
-                });
-            }
-
-            for style in &descriptor.styles {
-                if style.loc.start_line < style.loc.end_line {
-                    ranges.push(FoldingRange {
-                        start_line: style.loc.start_line.saturating_sub(1) as u32,
-                        start_character: None,
-                        end_line: style.loc.end_line.saturating_sub(1) as u32,
-                        end_character: None,
-                        kind: Some(FoldingRangeKind::Region),
-                        collapsed_text: Some("style".to_string()),
-                    });
-                }
-            }
-        }
+        let ranges = self
+            .state
+            .sfc_descriptor_for(uri, &content)
+            .and_then(|artifact| {
+                artifact.descriptor().map(|descriptor| {
+                    crate::ide::SfcDocumentStructureService::folding_ranges(descriptor)
+                })
+            })
+            .unwrap_or_default();
 
         if ranges.is_empty() {
             Ok(None)

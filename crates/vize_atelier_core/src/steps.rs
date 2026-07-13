@@ -3,6 +3,8 @@
 //! This module contains individual transform steps that process specific
 //! directives and node types inside the template lane.
 
+#![allow(deprecated)]
+
 #[path = "transforms/transform_element.rs"]
 pub mod element;
 #[path = "transforms/transform_expression.rs"]

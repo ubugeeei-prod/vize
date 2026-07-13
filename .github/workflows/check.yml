@@ -87,9 +87,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        crate:
-          - vize_carton
-          - vize_fresco
+        crate: [vize_carton, vize_relief, vize_armature, vize_croquis, vize_atelier_core, vize_atelier_dom, vize_atelier_vapor, vize_atelier_ssr, vize_atelier_sfc, vize_musea, vize_canon, vize_patina, vize_fresco]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -382,8 +380,8 @@ jobs:
           key: clippy-test
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
 
-      - name: Clippy
-        run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports
+      - name: Check graph backend boundaries and Clippy
+        run: ./tools/check-graph-backend-boundaries.sh && cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Test

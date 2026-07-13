@@ -18,9 +18,9 @@
 use tower_lsp::lsp_types::{
     Range, SemanticTokens, SemanticTokensRangeResult, SemanticTokensResult, Url,
 };
-use vize_atelier_jsx::JsxLang;
+use vize_atelier_jsx::{JsxLang, JsxSyntaxSnapshot, snapshot_jsx_named};
 
-use super::virtual_ts::collect_jsx_expressions;
+use super::virtual_ts::collect_snapshot_expressions;
 use crate::ide::semantic_tokens::{AbsoluteToken, encode_semantic_tokens, tokenize_expression};
 
 /// Semantic-tokens provider for `.jsx`/`.tsx` components.
@@ -30,7 +30,12 @@ impl JsxSemanticTokensService {
     /// Collect semantic tokens for the dynamic expressions in a `.jsx`/`.tsx`
     /// document, or `None` when there is nothing to highlight.
     pub fn tokens(content: &str, uri: &Url) -> Option<SemanticTokensResult> {
-        let tokens = Self::collect_tokens(content, uri);
+        let snapshot = snapshot_jsx_named(uri.path(), content, JsxLang::from_path(uri.path()));
+        Self::tokens_from_snapshot(&snapshot)
+    }
+
+    pub fn tokens_from_snapshot(snapshot: &JsxSyntaxSnapshot) -> Option<SemanticTokensResult> {
+        let tokens = Self::collect_snapshot_tokens(snapshot);
         if tokens.is_empty() {
             return None;
         }
@@ -47,7 +52,15 @@ impl JsxSemanticTokensService {
         uri: &Url,
         range: Range,
     ) -> Option<SemanticTokensRangeResult> {
-        let tokens = Self::collect_tokens(content, uri)
+        let snapshot = snapshot_jsx_named(uri.path(), content, JsxLang::from_path(uri.path()));
+        Self::tokens_range_from_snapshot(&snapshot, range)
+    }
+
+    pub fn tokens_range_from_snapshot(
+        snapshot: &JsxSyntaxSnapshot,
+        range: Range,
+    ) -> Option<SemanticTokensRangeResult> {
+        let tokens = Self::collect_snapshot_tokens(snapshot)
             .into_iter()
             .filter(|token| token_overlaps_range(token, range))
             .collect::<Vec<_>>();
@@ -60,12 +73,17 @@ impl JsxSemanticTokensService {
         }))
     }
 
-    fn collect_tokens(content: &str, uri: &Url) -> Vec<AbsoluteToken> {
-        let lang = JsxLang::from_path(uri.path());
-        let exprs = collect_jsx_expressions(content, lang);
+    fn collect_snapshot_tokens(snapshot: &JsxSyntaxSnapshot) -> Vec<AbsoluteToken> {
+        let exprs = collect_snapshot_expressions(snapshot);
+        Self::tokenize_expressions(snapshot.source.as_ref(), &exprs)
+    }
 
+    fn tokenize_expressions(
+        content: &str,
+        exprs: &[super::virtual_ts::JsxExpr],
+    ) -> Vec<AbsoluteToken> {
         let mut tokens: Vec<AbsoluteToken> = Vec::new();
-        for expr in &exprs {
+        for expr in exprs {
             let start = (expr.start as usize).min(content.len());
             let end = (expr.end as usize).min(content.len());
             if start >= end {
@@ -105,7 +123,8 @@ mod tests {
 
     fn tokens_for(source: &str) -> Vec<AbsoluteToken> {
         let uri = Url::parse("file:///tmp/Comp.tsx").unwrap();
-        JsxSemanticTokensService::collect_tokens(source, &uri)
+        let snapshot = snapshot_jsx_named(uri.path(), source, JsxLang::from_path(uri.path()));
+        JsxSemanticTokensService::collect_snapshot_tokens(&snapshot)
     }
 
     #[test]

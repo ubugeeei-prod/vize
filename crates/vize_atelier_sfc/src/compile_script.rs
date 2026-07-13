@@ -19,7 +19,7 @@ pub mod typescript;
 use crate::types::{BindingMetadata, ScriptCompileOptions, SfcDescriptor, SfcError};
 
 use self::artifacts::erase_artifact_macro_statements;
-use self::function_mode::compile_script_setup;
+use self::function_mode::compile_script_setup_from_source;
 use self::lazy_hydration::transform_lazy_hydration_macros;
 use self::typescript::transform_typescript_to_js;
 
@@ -65,8 +65,28 @@ pub fn compile_script(
     is_vapor: bool,
     is_ts: bool,
 ) -> Result<ScriptCompileResult, SfcError> {
+    compile_script_from_source(descriptor, _options, component_name, is_vapor, is_ts, None)
+}
+
+/// Compile script blocks with an optional physical source identity.
+///
+/// The graph pipeline supplies the resolved filename so imported type-based
+/// props are emitted with the same runtime contract as local declarations.
+pub(crate) fn compile_script_from_source(
+    descriptor: &SfcDescriptor,
+    _options: &ScriptCompileOptions,
+    component_name: &str,
+    is_vapor: bool,
+    is_ts: bool,
+    filename: Option<&str>,
+) -> Result<ScriptCompileResult, SfcError> {
     // Handle script setup
     if let Some(script_setup) = &descriptor.script_setup {
+        let source_is_ts = crate::compile::is_ts_lang(script_setup.lang.as_deref())
+            || descriptor
+                .script
+                .as_ref()
+                .is_some_and(|script| crate::compile::is_ts_lang(script.lang.as_deref()));
         let template_content = descriptor.template.as_ref().map(|t| t.content.as_ref());
         let transformed = transform_lazy_hydration_macros(&script_setup.content);
         let script_content = transformed
@@ -78,12 +98,18 @@ pub fn compile_script(
             .as_ref()
             .map(|content| content.as_str())
             .unwrap_or(script_content);
-        let mut result = compile_script_setup(
+        let mut result = compile_script_setup_from_source(
             script_content,
             component_name,
             is_vapor,
             is_ts,
+            source_is_ts,
             template_content,
+            descriptor
+                .script
+                .as_ref()
+                .map(|script| script.content.as_ref()),
+            filename,
         )?;
         if let Some(transformed) = transformed {
             let mut code = transformed.preamble;

@@ -16,8 +16,10 @@ use vize_carton::cstr;
 /// Find definition for a symbol in script context.
 pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionResponse> {
     if ctx.uri.path().ends_with(".art.vue")
-        && let Some(source) =
-            crate::ide::musea::define_art_source_at_offset(&ctx.content, ctx.uri, ctx.offset)
+        && let Some(source) = crate::ide::musea::define_art_source_at_offset_from_descriptor(
+            ctx.sfc_descriptor()?,
+            ctx.offset,
+        )
         && let Some(target) = crate::ide::musea::resolve_define_art_source(ctx.uri, &source.source)
         && let Ok(uri) = tower_lsp::lsp_types::Url::from_file_path(target)
     {
@@ -42,12 +44,7 @@ pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionRes
         return None;
     }
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-
-    let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+    let descriptor = ctx.sfc_descriptor()?;
 
     let is_setup = matches!(ctx.block_type, Some(BlockType::ScriptSetup));
 
@@ -97,51 +94,33 @@ pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionRes
 /// Returns `None` for ordinary `<script setup>` files without either signal,
 /// leaving the raw-text binding lookup untouched.
 pub(crate) fn find_analyzed_binding_location(ctx: &IdeContext, word: &str) -> Option<Location> {
-    use vize_atelier_sfc::{
-        SfcParseOptions,
-        croquis::{
-            SfcCroquisOptions, analyze_sfc_descriptor_with_context,
-            analyze_sfc_descriptor_with_context_legacy_vue2,
-            analyze_sfc_descriptor_with_context_options_api,
-        },
-        parse_sfc,
-    };
     use vize_croquis::ComponentShape;
 
-    let descriptor = parse_sfc(
-        &ctx.content,
-        SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        },
-    )
-    .ok()?;
-
-    let croquis_options = SfcCroquisOptions::full();
+    let document = ctx.sfc_croquis()?;
+    let analysis = document.analysis();
     let options_api = ctx.state.options_api_enabled();
-    let analysis = if ctx.state.legacy_vue2_enabled() {
-        analyze_sfc_descriptor_with_context_legacy_vue2(&descriptor, None, croquis_options)
-    } else if options_api {
-        analyze_sfc_descriptor_with_context_options_api(&descriptor, None, croquis_options)
-    } else {
-        analyze_sfc_descriptor_with_context(&descriptor, None, croquis_options)
-    };
 
     // Class-component members are collected unconditionally (auto-detected by
     // AST shape); Options API object bindings only when the mode is enabled.
     // Without either signal, defer to the caller's raw-text lookup so plain
     // `<script setup>` go-to-definition keeps its existing behavior.
-    let is_class = analysis.croquis.component_shape == ComponentShape::ClassApi;
+    let is_class = analysis.component_shape == ComponentShape::ClassApi;
     if !options_api && !is_class {
         return None;
     }
 
-    let &(start, end) = analysis.croquis.binding_spans.get(word)?;
+    let &(start, end) = analysis.binding_spans.get(word)?;
     if end <= start {
         return None;
     }
 
-    let offset = analysis.script_offset as usize + start as usize;
+    let descriptor = ctx.sfc_descriptor()?;
+    let script_offset = descriptor
+        .script_setup
+        .as_ref()
+        .or(descriptor.script.as_ref())
+        .map_or(0, |script| script.loc.start);
+    let offset = script_offset + start as usize;
     Some(location_from_sfc_offset(
         ctx,
         offset,
@@ -174,12 +153,7 @@ pub(crate) fn definition_in_style(ctx: &IdeContext) -> Option<GotoDefinitionResp
 
     // Check for v-bind() references to script variables.
     if is_inside_style_v_bind_argument(&ctx.content, ctx.offset) {
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options)
+        if let Some(descriptor) = ctx.sfc_descriptor()
             && let Some(ref script_setup) = descriptor.script_setup
         {
             let content = script_setup.content.as_ref();

@@ -105,6 +105,7 @@ pub struct SfcCompileResultNapi {
 #[derive(Default)]
 pub struct BatchCompileOptionsNapi {
     pub mode: Option<String>,
+    pub source_map: Option<bool>,
     pub ssr: Option<bool>,
     pub vapor: Option<bool>,
     pub custom_renderer: Option<bool>,
@@ -152,6 +153,7 @@ pub struct BatchFileInputNapi {
 pub struct BatchFileResultNapi {
     pub path: String,
     pub code: String,
+    pub map: Option<String>,
     pub css: Option<String>,
     pub scope_id: String,
     pub has_scoped: bool,

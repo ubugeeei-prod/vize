@@ -22,6 +22,7 @@ vize_relief.workspace = true
 vize_armature.workspace = true
 vize_atlas.workspace = true
 vize_atelier_core.workspace = true
+vize_atelier_dom.workspace = true
 vize_atelier_jsx.workspace = true
 vize_atelier_sfc.workspace = true
 

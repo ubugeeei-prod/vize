@@ -1,6 +1,7 @@
 # vize_croquis
 
-`vize_croquis` is the semantic analysis layer for Vue templates and SFCs.
+`vize_croquis` owns Vize's frontend-neutral semantic product for Vue templates,
+SFCs, JSX, and TSX.
 
 Relief records what source syntax was written and where. Croquis derives what
 that syntax means and how it relates: symbol identity, scopes, bindings,
@@ -12,7 +13,7 @@ separate `vize_croquis_cf` crate.
 - Scope tracking for template and script bindings
 - Binding metadata used by compilers and type checking
 - Reactivity and macro analysis
-- Call/effect graphs and virtual TypeScript support modules
+- Frontend-neutral semantic facts used by virtual TypeScript and diagnostics
 
 ## Key Entry Points
 
@@ -44,7 +45,8 @@ aggregation.
 - `vize_armature` provides the parsed template tree
 - `vize_relief` owns source-faithful syntax nodes and locations
 - `vize_croquis_cf` aggregates Croquis facts across files on demand
-- `vize_atelier_dom`, `vize_atelier_vapor`, and `vize_atelier_ssr` consume binding metadata
+- `vize_rendu` separately carries render intent to DOM, Vapor, and SSR backends
+- `vize_flow` separately carries control, data, and effect flow
 - `vize_canon` and `vize_maestro` reuse the analysis layer for type-aware features
 
 ## License

@@ -39,7 +39,7 @@ pub enum TemplateSyntaxArg {
     Quirks,
 }
 
-impl From<TemplateSyntaxArg> for vize_atelier_core::TemplateSyntaxMode {
+impl From<TemplateSyntaxArg> for vize_relief::TemplateSyntaxMode {
     fn from(value: TemplateSyntaxArg) -> Self {
         match value {
             TemplateSyntaxArg::Standard => Self::Standard,

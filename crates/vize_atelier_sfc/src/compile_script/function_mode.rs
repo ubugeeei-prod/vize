@@ -10,7 +10,10 @@
 mod compiler;
 pub(crate) mod helpers;
 pub(crate) mod imports;
+mod prop_defaults;
+mod source;
 
-pub use compiler::compile_script_setup;
+pub(crate) use compiler::compile_script_setup_from_source;
 pub use helpers::contains_top_level_await;
 pub use imports::dedupe_imports;
+pub use source::compile_script_setup;

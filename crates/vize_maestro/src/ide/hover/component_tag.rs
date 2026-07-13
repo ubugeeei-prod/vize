@@ -132,15 +132,8 @@ fn template_view<'a>(ctx: &'a IdeContext<'_>) -> Option<TemplateView<'a>> {
             })
         }
         BlockType::Template => {
-            let descriptor = vize_atelier_sfc::parse_sfc(
-                &ctx.content,
-                vize_atelier_sfc::SfcParseOptions {
-                    filename: ctx.uri.path().to_string().into(),
-                    ..Default::default()
-                },
-            )
-            .ok()?;
-            let template = descriptor.template?;
+            let descriptor = ctx.sfc_descriptor()?;
+            let template = descriptor.template.as_ref()?;
             Some(TemplateView {
                 content: ctx.content.get(template.loc.start..template.loc.end)?,
                 relative_offset: ctx.offset.saturating_sub(template.loc.start) as u32,

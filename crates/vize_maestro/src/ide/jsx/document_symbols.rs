@@ -21,8 +21,7 @@
 #![allow(deprecated, clippy::disallowed_methods)]
 
 use tower_lsp::lsp_types::{DocumentSymbol, Position, Range, SymbolKind, Url};
-use vize_atelier_jsx::{JsxLang, lower_source};
-use vize_carton::Bump;
+use vize_atelier_jsx::{JsxLang, JsxSyntaxSnapshot, snapshot_jsx_named};
 
 use crate::ide::offset_to_position;
 
@@ -33,20 +32,22 @@ impl JsxDocumentSymbolsService {
     /// Collect one symbol per component render root in the document, or `None`
     /// when the file contains no JSX components.
     pub fn symbols(content: &str, uri: &Url) -> Option<Vec<DocumentSymbol>> {
-        let lang = JsxLang::from_path(uri.path());
-        let bump = Bump::new();
-        let lowered = lower_source(&bump, content, lang);
+        let snapshot = snapshot_jsx_named(uri.path(), content, JsxLang::from_path(uri.path()));
+        Self::symbols_from_snapshot(&snapshot)
+    }
 
-        if lowered.roots.is_empty() {
+    pub fn symbols_from_snapshot(snapshot: &JsxSyntaxSnapshot) -> Option<Vec<DocumentSymbol>> {
+        if snapshot.roots.is_empty() {
             return None;
         }
 
-        let mut symbols = Vec::with_capacity(lowered.roots.len());
-        for (index, root) in lowered.roots.iter().enumerate() {
+        let content = snapshot.source.as_ref();
+        let mut symbols = Vec::with_capacity(snapshot.roots.len());
+        for (index, root) in snapshot.root_metadata().iter().enumerate() {
             let name = root
                 .component_name
-                .as_ref()
-                .map(|name| name.as_str().to_string())
+                .as_deref()
+                .map(str::to_string)
                 .unwrap_or_else(|| {
                     // Anonymous default-exported / inline component: use a stable
                     // 1-based placeholder so the outline stays deterministic.
@@ -56,10 +57,8 @@ impl JsxDocumentSymbolsService {
                     }
                 });
 
-            let start = (root.root.loc.start.offset as usize).min(content.len());
-            let end = (root.root.loc.end.offset as usize)
-                .min(content.len())
-                .max(start);
+            let start = (root.span.start as usize).min(content.len());
+            let end = (root.span.end as usize).min(content.len()).max(start);
             let (start_line, start_char) = offset_to_position(content, start);
             let (end_line, end_char) = offset_to_position(content, end);
 

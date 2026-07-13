@@ -37,7 +37,7 @@ impl CrossFileAnalyzer {
         &mut self,
         path: impl AsRef<Path>,
         source: &str,
-        analysis: Croquis,
+        analysis: impl Into<vize_atlas::Shared<Croquis>>,
     ) -> FileId {
         let effect_summary = automatic_effect_summary(path.as_ref(), source);
         self.add_file_with_analysis_and_effect_summary(path, source, analysis, effect_summary)
@@ -52,7 +52,7 @@ impl CrossFileAnalyzer {
         &mut self,
         path: impl AsRef<Path>,
         source: &str,
-        analysis: Croquis,
+        analysis: impl Into<vize_atlas::Shared<Croquis>>,
         effect_summary: EffectGraphSummary,
     ) -> FileId {
         let path = path.as_ref();
@@ -141,4 +141,22 @@ fn automatic_effect_summary(path: &Path, source: &str) -> EffectGraphSummary {
         _ => Some("ts"),
     };
     build_effect_graph_from_sfc_scripts(None, Some(EffectGraphScript::new(source, lang))).summary()
+}
+
+#[cfg(test)]
+mod shared_tests {
+    use super::*;
+    use vize_atlas::Shared;
+
+    #[test]
+    fn shared_analysis_is_registered_without_cloning_the_model() {
+        let analysis = Shared::new(Croquis::new());
+        let mut analyzer = CrossFileAnalyzer::default();
+        let id = analyzer.add_file_with_analysis("Shared.vue", "", Shared::clone(&analysis));
+
+        assert!(Shared::ptr_eq(
+            &analysis,
+            &analyzer.registry().get(id).unwrap().analysis,
+        ));
+    }
 }

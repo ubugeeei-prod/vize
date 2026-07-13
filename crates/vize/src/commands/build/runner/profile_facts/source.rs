@@ -2,10 +2,10 @@
 
 use std::{path::Path, time::Duration};
 
-use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::config::VueVersion;
 use vize_carton::profiler::global_profiler;
 use vize_carton::{String, cstr};
+use vize_relief::TemplateSyntaxMode;
 
 use crate::commands::build::config::FileProfile;
 

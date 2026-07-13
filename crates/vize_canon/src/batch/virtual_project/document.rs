@@ -3,9 +3,15 @@
 use std::path::Path;
 
 use oxc_span::SourceType;
-use vize_atelier_core::TemplateSyntaxMode;
-use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+use vize_atelier_sfc::{
+    SfcCompileOptions, SfcCompileRequest, SfcCompileSettings, SfcCroquisMode, SfcCroquisSettings,
+    SfcDescriptorArtifact, SfcDescriptorProduct, SfcResolvedPropsPolicy,
+};
+use vize_atlas::{Compilation, Shared};
 use vize_carton::{String as CompactString, ToCompactString};
+use vize_croquis::CroquisDocumentProduct;
+use vize_flow::FlowProduct;
+use vize_relief::{ReliefProduct, TemplateSyntaxMode};
 
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::import_rewriter::{ImportRewriter, ImportSourceMap};
@@ -14,7 +20,8 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
 use super::build::{
     descriptor_uses_jsx_script, prepend_vue_jsx_reference, virtual_ts_options_for_descriptor,
 };
-use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
+use super::vue_artifact_codegen::{VueArtifactInputs, generate_vue_virtual_ts_from_artifacts};
+use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions};
 
 /// Rewritten virtual TypeScript for a single in-memory `.vue` document.
 pub struct VueDocumentVirtualTs {
@@ -30,6 +37,7 @@ pub struct VueDocumentVirtualTs {
     pub source_type: SourceType,
     /// Suffix appended to the original `.vue` URI/path for socket-mode Corsa.
     pub virtual_suffix: &'static str,
+    pub(crate) descriptor: Shared<SfcDescriptorArtifact>,
 }
 
 /// Vue single-document generation options used by editor/socket callers.
@@ -65,17 +73,60 @@ pub fn generate_vue_document_virtual_ts_with_options(
     hoist_shared_preamble: bool,
     document_options: VueDocumentVirtualTsOptions,
 ) -> CorsaResult<VueDocumentVirtualTs> {
-    let descriptor = parse_sfc(
-        content,
-        SfcParseOptions {
-            filename: path.to_string_lossy().to_compact_string(),
-            ..Default::default()
-        },
-    )
-    .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))?;
+    let mode = if document_options.legacy_vue2 {
+        SfcCroquisMode::LegacyVue2
+    } else if document_options.options_api {
+        SfcCroquisMode::OptionsApi
+    } else {
+        SfcCroquisMode::Full
+    };
+    let mut compilation = Compilation::new();
+    vize_atelier_sfc::register_atlas_providers(&mut compilation).map_err(graph_error)?;
+    let source = compilation
+        .add_source(path.to_string_lossy().as_ref(), content)
+        .map_err(graph_error)?;
+    let filename = path.to_string_lossy().to_compact_string();
+    let mut compile_options = SfcCompileOptions::default();
+    compile_options.parse.filename = filename.clone();
+    let mut compile_settings = SfcCompileSettings::default();
+    compile_settings.insert(
+        source,
+        SfcCompileRequest::new(compile_options, TemplateSyntaxMode::default()),
+    );
+    compile_settings
+        .install(&mut compilation)
+        .map_err(graph_error)?;
+    let mut croquis_settings = SfcCroquisSettings::new(mode);
+    croquis_settings.insert(source, mode);
+    croquis_settings.insert_resolved_filename_with_policy(
+        source,
+        filename,
+        SfcResolvedPropsPolicy::PreserveCanonAfterTemplate,
+    );
+    croquis_settings
+        .install(&mut compilation)
+        .map_err(graph_error)?;
+    let snapshot = compilation.snapshot();
+    let mut session = snapshot.query_session();
+    let descriptor_artifact = session
+        .query::<SfcDescriptorProduct>(source)
+        .map_err(graph_error)?
+        .shared();
+    let descriptor = descriptor_artifact
+        .as_result()
+        .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))?;
+    let syntax = session
+        .query::<ReliefProduct>(source)
+        .map_err(graph_error)?;
+    let semantics = session
+        .query::<CroquisDocumentProduct>(source)
+        .map_err(graph_error)?;
+    // Corsa keeps the same recoverable control-flow product as the AST checker
+    // so diagnostics and editor mappings share one production plan.
+    session.query::<FlowProduct>(source).map_err(graph_error)?;
 
-    let effective_options = virtual_ts_options_for_descriptor(options, &descriptor);
-    let use_tsx_virtual = descriptor_uses_jsx_script(&descriptor);
+    let effective_options = virtual_ts_options_for_descriptor(options, descriptor);
+    let use_tsx_virtual = descriptor_uses_jsx_script(descriptor);
     let source_type = if use_tsx_virtual {
         SourceType::tsx()
     } else {
@@ -85,10 +136,15 @@ pub fn generate_vue_document_virtual_ts_with_options(
         mut code,
         mut mappings,
         ..
-    } = generate_vue_virtual_ts(
+    } = generate_vue_virtual_ts_from_artifacts(
         path,
         content,
-        &descriptor,
+        VueArtifactInputs {
+            descriptor,
+            syntax: syntax.value().as_ref(),
+            semantics: semantics.value(),
+            extra_template_referenced_names: None,
+        },
         &effective_options,
         VueCodegenOptions {
             check_options: VirtualTsCheckOptions::default(),
@@ -97,7 +153,6 @@ pub fn generate_vue_document_virtual_ts_with_options(
             legacy_vue2: document_options.legacy_vue2,
             dialect: vize_carton::config::VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),
-            experimental_in_tag_comments: false,
             hoist_shared_preamble,
         },
     )?;
@@ -113,5 +168,10 @@ pub fn generate_vue_document_virtual_ts_with_options(
         import_source_map: rewritten.source_map,
         source_type,
         virtual_suffix: if use_tsx_virtual { ".tsx" } else { ".ts" },
+        descriptor: descriptor_artifact,
     })
+}
+
+fn graph_error(error: impl std::fmt::Display) -> CorsaError {
+    CorsaError::ArtifactGraph(vize_carton::cstr!("{error}"))
 }

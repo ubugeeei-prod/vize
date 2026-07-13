@@ -7,6 +7,7 @@ use vize_carton::{Box, Bump, String, Vec};
 
 use super::{
     RuntimeHelper,
+    codegen::JsChildNode,
     core::{ConstantType, NodeType, SourceLocation},
     elements::{InterpolationNode, TextNode},
 };
@@ -36,6 +37,8 @@ pub struct SimpleExpressionNode<'a> {
     pub loc: SourceLocation,
     /// Parsed JavaScript AST (None = simple identifier, Some = parsed expression)
     pub js_ast: Option<JsExpression<'a>>,
+    #[deprecated(note = "code-generation state moved to vize_rendu products")]
+    pub hoisted: Option<Box<'a, JsChildNode<'a>>>,
     /// Identifiers declared in this expression
     pub identifiers: Option<Vec<'a, String>>,
     /// Whether this is a handler key
@@ -56,6 +59,7 @@ impl<'a> SimpleExpressionNode<'a> {
             },
             loc,
             js_ast: None,
+            hoisted: None,
             identifiers: None,
             is_handler_key: false,
             is_ref_transformed: false,
@@ -73,6 +77,15 @@ pub struct JsExpression<'a> {
     /// Raw expression content (will be replaced with OXC AST)
     pub raw: String,
     _marker: std::marker::PhantomData<&'a ()>,
+}
+
+impl<'a> JsExpression<'a> {
+    pub(crate) fn from_raw(raw: String) -> Self {
+        Self {
+            raw,
+            _marker: std::marker::PhantomData,
+        }
+    }
 }
 
 /// Compound expression node (mixed content)

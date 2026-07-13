@@ -5,7 +5,7 @@
 use vize_carton::{Box, Vec};
 
 use crate::ir::{BlockIRNode, OperationNode, SetTextIRNode};
-use vize_atelier_core::{
+use vize_relief::{
     ExpressionNode, InterpolationNode, SimpleExpressionNode, SourceLocation, TemplateChildNode,
     TextNode,
 };

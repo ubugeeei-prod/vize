@@ -9,10 +9,8 @@
 //! - Lazy computation (only compute what's needed)
 //! - Reusable across IDE and non-IDE contexts
 
-use vize_carton::CompactString;
-use vize_carton::cstr;
+use vize_carton::{BindingType, CompactString, cstr};
 use vize_croquis::Croquis;
-use vize_relief::BindingType;
 
 use crate::source_map::{MappingKind, SourceMap, Span};
 
@@ -479,9 +477,8 @@ fn add_directive_arg_completions(completions: &mut Vec<Completion>) {
 #[cfg(test)]
 mod tests {
     use super::{TypeIntelligence, get_vue_global_hover, is_ident_char};
-    use vize_carton::CompactString;
+    use vize_carton::{BindingType, CompactString};
     use vize_croquis::Croquis;
-    use vize_relief::BindingType;
 
     #[test]
     fn test_is_ident_char() {

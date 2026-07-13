@@ -79,6 +79,11 @@ const ready = true
             .iter()
             .all(|product| product["product"] != "relief.syntax")
     );
+    assert!(
+        tsx_products
+            .iter()
+            .all(|product| product["product"] != "relief.transformed")
+    );
 
     let counters = report["counters"].as_array().unwrap();
     let semantics = counters

@@ -12,18 +12,15 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
     process::{Command, Stdio},
-    time::Instant,
-};
-use vize_atelier_core::TemplateSyntaxMode;
-use vize_atelier_sfc::{
-    ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-    TemplateCompileOptions, compile_sfc_with_template_syntax as compile_vize_sfc,
-    parse_sfc as parse_vize_sfc,
 };
 use vize_carton::{String, ToCompactString};
 use vize_curator::inspector as curator_inspector;
+use vize_relief::TemplateSyntaxMode;
 
+mod artifact_graph;
 mod compare_error;
+
+use artifact_graph::{InspectorArtifactGraph, VizeCompilerRun};
 
 #[derive(Debug, Clone, Copy, ValueEnum, Default, serde::Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -179,7 +176,12 @@ pub fn run(args: InspectorArgs) {
             })
         }
         InspectorOutputFormat::Compare => {
-            let report = build_compare_report(&args, &source_files);
+            let artifacts =
+                InspectorArtifactGraph::new(&source_files, &args).unwrap_or_else(|error| {
+                    eprintln!("Failed to prepare inspector artifacts: {error}");
+                    std::process::exit(1);
+                });
+            let report = build_compare_report(&args, &source_files, &artifacts);
             serde_json::to_string_pretty(&report)
                 .unwrap_or_else(|error| {
                     eprintln!("Failed to serialize inspector compare report: {error}");
@@ -291,20 +293,14 @@ struct OfficialCompilerRun {
     time_ms: f64,
 }
 
-struct VizeCompilerRun {
-    code: String,
-    warnings: Vec<String>,
-    error: Option<String>,
-    time_ms: f64,
-}
-
 fn build_compare_report(
     args: &InspectorArgs,
     files: &[curator_inspector::InspectorSourceFile],
+    artifacts: &InspectorArtifactGraph,
 ) -> InspectorCompareReport {
     let vize_runs = files
         .iter()
-        .map(|file| compile_vize_for_compare(file, args))
+        .map(|file| artifacts.compile(file))
         .collect::<Vec<_>>();
     let official = run_official_compiler_for_compare(files, &vize_runs, args);
     if official.files.len() != files.len() {
@@ -395,116 +391,6 @@ fn build_compare_report(
     }
 }
 
-fn compile_vize_for_compare(
-    file: &curator_inspector::InspectorSourceFile,
-    args: &InspectorArgs,
-) -> VizeCompilerRun {
-    let start = Instant::now();
-    let filename = file.path.to_compact_string();
-    let descriptor = match parse_vize_sfc(
-        &file.source,
-        SfcParseOptions {
-            filename: filename.clone(),
-            ..Default::default()
-        },
-    ) {
-        Ok(descriptor) => descriptor,
-        Err(error) => {
-            return VizeCompilerRun {
-                code: String::default(),
-                warnings: Vec::new(),
-                error: Some(error.message),
-                time_ms: elapsed_ms(start),
-            };
-        }
-    };
-
-    let has_scoped = descriptor.styles.iter().any(|style| style.scoped);
-    let is_ts = descriptor_uses_type_script(&descriptor);
-    let is_ssr = matches!(args.target, InspectorTarget::Ssr);
-    let is_vapor = matches!(args.target, InspectorTarget::Vapor);
-    let compile_options = SfcCompileOptions {
-        parse: SfcParseOptions {
-            filename: filename.clone(),
-            ..Default::default()
-        },
-        script: ScriptCompileOptions {
-            id: Some(filename.clone()),
-            is_ts,
-            ..Default::default()
-        },
-        template: TemplateCompileOptions {
-            id: Some(filename.clone()),
-            scoped: has_scoped,
-            ssr: is_ssr,
-            is_prod: true,
-            is_ts,
-            custom_renderer: args.custom_renderer,
-            ..Default::default()
-        },
-        style: StyleCompileOptions {
-            id: filename,
-            scoped: has_scoped,
-            ..Default::default()
-        },
-        vapor: is_vapor,
-        ..Default::default()
-    };
-
-    let result = compile_vize_sfc(&descriptor, compile_options, args.template_syntax.into());
-
-    match result {
-        Ok(result) => VizeCompilerRun {
-            code: result.code,
-            warnings: result
-                .warnings
-                .into_iter()
-                .map(|warning| warning.message)
-                .collect(),
-            error: format_sfc_errors(result.errors),
-            time_ms: elapsed_ms(start),
-        },
-        Err(error) => VizeCompilerRun {
-            code: String::default(),
-            warnings: Vec::new(),
-            error: Some(error.message),
-            time_ms: elapsed_ms(start),
-        },
-    }
-}
-
-fn descriptor_uses_type_script(descriptor: &vize_atelier_sfc::SfcDescriptor) -> bool {
-    descriptor
-        .script
-        .as_ref()
-        .and_then(|script| script.lang.as_deref())
-        .is_some_and(is_type_script_lang)
-        || descriptor
-            .script_setup
-            .as_ref()
-            .and_then(|script| script.lang.as_deref())
-            .is_some_and(is_type_script_lang)
-}
-
-fn is_type_script_lang(lang: &str) -> bool {
-    matches!(lang, "ts" | "tsx")
-}
-
-fn format_sfc_errors(errors: Vec<vize_atelier_sfc::SfcError>) -> Option<String> {
-    if errors.is_empty() {
-        return None;
-    }
-
-    let mut message = String::default();
-    for (index, error) in errors.into_iter().enumerate() {
-        if index > 0 {
-            message.push('\n');
-        }
-        message.push_str(&error.message);
-    }
-    Some(message)
-}
-
 fn run_official_compiler_for_compare(
     files: &[curator_inspector::InspectorSourceFile],
     vize_runs: &[VizeCompilerRun],
@@ -587,10 +473,6 @@ fn output_text<'a>(code: &'a str, formatted_code: &'a str, error: Option<&'a str
             formatted_code
         }
     })
-}
-
-fn elapsed_ms(start: Instant) -> f64 {
-    start.elapsed().as_secs_f64() * 1000.0
 }
 
 const OFFICIAL_COMPILER_NODE_SCRIPT: &str = r#"

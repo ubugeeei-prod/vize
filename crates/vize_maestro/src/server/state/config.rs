@@ -75,6 +75,8 @@ impl ServerState {
             lsp_features.legacy_vue2 = enabled;
         }
         lsp_features.apply_effective_compatibility();
+        drop(lsp_features);
+        self.refresh_artifact_croquis_mode();
     }
 
     fn apply_linter_config(&self, config: LinterConfig, source: &str) {
@@ -89,6 +91,8 @@ impl ServerState {
         self.lsp_typecheck_enabled
             .store(features.typecheck, Ordering::SeqCst);
         tracing::info!("Loaded LSP config from {}: {:?}", source, *features);
+        drop(features);
+        self.refresh_artifact_croquis_mode();
     }
 
     /// Load all workspace-scoped options from `vize.config.pkl` (preferred) or JSON.

@@ -190,7 +190,7 @@ impl BatchTypeChecker {
     }
 
     /// Configure template syntax compatibility for Vue template parsing.
-    pub fn set_template_syntax(&mut self, template_syntax: vize_atelier_core::TemplateSyntaxMode) {
+    pub fn set_template_syntax(&mut self, template_syntax: vize_relief::TemplateSyntaxMode) {
         self.project.set_template_syntax(template_syntax);
     }
 

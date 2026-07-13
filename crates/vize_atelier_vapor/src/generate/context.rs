@@ -4,9 +4,9 @@ use super::{
     destructure::{parse_destructure_bindings, parse_destructure_names},
     expression,
 };
-use vize_atelier_core::options::BindingMetadata;
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, camelize, capitalize, cstr};
 use vize_croquis::builtins::is_global_allowed;
+use vize_relief::BindingMetadata;
 
 /// For-loop scope entry
 #[derive(Debug, Clone)]

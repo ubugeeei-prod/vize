@@ -109,6 +109,11 @@ catalogs:
     oxc-parser: "0.133.0"
     oxc-transform: "0.130.0"
 
+  # Source-map composition shared by compiler host adapters.
+  source-maps:
+    "@jridgewell/remapping": "2.3.5"
+    "@jridgewell/trace-mapping": "0.3.31"
+
   # Published native binary packages that are installed optionally at runtime.
   native-binaries:
     "@vizejs/native-darwin-arm64": "0.290.0"

@@ -1,5 +1,4 @@
 //! Expression transform steps for identifier prefixing and TS cleanup.
-
 #[path = "transform_expression/collector.rs"]
 mod collector;
 #[path = "transform_expression/inline_handler.rs"]
@@ -10,18 +9,15 @@ pub(crate) mod prefix;
 mod rewrite;
 #[path = "transform_expression/typescript.rs"]
 mod typescript;
-
 use oxc_ast::ast::{ChainElement, Expression};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{Box, Bump, String};
-
 /// Maximum bracket nesting depth allowed before handing source to OXC.
 ///
 /// OXC recurses for nested brackets and stack overflow cannot be caught with
 /// `catch_unwind`, so every expression entry point shares this guard. (#956)
 pub const MAX_EXPRESSION_NESTING_DEPTH: usize = 256;
-
 /// Returns the maximum bracket nesting depth in `content`. Only counts
 /// `(`, `[`, `{` and their closers — these are what drive recursion in the
 /// JS parser and the recursive AST walkers in `prefix` / `rewrite`. Strings
@@ -80,7 +76,6 @@ pub fn expression_nesting_depth(content: &str) -> usize {
     }
     max_depth
 }
-
 /// Returns true if `content` exceeds [`MAX_EXPRESSION_NESTING_DEPTH`].
 #[inline]
 pub fn expression_exceeds_max_depth(content: &str) -> bool {
@@ -270,6 +265,7 @@ pub fn process_expression<'a>(
             const_type: normalized.const_type,
             loc: normalized.loc.clone(),
             js_ast: None,
+            hoisted: None,
             identifiers: None,
             is_handler_key: normalized.is_handler_key,
             is_ref_transformed: true,
@@ -297,6 +293,7 @@ pub(crate) fn clone_expression<'a>(
                 const_type: simple.const_type,
                 loc: simple.loc.clone(),
                 js_ast: None,
+                hoisted: None,
                 identifiers: None,
                 is_handler_key: simple.is_handler_key,
                 is_ref_transformed: simple.is_ref_transformed,
@@ -310,6 +307,7 @@ pub(crate) fn clone_expression<'a>(
                 const_type: ConstantType::NotConstant,
                 loc: compound.loc.clone(),
                 js_ast: None,
+                hoisted: None,
                 identifiers: None,
                 is_handler_key: compound.is_handler_key,
                 is_ref_transformed: false,
@@ -331,6 +329,7 @@ pub(crate) fn normalize_expression<'a>(
                 const_type: simple.const_type,
                 loc: simple.loc.clone(),
                 js_ast: None,
+                hoisted: None,
                 identifiers: None,
                 is_handler_key: simple.is_handler_key,
                 is_ref_transformed: simple.is_ref_transformed,
@@ -344,6 +343,7 @@ pub(crate) fn normalize_expression<'a>(
                 const_type: ConstantType::NotConstant,
                 loc: compound.loc.clone(),
                 js_ast: None,
+                hoisted: None,
                 identifiers: None,
                 is_handler_key: compound.is_handler_key,
                 is_ref_transformed: false,

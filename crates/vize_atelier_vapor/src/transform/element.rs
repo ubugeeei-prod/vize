@@ -13,7 +13,7 @@ use crate::ir::{
     BlockIRNode, ChildRefIRNode, ComponentKind, CreateComponentIRNode, IRProp, IRSlot,
     NextRefIRNode, OperationNode, SetTemplateRefIRNode, SlotOutletIRNode,
 };
-use vize_atelier_core::{
+use vize_relief::{
     ElementNode, ElementType, ExpressionNode, PropNode, SimpleExpressionNode, SourceLocation,
     TemplateChildNode,
 };

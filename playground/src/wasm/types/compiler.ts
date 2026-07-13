@@ -15,6 +15,7 @@ export interface CompilerOptions {
   scriptExt?: "preserve" | "downcompile";
   customRenderer?: boolean;
   templateSyntax?: "standard" | "strict" | "quirks";
+  vueVersion?: "1" | "2" | "2.7" | "3";
   bindingMetadata?: SfcBindingMetadata;
 }
 

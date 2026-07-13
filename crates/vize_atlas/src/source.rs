@@ -1,5 +1,7 @@
 //! Stable source identities, revisions, and embedded-source provenance.
 
+mod lifecycle;
+
 use std::fmt;
 use vize_carton::FxHashMap;
 
@@ -270,28 +272,6 @@ impl SourceStore {
             parent_revision: parent_snapshot.revision,
             range,
         })
-    }
-
-    fn descendants_including(&self, source: SourceId) -> Vec<SourceId> {
-        let mut affected = vec![source];
-        let mut index = 0;
-        while index < affected.len() {
-            let parent = affected[index];
-            let mut children: Vec<_> = self
-                .entries
-                .values()
-                .filter_map(|entry| match entry.provenance {
-                    SourceProvenance::Embedded {
-                        parent: candidate, ..
-                    } if candidate == parent => Some(entry.id),
-                    _ => None,
-                })
-                .collect();
-            children.sort_unstable();
-            affected.extend(children);
-            index += 1;
-        }
-        affected
     }
 
     pub(crate) fn stale_edge(&self, source: SourceId) -> Option<StaleProvenance> {

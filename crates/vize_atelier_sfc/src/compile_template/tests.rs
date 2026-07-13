@@ -188,7 +188,7 @@ fn dom_inline_parts_are_sliced_from_sections_for_template_matrix() {
                 bindings: Some(&bindings),
                 croquis: None,
             },
-            vize_atelier_core::TemplateSyntaxMode::Standard,
+            vize_relief::TemplateSyntaxMode::Standard,
         )
         .expect("template should compile");
 

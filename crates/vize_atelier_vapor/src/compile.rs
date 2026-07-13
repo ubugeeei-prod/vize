@@ -5,13 +5,13 @@
 
 use crate::generate::generate_vapor;
 use crate::lower as vapor_lower;
-use vize_atelier_core::{
-    CompilerError, Namespace,
-    lane::{transform, transform_with_template_syntax_quirks},
-    options::{ParserOptions, TemplateSyntaxMode, TransformOptions},
-    parser::parse_with_options_and_template_syntax,
-};
+use vize_armature::parse_with_options_and_template_syntax;
+use vize_atelier_core::lane::{transform, transform_with_template_syntax_quirks};
 use vize_carton::{Bump, String};
+use vize_relief::{
+    BindingMetadata, CompilerError, Namespace, ParserOptions, RootNode, TemplateSyntaxMode,
+    TransformOptions,
+};
 
 /// Vapor compiler options
 #[derive(Debug, Clone, Default)]
@@ -21,7 +21,7 @@ pub struct VaporCompilerOptions {
     /// Whether in SSR mode
     pub ssr: bool,
     /// Binding metadata
-    pub binding_metadata: Option<vize_atelier_core::options::BindingMetadata>,
+    pub binding_metadata: Option<BindingMetadata>,
     /// Whether to inline
     pub inline: bool,
     /// Whether the template targets a custom renderer instead of the DOM.
@@ -105,6 +105,18 @@ pub fn compile_vapor_with_template_syntax_and_diagnostics<'a>(
     compile_vapor_inner(allocator, source, options, template_syntax)
 }
 
+/// Transform and emit Vapor output from an already parsed Relief root.
+#[doc(hidden)]
+pub fn compile_vapor_root_with_template_syntax_and_diagnostics<'a>(
+    allocator: &'a Bump,
+    root: RootNode<'a>,
+    parse_diagnostics: std::vec::Vec<CompilerError>,
+    options: VaporCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
+    compile_vapor_root(allocator, root, parse_diagnostics, options, template_syntax)
+}
+
 fn compile_vapor_inner<'a>(
     allocator: &'a Bump,
     source: &'a str,
@@ -121,11 +133,22 @@ fn compile_vapor_inner<'a>(
         get_namespace,
         ..ParserOptions::default()
     };
-    let (mut root, errors) =
+    let (root, errors) =
         parse_with_options_and_template_syntax(allocator, source, parser_opts, template_syntax);
-    let parser_diagnostics = errors.to_vec();
+    compile_vapor_root(allocator, root, errors.to_vec(), options, template_syntax)
+}
 
-    let fatal: std::vec::Vec<_> = errors.iter().filter(|e| !e.is_recoverable()).collect();
+fn compile_vapor_root<'a>(
+    allocator: &'a Bump,
+    mut root: RootNode<'a>,
+    parser_diagnostics: std::vec::Vec<CompilerError>,
+    options: VaporCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
+    let fatal: std::vec::Vec<_> = parser_diagnostics
+        .iter()
+        .filter(|error| !error.is_recoverable())
+        .collect();
     if !fatal.is_empty() {
         return (
             VaporCompileResult {

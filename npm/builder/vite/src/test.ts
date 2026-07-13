@@ -27,4 +27,5 @@ import "./plugin/precompile.test.ts";
 import "./plugin/state.test.ts";
 import "./plugin/unocss.test.ts";
 import "./plugin/vite-transform.test.ts";
+import "./source-map.test.ts";
 import "./virtual.test.ts";

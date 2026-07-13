@@ -28,14 +28,16 @@ use super::super::typescript::transform_typescript_to_js;
 use super::helpers::{collect_runtime_identifier_references, is_reserved_word};
 use super::imports::dedupe_imports;
 
-/// Compile script setup content following Vue.js core format
-#[allow(dead_code)]
-pub fn compile_script_setup(
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn compile_script_setup_from_source(
     content: &str,
     component_name: &str,
     is_vapor: bool,
-    is_ts: bool,
+    preserve_types: bool,
+    source_is_ts: bool,
     template_content: Option<&str>,
+    normal_script_content: Option<&str>,
+    filename: Option<&str>,
 ) -> Result<ScriptCompileResult, SfcError> {
     let lazy_hydration_transform = transform_lazy_hydration_macros(content);
     let content = lazy_hydration_transform
@@ -48,7 +50,8 @@ pub fn compile_script_setup(
         .map(|content| content.as_str())
         .unwrap_or(content);
 
-    let mut ctx = ScriptCompileContext::new(content);
+    let mut ctx =
+        super::source::build_context(content, normal_script_content, filename, source_is_ts);
     ctx.analyze();
     validate_props_destructure_default_types(&ctx, 0, content)?;
 
@@ -59,23 +62,24 @@ pub fn compile_script_setup(
     // Check if we have props destructure
     let has_props_destructure = ctx.macros.props_destructure.is_some();
 
-    let (imports, setup_lines, _) = extract_script_sections(content, is_ts).unwrap_or_else(|| {
-        let setup_lines = content
-            .lines()
-            .filter_map(|line| {
-                let trimmed = line.trim();
-                if trimmed.is_empty() {
-                    None
-                } else {
-                    Some(line.to_compact_string())
-                }
-            })
-            .collect();
-        (Vec::new(), setup_lines, Vec::new())
-    });
+    let (imports, setup_lines, _) =
+        extract_script_sections(content, source_is_ts).unwrap_or_else(|| {
+            let setup_lines = content
+                .lines()
+                .filter_map(|line| {
+                    let trimmed = line.trim();
+                    if trimmed.is_empty() {
+                        None
+                    } else {
+                        Some(line.to_compact_string())
+                    }
+                })
+                .collect();
+            (Vec::new(), setup_lines, Vec::new())
+        });
 
     // Check if we need PropType import (type-based defineProps in non-vapor TS mode)
-    let needs_prop_type = is_ts
+    let needs_prop_type = preserve_types
         && !is_vapor
         && ctx
             .macros
@@ -149,7 +153,7 @@ pub fn compile_script_setup(
         &ctx,
         has_props_destructure,
         needs_prop_type,
-        is_ts,
+        preserve_types,
     );
 
     // Collect model names for props and emits
@@ -171,7 +175,7 @@ pub fn compile_script_setup(
 
     // Prepare setup code and detect top-level await (async setup)
     let setup_code = setup_lines.join("\n");
-    let has_top_level_await = super::helpers::contains_top_level_await(&setup_code, is_ts);
+    let has_top_level_await = super::helpers::contains_top_level_await(&setup_code, source_is_ts);
 
     // Setup function
     if has_top_level_await {
@@ -198,10 +202,9 @@ pub fn compile_script_setup(
         output.extend_from_slice(b" = __emit\n");
     }
 
-    // Collect props binding for exclusion from __returned__ (props themselves shouldn't be in returned)
-    let mut props_binding_names: FxHashSet<String> = FxHashSet::default();
-
-    // defineProps binding: const props = __props (only if not destructured)
+    // defineProps binding: const props = __props (only if not destructured).
+    // Function mode has a separate render function, so this binding remains
+    // part of `__returned__` and is visible through `$setup`.
     if !has_props_destructure
         && let Some(ref props_macro) = ctx.macros.define_props
         && let Some(ref binding_name) = props_macro.binding_name
@@ -209,7 +212,6 @@ pub fn compile_script_setup(
         output.extend_from_slice(b"  const ");
         output.extend_from_slice(binding_name.as_bytes());
         output.extend_from_slice(b" = __props\n");
-        props_binding_names.insert(String::from(binding_name.as_str()));
     }
 
     // defineSlots binding: const slots = _useSlots()
@@ -246,7 +248,6 @@ pub fn compile_script_setup(
     let returned_bindings = build_returned_bindings(
         &mut ctx,
         has_props_destructure,
-        &props_binding_names,
         &emit_binding_name,
         &imports,
         template_content,
@@ -295,7 +296,7 @@ pub fn compile_script_setup(
         unsafe { std::string::String::from_utf8_unchecked(output.into_iter().collect()) };
 
     // Transform TypeScript to JavaScript only when output is not TS.
-    let mut final_code: String = if is_ts {
+    let mut final_code: String = if preserve_types {
         output_str.into()
     } else {
         transform_typescript_to_js(&output_str)
@@ -322,6 +323,7 @@ fn emit_props_definition(
     needs_prop_type: bool,
     _is_ts: bool,
 ) {
+    let with_defaults = super::prop_defaults::RuntimePropDefaults::new(ctx);
     if let (true, Some(destructure)) =
         (has_props_destructure, ctx.macros.props_destructure.as_ref())
     {
@@ -446,9 +448,7 @@ fn emit_props_definition(
                         output.extend_from_slice(normalized.as_bytes());
                         output.push(b'>');
                     }
-                    if prop_type.optional {
-                        output.extend_from_slice(b", required: false");
-                    }
+                    with_defaults.emit_contract(output, name, prop_type.optional);
                     output.extend_from_slice(b" },\n");
                 }
                 output.extend_from_slice(b"  },\n");
@@ -615,7 +615,6 @@ fn emit_model_bindings(
 fn build_returned_bindings(
     ctx: &mut ScriptCompileContext,
     _has_props_destructure: bool,
-    props_binding_names: &FxHashSet<String>,
     emit_binding_name: &Option<String>,
     imports: &[String],
     template_content: Option<&str>,
@@ -664,10 +663,9 @@ fn build_returned_bindings(
         .bindings
         .keys()
         .filter(|name| {
-            // Exclude compiler macros, destructured props, props bindings, and typed props
+            // Exclude compiler macros, destructured props, and typed props.
             !compiler_macros.contains(name.as_str())
                 && !destructured_prop_locals.contains(*name)
-                && !props_binding_names.contains(*name)
                 && !typed_prop_names.contains(*name)
                 && (!imported_identifier_set.contains(*name)
                     || runtime_used_identifiers.contains(*name)
@@ -688,7 +686,7 @@ fn build_returned_bindings(
     // Parse template to get used identifiers
     let template_used_ids: TemplateUsedIdentifiers = if let Some(template_src) = template_content {
         let allocator = Bump::new();
-        let (root, _) = vize_atelier_core::parser::parse(&allocator, template_src);
+        let (root, _) = vize_armature::parse(&allocator, template_src);
         resolve_template_used_identifiers(&root)
     } else {
         TemplateUsedIdentifiers::default()

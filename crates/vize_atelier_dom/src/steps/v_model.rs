@@ -2,8 +2,8 @@
 //!
 //! Handles v-model on form elements: input, textarea, select.
 
-use vize_atelier_core::{DirectiveNode, ElementNode, RuntimeHelper};
 use vize_carton::{String, cstr};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, RuntimeHelper};
 
 /// v-model modifier flags
 #[derive(Debug, Default, Clone)]
@@ -98,7 +98,7 @@ pub fn generate_model_props(
 
     // Get expression
     if let Some(ref exp) = dir.exp
-        && let vize_atelier_core::ExpressionNode::Simple(simple) = exp
+        && let ExpressionNode::Simple(simple) = exp
     {
         let model_value = simple.content.clone();
 
@@ -185,15 +185,12 @@ mod tests {
 
     #[test]
     fn test_generate_model_props_basic() {
-        use vize_atelier_core::{
-            ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation,
-        };
         use vize_carton::{Box, Bump};
+        use vize_relief::{ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation};
 
         let allocator = Bump::new();
         let element = ElementNode::new(&allocator, "input", SourceLocation::STUB);
-        let mut dir =
-            vize_atelier_core::DirectiveNode::new(&allocator, "model", SourceLocation::STUB);
+        let mut dir = DirectiveNode::new(&allocator, "model", SourceLocation::STUB);
         let exp_node = SimpleExpressionNode::new("modelValue", false, SourceLocation::STUB);
         let boxed = Box::new_in(exp_node, &allocator);
         dir.exp = Some(ExpressionNode::Simple(boxed));
@@ -208,15 +205,12 @@ mod tests {
 
     #[test]
     fn test_generate_model_props_lazy() {
-        use vize_atelier_core::{
-            ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation,
-        };
         use vize_carton::{Box, Bump};
+        use vize_relief::{ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation};
 
         let allocator = Bump::new();
         let element = ElementNode::new(&allocator, "input", SourceLocation::STUB);
-        let mut dir =
-            vize_atelier_core::DirectiveNode::new(&allocator, "model", SourceLocation::STUB);
+        let mut dir = DirectiveNode::new(&allocator, "model", SourceLocation::STUB);
         let exp_node = SimpleExpressionNode::new("msg", false, SourceLocation::STUB);
         let boxed = Box::new_in(exp_node, &allocator);
         dir.exp = Some(ExpressionNode::Simple(boxed));

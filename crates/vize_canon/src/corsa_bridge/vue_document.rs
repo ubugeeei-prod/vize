@@ -31,6 +31,7 @@ pub struct CorsaVueVirtualDocument {
     pub import_source_map: ImportSourceMap,
     pub source_type: SourceType,
     pub virtual_suffix: &'static str,
+    pub(crate) descriptor: vize_atlas::Shared<vize_atelier_sfc::SfcDescriptorArtifact>,
 }
 
 pub(crate) struct CorsaVueVirtualProject {
@@ -103,6 +104,7 @@ pub(crate) fn build_vue_virtual_project(
             import_source_map: generated.import_source_map,
             source_type: generated.source_type,
             virtual_suffix: generated.virtual_suffix,
+            descriptor: generated.descriptor,
         },
         documents,
     })

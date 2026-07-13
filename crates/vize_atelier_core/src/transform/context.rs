@@ -1,15 +1,13 @@
 //! TransformContext implementation.
-
-use vize_carton::{Box, Bump, CompactString, String};
-use vize_croquis::reactivity::ReactiveKind;
-use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
-
 use crate::errors::{CompilerError, ErrorCode};
 use crate::options::TransformOptions;
 use crate::{
     CommentNode, ConstantType, ExpressionNode, JsChildNode, RuntimeHelper, SimpleExpressionNode,
     SourceLocation, TemplateChildNode,
 };
+use vize_carton::{Box, Bump, CompactString, String};
+use vize_croquis::reactivity::ReactiveKind;
+use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
 
 use super::TransformContext;
 
@@ -178,7 +176,7 @@ impl<'a> TransformContext<'a> {
 
         // Fall back to binding metadata
         if let Some(metadata) = &self.options.binding_metadata {
-            return metadata.bindings.get(name).copied();
+            return metadata.bindings.get(name).copied().map(Into::into);
         }
 
         None
@@ -508,6 +506,7 @@ pub(super) fn clone_expression<'a>(
                 const_type: s.const_type,
                 loc: s.loc.clone(),
                 js_ast: None,
+                hoisted: None,
                 identifiers: None,
                 is_handler_key: s.is_handler_key,
                 is_ref_transformed: s.is_ref_transformed,
@@ -523,6 +522,7 @@ pub(super) fn clone_expression<'a>(
                     const_type: ConstantType::NotConstant,
                     loc: c.loc.clone(),
                     js_ast: None,
+                    hoisted: None,
                     identifiers: None,
                     is_handler_key: c.is_handler_key,
                     is_ref_transformed: false,

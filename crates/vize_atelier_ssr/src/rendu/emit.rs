@@ -25,12 +25,14 @@ impl<'a> SsrEmitter<'a> {
 
     pub(super) fn emit(mut self) -> RenduSsrOutput {
         self.output.code.push_str(
-            "import { mergeProps as _mergeProps, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective } from \"vue\"\n",
+            "import { mergeProps as _mergeProps, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withModifiers as _withModifiers } from \"vue\"\n",
         );
         self.output.code.push_str(
             "import { ssrGetDirectiveProps as _ssrGetDirectiveProps, ssrInterpolate as _ssrInterpolate, ssrRenderAttr as _ssrRenderAttr, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderComponent as _ssrRenderComponent, ssrRenderDynamicAttr as _ssrRenderDynamicAttr, ssrRenderList as _ssrRenderList, ssrRenderSlot as _ssrRenderSlot } from \"vue/server-renderer\"\n\n",
         );
-        self.line("export function ssrRender(_ctx, _push, _parent, _attrs) {");
+        self.line(
+            "export function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {",
+        );
         self.indent += 1;
         self.emit_nodes(self.root.entry());
         self.indent -= 1;
@@ -83,16 +85,25 @@ impl<'a> SsrEmitter<'a> {
                 value,
                 key,
                 index,
+                key_expression,
                 body,
                 ..
-            } => self.emit_for(*source, value, key.as_ref(), index.as_ref(), body),
+            } => self.emit_for(
+                *source,
+                value,
+                key.as_ref(),
+                index.as_ref(),
+                *key_expression,
+                body,
+            ),
             RenduNode::HoistRef { index, .. } => {
                 self.indent();
-                self.output.code.push_str("_push(_ssr_hoisted_");
-                vize_carton::append!(self.output.code, "{index}");
-                self.output.code.push_str(")\n");
+                vize_carton::append!(
+                    self.output.code,
+                    "_push(_ctx._ssrHoisted?.[{index}] ?? \"\")\n"
+                );
             }
-            _ => self.push_line_value("<!---->"),
+            _ => unreachable!("RenduNode is non-exhaustive across backend crates"),
         }
         self.map(start, node.provenance(), RenduSsrMappingKind::Node);
     }
@@ -124,6 +135,7 @@ impl<'a> SsrEmitter<'a> {
         value: &vize_rendu::RenduBinding,
         key: Option<&vize_rendu::RenduBinding>,
         index: Option<&vize_rendu::RenduBinding>,
+        key_expression: Option<vize_rendu::RenduExpressionId>,
         body: &[RenduNodeId],
     ) {
         self.indent();
@@ -137,6 +149,12 @@ impl<'a> SsrEmitter<'a> {
         }
         self.output.code.push_str(") => {\n");
         self.indent += 1;
+        if let Some(key_expression) = key_expression {
+            self.indent();
+            self.output.code.push_str("void (");
+            self.emit_expression(key_expression);
+            self.output.code.push_str(")\n");
+        }
         self.emit_nodes(body);
         self.indent -= 1;
         self.line("})");

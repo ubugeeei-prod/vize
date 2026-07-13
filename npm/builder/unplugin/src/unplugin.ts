@@ -14,6 +14,7 @@ import {
 } from "./request.ts";
 import { generateOutput, wrapScopedPreprocessorStyle } from "./style.ts";
 import { stripTypeScript } from "./strip-types.ts";
+import { composeSourceMaps, offsetEmbeddedSourceMap } from "@vizejs/source-map";
 import type {
   CachedCompiledModule,
   CompiledModule,
@@ -275,11 +276,12 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((raw
         isDev: false,
         filePath: id,
       });
+      const generatedMap = offsetEmbeddedSourceMap(compiled.code, generated, compiled.map);
 
       const transformed = await stripTypeScript(id, generated, options.sourceMap);
       return {
         code: transformed.code,
-        map: transformed.map,
+        map: composeSourceMaps(transformed.map, generatedMap),
       };
     },
 

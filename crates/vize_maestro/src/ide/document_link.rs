@@ -1,34 +1,29 @@
-//! Document link provider.
-//!
-//! Provides clickable links for:
-//! - Import statements in script blocks
-//! - src attributes on script/style/template blocks
+//! Document links for SFC imports and block resource attributes.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
-//! - CSS @import statements
 
 use std::path::Path;
 
 use tower_lsp::lsp_types::{DocumentLink, Position, Range, Url};
 
 use super::offset_to_position;
-
-/// Document link service.
 pub struct DocumentLinkService;
-
 impl DocumentLinkService {
-    /// Get document links for a file.
     pub fn get_links(content: &str, uri: &Url) -> Vec<DocumentLink> {
+        let Some(artifact) = crate::ide::sfc_descriptor_compatibility(content, uri) else {
+            return Vec::new();
+        };
+        let Some(descriptor) = artifact.descriptor() else {
+            return Vec::new();
+        };
+        Self::get_links_from_descriptor(content, uri, descriptor)
+    }
+
+    pub(crate) fn get_links_from_descriptor(
+        content: &str,
+        uri: &Url,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    ) -> Vec<DocumentLink> {
         let mut links = Vec::new();
-
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-            return links;
-        };
-
         let base_path = uri.to_file_path().ok();
 
         if let Some(ref script_setup) = descriptor.script_setup {
@@ -47,7 +42,7 @@ impl DocumentLinkService {
                 base_path.as_deref(),
                 &mut links,
             );
-            Self::collect_define_art_source_links(content, uri, &mut links);
+            Self::collect_define_art_source_links(content, uri, descriptor, &mut links);
         }
 
         if let Some(ref script) = descriptor.script {
@@ -95,8 +90,13 @@ impl DocumentLinkService {
         links
     }
 
-    fn collect_define_art_source_links(content: &str, uri: &Url, links: &mut Vec<DocumentLink>) {
-        for source in crate::ide::musea::define_art_sources(content, uri) {
+    fn collect_define_art_source_links(
+        content: &str,
+        uri: &Url,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+        links: &mut Vec<DocumentLink>,
+    ) {
+        for source in crate::ide::musea::define_art_sources_from_descriptor(descriptor) {
             let Some(target) = crate::ide::musea::resolve_define_art_source(uri, &source.source)
             else {
                 continue;

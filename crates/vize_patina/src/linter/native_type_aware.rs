@@ -8,6 +8,8 @@ use corsa::utils::{
 };
 use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::{String, ToCompactString, profile};
+use vize_croquis::Croquis;
+use vize_relief::{CompilerError, ReliefSnapshot};
 
 mod driver;
 mod markers;
@@ -16,6 +18,9 @@ mod reactivity_loss;
 mod rule_queries;
 mod script_options;
 mod template_queries;
+
+#[cfg(test)]
+pub(crate) use driver::{fallback_builds, reset_fallback_builds};
 
 #[cfg(test)]
 mod tests;
@@ -97,6 +102,24 @@ pub(crate) fn lint_sfc_with_corsa_descriptor<'a>(
 
     result.filename = filename.to_compact_string();
     result
+}
+
+pub(crate) fn lint_sfc_with_corsa_artifacts<'a>(
+    linter: &Linter,
+    source: &'a str,
+    filename: &str,
+    descriptor: &'a SfcDescriptor<'a>,
+    template_syntax: Option<(&ReliefSnapshot, &[CompilerError])>,
+    analysis: Option<&Croquis>,
+) -> LintResult {
+    driver::lint_with_artifacts(
+        linter,
+        source,
+        filename,
+        descriptor,
+        template_syntax,
+        analysis,
+    )
 }
 
 pub(super) fn push_warning(result: &mut LintResult, diagnostic: LintDiagnostic) {

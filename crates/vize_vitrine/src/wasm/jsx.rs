@@ -16,8 +16,7 @@
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
-use vize_atelier_jsx::{JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx as jsx_compile};
-use vize_carton::Bump;
+use vize_atelier_jsx::{JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx_with_atlas};
 
 use super::serde::to_json_js_value;
 
@@ -142,27 +141,35 @@ fn build_jsx_wasm_result(
     // Source maps are emitted by client VDOM codegen; a no-op for Vapor/SSR.
     config.vdom.source_map = source_map;
 
-    let bump = Bump::new();
-    let output = jsx_compile(&bump, source, lang, &config);
-
-    // A single self-contained module: deduplicated runtime-helper preamble + every
-    // component's render code (the preamble is no longer dropped, #1533).
-    let code = output.module_code().as_str().to_string();
-    let map = output.source_map().map(|map| map.to_string());
+    let filename = if lang.is_typescript() {
+        "anonymous.tsx"
+    } else {
+        "anonymous.jsx"
+    };
+    let output = match compile_jsx_with_atlas(source, filename, lang, config) {
+        Ok(output) => output,
+        Err(error) => {
+            return JsxWasmResult {
+                code: String::new(),
+                map: None,
+                errors: vec![error.to_string()],
+                warnings: vec![],
+                scoped_styles: vec![],
+            };
+        }
+    };
 
     let mut scoped_styles = Vec::new();
-    for component in &output.components {
-        if let Some(style) = component.scoped_style() {
-            scoped_styles.push(JsxScopedStyleWasm {
-                scope_id: style.scope_id.as_str().to_string(),
-                css: style.css.as_str().to_string(),
-            });
-        }
+    for style in output.scoped_styles {
+        scoped_styles.push(JsxScopedStyleWasm {
+            scope_id: style.scope_id.as_str().to_string(),
+            css: style.css.as_str().to_string(),
+        });
     }
 
     let mut errors = Vec::new();
     let mut warnings = Vec::new();
-    for diagnostic in &output.diagnostics {
+    for diagnostic in output.diagnostics {
         if diagnostic.is_error() {
             errors.push(diagnostic.message.as_str().to_string());
         } else {
@@ -171,8 +178,8 @@ fn build_jsx_wasm_result(
     }
 
     JsxWasmResult {
-        code,
-        map,
+        code: output.code.as_str().to_string(),
+        map: output.map.map(|map| map.as_str().to_string()),
         errors,
         warnings,
         scoped_styles,

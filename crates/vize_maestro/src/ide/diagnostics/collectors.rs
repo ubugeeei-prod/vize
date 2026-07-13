@@ -4,14 +4,12 @@
     clippy::disallowed_methods,
     clippy::disallowed_macros
 )]
-
-use tower_lsp::lsp_types::{
-    CodeDescription, Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url,
-};
-
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_parser::Parser as OxcParser;
 use oxc_span::SourceType;
+use tower_lsp::lsp_types::{
+    CodeDescription, Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url,
+};
 use vize_atelier_sfc::SfcDescriptor;
 use vize_patina::{HelpRenderTarget, LintPreset, render_help};
 
@@ -20,7 +18,8 @@ use vize_carton::append;
 
 impl DiagnosticService {
     /// Collect diagnostics for Art files (*.art.vue) using vize_patina's MuseaLinter.
-    pub(super) fn collect_musea_diagnostics(
+    pub(super) fn collect_musea(
+        state: &crate::server::ServerState,
         uri: &Url,
         content: &str,
         line_index: &LineIndex<'_>,
@@ -79,30 +78,23 @@ impl DiagnosticService {
             })
             .collect();
 
-        diagnostics.extend(collect_define_art_source_diagnostics(uri, content));
+        diagnostics.extend(collect_define_art_source_diagnostics(state, uri, content));
         diagnostics
     }
 
-    /// Collect JSX/TSX compiler diagnostics for a `.jsx`/`.tsx` document.
-    ///
-    /// This lowers the source through `vize_atelier_jsx::lower_source` and maps
-    /// each [`vize_atelier_jsx::JsxDiagnostic`] (byte range + severity) onto an
-    /// LSP [`Diagnostic`] via the shared [`LineIndex`]. It does **not** generate
-    /// any virtual TypeScript document — type-aware JSX features (hover,
-    /// completion, type errors) are deferred to #1497. This is the
-    /// diagnostics-only lane: parse errors and lowering warnings surface as
-    /// editor squiggles, nothing more.
+    /// Collect JSX/TSX diagnostics from the cached syntax product.
     pub(super) fn collect_jsx_diagnostics(
+        state: &crate::server::ServerState,
         uri: &Url,
         content: &str,
         line_index: &LineIndex<'_>,
     ) -> Vec<Diagnostic> {
-        let lang = vize_atelier_jsx::JsxLang::from_path(uri.path());
+        state.ensure_artifact_source(uri, content);
+        let Some(syntax) = state.jsx_syntax(uri) else {
+            return Vec::new();
+        };
 
-        let bump = vize_carton::Bump::new();
-        let output = vize_atelier_jsx::lower_source(&bump, content, lang);
-
-        output
+        syntax
             .diagnostics
             .iter()
             .map(|diag| {
@@ -265,17 +257,21 @@ impl DiagnosticService {
     /// Parse the SFC once for the diagnostic pipeline, returning either the
     /// parsed descriptor or a single SFC parser error diagnostic to surface.
     #[allow(clippy::result_large_err)]
-    pub(super) fn parse_sfc_for_collect<'a>(
+    pub(super) fn parse_sfc_for_collect(
+        state: &crate::server::ServerState,
         uri: &Url,
-        content: &'a str,
-    ) -> Result<SfcDescriptor<'a>, Diagnostic> {
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
+        content: &str,
+    ) -> Result<SfcDescriptor<'static>, Diagnostic> {
+        state.ensure_artifact_source(uri, content);
+        let artifact = state.sfc_descriptor(uri).ok_or_else(|| Diagnostic {
+            severity: Some(DiagnosticSeverity::ERROR),
+            source: Some(sources::SFC_PARSER.to_string()),
+            message: "SFC artifact query failed".to_string(),
             ..Default::default()
-        };
+        })?;
 
-        match vize_atelier_sfc::parse_sfc(content, options) {
-            Ok(descriptor) => Ok(descriptor),
+        match artifact.as_result() {
+            Ok(descriptor) => Ok(descriptor.clone()),
             Err(err) => {
                 let range = if let Some(ref loc) = err.loc {
                     Range {
@@ -571,10 +567,14 @@ impl DiagnosticService {
     }
 }
 
-fn collect_define_art_source_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
+fn collect_define_art_source_diagnostics(
+    state: &crate::server::ServerState,
+    uri: &Url,
+    content: &str,
+) -> Vec<Diagnostic> {
     let mut diagnostics = Vec::new();
 
-    for source in crate::ide::musea::define_art_sources(content, uri) {
+    for source in crate::ide::musea::define_art_sources_from_state(state, content, uri) {
         if source.source.is_empty() {
             diagnostics.push(Diagnostic {
                 range: crate::ide::musea::range_for_offsets(

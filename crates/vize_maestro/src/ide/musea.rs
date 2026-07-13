@@ -20,14 +20,24 @@ pub(crate) struct DefineArtSource {
     pub value_end: usize,
 }
 
-pub(crate) fn define_art_sources(content: &str, uri: &Url) -> Vec<DefineArtSource> {
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: uri.path().to_string().into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-        return Vec::new();
-    };
+pub(crate) fn define_art_sources_from_state(
+    state: &crate::server::ServerState,
+    content: &str,
+    uri: &Url,
+) -> Vec<DefineArtSource> {
+    state
+        .sfc_descriptor_for(uri, content)
+        .and_then(|artifact| {
+            artifact
+                .descriptor()
+                .map(define_art_sources_from_descriptor)
+        })
+        .unwrap_or_default()
+}
+
+pub(crate) fn define_art_sources_from_descriptor(
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+) -> Vec<DefineArtSource> {
     let Some(script_setup) = descriptor.script_setup.as_ref() else {
         return Vec::new();
     };
@@ -56,17 +66,18 @@ pub(crate) fn define_art_sources(content: &str, uri: &Url) -> Vec<DefineArtSourc
     }]
 }
 
-pub(crate) fn define_art_source_at_offset(
-    content: &str,
-    uri: &Url,
+pub(crate) fn define_art_source_at_offset_from_descriptor(
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
     offset: usize,
 ) -> Option<DefineArtSource> {
-    define_art_sources(content, uri).into_iter().find(|source| {
-        source.literal_start <= offset
-            && offset <= source.literal_end
-            && source.value_start <= offset
-            && offset <= source.value_end
-    })
+    define_art_sources_from_descriptor(descriptor)
+        .into_iter()
+        .find(|source| {
+            source.literal_start <= offset
+                && offset <= source.literal_end
+                && source.value_start <= offset
+                && offset <= source.value_end
+        })
 }
 
 pub(crate) fn resolve_define_art_source(uri: &Url, source: &str) -> Option<PathBuf> {
@@ -105,7 +116,7 @@ pub(crate) fn range_for_offsets(content: &str, start: usize, end: usize) -> Rang
 }
 
 pub(crate) fn define_art_source_completions(ctx: &IdeContext<'_>) -> Option<Vec<CompletionItem>> {
-    let source = define_art_source_at_offset(&ctx.content, ctx.uri, ctx.offset)?;
+    let source = define_art_source_at_offset_from_descriptor(ctx.sfc_descriptor()?, ctx.offset)?;
     let current_path = ctx.uri.to_file_path().ok()?;
     let base_dir = current_path.parent()?;
     let typed = ctx.content.get(source.value_start..ctx.offset)?;

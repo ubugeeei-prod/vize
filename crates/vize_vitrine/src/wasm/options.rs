@@ -7,7 +7,7 @@ use vize_atelier_sfc::{CssCompileOptions, CssTargets};
 
 pub(crate) struct ParsedCompilerOptions {
     pub(crate) options: CompilerOptions,
-    pub(crate) binding_metadata: Option<vize_atelier_core::options::BindingMetadata>,
+    pub(crate) binding_metadata: Option<vize_carton::BindingMetadata>,
 }
 
 pub(crate) fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions {
@@ -47,6 +47,7 @@ pub(crate) fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions
             is_ts: get_bool("isTs"),
             custom_renderer: get_bool("customRenderer"),
             template_syntax: get_string("templateSyntax"),
+            vue_version: get_string("vueVersion"),
             experimental_in_tag_comments: get_bool("experimentalInTagComments"),
             experimental_patterned_template: get_bool("experimentalPatternedTemplate"),
             experimental_server_script: get_bool("experimentalServerScript"),

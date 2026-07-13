@@ -2,7 +2,7 @@
 
 use vize_carton::{String, ToCompactString};
 
-use super::imports::analyze_file;
+use super::imports::FileAnalysis;
 use super::payload::InspectorSourceFile;
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -36,11 +36,18 @@ pub fn build_graph(files: &[InspectorSourceFile]) -> InspectorGraph {
         .iter()
         .map(|file| {
             let path = normalize_path(file.path.as_str());
-            let analysis = analyze_file(path.as_str(), file.source.as_str());
+            let analysis =
+                super::artifact::analyze_source_compatibility(path.as_str(), file.source.as_str());
             (path, file.source.as_str(), analysis)
         })
         .collect();
 
+    build_graph_from_analyses(&normalized_files)
+}
+
+pub(super) fn build_graph_from_analyses(
+    normalized_files: &[(String, &str, FileAnalysis)],
+) -> InspectorGraph {
     let nodes = normalized_files
         .iter()
         .map(|(path, source, _)| InspectorGraphNode {
@@ -53,10 +60,10 @@ pub fn build_graph(files: &[InspectorSourceFile]) -> InspectorGraph {
         .collect();
 
     let mut edges = Vec::new();
-    for (path, _, analysis) in &normalized_files {
+    for (path, _, analysis) in normalized_files {
         for import in &analysis.imports {
             if let Some(to) =
-                resolve_import(&normalized_files, path.as_str(), import.specifier.as_str())
+                resolve_import(normalized_files, path.as_str(), import.specifier.as_str())
             {
                 push_graph_edge(
                     &mut edges,
@@ -101,9 +108,20 @@ fn component_is_used(
     template_used_ids: &vize_carton::FxHashSet<String>,
     locals: &[String],
 ) -> bool {
-    locals
-        .iter()
-        .any(|local| template_used_ids.contains(local.as_str()))
+    locals.iter().any(|local| {
+        template_used_ids.contains(local.as_str())
+            || template_used_ids
+                .iter()
+                .any(|used| normalize_component_name(used) == normalize_component_name(local))
+    })
+}
+
+fn normalize_component_name(name: &str) -> String {
+    name.chars()
+        .filter(char::is_ascii_alphanumeric)
+        .map(|character| character.to_ascii_lowercase())
+        .collect::<std::string::String>()
+        .to_compact_string()
 }
 
 fn push_graph_edge(edges: &mut Vec<InspectorGraphEdge>, edge: InspectorGraphEdge) {
@@ -180,7 +198,7 @@ fn join_path(parent: &str, specifier: &str) -> String {
     }
 }
 
-fn normalize_path(path: &str) -> String {
+pub(super) fn normalize_path(path: &str) -> String {
     let mut parts = Vec::new();
     for part in path.split('/') {
         match part {

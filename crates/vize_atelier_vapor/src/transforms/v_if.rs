@@ -5,7 +5,7 @@
 use vize_carton::{Box, Bump};
 
 use crate::ir::{BlockIRNode, IfIRNode, NegativeBranch, OperationNode};
-use vize_atelier_core::{
+use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, IfBranchNode, SimpleExpressionNode, SourceLocation,
 };
 
@@ -36,10 +36,7 @@ pub fn transform_v_if<'a>(
 pub fn transform_if_branches<'a>(
     allocator: &'a Bump,
     branches: &[IfBranchNode<'a>],
-    transform_children: impl Fn(
-        &'a Bump,
-        &[vize_atelier_core::TemplateChildNode<'a>],
-    ) -> BlockIRNode<'a>,
+    transform_children: impl Fn(&'a Bump, &[vize_relief::TemplateChildNode<'a>]) -> BlockIRNode<'a>,
     id_generator: &mut impl FnMut() -> usize,
 ) -> Option<OperationNode<'a>> {
     if branches.is_empty() {
@@ -86,10 +83,7 @@ pub fn transform_if_branches<'a>(
 fn transform_remaining_branches<'a>(
     allocator: &'a Bump,
     branches: &[IfBranchNode<'a>],
-    transform_children: &impl Fn(
-        &'a Bump,
-        &[vize_atelier_core::TemplateChildNode<'a>],
-    ) -> BlockIRNode<'a>,
+    transform_children: &impl Fn(&'a Bump, &[vize_relief::TemplateChildNode<'a>]) -> BlockIRNode<'a>,
     id_generator: &mut impl FnMut() -> usize,
 ) -> NegativeBranch<'a> {
     if branches.is_empty() {
@@ -171,8 +165,8 @@ fn extract_expression<'a>(
 #[cfg(test)]
 mod tests {
     use super::extract_condition;
-    use vize_atelier_core::{DirectiveNode, SourceLocation};
     use vize_carton::Bump;
+    use vize_relief::{DirectiveNode, SourceLocation};
 
     #[test]
     fn test_extract_condition() {

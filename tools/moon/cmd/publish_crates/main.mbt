@@ -43,6 +43,30 @@ let blocked_by_pending_first_publish_crates : Array[String] = [
   "vize_patina",
 ]
 
+/// Complete manual bootstrap order for a version that has not been published.
+/// `--bootstrap` is intentionally guarded: it is the one owner-token operation
+/// that creates new crates before Trusted Publishing can manage later releases.
+let manual_bootstrap_crates : Array[String] = [
+  "vize_carton",
+  "vize_atlas",
+  "vize_fresco",
+  "vize_flow",
+  "vize_relief",
+  "vize_rendu",
+  "vize_armature",
+  "vize_croquis",
+  "vize_atelier_core",
+  "vize_croquis_cf",
+  "vize_atelier_dom",
+  "vize_atelier_ssr",
+  "vize_atelier_vapor",
+  "vize_atelier_sfc",
+  "vize_atelier_jsx",
+  "vize_musea",
+  "vize_canon",
+  "vize_patina",
+]
+
 /// Parses a positive integer from a string and falls back on invalid input.
 fn positive_int_or(value : String, fallback : Int) -> Int {
   try {
@@ -174,6 +198,19 @@ async fn wait_for_resolution(
 /// attempted. This avoids the common race where a dependent crate publishes
 /// before crates.io index propagation catches up.
 async fn run_app() -> Int {
+  let args = @tool.cli_args()
+  let resume = args.length() == 2 && args[0] == "--bootstrap" && args[1] == "--resume"
+  let bootstrap = (args.length() == 1 && args[0] == "--bootstrap") || resume
+  if !args.is_empty() && !bootstrap {
+    @stdio.stderr.write("Usage: publish_crates [--bootstrap [--resume]]\n")
+    return 1
+  }
+  if bootstrap && @sys.get_env_var("VIZE_CRATES_IO_BOOTSTRAP") != Some("1") {
+    @stdio.stderr.write(
+      "Refusing first publish without VIZE_CRATES_IO_BOOTSTRAP=1.\n",
+    )
+    return 1
+  }
   let cargo_toml = match @tool.read_file_to_string("Cargo.toml") {
     Some(content) => content
     None => {
@@ -188,6 +225,16 @@ async fn run_app() -> Int {
       return 1
     }
   }
+  if bootstrap && !resume {
+    for crate_name in manual_bootstrap_crates {
+      if crate_is_published(crate_name, version) {
+        @stdio.stderr.write(
+          "Bootstrap version \{version} already contains \{crate_name}; bump every workspace crate to one unpublished version, or pass --resume after a partial bootstrap.\n",
+        )
+        return 1
+      }
+    }
+  }
 
   let max_attempts = env_positive_int("PUBLISH_RETRY_LIMIT", 60)
   let delay_seconds = env_positive_int("PUBLISH_RETRY_DELAY", 5)
@@ -197,18 +244,19 @@ async fn run_app() -> Int {
     delay_seconds,
   )
   println("Expected version: \{version}")
-  if !pending_first_publish_crates.is_empty() {
+  if !bootstrap && !pending_first_publish_crates.is_empty() {
     println(
       "Deferred first-publish crates: " + pending_first_publish_crates.join(", "),
     )
   }
-  if !blocked_by_pending_first_publish_crates.is_empty() {
+  if !bootstrap && !blocked_by_pending_first_publish_crates.is_empty() {
     println(
       "Deferred dependent crates: " + blocked_by_pending_first_publish_crates.join(", "),
     )
   }
 
-  for crate_name in published_crates {
+  let crates = if bootstrap { manual_bootstrap_crates } else { published_crates }
+  for crate_name in crates {
     println("Publishing \{crate_name} v\{version}...")
     if crate_is_published(crate_name, version) {
       println("\{crate_name} v\{version} is already published, skipping publish.")

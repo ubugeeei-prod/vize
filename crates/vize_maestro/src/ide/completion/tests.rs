@@ -7,7 +7,7 @@ use super::{
 };
 use crate::{ide::IdeContext, server::ServerState};
 use tower_lsp::lsp_types::{CompletionItemKind, CompletionResponse, InsertTextFormat, Url};
-use vize_relief::BindingType;
+use vize_carton::BindingType;
 
 #[test]
 fn test_directive_completions() {

@@ -10,9 +10,13 @@
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 
-use crate::typecheck::{
-    TypeCheckOptions, TypeSeverity, type_check_sfc, type_check_sfc_with_legacy_vue2,
-};
+use crate::artifact_graph::SfcTypeCheckGraph;
+use crate::typecheck::{TypeCheckOptions, TypeSeverity};
+
+#[path = "napi_typecheck/declaration.rs"]
+mod declaration;
+
+pub use declaration::{DeclarationOptionsNapi, DeclarationResultNapi, generate_declaration_napi};
 
 /// Type check options for NAPI
 #[napi(object)]
@@ -91,11 +95,15 @@ pub fn type_check_napi(
     let mut check_opts = TypeCheckOptions::new(filename);
     apply_napi_options(&opts, &mut check_opts);
 
-    let result = if opts.legacy_vue2.unwrap_or(false) {
-        type_check_sfc_with_legacy_vue2(&source, &check_opts)
+    let mode = if opts.legacy_vue2.unwrap_or(false) {
+        vize_atelier_sfc::SfcCroquisMode::LegacyVue2
     } else {
-        type_check_sfc(&source, &check_opts)
+        vize_atelier_sfc::SfcCroquisMode::Full
     };
+    let name = check_opts.filename.to_string();
+    let graph = SfcTypeCheckGraph::new(vec![(name.clone(), source, check_opts)], mode)
+        .map_err(typecheck_graph_error)?;
+    let result = graph.query(&name).map_err(typecheck_graph_error)?;
 
     Ok(TypeCheckResultNapi {
         diagnostics: result
@@ -129,88 +137,6 @@ pub fn type_check_napi(
         error_count: result.error_count as u32,
         warning_count: result.warning_count as u32,
         analysis_time_ms: result.analysis_time_ms,
-    })
-}
-
-/// Declaration generation options for NAPI
-#[napi(object)]
-#[derive(Default)]
-pub struct DeclarationOptionsNapi {
-    pub filename: Option<String>,
-}
-
-/// Declaration generation result for NAPI
-#[napi(object)]
-pub struct DeclarationResultNapi {
-    pub code: String,
-}
-
-/// Generate a Vue SFC `.d.ts` declaration from Croquis analysis.
-#[napi(js_name = "generateDeclaration")]
-pub fn generate_declaration_napi(
-    source: String,
-    options: Option<DeclarationOptionsNapi>,
-) -> Result<DeclarationResultNapi> {
-    use vize_atelier_sfc::{
-        SfcDescriptor, SfcParseOptions,
-        croquis::{SfcCroquisOptions, analyze_sfc_descriptor},
-        parse_sfc,
-    };
-    use vize_croquis::Croquis;
-    use vize_croquis::declaration_ts::{
-        generate_declaration_ts, generate_declaration_ts_with_split_scripts,
-    };
-
-    let opts = options.unwrap_or_default();
-    let filename = opts.filename.unwrap_or_else(|| "anonymous.vue".to_string());
-    let descriptor = parse_sfc(
-        &source,
-        SfcParseOptions {
-            filename: filename.as_str().into(),
-            ..Default::default()
-        },
-    )
-    .map_err(|error| Error::new(Status::GenericFailure, error.message.to_string()))?;
-
-    enum DeclarationScript<'a> {
-        None,
-        Single(&'a str),
-        Split { plain: &'a str, setup: &'a str },
-    }
-
-    fn analyze_descriptor<'a>(
-        descriptor: &'a SfcDescriptor<'a>,
-    ) -> (Croquis, DeclarationScript<'a>) {
-        let summary =
-            analyze_sfc_descriptor(descriptor, None, SfcCroquisOptions::for_declaration());
-        match (descriptor.script.as_ref(), descriptor.script_setup.as_ref()) {
-            (Some(script), Some(script_setup)) => (
-                summary,
-                DeclarationScript::Split {
-                    plain: script.content.as_ref(),
-                    setup: script_setup.content.as_ref(),
-                },
-            ),
-            (Some(script), None) => (summary, DeclarationScript::Single(script.content.as_ref())),
-            (None, Some(script_setup)) => (
-                summary,
-                DeclarationScript::Single(script_setup.content.as_ref()),
-            ),
-            (None, None) => (summary, DeclarationScript::None),
-        }
-    }
-
-    let (summary, script_content) = analyze_descriptor(&descriptor);
-    let output = match script_content {
-        DeclarationScript::None => generate_declaration_ts(&summary, None),
-        DeclarationScript::Single(script) => generate_declaration_ts(&summary, Some(script)),
-        DeclarationScript::Split { plain, setup } => {
-            generate_declaration_ts_with_split_scripts(&summary, plain, setup)
-        }
-    };
-
-    Ok(DeclarationResultNapi {
-        code: output.content.into(),
     })
 }
 
@@ -304,7 +230,6 @@ pub fn type_check_batch_napi(
     use glob::glob;
     use rayon::prelude::*;
     use std::fs;
-    use std::sync::atomic::{AtomicUsize, Ordering};
     use std::time::Instant;
 
     let opts = options.unwrap_or_default();
@@ -331,51 +256,54 @@ pub fn type_check_batch_napi(
         });
     }
 
-    let files_checked = AtomicUsize::new(0);
-    let files_with_errors = AtomicUsize::new(0);
-    let total_errors = AtomicUsize::new(0);
-    let total_warnings = AtomicUsize::new(0);
-
     let start = Instant::now();
-
-    // Type check files in parallel using rayon
-    files.par_iter().for_each(|path| {
-        let source = match fs::read_to_string(path) {
-            Ok(s) => s,
-            Err(_) => return,
-        };
-
-        let filename: vize_carton::CompactString = path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("anonymous.vue")
-            .into();
-
-        let mut check_opts = TypeCheckOptions::new(filename);
-        apply_napi_options(&opts, &mut check_opts);
-        check_opts.include_virtual_ts = false; // Don't generate virtual TS for batch
-
-        let result = if opts.legacy_vue2.unwrap_or(false) {
-            type_check_sfc_with_legacy_vue2(&source, &check_opts)
-        } else {
-            type_check_sfc(&source, &check_opts)
-        };
-
-        files_checked.fetch_add(1, Ordering::Relaxed);
-        if result.error_count > 0 {
-            files_with_errors.fetch_add(1, Ordering::Relaxed);
-        }
-        total_errors.fetch_add(result.error_count, Ordering::Relaxed);
-        total_warnings.fetch_add(result.warning_count, Ordering::Relaxed);
-    });
+    let registered: Vec<_> = files
+        .iter()
+        .filter_map(|path| {
+            let source = fs::read_to_string(path).ok()?;
+            let name = path.to_string_lossy().into_owned();
+            let mut check_opts = TypeCheckOptions::new(name.as_str());
+            apply_napi_options(&opts, &mut check_opts);
+            check_opts.include_virtual_ts = false;
+            Some((name, source, check_opts))
+        })
+        .collect();
+    let mode = if opts.legacy_vue2.unwrap_or(false) {
+        vize_atelier_sfc::SfcCroquisMode::LegacyVue2
+    } else {
+        vize_atelier_sfc::SfcCroquisMode::Full
+    };
+    let graph = SfcTypeCheckGraph::new(registered.clone(), mode).map_err(typecheck_graph_error)?;
+    let results: Vec<_> = registered
+        .par_iter()
+        .map(|(name, _, _)| graph.query(name))
+        .collect::<std::result::Result<_, _>>()
+        .map_err(typecheck_graph_error)?;
+    let files_checked = results.len();
+    let files_with_errors = results
+        .iter()
+        .filter(|result| result.error_count > 0)
+        .count();
+    let total_errors = results
+        .iter()
+        .map(|result| result.error_count)
+        .sum::<usize>();
+    let total_warnings = results
+        .iter()
+        .map(|result| result.warning_count)
+        .sum::<usize>();
 
     let elapsed = start.elapsed();
 
     Ok(BatchTypeCheckResultNapi {
-        files_checked: files_checked.load(Ordering::Relaxed) as u32,
-        files_with_errors: files_with_errors.load(Ordering::Relaxed) as u32,
-        total_errors: total_errors.load(Ordering::Relaxed) as u32,
-        total_warnings: total_warnings.load(Ordering::Relaxed) as u32,
+        files_checked: files_checked as u32,
+        files_with_errors: files_with_errors as u32,
+        total_errors: total_errors as u32,
+        total_warnings: total_warnings as u32,
         time_ms: elapsed.as_secs_f64() * 1000.0,
     })
+}
+
+fn typecheck_graph_error(error: vize_carton::String) -> Error {
+    Error::new(Status::GenericFailure, error.to_string())
 }

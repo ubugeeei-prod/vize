@@ -164,13 +164,22 @@ fn find_inline_art_block_at_offset(
 ///
 /// Uses `vize_musea::parse_art()` to determine cursor position within art variant templates.
 pub fn find_art_block_at_offset(source: &str, offset: usize) -> Option<BlockType> {
-    // First check SFC blocks (script, style)
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: Default::default(),
-        ..Default::default()
-    };
+    let uri = tower_lsp::lsp_types::Url::parse("file:///anonymous.art.vue").ok()?;
+    let artifact = crate::ide::sfc_descriptor_compatibility(source, &uri);
+    find_art_block_at_offset_with_descriptor(
+        source,
+        offset,
+        artifact.as_ref().and_then(|artifact| artifact.descriptor()),
+    )
+}
 
-    if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, options) {
+pub(crate) fn find_art_block_at_offset_with_descriptor(
+    source: &str,
+    offset: usize,
+    descriptor: Option<&vize_atelier_sfc::SfcDescriptor<'_>>,
+) -> Option<BlockType> {
+    // First check SFC blocks (script, style).
+    if let Some(descriptor) = descriptor {
         // Check script/script_setup/style blocks
         if let Some(ref script) = descriptor.script
             && offset >= script.loc.start

@@ -45,7 +45,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::BindingType;
+use vize_carton::BindingType;
 use vize_relief::{ElementNode, ExpressionNode, InterpolationNode, RootNode};
 
 /// Browser-only global names that are NOT available in SSR

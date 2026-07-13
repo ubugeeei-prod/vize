@@ -7,18 +7,16 @@ use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
 use rayon::prelude::*;
-use vize_atelier_core::TemplateSyntaxMode;
-use vize_carton::{FxHashMap, profile};
+use vize_carton::{FxHashMap, ToCompactString, profile};
+use vize_relief::TemplateSyntaxMode;
 
 use crate::batch::error::{CorsaError, CorsaResult};
-use crate::batch::import_rewriter::ImportRewriter;
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
 use super::VirtualProject;
-use super::build::{
-    RegisteredFile, VirtualBuildContext, build_registered_file, build_script_registered_file,
-    build_vue_registered_file, source_type_for_path,
-};
+use super::artifact_recipe::build_registered_sources;
+use super::artifact_source::RegisteredSource;
+use super::build::{RegisteredFile, source_type_for_path};
 
 const MUSEA_DEFINE_ART_STUB: &str =
     "declare function defineArt(source: string, options?: Record<string, any>): void;";
@@ -56,7 +54,6 @@ impl VirtualProject {
             original_index: FxHashMap::default(),
             original_contents: FxHashMap::default(),
             diagnostics: Vec::new(),
-            rewriter: ImportRewriter::new(),
         };
         project.preserve_unused_diagnostics =
             project.resolve_tsconfig_preserves_unused_diagnostics();
@@ -133,38 +130,15 @@ impl VirtualProject {
 
     /// Register a supported file path with already-loaded content.
     pub fn register_path_with_content(&mut self, path: &Path, content: &str) -> CorsaResult<()> {
-        let registered = build_registered_file(
-            path,
-            content,
-            VirtualBuildContext {
-                project_root: &self.project_root,
-                virtual_root: &self.virtual_root,
-                virtual_ts_options: &self.virtual_ts_options,
-                virtual_ts_check_options: self.virtual_ts_check_options,
-                preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
-                options_api: self.options_api,
-                legacy_vue2: self.legacy_vue2,
-                jsx_typecheck: self.jsx_typecheck,
-                dialect: self.dialect,
-                template_syntax: self.template_syntax,
-                experimental_in_tag_comments: self.experimental_in_tag_comments,
-                rewriter: &self.rewriter,
-            },
-        )?;
-        self.absorb_registered_file(registered);
-        Ok(())
+        self.register_sources(vec![RegisteredSource {
+            path: path.to_path_buf(),
+            content: content.to_compact_string(),
+            source_type: None,
+        }])
     }
 
-    /// Register a batch of file paths, parallelizing per-file parse and Virtual TS
-    /// generation across rayon's thread pool. Falls back to sequential work when
-    /// the batch is small enough that the fan-out cost would dominate.
-    ///
-    /// This is deliberately structured as "parallel build, sequential absorb".
-    /// `build_registered_file` owns the expensive work (disk read, SFC parse,
-    /// template parse, virtual-TS generation, import rewriting) and only needs an
-    /// immutable build context, so it scales cleanly across rayon workers. The
-    /// mutable project indexes are updated after the join point, which preserves
-    /// deterministic maps and avoids locking every insertion in the hot loop.
+    /// Register a batch in one Atlas compilation and query independent sources
+    /// through parallel sessions sharing the same immutable artifact cache.
     pub fn register_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
         let valid_paths: Vec<&Path> = paths
             .iter()
@@ -175,67 +149,23 @@ impl VirtualProject {
             return Ok(());
         }
 
-        // Sequential is cheaper for tiny batches than firing up rayon workers.
-        if valid_paths.len() <= 1 {
-            for path in valid_paths {
-                self.register_path(path)?;
-            }
-            return Ok(());
-        }
-
-        let preserve_unused_diagnostics = self.tsconfig_preserves_unused_diagnostics();
-        let build_context = VirtualBuildContext {
-            project_root: self.project_root.as_path(),
-            virtual_root: self.virtual_root.as_path(),
-            virtual_ts_options: &self.virtual_ts_options,
-            virtual_ts_check_options: self.virtual_ts_check_options,
-            preserve_unused_diagnostics,
-            options_api: self.options_api,
-            legacy_vue2: self.legacy_vue2,
-            jsx_typecheck: self.jsx_typecheck,
-            dialect: self.dialect,
-            template_syntax: self.template_syntax,
-            experimental_in_tag_comments: self.experimental_in_tag_comments,
-            rewriter: &self.rewriter,
-        };
-
-        let registered: Result<Vec<RegisteredFile>, CorsaError> = valid_paths
+        let sources: Result<Vec<RegisteredSource>, CorsaError> = valid_paths
             .par_iter()
             .map(|&path| {
                 let content = profile!("canon.file.read", std::fs::read_to_string(path))?;
-                build_registered_file(path, &content, build_context)
+                Ok(RegisteredSource {
+                    path: path.to_path_buf(),
+                    content: content.into(),
+                    source_type: None,
+                })
             })
             .collect();
-
-        self.virtual_files.reserve(valid_paths.len());
-        for registered in registered? {
-            self.absorb_registered_file(registered);
-        }
-        Ok(())
+        self.register_sources(sources?)
     }
 
     /// Register a `.vue` file.
     pub fn register_vue_file(&mut self, path: &Path, content: &str) -> CorsaResult<()> {
-        let registered = build_vue_registered_file(
-            path,
-            content,
-            VirtualBuildContext {
-                project_root: &self.project_root,
-                virtual_root: &self.virtual_root,
-                virtual_ts_options: &self.virtual_ts_options,
-                virtual_ts_check_options: self.virtual_ts_check_options,
-                preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
-                options_api: self.options_api,
-                legacy_vue2: self.legacy_vue2,
-                jsx_typecheck: self.jsx_typecheck,
-                dialect: self.dialect,
-                template_syntax: self.template_syntax,
-                experimental_in_tag_comments: self.experimental_in_tag_comments,
-                rewriter: &self.rewriter,
-            },
-        )?;
-        self.absorb_registered_file(registered);
-        Ok(())
+        self.register_path_with_content(path, content)
     }
 
     /// Register a `.ts`/`.tsx`/`.mts`/`.cts` file.
@@ -259,14 +189,18 @@ impl VirtualProject {
         content: &str,
         source_type: SourceType,
     ) -> CorsaResult<()> {
-        let registered = build_script_registered_file(
-            path,
-            content,
-            source_type,
-            (&self.project_root, &self.virtual_root),
-            &self.rewriter,
-        )?;
-        self.absorb_registered_file(registered);
+        self.register_sources(vec![RegisteredSource {
+            path: path.to_path_buf(),
+            content: content.to_compact_string(),
+            source_type: Some(source_type),
+        }])
+    }
+
+    fn register_sources(&mut self, sources: Vec<RegisteredSource>) -> CorsaResult<()> {
+        self.virtual_files.reserve(sources.len());
+        for registered in build_registered_sources(self, sources)? {
+            self.absorb_registered_file(registered);
+        }
         Ok(())
     }
 

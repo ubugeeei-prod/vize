@@ -139,7 +139,7 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// Get the JavaScript expression for a slot outlet name.
     pub(super) fn slot_outlet_name_expression(&mut self, el: &ElementNode) -> String {
-        use vize_atelier_core::{ExpressionNode, PropNode};
+        use vize_relief::{ExpressionNode, PropNode};
 
         for prop in &el.props {
             if let PropNode::Directive(dir) = prop {

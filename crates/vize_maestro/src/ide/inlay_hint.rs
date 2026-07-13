@@ -6,6 +6,7 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 //! Uses vize_croquis for proper scope analysis to accurately identify destructured props.
 
+mod products;
 mod script;
 mod template;
 
@@ -31,104 +32,22 @@ impl InlayHintService {
         range: Range,
         ecosystem_enabled: bool,
     ) -> Vec<InlayHint> {
-        let mut hints = Vec::new();
-
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
+        let Some(artifact) = crate::ide::sfc_descriptor_compatibility(content, uri) else {
+            return Vec::new();
         };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-            return hints;
+        let Some(descriptor) = artifact.descriptor() else {
+            return Vec::new();
         };
-
-        if ecosystem_enabled {
-            ecosystem::i18n::collect_inlay_hints(
-                content,
-                &descriptor,
-                Some(uri),
-                range,
-                &mut hints,
-            );
-        }
-
-        // Use the Croquis drawer for proper scope analysis.
-        let Some(ref script_setup) = descriptor.script_setup else {
-            return hints;
+        let Some(script_setup) = descriptor.script_setup.as_ref() else {
+            return Vec::new();
         };
-
-        // Analyze the script setup using croquis
         let mut analyzer = Drawer::with_options(DrawerOptions {
             analyze_script: true,
             ..Default::default()
         });
         analyzer.analyze_script_setup(&script_setup.content);
         let croquis = analyzer.finish();
-
-        // Get all prop names from defineProps (for template hints)
-        let all_prop_names: Vec<String> = croquis
-            .macros
-            .props()
-            .iter()
-            .map(|p| p.name.to_string())
-            .collect();
-
-        // Get props destructure info from the analysis (for script hints)
-        let props_destructure = croquis.macros.props_destructure();
-
-        // Collect local names of destructured props (for script)
-        let destructured_local_names: Vec<&str> = props_destructure
-            .map(|pd| pd.bindings.values().map(|b| b.local.as_str()).collect())
-            .unwrap_or_default();
-
-        // Get the defineProps call span to skip hints within the type definition
-        let define_props_end = croquis
-            .macros
-            .define_props()
-            .map(|call| call.end as usize)
-            .unwrap_or(0);
-
-        // Find usages of destructured props in script setup (only destructured ones)
-        if !destructured_local_names.is_empty() {
-            Self::collect_script_props_hints(
-                &script_setup.content,
-                script_setup.loc.start,
-                content,
-                &destructured_local_names,
-                define_props_end,
-                range,
-                &mut hints,
-            );
-        }
-
-        // Find usages of props in template (all props are available in template)
-        if let Some(ref template) = descriptor.template
-            && !all_prop_names.is_empty()
-        {
-            let prop_refs: Vec<&str> = all_prop_names.iter().map(|s| s.as_str()).collect();
-            Self::collect_template_props_hints(
-                &template.content,
-                template.loc.start,
-                content,
-                &prop_refs,
-                range,
-                &mut hints,
-            );
-        }
-
-        // Reactive-binding inlay hints: show `: Ref<…>` / `: ComputedRef<…>`
-        // after `const X = ref(...)` / `const X = computed(() => ...)` so the
-        // editor surfaces the inferred wrapper without requiring hover.
-        Self::collect_reactive_binding_hints(
-            &script_setup.content,
-            script_setup.loc.start,
-            content,
-            &croquis,
-            range,
-            &mut hints,
-        );
-
-        hints
+        Self::get_hints_from_products(content, uri, range, ecosystem_enabled, descriptor, &croquis)
     }
 
     /// Append inlay hints for reactive binding declarations.

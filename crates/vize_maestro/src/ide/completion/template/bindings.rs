@@ -7,12 +7,8 @@ use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, CompletionItemLabelDetails, Documentation, MarkupContent,
     MarkupKind,
 };
-use vize_atelier_sfc::croquis::{
-    SfcCroquisOptions, analyze_sfc_descriptor, analyze_sfc_descriptor_with_context_legacy_vue2,
-    analyze_sfc_descriptor_with_context_options_api,
-};
+use vize_carton::BindingType;
 use vize_croquis::ScopeKind;
-use vize_relief::BindingType;
 
 use crate::ide::IdeContext;
 use crate::ide::completion::items;
@@ -26,14 +22,7 @@ pub(crate) fn css_module_class_completions(ctx: &IdeContext) -> Option<Vec<Compl
     if !trimmed.ends_with("$style.") {
         return None;
     }
-    let descriptor = vize_atelier_sfc::parse_sfc(
-        &ctx.content,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        },
-    )
-    .ok()?;
+    let descriptor = ctx.sfc_descriptor()?;
     let mut classes = BTreeSet::new();
     for style in descriptor.styles.iter() {
         let attrs = &style.attrs;
@@ -110,53 +99,22 @@ pub(crate) fn analyzed_template_binding_completions(
         return petite_vue_scope_binding_completions(ctx);
     }
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+    let Some(descriptor) = ctx.sfc_descriptor() else {
         return Vec::new();
     };
-
-    // Parse the template so v-for / v-slot scopes land in the Croquis scope
-    // chain. Without the AST, `analyze_sfc_descriptor` skips template-level
-    // analysis and we lose nested binding visibility.
-    let template_block = descriptor.template.as_ref();
-    let allocator = vize_carton::Bump::new();
-    let template_parse =
-        template_block.map(|tb| (vize_armature::parse(&allocator, &tb.content), tb.loc.start));
-
-    let croquis_options = SfcCroquisOptions::full();
-    let croquis = if ctx.state.legacy_vue2_enabled() {
-        analyze_sfc_descriptor_with_context_legacy_vue2(
-            &descriptor,
-            template_parse.as_ref().map(|((ast, _), _)| ast),
-            croquis_options,
-        )
-        .croquis
-    } else if ctx.state.options_api_enabled() {
-        analyze_sfc_descriptor_with_context_options_api(
-            &descriptor,
-            template_parse.as_ref().map(|((ast, _), _)| ast),
-            croquis_options,
-        )
-        .croquis
-    } else {
-        analyze_sfc_descriptor(
-            &descriptor,
-            template_parse.as_ref().map(|((ast, _), _)| ast),
-            croquis_options,
-        )
+    let croquis_product = match ctx.sfc_croquis() {
+        Some(product) => product,
+        None => return Vec::new(),
     };
+    let croquis = croquis_product.analysis();
 
     let mut items_vec = Vec::new();
 
     // Scope-aware completion: include bindings introduced by v-for / v-slot /
     // event-handler scopes that contain the cursor. Top-level setup bindings
     // are added by the loop below; we de-dup by name.
-    if let Some((_, template_start)) = template_parse.as_ref() {
-        let template_local = ctx.offset.saturating_sub(*template_start) as u32;
+    if let Some(template) = descriptor.template.as_ref() {
+        let template_local = ctx.offset.saturating_sub(template.loc.start) as u32;
         for (name, _binding, scope_kind) in croquis.scopes.bindings_visible_at(template_local) {
             if !is_template_scope_kind(scope_kind) {
                 continue;

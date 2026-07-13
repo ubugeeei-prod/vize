@@ -10,15 +10,15 @@ use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{Visit, walk::walk_arrow_function_expression};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_atelier_core::{
-    DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, SimpleExpressionNode,
-    TemplateChildNode,
-};
 use vize_carton::{
     FxHashSet, String, ToCompactString, camelize, capitalize, is_builtin_directive, is_native_tag,
     is_simple_identifier,
 };
 use vize_croquis::builtins::{is_builtin_component, is_global_allowed};
+use vize_relief::{
+    CompoundExpressionChild, CompoundExpressionNode, DirectiveNode, ElementNode, ExpressionNode,
+    PropNode, RootNode, SimpleExpressionNode, TemplateChildNode, TextCallContent,
+};
 
 /// Result of template analysis
 #[derive(Debug, Clone, Default)]
@@ -103,10 +103,10 @@ fn walk_node(
         TemplateChildNode::TextCall(text_call) => {
             if collect_used_ids {
                 match &text_call.content {
-                    vize_atelier_core::TextCallContent::Interpolation(interp) => {
+                    TextCallContent::Interpolation(interp) => {
                         extract_identifiers_from_expression(&interp.content, &mut result.used_ids);
                     }
-                    vize_atelier_core::TextCallContent::Compound(compound) => {
+                    TextCallContent::Compound(compound) => {
                         extract_identifiers_from_compound(compound, &mut result.used_ids);
                     }
                     _ => {}
@@ -380,10 +380,7 @@ fn extract_identifiers_from_js_expression(content: &str, ids: &mut FxHashSet<Str
 }
 
 /// Extract identifiers from a compound expression node.
-fn extract_identifiers_from_compound(
-    node: &vize_atelier_core::CompoundExpressionNode,
-    ids: &mut FxHashSet<String>,
-) {
+fn extract_identifiers_from_compound(node: &CompoundExpressionNode, ids: &mut FxHashSet<String>) {
     // Use pre-parsed identifiers if available
     if let Some(ref identifiers) = node.identifiers {
         for ident in identifiers.iter() {
@@ -395,13 +392,13 @@ fn extract_identifiers_from_compound(
     // Otherwise, walk children
     for child in node.children.iter() {
         match child {
-            vize_atelier_core::CompoundExpressionChild::Simple(simple) => {
+            CompoundExpressionChild::Simple(simple) => {
                 extract_identifiers_from_simple_expression(simple, ids);
             }
-            vize_atelier_core::CompoundExpressionChild::Compound(compound) => {
+            CompoundExpressionChild::Compound(compound) => {
                 extract_identifiers_from_compound(compound, ids);
             }
-            vize_atelier_core::CompoundExpressionChild::Interpolation(interp) => {
+            CompoundExpressionChild::Interpolation(interp) => {
                 extract_identifiers_from_expression(&interp.content, ids);
             }
             // Text and Symbol don't contain identifiers
@@ -413,7 +410,7 @@ fn extract_identifiers_from_compound(
 #[cfg(test)]
 mod tests {
     use super::{TemplateUsedIdentifiers, is_used_in_template, resolve_template_used_identifiers};
-    use vize_atelier_core::parser::parse;
+    use vize_armature::parse;
     use vize_carton::Bump;
 
     fn analyze_template(source: &str) -> TemplateUsedIdentifiers {

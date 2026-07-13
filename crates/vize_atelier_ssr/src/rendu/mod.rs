@@ -3,6 +3,8 @@
 mod emit;
 
 #[cfg(test)]
+mod parity_tests;
+#[cfg(test)]
 mod tests;
 
 use vize_carton::{String, source_anchor::SourceAnchor};

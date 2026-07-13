@@ -1,14 +1,27 @@
-//! Owned JSX/TSX syntax product built from OXC without constructing Relief.
+//! Owned JSX/TSX syntax products built from one OXC program.
 
 #[path = "syntax/build.rs"]
 mod build;
 #[path = "syntax/control.rs"]
 mod control;
+#[path = "syntax/roots.rs"]
+mod roots;
 #[path = "syntax/text.rs"]
 pub(crate) mod text;
+#[path = "syntax/typecheck.rs"]
+mod typecheck;
 
+#[cfg(test)]
+#[path = "syntax/tests.rs"]
+mod tests;
+
+pub use typecheck::{JsxTypecheckEmit, JsxTypecheckExpression, JsxTypecheckRoot};
+
+use crate::{ComponentSetupSpan, JsxOutputMode, StyleExprSpan};
 use crate::{JsxDiagnostic, JsxLang};
+use vize_atlas::Shared;
 use vize_carton::source_anchor::SourceAnchor;
+use vize_croquis::Croquis;
 
 /// Inclusive-start, exclusive-end byte range in the original module.
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash)]
@@ -96,6 +109,25 @@ pub struct JsxSyntaxElement {
     pub span: JsxSyntaxSpan,
 }
 
+/// Component context retained beside one outermost owned JSX render root.
+#[derive(Debug, Clone)]
+pub struct JsxSyntaxRootMetadata {
+    pub span: JsxSyntaxSpan,
+    pub mode: Option<JsxOutputMode>,
+    pub component_name: Option<Box<str>>,
+    pub component_setup: Option<ComponentSetupSpan>,
+    pub scoped_css: Option<Box<str>>,
+    pub scoped_styles: Vec<JsxSyntaxScopedStyle>,
+    pub(crate) scoped_style_exprs: Vec<StyleExprSpan>,
+}
+
+/// Raw embedded CSS and its exact authored body range.
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct JsxSyntaxScopedStyle {
+    pub css: Box<str>,
+    pub span: JsxSyntaxSpan,
+}
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct JsxSyntaxBranch {
     pub condition: Option<JsxSyntaxExpression>,
@@ -155,16 +187,24 @@ impl JsxSyntaxNode {
 ///
 /// No OXC or Relief node escapes construction, so this value is
 /// `Send + Sync + 'static` and may be cached by the compilation graph.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct JsxSyntaxSnapshot {
     pub filename: Option<Box<str>>,
     pub source: Box<str>,
     pub lang: JsxLang,
     pub roots: Vec<JsxSyntaxNode>,
+    root_metadata: Vec<JsxSyntaxRootMetadata>,
+    /// Exact embedded-expression projection used by plain-TypeScript consumers.
+    ///
+    /// This is built while the source's single OXC program is live. Consumers
+    /// never need to parse JSX again or reconstruct directives, slots, control
+    /// flow, or scoped-style expressions from the generic syntax tree.
+    typecheck_roots: Vec<JsxTypecheckRoot>,
     pub diagnostics: Vec<JsxDiagnostic>,
     pub panicked: bool,
     /// Stable compilation source identity when constructed by an Atlas provider.
     pub source_anchor: Option<SourceAnchor>,
+    analysis: Shared<Croquis>,
 }
 
 impl JsxSyntaxSnapshot {
@@ -174,6 +214,25 @@ impl JsxSyntaxSnapshot {
 
     pub fn is_empty(&self) -> bool {
         self.roots.is_empty()
+    }
+
+    /// Complete Croquis script analysis built from the same OXC parse.
+    pub fn analysis(&self) -> &Croquis {
+        &self.analysis
+    }
+
+    pub fn shared_analysis(&self) -> Shared<Croquis> {
+        Shared::clone(&self.analysis)
+    }
+
+    /// Outermost JSX roots and their exact type-checkable expression graph.
+    pub fn typecheck_roots(&self) -> &[JsxTypecheckRoot] {
+        &self.typecheck_roots
+    }
+
+    /// Metadata aligned one-for-one with [`Self::roots`].
+    pub fn root_metadata(&self) -> &[JsxSyntaxRootMetadata] {
+        &self.root_metadata
     }
 }
 
@@ -189,4 +248,21 @@ pub fn snapshot_jsx_named(
     lang: JsxLang,
 ) -> JsxSyntaxSnapshot {
     build::snapshot(Some(filename.into()), source, lang)
+}
+
+#[cfg(test)]
+pub(crate) fn reset_frontend_counters() {
+    crate::parse::reset_parse_count();
+    typecheck::reset_lowering_counts();
+}
+
+#[cfg(test)]
+pub(crate) fn frontend_counters() -> (usize, usize, usize) {
+    let (lowerings, direct_fallbacks) = typecheck::lowering_counts();
+    (crate::parse::parse_count(), lowerings, direct_fallbacks)
+}
+
+#[cfg(test)]
+pub(crate) fn record_direct_fallback() {
+    typecheck::record_direct_fallback();
 }

@@ -10,6 +10,8 @@
 //! derived semantics (`vize_croquis`), Flow, and render HIR (`vize_rendu`) are
 //! deliberately owned outside this shared-helper crate.
 
+#![allow(deprecated)]
+
 #[doc(hidden)]
 pub mod atelier_output;
 pub mod codegen;
@@ -28,6 +30,7 @@ pub mod steps;
 
 // Re-export from vize_relief (AST, errors, options)
 pub use vize_relief::errors::{CompilerError, CompilerResult, ErrorCode};
+#[allow(deprecated)]
 pub use vize_relief::options::{
     BindingMetadata, BindingType, CodegenMode, CodegenOptions, CompilerOptions, ParseMode,
     ParserOptions, TemplateSyntaxMode, TextMode, TransformOptions, WhitespaceStrategy,

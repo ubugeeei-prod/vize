@@ -29,7 +29,10 @@ mod snapshot;
 
 pub use errors::*;
 pub use options::*;
-pub use product::{ReliefProduct, VueDialectInput};
+pub use product::{
+    ReliefArtifact, ReliefProduct, TransformedReliefArtifact, TransformedReliefProduct,
+    VueDialectInput,
+};
 pub use relief::*;
 pub use snapshot::*;
 

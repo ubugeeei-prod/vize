@@ -45,12 +45,11 @@ use tower_lsp::lsp_types::{
     CompletionResponse, Diagnostic, DiagnosticSeverity, GotoDefinitionResponse, Hover, Location,
     Position, Range, Url,
 };
-use vize_atelier_jsx::JsxLang;
 use vize_canon::{CorsaBridge, LspLocation};
 use vize_carton::cstr;
 
 use super::position::{source_offset_to_virtual_position, virtual_range_to_source};
-use super::virtual_ts::{JsxVirtualTs, generate_jsx_virtual_ts};
+use super::virtual_ts::{JsxVirtualTs, generate_jsx_virtual_ts_from_snapshot};
 use crate::ide::IdeContext;
 use crate::ide::completion::CompletionService;
 use crate::ide::diagnostics::sources;
@@ -73,8 +72,9 @@ impl JsxService {
 
     /// Lower the current document to its plain virtual TypeScript.
     pub(super) fn virtual_ts(ctx: &IdeContext<'_>) -> Option<JsxVirtualTs> {
-        let lang = JsxLang::from_path(ctx.uri.path());
-        generate_jsx_virtual_ts(&ctx.content, lang)
+        ctx.state.ensure_artifact_source(ctx.uri, &ctx.content)?;
+        let syntax = ctx.state.jsx_syntax(ctx.uri)?;
+        generate_jsx_virtual_ts_from_snapshot(syntax.as_ref())
     }
 
     /// Generate the virtual TS, forward-map the editor cursor into it, and open

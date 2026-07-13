@@ -93,9 +93,9 @@ withDefaults(defineProps<AppProps>(), {
         js.contains("feature: {\n      type: String,\n      required: false,\n      default: \"focusable\"\n    }"),
         "{js}"
     );
-    assert!(js.contains("\"data-as\": __props.as"), "{js}");
-    assert!(js.contains("\"data-as-child\": __props.asChild"), "{js}");
-    assert!(js.contains("\"data-feature\": __props.feature"), "{js}");
+    assert!(js.contains("\"data-as\": $props.as"), "{js}");
+    assert!(js.contains("\"data-as-child\": $props.asChild"), "{js}");
+    assert!(js.contains("\"data-feature\": $props.feature"), "{js}");
     assert!(!js.contains("_ctx.as"), "{js}");
     assert!(!js.contains("_ctx.asChild"), "{js}");
 
@@ -197,7 +197,11 @@ const props = defineProps<WrapperProps>()
         js.contains("forceMount: {\n      type: Boolean,\n      required: false\n    }"),
         "{js}"
     );
-    assert!(js.contains("as: __props.as"), "{js}");
+    assert!(js.contains("as: $props.as"), "{js}");
+    assert!(
+        js.contains("const __returned__ = {\n      Content,\n      props\n    }"),
+        "{js}"
+    );
     assert!(!js.contains("_ctx.as"), "{js}");
 
     let _ = fs::remove_dir_all(project_root);

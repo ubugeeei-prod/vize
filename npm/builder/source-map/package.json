@@ -1,0 +1,25 @@
+{
+  "name": "@vizejs/source-map",
+  "version": "0.290.0",
+  "private": true,
+  "description": "Shared source-map composition and provenance utilities for Vize hosts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "check": "vp check src",
+    "test": "node --test src/*.test.ts"
+  },
+  "dependencies": {
+    "@jridgewell/remapping": "catalog:source-maps",
+    "@jridgewell/trace-mapping": "catalog:source-maps"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

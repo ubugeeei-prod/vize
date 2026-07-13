@@ -20,9 +20,9 @@ use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, CompletionItemLabelDetails, Documentation, MarkupContent,
     MarkupKind,
 };
+use vize_carton::BindingType;
 use vize_croquis::ScopeKind;
 use vize_croquis::{Drawer, DrawerOptions};
-use vize_relief::BindingType;
 
 use self::context::{
     is_nested_user_scope, receiver_is_member_chain, scope_kind_short_label,

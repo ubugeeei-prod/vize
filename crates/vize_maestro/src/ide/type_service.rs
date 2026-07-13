@@ -72,12 +72,7 @@ pub struct TypeService;
 impl TypeService {
     /// Get type information at a specific position.
     pub fn get_type_at(ctx: &IdeContext) -> Option<vize_canon::TypeInfo> {
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+        let descriptor = ctx.sfc_descriptor()?;
         let template = descriptor.template.as_ref()?;
 
         // Check if offset is in template
@@ -101,12 +96,7 @@ impl TypeService {
 
     /// Get type-aware completions.
     pub fn get_completions(ctx: &IdeContext) -> Vec<vize_canon::CompletionItem> {
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+        let Some(descriptor) = ctx.sfc_descriptor() else {
             return vec![];
         };
 

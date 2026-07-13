@@ -16,6 +16,7 @@ vize_croquis = { workspace = true, default-features = false, features = ["analys
 vize_flow = { workspace = true }
 vize_rendu = { workspace = true }
 vize_atelier_core = { workspace = true }
+vize_atelier_dom = { workspace = true }
 vize_atelier_vapor = { workspace = true }
 # Reused for the first-cut JSX Vapor SSR render path (#1533): the lowered
 # RootNode is the same `vize_relief` type the SSR codegen consumes, so the
@@ -34,6 +35,7 @@ oxc_ast_visit = { workspace = true }
 oxc_syntax = { workspace = true }
 oxc_span = { workspace = true }
 oxc_diagnostics = { workspace = true }
+serde_json = { workspace = true }
 
 [dev-dependencies]
 criterion = { workspace = true }

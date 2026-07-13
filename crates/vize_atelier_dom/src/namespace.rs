@@ -1,6 +1,6 @@
 //! HTML/SVG/MathML namespace resolution for the DOM platform.
 
-use vize_atelier_core::Namespace;
+use vize_relief::Namespace;
 
 /// Get the namespace for an element based on its parent.
 ///

@@ -90,6 +90,7 @@ mod linter;
 pub mod markup;
 pub mod output;
 mod preset;
+mod production_recipe;
 mod rule;
 pub mod rules;
 mod semantic_recipe;
@@ -114,6 +115,10 @@ pub use markup::{
 };
 pub use output::{OutputFormat, format_results, format_summary, rule_docs_path};
 pub use preset::LintPreset;
+pub use production_recipe::{
+    PatinaDocumentProvider, PatinaDocumentReportProduct, register_document_lint_recipe,
+    register_shared_document_lint_recipe,
+};
 pub use rule::{Rule, RuleCategory, RuleMeta, RuleRegistry};
 pub use semantic_recipe::{
     PatinaSemanticRecipe, PatinaSemanticReport, PatinaSemanticReportProduct,

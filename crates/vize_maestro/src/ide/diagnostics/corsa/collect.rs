@@ -33,6 +33,12 @@ impl DiagnosticService {
             return vec![];
         };
         let content = doc.text();
+        let Some(artifact) = state.sfc_descriptor_for(uri, &content) else {
+            return vec![];
+        };
+        let Some(descriptor) = artifact.descriptor() else {
+            return vec![];
+        };
 
         // Get the shared Corsa bridge.
         tracing::info!("getting corsa bridge...");
@@ -48,7 +54,7 @@ impl DiagnosticService {
         let legacy_vue2 = state.legacy_vue2_enabled();
         let mut diagnostics = if is_art_file {
             let Some(art_virtual) =
-                Self::generate_virtual_ts_for_art_with_dependencies(uri, &content)
+                Self::generate_virtual_ts_for_art_with_descriptor(uri, &content, descriptor)
             else {
                 tracing::warn!("failed to generate virtual ts for {}", uri);
                 return vec![];
@@ -93,7 +99,9 @@ impl DiagnosticService {
                 }
             };
             let Some((virtual_uri, virtual_result)) =
-                Self::virtual_ts_result_from_corsa_vue_document(uri, &content, opened)
+                Self::virtual_ts_result_from_corsa_vue_document_and_descriptor(
+                    &content, descriptor, opened,
+                )
             else {
                 tracing::warn!("failed to map virtual ts metadata for {}", uri);
                 return vec![];
@@ -109,12 +117,15 @@ impl DiagnosticService {
         };
 
         if !is_art_file {
-            for (variant_index, inline_virtual) in Self::generate_virtual_ts_for_inline_art_variants(
-                uri,
-                &content,
-                options_api,
-                legacy_vue2,
-            ) {
+            for (variant_index, inline_virtual) in
+                Self::generate_virtual_ts_for_inline_art_variants_from_descriptor(
+                    uri,
+                    &content,
+                    descriptor,
+                    options_api,
+                    legacy_vue2,
+                )
+            {
                 diagnostics.extend(
                     collect_virtual_result_diagnostics(
                         &bridge,

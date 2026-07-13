@@ -28,6 +28,8 @@ export interface CompilerOptions {
   isTs?: boolean;
   /** Whether the template targets a custom renderer instead of the DOM. */
   customRenderer?: boolean;
+  /** Vue language line used by SFC artifact planning. */
+  vueVersion?: "1" | "2" | "2.7" | "3";
   /** Enable Vue parser quirk compatibility for known edge cases. */
   vueParserQuirks?: boolean;
 }

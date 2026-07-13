@@ -3,191 +3,69 @@
 //! Exposes both the legacy template compiler and the graph-native Rendu backend.
 
 #![allow(clippy::collapsible_match)]
+#![allow(deprecated)]
 #![cfg_attr(test, allow(clippy::disallowed_macros))]
 
+#[cfg(feature = "graph")]
 mod atlas;
+#[cfg(feature = "legacy")]
 pub mod codegen;
+#[cfg(feature = "legacy")]
 pub mod errors;
+#[cfg(feature = "legacy")]
+mod legacy;
+#[cfg(feature = "legacy")]
 pub mod options;
+#[cfg(feature = "legacy")]
 mod output_plate;
+#[cfg(feature = "graph")]
 pub mod rendu;
+#[cfg(feature = "legacy")]
 pub mod steps;
-pub use atlas::{SsrOutputProduct, SsrProvider, register_atlas_provider};
+#[cfg(feature = "graph")]
+pub use atlas::{SsrOutputArtifact, SsrOutputProduct, SsrProvider, register_atlas_provider};
+#[cfg(feature = "legacy")]
 pub use codegen::{SsrCodegenContext, SsrCodegenResult};
+#[cfg(feature = "legacy")]
 pub use errors::SsrErrorCode;
+#[cfg(feature = "legacy")]
+#[allow(deprecated)]
+pub use legacy::{
+    compile_ssr, compile_ssr_root_with_template_syntax, compile_ssr_with_options,
+    compile_ssr_with_template_syntax, compile_ssr_with_vue_parser_quirks,
+};
+#[cfg(feature = "legacy")]
 pub use options::SsrCompilerOptions;
+#[cfg(feature = "graph")]
 pub use rendu::{
     RenduSsrMapping, RenduSsrMappingKind, RenduSsrOutput, compile_rendu,
     compile_rendu as compile_rendu_ssr,
 };
+#[cfg(feature = "legacy")]
 pub use steps::{
     get_v_html_exp, get_v_model_exp, get_v_show_exp, get_v_text_exp, has_v_html, has_v_model,
     has_v_show, has_v_text,
 };
 
-// Re-export core types
-pub use vize_atelier_core::{
-    Allocator, CompilerError, Namespace, RootNode, RuntimeHelper, TemplateChildNode,
-    codegen as core_codegen, errors as core_errors, lane, parser, runtime_helpers, tokenizer,
-    transform,
+// Preserve the public compatibility surface while keeping owner crates visible.
+#[cfg(feature = "legacy")]
+pub use vize_armature::{parser, tokenizer};
+#[cfg(feature = "legacy")]
+pub use vize_atelier_core::{codegen as core_codegen, lane, runtime_helpers, transform};
+#[cfg(feature = "legacy")]
+pub use vize_carton::Allocator;
+#[cfg(feature = "legacy")]
+pub use vize_relief::{
+    CompilerError, Namespace, RootNode, RuntimeHelper, TemplateChildNode, errors as core_errors,
 };
 
-use vize_atelier_core::{
-    lane::{transform as do_transform, transform_with_template_syntax_quirks},
-    options::{ParserOptions, TemplateSyntaxMode, TransformOptions},
-    parser::parse_with_options_and_template_syntax,
-};
-use vize_carton::{Bump, String, profile};
-
-/// Compile a Vue template for SSR with default options
-pub fn compile_ssr<'a>(
-    allocator: &'a Bump,
-    source: &'a str,
-) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_with_options(allocator, source, SsrCompilerOptions::default())
-}
-
-/// Compile a Vue template for SSR with custom options
-pub fn compile_ssr_with_options<'a>(
-    allocator: &'a Bump,
-    source: &'a str,
-    options: SsrCompilerOptions,
-) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner(allocator, source, options, TemplateSyntaxMode::Standard)
-}
-
-/// Compile a Vue template for SSR with Vue parser quirk compatibility.
-#[deprecated(note = "use compile_ssr_with_template_syntax instead")]
-pub fn compile_ssr_with_vue_parser_quirks<'a>(
-    allocator: &'a Bump,
-    source: &'a str,
-    options: SsrCompilerOptions,
-) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner(allocator, source, options, TemplateSyntaxMode::Quirks)
-}
-
-/// Compile a Vue template for SSR with an explicit template syntax mode.
-#[doc(hidden)]
-pub fn compile_ssr_with_template_syntax<'a>(
-    allocator: &'a Bump,
-    source: &'a str,
-    options: SsrCompilerOptions,
-    template_syntax: TemplateSyntaxMode,
-) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner(allocator, source, options, template_syntax)
-}
-
-fn compile_ssr_inner<'a>(
-    allocator: &'a Bump,
-    source: &'a str,
-    options: SsrCompilerOptions,
-    template_syntax: TemplateSyntaxMode,
-) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    let codegen_options = options.clone();
-
-    // Create parser options
-    let parser_opts = ParserOptions {
-        is_void_tag: vize_carton::is_void_tag,
-        is_native_tag: Some(vize_carton::is_native_tag),
-        custom_renderer: options.custom_renderer,
-        is_pre_tag: |tag| tag == "pre",
-        get_namespace,
-        comments: options.comments,
-        experimental_in_tag_comments: options.experimental_in_tag_comments,
-        dialect: options.dialect,
-        ..ParserOptions::default()
-    };
-
-    // Parse
-    let (mut root, errors) = profile!(
-        "atelier.ssr.template.parse",
-        parse_with_options_and_template_syntax(allocator, source, parser_opts, template_syntax)
-    );
-
-    // Parser-level diagnostics that are recoverable (e.g. duplicate
-    // attribute) must NOT gate SSR codegen for the same reason as the
-    // DOM compiler — see #958.
-    let fatal_count = errors.iter().filter(|e| !e.is_recoverable()).count();
-    if fatal_count > 0 {
-        let codegen_result = SsrCodegenResult {
-            code: String::default(),
-            preamble: String::default(),
-        };
-        return (root, errors.to_vec(), codegen_result);
-    }
-
-    // Transform with SSR-specific settings
-    // SSR always uses prefix identifiers and disables hoisting/caching
-    let transform_opts = TransformOptions {
-        prefix_identifiers: true, // SSR always uses prefix
-        hoist_static: false,      // No hoisting in SSR
-        cache_handlers: false,    // No caching in SSR
-        scope_id: codegen_options.scope_id.clone(),
-        ssr: true,
-        is_ts: codegen_options.is_ts,
-        inline: codegen_options.inline,
-        custom_renderer: codegen_options.custom_renderer,
-        experimental_patterned_template: codegen_options.experimental_patterned_template,
-        binding_metadata: codegen_options.binding_metadata.clone(),
-        dialect: codegen_options.dialect,
-        ..Default::default()
-    };
-    let analysis = options.croquis.map(|c| &*allocator.alloc(*c));
-    let template_syntax_quirks = template_syntax.is_quirks();
-    let transform_errors = profile!(
-        "atelier.ssr.template.transform",
-        if template_syntax_quirks {
-            transform_with_template_syntax_quirks(allocator, &mut root, transform_opts, analysis)
-        } else {
-            do_transform(allocator, &mut root, transform_opts, analysis)
-        }
-    );
-
-    // Surface transform diagnostics (e.g. invalid expressions) alongside
-    // parse errors instead of dropping them — same channel as the DOM
-    // compiler.
-    let mut errors = errors.to_vec();
-    errors.extend(transform_errors.errors);
-
-    // SSR codegen
-    let codegen_ctx = SsrCodegenContext::new(allocator, &codegen_options);
-    let codegen_result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root));
-
-    (root, errors, codegen_result)
-}
-
-/// Get the namespace for an element based on its parent
-fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
-    if vize_carton::is_svg_tag(tag) {
-        return Namespace::Svg;
-    }
-    if vize_carton::is_math_ml_tag(tag) {
-        return Namespace::MathMl;
-    }
-
-    // Inherit namespace from parent
-    if let Some(parent_tag) = parent {
-        if vize_carton::is_svg_tag(parent_tag) && tag != "foreignObject" {
-            return Namespace::Svg;
-        }
-        if vize_carton::is_math_ml_tag(parent_tag)
-            && tag != "annotation-xml"
-            && tag != "foreignObject"
-        {
-            return Namespace::MathMl;
-        }
-    }
-
-    Namespace::Html
-}
-
-#[cfg(test)]
+#[cfg(all(test, feature = "legacy"))]
 mod tests {
     use super::{
-        Bump, SsrCompilerOptions, compile_ssr, compile_ssr_with_options,
-        compile_ssr_with_template_syntax,
+        SsrCompilerOptions, compile_ssr, compile_ssr_with_options, compile_ssr_with_template_syntax,
     };
-    use vize_atelier_core::TemplateSyntaxMode;
+    use vize_carton::Bump;
+    use vize_relief::TemplateSyntaxMode;
 
     #[test]
     fn test_compile_simple_element() {

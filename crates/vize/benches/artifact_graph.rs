@@ -4,7 +4,11 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use criterion::{Criterion, criterion_group, criterion_main};
 use vize::artifact_graph::{VizeGraphConfig, analysis_roots, compiler_roots, create_compilation};
+use vize_atelier_sfc::SfcCompileProduct;
 use vize_atlas::ProductId;
+use vize_croquis_cf::{
+    CrossFileAnalysisInput, CrossFileAnalysisProduct, CrossFileAnalysisRequest, CrossFileOptions,
+};
 
 struct TrackingAllocator;
 
@@ -49,14 +53,20 @@ fn record_allocation(bytes: usize) {
 }
 
 const SOURCE: &str = r#"<script setup lang="ts">
+import Child from './Child.vue'
 const ready = true
 const items = [{ id: 1, label: 'one' }]
 </script>
 <template>
   <section v-if="ready">
-    <p v-for="item in items" :key="item.id">{{ item.label }}</p>
+    <Child v-for="item in items" :key="item.id" :label="item.label" />
   </section>
 </template>"#;
+
+const CHILD_SOURCE: &str = r#"<script setup lang="ts">
+defineProps<{ label: string }>()
+</script>
+<template><p>{{ label }}</p></template>"#;
 
 #[derive(Debug, Clone, Copy)]
 struct GraphCost {
@@ -74,6 +84,14 @@ struct AllocationCost {
 fn run_case(roots: &[ProductId]) -> GraphCost {
     let mut compilation = create_compilation(VizeGraphConfig::default()).unwrap();
     let source = compilation.add_source("Benchmark.vue", SOURCE).unwrap();
+    if roots.contains(&ProductId::of::<CrossFileAnalysisProduct>()) {
+        compilation.add_source("Child.vue", CHILD_SOURCE).unwrap();
+        compilation
+            .set_input::<CrossFileAnalysisInput>(CrossFileAnalysisRequest::new(
+                CrossFileOptions::all(),
+            ))
+            .unwrap();
+    }
     let plan = compilation.plan(source, roots.iter().copied()).unwrap();
     let outcome = compilation.execute(plan).unwrap();
     let (queries, executions) =
@@ -118,9 +136,18 @@ fn allocation_cost(roots: &[ProductId]) -> (GraphCost, AllocationCost) {
 fn benchmark_artifact_graph(criterion: &mut Criterion) {
     let cases = [
         ("compiler_only", compiler_roots(true, false, false)),
+        (
+            "production_sfc_module",
+            vec![ProductId::of::<SfcCompileProduct>()],
+        ),
+        ("multi_backend", compiler_roots(true, true, true)),
         ("lint_only", analysis_roots(true, false)),
         ("typecheck_only", analysis_roots(false, true)),
         ("combined", analysis_roots(true, true)),
+        (
+            "cross_file_analysis",
+            vec![ProductId::of::<CrossFileAnalysisProduct>()],
+        ),
     ];
     let mut group = criterion.benchmark_group("artifact_graph");
     for (name, roots) in cases {

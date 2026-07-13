@@ -284,6 +284,7 @@ mod tests {
                 const_type: crate::ConstantType::NotConstant,
                 loc: SourceLocation::STUB,
                 js_ast: None,
+                hoisted: None,
                 identifiers: None,
                 is_handler_key: true,
                 is_ref_transformed: true,

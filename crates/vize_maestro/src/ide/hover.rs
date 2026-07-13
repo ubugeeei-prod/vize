@@ -30,7 +30,7 @@ pub use builder::HoverBuilder;
 #[cfg(feature = "native")]
 use std::sync::Arc;
 use tower_lsp::lsp_types::Hover;
-use vize_relief::BindingType;
+use vize_carton::BindingType;
 
 use super::IdeContext;
 use crate::virtual_code::{ArtCursorPosition, BlockType};
@@ -458,7 +458,7 @@ mod tests {
     use super::{HoverBuilder, HoverService};
     use crate::{ide::IdeContext, server::ServerState};
     use tower_lsp::lsp_types::{HoverContents, Url};
-    use vize_relief::BindingType;
+    use vize_carton::BindingType;
 
     #[test]
     fn test_get_word_at_offset() {

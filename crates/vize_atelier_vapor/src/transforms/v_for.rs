@@ -5,7 +5,7 @@
 use vize_carton::{Box, Bump, String, ToCompactString};
 
 use crate::ir::{BlockIRNode, ForIRNode, OperationNode};
-use vize_atelier_core::{
+use vize_relief::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, ForNode, SimpleExpressionNode,
     SourceLocation,
 };

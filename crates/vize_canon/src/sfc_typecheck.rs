@@ -39,7 +39,9 @@
 //! ```
 
 mod analysis;
+mod artifact;
 mod checks;
+mod engine;
 mod runner;
 #[cfg(test)]
 mod tests;
@@ -47,6 +49,10 @@ mod virtual_ts;
 
 pub use analysis::{
     SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity,
+};
+pub use artifact::{
+    SfcTypeCheckProduct, SfcTypeCheckProvider, SfcTypeCheckRequest, SfcTypeCheckSettingsInput,
+    install_sfc_typecheck_request, register_sfc_typecheck_provider,
 };
 pub use runner::{
     type_check_sfc, type_check_sfc_with_legacy_vue2, type_check_sfc_with_options_api,

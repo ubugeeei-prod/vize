@@ -15,6 +15,11 @@ use vize_carton::ToCompactString;
 use crate::diagnostics::JsxDiagnostic;
 use crate::lang::JsxLang;
 
+#[cfg(test)]
+thread_local! {
+    static PARSE_COUNT: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 /// The result of parsing a JSX/TSX module.
 ///
 /// The [`Program`] borrows the supplied [`Allocator`], so the allocator must
@@ -84,6 +89,8 @@ pub fn parse_module<'a>(
     source: &'a str,
     lang: JsxLang,
 ) -> ParsedModule<'a> {
+    #[cfg(test)]
+    PARSE_COUNT.with(|count| count.set(count.get() + 1));
     let ret = Parser::new(allocator, source, lang.source_type()).parse();
     let source_len = source.len();
     let diagnostics = ret
@@ -96,6 +103,16 @@ pub fn parse_module<'a>(
         diagnostics,
         panicked: ret.panicked,
     }
+}
+
+#[cfg(test)]
+pub(crate) fn reset_parse_count() {
+    PARSE_COUNT.with(|count| count.set(0));
+}
+
+#[cfg(test)]
+pub(crate) fn parse_count() -> usize {
+    PARSE_COUNT.with(std::cell::Cell::get)
 }
 
 /// Convert an OXC diagnostic into a Vize [`JsxDiagnostic`] with a byte range.

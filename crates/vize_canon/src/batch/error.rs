@@ -20,6 +20,10 @@ pub enum CorsaError {
     #[error("SFC parse error: {0}")]
     SfcParse(String),
 
+    /// Atlas planning, execution, or artifact consistency error.
+    #[error("Artifact graph error: {0}")]
+    ArtifactGraph(String),
+
     /// Path error.
     #[error("Path error: {path}")]
     PathError { path: PathBuf },

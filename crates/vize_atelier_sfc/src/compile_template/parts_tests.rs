@@ -14,8 +14,8 @@
 
 use std::borrow::Cow;
 
-use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::String;
+use vize_relief::TemplateSyntaxMode;
 
 use super::{
     TemplateBlockCompileContext, TemplateBlockCompileResult, compile_template_block,

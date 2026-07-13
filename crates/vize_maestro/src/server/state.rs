@@ -1,6 +1,7 @@
 //! Server state management.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
+mod atlas;
 mod config;
 mod features;
 mod virtual_docs;
@@ -47,6 +48,10 @@ pub use batch_cache::BatchTypeCheckCache;
 pub struct ServerState {
     /// Document store for managing open documents
     pub documents: DocumentStore,
+    /// Persistent typed artifact graph for every open source.
+    artifact_compilation: RwLock<vize_atlas::Compilation>,
+    /// Stable Atlas source identity owned by each open document URI.
+    artifact_sources: DashMap<Url, vize_atlas::SourceId>,
     /// Virtual code generator (reusable)
     virtual_gen: RwLock<VirtualCodeGenerator>,
     /// Cached virtual documents per file
@@ -124,6 +129,8 @@ impl ServerState {
         let default_features = LspFeatureConfig::default();
         Self {
             documents: DocumentStore::new(),
+            artifact_compilation: RwLock::new(Self::new_artifact_compilation()),
+            artifact_sources: DashMap::new(),
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
             component_metadata_cache: DashMap::new(),

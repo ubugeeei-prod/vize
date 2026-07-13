@@ -1,12 +1,10 @@
 //! Structural directive transforms (v-if, v-for).
-
-use vize_carton::{Box, String, Vec};
-
 use crate::errors::ErrorCode;
 use crate::{
     ConstantType, ElementNode, ElementType, ExpressionNode, ForNode, ForParseResult, IfBranchNode,
     IfNode, PropNode, RuntimeHelper, SimpleExpressionNode, SourceLocation, TemplateChildNode,
 };
+use vize_carton::{Box, String, Vec};
 
 use super::context::clone_expression;
 use super::traverse::traverse_children;
@@ -190,6 +188,7 @@ pub(crate) fn transform_v_if_with_directive<'a>(
                         ConstantType::NotConstant
                     },
                     loc: e.loc.clone(),
+                    hoisted: None,
                     js_ast: None,
                     identifiers: None,
                     is_handler_key: false,
@@ -311,6 +310,7 @@ pub(crate) fn transform_v_if_with_directive<'a>(
                             ConstantType::NotConstant
                         },
                         loc: e.loc.clone(),
+                        hoisted: None,
                         js_ast: None,
                         identifiers: None,
                         is_handler_key: false,

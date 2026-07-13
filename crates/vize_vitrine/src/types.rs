@@ -51,6 +51,9 @@ pub struct CompilerOptions {
     /// Template syntax compatibility mode: "standard", "strict", or "quirks".
     #[serde(default)]
     pub template_syntax: Option<String>,
+    /// Vue language line used by the SFC artifact graph ("1", "2", "2.7", or "3").
+    #[serde(default)]
+    pub vue_version: Option<String>,
     /// Enable experimental Vue in-tag comments (`// ...`) inside opening tags.
     #[serde(default)]
     pub experimental_in_tag_comments: Option<bool>,

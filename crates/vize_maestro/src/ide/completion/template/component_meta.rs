@@ -6,8 +6,8 @@ use oxc_ast::ast::{PropertyKey, Statement, TSSignature, TSType};
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, CompletionItemLabelDetails, InsertTextFormat,
 };
+use vize_carton::BindingType;
 use vize_croquis::{Drawer, DrawerOptions};
-use vize_relief::BindingType;
 
 use crate::ide::definition::helpers as definition_helpers;
 use crate::ide::{IdeContext, is_component_tag, kebab_to_pascal, pascal_to_kebab};
@@ -141,9 +141,13 @@ pub(super) fn cached_component_metadata(
     }
 
     let component_content = std::fs::read_to_string(resolved).ok()?;
+    let component_uri = tower_lsp::lsp_types::Url::from_file_path(resolved).ok()?;
+    let artifact = ctx
+        .state
+        .sfc_descriptor_for(&component_uri, &component_content)?;
+    let descriptor = artifact.descriptor()?;
     let metadata = Arc::new(extract_component_metadata(
-        &component_content,
-        &resolved.to_string_lossy(),
+        descriptor,
         ctx.state.options_api_enabled(),
         ctx.state.legacy_vue2_enabled(),
     ));
@@ -194,22 +198,10 @@ fn art_component_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<Stri
 }
 
 fn extract_component_metadata(
-    content: &str,
-    filename: &str,
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
     options_api: bool,
     legacy_vue2: bool,
 ) -> ComponentMetadata {
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: filename.to_string().into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-        return ComponentMetadata {
-            props: Vec::new(),
-            slots: Vec::new(),
-        };
-    };
-
     let mut props = Vec::new();
     let mut slots = Vec::new();
     let mut seen_props = BTreeSet::new();

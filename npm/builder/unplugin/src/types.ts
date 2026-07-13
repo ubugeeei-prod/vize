@@ -1,3 +1,5 @@
+import type { RawSourceMap } from "@vizejs/source-map";
+
 export interface SfcCompileOptionsNapi {
   filename?: string;
   mode?: "module" | "function";
@@ -168,6 +170,7 @@ export interface StyleBlockInfo {
 
 export interface CompiledModule {
   code: string;
+  map?: RawSourceMap | null;
   css?: string;
   scopeId: string;
   hasScoped: boolean;

@@ -11,7 +11,7 @@
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, CompletionItemLabelDetails, InsertTextFormat,
 };
-use vize_relief::BindingType;
+use vize_carton::BindingType;
 
 use crate::ide::markup::{self, Markdown};
 

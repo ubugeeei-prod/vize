@@ -112,6 +112,7 @@ pub fn render_profile_report(report: &ProfileReport<'_>) -> String {
         "atelier.profile.",
     );
     render_counter_table(&mut out, report, "Atelier fallbacks", "atelier.fallback.");
+    render_counter_table(&mut out, report, "Atlas artifact graph", "atlas.");
     render_counter_table(&mut out, report, "Source facts", "source.");
     render_counter_table(&mut out, report, "Product lanes", "lane.");
     render_counter_table(&mut out, report, "Vue dialects", "dialect.");

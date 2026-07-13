@@ -105,4 +105,8 @@ fn control_flow_retains_branch_loop_nesting_and_order() {
             .count(),
         0
     );
+
+    let materialized_allocator = Bump::new();
+    let materialized = snapshot.materialize(&materialized_allocator);
+    assert_eq!(ReliefSnapshot::from_root(&materialized), snapshot);
 }

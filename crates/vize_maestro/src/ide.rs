@@ -18,12 +18,14 @@ pub mod auto_import;
 pub mod code_action;
 pub mod code_lens;
 pub mod completion;
+mod context;
 mod corsa_support;
 pub mod cursor_context;
 pub mod definition;
 pub mod diagnostics;
 pub mod document_highlight;
 pub mod document_link;
+mod document_structure;
 pub(crate) mod ecosystem;
 pub mod file_rename;
 pub mod hover;
@@ -41,11 +43,13 @@ pub mod workspace_symbols;
 pub use code_action::CodeActionService;
 pub use code_lens::CodeLensService;
 pub use completion::{CompletionService, TRIGGER_CHARACTERS, trigger_characters};
+pub use context::IdeContext;
 pub use cursor_context::CursorContext;
 pub use definition::{BindingKind, BindingLocation, DefinitionService};
 pub use diagnostics::{DiagnosticBuilder, DiagnosticService, Severity, sources};
 pub use document_highlight::DocumentHighlightService;
 pub use document_link::DocumentLinkService;
+pub(crate) use document_structure::SfcDocumentStructureService;
 pub use file_rename::FileRenameService;
 pub use hover::{HoverBuilder, HoverService};
 pub use inlay_hint::InlayHintService;
@@ -63,12 +67,41 @@ pub use type_service::{LspTypeCheckOptions, TypeService};
 pub use workspace_symbols::WorkspaceSymbolsService;
 
 use tower_lsp::lsp_types::Url;
+use vize_atlas::Shared;
 
-use crate::server::ServerState;
-use crate::utils::is_standalone_html_path;
-use crate::virtual_code::{
-    ArtCursorPosition, BlockType, VirtualDocuments, find_art_block_at_offset, find_block_at_offset,
-};
+use crate::virtual_code::BlockType;
+
+#[cfg(test)]
+std::thread_local! {
+    static SFC_COMPATIBILITY_QUERIES: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+}
+
+pub(crate) fn sfc_descriptor_compatibility(
+    content: &str,
+    uri: &Url,
+) -> Option<Shared<vize_atelier_sfc::SfcDescriptorArtifact>> {
+    #[cfg(test)]
+    SFC_COMPATIBILITY_QUERIES.with(|queries| queries.set(queries.get() + 1));
+    let mut compilation = vize_atlas::Compilation::new();
+    vize_atelier_sfc::register_atlas_providers(&mut compilation).ok()?;
+    let source = compilation.add_source(uri.path(), content).ok()?;
+    Some(
+        compilation
+            .query::<vize_atelier_sfc::SfcDescriptorProduct>(source)
+            .ok()?
+            .shared(),
+    )
+}
+
+#[cfg(test)]
+pub(crate) fn reset_sfc_compatibility_queries() {
+    SFC_COMPATIBILITY_QUERIES.with(|queries| queries.set(0));
+}
+
+#[cfg(test)]
+pub(crate) fn sfc_compatibility_queries() -> u64 {
+    SFC_COMPATIBILITY_QUERIES.with(std::cell::Cell::get)
+}
 
 // Position conversion utilities
 // =============================================================================
@@ -299,123 +332,6 @@ fn is_inside_html_comment_at(content: &str, offset: usize) -> bool {
 
     matches!((last_open, last_close), (Some(open), Some(close)) if open > close)
         || matches!((last_open, last_close), (Some(_), None))
-}
-
-/// Context for IDE operations.
-pub struct IdeContext<'a> {
-    /// Server state
-    pub state: &'a ServerState,
-    /// Document URI
-    pub uri: &'a Url,
-    /// Document content
-    pub content: String,
-    /// Cursor offset in the document
-    pub offset: usize,
-    /// Which block the cursor is in
-    pub block_type: Option<BlockType>,
-    /// Virtual documents for this file
-    pub virtual_docs: Option<dashmap::mapref::one::Ref<'a, Url, VirtualDocuments>>,
-}
-
-impl<'a> IdeContext<'a> {
-    /// Create a new IDE context.
-    ///
-    /// This re-fetches the document from the store and materializes its content.
-    /// Callers that have already materialized the document content should prefer
-    /// [`IdeContext::with_content`] to avoid a redundant document lookup and a
-    /// second full Rope→String allocation.
-    pub fn new(state: &'a ServerState, uri: &'a Url, offset: usize) -> Option<Self> {
-        let content = state.documents.get(uri)?.text();
-        Some(Self::with_content(state, uri, offset, content))
-    }
-
-    /// Create a new IDE context from already-materialized document content.
-    ///
-    /// Reuses the provided `content` instead of re-reading the document from the
-    /// store, avoiding a redundant `DashMap` lookup and a second full
-    /// Rope→String allocation per request.
-    pub fn with_content(
-        state: &'a ServerState,
-        uri: &'a Url,
-        offset: usize,
-        content: String,
-    ) -> Self {
-        // Determine block type
-        let block_type = if uri.path().ends_with(".art.vue") {
-            // For art files, use art-specific block detection
-            find_art_block_at_offset(&content, offset)
-        } else if is_standalone_html_path(uri.path()) {
-            Some(standalone_html_block_at_offset(&content, offset))
-        } else {
-            // Parse SFC to determine block type
-            let options = vize_atelier_sfc::SfcParseOptions {
-                filename: uri.path().to_string().into(),
-                ..Default::default()
-            };
-            if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) {
-                find_block_at_offset(&descriptor, offset)
-            } else {
-                None
-            }
-        };
-
-        let virtual_docs = state.get_virtual_docs(uri);
-
-        Self {
-            state,
-            uri,
-            content,
-            offset,
-            block_type,
-            virtual_docs,
-        }
-    }
-
-    /// Effective Vue dialect for this document.
-    ///
-    /// Delegates to [`ServerState::document_dialect`]: an explicit `dialect`
-    /// config key wins, otherwise the structural petite-vue detection memoized
-    /// on the open document is used (no per-request re-scan).
-    #[inline]
-    pub fn dialect(&self) -> vize_carton::dialect::VueDialect {
-        self.state.document_dialect(self.uri, &self.content)
-    }
-
-    /// Check if cursor is in template block.
-    #[inline]
-    pub fn is_in_template(&self) -> bool {
-        matches!(self.block_type, Some(BlockType::Template))
-    }
-
-    /// Check if cursor is in script block.
-    #[inline]
-    pub fn is_in_script(&self) -> bool {
-        matches!(
-            self.block_type,
-            Some(BlockType::Script) | Some(BlockType::ScriptSetup)
-        )
-    }
-
-    /// Check if cursor is in style block.
-    #[inline]
-    pub fn is_in_style(&self) -> bool {
-        matches!(self.block_type, Some(BlockType::Style(_)))
-    }
-
-    /// Check if cursor is in an art custom block.
-    #[inline]
-    pub fn is_in_art(&self) -> bool {
-        matches!(self.block_type, Some(BlockType::Art(_)))
-    }
-
-    /// Check if cursor is in an art variant template.
-    #[inline]
-    pub fn is_in_art_variant_template(&self) -> bool {
-        matches!(
-            self.block_type,
-            Some(BlockType::Art(ArtCursorPosition::VariantTemplate(_)))
-        )
-    }
 }
 
 #[cfg(test)]

@@ -12,4 +12,5 @@ mod nuxt;
 mod script;
 mod severity_overrides;
 mod sfc;
+mod shared_artifacts;
 mod v_for_unused_vars;

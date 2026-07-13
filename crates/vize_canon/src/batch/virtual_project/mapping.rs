@@ -12,17 +12,17 @@ impl VirtualProject {
     /// Find a virtual file by its original path.
     pub fn find_by_original(&self, original_path: &Path) -> Option<&VirtualFile> {
         let virtual_path = self.original_index.get(original_path)?;
-        self.virtual_files.get(virtual_path)
+        self.virtual_files.get(virtual_path).map(AsRef::as_ref)
     }
 
     /// Find a virtual file by its materialized path.
     pub fn find_by_virtual(&self, virtual_path: &Path) -> Option<&VirtualFile> {
-        self.virtual_files.get(virtual_path)
+        self.virtual_files.get(virtual_path).map(AsRef::as_ref)
     }
 
     /// Return virtual files sorted by original path for deterministic output.
     pub fn virtual_files_sorted(&self) -> Vec<&VirtualFile> {
-        let mut files: Vec<_> = self.virtual_files.values().collect();
+        let mut files: Vec<_> = self.virtual_files.values().map(AsRef::as_ref).collect();
         files.sort_by(|left, right| left.original_path.cmp(&right.original_path));
         files
     }

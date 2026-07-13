@@ -1,6 +1,6 @@
 //! Explicit cache invalidation reports.
 
-use crate::{InputId, ProductId, ProviderId, SourceId, SourceRevisionChange};
+use crate::{InputId, ProductId, ProviderId, SourceId, SourceInputId, SourceRevisionChange};
 
 /// Invalidation granularity currently used by Atlas.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -8,8 +8,85 @@ pub enum InvalidationPolicy {
     /// Evict all cached products for the updated source and every embedded
     /// descendant, while preserving unrelated source caches.
     SourceAndEmbeddedDescendants,
+    /// Remove a source subtree and every cached product that owns or depends
+    /// on any source in that subtree.
+    RemovedSourceAndEmbeddedDescendants,
     /// Evict only products transitively affected by the changed typed input.
     CompilationInputDependents,
+    /// Evict only products whose closure read one source-scoped input.
+    SourceInputDependents,
+}
+
+/// Result of installing or replacing one typed source-scoped input.
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct SourceInputInvalidationReport {
+    source: SourceId,
+    input: SourceInputId,
+    replaced: bool,
+    evicted: Vec<InvalidatedProduct>,
+}
+
+impl SourceInputInvalidationReport {
+    pub(crate) const fn new(
+        source: SourceId,
+        input: SourceInputId,
+        replaced: bool,
+        evicted: Vec<InvalidatedProduct>,
+    ) -> Self {
+        Self {
+            source,
+            input,
+            replaced,
+            evicted,
+        }
+    }
+
+    pub const fn source(&self) -> SourceId {
+        self.source
+    }
+
+    pub const fn input(&self) -> SourceInputId {
+        self.input
+    }
+
+    pub const fn replaced(&self) -> bool {
+        self.replaced
+    }
+
+    pub const fn policy(&self) -> InvalidationPolicy {
+        InvalidationPolicy::SourceInputDependents
+    }
+
+    pub fn evicted(&self) -> &[InvalidatedProduct] {
+        &self.evicted
+    }
+}
+
+/// Observable result of closing or deleting a source from a compilation.
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct SourceRemovalReport {
+    removed: Vec<SourceId>,
+    evicted: Vec<InvalidatedProduct>,
+}
+
+impl SourceRemovalReport {
+    pub(crate) const fn new(removed: Vec<SourceId>, evicted: Vec<InvalidatedProduct>) -> Self {
+        Self { removed, evicted }
+    }
+
+    /// Removed root followed by its embedded descendants in stable tree order.
+    pub fn removed(&self) -> &[SourceId] {
+        &self.removed
+    }
+
+    pub const fn policy(&self) -> InvalidationPolicy {
+        InvalidationPolicy::RemovedSourceAndEmbeddedDescendants
+    }
+
+    /// Cached products owned by or dependent on a removed source.
+    pub fn evicted(&self) -> &[InvalidatedProduct] {
+        &self.evicted
+    }
 }
 
 /// Observable result of installing or replacing one typed compilation input.

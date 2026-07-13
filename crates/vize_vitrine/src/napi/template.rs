@@ -15,13 +15,16 @@ use napi_derive::napi;
 use vize_carton::Bump;
 
 use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
+use vize_armature::{parse_with_options, parse_with_options_and_template_syntax};
 use vize_atelier_core::{
     codegen::generate,
     lane::{transform, transform_with_template_syntax_quirks},
-    options::{CodegenMode, CodegenOptions, ParserOptions, TransformOptions},
-    parser::{parse_with_options, parse_with_options_and_template_syntax},
 };
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor_with_template_syntax};
+use vize_relief::{
+    CodegenMode, CodegenOptions, ExpressionNode, ParserOptions, RootNode, TemplateChildNode,
+    TransformOptions,
+};
 
 /// Compile Vue template to VDom render function
 #[napi]
@@ -177,9 +180,7 @@ pub fn parse_template(
 }
 
 /// Build AST JSON from root node.
-fn build_ast_json(root: &vize_atelier_core::RootNode<'_>) -> serde_json::Value {
-    use vize_atelier_core::TemplateChildNode;
-
+fn build_ast_json(root: &RootNode<'_>) -> serde_json::Value {
     let children: Vec<serde_json::Value> = root
         .children
         .iter()
@@ -203,7 +204,7 @@ fn build_ast_json(root: &vize_atelier_core::RootNode<'_>) -> serde_json::Value {
             TemplateChildNode::Interpolation(interp) => serde_json::json!({
                 "type": "INTERPOLATION",
                 "content": match &interp.content {
-                    vize_atelier_core::ExpressionNode::Simple(exp) => exp.content.as_str(),
+                    ExpressionNode::Simple(exp) => exp.content.as_str(),
                     _ => "<compound>",
                 }
             }),

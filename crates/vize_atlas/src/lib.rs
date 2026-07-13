@@ -30,11 +30,14 @@ mod source_error;
 mod trace;
 
 pub use cache::{ArtifactCache, CachedProduct};
-pub use compilation::{Compilation, CompilationSnapshot};
+pub use compilation::{Compilation, CompilationSnapshot, QuerySession};
 pub use error::{PlanError, ProviderError, QueryError, RegisterProviderError};
-pub use input::{CompilationInput, CompilationInputError, CompilationInputs, InputId};
+pub use input::{
+    CompilationInput, CompilationInputError, CompilationInputs, InputId, SourceInput, SourceInputId,
+};
 pub use invalidation::{
     InputInvalidationReport, InvalidatedProduct, InvalidationPolicy, InvalidationReport,
+    SourceInputInvalidationReport, SourceRemovalReport,
 };
 pub use observation::{ObservationKind, ProviderObservation};
 pub use outcome::{ExecutionOutcome, ProductStatus, QueryOutcome};

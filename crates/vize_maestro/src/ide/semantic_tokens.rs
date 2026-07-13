@@ -61,7 +61,16 @@ impl SemanticTokensService {
         content: &str,
         uri: &tower_lsp::lsp_types::Url,
     ) -> Option<SemanticTokensResult> {
-        let tokens = Self::collect_tokens(content, uri)?;
+        let descriptor = crate::ide::sfc_descriptor_compatibility(content, uri)?;
+        Self::get_tokens_from_descriptor(content, uri, descriptor.descriptor()?)
+    }
+
+    pub(crate) fn get_tokens_from_descriptor(
+        content: &str,
+        uri: &tower_lsp::lsp_types::Url,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    ) -> Option<SemanticTokensResult> {
+        let tokens = Self::collect_tokens(content, uri, descriptor)?;
         Some(SemanticTokensResult::Tokens(SemanticTokens {
             result_id: None,
             data: encode_tokens(&tokens),
@@ -74,7 +83,17 @@ impl SemanticTokensService {
         uri: &tower_lsp::lsp_types::Url,
         range: Range,
     ) -> Option<SemanticTokensRangeResult> {
-        let tokens = Self::collect_tokens(content, uri)?;
+        let descriptor = crate::ide::sfc_descriptor_compatibility(content, uri)?;
+        Self::get_tokens_range_from_descriptor(content, uri, descriptor.descriptor()?, range)
+    }
+
+    pub(crate) fn get_tokens_range_from_descriptor(
+        content: &str,
+        uri: &tower_lsp::lsp_types::Url,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+        range: Range,
+    ) -> Option<SemanticTokensRangeResult> {
+        let tokens = Self::collect_tokens(content, uri, descriptor)?;
         let tokens = tokens
             .into_iter()
             .filter(|token| token_overlaps_range(token, range))
@@ -89,18 +108,12 @@ impl SemanticTokensService {
     fn collect_tokens(
         content: &str,
         uri: &tower_lsp::lsp_types::Url,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
     ) -> Option<Vec<AbsoluteToken>> {
         // Check if this is an Art file
         if uri.path().ends_with(".art.vue") {
             return Some(Self::collect_art_tokens(content));
         }
-
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let descriptor = vize_atelier_sfc::parse_sfc(content, options).ok()?;
 
         let mut tokens: Vec<AbsoluteToken> = Vec::new();
 

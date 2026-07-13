@@ -77,7 +77,11 @@ pub(crate) mod rules;
 
 // Re-exports
 pub use analyzer::{CrossFileAnalyzer, CrossFileOptions, CrossFileResult, CrossFileStats};
-pub use atlas::{CroquisProjectProvider, register_atlas_provider};
+pub use atlas::{
+    CroquisProjectProvider, CrossFileAnalysisArtifact, CrossFileAnalysisInput,
+    CrossFileAnalysisProduct, CrossFileAnalysisProvider, CrossFileAnalysisRequest,
+    CrossFileOffsetRegion, CrossFileSourceLayout, register_atlas_provider,
+};
 pub use diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
 pub use graph::{DependencyEdge, DependencyGraph, ModuleNode};
 pub use project::{

@@ -51,6 +51,10 @@ function getBlockedByPendingFirstPublishCrates(): string[] {
   return getScriptCrateArray("blocked_by_pending_first_publish_crates");
 }
 
+function getManualBootstrapCrates(): string[] {
+  return getScriptCrateArray("manual_bootstrap_crates");
+}
+
 function getMetadata(): CargoMetadata {
   return JSON.parse(
     execFileSync("cargo", ["metadata", "--no-deps", "--format-version", "1"], {
@@ -60,12 +64,11 @@ function getMetadata(): CargoMetadata {
   ) as CargoMetadata;
 }
 
-test("publish_crates script keeps publishable workspace dependencies ordered", () => {
-  const publishedCrates = getPublishedCrates();
-  const publishOrder = new Map(publishedCrates.map((crateName, index) => [crateName, index]));
+function assertTopologicalPublishOrder(crateNames: string[]): void {
+  const publishOrder = new Map(crateNames.map((crateName, index) => [crateName, index]));
   const packages = new Map(getMetadata().packages.map((pkg) => [pkg.name, pkg]));
 
-  for (const crateName of publishedCrates) {
+  for (const crateName of crateNames) {
     const pkg = packages.get(crateName);
     assert.ok(pkg, `Missing package metadata for ${crateName}`);
 
@@ -87,6 +90,10 @@ test("publish_crates script keeps publishable workspace dependencies ordered", (
       );
     }
   }
+}
+
+test("publish_crates script keeps publishable workspace dependencies ordered", () => {
+  assertTopologicalPublishOrder(getPublishedCrates());
 });
 
 test("publish_crates includes every publishable crate package after first publish exclusions", () => {
@@ -130,6 +137,69 @@ test("publish_crates only blocks crates that depend on first-publish exclusions"
     "vize_canon",
     "vize_patina",
   ]);
+});
+
+test("publish_crates has one complete topological manual bootstrap", () => {
+  const crates = getManualBootstrapCrates();
+  assert.deepEqual(crates, [
+    "vize_carton",
+    "vize_atlas",
+    "vize_fresco",
+    "vize_flow",
+    "vize_relief",
+    "vize_rendu",
+    "vize_armature",
+    "vize_croquis",
+    "vize_atelier_core",
+    "vize_croquis_cf",
+    "vize_atelier_dom",
+    "vize_atelier_ssr",
+    "vize_atelier_vapor",
+    "vize_atelier_sfc",
+    "vize_atelier_jsx",
+    "vize_musea",
+    "vize_canon",
+    "vize_patina",
+  ]);
+  assertTopologicalPublishOrder(crates);
+});
+
+test("publish_crates requires an explicit bootstrap confirmation", () => {
+  const result = runMoonScript("publish_crates", ["--bootstrap"], { cwd: repoRoot });
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /VIZE_CRATES_IO_BOOTSTRAP=1/);
+});
+
+test("publish_crates refuses to mix a bootstrap with an existing version", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-bootstrap-version-"));
+  const binDir = path.join(tempDir, "bin");
+
+  try {
+    fs.mkdirSync(binDir, { recursive: true });
+    writeFakeCommand(
+      binDir,
+      "curl",
+      [
+        'process.stdout.write(JSON.stringify({ versions: [{ num: "0.290.0" }] }));',
+        "process.exit(0);",
+      ].join("\n"),
+    );
+
+    const result = runMoonScript("publish_crates", ["--bootstrap"], {
+      cwd: repoRoot,
+      env: {
+        PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+        VIZE_CRATES_IO_BOOTSTRAP: "1",
+      },
+    });
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /already contains vize_carton/);
+    assert.match(result.stderr, /one unpublished version/);
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
 });
 
 test("publish_crates runs as a native MoonBit script", () => {

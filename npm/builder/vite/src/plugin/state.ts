@@ -263,6 +263,7 @@ export async function compileAll(state: VizePluginState): Promise<void> {
     }
 
     const result = compileBatch(fileContents, state.cache, {
+      sourceMap: state.mergedOptions.sourceMap ?? !state.isProduction,
       ssr: false,
       vapor: state.mergedOptions.vapor ?? false,
       mode: state.mergedOptions.mode,

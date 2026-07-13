@@ -1,6 +1,6 @@
 use crate::CompilerOptions;
-use vize_atelier_core::options::ParserOptions;
 use vize_atelier_dom::DomCompilerOptions;
+use vize_relief::ParserOptions;
 
 pub(super) fn experimental_flags(opts: &CompilerOptions) -> (bool, bool) {
     (

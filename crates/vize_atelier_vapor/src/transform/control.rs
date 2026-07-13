@@ -5,7 +5,7 @@
 use vize_carton::Box;
 
 use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, NegativeBranch, OperationNode};
-use vize_atelier_core::{
+use vize_relief::{
     ExpressionNode, ForNode, IfNode, PropNode, SimpleExpressionNode, SourceLocation,
     TemplateChildNode,
 };
@@ -121,7 +121,7 @@ fn transform_if_node_with_options<'a>(
 /// Transform remaining if branches (v-else-if, v-else)
 pub(crate) fn transform_remaining_branches<'a>(
     ctx: &mut TransformContext<'a>,
-    branches: &[vize_atelier_core::IfBranchNode<'a>],
+    branches: &[vize_relief::IfBranchNode<'a>],
     parent: Option<usize>,
     anchor: Option<usize>,
 ) -> NegativeBranch<'a> {

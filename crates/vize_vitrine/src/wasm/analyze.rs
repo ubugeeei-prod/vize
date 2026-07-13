@@ -9,18 +9,15 @@
 
 use super::source_offsets::{ScriptOffsetMapper, to_sfc_utf16_range};
 use super::to_js_value;
-use vize_carton::Bump;
 use wasm_bindgen::prelude::*;
 
 /// Analyze Vue SFC for semantic information (scopes, bindings, etc.)
 #[wasm_bindgen(js_name = "analyzeSfc")]
 #[allow(clippy::disallowed_macros)]
 pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
-    use vize_atelier_core::parser::parse;
     use vize_atelier_sfc::{
-        SfcParseOptions,
-        croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
-        parse_sfc,
+        SfcCroquisMode,
+        croquis::{SfcCroquisOptions, script_content_for_descriptor},
     };
 
     let filename: String = js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
@@ -28,16 +25,15 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
         .and_then(|v| v.as_string())
         .unwrap_or_else(|| "anonymous.vue".to_string());
 
-    // Parse SFC first
-    let parse_opts = SfcParseOptions {
-        filename: filename.clone().into(),
-        ..Default::default()
-    };
-
-    let descriptor = match parse_sfc(source, parse_opts) {
-        Ok(d) => d,
-        Err(e) => return Err(JsValue::from_str(&e.message)),
-    };
+    let graph = crate::artifact_graph::SfcAnalysisGraph::new(
+        [(filename.as_str(), source)],
+        SfcCroquisMode::Full,
+    )
+    .map_err(|error| JsValue::from_str(&error))?;
+    let artifacts = graph
+        .query(&filename)
+        .map_err(|error| JsValue::from_str(&error))?;
+    let descriptor = artifacts.descriptor();
 
     // Track template offset for coordinate adjustment
     let template_offset: u32 = descriptor
@@ -46,17 +42,9 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
         .map(|t| t.loc.start as u32)
         .unwrap_or(0);
 
-    let analysis = if let Some(ref template) = descriptor.template {
-        let allocator = Bump::new();
-        let (root, _errors) = parse(&allocator, &template.content);
-        analyze_sfc_descriptor_with_context(&descriptor, Some(&root), SfcCroquisOptions::full())
-    } else {
-        analyze_sfc_descriptor_with_context(&descriptor, None, SfcCroquisOptions::full())
-    };
-
-    let script_offset = analysis.script_offset;
-    let summary = analysis.croquis;
-    let script_offset_mapper = ScriptOffsetMapper::from_descriptor(&descriptor, script_offset);
+    let (_, script_offset) = script_content_for_descriptor(descriptor, SfcCroquisOptions::full());
+    let summary = artifacts.document().analysis();
+    let script_offset_mapper = ScriptOffsetMapper::from_descriptor(descriptor, script_offset);
     let reactivity_overlay = super::reactivity_overlay::reactivity_overlay_json(
         source,
         script_offset_mapper,

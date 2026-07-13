@@ -1,33 +1,77 @@
 //! Independently registered Atlas providers for Vue SFC sources.
 
-#[path = "atlas/semantics.rs"]
-mod semantics;
+#[path = "atlas/croquis.rs"]
+mod croquis;
+#[path = "atlas/compile.rs"]
+mod full_compile;
+#[path = "atlas/relief.rs"]
+mod relief;
 
-use vize_atelier_core::{ParserOptions, TransformOptions, parse_with_options, transform};
 use vize_atlas::{
-    Compilation, InputId, PlanningContext, Product, ProductId, Provider, ProviderContext,
-    ProviderError, RegisterProviderError, SourceId, SourceRange, SourceRevision,
+    Compilation, ObservationKind, PlanningContext, Product, ProductId, Provider, ProviderContext,
+    ProviderError, RegisterProviderError, SourceId, SourceInputId, SourceRange, SourceRevision,
 };
 use vize_carton::{
-    Bump, String, cstr, source_anchor::SourceAnchor, source_range::SourceRange as StableSourceRange,
+    String, cstr, source_anchor::SourceAnchor, source_range::SourceRange as StableSourceRange,
 };
-use vize_croquis::{CroquisSemanticProduct, CroquisSemanticSnapshot};
-use vize_flow::FlowProduct;
-use vize_relief::{ReliefProduct, ReliefSnapshot, VueDialectInput};
-use vize_rendu::RenduProduct;
+use vize_croquis::CroquisSemanticProduct;
+use vize_flow::{FlowGraph, FlowProduct};
+use vize_relief::{ReliefSnapshot, TransformedReliefArtifact, TransformedReliefProduct};
+use vize_rendu::{RenduBuilder, RenduModule, RenduProduct};
 
-use crate::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
 use crate::graph_frontend::{
     lower_relief_snapshot_to_rendu_with_anchor, project_relief_snapshot_to_flow_with_anchor,
 };
-use crate::{SfcDescriptor, SfcGraphAdapterError, parse_sfc};
-use semantics::project_template_semantics;
+use crate::{SfcDescriptor, SfcError, SfcGraphAdapterError, parse_sfc};
+pub use croquis::{
+    SfcCroquisMode, SfcCroquisProvider, SfcCroquisRequest, SfcCroquisSettings,
+    SfcCroquisSettingsInput, SfcResolvedPropsPolicy,
+};
+pub use full_compile::{
+    SfcCompileProduct, SfcCompileProvider, SfcCompileRequest, SfcCompileSettings,
+    SfcCompileSettingsInput, SfcRenderModuleArtifact, SfcRenderModuleProduct,
+    SfcRenderModuleProvider, SfcRenderTarget, SfcSourceMapProduct, SfcSourceMapProvider,
+};
+pub use relief::{SfcReliefProvider, SfcTransformedReliefProvider};
 
-/// Parsed, owned SFC container descriptor.
+/// Cached SFC container parse, including a structured fatal diagnostic.
+#[derive(Debug, Clone)]
+#[non_exhaustive]
+pub struct SfcDescriptorArtifact {
+    result: Result<SfcDescriptor<'static>, SfcError>,
+}
+
+impl SfcDescriptorArtifact {
+    fn new(result: Result<SfcDescriptor<'static>, SfcError>) -> Self {
+        Self { result }
+    }
+
+    /// Return the parsed descriptor when the SFC container is valid.
+    pub fn descriptor(&self) -> Option<&SfcDescriptor<'static>> {
+        self.result.as_ref().ok()
+    }
+
+    /// Return the cached fatal SFC container diagnostic, if any.
+    pub fn diagnostic(&self) -> Option<&SfcError> {
+        self.result.as_ref().err()
+    }
+
+    /// Borrow the complete parse result without discarding either state.
+    pub fn as_result(&self) -> Result<&SfcDescriptor<'static>, &SfcError> {
+        self.result.as_ref()
+    }
+
+    /// Consume the artifact and recover the complete parse result.
+    pub fn into_result(self) -> Result<SfcDescriptor<'static>, SfcError> {
+        self.result
+    }
+}
+
+/// Parsed, owned SFC container descriptor or its fatal parse diagnostic.
 pub struct SfcDescriptorProduct;
 
 impl Product for SfcDescriptorProduct {
-    type Value = SfcDescriptor<'static>;
+    type Value = SfcDescriptorArtifact;
 
     const NAME: &'static str = "sfc.descriptor";
 }
@@ -46,7 +90,7 @@ pub struct SfcTemplateSource {
 pub struct SfcTemplateProduct;
 
 impl Product for SfcTemplateProduct {
-    type Value = SfcTemplateSource;
+    type Value = Option<SfcTemplateSource>;
 
     const NAME: &'static str = "sfc.template-source";
 }
@@ -57,6 +101,10 @@ pub struct SfcDescriptorProvider;
 impl Provider for SfcDescriptorProvider {
     type Product = SfcDescriptorProduct;
 
+    fn source_input_dependencies(&self) -> Vec<SourceInputId> {
+        vec![SourceInputId::of::<SfcCompileSettingsInput>()]
+    }
+
     fn supports(&self, context: &PlanningContext<'_>) -> bool {
         is_sfc_source(context.source().name())
     }
@@ -64,17 +112,22 @@ impl Provider for SfcDescriptorProvider {
     fn provide(
         &self,
         context: &mut ProviderContext<'_>,
-    ) -> Result<SfcDescriptor<'static>, ProviderError> {
-        let source = context.source();
-        parse_sfc(
-            source.text(),
-            crate::SfcParseOptions {
-                filename: source.name().into(),
-                ..Default::default()
-            },
-        )
-        .map(SfcDescriptor::into_owned)
-        .map_err(|error| ProviderError::message(error.message))
+    ) -> Result<SfcDescriptorArtifact, ProviderError> {
+        let request = full_compile::request_for(context);
+        let result = parse_sfc(context.source().text(), request.options.parse)
+            .map(SfcDescriptor::into_owned);
+        if let Err(error) = &result {
+            context.observe(
+                ObservationKind::Diagnostic,
+                "sfc.parse.error",
+                error.message.as_str(),
+                error
+                    .loc
+                    .as_ref()
+                    .map(|loc| SourceRange::new(loc.start, loc.end)),
+            );
+        }
+        Ok(SfcDescriptorArtifact::new(result))
     }
 }
 
@@ -95,72 +148,22 @@ impl Provider for SfcTemplateProvider {
     fn provide(
         &self,
         context: &mut ProviderContext<'_>,
-    ) -> Result<SfcTemplateSource, ProviderError> {
-        let descriptor = context.get::<SfcDescriptorProduct>()?;
-        let template = descriptor
-            .template
-            .as_ref()
-            .ok_or_else(|| ProviderError::message("SFC has no template block"))?;
+    ) -> Result<Option<SfcTemplateSource>, ProviderError> {
+        let artifact = context.get::<SfcDescriptorProduct>()?;
+        let Some(descriptor) = artifact.descriptor() else {
+            return Ok(None);
+        };
+        let Some(template) = descriptor.template.as_ref() else {
+            return Ok(None);
+        };
         let source = context.source();
-        Ok(SfcTemplateSource {
+        Ok(Some(SfcTemplateSource {
             parent: source.id(),
             parent_revision: source.revision(),
             range: SourceRange::new(template.loc.start, template.loc.end),
             name: cstr!("{}#template", source.name()),
             text: template.content.as_ref().into(),
-        })
-    }
-}
-
-/// Parse and transform one template block into an owned Relief snapshot.
-pub struct SfcReliefProvider;
-
-impl Provider for SfcReliefProvider {
-    type Product = ReliefProduct;
-
-    fn input_dependencies(&self) -> Vec<InputId> {
-        vec![InputId::of::<VueDialectInput>()]
-    }
-
-    fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name())
-    }
-
-    fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
-        vec![ProductId::of::<SfcTemplateProduct>()]
-    }
-
-    fn provide(&self, context: &mut ProviderContext<'_>) -> Result<ReliefSnapshot, ProviderError> {
-        let template = context.get::<SfcTemplateProduct>()?;
-        let dialect = context
-            .input::<VueDialectInput>()
-            .copied()
-            .unwrap_or_default();
-        let allocator = Bump::new();
-        let (mut root, parse_errors) = parse_with_options(
-            &allocator,
-            &template.text,
-            ParserOptions {
-                dialect,
-                ..Default::default()
-            },
-        );
-        if let Some(error) = parse_errors.iter().find(|error| !error.is_recoverable()) {
-            return Err(ProviderError::message(cstr!("{error:?}")));
-        }
-        let transformed = transform(
-            &allocator,
-            &mut root,
-            TransformOptions {
-                dialect,
-                ..Default::default()
-            },
-            None,
-        );
-        if let Some(error) = transformed.errors.first() {
-            return Err(ProviderError::message(cstr!("{error:?}")));
-        }
-        Ok(ReliefSnapshot::from_root(&root))
+        }))
     }
 }
 
@@ -177,7 +180,7 @@ impl Provider for SfcRenduProvider {
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
         vec![
             ProductId::of::<SfcTemplateProduct>(),
-            ProductId::of::<ReliefProduct>(),
+            ProductId::of::<TransformedReliefProduct>(),
         ]
     }
 
@@ -186,9 +189,22 @@ impl Provider for SfcRenduProvider {
         context: &mut ProviderContext<'_>,
     ) -> Result<<RenduProduct as Product>::Value, ProviderError> {
         let template = context.get::<SfcTemplateProduct>()?;
-        let relief = context.get::<ReliefProduct>()?;
-        let anchor = template_source_anchor(&template)?;
-        lower_relief_snapshot_to_rendu_with_anchor(relief.as_ref(), anchor).map_err(graph_error)
+        let relief = context.get::<TransformedReliefProduct>()?;
+        let (template, relief) = match (template.as_ref(), relief.as_ref()) {
+            (Some(template), Some(relief)) => (template, relief),
+            (None, None) => {
+                return RenduBuilder::new()
+                    .finish()
+                    .map(RenduModule::from_root)
+                    .map_err(|error| ProviderError::message(cstr!("{error}")));
+            }
+            _ => return Err(inconsistent_template_artifacts()),
+        };
+        let relief = usable_relief_snapshot(relief)?;
+        let anchor = template_source_anchor(template)?;
+        lower_relief_snapshot_to_rendu_with_anchor(relief, anchor)
+            .map(RenduModule::from_root)
+            .map_err(graph_error)
     }
 }
 
@@ -205,7 +221,7 @@ impl Provider for SfcFlowProvider {
     fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
         vec![
             ProductId::of::<SfcTemplateProduct>(),
-            ProductId::of::<ReliefProduct>(),
+            ProductId::of::<TransformedReliefProduct>(),
         ]
     }
 
@@ -214,50 +230,18 @@ impl Provider for SfcFlowProvider {
         context: &mut ProviderContext<'_>,
     ) -> Result<<FlowProduct as Product>::Value, ProviderError> {
         let template = context.get::<SfcTemplateProduct>()?;
-        let relief = context.get::<ReliefProduct>()?;
-        let anchor = template_source_anchor(&template)?;
-        project_relief_snapshot_to_flow_with_anchor(relief.as_ref(), anchor).map_err(graph_error)
-    }
-}
-
-/// SFC script plus cached Relief syntax to owned Croquis semantic facts.
-pub struct SfcSemanticProvider;
-
-impl Provider for SfcSemanticProvider {
-    type Product = CroquisSemanticProduct;
-
-    fn supports(&self, context: &PlanningContext<'_>) -> bool {
-        is_sfc_source(context.source().name())
-    }
-
-    fn dependencies(&self, _context: &PlanningContext<'_>) -> Vec<ProductId> {
-        vec![
-            ProductId::of::<SfcDescriptorProduct>(),
-            ProductId::of::<SfcTemplateProduct>(),
-            ProductId::of::<ReliefProduct>(),
-        ]
-    }
-
-    fn provide(
-        &self,
-        context: &mut ProviderContext<'_>,
-    ) -> Result<CroquisSemanticSnapshot, ProviderError> {
-        let source_anchor = SourceAnchor::new(
-            context.source().id().get(),
-            context.source().revision().get(),
-        );
-        let descriptor = context.get::<SfcDescriptorProduct>()?;
-        let template = context.get::<SfcTemplateProduct>()?;
-        let relief = context.get::<ReliefProduct>()?;
-        let script_semantics = analyze_sfc_descriptor(&descriptor, None, SfcCroquisOptions::full())
-            .semantic_snapshot();
-        let mut semantics = project_template_semantics(
-            script_semantics,
-            relief.as_ref(),
-            template.range.start as u32,
-        );
-        semantics.source_anchor = Some(source_anchor);
-        Ok(semantics)
+        let relief = context.get::<TransformedReliefProduct>()?;
+        let (template, relief) = match (template.as_ref(), relief.as_ref()) {
+            (Some(template), Some(relief)) => (template, relief),
+            (None, None) => return Ok(FlowGraph::new()),
+            _ => return Err(inconsistent_template_artifacts()),
+        };
+        // Flow is a diagnostic/control-analysis product and must remain
+        // available for recoverable or malformed sources. Strict render
+        // backends validate these diagnostics at the Rendu boundary instead.
+        let relief = relief.snapshot();
+        let anchor = template_source_anchor(template)?;
+        project_relief_snapshot_to_flow_with_anchor(relief, anchor).map_err(graph_error)
     }
 }
 
@@ -268,17 +252,56 @@ pub fn register_atlas_providers(
     compilation.register_provider(SfcDescriptorProvider)?;
     compilation.register_provider(SfcTemplateProvider)?;
     compilation.register_provider(SfcReliefProvider)?;
+    compilation.register_provider(SfcTransformedReliefProvider)?;
     compilation.register_provider(SfcRenduProvider)?;
     compilation.register_provider(SfcFlowProvider)?;
-    compilation.register_provider(SfcSemanticProvider)
+    compilation.register_provider(SfcCroquisProvider)?;
+    vize_atelier_dom::register_atlas_provider(compilation)?;
+    vize_atelier_ssr::register_atlas_provider(compilation)?;
+    vize_atelier_vapor::register_atlas_provider(compilation)?;
+    compilation.register_provider(SfcRenderModuleProvider)?;
+    compilation.register_provider(SfcCompileProvider)?;
+    compilation.register_provider(SfcSourceMapProvider)?;
+    if !compilation.has_provider::<CroquisSemanticProduct>() {
+        vize_croquis::register_semantic_projection(compilation)?;
+    }
+    Ok(())
 }
 
 fn is_sfc_source(name: &str) -> bool {
     name.ends_with(".vue")
 }
 
+fn usable_descriptor(
+    artifact: &SfcDescriptorArtifact,
+) -> Result<&SfcDescriptor<'static>, ProviderError> {
+    artifact
+        .as_result()
+        .map_err(|error| ProviderError::message(error.message.clone()))
+}
+
 fn graph_error(error: SfcGraphAdapterError) -> ProviderError {
     ProviderError::message(cstr!("{error}"))
+}
+
+fn inconsistent_template_artifacts() -> ProviderError {
+    ProviderError::message("SFC template products disagree about template presence")
+}
+
+fn usable_relief_snapshot(
+    relief: &TransformedReliefArtifact,
+) -> Result<&ReliefSnapshot, ProviderError> {
+    if let Some(error) = relief
+        .parse_diagnostics()
+        .iter()
+        .find(|error| !error.is_recoverable())
+    {
+        return Err(ProviderError::message(cstr!("{error:?}")));
+    }
+    if let Some(error) = relief.transform_diagnostics().first() {
+        return Err(ProviderError::message(cstr!("{error:?}")));
+    }
+    Ok(relief.snapshot())
 }
 
 fn template_source_anchor(template: &SfcTemplateSource) -> Result<SourceAnchor, ProviderError> {

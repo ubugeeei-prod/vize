@@ -28,19 +28,18 @@ impl ServerState {
             return;
         }
 
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
+        let Some(artifact) = self.sfc_descriptor_for(uri, content) else {
+            self.remove_virtual_docs(uri);
+            return;
         };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+        let Some(descriptor) = artifact.descriptor() else {
             self.remove_virtual_docs(uri);
             return;
         };
 
         let base_uri = uri.path();
-        let mut virtual_docs = self.virtual_gen.write().generate(&descriptor, base_uri);
-        add_inline_art_template_virtual_docs(&mut virtual_docs, &descriptor, base_uri);
+        let mut virtual_docs = self.virtual_gen.write().generate(descriptor, base_uri);
+        add_inline_art_template_virtual_docs(&mut virtual_docs, descriptor, base_uri);
         self.virtual_docs_cache.insert(uri.clone(), virtual_docs);
     }
 
@@ -71,7 +70,15 @@ impl ServerState {
     /// scoped CSS so the editor's CSS service gets diagnostics + source mapping,
     /// mirroring the SFC style virtual-document path.
     fn update_jsx_virtual_docs(&self, uri: &Url, content: &str) {
-        let styles = crate::ide::JsxScopedStyleService::virtual_css_documents(content, uri);
+        self.ensure_artifact_source(uri, content);
+        let Some(snapshot) = self.jsx_syntax(uri) else {
+            self.remove_virtual_docs(uri);
+            return;
+        };
+        let styles = crate::ide::JsxScopedStyleService::virtual_css_documents_from_snapshot(
+            snapshot.as_ref(),
+            uri,
+        );
         if styles.is_empty() {
             self.remove_virtual_docs(uri);
             return;
@@ -129,13 +136,10 @@ impl ServerState {
             docs.art_templates[index] = Some(template_doc);
         }
 
-        // Generate script_setup virtual doc using SFC parser
-        // (SFC parser handles script blocks even in art files)
-        let sfc_options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-        if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, sfc_options) {
+        // Reuse the URI-keyed SFC descriptor product for script blocks.
+        if let Some(artifact) = self.sfc_descriptor_for(uri, content)
+            && let Some(descriptor) = artifact.descriptor()
+        {
             if let Some(ref script_setup) = descriptor.script_setup {
                 let isolate = art_script_setup_isolated(script_setup);
                 let mut script_doc = generate_art_script_setup_virtual_doc(

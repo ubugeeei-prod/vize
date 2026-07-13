@@ -133,8 +133,8 @@ impl Rule for NoUnusedProperties {
                     let is_prop_destructured = analysis.bindings.get(prop_name).is_some_and(|bt| {
                         matches!(
                             bt,
-                            vize_relief::BindingType::Props
-                                | vize_relief::BindingType::PropsAliased
+                            vize_carton::BindingType::Props
+                                | vize_carton::BindingType::PropsAliased
                         )
                     });
 

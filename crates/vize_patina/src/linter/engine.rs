@@ -2,7 +2,6 @@
 //!
 //! Contains the core linting methods: single-file template linting,
 //! full SFC linting with template extraction, and batch file processing.
-//!
 //! - [`parse_diagnostics`]: parser-error to lint-diagnostic translation
 //! - [`template_extract`]: ultra-fast `<template>` block extraction
 //! - [`ecosystem_hint`]: source heuristics for ecosystem template rules
@@ -12,6 +11,7 @@ mod ecosystem_hint;
 mod offset;
 mod parse_diagnostics;
 mod script;
+mod shared_artifacts;
 mod tag_scan;
 mod template_extract;
 

@@ -9,8 +9,8 @@ pub(crate) mod helpers;
 mod scope_prefix;
 
 use crate::options::SsrCompilerOptions;
-use vize_atelier_core::{RootNode, RuntimeHelper, TemplateChildNode};
 use vize_carton::{Bump, FxHashSet, SmallVec, String, ToCompactString, camelize, capitalize};
+use vize_relief::{RootNode, RuntimeHelper, TemplateChildNode};
 
 /// SSR codegen result
 #[derive(Debug, Default)]

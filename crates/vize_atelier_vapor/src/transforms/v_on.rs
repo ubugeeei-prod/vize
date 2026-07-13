@@ -5,7 +5,7 @@
 use vize_carton::{Box, Bump, String, ToCompactString, cstr};
 
 use crate::ir::{EventModifiers, EventOptions, OperationNode, SetEventIRNode};
-use vize_atelier_core::{DirectiveNode, ExpressionNode, SimpleExpressionNode};
+use vize_relief::{DirectiveNode, ExpressionNode, SimpleExpressionNode};
 
 /// Transform v-on directive to IR
 pub fn transform_v_on<'a>(

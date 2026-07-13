@@ -27,7 +27,7 @@ impl SsrEmitter<'_> {
     ) {
         self.indent();
         self.output.code.push_str("_ssrRenderSlot(_ctx.$slots, ");
-        self.emit_name(name);
+        self.emit_name_value(name);
         self.output.code.push_str(", ");
         self.emit_properties(properties);
         self.output.code.push_str(", () => {\n");
@@ -76,7 +76,7 @@ impl SsrEmitter<'_> {
                 self.output.code.push(',');
             }
             self.output.code.push(' ');
-            self.emit_name(name);
+            self.emit_object_key(name);
             self.output.code.push_str(": (");
             if bindings.is_empty() {
                 self.output.code.push_str("_props");

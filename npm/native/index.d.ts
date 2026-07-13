@@ -62,6 +62,7 @@ export interface AutogenOutputNapi {
 
 export interface BatchCompileOptionsNapi {
   mode?: string;
+  sourceMap?: boolean;
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
@@ -115,6 +116,7 @@ export interface BatchFileInputNapi {
 export interface BatchFileResultNapi {
   path: string;
   code: string;
+  map?: string;
   css?: string;
   scopeId: string;
   hasScoped: boolean;
@@ -917,6 +919,8 @@ export interface SfcCompileOptionsNapi {
 export interface SfcCompileResultNapi {
   code: string;
   css?: string;
+  /** Composed v3 source map JSON for `code`. */
+  map?: string;
   errors: Array<string>;
   warnings: Array<string>;
   templateHash?: string;

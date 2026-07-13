@@ -16,14 +16,14 @@ mod parts_tests;
 #[cfg(test)]
 mod tests;
 
-pub(crate) use vapor::compile_template_block_vapor;
+pub(crate) use vapor::{compile_template_block_vapor, compile_template_block_vapor_from_syntax};
 
 use vize_atelier_core::{
-    TemplateSyntaxMode,
     atelier_output::AtelierRange,
     source_map::{SourceMapRegistration, SourceMapRegistrationState},
 };
 use vize_carton::Bump;
+use vize_relief::{CodegenMode, CompilerError, ReliefArtifact, TemplateSyntaxMode};
 
 use crate::compile::output_module::{
     AtelierModuleSections, AtelierOutputMaps, AtelierOutputSections, OutputModule,
@@ -103,11 +103,6 @@ impl TemplateBlockCompileResult {
         )
     }
 
-    pub(crate) fn source_map_json(&self) -> Option<serde_json::Value> {
-        self.source_map_fragment()
-            .and_then(|fragment| serde_json::from_str(fragment).ok())
-    }
-
     fn source_map_generated_range(&self) -> AtelierRange {
         self.module_sections
             .map(|sections| sections.functions)
@@ -121,6 +116,26 @@ pub(crate) fn compile_template_block(
     options: &TemplateCompileOptions,
     ctx: TemplateBlockCompileContext<'_>,
     template_syntax: TemplateSyntaxMode,
+) -> Result<TemplateBlockCompileResult, SfcError> {
+    compile_template_block_inner(template, options, ctx, template_syntax, None)
+}
+
+pub(crate) fn compile_template_block_from_syntax(
+    template: &SfcTemplateBlock,
+    options: &TemplateCompileOptions,
+    ctx: TemplateBlockCompileContext<'_>,
+    template_syntax: TemplateSyntaxMode,
+    syntax: &ReliefArtifact,
+) -> Result<TemplateBlockCompileResult, SfcError> {
+    compile_template_block_inner(template, options, ctx, template_syntax, Some(syntax))
+}
+
+fn compile_template_block_inner(
+    template: &SfcTemplateBlock,
+    options: &TemplateCompileOptions,
+    ctx: TemplateBlockCompileContext<'_>,
+    template_syntax: TemplateSyntaxMode,
+    syntax: Option<&ReliefArtifact>,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
     let TemplateBlockCompileContext {
         scope_id,
@@ -161,15 +176,24 @@ pub(crate) fn compile_template_block(
             croquis: croquis.map(Box::new),
         };
 
-        let (_, errors, result) = profile!(
-            "atelier.sfc.template.ssr",
-            vize_atelier_ssr::compile_ssr_with_template_syntax(
-                &allocator,
-                &template.content,
-                ssr_opts,
-                template_syntax,
-            )
-        );
+        let (_, errors, result) = profile!("atelier.sfc.template.ssr", {
+            if let Some(syntax) = syntax {
+                vize_atelier_ssr::compile_ssr_root_with_template_syntax(
+                    &allocator,
+                    syntax.snapshot().materialize(&allocator),
+                    syntax.parse_diagnostics().to_vec(),
+                    ssr_opts,
+                    template_syntax,
+                )
+            } else {
+                vize_atelier_ssr::compile_ssr_with_template_syntax(
+                    &allocator,
+                    &template.content,
+                    ssr_opts,
+                    template_syntax,
+                )
+            }
+        });
 
         // Recoverable parser diagnostics (e.g. duplicate attribute) must
         // not gate SFC compilation, or a single `<div id=a id=b>` produces
@@ -200,7 +224,7 @@ pub(crate) fn compile_template_block(
 
     // Build DOM compiler options
     let mut dom_opts = options.compiler_options.clone().unwrap_or_default();
-    dom_opts.mode = vize_atelier_core::options::CodegenMode::Module;
+    dom_opts.mode = CodegenMode::Module;
     dom_opts.prefix_identifiers = true;
     // Vue applies SFC scope IDs at runtime. Only module-level hoisted VNodes
     // need an explicit scope attr baked into their props.
@@ -241,16 +265,26 @@ pub(crate) fn compile_template_block(
     }
 
     // Compile template
-    let (_, errors, result) = profile!(
-        "atelier.sfc.template.dom",
-        vize_atelier_dom::compile_template_with_template_syntax_and_hoisted_scope_id_with_sections(
-            &allocator,
-            &template.content,
-            dom_opts,
-            template_syntax,
-            hoisted_scope_attr,
-        )
-    );
+    let (_, errors, result) = profile!("atelier.sfc.template.dom", {
+        if let Some(syntax) = syntax {
+            vize_atelier_dom::compile_template_root_with_template_syntax_and_hoisted_scope_id_with_sections(
+                &allocator,
+                syntax.snapshot().materialize(&allocator),
+                syntax.parse_diagnostics().to_vec(),
+                dom_opts,
+                template_syntax,
+                hoisted_scope_attr,
+            )
+        } else {
+            vize_atelier_dom::compile_template_with_template_syntax_and_hoisted_scope_id_with_sections(
+                &allocator,
+                &template.content,
+                dom_opts,
+                template_syntax,
+                hoisted_scope_attr,
+            )
+        }
+    });
 
     // See above — drop recoverable parser diagnostics from the gating
     // check so duplicate-attribute SFCs still produce valid render code. (#958)
@@ -280,9 +314,7 @@ pub(crate) fn compile_template_block(
     })
 }
 
-pub(crate) fn recoverable_template_warnings(
-    errors: &[vize_atelier_core::CompilerError],
-) -> std::vec::Vec<SfcError> {
+pub(crate) fn recoverable_template_warnings(errors: &[CompilerError]) -> std::vec::Vec<SfcError> {
     errors
         .iter()
         .filter(|error| error.is_recoverable())

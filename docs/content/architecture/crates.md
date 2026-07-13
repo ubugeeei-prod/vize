@@ -19,7 +19,7 @@ editor tooling can share the same syntax model.
 | `vize_atlas`      | Typed product/provider graph, source revisions, planning, cache, invalidation, and traces |
 | `vize_relief`     | Source syntax nodes and locations, compiler errors, and compiler options                  |
 | `vize_croquis`    | Owned semantic contracts plus derived scopes, bindings, usage, and reactivity             |
-| `vize_croquis_cf` | Opt-in cross-file registry, dependency graph, and project semantic aggregation            |
+| `vize_croquis_cf` | Opt-in lightweight project index plus full cross-file dependency/rule analysis            |
 | `vize_flow`       | Frontend-neutral single-file control, data, effect graphs, and graph analyses             |
 | `vize_rendu`      | Owned, indexed, frontend-neutral render HIR and capabilities                              |
 
@@ -27,7 +27,7 @@ editor tooling can share the same syntax model.
 
 | Crate                | Role                                                                      |
 | -------------------- | ------------------------------------------------------------------------- |
-| `vize_atelier_core`  | Shared transform lane and code generation infrastructure                  |
+| `vize_atelier_core`  | Narrow shared Vue-template transform/codegen lane; no graph or representation ownership |
 | `vize_atelier_dom`   | VDOM-oriented template compilation                                        |
 | `vize_atelier_vapor` | Vapor-mode template compilation                                           |
 | `vize_atelier_ssr`   | Server-side rendering template compilation                                |

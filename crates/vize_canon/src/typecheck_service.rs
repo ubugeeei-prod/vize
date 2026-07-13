@@ -4,8 +4,7 @@
 //! using Corsa as the TypeScript type checker backend.
 
 use crate::corsa_bridge::{CorsaBridge, CorsaBridgeError};
-use crate::script_parse::{ScriptParseDiagnostic, collect_script_parse_diagnostics};
-use crate::virtual_ts::{VirtualTsOptions, VirtualTsOutput, generate_virtual_ts_with_offsets};
+use std::path::Path;
 #[allow(clippy::disallowed_types)]
 use std::sync::Arc;
 use vize_carton::String;
@@ -128,150 +127,73 @@ impl TypeCheckService {
         legacy_vue2: bool,
     ) -> Result<SfcTypeCheckResult, CorsaBridgeError> {
         use std::time::Instant;
-        use vize_atelier_core::parser::parse;
-        use vize_atelier_sfc::{SfcParseOptions, croquis::SfcCroquisOptions, parse_sfc};
-        use vize_carton::Bump;
 
         let start_time = Instant::now();
         let mut result = SfcTypeCheckResult::default();
-
-        // Parse SFC
-        let parse_opts = SfcParseOptions {
-            filename: filename.into(),
-            ..Default::default()
-        };
-
-        let descriptor = match parse_sfc(source, parse_opts) {
-            Ok(d) => d,
-            Err(e) => {
-                result.diagnostics.push(SfcDiagnostic {
-                    message: cstr!("Failed to parse SFC: {}", e.message),
-                    severity: SfcDiagnosticSeverity::Error,
-                    start: 0,
-                    end: 0,
-                    code: Some("parse-error".into()),
-                    related: Vec::new(),
-                });
-                result.error_count = 1;
-                return Ok(result);
-            }
-        };
-
-        // Create allocator for template parsing
-        let allocator = Bump::new();
-
-        let mut has_script_parse_errors = false;
-        if let Some(ref script) = descriptor.script {
-            let script_diagnostics = collect_script_parse_diagnostics(
-                &script.content,
-                script.loc.start as u32,
-                script.lang.as_deref(),
-            );
-            if !script_diagnostics.is_empty() {
-                has_script_parse_errors = true;
-                add_script_parse_diagnostics(script_diagnostics, &mut result);
-            }
-        }
-        if let Some(ref script_setup) = descriptor.script_setup {
-            let script_diagnostics = collect_script_parse_diagnostics(
-                &script_setup.content,
-                script_setup.loc.start as u32,
-                script_setup.lang.as_deref(),
-            );
-            if !script_diagnostics.is_empty() {
-                has_script_parse_errors = true;
-                add_script_parse_diagnostics(script_diagnostics, &mut result);
-            }
-        }
-
-        // Analyze template
-        let mut has_template_parse_errors = false;
-        let (template_offset, template_ast) = if let Some(ref template) = descriptor.template {
-            let template_offset = template.loc.start as u32;
-            let (root, errors) = parse(&allocator, &template.content);
-            let mut hard_template_error = false;
-            for error in errors {
-                if error.is_recoverable() {
-                    continue;
-                }
-                hard_template_error = true;
-                let (start, end) = error
-                    .loc
-                    .as_ref()
-                    .map(|loc| {
-                        (
-                            template_offset + loc.start.offset,
-                            template_offset + loc.end.offset,
-                        )
-                    })
-                    .unwrap_or((template_offset, template_offset));
-
-                result.diagnostics.push(SfcDiagnostic {
-                    message: cstr!("Template parse error: {}", error.message),
-                    severity: SfcDiagnosticSeverity::Error,
-                    start,
-                    end: end.max(start + 1),
-                    code: Some("template-parse-error".into()),
-                    related: Vec::new(),
-                });
-                result.error_count += 1;
-            }
-            if hard_template_error {
-                has_template_parse_errors = true;
-                (template_offset, None)
-            } else {
-                (template_offset, Some(root))
-            }
+        let mut syntax_options = crate::SfcTypeCheckOptions::new(filename);
+        syntax_options.check_props = false;
+        syntax_options.check_emits = false;
+        syntax_options.check_template_bindings = false;
+        syntax_options.check_reactivity = false;
+        syntax_options.check_setup_context = false;
+        syntax_options.check_invalid_exports = false;
+        syntax_options.check_fallthrough_attrs = false;
+        let syntax = if legacy_vue2 {
+            crate::type_check_sfc_with_legacy_vue2(source, &syntax_options)
         } else {
-            (0, None)
+            crate::type_check_sfc(source, &syntax_options)
         };
-
-        let croquis_options = SfcCroquisOptions::full();
-        // Croquis cannot resolve props inherited through imported/heritage
-        // types; the resolved analysis merges the script compile context's
-        // props before the template pass so virtual TS generation and
-        // undefined-reference detection see the full prop set.
-        let analysis = vize_atelier_sfc::croquis::analyze_sfc_descriptor_resolved(
-            &descriptor,
-            template_ast.as_ref(),
-            croquis_options,
-            false,
-            legacy_vue2,
-            filename,
-        );
-
-        if has_template_parse_errors || has_script_parse_errors {
+        for diagnostic in syntax.diagnostics {
+            result.diagnostics.push(SfcDiagnostic {
+                message: diagnostic.message,
+                severity: match diagnostic.severity {
+                    crate::SfcTypeSeverity::Error => SfcDiagnosticSeverity::Error,
+                    crate::SfcTypeSeverity::Warning => SfcDiagnosticSeverity::Warning,
+                    crate::SfcTypeSeverity::Info => SfcDiagnosticSeverity::Info,
+                    crate::SfcTypeSeverity::Hint => SfcDiagnosticSeverity::Hint,
+                },
+                start: diagnostic.start,
+                end: diagnostic.end,
+                code: diagnostic.code,
+                related: diagnostic
+                    .related
+                    .into_iter()
+                    .map(|related| SfcRelatedInfo {
+                        message: related.message,
+                        filename: related.filename,
+                        start: related.start,
+                        end: related.end,
+                    })
+                    .collect(),
+            });
+        }
+        result.error_count = syntax.error_count;
+        result.warning_count = syntax.warning_count;
+        if result.error_count > 0 {
             result.analysis_time_ms = Some(start_time.elapsed().as_secs_f64() * 1000.0);
             return Ok(result);
         }
-
-        let script_offset = analysis.script_offset;
-
-        // Generate virtual TypeScript
-        let virtual_ts_options = VirtualTsOptions::default();
-        let generate_virtual_ts = if legacy_vue2 {
-            crate::virtual_ts::generate_virtual_ts_with_offsets_legacy_vue2
-        } else {
-            generate_virtual_ts_with_offsets
-        };
-        let virtual_ts_output = generate_virtual_ts(
-            &analysis.croquis,
-            analysis.script_content_ref(),
-            template_ast.as_ref(),
-            script_offset,
-            template_offset,
-            &virtual_ts_options,
-        );
-
-        result.virtual_ts = Some(virtual_ts_output.code.clone());
+        let document = crate::batch::generate_vue_document_virtual_ts_with_options(
+            Path::new(filename),
+            source,
+            &crate::virtual_ts::VirtualTsOptions::default(),
+            &crate::batch::ImportRewriter::new(),
+            false,
+            crate::batch::VueDocumentVirtualTsOptions {
+                options_api: false,
+                legacy_vue2,
+            },
+        )
+        .map_err(|error| CorsaBridgeError::CommunicationError(cstr!("{error}")))?;
+        result.virtual_ts = Some(document.code.clone());
 
         // Check with Corsa
-        if !virtual_ts_output.code.is_empty() {
-            let virtual_uri = cstr!("vize-virtual://{filename}.ts");
+        if !document.code.is_empty() {
+            let virtual_uri = cstr!("vize-virtual://{filename}{}", document.virtual_suffix);
 
             // Open virtual document
             self.bridge
-                .open_virtual_document(&virtual_uri, &virtual_ts_output.code)
+                .open_virtual_document(&virtual_uri, &document.code)
                 .await?;
 
             // Get diagnostics
@@ -281,13 +203,11 @@ impl TypeCheckService {
             for diag in corsa_result {
                 // Map position from virtual TS to original SFC
                 let (start, end) = map_position_to_sfc(
-                    &virtual_ts_output,
+                    &document,
                     diag.range.start.line,
                     diag.range.start.character,
                     diag.range.end.line,
                     diag.range.end.character,
-                    script_offset,
-                    template_offset,
                 );
 
                 let severity = match diag.severity.unwrap_or(1) {
@@ -316,13 +236,11 @@ impl TypeCheckService {
                         .map(|r| {
                             // Map related info position from virtual TS to original SFC
                             let (rel_start, rel_end) = map_position_to_sfc(
-                                &virtual_ts_output,
+                                &document,
                                 r.location.range.start.line,
                                 r.location.range.start.character,
                                 r.location.range.end.line,
                                 r.location.range.end.character,
-                                script_offset,
-                                template_offset,
                             );
                             SfcRelatedInfo {
                                 message: r.message.into(),
@@ -367,36 +285,23 @@ fn line_col_to_offset(content: &str, line: u32, col: u32) -> u32 {
     offset + col
 }
 
-fn add_script_parse_diagnostics(
-    diagnostics: Vec<ScriptParseDiagnostic>,
-    result: &mut SfcTypeCheckResult,
-) {
-    for diagnostic in diagnostics {
-        result.diagnostics.push(SfcDiagnostic {
-            message: cstr!("Script parse error: {}", diagnostic.message),
-            severity: SfcDiagnosticSeverity::Error,
-            start: diagnostic.start,
-            end: diagnostic.end,
-            code: Some("script-parse-error".into()),
-            related: Vec::new(),
-        });
-        result.error_count += 1;
-    }
-}
-
 /// Map position from virtual TypeScript to original SFC.
 fn map_position_to_sfc(
-    virtual_ts: &VirtualTsOutput,
+    virtual_ts: &crate::batch::VueDocumentVirtualTs,
     start_line: u32,
     start_char: u32,
     end_line: u32,
     end_char: u32,
-    script_offset: u32,
-    _template_offset: u32,
 ) -> (u32, u32) {
     // Convert line/col to offset in generated content
-    let gen_start_offset = line_col_to_offset(&virtual_ts.code, start_line, start_char) as usize;
-    let gen_end_offset = line_col_to_offset(&virtual_ts.code, end_line, end_char) as usize;
+    let rewritten_start = line_col_to_offset(&virtual_ts.code, start_line, start_char);
+    let rewritten_end = line_col_to_offset(&virtual_ts.code, end_line, end_char);
+    let gen_start_offset = virtual_ts
+        .import_source_map
+        .get_original_offset(rewritten_start) as usize;
+    let gen_end_offset = virtual_ts
+        .import_source_map
+        .get_original_offset(rewritten_end) as usize;
 
     // Try to find source mapping
     if let Some(mapping) = virtual_ts
@@ -416,8 +321,8 @@ fn map_position_to_sfc(
 
     // Fallback: estimate based on line numbers
     // This is a rough approximation when source map mapping is not found
-    let start = script_offset + start_line * 80 + start_char;
-    let end = script_offset + end_line * 80 + end_char;
+    let start = start_line * 80 + start_char;
+    let end = end_line * 80 + end_char;
     (start, end)
 }
 

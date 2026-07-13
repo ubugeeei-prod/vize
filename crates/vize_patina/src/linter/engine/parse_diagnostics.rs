@@ -105,7 +105,7 @@ impl Linter {
         parse_errors.iter().any(|error| !error.is_recoverable())
     }
 
-    pub(super) fn sfc_parse_lint_result(
+    pub(crate) fn sfc_parse_lint_result(
         filename: &str,
         source_len: usize,
         parse_error: &SfcError,

@@ -7,16 +7,31 @@ license.workspace = true
 repository.workspace = true
 description = "Vue SSR compiler for Vize"
 
+[features]
+default = ["legacy"]
+# The frontend-neutral Atlas provider and Rendu emitter.
+graph = ["dep:vize_atlas", "dep:vize_rendu"]
+# Preserve the existing template compiler API and dependency behavior by
+# default. Graph remains included so no default export disappears.
+legacy = [
+  "graph",
+  "dep:vize_relief",
+  "dep:vize_armature",
+  "dep:vize_atelier_core",
+  "dep:vize_croquis",
+  "dep:serde",
+]
+
 [dependencies]
 vize_carton = { workspace = true }
-vize_atlas = { workspace = true }
-vize_relief = { workspace = true }
-vize_armature = { workspace = true }
-vize_atelier_core = { workspace = true }
-vize_croquis = { workspace = true, features = ["relief-compat"] }
-vize_rendu = { workspace = true }
+vize_atlas = { workspace = true, optional = true }
+vize_relief = { workspace = true, optional = true }
+vize_armature = { workspace = true, optional = true }
+vize_atelier_core = { workspace = true, optional = true }
+vize_croquis = { workspace = true, optional = true, features = ["relief-compat"] }
+vize_rendu = { workspace = true, optional = true }
 
-serde = { workspace = true }
+serde = { workspace = true, optional = true }
 
 [dev-dependencies]
 insta = { workspace = true }

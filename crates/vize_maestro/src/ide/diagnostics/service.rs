@@ -67,7 +67,7 @@ impl DiagnosticService {
         let path = uri.path();
         if path.ends_with(".art.vue") {
             if features.lint {
-                diagnostics.extend(Self::collect_musea_diagnostics(uri, &content, &line_index));
+                diagnostics.extend(Self::collect_musea(state, uri, &content, &line_index));
             }
             return diagnostics;
         }
@@ -91,13 +91,13 @@ impl DiagnosticService {
         }
 
         if is_jsx_path(path) {
-            let jsx_diags = Self::collect_jsx_diagnostics(uri, &content, &line_index);
+            let jsx_diags = Self::collect_jsx_diagnostics(state, uri, &content, &line_index);
             tracing::info!("collect: jsx compiler diagnostics: {}", jsx_diags.len());
             diagnostics.extend(jsx_diags);
             return diagnostics;
         }
 
-        let descriptor = match Self::parse_sfc_for_collect(uri, &content) {
+        let descriptor = match Self::parse_sfc_for_collect(state, uri, &content) {
             Ok(descriptor) => descriptor,
             Err(parse_diagnostic) => {
                 tracing::info!("collect: skipping dependent diagnostics after SFC parse error");
@@ -176,7 +176,7 @@ impl DiagnosticService {
         }
 
         if features.ecosystem {
-            let ecosystem_diags = ecosystem::diagnostics(&content, uri);
+            let ecosystem_diags = ecosystem::diagnostics_from_state(state, &content, uri);
             tracing::info!(
                 "collect: ecosystem editor diagnostics: {}",
                 ecosystem_diags.len()
@@ -234,13 +234,11 @@ impl DiagnosticService {
         // collector below (mirrors `collect`).
         let line_index = LineIndex::new(&content);
 
-        // Art files (*.art.vue): Musea-specific lint only.
         let path = uri.path();
         if path.ends_with(".art.vue") {
-            diagnostics.extend(Self::collect_musea_diagnostics(uri, &content, &line_index));
+            diagnostics.extend(Self::collect_musea(state, uri, &content, &line_index));
             return diagnostics;
         }
-
         // Standalone HTML: patina lint only.
         if is_standalone_html_path(path) {
             diagnostics.extend(Self::collect_lint_diagnostics(
@@ -256,7 +254,7 @@ impl DiagnosticService {
         // Standard SFC: parse once, then mirror `collect`'s parser-error
         // short-circuit so lint only surfaces when the full pipeline would
         // also surface it.
-        let Ok(descriptor) = Self::parse_sfc_for_collect(uri, &content) else {
+        let Ok(descriptor) = Self::parse_sfc_for_collect(state, uri, &content) else {
             return diagnostics;
         };
         let script_diags =

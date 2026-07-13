@@ -8,7 +8,7 @@ use super::{
 };
 use super::{
     markers::{QueryKind, push_promise_marker},
-    parsing::{collect_floating_candidates, is_runtime_array_macro},
+    parsing::collect_floating_candidates,
     reactivity_loss::collect_reactivity_loss_queries,
     rule_queries::{MacroWarning, collect_emit_queries, collect_prop_queries, push_macro_warning},
     template_queries::{TemplateQueryKind, collect_template_query_sets},
@@ -21,17 +21,63 @@ use vize_croquis::{
     Croquis, script_parser,
     virtual_ts::{VirtualTsConfig, generate_virtual_ts_with_croquis},
 };
+use vize_relief::{CompilerError, ReliefSnapshot};
+
+mod planning;
+
+use planning::{
+    collect_emit_static_warning_or_probe_need, collect_prop_static_warning_or_probe_need,
+    is_type_rule_active,
+};
+
+#[cfg(test)]
+thread_local! {
+    static FALLBACK_BUILDS: std::cell::Cell<(usize, usize)> = const { std::cell::Cell::new((0, 0)) };
+}
+
+#[cfg(test)]
+pub(crate) fn reset_fallback_builds() {
+    FALLBACK_BUILDS.set((0, 0));
+}
+
+#[cfg(test)]
+pub(crate) fn fallback_builds() -> (usize, usize) {
+    FALLBACK_BUILDS.get()
+}
+
 pub(super) fn lint_with_descriptor<'a>(
     linter: &Linter,
     source: &str,
     filename: &str,
     descriptor: &vize_atelier_sfc::SfcDescriptor<'a>,
 ) -> LintResult {
+    lint_with_artifacts(linter, source, filename, descriptor, None, None)
+}
+
+pub(super) fn lint_with_artifacts<'a>(
+    linter: &Linter,
+    source: &str,
+    filename: &str,
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'a>,
+    template_syntax: Option<(&ReliefSnapshot, &[CompilerError])>,
+    shared_analysis: Option<&Croquis>,
+) -> LintResult {
     let allocator =
         vize_carton::Allocator::with_capacity((source.len() * 4).max(linter.initial_capacity));
     let template_ast = descriptor.template.as_ref().map(|template| {
-        let parser = TemplateParser::new(allocator.as_bump(), &template.content);
-        let (root, parse_errors) = profile!("patina.type_aware.template_parse", parser.parse());
+        let (root, parse_errors) = if let Some((snapshot, parse_errors)) = template_syntax {
+            let parse_errors =
+                vize_carton::Vec::from_iter_in(parse_errors.iter().cloned(), allocator.as_bump());
+            (snapshot.materialize(allocator.as_bump()), parse_errors)
+        } else {
+            #[cfg(test)]
+            FALLBACK_BUILDS.with(|builds| {
+                let (parses, analyses) = builds.get();
+                builds.set((parses + 1, analyses));
+            });
+            let parser = TemplateParser::new(allocator.as_bump(), &template.content);
+            profile!("patina.type_aware.template_parse", parser.parse())
+        };
         let has_fatal_parse_errors = Linter::has_fatal_template_parse_errors(&parse_errors);
         (
             root,
@@ -44,14 +90,25 @@ pub(super) fn lint_with_descriptor<'a>(
         .as_ref()
         .is_some_and(|(_, _, _, has_fatal)| *has_fatal);
 
-    let analysis = profile!("patina.type_aware.croquis", {
-        super::super::engine::analyze_descriptor_for_lint(
-            descriptor,
-            template_ast
-                .as_ref()
-                .and_then(|(root, _, _, has_fatal)| (!*has_fatal).then_some(root)),
-        )
-    });
+    let owned_analysis;
+    let analysis = if let Some(analysis) = shared_analysis {
+        analysis
+    } else {
+        #[cfg(test)]
+        FALLBACK_BUILDS.with(|builds| {
+            let (parses, analyses) = builds.get();
+            builds.set((parses, analyses + 1));
+        });
+        owned_analysis = profile!("patina.type_aware.croquis", {
+            super::super::engine::analyze_descriptor_for_lint(
+                descriptor,
+                template_ast
+                    .as_ref()
+                    .and_then(|(root, _, _, has_fatal)| (!*has_fatal).then_some(root)),
+            )
+        });
+        &owned_analysis
+    };
 
     let mut result = if let (Some((root, _, parse_errors, has_fatal)), Some(template)) =
         (template_ast.as_ref(), descriptor.template.as_ref())
@@ -67,7 +124,7 @@ pub(super) fn lint_with_descriptor<'a>(
                 analysis: if *has_fatal {
                     TemplateAnalysis::Disabled
                 } else {
-                    TemplateAnalysis::Precomputed(&analysis)
+                    TemplateAnalysis::Precomputed(analysis)
                 },
             })
         );
@@ -103,10 +160,10 @@ pub(super) fn lint_with_descriptor<'a>(
     // rule needs Corsa, returning here avoids virtual project creation and the
     // expensive type-probe round trip entirely.
     let needs_prop_probe = profile!("patina.type_aware.plan_prop_queries", {
-        collect_prop_static_warning_or_probe_need(linter, &analysis, &mut result, script_block)
+        collect_prop_static_warning_or_probe_need(linter, analysis, &mut result, script_block)
     });
     let needs_emit_probe = profile!("patina.type_aware.plan_emit_queries", {
-        collect_emit_static_warning_or_probe_need(linter, &analysis, &mut result, script_block)
+        collect_emit_static_warning_or_probe_need(linter, analysis, &mut result, script_block)
     });
     let include_template_queries = !template_has_fatal_parse_errors
         && is_type_rule_active(linter, RULE_NO_UNSAFE_TEMPLATE_BINDING);
@@ -165,7 +222,7 @@ pub(super) fn lint_with_descriptor<'a>(
             "patina.type_aware.collect_prop_queries",
             collect_prop_queries(
                 linter,
-                &analysis,
+                analysis,
                 &mut result,
                 script_block,
                 &mut virtual_ts,
@@ -178,7 +235,7 @@ pub(super) fn lint_with_descriptor<'a>(
             "patina.type_aware.collect_emit_queries",
             collect_emit_queries(
                 linter,
-                &analysis,
+                analysis,
                 &mut result,
                 script_block,
                 &mut virtual_ts,
@@ -410,89 +467,4 @@ pub(super) fn lint_with_descriptor<'a>(
     );
 
     result
-}
-
-#[inline]
-fn is_type_rule_active(linter: &Linter, rule_name: &str) -> bool {
-    linter.registry.has_rule(rule_name) && linter.is_rule_enabled(rule_name)
-}
-
-fn collect_prop_static_warning_or_probe_need(
-    linter: &Linter,
-    analysis: &Croquis,
-    result: &mut LintResult,
-    script_block: &vize_atelier_sfc::SfcScriptBlock<'_>,
-) -> bool {
-    if !is_type_rule_active(linter, RULE_REQUIRE_TYPED_PROPS) {
-        return false;
-    }
-
-    let Some(call) = analysis.macros.define_props() else {
-        return false;
-    };
-    if call.type_args.is_some() {
-        return false;
-    }
-
-    if is_runtime_array_macro(call.runtime_args.as_ref().map(|args| args.as_str())) {
-        push_warning(
-            result,
-            LintDiagnostic::warn(
-                RULE_REQUIRE_TYPED_PROPS,
-                "Prop should have a type definition",
-                script_block.loc.start as u32 + call.start,
-                script_block.loc.start as u32 + call.end,
-            )
-            .with_help(
-                "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
-            ),
-        );
-        return false;
-    }
-
-    analysis
-        .macros
-        .props()
-        .iter()
-        .any(|prop| prop.prop_type.is_none())
-}
-
-fn collect_emit_static_warning_or_probe_need(
-    linter: &Linter,
-    analysis: &Croquis,
-    result: &mut LintResult,
-    script_block: &vize_atelier_sfc::SfcScriptBlock<'_>,
-) -> bool {
-    if !is_type_rule_active(linter, RULE_REQUIRE_TYPED_EMITS) {
-        return false;
-    }
-
-    let Some(call) = analysis.macros.define_emits() else {
-        return false;
-    };
-    if call.type_args.is_some() {
-        return false;
-    }
-
-    if is_runtime_array_macro(call.runtime_args.as_ref().map(|args| args.as_str())) {
-        push_warning(
-            result,
-            LintDiagnostic::warn(
-                RULE_REQUIRE_TYPED_EMITS,
-                "Emit should have a type definition",
-                script_block.loc.start as u32 + call.start,
-                script_block.loc.start as u32 + call.end,
-            )
-            .with_help(
-                "Use `defineEmits<...>()` or a validator object with typed payload parameters.",
-            ),
-        );
-        return false;
-    }
-
-    analysis
-        .macros
-        .emits()
-        .iter()
-        .any(|emit| emit.payload_type.is_none())
 }

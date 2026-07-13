@@ -4,6 +4,7 @@
 //! Relief, Croquis, Flow, and Rendu products.
 
 #![allow(clippy::collapsible_match)]
+#![allow(deprecated)]
 #![allow(clippy::type_complexity)]
 #![allow(clippy::redundant_field_names)]
 #![allow(clippy::unnecessary_lazy_evaluations)]
@@ -26,12 +27,8 @@ pub mod style;
 pub mod types;
 pub mod vite_plugin;
 
-// Re-exports for public API
-pub use atlas::{
-    SfcDescriptorProduct, SfcDescriptorProvider, SfcFlowProvider, SfcReliefProvider,
-    SfcRenduProvider, SfcSemanticProvider, SfcTemplateProduct, SfcTemplateProvider,
-    SfcTemplateSource, register_atlas_providers,
-};
+// Re-export the open Atlas product/provider surface.
+pub use atlas::*;
 pub use bundler::{
     BundlerCustomBlock, BundlerStyleBlock, SfcBlockAttribute, SfcSrcInfo, TemplateAssetTagRule,
     TemplateAssetUrl, collect_template_asset_urls, extract_custom_blocks, extract_src_info,
@@ -40,7 +37,10 @@ pub use bundler::{
 };
 #[allow(deprecated)]
 pub use compile::compile_sfc_with_vue_parser_quirks;
-pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_template_syntax};
+pub use compile::{
+    ScriptCompileResult, compile_sfc, compile_sfc_with_shared_syntax,
+    compile_sfc_with_template_syntax,
+};
 pub use compile_script::props::{
     validate_script_setup_semantics, validate_script_setup_semantics_located,
 };
@@ -62,8 +62,8 @@ pub use types::{
 };
 
 // Re-export key types from dependencies
-pub use vize_atelier_core::CompilerError;
 pub use vize_atelier_dom::compile_template;
+pub use vize_relief::CompilerError;
 
 #[cfg(test)]
 mod snapshot_tests;
@@ -71,8 +71,8 @@ mod snapshot_tests;
 #[cfg(test)]
 mod tests {
     use super::{SfcCompileOptions, compile_sfc, compile_sfc_with_template_syntax, parse_sfc};
-    use vize_atelier_core::TemplateSyntaxMode;
     use vize_carton::config::VueVersion;
+    use vize_relief::TemplateSyntaxMode;
 
     #[test]
     fn template_compile_options_default_dialect_is_vue3() {
@@ -387,7 +387,7 @@ const isRootSelected = ref(false)
         for (name, binding_type) in croquis.bindings.iter() {
             binding_metadata
                 .bindings
-                .insert(name.to_compact_string(), binding_type);
+                .insert(name.to_compact_string(), binding_type.into());
         }
         for (local, key) in &croquis.bindings.props_aliases {
             binding_metadata
@@ -408,7 +408,7 @@ const isRootSelected = ref(false)
                 bindings: Some(&binding_metadata),
                 croquis: Some(croquis),
             },
-            vize_atelier_core::TemplateSyntaxMode::Standard,
+            vize_relief::TemplateSyntaxMode::Standard,
         )
         .expect("template compile should succeed");
         let render_body = template_output.body_parts_for_inline().unwrap().render_body;

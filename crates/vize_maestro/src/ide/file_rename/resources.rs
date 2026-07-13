@@ -14,11 +14,13 @@ pub(super) fn collect_vue_resource_edits(
     source: &str,
     rename_targets: &[RenameTarget],
 ) -> Vec<TextEdit> {
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: path.to_string_lossy().to_string().into(),
-        ..Default::default()
+    let Ok(uri) = tower_lsp::lsp_types::Url::from_file_path(path) else {
+        return Vec::new();
     };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, options) else {
+    let Some(artifact) = state.sfc_descriptor_for(&uri, source) else {
+        return Vec::new();
+    };
+    let Some(descriptor) = artifact.descriptor() else {
         return Vec::new();
     };
     let Some(current_dir) = path.parent() else {

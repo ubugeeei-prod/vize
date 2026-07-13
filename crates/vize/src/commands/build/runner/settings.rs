@@ -1,8 +1,8 @@
 //! Per-file compile settings and template-syntax mapping for the build command.
 
 use std::path::Path;
-use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::config::{ConfigFeatureFlags, VueVersion};
+use vize_relief::TemplateSyntaxMode;
 
 use crate::commands::build::ScriptExtension;
 

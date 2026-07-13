@@ -173,12 +173,8 @@ impl super::DefinitionService {
 
         // Check if this is a prop name used directly in template
         if helpers::is_in_vue_directive_expression(ctx) {
-            let options = vize_atelier_sfc::SfcParseOptions {
-                filename: ctx.uri.path().to_string().into(),
-                ..Default::default()
-            };
-            if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options)
-                && let Some(def) = template::find_prop_definition_by_name(ctx, &descriptor, &word)
+            if let Some(descriptor) = ctx.sfc_descriptor()
+                && let Some(def) = template::find_prop_definition_by_name(ctx, descriptor, &word)
             {
                 return Some(def);
             }
@@ -195,9 +191,12 @@ impl super::DefinitionService {
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
         if let Some(definition) = script::definition_in_script(ctx) {
-            let is_define_art_source =
-                crate::ide::musea::define_art_source_at_offset(&ctx.content, ctx.uri, ctx.offset)
-                    .is_some();
+            let is_define_art_source = ctx.sfc_descriptor().is_some_and(|descriptor| {
+                crate::ide::musea::define_art_source_at_offset_from_descriptor(
+                    descriptor, ctx.offset,
+                )
+                .is_some()
+            });
             if is_define_art_source {
                 return Some(definition);
             }

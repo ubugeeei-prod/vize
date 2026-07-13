@@ -2,8 +2,8 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range};
+use vize_carton::BindingType;
 use vize_croquis::{Drawer, DrawerOptions};
-use vize_relief::BindingType;
 
 use super::{IdeContext, helpers};
 use crate::ide::{is_component_tag, kebab_to_pascal};
@@ -49,17 +49,11 @@ pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionR
         return Some(GotoDefinitionResponse::Scalar(location));
     }
 
-    // Parse SFC to get the actual script content (not virtual code)
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-
-    let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+    let descriptor = ctx.sfc_descriptor()?;
 
     // Check if this word is a prop name (props are available directly in template)
     if helpers::is_in_vue_directive_expression(ctx)
-        && let Some(def) = find_prop_definition_by_name(ctx, &descriptor, &word)
+        && let Some(def) = find_prop_definition_by_name(ctx, descriptor, &word)
     {
         return Some(def);
     }
@@ -337,12 +331,7 @@ pub(crate) fn find_props_property_definition(
         return None;
     }
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-
-    let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+    let descriptor = ctx.sfc_descriptor()?;
 
     if let Some(ref script_setup) = descriptor.script_setup {
         let content = &script_setup.content;
@@ -403,12 +392,11 @@ pub(crate) fn find_component_prop_definition(
     let resolved_path = helpers::resolve_import_path(ctx.uri, &import_path)?;
     let component_content = std::fs::read_to_string(&resolved_path).ok()?;
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: resolved_path.to_string_lossy().to_string().into(),
-        ..Default::default()
-    };
-
-    let descriptor = vize_atelier_sfc::parse_sfc(&component_content, options).ok()?;
+    let component_uri = tower_lsp::lsp_types::Url::from_file_path(&resolved_path).ok()?;
+    let artifact = ctx
+        .state
+        .sfc_descriptor_for(&component_uri, &component_content)?;
+    let descriptor = artifact.descriptor()?;
 
     let prop_name = helpers::kebab_to_camel(&attr_name);
 
@@ -507,13 +495,8 @@ pub(crate) fn find_component_definition(
         return super::inline_art::self_component_definition(ctx);
     }
 
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-
     let mut analyzer = Drawer::with_options(DrawerOptions::full());
-    let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+    let descriptor = ctx.sfc_descriptor()?;
 
     if let Some(ref script_setup) = descriptor.script_setup {
         analyzer.analyze_script_setup(&script_setup.content);
@@ -603,14 +586,7 @@ fn art_component_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<Stri
     )
     .ok()?;
     let component_path = art_desc.metadata.component?;
-    let descriptor = vize_atelier_sfc::parse_sfc(
-        &ctx.content,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        },
-    )
-    .ok()?;
+    let descriptor = ctx.sfc_descriptor()?;
     if let Some(script_setup) = descriptor.script_setup.as_ref()
         && let Some(defined_component) =
             crate::virtual_code::find_define_art_component_name(script_setup.content.as_ref())

@@ -7,9 +7,11 @@
 mod bindings;
 mod empty_component;
 pub(crate) mod fallbacks;
+mod graph;
 mod helpers;
 mod normal_script;
 pub(crate) mod output_module;
+mod shared_syntax;
 mod source_maps;
 mod styles;
 #[cfg(test)]
@@ -19,21 +21,22 @@ use crate::compile_script::artifacts::{erase_artifact_macro_statements, extract_
 use crate::compile_script::lazy_hydration::transform_lazy_hydration_macros;
 use crate::compile_script::props::is_valid_identifier;
 use crate::compile_script::{TemplateParts, compile_script_setup_inline_with_context};
-use crate::compile_template::{
-    TemplateBlockCompileContext, compile_template_block, compile_template_block_vapor,
-};
+use crate::compile_template::TemplateBlockCompileContext;
 use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
 use crate::types::{
     BindingMetadata, BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError,
     SfcMacroArtifact,
 };
-use vize_atelier_core::TemplateSyntaxMode;
+use vize_relief::TemplateSyntaxMode;
 
 use self::bindings::{
     collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
 };
 use self::fallbacks::apply_vapor_ssr_fallback;
+pub(crate) use self::graph::{
+    GraphRenderMapping, GraphRenderModule, compile_sfc_with_graph_render,
+};
 use self::helpers::{
     demote_v_model_reactive_const_bindings, extract_component_name, generate_scope_id,
 };
@@ -42,7 +45,11 @@ use self::output_module::{
     RenderFunctionName, append_component_render_export, append_css_modules_assignment,
     rewrite_client_render_for_sfc_main,
 };
-use self::source_maps::{SourceMapComposition, record_template_source_map_fact};
+pub use self::shared_syntax::compile_sfc_with_shared_syntax;
+use self::shared_syntax::{compile_template_block, compile_template_block_vapor};
+use self::source_maps::{
+    SourceMapComposition, compose_template_source_map, record_template_source_map_fact,
+};
 use self::styles::compile_styles;
 
 // Re-export ScriptCompileResult for public API
@@ -218,7 +225,7 @@ pub fn compile_sfc(
     descriptor: &SfcDescriptor,
     options: SfcCompileOptions,
 ) -> Result<SfcCompileResult, SfcError> {
-    compile_sfc_inner(descriptor, options, TemplateSyntaxMode::Standard)
+    compile_sfc_inner(descriptor, options, TemplateSyntaxMode::Standard, None)
 }
 
 /// Compile an SFC descriptor with Vue parser quirk compatibility.
@@ -227,7 +234,7 @@ pub fn compile_sfc_with_vue_parser_quirks(
     descriptor: &SfcDescriptor,
     options: SfcCompileOptions,
 ) -> Result<SfcCompileResult, SfcError> {
-    compile_sfc_inner(descriptor, options, TemplateSyntaxMode::Quirks)
+    compile_sfc_inner(descriptor, options, TemplateSyntaxMode::Quirks, None)
 }
 
 /// Compile an SFC descriptor with an explicit template syntax mode.
@@ -237,13 +244,14 @@ pub fn compile_sfc_with_template_syntax(
     options: SfcCompileOptions,
     template_syntax: TemplateSyntaxMode,
 ) -> Result<SfcCompileResult, SfcError> {
-    compile_sfc_inner(descriptor, options, template_syntax)
+    compile_sfc_inner(descriptor, options, template_syntax, None)
 }
 
 fn compile_sfc_inner(
     descriptor: &SfcDescriptor,
     options: SfcCompileOptions,
     template_syntax: TemplateSyntaxMode,
+    shared_syntax: Option<&vize_relief::ReliefArtifact>,
 ) -> Result<SfcCompileResult, SfcError> {
     let mut errors = Vec::new();
     let mut warnings = Vec::new();
@@ -260,9 +268,7 @@ fn compile_sfc_inner(
 
     let has_styles = !descriptor.styles.is_empty();
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
-    // Use externally-provided scope ID if available, otherwise generate from filename.
-    // The external scope ID ensures consistency with JS-side SHA-256 generation.
-    // Template/script-only SFCs do not need the hash.
+    // External scope IDs preserve JS-side SHA-256 consistency; otherwise derive one when needed.
     let needs_scope_id =
         has_styles || !descriptor.css_vars.is_empty() || options.scope_id.is_some();
     let scope_id = if needs_scope_id {
@@ -294,17 +300,13 @@ fn compile_sfc_inner(
             .map(|s| s.attrs.contains_key("vapor"))
             .unwrap_or(false);
 
-    // Vapor components currently render on the client. For SSR we fall back to
-    // the standard VDOM compiler and let the client hydrate with Vapor output.
+    // SSR falls back to VDOM before the client hydrates with Vapor output.
     if descriptor.template.is_some() {
         apply_vapor_ssr_fallback(descriptor, &options, vapor_requested, &mut warnings);
     }
     let is_vapor = !options.template.ssr && vapor_requested;
 
-    // is_ts controls output format:
-    // - true: output TypeScript (add `: any` annotations, defineComponent wrapper)
-    // - false: output JavaScript (strip TypeScript syntax from TS sources)
-    // Source language detection is tracked separately in the script/setup branches below.
+    // Output TypeScript when either script or template compilation requests it.
     let is_ts = options.script.is_ts || options.template.is_ts;
     let template_is_ts = options.template.is_ts
         || descriptor
@@ -316,17 +318,15 @@ fn compile_sfc_inner(
             .as_ref()
             .is_some_and(|s| is_ts_lang(s.lang.as_deref()));
 
-    // Extract component name from filename
     let component_name = extract_component_name(filename);
 
-    // Determine output mode based on script type
     let has_script_setup = descriptor.script_setup.is_some();
     let has_script = descriptor.script.is_some();
     let has_template = descriptor.template.is_some();
 
     if !has_script && !has_script_setup && has_template {
         let template = descriptor.template.as_ref().unwrap();
-        let map;
+        let source_map;
         let template_result = if is_vapor {
             profile!(
                 "atelier.sfc.template.vapor",
@@ -337,6 +337,7 @@ fn compile_sfc_inner(
                     None,
                     &options.template,
                     template_syntax,
+                    shared_syntax,
                 )
             )
         } else {
@@ -344,9 +345,7 @@ fn compile_sfc_inner(
             let mut dom_opts = template_opts.compiler_options.take().unwrap_or_default();
             dom_opts.hoist_static = true;
             template_opts.compiler_options = Some(dom_opts);
-            // Also pass scope IDs to the client template compiler. Vue's runtime
-            // normally propagates __scopeId, but wrapper components such as NuxtLink
-            // can otherwise lose parent scoped attrs before the final DOM root.
+            // Preserve scoped attrs across wrappers such as NuxtLink.
             profile!(
                 "atelier.sfc.template.compile",
                 compile_template_block(
@@ -363,14 +362,17 @@ fn compile_sfc_inner(
                         croquis: None,
                     },
                     template_syntax,
+                    shared_syntax,
                 )
             )
         };
 
         match template_result {
             Ok(template_output) => {
-                record_template_source_map_fact(&template_output, SourceMapComposition::Composed);
-                map = template_output.source_map_json();
+                source_map = record_template_source_map_fact(
+                    &template_output,
+                    SourceMapComposition::Composed,
+                );
                 warnings.extend(template_output.warnings);
                 code = template_output.code;
                 if is_vapor {
@@ -408,6 +410,7 @@ fn compile_sfc_inner(
 
         finalize_output_mode(&mut code, &mut warnings, &options);
         trim_trailing_newlines(&mut code);
+        let map = compose_template_source_map(source_map, &code, descriptor, filename);
 
         return Ok(SfcCompileResult {
             code,
@@ -420,7 +423,6 @@ fn compile_sfc_inner(
         });
     }
 
-    // Case 2: Script (non-setup) + Template - rewrite default and compile template
     if has_script && !has_script_setup {
         let script = descriptor.script.as_ref().unwrap();
         let lazy_hydration_transform = transform_lazy_hydration_macros(&script.content);
@@ -431,7 +433,6 @@ fn compile_sfc_inner(
         let script_content = erase_artifact_macro_statements(script_source)
             .unwrap_or_else(|| script_source.to_compact_string());
 
-        // Check if source script is TypeScript
         let source_is_ts = is_ts_lang(script.lang.as_deref());
 
         // Rewrite `export default` to `const _sfc_main = ...`
@@ -489,6 +490,7 @@ fn compile_sfc_inner(
             );
             let mut bindings = BindingMetadata::default();
             for (name, bt) in parsed.bindings.iter() {
+                let bt: BindingType = bt.into();
                 // Forward only the unambiguous Options API member kinds. Croquis
                 // assigns `SetupConst`/`LiteralConst` to top-level imports and
                 // module-local consts and `SetupMaybeRef` to `setup()` returns —
@@ -516,7 +518,7 @@ fn compile_sfc_inner(
             None
         };
 
-        // Compile template if present
+        let mut source_map = None;
         if has_template {
             let template = descriptor.template.as_ref().unwrap();
             let template_result = if is_vapor {
@@ -529,6 +531,7 @@ fn compile_sfc_inner(
                         None,
                         &options.template,
                         template_syntax,
+                        shared_syntax,
                     )
                 )
             } else {
@@ -537,9 +540,7 @@ fn compile_sfc_inner(
                 dom_opts.hoist_static = true;
                 template_opts.compiler_options = Some(dom_opts);
 
-                // Also pass scope IDs to the client template compiler. Vue's runtime
-                // normally propagates __scopeId, but wrapper components such as NuxtLink
-                // can otherwise lose parent scoped attrs before the final DOM root.
+                // Preserve scoped attrs across wrappers such as NuxtLink.
                 profile!(
                     "atelier.sfc.template.compile",
                     compile_template_block(
@@ -556,23 +557,20 @@ fn compile_sfc_inner(
                             croquis: None,
                         },
                         template_syntax,
+                        shared_syntax,
                     )
                 )
             };
 
             match template_result {
                 Ok(template_output) => {
-                    record_template_source_map_fact(
+                    source_map = record_template_source_map_fact(
                         &template_output,
                         SourceMapComposition::Skipped,
                     );
                     warnings.extend(template_output.warnings);
                     let template_code = template_output.code;
-                    // Build output matching Vue's compiler-sfc:
-                    // 1. Full template output (imports + hoisted + function _sfc_render(...))
-                    // 2. Rewritten script
-                    // 3. _sfc_main.render = _sfc_render / _sfc_main.ssrRender = ssrRender
-                    // 4. export default _sfc_main
+                    // Match compiler-sfc: template module, script, render attachment, export.
                     if is_vapor || options.template.ssr {
                         // Vapor / SSR keep the render block first, then the script.
                         code.push_str(&template_code);
@@ -632,11 +630,12 @@ fn compile_sfc_inner(
 
         finalize_output_mode(&mut code, &mut warnings, &options);
         trim_trailing_newlines(&mut code);
+        let map = compose_template_source_map(source_map, &code, descriptor, filename);
 
         return Ok(SfcCompileResult {
             code,
             css,
-            map: None,
+            map,
             errors,
             warnings,
             bindings: None,
@@ -644,7 +643,6 @@ fn compile_sfc_inner(
         });
     }
 
-    // Case 3: Script setup with inline template
     let Some(script_setup) = descriptor.script_setup.as_ref() else {
         return Ok(empty_component::compile_empty_component(
             is_vapor,
@@ -849,6 +847,7 @@ fn compile_sfc_inner(
                     Some(&script_bindings),
                     &options.template,
                     template_syntax,
+                    shared_syntax,
                 )
             ))
         } else {
@@ -871,16 +870,19 @@ fn compile_sfc_inner(
                         croquis: Some(croquis),
                     },
                     template_syntax,
+                    shared_syntax,
                 )
             ))
         }
     } else {
         None
     };
-    if let Some(Ok(template_output)) = &template_result {
-        record_template_source_map_fact(template_output, SourceMapComposition::Skipped);
+    let source_map = if let Some(Ok(template_output)) = &template_result {
         warnings.extend(template_output.warnings.clone());
-    }
+        record_template_source_map_fact(template_output, SourceMapComposition::Skipped)
+    } else {
+        None
+    };
     // Extract template parts for inline mode (imports, hoisted, preamble, render_body)
     let (
         template_imports,
@@ -953,11 +955,7 @@ fn compile_sfc_inner(
         None => (script_setup_content.as_str(), setup_program.as_ref()),
     };
 
-    // Compile script setup using inline mode to match Vue's @vue/compiler-sfc output format:
-    // 1. Template imports (from "vue")
-    // 2. User imports
-    // 3. Hoisted literal consts (module-level)
-    // 4. export default { __name, props?, emits?, setup(__props) { ... return (_ctx, _cache) => { ... } } }
+    // Compile script setup with compiler-sfc-compatible inline output ordering.
     let script_result = profile!(
         "atelier.sfc.script_setup.inline_compile",
         compile_script_setup_inline_with_context(
@@ -996,11 +994,12 @@ fn compile_sfc_inner(
 
     finalize_output_mode(&mut code, &mut warnings, &options);
     trim_trailing_newlines(&mut code);
+    let map = compose_template_source_map(source_map, &code, descriptor, filename);
 
     Ok(SfcCompileResult {
         code,
         css,
-        map: None,
+        map,
         errors,
         warnings,
         bindings: script_result.bindings,

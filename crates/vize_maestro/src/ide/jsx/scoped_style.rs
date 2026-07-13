@@ -17,12 +17,8 @@
 //! `style` element carrying a bare `scoped` attribute.
 #![allow(clippy::disallowed_methods)]
 
-use oxc_allocator::Allocator;
-use oxc_ast::ast::{JSXAttributeItem, JSXAttributeName, JSXChild, JSXElement, JSXElementName};
-use oxc_ast_visit::{Visit, walk};
-use oxc_span::GetSpan;
 use tower_lsp::lsp_types::Url;
-use vize_atelier_jsx::{JsxLang, parse_module};
+use vize_atelier_jsx::{JsxLang, JsxSyntaxSnapshot, snapshot_jsx};
 
 use crate::virtual_code::{
     MappingFeatures, SourceMap, SourceMapping, SourceRange, VirtualDocument, VirtualLanguage,
@@ -46,16 +42,24 @@ pub struct JsxScopedStyleService;
 impl JsxScopedStyleService {
     /// Extract every JSX `<style scoped>` block's CSS content + source span from
     /// a `.jsx`/`.tsx` document, in source order.
+    #[cfg(test)]
     pub(in crate::ide) fn extract(content: &str, lang: JsxLang) -> Vec<JsxScopedStyle> {
-        let allocator = Allocator::default();
-        let parsed = parse_module(&allocator, content, lang);
+        let snapshot = snapshot_jsx(content, lang);
+        Self::extract_from_snapshot(&snapshot)
+    }
 
-        let mut collector = ScopedStyleCollector {
-            source: content,
-            styles: Vec::new(),
-        };
-        collector.visit_program(&parsed.program);
-        collector.styles
+    fn extract_from_snapshot(snapshot: &JsxSyntaxSnapshot) -> Vec<JsxScopedStyle> {
+        snapshot
+            .root_metadata()
+            .iter()
+            .flat_map(|metadata| metadata.scoped_styles.iter())
+            .filter(|style| !style.css.trim().is_empty())
+            .map(|style| JsxScopedStyle {
+                css: style.css.to_string(),
+                start: style.span.start,
+                end: style.span.end,
+            })
+            .collect()
     }
 
     /// Build embedded CSS virtual documents for a `.jsx`/`.tsx` document's
@@ -65,7 +69,15 @@ impl JsxScopedStyleService {
     /// editor's CSS service sees JSX scoped CSS identically.
     pub fn virtual_css_documents(content: &str, uri: &Url) -> Vec<VirtualDocument> {
         let lang = JsxLang::from_path(uri.path());
-        let styles = Self::extract(content, lang);
+        let snapshot = snapshot_jsx(content, lang);
+        Self::virtual_css_documents_from_snapshot(&snapshot, uri)
+    }
+
+    pub(crate) fn virtual_css_documents_from_snapshot(
+        snapshot: &JsxSyntaxSnapshot,
+        uri: &Url,
+    ) -> Vec<VirtualDocument> {
+        let styles = Self::extract_from_snapshot(snapshot);
 
         styles
             .into_iter()
@@ -106,119 +118,6 @@ impl JsxScopedStyleService {
             source_map,
         }
     }
-}
-
-/// Walks the parsed program collecting `<style scoped>` CSS spans. Only
-/// `visit_jsx_element` is overridden, so no scope bookkeeping (and hence no
-/// `oxc_syntax`) is needed — `walk` still descends into nested elements.
-struct ScopedStyleCollector<'s> {
-    source: &'s str,
-    styles: Vec<JsxScopedStyle>,
-}
-
-impl<'a, 's> Visit<'a> for ScopedStyleCollector<'s> {
-    fn visit_jsx_element(&mut self, element: &JSXElement<'a>) {
-        if let Some(style) = self.try_extract(element) {
-            self.styles.push(style);
-        }
-        // Descend so a `<style scoped>` nested in fragments/children is still
-        // found, and so multiple components in one module each contribute.
-        walk::walk_jsx_element(self, element);
-    }
-}
-
-impl ScopedStyleCollector<'_> {
-    /// If `element` is an intrinsic `<style scoped>`, return its CSS slice + span.
-    fn try_extract(&self, element: &JSXElement<'_>) -> Option<JsxScopedStyle> {
-        let opening = &element.opening_element;
-        if !is_intrinsic_style(&opening.name) || !has_scoped_attr(&opening.attributes) {
-            return None;
-        }
-        self.children_css_span(element)
-    }
-
-    /// Byte range covering the element's CSS, as a raw source slice (positions
-    /// map 1:1).
-    ///
-    /// For the idiomatic single template-literal (`` {`…`} ``) or string-literal
-    /// (`{'…'}`) body the span is narrowed to the literal's inner text, so the
-    /// CSS document is pure CSS with no JSX braces/quotes. For bare-text or mixed
-    /// children it falls back to first-child-start..last-child-end.
-    fn children_css_span(&self, element: &JSXElement<'_>) -> Option<JsxScopedStyle> {
-        let children = &element.children;
-        // For the idiomatic single template-literal / string body, narrow the
-        // span to the literal's inner text so the CSS document is pure CSS.
-        if let [JSXChild::ExpressionContainer(container)] = children.as_slice() {
-            use oxc_ast::ast::JSXExpression;
-            match &container.expression {
-                JSXExpression::TemplateLiteral(template) => {
-                    // Cover from the first quasi to the last quasi (the static
-                    // CSS text), excluding the backticks.
-                    let first = template.quasis.first()?;
-                    let last = template.quasis.last()?;
-                    let start = first.span.start;
-                    let end = last.span.end;
-                    return self.slice_span(start, end);
-                }
-                JSXExpression::StringLiteral(string) => {
-                    // Inside the quotes.
-                    let span = string.span;
-                    let start = span.start.saturating_add(1);
-                    let end = span.end.saturating_sub(1).max(start);
-                    return self.slice_span(start, end);
-                }
-                _ => {}
-            }
-        }
-
-        // Fallback: bare JSX text and/or mixed children — cover from the first
-        // child's start to the last child's end.
-        let first = children.first()?;
-        let last = children.last()?;
-        let start = first.span().start;
-        let end = last.span().end;
-        self.slice_span(start, end)
-    }
-
-    /// Materialize a [`JsxScopedStyle`] from a `[start, end)` source byte range.
-    fn slice_span(&self, start: u32, end: u32) -> Option<JsxScopedStyle> {
-        let s = start as usize;
-        let e = (end as usize).min(self.source.len());
-        if s >= e {
-            return None;
-        }
-        let css = self.source.get(s..e)?;
-        // Skip whitespace-only bodies — there is no CSS to diagnose.
-        if css.trim().is_empty() {
-            return None;
-        }
-        #[allow(clippy::disallowed_methods)]
-        Some(JsxScopedStyle {
-            css: css.to_string(),
-            start,
-            end: e as u32,
-        })
-    }
-}
-
-/// Whether a JSX element name is the intrinsic lowercase `style` tag.
-fn is_intrinsic_style(name: &JSXElementName<'_>) -> bool {
-    match name {
-        JSXElementName::Identifier(id) => id.name.as_str() == "style",
-        JSXElementName::IdentifierReference(reference) => reference.name.as_str() == "style",
-        _ => false,
-    }
-}
-
-/// Whether the opening element carries a bare `scoped` attribute.
-fn has_scoped_attr(attributes: &[JSXAttributeItem<'_>]) -> bool {
-    attributes.iter().any(|item| match item {
-        JSXAttributeItem::Attribute(attr) => match &attr.name {
-            JSXAttributeName::Identifier(id) => id.name.as_str() == "scoped",
-            JSXAttributeName::NamespacedName(_) => false,
-        },
-        JSXAttributeItem::SpreadAttribute(_) => false,
-    })
 }
 
 #[cfg(test)]

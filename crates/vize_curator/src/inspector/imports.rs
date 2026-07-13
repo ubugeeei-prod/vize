@@ -1,51 +1,38 @@
-//! AST-backed import extraction for inspector graphs.
+//! AST-backed import extraction for cached inspector source products.
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Expression, ImportDeclaration, ImportDeclarationSpecifier, ImportExpression};
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_atelier_core::parser::parse;
-use vize_atelier_sfc::{
-    SfcParseOptions, SfcScriptBlock, parse_sfc, script::resolve_template_used_identifiers,
-};
-use vize_carton::{Bump, FxHashSet, String, ToCompactString};
+use vize_atelier_sfc::{SfcDescriptor, SfcScriptBlock};
+use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_croquis::CroquisSemanticSnapshot;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(super) struct ImportEdge {
     pub specifier: String,
     pub kind: &'static str,
     pub locals: Vec<String>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub(super) struct FileAnalysis {
     pub imports: Vec<ImportEdge>,
     pub template_used_ids: FxHashSet<String>,
 }
 
-pub(super) fn analyze_file(path: &str, source: &str) -> FileAnalysis {
-    if path.ends_with(".vue") {
-        return analyze_sfc_file(path, source);
-    }
-
+pub(super) fn analyze_script_file(path: &str, source: &str) -> FileAnalysis {
     FileAnalysis {
         imports: extract_script_imports(source, source_type_for_path(path)),
         template_used_ids: FxHashSet::default(),
     }
 }
 
-fn analyze_sfc_file(path: &str, source: &str) -> FileAnalysis {
-    let Ok(descriptor) = parse_sfc(
-        source,
-        SfcParseOptions {
-            filename: path.into(),
-            ..Default::default()
-        },
-    ) else {
-        return FileAnalysis::default();
-    };
-
+pub(super) fn analyze_sfc_file(
+    descriptor: &SfcDescriptor<'_>,
+    semantics: &CroquisSemanticSnapshot,
+) -> FileAnalysis {
     let mut imports = Vec::new();
     if let Some(script) = descriptor.script.as_ref() {
         imports.extend(extract_script_block_imports(script));
@@ -54,15 +41,11 @@ fn analyze_sfc_file(path: &str, source: &str) -> FileAnalysis {
         imports.extend(extract_script_block_imports(script_setup));
     }
 
-    let template_used_ids = descriptor
-        .template
-        .as_ref()
-        .map(|template| {
-            let allocator = Bump::new();
-            let (root, _) = parse(&allocator, template.content.as_ref());
-            resolve_template_used_identifiers(&root).used_ids
-        })
-        .unwrap_or_default();
+    let template_used_ids = semantics
+        .component_usages
+        .iter()
+        .map(|usage| usage.name.as_str().to_compact_string())
+        .collect();
 
     FileAnalysis {
         imports,

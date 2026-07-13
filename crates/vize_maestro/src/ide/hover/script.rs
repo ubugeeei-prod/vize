@@ -9,8 +9,8 @@
 )]
 
 use tower_lsp::lsp_types::{Hover, HoverContents};
+use vize_carton::BindingType;
 use vize_croquis::{Drawer, DrawerOptions};
-use vize_relief::BindingType;
 
 #[cfg(feature = "native")]
 use std::sync::Arc;
@@ -100,12 +100,7 @@ impl HoverService {
     /// Get hover for TypeScript binding in script using croquis analysis.
     fn hover_ts_binding_in_script(ctx: &IdeContext, word: &str) -> Option<Hover> {
         // Parse SFC to get script content
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+        let descriptor = ctx.sfc_descriptor()?;
 
         // Get the script content for type inference
         let script_content = descriptor

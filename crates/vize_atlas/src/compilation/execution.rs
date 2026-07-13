@@ -110,6 +110,9 @@ impl Compilation {
                     plan.input_dependencies
                         .get(request)
                         .map_or(&[], Vec::as_slice),
+                    plan.source_input_dependencies
+                        .get(request)
+                        .map_or(&[], Vec::as_slice),
                     source_dependencies,
                     CachedArtifact {
                         value: Shared::clone(&value),
@@ -222,6 +225,17 @@ impl Compilation {
             let current = self.inputs.revision(*input);
             if current != *planned {
                 return Err(QueryError::StaleInputPlan {
+                    input: *input,
+                    planned: *planned,
+                    current,
+                });
+            }
+        }
+        for (source, input, planned) in &plan.source_input_revisions {
+            let current = self.inputs.source_revision(*source, *input);
+            if current != *planned {
+                return Err(QueryError::StaleSourceInputPlan {
+                    source: *source,
                     input: *input,
                     planned: *planned,
                     current,

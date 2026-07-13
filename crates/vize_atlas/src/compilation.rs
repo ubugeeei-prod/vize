@@ -3,15 +3,16 @@
 mod execution;
 mod snapshot;
 
-pub use snapshot::CompilationSnapshot;
+pub use snapshot::{CompilationSnapshot, QuerySession};
 
 use vize_carton::{FxHashMap, FxHashSet};
 
 use crate::{
     ArtifactCache, CompilationInput, CompilationInputError, CompilationInputs, ExecutionCounters,
     InputId, Plan, PlanError, Product, ProductId, ProductRequest, Provider, ProviderId,
-    RegisterProviderError, Shared, SourceError, SourceId, SourceRange, SourceSnapshot, SourceStore,
-    invalidation::{InputInvalidationReport, InvalidationReport},
+    RegisterProviderError, Shared, SourceError, SourceId, SourceInput, SourceInputId, SourceRange,
+    SourceSnapshot, SourceStore,
+    invalidation::{InputInvalidationReport, InvalidationReport, SourceInputInvalidationReport},
     provider::{ErasedProvider, ProviderAdapter},
 };
 
@@ -28,7 +29,7 @@ pub struct Compilation {
     providers: FxHashMap<ProductId, Vec<ProviderEntry>>,
     provider_generation: u64,
     inputs: CompilationInputs,
-    cache: ArtifactCache,
+    cache: Shared<ArtifactCache>,
     counters: ExecutionCounters,
 }
 
@@ -100,8 +101,29 @@ impl Compilation {
         self.inputs.get::<I>()
     }
 
+    /// Install or replace an option for exactly one source.
+    pub fn set_source_input<I: SourceInput>(
+        &mut self,
+        source: SourceId,
+        value: I::Value,
+    ) -> Result<SourceInputInvalidationReport, CompilationInputError> {
+        if self.sources.get(source).is_none() {
+            return Err(CompilationInputError::SourceNotFound(source));
+        }
+        let input = SourceInputId::of::<I>();
+        let replaced = self.inputs.insert_source::<I>(source, value)?;
+        let evicted = self.cache.evict_source_input(source, input);
+        Ok(SourceInputInvalidationReport::new(
+            source, input, replaced, evicted,
+        ))
+    }
+
+    pub fn source_input<I: SourceInput>(&self, source: SourceId) -> Option<&I::Value> {
+        self.inputs.get_source::<I>(source)
+    }
+
     /// Inspect the revision-keyed artifact cache.
-    pub const fn cache(&self) -> &ArtifactCache {
+    pub fn cache(&self) -> &ArtifactCache {
         &self.cache
     }
 
@@ -150,6 +172,41 @@ impl Compilation {
         text: impl Into<Shared<str>>,
     ) -> Result<InvalidationReport, SourceError> {
         self.update_source_inner(source, text.into(), Some(range))
+    }
+
+    /// Rename a source while preserving its stable identity.
+    ///
+    /// Provider applicability may depend on the source name or extension, so
+    /// the source and all provenance descendants receive new revisions and
+    /// affected cache entries are evicted.
+    pub fn rename_source(
+        &mut self,
+        source: SourceId,
+        name: impl Into<Shared<str>>,
+    ) -> Result<InvalidationReport, SourceError> {
+        let mutation = self.sources.rename(source, name.into())?;
+        let affected: FxHashSet<_> = mutation
+            .changes
+            .iter()
+            .map(|change| change.source)
+            .collect();
+        let evicted = self.cache.evict_sources(&affected);
+        Ok(InvalidationReport::new(source, mutation.changes, evicted))
+    }
+
+    /// Remove a source and every embedded descendant from this compilation.
+    ///
+    /// Products belonging to other sources are also evicted when they record a
+    /// dependency on the removed subtree. This is the close/delete operation
+    /// used by persistent editor, watcher, and bundler sessions.
+    pub fn remove_source(
+        &mut self,
+        source: SourceId,
+    ) -> Result<crate::SourceRemovalReport, SourceError> {
+        let removed = self.sources.remove(source)?;
+        let affected: FxHashSet<_> = removed.iter().copied().collect();
+        let evicted = self.cache.evict_sources(&affected);
+        Ok(crate::SourceRemovalReport::new(removed, evicted))
     }
 
     fn update_source_inner(

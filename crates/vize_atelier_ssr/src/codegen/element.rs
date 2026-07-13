@@ -9,11 +9,11 @@ mod props;
 mod slot;
 mod vnode;
 
-use vize_atelier_core::{
+use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_relief::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, ForNode, IfNode, PropNode,
     RuntimeHelper, TemplateChildNode,
 };
-use vize_carton::{FxHashSet, String, ToCompactString};
 
 use super::{SsrCodegenContext, helpers::escape_html_attr, helpers::extract_destructure_params};
 use vize_carton::cstr;

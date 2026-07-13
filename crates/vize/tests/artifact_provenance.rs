@@ -28,7 +28,8 @@ fn sfc_parent_anchor_survives_render_flow_and_virtual_ts_products() {
         .query::<SfcTemplateProduct>(source)
         .unwrap()
         .value()
-        .clone();
+        .clone()
+        .expect("template block");
     let template_range = SourceRange::new(
         u32::try_from(template.range.start).unwrap(),
         u32::try_from(template.range.end).unwrap(),

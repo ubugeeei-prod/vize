@@ -257,6 +257,7 @@ pub(super) fn rename_open_documents(
         }
 
         if state.documents.rename(&old_uri, new_uri.clone()) {
+            state.rename_artifact_source(&old_uri, &new_uri);
             state.remove_virtual_docs(&old_uri);
 
             if let Some(document) = state.documents.get(&new_uri) {
@@ -323,15 +324,15 @@ fn collect_vue_edits(
     source: &str,
     rename_targets: &[RenameTarget],
 ) -> Vec<TextEdit> {
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: path.to_string_lossy().to_string().into(),
-        ..Default::default()
-    };
-
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, options) else {
+    let Ok(uri) = Url::from_file_path(path) else {
         return Vec::new();
     };
-
+    let Some(artifact) = state.sfc_descriptor_for(&uri, source) else {
+        return Vec::new();
+    };
+    let Some(descriptor) = artifact.descriptor() else {
+        return Vec::new();
+    };
     let mut edits = Vec::new();
     let edit_context = ScriptEditContext {
         state,
@@ -340,7 +341,6 @@ fn collect_vue_edits(
         full_source: source,
         rename_targets,
     };
-
     if let Some(script) = descriptor.script.as_ref() {
         edits.extend(collect_script_content_edits(
             &edit_context,

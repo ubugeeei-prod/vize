@@ -75,12 +75,12 @@ pub(super) fn dialect_from_features(
 
 pub(super) fn template_syntax_mode(
     template_syntax: Option<&str>,
-) -> vize_atelier_core::TemplateSyntaxMode {
+) -> vize_relief::TemplateSyntaxMode {
     match template_syntax {
-        Some("strict") => vize_atelier_core::TemplateSyntaxMode::Strict,
-        Some("quirks") => vize_atelier_core::TemplateSyntaxMode::Quirks,
-        Some("standard") | None => vize_atelier_core::TemplateSyntaxMode::Standard,
-        Some(_) => vize_atelier_core::TemplateSyntaxMode::Standard,
+        Some("strict") => vize_relief::TemplateSyntaxMode::Strict,
+        Some("quirks") => vize_relief::TemplateSyntaxMode::Quirks,
+        Some("standard") | None => vize_relief::TemplateSyntaxMode::Standard,
+        Some(_) => vize_relief::TemplateSyntaxMode::Standard,
     }
 }
 

@@ -5,9 +5,7 @@
 use vize_carton::{Box, Bump, Vec, camelize};
 
 use crate::ir::{IRProp, OperationNode, SetPropIRNode};
-use vize_atelier_core::{
-    DirectiveNode, ElementNode, ElementType, ExpressionNode, SimpleExpressionNode,
-};
+use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, SimpleExpressionNode};
 
 /// Transform v-bind directive to IR
 pub fn transform_v_bind<'a>(

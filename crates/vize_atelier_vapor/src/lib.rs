@@ -4,35 +4,53 @@
 //! by eliminating the virtual DOM overhead for static parts of the template.
 
 #![allow(clippy::collapsible_match)]
+#![allow(deprecated)]
 
+#[cfg(feature = "graph")]
 mod atlas;
+#[cfg(feature = "legacy")]
 pub mod compile;
+#[cfg(feature = "legacy")]
 pub mod generate;
+#[cfg(feature = "legacy")]
 pub mod generators;
+#[cfg(feature = "legacy")]
 pub mod ir;
+#[cfg(feature = "legacy")]
 pub mod lower;
+#[cfg(feature = "graph")]
 pub mod rendu;
+#[cfg(feature = "legacy")]
 pub mod steps;
 
-#[cfg(test)]
+#[cfg(all(test, feature = "legacy"))]
 mod tests;
-#[cfg(test)]
+#[cfg(all(test, feature = "legacy"))]
 mod tests_dotted_slots;
-#[cfg(test)]
+#[cfg(all(test, feature = "legacy"))]
 mod tests_setup_components;
 
-pub use atlas::{VaporPlanProduct, VaporProvider, register_atlas_provider};
+#[cfg(feature = "graph")]
+pub use atlas::{
+    VaporOutput, VaporOutputArtifact, VaporOutputMapping, VaporOutputProduct, VaporOutputProvider,
+    VaporPlanArtifact, VaporPlanProduct, VaporProvider, register_atlas_provider,
+};
+#[cfg(feature = "legacy")]
 pub use compile::{
-    VaporCompileResult, VaporCompilerOptions, compile_vapor, compile_vapor_with_diagnostics,
+    VaporCompileResult, VaporCompilerOptions, compile_vapor,
+    compile_vapor_root_with_template_syntax_and_diagnostics, compile_vapor_with_diagnostics,
     compile_vapor_with_template_syntax, compile_vapor_with_template_syntax_and_diagnostics,
 };
+#[cfg(feature = "legacy")]
 #[allow(deprecated)]
 pub use compile::{
     compile_vapor_with_vue_parser_quirks, compile_vapor_with_vue_parser_quirks_and_diagnostics,
 };
+#[cfg(feature = "legacy")]
 pub use generate::{
     VaporGenerateOptions, VaporGenerateResult, generate_vapor, generate_vapor_with_options,
 };
+#[cfg(feature = "legacy")]
 pub use generators::{
     GenerateContext, build_text_expression, can_inline_text, can_optimize_for, can_use_ternary,
     capitalize_event_name, escape_template, generate_async_component, generate_attribute,
@@ -47,6 +65,7 @@ pub use generators::{
     generate_v_cloak_removal, generate_v_show, generate_with_directives, is_v_pre_element,
     normalize_prop_key,
 };
+#[cfg(feature = "legacy")]
 pub use ir::{
     BlockIRNode, ComponentKind, CreateComponentIRNode, DirectiveIRNode, DynamicFlag,
     EventModifiers, EventOptions, ForIRNode, GetTextChildIRNode, IRDynamicInfo, IREffect,
@@ -54,12 +73,15 @@ pub use ir::{
     PrependNodeIRNode, RootIRNode, SetDynamicPropsIRNode, SetEventIRNode, SetHtmlIRNode,
     SetPropIRNode, SetTemplateRefIRNode, SetTextIRNode, SlotOutletIRNode,
 };
+#[cfg(feature = "legacy")]
 pub use lower::transform_to_ir;
+#[cfg(feature = "graph")]
 pub use rendu::{
     VaporAttributeValue, VaporBinding, VaporBlock, VaporBlockId, VaporBranch, VaporDirective,
-    VaporExpression, VaporExpressionId, VaporName, VaporOperation, VaporPlan, VaporProperty,
-    lower_rendu, plan_rendu,
+    VaporEmitResult, VaporExpression, VaporExpressionId, VaporName, VaporOperation, VaporPlan,
+    VaporProperty, emit_rendu, emit_vapor_plan, lower_rendu, plan_rendu,
 };
+#[cfg(feature = "legacy")]
 pub use steps::{
     collect_component_slots, generate_element_template, generate_event_handler,
     generate_model_handler, generate_text_expression, generate_v_show_effect, get_model_arg,

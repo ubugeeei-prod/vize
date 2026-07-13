@@ -31,6 +31,7 @@ pub use art_script::{
     art_target_component_from_source, find_define_art_component_name,
     find_define_art_target_component,
 };
+pub(crate) use block::find_art_block_at_offset_with_descriptor;
 pub use block::{
     ArtCursorPosition, ArtVariantInfo, BlockType, find_art_block_at_offset, find_block_at_offset,
 };

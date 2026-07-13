@@ -1,8 +1,8 @@
 //! Vapor Intermediate Representation (IR) types.
 
 use serde::{Deserialize, Serialize};
-use vize_atelier_core::{Namespace, RootNode, SimpleExpressionNode, TemplateChildNode};
 use vize_carton::{Box, Bump, FxHashMap, FxHashSet, String, Vec};
+use vize_relief::{DirectiveNode, Namespace, RootNode, SimpleExpressionNode, TemplateChildNode};
 
 /// IR node type discriminant
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -215,7 +215,7 @@ pub struct PrependNodeIRNode {
 #[derive(Debug)]
 pub struct DirectiveIRNode<'a> {
     pub element: usize,
-    pub dir: Box<'a, vize_atelier_core::DirectiveNode<'a>>,
+    pub dir: Box<'a, DirectiveNode<'a>>,
     pub name: String,
     pub builtin: bool,
     /// Element tag name (for v-model type detection)

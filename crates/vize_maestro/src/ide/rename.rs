@@ -344,12 +344,7 @@ impl RenameService {
     fn find_all_occurrences(ctx: &IdeContext, word: &str) -> Vec<(usize, usize)> {
         let mut occurrences = Vec::new();
 
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+        let Some(descriptor) = ctx.sfc_descriptor() else {
             return occurrences;
         };
 

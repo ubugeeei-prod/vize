@@ -2,6 +2,8 @@
 //!
 //! This module generates JavaScript render function code from the transformed AST.
 
+#![allow(deprecated)]
+
 mod children;
 mod children_static;
 mod component_binding;
@@ -35,6 +37,7 @@ use crate::options::CodegenOptions;
 
 pub use context::{CodegenContext, CodegenResult, CodegenResultWithSections, CodegenSections};
 pub(crate) use helpers::is_constant_simple_expression;
+pub use helpers::is_valid_js_identifier;
 // Shared with the dialect-gated Vue 2 filter transform, which builds the same
 // `_filter_<name>` asset id the codegen preamble declares.
 pub use emit::{generate, generate_with_sections};
