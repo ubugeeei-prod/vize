@@ -123,6 +123,15 @@ pub(super) fn project_root_has_package_boundary(project_root: &Path) -> bool {
     project_root.join("package.json").is_file()
 }
 
+pub(super) fn retain_project_files(files: &mut Vec<PathBuf>, project_root: &Path) {
+    // Ambient `compilerOptions.types` packages can resolve from an ancestor
+    // `node_modules` outside the source root. The virtual project extends the
+    // real tsconfig and lets TypeScript load those packages normally; trying to
+    // mirror them as source roots fails because they have no path relative to
+    // the virtual project root.
+    files.retain(|path| path.starts_with(project_root));
+}
+
 fn has_source_input_outside_root(root: &Path, files: &[PathBuf]) -> bool {
     files.iter().any(|file| {
         !path_has_component(file, "node_modules")
