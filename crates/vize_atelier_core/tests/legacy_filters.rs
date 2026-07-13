@@ -15,12 +15,14 @@
 // out-of-crate test harness).
 #![allow(clippy::disallowed_types, clippy::disallowed_macros)]
 
-use vize_atelier_core::{CodegenOptions, TransformOptions, codegen, lane, parser};
+use vize_armature::parse;
+use vize_atelier_core::{codegen, lane};
 use vize_carton::config::VueVersion;
+use vize_relief::{CodegenOptions, TransformOptions};
 
 fn compile(input: &str, dialect: VueVersion) -> String {
     let allocator = bumpalo::Bump::new();
-    let (mut root, errors) = parser::parse(&allocator, input);
+    let (mut root, errors) = parse(&allocator, input);
     assert!(errors.is_empty(), "parse errors: {errors:?}");
 
     let transform_opts = TransformOptions {

@@ -9,7 +9,8 @@
     clippy::disallowed_types
 )]
 
-use criterion::{BatchSize, Criterion, black_box, criterion_group, criterion_main};
+use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
+use std::hint::black_box;
 use std::path::Path;
 use vize_carton::{CompactString, cstr};
 use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};

@@ -21,9 +21,10 @@ fn resolve_test_tsgo_binary_from(
     if let Some(sibling_cache) = workspace_root
         .and_then(Path::parent)
         .map(|parent| parent.join("corsa-bind/.cache/tsgo"))
-        && sibling_cache.exists()
     {
-        return Some(sibling_cache);
+        if sibling_cache.exists() {
+            return Some(sibling_cache);
+        }
     }
 
     let resolved =

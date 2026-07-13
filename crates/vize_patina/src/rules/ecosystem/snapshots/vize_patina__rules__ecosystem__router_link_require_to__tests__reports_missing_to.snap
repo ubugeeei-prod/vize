@@ -6,11 +6,11 @@ expression: result.diagnostics
     LintDiagnostic {
         rule_name: "ecosystem/router-link-require-to",
         severity: Error,
-        message: "RouterLink components must declare a `to` target",
+        message: "RouterLink components must declare a navigation target",
         start: 0,
         end: 10,
         help: Some(
-            "Add `to` or `:to` so navigation is explicit and typed-route tooling can infer the target.",
+            "Add `to` or `:to` (`href` or `:href` is also valid on NuxtLink) so navigation is explicit and typed-route tooling can infer the target.",
         ),
         labels: [],
         fix: None,

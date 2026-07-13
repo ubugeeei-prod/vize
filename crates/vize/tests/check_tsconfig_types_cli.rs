@@ -191,3 +191,74 @@ void label;
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn check_loads_parent_type_packages_without_mirroring_them_as_sources() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let workspace = unique_case_dir("parent-types");
+    let _ = std::fs::remove_dir_all(&workspace);
+    std::fs::create_dir_all(&workspace).unwrap();
+    link_workspace_vue(&workspace).unwrap();
+    write(
+        &workspace,
+        "node_modules/@types/vize-external/index.d.ts",
+        "declare const externalFixtureValue: string;\n",
+    );
+    write(&workspace, "packages/router/package.json", "{}\n");
+    write(
+        &workspace,
+        "packages/router/tsconfig.json",
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": ["vize-external"],
+    "noEmit": true
+  }
+}"#,
+    );
+    write(
+        &workspace,
+        "packages/playground/src/App.vue",
+        r#"<script setup lang="ts">
+const message: string = externalFixtureValue;
+</script>
+
+<template>{{ message }}</template>
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&workspace)
+        .env("CORSA_PATH", &corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "packages/router/tsconfig.json",
+            "packages/playground/src/App.vue",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(
+        output.status.success(),
+        "parent type package check failed:\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert!(
+        !stderr.contains("Failed to strip prefix from path"),
+        "{stdout}\n{stderr}"
+    );
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(json["errorCount"], 0, "{stdout}\n{stderr}");
+    assert_eq!(json["fileCount"], 1, "{stdout}\n{stderr}");
+
+    let _ = std::fs::remove_dir_all(&workspace);
+}

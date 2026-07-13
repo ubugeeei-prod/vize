@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const registryPath = path.join(root, "tests", "_fixtures", "vue-ecosystem-fixtures.json");
 
-type FixtureKind = "application" | "component-library";
+type FixtureKind = "application" | "component-library" | "library" | "tooling";
 type FixtureDiff = "e2e-vrt" | "curator-compare";
 
 interface FixtureProject {
@@ -57,6 +57,17 @@ const requestedFixtures = [
   "vuetify",
   "naive-ui",
   "directus",
+  "motion-vue",
+  "shadcn-vue",
+  "inspira-ui",
+  "vue-charts",
+  "vaul-vue",
+  "vee-validate",
+  "create-vue",
+  "vue-router",
+  "pinia",
+  "vue-tui",
+  "vue-termui",
 ] as const;
 const requiredTypecheckProjects = ["voicevox", "elk", "misskey"] as const;
 const newlyAddedSubmodules = new Set([
@@ -68,6 +79,30 @@ const newlyAddedSubmodules = new Set([
   "vuetify",
   "naive-ui",
   "directus",
+  "motion-vue",
+  "shadcn-vue",
+  "inspira-ui",
+  "vue-charts",
+  "vaul-vue",
+  "vee-validate",
+  "create-vue",
+  "vue-router",
+  "pinia",
+  "vue-tui",
+  "vue-termui",
+]);
+const requestedFixtureLicenses = new Map<string, string>([
+  ["motion-vue", "MIT"],
+  ["shadcn-vue", "MIT"],
+  ["inspira-ui", "MIT"],
+  ["vue-charts", "MIT"],
+  ["vaul-vue", "MIT"],
+  ["vee-validate", "MIT"],
+  ["create-vue", "MIT AND CC0-1.0"],
+  ["vue-router", "MIT"],
+  ["pinia", "MIT"],
+  ["vue-tui", "MIT"],
+  ["vue-termui", "MIT"],
 ]);
 
 function readJsonFile<T>(filePath: string): T {
@@ -125,7 +160,7 @@ test("Vue ecosystem registry covers the requested projects", () => {
   const registry = readRegistry();
   const ids = new Set(registry.projects.map((project) => project.id));
 
-  assert.equal(registry.schemaVersion, 1);
+  assert.equal(registry.schemaVersion, 2);
   for (const id of requestedFixtures) {
     assert.ok(ids.has(id), `${id} should be registered`);
   }
@@ -164,6 +199,25 @@ test("registered fixtures are pinned submodules with declared licenses", () => {
       }
     }
   }
+});
+
+test("new fixture licenses and read-only policy stay explicit", () => {
+  const registry = readRegistry();
+  const fixturePolicy = fs.readFileSync(path.join(root, "tests", "_fixtures", "README.md"), "utf8");
+
+  for (const [id, spdx] of requestedFixtureLicenses) {
+    const project = registry.projects.find((candidate) => candidate.id === id);
+    assert.ok(project, `${id} should be registered`);
+    assert.equal(
+      project?.license.spdx,
+      spdx,
+      `${id} should retain its upstream license expression`,
+    );
+  }
+
+  assert.match(fixturePolicy, /read-only upstream test inputs/);
+  assert.match(fixturePolicy, /not\s+covered by Vize's license/);
+  assert.match(fixturePolicy, /Do not patch fixture source/);
 });
 
 test("every registry entry declares the requested tool coverage and diff mode", () => {

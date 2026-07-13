@@ -1,7 +1,8 @@
 //! Render benchmarks.
 #![allow(deprecated)]
 
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
+use std::hint::black_box;
 
 use vize_fresco::layout::{FlexStyle, LayoutEngine};
 use vize_fresco::terminal::{Buffer, Style};

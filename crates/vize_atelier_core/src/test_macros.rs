@@ -2,6 +2,8 @@
 //!
 //! Provides concise macros for testing parsing and transformation.
 
+#![allow(unused_macros)]
+
 /// Parse a template and run assertions
 ///
 /// # Example
@@ -11,7 +13,6 @@
 ///     matches!(root.children[0], TemplateChildNode::Element(_)),
 /// });
 /// ```
-#[macro_export]
 macro_rules! parse_test {
     ($input:expr => { $($assertion:expr),* $(,)? }) => {{
         let allocator = bumpalo::Bump::new();
@@ -31,7 +32,6 @@ macro_rules! parse_test {
 /// assert_parse!("<div></div>" => element("div"));
 /// assert_parse!("{{ msg }}" => interpolation("msg"));
 /// ```
-#[macro_export]
 macro_rules! assert_parse {
     ($input:expr => element($tag:expr)) => {{
         let allocator = bumpalo::Bump::new();
@@ -117,7 +117,6 @@ macro_rules! assert_parse {
 }
 
 /// Assert prop matches expected type
-#[macro_export]
 macro_rules! assert_prop {
     ($prop:expr, attr($name:expr)) => {
         match $prop {
@@ -203,7 +202,6 @@ macro_rules! assert_prop {
 }
 
 /// Assert transform results
-#[macro_export]
 macro_rules! assert_transform {
     ($input:expr => helpers: [$($helper:ident),* $(,)?]) => {{
         let allocator = bumpalo::Bump::new();
@@ -234,7 +232,6 @@ macro_rules! assert_transform {
 }
 
 /// Quick element extraction
-#[macro_export]
 macro_rules! get_element {
     ($root:expr) => {
         match &$root.children[0] {
@@ -251,7 +248,6 @@ macro_rules! get_element {
 }
 
 /// Quick directive extraction from element
-#[macro_export]
 macro_rules! get_directive {
     ($el:expr, $name:expr) => {
         $el.props
@@ -265,7 +261,6 @@ macro_rules! get_directive {
 }
 
 /// Assert codegen output against a full snapshot.
-#[macro_export]
 #[allow(clippy::disallowed_macros)]
 macro_rules! assert_codegen {
     ($input:expr => snapshot) => {{
@@ -281,7 +276,6 @@ macro_rules! assert_codegen {
 }
 
 /// Compile template and return result (parse + transform + codegen)
-#[macro_export]
 macro_rules! compile {
     ($input:expr) => {{
         let allocator = bumpalo::Bump::new();

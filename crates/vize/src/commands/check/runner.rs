@@ -219,7 +219,6 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             &mut tsconfig_input_cache,
         )
     };
-
     // Explicit subsets omit ambient roots; pull package-local `.d.ts` files
     // back in so global types stay in scope without widening package checks.
     if !args.patterns.is_empty() && program_tsconfig_path.is_some() {
@@ -244,6 +243,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     } else {
         program_tsconfig_path
     };
+    resolve::retain_project_files(&mut files, &project_root);
     let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
     let tsconfig = program_tsconfig_path.as_deref();
     let nuxt_root = &nuxt_project_root;

@@ -1,7 +1,5 @@
 //! Snapshot and assertion tests for codegen.
 
-use crate::compile;
-
 fn result_output(result: &super::CodegenResult) -> vize_carton::String {
     let mut output =
         vize_carton::String::with_capacity(result.preamble.len() + result.code.len() + 1);

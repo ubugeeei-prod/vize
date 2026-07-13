@@ -14,7 +14,11 @@
 
 #[doc(hidden)]
 pub mod atelier_output;
+#[cfg(test)]
+#[macro_use]
+mod test_macros;
 pub mod codegen;
+pub mod lane;
 mod relief_projection;
 #[doc(hidden)]
 pub mod render_ir;
@@ -23,9 +27,6 @@ pub mod render_ir_ssr;
 pub mod runtime_helpers;
 #[doc(hidden)]
 pub mod source_map;
-#[macro_use]
-pub mod test_macros;
-pub mod lane;
 pub mod steps;
 
 // Re-export from vize_relief (AST, errors, options)

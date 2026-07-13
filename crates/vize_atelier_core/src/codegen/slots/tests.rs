@@ -1,6 +1,5 @@
 use super::super::helpers::is_valid_js_identifier;
 use super::params::prefix_slot_defaults;
-use crate::compile;
 
 fn result_output(result: &super::super::CodegenResult) -> vize_carton::String {
     let mut output =

@@ -157,7 +157,7 @@ const items = ['a', 'b'];
 
 #[test]
 fn test_ecosystem_template_rules_are_enabled_by_default() {
-    let source = r#"<template><RouterLink>Home</RouterLink></template>"#;
+    let source = r#"<template><RouterLink>Home</RouterLink><footer>Footer</footer></template>"#;
 
     let happy_path = Linter::with_preset(LintPreset::HappyPath);
     let happy_path_result = happy_path.lint_sfc(source, "test.vue");

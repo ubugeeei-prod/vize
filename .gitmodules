@@ -69,3 +69,58 @@
 	path = tests/_fixtures/_git/directus
 	url = https://github.com/directus/directus
 	shallow = true
+
+[submodule "tests/_fixtures/_git/motion-vue"]
+	path = tests/_fixtures/_git/motion-vue
+	url = https://github.com/motiondivision/motion-vue
+	shallow = true
+
+[submodule "tests/_fixtures/_git/shadcn-vue"]
+	path = tests/_fixtures/_git/shadcn-vue
+	url = https://github.com/unovue/shadcn-vue
+	shallow = true
+
+[submodule "tests/_fixtures/_git/inspira-ui"]
+	path = tests/_fixtures/_git/inspira-ui
+	url = https://github.com/unovue/inspira-ui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-charts"]
+	path = tests/_fixtures/_git/vue-charts
+	url = https://github.com/unovue/vue-charts
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vaul-vue"]
+	path = tests/_fixtures/_git/vaul-vue
+	url = https://github.com/unovue/vaul-vue
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vee-validate"]
+	path = tests/_fixtures/_git/vee-validate
+	url = https://github.com/logaretm/vee-validate
+	shallow = true
+
+[submodule "tests/_fixtures/_git/create-vue"]
+	path = tests/_fixtures/_git/create-vue
+	url = https://github.com/vuejs/create-vue
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-router"]
+	path = tests/_fixtures/_git/vue-router
+	url = https://github.com/vuejs/router
+	shallow = true
+
+[submodule "tests/_fixtures/_git/pinia"]
+	path = tests/_fixtures/_git/pinia
+	url = https://github.com/vuejs/pinia
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-tui"]
+	path = tests/_fixtures/_git/vue-tui
+	url = https://github.com/vuejs-ai/vue-tui
+	shallow = true
+
+[submodule "tests/_fixtures/_git/vue-termui"]
+	path = tests/_fixtures/_git/vue-termui
+	url = https://github.com/vue-terminal/vue-termui
+	shallow = true

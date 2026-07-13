@@ -7,16 +7,12 @@
 use pklrust::{EvaluatorManager, EvaluatorOptions, ModuleSource};
 use serde::Deserialize;
 use std::path::{Path, PathBuf};
-use vize_atelier_core::{
-    Namespace,
-    codegen::generate,
-    lane::transform,
-    options::{CodegenMode, CodegenOptions, ParserOptions, TransformOptions},
-    parser::parse_with_options,
-};
+use vize_armature::parse_with_options;
+use vize_atelier_core::{codegen::generate, lane::transform};
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::{Allocator, String, ToCompactString};
+use vize_relief::{CodegenMode, CodegenOptions, Namespace, ParserOptions, TransformOptions};
 
 /// Test fixture file
 #[derive(Debug, Deserialize)]

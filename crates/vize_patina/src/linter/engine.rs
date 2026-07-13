@@ -35,7 +35,6 @@ use super::config::{LintResult, Linter};
 
 use ecosystem_hint::source_may_contain_ecosystem_template_rule;
 pub(crate) use offset::offset_result;
-
 pub(crate) enum TemplateAnalysis<'a> {
     Disabled,
     Precomputed(&'a Croquis),
@@ -69,6 +68,7 @@ const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
     "vue/no-undefined-refs",
     "vue/no-mutating-props",
     "a11y/no-refer-to-non-existent-id",
+    "ecosystem/router-link-require-to",
 ];
 const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
     "vue/no-reserved-component-names",
