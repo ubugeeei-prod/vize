@@ -11,9 +11,9 @@ executes the dependency closure, and drops the result. Six cases use one SFC;
 the cross-file case adds a second SFC to exercise a real multi-source closure.
 
 Measured on 2026-07-11 at canary commit
-`a3aa89dda79e8102d965e6dd1f3db332c3884aae`, using `rustc 1.95.0` on an Apple
+`52272c67ce5a213cabfbaf30d841f791f3c5339e`, using `rustc 1.95.0` on an Apple
 M5 Pro (`arm64-apple-darwin`). The commit contains latest `main` through
-`bfeeff6e6`, explicit frontend/peer-provider composition, request-keyed
+`588c1e15d`, explicit frontend/peer-provider composition, request-keyed
 multi-source planning, immutable snapshots, and cached provider observations.
 Canon requests the descriptor and Croquis document, plus Relief only when a
 template exists and Module only when a script exists. Flow is independent and
@@ -26,13 +26,13 @@ cargo bench -p vize --bench artifact_graph -- \
 
 | Recipe                         | Observed time interval | Allocations | Peak live bytes | Queries | Provider executions | Cached products |
 | ------------------------------ | ---------------------: | ----------: | --------------: | ------: | ------------------: | --------------: |
-| DOM backend product            |       42.480-42.658 us |         653 |         131,821 |      16 |                   9 |               9 |
-| production SFC compiled module |       58.582-60.663 us |         830 |         169,187 |      23 |                  11 |              11 |
-| DOM + SSR + Vapor products     |       46.151-46.869 us |         731 |         130,877 |      20 |                  11 |              11 |
-| Patina document lint           |       38.042-38.419 us |         525 |         171,205 |      13 |                   7 |               7 |
-| Canon SFC typecheck            |       34.645-35.001 us |         501 |         104,675 |      15 |                   7 |               7 |
-| combined lint + typecheck      |       40.682-40.806 us |         572 |         176,621 |      19 |                   8 |               8 |
-| two-source cross-file analysis |       79.754-80.067 us |         931 |         173,743 |      45 |                  25 |              13 |
+| DOM backend product            |       42.950-43.141 us |         660 |         132,156 |      16 |                   9 |               9 |
+| production SFC compiled module |       57.482-57.633 us |         837 |         169,522 |      23 |                  11 |              11 |
+| DOM + SSR + Vapor products     |       46.150-46.269 us |         738 |         131,212 |      20 |                  11 |              11 |
+| Patina document lint           |       37.490-37.604 us |         532 |         171,540 |      13 |                   7 |               7 |
+| Canon SFC typecheck            |       34.377-34.495 us |         508 |         105,010 |      15 |                   7 |               7 |
+| combined lint + typecheck      |       40.584-40.755 us |         579 |         176,956 |      19 |                   8 |               8 |
+| two-source cross-file analysis |       79.547-79.813 us |         938 |         174,150 |      45 |                  25 |              13 |
 
 Allocation counts and peak live bytes are deltas observed by the benchmark's
 tracking global allocator; peak bytes are not process RSS. Timing is a
