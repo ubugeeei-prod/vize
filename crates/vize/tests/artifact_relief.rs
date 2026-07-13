@@ -130,7 +130,7 @@ fn transform_diagnostics_are_cached_before_consumers_reject_them() {
 }
 
 #[test]
-fn template_less_sfc_has_optional_syntax_and_valid_empty_graphs() {
+fn template_less_sfc_has_optional_syntax_empty_render_and_script_flow() {
     let mut compilation = create_compilation(VizeGraphConfig::default()).unwrap();
     let source = compilation
         .add_source(
@@ -167,8 +167,12 @@ fn template_less_sfc_has_optional_syntax_and_valid_empty_graphs() {
     assert!(rendu.value().entry().is_empty());
 
     let flow = compilation.query::<FlowProduct>(source).unwrap();
-    assert_eq!(flow.value().blocks().len(), 1);
-    assert_eq!(flow.value().nodes().len(), 0);
+    assert!(flow.value().blocks().len() > 1);
+    assert!(
+        flow.value()
+            .sources()
+            .any(|source| source.name().ends_with("#script-setup"))
+    );
     flow.value().validate().unwrap();
     compilation.query::<CroquisSemanticProduct>(source).unwrap();
 }
