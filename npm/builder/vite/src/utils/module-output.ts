@@ -1,4 +1,4 @@
-import { parseSync } from "vite";
+import { parseSync } from "oxc-parser";
 
 const OUTPUT_PARSE_ID = "vize-output.tsx";
 const SFC_MAIN_NAME = "_sfc_main";

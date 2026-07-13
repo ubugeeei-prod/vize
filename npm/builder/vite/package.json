@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",
+    "oxc-parser": "catalog:oxc",
     "tinyglobby": "catalog:repo-tooling",
     "vize": "workspace:*"
   },
