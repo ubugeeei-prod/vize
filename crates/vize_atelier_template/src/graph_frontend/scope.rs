@@ -1,6 +1,15 @@
 //! Lexical template bindings preserved while lowering syntax into peer graphs.
 
+#[path = "scope/pattern.rs"]
+mod pattern;
+
+#[cfg(test)]
+#[path = "scope/tests.rs"]
+mod tests;
+
 use vize_carton::{FxHashSet, String, ToCompactString};
+
+pub(super) use pattern::pattern_bindings;
 
 const GENERATED_SCOPE_PREFIXES: [&str; 6] = [
     "_ctx.",
@@ -10,12 +19,6 @@ const GENERATED_SCOPE_PREFIXES: [&str; 6] = [
     "$data.",
     "$options.",
 ];
-
-pub(super) fn pattern_bindings(pattern: &str) -> FxHashSet<String> {
-    let mut bindings = FxHashSet::default();
-    extract_pattern_bindings(pattern.trim(), &mut bindings);
-    bindings
-}
 
 pub(super) fn strip_local_scope_prefixes(scopes: &[FxHashSet<String>], content: &str) -> String {
     if scopes.is_empty()
@@ -309,112 +312,4 @@ fn regex_literal_end(content: &str, start: usize) -> Option<usize> {
         }
     }
     None
-}
-
-fn extract_pattern_bindings(value: &str, bindings: &mut FxHashSet<String>) {
-    if value.starts_with('(') && value.ends_with(')') {
-        extract_pattern_bindings(value[1..value.len() - 1].trim(), bindings);
-        return;
-    }
-    if value.contains(',') && !value.starts_with('{') && !value.starts_with('[') {
-        for part in split_top_level(value) {
-            extract_pattern_bindings(part.trim(), bindings);
-        }
-        return;
-    }
-    if !value.starts_with('{')
-        && !value.starts_with('[')
-        && let Some(equal) = value.find('=')
-    {
-        extract_pattern_bindings(value[..equal].trim(), bindings);
-        return;
-    }
-    if value.starts_with('{') && value.ends_with('}') {
-        for part in split_top_level(&value[1..value.len() - 1]) {
-            let part = part.trim();
-            if let Some(rest) = part.strip_prefix("...") {
-                collect_identifier(rest.trim(), bindings);
-            } else if let Some(colon) = part.find(':') {
-                extract_pattern_bindings(part[colon + 1..].trim(), bindings);
-            } else {
-                extract_pattern_bindings(part, bindings);
-            }
-        }
-    } else if value.starts_with('[') && value.ends_with(']') {
-        for part in split_top_level(&value[1..value.len() - 1]) {
-            let part = part.trim();
-            if let Some(rest) = part.strip_prefix("...") {
-                collect_identifier(rest.trim(), bindings);
-            } else {
-                extract_pattern_bindings(part, bindings);
-            }
-        }
-    } else {
-        collect_identifier(value, bindings);
-    }
-}
-
-fn collect_identifier(value: &str, bindings: &mut FxHashSet<String>) {
-    if is_identifier(value) {
-        bindings.insert(value.to_compact_string());
-    }
-}
-
-fn split_top_level(value: &str) -> Vec<&str> {
-    let mut parts = Vec::new();
-    let mut depth = 0i32;
-    let mut start = 0;
-    for (index, byte) in value.bytes().enumerate() {
-        match byte {
-            b'{' | b'[' | b'(' => depth += 1,
-            b'}' | b']' | b')' => depth -= 1,
-            b',' if depth == 0 => {
-                parts.push(&value[start..index]);
-                start = index + 1;
-            }
-            _ => {}
-        }
-    }
-    parts.push(&value[start..]);
-    parts
-}
-
-fn is_identifier(value: &str) -> bool {
-    let mut chars = value.chars();
-    matches!(chars.next(), Some(first) if first.is_alphabetic() || first == '_' || first == '$')
-        && chars
-            .all(|character| character.is_alphanumeric() || character == '_' || character == '$')
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn extracts_nested_patterns_and_strips_only_lexical_bindings() {
-        let scope = pattern_bindings("[{ id: dep = fallback }, version, ...rest]");
-        assert!(scope.contains("dep"));
-        assert!(scope.contains("version"));
-        assert!(scope.contains("rest"));
-        assert!(!scope.contains("id"));
-        assert_eq!(
-            strip_local_scope_prefixes(
-                &[scope],
-                "_ctx.route(_ctx.dep, _ctx.version, _ctx.external)"
-            ),
-            "_ctx.route(dep, version, _ctx.external)"
-        );
-    }
-
-    #[test]
-    fn rewrites_only_javascript_references_without_corrupting_literals() {
-        let scope = pattern_bindings("dep, 項目");
-        assert_eq!(
-            strip_local_scope_prefixes(
-                &[scope],
-                r#"_ctx.route(_ctx.dep, _ctx.項目, `日本語 _ctx.dep ${_ctx.dep}`, "_ctx.dep", /_ctx\.dep/, /* _ctx.dep */ _ctx.external)"#,
-            ),
-            r#"_ctx.route(dep, 項目, `日本語 _ctx.dep ${dep}`, "_ctx.dep", /_ctx\.dep/, /* _ctx.dep */ _ctx.external)"#,
-        );
-    }
 }
