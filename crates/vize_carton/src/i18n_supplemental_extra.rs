@@ -273,7 +273,7 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
     // vue/no-deprecated-filter
     (
         "vue/no-deprecated-filter.description",
-        "Disallow deprecated Vue 2 filter syntax (the `|` pipe)",
+        "Disallow deprecated Vue 2 filter syntax using the pipe operator",
         "非推奨の Vue 2 フィルター構文（`|` パイプ）を禁止する",
         "禁止已废弃的 Vue 2 过滤器语法（`|` 管道符）",
     ),

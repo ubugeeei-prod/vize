@@ -44,7 +44,7 @@ use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, InterpolationNode}
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-filter",
-    description: "Disallow deprecated Vue 2 filter syntax (the `|` pipe)",
+    description: "Disallow deprecated Vue 2 filter syntax using the pipe operator",
     category: RuleCategory::Essential,
     fixable: false,
     default_severity: Severity::Error,
