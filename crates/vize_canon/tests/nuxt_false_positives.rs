@@ -104,6 +104,26 @@ fn accepts_typed_route_destructured_and_rest_props() {
     );
 }
 
+#[test]
+fn undefined_unknown_event_handler_stays_optional() {
+    let result = type_check_sfc(
+        UNDEFINED_EVENT_SFC,
+        &SfcTypeCheckOptions::new("UndefinedEvent.vue").with_virtual_ts(),
+    );
+    let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
+    assert!(virtual_ts.contains("undefined;  // handler expression"));
+    assert!(!virtual_ts.contains("=> handler)((undefined))"));
+
+    let project = create_project(&[("src/UndefinedEvent.vue", UNDEFINED_EVENT_SFC)]);
+    let Some(snapshot) = snapshot_project_diagnostics(project.path()) else {
+        return;
+    };
+    assert!(
+        snapshot.iter().all(|(_, code, _)| *code != Some(2345)),
+        "undefined listeners should not be required callbacks: {snapshot:#?}"
+    );
+}
+
 fn create_project(files: &[(&str, &str)]) -> tempfile::TempDir {
     let project = tempfile::tempdir().expect("temp project should be created");
     write_tsconfig(project.path());
@@ -286,4 +306,8 @@ const {
     <Icon v-if="appendIcon" :name="appendIcon" />
   </NuxtLink>
 </template>
+"#;
+
+const UNDEFINED_EVENT_SFC: &str = r#"<script setup lang="ts"></script>
+<template><UnknownComponent @unknownEvent="undefined" /></template>
 "#;

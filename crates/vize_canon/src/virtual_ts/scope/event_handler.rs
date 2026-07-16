@@ -194,7 +194,7 @@ fn matching_paren_index(input: &str, open_index: usize) -> Option<usize> {
 
 fn is_callable_handler_reference(content: &str) -> bool {
     let trimmed = content.trim();
-    if trimmed.is_empty() {
+    if trimmed.is_empty() || trimmed == "undefined" {
         return false;
     }
 
@@ -322,4 +322,22 @@ fn parse_bracket_member(input: &str, open_index: usize) -> Option<usize> {
     }
 
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_callable_handler_reference;
+
+    #[test]
+    fn undefined_is_not_a_callable_handler_reference() {
+        assert!(!is_callable_handler_reference("undefined"));
+        assert!(!is_callable_handler_reference("  undefined  "));
+    }
+
+    #[test]
+    fn actual_handler_references_stay_callable() {
+        assert!(is_callable_handler_reference("handler"));
+        assert!(is_callable_handler_reference("handlers[key]"));
+        assert!(is_callable_handler_reference("form?.submit"));
+    }
 }
