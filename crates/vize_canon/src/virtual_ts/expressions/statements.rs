@@ -98,7 +98,19 @@ pub(crate) fn generate_expression(
             .as_ref()
             .map_or_else(|| guard.as_str(), |s| s.as_str());
         // Wrap in if block for type narrowing
+        let gen_guard_start = ts.len();
         append!(*ts, "{indent}if ({generated_guard}) {{\n");
+        let gen_guard_end = ts.len();
+        mappings.push(VizeMapping {
+            gen_range: generated_text_range(
+                &ts[gen_guard_start..gen_guard_end],
+                generated_guard,
+                gen_guard_start,
+            ),
+            src_range: (template_offset + expr.start) as usize
+                ..(template_offset + expr.end) as usize,
+            sub_spans: Vec::new(),
+        });
         generate_expression_statement(
             ts,
             mappings,
