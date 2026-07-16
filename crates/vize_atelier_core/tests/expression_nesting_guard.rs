@@ -35,6 +35,19 @@ fn expression_guard_preserves_the_documented_boundary() {
 }
 
 #[test]
+fn expression_guard_rejects_decorator_chain_reproducer() {
+    let rejected = "@".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1) + "value";
+    let allowed = "@".repeat(MAX_EXPRESSION_NESTING_DEPTH) + "value";
+    assert!(expression_exceeds_max_depth(&rejected));
+    assert!(!expression_exceeds_max_depth(&allowed));
+    assert_eq!(expression_nesting_depth(r#""user@example.com""#), 0);
+    assert_eq!(
+        expression_nesting_depth("value /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */"),
+        0
+    );
+}
+
+#[test]
 fn expression_guard_rejects_nested_type_argument_reproducers() {
     assert_eq!(SLOW_TYPE_ARGUMENT_REPRODUCER.len(), 282);
     assert_eq!(TIMEOUT_TYPE_ARGUMENT_REPRODUCER.len(), 456);
