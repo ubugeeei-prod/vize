@@ -19,6 +19,28 @@ pub(super) fn common_vif_guard_prefix_for_guards(guards: &[&str]) -> Option<Stri
     common_guard_prefix_from_terms(first, rest.iter().copied())
 }
 
+/// Remove a guard prefix that is already active in the surrounding generated
+/// control flow.
+///
+/// Guards are compared term-by-term so conditions containing nested `&&`
+/// expressions are not truncated accidentally. If `prefix` is not an exact
+/// top-level prefix, the original guard is preserved.
+pub(crate) fn remove_enclosing_vif_guard_prefix(guard: &str, prefix: &str) -> Option<String> {
+    let guard_terms = split_guard_terms(guard);
+    let prefix_terms = split_guard_terms(prefix);
+    if prefix_terms.len() > guard_terms.len()
+        || !prefix_terms
+            .iter()
+            .zip(guard_terms.iter())
+            .all(|(prefix_term, guard_term)| prefix_term == guard_term)
+    {
+        return Some(String::from(guard));
+    }
+
+    let remaining = &guard_terms[prefix_terms.len()..];
+    (!remaining.is_empty()).then(|| String::from(remaining.join(" && ").as_str()))
+}
+
 fn common_guard_prefix_from_terms<'a>(
     first: &'a str,
     rest: impl Iterator<Item = &'a str>,
@@ -132,4 +154,40 @@ fn references_any_alias(term: &str, aliases: &[&str]) -> bool {
     extract_identifiers_oxc(term)
         .iter()
         .any(|identifier| aliases.iter().any(|alias| identifier.as_str() == *alias))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::remove_enclosing_vif_guard_prefix;
+
+    #[test]
+    fn removes_an_exact_enclosing_guard() {
+        assert_eq!(
+            remove_enclosing_vif_guard_prefix(
+                "!(item.type === 'hunk-bar')",
+                "!(item.type === 'hunk-bar')"
+            ),
+            None
+        );
+    }
+
+    #[test]
+    fn removes_only_complete_top_level_guard_terms() {
+        assert_eq!(
+            remove_enclosing_vif_guard_prefix(
+                "(ready && enabled) && !(item.type === 'hunk-bar')",
+                "(ready && enabled)",
+            )
+            .as_deref(),
+            Some("!(item.type === 'hunk-bar')")
+        );
+    }
+
+    #[test]
+    fn preserves_a_guard_when_the_prefix_does_not_match() {
+        assert_eq!(
+            remove_enclosing_vif_guard_prefix("(ready) && (visible)", "(enabled)").as_deref(),
+            Some("(ready) && (visible)")
+        );
+    }
 }

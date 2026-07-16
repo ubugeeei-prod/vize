@@ -13,4 +13,4 @@ mod tests;
 
 pub(crate) use component_props::generate_component_prop_checks;
 pub(crate) use reserved_props::rewrite_reserved_template_prop;
-pub(crate) use statements::generate_expressions;
+pub(crate) use statements::{generate_expressions, generate_expressions_in_enclosing_guard};

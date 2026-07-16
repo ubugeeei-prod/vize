@@ -10,7 +10,9 @@ use vize_carton::profile;
 
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeId, ScopeKind};
 
-use crate::virtual_ts::expressions::generate_expressions;
+use crate::virtual_ts::expressions::{
+    generate_expressions, generate_expressions_in_enclosing_guard,
+};
 use crate::virtual_ts::helpers::{get_dom_event_type, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;
 
@@ -220,8 +222,7 @@ fn generate_scope_node(
 
     match scope.data() {
         ScopeData::VFor(data) => {
-            // When the v-for element is nested inside an enclosing `v-if`, wrap
-            // the whole `__vForList(source).forEach(...)` loop in `if (guard) {}`
+            // For a v-for nested in `v-if`, wrap the whole loop in `if (guard) {}`
             // so TypeScript narrows identifiers used in the v-for source
             // expression (e.g. `elems[key]` with `key` narrowed by the parent
             // `v-if="key === 'b'"`). Without this the source is evaluated outside
@@ -231,9 +232,7 @@ fn generate_scope_node(
             // are recorded as expressions in this scope carrying that enclosing
             // guard; any deeper `v-if` nested *inside* the loop body extends the
             // guard with extra `&& (...)` terms. The enclosing guard is therefore
-            // the longest `&&`-separated prefix common to every direct expression
-            // in the scope — conservative enough never to import a nested
-            // branch's condition.
+            // the longest common `&&`-separated prefix of direct expressions.
             let enclosing_guard: Option<String> = ctx
                 .expressions_by_scope
                 .get(&scope_id)
@@ -281,14 +280,14 @@ fn generate_scope_node(
             if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
                 && ctx.check_options.check_template_bindings
             {
-                generate_expressions(
+                generate_expressions_in_enclosing_guard(
                     ts,
                     mappings,
                     exprs,
                     ctx.template_prop_names,
                     ctx.skipped_expression_ranges,
                     ctx.template_offset,
-                    &vfor_inner_indent,
+                    (&vfor_inner_indent, enclosing_guard),
                 );
             }
 

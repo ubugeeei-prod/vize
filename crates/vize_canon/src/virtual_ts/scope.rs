@@ -18,3 +18,4 @@ mod vif_guard;
 
 pub(crate) use closures::generate_scope_closures;
 pub(crate) use context::ScopeGenerationOptions;
+pub(crate) use vif_guard::remove_enclosing_vif_guard_prefix;

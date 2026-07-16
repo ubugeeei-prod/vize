@@ -107,14 +107,10 @@ function __setup() {
     // v-for scope: value in elems[key]
     __vForList(elems[key]).forEach(([value]) => {
       void value;
-      if ((key === 'b')) {
-        void (value); // VBind
-        // @vize-map: expr -> 69:74
-      }
-      if ((key === 'b')) {
-        void (value); // Interpolation
-        // @vize-map: expr -> 79:84
-      }
+      void (value); // VBind
+      // @vize-map: expr -> 69:74
+      void (value); // Interpolation
+      // @vize-map: expr -> 79:84
     });
   }
 

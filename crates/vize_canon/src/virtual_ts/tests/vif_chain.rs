@@ -2,7 +2,7 @@ use super::generate_virtual_ts;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 #[test]
-fn test_prefixed_v_else_branch_keeps_negated_branch_guard() {
+fn test_prefixed_v_else_branch_reuses_the_enclosing_v_for_guard() {
     let script = r#"const isOpen = true
 type Item =
   | { kind: 'anchor'; hash: string; key: string }
@@ -29,8 +29,15 @@ const navItems: Item[] = []
     assert!(
         output
             .code
-            .contains("} else if ((isOpen) && !(item.kind === 'page')) {"),
-        "prefixed v-else branch should retain the negated discriminant guard:\n{}",
+            .contains("if ((isOpen)) {\n\n    // v-for scope"),
+        "the common outer guard should wrap the complete v-for:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains("if (item.kind === 'page') {")
+            && output.code.contains("} else {")
+            && !output.code.contains("(isOpen) && !(item.kind === 'page')"),
+        "the inner chain should reuse the active guard and preserve a plain else branch:\n{}",
         output.code
     );
 }
@@ -77,6 +84,36 @@ const aimAtReports: AimAtReport[] = []
     assert!(
         !output.code.contains("if ((aimAtReport.kind === 'summary')) {\n\n    // v-for scope: aimAtReport in aimAtReports"),
         "v-for enclosing guard must not reference its own alias before declaration:\n{}",
+        output.code
+    );
+}
+
+#[test]
+fn nested_else_v_for_does_not_recheck_narrowed_discriminant() {
+    let script = r#"interface BarItem { type: 'hunk-bar'; lines: number }
+interface LineItem { type: 'line'; text: string }
+type ViewItem = BarItem | { type: 'section'; lines: LineItem[] }
+const items: ViewItem[] = []
+"#;
+    let template = r#"<template v-for="(item, i) in items" :key="i">
+  <button v-if="item.type === 'hunk-bar'">{{ item.lines }}</button>
+  <div v-else>
+    <div v-for="(row, j) in item.lines" :key="j">{{ row.text }}</div>
+  </div>
+</template>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    assert_eq!(
+        output.code.matches("!(item.type === 'hunk-bar')").count(),
+        1,
+        "the v-else branch already narrows item; nested scopes must not compare it again:\n{}",
         output.code
     );
 }

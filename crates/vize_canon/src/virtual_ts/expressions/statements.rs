@@ -10,6 +10,8 @@ use super::reserved_props::rewrite_reserved_template_prop;
 use super::vif_chain::{
     VifControlFlowChain, VifControlFlowEmitContext, emit_vif_control_flow_chain,
 };
+use crate::virtual_ts::scope::remove_enclosing_vif_guard_prefix;
+use vize_carton::CompactString;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
@@ -59,6 +61,54 @@ pub(crate) fn generate_expressions(
         );
         index += 1;
     }
+}
+
+/// Generate expressions inside control flow that already enforces a common
+/// v-if guard, removing only that exact top-level guard prefix first.
+pub(crate) fn generate_expressions_in_enclosing_guard(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    exprs: &[&TemplateExpression],
+    template_prop_names: &FxHashSet<String>,
+    skipped_expression_ranges: &FxHashSet<(u32, u32)>,
+    template_offset: u32,
+    generation_scope: (&str, Option<&str>),
+) {
+    let (indent, enclosing_guard) = generation_scope;
+    let Some(enclosing_guard) = enclosing_guard else {
+        generate_expressions(
+            ts,
+            mappings,
+            exprs,
+            template_prop_names,
+            skipped_expression_ranges,
+            template_offset,
+            indent,
+        );
+        return;
+    };
+
+    let adjusted_expressions: Vec<_> = exprs
+        .iter()
+        .map(|expr| {
+            let mut adjusted = (**expr).clone();
+            adjusted.vif_guard = adjusted.vif_guard.as_ref().and_then(|guard| {
+                remove_enclosing_vif_guard_prefix(guard.as_str(), enclosing_guard)
+                    .map(|guard| CompactString::new(guard.as_str()))
+            });
+            adjusted
+        })
+        .collect();
+    let adjusted_expression_refs: Vec<_> = adjusted_expressions.iter().collect();
+    generate_expressions(
+        ts,
+        mappings,
+        &adjusted_expression_refs,
+        template_prop_names,
+        skipped_expression_ranges,
+        template_offset,
+        indent,
+    );
 }
 
 /// Generate a template expression with optional v-if narrowing.
