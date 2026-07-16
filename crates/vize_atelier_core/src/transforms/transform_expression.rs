@@ -16,20 +16,18 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{Box, Bump, String};
 
-/// Maximum bracket nesting depth allowed before handing source to OXC.
+/// Maximum delimiter nesting depth allowed before handing source to OXC.
 ///
 /// OXC recurses for nested brackets; stack overflow (#956) and a parser timeout
 /// at depth 32 (#2944) cannot be caught, so every entry point shares this guard.
 pub const MAX_EXPRESSION_NESTING_DEPTH: usize = 31;
 
-/// Returns the maximum bracket nesting depth in `content`. Only counts
-/// `(`, `[`, `{` and their closers — these are what drive recursion in the
-/// JS parser and the recursive AST walkers in `prefix` / `rewrite`. Strings
-/// and template literals are skipped so contents like `"((((((((..."` don't
-/// trigger a false positive.
+/// Returns the maximum delimiter nesting depth in `content`. Brackets and
+/// TypeScript angle brackets use separate counters so `>` cannot close an array
+/// or object. Strings and template literals are skipped.
 pub fn expression_nesting_depth(content: &str) -> usize {
     let bytes = content.as_bytes();
-    let mut depth: usize = 0;
+    let (mut bracket_depth, mut angle_depth) = (0usize, 0usize);
     let mut max_depth: usize = 0;
     let mut i = 0;
     while i < bytes.len() {
@@ -65,17 +63,13 @@ pub fn expression_nesting_depth(content: &str) -> usize {
                 i = i.saturating_add(2);
                 continue;
             }
-            b'(' | b'[' | b'{' => {
-                depth += 1;
-                if depth > max_depth {
-                    max_depth = depth;
-                }
-            }
-            b')' | b']' | b'}' => {
-                depth = depth.saturating_sub(1);
-            }
+            b'(' | b'[' | b'{' => bracket_depth += 1,
+            b')' | b']' | b'}' => bracket_depth = bracket_depth.saturating_sub(1),
+            b'<' => angle_depth += 1,
+            b'>' => angle_depth = angle_depth.saturating_sub(1),
             _ => {}
         }
+        max_depth = max_depth.max(bracket_depth + angle_depth);
         i += 1;
     }
     max_depth
