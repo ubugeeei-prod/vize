@@ -87,3 +87,31 @@ fn expression_guard_rejects_nested_type_argument_reproducers() {
         );
     }
 }
+
+#[test]
+fn expression_guard_scans_deep_template_interpolations_without_recursion() {
+    let depth = 100_000;
+    let mut expression = "(".repeat(depth);
+    expression.insert_str(0, "`literal ${");
+    expression.push_str("value");
+    expression.push_str(&")".repeat(depth));
+    expression.push_str("}`");
+
+    assert!(expression_exceeds_max_depth(&expression));
+    assert_eq!(
+        prefix_identifiers_in_expression(&expression).as_str(),
+        expression
+    );
+}
+
+#[test]
+fn expression_guard_does_not_treat_relational_operators_as_type_angles() {
+    let expression = std::iter::repeat_n("value < limit", MAX_EXPRESSION_NESTING_DEPTH + 1)
+        .collect::<Vec<_>>()
+        .join(" || ");
+
+    assert_eq!(expression_nesting_depth(&expression), 0);
+    assert!(!expression_exceeds_max_depth(&expression));
+    let rewritten = prefix_identifiers_in_expression(&expression);
+    assert!(rewritten.contains("_ctx.value < _ctx.limit"), "{rewritten}");
+}

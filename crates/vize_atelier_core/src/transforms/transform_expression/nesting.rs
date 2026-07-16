@@ -6,13 +6,21 @@ pub const MAX_EXPRESSION_NESTING_DEPTH: usize = 31;
 
 /// Returns the maximum parser-recursion depth in `content`.
 ///
-/// Brackets and TypeScript angles are paired, while decorator markers accumulate
-/// for OXC's recursive parser. Strings, templates, comments, and regexes are skipped.
+/// Brackets and unambiguous TypeScript angles are paired, while decorator markers
+/// accumulate for OXC's recursive parser. Strings, template text, comments, and
+/// regexes are skipped; `${...}` template interpolations are scanned.
 pub fn expression_nesting_depth(content: &str) -> usize {
     let bytes = content.as_bytes();
     let (mut bracket_depth, mut angle_depth, mut decorator_depth) = (0usize, 0usize, 0usize);
     let mut max_depth = 0usize;
     let mut can_start_regex = true;
+    let mut template_interpolation_depths = Vec::new();
+    // Plain `foo < bar` is indistinguishable from a type argument to a byte
+    // scanner. Enter angle-tracking mode only for the repeated structural type
+    // prefixes present in the parser-timeout class (`<{`, `<[`), discovered
+    // while scanning so strings and comments cannot activate the mode.
+    let mut structural_type_angle_opens = 0usize;
+    let mut track_type_angles = false;
     let mut i = 0;
 
     while i < bytes.len() {
@@ -22,9 +30,24 @@ pub fn expression_nesting_depth(content: &str) -> usize {
                 i += 1;
                 continue;
             }
-            b'"' | b'\'' | b'`' => {
+            b'"' | b'\'' => {
                 i = skip_quoted(bytes, i + 1, b);
                 can_start_regex = false;
+                continue;
+            }
+            b'`' => {
+                let (next, has_interpolation) = skip_template_text(bytes, i + 1);
+                i = next;
+                if has_interpolation {
+                    bracket_depth += 1;
+                    template_interpolation_depths.push(bracket_depth);
+                    let effective_angle_depth = if track_type_angles { angle_depth } else { 0 };
+                    max_depth =
+                        max_depth.max(bracket_depth + effective_angle_depth + decorator_depth);
+                    can_start_regex = true;
+                } else {
+                    can_start_regex = false;
+                }
                 continue;
             }
             b'/' if bytes.get(i + 1) == Some(&b'/') => {
@@ -55,12 +78,37 @@ pub fn expression_nesting_depth(content: &str) -> usize {
                 bracket_depth += 1;
                 can_start_regex = true;
             }
-            b')' | b']' | b'}' => {
+            b')' | b']' => {
+                bracket_depth = bracket_depth.saturating_sub(1);
+                can_start_regex = false;
+            }
+            b'}' if template_interpolation_depths.last() == Some(&bracket_depth) => {
+                bracket_depth = bracket_depth.saturating_sub(1);
+                template_interpolation_depths.pop();
+                let (next, has_interpolation) = skip_template_text(bytes, i + 1);
+                i = next;
+                if has_interpolation {
+                    bracket_depth += 1;
+                    template_interpolation_depths.push(bracket_depth);
+                    let effective_angle_depth = if track_type_angles { angle_depth } else { 0 };
+                    max_depth =
+                        max_depth.max(bracket_depth + effective_angle_depth + decorator_depth);
+                    can_start_regex = true;
+                } else {
+                    can_start_regex = false;
+                }
+                continue;
+            }
+            b'}' => {
                 bracket_depth = bracket_depth.saturating_sub(1);
                 can_start_regex = false;
             }
             b'<' => {
                 angle_depth += 1;
+                if is_structural_type_angle_open(bytes, i) {
+                    structural_type_angle_opens += 1;
+                    track_type_angles = structural_type_angle_opens >= 2;
+                }
                 can_start_regex = true;
             }
             b'>' => {
@@ -81,7 +129,8 @@ pub fn expression_nesting_depth(content: &str) -> usize {
             _ => can_start_regex = b < 0x80,
         }
 
-        max_depth = max_depth.max(bracket_depth + angle_depth + decorator_depth);
+        let effective_angle_depth = if track_type_angles { angle_depth } else { 0 };
+        max_depth = max_depth.max(bracket_depth + effective_angle_depth + decorator_depth);
         i += 1;
     }
 
@@ -105,6 +154,29 @@ fn skip_quoted(bytes: &[u8], mut i: usize, quote: u8) -> usize {
         }
     }
     i
+}
+
+/// Skip literal template text, returning the byte after either the closing
+/// backtick or an opening `${`. The caller scans interpolation bodies so deeply
+/// nested input is guarded without recursive Rust calls.
+fn skip_template_text(bytes: &[u8], mut i: usize) -> (usize, bool) {
+    while i < bytes.len() {
+        match bytes[i] {
+            b'\\' => i = i.saturating_add(2),
+            b'`' => return (i + 1, false),
+            b'$' if bytes.get(i + 1) == Some(&b'{') => return (i + 2, true),
+            _ => i += 1,
+        }
+    }
+    (i, false)
+}
+
+fn is_structural_type_angle_open(bytes: &[u8], i: usize) -> bool {
+    let mut next = i + 1;
+    while matches!(bytes.get(next), Some(b' ' | b'\t' | b'\r' | b'\n')) {
+        next += 1;
+    }
+    matches!(bytes.get(next), Some(b'{' | b'['))
 }
 
 fn skip_line_comment(bytes: &[u8], mut i: usize) -> usize {
