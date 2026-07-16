@@ -62,6 +62,32 @@ fn accepts_enum_ref_template_comparisons_after_initial_member() {
 }
 
 #[test]
+fn branded_ref_template_arguments_keep_their_brand() {
+    let result = type_check_sfc(
+        BRANDED_REF_SFC,
+        &SfcTypeCheckOptions::new("BrandedRef.vue").with_virtual_ts(),
+    );
+    let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
+    assert!(
+        virtual_ts.contains("keyof T extends keyof string ? string : T"),
+        "primitive widening must preserve branded string intersections:\n{virtual_ts}"
+    );
+
+    let project = create_project(&[("src/BrandedRef.vue", BRANDED_REF_SFC)]);
+    let Some(snapshot) = snapshot_project_diagnostics(project.path()) else {
+        return;
+    };
+    assert!(
+        snapshot.iter().all(|(file, code, message)| {
+            !(file == "src/BrandedRef.vue"
+                && *code == Some(2345)
+                && message.contains("BrandedString"))
+        }),
+        "template ref unwrapping should retain the brand: {snapshot:#?}"
+    );
+}
+
+#[test]
 fn destructured_and_rest_props_do_not_emit_shadowing_template_aliases() {
     let options = SfcTypeCheckOptions::new("Button.vue").with_virtual_ts();
     let result = type_check_sfc(TYPED_ROUTE_BUTTON_SFC, &options);
@@ -233,6 +259,15 @@ const modalWindowState = ref(ModalWindowState.None)
   <ModalWindow :opened="modalWindowState === ModalWindowState.ProfileEdit" />
   <ModalWindow :opened="modalWindowState === ModalWindowState.PasswordChange" />
 </template>
+"#;
+
+const BRANDED_REF_SFC: &str = r#"<script setup lang="ts">
+import { ref } from "vue";
+type BrandedString = string & { __brand: "BrandedString" };
+function acceptBranded(value: BrandedString): string { return value; }
+const brandedRef = ref<BrandedString>("" as BrandedString);
+</script>
+<template>{{ acceptBranded(brandedRef) }}</template>
 "#;
 
 const NUXT_LINK_SFC: &str = r#"<script setup lang="ts" generic="T extends string = string, P extends string = string">
