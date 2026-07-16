@@ -9,12 +9,13 @@ use libfuzzer_sys::fuzz_target;
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use vize_atelier_core::steps::expression::expression_exceeds_max_depth;
 
 fuzz_target!(|data: &[u8]| {
     let Ok(source) = std::str::from_utf8(data) else {
         return;
     };
-    if exceeds_expression_nesting_limit(source, 256) {
+    if expression_exceeds_max_depth(source) {
         return;
     }
 
@@ -26,20 +27,3 @@ fuzz_target!(|data: &[u8]| {
     );
     let _ = parser.parse_expression();
 });
-
-fn exceeds_expression_nesting_limit(source: &str, limit: usize) -> bool {
-    let mut depth = 0usize;
-    for byte in source.bytes() {
-        match byte {
-            b'(' | b'[' | b'{' => {
-                depth += 1;
-                if depth > limit {
-                    return true;
-                }
-            }
-            b')' | b']' | b'}' => depth = depth.saturating_sub(1),
-            _ => {}
-        }
-    }
-    false
-}

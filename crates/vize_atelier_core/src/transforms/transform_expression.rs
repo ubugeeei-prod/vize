@@ -18,9 +18,9 @@ use vize_carton::{Box, Bump, String};
 
 /// Maximum bracket nesting depth allowed before handing source to OXC.
 ///
-/// OXC recurses for nested brackets and stack overflow cannot be caught with
-/// `catch_unwind`, so every expression entry point shares this guard. (#956)
-pub const MAX_EXPRESSION_NESTING_DEPTH: usize = 256;
+/// OXC recurses for nested brackets; stack overflow (#956) and a parser timeout
+/// at depth 32 (#2944) cannot be caught, so every entry point shares this guard.
+pub const MAX_EXPRESSION_NESTING_DEPTH: usize = 31;
 
 /// Returns the maximum bracket nesting depth in `content`. Only counts
 /// `(`, `[`, `{` and their closers — these are what drive recursion in the
