@@ -10,8 +10,7 @@ use vize_carton::String;
 use vize_carton::ToCompactString;
 use vize_carton::is_builtin_directive;
 
-/// Check if an interpolation references only constant bindings (LiteralConst or SetupConst)
-/// These bindings never change at runtime, so no TEXT patch flag is needed.
+/// Check whether an interpolation only references bindings constant at runtime.
 fn is_constant_interpolation(
     expr: &ExpressionNode<'_>,
     bindings: Option<&BindingMetadata>,
@@ -23,9 +22,7 @@ fn is_constant_interpolation(
 
     match expr {
         ExpressionNode::Simple(simple) => {
-            // Check if the expression is a simple identifier that's a constant
-            // Both LiteralConst (e.g., const x = 'hello') and SetupConst (e.g., class Foo {})
-            // are constant at runtime and don't need TEXT patch flag
+            // LiteralConst and SetupConst identifiers need no TEXT patch flag.
             let name = simple.content.as_str();
             matches!(
                 bindings.bindings.get(name),
@@ -45,7 +42,6 @@ fn is_const_handler(expr: &ExpressionNode<'_>, bindings: Option<&BindingMetadata
 
     match expr {
         ExpressionNode::Simple(simple) => {
-            // Check if the expression is a simple identifier that's a constant
             let name = simple.content.as_str();
             matches!(
                 bindings.bindings.get(name),
@@ -79,6 +75,9 @@ fn is_string_literal(content: &str) -> bool {
 }
 
 fn is_static_object_or_array_literal(content: &str) -> bool {
+    if crate::steps::expression::expression_exceeds_max_depth(content) {
+        return false;
+    }
     let mut wrapped = String::with_capacity(content.len() + 2);
     wrapped.push('(');
     wrapped.push_str(content);

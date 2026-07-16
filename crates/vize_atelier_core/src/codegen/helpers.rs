@@ -15,12 +15,10 @@ use oxc_syntax::scope::ScopeFlags;
 use vize_carton::{FxHashSet, ToCompactString};
 use vize_croquis::builtins::is_global_allowed;
 
-/// Decode HTML entities (numeric character references) in a string
-/// Supports &#xHHHH; (hex) and &#NNNN; (decimal) formats
+/// Decode HTML numeric character references in hex or decimal form.
 pub fn decode_html_entities(s: &str) -> String {
-    // Numeric entity decoding only ever triggers on `&`. Without one, the
-    // result is the input verbatim, so skip the per-char state machine and
-    // its intermediate growth and copy the string in a single pass.
+    // Numeric decoding only triggers on `&`; otherwise skip the state machine
+    // and copy the input in a single pass.
     if !s.contains('&') {
         return String::from(s);
     }
@@ -414,8 +412,10 @@ pub fn is_constant_simple_expression(
     }
 
     // Expressions that already reference runtime context/setup/props are dynamic.
-    // This keeps patch flags for transformed bindings such as `_ctx.foo`.
     let content = exp.content.as_str();
+    if crate::steps::expression::expression_exceeds_max_depth(content) {
+        return false;
+    }
     if content.contains("_ctx.")
         || content.contains("$setup.")
         || content.contains("__props.")
