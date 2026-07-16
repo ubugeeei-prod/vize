@@ -1084,7 +1084,14 @@
         "error:97:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:142:29 [TS2339] Property 'path' does not exist on type 'ContentNavigationLink'.",
         "error:175:24 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:175:92 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:176:46 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:176:67 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:176:76 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:177:19 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:177:20 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:180:61 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:180:132 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:229:65 [TS18048] 'slotData' is possibly 'undefined'."
       ]
     },
@@ -1553,7 +1560,7 @@
       ]
     }
   ],
-  "errorCount": 659,
+  "errorCount": 666,
   "warningCount": 0,
   "fileCount": 180
 }

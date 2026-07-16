@@ -71,7 +71,10 @@ export interface VizeNuxtCompilerOptions {
   configMode?: "root" | "auto" | false;
   /** Custom config file path. */
   configFile?: string;
-  /** Handle .vue files in node_modules during on-demand compilation. */
+  /**
+   * Handle .vue files in node_modules during on-demand compilation.
+   * @default true
+   */
   handleNodeModulesVue?: boolean;
   /** Enable debug logging. */
   debug?: boolean;

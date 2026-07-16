@@ -19,6 +19,11 @@ interface PngCompareResult {
   width: number;
 }
 
+interface ImageDimensions {
+  height: number;
+  width: number;
+}
+
 const DEFAULT_CHANNEL_THRESHOLD = 16;
 const DEFAULT_MAX_DIFF_RATIO = 0.002;
 
@@ -106,8 +111,7 @@ function comparePngBuffers(
 ): PngCompareResult {
   const reference = PNG.sync.read(referenceBuffer);
   const candidate = PNG.sync.read(candidateBuffer);
-  const width = Math.max(reference.width, candidate.width);
-  const height = Math.max(reference.height, candidate.height);
+  const { height, width } = visualComparisonDimensions(reference, candidate);
   const diff = new PNG({ width, height });
   let diffPixels = 0;
 
@@ -148,6 +152,19 @@ function comparePngBuffers(
     height,
     totalPixels,
     width,
+  };
+}
+
+export function visualComparisonDimensions(
+  reference: ImageDimensions,
+  candidate: ImageDimensions,
+): ImageDimensions {
+  return {
+    // Full-page screenshots can include horizontal document overflow beyond the
+    // shared browser viewport. Compare the common visible width while retaining
+    // the full vertical extent so missing page content still fails parity.
+    height: Math.max(reference.height, candidate.height),
+    width: Math.min(reference.width, candidate.width),
   };
 }
 

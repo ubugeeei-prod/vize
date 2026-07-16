@@ -355,7 +355,7 @@
     {
       "file": "app/components/Package/SkillsModal.vue",
       "diagnostics": [
-        "error:200:3 [TS2367] This comparison appears to be unintentional because the types '\"skills-cli\"' and '\"skills-npm\"' have no overlap."
+        "error:202:2 [TS2367] This comparison appears to be unintentional because the types '\"skills-cli\"' and '\"skills-npm\"' have no overlap."
       ]
     },
     {
@@ -364,7 +364,9 @@
     },
     {
       "file": "app/components/Package/TableRow.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:117:39 [TS18048] 'pkg.maintainers' is possibly 'undefined'."
+      ]
     },
     {
       "file": "app/components/Package/TrendsChart.vue",
@@ -752,7 +754,7 @@
       ]
     }
   ],
-  "errorCount": 163,
+  "errorCount": 164,
   "warningCount": 0,
   "fileCount": 134
 }

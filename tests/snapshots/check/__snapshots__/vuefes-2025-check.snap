@@ -291,10 +291,7 @@
     },
     {
       "file": "app/pages/timetable/_components/TimetableCard.vue",
-      "diagnostics": [
-        "error:251:3 [TS2367] This comparison appears to be unintentional because the types '\"event\" | \"lightningTalk\" | \"session\" | undefined' and '\"schedule\"' have no overlap.",
-        "error:261:7 [TS2367] This comparison appears to be unintentional because the types '\"event\" | \"lightningTalk\" | \"session\" | undefined' and '\"schedule\"' have no overlap."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/timetable/_components/TimetableCell.vue",
@@ -313,7 +310,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 19,
+  "errorCount": 17,
   "warningCount": 0,
   "fileCount": 71
 }

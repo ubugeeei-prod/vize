@@ -44,7 +44,8 @@
         "error:17:162 [TS2345] Argument of type '(() => Promise<void>) | undefined' is not assignable to parameter of type '(payload: PointerEvent) => unknown'.\nType 'undefined' is not assignable to type '(payload: PointerEvent) => unknown'.\nProperty 'default' does not exist on type 'AsUiButton'.",
         "error:23:100 [TS2345] Argument of type '((v: string) => Promise<void>) | undefined' is not assignable to parameter of type '(value: string) => unknown'.\nType 'undefined' is not assignable to type '(value: string) => unknown'.\nProperty 'default' does not exist on type 'AsUiButton'.",
         "error:27:124 [TS2345] Argument of type '((v: string) => Promise<void>) | undefined' is not assignable to parameter of type '(value: string) => unknown'.\nType 'undefined' is not assignable to type '(value: string) => unknown'.\nProperty 'default' does not exist on type 'AsUiButton'.",
-        "error:31:140 [TS2345] Argument of type '((v: number) => Promise<void>) | undefined' is not assignable to parameter of type '(value: number) => unknown'.\nType 'undefined' is not assignable to type '(value: number) => unknown'.\nProperty 'primary' does not exist on type 'AsUiButtons'.\nProperty 'rounded' does not exist on type 'AsUiButtons'."
+        "error:31:140 [TS2345] Argument of type '((v: number) => Promise<void>) | undefined' is not assignable to parameter of type '(value: number) => unknown'.\nType 'undefined' is not assignable to type '(value: number) => unknown'.\nProperty 'primary' does not exist on type 'AsUiButtons'.\nProperty 'rounded' does not exist on type 'AsUiButtons'.",
+        "error:58:112 [TS2339] Property 'align' does not exist on type 'AsUiComponent'.\nProperty 'align' does not exist on type 'AsUiButton'."
       ]
     },
     {
@@ -214,31 +215,11 @@
     },
     {
       "file": "src/components/MkEmojiPicker.section.vue",
-      "diagnostics": [
-        "error:38:42 [TS2339] Property 'filter' does not exist on type 'ShallowRef<{ aliases: string[]; name: string; category: string | null; url: string; localOnly?: boolean | undefined; isSensitive?: boolean | undefined; roleIdsThatCanBeUsedThisEmojiAsReaction?: string[] | undefined; }[], { ...; }[]>'.",
-        "error:38:49 [TS7006] Parameter 'e' implicitly has an 'any' type.",
-        "error:38:89 [TS7006] Parameter 'e' implicitly has an 'any' type.",
-        "error:38:108 [TS2339] Property 'filter' does not exist on type 'ShallowRef<{ aliases: string[]; name: string; category: string | null; url: string; localOnly?: boolean | undefined; isSensitive?: boolean | undefined; roleIdsThatCanBeUsedThisEmojiAsReaction?: string[] | undefined; }[], { ...; }[]>'.",
-        "error:38:108 [TS7006] Parameter 'e' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkEmojiPicker.vue",
-      "diagnostics": [
-        "error:95:43 [TS2339] Property 'filter' does not exist on type 'ShallowRef<{ aliases: string[]; name: string; category: string | null; url: string; localOnly?: boolean | undefined; isSensitive?: boolean | undefined; roleIdsThatCanBeUsedThisEmojiAsReaction?: string[] | undefined; }[], { ...; }[]>'.",
-        "error:95:50 [TS7006] Parameter 'e' implicitly has an 'any' type.",
-        "error:95:91 [TS7006] Parameter 'e' implicitly has an 'any' type.",
-        "error:95:98 [TS2339] Property 'filter' does not exist on type 'ShallowRef<{ aliases: string[]; name: string; category: string | null; url: string; localOnly?: boolean | undefined; isSensitive?: boolean | undefined; roleIdsThatCanBeUsedThisEmojiAsReaction?: string[] | undefined; }[], { ...; }[]>'.",
-        "error:95:105 [TS7006] Parameter 'e' implicitly has an 'any' type.",
-        "error:95:110 [TS7006] Parameter 'e' implicitly has an 'any' type.",
-        "error:96:51 [TS2339] Property 'filter' does not exist on type 'ShallowRef<{ aliases: string[]; name: string; category: string | null; url: string; localOnly?: boolean | undefined; isSensitive?: boolean | undefined; roleIdsThatCanBeUsedThisEmojiAsReaction?: string[] | undefined; }[], { ...; }[]>'.",
-        "error:96:58 [TS7006] Parameter 'e' implicitly has an 'any' type.",
-        "error:96:102 [TS7006] Parameter 'e' implicitly has an 'any' type.",
-        "error:96:114 [TS2339] Property 'filter' does not exist on type 'ShallowRef<{ aliases: string[]; name: string; category: string | null; url: string; localOnly?: boolean | undefined; isSensitive?: boolean | undefined; roleIdsThatCanBeUsedThisEmojiAsReaction?: string[] | undefined; }[], { ...; }[]>'.",
-        "error:96:121 [TS7006] Parameter 'e' implicitly has an 'any' type.",
-        "error:96:125 [TS7006] Parameter 'e' implicitly has an 'any' type.",
-        "error:96:144 [TS7006] Parameter 'e' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkEmojiPickerDialog.vue",
@@ -1370,11 +1351,7 @@
     },
     {
       "file": "src/pages/admin/overview.stats.vue",
-      "diagnostics": [
-        "error:44:38 [TS2339] Property 'length' does not exist on type 'ShallowRef<{ aliases: string[]; name: string; category: string | null; url: string; localOnly?: boolean | undefined; isSensitive?: boolean | undefined; roleIdsThatCanBeUsedThisEmojiAsReaction?: string[] | undefined; }[], { ...; }[]>'.",
-        "error:44:39 [TS2339] Property 'length' does not exist on type 'ShallowRef<{ aliases: string[]; name: string; category: string | null; url: string; localOnly?: boolean | undefined; isSensitive?: boolean | undefined; roleIdsThatCanBeUsedThisEmojiAsReaction?: string[] | undefined; }[], { ...; }[]>'.",
-        "error:44:44 [TS2339] Property 'length' does not exist on type 'ShallowRef<{ aliases: string[]; name: string; category: string | null; url: string; localOnly?: boolean | undefined; isSensitive?: boolean | undefined; roleIdsThatCanBeUsedThisEmojiAsReaction?: string[] | undefined; }[], { ...; }[]>'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/admin/overview.users.vue",
@@ -1578,12 +1555,7 @@
     },
     {
       "file": "src/pages/emoji-edit-dialog.vue",
-      "diagnostics": [
-        "error:39:67 [TS2339] Property 'filter' does not exist on type 'ComputedRef<[...string[], null]>'.",
-        "error:39:74 [TS7006] Parameter 'x' implicitly has an 'any' type.",
-        "error:39:88 [TS2339] Property 'filter' does not exist on type 'ComputedRef<[...string[], null]>'.",
-        "error:39:88 [TS7006] Parameter 'x' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/emojis.emoji.vue",
@@ -2159,13 +2131,7 @@
     },
     {
       "file": "src/ui/_common_/common.vue",
-      "diagnostics": [
-        "error:61:13 [TS2339] Property 'component' does not exist on type 'true | { id: number; component: ComponentPublicInstanceConstructor<any, any, any, any, ComputedOptions, MethodOptions> | FunctionalComponent<...> | { ...; }; props: Record<...>; events: Record<...>; }[]'.\nProperty 'component' does not exist on type 'true'.",
-        "error:63:14 [TS2339] Property 'id' does not exist on type 'true | { id: number; component: ComponentPublicInstanceConstructor<any, any, any, any, ComputedOptions, MethodOptions> | FunctionalComponent<...> | { ...; }; props: Record<...>; events: Record<...>; }[]'.\nProperty 'id' does not exist on type 'true'.",
-        "error:64:16 [TS2339] Property 'props' does not exist on type 'true | { id: number; component: ComponentPublicInstanceConstructor<any, any, any, any, ComputedOptions, MethodOptions> | FunctionalComponent<...> | { ...; }; props: Record<...>; events: Record<...>; }[]'.\nProperty 'props' does not exist on type 'true'.",
-        "error:65:14 [TS2339] Property 'events' does not exist on type 'true | { id: number; component: ComponentPublicInstanceConstructor<any, any, any, any, ComputedOptions, MethodOptions> | FunctionalComponent<...> | { ...; }; props: Record<...>; events: Record<...>; }[]'.\nProperty 'events' does not exist on type 'true'.",
-        "error:92:12 [TS2365] Operator '>' cannot be applied to types 'Ref<number, number>' and 'number'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/ui/_common_/mobile-footer-menu.vue",
@@ -2214,28 +2180,7 @@
     {
       "file": "src/ui/deck.vue",
       "diagnostics": [
-        "error:27:23 [TS2339] Property 'filter' does not exist on type 'Ref<{ id: string; type: \"antenna\" | \"channel\" | \"chat\" | \"direct\" | \"list\" | \"main\" | \"mentions\" | \"notifications\" | \"roleTimeline\" | \"tl\" | \"widgets\"; name: string | null; width: number; ... 14 more ...; timelineNameCache?: string | undefined; }[], Column[] | { ...; }[]>'.",
-        "error:27:30 [TS7006] Parameter 'c' implicitly has an 'any' type.",
-        "error:27:39 [TS2339] Property 'includes' does not exist on type 'true | string[][]'.\nProperty 'includes' does not exist on type 'true'.",
-        "error:27:60 [TS7006] Parameter 'c' implicitly has an 'any' type.",
-        "error:27:141 [TS2339] Property 'filter' does not exist on type 'Ref<{ id: string; type: \"antenna\" | \"channel\" | \"chat\" | \"direct\" | \"list\" | \"main\" | \"mentions\" | \"notifications\" | \"roleTimeline\" | \"tl\" | \"widgets\"; name: string | null; width: number; ... 14 more ...; timelineNameCache?: string | undefined; }[], Column[] | { ...; }[]>'.",
-        "error:27:148 [TS7006] Parameter 'c' implicitly has an 'any' type.",
-        "error:27:157 [TS2339] Property 'includes' does not exist on type 'true | string[][]'.\nProperty 'includes' does not exist on type 'true'.",
-        "error:27:177 [TS7006] Parameter 'c' implicitly has an 'any' type.",
-        "error:31:13 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ main: __VizeComponentConstructor & __VizeVueComponentOptions; widgets: __VizeComponentConstructor & __VizeVueComponentOptions; ... 8 more ...; chat: __VizeComponentConstructor & __VizeVueComponentOptions; }'.",
-        "error:31:38 [TS2339] Property 'find' does not exist on type 'Ref<{ id: string; type: \"antenna\" | \"channel\" | \"chat\" | \"direct\" | \"list\" | \"main\" | \"mentions\" | \"notifications\" | \"roleTimeline\" | \"tl\" | \"widgets\"; name: string | null; width: number; ... 14 more ...; timelineNameCache?: string | undefined; }[], Column[] | { ...; }[]>'.",
-        "error:31:43 [TS7006] Parameter 'c' implicitly has an 'any' type.",
-        "error:36:25 [TS2339] Property 'find' does not exist on type 'Ref<{ id: string; type: \"antenna\" | \"channel\" | \"chat\" | \"direct\" | \"list\" | \"main\" | \"mentions\" | \"notifications\" | \"roleTimeline\" | \"tl\" | \"widgets\"; name: string | null; width: number; ... 14 more ...; timelineNameCache?: string | undefined; }[], Column[] | { ...; }[]>'.",
-        "error:36:30 [TS7006] Parameter 'c' implicitly has an 'any' type.",
-        "error:37:24 [TS2339] Property 'length' does not exist on type 'true | string[][]'.\nProperty 'length' does not exist on type 'true'.",
-        "error:38:22 [TS2345] Argument of type '(ev: WheelEvent) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'WheelEvent': deltaMode, deltaX, deltaY, deltaZ, and 30 more.",
-        "error:41:24 [TS2339] Property 'length' does not exist on type 'Ref<string[][], string[][]>'.",
-        "error:295:11 [TS2339] Property 'length' does not exist on type 'Ref<string[][], string[][]>'.",
-        "error:300:22 [TS2339] Property 'length' does not exist on type 'Ref<string[][], string[][]>'.",
-        "error:300:64 [TS2339] Property 'length' does not exist on type 'Ref<string[][], string[][]>'.",
-        "error:309:18 [TS2339] Property 'length' does not exist on type 'Ref<string[][], string[][]>'.",
-        "error:314:23 [TS2339] Property 'length' does not exist on type 'Ref<string[][], string[][]>'.",
-        "error:324:7 [TS2339] Property 'length' does not exist on type 'Ref<string[][], string[][]>'."
+        "error:38:22 [TS2345] Argument of type '(ev: WheelEvent) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'WheelEvent': deltaMode, deltaX, deltaY, deltaZ, and 30 more."
       ]
     },
     {
@@ -2457,7 +2402,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 98,
+  "errorCount": 48,
   "warningCount": 0,
   "fileCount": 583
 }

@@ -156,11 +156,38 @@ async function openRoute(page: Page, baseUrl: string, route: VisualRoute): Promi
 async function prepareVuefesPage(page: Page): Promise<void> {
   await retryAfterReload(() => stabilizeVuefesTheme(page));
   await retryAfterReload(() => waitForVuefesLayoutReady(page));
+  await retryAfterReload(() => waitForVuefesHomeStaff(page));
   await retryAfterReload(() => loadVuefesLazyImages(page));
   await retryAfterReload(() => prepareStableVisualState(page));
   await retryAfterReload(() => waitForVuefesLayoutReady(page));
   await retryAfterReload(() => waitForVuefesImagesReady(page));
   await page.waitForTimeout(500);
+}
+
+async function waitForVuefesHomeStaff(page: Page): Promise<void> {
+  const pathname = new URL(page.url()).pathname.replace(/\/$/, "");
+  if (!["", "/en", "/2025", "/2025/en"].includes(pathname)) {
+    return;
+  }
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      await expect
+        .poll(() => page.locator(".staff-member").count(), { timeout: 15_000 })
+        .toBeGreaterThan(80);
+      return;
+    } catch (error) {
+      if (attempt > 0) {
+        throw error;
+      }
+
+      // The staff section is an async component. A dependency-optimization
+      // reload can strand its first chunk request, so retry from fresh HTML.
+      const response = await page.reload({ timeout: 60_000, waitUntil: "domcontentloaded" });
+      expect(response?.status()).toBeLessThan(500);
+      await waitForMountedAppContent(page, "#__nuxt");
+    }
+  }
 }
 
 async function retryAfterReload(operation: () => Promise<void>): Promise<void> {
@@ -198,35 +225,50 @@ async function stabilizeVuefesTheme(page: Page): Promise<void> {
 }
 
 async function waitForVuefesLayoutReady(page: Page): Promise<void> {
-  await expect
-    .poll(
-      () =>
-        page.evaluate(() => {
-          const header = document.querySelector(".header");
-          const logo = document.querySelector(".logo-image");
-          if (!(header instanceof HTMLElement) || !(logo instanceof Element)) {
-            return "missing-shell";
-          }
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      await expect
+        .poll(
+          () =>
+            page.evaluate(() => {
+              const header = document.querySelector(".header");
+              const logo = document.querySelector(".logo-image");
+              if (!(header instanceof HTMLElement) || !(logo instanceof Element)) {
+                return "missing-shell";
+              }
 
-          const headerStyle = getComputedStyle(header);
-          const logoRect = logo.getBoundingClientRect();
-          const scrollHeight = document.documentElement.scrollHeight;
+              const headerStyle = getComputedStyle(header);
+              const logoRect = logo.getBoundingClientRect();
+              const scrollHeight = document.documentElement.scrollHeight;
 
-          if (headerStyle.position !== "sticky") {
-            return `header-position:${headerStyle.position}`;
-          }
-          if (logoRect.width < 100 || logoRect.width > 400) {
-            return `logo-width:${logoRect.width}`;
-          }
-          if (scrollHeight < window.innerHeight || scrollHeight > 40_000) {
-            return `scroll-height:${scrollHeight}`;
-          }
+              if (headerStyle.position !== "sticky") {
+                return `header-position:${headerStyle.position}`;
+              }
+              if (logoRect.width < 100 || logoRect.width > 400) {
+                return `logo-width:${logoRect.width}`;
+              }
+              if (scrollHeight < window.innerHeight || scrollHeight > 40_000) {
+                return `scroll-height:${scrollHeight}`;
+              }
 
-          return "ready";
-        }),
-      { timeout: 30_000 },
-    )
-    .toBe("ready");
+              return "ready";
+            }),
+          { timeout: 15_000 },
+        )
+        .toBe("ready");
+      return;
+    } catch (error) {
+      if (attempt > 0 || !String(error).includes("missing-shell")) {
+        throw error;
+      }
+
+      // Vite can reload once after discovering this fixture's lazy dependencies.
+      // Reload explicitly if that optimization navigation leaves an empty shell.
+      const response = await page.reload({ timeout: 60_000, waitUntil: "domcontentloaded" });
+      expect(response?.status()).toBeLessThan(500);
+      await waitForMountedAppContent(page, "#__nuxt");
+    }
+  }
 }
 
 async function loadVuefesLazyImages(page: Page): Promise<void> {

@@ -1719,9 +1719,6 @@ function setupVuefesWorktree(opts?: { enableVize?: boolean; variant?: string }):
     fs.writeFileSync(vuefesPackageJson, JSON.stringify(pkg, null, "\t") + "\n");
   }
 
-  addPnpmOverrides(vuefesPackageJson, {
-    vite: "^8.0.0",
-  });
   patchVuefesVisualFixture(vuefesDir);
 
   installPnpmDependencies(vuefesDir, {

@@ -719,7 +719,9 @@
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
         "error:55:33 [TS2367] This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.",
-        "error:56:83 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'."
+        "error:56:66 [TS2367] This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.",
+        "error:56:83 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
+        "error:57:43 [TS2367] This comparison appears to be unintentional because the types 'number' and 'string' have no overlap."
       ]
     },
     {
@@ -1424,7 +1426,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 277,
+  "errorCount": 279,
   "warningCount": 0,
   "fileCount": 253
 }

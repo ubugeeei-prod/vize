@@ -24,7 +24,10 @@ export function buildNuxtCompilerOptions(
 ): VizeNuxtCompilerOptions {
   const defaults: VizeNuxtCompilerOptions = {
     devUrlBase: buildNuxtDevAssetBase(baseURL, buildAssetsDir),
-    handleNodeModulesVue: false,
+    // Nuxt's built-in Vue plugin is removed while Vize owns SFC compilation,
+    // so dependency SFCs (including ?nuxt_component wrappers) must stay on the
+    // Vize on-demand path as well.
+    handleNodeModulesVue: true,
     root: rootDir,
     scanPatterns: [],
   };

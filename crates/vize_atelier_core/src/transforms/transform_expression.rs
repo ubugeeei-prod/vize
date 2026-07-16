@@ -22,12 +22,13 @@ use vize_carton::{Box, Bump, String};
 /// at depth 32 (#2944) cannot be caught, so every entry point shares this guard.
 pub const MAX_EXPRESSION_NESTING_DEPTH: usize = 31;
 
-/// Returns the maximum delimiter nesting depth in `content`. Brackets and
+/// Returns the maximum parser-recursion depth in `content`. Brackets and
 /// TypeScript angle brackets use separate counters so `>` cannot close an array
-/// or object. Strings and template literals are skipped.
+/// or object. Decorator markers are cumulative because OXC recursively parses
+/// chained decorators. Strings, template literals, and comments are skipped.
 pub fn expression_nesting_depth(content: &str) -> usize {
     let bytes = content.as_bytes();
-    let (mut bracket_depth, mut angle_depth) = (0usize, 0usize);
+    let (mut bracket_depth, mut angle_depth, mut decorator_depth) = (0usize, 0usize, 0usize);
     let mut max_depth: usize = 0;
     let mut i = 0;
     while i < bytes.len() {
@@ -67,9 +68,10 @@ pub fn expression_nesting_depth(content: &str) -> usize {
             b')' | b']' | b'}' => bracket_depth = bracket_depth.saturating_sub(1),
             b'<' => angle_depth += 1,
             b'>' => angle_depth = angle_depth.saturating_sub(1),
+            b'@' => decorator_depth += 1,
             _ => {}
         }
-        max_depth = max_depth.max(bracket_depth + angle_depth);
+        max_depth = max_depth.max(bracket_depth + angle_depth + decorator_depth);
         i += 1;
     }
     max_depth
@@ -483,6 +485,23 @@ mod tests {
             + "1"
             + &")".repeat(MAX_EXPRESSION_NESTING_DEPTH);
         assert!(!expression_exceeds_max_depth(&shallow));
+    }
+
+    #[test]
+    fn test_expression_exceeds_max_depth_guards_decorator_chains() {
+        // Regression for #2967: OXC recursively parses every decorator marker,
+        // even in malformed expression input, so a long `@` chain can overflow
+        // before returning a parser error.
+        let deep = "@".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1) + "value";
+        assert!(expression_exceeds_max_depth(&deep));
+
+        let shallow = "@".repeat(MAX_EXPRESSION_NESTING_DEPTH) + "value";
+        assert!(!expression_exceeds_max_depth(&shallow));
+        assert_eq!(expression_nesting_depth(r#""user@example.com""#), 0);
+        assert_eq!(
+            expression_nesting_depth("value /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */"),
+            0
+        );
     }
 
     #[test]
