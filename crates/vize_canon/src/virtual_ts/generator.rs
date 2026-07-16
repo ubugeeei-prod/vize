@@ -32,8 +32,8 @@ use self::props_anchors::emit_setup_scope_prop_anchors;
 use self::setup_helpers::emit_setup_helpers;
 use self::setup_props::SetupPropsPlan;
 use self::spans::{
-    DEFINE_COMPONENT_REF, merge_overlapping_spans, preserved_template_usage,
-    rewrite_export_default_for_module_scope,
+    DEFINE_COMPONENT_REF, merge_overlapping_spans, rewrite_export_default_for_module_scope,
+    template_usage,
 };
 use super::{
     helpers::{
@@ -144,14 +144,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let mut ts = String::default();
     let mut mappings: Vec<VizeMapping> = Vec::new();
     let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
-    let (template_referenced_names, has_template_scope) =
-        preserved_template_usage(summary, template_ast, generation_options);
+    let (template_usage_names, has_template_scope) =
+        template_usage(summary, template_ast, generation_options);
+    let template_referenced_names = preserve_unused_diagnostics.then_some(&template_usage_names);
     let reference_setup_bindings_comment = if preserve_unused_diagnostics {
         "Reference setup bindings used by template generation"
     } else {
         "Reference setup bindings (used in template/CSS v-bind)"
     };
-
     let lib_references = generation_options
         .lib_references
         .unwrap_or(DEFAULT_LIB_REFERENCES);
@@ -737,7 +737,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             let template_ref_unwraps = template_refs::TemplateRefUnwraps::collect(
                 summary,
                 options_api,
-                template_referenced_names.as_ref(),
+                Some(&template_usage_names),
                 script_content,
             );
             template_ref_unwraps.emit_type_captures(&mut ts);
@@ -846,7 +846,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     &mut ts,
                     summary,
                     script_content,
-                    template_referenced_names.as_ref(),
+                    template_referenced_names,
                     reference_setup_bindings_comment,
                 )
             );
@@ -862,7 +862,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 &mut ts,
                 summary,
                 script_content,
-                template_referenced_names.as_ref(),
+                template_referenced_names,
                 reference_setup_bindings_comment,
             )
         );
@@ -872,7 +872,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         &mut ts,
         summary,
         script_content,
-        template_referenced_names.as_ref(),
+        template_referenced_names,
         preserve_unused_diagnostics,
     );
 

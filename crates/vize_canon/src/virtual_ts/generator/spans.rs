@@ -5,19 +5,17 @@ use vize_atelier_sfc::script::resolve_template_used_identifiers;
 use vize_carton::{FxHashSet, String};
 use vize_croquis::{Croquis, ScopeData};
 
-pub(super) fn preserved_template_usage(
+pub(super) fn template_usage(
     summary: &Croquis,
     template_ast: Option<&vize_relief::RootNode<'_>>,
     generation_options: crate::virtual_ts::types::VirtualTsGenerationOptions<'_>,
-) -> (Option<FxHashSet<String>>, bool) {
-    let names = generation_options.preserve_unused_diagnostics.then(|| {
-        collect_template_referenced_names(
-            summary,
-            template_ast,
-            generation_options.extra_template_referenced_names,
-        )
-    });
-    let has_scope = template_ast.is_some() || names.as_ref().is_some_and(|names| !names.is_empty());
+) -> (FxHashSet<String>, bool) {
+    let names = collect_template_referenced_names(
+        summary,
+        template_ast,
+        generation_options.extra_template_referenced_names,
+    );
+    let has_scope = template_ast.is_some() || !names.is_empty();
     (names, has_scope)
 }
 
@@ -84,6 +82,17 @@ fn collect_template_referenced_names(
     }
 
     names
+}
+
+pub(super) fn is_local_setup_binding(summary: &Croquis, name: &str) -> bool {
+    let Some(&(start, end)) = summary.binding_spans.get(name) else {
+        return true;
+    };
+
+    !summary
+        .import_statements
+        .iter()
+        .any(|import| start >= import.start && end <= import.end)
 }
 
 fn collect_expression_identifiers(names: &mut FxHashSet<String>, expression: &str) {
@@ -219,17 +228,6 @@ fn wrap_default_export_object(
     output.push(')');
     output.push_str(&text[object_end..]);
     Some(output)
-}
-
-pub(super) fn is_local_setup_binding(summary: &Croquis, name: &str) -> bool {
-    let Some(&(start, end)) = summary.binding_spans.get(name) else {
-        return true;
-    };
-
-    !summary
-        .import_statements
-        .iter()
-        .any(|import| start >= import.start && end <= import.end)
 }
 
 #[cfg(test)]

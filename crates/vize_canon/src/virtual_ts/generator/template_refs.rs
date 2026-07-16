@@ -34,14 +34,15 @@ impl TemplateRefUnwraps {
             .bindings
             .iter()
             .filter(|(name, _)| {
-                template_referenced_names
-                    .is_none_or(|referenced| referenced.contains(name.as_str()))
+                template_referenced_names.is_none_or(|referenced| {
+                    referenced.contains(name.as_str())
+                        || is_local_setup_binding(summary, name.as_str())
+                })
             })
             .filter(|(name, _)| !options_api_setup_binding_names.contains(name.as_str()))
             .filter(|(name, binding_type)| {
                 summary.reactivity.needs_value_access(name.as_str())
                     || matches!(binding_type, BindingType::SetupMaybeRef)
-                        && is_local_setup_binding(summary, name.as_str())
             })
             .map(|(name, _)| String::from(name.as_str()))
             .collect();
