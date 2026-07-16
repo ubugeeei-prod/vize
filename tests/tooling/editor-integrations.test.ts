@@ -8,9 +8,7 @@ import {
   onigurumaWasmPath,
   textmateModulePath,
 } from "./support/textmate-deps.ts";
-
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-
 function readText(relativePath: string): string {
   return fs.readFileSync(path.join(root, relativePath), "utf-8");
 }
@@ -21,7 +19,6 @@ function readJson<T>(relativePath: string): T {
 
 function workspaceVersion(): string {
   const version = readText("Cargo.toml").match(/^version = "(.+)"$/m)?.[1];
-
   assert.ok(version);
   return version;
 }
@@ -39,7 +36,6 @@ function createStubGrammar(scopeName: string) {
     { match: "[<>{}()\\[\\].,:?=+\\-*/|&!]+", name: "punctuation.ts" },
     { match: "\"(?:\\\\.|[^\"])*\"|'(?:\\\\.|[^'])*'|`(?:\\\\.|[^`])*`", name: "string.ts" },
   ];
-
   return {
     scopeName,
     patterns,
@@ -466,14 +462,18 @@ test("zed-vize registers art-vue as a first-party language", () => {
 test("CI packages editor extension artifacts", () => {
   const workflow = readText(".github/workflows/check.yml");
   const buildTasks = readText("tools/vite-plus/tasks/build.ts");
+  const taskCommands = readText("tools/vite-plus/task-commands.ts");
   const testTasks = readText("tools/vite-plus/tasks/test-benchmark.ts");
-
   assert.match(
     workflow,
     /name: Check and package editor extensions[\s\S]*package:editor-extensions/,
   );
   assert.match(buildTasks, /package:vscode-extension[\s\S]*assert-vsix-package\.mjs/);
   assert.match(buildTasks, /package:editor-extensions[\s\S]*assert-vsix-package\.mjs/);
+  assert.match(
+    taskCommands,
+    /pnpm install --ignore-workspace --no-lockfile --prefer-offline --ignore-scripts/,
+  );
   assert.match(testTasks, /test:vscode-extension:vsix[\s\S]*assert-vsix-package\.mjs/);
   assert.match(testTasks, /test:vscode-extension:host[\s\S]*pnpm run test:host/);
   assert.match(buildTasks, /package:zed-extension[\s\S]*assert-zed-package\.mjs/);

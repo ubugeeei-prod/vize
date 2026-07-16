@@ -23,7 +23,7 @@ export const runPackageScriptDirectly = (taskName: string, packages: readonly Pa
  */
 export const installVscodeExtensionDependencies = runInDirectory(
   "editors/vscode",
-  "if [ -x node_modules/.bin/vp ]; then exit 0; fi && mkdir -p node_modules/.bin && pnpm install --ignore-workspace --no-lockfile --prefer-offline",
+  "if [ -x node_modules/.bin/vp ]; then exit 0; fi && mkdir -p node_modules/.bin && pnpm install --ignore-workspace --no-lockfile --prefer-offline --ignore-scripts",
 );
 
 /**
