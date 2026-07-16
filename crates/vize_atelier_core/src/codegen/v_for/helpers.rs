@@ -22,7 +22,10 @@ pub(crate) fn extract_for_params(expr: &ExpressionNode<'_>, params: &mut Vec<Str
 /// Recursively extract parameter names from a destructuring pattern string.
 pub(crate) fn extract_destructure_params(trimmed: &str, params: &mut Vec<String>) {
     if trimmed.contains(',') && !trimmed.starts_with('{') && !trimmed.starts_with('[') {
-        for part in split_top_level(trimmed) {
+        for part in split_top_level(trimmed)
+            .into_iter()
+            .filter(|part| *part != trimmed)
+        {
             let part = part.trim();
             if !part.is_empty() {
                 extract_destructure_params(part, params);
@@ -290,6 +293,19 @@ mod tests {
         );
 
         assert_eq!(params, ["first", "secondId"]);
+    }
+
+    #[test]
+    fn test_extract_destructure_params_stops_on_unbalanced_nesting() {
+        for malformed in ["$data.[label, value]", "(dep(, file)"] {
+            let mut params = Vec::new();
+            extract_destructure_params(malformed, &mut params);
+            assert!(params.is_empty(), "unexpected params for {malformed:?}");
+        }
+
+        let mut params = Vec::new();
+        extract_destructure_params("item, index", &mut params);
+        assert_eq!(params, ["item", "index"]);
     }
 
     #[test]

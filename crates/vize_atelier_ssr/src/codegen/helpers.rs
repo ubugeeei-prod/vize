@@ -353,14 +353,15 @@ pub(crate) fn extract_destructure_params(value: &str, params: &mut FxHashSet<Str
         extract_destructure_params(value[1..value.len() - 1].trim(), params);
         return;
     }
-
     if value.contains(',') && !value.starts_with('{') && !value.starts_with('[') {
-        for part in split_top_level(value) {
+        for part in split_top_level(value)
+            .into_iter()
+            .filter(|part| *part != value)
+        {
             extract_destructure_params(part.trim(), params);
         }
         return;
     }
-
     if value.starts_with('{') && value.ends_with('}') {
         for part in split_top_level(&value[1..value.len() - 1]) {
             let part = part.trim();
@@ -391,7 +392,6 @@ pub(crate) fn extract_destructure_params(value: &str, params: &mut FxHashSet<Str
         collect_identifier_param(value, params);
     }
 }
-
 fn collect_identifier_param(value: &str, params: &mut FxHashSet<String>) {
     if is_valid_identifier(value) {
         params.insert(value.to_compact_string());
