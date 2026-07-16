@@ -228,9 +228,18 @@ test("PR test report keeps the test file inventory collapsed with a short toggle
 
 test("check workflow runs JS package unit tests and production dependency audit", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const packageJson = JSON.parse(readRepoFile("package.json"));
+  const pnpmWorkspace = readRepoFile("pnpm-workspace.yaml");
   const jsPackageJob = workflowJobBody(workflow, "test-js-packages");
   const auditJob = workflowJobBody(workflow, "security-audit");
 
+  assert.equal(packageJson.packageManager, "pnpm@11.13.1");
+  assert.equal(packageJson.pnpm, undefined);
+  assert.match(pnpmWorkspace, /^overrides:\n/m);
+  assert.match(
+    pnpmWorkspace,
+    /^allowBuilds:\n  "@parcel\/watcher": false\n  core-js: false\n  esbuild: true\n  puppeteer: false\n  vue-demi: false$/m,
+  );
   assert.match(jsPackageJob, /vp run --workspace-root test:js/);
   assert.match(jsPackageJob, /key:\s*test-js-packages/);
   assert.match(auditJob, /vp exec pnpm audit --prod --audit-level moderate/);

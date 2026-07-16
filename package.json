@@ -22,33 +22,5 @@
     "vite-plus": "catalog:vite-stack",
     "yaml": "2.9.0"
   },
-  "packageManager": "pnpm@10.0.0",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ],
-    "overrides": {
-      "@azure/msal-node>uuid": "11.1.1",
-      "@unhead/vue": "2.1.15",
-      "defu": "6.1.7",
-      "devalue": "5.8.1",
-      "dompurify": "3.4.11",
-      "esbuild": "0.28.1",
-      "h3": "1.15.11",
-      "hono": "4.12.25",
-      "launch-editor": "2.14.1",
-      "nanotar": "0.3.0",
-      "nitropack": "2.13.4",
-      "node-forge": "1.4.0",
-      "nuxt": "4.4.8",
-      "qs": "6.15.2",
-      "shell-quote": "1.8.4",
-      "simple-git": "3.36.0",
-      "srvx": "0.11.15",
-      "svgo": "4.0.1",
-      "tar": "7.5.16",
-      "vite@>=7.0.0 <7.3.5": "7.3.5",
-      "yaml": "2.9.0"
-    }
-  }
+  "packageManager": "pnpm@11.13.1"
 }
