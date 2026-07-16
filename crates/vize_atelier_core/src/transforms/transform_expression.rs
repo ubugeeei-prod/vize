@@ -4,6 +4,8 @@
 mod collector;
 #[path = "transform_expression/inline_handler.rs"]
 mod inline_handler;
+#[path = "transform_expression/nesting.rs"]
+mod nesting;
 #[path = "transform_expression/prefix.rs"]
 pub(crate) mod prefix;
 #[path = "transform_expression/rewrite.rs"]
@@ -16,74 +18,12 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{Box, Bump, String};
 
-/// Maximum delimiter nesting depth allowed before handing source to OXC.
-///
-/// OXC recurses for nested brackets; stack overflow (#956) and a parser timeout
-/// at depth 32 (#2944) cannot be caught, so every entry point shares this guard.
-pub const MAX_EXPRESSION_NESTING_DEPTH: usize = 31;
-/// Returns the maximum parser-recursion depth in `content`. Brackets and TypeScript
-/// angles are paired, while decorator markers accumulate for OXC's recursive parser.
-/// Strings, template literals, and comments are skipped.
-pub fn expression_nesting_depth(content: &str) -> usize {
-    let bytes = content.as_bytes();
-    let (mut bracket_depth, mut angle_depth, mut decorator_depth) = (0usize, 0usize, 0usize);
-    let mut max_depth: usize = 0;
-    let mut i = 0;
-    while i < bytes.len() {
-        let b = bytes[i];
-        match b {
-            b'"' | b'\'' | b'`' => {
-                let quote = b;
-                i += 1;
-                while i < bytes.len() {
-                    if bytes[i] == b'\\' {
-                        i = i.saturating_add(2);
-                        continue;
-                    }
-                    if bytes[i] == quote {
-                        i += 1;
-                        break;
-                    }
-                    i += 1;
-                }
-                continue;
-            }
-            b'/' if i + 1 < bytes.len() && bytes[i + 1] == b'/' => {
-                while i < bytes.len() && bytes[i] != b'\n' {
-                    i += 1;
-                }
-                continue;
-            }
-            b'/' if i + 1 < bytes.len() && bytes[i + 1] == b'*' => {
-                i += 2;
-                while i + 1 < bytes.len() && !(bytes[i] == b'*' && bytes[i + 1] == b'/') {
-                    i += 1;
-                }
-                i = i.saturating_add(2);
-                continue;
-            }
-            b'(' | b'[' | b'{' => bracket_depth += 1,
-            b')' | b']' | b'}' => bracket_depth = bracket_depth.saturating_sub(1),
-            b'<' => angle_depth += 1,
-            b'>' => angle_depth = angle_depth.saturating_sub(1),
-            b'@' => decorator_depth += 1,
-            _ => {}
-        }
-        max_depth = max_depth.max(bracket_depth + angle_depth + decorator_depth);
-        i += 1;
-    }
-    max_depth
-}
-
-/// Returns true if `content` exceeds [`MAX_EXPRESSION_NESTING_DEPTH`].
-#[inline]
-pub fn expression_exceeds_max_depth(content: &str) -> bool {
-    expression_nesting_depth(content) > MAX_EXPRESSION_NESTING_DEPTH
-}
-
 use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, lane::TransformContext};
 
 pub use inline_handler::process_inline_handler;
+pub use nesting::{
+    MAX_EXPRESSION_NESTING_DEPTH, expression_exceeds_max_depth, expression_nesting_depth,
+};
 pub use prefix::{is_simple_identifier, prefix_identifiers_in_expression};
 pub use typescript::strip_typescript_from_expression;
 

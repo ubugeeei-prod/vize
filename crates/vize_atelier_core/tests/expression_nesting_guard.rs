@@ -40,10 +40,27 @@ fn expression_guard_rejects_decorator_chain_reproducer() {
     let allowed = "@".repeat(MAX_EXPRESSION_NESTING_DEPTH) + "value";
     assert!(expression_exceeds_max_depth(&rejected));
     assert!(!expression_exceeds_max_depth(&allowed));
+    assert_eq!(
+        prefix_identifiers_in_expression(&rejected).as_str(),
+        rejected
+    );
     assert_eq!(expression_nesting_depth(r#""user@example.com""#), 0);
     assert_eq!(
         expression_nesting_depth("value /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */"),
         0
+    );
+}
+
+#[test]
+fn expression_guard_ignores_at_signs_inside_regex_literals() {
+    let at_signs = "@".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1);
+    let expression = ["/[", at_signs.as_str(), "]+/gu.test(value)"].concat();
+    let expected = expression.replace("value", "_ctx.value");
+    assert_eq!(expression_nesting_depth(&expression), 1);
+    assert!(!expression_exceeds_max_depth(&expression));
+    assert_eq!(
+        prefix_identifiers_in_expression(&expression).as_str(),
+        expected
     );
 }
 
