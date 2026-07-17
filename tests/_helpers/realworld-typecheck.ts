@@ -28,7 +28,18 @@ export function runVizeCheck(
   const [command, ...prefixArgs] = resolveVizeCommand();
   const result = runCommand(
     command,
-    [...prefixArgs, "check", ...patterns, "--format", "json", "--quiet", "--corsa-path", corsaPath],
+    [
+      ...prefixArgs,
+      "check",
+      ...patterns,
+      "--tsconfig",
+      "tsconfig.json",
+      "--format",
+      "json",
+      "--quiet",
+      "--corsa-path",
+      corsaPath,
+    ],
     workspaceDir,
   );
   return { ...result, report: JSON.parse(result.stdout) as CheckReport };

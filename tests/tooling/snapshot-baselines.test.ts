@@ -24,6 +24,8 @@ const assertionOnlyCheckTests = {
   "class-component": "class-component vue-tsc parity has known upstream-noisy diagnostics",
   "create-vue-patch-oracle":
     "patch oracle asserts exact live CLI and LSP behavior across document versions",
+  "pinia-generic-store-oracle":
+    "library patch oracle asserts generic store inference and dependency refresh behavior",
   "vue-router-patch-oracle":
     "library patch oracle asserts exact package-resolution behavior across document versions",
   directus: "real-world smoke lane is too large for a deterministic complete baseline",
