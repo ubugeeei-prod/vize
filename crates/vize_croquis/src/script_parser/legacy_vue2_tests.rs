@@ -72,6 +72,51 @@ export default {
     }
 }
 
+fn assert_typed_mixin_array(source: &str) {
+    let legacy = parse_legacy(source);
+    let vue3 = parse_vue3_options(source);
+
+    assert_eq!(
+        legacy.bindings.get("inheritedMethod"),
+        Some(BindingType::Options)
+    );
+    assert_eq!(
+        vue3.bindings.get("inheritedMethod"),
+        Some(BindingType::Options)
+    );
+    assert_eq!(
+        legacy.bindings.get("inheritedFilter"),
+        Some(BindingType::Options)
+    );
+    assert!(!vue3.bindings.contains("inheritedFilter"));
+}
+
+#[test]
+fn mixins_unwrap_as_const_arrays() {
+    assert_typed_mixin_array(
+        r#"
+const LocalMixin = {
+  methods: { inheritedMethod() {} },
+  filters: { inheritedFilter(value) { return value } }
+}
+export default { mixins: ([LocalMixin] as const) }
+"#,
+    );
+}
+
+#[test]
+fn mixins_unwrap_satisfies_arrays() {
+    assert_typed_mixin_array(
+        r#"
+const LocalMixin = {
+  methods: { inheritedMethod() {} },
+  filters: { inheritedFilter(value) { return value } }
+}
+export default { mixins: ([LocalMixin] satisfies readonly object[]) }
+"#,
+    );
+}
+
 #[test]
 fn class_component_decorator_filters_are_legacy_only() {
     let source = r#"

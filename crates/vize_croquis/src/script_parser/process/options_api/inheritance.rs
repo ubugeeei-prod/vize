@@ -1,6 +1,6 @@
 //! Same-file Options API mixin and extends resolution.
 
-use oxc_ast::ast::{Expression, ObjectExpression};
+use oxc_ast::ast::{ArrayExpression, Expression, ObjectExpression};
 use vize_carton::{FxHashMap, FxHashSet};
 
 use super::{
@@ -19,8 +19,10 @@ pub(super) fn collect_mixins_bindings<'a>(
     seen_mixins: &mut FxHashSet<&'a str>,
     legacy_vue2: bool,
 ) {
-    let Some(Expression::ArrayExpression(array)) = option_expression_property(options, "mixins")
-    else {
+    let Some(expression) = option_expression_property(options, "mixins") else {
+        return;
+    };
+    let Some(array) = unwrap_array_expression(expression) else {
         return;
     };
 
@@ -35,6 +37,23 @@ pub(super) fn collect_mixins_bindings<'a>(
             seen_mixins,
             legacy_vue2,
         );
+    }
+}
+
+fn unwrap_array_expression<'a>(expression: &'a Expression<'a>) -> Option<&'a ArrayExpression<'a>> {
+    match expression {
+        Expression::ArrayExpression(array) => Some(array),
+        Expression::ParenthesizedExpression(parenthesized) => {
+            unwrap_array_expression(&parenthesized.expression)
+        }
+        Expression::TSAsExpression(ts_as) => unwrap_array_expression(&ts_as.expression),
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            unwrap_array_expression(&ts_satisfies.expression)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            unwrap_array_expression(&ts_non_null.expression)
+        }
+        _ => None,
     }
 }
 
