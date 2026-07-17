@@ -179,11 +179,16 @@ export class LspSession {
     try {
       await this.request("shutdown", undefined, 10000);
     } finally {
-      this.notify("exit", undefined);
-      this.process.stdin.end();
-      await new Promise<void>((resolve) => {
+      const exited = new Promise<void>((resolve) => {
+        if (this.process.exitCode != null || this.process.signalCode != null) {
+          resolve();
+          return;
+        }
+
         const timeout = setTimeout(() => {
-          this.process.kill("SIGKILL");
+          if (!this.process.kill("SIGKILL")) {
+            resolve();
+          }
         }, 5000);
 
         this.process.once("exit", () => {
@@ -191,6 +196,10 @@ export class LspSession {
           resolve();
         });
       });
+
+      this.notify("exit", undefined);
+      this.process.stdin.end();
+      await exited;
     }
   }
 

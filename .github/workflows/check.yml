@@ -234,8 +234,8 @@ jobs:
         with:
           key: vue-parity
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
-      - name: Install JS dependencies
-        run: vp install --frozen-lockfile --prefer-offline
+      - name: Hydrate fixture and install JS dependencies
+        run: git submodule update --init --depth 1 tests/_fixtures/_git/create-vue && vp install --frozen-lockfile --prefer-offline
       - name: Build vize CLI
         run: cargo build --profile ci -p vize
       - name: Check Vue compiler and typecheck parity
