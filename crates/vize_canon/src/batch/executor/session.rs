@@ -173,10 +173,14 @@ impl MaterializedSnapshot {
             let path = entry.path();
             if entry.file_type().is_symlink() {
                 let target = std::fs::read_link(path)?;
-                snapshot
-                    .revisions
-                    .insert(path.to_path_buf(), hash_path(&target));
-                if path.is_file()
+                let resolves_to_file = path.is_file();
+                let revision = if resolves_to_file {
+                    hash_bytes(&std::fs::read(path)?)
+                } else {
+                    hash_path(&target)
+                };
+                snapshot.revisions.insert(path.to_path_buf(), revision);
+                if resolves_to_file
                     && is_diagnostic_input(path)
                     && !is_under_virtual_node_modules(virtual_root, path)
                     && !is_internal_virtual_project_stub(path)

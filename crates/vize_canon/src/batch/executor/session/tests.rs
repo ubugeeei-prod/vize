@@ -31,11 +31,15 @@ fn snapshot_keeps_symlinked_typescript_files_as_diagnostic_inputs() {
     std::fs::write(&target, "export const value = 1\n").expect("target should be written");
     symlink(&target, &linked).expect("source symlink should be created");
 
-    let snapshot = MaterializedSnapshot::capture(&virtual_root)
+    let before = MaterializedSnapshot::capture(&virtual_root)
         .expect("materialized snapshot should be captured");
+    std::fs::write(&target, "export const value = 2\n").expect("target should be updated");
+    let after = MaterializedSnapshot::capture(&virtual_root)
+        .expect("updated materialized snapshot should be captured");
 
-    assert!(snapshot.revisions.contains_key(&linked));
-    assert_eq!(snapshot.uris, vec![path_to_file_uri(&linked)]);
+    assert!(after.revisions.contains_key(&linked));
+    assert_eq!(after.uris, vec![path_to_file_uri(&linked)]);
+    assert_eq!(after.diff(&before).changed, vec![linked]);
 }
 
 fn snapshot(entries: &[(&str, u64)]) -> MaterializedSnapshot {
