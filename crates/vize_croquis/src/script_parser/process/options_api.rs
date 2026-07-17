@@ -1,8 +1,10 @@
 //! Options API component metadata collection for component registrations and template bindings.
 
 mod emits;
+mod inheritance;
 
 use emits::collect_options_api_emits_from_options as collect_emits;
+use inheritance::{collect_extends_bindings, collect_mixins_bindings};
 
 use oxc_ast::ast::{
     Argument, ArrayExpression, ArrayExpressionElement, BindingPattern, CallExpression,
@@ -256,127 +258,6 @@ fn collect_options_object_template_bindings<'a>(
     );
     collect_mixins_bindings(result, options, object_bindings, seen_mixins, legacy_vue2);
     collect_extends_bindings(result, options, object_bindings, seen_mixins, legacy_vue2);
-}
-
-/// Merges template bindings contributed by same-file `mixins` entries.
-///
-/// Only same-file targets are resolved: inline object literals and
-/// identifiers whose `const` initializer is an object literal in this module.
-/// Imported mixins are deliberately ignored — resolving them requires
-/// cross-file analysis, which is deferred.
-fn collect_mixins_bindings<'a>(
-    result: &mut ScriptParseResult,
-    options: &'a ObjectExpression<'a>,
-    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
-    seen_mixins: &mut FxHashSet<&'a str>,
-    legacy_vue2: bool,
-) {
-    let Some(Expression::ArrayExpression(array)) = option_expression_property(options, "mixins")
-    else {
-        return;
-    };
-
-    for element in &array.elements {
-        let Some(expression) = element.as_expression() else {
-            continue;
-        };
-        collect_mixin_target_bindings(
-            result,
-            expression,
-            object_bindings,
-            seen_mixins,
-            legacy_vue2,
-        );
-    }
-}
-
-/// Merges template bindings contributed by a same-file `extends` target.
-/// Same resolution rules and deferral as [`collect_mixins_bindings`].
-fn collect_extends_bindings<'a>(
-    result: &mut ScriptParseResult,
-    options: &'a ObjectExpression<'a>,
-    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
-    seen_mixins: &mut FxHashSet<&'a str>,
-    legacy_vue2: bool,
-) {
-    let Some(expression) = option_expression_property(options, "extends") else {
-        return;
-    };
-    collect_mixin_target_bindings(
-        result,
-        expression,
-        object_bindings,
-        seen_mixins,
-        legacy_vue2,
-    );
-}
-
-/// Resolves a single mixin/extends target expression and merges its option
-/// bindings. The seen-set guards against mixin cycles (A mixes B mixes A);
-/// inline object literals cannot cycle because the AST is a tree.
-fn collect_mixin_target_bindings<'a>(
-    result: &mut ScriptParseResult,
-    expression: &'a Expression<'a>,
-    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
-    seen_mixins: &mut FxHashSet<&'a str>,
-    legacy_vue2: bool,
-) {
-    match expression {
-        Expression::ObjectExpression(object) => {
-            collect_options_object_template_bindings(
-                result,
-                object,
-                object_bindings,
-                seen_mixins,
-                legacy_vue2,
-            );
-        }
-        Expression::Identifier(identifier) => {
-            let name = identifier.name.as_str();
-            if !seen_mixins.insert(name) {
-                return;
-            }
-            if let Some(object) = object_bindings.get(name).copied() {
-                collect_options_object_template_bindings(
-                    result,
-                    object,
-                    object_bindings,
-                    seen_mixins,
-                    legacy_vue2,
-                );
-            }
-        }
-        Expression::ParenthesizedExpression(parenthesized) => collect_mixin_target_bindings(
-            result,
-            &parenthesized.expression,
-            object_bindings,
-            seen_mixins,
-            legacy_vue2,
-        ),
-        Expression::TSAsExpression(ts_as) => collect_mixin_target_bindings(
-            result,
-            &ts_as.expression,
-            object_bindings,
-            seen_mixins,
-            legacy_vue2,
-        ),
-        Expression::TSSatisfiesExpression(ts_satisfies) => collect_mixin_target_bindings(
-            result,
-            &ts_satisfies.expression,
-            object_bindings,
-            seen_mixins,
-            legacy_vue2,
-        ),
-        Expression::TSNonNullExpression(ts_non_null) => collect_mixin_target_bindings(
-            result,
-            &ts_non_null.expression,
-            object_bindings,
-            seen_mixins,
-            legacy_vue2,
-        ),
-        // Imported mixins, call expressions, etc. — deferred.
-        _ => {}
-    }
 }
 
 fn add_nuxt2_template_globals(result: &mut ScriptParseResult) {

@@ -494,11 +494,6 @@ export default {
   methods: {
     save() {}
   },
-  filters: {
-    formatStatus(value) {
-      return String(value)
-    }
-  },
   setup() {
     return {
       setupValue: 1
@@ -521,83 +516,11 @@ export default {
         "pageTitle",
         "doubled",
         "save",
-        "formatStatus",
         "setupValue",
         "$route",
         "$nuxt",
     ] {
         assert!(result.bindings.contains(name), "missing binding {name}");
-    }
-}
-
-#[test]
-fn test_parse_vue3_options_api_does_not_expose_legacy_filters() {
-    let result = parse_script_with_options(
-        r#"
-export default {
-  filters: {
-    formatStatus(value) {
-      return String(value)
-    }
-  }
-}
-"#,
-        ScriptParserOptions {
-            options_api: true,
-            legacy_vue2: false,
-        },
-    );
-
-    assert!(!result.bindings.contains("formatStatus"));
-}
-
-#[test]
-fn test_parse_legacy_filters_follow_same_file_mixins_and_extends() {
-    let source = r#"
-const BaseComponent = {
-  filters: {
-    fromBase(value) { return value }
-  }
-}
-const LocalMixin = {
-  filters: {
-    fromMixin(value) { return value }
-  }
-}
-export default {
-  extends: BaseComponent,
-  mixins: [LocalMixin],
-  filters: {
-    fromComponent(value) { return value }
-  }
-}
-"#;
-    let legacy = parse_script_with_options(
-        source,
-        ScriptParserOptions {
-            options_api: false,
-            legacy_vue2: true,
-        },
-    );
-    for name in ["fromBase", "fromMixin", "fromComponent"] {
-        assert!(
-            legacy.bindings.contains(name),
-            "missing legacy filter {name}"
-        );
-    }
-
-    let vue3 = parse_script_with_options(
-        source,
-        ScriptParserOptions {
-            options_api: true,
-            legacy_vue2: false,
-        },
-    );
-    for name in ["fromBase", "fromMixin", "fromComponent"] {
-        assert!(
-            !vue3.bindings.contains(name),
-            "Vue 3 must not expose legacy filter {name}"
-        );
     }
 }
 
@@ -1017,41 +940,6 @@ export default class App extends Vue {
         result.bindings.get("decoratedMethod"),
         Some(BindingType::Options)
     );
-}
-
-#[test]
-fn test_parse_legacy_class_component_decorator_filters() {
-    let source = r#"
-import Vue from 'vue'
-import Component from 'vue-class-component'
-
-@Component({
-  filters: {
-    formatStatus(value) { return String(value) }
-  }
-})
-export default class App extends Vue {}
-"#;
-    let legacy = parse_script_with_options(
-        source,
-        ScriptParserOptions {
-            options_api: false,
-            legacy_vue2: true,
-        },
-    );
-    assert_eq!(
-        legacy.bindings.get("formatStatus"),
-        Some(BindingType::Options)
-    );
-
-    let vue3 = parse_script_with_options(
-        source,
-        ScriptParserOptions {
-            options_api: true,
-            legacy_vue2: false,
-        },
-    );
-    assert!(!vue3.bindings.contains("formatStatus"));
 }
 
 #[test]

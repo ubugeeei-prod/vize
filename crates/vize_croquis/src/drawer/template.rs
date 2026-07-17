@@ -12,6 +12,8 @@ mod directives;
 #[cfg(test)]
 mod dynamic_names_tests;
 mod ids;
+#[cfg(test)]
+mod legacy_vue2_tests;
 mod visit_element;
 
 #[cfg(test)]

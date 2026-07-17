@@ -41,6 +41,9 @@ mod tests;
 mod interface_extends_tests;
 
 #[cfg(test)]
+mod legacy_vue2_tests;
+
+#[cfg(test)]
 mod props_destructure_tests;
 
 #[cfg(test)]
