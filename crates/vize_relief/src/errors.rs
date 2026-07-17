@@ -1,5 +1,5 @@
 //! Compiler error types and codes.
-
+mod compatibility;
 use crate::SourceLocation;
 use thiserror::Error;
 use vize_carton::{CompactString, ToCompactString};
@@ -41,18 +41,6 @@ impl CompilerError {
     #[must_use]
     pub fn is_recoverable(&self) -> bool {
         matches!(self.code, ErrorCode::DuplicateAttribute) || self.is_compatibility_notice()
-    }
-
-    /// Returns true for parser recovery notices that are useful to compiler
-    /// callers but should not surface as project diagnostics in lint or editor
-    /// integrations. Vue accepts self-closing native elements in SFC templates,
-    /// so the standard-mode rewrite must stay silent outside compilation.
-    #[must_use]
-    pub fn is_compatibility_notice(&self) -> bool {
-        self.code == ErrorCode::ExtendPoint
-            && self
-                .message
-                .starts_with("Invalid self-closing syntax on non-void HTML element")
     }
 }
 
@@ -252,28 +240,6 @@ mod tests {
             CompilerError::with_message(ErrorCode::UnhandledCodePath, "custom error message", None);
         assert_eq!(err.code, ErrorCode::UnhandledCodePath);
         assert_eq!(err.message, "custom error message");
-    }
-
-    #[test]
-    fn self_closing_html_rewrite_is_a_silent_compatibility_notice() {
-        let notice = CompilerError::with_message(
-            ErrorCode::ExtendPoint,
-            "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
-            None,
-        );
-        let duplicate = CompilerError::new(ErrorCode::DuplicateAttribute, None);
-        let strict = CompilerError::with_message(
-            ErrorCode::UnexpectedSolidusInTag,
-            "Invalid self-closing syntax on non-void HTML element.",
-            None,
-        );
-
-        assert!(notice.is_recoverable());
-        assert!(notice.is_compatibility_notice());
-        assert!(duplicate.is_recoverable());
-        assert!(!duplicate.is_compatibility_notice());
-        assert!(!strict.is_recoverable());
-        assert!(!strict.is_compatibility_notice());
     }
 
     #[test]
