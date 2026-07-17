@@ -66,6 +66,11 @@ const total: number = 1
         "repaired source retained stale TS2322: {:#?}",
         repaired.diagnostics
     );
+    assert_eq!(
+        checker.executor.incremental_session_counts(),
+        (1, 1, 1),
+        "broken and repaired patches should reuse one refreshed Corsa session"
+    );
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
@@ -141,6 +146,11 @@ const total: Total = 1
             .all(|diagnostic| diagnostic.code != Some(2322)),
         "dependency repair retained stale TS2322: {:#?}",
         repaired.diagnostics
+    );
+    assert_eq!(
+        checker.executor.incremental_session_counts(),
+        (1, 1, 1),
+        "dependency patches should reuse one refreshed Corsa session"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
@@ -219,6 +229,11 @@ const outside: number = 'must stay outside the scan'
             .any(|diagnostic| diagnostic.file == included_path && diagnostic.code == Some(2322)),
         "out-of-scope refresh dropped the included diagnostic: {:#?}",
         outside_change.diagnostics
+    );
+    assert_eq!(
+        checker.executor.incremental_session_counts(),
+        (1, 1, 0),
+        "an unchanged materialized scope should reuse without refreshing Corsa"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
@@ -302,6 +317,11 @@ const added: number = 'broken added file'
             .any(|diagnostic| diagnostic.file == app_path && diagnostic.code == Some(2322)),
         "deleting the added file dropped the unrelated App.vue diagnostic: {:#?}",
         after_delete.diagnostics
+    );
+    assert_eq!(
+        checker.executor.incremental_session_counts(),
+        (1, 2, 2),
+        "create, edit, and delete patches should reuse one refreshed Corsa session"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);

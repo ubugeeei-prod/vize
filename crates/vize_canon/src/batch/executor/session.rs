@@ -1,0 +1,333 @@
+//! Corsa project-session execution, including persistent incremental snapshots.
+
+use std::{
+    hash::{Hash, Hasher},
+    path::{Path, PathBuf},
+};
+
+use crate::{corsa_client::CorsaProjectClient, file_uri::path_to_file_uri};
+use vize_carton::{FxHashMap, String, hash::hash_bytes, profile};
+
+use super::{
+    CorsaExecutor, FallbackStep, MaterializeLock, TypeCheckResult, VirtualProject, check_with_cli,
+    map_corsa_error, should_fallback_to_cli, warn_fallback,
+};
+use crate::batch::error::CorsaResult;
+use crate::batch::executor::diagnostics::map_batch_diagnostics;
+use crate::batch::virtual_project::{
+    AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE,
+};
+
+#[derive(Default)]
+pub(super) struct IncrementalSessionState {
+    session: Option<IncrementalSession>,
+    starts: usize,
+    reuses: usize,
+    refreshes: usize,
+}
+
+struct IncrementalSession {
+    client: CorsaProjectClient,
+    snapshot: MaterializedSnapshot,
+}
+
+#[derive(Default)]
+struct MaterializedSnapshot {
+    revisions: FxHashMap<PathBuf, u64>,
+    uris: Vec<String>,
+}
+
+#[derive(Debug, Default, PartialEq, Eq)]
+struct MaterializedDelta {
+    changed: Vec<PathBuf>,
+    created: Vec<PathBuf>,
+    deleted: Vec<PathBuf>,
+}
+
+impl CorsaExecutor {
+    pub(super) fn check_with_project_session(
+        &self,
+        project: &VirtualProject,
+    ) -> CorsaResult<TypeCheckResult> {
+        let corsa_path = self.corsa_path.to_string_lossy();
+        let mut client = match profile!(
+            "canon.corsa.session",
+            CorsaProjectClient::new_for_workspace(
+                Some(corsa_path.as_ref()),
+                project.virtual_root()
+            )
+        ) {
+            Ok(client) => client,
+            Err(error) if should_fallback_to_cli(&error) => {
+                warn_fallback(
+                    FallbackStep::SessionToCli,
+                    &map_corsa_error(error.as_str().into()),
+                );
+                return profile!(
+                    "canon.corsa.cli_fallback",
+                    check_with_cli(&self.corsa_path, project)
+                );
+            }
+            Err(error) => return Err(map_corsa_error(error)),
+        };
+        let uris = profile!(
+            "canon.corsa.collect_uris",
+            collect_virtual_file_uris(project.virtual_root())
+        )?;
+        check_session_client(&mut client, project, &uris)
+    }
+
+    pub(crate) fn check_incremental_session(
+        &self,
+        project: &VirtualProject,
+        servers: Option<usize>,
+    ) -> CorsaResult<TypeCheckResult> {
+        let session_result = {
+            let _materialize_lock = MaterializeLock::acquire(project.virtual_root())?;
+            profile!(
+                "canon.executor.materialize_incremental",
+                project.materialize()
+            )?;
+            let snapshot = profile!(
+                "canon.corsa.incremental.snapshot",
+                MaterializedSnapshot::capture(project.virtual_root())
+            )?;
+            let mut state = self
+                .incremental_session
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            let result = state.check(&self.corsa_path, project, snapshot);
+            if result.is_err() {
+                state.session = None;
+            }
+            result
+        };
+
+        match session_result {
+            Ok(result) => Ok(result),
+            Err(error) => {
+                warn_fallback(FallbackStep::SessionToCli, &error);
+                self.check_with_servers(project, servers)
+            }
+        }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn incremental_session_counts(&self) -> (usize, usize, usize) {
+        let state = self
+            .incremental_session
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        (state.starts, state.reuses, state.refreshes)
+    }
+}
+
+impl IncrementalSessionState {
+    fn check(
+        &mut self,
+        corsa_path: &Path,
+        project: &VirtualProject,
+        snapshot: MaterializedSnapshot,
+    ) -> CorsaResult<TypeCheckResult> {
+        if let Some(session) = &mut self.session {
+            let delta = snapshot.diff(&session.snapshot);
+            let refreshed = !delta.is_empty();
+            profile!(
+                "canon.corsa.incremental.refresh",
+                session.client.refresh_materialized_files(
+                    &delta.changed,
+                    &delta.created,
+                    &delta.deleted
+                )
+            )
+            .map_err(map_corsa_error)?;
+            session.snapshot = snapshot;
+            self.reuses += 1;
+            self.refreshes += usize::from(refreshed);
+        } else {
+            let corsa_path = corsa_path.to_string_lossy();
+            let client = profile!(
+                "canon.corsa.incremental.start",
+                CorsaProjectClient::new_for_workspace(
+                    Some(corsa_path.as_ref()),
+                    project.virtual_root()
+                )
+            )
+            .map_err(map_corsa_error)?;
+            self.session = Some(IncrementalSession { client, snapshot });
+            self.starts += 1;
+        }
+
+        let session = self.session.as_mut().expect("session initialized above");
+        check_session_client(&mut session.client, project, &session.snapshot.uris)
+    }
+}
+
+impl MaterializedSnapshot {
+    fn capture(virtual_root: &Path) -> CorsaResult<Self> {
+        let mut snapshot = Self::default();
+        for entry in walkdir::WalkDir::new(virtual_root) {
+            let entry = entry?;
+            let path = entry.path();
+            if entry.file_type().is_symlink() {
+                let target = std::fs::read_link(path)?;
+                snapshot
+                    .revisions
+                    .insert(path.to_path_buf(), hash_path(&target));
+                continue;
+            }
+            if !entry.file_type().is_file() {
+                continue;
+            }
+
+            let content = std::fs::read(path)?;
+            snapshot
+                .revisions
+                .insert(path.to_path_buf(), hash_bytes(&content));
+            if is_diagnostic_input(path)
+                && !is_under_virtual_node_modules(virtual_root, path)
+                && !is_internal_virtual_project_stub(path)
+            {
+                snapshot.uris.push(path_to_file_uri(path));
+            }
+        }
+        snapshot.uris.sort();
+        Ok(snapshot)
+    }
+
+    fn diff(&self, previous: &Self) -> MaterializedDelta {
+        let mut delta = MaterializedDelta::default();
+        for (path, revision) in &self.revisions {
+            match previous.revisions.get(path) {
+                None => delta.created.push(path.clone()),
+                Some(previous) if previous != revision => delta.changed.push(path.clone()),
+                Some(_) => {}
+            }
+        }
+        for path in previous.revisions.keys() {
+            if !self.revisions.contains_key(path) {
+                delta.deleted.push(path.clone());
+            }
+        }
+        delta.sort();
+        delta
+    }
+}
+
+impl MaterializedDelta {
+    fn is_empty(&self) -> bool {
+        self.changed.is_empty() && self.created.is_empty() && self.deleted.is_empty()
+    }
+
+    fn sort(&mut self) {
+        self.changed.sort();
+        self.created.sort();
+        self.deleted.sort();
+    }
+}
+
+fn hash_path(path: &Path) -> u64 {
+    let mut hasher = std::hash::DefaultHasher::new();
+    path.hash(&mut hasher);
+    hasher.finish()
+}
+
+fn check_session_client(
+    client: &mut CorsaProjectClient,
+    project: &VirtualProject,
+    uris: &[String],
+) -> CorsaResult<TypeCheckResult> {
+    let raw_diagnostics = profile!(
+        "canon.corsa.diagnostics",
+        client
+            .request_diagnostics_batch(uris)
+            .map_err(map_corsa_error)
+    )?;
+    let diagnostics = profile!(
+        "canon.corsa.map_diagnostics",
+        map_batch_diagnostics(raw_diagnostics, project)
+    );
+    let success = diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.severity != 1);
+    Ok(TypeCheckResult {
+        exit_code: if success { 0 } else { 1 },
+        success,
+        diagnostics,
+    })
+}
+
+pub(super) fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {
+    let mut uris = Vec::new();
+    for entry in walkdir::WalkDir::new(virtual_root) {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_file()
+            && !is_under_virtual_node_modules(virtual_root, path)
+            && !is_internal_virtual_project_stub(path)
+            && is_diagnostic_input(path)
+        {
+            uris.push(path_to_file_uri(path));
+        }
+    }
+    uris.sort();
+    Ok(uris)
+}
+
+fn is_diagnostic_input(path: &Path) -> bool {
+    matches!(
+        path.extension().and_then(|extension| extension.to_str()),
+        Some("ts" | "tsx" | "mts" | "cts")
+    )
+}
+
+fn is_internal_virtual_project_stub(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            matches!(
+                name,
+                AUTO_IMPORT_STUBS_FILE | VUE_MODULE_STUBS_FILE | SHARED_HELPERS_FILE
+            )
+        })
+}
+
+fn is_under_virtual_node_modules(virtual_root: &Path, path: &Path) -> bool {
+    path.strip_prefix(virtual_root)
+        .ok()
+        .and_then(|path| path.components().next())
+        .and_then(|component| component.as_os_str().to_str())
+        .is_some_and(|name| name == "node_modules")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{MaterializedDelta, MaterializedSnapshot};
+    use std::path::PathBuf;
+    use vize_carton::FxHashMap;
+
+    #[test]
+    fn snapshot_diff_classifies_created_changed_and_deleted_files() {
+        let previous = snapshot(&[("/virtual/changed.ts", 1), ("/virtual/deleted.ts", 2)]);
+        let current = snapshot(&[("/virtual/changed.ts", 3), ("/virtual/created.ts", 4)]);
+
+        assert_eq!(
+            current.diff(&previous),
+            MaterializedDelta {
+                changed: vec![PathBuf::from("/virtual/changed.ts")],
+                created: vec![PathBuf::from("/virtual/created.ts")],
+                deleted: vec![PathBuf::from("/virtual/deleted.ts")],
+            }
+        );
+    }
+
+    fn snapshot(entries: &[(&str, u64)]) -> MaterializedSnapshot {
+        MaterializedSnapshot {
+            revisions: entries
+                .iter()
+                .map(|(path, revision)| (PathBuf::from(path), *revision))
+                .collect::<FxHashMap<_, _>>(),
+            uris: Vec::new(),
+        }
+    }
+}

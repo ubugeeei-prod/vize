@@ -299,24 +299,39 @@ impl TypeChecker for BatchTypeChecker {
             return self.check_project();
         }
 
-        // Correctness before reuse: rebuilding the source snapshot guarantees
-        // that edits, additions, deletions, and dependent diagnostics are never
-        // checked against the stale virtual files captured by the initial scan.
-        // A dependency-aware persistent Corsa session can optimize this path
-        // without weakening this observable contract.
+        // Rebuilding source-derived virtual files preserves the observable
+        // correctness contract; the executor reuses Corsa's dependency graph
+        // after diffing the complete materialized snapshot.
         let paths = self.incremental_paths.refresh(&self.project, changed)?;
 
         let mut refreshed = self.project.empty_with_same_options()?;
         refreshed.register_paths(&paths)?;
-        self.check_registered_project(&refreshed)
+        self.check_registered_project_incremental(&refreshed)
     }
 }
 
 impl BatchTypeChecker {
     fn check_registered_project(&self, project: &VirtualProject) -> CorsaResult<TypeCheckResult> {
-        let mut result = self
+        let result = self
             .executor
             .check_with_servers(project, self.server_count)?;
+        Self::finish_registered_result(result, project)
+    }
+
+    fn check_registered_project_incremental(
+        &self,
+        project: &VirtualProject,
+    ) -> CorsaResult<TypeCheckResult> {
+        let result = self
+            .executor
+            .check_incremental_session(project, self.server_count)?;
+        Self::finish_registered_result(result, project)
+    }
+
+    fn finish_registered_result(
+        mut result: TypeCheckResult,
+        project: &VirtualProject,
+    ) -> CorsaResult<TypeCheckResult> {
         result
             .diagnostics
             .extend(project.diagnostics().iter().cloned());

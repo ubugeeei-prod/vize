@@ -5,6 +5,7 @@
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::Mutex;
 
 use super::declaration_path::is_declaration_file;
 use super::error::{CorsaError, CorsaNotFoundError, CorsaResult};
@@ -13,10 +14,7 @@ use super::materialize_lock::MaterializeLock;
 use super::type_checker::{
     DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput, TypeCheckResult,
 };
-use super::virtual_project::{
-    AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject,
-};
-use crate::{corsa_client::CorsaProjectClient, file_uri::path_to_file_uri};
+use super::virtual_project::VirtualProject;
 use oxc_span::SourceType;
 use vize_carton::{
     String,
@@ -29,14 +27,18 @@ const DECLARATION_HELPERS_FILE: &str = crate::virtual_ts::SHARED_PREAMBLE_FILE_N
 mod cli;
 mod declaration_maps;
 mod diagnostics;
+mod session;
 
 use cli::{auto_server_count, check_with_cli, check_with_cli_sharded};
-use diagnostics::map_batch_diagnostics;
+use session::IncrementalSessionState;
+#[cfg(test)]
+use session::collect_virtual_file_uris;
 
 /// Batch executor backed by `corsa`'s project-session diagnostics API.
 pub struct CorsaExecutor {
     /// Path to the resolved Corsa executable.
     corsa_path: PathBuf,
+    incremental_session: Mutex<IncrementalSessionState>,
 }
 
 impl CorsaExecutor {
@@ -55,7 +57,10 @@ impl CorsaExecutor {
         };
 
         match resolve_corsa_executable(request) {
-            Ok(corsa_path) => Ok(Self { corsa_path }),
+            Ok(corsa_path) => Ok(Self {
+                corsa_path,
+                incremental_session: Mutex::new(IncrementalSessionState::default()),
+            }),
             Err(CorsaResolveError::ExplicitNotFound { path, .. }) => {
                 Err(CorsaNotFoundError::new_explicit(project_root, &path))
             }
@@ -110,53 +115,6 @@ impl CorsaExecutor {
         self.check_with_project_session(project)
     }
 
-    fn check_with_project_session(&self, project: &VirtualProject) -> CorsaResult<TypeCheckResult> {
-        let corsa_path = self.corsa_path.to_string_lossy();
-        let mut client = match profile!(
-            "canon.corsa.session",
-            CorsaProjectClient::new_for_workspace(
-                Some(corsa_path.as_ref()),
-                project.virtual_root()
-            )
-        ) {
-            Ok(client) => client,
-            Err(error) if should_fallback_to_cli(&error) => {
-                warn_fallback(
-                    FallbackStep::SessionToCli,
-                    &map_corsa_error(error.as_str().into()),
-                );
-                return profile!(
-                    "canon.corsa.cli_fallback",
-                    check_with_cli(&self.corsa_path, project)
-                );
-            }
-            Err(error) => return Err(map_corsa_error(error)),
-        };
-        let uris = profile!(
-            "canon.corsa.collect_uris",
-            collect_virtual_file_uris(project.virtual_root())
-        )?;
-        let raw_diagnostics = profile!(
-            "canon.corsa.diagnostics",
-            client
-                .request_diagnostics_batch(&uris)
-                .map_err(map_corsa_error)
-        )?;
-        let diagnostics = profile!(
-            "canon.corsa.map_diagnostics",
-            map_batch_diagnostics(raw_diagnostics, project)
-        );
-        let success = diagnostics
-            .iter()
-            .all(|diagnostic| diagnostic.severity != 1);
-
-        Ok(TypeCheckResult {
-            exit_code: if success { 0 } else { 1 },
-            success,
-            diagnostics,
-        })
-    }
-
     /// Emit declaration files from the materialized virtual project.
     pub fn emit_declarations(
         &self,
@@ -209,52 +167,6 @@ impl CorsaExecutor {
             )?,
         })
     }
-}
-
-fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {
-    let mut uris = Vec::new();
-
-    for entry in walkdir::WalkDir::new(virtual_root) {
-        let entry = entry?;
-        let path = entry.path();
-        if !path.is_file() {
-            continue;
-        }
-        if is_internal_virtual_project_file(virtual_root, path) {
-            continue;
-        }
-        if let Some("ts" | "tsx" | "mts" | "cts") =
-            path.extension().and_then(|extension| extension.to_str())
-        {
-            uris.push(path_to_file_uri(path));
-        }
-    }
-
-    uris.sort();
-    Ok(uris)
-}
-
-fn is_internal_virtual_project_file(virtual_root: &Path, path: &Path) -> bool {
-    is_internal_virtual_project_stub(path) || is_under_virtual_node_modules(virtual_root, path)
-}
-
-fn is_internal_virtual_project_stub(path: &Path) -> bool {
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| {
-            matches!(
-                name,
-                AUTO_IMPORT_STUBS_FILE | VUE_MODULE_STUBS_FILE | SHARED_HELPERS_FILE
-            )
-        })
-}
-
-fn is_under_virtual_node_modules(virtual_root: &Path, path: &Path) -> bool {
-    path.strip_prefix(virtual_root)
-        .ok()
-        .and_then(|path| path.components().next())
-        .and_then(|component| component.as_os_str().to_str())
-        .is_some_and(|name| name == "node_modules")
 }
 
 fn collect_declaration_outputs(out_dir: &Path) -> CorsaResult<Vec<DeclarationOutput>> {
