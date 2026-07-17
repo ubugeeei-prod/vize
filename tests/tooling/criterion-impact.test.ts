@@ -192,9 +192,7 @@ test("Criterion baseline comparison fails closed and uses exported medians", () 
   const base = parseCritcmpExport(baselineExport("base", { shared: 100 }), "base");
   const head = parseCritcmpExport(baselineExport("head", { shared: 125 }), "head");
 
-  assert.deepEqual(compareBaselineExports(base, head, 10), [
-    { name: "shared", changePercent: 25 },
-  ]);
+  assert.deepEqual(compareBaselineExports(base, head, 10), [{ name: "shared", changePercent: 25 }]);
   assert.throws(
     () => parseCritcmpExport(baselineExport("base", {}), "base"),
     /contains no benchmarks/,
