@@ -1,0 +1,44 @@
+name: Check Vue parity
+description: Gate compiler fixtures and incremental LSP behavior against pinned Vue projects
+
+runs:
+  using: composite
+  steps:
+    - name: Hydrate fixtures and install JS dependencies
+      shell: bash
+      run: |
+        git submodule update --init --depth 1 \
+          tests/_fixtures/_git/create-vue \
+          tests/_fixtures/_git/misskey
+        vp install --frozen-lockfile --prefer-offline
+
+    - name: Build vize CLI
+      shell: bash
+      run: cargo build --profile ci -p vize
+
+    - name: Check Vue compiler and typecheck parity
+      shell: bash
+      run: vp run --filter './tests' test:check:fixtures
+
+    - name: Check incremental LSP against Misskey
+      shell: bash
+      env:
+        VIZE_LSP_BIN: target/ci/vize
+      run: vp run --filter './tests' test:performance:lsp-incremental
+
+    - name: Publish incremental LSP summary
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        if [ -s target/vize-tests/metrics/misskey-lsp-incremental/summary.md ]; then
+          cat target/vize-tests/metrics/misskey-lsp-incremental/summary.md >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+    - name: Upload incremental LSP metrics
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: misskey-lsp-incremental-metrics
+        path: target/vize-tests/metrics/misskey-lsp-incremental/
+        if-no-files-found: warn
+        retention-days: 14

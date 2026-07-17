@@ -276,10 +276,24 @@ test("check workflow blocks on Rust source and branch coverage budgets", () => {
 test("check workflow gates Vue parity against official compiler and vue-tsc fixtures", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const job = workflowJobBody(workflow, "vue-parity");
+  const action = readRepoFile(".github", "actions", "check-vue-parity", "action.yml");
+  const testsPackage = JSON.parse(readRepoFile("tests", "package.json"));
 
-  assert.match(job, /vp install --frozen-lockfile --prefer-offline/);
-  assert.match(job, /cargo build --profile ci -p vize/);
-  assert.match(job, /vp run --filter '\.\/tests' test:check:fixtures/);
+  assert.match(job, /uses:\s*\.\/\.github\/actions\/check-vue-parity/);
+  assert.match(action, /vp install --frozen-lockfile --prefer-offline/);
+  assert.match(action, /cargo build --profile ci -p vize/);
+  assert.match(action, /vp run --filter '\.\/tests' test:check:fixtures/);
+  assert.match(action, /tests\/_fixtures\/_git\/create-vue/);
+  assert.match(action, /tests\/_fixtures\/_git\/misskey/);
+  assert.match(action, /VIZE_LSP_BIN:\s*target\/ci\/vize/);
+  assert.match(action, /vp run --filter '\.\/tests' test:performance:lsp-incremental/);
+  assert.match(action, /misskey-lsp-incremental\/summary\.md/);
+  assert.match(action, /name:\s*misskey-lsp-incremental-metrics/);
+  assert.match(action, /retention-days:\s*14/);
+  assert.equal(
+    testsPackage.scripts["test:performance:lsp-incremental"],
+    "node --test --test-concurrency=1 performance/misskey-lsp-incremental.test.ts",
+  );
 });
 
 test("check workflow only installs Playwright browsers on cache misses", () => {

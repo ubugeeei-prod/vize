@@ -41,16 +41,7 @@ export async function withPinnedFixtureWorkspace<T>(
   options: PinnedFixtureOptions,
   run: (fixture: PinnedFixtureWorkspace) => Promise<T>,
 ): Promise<T> {
-  const entry = readFixtureEntry(options.fixtureId);
-  const upstreamDir = path.join(repoRoot, entry.fixturePath);
-  assert.ok(
-    fs.existsSync(upstreamDir),
-    `fixture ${entry.id} is not hydrated; run git submodule update --init ${entry.fixturePath}`,
-  );
-
-  const initialRevision = git(upstreamDir, "rev-parse", "HEAD");
-  assert.equal(initialRevision, entry.revision, `${entry.id} must stay pinned to the registry`);
-  assert.equal(git(upstreamDir, "status", "--porcelain"), "", `${entry.id} must start clean`);
+  const { entry, upstreamDir, initialRevision } = openPinnedFixture(options.fixtureId);
 
   const outputRoot = path.join(repoRoot, "target/vize-tests/realworld-patches");
   fs.mkdirSync(outputRoot, { recursive: true });
@@ -99,16 +90,7 @@ export async function withPinnedFixtureWorkspace<T>(
     return await run(fixture);
   } finally {
     fs.rmSync(workspaceDir, { recursive: true, force: true });
-    assert.equal(
-      git(upstreamDir, "rev-parse", "HEAD"),
-      initialRevision,
-      `${entry.id} revision changed during patch-oracle execution`,
-    );
-    assert.equal(
-      git(upstreamDir, "status", "--porcelain"),
-      "",
-      `${entry.id} was dirtied by patch-oracle execution`,
-    );
+    assertPinnedFixtureUnchanged(entry, upstreamDir, initialRevision);
   }
 }
 
@@ -125,6 +107,40 @@ function readFixtureEntry(id: string): FixtureRegistryEntry {
   const entry = registry.projects.find((project) => project.id === id);
   assert.ok(entry, `fixture registry does not contain ${id}`);
   return entry;
+}
+
+function openPinnedFixture(fixtureId: string): {
+  entry: FixtureRegistryEntry;
+  upstreamDir: string;
+  initialRevision: string;
+} {
+  const entry = readFixtureEntry(fixtureId);
+  const upstreamDir = path.join(repoRoot, entry.fixturePath);
+  assert.ok(
+    fs.existsSync(upstreamDir),
+    `fixture ${entry.id} is not hydrated; run git submodule update --init ${entry.fixturePath}`,
+  );
+  const initialRevision = git(upstreamDir, "rev-parse", "HEAD");
+  assert.equal(initialRevision, entry.revision, `${entry.id} must stay pinned to the registry`);
+  assert.equal(git(upstreamDir, "status", "--porcelain"), "", `${entry.id} must start clean`);
+  return { entry, upstreamDir, initialRevision };
+}
+
+function assertPinnedFixtureUnchanged(
+  entry: FixtureRegistryEntry,
+  upstreamDir: string,
+  initialRevision: string,
+): void {
+  assert.equal(
+    git(upstreamDir, "rev-parse", "HEAD"),
+    initialRevision,
+    `${entry.id} revision changed during patch-oracle execution`,
+  );
+  assert.equal(
+    git(upstreamDir, "status", "--porcelain"),
+    "",
+    `${entry.id} was dirtied by patch-oracle execution`,
+  );
 }
 
 function resolveInside(root: string, relativePath: string): string {
