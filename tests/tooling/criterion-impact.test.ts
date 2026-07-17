@@ -12,6 +12,7 @@ import {
 } from "../../bench/criterion-ab.mjs";
 import {
   compareBaselineExports,
+  criterionEnvironment,
   critcmpArgs,
   critcmpExportArgs,
   parseCritcmpExport,
@@ -173,6 +174,9 @@ test("Criterion driver validates scoped suite manifests", () => {
 });
 
 test("Criterion driver snapshots both baselines before comparing them", () => {
+  assert.deepEqual(criterionEnvironment("/work/head/target"), {
+    CARGO_TARGET_DIR: "/work/head/target",
+  });
   assert.deepEqual(critcmpExportArgs({ targetDir: "/work/head/target", baseline: "base" }), [
     "--target-dir",
     "/work/head/target",

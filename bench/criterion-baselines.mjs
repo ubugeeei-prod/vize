@@ -2,6 +2,10 @@ export function critcmpExportArgs({ targetDir, baseline }) {
   return ["--target-dir", targetDir, "--export", baseline];
 }
 
+export function criterionEnvironment(targetDir) {
+  return { CARGO_TARGET_DIR: targetDir };
+}
+
 export function critcmpArgs({ targetDir, baselinePaths }) {
   return ["--target-dir", targetDir, ...baselinePaths];
 }

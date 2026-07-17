@@ -39,6 +39,7 @@ import { pathToFileURL } from "node:url";
 
 import {
   compareBaselineExports,
+  criterionEnvironment,
   critcmpArgs,
   critcmpExportArgs,
   parseCritcmpExport,
@@ -110,7 +111,9 @@ function run(command, commandArgs, options = {}) {
     throw result.error;
   }
   if (result.status !== 0) {
-    throw new Error(`${command} ${commandArgs.join(" ")} exited with ${result.status}`);
+    const output = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
+    const details = output ? `\n${output}` : "";
+    throw new Error(`${command} ${commandArgs.join(" ")} exited with ${result.status}${details}`);
   }
   return result;
 }
@@ -140,7 +143,10 @@ function benchSide({ side, checkoutDir, baseline, targetDir, suites }) {
       targetDir,
     });
     console.log(`\n==> [${side}] cargo ${args.join(" ")}`);
-    run("cargo", args, { cwd: checkoutDir });
+    run("cargo", args, {
+      cwd: checkoutDir,
+      env: criterionEnvironment(targetDir),
+    });
   }
 }
 
