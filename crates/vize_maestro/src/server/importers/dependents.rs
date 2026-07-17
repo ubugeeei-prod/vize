@@ -18,7 +18,7 @@ pub(in crate::server) fn open_vue_dependents(state: &ServerState, dependency: &U
                 .map(|document| document.key().clone()),
         );
     }
-    dependents.sort_by(|left, right| left.as_str().cmp(right.as_str()));
+    dependents.sort();
     dependents.dedup();
     dependents
 }
