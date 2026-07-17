@@ -47,6 +47,9 @@ fn unwrap_array_expression<'a>(expression: &'a Expression<'a>) -> Option<&'a Arr
             unwrap_array_expression(&parenthesized.expression)
         }
         Expression::TSAsExpression(ts_as) => unwrap_array_expression(&ts_as.expression),
+        Expression::TSTypeAssertion(ts_assertion) => {
+            unwrap_array_expression(&ts_assertion.expression)
+        }
         Expression::TSSatisfiesExpression(ts_satisfies) => {
             unwrap_array_expression(&ts_satisfies.expression)
         }
