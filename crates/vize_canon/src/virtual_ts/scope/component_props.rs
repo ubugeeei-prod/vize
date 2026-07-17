@@ -212,6 +212,7 @@ pub(super) fn generate_component_props(
         }
         let props_ctx = VForPropsContext {
             summary,
+            options: ctx.options,
             components_by_scope: &components_by_scope,
             children_map: ctx.children_map,
             vfor_enclosing_guards: &vfor_enclosing_guards,
@@ -341,6 +342,8 @@ fn generate_closure_component_props_recursive(
                 data.name
             );
             let props_type = slot_props_type(
+                ctx.summary,
+                ctx.options,
                 data.component.as_deref(),
                 data.name.as_str(),
                 ctx.summary.scopes.is_v_slot_name_static(scope.id),

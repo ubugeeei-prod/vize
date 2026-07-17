@@ -12,6 +12,7 @@ use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions};
 /// Context for recursive scope generation, bundling shared parameters.
 pub(crate) struct ScopeGenContext<'a> {
     pub(crate) summary: &'a Croquis,
+    pub(crate) virtual_ts_options: &'a VirtualTsOptions,
     pub(crate) expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
     pub(crate) skipped_expression_ranges: &'a FxHashSet<(u32, u32)>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
@@ -32,6 +33,7 @@ pub(crate) struct ScopeGenerationOptions<'a> {
 /// Context for recursive component prop checks inside v-for scopes.
 pub(crate) struct VForPropsContext<'a> {
     pub(crate) summary: &'a Croquis,
+    pub(crate) options: &'a VirtualTsOptions,
     pub(crate) components_by_scope: &'a FxHashMap<u32, Vec<(usize, &'a ComponentUsage)>>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(crate) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
