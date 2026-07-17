@@ -18,7 +18,7 @@ const count = 1
 </script>
 
 <template>
-  <Child :count="count" />
+  <Child data-label="😀" :count="count" />
 </template>
 "#;
 const NUMERIC_CHILD: &str = r#"<script setup lang="ts">
@@ -126,7 +126,7 @@ fn check_server_maps_dependency_patch_diagnostics_to_the_parent_sfc() {
             "message": "Type 'number' is not assignable to type 'string'.",
             "severity": "error",
             "line": 7,
-            "column": 18,
+            "column": 34,
             "code": "TS2322"
         }])
     );

@@ -60,13 +60,17 @@ impl CorsaServer {
                 Diagnostic {
                     message: diagnostic.message,
                     severity,
-                    line: line + 1,
-                    column: column + 1,
+                    line: one_based(line),
+                    column: one_based(column),
                     code,
                 }
             })
             .collect())
     }
+}
+
+fn one_based(position: u32) -> u32 {
+    position.saturating_add(1)
 }
 
 fn map_host_position_to_source(
@@ -97,4 +101,15 @@ fn map_host_position_to_source(
         .saturating_add(delta)
         .min(source_range.end.saturating_sub(1));
     Some(source_line_index.line_col(source_offset))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::one_based;
+
+    #[test]
+    fn one_based_positions_saturate_at_the_protocol_boundary() {
+        assert_eq!(one_based(0), 1);
+        assert_eq!(one_based(u32::MAX), u32::MAX);
+    }
 }
