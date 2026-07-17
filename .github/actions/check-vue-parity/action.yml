@@ -9,6 +9,7 @@ runs:
       run: |
         git submodule update --init --depth 1 \
           tests/_fixtures/_git/create-vue \
+          tests/_fixtures/_git/element-plus \
           tests/_fixtures/_git/misskey \
           tests/_fixtures/_git/pinia \
           tests/_fixtures/_git/vue-router

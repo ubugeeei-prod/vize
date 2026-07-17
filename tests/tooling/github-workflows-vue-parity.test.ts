@@ -28,6 +28,7 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
     (step) => step.name === "Hydrate fixtures and install JS dependencies",
   );
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/create-vue/);
+  assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/element-plus/);
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/misskey/);
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/pinia/);
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/vue-router/);
