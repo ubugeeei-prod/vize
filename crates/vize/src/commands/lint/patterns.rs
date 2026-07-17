@@ -23,6 +23,13 @@ pub(super) fn no_lint_files_message(patterns: &[vize_carton::String]) -> vize_ca
     vize_carton::cstr!("No {LINT_EXTENSIONS_DISPLAY} files found matching patterns: {patterns:?}")
 }
 
+pub(super) fn write_no_files(format: vize_patina::OutputFormat, patterns: &[vize_carton::String]) {
+    eprintln!("{}", no_lint_files_message(patterns));
+    if format == vize_patina::OutputFormat::Json {
+        super::stdout::write(vize_patina::format_results(&[], &[], format).as_bytes());
+    }
+}
+
 #[inline]
 pub(super) fn is_lint_extension(extension: &str) -> bool {
     LINT_EXTENSIONS.contains(&extension)

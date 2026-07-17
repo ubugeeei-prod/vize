@@ -47,3 +47,28 @@ fn lint_reports_all_supported_extensions_when_patterns_match_no_files() {
 
     let _ = fs::remove_dir_all(project_root);
 }
+
+#[test]
+fn lint_json_emits_an_empty_array_when_patterns_match_no_files() {
+    let project_root = temp_project_dir("json-no-matching-files");
+    fs::create_dir_all(&project_root).unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["lint", "--no-config", "**/*.vue", "--format", "json"])
+        .output()
+        .unwrap();
+
+    assert!(output.status.success(), "{}", output_details(&output));
+    let stdout: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(stdout, serde_json::json!([]));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains(
+            "No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx files found"
+        ),
+        "{stderr}"
+    );
+
+    let _ = fs::remove_dir_all(project_root);
+}

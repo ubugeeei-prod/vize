@@ -86,7 +86,7 @@ pub fn run(args: LintArgs) {
     let collect_time = collect_start.elapsed();
 
     if files.is_empty() {
-        eprintln!("{}", patterns::no_lint_files_message(&args.patterns));
+        patterns::write_no_files(format, &args.patterns);
         return;
     }
     let help_level = match args.help_level.as_str() {

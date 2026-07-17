@@ -24,6 +24,7 @@ use vize_carton::{String, ToCompactString};
 use vize_curator::inspector as curator_inspector;
 
 mod compare_error;
+mod no_inputs;
 
 #[derive(Debug, Clone, Copy, ValueEnum, Default, serde::Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -147,8 +148,7 @@ pub struct InspectorArgs {
 pub fn run(args: InspectorArgs) {
     let files = collect_files(&args.patterns, args.max_files);
     if files.is_empty() {
-        eprintln!("No .vue files found matching the patterns");
-        std::process::exit(1);
+        no_inputs::handle(args.format);
     }
 
     let source_files = collect_source_files(&files);
