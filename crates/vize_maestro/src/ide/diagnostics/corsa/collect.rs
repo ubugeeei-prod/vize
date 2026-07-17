@@ -85,8 +85,16 @@ impl DiagnosticService {
                     ))
                 })
                 .collect::<Vec<(std::path::PathBuf, vize_carton::String)>>();
+            let virtual_ts_options = vize_canon::virtual_ts::VirtualTsOptions {
+                reference_paths: state
+                    .global_component_reference_paths()
+                    .iter()
+                    .map(|path| path.to_string_lossy().as_ref().into())
+                    .collect(),
+                ..Default::default()
+            };
             let opened = match bridge
-                .open_vue_virtual_document_with_overlays(
+                .open_vue_virtual_document_with_overlays_and_options(
                     &source_path,
                     &content,
                     CorsaVueVirtualDocumentOptions {
@@ -94,6 +102,7 @@ impl DiagnosticService {
                         legacy_vue2,
                     },
                     &overlays,
+                    &virtual_ts_options,
                 )
                 .await
             {

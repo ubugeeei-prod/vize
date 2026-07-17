@@ -9,6 +9,8 @@ mod virtual_docs;
 mod batch_cache;
 #[cfg(feature = "native")]
 mod corsa;
+#[cfg(feature = "native")]
+mod global_components;
 
 #[cfg(test)]
 mod config_tests;
@@ -105,6 +107,9 @@ pub struct ServerState {
     /// Workspace root path
     #[cfg(feature = "native")]
     workspace_root: RwLock<Option<PathBuf>>,
+    /// Project declaration files that augment Vue's global components.
+    #[cfg(feature = "native")]
+    global_component_reference_paths: RwLock<Option<Vec<PathBuf>>>,
     /// Batch type checker (lazy initialized, sync)
     #[cfg(feature = "native")]
     batch_checker: OnceLock<Arc<RwLock<BatchTypeChecker>>>,
@@ -157,6 +162,8 @@ impl ServerState {
             #[cfg(feature = "native")]
             workspace_root: RwLock::new(None),
             #[cfg(feature = "native")]
+            global_component_reference_paths: RwLock::new(None),
+            #[cfg(feature = "native")]
             batch_checker: OnceLock::new(),
             #[cfg(feature = "native")]
             batch_cache: BatchTypeCheckCache::new(),
@@ -167,6 +174,7 @@ impl ServerState {
     #[cfg(feature = "native")]
     pub fn set_workspace_root(&self, path: PathBuf) {
         *self.workspace_root.write() = Some(path);
+        *self.global_component_reference_paths.write() = None;
         // Invalidate batch cache when workspace changes
         self.batch_cache.invalidate();
     }

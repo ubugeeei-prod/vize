@@ -66,8 +66,32 @@ impl CorsaBridge {
         options: CorsaVueVirtualDocumentOptions,
         overlays: &[(PathBuf, String)],
     ) -> Result<CorsaVueVirtualDocument, CorsaBridgeError> {
-        let project =
-            build_vue_virtual_project_with_overlays(source_path, content, options, overlays)?;
+        self.open_vue_virtual_document_with_overlays_and_options(
+            source_path,
+            content,
+            options,
+            overlays,
+            &VirtualTsOptions::default(),
+        )
+        .await
+    }
+
+    /// Generate and sync a Vue document with editor-specific virtual-TS options.
+    pub async fn open_vue_virtual_document_with_overlays_and_options(
+        &self,
+        source_path: &Path,
+        content: &str,
+        options: CorsaVueVirtualDocumentOptions,
+        overlays: &[(PathBuf, String)],
+        virtual_ts_options: &VirtualTsOptions,
+    ) -> Result<CorsaVueVirtualDocument, CorsaBridgeError> {
+        let project = build_vue_virtual_project_with_overlays_and_options(
+            source_path,
+            content,
+            options,
+            overlays,
+            virtual_ts_options,
+        )?;
         self.open_virtual_documents_batch(&project.documents)
             .await?;
         Ok(project.host)
@@ -108,8 +132,30 @@ pub(crate) fn build_vue_virtual_project_with_overlays(
     options: CorsaVueVirtualDocumentOptions,
     overlays: &[(PathBuf, String)],
 ) -> Result<CorsaVueVirtualProject, CorsaBridgeError> {
+    build_vue_virtual_project_with_overlays_and_options(
+        source_path,
+        content,
+        options,
+        overlays,
+        &VirtualTsOptions::default(),
+    )
+}
+
+fn build_vue_virtual_project_with_overlays_and_options(
+    source_path: &Path,
+    content: &str,
+    options: CorsaVueVirtualDocumentOptions,
+    overlays: &[(PathBuf, String)],
+    virtual_ts_options: &VirtualTsOptions,
+) -> Result<CorsaVueVirtualProject, CorsaBridgeError> {
     let rewriter = ImportRewriter::new();
-    let host = generate_vue_document(source_path, content, options, &rewriter)?;
+    let host = generate_vue_document_with_options(
+        source_path,
+        content,
+        options,
+        virtual_ts_options,
+        &rewriter,
+    )?;
     let mut documents = vec![(host.virtual_uri.clone(), host.generated.code.clone())];
     if host.generated.virtual_suffix == ".tsx" {
         documents.push(tsx_vue_import_shim(&host.source_path));
@@ -144,10 +190,26 @@ pub(super) fn generate_vue_document(
     options: CorsaVueVirtualDocumentOptions,
     rewriter: &ImportRewriter,
 ) -> Result<GeneratedVueDocument, CorsaBridgeError> {
+    generate_vue_document_with_options(
+        source_path,
+        content,
+        options,
+        &VirtualTsOptions::default(),
+        rewriter,
+    )
+}
+
+fn generate_vue_document_with_options(
+    source_path: &Path,
+    content: &str,
+    options: CorsaVueVirtualDocumentOptions,
+    virtual_ts_options: &VirtualTsOptions,
+    rewriter: &ImportRewriter,
+) -> Result<GeneratedVueDocument, CorsaBridgeError> {
     let generated = generate_vue_document_virtual_ts_with_options(
         source_path,
         content,
-        &VirtualTsOptions::default(),
+        virtual_ts_options,
         rewriter,
         false,
         VueDocumentVirtualTsOptions {

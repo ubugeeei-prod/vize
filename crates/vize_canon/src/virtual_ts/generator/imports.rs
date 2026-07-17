@@ -1,18 +1,34 @@
-//! Import-name extraction, `/// <reference types>` directives, and global
-//! component stub emission for the virtual TypeScript generator.
+//! Import-name extraction and `/// <reference types>` directives.
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{IdentifierReference, TSTypeName, TSTypeQueryExprName, TSTypeReference};
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_croquis::Croquis;
-
-use crate::virtual_ts::helpers::to_safe_identifier;
-use crate::virtual_ts::types::VirtualTsOptions;
 use vize_carton::append;
 use vize_carton::cstr;
-use vize_carton::{CompactString, FxHashSet, String, camelize, capitalize};
+use vize_carton::{CompactString, FxHashSet, String};
+use vize_croquis::Croquis;
+
+pub(super) fn emit_reference_path_directives(ts: &mut String, paths: &[String]) {
+    let mut seen = FxHashSet::default();
+    for path in paths {
+        if path.is_empty() || path.contains(['\n', '\r']) || !seen.insert(path.as_str()) {
+            continue;
+        }
+        ts.push_str("/// <reference path=\"");
+        for character in path.chars() {
+            match character {
+                '&' => ts.push_str("&amp;"),
+                '"' => ts.push_str("&quot;"),
+                '<' => ts.push_str("&lt;"),
+                '>' => ts.push_str("&gt;"),
+                _ => ts.push(character),
+            }
+        }
+        ts.push_str("\" />\n");
+    }
+}
 
 pub(super) fn emit_reference_type_directives(
     ts: &mut String,
@@ -217,66 +233,6 @@ fn record_type_query_root(name: &TSTypeQueryExprName<'_>, refs: &mut FxHashSet<C
         }
         TSTypeQueryExprName::TSImportType(_) => {}
         _ => {}
-    }
-}
-
-pub(super) fn emit_global_component_stubs(
-    ts: &mut String,
-    summary: &Croquis,
-    options: &VirtualTsOptions,
-    imported_names: &FxHashSet<&str>,
-    enabled: bool,
-) {
-    if !enabled || summary.component_usages.is_empty() {
-        return;
-    }
-
-    let external_template_bindings = options
-        .external_template_bindings
-        .iter()
-        .map(|name| name.as_str())
-        .collect::<FxHashSet<_>>();
-    let auto_import_stub_names = options
-        .auto_import_stubs
-        .iter()
-        .filter_map(|stub| extract_declared_name(stub))
-        .collect::<FxHashSet<_>>();
-
-    let mut emitted_refs = FxHashSet::default();
-    let mut has_header = false;
-    for usage in &summary.component_usages {
-        let name = usage.name.as_str();
-        if summary.bindings.bindings.contains_key(name)
-            || imported_names.contains(&name)
-            || external_template_bindings.contains(&name)
-            || auto_import_stub_names.contains(&name)
-        {
-            continue;
-        }
-
-        let component_ref = to_safe_identifier(name);
-        if !emitted_refs.insert(component_ref.clone()) {
-            continue;
-        }
-
-        if !has_header {
-            ts.push_str("\n// Global component stubs (vue module augmentations)\n");
-            has_header = true;
-        }
-
-        let pascal_name = capitalize(camelize(name).as_str());
-        append!(
-            *ts,
-            "declare const {component_ref}: \"{name}\" extends keyof import(\"vue\").GlobalComponents ? import(\"vue\").GlobalComponents[\"{name}\"]"
-        );
-        if pascal_name.as_str() == name {
-            ts.push_str(" : any;\n");
-        } else {
-            append!(
-                *ts,
-                " : \"{pascal_name}\" extends keyof import(\"vue\").GlobalComponents ? import(\"vue\").GlobalComponents[\"{pascal_name}\"] : any;\n"
-            );
-        }
     }
 }
 

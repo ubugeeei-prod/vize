@@ -2,6 +2,7 @@ mod anchors;
 mod component_export;
 mod emits;
 mod generics;
+mod global_components;
 mod imports;
 mod legacy_vue2;
 mod options_api;
@@ -17,8 +18,9 @@ use self::anchors::emit_setup_binding_anchors;
 use self::component_export::emit_default_export_declaration;
 use self::emits::{emit_emit_props_helper, emit_emits_type};
 use self::generics::{HoistedGenericAliases, generic_injection_point, references_any_identifier};
+use self::global_components::GlobalComponentPlan;
 use self::imports::{
-    collect_imported_names, emit_global_component_stubs, emit_reference_type_directives,
+    collect_imported_names, emit_reference_path_directives, emit_reference_type_directives,
     extract_declared_name,
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
@@ -156,6 +158,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         .lib_references
         .unwrap_or(DEFAULT_LIB_REFERENCES);
     emit_lib_reference_directives(&mut ts, lib_references);
+    emit_reference_path_directives(&mut ts, &options.reference_paths);
     let has_script_reference_types = emit_reference_type_directives(&mut ts, script_content);
     ts.push_str("// ============================================\n");
     ts.push_str("// Virtual TypeScript for Vue SFC Type Checking\n");
@@ -395,8 +398,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         aliases.emit_module_aliases(&mut ts);
     }
 
+    let global_components =
+        GlobalComponentPlan::new(summary, legacy_vue2, has_script_reference_types);
     let needs_imported_names = !options.auto_import_stubs.is_empty()
-        || (has_script_reference_types && !summary.component_usages.is_empty());
+        || (global_components.enabled() && !summary.component_usages.is_empty());
     let imported_names: FxHashSet<&str> = if needs_imported_names {
         profile!(
             "canon.virtual_ts.extract_imported_names",
@@ -433,13 +438,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             }
         });
     }
-    emit_global_component_stubs(
-        &mut ts,
-        summary,
-        options,
-        &imported_names,
-        has_script_reference_types,
-    );
+    global_components.emit(&mut ts, summary, options, &imported_names);
     ts.push('\n');
 
     // For an Options API component with no `defineProps` macro, derive a real
@@ -817,7 +816,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     // Skip if already declared via script bindings (import/const)
                     if summary.bindings.bindings.contains_key(name)
                         || external_template_bindings.contains(name)
-                        || has_script_reference_types
+                        || global_components.keeps_unresolved_binding(name)
                     {
                         continue;
                     }

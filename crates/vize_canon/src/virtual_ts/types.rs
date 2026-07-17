@@ -68,6 +68,9 @@ pub struct VirtualTsOptions {
     /// shadowing them with local `any` fallbacks, so their real props remain
     /// type-checkable.
     pub external_template_bindings: Vec<String>,
+    /// Ambient declaration files that editor virtual documents must load.
+    /// Paths are emitted as triple-slash references before generated code.
+    pub reference_paths: Vec<String>,
 }
 
 impl Default for VirtualTsOptions {
@@ -77,6 +80,7 @@ impl Default for VirtualTsOptions {
             css_modules: Vec::new(),
             auto_import_stubs: Vec::new(),
             external_template_bindings: Vec::new(),
+            reference_paths: Vec::new(),
         }
     }
 }

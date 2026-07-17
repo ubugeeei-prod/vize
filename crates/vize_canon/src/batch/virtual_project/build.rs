@@ -1,7 +1,6 @@
 //! Building a [`RegisteredFile`] from a source path. This owns the expensive,
-//! `&mut`-free work (SFC/template parse, virtual-TS generation, import
-//! rewriting) so it can be fanned out across rayon workers, returning a
-//! self-contained result the project absorbs after the join point.
+//! `&mut`-free work (SFC/template parse and virtual-TS generation) so it can run
+//! across rayon workers and return a self-contained result for the project.
 
 use std::path::{Path, PathBuf};
 
@@ -252,6 +251,7 @@ pub(super) fn virtual_ts_options_for_descriptor(
         css_modules,
         auto_import_stubs: Vec::new(),
         external_template_bindings: base.external_template_bindings.clone(),
+        reference_paths: base.reference_paths.clone(),
     }
 }
 
