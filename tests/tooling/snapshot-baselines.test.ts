@@ -22,6 +22,8 @@ const completeCheckSnapshotTests = [
 
 const assertionOnlyCheckTests = {
   "class-component": "class-component vue-tsc parity has known upstream-noisy diagnostics",
+  "create-vue-patch-oracle":
+    "patch oracle asserts exact live CLI and LSP behavior across document versions",
   directus: "real-world smoke lane is too large for a deterministic complete baseline",
   "element-plus": "real-world smoke lane is too large for a deterministic complete baseline",
   "frontend-phpcon": "real-world smoke lane is too large for a deterministic complete baseline",
