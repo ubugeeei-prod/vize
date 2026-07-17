@@ -17,7 +17,7 @@ impl CorsaProjectClient {
         created: &[PathBuf],
         deleted: &[PathBuf],
     ) -> Result<(), String> {
-        let Some(file_changes) = materialized_file_changes(changed, created, deleted) else {
+        let Some(file_changes) = materialized_file_changes(changed, created, deleted)? else {
             return Ok(());
         };
 
@@ -31,26 +31,34 @@ fn materialized_file_changes(
     changed: &[PathBuf],
     created: &[PathBuf],
     deleted: &[PathBuf],
-) -> Option<FileChanges> {
+) -> Result<Option<FileChanges>, String> {
     if changed.is_empty() && created.is_empty() && deleted.is_empty() {
-        return None;
+        return Ok(None);
     }
 
-    Some(FileChanges::Summary(FileChangeSummary {
-        changed: document_identifiers(changed),
-        created: document_identifiers(created),
-        deleted: document_identifiers(deleted),
-    }))
+    Ok(Some(FileChanges::Summary(FileChangeSummary {
+        changed: document_identifiers(changed)?,
+        created: document_identifiers(created)?,
+        deleted: document_identifiers(deleted)?,
+    })))
 }
 
-fn document_identifiers(paths: &[PathBuf]) -> Vec<DocumentIdentifier> {
-    let mut paths: Vec<_> = paths
-        .iter()
-        .map(|path| path.to_string_lossy().into_owned())
-        .collect();
+fn document_identifiers(paths: &[PathBuf]) -> Result<Vec<DocumentIdentifier>, String> {
+    let mut paths = paths.to_vec();
     paths.sort();
     paths.dedup();
-    paths.into_iter().map(DocumentIdentifier::from).collect()
+    paths
+        .into_iter()
+        .map(|path| {
+            let path_str = path.to_str().ok_or_else(|| {
+                cstr!(
+                    "Corsa cannot represent non-UTF-8 materialized path {:?}",
+                    path.as_os_str()
+                )
+            })?;
+            Ok(DocumentIdentifier::from(path_str))
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -69,8 +77,9 @@ mod tests {
         let created = vec![PathBuf::from("/workspace/created.ts")];
         let deleted = vec![PathBuf::from("/workspace/deleted.ts")];
 
-        let FileChanges::Summary(summary) =
-            materialized_file_changes(&changed, &created, &deleted).expect("changes should exist")
+        let FileChanges::Summary(summary) = materialized_file_changes(&changed, &created, &deleted)
+            .expect("paths should be representable")
+            .expect("changes should exist")
         else {
             panic!("expected a file-change summary");
         };
@@ -94,6 +103,26 @@ mod tests {
 
     #[test]
     fn skips_refresh_when_no_materialized_paths_changed() {
-        assert!(materialized_file_changes(&[], &[], &[]).is_none());
+        assert!(
+            materialized_file_changes(&[], &[], &[])
+                .expect("empty changes should be valid")
+                .is_none()
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn rejects_distinct_non_utf8_paths_instead_of_merging_them() {
+        use std::ffi::OsString;
+        use std::os::unix::ffi::OsStringExt;
+
+        let first = PathBuf::from(OsString::from_vec(b"/workspace/\x80.ts".to_vec()));
+        let second = PathBuf::from(OsString::from_vec(b"/workspace/\x81.ts".to_vec()));
+        assert_ne!(first, second);
+        assert_eq!(first.to_string_lossy(), second.to_string_lossy());
+
+        let error = materialized_file_changes(&[first, second], &[], &[])
+            .expect_err("lossy paths must not collapse into one refresh entry");
+        assert!(error.contains("cannot represent non-UTF-8 materialized path"));
     }
 }
