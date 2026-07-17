@@ -1,7 +1,10 @@
 //! Import-name extraction and `/// <reference types>` directives.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{IdentifierReference, TSTypeName, TSTypeQueryExprName, TSTypeReference};
+use oxc_ast::ast::{
+    IdentifierReference, ImportDeclarationSpecifier, ImportOrExportKind, Statement, TSTypeName,
+    TSTypeQueryExprName, TSTypeReference,
+};
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
@@ -262,49 +265,57 @@ pub(super) fn extract_declared_name(stub: &str) -> Option<&str> {
 }
 
 fn extract_import_names(import_text: &str) -> Vec<&str> {
-    let mut names = Vec::new();
-    let trimmed = import_text.trim_start();
-    if trimmed.starts_with("import type ") {
-        return names;
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, import_text, SourceType::ts()).parse();
+    let Some(Statement::ImportDeclaration(declaration)) = parsed.program.body.first() else {
+        return Vec::new();
+    };
+    if declaration.import_kind == ImportOrExportKind::Type {
+        return Vec::new();
     }
 
-    if let Some(brace_start) = import_text.find('{') {
-        if let Some(brace_end) = import_text.find('}') {
-            let inner = &import_text[brace_start + 1..brace_end];
-            for part in inner.split(',') {
-                let part = part.trim();
-                if part.is_empty() || part.starts_with("//") || part.starts_with("type ") {
-                    continue;
+    declaration
+        .specifiers
+        .iter()
+        .flatten()
+        .filter_map(|specifier| {
+            let span = match specifier {
+                ImportDeclarationSpecifier::ImportSpecifier(specifier)
+                    if specifier.import_kind == ImportOrExportKind::Value =>
+                {
+                    specifier.local.span
                 }
-                if let Some(as_pos) = part.find(" as ") {
-                    let alias = part[as_pos + 4..].trim();
-                    if !alias.is_empty() {
-                        names.push(alias);
-                    }
-                } else {
-                    let name = part.strip_suffix('\r').unwrap_or(part);
-                    if !name.is_empty() && name.chars().all(|c| c.is_alphanumeric() || c == '_') {
-                        names.push(name);
-                    }
+                ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
+                    specifier.local.span
                 }
-            }
-        }
-    } else {
-        // Handle `import Name from "..."`
-        let text = import_text.trim();
-        if let Some(rest) = text.strip_prefix("import ")
-            && let Some(from_pos) = rest.find(" from ")
-        {
-            let name = rest[..from_pos].trim();
-            if !name.is_empty()
-                && !name.contains('{')
-                && !name.contains('*')
-                && name.chars().all(|c| c.is_alphanumeric() || c == '_')
-            {
-                names.push(name);
-            }
-        }
+                ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                    specifier.local.span
+                }
+                ImportDeclarationSpecifier::ImportSpecifier(_) => return None,
+            };
+            import_text.get(span.start as usize..span.end as usize)
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::extract_import_names;
+
+    #[test]
+    fn mixed_default_and_named_imports_keep_every_value_binding() {
+        assert_eq!(
+            extract_import_names("import Badge, { helper as local, type Props } from 'pkg'"),
+            ["Badge", "local"]
+        );
     }
 
-    names
+    #[test]
+    fn mixed_default_and_namespace_imports_keep_both_bindings() {
+        assert_eq!(
+            extract_import_names("import Badge, * as badgeNs from 'pkg'"),
+            ["Badge", "badgeNs"]
+        );
+        assert!(extract_import_names("import type Badge from 'pkg'").is_empty());
+    }
 }
