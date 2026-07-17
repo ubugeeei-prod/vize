@@ -137,6 +137,7 @@ test("create-vue clean, broken, and repaired patches agree across check and LSP"
         assert.ok(typeError, JSON.stringify(brokenPublish.diagnostics));
         assert.equal(typeError.source, "vize/types");
         assert.equal(typeError.severity, 1);
+        assert.equal(String(typeError.code).replace(/^TS/, ""), "2322");
         assert.match(typeError.message ?? "", /string.*not assignable.*number/i);
         assert.deepEqual(typeError.range?.start, { line: 1, character: 6 });
         assert.deepEqual(typeError.range?.end, { line: 1, character: 11 });

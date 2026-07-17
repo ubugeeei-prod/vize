@@ -1,6 +1,6 @@
 //! Mapping Corsa virtual-document diagnostics back to the host SFC.
 
-use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, Position, Range, Url};
+use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url};
 
 use super::super::{VirtualTsResult, sources};
 use super::mapping::{map_diagnostic_with_source_mappings, source_offset_to_position};
@@ -181,10 +181,45 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
                     3 => DiagnosticSeverity::INFORMATION,
                     _ => DiagnosticSeverity::HINT,
                 }),
+                code: diag.code.map(corsa_diagnostic_code),
                 source: Some(sources::TYPE_CHECKER.to_string()),
                 message: rewrite_corsa_message(&diag.message),
                 ..Default::default()
             })
         })
         .collect()
+}
+
+fn corsa_diagnostic_code(code: serde_json::Value) -> NumberOrString {
+    match code {
+        serde_json::Value::Number(number) => number.as_i64().map_or_else(
+            || NumberOrString::String(number.to_string()),
+            |value| {
+                i32::try_from(value).map_or_else(
+                    |_| NumberOrString::String(number.to_string()),
+                    NumberOrString::Number,
+                )
+            },
+        ),
+        serde_json::Value::String(code) => NumberOrString::String(code),
+        other => NumberOrString::String(other.to_string()),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::corsa_diagnostic_code;
+    use tower_lsp::lsp_types::NumberOrString;
+
+    #[test]
+    fn corsa_diagnostic_codes_preserve_lsp_number_and_string_shapes() {
+        assert_eq!(
+            corsa_diagnostic_code(serde_json::json!(2322)),
+            NumberOrString::Number(2322),
+        );
+        assert_eq!(
+            corsa_diagnostic_code(serde_json::json!("TS2322")),
+            NumberOrString::String("TS2322".to_string()),
+        );
+    }
 }
