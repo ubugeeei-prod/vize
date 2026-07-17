@@ -90,7 +90,7 @@ fn map_generated_offset_to_source(
     mapping
         .src_range
         .start
-        .saturating_add(generated_relative.min(source_len.saturating_sub(1)))
+        .saturating_add(generated_relative.min(source_len))
 }
 
 pub(super) fn line_character_to_byte_offset(
@@ -212,5 +212,18 @@ mod tests {
                 .src_range,
             200..220
         );
+    }
+
+    #[test]
+    fn diagnostic_mapping_preserves_exclusive_range_end() {
+        let mapping = VizeMapping {
+            gen_range: 20..40,
+            src_range: 200..220,
+            sub_spans: Vec::new(),
+        };
+
+        assert_eq!(map_generated_offset_to_source(&mapping, 20), 200);
+        assert_eq!(map_generated_offset_to_source(&mapping, 39), 219);
+        assert_eq!(map_generated_offset_to_source(&mapping, 40), 220);
     }
 }
