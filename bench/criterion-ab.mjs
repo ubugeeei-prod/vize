@@ -37,6 +37,14 @@ import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
+import {
+  compareBaselineExports,
+  critcmpArgs,
+  critcmpExportArgs,
+  parseCritcmpExport,
+  validateComparisonTable,
+} from "./criterion-baselines.mjs";
+
 // Criterion benches that exist under crates/*/benches and represent the hot
 // compiler/analysis/codegen paths. Each entry maps a cargo package to the
 // `[[bench]]` targets it owns; the `bench filter` narrows criterion to the
@@ -136,63 +144,21 @@ function benchSide({ side, checkoutDir, baseline, targetDir, suites }) {
   }
 }
 
-export function critcmpArgs({ targetDir, threshold }) {
-  const args = ["--target-dir", targetDir, "base", "head"];
-  if (threshold != null) {
-    // critcmp's own threshold only colorizes; we still parse the table below to
-    // decide pass/fail so the behaviour is identical across critcmp versions.
-    args.push("--threshold", String(threshold));
-  }
-  return args;
+function exportBaseline({ targetDir, baseline, outputPath }) {
+  const result = run("critcmp", critcmpExportArgs({ targetDir, baseline }), { capture: true });
+  const serialized = result.stdout ?? "";
+  const parsed = parseCritcmpExport(serialized, baseline);
+  writeFileSync(outputPath, serialized);
+  return parsed;
 }
 
-function critcmpCompare({ targetDir, threshold }) {
+function critcmpCompare({ targetDir, baselinePaths }) {
   // critcmp 0.1.8 does not read CRITERION_HOME. Point it at the same Cargo
-  // target directory used by both benchmark runs; critcmp appends `criterion`
-  // itself and fails the lane if either baseline is unavailable.
-  const args = critcmpArgs({ targetDir, threshold });
+  // target directory used by both benchmark runs. The exported snapshots keep
+  // the base sample stable while the head checkout reuses the shared target.
+  const args = critcmpArgs({ targetDir, baselinePaths });
   const result = run("critcmp", args, { capture: true });
   return `${result.stdout ?? ""}${result.stderr ?? ""}`;
-}
-
-/**
- * Parse a critcmp table into per-benchmark base/head nanosecond medians.
- * critcmp prints rows like:
- *   group/bench   1.00   3.2±0.1µs   1.04  3.4±0.2µs
- * where the two timing columns are base and head. We only need the ratio, which
- * critcmp already encodes as the leading multiplier on each side (1.00 for the
- * faster side). Rather than re-derive units we read the explicit factor columns.
- */
-export function parseCritcmpRegressions(table, thresholdPercent) {
-  if (thresholdPercent == null) {
-    return [];
-  }
-  const regressions = [];
-  for (const rawLine of table.split("\n")) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith("group")) {
-      continue;
-    }
-    // Columns: <name> <baseFactor> <baseTime> <headFactor> <headTime>
-    const match = line.match(/^(\S+)\s+(\d+(?:\.\d+)?)\s+\S+\s+(\d+(?:\.\d+)?)\s+\S+/);
-    if (!match) {
-      continue;
-    }
-    const name = match[1];
-    const baseFactor = Number.parseFloat(match[2]);
-    const headFactor = Number.parseFloat(match[3]);
-    if (!Number.isFinite(baseFactor) || !Number.isFinite(headFactor) || baseFactor === 0) {
-      continue;
-    }
-    // critcmp normalises the faster column to 1.00; head/base ratio is the
-    // head factor when base is the 1.00 baseline, otherwise its reciprocal.
-    const ratio = headFactor / baseFactor;
-    const changePercent = (ratio - 1) * 100;
-    if (changePercent >= thresholdPercent) {
-      regressions.push({ name, changePercent });
-    }
-  }
-  return regressions;
 }
 
 export function resolveSuiteSelection(selection) {
@@ -237,8 +203,8 @@ export function renderSummary({ table, threshold, regressions, selection }) {
   }
   lines.push(
     threshold == null
-      ? "Report-only: micro-benchmark medians for base vs head (no gate)."
-      : `Regression threshold: ${threshold}%.`,
+      ? "Report-only: micro-benchmark mean estimates for base vs head (no gate)."
+      : `Regression threshold: ${threshold}% (median).`,
   );
   lines.push("");
   lines.push("```");
@@ -273,7 +239,11 @@ export function main(argv = process.argv.slice(2)) {
   }
 
   const suites = CRITERION_SUITES.filter((suite) => selection.selected.includes(suite.package));
-  // Base first, then head, into the shared target dir so critcmp sees both.
+  const basePath = resolve(targetDir, "criterion-ab-base.json");
+  const headPath = resolve(targetDir, "criterion-ab-head.json");
+  let baseExport;
+  let headExport;
+  // Export base before the head run can mutate the shared Criterion directory.
   if (suites.length > 0) {
     benchSide({
       side: "base",
@@ -282,6 +252,7 @@ export function main(argv = process.argv.slice(2)) {
       targetDir,
       suites,
     });
+    baseExport = exportBaseline({ targetDir, baseline: "base", outputPath: basePath });
     benchSide({
       side: "head",
       checkoutDir: headDir,
@@ -289,10 +260,16 @@ export function main(argv = process.argv.slice(2)) {
       targetDir,
       suites,
     });
+    headExport = exportBaseline({ targetDir, baseline: "head", outputPath: headPath });
   }
 
-  const table = suites.length > 0 ? critcmpCompare({ targetDir, threshold }) : "";
-  const regressions = parseCritcmpRegressions(table, threshold);
+  const table =
+    suites.length > 0 ? critcmpCompare({ targetDir, baselinePaths: [basePath, headPath] }) : "";
+  if (suites.length > 0) {
+    validateComparisonTable(table);
+  }
+  const regressions =
+    baseExport && headExport ? compareBaselineExports(baseExport, headExport, threshold) : [];
   const summary = renderSummary({ table, threshold, regressions, selection });
 
   if (args.out) {

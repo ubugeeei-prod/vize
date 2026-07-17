@@ -7,10 +7,16 @@ import { test } from "node:test";
 
 import {
   CRITERION_SUITES,
-  critcmpArgs,
   renderSummary,
   resolveSuiteSelection,
 } from "../../bench/criterion-ab.mjs";
+import {
+  compareBaselineExports,
+  critcmpArgs,
+  critcmpExportArgs,
+  parseCritcmpExport,
+  validateComparisonTable,
+} from "../../bench/criterion-baselines.mjs";
 import {
   changedPathsBetween,
   parseNameStatusZ,
@@ -166,21 +172,52 @@ test("Criterion driver validates scoped suite manifests", () => {
   );
 });
 
-test("Criterion driver points critcmp at the shared Cargo target", () => {
-  assert.deepEqual(critcmpArgs({ targetDir: "/work/head/target", threshold: undefined }), [
+test("Criterion driver snapshots both baselines before comparing them", () => {
+  assert.deepEqual(critcmpExportArgs({ targetDir: "/work/head/target", baseline: "base" }), [
     "--target-dir",
     "/work/head/target",
+    "--export",
     "base",
-    "head",
   ]);
-  assert.deepEqual(critcmpArgs({ targetDir: "/work/head/target", threshold: 10 }), [
-    "--target-dir",
-    "/work/head/target",
-    "base",
-    "head",
-    "--threshold",
-    "10",
+  assert.deepEqual(
+    critcmpArgs({
+      targetDir: "/work/head/target",
+      baselinePaths: ["/work/base.json", "/work/head.json"],
+    }),
+    ["--target-dir", "/work/head/target", "/work/base.json", "/work/head.json"],
+  );
+});
+
+test("Criterion baseline comparison fails closed and uses exported medians", () => {
+  const base = parseCritcmpExport(baselineExport("base", { shared: 100 }), "base");
+  const head = parseCritcmpExport(baselineExport("head", { shared: 125 }), "head");
+
+  assert.deepEqual(compareBaselineExports(base, head, 10), [
+    { name: "shared", changePercent: 25 },
   ]);
+  assert.throws(
+    () => parseCritcmpExport(baselineExport("base", {}), "base"),
+    /contains no benchmarks/,
+  );
+  assert.throws(
+    () =>
+      compareBaselineExports(
+        base,
+        parseCritcmpExport(baselineExport("head", { other: 90 }), "head"),
+        10,
+      ),
+    /no shared benchmarks/,
+  );
+});
+
+test("Criterion comparison table requires both base and head columns", () => {
+  assert.doesNotThrow(() =>
+    validateComparisonTable("group  base  head\n-----  ----  ----\nshared  1.00  1.12\n"),
+  );
+  assert.throws(
+    () => validateComparisonTable("group  head\n-----  ----\nshared  1.00\n"),
+    /did not produce base\/head columns/,
+  );
 });
 
 test("Criterion driver reports a useful summary when no suite is affected", () => {
@@ -192,3 +229,15 @@ test("Criterion driver reports a useful summary when no suite is affected", () =
   assert.match(summary, /Skipped: vize_atelier_sfc, vize_atelier_jsx/);
   assert.match(summary, /timing execution was skipped/);
 });
+
+function baselineExport(name: string, medians: Record<string, number>): string {
+  return JSON.stringify({
+    name,
+    benchmarks: Object.fromEntries(
+      Object.entries(medians).map(([benchmark, pointEstimate]) => [
+        benchmark,
+        { criterion_estimates_v1: { median: { point_estimate: pointEstimate } } },
+      ]),
+    ),
+  });
+}
