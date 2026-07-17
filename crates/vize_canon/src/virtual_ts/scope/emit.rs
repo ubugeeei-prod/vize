@@ -3,7 +3,7 @@
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
-use vize_carton::{FxHashSet, camelize, capitalize};
+use vize_carton::{camelize, capitalize};
 use vize_croquis::Croquis;
 
 use crate::virtual_ts::helpers::to_safe_identifier;
@@ -48,14 +48,12 @@ fn component_binding_reference(
 ) -> String {
     let camel_name = camelize(template_name);
     let pascal_name = capitalize(camel_name.as_str());
-    let external_template_bindings: FxHashSet<&str> = options
-        .external_template_bindings
-        .iter()
-        .map(|name| name.as_str())
-        .collect();
     for candidate in [template_name, camel_name.as_str(), pascal_name.as_str()] {
         if summary.bindings.bindings.contains_key(candidate)
-            || external_template_bindings.contains(candidate)
+            || options
+                .external_template_bindings
+                .iter()
+                .any(|name| name.as_str() == candidate)
         {
             return to_safe_identifier(candidate);
         }
