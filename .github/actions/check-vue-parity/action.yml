@@ -9,7 +9,8 @@ runs:
       run: |
         git submodule update --init --depth 1 \
           tests/_fixtures/_git/create-vue \
-          tests/_fixtures/_git/misskey
+          tests/_fixtures/_git/misskey \
+          tests/_fixtures/_git/vue-router
         vp install --frozen-lockfile --prefer-offline
 
     - name: Build vize CLI
