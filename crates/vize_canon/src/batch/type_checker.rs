@@ -3,12 +3,14 @@
 use std::path::{Path, PathBuf};
 
 use super::Diagnostic;
-use super::declaration_path::is_declaration_file;
 use super::error::{CorsaError, CorsaResult};
 use super::executor::CorsaExecutor;
 use super::virtual_project::VirtualProject;
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 use vize_carton::String;
+
+mod paths;
+use paths::{collect_project_paths, refreshed_paths};
 
 /// Result of type checking.
 #[derive(Debug, Default)]
@@ -96,7 +98,10 @@ pub trait TypeChecker: Send + Sync {
     /// Check a single file.
     fn check_file(&self, path: &Path, content: &str) -> CorsaResult<Vec<Diagnostic>>;
 
-    /// Check incrementally (only changed files).
+    /// Re-check a scanned project after source files changed.
+    ///
+    /// The result must observe the latest on-disk contents and include
+    /// diagnostics from dependents, not only the changed files themselves.
     fn check_incremental(&self, changed: &[PathBuf]) -> CorsaResult<TypeCheckResult>;
 }
 
@@ -223,35 +228,7 @@ impl BatchTypeChecker {
 
     /// Scan the project for source files.
     pub fn scan_project(&mut self) -> CorsaResult<()> {
-        let project_root = self.project.project_root().to_path_buf();
-
-        let mut paths: Vec<PathBuf> = Vec::new();
-        for entry in walkdir::WalkDir::new(&project_root)
-            .into_iter()
-            .filter_entry(|e| {
-                // Don't filter the root directory itself
-                if e.path() == project_root {
-                    return true;
-                }
-                // Skip node_modules and hidden directories
-                let name = e.file_name().to_string_lossy();
-                !name.starts_with('.') && name != "node_modules"
-            })
-        {
-            let entry = entry?;
-            let path = entry.path();
-
-            if !path.is_file() {
-                continue;
-            }
-
-            if !is_supported_input(path) {
-                continue;
-            }
-
-            paths.push(path.to_path_buf());
-        }
-
+        let paths = collect_project_paths(self.project.project_root())?;
         self.project.register_paths(&paths)?;
         self.scanned = true;
         Ok(())
@@ -293,17 +270,7 @@ impl TypeChecker for BatchTypeChecker {
             return Err(CorsaError::NotInitialized);
         }
 
-        let mut result = self
-            .executor
-            .check_with_servers(&self.project, self.server_count)?;
-        result
-            .diagnostics
-            .extend(self.project.diagnostics().iter().cloned());
-        if result.has_errors() {
-            result.success = false;
-            result.exit_code = result.exit_code.max(1);
-        }
-        Ok(result)
+        self.check_registered_project(&self.project)
     }
 
     fn check_file(&self, path: &Path, content: &str) -> CorsaResult<Vec<Diagnostic>> {
@@ -320,18 +287,39 @@ impl TypeChecker for BatchTypeChecker {
     }
 
     fn check_incremental(&self, changed: &[PathBuf]) -> CorsaResult<TypeCheckResult> {
-        // For now, just do a full check
-        // TODO: Implement proper incremental checking
-        let _ = changed;
-        self.check_project()
+        if !self.scanned {
+            return Err(CorsaError::NotInitialized);
+        }
+        if changed.is_empty() {
+            return self.check_project();
+        }
+
+        // Correctness before reuse: rebuilding the source snapshot guarantees
+        // that edits, additions, deletions, and dependent diagnostics are never
+        // checked against the stale virtual files captured by the initial scan.
+        // A dependency-aware persistent Corsa session can optimize this path
+        // without weakening this observable contract.
+        let mut refreshed = self.project.empty_with_same_options()?;
+        let paths = refreshed_paths(&self.project, changed)?;
+        refreshed.register_paths(&paths)?;
+        self.check_registered_project(&refreshed)
     }
 }
 
-fn is_supported_input(path: &Path) -> bool {
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| matches!(extension, "vue" | "ts" | "tsx" | "mts" | "cts"))
-        || is_declaration_file(path)
+impl BatchTypeChecker {
+    fn check_registered_project(&self, project: &VirtualProject) -> CorsaResult<TypeCheckResult> {
+        let mut result = self
+            .executor
+            .check_with_servers(project, self.server_count)?;
+        result
+            .diagnostics
+            .extend(project.diagnostics().iter().cloned());
+        if result.has_errors() {
+            result.success = false;
+            result.exit_code = result.exit_code.max(1);
+        }
+        Ok(result)
+    }
 }
 
 #[cfg(test)]

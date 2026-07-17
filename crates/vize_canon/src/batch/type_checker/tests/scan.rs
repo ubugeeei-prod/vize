@@ -1,5 +1,8 @@
 use super::{BatchTypeChecker, unique_case_dir};
 
+#[path = "incremental.rs"]
+mod incremental;
+
 #[test]
 fn test_batch_type_checker_scan() {
     let project_root = unique_case_dir("scan");

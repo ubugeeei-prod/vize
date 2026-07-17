@@ -63,6 +63,25 @@ impl VirtualProject {
         Ok(project)
     }
 
+    /// Create an empty project snapshot with the same generation settings.
+    ///
+    /// This is used by correctness-safe refreshes: source files are registered
+    /// again from disk, while every caller-configured Vue dialect and virtual
+    /// TypeScript option remains identical to the original scan.
+    pub(crate) fn empty_with_same_options(&self) -> CorsaResult<Self> {
+        let mut project = Self::new(&self.project_root)?;
+        project.set_tsconfig_path(self.tsconfig_path.clone());
+        project.virtual_ts_options = self.virtual_ts_options.clone();
+        project.virtual_ts_check_options = self.virtual_ts_check_options;
+        project.options_api = self.options_api;
+        project.legacy_vue2 = self.legacy_vue2;
+        project.jsx_typecheck = self.jsx_typecheck;
+        project.dialect = self.dialect;
+        project.template_syntax = self.template_syntax;
+        project.experimental_in_tag_comments = self.experimental_in_tag_comments;
+        Ok(project)
+    }
+
     /// Set the tsconfig path to extend.
     pub fn set_tsconfig_path(&mut self, tsconfig_path: Option<PathBuf>) {
         self.tsconfig_path = tsconfig_path.map(vize_carton::path::normalize_windows_verbatim_path);

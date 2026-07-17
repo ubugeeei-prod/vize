@@ -27,6 +27,13 @@ impl VirtualProject {
         files
     }
 
+    /// Original paths registered in this project, in deterministic order.
+    pub(crate) fn registered_original_paths_sorted(&self) -> Vec<PathBuf> {
+        let mut paths: Vec<_> = self.original_index.keys().cloned().collect();
+        paths.sort();
+        paths
+    }
+
     /// Parser diagnostics collected while registering source files.
     pub fn diagnostics(&self) -> &[Diagnostic] {
         &self.diagnostics
