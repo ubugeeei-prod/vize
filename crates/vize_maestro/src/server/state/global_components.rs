@@ -1,6 +1,7 @@
 //! Discovery and caching of declarations that augment Vue global components.
 
-use std::path::{Path, PathBuf};
+use std::ffi::OsStr;
+use std::path::{Component, Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
 use futures::{channel::oneshot, lock::Mutex as AsyncMutex};
@@ -87,10 +88,12 @@ impl GlobalComponentReferences {
                 None => Vec::new(),
             };
 
+            let mut cached = self.paths.write();
             if self.generation.load(Ordering::Acquire) != generation {
+                drop(cached);
                 continue;
             }
-            *self.paths.write() = Some(CachedPaths {
+            *cached = Some(CachedPaths {
                 generation,
                 paths: paths.clone(),
             });
@@ -111,7 +114,13 @@ impl ServerState {
         I: IntoIterator<Item = U>,
         U: AsRef<str>,
     {
-        if !uris.into_iter().any(|uri| is_declaration_uri(uri.as_ref())) {
+        let Some(root) = self.get_workspace_root() else {
+            return false;
+        };
+        if !uris
+            .into_iter()
+            .any(|uri| is_discoverable_declaration_uri(&root, uri.as_ref()))
+        {
             return false;
         }
         self.global_component_references.invalidate();
@@ -205,18 +214,28 @@ fn should_visit(entry: &DirEntry) -> bool {
     if entry.depth() == 0 || !entry.file_type().is_some_and(|kind| kind.is_dir()) {
         return true;
     }
-    !matches!(
-        entry.file_name().to_str(),
-        Some(".git" | "node_modules" | "target" | "coverage" | "dist")
-    )
+    !is_excluded_directory(entry.file_name())
 }
 
-fn is_declaration_uri(uri: &str) -> bool {
-    Url::parse(uri)
+fn is_discoverable_declaration_uri(root: &Path, uri: &str) -> bool {
+    let uri_path = Url::parse(uri)
         .ok()
         .and_then(|url| url.to_file_path().ok())
-        .is_some_and(|path| is_declaration_file(&path))
-        || is_declaration_file(Path::new(uri))
+        .unwrap_or_else(|| PathBuf::from(uri));
+    let Ok(relative) = uri_path.strip_prefix(root) else {
+        return false;
+    };
+    is_declaration_file(relative)
+        && relative.components().all(|component| {
+            !matches!(component, Component::Normal(name) if is_excluded_directory(name))
+        })
+}
+
+fn is_excluded_directory(name: &OsStr) -> bool {
+    matches!(
+        name.to_str(),
+        Some(".git" | "node_modules" | "target" | "coverage" | "dist")
+    )
 }
 
 fn is_declaration_file(path: &Path) -> bool {
@@ -231,8 +250,6 @@ fn is_declaration_file(path: &Path) -> bool {
 mod tests {
     use std::sync::atomic::Ordering;
     use std::sync::{Arc, Barrier};
-
-    use tower_lsp::lsp_types::Url;
 
     use super::{ServerState, collect_global_component_declarations};
 
@@ -281,14 +298,28 @@ mod tests {
                 let barrier = barrier.clone();
                 std::thread::spawn(move || {
                     barrier.wait();
-                    crate::runtime::block_on(state.global_component_reference_paths())
+                    let caller_thread = std::thread::current().id();
+                    let paths = crate::runtime::block_on(state.global_component_reference_paths());
+                    (caller_thread, paths)
                 })
             })
             .collect::<Vec<_>>();
         barrier.wait();
 
-        for caller in callers {
-            assert_eq!(caller.join().unwrap().len(), 1);
+        let caller_results = callers
+            .into_iter()
+            .map(|caller| caller.join().unwrap())
+            .collect::<Vec<_>>();
+        let scan_thread = state
+            .global_component_references
+            .last_scan_thread
+            .lock()
+            .as_ref()
+            .copied()
+            .expect("background scan thread should be recorded");
+        for (caller_thread, paths) in caller_results {
+            assert_eq!(paths.len(), 1);
+            assert_ne!(scan_thread, caller_thread);
         }
         assert_eq!(
             state
@@ -297,53 +328,8 @@ mod tests {
                 .load(Ordering::Acquire),
             1
         );
-        assert_ne!(
-            *state.global_component_references.last_scan_thread.lock(),
-            Some(std::thread::current().id())
-        );
-    }
-
-    #[test]
-    fn declaration_file_events_refresh_created_renamed_and_deleted_paths() {
-        let root = tempfile::tempdir().unwrap();
-        std::fs::create_dir_all(root.path().join(".nuxt")).unwrap();
-        let state = ServerState::new();
-        state.set_workspace_root(root.path().to_path_buf());
-        assert!(crate::runtime::block_on(state.global_component_reference_paths()).is_empty());
-
-        let created = root.path().join(".nuxt/components.d.ts");
-        std::fs::write(&created, DECLARATION).unwrap();
-        let created_uri = Url::from_file_path(&created).unwrap();
-        assert!(state.invalidate_global_component_references([created_uri.as_str()]));
-        assert_eq!(
-            crate::runtime::block_on(state.global_component_reference_paths()),
-            [std::fs::canonicalize(&created).unwrap()]
-        );
-
-        let renamed = root.path().join(".nuxt/components.d.mts");
-        std::fs::rename(&created, &renamed).unwrap();
-        let renamed_uri = Url::from_file_path(&renamed).unwrap();
-        assert!(
-            state.invalidate_global_component_references([
-                created_uri.as_str(),
-                renamed_uri.as_str(),
-            ])
-        );
-        assert_eq!(
-            crate::runtime::block_on(state.global_component_reference_paths()),
-            [std::fs::canonicalize(&renamed).unwrap()]
-        );
-
-        std::fs::remove_file(&renamed).unwrap();
-        assert!(state.invalidate_global_component_references([renamed_uri.as_str()]));
-        assert!(crate::runtime::block_on(state.global_component_reference_paths()).is_empty());
-        assert!(!state.invalidate_global_component_references(["file:///workspace/App.vue"]));
-        assert_eq!(
-            state
-                .global_component_references
-                .scan_count
-                .load(Ordering::Acquire),
-            4
-        );
     }
 }
+
+#[cfg(test)]
+mod event_tests;
