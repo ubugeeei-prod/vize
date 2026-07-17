@@ -46,13 +46,30 @@ fn mapping_for_generated_offset(
 ) -> Option<&vize_canon::virtual_ts::VizeMapping> {
     mappings
         .iter()
-        .find(|mapping| offset >= mapping.gen_range.start && offset <= mapping.gen_range.end)
+        .filter(|mapping| offset >= mapping.gen_range.start && offset <= mapping.gen_range.end)
+        .min_by_key(|mapping| {
+            mapping
+                .gen_range
+                .end
+                .saturating_sub(mapping.gen_range.start)
+        })
 }
 
 fn map_generated_offset_to_source(
     mapping: &vize_canon::virtual_ts::VizeMapping,
     generated_offset: usize,
 ) -> usize {
+    if let Some(span) = mapping.sub_spans.iter().find(|span| {
+        generated_offset >= span.gen_range.start && generated_offset <= span.gen_range.end
+    }) {
+        let generated_relative = generated_offset.saturating_sub(span.gen_range.start);
+        let source_len = span.src_range.end.saturating_sub(span.src_range.start);
+        return span
+            .src_range
+            .start
+            .saturating_add(generated_relative.min(source_len));
+    }
+
     let generated_relative = generated_offset.saturating_sub(mapping.gen_range.start);
     let source_len = mapping
         .src_range
@@ -124,4 +141,49 @@ pub(super) fn source_offset_to_position(source: &str, offset: usize) -> (u32, u3
     }
 
     (line, character)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{map_generated_offset_to_source, mapping_for_generated_offset};
+    use vize_canon::virtual_ts::{VizeMapping, VizeSubSpan};
+
+    #[test]
+    fn diagnostic_mapping_prefers_exact_expression_sub_span() {
+        let mappings = [VizeMapping {
+            gen_range: 10..80,
+            src_range: 100..140,
+            sub_spans: vec![VizeSubSpan {
+                gen_range: 20..43,
+                src_range: 107..130,
+            }],
+        }];
+        let mapping = mapping_for_generated_offset(&mappings, 20).expect("mapping present");
+
+        assert_eq!(map_generated_offset_to_source(mapping, 20), 107);
+        assert_eq!(map_generated_offset_to_source(mapping, 43), 130);
+    }
+
+    #[test]
+    fn diagnostic_mapping_prefers_the_narrowest_generated_range() {
+        let mappings = [
+            VizeMapping {
+                gen_range: 0..100,
+                src_range: 0..100,
+                sub_spans: Vec::new(),
+            },
+            VizeMapping {
+                gen_range: 20..40,
+                src_range: 200..220,
+                sub_spans: Vec::new(),
+            },
+        ];
+
+        assert_eq!(
+            mapping_for_generated_offset(&mappings, 30)
+                .expect("mapping present")
+                .src_range,
+            200..220
+        );
+    }
 }

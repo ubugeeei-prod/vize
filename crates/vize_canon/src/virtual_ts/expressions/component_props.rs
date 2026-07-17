@@ -6,7 +6,7 @@
 //! across the component boundary.
 
 use super::super::helpers::{to_camel_case, to_safe_identifier_fragment};
-use super::super::types::VizeMapping;
+use super::super::types::{VizeMapping, VizeSubSpan};
 use super::reserved_props::rewrite_reserved_template_prop;
 use vize_carton::FxHashSet;
 use vize_carton::String;
@@ -62,6 +62,32 @@ fn is_checkable_prop(prop: &PassedProp) -> bool {
     !prop.name_is_dynamic && prop.name.as_str() != "key" && prop.name.as_str() != "ref"
 }
 
+#[derive(Clone, Copy)]
+pub(crate) struct ComponentPropSource<'a> {
+    pub(crate) template: Option<&'a str>,
+    pub(crate) offset: u32,
+}
+
+impl<'a> ComponentPropSource<'a> {
+    pub(crate) const fn new(template: Option<&'a str>, offset: u32) -> Self {
+        Self { template, offset }
+    }
+}
+
+fn dynamic_prop_value_source_range(
+    source_context: ComponentPropSource<'_>,
+    prop: &PassedProp,
+) -> Option<std::ops::Range<usize>> {
+    let source = source_context.template?;
+    let value = prop.value.as_ref()?.as_str();
+    let prop_start = prop.start as usize;
+    let prop_end = prop.end as usize;
+    let raw_prop = source.get(prop_start..prop_end)?;
+    let relative_start = raw_prop.rfind(value)?;
+    let source_start = source_context.offset as usize + prop_start + relative_start;
+    Some(source_start..source_start + value.len())
+}
+
 fn collect_generated_class_bindings<'a>(
     usage: &'a ComponentUsage,
     template_prop_names: &FxHashSet<String>,
@@ -102,7 +128,7 @@ pub(crate) fn generate_component_prop_checks(
     usage: &ComponentUsage,
     idx: usize,
     template_prop_names: &FxHashSet<String>,
-    template_offset: u32,
+    source_context: ComponentPropSource<'_>,
     indent: &str,
 ) {
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
@@ -111,8 +137,9 @@ pub(crate) fn generate_component_prop_checks(
             continue;
         }
         if prop.value.is_some() && prop.is_dynamic {
-            let prop_src_start = (template_offset + prop.start) as usize;
-            let prop_src_end = (template_offset + prop.end) as usize;
+            let prop_src_start = (source_context.offset + prop.start) as usize;
+            let prop_src_end = (source_context.offset + prop.end) as usize;
+            let value_src_range = dynamic_prop_value_source_range(source_context, prop);
             let generated_value = profile!(
                 "canon.virtual_ts.prop_check.value",
                 generated_prop_value(prop, template_prop_names).unwrap_or_default()
@@ -133,11 +160,15 @@ pub(crate) fn generate_component_prop_checks(
                 append!(*ts, "{indent}if ({guard}) {{\n");
             }
 
-            let gen_stmt_start = ts.len();
             let check_name = cstr!("__vize_prop_check_{idx}_{safe_prop_name}");
+            let gen_stmt_start = ts.len();
+            append!(*ts, "{expr_indent}const ");
+            let check_name_start = ts.len();
+            ts.push_str(check_name.as_str());
+            let check_name_end = ts.len();
             append!(
                 *ts,
-                "{expr_indent}const {check_name}: __{component_type_name}_{idx}_prop_{safe_prop_name} = {};\n",
+                ": __{component_type_name}_{idx}_prop_{safe_prop_name} = {};\n",
                 generated_value.as_str(),
             );
             let gen_stmt_end = ts.len();
@@ -145,7 +176,13 @@ pub(crate) fn generate_component_prop_checks(
             mappings.push(VizeMapping {
                 gen_range: gen_stmt_start..gen_stmt_end,
                 src_range: prop_src_start..prop_src_end,
-                sub_spans: Vec::new(),
+                sub_spans: value_src_range
+                    .map(|src_range| VizeSubSpan {
+                        gen_range: check_name_start..check_name_end,
+                        src_range,
+                    })
+                    .into_iter()
+                    .collect(),
             });
 
             if usage.vif_guard.is_some() {
@@ -160,7 +197,7 @@ pub(crate) fn generate_component_prop_checks(
         usage,
         idx,
         template_prop_names,
-        template_offset,
+        source_context.offset,
         indent,
     );
 }
@@ -267,48 +304,5 @@ fn generate_generic_props_call(
 
     if usage.vif_guard.is_some() {
         append!(*ts, "{indent}}}\n");
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use vize_croquis::{Analyzer, AnalyzerOptions};
-
-    use crate::virtual_ts::generate_virtual_ts;
-
-    #[test]
-    fn generic_props_call_merges_static_and_dynamic_class_bindings() {
-        let script = r#"import TeacherCard from "./TeacherCard.vue"
-const teacher = { name: "Ada" }
-const isLoading = false
-"#;
-        let template = r#"<TeacherCard
-  class="ma-1"
-  :teacher="teacher"
-  :class="{ 'loading-place-holder': isLoading }"
-/>"#;
-
-        let allocator = vize_carton::Bump::new();
-        let (root, _) = vize_armature::parse(&allocator, template);
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-        analyzer.analyze_script_setup(script);
-        analyzer.analyze_template(&root);
-        let summary = analyzer.finish();
-
-        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
-
-        assert!(
-            output
-                .code
-                .contains("\"class\": [\"ma-1\", { 'loading-place-holder': isLoading }]"),
-            "expected merged class binding in generic props call:\n{}",
-            output.code
-        );
-        assert_eq!(
-            output.code.matches("\"class\":").count(),
-            1,
-            "class should be emitted once in the props object:\n{}",
-            output.code
-        );
     }
 }

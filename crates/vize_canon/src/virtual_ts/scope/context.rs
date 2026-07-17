@@ -6,6 +6,7 @@ use vize_carton::String;
 
 use vize_croquis::{Croquis, EventHandlerScopeData, ScopeId, analysis::ComponentUsage};
 
+use crate::virtual_ts::expressions::ComponentPropSource;
 use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions};
 
 /// Context for recursive scope generation, bundling shared parameters.
@@ -35,7 +36,7 @@ pub(crate) struct VForPropsContext<'a> {
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(crate) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
     pub(crate) template_prop_names: &'a FxHashSet<String>,
-    pub(crate) template_offset: u32,
+    pub(crate) source_context: ComponentPropSource<'a>,
 }
 
 pub(super) struct EventHandlerExprContext<'a> {
