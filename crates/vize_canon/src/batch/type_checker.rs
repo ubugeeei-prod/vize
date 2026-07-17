@@ -226,7 +226,7 @@ impl BatchTypeChecker {
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
         self.project.register_paths(paths)?;
         self.scanned = true;
-        self.incremental_paths.after_explicit_scan(&self.project);
+        self.incremental_paths.after_explicit_scan(paths);
         Ok(())
     }
 

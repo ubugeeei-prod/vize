@@ -173,14 +173,11 @@ const outside: number = 'must stay outside the scan'
     let outside_path = project_root.join("src/OutsideScope.vue");
     let mut checker = BatchTypeChecker::new(&project_root).expect("checker should start");
     checker
+        .scan_project()
+        .expect("project-wide scan should succeed");
+    checker
         .scan_paths(std::slice::from_ref(&included_path))
         .expect("explicit scan should succeed");
-
-    let clean = checker.check_project().expect("clean check should succeed");
-    assert!(
-        clean.diagnostics.is_empty(),
-        "unexpected clean diagnostics: {clean:#?}"
-    );
 
     std::fs::write(&included_path, clean_source.replace("= 1", "= 'broken'"))
         .expect("included patch should write");
@@ -213,6 +210,14 @@ const outside: number = 'must stay outside the scan'
             .iter()
             .all(|diagnostic| diagnostic.file != outside_path),
         "a changed path expanded the explicit scan scope: {:#?}",
+        outside_change.diagnostics
+    );
+    assert!(
+        outside_change
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.file == included_path && diagnostic.code == Some(2322)),
+        "out-of-scope refresh dropped the included diagnostic: {:#?}",
         outside_change.diagnostics
     );
 
@@ -288,6 +293,14 @@ const added: number = 'broken added file'
             .iter()
             .all(|diagnostic| diagnostic.file != added_path),
         "deleted file retained stale diagnostics: {:#?}",
+        after_delete.diagnostics
+    );
+    assert!(
+        after_delete
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.file == app_path && diagnostic.code == Some(2322)),
+        "deleting the added file dropped the unrelated App.vue diagnostic: {:#?}",
         after_delete.diagnostics
     );
 
