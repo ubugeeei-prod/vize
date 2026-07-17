@@ -83,6 +83,11 @@ test(
             });
             return waitForDiagnostics(session, componentUri, 1);
           });
+          assert.equal(
+            cleanPublish.diagnostics.length,
+            0,
+            `expected no clean diagnostics: ${JSON.stringify(cleanPublish.diagnostics)}`,
+          );
           baseline = normalizeDiagnostics(cleanPublish.diagnostics);
 
           const completion = await metrics.measure("completion", () =>
