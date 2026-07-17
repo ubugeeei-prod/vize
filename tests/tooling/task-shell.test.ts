@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -13,7 +14,9 @@ import {
   withRustTaskEnvironment,
 } from "../../tools/vite-plus/task-shell.ts";
 import {
+  localVp,
   moonCommandForEnvironment,
+  moonRegistryRefreshCommandForEnvironment,
   moonRegistryUpdateGuardForEnvironment,
 } from "../../tools/vite-plus/task-commands.ts";
 import { checkTasks } from "../../tools/vite-plus/tasks/check.ts";
@@ -105,13 +108,68 @@ test("MoonBit task commands leave explicit MoonBit shims untouched", () => {
   );
 });
 
-test("release task forwards extra vp run arguments into the MoonBit script", () => {
+test("release registry refreshes use an explicit MoonBit shim", () => {
+  assert.equal(
+    moonRegistryRefreshCommandForEnvironment(
+      { MOON_BIN: "/runner-temp/moonbit-shims/moon" },
+      () => true,
+    ),
+    "/runner-temp/moonbit-shims/moon update",
+  );
+});
+
+test("release task refreshes the MoonBit registry and forwards vp run arguments", () => {
   const command = (releaseTasks.release as { command: string }).command;
 
+  assert.match(
+    command,
+    /moon update && .*moon run -q --target native tools\/moon\/cmd\/release -- "\$@"/,
+  );
   assert.match(command, /moon run -q --target native tools\/moon\/cmd\/release -- "\$@"/);
   assert.doesNotMatch(command, /env -u MOON_HOME/);
   assert.match(command, / --$/);
 });
+
+function gitRepositoryState() {
+  const read = (...args: string[]) => {
+    const result = spawnSync("git", args, { encoding: "utf8" });
+    assert.equal(result.status, 0, result.stderr);
+    return result.stdout;
+  };
+  return {
+    head: read("rev-parse", "HEAD"),
+    status: read("status", "--porcelain=v1", "--untracked-files=all"),
+    tags: read("tag", "--list"),
+  };
+}
+
+test(
+  "release task prompts through a controlling terminal and aborts without mutation",
+  { skip: process.platform === "win32" },
+  () => {
+    const before = gitRepositoryState();
+    const result = spawnSync(
+      "python3",
+      [
+        "tests/tooling/support/pty-command.py",
+        "Proceed with release? [y/N]",
+        "n\n",
+        localVp,
+        "run",
+        "release",
+        "minor",
+      ],
+      { encoding: "utf8", timeout: 30_000 },
+    );
+    const output = result.stdout + result.stderr;
+
+    assert.equal(result.error, undefined, output);
+    assert.equal(result.status, 1, output);
+    assert.match(output, /Proceed with release\? \[y\/N\]/);
+    assert.match(output, /Aborted\./);
+    assert.deepEqual(gitRepositoryState(), before);
+  },
+);
 
 test("repository JS check enforces the v1 alpha warning budget", () => {
   const command = (checkTasks["check:repo"] as { command: string }).command;

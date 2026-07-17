@@ -4,6 +4,7 @@ export {
   installVscodeExtensionDependencies,
   localVp,
   moonScript,
+  moonScriptWithFreshRegistry,
   runInDirectory,
   runInPackages,
   runInVscodeExtension,

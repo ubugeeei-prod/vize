@@ -99,8 +99,27 @@ export const moonRegistryUpdateGuardForEnvironment = (
   return `( [ -d ${workspaceMoonRegistryIndex} ] || ${moonCommandForEnvironment(env, pathExists)} update )`;
 };
 
+export const moonRegistryRefreshCommandForEnvironment = (
+  env: NodeJS.ProcessEnv = process.env,
+  pathExists: (path: string) => boolean = existsSync,
+) => `${moonCommandForEnvironment(env, pathExists)} update`;
+
 const moonCommand = moonCommandForEnvironment();
 const moonRegistryUpdateGuard = moonRegistryUpdateGuardForEnvironment();
+const moonRegistryRefreshCommand = moonRegistryRefreshCommandForEnvironment();
+
+const moonScriptCommand = (registrySetup: string | null, name: string, args: string[]) =>
+  [
+    ...(registrySetup == null ? [] : [registrySetup, "&&"]),
+    moonCommand,
+    "run",
+    "-q",
+    "--target",
+    "native",
+    `${moonToolsModule}/cmd/${name}`,
+    "--",
+    ...args,
+  ].join(" ");
 
 /**
  * Executes a repository MoonBit command package.
@@ -111,17 +130,17 @@ const moonRegistryUpdateGuard = moonRegistryUpdateGuardForEnvironment();
  * `--` so each package owns its own CLI parsing.
  */
 export const moonScript = (name: string, ...args: string[]) =>
-  [
-    ...(moonRegistryUpdateGuard == null ? [] : [moonRegistryUpdateGuard, "&&"]),
-    moonCommand,
-    "run",
-    "-q",
-    "--target",
-    "native",
-    `${moonToolsModule}/cmd/${name}`,
-    "--",
-    ...args,
-  ].join(" ");
+  moonScriptCommand(moonRegistryUpdateGuard, name, args);
+
+/**
+ * Executes a MoonBit command after refreshing the registry index.
+ *
+ * Release tasks use this slower path because resolving a newly pinned package
+ * against an existing but stale index must fail before any release files are
+ * changed. Regular development tasks keep the cheaper initialize-once path.
+ */
+export const moonScriptWithFreshRegistry = (name: string, ...args: string[]) =>
+  moonScriptCommand(moonRegistryRefreshCommand, name, args);
 
 export const devApp = (target?: string) =>
   target == null ? moonScript("dev_app") : moonScript("dev_app", target);

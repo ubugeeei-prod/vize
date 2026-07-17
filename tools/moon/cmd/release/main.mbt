@@ -399,11 +399,13 @@ fn replace_native_binary_lockfile_catalog(
 /// non-interactive terminals must fail with an explicit message instead of
 /// hanging on stdin reads.
 async fn has_interactive_terminal() -> Bool {
-  let (exit_code, _, _) = @process.collect_output(
-    "sh",
-    ["-c", "test -t 0 && test -t 1"],
-  )
-  exit_code == 0
+  @process.run("sh", ["-c", "test -t 0 && test -t 1"]) == 0
+}
+
+/// Prompts through the controlling terminal because task runners keep stdin.
+async fn confirm_release() -> Bool {
+  let command = "printf 'Proceed with release? [y/N] ' > /dev/tty; IFS= read -r answer < /dev/tty; case \"$answer\" in y|Y|yes|Yes|YES) exit 0 ;; *) exit 1 ;; esac"
+  @process.run("sh", ["-c", command]) == 0
 }
 
 /// Filters a list of candidate paths down to the ones that currently exist.
@@ -559,12 +561,7 @@ async fn run_app() -> Int {
       )
       return 1
     }
-    @stdio.stdout.write("Proceed with release? [y/N] ")
-    let answer = match @stdio.stdin.read_until("\n") {
-      Some(input) => input.trim().to_lower()
-      None => ""
-    }
-    if answer != "y" && answer != "yes" {
+    if !confirm_release() {
       println("Aborted.")
       return 1
     }

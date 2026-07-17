@@ -2,6 +2,7 @@ import {
   defineTasks,
   installVscodeExtensionDependencies,
   moonScript,
+  moonScriptWithFreshRegistry,
   noCacheTask,
   runInPackages,
   runTask,
@@ -17,7 +18,9 @@ import {
  * catalog readable even as the repository gains more package families.
  */
 export const releaseTasks = defineTasks({
-  release: noCacheTask(moonScript("release", '"$@"'), { forwardArguments: true }),
+  release: noCacheTask(moonScriptWithFreshRegistry("release", '"$@"'), {
+    forwardArguments: true,
+  }),
   "publish:wasm": noCacheTask(
     `${moonScript("build_vize_wasm_package")} && ${moonScript("publish_npm_package", "npm/wasm")}`,
   ),
