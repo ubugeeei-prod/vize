@@ -101,7 +101,7 @@ function run(command, commandArgs, options = {}) {
   if (result.error) {
     throw result.error;
   }
-  if (result.status !== 0 && !options.allowFailure) {
+  if (result.status !== 0) {
     throw new Error(`${command} ${commandArgs.join(" ")} exited with ${result.status}`);
   }
   return result;
@@ -136,17 +136,22 @@ function benchSide({ side, checkoutDir, baseline, targetDir, suites }) {
   }
 }
 
-function critcmpCompare({ targetDir, threshold }) {
-  // `--target-dir` points criterion at <dir>/criterion; critcmp reads the same
-  // location via CRITERION_HOME so both baselines resolve without extra flags.
-  const env = { CRITERION_HOME: resolve(targetDir, "criterion") };
-  const args = ["base", "head"];
+export function critcmpArgs({ targetDir, threshold }) {
+  const args = ["--target-dir", targetDir, "base", "head"];
   if (threshold != null) {
     // critcmp's own threshold only colorizes; we still parse the table below to
     // decide pass/fail so the behaviour is identical across critcmp versions.
     args.push("--threshold", String(threshold));
   }
-  const result = run("critcmp", args, { capture: true, allowFailure: true, env });
+  return args;
+}
+
+function critcmpCompare({ targetDir, threshold }) {
+  // critcmp 0.1.8 does not read CRITERION_HOME. Point it at the same Cargo
+  // target directory used by both benchmark runs; critcmp appends `criterion`
+  // itself and fails the lane if either baseline is unavailable.
+  const args = critcmpArgs({ targetDir, threshold });
+  const result = run("critcmp", args, { capture: true });
   return `${result.stdout ?? ""}${result.stderr ?? ""}`;
 }
 

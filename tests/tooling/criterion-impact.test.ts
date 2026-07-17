@@ -7,6 +7,7 @@ import { test } from "node:test";
 
 import {
   CRITERION_SUITES,
+  critcmpArgs,
   renderSummary,
   resolveSuiteSelection,
 } from "../../bench/criterion-ab.mjs";
@@ -163,6 +164,23 @@ test("Criterion driver validates scoped suite manifests", () => {
     () => resolveSuiteSelection({ selected: ["unknown"], reason: "fixture" }),
     /unknown suites/,
   );
+});
+
+test("Criterion driver points critcmp at the shared Cargo target", () => {
+  assert.deepEqual(critcmpArgs({ targetDir: "/work/head/target", threshold: undefined }), [
+    "--target-dir",
+    "/work/head/target",
+    "base",
+    "head",
+  ]);
+  assert.deepEqual(critcmpArgs({ targetDir: "/work/head/target", threshold: 10 }), [
+    "--target-dir",
+    "/work/head/target",
+    "base",
+    "head",
+    "--threshold",
+    "10",
+  ]);
 });
 
 test("Criterion driver reports a useful summary when no suite is affected", () => {
