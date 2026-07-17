@@ -396,10 +396,10 @@ fn replace_native_binary_lockfile_catalog(
 
 /// Detects whether the script can safely prompt the user for confirmation.
 /// The release script is allowed to be interactive when run locally, but CI and
-/// non-interactive terminals must fail with an explicit message instead of
+/// sessions without a controlling terminal must fail explicitly instead of
 /// hanging on stdin reads.
 async fn has_interactive_terminal() -> Bool {
-  @process.run("sh", ["-c", "test -t 0 && test -t 1"]) == 0
+  @process.run("sh", ["-c", ": </dev/tty >/dev/tty"]) == 0
 }
 
 /// Prompts through the controlling terminal because task runners keep stdin.

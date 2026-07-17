@@ -10,6 +10,36 @@ import sys
 import time
 
 
+def wait_for_child(child_pid: int, timeout: float) -> bool:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            waited_pid, _ = os.waitpid(child_pid, os.WNOHANG)
+        except ChildProcessError:
+            return True
+        if waited_pid == child_pid:
+            return True
+        time.sleep(0.05)
+    return False
+
+
+def terminate_process_group(child_pid: int) -> None:
+    try:
+        os.killpg(child_pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    wait_for_child(child_pid, 1)
+    try:
+        os.killpg(child_pid, 0)
+    except ProcessLookupError:
+        return
+    try:
+        os.killpg(child_pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    wait_for_child(child_pid, 1)
+
+
 def main() -> int:
     if len(sys.argv) < 4:
         raise SystemExit("usage: pty-command.py PROMPT RESPONSE COMMAND [ARG ...]")
@@ -27,8 +57,8 @@ def main() -> int:
     status = None
     while status is None:
         if time.monotonic() >= deadline:
-            os.kill(child_pid, signal.SIGTERM)
-            os.waitpid(child_pid, 0)
+            terminate_process_group(child_pid)
+            os.close(terminal_fd)
             return 124
 
         readable, _, _ = select.select([terminal_fd], [], [], 0.1)
