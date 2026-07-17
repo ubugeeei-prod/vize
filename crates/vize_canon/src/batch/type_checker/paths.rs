@@ -30,6 +30,7 @@ pub(super) fn refresh_paths(
     project_root: &Path,
     paths: &mut Vec<PathBuf>,
     changed: &[PathBuf],
+    allow_new_paths: bool,
 ) -> CorsaResult<()> {
     for changed_path in changed {
         let candidate = if changed_path.is_absolute() {
@@ -45,7 +46,8 @@ pub(super) fn refresh_paths(
         if !candidate.starts_with(project_root) {
             return Err(CorsaError::PathError { path: candidate });
         }
-        if !paths.iter().any(|path| path == &candidate)
+        if allow_new_paths
+            && !paths.iter().any(|path| path == &candidate)
             && candidate.is_file()
             && is_supported_input(&candidate)
         {

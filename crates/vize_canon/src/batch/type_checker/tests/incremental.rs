@@ -204,6 +204,18 @@ const outside: number = 'must stay outside the scan'
         broken.diagnostics
     );
 
+    let outside_change = checker
+        .check_incremental(std::slice::from_ref(&outside_path))
+        .expect("out-of-scope incremental check should complete");
+    assert!(
+        outside_change
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.file != outside_path),
+        "a changed path expanded the explicit scan scope: {:#?}",
+        outside_change.diagnostics
+    );
+
     let _ = std::fs::remove_dir_all(&project_root);
 }
 

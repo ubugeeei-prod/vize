@@ -116,6 +116,12 @@ pub struct BatchTypeChecker {
     scanned: bool,
     /// Number of parallel Corsa CLI processes; `None` auto-tunes.
     server_count: Option<usize>,
+    /// Whether source discovery came from a project-wide scan.
+    ///
+    /// Only project scans may grow when incremental callers report a newly
+    /// created path. Explicit `scan_paths` scopes stay closed over their
+    /// original membership.
+    project_wide_scan: bool,
     /// Source membership carried across incremental checks.
     ///
     /// The initial scan remains immutable so full checks preserve their
@@ -156,6 +162,7 @@ impl BatchTypeChecker {
             executor,
             scanned: false,
             server_count: None,
+            project_wide_scan: false,
             incremental_paths: Mutex::new(None),
         })
     }
@@ -244,6 +251,7 @@ impl BatchTypeChecker {
         let paths = collect_project_paths(self.project.project_root())?;
         self.project.register_paths(&paths)?;
         self.scanned = true;
+        self.project_wide_scan = true;
         *self
             .incremental_paths
             .get_mut()
@@ -322,7 +330,12 @@ impl TypeChecker for BatchTypeChecker {
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         let paths = incremental_paths
             .get_or_insert_with(|| self.project.registered_original_paths_sorted());
-        refresh_paths(self.project.project_root(), paths, changed)?;
+        refresh_paths(
+            self.project.project_root(),
+            paths,
+            changed,
+            self.project_wide_scan,
+        )?;
 
         let mut refreshed = self.project.empty_with_same_options()?;
         refreshed.register_paths(paths)?;
