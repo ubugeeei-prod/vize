@@ -29,6 +29,8 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use vize_carton::{FxHashMap, String, cstr};
 
+mod diagnostics;
+
 /// JSON-RPC Request
 #[derive(Debug, Deserialize)]
 pub struct JsonRpcRequest {
@@ -334,7 +336,7 @@ impl CorsaServer {
         .map_err(|e| cstr!("Failed to parse SFC: {}", e.message))?;
 
         // Run Corsa on the virtual TypeScript through the project-session API.
-        let mut diagnostics = self.run_corsa(&project)?;
+        let mut diagnostics = self.run_corsa(&project, content)?;
 
         // Merge in Vue-specific compile errors (e.g. props destructure default type
         // mismatch) so the socket-mode check matches the direct `vize check` runner.
@@ -349,61 +351,6 @@ impl CorsaServer {
             virtual_ts,
             error_count,
         })
-    }
-
-    /// Run Corsa on TypeScript content and parse diagnostics via project sessions.
-    fn run_corsa(
-        &mut self,
-        project: &crate::corsa_bridge::CorsaVueVirtualProject,
-    ) -> Result<Vec<Diagnostic>, String> {
-        if self.corsa_client.is_none() {
-            let client = crate::corsa_client::CorsaProjectClient::new(
-                self.config.corsa_path.as_deref(),
-                self.config.working_dir.as_deref(),
-            )?;
-            self.corsa_client = Some(client);
-        }
-
-        let client = self
-            .corsa_client
-            .as_mut()
-            .expect("corsa_client must be initialized above");
-
-        let documents: Vec<(&str, &str)> = project
-            .documents
-            .iter()
-            .map(|(uri, content)| (uri.as_str(), content.as_str()))
-            .collect();
-        client.did_open_batch_fast(&documents)?;
-        let corsa_diagnostics = client.request_diagnostics(&project.host.request_uri)?;
-
-        // Convert Corsa's editor-style diagnostics to the server payload.
-        let diagnostics = corsa_diagnostics
-            .into_iter()
-            .map(|d| {
-                let severity: String = match d.severity {
-                    Some(1) => "error".into(),
-                    Some(2) => "warning".into(),
-                    Some(3) => "info".into(),
-                    Some(4) => "hint".into(),
-                    _ => "error".into(),
-                };
-                let code = d.code.map(|c| match c {
-                    serde_json::Value::Number(n) => cstr!("TS{n}"),
-                    serde_json::Value::String(s) => s.into(),
-                    _ => cstr!("{c:?}"),
-                });
-                Diagnostic {
-                    message: d.message,
-                    severity,
-                    line: d.range.start.line + 1,
-                    column: d.range.start.character + 1,
-                    code,
-                }
-            })
-            .collect();
-
-        Ok(diagnostics)
     }
 
     fn working_dir(&self) -> PathBuf {

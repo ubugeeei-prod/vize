@@ -79,6 +79,33 @@ impl<'a> LineIndex<'a> {
         let (line, character) = self.line_col(offset);
         Position { line, character }
     }
+
+    /// Convert an LSP `(line, UTF-16 column)` position to a byte offset.
+    pub fn line_col_to_offset(&self, line: u32, column: u32) -> Option<usize> {
+        let line = usize::try_from(line).ok()?;
+        let start = *self.line_starts.get(line)?;
+        let end = self
+            .line_starts
+            .get(line + 1)
+            .map(|next| next.saturating_sub(1))
+            .unwrap_or(self.source.len());
+        let mut current_column = 0u32;
+        let mut offset = start;
+
+        if column == 0 {
+            return Some(offset);
+        }
+
+        for ch in self.source[start..end].chars() {
+            offset += ch.len_utf8();
+            current_column += ch.len_utf16() as u32;
+            if current_column >= column {
+                return (current_column == column).then_some(offset);
+            }
+        }
+
+        (current_column == column).then_some(offset)
+    }
 }
 
 /// Convert a byte offset to `(line, column)`, both 0-indexed for LSP, with
@@ -125,6 +152,18 @@ mod tests {
         assert_eq!(offset_to_line_col(source, emoji_bytes), (0, 2));
         // Just after the trailing 'x': 3 UTF-16 code units.
         assert_eq!(offset_to_line_col(source, emoji_bytes + 1), (0, 3));
+    }
+
+    #[test]
+    fn converts_utf16_positions_back_to_byte_offsets() {
+        let source = "plain\n😀x";
+        let index = LineIndex::new(source);
+
+        assert_eq!(index.line_col_to_offset(1, 0), Some(6));
+        assert_eq!(index.line_col_to_offset(1, 2), Some(10));
+        assert_eq!(index.line_col_to_offset(1, 3), Some(11));
+        assert_eq!(index.line_col_to_offset(1, 1), None);
+        assert_eq!(index.line_col_to_offset(2, 0), None);
     }
 
     #[test]

@@ -129,6 +129,7 @@ pub(super) fn write_temp_tsconfig(temp_dir_path: &Path) -> Result<(), String> {
             "target": "ES2022",
             "module": "ESNext",
             "moduleResolution": "bundler",
+            "allowImportingTsExtensions": true,
             "lib": ["ES2022", "DOM", "DOM.Iterable"],
             "strict": true,
             "noEmit": true,
