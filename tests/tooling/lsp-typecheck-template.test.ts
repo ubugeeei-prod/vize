@@ -126,7 +126,7 @@ const button = document.createElement("button")
   }
 });
 
-test("vize lsp refreshes an open parent after a child prop type changes", async (t) => {
+test("vize lsp publishes and clears exact parent diagnostics after child prop edits", async (t) => {
   const corsaPath = resolveTsgoBinary();
   if (corsaPath == null) {
     t.skip("tsgo binary not found; skipping LSP typecheck test");
@@ -182,7 +182,7 @@ import Child from './Child.vue'
 </script>
 
 <template>
-  <Child :count="'one'" />
+  <Child data-label="😀" :count="'one'" />
 </template>
 `;
     const childPath = path.join(sourceDir, "Child.vue");
@@ -195,9 +195,12 @@ import Child from './Child.vue'
     session.notify("textDocument/didOpen", {
       textDocument: { uri: childUri, languageId: "vue", version: 1, text: initialChild },
     });
-    await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
-      isDiagnosticsForUri(params, childUri),
-    );
+    const initialChildPublish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => isDiagnosticsForUri(params, childUri),
+    )) as PublishDiagnosticsParams;
+    assert.equal(initialChildPublish.version, 1);
+    assert.deepEqual(initialChildPublish.diagnostics, []);
     session.notify("textDocument/didOpen", {
       textDocument: { uri: parentUri, languageId: "vue", version: 1, text: parent },
     });
@@ -205,24 +208,56 @@ import Child from './Child.vue'
       "textDocument/publishDiagnostics",
       (params) => isDiagnosticsForUri(params, parentUri),
     )) as PublishDiagnosticsParams;
-    assert.equal(
-      initialParent.diagnostics.some((diagnostic) =>
-        diagnostic.message?.includes("not assignable"),
-      ),
-      false,
-      initialParent.diagnostics.map((diagnostic) => diagnostic.message).join("\n"),
-    );
+    assert.equal(initialParent.version, 1);
+    assert.deepEqual(initialParent.diagnostics, []);
 
     session.notify("textDocument/didChange", {
       textDocument: { uri: childUri, version: 2 },
       contentChanges: [{ text: changedChild }],
     });
-    await session.waitForNotification(
+    const changedParent = (await session.waitForNotification(
       "textDocument/publishDiagnostics",
       (params) =>
         isDiagnosticsForUri(params, parentUri) &&
         params.diagnostics.some((diagnostic) => diagnostic.message?.includes("not assignable")),
-    );
+    )) as PublishDiagnosticsParams;
+    const bindingStart = offsetToPosition(parent, parent.indexOf("'one'"));
+    assert.equal(changedParent.version, 1);
+    assert.deepEqual(changedParent.diagnostics, [
+      {
+        code: 2322,
+        message: "Type 'string' is not assignable to type 'number'.",
+        range: {
+          start: bindingStart,
+          end: { line: bindingStart.line, character: bindingStart.character + "'one'".length },
+        },
+        severity: 1,
+        source: "vize/types",
+      },
+    ]);
+    const changedChildPublish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => isDiagnosticsForUri(params, childUri) && params.version === 2,
+    )) as PublishDiagnosticsParams;
+    assert.deepEqual(changedChildPublish.diagnostics, []);
+
+    session.notify("textDocument/didChange", {
+      textDocument: { uri: childUri, version: 3 },
+      contentChanges: [{ text: initialChild }],
+    });
+    const repairedParent = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) =>
+        isDiagnosticsForUri(params, parentUri) &&
+        !params.diagnostics.some((diagnostic) => diagnostic.message?.includes("not assignable")),
+    )) as PublishDiagnosticsParams;
+    assert.equal(repairedParent.version, 1);
+    assert.deepEqual(repairedParent.diagnostics, []);
+    const repairedChildPublish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => isDiagnosticsForUri(params, childUri) && params.version === 3,
+    )) as PublishDiagnosticsParams;
+    assert.deepEqual(repairedChildPublish.diagnostics, []);
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
