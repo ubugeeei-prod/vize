@@ -1,6 +1,4 @@
-//! Definition provider for Vue SFC files.
-//!
-//! Provides go-to-definition for template bindings, components, imports, and Corsa.
+//! Go-to-definition for Vue SFC template bindings, components, imports, and Corsa.
 pub mod bindings;
 #[cfg(all(test, feature = "native"))]
 mod corsa_tests;
@@ -9,6 +7,7 @@ mod html;
 #[cfg(all(test, feature = "native"))]
 mod html_tests;
 mod inline_art;
+mod module_specifier;
 pub(crate) mod script;
 mod service;
 mod template;

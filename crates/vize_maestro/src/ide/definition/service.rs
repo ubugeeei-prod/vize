@@ -16,7 +16,7 @@ use tower_lsp::lsp_types::GotoDefinitionResponse;
 #[cfg(feature = "native")]
 use vize_canon::CorsaBridge;
 
-use super::{IdeContext, helpers, script, template};
+use super::{IdeContext, helpers, module_specifier, script, template};
 #[cfg(feature = "native")]
 use crate::ide::corsa_support;
 use crate::ide::is_component_tag;
@@ -27,7 +27,9 @@ impl super::DefinitionService {
     pub fn definition(ctx: &IdeContext) -> Option<GotoDefinitionResponse> {
         match ctx.block_type? {
             BlockType::Template => Self::definition_in_template_sync(ctx),
-            BlockType::Script | BlockType::ScriptSetup => script::definition_in_script(ctx),
+            BlockType::Script | BlockType::ScriptSetup => {
+                module_specifier::definition(ctx).or_else(|| script::definition_in_script(ctx))
+            }
             BlockType::Style(_) => script::definition_in_style(ctx),
             BlockType::Art(ArtCursorPosition::VariantTemplate(_)) => {
                 Self::definition_in_template_sync(ctx)
@@ -194,6 +196,10 @@ impl super::DefinitionService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
+        if let Some(definition) = module_specifier::definition(ctx) {
+            return Some(definition);
+        }
+
         if let Some(definition) = script::definition_in_script(ctx) {
             let is_define_art_source =
                 crate::ide::musea::define_art_source_at_offset(&ctx.content, ctx.uri, ctx.offset)
