@@ -12,6 +12,7 @@ mod legacy_nuxt2_page_context;
 mod no_check_template_bindings;
 mod options_api_props_spread;
 mod options_api_setup_spread;
+mod slot_component_bindings;
 mod unused_refs;
 mod vif_chain;
 fn assert_virtual_ts_snapshot(name: &str, value: &str) {
@@ -999,49 +1000,6 @@ function handleUpdate(value: string) {
         output.code.as_str(),
     );
 }
-
-#[test]
-fn test_kebab_case_slot_host_uses_pascal_case_setup_binding() {
-    use vize_croquis::{Analyzer, AnalyzerOptions};
-
-    let script = r#"import { ElBadge } from 'element-plus'"#;
-    let template =
-        r#"<el-badge><template #content="{ value }">{{ value.missing }}</template></el-badge>"#;
-
-    let allocator = vize_carton::Bump::new();
-    let (root, _) = vize_armature::parse(&allocator, template);
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-    analyzer.analyze_script_setup(script);
-    analyzer.analyze_template(&root);
-    let summary = analyzer.finish();
-
-    let output = generate_virtual_ts_with_offsets(
-        &summary,
-        Some(script),
-        Some(&root),
-        0,
-        0,
-        &Default::default(),
-    );
-
-    assert_eq!(
-        output
-            .code
-            .matches("typeof ElBadge extends { new (): { $slots: infer __S } }")
-            .count(),
-        1,
-        "{}",
-        output.code,
-    );
-    assert!(
-        !output
-            .code
-            .contains("typeof el_badge extends { new (): { $slots: infer __S } }"),
-        "{}",
-        output.code,
-    );
-}
-
 #[test]
 fn test_check_props_option_disables_component_prop_checks() {
     use vize_croquis::{Analyzer, AnalyzerOptions};

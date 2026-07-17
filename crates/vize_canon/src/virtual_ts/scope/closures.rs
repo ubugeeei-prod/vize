@@ -163,7 +163,6 @@ pub(crate) fn generate_scope_closures(
             }
             continue;
         }
-
         let ctx = ScopeGenContext {
             summary,
             virtual_ts_options,
@@ -307,7 +306,6 @@ fn generate_scope_node(
         }
         ScopeData::VSlot(data) => {
             append!(*ts, "\n{indent}// v-slot scope: #{}\n", data.name);
-
             let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
             let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
             let props_type = slot_props_type(
@@ -324,7 +322,6 @@ fn generate_scope_node(
                 props_pattern,
                 &props_type,
             );
-            // Mark slot prop variables as used
             if data.prop_names.is_empty() {
                 // Simple identifier (no destructuring)
                 append!(*ts, "{inner_indent}void {props_pattern};\n");
