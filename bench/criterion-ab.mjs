@@ -134,6 +134,14 @@ export function cargoBenchArgs({ pkg, benches, baseline, targetDir }) {
   return args;
 }
 
+export function criterionBenchRunOptions({ checkoutDir, targetDir }) {
+  return {
+    cwd: checkoutDir,
+    env: criterionEnvironment(targetDir),
+    capture: true,
+  };
+}
+
 function benchSide({ side, checkoutDir, baseline, targetDir, suites }) {
   for (const suite of suites) {
     const args = cargoBenchArgs({
@@ -143,10 +151,7 @@ function benchSide({ side, checkoutDir, baseline, targetDir, suites }) {
       targetDir,
     });
     console.log(`\n==> [${side}] cargo ${args.join(" ")}`);
-    run("cargo", args, {
-      cwd: checkoutDir,
-      env: criterionEnvironment(targetDir),
-    });
+    run("cargo", args, criterionBenchRunOptions({ checkoutDir, targetDir }));
   }
 }
 

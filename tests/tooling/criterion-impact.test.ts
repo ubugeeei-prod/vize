@@ -7,6 +7,7 @@ import { test } from "node:test";
 
 import {
   CRITERION_SUITES,
+  criterionBenchRunOptions,
   renderSummary,
   resolveSuiteSelection,
 } from "../../bench/criterion-ab.mjs";
@@ -174,6 +175,17 @@ test("Criterion driver validates scoped suite manifests", () => {
 });
 
 test("Criterion driver snapshots both baselines before comparing them", () => {
+  assert.deepEqual(
+    criterionBenchRunOptions({
+      checkoutDir: "/work/head",
+      targetDir: "/work/head/target",
+    }),
+    {
+      cwd: "/work/head",
+      env: { CARGO_TARGET_DIR: "/work/head/target" },
+      capture: true,
+    },
+  );
   assert.deepEqual(criterionEnvironment("/work/head/target"), {
     CARGO_TARGET_DIR: "/work/head/target",
   });
