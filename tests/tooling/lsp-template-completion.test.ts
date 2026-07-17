@@ -3,8 +3,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
-import { completionLabels, offsetToPosition } from "./support/lsp/assertions.ts";
+import {
+  completionLabels,
+  isDiagnosticsForUri,
+  offsetToPosition,
+} from "./support/lsp/assertions.ts";
 import { testOutputRoot } from "./support/lsp/paths.ts";
+import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
 
 // Template completion contexts are parse-driven (typecheck:false, no corsa).
@@ -27,8 +32,9 @@ defineProps<{ diskOnly: string }>()
     const openChildSource = `<script setup lang="ts">
 defineProps<{ label: string; disabled?: boolean }>()
 </script>
-<template><button /></template>
+<template><button></button></template>
 `;
+    const changedChildSource = openChildSource.replace("disabled?: boolean", "loading?: number");
     fs.writeFileSync(path.join(workspaceDir, "Child.vue"), childSource, "utf8");
 
     // Two spaces after <Child so the cursor sits inside the opening tag,
@@ -145,26 +151,58 @@ const count = ref(0)
 
     await session.waitForNotification("textDocument/publishDiagnostics");
 
-    await t.test(
-      "inside an opening component tag surfaces the child's props plus directives",
-      async () => {
-        const offset = parentSource.indexOf("<Child ") + "<Child ".length;
+    await t.test("component prop completion tracks unsaved child edits and repair", async () => {
+      const offset = parentSource.indexOf("<Child ") + "<Child ".length;
+      const requestLabels = async (): Promise<string[]> => {
         const response = await session.request("textDocument/completion", {
           textDocument: { uri: parentUri },
           position: offsetToPosition(parentSource, offset),
         });
-
-        const labels = completionLabels(
+        return completionLabels(
           response as Array<{ label: string }> | { items?: Array<{ label: string }> } | null,
         );
-        assert.ok(labels.includes("label"), labels.join(", "));
-        assert.ok(labels.includes("disabled"), labels.join(", "));
-        assert.ok(!labels.includes("disk-only"), labels.join(", "));
-        assert.ok(labels.includes("v-if"), labels.join(", "));
-        assert.ok(labels.includes(":"), labels.join(", "));
-        assert.ok(!labels.includes("Transition"), labels.join(", "));
-      },
-    );
+      };
+
+      const labels = await requestLabels();
+      assert.ok(labels.includes("label"), labels.join(", "));
+      assert.ok(labels.includes("disabled"), labels.join(", "));
+      assert.ok(!labels.includes("disk-only"), labels.join(", "));
+      assert.ok(labels.includes("v-if"), labels.join(", "));
+      assert.ok(labels.includes(":"), labels.join(", "));
+      assert.ok(!labels.includes("Transition"), labels.join(", "));
+
+      session.notify("textDocument/didChange", {
+        textDocument: { uri: childUri, version: 2 },
+        contentChanges: [{ text: changedChildSource }],
+      });
+      const changedPublish = (await session.waitForNotification(
+        "textDocument/publishDiagnostics",
+        (params) => isDiagnosticsForUri(params, childUri) && params.version === 2,
+      )) as PublishDiagnosticsParams;
+      assert.deepEqual(changedPublish.diagnostics, []);
+
+      const changedLabels = await requestLabels();
+      assert.ok(changedLabels.includes("label"), changedLabels.join(", "));
+      assert.ok(changedLabels.includes("loading"), changedLabels.join(", "));
+      assert.ok(!changedLabels.includes("disabled"), changedLabels.join(", "));
+      assert.ok(!changedLabels.includes("disk-only"), changedLabels.join(", "));
+
+      session.notify("textDocument/didChange", {
+        textDocument: { uri: childUri, version: 3 },
+        contentChanges: [{ text: openChildSource }],
+      });
+      const repairedPublish = (await session.waitForNotification(
+        "textDocument/publishDiagnostics",
+        (params) => isDiagnosticsForUri(params, childUri) && params.version === 3,
+      )) as PublishDiagnosticsParams;
+      assert.deepEqual(repairedPublish.diagnostics, []);
+
+      const repairedLabels = await requestLabels();
+      assert.ok(repairedLabels.includes("label"), repairedLabels.join(", "));
+      assert.ok(repairedLabels.includes("disabled"), repairedLabels.join(", "));
+      assert.ok(!repairedLabels.includes("loading"), repairedLabels.join(", "));
+      assert.ok(!repairedLabels.includes("disk-only"), repairedLabels.join(", "));
+    });
 
     await t.test("after '<' surfaces built-in components and directive snippets", async () => {
       const offset = ltSource.indexOf("  <") + "  <".length;
