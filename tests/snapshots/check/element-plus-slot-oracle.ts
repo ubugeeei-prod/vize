@@ -186,10 +186,7 @@ function assertBrokenParity(vize: VizeCheckResult, vueTsc: CommandResult): void 
     { diagnostics: [], file: "element-plus-global.d.ts" },
     JSON.stringify(vize.report),
   );
-  assert.match(
-    vize.report.files[0]?.diagnostics.join("\n") ?? "",
-    /TS2339.*missing.*string/i,
-  );
+  assert.match(vize.report.files[0]?.diagnostics.join("\n") ?? "", /TS2339.*missing.*string/i);
   assert.equal(vueTsc.status, 2, vueTsc.stderr || vueTsc.stdout);
   const output = `${vueTsc.stdout}\n${vueTsc.stderr}`;
   assert.equal([...output.matchAll(/error TS2339:/g)].length, 1, output);
