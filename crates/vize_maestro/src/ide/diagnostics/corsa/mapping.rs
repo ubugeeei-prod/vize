@@ -25,7 +25,7 @@ pub(super) fn map_diagnostic_with_source_mappings(
     let end_offset = import_source_map.get_original_offset(end_offset_post as u32) as usize;
     let start_mapping = mapping_for_generated_offset(mappings, start_offset)?;
     let src_start = map_generated_offset_to_source(start_mapping, start_offset);
-    let src_end = mapping_for_generated_offset(mappings, end_offset)
+    let src_end = mapping_for_diagnostic_end_offset(mappings, start_mapping, end_offset)
         .map(|mapping| map_generated_offset_to_source(mapping, end_offset))
         .unwrap_or_else(|| {
             let generated_len = end_offset.saturating_sub(start_offset);
@@ -46,13 +46,25 @@ fn mapping_for_generated_offset(
 ) -> Option<&vize_canon::virtual_ts::VizeMapping> {
     mappings
         .iter()
-        .filter(|mapping| offset >= mapping.gen_range.start && offset <= mapping.gen_range.end)
+        .filter(|mapping| mapping.gen_range.contains(&offset))
         .min_by_key(|mapping| {
             mapping
                 .gen_range
                 .end
                 .saturating_sub(mapping.gen_range.start)
         })
+}
+
+fn mapping_for_diagnostic_end_offset<'a>(
+    mappings: &'a [vize_canon::virtual_ts::VizeMapping],
+    start_mapping: &'a vize_canon::virtual_ts::VizeMapping,
+    end_offset: usize,
+) -> Option<&'a vize_canon::virtual_ts::VizeMapping> {
+    if end_offset > start_mapping.gen_range.start && end_offset <= start_mapping.gen_range.end {
+        Some(start_mapping)
+    } else {
+        mapping_for_generated_offset(mappings, end_offset)
+    }
 }
 
 fn map_generated_offset_to_source(
@@ -145,7 +157,10 @@ pub(super) fn source_offset_to_position(source: &str, offset: usize) -> (u32, u3
 
 #[cfg(test)]
 mod tests {
-    use super::{map_generated_offset_to_source, mapping_for_generated_offset};
+    use super::{
+        map_generated_offset_to_source, mapping_for_diagnostic_end_offset,
+        mapping_for_generated_offset,
+    };
     use vize_canon::virtual_ts::{VizeMapping, VizeSubSpan};
 
     #[test]
@@ -182,6 +197,18 @@ mod tests {
         assert_eq!(
             mapping_for_generated_offset(&mappings, 30)
                 .expect("mapping present")
+                .src_range,
+            200..220
+        );
+        assert_eq!(
+            mapping_for_generated_offset(&mappings, 40)
+                .expect("mapping present")
+                .src_range,
+            0..100
+        );
+        assert_eq!(
+            mapping_for_diagnostic_end_offset(&mappings, &mappings[1], 40)
+                .expect("end mapping present")
                 .src_range,
             200..220
         );
