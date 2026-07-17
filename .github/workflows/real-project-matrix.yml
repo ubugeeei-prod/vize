@@ -49,7 +49,9 @@ jobs:
             echo "::error title=Empty fixture shard::shard $FIXTURE_SHARD_INDEX selected no projects"
             exit 1
           fi
-          git submodule update --init --recursive --depth 1 -- "${fixture_paths[@]}"
+          mkdir -p "$FIXTURE_REPORT_DIR"
+          printf '%s\n' "${fixture_paths[@]}" > "$FIXTURE_REPORT_DIR/selected-fixtures.txt"
+          git submodule update --init --depth 1 -- "${fixture_paths[@]}"
 
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:

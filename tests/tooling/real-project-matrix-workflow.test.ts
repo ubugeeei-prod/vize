@@ -61,7 +61,10 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(hydration?.run ?? "", /--list-fixture-paths/);
   assert.match(hydration?.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
   assert.match(hydration?.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
-  assert.match(hydration?.run ?? "", /git submodule update --init --recursive --depth 1/);
+  assert.match(hydration?.run ?? "", /mkdir -p "\$FIXTURE_REPORT_DIR"/);
+  assert.match(hydration?.run ?? "", /selected-fixtures\.txt/);
+  assert.match(hydration?.run ?? "", /git submodule update --init --depth 1/);
+  assert.doesNotMatch(hydration?.run ?? "", /--recursive/);
   assert.match(hydration?.run ?? "", /"\$\{fixture_paths\[@\]\}"/);
   assert.match(run?.run ?? "", /tools\/fixtures\/tool-matrix-report\.mjs/);
   assert.match(run?.run ?? "", /--vize-bin target\/ci\/vize/);
