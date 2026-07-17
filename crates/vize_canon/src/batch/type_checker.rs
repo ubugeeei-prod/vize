@@ -1,6 +1,7 @@
 //! TypeChecker trait and BatchTypeChecker implementation.
 
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 
 use super::Diagnostic;
 use super::error::{CorsaError, CorsaResult};
@@ -10,7 +11,7 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 use vize_carton::String;
 
 mod paths;
-use paths::{collect_project_paths, refreshed_paths};
+use paths::{collect_project_paths, refresh_paths};
 
 /// Result of type checking.
 #[derive(Debug, Default)]
@@ -115,6 +116,13 @@ pub struct BatchTypeChecker {
     scanned: bool,
     /// Number of parallel Corsa CLI processes; `None` auto-tunes.
     server_count: Option<usize>,
+    /// Source membership carried across incremental checks.
+    ///
+    /// The initial scan remains immutable so full checks preserve their
+    /// original scope. Incremental checks evolve this separate path set as
+    /// files are created and deleted, preventing a newly added file from
+    /// disappearing on the next unrelated edit.
+    incremental_paths: Mutex<Option<Vec<PathBuf>>>,
 }
 
 impl BatchTypeChecker {
@@ -148,6 +156,7 @@ impl BatchTypeChecker {
             executor,
             scanned: false,
             server_count: None,
+            incremental_paths: Mutex::new(None),
         })
     }
 
@@ -223,6 +232,10 @@ impl BatchTypeChecker {
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
         self.project.register_paths(paths)?;
         self.scanned = true;
+        *self
+            .incremental_paths
+            .get_mut()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = None;
         Ok(())
     }
 
@@ -231,6 +244,10 @@ impl BatchTypeChecker {
         let paths = collect_project_paths(self.project.project_root())?;
         self.project.register_paths(&paths)?;
         self.scanned = true;
+        *self
+            .incremental_paths
+            .get_mut()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = None;
         Ok(())
     }
 
@@ -299,9 +316,16 @@ impl TypeChecker for BatchTypeChecker {
         // checked against the stale virtual files captured by the initial scan.
         // A dependency-aware persistent Corsa session can optimize this path
         // without weakening this observable contract.
+        let mut incremental_paths = self
+            .incremental_paths
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let paths = incremental_paths
+            .get_or_insert_with(|| self.project.registered_original_paths_sorted());
+        refresh_paths(self.project.project_root(), paths, changed)?;
+
         let mut refreshed = self.project.empty_with_same_options()?;
-        let paths = refreshed_paths(&self.project, changed)?;
-        refreshed.register_paths(&paths)?;
+        refreshed.register_paths(paths)?;
         self.check_registered_project(&refreshed)
     }
 }

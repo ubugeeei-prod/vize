@@ -4,7 +4,6 @@ use std::path::{Path, PathBuf};
 
 use super::super::declaration_path::is_declaration_file;
 use super::super::error::{CorsaError, CorsaResult};
-use super::super::virtual_project::VirtualProject;
 
 pub(super) fn collect_project_paths(project_root: &Path) -> CorsaResult<Vec<PathBuf>> {
     let mut paths = Vec::new();
@@ -27,20 +26,18 @@ pub(super) fn collect_project_paths(project_root: &Path) -> CorsaResult<Vec<Path
     Ok(paths)
 }
 
-pub(super) fn refreshed_paths(
-    project: &VirtualProject,
+pub(super) fn refresh_paths(
+    project_root: &Path,
+    paths: &mut Vec<PathBuf>,
     changed: &[PathBuf],
-) -> CorsaResult<Vec<PathBuf>> {
-    let project_root = project.project_root();
-    let mut paths = project.registered_original_paths_sorted();
-
+) -> CorsaResult<()> {
     for changed_path in changed {
         let candidate = if changed_path.is_absolute() {
             changed_path.clone()
         } else {
             project_root.join(changed_path)
         };
-        if paths.iter().any(|path| path == &candidate) || !candidate.exists() {
+        if !candidate.exists() {
             continue;
         }
 
@@ -48,7 +45,10 @@ pub(super) fn refreshed_paths(
         if !candidate.starts_with(project_root) {
             return Err(CorsaError::PathError { path: candidate });
         }
-        if candidate.is_file() && is_supported_input(&candidate) {
+        if !paths.iter().any(|path| path == &candidate)
+            && candidate.is_file()
+            && is_supported_input(&candidate)
+        {
             paths.push(candidate);
         }
     }
@@ -56,7 +56,7 @@ pub(super) fn refreshed_paths(
     paths.retain(|path| path.is_file());
     paths.sort();
     paths.dedup();
-    Ok(paths)
+    Ok(())
 }
 
 fn is_supported_input(path: &Path) -> bool {
