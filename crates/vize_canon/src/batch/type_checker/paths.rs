@@ -1,9 +1,66 @@
 //! Source discovery and refresh scope for batch type checking.
 
 use std::path::{Path, PathBuf};
+use std::sync::{Mutex, MutexGuard};
 
 use super::super::declaration_path::is_declaration_file;
 use super::super::error::{CorsaError, CorsaResult};
+use super::super::virtual_project::VirtualProject;
+
+/// Source membership carried across incremental checks.
+///
+/// The initial virtual project stays immutable so full checks preserve their
+/// original scope. This state evolves separately as project-wide scans observe
+/// creates and all scans observe deletes. Explicit `scan_paths` scopes never
+/// grow from an out-of-scope change notification.
+pub(super) struct IncrementalPaths {
+    allow_new_paths: bool,
+    paths: Mutex<Vec<PathBuf>>,
+}
+
+impl IncrementalPaths {
+    pub(super) fn new() -> Self {
+        Self {
+            allow_new_paths: false,
+            paths: Mutex::new(Vec::new()),
+        }
+    }
+
+    pub(super) fn after_explicit_scan(&mut self, project: &VirtualProject) {
+        self.replace_paths(project);
+    }
+
+    pub(super) fn after_project_scan(&mut self, project: &VirtualProject) {
+        self.allow_new_paths = true;
+        self.replace_paths(project);
+    }
+
+    pub(super) fn refresh<'a>(
+        &'a self,
+        project: &VirtualProject,
+        changed: &[PathBuf],
+    ) -> CorsaResult<MutexGuard<'a, Vec<PathBuf>>> {
+        let mut paths = self
+            .paths
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        refresh_paths(
+            project.project_root(),
+            &mut paths,
+            changed,
+            self.allow_new_paths,
+        )?;
+        Ok(paths)
+    }
+
+    fn replace_paths(&mut self, project: &VirtualProject) {
+        *self
+            .paths
+            .get_mut()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) =
+            project.registered_original_paths_sorted();
+    }
+}
 
 pub(super) fn collect_project_paths(project_root: &Path) -> CorsaResult<Vec<PathBuf>> {
     let mut paths = Vec::new();
