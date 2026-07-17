@@ -1,0 +1,107 @@
+name: Real Project Matrix
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly full ecosystem sweep. Manual dispatches provide on-demand release evidence.
+    - cron: "37 5 * * 0"
+
+concurrency:
+  group: real-project-matrix-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  real-project-matrix:
+    name: real projects (${{ matrix.shard }}/11)
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    env:
+      FIXTURE_SHARD_COUNT: "11"
+      FIXTURE_SHARD_INDEX: ${{ matrix.shard }}
+      FIXTURE_REPORT_DIR: real-project-results/shard-${{ matrix.shard }}
+    steps:
+      - name: Checkout matrix commit
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Select and hydrate fixture shard
+        shell: bash
+        run: |
+          mapfile -t fixture_paths < <(
+            node tools/fixtures/tool-matrix-report.mjs \
+              --list-fixture-paths \
+              --shard-index "$FIXTURE_SHARD_INDEX" \
+              --shard-count "$FIXTURE_SHARD_COUNT"
+          )
+          if (( ${#fixture_paths[@]} == 0 )); then
+            echo "::error title=Empty fixture shard::shard $FIXTURE_SHARD_INDEX selected no projects"
+            exit 1
+          fi
+          git submodule update --init --recursive --depth 1 -- "${fixture_paths[@]}"
+
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+      - name: Setup Wild linker
+        uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: real-project-matrix-${{ matrix.shard }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+
+      - name: Install JavaScript dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+
+      - name: Build Vize CLI
+        run: cargo build --profile ci -p vize
+
+      - name: Exercise real projects with every core tool
+        run: |
+          node tools/fixtures/tool-matrix-report.mjs \
+            --shard-index "$FIXTURE_SHARD_INDEX" \
+            --shard-count "$FIXTURE_SHARD_COUNT" \
+            --vize-bin target/ci/vize \
+            --timeout-ms 600000 \
+            --output-dir "$FIXTURE_REPORT_DIR"
+
+      - name: Publish shard summary
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          if [[ -f "$FIXTURE_REPORT_DIR/summary.md" ]]; then
+            cat "$FIXTURE_REPORT_DIR/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No fixture tool report was produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload shard report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: real-project-matrix-${{ matrix.shard }}
+          path: ${{ env.FIXTURE_REPORT_DIR }}
+          if-no-files-found: error
+          retention-days: 30

@@ -1,0 +1,80 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { parse } from "yaml";
+
+import { readRepoFile } from "./support/github-workflows.ts";
+
+type WorkflowStep = {
+  if?: string;
+  name?: string;
+  run?: string;
+  uses?: string;
+  with?: Record<string, unknown>;
+};
+
+type WorkflowJob = {
+  env?: Record<string, string>;
+  "runs-on"?: string;
+  steps?: WorkflowStep[];
+  strategy?: { "fail-fast"?: boolean; matrix?: { shard?: number[] } };
+  "timeout-minutes"?: number;
+};
+
+test("real-project workflow schedules every balanced fixture shard", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "real-project-matrix.yml")) as {
+    concurrency?: { "cancel-in-progress"?: boolean; group?: string };
+    jobs?: Record<string, WorkflowJob>;
+    on?: { schedule?: Array<{ cron?: string }>; workflow_dispatch?: unknown };
+    permissions?: Record<string, string>;
+  };
+  const job = workflow.jobs?.["real-project-matrix"];
+
+  assert.ok(job);
+  assert.deepEqual(workflow.permissions, { contents: "read" });
+  assert.equal(workflow.on?.schedule?.[0]?.cron, "37 5 * * 0");
+  assert.ok("workflow_dispatch" in (workflow.on ?? {}));
+  assert.deepEqual(workflow.concurrency, {
+    group: "real-project-matrix-${{ github.ref }}",
+    "cancel-in-progress": true,
+  });
+  assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
+  assert.equal(job["timeout-minutes"], 120);
+  assert.equal(job.strategy?.["fail-fast"], false);
+  assert.deepEqual(job.strategy?.matrix?.shard, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  assert.deepEqual(job.env, {
+    FIXTURE_SHARD_COUNT: "11",
+    FIXTURE_SHARD_INDEX: "${{ matrix.shard }}",
+    FIXTURE_REPORT_DIR: "real-project-results/shard-${{ matrix.shard }}",
+  });
+});
+
+test("real-project workflow hydrates only its shard and runs every core tool", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "real-project-matrix.yml")) as {
+    jobs?: Record<string, WorkflowJob>;
+  };
+  const steps = workflow.jobs?.["real-project-matrix"]?.steps ?? [];
+  const hydration = steps.find((step) => step.name === "Select and hydrate fixture shard");
+  const run = steps.find((step) => step.name === "Exercise real projects with every core tool");
+  const summary = steps.find((step) => step.name === "Publish shard summary");
+  const upload = steps.find((step) => step.name === "Upload shard report");
+
+  assert.match(hydration?.run ?? "", /--list-fixture-paths/);
+  assert.match(hydration?.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
+  assert.match(hydration?.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
+  assert.match(hydration?.run ?? "", /git submodule update --init --recursive --depth 1/);
+  assert.match(hydration?.run ?? "", /"\$\{fixture_paths\[@\]\}"/);
+  assert.match(run?.run ?? "", /tools\/fixtures\/tool-matrix-report\.mjs/);
+  assert.match(run?.run ?? "", /--vize-bin target\/ci\/vize/);
+  assert.match(run?.run ?? "", /--timeout-ms 600000/);
+  assert.match(run?.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
+  assert.equal(summary?.if, "${{ always() }}");
+  assert.match(summary?.run ?? "", /summary\.md/);
+  assert.equal(upload?.if, "${{ always() }}");
+  assert.match(upload?.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
+  assert.deepEqual(upload?.with, {
+    name: "real-project-matrix-${{ matrix.shard }}",
+    path: "${{ env.FIXTURE_REPORT_DIR }}",
+    "if-no-files-found": "error",
+    "retention-days": 30,
+  });
+});
