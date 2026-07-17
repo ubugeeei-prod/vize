@@ -132,15 +132,17 @@ impl IncrementalSessionState {
         if let Some(session) = &mut self.session {
             let delta = snapshot.diff(&session.snapshot);
             let refreshed = !delta.is_empty();
-            profile!(
-                "canon.corsa.incremental.refresh",
-                session.client.refresh_materialized_files(
-                    &delta.changed,
-                    &delta.created,
-                    &delta.deleted
+            if refreshed {
+                profile!(
+                    "canon.corsa.incremental.refresh",
+                    session.client.refresh_materialized_files(
+                        &delta.changed,
+                        &delta.created,
+                        &delta.deleted
+                    )
                 )
-            )
-            .map_err(map_corsa_error)?;
+                .map_err(map_corsa_error)?;
+            }
             session.snapshot = snapshot;
             self.reuses += 1;
             self.refreshes += usize::from(refreshed);
@@ -174,6 +176,13 @@ impl MaterializedSnapshot {
                 snapshot
                     .revisions
                     .insert(path.to_path_buf(), hash_path(&target));
+                if path.is_file()
+                    && is_diagnostic_input(path)
+                    && !is_under_virtual_node_modules(virtual_root, path)
+                    && !is_internal_virtual_project_stub(path)
+                {
+                    snapshot.uris.push(path_to_file_uri(path));
+                }
                 continue;
             }
             if !entry.file_type().is_file() {
@@ -301,33 +310,4 @@ fn is_under_virtual_node_modules(virtual_root: &Path, path: &Path) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{MaterializedDelta, MaterializedSnapshot};
-    use std::path::PathBuf;
-    use vize_carton::FxHashMap;
-
-    #[test]
-    fn snapshot_diff_classifies_created_changed_and_deleted_files() {
-        let previous = snapshot(&[("/virtual/changed.ts", 1), ("/virtual/deleted.ts", 2)]);
-        let current = snapshot(&[("/virtual/changed.ts", 3), ("/virtual/created.ts", 4)]);
-
-        assert_eq!(
-            current.diff(&previous),
-            MaterializedDelta {
-                changed: vec![PathBuf::from("/virtual/changed.ts")],
-                created: vec![PathBuf::from("/virtual/created.ts")],
-                deleted: vec![PathBuf::from("/virtual/deleted.ts")],
-            }
-        );
-    }
-
-    fn snapshot(entries: &[(&str, u64)]) -> MaterializedSnapshot {
-        MaterializedSnapshot {
-            revisions: entries
-                .iter()
-                .map(|(path, revision)| (PathBuf::from(path), *revision))
-                .collect::<FxHashMap<_, _>>(),
-            uris: Vec::new(),
-        }
-    }
-}
+mod tests;
