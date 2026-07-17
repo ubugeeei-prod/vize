@@ -1,4 +1,4 @@
-//! Discovery and caching of declarations that augment Vue global components.
+//! Discovery and caching of workspace declarations used by Vue globals.
 
 use std::ffi::OsStr;
 use std::path::{Component, Path, PathBuf};
@@ -152,7 +152,7 @@ async fn discover_in_background(root: PathBuf) -> DiscoveryResult {
     let spawned = std::thread::Builder::new()
         .name("vize-global-components".to_string())
         .spawn(move || {
-            let paths = collect_global_component_declarations(&root);
+            let paths = collect_workspace_declarations(&root);
             let _ = sender.send(DiscoveryResult {
                 paths,
                 #[cfg(test)]
@@ -174,7 +174,7 @@ async fn discover_in_background(root: PathBuf) -> DiscoveryResult {
     })
 }
 
-fn collect_global_component_declarations(root: &Path) -> Vec<PathBuf> {
+fn collect_workspace_declarations(root: &Path) -> Vec<PathBuf> {
     let mut builder = WalkBuilder::new(root);
     builder
         .hidden(false)
@@ -195,13 +195,7 @@ fn collect_global_component_declarations(root: &Path) -> Vec<PathBuf> {
         let Ok(metadata) = entry.metadata() else {
             continue;
         };
-        if metadata.len() > 4 * 1024 * 1024 {
-            continue;
-        }
-        let Ok(content) = std::fs::read_to_string(path) else {
-            continue;
-        };
-        if content.contains("GlobalComponents") && content.contains("declare module") {
+        if metadata.is_file() && metadata.len() <= 4 * 1024 * 1024 {
             paths.push(std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf()));
         }
     }
@@ -251,33 +245,43 @@ mod tests {
     use std::sync::atomic::Ordering;
     use std::sync::{Arc, Barrier};
 
-    use super::{ServerState, collect_global_component_declarations};
+    use super::{ServerState, collect_workspace_declarations};
 
     const DECLARATION: &str =
         "declare module 'vue' { interface GlobalComponents { NuxtCard: unknown } }";
 
     #[test]
-    fn finds_hidden_project_augmentations_without_scanning_dependencies() {
+    fn finds_hidden_workspace_declarations_without_scanning_dependencies() {
         let root = tempfile::tempdir().unwrap();
         std::fs::create_dir_all(root.path().join(".nuxt")).unwrap();
         std::fs::create_dir_all(root.path().join("node_modules/pkg")).unwrap();
         std::fs::write(root.path().join("components.d.ts"), DECLARATION).unwrap();
-        std::fs::write(root.path().join(".nuxt/components.d.ts"), DECLARATION).unwrap();
+        std::fs::write(
+            root.path().join(".nuxt/imports.d.ts"),
+            "declare global { const useRoute: () => unknown }\nexport {}\n",
+        )
+        .unwrap();
         std::fs::write(
             root.path().join("node_modules/pkg/global.d.ts"),
             DECLARATION,
         )
         .unwrap();
         std::fs::write(root.path().join("unrelated.d.ts"), "interface Plain {}\n").unwrap();
+        std::fs::File::create(root.path().join("oversized.d.ts"))
+            .unwrap()
+            .set_len(4 * 1024 * 1024 + 1)
+            .unwrap();
 
-        let paths = collect_global_component_declarations(root.path());
-        assert_eq!(paths.len(), 2, "{paths:?}");
+        let paths = collect_workspace_declarations(root.path());
+        assert_eq!(paths.len(), 3, "{paths:?}");
         assert!(paths.iter().any(|path| path.ends_with("components.d.ts")));
         assert!(
             paths
                 .iter()
-                .any(|path| path.ends_with(".nuxt/components.d.ts"))
+                .any(|path| path.ends_with(".nuxt/imports.d.ts"))
         );
+        assert!(paths.iter().any(|path| path.ends_with("unrelated.d.ts")));
+        assert!(paths.iter().all(|path| !path.ends_with("oversized.d.ts")));
         assert!(
             paths
                 .iter()

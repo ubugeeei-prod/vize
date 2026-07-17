@@ -33,7 +33,7 @@ type PinnedFixtureOptions = {
 };
 
 /**
- * Copies selected files from a pinned third-party fixture into an isolated
+ * Copies selected files from a pinned third-party git fixture into an isolated
  * mutable workspace. The upstream gitlink is checked before and after the
  * callback so patch-oracle tests cannot silently dirty external repositories.
  */
@@ -105,8 +105,20 @@ function readFixtureEntry(id: string): FixtureRegistryEntry {
     fs.readFileSync(path.join(repoRoot, "tests/_fixtures/vue-ecosystem-fixtures.json"), "utf8"),
   ) as FixtureRegistry;
   const entry = registry.projects.find((project) => project.id === id);
-  assert.ok(entry, `fixture registry does not contain ${id}`);
-  return entry;
+  if (entry != null) return entry;
+
+  assert.match(id, /^[a-z0-9][a-z0-9-]*$/, `invalid fixture id: ${id}`);
+  const fixturePath = `tests/_fixtures/_git/${id}`;
+  const treeEntry = git(repoRoot, "ls-tree", "HEAD", "--", fixturePath);
+  const match = /^(160000) commit ([0-9a-f]{40})\t(.+)$/.exec(treeEntry);
+  assert.ok(match, `${fixturePath} must be a pinned gitlink`);
+  assert.equal(match[3], fixturePath);
+  return {
+    id,
+    displayName: id,
+    fixturePath,
+    revision: match[2],
+  };
 }
 
 function openPinnedFixture(fixtureId: string): {

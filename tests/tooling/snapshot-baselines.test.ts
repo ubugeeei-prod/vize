@@ -26,6 +26,8 @@ const assertionOnlyCheckTests = {
     "patch oracle asserts exact live CLI and LSP behavior across document versions",
   "element-plus-slot-oracle":
     "UI library patch oracle asserts global component slot types across editor revisions",
+  "nuxt-ui-ambient-oracle":
+    "framework patch oracle asserts generated Nuxt ambient types across editor revisions",
   "pinia-generic-store-oracle":
     "library patch oracle asserts generic store inference and dependency refresh behavior",
   "typescript-project-references-oracle":
