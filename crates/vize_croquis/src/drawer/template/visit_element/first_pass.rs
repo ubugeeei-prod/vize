@@ -126,8 +126,48 @@ impl Drawer {
             }
         });
 
+        if state.slot_scope.is_none() && self.legacy_vue2 && self.options.analyze_template_scopes {
+            state.slot_scope = legacy_slot_scope(el);
+        }
+
         state
     }
+}
+
+fn legacy_slot_scope(el: &ElementNode<'_>) -> Option<super::scopes::SlotScopeInfo> {
+    let scope_attr = el
+        .props
+        .iter()
+        .find_map(|prop| match prop {
+            PropNode::Attribute(attr) if attr.name == "slot-scope" => Some(attr.as_ref()),
+            _ => None,
+        })
+        .or_else(|| {
+            el.props.iter().find_map(|prop| match prop {
+                PropNode::Attribute(attr) if attr.name == "scope" => Some(attr.as_ref()),
+                _ => None,
+            })
+        })?;
+    let value = scope_attr.value.as_ref()?;
+    let pattern = value.content.as_str();
+    let slot_name = el
+        .props
+        .iter()
+        .find_map(|prop| match prop {
+            PropNode::Attribute(attr) if attr.name == "slot" => {
+                attr.value.as_ref().map(|value| value.content.clone())
+            }
+            _ => None,
+        })
+        .unwrap_or_else(|| CompactString::const_new("default"));
+
+    Some((
+        slot_name,
+        true,
+        extract_slot_props(pattern),
+        Some(CompactString::new(pattern)),
+        value.loc.start.offset,
+    ))
 }
 
 fn expression_content<'a>(exp: &'a ExpressionNode<'_>) -> &'a str {

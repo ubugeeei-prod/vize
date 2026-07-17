@@ -51,6 +51,7 @@ pub(in crate::script_parser) fn collect_options_api_component_metadata(
                 result,
                 class,
                 &object_bindings,
+                legacy_vue2,
             );
             continue;
         }
@@ -72,6 +73,7 @@ pub(in crate::script_parser) fn collect_options_api_component_metadata(
                 result,
                 options.object,
                 &object_bindings,
+                legacy_vue2,
             );
         }
     }
@@ -163,9 +165,16 @@ pub(super) fn collect_options_api_template_bindings_from_options<'a>(
     result: &mut ScriptParseResult,
     options: &'a ObjectExpression<'a>,
     object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+    legacy_vue2: bool,
 ) {
     let mut seen_mixins = FxHashSet::default();
-    collect_options_object_template_bindings(result, options, object_bindings, &mut seen_mixins);
+    collect_options_object_template_bindings(
+        result,
+        options,
+        object_bindings,
+        &mut seen_mixins,
+        legacy_vue2,
+    );
 }
 
 /// Collects Options API template bindings from a single options
@@ -180,6 +189,7 @@ fn collect_options_object_template_bindings<'a>(
     options: &'a ObjectExpression<'a>,
     object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
     seen_mixins: &mut FxHashSet<&'a str>,
+    legacy_vue2: bool,
 ) {
     collect_array_or_object_option_bindings(
         result,
@@ -195,6 +205,15 @@ fn collect_options_object_template_bindings<'a>(
         "computed",
         BindingType::Options,
     );
+    if legacy_vue2 {
+        collect_object_option_bindings(
+            result,
+            options,
+            object_bindings,
+            "filters",
+            BindingType::Options,
+        );
+    }
     collect_object_option_bindings(
         result,
         options,
@@ -235,8 +254,8 @@ fn collect_options_object_template_bindings<'a>(
         "setup",
         BindingType::SetupMaybeRef,
     );
-    collect_mixins_bindings(result, options, object_bindings, seen_mixins);
-    collect_extends_bindings(result, options, object_bindings, seen_mixins);
+    collect_mixins_bindings(result, options, object_bindings, seen_mixins, legacy_vue2);
+    collect_extends_bindings(result, options, object_bindings, seen_mixins, legacy_vue2);
 }
 
 /// Merges template bindings contributed by same-file `mixins` entries.
@@ -250,6 +269,7 @@ fn collect_mixins_bindings<'a>(
     options: &'a ObjectExpression<'a>,
     object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
     seen_mixins: &mut FxHashSet<&'a str>,
+    legacy_vue2: bool,
 ) {
     let Some(Expression::ArrayExpression(array)) = option_expression_property(options, "mixins")
     else {
@@ -260,7 +280,13 @@ fn collect_mixins_bindings<'a>(
         let Some(expression) = element.as_expression() else {
             continue;
         };
-        collect_mixin_target_bindings(result, expression, object_bindings, seen_mixins);
+        collect_mixin_target_bindings(
+            result,
+            expression,
+            object_bindings,
+            seen_mixins,
+            legacy_vue2,
+        );
     }
 }
 
@@ -271,11 +297,18 @@ fn collect_extends_bindings<'a>(
     options: &'a ObjectExpression<'a>,
     object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
     seen_mixins: &mut FxHashSet<&'a str>,
+    legacy_vue2: bool,
 ) {
     let Some(expression) = option_expression_property(options, "extends") else {
         return;
     };
-    collect_mixin_target_bindings(result, expression, object_bindings, seen_mixins);
+    collect_mixin_target_bindings(
+        result,
+        expression,
+        object_bindings,
+        seen_mixins,
+        legacy_vue2,
+    );
 }
 
 /// Resolves a single mixin/extends target expression and merges its option
@@ -286,10 +319,17 @@ fn collect_mixin_target_bindings<'a>(
     expression: &'a Expression<'a>,
     object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
     seen_mixins: &mut FxHashSet<&'a str>,
+    legacy_vue2: bool,
 ) {
     match expression {
         Expression::ObjectExpression(object) => {
-            collect_options_object_template_bindings(result, object, object_bindings, seen_mixins);
+            collect_options_object_template_bindings(
+                result,
+                object,
+                object_bindings,
+                seen_mixins,
+                legacy_vue2,
+            );
         }
         Expression::Identifier(identifier) => {
             let name = identifier.name.as_str();
@@ -302,6 +342,7 @@ fn collect_mixin_target_bindings<'a>(
                     object,
                     object_bindings,
                     seen_mixins,
+                    legacy_vue2,
                 );
             }
         }
@@ -310,21 +351,28 @@ fn collect_mixin_target_bindings<'a>(
             &parenthesized.expression,
             object_bindings,
             seen_mixins,
+            legacy_vue2,
         ),
-        Expression::TSAsExpression(ts_as) => {
-            collect_mixin_target_bindings(result, &ts_as.expression, object_bindings, seen_mixins)
-        }
+        Expression::TSAsExpression(ts_as) => collect_mixin_target_bindings(
+            result,
+            &ts_as.expression,
+            object_bindings,
+            seen_mixins,
+            legacy_vue2,
+        ),
         Expression::TSSatisfiesExpression(ts_satisfies) => collect_mixin_target_bindings(
             result,
             &ts_satisfies.expression,
             object_bindings,
             seen_mixins,
+            legacy_vue2,
         ),
         Expression::TSNonNullExpression(ts_non_null) => collect_mixin_target_bindings(
             result,
             &ts_non_null.expression,
             object_bindings,
             seen_mixins,
+            legacy_vue2,
         ),
         // Imported mixins, call expressions, etc. — deferred.
         _ => {}

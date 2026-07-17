@@ -110,6 +110,7 @@ pub(super) fn collect_class_component_metadata<'a>(
     result: &mut ScriptParseResult,
     class: &'a Class<'a>,
     object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+    legacy_vue2: bool,
 ) {
     result.component_shape = ComponentShape::ClassApi;
 
@@ -121,7 +122,12 @@ pub(super) fn collect_class_component_metadata<'a>(
             continue;
         };
         collect_component_registrations_from_options(result, options, object_bindings);
-        collect_options_api_template_bindings_from_options(result, options, object_bindings);
+        collect_options_api_template_bindings_from_options(
+            result,
+            options,
+            object_bindings,
+            legacy_vue2,
+        );
     }
 
     for element in &class.body.body {

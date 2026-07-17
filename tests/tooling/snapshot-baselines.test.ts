@@ -38,6 +38,8 @@ const assertionOnlyCheckTests = {
     "declaration patch oracle asserts .d.mts resolution and dependent diagnostic refresh",
   "vitepress-theme-oracle":
     "framework patch oracle asserts package exports and theme declaration refresh behavior",
+  "vue-element-admin-legacy-oracle":
+    "legacy project patch oracle asserts Vue 2 slot-scope and filter typecheck behavior",
   directus: "real-world smoke lane is too large for a deterministic complete baseline",
   "element-plus": "real-world smoke lane is too large for a deterministic complete baseline",
   "frontend-phpcon": "real-world smoke lane is too large for a deterministic complete baseline",
