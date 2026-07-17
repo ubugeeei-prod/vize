@@ -13,7 +13,8 @@ runs:
           tests/_fixtures/_git/misskey \
           tests/_fixtures/_git/nuxt-ui \
           tests/_fixtures/_git/pinia \
-          tests/_fixtures/_git/vue-router
+          tests/_fixtures/_git/vue-router \
+          tests/_fixtures/_git/vitepress
         vp install --frozen-lockfile --prefer-offline
 
     - name: Build vize CLI

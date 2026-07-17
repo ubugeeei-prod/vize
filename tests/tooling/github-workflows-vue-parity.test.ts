@@ -33,6 +33,7 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/nuxt-ui/);
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/pinia/);
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/vue-router/);
+  assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/vitepress/);
   assert.match(hydration?.run ?? "", /vp install --frozen-lockfile --prefer-offline/);
   assert.equal(
     steps.find((step) => step.name === "Build vize CLI")?.run,

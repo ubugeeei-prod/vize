@@ -5,24 +5,6 @@ expression: diagnostic_snapshots(diagnostics)
 [
     DiagnosticSnapshot {
         source: Some(
-            "vize/template",
-        ),
-        severity: Some(
-            "warning",
-        ),
-        code: Some(
-            "1000",
-        ),
-        message: "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
-        range: (
-            1,
-            2,
-            1,
-            10,
-        ),
-    },
-    DiagnosticSnapshot {
-        source: Some(
             "vize/lint",
         ),
         severity: Some(

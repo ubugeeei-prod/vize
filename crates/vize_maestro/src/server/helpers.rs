@@ -25,7 +25,7 @@ impl MaestroServer {
             return;
         }
 
-        for importer in super::importers::open_vue_importers(&self.state, uri) {
+        for importer in super::importers::open_vue_dependents(&self.state, uri) {
             self.publish_diagnostics(&importer).await;
         }
     }

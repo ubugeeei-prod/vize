@@ -3,15 +3,12 @@
 use crate::diagnostic::{LintDiagnostic, Severity};
 use vize_atelier_sfc::SfcError;
 use vize_carton::ToCompactString;
-use vize_relief::{CompilerError, ErrorCode};
+use vize_relief::CompilerError;
 
 use super::super::config::{LintResult, Linter};
 
 const TEMPLATE_PARSE_RULE: &str = "parser/template";
 const SFC_PARSE_RULE: &str = "parser/sfc";
-const INVALID_SELF_CLOSING_HTML_MESSAGE: &str =
-    "Invalid self-closing syntax on non-void HTML element";
-
 fn template_parse_diagnostic(parse_error: &CompilerError, source_len: usize) -> LintDiagnostic {
     let (start, end) = template_parse_span(parse_error, source_len);
     if parse_error.is_recoverable() {
@@ -25,10 +22,7 @@ fn should_report_template_parse_diagnostic(parse_error: &CompilerError) -> bool 
     // Standard mode rewrites invalid HTML self-closing syntax as a compatibility
     // warning. Lint surfaces parser errors, but should not turn this rewrite
     // notice into a project warning budget failure.
-    !(parse_error.code == ErrorCode::ExtendPoint
-        && parse_error
-            .message
-            .starts_with(INVALID_SELF_CLOSING_HTML_MESSAGE))
+    !parse_error.is_compatibility_notice()
 }
 
 fn template_parse_span(parse_error: &CompilerError, source_len: usize) -> (u32, u32) {

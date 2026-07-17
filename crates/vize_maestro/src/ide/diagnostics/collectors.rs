@@ -320,6 +320,7 @@ impl DiagnosticService {
 
         errors
             .iter()
+            .filter(|error| !error.is_compatibility_notice())
             .filter_map(|error| {
                 let loc = error.loc.as_ref()?;
 
