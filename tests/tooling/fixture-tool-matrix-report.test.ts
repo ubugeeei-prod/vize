@@ -194,3 +194,84 @@ test("fixture tool matrix preserves raw output for invalid JSON and spawn errors
     }
   }
 });
+
+test("fixture tool matrix shards every project exactly once with balanced sizes", () => {
+  const projectIds = new Set<string>();
+  const shardSizes: number[] = [];
+  for (let index = 0; index < 11; index += 1) {
+    const { outputDir, result } = run([
+      "--dry-run",
+      "--shard-index",
+      String(index),
+      "--shard-count",
+      "11",
+    ]);
+    try {
+      assert.equal(result.status, 0, result.stderr);
+      const report = JSON.parse(fs.readFileSync(path.join(outputDir, "summary.json"), "utf8"));
+      assert.equal(report.command.shardIndex, index);
+      assert.equal(report.command.shardCount, 11);
+      assert.equal(report.summary.runCount, report.summary.projectCount * 4);
+      shardSizes.push(report.summary.projectCount);
+      for (const project of report.projects) {
+        assert.equal(
+          projectIds.has(project.id),
+          false,
+          `${project.id} must appear in only one shard`,
+        );
+        projectIds.add(project.id);
+      }
+    } finally {
+      fs.rmSync(outputDir, { recursive: true, force: true });
+    }
+  }
+  assert.equal(projectIds.size, 131);
+  assert.deepEqual(
+    [...new Set(shardSizes)].sort((a, b) => a - b),
+    [11, 12],
+  );
+  assert.equal(
+    shardSizes.reduce((sum, size) => sum + size, 0),
+    131,
+  );
+});
+
+test("fixture tool matrix lists exactly the fixture paths selected by a shard", () => {
+  const args = ["--shard-index", "3", "--shard-count", "11"];
+  const planned = run(["--dry-run", ...args]);
+  const listed = run(["--list-fixture-paths", ...args]);
+  try {
+    assert.equal(planned.result.status, 0, planned.result.stderr);
+    assert.equal(listed.result.status, 0, listed.result.stderr);
+    const report = JSON.parse(
+      fs.readFileSync(path.join(planned.outputDir, "summary.json"), "utf8"),
+    );
+    assert.deepEqual(
+      listed.result.stdout.trim().split("\n"),
+      report.projects.map((project: { fixturePath: string }) => project.fixturePath),
+    );
+    assert.equal(fs.existsSync(path.join(listed.outputDir, "summary.json")), false);
+  } finally {
+    fs.rmSync(planned.outputDir, { recursive: true, force: true });
+    fs.rmSync(listed.outputDir, { recursive: true, force: true });
+  }
+});
+
+test("fixture tool matrix rejects invalid shard bounds", () => {
+  for (const [args, message] of [
+    [["--dry-run", "--shard-index", "-1"], /--shard-index must be a non-negative integer/],
+    [["--dry-run", "--shard-count", "0"], /--shard-count must be a positive integer/],
+    [
+      ["--dry-run", "--shard-index", "2", "--shard-count", "2"],
+      /--shard-index must be less than --shard-count/,
+    ],
+  ] as const) {
+    const { outputDir, result } = run([...args]);
+    try {
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, message);
+    } finally {
+      fs.rmSync(outputDir, { recursive: true, force: true });
+    }
+  }
+});

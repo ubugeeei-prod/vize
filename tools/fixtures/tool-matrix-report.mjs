@@ -13,10 +13,16 @@ const supportedTools = ["compiler", "typechecker", "linter", "formatter"];
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const registry = readJson(registryPath);
-  const projects = select(registry.projects, args.projects, "project");
+  const selectedProjects = select(registry.projects, args.projects, "project");
+  const projects = selectShard(selectedProjects, args.shardIndex, args.shardCount);
   const tools =
     args.tools.length === 0 ? supportedTools : select(supportedTools, args.tools, "tool");
   assertRegistryCoverage(registry, projects, tools);
+
+  if (args.listFixturePaths) {
+    process.stdout.write(`${projects.map((project) => project.fixturePath).join("\n")}\n`);
+    return;
+  }
 
   const outputDir = resolve(
     repoRoot,
@@ -35,6 +41,8 @@ function main() {
       dryRun: args.dryRun,
       timeoutMs: args.timeoutMs,
       tools,
+      shardIndex: args.shardIndex,
+      shardCount: args.shardCount,
     },
     summary: {
       projectCount: projects.length,
@@ -79,8 +87,11 @@ function main() {
 function parseArgs(argv) {
   const args = {
     dryRun: false,
+    listFixturePaths: false,
     outputDir: null,
     projects: [],
+    shardCount: 1,
+    shardIndex: 0,
     timeoutMs: 300_000,
     tools: [],
     vizeBin: null,
@@ -92,11 +103,18 @@ function parseArgs(argv) {
       return argv[++index];
     };
     if (arg === "--dry-run") args.dryRun = true;
+    else if (arg === "--list-fixture-paths") args.listFixturePaths = true;
     else if (arg === "--help" || arg === "-h") return printHelpAndExit();
     else if (arg === "--output-dir") args.outputDir = value();
     else if (arg.startsWith("--output-dir=")) args.outputDir = arg.slice(13);
     else if (arg === "--project") args.projects.push(...splitCsv(value()));
     else if (arg.startsWith("--project=")) args.projects.push(...splitCsv(arg.slice(10)));
+    else if (arg === "--shard-count") args.shardCount = positiveInteger(value(), arg);
+    else if (arg.startsWith("--shard-count="))
+      args.shardCount = positiveInteger(arg.slice(14), "--shard-count");
+    else if (arg === "--shard-index") args.shardIndex = nonNegativeInteger(value(), arg);
+    else if (arg.startsWith("--shard-index="))
+      args.shardIndex = nonNegativeInteger(arg.slice(14), "--shard-index");
     else if (arg === "--timeout-ms") args.timeoutMs = positiveInteger(value(), arg);
     else if (arg.startsWith("--timeout-ms="))
       args.timeoutMs = positiveInteger(arg.slice(13), "--timeout-ms");
@@ -108,6 +126,9 @@ function parseArgs(argv) {
   }
   args.projects = [...new Set(args.projects)];
   args.tools = [...new Set(args.tools)];
+  if (args.shardIndex >= args.shardCount) {
+    throw new Error("--shard-index must be less than --shard-count");
+  }
   return args;
 }
 
@@ -118,6 +139,9 @@ function printHelpAndExit() {
   );
   process.stdout.write(`  --project <id[,id]>  Limit registry projects\n`);
   process.stdout.write(`  --tool <name[,name]> Limit tool surfaces\n`);
+  process.stdout.write(`  --shard-index <n>    Zero-based project shard index\n`);
+  process.stdout.write(`  --shard-count <n>    Total balanced project shards\n`);
+  process.stdout.write(`  --list-fixture-paths Print selected fixture paths and exit\n`);
   process.stdout.write(`  --output-dir <dir>   Report directory\n`);
   process.stdout.write(`  --vize-bin <path>    Vize executable\n`);
   process.stdout.write(`  --timeout-ms <n>     Per-run timeout\n`);
@@ -295,6 +319,10 @@ function select(items, selected, kind) {
   });
 }
 
+function selectShard(projects, shardIndex, shardCount) {
+  return projects.filter((_, index) => index % shardCount === shardIndex);
+}
+
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
@@ -308,6 +336,12 @@ function positiveInteger(value, name) {
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed <= 0)
     throw new Error(`${name} must be a positive integer`);
+  return parsed;
+}
+function nonNegativeInteger(value, name) {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 0)
+    throw new Error(`${name} must be a non-negative integer`);
   return parsed;
 }
 function timestampSlug(date) {
