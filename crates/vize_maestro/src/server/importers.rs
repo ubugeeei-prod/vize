@@ -144,7 +144,11 @@ fn resolve_import(importer_dir: &Path, specifier: &str) -> Option<PathBuf> {
     let specifier = specifier
         .split_once(['?', '#'])
         .map_or(specifier, |(path, _)| path);
-    if specifier.starts_with("./") || specifier.starts_with("../") {
+    if specifier == "."
+        || specifier == ".."
+        || specifier.starts_with("./")
+        || specifier.starts_with("../")
+    {
         return resolve_relative_import(importer_dir, specifier);
     }
 
@@ -282,5 +286,37 @@ void plugin
             vec![parent_uri.clone()]
         );
         assert_eq!(open_vue_importers(&state, &common_uri), vec![parent_uri]);
+    }
+
+    #[test]
+    fn index_resolves_current_and_parent_directory_specifiers() {
+        let dir = tempfile::tempdir().unwrap();
+        let nested = dir.path().join("nested");
+        std::fs::create_dir_all(&nested).unwrap();
+        let current_index = nested.join("index.ts");
+        let parent_index = dir.path().join("index.ts");
+        std::fs::write(&current_index, "export const current = 1").unwrap();
+        std::fs::write(&parent_index, "export const parent = 1").unwrap();
+        let parent_vue = nested.join("Parent.vue");
+        std::fs::write(&parent_vue, "<template />").unwrap();
+        let parent_uri = Url::from_file_path(&parent_vue).unwrap();
+        let current_uri = Url::from_file_path(&current_index).unwrap();
+        let parent_index_uri = Url::from_file_path(&parent_index).unwrap();
+        let state = ServerState::new();
+        let source = r#"<script setup lang="ts">
+import { current } from '.'
+import { parent } from '..'
+</script>"#;
+
+        state.update_virtual_docs(&parent_uri, source);
+
+        assert_eq!(
+            open_vue_importers(&state, &current_uri),
+            vec![parent_uri.clone()]
+        );
+        assert_eq!(
+            open_vue_importers(&state, &parent_index_uri),
+            vec![parent_uri]
+        );
     }
 }
