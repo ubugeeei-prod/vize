@@ -165,16 +165,7 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
                 supported: Some(true),
                 change_notifications: Some(OneOf::Left(true)),
             }),
-            file_operations: features.file_rename.then_some(
-                WorkspaceFileOperationsServerCapabilities {
-                    did_create: None,
-                    will_create: None,
-                    did_rename: Some(file_rename_registration_options()),
-                    will_rename: Some(file_rename_registration_options()),
-                    did_delete: None,
-                    will_delete: None,
-                },
-            ),
+            file_operations: workspace_file_operations(features),
         }),
 
         // Features not yet implemented
@@ -191,6 +182,40 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
 
         // Default for other fields
         ..Default::default()
+    }
+}
+
+fn workspace_file_operations(
+    features: LspFeatureConfig,
+) -> Option<WorkspaceFileOperationsServerCapabilities> {
+    let track_declarations = cfg!(feature = "native") && features.typecheck;
+    if !track_declarations && !features.file_rename {
+        return None;
+    }
+    Some(WorkspaceFileOperationsServerCapabilities {
+        did_create: track_declarations.then(declaration_file_registration_options),
+        will_create: None,
+        did_rename: Some(if features.file_rename {
+            file_rename_registration_options()
+        } else {
+            declaration_file_registration_options()
+        }),
+        will_rename: features.file_rename.then(file_rename_registration_options),
+        did_delete: track_declarations.then(declaration_file_registration_options),
+        will_delete: None,
+    })
+}
+
+fn declaration_file_registration_options() -> FileOperationRegistrationOptions {
+    FileOperationRegistrationOptions {
+        filters: vec![FileOperationFilter {
+            scheme: Some("file".to_string()),
+            pattern: FileOperationPattern {
+                glob: "**/*.d.{ts,mts,cts}".to_string(),
+                matches: Some(FileOperationPatternKind::File),
+                options: None,
+            },
+        }],
     }
 }
 

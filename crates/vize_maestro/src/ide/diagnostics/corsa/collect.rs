@@ -88,6 +88,7 @@ impl DiagnosticService {
             let virtual_ts_options = vize_canon::virtual_ts::VirtualTsOptions {
                 reference_paths: state
                     .global_component_reference_paths()
+                    .await
                     .iter()
                     .map(|path| path.to_string_lossy().as_ref().into())
                     .collect(),

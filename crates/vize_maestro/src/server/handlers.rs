@@ -9,32 +9,33 @@ use tower_lsp::{
     jsonrpc::Result,
     lsp_types::{
         CodeActionParams, CodeActionResponse, CodeLens, CodeLensParams, CompletionItem,
-        CompletionParams, CompletionResponse, DidChangeConfigurationParams,
-        DidChangeTextDocumentParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams,
-        DidSaveTextDocumentParams, DocumentFormattingParams, DocumentHighlight,
-        DocumentHighlightParams, DocumentLink, DocumentLinkParams, DocumentRangeFormattingParams,
-        DocumentSymbol, DocumentSymbolParams, DocumentSymbolResponse, FoldingRange,
-        FoldingRangeKind, FoldingRangeParams, GotoDefinitionParams, GotoDefinitionResponse, Hover,
-        HoverParams, InitializeParams, InitializeResult, InitializedParams, InlayHint,
-        InlayHintParams, Location, MessageType, Position, PrepareRenameResponse, Range,
-        ReferenceParams, RenameFilesParams, RenameParams, SemanticTokensParams,
-        SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult, ServerInfo,
-        SymbolInformation, SymbolKind, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
-        WorkspaceSymbolParams,
+        CompletionParams, CompletionResponse, CreateFilesParams, DeleteFilesParams,
+        DidChangeConfigurationParams, DidChangeTextDocumentParams, DidChangeWatchedFilesParams,
+        DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
+        DocumentFormattingParams, DocumentHighlight, DocumentHighlightParams, DocumentLink,
+        DocumentLinkParams, DocumentRangeFormattingParams, DocumentSymbol, DocumentSymbolParams,
+        DocumentSymbolResponse, FoldingRange, FoldingRangeKind, FoldingRangeParams,
+        GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams, InitializeParams,
+        InitializeResult, InitializedParams, InlayHint, InlayHintParams, Location, Position,
+        PrepareRenameResponse, Range, ReferenceParams, RenameFilesParams, RenameParams,
+        SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
+        SemanticTokensResult, ServerInfo, SymbolInformation, SymbolKind,
+        TextDocumentPositionParams, TextEdit, WorkspaceEdit, WorkspaceSymbolParams,
     },
 };
 
 use super::{MaestroServer, server_capabilities};
 use crate::ide::{
     CodeActionService, CodeLensService, CompletionService, DefinitionService,
-    DocumentHighlightService, DocumentLinkService, FileRenameService, HoverService, IdeContext,
-    InlayHintService, ReferencesService, RenameService, SemanticTokensService,
-    WorkspaceSymbolsService, position_to_offset,
+    DocumentHighlightService, DocumentLinkService, HoverService, IdeContext, InlayHintService,
+    ReferencesService, RenameService, SemanticTokensService, WorkspaceSymbolsService,
+    position_to_offset,
 };
 
 #[tower_lsp::async_trait]
 impl LanguageServer for MaestroServer {
     async fn initialize(&self, params: InitializeParams) -> Result<InitializeResult> {
+        super::workspace_files::record_watcher_support(&self.state, &params.capabilities);
         // Resolve workspace root
         let workspace_path = params
             .root_uri
@@ -73,9 +74,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn initialized(&self, _params: InitializedParams) {
-        self.client
-            .log_message(MessageType::INFO, "vize_maestro LSP server initialized")
-            .await;
+        super::workspace_files::initialized(self).await;
     }
 
     async fn did_change_configuration(&self, _params: DidChangeConfigurationParams) {
@@ -791,24 +790,23 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn will_rename_files(&self, params: RenameFilesParams) -> Result<Option<WorkspaceEdit>> {
-        if !self.state.lsp_features().file_rename {
-            return Ok(None);
-        }
+        Ok(super::workspace_files::will_rename_files(&self.state, &params).await)
+    }
 
-        Ok(FileRenameService::will_rename_files(&self.state, &params).await)
+    async fn did_change_watched_files(&self, params: DidChangeWatchedFilesParams) {
+        super::workspace_files::did_change_watched_files(&self.state, &params);
+    }
+
+    async fn did_create_files(&self, params: CreateFilesParams) {
+        super::workspace_files::did_create_files(&self.state, &params);
+    }
+
+    async fn did_delete_files(&self, params: DeleteFilesParams) {
+        super::workspace_files::did_delete_files(&self.state, &params);
     }
 
     async fn did_rename_files(&self, params: RenameFilesParams) {
-        if !self.state.lsp_features().file_rename {
-            return;
-        }
-
-        let renamed = FileRenameService::did_rename_files(&self.state, &params).await;
-
-        for (old_uri, new_uri) in renamed {
-            self.client.publish_diagnostics(old_uri, vec![], None).await;
-            self.publish_diagnostics(&new_uri).await;
-        }
+        super::workspace_files::did_rename_files(self, &params).await;
     }
 
     async fn document_link(&self, params: DocumentLinkParams) -> Result<Option<Vec<DocumentLink>>> {

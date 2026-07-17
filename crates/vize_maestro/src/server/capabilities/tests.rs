@@ -175,7 +175,7 @@ fn code_actions_require_both_lint_and_code_action_features() {
 }
 
 #[test]
-fn file_rename_flag_only_controls_workspace_file_operations() {
+fn declaration_events_remain_registered_when_file_rename_is_disabled() {
     let mut features = all_features();
     let enabled_capabilities = server_capabilities(features);
     let enabled = enabled_capabilities
@@ -191,7 +191,13 @@ fn file_rename_flag_only_controls_workspace_file_operations() {
         .expect("workspace capabilities should still be advertised");
 
     assert!(workspace.workspace_folders.is_some());
-    assert!(workspace.file_operations.is_none());
+    let operations = workspace
+        .file_operations
+        .expect("type checking must continue tracking declaration files");
+    assert!(operations.did_create.is_some());
+    assert!(operations.did_delete.is_some());
+    assert!(operations.did_rename.is_some());
+    assert!(operations.will_rename.is_none());
 }
 
 #[test]
@@ -254,5 +260,25 @@ fn file_rename_registration_mentions_declaration_files() {
             file_glob.contains(extension),
             "rename operations should include declaration shims: {file_glob}"
         );
+    }
+}
+
+#[test]
+fn declaration_file_operations_cover_create_delete_and_rename() {
+    let mut features = all_features();
+    features.file_rename = false;
+    let operations = server_capabilities(features)
+        .workspace
+        .and_then(|workspace| workspace.file_operations)
+        .expect("declaration tracking should be advertised");
+
+    for options in [
+        operations.did_create,
+        operations.did_delete,
+        operations.did_rename,
+    ] {
+        let options = options.expect("every declaration event must be registered");
+        assert_eq!(options.filters.len(), 1);
+        assert_eq!(options.filters[0].pattern.glob, "**/*.d.{ts,mts,cts}");
     }
 }

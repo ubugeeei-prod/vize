@@ -107,9 +107,9 @@ pub struct ServerState {
     /// Workspace root path
     #[cfg(feature = "native")]
     workspace_root: RwLock<Option<PathBuf>>,
-    /// Project declaration files that augment Vue's global components.
+    /// Cached project declarations that augment Vue's global components.
     #[cfg(feature = "native")]
-    global_component_reference_paths: RwLock<Option<Vec<PathBuf>>>,
+    global_component_references: global_components::GlobalComponentReferences,
     /// Batch type checker (lazy initialized, sync)
     #[cfg(feature = "native")]
     batch_checker: OnceLock<Arc<RwLock<BatchTypeChecker>>>,
@@ -162,7 +162,7 @@ impl ServerState {
             #[cfg(feature = "native")]
             workspace_root: RwLock::new(None),
             #[cfg(feature = "native")]
-            global_component_reference_paths: RwLock::new(None),
+            global_component_references: global_components::GlobalComponentReferences::new(),
             #[cfg(feature = "native")]
             batch_checker: OnceLock::new(),
             #[cfg(feature = "native")]
@@ -174,7 +174,7 @@ impl ServerState {
     #[cfg(feature = "native")]
     pub fn set_workspace_root(&self, path: PathBuf) {
         *self.workspace_root.write() = Some(path);
-        *self.global_component_reference_paths.write() = None;
+        self.global_component_references.invalidate();
         // Invalidate batch cache when workspace changes
         self.batch_cache.invalidate();
     }

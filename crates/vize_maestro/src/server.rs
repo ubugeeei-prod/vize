@@ -8,6 +8,7 @@ mod handlers;
 mod helpers;
 mod importers;
 mod state;
+mod workspace_files;
 
 pub use capabilities::server_capabilities;
 #[cfg(feature = "native")]
