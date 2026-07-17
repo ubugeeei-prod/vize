@@ -154,34 +154,39 @@ function runTool(project, tool, args, launch, outputDir) {
     exitCode: result.status,
     outputPath: relative(repoRoot, rawPath),
   };
-  if (result.error != null) {
-    return { ...completed, status: "failed", failure: errorMessage(result.error) };
-  }
-  if (result.status !== 0 && result.status !== 1) {
-    return { ...completed, status: "failed", failure: failureOutput(result) };
-  }
-
   const payload = {
     schema: "vize.fixtureToolRun",
     version: 1,
     project: project.id,
     tool,
     exitCode: result.status,
-    stdout: result.stdout,
-    stderr: result.stderr,
+    stdout: result.stdout ?? "",
+    stderr: result.stderr ?? "",
   };
-  if (tool !== "formatter") {
+  if (result.error != null) {
+    payload.spawnError = errorMessage(result.error);
+  } else if (tool !== "formatter" && (result.status === 0 || result.status === 1)) {
     try {
       payload.parsed = JSON.parse(result.stdout);
     } catch (error) {
-      return {
-        ...completed,
-        status: "failed",
-        failure: `invalid JSON output: ${errorMessage(error)}`,
-      };
+      payload.parseError = errorMessage(error);
     }
   }
   writeFileSync(rawPath, `${JSON.stringify(payload, null, 2)}\n`);
+
+  if (result.error != null) {
+    return { ...completed, status: "failed", failure: errorMessage(result.error) };
+  }
+  if (result.status !== 0 && result.status !== 1) {
+    return { ...completed, status: "failed", failure: failureOutput(result) };
+  }
+  if (payload.parseError != null) {
+    return {
+      ...completed,
+      status: "failed",
+      failure: `invalid JSON output: ${payload.parseError}`,
+    };
+  }
   return { ...completed, status: result.status === 0 ? "ok" : "findings" };
 }
 
@@ -230,10 +235,16 @@ function resolveVizeLaunch(vizeBin, dryRun) {
     join(repoRoot, "target", "ci", executableName("vize")),
     join(repoRoot, "target", "debug", executableName("vize")),
     join(repoRoot, "target", "release", executableName("vize")),
-  ].filter(Boolean);
+  ]
+    .filter(Boolean)
+    .map((candidate) => resolve(candidate));
   for (const candidate of candidates) {
     if (!existsSync(candidate)) continue;
-    const probe = spawnSync(candidate, ["--version"], { encoding: "utf8" });
+    if (dryRun) return { command: candidate, prefix: [], label: candidate };
+    const probe = spawnSync(candidate, ["--version"], {
+      encoding: "utf8",
+      timeout: 10_000,
+    });
     if (probe.status === 0) return { command: candidate, prefix: [], label: candidate };
   }
   if (vizeBin != null && !dryRun) throw new Error(`Vize executable is not runnable: ${vizeBin}`);
