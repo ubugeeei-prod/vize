@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
+import { assertParsesAsModule } from "../../_helpers/assertions.ts";
 import {
   repoRoot,
   symlinkDirectory,
@@ -19,6 +21,97 @@ import type { PublishDiagnosticsParams } from "../../tooling/support/lsp/protoco
 import { LspSession } from "../../tooling/support/lsp/session.ts";
 
 const appPath = "template/bare/typescript/src/App.vue";
+const sourceSha256 = "bdafe70baf73a040d432b574108ce0e11823a3c1c1cc8bdfe01d118d6ff7d35a";
+const compiledCodeSha256 = "1216a548943fe8a09ab349a913c627d4115f93935b75ec89922415511475eff7";
+const cleanHeading = "  <h1>You did it!</h1>";
+const brokenHeading = "  <h1>You did it!</h2>";
+
+type CompilerOutput = {
+  code: string;
+  css: string | null;
+  errors: string[];
+  filename: string;
+  macro_artifacts: unknown[];
+  script_lang: string;
+  warnings: string[];
+};
+
+test("create-vue compiler is deterministic and recovers from an exact template parse error", async () => {
+  await withPinnedFixtureWorkspace(
+    { fixtureId: "create-vue", includePaths: [appPath] },
+    async (fixture) => {
+      const source = fixture.read(appPath);
+      const sourceMode = fs.statSync(fixture.resolve(appPath)).mode & 0o777;
+      assert.equal(sha256(source), sourceSha256, "pinned create-vue source changed");
+
+      const cleanFirst = runBuild(fixture.workspaceDir, ".vize-compiler-clean-first");
+      const cleanSecond = runBuild(fixture.workspaceDir, ".vize-compiler-clean-second");
+      assertSuccessfulBuild(cleanFirst);
+      assertSuccessfulBuild(cleanSecond);
+      assert.equal(
+        cleanSecond.outputText,
+        cleanFirst.outputText,
+        "clean output must be byte-stable",
+      );
+      assert.equal(fixture.read(appPath), source, "compiler must not mutate the source");
+      assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
+
+      const output = cleanFirst.output;
+      assert.deepEqual(
+        {
+          css: output.css,
+          errors: output.errors,
+          filename: output.filename,
+          macro_artifacts: output.macro_artifacts,
+          script_lang: output.script_lang,
+          warnings: output.warnings,
+        },
+        {
+          css: null,
+          errors: [],
+          filename: "App.vue",
+          macro_artifacts: [],
+          script_lang: "ts",
+          warnings: [],
+        },
+      );
+      assert.equal(sha256(output.code), compiledCodeSha256, output.code);
+      assertParsesAsModule(output.code, "create-vue App.json#code");
+      for (const expected of [
+        "import { createElementVNode as _createElementVNode",
+        '__name: "App"',
+        '_createElementVNode("h1", null, "You did it!")',
+        'href: "https://vuejs.org/"',
+        'rel: "noopener"',
+        "/* STABLE_FRAGMENT */",
+      ]) {
+        assert.equal(count(output.code, expected), 1, `${expected}\n${output.code}`);
+      }
+      assert.equal(count(output.code, "_cache[0] || (_cache[0] = _createElementVNode("), 1);
+
+      const brokenSource = fixture.applyExactPatch(appPath, cleanHeading, brokenHeading);
+      const brokenFirst = runBuild(fixture.workspaceDir, ".vize-compiler-broken-first");
+      const brokenSecond = runBuild(fixture.workspaceDir, ".vize-compiler-broken-second");
+      assertBrokenBuild(brokenFirst);
+      assertBrokenBuild(brokenSecond);
+      assert.equal(
+        brokenSecond.outputText,
+        brokenFirst.outputText,
+        "broken output must be byte-stable",
+      );
+      assert.equal(fixture.read(appPath), brokenSource, "compiler must preserve the broken source");
+      assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
+
+      const repairedSource = fixture.applyExactPatch(appPath, brokenHeading, cleanHeading);
+      assert.equal(repairedSource, source);
+      const repaired = runBuild(fixture.workspaceDir, ".vize-compiler-repaired");
+      assertSuccessfulBuild(repaired);
+      assert.equal(repaired.outputText, cleanFirst.outputText, "repair must restore exact output");
+      assert.equal(fixture.read(appPath), source);
+      assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
+    },
+  );
+});
 
 test("create-vue clean, broken, and repaired patches agree across check and LSP", async () => {
   const corsaPath = resolveTsgoBinary();
@@ -246,4 +339,79 @@ function symlinkVueTypes(workspaceDir: string): void {
   if (fs.existsSync(vueNamespace)) {
     symlinkDirectory(vueNamespace, path.join(workspaceDir, "node_modules/@vue"));
   }
+}
+
+type BuildResult = {
+  files: string[];
+  output: CompilerOutput;
+  outputText: string;
+  status: number | null;
+  stderr: string;
+  stdout: string;
+};
+
+function runBuild(workspaceDir: string, outputDirectory: string): BuildResult {
+  const [command, ...prefixArgs] = resolveVizeCommand();
+  const result = spawnSync(
+    command,
+    [...prefixArgs, "build", appPath, "--format", "json", "--output", outputDirectory],
+    {
+      cwd: workspaceDir,
+      encoding: "utf8",
+      env: { ...process.env, LANG: "C", LC_ALL: "C" },
+      maxBuffer: 64 * 1024 * 1024,
+      timeout: 120_000,
+    },
+  );
+  if (result.error != null) throw result.error;
+
+  const outputRoot = path.join(workspaceDir, outputDirectory);
+  const files = fs.existsSync(outputRoot)
+    ? fs
+        .readdirSync(outputRoot, { recursive: true })
+        .map(String)
+        .filter((entry) => entry.endsWith(".json"))
+        .sort()
+    : [];
+  const outputText =
+    files.length === 1 ? fs.readFileSync(path.join(outputRoot, files[0]), "utf8") : "";
+  return {
+    files,
+    output: outputText === "" ? ({} as CompilerOutput) : (JSON.parse(outputText) as CompilerOutput),
+    outputText,
+    status: result.status,
+    stderr: result.stderr,
+    stdout: result.stdout,
+  };
+}
+
+function assertSuccessfulBuild(result: BuildResult): void {
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.deepEqual(result.files, ["App.json"]);
+  assert.deepEqual(result.output.errors, []);
+  assert.deepEqual(result.output.warnings, []);
+}
+
+function assertBrokenBuild(result: BuildResult): void {
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.deepEqual(result.files, ["App.json"]);
+  assert.deepEqual(result.output, {
+    filename: "App.vue",
+    code: 'export default {\n  __name: "App",\n  setup(__props) {}\n};',
+    css: null,
+    errors: [
+      'Template compilation errors: [CompilerError { code: InvalidEndTag, message: "Invalid end tag.", loc: Some(SourceLocation { start: Position { offset: 18, line: 1, column: 19 }, end: Position { offset: 23, line: 1, column: 24 }, source: "</h2>" }) }, CompilerError { code: MissingEndTag, message: "Element is missing end tag.", loc: Some(SourceLocation { start: Position { offset: 3, line: 1, column: 4 }, end: Position { offset: 7, line: 1, column: 8 }, source: "<h1>" }) }]',
+    ],
+    warnings: [],
+    script_lang: "ts",
+    macro_artifacts: [],
+  });
+}
+
+function sha256(source: string | Buffer): string {
+  return createHash("sha256").update(source).digest("hex");
+}
+
+function count(source: string, needle: string): number {
+  return source.split(needle).length - 1;
 }
