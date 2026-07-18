@@ -2,6 +2,9 @@
 //!
 //! Transforms v-model directives for two-way binding.
 
+use oxc_ast::ast::Expression;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_carton::{Box, String, Vec};
 
 use crate::lane::TransformContext;
@@ -16,6 +19,46 @@ pub struct VModelModifiers {
     pub lazy: bool,
     pub number: bool,
     pub trim: bool,
+}
+
+/// Build the assignment callback shared by component and native `v-model`.
+///
+/// Vue 2 emitted an unparenthesized top-level conditional before `=`, making
+/// JavaScript assign only to its alternate branch. Preserve that quirk only in
+/// the explicitly selected compatibility mode; every other expression keeps
+/// the Vue 3 assignment shape and its normal invalid-target diagnostic.
+pub(crate) fn generate_model_assignment_handler(
+    ctx: &TransformContext<'_>,
+    value: &str,
+    assignment: &str,
+) -> String {
+    let is_legacy_conditional =
+        ctx.template_syntax_quirks() && super::expression::expression_is_safe_to_parse(value) && {
+            let allocator = oxc_allocator::Allocator::default();
+            let source_type = if ctx.options.is_ts {
+                SourceType::ts().with_module(true)
+            } else {
+                SourceType::default().with_module(true)
+            };
+            matches!(
+                Parser::new(&allocator, value, source_type).parse_expression(),
+                Ok(Expression::ConditionalExpression(_))
+            )
+        };
+
+    let mut handler = String::with_capacity(value.len() + assignment.len() + 16);
+    handler.push_str("$event => (");
+    if !is_legacy_conditional {
+        handler.push('(');
+    }
+    handler.push_str(value);
+    if !is_legacy_conditional {
+        handler.push(')');
+    }
+    handler.push_str(" = ");
+    handler.push_str(assignment);
+    handler.push(')');
+    handler
 }
 
 /// Parse v-model modifiers from directive modifiers

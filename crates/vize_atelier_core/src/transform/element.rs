@@ -4,6 +4,7 @@ use vize_carton::{Box, String, Vec, capitalize, is_builtin_directive, is_native_
 
 use crate::errors::ErrorCode;
 use crate::steps::expression::process_inline_handler;
+use crate::steps::v_model::generate_model_assignment_handler;
 use crate::steps::v_slot::validate_v_slot_usage;
 use crate::{
     ConstantType, DirectiveNode, ElementNode, ElementType, ExpressionNode, InterpolationNode,
@@ -354,11 +355,7 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
 
             // Build handler expression
             let handler = if is_component {
-                let mut out = String::with_capacity(raw_value_exp.len() + 20);
-                out.push_str("$event => ((");
-                out.push_str(raw_value_exp.as_str());
-                out.push_str(") = $event)");
-                out
+                generate_model_assignment_handler(ctx, raw_value_exp.as_str(), "$event")
             } else {
                 // For native elements, check modifiers
                 let has_number = dir.modifiers.iter().any(|m| m.content == "number");
@@ -375,13 +372,11 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                     wrapped.push(')');
                     target_value = wrapped;
                 }
-                let mut out = String::with_capacity(raw_value_exp.len() + target_value.len() + 16);
-                out.push_str("$event => ((");
-                out.push_str(raw_value_exp.as_str());
-                out.push_str(") = ");
-                out.push_str(target_value.as_str());
-                out.push(')');
-                out
+                generate_model_assignment_handler(
+                    ctx,
+                    raw_value_exp.as_str(),
+                    target_value.as_str(),
+                )
             };
 
             let dir_loc = dir.loc.clone();
@@ -571,10 +566,8 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
         // For native elements: process in reverse order to preserve indices during insertion
         for data in vmodel_data.iter().rev() {
             // Keep v-model directive, insert onUpdate:modelValue handler right after it
-            let mut handler = String::with_capacity(data.raw_value_exp.len() + 20);
-            handler.push_str("$event => ((");
-            handler.push_str(data.raw_value_exp.as_str());
-            handler.push_str(") = $event)");
+            let handler =
+                generate_model_assignment_handler(ctx, data.raw_value_exp.as_str(), "$event");
             let raw_handler_expr = ExpressionNode::Simple(Box::new_in(
                 SimpleExpressionNode::new(handler.as_str(), false, data.dir_loc.clone()),
                 allocator,
