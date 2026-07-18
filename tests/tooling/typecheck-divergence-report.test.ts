@@ -196,18 +196,15 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
   }
 });
 
-test("typecheck divergence report records an unconfigured false-negative budget", () => {
+test("typecheck divergence report requires a false-negative budget", () => {
   const fixture = setup();
   try {
     const registry = readJson(fixture.registryPath);
     delete registry.projects[0].typecheckPerformance.maxFalseNegativeRatio;
     writeJson(fixture.registryPath, registry);
     const result = run(fixture);
-    assert.equal(result.status, 0, result.stderr);
-    const artifact = readJson(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"));
-    assert.equal(artifact.budget.maxFalseNegativeRatio, null);
-    assert.equal(artifact.budget.falseNegativePassed, null);
-    assert.equal(artifact.budget.passed, null);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /maxFalseNegativeRatio must be a finite number/);
   } finally {
     cleanup(fixture);
   }

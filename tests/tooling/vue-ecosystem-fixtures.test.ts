@@ -32,6 +32,7 @@ interface FixtureProject {
     compareTo: string;
     hangTimeoutMs: number;
     maxFalsePositiveRatio: number;
+    maxFalseNegativeRatio: number;
     largeProjectRegressionTarget?: boolean;
   };
 }
@@ -295,6 +296,30 @@ test("Directus fixture is wired into Vize-wide check and lint lanes", () => {
   assert.match(pkg.scripts["test:lint"], /snapshots\/lint\/directus\.ts/);
 });
 
+test("typecheck baselines have complete budgets and one target per matrix shard", () => {
+  const registry = readRegistry();
+  const shardCounts = Array.from({ length: 11 }, () => 0);
+  const targets = registry.projects.filter((project, index) => {
+    if (project.typecheckPerformance?.enabled !== true) return false;
+    shardCounts[index % shardCounts.length] += 1;
+    return true;
+  });
+
+  assert.equal(targets.length, shardCounts.length);
+  assert.deepEqual(
+    shardCounts,
+    Array.from({ length: 11 }, () => 1),
+  );
+  for (const project of targets) {
+    const performance = project.typecheckPerformance!;
+    assert.equal(performance.compareTo, "vue-tsc", `${project.id} baseline`);
+    assert.ok(Number.isSafeInteger(performance.hangTimeoutMs));
+    assert.ok(performance.hangTimeoutMs > 0 && performance.hangTimeoutMs <= 300_000);
+    assert.ok(performance.maxFalsePositiveRatio >= 0 && performance.maxFalsePositiveRatio <= 1);
+    assert.equal(performance.maxFalseNegativeRatio, performance.maxFalsePositiveRatio);
+  }
+});
+
 test("large typechecker fixtures have performance safeguards and bench wiring", () => {
   const registry = readRegistry();
   const benchCheck = fs.readFileSync(path.join(root, "bench", "check.ts"), "utf8");
@@ -306,6 +331,7 @@ test("large typechecker fixtures have performance safeguards and bench wiring", 
     assert.equal(project?.typecheckPerformance?.largeProjectRegressionTarget, true);
     assert.ok((project?.typecheckPerformance?.hangTimeoutMs ?? Infinity) <= 300_000);
     assert.ok((project?.typecheckPerformance?.maxFalsePositiveRatio ?? Infinity) <= 0.02);
+    assert.ok((project?.typecheckPerformance?.maxFalseNegativeRatio ?? Infinity) <= 0.02);
     assert.match(benchCheck, new RegExp(`name:\\s*"${id}"`), `${id} should be in bench/check.ts`);
   }
 });

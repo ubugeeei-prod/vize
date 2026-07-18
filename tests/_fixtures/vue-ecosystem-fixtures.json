@@ -28,7 +28,8 @@
         "enabled": true,
         "compareTo": "vue-tsc",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05
+        "maxFalsePositiveRatio": 0.05,
+        "maxFalseNegativeRatio": 0.05
       }
     },
     {
@@ -57,7 +58,8 @@
         "enabled": true,
         "compareTo": "vue-tsc",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05
+        "maxFalsePositiveRatio": 0.05,
+        "maxFalseNegativeRatio": 0.05
       }
     },
     {
@@ -86,7 +88,8 @@
         "enabled": true,
         "compareTo": "vue-tsc",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05
+        "maxFalsePositiveRatio": 0.05,
+        "maxFalseNegativeRatio": 0.05
       }
     },
     {
@@ -115,7 +118,8 @@
         "enabled": true,
         "compareTo": "vue-tsc",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05
+        "maxFalsePositiveRatio": 0.05,
+        "maxFalseNegativeRatio": 0.05
       }
     },
     {
@@ -144,7 +148,8 @@
         "enabled": true,
         "compareTo": "vue-tsc",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05
+        "maxFalsePositiveRatio": 0.05,
+        "maxFalseNegativeRatio": 0.05
       }
     },
     {
@@ -179,7 +184,8 @@
         "enabled": true,
         "compareTo": "vue-tsc",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05
+        "maxFalsePositiveRatio": 0.05,
+        "maxFalseNegativeRatio": 0.05
       }
     },
     {
@@ -208,7 +214,8 @@
         "enabled": true,
         "compareTo": "vue-tsc",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05
+        "maxFalsePositiveRatio": 0.05,
+        "maxFalseNegativeRatio": 0.05
       }
     },
     {
@@ -237,21 +244,9 @@
         "enabled": true,
         "compareTo": "vue-tsc",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05
+        "maxFalsePositiveRatio": 0.05,
+        "maxFalseNegativeRatio": 0.05
       }
-    },
-    {
-      "id": "directus",
-      "displayName": "Directus",
-      "kind": "application",
-      "fixturePath": "tests/_fixtures/_git/directus",
-      "repository": "https://github.com/directus/directus",
-      "revision": "e0444f46909d530c4af243313a5320571992a30c",
-      "license": { "spdx": "LicenseRef-MSCL-1.0-GPL", "files": ["license", "app/license"] },
-      "vueGlobs": ["app/src/**/*.vue"],
-      "tsconfig": "app/tsconfig.json",
-      "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
-      "diff": "e2e-vrt"
     },
     {
       "id": "voicevox",
@@ -280,6 +275,7 @@
         "compareTo": "vue-tsc",
         "hangTimeoutMs": 300000,
         "maxFalsePositiveRatio": 0.02,
+        "maxFalseNegativeRatio": 0.02,
         "largeProjectRegressionTarget": true
       }
     },
@@ -310,6 +306,7 @@
         "compareTo": "vue-tsc",
         "hangTimeoutMs": 300000,
         "maxFalsePositiveRatio": 0.02,
+        "maxFalseNegativeRatio": 0.02,
         "largeProjectRegressionTarget": true
       }
     },
@@ -340,8 +337,22 @@
         "compareTo": "vue-tsc",
         "hangTimeoutMs": 300000,
         "maxFalsePositiveRatio": 0.02,
+        "maxFalseNegativeRatio": 0.02,
         "largeProjectRegressionTarget": true
       }
+    },
+    {
+      "id": "directus",
+      "displayName": "Directus",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/directus",
+      "repository": "https://github.com/directus/directus",
+      "revision": "e0444f46909d530c4af243313a5320571992a30c",
+      "license": { "spdx": "LicenseRef-MSCL-1.0-GPL", "files": ["license", "app/license"] },
+      "vueGlobs": ["app/src/**/*.vue"],
+      "tsconfig": "app/tsconfig.json",
+      "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+      "diff": "e2e-vrt"
     },
     {
       "id": "motion-vue",

@@ -176,22 +176,19 @@ function validatePerformanceConfig(performance) {
     throw new Error("typecheckPerformance.hangTimeoutMs must be a positive safe integer");
   }
   ratio(performance.maxFalsePositiveRatio, "maxFalsePositiveRatio");
-  if (performance.maxFalseNegativeRatio != null) {
-    ratio(performance.maxFalseNegativeRatio, "maxFalseNegativeRatio");
-  }
+  ratio(performance.maxFalseNegativeRatio, "maxFalseNegativeRatio");
 }
 
 function evaluateBudget(performance, summary) {
-  const falseNegativeLimit = performance.maxFalseNegativeRatio ?? null;
+  const falseNegativeLimit = performance.maxFalseNegativeRatio;
   const falsePositivePassed = summary.falsePositiveRatio <= performance.maxFalsePositiveRatio;
-  const falseNegativePassed =
-    falseNegativeLimit == null ? null : summary.falseNegativeRatio <= falseNegativeLimit;
+  const falseNegativePassed = summary.falseNegativeRatio <= falseNegativeLimit;
   return {
     maxFalsePositiveRatio: performance.maxFalsePositiveRatio,
     maxFalseNegativeRatio: falseNegativeLimit,
     falsePositivePassed,
     falseNegativePassed,
-    passed: falseNegativePassed == null ? null : falsePositivePassed && falseNegativePassed,
+    passed: falsePositivePassed && falseNegativePassed,
   };
 }
 
