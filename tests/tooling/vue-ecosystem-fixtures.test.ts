@@ -53,6 +53,7 @@ interface SubmoduleEntry {
 }
 
 const requestedFixtures = [
+  "airi",
   "vue-vben-admin",
   "hoppscotch",
   "element-plus",
@@ -76,6 +77,7 @@ const requestedFixtures = [
 ] as const;
 const requiredTypecheckProjects = ["voicevox", "elk", "misskey"] as const;
 const newlyAddedSubmodules = new Set([
+  "airi",
   "vue-vben-admin",
   "hoppscotch",
   "element-plus",
@@ -97,6 +99,7 @@ const newlyAddedSubmodules = new Set([
   "vue-termui",
 ]);
 const requestedFixtureLicenses = new Map<string, string>([
+  ["airi", "MIT"],
   ["motion-vue", "MIT"],
   ["shadcn-vue", "MIT"],
   ["inspira-ui", "MIT"],

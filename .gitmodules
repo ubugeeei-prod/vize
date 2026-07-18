@@ -664,3 +664,7 @@
 	path = tests/_fixtures/_git/vue-cal-v4
 	url = https://github.com/antoniandre/vue-cal-v4
 	shallow = true
+[submodule "tests/_fixtures/_git/airi"]
+	path = tests/_fixtures/_git/airi
+	url = https://github.com/moeru-ai/airi
+	shallow = true

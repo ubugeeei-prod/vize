@@ -2903,6 +2903,36 @@
         "lsp"
       ],
       "diff": "curator-compare"
+    },
+    {
+      "id": "airi",
+      "displayName": "Project AIRI",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/airi",
+      "repository": "https://github.com/moeru-ai/airi",
+      "revision": "b43b8944bfba4113233ccfc090f373a6e869dff6",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "apps/**/*.vue",
+        "docs/**/*.vue",
+        "packages/**/*.vue",
+        "plugins/**/*.vue"
+      ],
+      "tsconfig": "tsconfig.json",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
     }
   ]
 }
