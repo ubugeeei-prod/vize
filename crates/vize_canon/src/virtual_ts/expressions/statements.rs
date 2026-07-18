@@ -248,6 +248,9 @@ pub(super) fn generate_expression_statement(
         strip_js_comments(expr.content.as_str())
     );
     let trimmed_expression = expression.as_ref().trim();
+    if trimmed_expression.is_empty() {
+        return;
+    }
     let rewritten_expression =
         rewrite_reserved_template_prop(trimmed_expression, template_prop_names);
     let generated_expression = rewritten_expression
