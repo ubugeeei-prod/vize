@@ -2,6 +2,7 @@ use oxc_ast::ast::{ArrayExpressionElement, Expression, ObjectExpression, ObjectP
 use vize_carton::String;
 use vize_croquis::{Croquis, OptionGroup};
 
+pub(super) use crate::options_api_setup_spread::is_safe_value_identifier;
 use crate::virtual_ts::props::OptionsApiPropsSource;
 
 pub(super) fn extend_options_api_descriptor_names<'a>(
@@ -70,15 +71,4 @@ fn expression_must_stay_in_value_scope(expression: &Expression<'_>) -> bool {
         }
         _ => false,
     }
-}
-
-pub(super) fn is_safe_value_identifier(name: &str) -> bool {
-    let mut chars = name.chars();
-    let Some(first) = chars.next() else {
-        return false;
-    };
-    if !(first.is_ascii_alphabetic() || first == '_' || first == '$') {
-        return false;
-    }
-    chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
 }

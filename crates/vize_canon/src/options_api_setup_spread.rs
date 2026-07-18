@@ -283,7 +283,13 @@ fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
     }
 }
 
-fn is_safe_value_identifier(name: &str) -> bool {
+pub(crate) fn is_safe_value_identifier(name: &str) -> bool {
+    // Literal tokens can surface from expression identifier extraction, but
+    // can never be Options API bindings. Keep contextual names such as `as`:
+    // existing component APIs legitimately expose those in templates.
+    if matches!(name, "false" | "true" | "null") {
+        return false;
+    }
     let mut chars = name.chars();
     let Some(first) = chars.next() else {
         return false;
