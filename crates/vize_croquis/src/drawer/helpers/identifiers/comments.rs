@@ -42,7 +42,7 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
             continue;
         }
 
-        if c == b'/' && i + 1 < len {
+        if c == b'/' && i + 1 < len && !is_escaped(bytes, i) {
             let next = bytes[i + 1];
 
             if next == b'/' {
@@ -101,4 +101,12 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
     } else {
         Cow::Borrowed(expr)
     }
+}
+
+fn is_escaped(bytes: &[u8], index: usize) -> bool {
+    let mut cursor = index;
+    while cursor > 0 && bytes[cursor - 1] == b'\\' {
+        cursor -= 1;
+    }
+    (index - cursor) % 2 == 1
 }

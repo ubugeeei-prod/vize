@@ -76,6 +76,24 @@ fn test_strip_js_comments_preserves_non_ascii_literals_after_comments() {
 }
 
 #[test]
+fn test_strip_js_comments_preserves_regex_with_escaped_slashes() {
+    let expression = r#"url.replace(/^http:\/\//, '') // remove this comment
++ suffix"#;
+    let stripped = strip_js_comments(expression);
+
+    assert_eq!(
+        stripped.as_ref(),
+        concat!(r#"url.replace(/^http:\/\//, '') "#, "\n+ suffix")
+    );
+
+    let block_like = r#"value.match(/\/\*literal/) /* remove this comment */"#;
+    assert_eq!(
+        strip_js_comments(block_like).as_ref(),
+        r#"value.match(/\/\*literal/)  "#
+    );
+}
+
+#[test]
 fn test_extract_identifiers_ignores_regex_literals() {
     fn to_strings(ids: Vec<CompactString>) -> Vec<CompactString> {
         ids
