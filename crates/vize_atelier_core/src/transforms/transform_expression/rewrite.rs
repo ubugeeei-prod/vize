@@ -167,21 +167,14 @@ pub(crate) fn rewrite_expression(
     ctx: &TransformContext<'_>,
     as_params: bool,
 ) -> RewriteResult {
-    // Skip parsing for inputs that would overflow the parser stack — return
-    // the original content unchanged so the compile lane emits a normal
-    // diagnostic for the surrounding directive instead of aborting. (#956)
-    if super::expression_exceeds_max_depth(content) {
+    // Pass raw content through instead of aborting: depth overflow keeps the
+    // silent passthrough (#956); mismatched delimiters surface a diagnostic.
+    let overflows = super::expression_exceeds_max_depth(content);
+    if overflows || !super::expression_has_balanced_delimiters(content) {
         return RewriteResult {
             code: String::new(content),
             used_unref: false,
-            parse_error: None,
-        };
-    }
-    if !super::expression_has_balanced_delimiters(content) {
-        return RewriteResult {
-            code: String::new(content),
-            used_unref: false,
-            parse_error: Some(String::new("mismatched expression delimiters")),
+            parse_error: (!overflows).then(|| String::new("mismatched expression delimiters")),
         };
     }
     // First, if this is TypeScript, strip type annotations
