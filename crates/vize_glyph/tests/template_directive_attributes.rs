@@ -1,6 +1,67 @@
 use vize_glyph::{FormatOptions, format_sfc, format_template};
 
 #[test]
+fn object_v_bind_stays_between_independently_sorted_attribute_groups() {
+    let source = r#"<a title="link" class="router-link" v-bind="attrs" target="_blank" rel="noopener" :href="href"></a>"#;
+    let options = FormatOptions {
+        print_width: 200,
+        ..FormatOptions::default()
+    };
+
+    let first = format_template(source, &options).unwrap();
+    let second = format_template(&first, &options).unwrap();
+
+    assert_eq!(
+        first.as_str(),
+        r#"<a class="router-link" title="link" v-bind="attrs" rel="noopener" target="_blank" :href="href"></a>"#
+    );
+    assert_eq!(first, second);
+}
+
+#[test]
+fn object_v_on_stays_between_independently_sorted_event_groups() {
+    let source = r#"<button @keyup="up" @click="click" v-on="listeners" @mouseup="up" @mousedown="down"></button>"#;
+    let options = FormatOptions {
+        print_width: 200,
+        ..FormatOptions::default()
+    };
+
+    let first = format_template(source, &options).unwrap();
+    let second = format_template(&first, &options).unwrap();
+
+    assert_eq!(
+        first.as_str(),
+        r#"<button @click="click" @keyup="up" v-on="listeners" @mousedown="down" @mouseup="up"></button>"#
+    );
+    assert_eq!(first, second);
+}
+
+#[test]
+fn object_directive_modifiers_are_also_ordering_barriers() {
+    let options = FormatOptions {
+        print_width: 200,
+        ..FormatOptions::default()
+    };
+    let cases = [
+        (
+            r#"<div title="x" v-bind.prop="attrs" id="y"></div>"#,
+            r#"<div title="x" v-bind.prop="attrs" id="y"></div>"#,
+        ),
+        (
+            r#"<div @keyup="up" v-on.stop="listeners" @click="click"></div>"#,
+            r#"<div @keyup="up" v-on.stop="listeners" @click="click"></div>"#,
+        ),
+    ];
+
+    for (source, expected) in cases {
+        let first = format_template(source, &options).unwrap();
+        let second = format_template(&first, &options).unwrap();
+        assert_eq!(first.as_str(), expected);
+        assert_eq!(first, second);
+    }
+}
+
+#[test]
 fn multiline_directive_attribute_value_is_indented_from_attribute_depth() {
     let source = r#"<span
   :class='[

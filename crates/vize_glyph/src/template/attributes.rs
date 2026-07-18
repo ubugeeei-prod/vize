@@ -22,6 +22,24 @@ pub(crate) struct ParsedAttribute {
 
 /// Sort attributes based on the configured options.
 pub(crate) fn sort_attributes(attrs: &mut [ParsedAttribute], options: &FormatOptions) {
+    let mut segment_start = 0;
+    for barrier_index in 0..attrs.len() {
+        if !is_order_sensitive_spread(&attrs[barrier_index].name) {
+            continue;
+        }
+
+        sort_attribute_segment(&mut attrs[segment_start..barrier_index], options);
+        segment_start = barrier_index + 1;
+    }
+    sort_attribute_segment(&mut attrs[segment_start..], options);
+}
+
+/// Sort one contiguous group that cannot cross an object directive spread.
+///
+/// Vue applies object `v-bind` and `v-on` directives in source order. Moving
+/// an attribute across either directive changes the order of `mergeProps`
+/// arguments and can therefore change which value wins at runtime.
+fn sort_attribute_segment(attrs: &mut [ParsedAttribute], options: &FormatOptions) {
     match options.attribute_sort_order {
         AttributeSortOrder::Alphabetical => {
             // Decorate-sort-undecorate: `attr_sort_key` lowercases the name,
@@ -48,6 +66,10 @@ pub(crate) fn sort_attributes(attrs: &mut [ParsedAttribute], options: &FormatOpt
             });
         }
     }
+}
+
+fn is_order_sensitive_spread(name: &str) -> bool {
+    name == "v-bind" || name.starts_with("v-bind.") || name == "v-on" || name.starts_with("v-on.")
 }
 
 /// Generate a sort key for alphabetical ordering within a group.
