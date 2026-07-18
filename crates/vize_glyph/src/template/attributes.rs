@@ -22,15 +22,12 @@ pub(crate) struct ParsedAttribute {
 
 /// Sort attributes based on the configured options.
 pub(crate) fn sort_attributes(attrs: &mut [ParsedAttribute], options: &FormatOptions) {
-    let mut segment_start = 0;
-    for barrier_index in 0..attrs.len() {
-        if !is_order_sensitive_spread(&attrs[barrier_index].name) {
-            continue;
-        }
-        sort_attribute_segment(&mut attrs[segment_start..barrier_index], options);
-        segment_start = barrier_index + 1;
+    // `split_mut` yields the segments between order-sensitive spreads while
+    // leaving each `v-bind`/`v-on` object directive fixed in place, so merge
+    // precedence cannot change.
+    for segment in attrs.split_mut(|attr| is_order_sensitive_spread(&attr.name)) {
+        sort_attribute_segment(segment, options);
     }
-    sort_attribute_segment(&mut attrs[segment_start..], options);
 }
 
 /// Sort one contiguous group that cannot cross an object directive spread.
