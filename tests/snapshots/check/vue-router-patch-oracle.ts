@@ -40,6 +40,8 @@ const brokenOutputSha256 = "15e571e43307b3ac025db3929f4f11029f1b7f5991d11b405433
 const brokenCodeSha256 = "eed24c03d97029fca5d3d13f81ac416099d3876e7f36572d113acc0768872679";
 const cleanHref = ':href="String(to)"';
 const brokenHref = ':href="String(to"';
+const cleanClick = '@click="navigate"';
+const brokenClick = 'v-on:click="navigate"';
 
 type CompilerOutput = {
   code: string;
@@ -59,6 +61,23 @@ type BuildResult = {
   stderr: string;
   stdout: string;
 };
+
+type LintReport = Array<{
+  errorCount: number;
+  file: string;
+  messages: Array<{
+    column: number;
+    endColumn: number;
+    endLine: number;
+    help: string;
+    line: number;
+    message: string;
+    ruleDocsPath: string;
+    ruleId: string;
+    severity: number;
+  }>;
+  warningCount: number;
+}>;
 
 test("Vue Router compiler is deterministic and recovers from an exact expression error", async () => {
   await withPinnedFixtureWorkspace(
@@ -146,6 +165,64 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
       const repaired = runBuild(fixture.workspaceDir, ".vize-compiler-repaired");
       assertSuccessfulBuild(repaired);
       assert.equal(repaired.outputText, cleanFirst.outputText, "repair must restore exact output");
+      assert.equal(fixture.read(appPath), source);
+      assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
+    },
+  );
+});
+
+test("Vue Router linter reports and repairs one exact event directive edit", async () => {
+  await withPinnedFixtureWorkspace(
+    { fixtureId: "vue-router", includePaths: [appPath] },
+    async (fixture) => {
+      fixture.write(
+        "vize.config.json",
+        `${JSON.stringify(
+          {
+            linter: {
+              preset: "incremental",
+              rules: { "vue/v-on-style": "error" },
+            },
+          },
+          null,
+          2,
+        )}\n`,
+      );
+
+      const source = fixture.read(appPath);
+      const sourceMode = fs.statSync(fixture.resolve(appPath)).mode & 0o777;
+      assert.equal(sha256(source), sourceSha256, "pinned Vue Router source changed");
+      assert.equal(count(source, cleanClick), 1, "linter patch anchor must stay unique");
+
+      const cleanFirst = runLint(fixture.workspaceDir);
+      const cleanSecond = runLint(fixture.workspaceDir);
+      assertCleanLint(cleanFirst);
+      assertCleanLint(cleanSecond);
+      assert.equal(cleanSecond.stdout, cleanFirst.stdout, "clean lint JSON must be byte-stable");
+      assert.equal(fixture.read(appPath), source, "read-only lint must preserve the source");
+      assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
+
+      const brokenSource = fixture.applyExactPatch(appPath, cleanClick, brokenClick);
+      const brokenFirst = runLint(fixture.workspaceDir);
+      const brokenSecond = runLint(fixture.workspaceDir);
+      assertBrokenLint(brokenFirst);
+      assertBrokenLint(brokenSecond);
+      assert.equal(brokenSecond.stdout, brokenFirst.stdout, "broken lint JSON must be byte-stable");
+      assert.equal(fixture.read(appPath), brokenSource, "read-only lint must preserve the edit");
+      assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
+
+      const fixed = runLint(fixture.workspaceDir, true);
+      assertCleanLint(fixed);
+      assert.equal(fixed.stdout, cleanFirst.stdout, "fixed lint JSON must match clean JSON");
+      assert.equal(fixture.read(appPath), source, "--fix must restore the exact pinned source");
+      assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
+
+      const repaired = runLint(fixture.workspaceDir);
+      const idempotentFix = runLint(fixture.workspaceDir, true);
+      assertCleanLint(repaired);
+      assertCleanLint(idempotentFix);
+      assert.equal(repaired.stdout, cleanFirst.stdout);
+      assert.equal(idempotentFix.stdout, cleanFirst.stdout);
       assert.equal(fixture.read(appPath), source);
       assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
     },
@@ -376,6 +453,73 @@ function assertBrokenBuild(result: BuildResult): void {
   assertParsesAsModule(result.output.code, "broken vue-router AppLink.json#code");
   assert.equal(result.output.code.includes("_createElementBlock"), false, result.output.code);
   assert.equal(count(result.output.code, "return {"), 1, result.output.code);
+}
+
+type LintResult = {
+  report: LintReport;
+  status: number | null;
+  stderr: string;
+  stdout: string;
+};
+
+function runLint(workspaceDir: string, fix = false): LintResult {
+  const [command, ...prefixArgs] = resolveVizeCommand();
+  const result = spawnSync(
+    command,
+    [...prefixArgs, "lint", appPath, "--format", "json", ...(fix ? ["--fix"] : [])],
+    {
+      cwd: workspaceDir,
+      encoding: "utf8",
+      env: { ...process.env, LANG: "C", LC_ALL: "C" },
+      maxBuffer: 64 * 1024 * 1024,
+      timeout: 120_000,
+    },
+  );
+  if (result.error != null) throw result.error;
+  return {
+    report: JSON.parse(result.stdout) as LintReport,
+    status: result.status,
+    stderr: result.stderr,
+    stdout: result.stdout,
+  };
+}
+
+function assertCleanLint(result: LintResult): void {
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(result.stderr, "");
+  assert.deepEqual(result.report, [
+    {
+      file: appPath,
+      messages: [],
+      errorCount: 0,
+      warningCount: 0,
+    },
+  ]);
+}
+
+function assertBrokenLint(result: LintResult): void {
+  assert.equal(result.status, 1, result.stderr || result.stdout);
+  assert.equal(result.stderr, "");
+  assert.deepEqual(result.report, [
+    {
+      file: appPath,
+      messages: [
+        {
+          ruleId: "vue/v-on-style",
+          ruleDocsPath: "docs/content/rules/vue.md",
+          severity: 2,
+          message: "[vize:vue/v-on-style] Prefer shorthand `@` over `v-on:`",
+          line: 23,
+          column: 5,
+          endLine: 23,
+          endColumn: 26,
+          help: 'Use @event="handler" instead of v-on:event="handler"',
+        },
+      ],
+      errorCount: 1,
+      warningCount: 0,
+    },
+  ]);
 }
 
 function sha256(source: string | Buffer): string {
