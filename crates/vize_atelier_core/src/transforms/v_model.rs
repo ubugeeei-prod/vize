@@ -46,7 +46,7 @@ pub(crate) fn generate_model_assignment_handler(
             )
         };
 
-    let mut handler = String::with_capacity(value.len() + assignment.len() + 16);
+    let mut handler = String::with_capacity(value.len() + assignment.len() + 17);
     handler.push_str("$event => (");
     if !is_legacy_conditional {
         handler.push('(');
