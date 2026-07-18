@@ -178,13 +178,11 @@ fn append_local_imports(
     explicit_input_root: Option<&Path>,
     validate_inputs: bool,
 ) {
-    for path in discovered {
-        if local_import_is_allowed(&path, explicit_input_root, validate_inputs)
-            && !files.contains(&path)
-        {
-            files.push(path);
-        }
-    }
+    files.extend(
+        discovered
+            .into_iter()
+            .filter(|path| local_import_is_allowed(path, explicit_input_root, validate_inputs)),
+    );
     files.sort();
     files.dedup();
 }
