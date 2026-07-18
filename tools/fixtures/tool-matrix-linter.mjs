@@ -23,13 +23,16 @@ const messageKeysWithHelp = [
   "severity",
 ];
 
-export function validateLinterOutput(project, output, exitCode) {
+export function validateLinterOutput(project, output, exitCode, expectedFiles = null) {
   if (!Array.isArray(output)) invalid("envelope must be an array");
   if (project.expectedVueFileCount === 0 && output.length !== 0) {
     invalid(`expected zero checked files, received ${output.length}`);
   }
   if (project.expectedVueFileCount !== 0 && output.length === 0) {
     invalid("non-empty fixture linted zero Vue files");
+  }
+  if (expectedFiles != null && output.length !== expectedFiles.length) {
+    invalid(`checked file count ${output.length} does not match ${expectedFiles.length} inputs`);
   }
 
   const seenFiles = new Set();
@@ -80,6 +83,19 @@ export function validateLinterOutput(project, output, exitCode) {
       );
     }
     totalErrors += errorCount;
+  }
+
+  const checkedFiles = output.map((file) => file.file);
+  if (expectedFiles != null) {
+    const checkedSet = new Set(checkedFiles);
+    const expectedSet = new Set(expectedFiles);
+    const missing = expectedFiles.filter((file) => !checkedSet.has(file));
+    const unexpected = checkedFiles.filter((file) => !expectedSet.has(file));
+    if (missing.length > 0 || unexpected.length > 0) {
+      invalid(
+        `checked files do not match inputs: missing [${missing.join(", ")}], unexpected [${unexpected.join(", ")}]`,
+      );
+    }
   }
 
   const expectedExitCode = totalErrors > 0 ? 1 : 0;

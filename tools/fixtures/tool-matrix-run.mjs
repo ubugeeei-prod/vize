@@ -46,8 +46,10 @@ export function runTool(project, tool, args, launch, outputDir) {
   if (!fixtureExists) return { ...base, status: "missing-fixture" };
   const formatterStateBefore =
     tool === "formatter" ? snapshotFormatterInputs(cwd, project.vueGlobs) : null;
-  const expectedTypecheckerFiles =
-    tool === "typechecker" ? collectVueInputPaths(cwd, project.vueGlobs) : null;
+  const expectedToolFiles =
+    tool === "typechecker" || tool === "linter"
+      ? collectVueInputPaths(cwd, project.vueGlobs)
+      : null;
 
   try {
     const startedAt = Date.now();
@@ -95,19 +97,14 @@ export function runTool(project, tool, args, launch, outputDir) {
       }
       if (tool === "typechecker" && payload.parseError == null) {
         try {
-          validateTypecheckerOutput(
-            project,
-            payload.parsed,
-            result.status,
-            expectedTypecheckerFiles,
-          );
+          validateTypecheckerOutput(project, payload.parsed, result.status, expectedToolFiles);
         } catch (error) {
           payload.validationError = errorMessage(error);
         }
       }
       if (tool === "linter" && payload.parseError == null) {
         try {
-          validateLinterOutput(project, payload.parsed, result.status);
+          validateLinterOutput(project, payload.parsed, result.status, expectedToolFiles);
         } catch (error) {
           payload.validationError = errorMessage(error);
         }

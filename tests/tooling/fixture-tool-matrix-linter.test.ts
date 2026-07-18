@@ -51,7 +51,30 @@ test("linter oracle accepts exact error, warning, clean, and zero-file reports",
   clean[0].warningCount = 0;
   validateLinterOutput({ id: "clean" }, clean, 0);
 
-  validateLinterOutput({ id: "no-sfc", expectedVueFileCount: 0 }, [], 0);
+  validateLinterOutput({ id: "no-sfc", expectedVueFileCount: 0 }, [], 0, []);
+});
+
+test("linter oracle requires every fixture input and rejects substitutions", () => {
+  const output = validOutput();
+  output.push({
+    file: "src/Card.vue",
+    messages: [],
+    errorCount: 0,
+    warningCount: 0,
+  });
+
+  validateLinterOutput({ id: "complete" }, output, 1, ["src/App.vue", "src/Card.vue"]);
+
+  assert.throws(
+    () =>
+      validateLinterOutput({ id: "partial" }, validOutput(), 1, ["src/App.vue", "src/Card.vue"]),
+    /checked file count 1 does not match 2 inputs/,
+  );
+
+  assert.throws(
+    () => validateLinterOutput({ id: "substituted" }, validOutput(), 1, ["src/Other.vue"]),
+    /checked files do not match inputs: missing \[src\/Other\.vue\], unexpected \[src\/App\.vue\]/,
+  );
 });
 
 test("linter oracle rejects malformed or internally inconsistent reports", () => {
@@ -242,6 +265,46 @@ test("fixture tool matrix records linter schema failures", () => {
     assert.match(run.failure, /non-empty fixture linted zero Vue files/);
     const raw = JSON.parse(fs.readFileSync(path.resolve(root, run.outputPath as string), "utf8"));
     assert.match(raw.validationError, /non-empty fixture linted zero Vue files/);
+  } finally {
+    fs.rmSync(fixtureDir, { recursive: true, force: true });
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+    fs.rmSync(reportDir, { recursive: true, force: true });
+  }
+});
+
+test("fixture tool matrix rejects partial linter coverage", () => {
+  const fixtureDir = fs.mkdtempSync(
+    path.join(root, "tests", "_fixtures", "tool-matrix-linter-partial-"),
+  );
+  const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-linter-partial-"));
+  const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-linter-partial-report-"));
+  const executable = path.join(fakeDir, "fake-vize.mjs");
+  fs.mkdirSync(path.join(fixtureDir, "src"), { recursive: true });
+  fs.writeFileSync(path.join(fixtureDir, "src", "App.vue"), "<template />\n");
+  fs.writeFileSync(path.join(fixtureDir, "src", "Card.vue"), "<template />\n");
+  fs.writeFileSync(
+    executable,
+    `#!/usr/bin/env node
+process.stdout.write(JSON.stringify([{ file: "src/App.vue", messages: [], errorCount: 0, warningCount: 0 }]));\n`,
+  );
+  fs.chmodSync(executable, 0o755);
+
+  try {
+    const run = runTool(
+      {
+        id: "linter-partial-fixture",
+        fixturePath: path.relative(root, fixtureDir),
+        vueGlobs: ["**/*.vue"],
+      },
+      "linter",
+      { dryRun: false, timeoutMs: 5_000 },
+      { command: executable, prefix: [], label: executable },
+      reportDir,
+    );
+    assert.equal(run.status, "failed");
+    assert.match(run.failure, /checked file count 1 does not match 2 inputs/);
+    const raw = JSON.parse(fs.readFileSync(path.resolve(root, run.outputPath as string), "utf8"));
+    assert.match(raw.validationError, /checked file count 1 does not match 2 inputs/);
   } finally {
     fs.rmSync(fixtureDir, { recursive: true, force: true });
     fs.rmSync(fakeDir, { recursive: true, force: true });
