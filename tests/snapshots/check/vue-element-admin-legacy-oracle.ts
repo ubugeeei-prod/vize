@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -12,6 +13,7 @@ import {
   resolveTsgoBinary,
   runVizeCheck,
   symlinkVueTypes,
+  type CommandResult,
   type VizeCheckResult,
 } from "../../_helpers/realworld-typecheck.ts";
 import { isDiagnosticsForUri } from "../../tooling/support/lsp/assertions.ts";
@@ -22,6 +24,9 @@ const sourcePath = "src/views/dashboard/admin/components/TransactionTable.vue";
 const cleanBinding = ':data="list"';
 const brokenBinding = ':data="missingList"';
 const brokenLintBinding = 'v-bind:data="list"';
+const formattedTable = '  <el-table style="width: 100%;padding-top: 15px;" :data="list">';
+const brokenFormattedTable = '  <el-table style="width: 100%;padding-top: 15px;"  :data="list">';
+const formattedSourceSha256 = "1a0656daedde4d7f0f50e96d7ab367c94b920d452f71e775b09a25e3c9521804";
 
 type CompilerOutput = {
   code: string;
@@ -186,6 +191,80 @@ test("vue-element-admin linter reports and repairs one exact legacy SFC edit", a
       const repaired = runVizeLint(fixture.workspaceDir, sourcePath);
       assertCleanLint(repaired);
       assert.equal(repaired.stdout, cleanFirst.stdout, "repaired lint JSON must match clean JSON");
+    },
+  );
+});
+
+test("vue-element-admin formatter converges and repairs one exact legacy SFC edit", async () => {
+  await withPinnedFixtureWorkspace(
+    { fixtureId: "vue-element-admin", includePaths: [sourcePath] },
+    async (fixture) => {
+      fixture.write("vize.config.json", json({ compiler: { compatibility: { vueVersion: "2" } } }));
+
+      const pinnedSource = fixture.read(sourcePath);
+      const sourceMode = fs.statSync(fixture.resolve(sourcePath)).mode & 0o777;
+      const initialCheck = runVizeFmt(fixture.workspaceDir, sourcePath, "--check");
+      assertFmtResult(initialCheck, 1, wouldReformatOutput);
+      assert.equal(
+        fixture.read(sourcePath),
+        pinnedSource,
+        "--check must preserve the pinned source",
+      );
+
+      const initialWrite = runVizeFmt(fixture.workspaceDir, sourcePath, "--write");
+      assertFmtResult(initialWrite, 0, reformattedOutput);
+      const formattedSource = fixture.read(sourcePath);
+      assert.notEqual(formattedSource, pinnedSource);
+      assert.equal(sha256(formattedSource), formattedSourceSha256);
+      assert.equal(fs.statSync(fixture.resolve(sourcePath)).mode & 0o777, sourceMode);
+      assert.equal(formattedSource.startsWith("<script>\n"), true);
+      assert.equal(formattedSource.endsWith("</template>\n"), true);
+      assert.equal(formattedSource.includes("\r"), false);
+      assert.equal(count(formattedSource, 'slot-scope="scope"'), 2);
+      assert.equal(count(formattedSource, 'slot-scope="{row}"'), 1);
+      assert.equal(count(formattedSource, "scope.row.order_no | orderNoFilter"), 1);
+      assert.equal(count(formattedSource, "scope.row.price | toThousandFilter"), 1);
+      assert.equal(count(formattedSource, "row.status | statusFilter"), 1);
+      assert.equal(formattedSource.includes("v-slot"), false);
+
+      const compiled = runVizeBuild(fixture.workspaceDir, sourcePath, ".vize-formatter-compile");
+      assert.equal(compiled.status, 0, compiled.stderr || compiled.stdout);
+      assert.deepEqual(compiled.output.errors, []);
+      assert.deepEqual(compiled.output.warnings, []);
+      assertParsesAsModule(compiled.output.code, "formatted TransactionTable.json#code");
+
+      const cleanFirst = runVizeFmt(fixture.workspaceDir, sourcePath, "--check");
+      const cleanSecond = runVizeFmt(fixture.workspaceDir, sourcePath, "--check");
+      assertFmtResult(cleanFirst, 0, alreadyFormattedOutput);
+      assertFmtResult(cleanSecond, 0, alreadyFormattedOutput);
+      assert.deepEqual(cleanSecond, cleanFirst, "clean formatter output must be deterministic");
+
+      const brokenSource = fixture.applyExactPatch(
+        sourcePath,
+        formattedTable,
+        brokenFormattedTable,
+      );
+      const brokenFirst = runVizeFmt(fixture.workspaceDir, sourcePath, "--check");
+      const brokenSecond = runVizeFmt(fixture.workspaceDir, sourcePath, "--check");
+      assertFmtResult(brokenFirst, 1, wouldReformatOutput);
+      assertFmtResult(brokenSecond, 1, wouldReformatOutput);
+      assert.deepEqual(brokenSecond, brokenFirst, "broken formatter output must be deterministic");
+      assert.equal(fixture.read(sourcePath), brokenSource, "--check must preserve broken source");
+
+      const repaired = runVizeFmt(fixture.workspaceDir, sourcePath, "--write");
+      assertFmtResult(repaired, 0, reformattedOutput);
+      assert.equal(
+        fixture.read(sourcePath),
+        formattedSource,
+        "--write must exactly repair the source",
+      );
+      assert.equal(fs.statSync(fixture.resolve(sourcePath)).mode & 0o777, sourceMode);
+
+      const repairedCheck = runVizeFmt(fixture.workspaceDir, sourcePath, "--check");
+      const idempotentWrite = runVizeFmt(fixture.workspaceDir, sourcePath, "--write");
+      assertFmtResult(repairedCheck, 0, alreadyFormattedOutput);
+      assertFmtResult(idempotentWrite, 0, unchangedOutput);
+      assert.equal(fixture.read(sourcePath), formattedSource);
     },
   );
 });
@@ -369,6 +448,57 @@ function runVizeLint(workspaceDir: string, input: string, fix = false): VizeLint
     stderr: result.stderr,
     stdout: result.stdout,
   };
+}
+
+const wouldReformatOutput = `Found 1 file(s)
+Would reformat: ${sourcePath}
+
+Checked 1 file(s)
+  1 file(s) would be reformatted
+`;
+
+const reformattedOutput = `Found 1 file(s)
+Reformatted: ${sourcePath}
+
+Formatted 1 file(s)
+  1 file(s) reformatted
+`;
+
+const alreadyFormattedOutput = `Found 1 file(s)
+
+Checked 1 file(s)
+  1 file(s) already formatted
+`;
+
+const unchangedOutput = `Found 1 file(s)
+
+Formatted 1 file(s)
+  1 file(s) unchanged
+`;
+
+function assertFmtResult(result: CommandResult, status: number, stderr: string): void {
+  assert.deepEqual(result, { status, stdout: "", stderr });
+}
+
+function runVizeFmt(
+  workspaceDir: string,
+  input: string,
+  mode: "--check" | "--write",
+): CommandResult {
+  const [command, ...prefixArgs] = resolveVizeCommand();
+  const result = spawnSync(command, [...prefixArgs, "fmt", mode, input], {
+    cwd: workspaceDir,
+    encoding: "utf8",
+    env: { ...process.env, LANG: "C", LC_ALL: "C" },
+    maxBuffer: 64 * 1024 * 1024,
+    timeout: 120_000,
+  });
+  if (result.error != null) throw result.error;
+  return { status: result.status, stderr: result.stderr, stdout: result.stdout };
+}
+
+function sha256(source: string): string {
+  return createHash("sha256").update(source).digest("hex");
 }
 
 function runVizeBuild(
