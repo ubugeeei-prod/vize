@@ -1,6 +1,6 @@
 use glob::{MatchOptions, Pattern, glob};
 use ignore::WalkBuilder;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 use super::ignores::FmtIgnoreSet;
 use super::patterns::is_format_extension;
@@ -79,7 +79,12 @@ fn should_include_format_file(path: &Path, ignore_set: Option<&FmtIgnoreSet>) ->
 fn should_walk_with_gitignore(pattern: &str) -> bool {
     // `normalize_fmt_pattern` strips leading `./`, but accept it defensively.
     let bare = pattern.strip_prefix("./").unwrap_or(pattern);
-    bare == "**/*" || bare.strip_prefix("**/*.").is_some_and(is_format_extension)
+    let path = Path::new(bare);
+    contains_glob_char(bare)
+        && !path.is_absolute()
+        && !path
+            .components()
+            .any(|component| component == Component::ParentDir)
 }
 
 pub(super) struct FmtPattern {
@@ -309,6 +314,34 @@ mod tests {
 
         assert!(pattern.matches(Path::new("./bench/__in__/Component0000.vue")));
         assert!(!pattern.matches(Path::new("./examples/cli/src/App.vue")));
+    }
+
+    #[test]
+    fn explicit_relative_glob_respects_nested_gitignore() {
+        let cwd = std::env::current_dir().unwrap();
+        let relative_root = PathBuf::from("tests")
+            .join(unique_case_dir("explicit-glob-ignore").file_name().unwrap());
+        let root = cwd.join(&relative_root);
+        let source = root.join("apps/web/src/App.vue");
+        let dependency = root.join("apps/web/node_modules/dependency/Hidden.vue");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(source.parent().unwrap()).unwrap();
+        fs::create_dir_all(dependency.parent().unwrap()).unwrap();
+        fs::write(&source, "<template><main /></template>").unwrap();
+        fs::write(&dependency, "<template><aside /></template>").unwrap();
+        fs::write(root.join("apps/web/.gitignore"), "node_modules/\n").unwrap();
+
+        let pattern = relative_root
+            .join("apps/**/*.vue")
+            .to_string_lossy()
+            .into_owned();
+        let files = collect_files(&[pattern], None);
+        let _ = fs::remove_dir_all(&root);
+
+        assert_eq!(
+            files,
+            vec![PathBuf::from(".").join(relative_root.join("apps/web/src/App.vue"))]
+        );
     }
 
     fn unique_case_dir(name: &str) -> PathBuf {
