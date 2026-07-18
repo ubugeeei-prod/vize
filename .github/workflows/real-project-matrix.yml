@@ -43,6 +43,9 @@ jobs:
           cache: true
           run-install: false
 
+      - name: Enable package manager shims
+        run: corepack enable
+
       - name: Select and hydrate fixture shard
         shell: bash
         run: |

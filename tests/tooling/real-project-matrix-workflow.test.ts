@@ -54,6 +54,9 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   };
   const steps = workflow.jobs?.["real-project-matrix"]?.steps ?? [];
   const nodeSetupIndex = steps.findIndex((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
+  const shims = steps.find((step) => step.name === "Enable package manager shims");
+  assert.ok(shims, "Missing 'Enable package manager shims' step");
+  const shimsIndex = steps.indexOf(shims);
   const hydrationIndex = steps.findIndex(
     (step) => step.name === "Select and hydrate fixture shard",
   );
@@ -74,14 +77,15 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.notEqual(nodeSetupIndex, -1);
   assert.notEqual(hydrationIndex, -1);
   assert.ok(
-    nodeSetupIndex < hydrationIndex,
-    "Node 24 must be active before loading matrix scripts",
+    nodeSetupIndex < shimsIndex && shimsIndex < hydrationIndex,
+    "Node 24 and package manager shims must be active before loading matrix scripts",
   );
   assert.deepEqual(steps[nodeSetupIndex].with, {
     "node-version-file": ".node-version",
     cache: true,
     "run-install": false,
   });
+  assert.equal(shims.run, "corepack enable");
   assert.match(hydration?.run ?? "", /--list-fixture-paths/);
   assert.match(hydration?.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
   assert.match(hydration?.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
