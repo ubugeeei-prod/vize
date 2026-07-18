@@ -34,8 +34,8 @@ const appPath = "packages/playground/src/AppLink.vue";
 const routerManifestPath = "packages/router/package.json";
 const symbol = "packageBoundary";
 const sourceSha256 = "f5c888da7bae9c61151c7fbfde578ccdb768e75fbe2e69637d8298ca4f702c96";
-const cleanOutputSha256 = "baa6667f47df3663c55e938e7f93f0e12eb2f0bd931cc1b3de43b0dbbc110883";
-const cleanCodeSha256 = "d305d39f63d298418bb52dc4bd1d6c02d73a3f5a52205c6166a8811dbec7c3b9";
+const cleanOutputSha256 = "84e9feaa14017c1c0e27a6b8955bd4a591b3b61e8708f3ead335aaa0c7c96013";
+const cleanCodeSha256 = "2e99ba339b7fb47f5788a990245b0292ede267d6bdfcb6c80cbe4c76da9cdebc";
 const brokenOutputSha256 = "15e571e43307b3ac025db3929f4f11029f1b7f5991d11b405433b6a31c5bc90e";
 const brokenCodeSha256 = "eed24c03d97029fca5d3d13f81ac416099d3876e7f36572d113acc0768872679";
 const cleanHref = ':href="String(to)"';
@@ -134,16 +134,23 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
       }
       assert.equal(count(output.code, "key: 0"), 1, output.code);
       assert.equal(count(output.code, "key: 1"), 1, output.code);
+      for (const branchKey of [0, 1]) {
+        assert.equal(
+          count(
+            output.code,
+            `_createElementBlock("a", _mergeProps({ key: ${branchKey} }, _unref(attrs), {`,
+          ),
+          1,
+          output.code,
+        );
+      }
+      assert.equal(output.code.includes("_mergeProps(_unref(attrs), {"), false, output.code);
       assert.equal(
-        count(output.code, '_createElementBlock("a", _mergeProps(_unref(attrs), {'),
+        count(output.code, 'class: ["router-link", classes.value]'),
         2,
         output.code,
       );
-      assert.equal(
-        count(output.code, 'class: _normalizeClass(["router-link", classes.value])'),
-        2,
-        output.code,
-      );
+      assert.equal(output.code.includes("_normalizeClass"), false, output.code);
       assert.equal(count(output.code, '_renderSlot(_ctx.$slots, "default")'), 2, output.code);
       assert.equal(output.code.includes("RouterLinkProps"), false, output.code);
 

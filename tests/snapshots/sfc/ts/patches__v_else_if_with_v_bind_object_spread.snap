@@ -23,8 +23,7 @@ return (_ctx: any,_cache: any) => {
       name: "eye"
     }))
     : (mode.value === 'edit')
-      ? (_openBlock(), _createBlock(Icon, _mergeProps(iconProps, {
-        key: 1,
+      ? (_openBlock(), _createBlock(Icon, _mergeProps({ key: 1 }, iconProps, {
         name: "pencil"
       }), null, 16 /* FULL_PROPS */))
     : (_openBlock(), _createBlock(Icon, {

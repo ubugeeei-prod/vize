@@ -6,6 +6,7 @@
 
 mod branch;
 mod generate;
+mod props;
 
 use crate::{IfBranchNode, IfNode, PropNode, RuntimeHelper};
 

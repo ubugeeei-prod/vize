@@ -32,11 +32,8 @@ use super::{
             has_dynamic_slots_flag, has_forwarded_slot_outlet, has_slot_children,
         },
     },
-    generate::{
-        extract_static_class_style, generate_if_branch_props_object, has_dynamic_class,
-        has_dynamic_style, has_vbind_spread, has_von_spread,
-    },
     generate_if_branch_key,
+    props::generate_if_branch_props,
 };
 
 /// Generate a single if branch.
@@ -248,82 +245,8 @@ fn generate_if_branch_component(
 
     let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
 
-    // Extract static class/style for merging with dynamic bindings
-    let static_merge = extract_static_class_style(el);
-    let has_dyn_class = has_dynamic_class(el);
-    let has_dyn_style = has_dynamic_style(el);
-
-    // Check if component has v-bind spread or v-on spread
-    let has_vbind = has_vbind_spread(el);
-    let has_von = has_von_spread(el);
-    if has_vbind || has_von {
-        ctx.use_helper(RuntimeHelper::MergeProps);
-        ctx.push(", ");
-        ctx.push(ctx.helper(RuntimeHelper::MergeProps));
-        ctx.push("(");
-
-        let mut first_merge_arg = true;
-        // Add v-bind spreads
-        for prop in el.props.iter() {
-            if let PropNode::Directive(dir) = prop
-                && dir.name == "bind"
-                && dir.arg.is_none()
-                && let Some(exp) = &dir.exp
-            {
-                if !first_merge_arg {
-                    ctx.push(", ");
-                }
-                generate_expression(ctx, exp);
-                first_merge_arg = false;
-            }
-        }
-
-        // Add v-on spreads wrapped with _toHandlers
-        for prop in el.props.iter() {
-            if let PropNode::Directive(dir) = prop
-                && dir.name == "on"
-                && dir.arg.is_none()
-                && let Some(exp) = &dir.exp
-            {
-                if !first_merge_arg {
-                    ctx.push(", ");
-                }
-                ctx.use_helper(RuntimeHelper::ToHandlers);
-                ctx.push(ctx.helper(RuntimeHelper::ToHandlers));
-                ctx.push("(");
-                generate_expression(ctx, exp);
-                ctx.push(", true)");
-                first_merge_arg = false;
-            }
-        }
-
-        if !first_merge_arg {
-            ctx.push(", ");
-        }
-        generate_if_branch_props_object(
-            ctx,
-            el,
-            branch,
-            branch_index,
-            static_merge,
-            has_dyn_class,
-            has_dyn_style,
-            is_dynamic,
-        );
-        ctx.push(")");
-    } else {
-        ctx.push(", ");
-        generate_if_branch_props_object(
-            ctx,
-            el,
-            branch,
-            branch_index,
-            static_merge,
-            has_dyn_class,
-            has_dyn_style,
-            is_dynamic,
-        );
-    }
+    ctx.push(", ");
+    generate_if_branch_props(ctx, el, branch, branch_index, is_dynamic);
 
     ctx.skip_scope_id = prev_skip_scope_id;
 
@@ -425,82 +348,8 @@ fn generate_if_branch_element(
     ctx.push(el.tag.as_str());
     ctx.push("\"");
 
-    // Extract static class/style for merging with dynamic bindings
-    let static_merge = extract_static_class_style(el);
-    let has_dyn_class = has_dynamic_class(el);
-    let has_dyn_style = has_dynamic_style(el);
-
-    // Generate props with key and all other props (handle v-bind/v-on spreads)
-    let has_vbind = has_vbind_spread(el);
-    let has_von = has_von_spread(el);
-    if has_vbind || has_von {
-        ctx.use_helper(RuntimeHelper::MergeProps);
-        ctx.push(", ");
-        ctx.push(ctx.helper(RuntimeHelper::MergeProps));
-        ctx.push("(");
-
-        // Add all v-bind spreads
-        let mut first_merge_arg = true;
-        for prop in el.props.iter() {
-            if let PropNode::Directive(dir) = prop
-                && dir.name == "bind"
-                && dir.arg.is_none()
-                && let Some(exp) = &dir.exp
-            {
-                if !first_merge_arg {
-                    ctx.push(", ");
-                }
-                generate_expression(ctx, exp);
-                first_merge_arg = false;
-            }
-        }
-
-        // Add all v-on spreads wrapped with _toHandlers
-        for prop in el.props.iter() {
-            if let PropNode::Directive(dir) = prop
-                && dir.name == "on"
-                && dir.arg.is_none()
-                && let Some(exp) = &dir.exp
-            {
-                if !first_merge_arg {
-                    ctx.push(", ");
-                }
-                ctx.use_helper(RuntimeHelper::ToHandlers);
-                ctx.push(ctx.helper(RuntimeHelper::ToHandlers));
-                ctx.push("(");
-                generate_expression(ctx, exp);
-                ctx.push(", true)");
-                first_merge_arg = false;
-            }
-        }
-
-        if !first_merge_arg {
-            ctx.push(", ");
-        }
-        generate_if_branch_props_object(
-            ctx,
-            el,
-            branch,
-            branch_index,
-            static_merge,
-            has_dyn_class,
-            has_dyn_style,
-            false,
-        );
-        ctx.push(")");
-    } else {
-        ctx.push(", ");
-        generate_if_branch_props_object(
-            ctx,
-            el,
-            branch,
-            branch_index,
-            static_merge,
-            has_dyn_class,
-            has_dyn_style,
-            false,
-        );
-    }
+    ctx.push(", ");
+    generate_if_branch_props(ctx, el, branch, branch_index, false);
 
     // Generate children if any
     if !el.children.is_empty() {

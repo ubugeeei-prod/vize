@@ -1,18 +1,14 @@
 //! Props and helper utilities for v-if branch code generation.
 //!
-//! Contains prop object generation, static class/style extraction,
-//! dynamic binding checks, event key deduplication, and spread detection.
+//! Contains single-prop generation, event key deduplication, and spread detection.
 
-use crate::{DirectiveNode, ElementNode, ExpressionNode, IfBranchNode, PropNode};
+use crate::{DirectiveNode, ExpressionNode, PropNode};
 
 use super::super::{
     context::CodegenContext,
-    element::helpers::is_is_prop,
     helpers::{camelize, capitalize_first, escape_js_string, is_valid_js_identifier},
-    props::{StaticMerge, generate_directive_prop_with_static, is_supported_directive},
+    props::{StaticMerge, generate_directive_prop_with_static},
 };
-use super::generate_if_branch_key;
-use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::ToCompactString;
 
@@ -48,37 +44,6 @@ pub(super) fn should_skip_prop_for_if(
             false
         }
     }
-}
-
-/// Extract static class/style values and their source ordering from props.
-pub(super) fn extract_static_class_style<'a>(el: &'a ElementNode<'_>) -> StaticMerge<'a> {
-    StaticMerge::from_props(&el.props)
-}
-
-/// Check if element has dynamic `:class` binding.
-pub(super) fn has_dynamic_class(el: &ElementNode<'_>) -> bool {
-    el.props.iter().any(|p| {
-        if let PropNode::Directive(dir) = p
-            && dir.name == "bind"
-            && let Some(ExpressionNode::Simple(arg)) = &dir.arg
-        {
-            return arg.content == "class";
-        }
-        false
-    })
-}
-
-/// Check if element has dynamic `:style` binding.
-pub(super) fn has_dynamic_style(el: &ElementNode<'_>) -> bool {
-    el.props.iter().any(|p| {
-        if let PropNode::Directive(dir) = p
-            && dir.name == "bind"
-            && let Some(ExpressionNode::Simple(arg)) = &dir.arg
-        {
-            return arg.content == "style";
-        }
-        false
-    })
 }
 
 /// Generate a single prop for v-if branch element.
@@ -152,119 +117,12 @@ pub(super) fn generate_single_prop_for_if(
     }
 }
 
-/// Generate props object for v-if branch (with key and other props).
-#[allow(clippy::too_many_arguments)]
-pub(super) fn generate_if_branch_props_object(
-    ctx: &mut CodegenContext,
-    el: &ElementNode<'_>,
-    branch: &IfBranchNode<'_>,
-    branch_index: usize,
-    static_merge: StaticMerge<'_>,
-    has_dynamic_class: bool,
-    has_dynamic_style: bool,
-    skip_is_prop: bool,
-) {
-    // Check if there are other props besides key (skip excluded ones)
-    let has_other_props = el.props.iter().any(|p| {
-        // Skip unsupported directives (v-slot, v-tooltip, custom directives, etc.)
-        if let PropNode::Directive(dir) = p
-            && !is_supported_directive(dir)
-        {
-            return false;
-        }
-        if skip_is_prop && is_is_prop(p) {
-            return false;
-        }
-        !should_skip_prop_for_if(p, has_dynamic_class, has_dynamic_style)
-            && !is_vbind_spread_prop(p)
-            && !is_von_spread_prop(p)
-    });
-    // skip_scope_id suppresses duplicate scope attrs for synthetic prop objects.
-    let scope_id = if ctx.skip_scope_id {
-        None
-    } else {
-        ctx.options.scope_id.clone()
-    };
-    let has_scope = scope_id.is_some();
-
-    if !has_other_props && !has_scope {
-        // Key-only: use inline format { key: N }
-        ctx.push("{ key: ");
-        generate_if_branch_key(ctx, branch, branch_index);
-        ctx.push(" }");
-        return;
-    }
-
-    // Multiline format for key + other props
-    ctx.push("{");
-    ctx.indent();
-    ctx.newline();
-    ctx.push("key: ");
-    generate_if_branch_key(ctx, branch, branch_index);
-
-    let mut seen_events: FxHashSet<String> = FxHashSet::default();
-
-    for prop in el.props.iter() {
-        // Skip unsupported directives (v-slot, v-tooltip, custom directives, etc.)
-        if let PropNode::Directive(dir) = prop
-            && !is_supported_directive(dir)
-        {
-            continue;
-        }
-        if skip_is_prop && is_is_prop(prop) {
-            continue;
-        }
-        if should_skip_prop_for_if(prop, has_dynamic_class, has_dynamic_style) {
-            continue;
-        }
-        if is_vbind_spread_prop(prop) {
-            continue;
-        }
-        if is_von_spread_prop(prop) {
-            continue;
-        }
-        if let PropNode::Directive(dir) = prop
-            && dir.name == "on"
-            && let Some(key) = get_static_event_key(dir)
-            && !seen_events.insert(key)
-        {
-            continue;
-        }
-        ctx.push(",");
-        ctx.newline();
-        generate_single_prop_for_if(ctx, prop, static_merge);
-    }
-
-    // Add scope_id for scoped CSS
-    if let Some(ref scope_id) = scope_id {
-        ctx.push(",");
-        ctx.newline();
-        ctx.push("\"");
-        ctx.push(scope_id);
-        ctx.push("\": \"\"");
-    }
-
-    ctx.deindent();
-    ctx.newline();
-    ctx.push("}");
-}
-
-/// Check if element has v-bind object spread.
-pub(super) fn has_vbind_spread(el: &ElementNode<'_>) -> bool {
-    el.props.iter().any(|p| is_vbind_spread_prop(p))
-}
-
 /// Check if prop is a v-bind object spread (`v-bind="obj"`).
 pub(super) fn is_vbind_spread_prop(prop: &PropNode<'_>) -> bool {
     if let PropNode::Directive(dir) = prop {
         return dir.name == "bind" && dir.arg.is_none();
     }
     false
-}
-
-/// Check if element has v-on object spread (`v-on="obj"`).
-pub(super) fn has_von_spread(el: &ElementNode<'_>) -> bool {
-    el.props.iter().any(|p| is_von_spread_prop(p))
 }
 
 /// Check if prop is a v-on object spread (`v-on="obj"`).
@@ -276,7 +134,7 @@ pub(super) fn is_von_spread_prop(prop: &PropNode<'_>) -> bool {
 }
 
 /// Compute static event prop key for dedupe (e.g., `onClick`, `onUpdate:modelValue`).
-fn get_static_event_key(dir: &DirectiveNode<'_>) -> Option<String> {
+pub(super) fn get_static_event_key(dir: &DirectiveNode<'_>) -> Option<String> {
     let arg = dir.arg.as_ref()?;
     let ExpressionNode::Simple(exp) = arg else {
         return None;
