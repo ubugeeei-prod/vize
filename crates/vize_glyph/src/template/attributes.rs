@@ -27,7 +27,6 @@ pub(crate) fn sort_attributes(attrs: &mut [ParsedAttribute], options: &FormatOpt
         if !is_order_sensitive_spread(&attrs[barrier_index].name) {
             continue;
         }
-
         sort_attribute_segment(&mut attrs[segment_start..barrier_index], options);
         segment_start = barrier_index + 1;
     }
