@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { pathToFileURL } from "node:url";
 
 import { withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
 import {
@@ -8,10 +9,24 @@ import {
   symlinkVueTypes,
   type VizeCheckResult,
 } from "../../_helpers/realworld-typecheck.ts";
+import { isDiagnosticsForUri } from "../../tooling/support/lsp/assertions.ts";
+import type { PublishDiagnosticsParams } from "../../tooling/support/lsp/protocol.ts";
+import { LspSession } from "../../tooling/support/lsp/session.ts";
 
 const sourcePath = "src/views/dashboard/admin/components/TransactionTable.vue";
 const cleanBinding = ':data="list"';
 const brokenBinding = ':data="missingList"';
+
+const missingListDiagnostic = {
+  range: {
+    start: { line: 1, character: 19 },
+    end: { line: 1, character: 30 },
+  },
+  severity: 1,
+  code: 2304,
+  source: "vize/types",
+  message: "Cannot find name 'missingList'.",
+};
 
 test("vue-element-admin legacy slot scopes recover exact CLI diagnostics", async () => {
   const corsaPath = resolveTsgoBinary();
@@ -32,18 +47,75 @@ test("vue-element-admin legacy slot scopes recover exact CLI diagnostics", async
       );
 
       const source = fixture.read(sourcePath);
+      const sourceUri = pathToFileURL(fixture.resolve(sourcePath)).href;
       assertCleanCheck(runVizeCheck(fixture.workspaceDir, corsaPath, [sourcePath]));
 
-      const brokenSource = fixture.applyExactPatch(sourcePath, cleanBinding, brokenBinding);
-      assert.notEqual(source, brokenSource);
-      assertBrokenCheck(runVizeCheck(fixture.workspaceDir, corsaPath, [sourcePath]));
+      const session = new LspSession();
+      try {
+        await session.initialize(fixture.workspaceDir, {
+          editor: true,
+          legacyVue2: true,
+          lint: false,
+          typecheck: true,
+        });
+        session.notify("textDocument/didOpen", {
+          textDocument: { uri: sourceUri, languageId: "vue", version: 1, text: source },
+        });
+        const cleanPublish = await waitForDiagnostics(session, sourceUri, 1, false);
+        assert.deepEqual(cleanPublish.diagnostics, [], JSON.stringify(cleanPublish.diagnostics));
 
-      const repairedSource = fixture.applyExactPatch(sourcePath, brokenBinding, cleanBinding);
-      assert.equal(repairedSource, source);
-      assertCleanCheck(runVizeCheck(fixture.workspaceDir, corsaPath, [sourcePath]));
+        const brokenSource = fixture.applyExactPatch(sourcePath, cleanBinding, brokenBinding);
+        assert.notEqual(source, brokenSource);
+        session.notify("textDocument/didChange", {
+          textDocument: { uri: sourceUri, version: 2 },
+          contentChanges: [{ text: brokenSource }],
+        });
+        const brokenPublish = await waitForDiagnostics(session, sourceUri, 2, true);
+        assert.deepEqual(brokenPublish.diagnostics, [missingListDiagnostic]);
+        assertBrokenCheck(runVizeCheck(fixture.workspaceDir, corsaPath, [sourcePath]));
+
+        const repairedSource = fixture.applyExactPatch(sourcePath, brokenBinding, cleanBinding);
+        assert.equal(repairedSource, source);
+        session.notify("textDocument/didChange", {
+          textDocument: { uri: sourceUri, version: 3 },
+          contentChanges: [{ text: repairedSource }],
+        });
+        const repairedPublish = await waitForDiagnostics(session, sourceUri, 3, false);
+        assert.deepEqual(
+          repairedPublish.diagnostics,
+          [],
+          JSON.stringify(repairedPublish.diagnostics),
+        );
+        assertCleanCheck(runVizeCheck(fixture.workspaceDir, corsaPath, [sourcePath]));
+      } finally {
+        await session.shutdown();
+      }
     },
   );
 });
+
+async function waitForDiagnostics(
+  session: LspSession,
+  uri: string,
+  version: number,
+  expectMissingList: boolean,
+): Promise<PublishDiagnosticsParams> {
+  return (await session.waitForNotification(
+    "textDocument/publishDiagnostics",
+    (params) =>
+      isDiagnosticsForUri(params, uri) &&
+      params.version === version &&
+      params.diagnostics.some(isMissingListDiagnostic) === expectMissingList,
+    120_000,
+  )) as PublishDiagnosticsParams;
+}
+
+function isMissingListDiagnostic(diagnostic: PublishDiagnosticsParams["diagnostics"][number]) {
+  return (
+    String(diagnostic.code).replace(/^TS/, "") === "2304" &&
+    diagnostic.message === "Cannot find name 'missingList'."
+  );
+}
 
 function assertCleanCheck(result: VizeCheckResult): void {
   assert.equal(result.status, 0, result.stderr || result.stdout);

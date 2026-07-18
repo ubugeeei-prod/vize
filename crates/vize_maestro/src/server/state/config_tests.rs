@@ -73,3 +73,53 @@ fn disabled_language_server_clears_logged_legacy_vue2_feature() {
     assert!(logged_payload.contains("legacy_vue2: false"));
     assert!(logged_payload.contains("options_api: false"));
 }
+
+#[test]
+fn both_config_loaders_preserve_exact_template_globals() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("vize.config.json"),
+        r#"{
+          "globalTypes": {
+            "currentRoute": {
+              "type": "{ path: string }",
+              "defaultValue": "{ path: '/' }"
+            },
+            "toThousandFilter": "(value: number) => string"
+          }
+        }"#,
+    )
+    .unwrap();
+
+    for load_workspace in [true, false] {
+        let state = ServerState::new();
+        if load_workspace {
+            state.load_workspace_config(dir.path());
+        } else {
+            state.load_lsp_config(dir.path());
+        }
+
+        let globals = state
+            .virtual_ts_options()
+            .template_globals
+            .into_iter()
+            .map(|global| (global.name, global.type_annotation, global.default_value))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            globals,
+            vec![
+                (
+                    "currentRoute".into(),
+                    "{ path: string }".into(),
+                    "{ path: '/' }".into(),
+                ),
+                (
+                    "toThousandFilter".into(),
+                    "(value: number) => string".into(),
+                    "{} as any".into(),
+                ),
+            ],
+            "load_workspace={load_workspace}",
+        );
+    }
+}

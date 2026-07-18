@@ -82,7 +82,7 @@ impl ServerState {
         let corsa_path = config.runtime_path().map(PathBuf::from);
         let options = BatchTypeCheckerOptions {
             tsconfig_path: config.tsconfig.as_ref().map(PathBuf::from),
-            virtual_ts_options: vize_canon::virtual_ts::VirtualTsOptions::default(),
+            virtual_ts_options: self.virtual_ts_options(),
         };
 
         match BatchTypeChecker::with_options_and_corsa_path(

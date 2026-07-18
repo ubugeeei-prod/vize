@@ -81,9 +81,14 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
         );
     }
 
-    corsa_diags
+    let mapped_diagnostics = corsa_diags
         .into_iter()
         .filter_map(|diag| {
+            if is_inferred_implicit_any_suggestion(&diag) {
+                tracing::debug!("skipping TS7044 inference suggestion");
+                return None;
+            }
+
             let is_unused_warning = diag.message.contains("is declared but")
                 && (diag.message.contains("never read") || diag.message.contains("never used"));
             let is_internal_var = diag.message.contains("'__")
@@ -187,7 +192,30 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
                 ..Default::default()
             })
         })
-        .collect()
+        .collect::<Vec<_>>();
+
+    deduplicate_diagnostics(mapped_diagnostics)
+}
+
+fn deduplicate_diagnostics(diagnostics: Vec<Diagnostic>) -> Vec<Diagnostic> {
+    let mut unique = Vec::with_capacity(diagnostics.len());
+    for diagnostic in diagnostics {
+        if !unique.contains(&diagnostic) {
+            unique.push(diagnostic);
+        }
+    }
+    unique
+}
+
+fn is_inferred_implicit_any_suggestion(
+    diagnostic: &vize_canon::corsa_bridge::LspDiagnostic,
+) -> bool {
+    diagnostic.severity == Some(4)
+        && diagnostic.code.as_ref().is_some_and(|code| match code {
+            serde_json::Value::Number(number) => number.as_i64() == Some(7044),
+            serde_json::Value::String(code) => matches!(code.as_str(), "7044" | "TS7044"),
+            _ => false,
+        })
 }
 
 fn corsa_diagnostic_code(code: serde_json::Value) -> NumberOrString {
@@ -208,8 +236,11 @@ fn corsa_diagnostic_code(code: serde_json::Value) -> NumberOrString {
 
 #[cfg(test)]
 mod tests {
-    use super::corsa_diagnostic_code;
-    use tower_lsp::lsp_types::NumberOrString;
+    use super::{
+        corsa_diagnostic_code, deduplicate_diagnostics, is_inferred_implicit_any_suggestion,
+    };
+    use tower_lsp::lsp_types::{Diagnostic, NumberOrString, Position, Range};
+    use vize_canon::corsa_bridge::{LspDiagnostic, LspPosition, LspRange};
 
     #[test]
     fn corsa_diagnostic_codes_preserve_lsp_number_and_string_shapes() {
@@ -220,6 +251,82 @@ mod tests {
         assert_eq!(
             corsa_diagnostic_code(serde_json::json!("TS2322")),
             NumberOrString::String("TS2322".to_string()),
+        );
+    }
+
+    #[test]
+    fn only_ts7044_hints_are_suppressed() {
+        let diagnostic = |severity, code| LspDiagnostic {
+            range: LspRange {
+                start: LspPosition {
+                    line: 0,
+                    character: 0,
+                },
+                end: LspPosition {
+                    line: 0,
+                    character: 1,
+                },
+            },
+            severity,
+            code,
+            source: Some("ts".into()),
+            message: "diagnostic".into(),
+            related_information: None,
+        };
+
+        assert!(is_inferred_implicit_any_suggestion(&diagnostic(
+            Some(4),
+            Some(serde_json::json!(7044)),
+        )));
+        assert!(is_inferred_implicit_any_suggestion(&diagnostic(
+            Some(4),
+            Some(serde_json::json!("TS7044")),
+        )));
+        assert!(!is_inferred_implicit_any_suggestion(&diagnostic(
+            Some(1),
+            Some(serde_json::json!(7044)),
+        )));
+        assert!(!is_inferred_implicit_any_suggestion(&diagnostic(
+            Some(4),
+            Some(serde_json::json!(7043)),
+        )));
+        assert!(!is_inferred_implicit_any_suggestion(&diagnostic(
+            None, None,
+        )));
+    }
+
+    #[test]
+    fn exact_diagnostics_are_stably_deduplicated() {
+        let original = Diagnostic {
+            range: Range {
+                start: Position {
+                    line: 1,
+                    character: 19,
+                },
+                end: Position {
+                    line: 1,
+                    character: 30,
+                },
+            },
+            severity: Some(tower_lsp::lsp_types::DiagnosticSeverity::ERROR),
+            code: Some(NumberOrString::Number(2304)),
+            source: Some("vize/types".into()),
+            message: "Cannot find name 'missingList'.".into(),
+            ..Default::default()
+        };
+        let distinct = Diagnostic {
+            message: "Cannot find name 'anotherBinding'.".into(),
+            ..original.clone()
+        };
+
+        assert_eq!(
+            deduplicate_diagnostics(vec![
+                original.clone(),
+                distinct.clone(),
+                original.clone(),
+                distinct.clone(),
+            ]),
+            vec![original, distinct],
         );
     }
 }

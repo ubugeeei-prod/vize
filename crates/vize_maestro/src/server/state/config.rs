@@ -3,7 +3,7 @@
 use std::path::Path;
 use std::sync::atomic::Ordering;
 
-use vize_carton::config::{LinterConfig, TypeCheckerConfig};
+use vize_carton::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
 
 #[cfg(feature = "glyph")]
 use vize_carton::config::FormatterConfig;
@@ -35,6 +35,22 @@ impl ServerState {
         self.type_checker_config.read().clone()
     }
 
+    /// Build the shared virtual TypeScript options from workspace config.
+    #[cfg(feature = "native")]
+    pub(crate) fn virtual_ts_options(&self) -> vize_canon::virtual_ts::VirtualTsOptions {
+        let mut options = vize_canon::virtual_ts::VirtualTsOptions::default();
+        options
+            .template_globals
+            .extend(self.global_types.read().iter().map(|(name, declaration)| {
+                vize_canon::virtual_ts::TemplateGlobal {
+                    name: name.clone(),
+                    type_annotation: declaration.type_annotation.clone(),
+                    default_value: declaration.template_default_value(),
+                }
+            }));
+        options
+    }
+
     /// Get a clone of the current linter config.
     #[inline]
     pub fn get_linter_config(&self) -> LinterConfig {
@@ -62,6 +78,13 @@ impl ServerState {
     fn apply_type_checker_config(&self, config: TypeCheckerConfig, source: &str) {
         *self.type_checker_config.write() = config;
         tracing::info!("Loaded type checker config from {}", source);
+    }
+
+    fn apply_global_types_config(&self, config: GlobalTypesConfig, source: &str) {
+        *self.global_types.write() = config;
+        #[cfg(feature = "native")]
+        self.batch_cache.invalidate();
+        tracing::info!("Loaded global types config from {}", source);
     }
 
     fn apply_config_features(&self, features: vize_carton::config::ConfigFeatureFlags) {
@@ -106,6 +129,7 @@ impl ServerState {
             self.apply_linter_config(linter_config, &source);
             *self.linter_rule_options.write() =
                 vize_carton::config::load_linter_rule_options(Some(dir));
+            self.apply_global_types_config(config.global_types, &source);
             self.apply_type_checker_config(config.type_checker, &source);
             self.apply_config_features(loaded.features);
             self.apply_lsp_config(config.language_server.into(), &source);
@@ -119,13 +143,15 @@ impl ServerState {
             vize_carton::config::load_config_and_linter_with_features_and_source(Some(dir));
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
+            let config = loaded.config;
             self.apply_linter_config(linter_config, &source);
             *self.linter_rule_options.write() =
                 vize_carton::config::load_linter_rule_options(Some(dir));
-            self.apply_type_checker_config(loaded.config.type_checker, &source);
+            self.apply_global_types_config(config.global_types, &source);
+            self.apply_type_checker_config(config.type_checker, &source);
             self.apply_config_features(loaded.features);
-            self.apply_lsp_config(loaded.config.language_server.into(), &source);
-            self.set_dialect_config(loaded.config.dialect);
+            self.apply_lsp_config(config.language_server.into(), &source);
+            self.set_dialect_config(config.dialect);
         }
     }
 

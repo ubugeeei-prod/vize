@@ -23,7 +23,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use dashmap::DashMap;
 use parking_lot::RwLock;
 use tower_lsp::lsp_types::Url;
-use vize_carton::config::{LinterConfig, TypeCheckerConfig};
+use vize_carton::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
 use vize_carton::dialect::VueDialect;
 
 #[cfg(feature = "native")]
@@ -66,6 +66,8 @@ pub struct ServerState {
     lsp_typecheck_enabled: AtomicBool,
     /// Type checker options shared by LSP diagnostics.
     type_checker_config: RwLock<TypeCheckerConfig>,
+    /// User-declared template globals shared by every virtual TypeScript path.
+    global_types: RwLock<GlobalTypesConfig>,
     /// Vue 3 Options API binding-resolution opt-in from config.
     type_checker_options_api: RwLock<bool>,
     /// Vue 2.7 / Nuxt 2 type checker compatibility flag from config.
@@ -137,6 +139,7 @@ impl ServerState {
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             type_checker_config: RwLock::new(TypeCheckerConfig::default()),
+            global_types: RwLock::new(GlobalTypesConfig::default()),
             // Options API resolution is default-on (matches vue-tsc); config can
             // opt out with `typeChecker.optionsApi: false`.
             type_checker_options_api: RwLock::new(true),

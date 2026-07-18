@@ -94,8 +94,13 @@ defineProps<{ variant?: "primary" | "secondary" }>();
   </variant>
 </art>"#;
 
-    let results =
-        DiagnosticService::generate_virtual_ts_for_inline_art_variants(&uri, content, false, false);
+    let results = DiagnosticService::generate_virtual_ts_for_inline_art_variants(
+        &uri,
+        content,
+        false,
+        false,
+        &vize_canon::virtual_ts::VirtualTsOptions::default(),
+    );
 
     assert_eq!(results.len(), 1);
     let (_, result) = &results[0];
@@ -129,9 +134,13 @@ defineArt("./Button.vue", { title: "Button" });
   </variant>
 </art>"#;
 
-    let result = DiagnosticService::generate_virtual_ts_for_art_with_dependencies(&uri, content)
-        .expect("virtual TS generated")
-        .virtual_result;
+    let result = DiagnosticService::generate_virtual_ts_for_art_with_dependencies(
+        &uri,
+        content,
+        &vize_canon::virtual_ts::VirtualTsOptions::default(),
+    )
+    .expect("virtual TS generated")
+    .virtual_result;
 
     assert!(
         result

@@ -20,6 +20,7 @@ impl DiagnosticService {
     pub(in crate::ide::diagnostics) fn generate_virtual_ts_for_art_with_dependencies(
         uri: &Url,
         content: &str,
+        base_options: &VirtualTsOptions,
     ) -> Option<ArtVirtualTsResult> {
         let art_allocator = vize_carton::Bump::new();
         let art_desc = vize_musea::parse_art(
@@ -113,7 +114,7 @@ impl DiagnosticService {
         analyzer.analyze_template(&template_ast);
 
         let summary = analyzer.finish();
-        let mut virtual_ts_options = VirtualTsOptions::default();
+        let mut virtual_ts_options = base_options.clone();
         if let Some(target) = target_component.as_ref() {
             add_art_target_component_bindings(&mut virtual_ts_options, &summary, target);
         }

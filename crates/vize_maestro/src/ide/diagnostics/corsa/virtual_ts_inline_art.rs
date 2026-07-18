@@ -31,6 +31,7 @@ impl DiagnosticService {
         content: &str,
         options_api: bool,
         legacy_vue2: bool,
+        base_options: &VirtualTsOptions,
     ) -> Vec<(usize, VirtualTsResult)> {
         if uri.path().ends_with(".art.vue") || !content.contains("<art") {
             return Vec::new();
@@ -93,7 +94,7 @@ impl DiagnosticService {
                     crate::ide::offset_to_position(content, script_offset as usize).0 + 1
                 };
 
-                let mut virtual_ts_options = VirtualTsOptions::default();
+                let mut virtual_ts_options = base_options.clone();
                 add_inline_self_component_binding(&mut virtual_ts_options, &analysis.croquis);
 
                 let generate_virtual_ts = if legacy_vue2 {
