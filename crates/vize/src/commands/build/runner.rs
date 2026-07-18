@@ -7,6 +7,7 @@ mod cache;
 mod collect;
 mod compile;
 mod compile_stats;
+mod fallback;
 mod output;
 mod profile_facts;
 mod settings;
@@ -197,12 +198,11 @@ pub(crate) fn run(args: BuildArgs) {
                     }
                     Err(err) => {
                         stats.failed.fetch_add(1, Ordering::Relaxed);
-
-                        if let Ok(mut errs) = errors.lock() {
-                            errs.push(err);
-                        }
-
-                        None
+                        fallback::record_error(&errors, err.clone());
+                        args.continue_on_error.then(|| CompiledBuildOutput {
+                            input,
+                            output: fallback::fallback_output(&input.source, &err),
+                        })
                     }
                 }
             })
