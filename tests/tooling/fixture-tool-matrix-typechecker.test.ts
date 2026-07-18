@@ -57,6 +57,30 @@ test("typechecker oracle accepts exact error, warning, project, and zero-file re
     { id: "no-sfc", expectedVueFileCount: 0 },
     { files: [], errorCount: 0, warningCount: 0, fileCount: 0 },
     0,
+    [],
+  );
+});
+
+test("typechecker oracle requires every fixture input and rejects substitutions", () => {
+  const output = validOutput();
+  output.files.push({ file: "src/Card.vue", diagnostics: [] });
+  output.fileCount = 2;
+
+  validateTypecheckerOutput({ id: "complete" }, output, 1, ["src/App.vue", "src/Card.vue"]);
+
+  assert.throws(
+    () =>
+      validateTypecheckerOutput({ id: "partial" }, validOutput(), 1, [
+        "src/App.vue",
+        "src/Card.vue",
+      ]),
+    /checked file count 1 does not match 2 fixture inputs/,
+  );
+
+  const substituted = validOutput();
+  assert.throws(
+    () => validateTypecheckerOutput({ id: "substituted" }, substituted, 1, ["src/Other.vue"]),
+    /checked files do not match fixture inputs: missing \[src\/Other\.vue\], unexpected \[src\/App\.vue\]/,
   );
 });
 
@@ -237,6 +261,46 @@ process.stdout.write(JSON.stringify({ files: [], errorCount: 0, warningCount: 0,
     assert.match(run.failure, /non-empty fixture checked zero Vue files/);
     const raw = JSON.parse(fs.readFileSync(path.resolve(root, run.outputPath as string), "utf8"));
     assert.match(raw.validationError, /non-empty fixture checked zero Vue files/);
+  } finally {
+    fs.rmSync(fixtureDir, { recursive: true, force: true });
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+    fs.rmSync(reportDir, { recursive: true, force: true });
+  }
+});
+
+test("fixture tool matrix rejects partial typechecker coverage", () => {
+  const fixtureDir = fs.mkdtempSync(
+    path.join(root, "tests", "_fixtures", "tool-matrix-typechecker-partial-"),
+  );
+  const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-typechecker-partial-"));
+  const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-typechecker-partial-report-"));
+  const executable = path.join(fakeDir, "fake-vize.mjs");
+  fs.mkdirSync(path.join(fixtureDir, "src"), { recursive: true });
+  fs.writeFileSync(path.join(fixtureDir, "src", "App.vue"), "<template />\n");
+  fs.writeFileSync(path.join(fixtureDir, "src", "Card.vue"), "<template />\n");
+  fs.writeFileSync(
+    executable,
+    `#!/usr/bin/env node
+process.stdout.write(JSON.stringify({ files: [{ file: "src/App.vue", diagnostics: [] }], errorCount: 0, warningCount: 0, fileCount: 1 }));\n`,
+  );
+  fs.chmodSync(executable, 0o755);
+
+  try {
+    const run = runTool(
+      {
+        id: "typechecker-partial-fixture",
+        fixturePath: path.relative(root, fixtureDir),
+        vueGlobs: ["**/*.vue"],
+      },
+      "typechecker",
+      { dryRun: false, timeoutMs: 5_000 },
+      { command: executable, prefix: [], label: executable },
+      reportDir,
+    );
+    assert.equal(run.status, "failed");
+    assert.match(run.failure, /checked file count 1 does not match 2 fixture inputs/);
+    const raw = JSON.parse(fs.readFileSync(path.resolve(root, run.outputPath as string), "utf8"));
+    assert.match(raw.validationError, /checked file count 1 does not match 2 fixture inputs/);
   } finally {
     fs.rmSync(fixtureDir, { recursive: true, force: true });
     fs.rmSync(fakeDir, { recursive: true, force: true });

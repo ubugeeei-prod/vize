@@ -4,7 +4,7 @@ import { isAbsolute } from "node:path";
 const outputKeys = ["errorCount", "fileCount", "files", "warningCount"];
 const fileKeys = ["diagnostics", "file"];
 
-export function validateTypecheckerOutput(project, output, exitCode) {
+export function validateTypecheckerOutput(project, output, exitCode, expectedFiles = null) {
   requireRecord(output, "envelope");
   requireExactKeys(output, outputKeys, "envelope");
   for (const field of ["errorCount", "warningCount", "fileCount"]) {
@@ -21,6 +21,11 @@ export function validateTypecheckerOutput(project, output, exitCode) {
   }
   if (project.expectedVueFileCount !== 0 && output.fileCount === 0) {
     invalid("non-empty fixture checked zero Vue files");
+  }
+  if (expectedFiles != null && output.fileCount !== expectedFiles.length) {
+    invalid(
+      `checked file count ${output.fileCount} does not match ${expectedFiles.length} fixture inputs`,
+    );
   }
 
   const seenFiles = new Set();
@@ -58,6 +63,15 @@ export function validateTypecheckerOutput(project, output, exitCode) {
     .map(({ file }) => file);
   if (JSON.stringify(checkedFiles) !== JSON.stringify(sortedFiles)) {
     invalid("checked file entries are not sorted");
+  }
+  if (expectedFiles != null && JSON.stringify(checkedFiles) !== JSON.stringify(expectedFiles)) {
+    const checkedSet = new Set(checkedFiles);
+    const expectedSet = new Set(expectedFiles);
+    const missing = expectedFiles.filter((file) => !checkedSet.has(file));
+    const unexpected = checkedFiles.filter((file) => !expectedSet.has(file));
+    invalid(
+      `checked files do not match fixture inputs: missing [${missing.join(", ")}], unexpected [${unexpected.join(", ")}]`,
+    );
   }
   if (output.errorCount !== errorCount) {
     invalid(`errorCount ${output.errorCount} does not match ${errorCount} diagnostics`);

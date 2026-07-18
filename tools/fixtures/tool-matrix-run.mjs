@@ -16,6 +16,7 @@ import { fileURLToPath } from "node:url";
 
 import { expectedCompilerOutputs } from "./tool-matrix-compiler-paths.mjs";
 import { snapshotFormatterInputs, validateFormatterOutput } from "./tool-matrix-formatter.mjs";
+import { collectVueInputPaths } from "./tool-matrix-inputs.mjs";
 import { validateLinterOutput } from "./tool-matrix-linter.mjs";
 import { validatedFileCount } from "./tool-matrix-metrics.mjs";
 import { validateTypecheckerOutput } from "./tool-matrix-typechecker.mjs";
@@ -45,6 +46,8 @@ export function runTool(project, tool, args, launch, outputDir) {
   if (!fixtureExists) return { ...base, status: "missing-fixture" };
   const formatterStateBefore =
     tool === "formatter" ? snapshotFormatterInputs(cwd, project.vueGlobs) : null;
+  const expectedTypecheckerFiles =
+    tool === "typechecker" ? collectVueInputPaths(cwd, project.vueGlobs) : null;
 
   try {
     const startedAt = Date.now();
@@ -92,7 +95,12 @@ export function runTool(project, tool, args, launch, outputDir) {
       }
       if (tool === "typechecker" && payload.parseError == null) {
         try {
-          validateTypecheckerOutput(project, payload.parsed, result.status);
+          validateTypecheckerOutput(
+            project,
+            payload.parsed,
+            result.status,
+            expectedTypecheckerFiles,
+          );
         } catch (error) {
           payload.validationError = errorMessage(error);
         }
