@@ -145,11 +145,7 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
         );
       }
       assert.equal(output.code.includes("_mergeProps(_unref(attrs), {"), false, output.code);
-      assert.equal(
-        count(output.code, 'class: ["router-link", classes.value]'),
-        2,
-        output.code,
-      );
+      assert.equal(count(output.code, 'class: ["router-link", classes.value]'), 2, output.code);
       assert.equal(output.code.includes("_normalizeClass"), false, output.code);
       assert.equal(count(output.code, '_renderSlot(_ctx.$slots, "default")'), 2, output.code);
       assert.equal(output.code.includes("RouterLinkProps"), false, output.code);
