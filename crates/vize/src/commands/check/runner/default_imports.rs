@@ -11,7 +11,8 @@ use crate::commands::check::{
     imports_aliases::PathAliasResolver,
     path_cache::CanonicalPathCache,
     tsconfig_inputs::{
-        TsconfigInputCache, collect_default_check_files, collect_hidden_ambient_declaration_files,
+        TsconfigInputCache, collect_ambient_declaration_files, collect_default_check_files,
+        collect_hidden_ambient_declaration_files,
     },
 };
 
@@ -64,6 +65,45 @@ fn register_ambient_declaration_files(
             files.push(path);
         }
     }
+}
+
+/// Explicit subsets omit ambient roots; pull package-local declarations back in
+/// (plus the local types they import) so global types stay in scope without
+/// widening package checks.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn register_explicit_ambient_support(
+    files: &mut Vec<PathBuf>,
+    project_root: &Path,
+    cwd: &Path,
+    tsconfig_path: Option<&Path>,
+    include_jsx: bool,
+    tsconfig_input_cache: &mut TsconfigInputCache,
+    canonical_paths: &mut CanonicalPathCache,
+    explicit_input_root: &Path,
+    validate_inputs: bool,
+) {
+    let keep_package_local = super::resolve::project_root_has_package_boundary(project_root);
+    let ambient_declarations =
+        collect_ambient_declaration_files(project_root, tsconfig_path, tsconfig_input_cache)
+            .into_iter()
+            .filter(|path| !keep_package_local || path.starts_with(project_root))
+            .collect::<Vec<_>>();
+    for path in &ambient_declarations {
+        if !files.contains(path) {
+            files.push(path.clone());
+        }
+    }
+    files.extend(collect_transitive_local_imports_from(
+        &ambient_declarations,
+        cwd,
+        tsconfig_path,
+        include_jsx,
+        canonical_paths,
+        Some(explicit_input_root),
+        validate_inputs,
+    ));
+    files.sort();
+    files.dedup();
 }
 
 pub(super) fn canonical_file_set(

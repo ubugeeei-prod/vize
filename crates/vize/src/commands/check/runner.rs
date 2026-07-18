@@ -22,9 +22,7 @@ use super::{
     path_cache::CanonicalPathCache,
     patterns::CHECK_INPUTS_DISPLAY,
     reporting::{JsonFileResult, JsonOutput},
-    tsconfig_inputs::{
-        TsconfigInputCache, collect_ambient_declaration_files, resolve_tsconfig_for_files,
-    },
+    tsconfig_inputs::{TsconfigInputCache, resolve_tsconfig_for_files},
 };
 mod collect;
 mod default_imports;
@@ -39,7 +37,7 @@ mod socket;
 mod tests;
 use collect::collect_check_files_with_ignores;
 use default_imports::{
-    canonical_file_set, collect_default_run_files, collect_transitive_local_imports_from,
+    canonical_file_set, collect_default_run_files, register_explicit_ambient_support,
     register_transitive_local_imports,
 };
 use diagnostics::{
@@ -223,32 +221,17 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     // Explicit subsets omit ambient roots; pull package-local `.d.ts` files
     // back in so global types stay in scope without widening package checks.
     if !args.patterns.is_empty() && program_tsconfig_path.is_some() {
-        let keep_package_local = resolve::project_root_has_package_boundary(&project_root);
-        let ambient_declarations = collect_ambient_declaration_files(
+        register_explicit_ambient_support(
+            &mut files,
             &project_root,
-            program_tsconfig_path.as_deref(),
-            &mut tsconfig_input_cache,
-        );
-        let ambient_declarations = ambient_declarations
-            .into_iter()
-            .filter(|path| !keep_package_local || path.starts_with(&project_root))
-            .collect::<Vec<_>>();
-        for path in &ambient_declarations {
-            if !files.contains(path) {
-                files.push(path.clone());
-            }
-        }
-        files.extend(collect_transitive_local_imports_from(
-            &ambient_declarations,
             &cwd,
             program_tsconfig_path.as_deref(),
             jsx_typecheck,
+            &mut tsconfig_input_cache,
             &mut canonical_paths,
-            Some(&explicit_input_root),
+            &explicit_input_root,
             validate_inputs,
-        ));
-        files.sort();
-        files.dedup();
+        );
     }
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
     let tsconfig_path =
