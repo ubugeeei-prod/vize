@@ -90,6 +90,14 @@ jobs:
             --timeout-ms 600000 \
             --output-dir "$FIXTURE_REPORT_DIR"
 
+      - name: Record typechecker baseline divergence
+        run: |
+          node tools/fixtures/typecheck-divergence-report.mjs \
+            --report-dir "$FIXTURE_REPORT_DIR" \
+            --shard-index "$FIXTURE_SHARD_INDEX" \
+            --shard-count "$FIXTURE_SHARD_COUNT" \
+            --vue-tsc-bin tests/node_modules/.bin/vue-tsc
+
       - name: Publish shard summary
         if: ${{ always() }}
         shell: bash
@@ -98,6 +106,15 @@ jobs:
             cat "$FIXTURE_REPORT_DIR/summary.md" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "No fixture tool report was produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          mapfile -t divergence_reports < <(
+            find "$FIXTURE_REPORT_DIR" -maxdepth 1 -type f \
+              -name '*-typecheck-divergence.md' -print | sort
+          )
+          if (( ${#divergence_reports[@]} == 1 )); then
+            cat "${divergence_reports[0]}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No unique typecheck divergence report was produced." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload shard report

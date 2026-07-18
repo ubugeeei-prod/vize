@@ -59,7 +59,11 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   );
   const hydration = steps.find((step) => step.name === "Select and hydrate fixture shard");
   const run = steps.find((step) => step.name === "Exercise real projects with every core tool");
+  const runIndex = steps.indexOf(run!);
+  const divergence = steps.find((step) => step.name === "Record typechecker baseline divergence");
+  const divergenceIndex = steps.indexOf(divergence!);
   const summary = steps.find((step) => step.name === "Publish shard summary");
+  const summaryIndex = steps.indexOf(summary!);
   const upload = steps.find((step) => step.name === "Upload shard report");
 
   assert.notEqual(nodeSetupIndex, -1);
@@ -85,8 +89,16 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(run?.run ?? "", /--vize-bin target\/ci\/vize/);
   assert.match(run?.run ?? "", /--timeout-ms 600000/);
   assert.match(run?.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
+  assert.ok(runIndex < divergenceIndex && divergenceIndex < summaryIndex);
+  assert.match(divergence?.run ?? "", /tools\/fixtures\/typecheck-divergence-report\.mjs/);
+  assert.match(divergence?.run ?? "", /--report-dir "\$FIXTURE_REPORT_DIR"/);
+  assert.match(divergence?.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
+  assert.match(divergence?.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
+  assert.match(divergence?.run ?? "", /--vue-tsc-bin tests\/node_modules\/\.bin\/vue-tsc/);
   assert.equal(summary?.if, "${{ always() }}");
   assert.match(summary?.run ?? "", /summary\.md/);
+  assert.match(summary?.run ?? "", /\*-typecheck-divergence\.md/);
+  assert.match(summary?.run ?? "", /divergence_reports\[@\]/);
   assert.equal(upload?.if, "${{ always() }}");
   assert.match(upload?.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
   assert.deepEqual(upload?.with, {
