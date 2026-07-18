@@ -39,23 +39,28 @@ export function compareTypecheckDiagnostics({ projectId, cwd, vizeReport, vueTsc
   falsePositives.sort(compareRecords);
   falseNegatives.sort(compareRecords);
   const classified = { shared, falsePositives, falseNegatives };
+  const summary = {
+    vizeDiagnosticCount: vize.length,
+    baselineDiagnosticCount: baseline.length,
+    sharedCount: shared.length,
+    falsePositiveCount: falsePositives.length,
+    falseNegativeCount: falseNegatives.length,
+    falsePositiveRatio: ratio(falsePositives.length, vize.length),
+    falseNegativeRatio: ratio(falseNegatives.length, baseline.length),
+    vizeExcludedNonVueCount: vizeInput.excludedNonVueCount,
+    baselineExcludedNonVueCount: baselineInput.excludedNonVueCount,
+    baselineExcludedProjectCount: baselineInput.excludedProjectCount,
+    baselineExcludedExternalCount: baselineInput.excludedExternalCount,
+  };
   return {
     schema: "vize.fixtureTypecheckDivergence",
-    version: 1,
+    version: 2,
     project: projectId,
-    summary: {
-      vizeDiagnosticCount: vize.length,
-      baselineDiagnosticCount: baseline.length,
-      sharedCount: shared.length,
-      falsePositiveCount: falsePositives.length,
-      falseNegativeCount: falseNegatives.length,
-      falsePositiveRatio: ratio(falsePositives.length, vize.length),
-      falseNegativeRatio: ratio(falseNegatives.length, baseline.length),
-      vizeExcludedNonVueCount: vizeInput.excludedNonVueCount,
-      baselineExcludedNonVueCount: baselineInput.excludedNonVueCount,
-    },
+    summary,
     ...classified,
-    sha256: createHash("sha256").update(JSON.stringify(classified)).digest("hex"),
+    sha256: createHash("sha256")
+      .update(JSON.stringify({ summary, ...classified }))
+      .digest("hex"),
   };
 }
 
@@ -84,16 +89,25 @@ function collectVizeDiagnostics(report, cwd) {
 function collectVueTscDiagnostics(output, cwd) {
   if (typeof output !== "string") invalid("vue-tsc output must be a string");
   const diagnostics = [];
+  let excludedNonVueCount = 0;
+  let excludedProjectCount = 0;
+  let excludedExternalCount = 0;
   for (const line of output.replaceAll("\r\n", "\n").split("\n")) {
     const match = /^(.+)\((\d+),(\d+)\): (error|warning) TS(\d+): (.+)$/.exec(line);
+    const projectMatch = /^(error|warning) TS(\d+): (.+)$/.exec(line);
     if (match != null) {
-      const file = normalizePath(match[1], cwd, "vue-tsc diagnostic file");
-      diagnostics.push(record(file, match[4], match[2], match[3], match[5], match[6]));
+      const file = normalizeBaselinePath(match[1], cwd);
+      if (file == null) excludedExternalCount += 1;
+      else if (!file.endsWith(".vue")) excludedNonVueCount += 1;
+      else diagnostics.push(record(file, match[4], match[2], match[3], match[5], match[6]));
+    } else if (projectMatch != null) {
+      record("<project>", projectMatch[1], "1", "1", projectMatch[2], projectMatch[3]);
+      excludedProjectCount += 1;
     } else if (/\b(?:error|warning) TS\d+:/.test(line)) {
       invalid(`unparseable vue-tsc diagnostic: ${line}`);
     }
   }
-  return partitionVueDiagnostics(diagnostics);
+  return { diagnostics, excludedNonVueCount, excludedProjectCount, excludedExternalCount };
 }
 
 function partitionVueDiagnostics(diagnostics) {
@@ -116,6 +130,23 @@ function normalizePath(value, cwd, label) {
     normalized.split("/").some((segment) => segment === "" || segment === "." || segment === "..")
   ) {
     invalid(`${label} must stay inside the fixture workspace`);
+  }
+  return normalized;
+}
+
+function normalizeBaselinePath(value, cwd) {
+  if (typeof value !== "string" || value.length === 0) {
+    invalid("vue-tsc diagnostic file must be non-empty");
+  }
+  let normalized = value.replaceAll("\\", "/");
+  if (isAbsolute(normalized)) normalized = relative(cwd, normalized).replaceAll("\\", "/");
+  if (normalized.startsWith("./")) normalized = normalized.slice(2);
+  const segments = normalized.split("/");
+  if (normalized.length === 0 || segments.some((segment) => segment === "" || segment === ".")) {
+    invalid("vue-tsc diagnostic file must be normalized");
+  }
+  if (isAbsolute(normalized) || /^[A-Za-z]:\//.test(normalized) || segments.includes("..")) {
+    return null;
   }
   return normalized;
 }

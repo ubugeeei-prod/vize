@@ -190,6 +190,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "utf8",
     );
     assert.match(markdown, /Budget passed: true/);
+    assert.match(markdown, /vue-tsc excluded project-level: 0/);
     assert.match(markdown, new RegExp(`Digest: ${artifact.divergence.sha256}`));
   } finally {
     cleanup(fixture);
@@ -320,7 +321,7 @@ test("typecheck divergence report rejects invalid performance budgets", () => {
 test("typecheck divergence report rejects unsupported baseline exits and output", () => {
   for (const [body, message] of [
     ["process.exit(1);", /unsupported status 1/],
-    ['process.stderr.write("error TS5058: missing config\\n"); process.exit(2);', /unparseable/],
+    ["process.stderr.write('prefix error TS1: bad\\n'); process.exit(2);", /unparseable/],
   ] as const) {
     const fixture = setup();
     try {

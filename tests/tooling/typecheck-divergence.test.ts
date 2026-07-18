@@ -46,7 +46,7 @@ test("typecheck divergence classifies exact diagnostics deterministically", () =
     "sha256",
   ]);
   assert.equal(result.schema, "vize.fixtureTypecheckDivergence");
-  assert.equal(result.version, 1);
+  assert.equal(result.version, 2);
   assert.deepEqual(result.summary, {
     vizeDiagnosticCount: 2,
     baselineDiagnosticCount: 2,
@@ -57,6 +57,8 @@ test("typecheck divergence classifies exact diagnostics deterministically", () =
     falseNegativeRatio: 0,
     vizeExcludedNonVueCount: 0,
     baselineExcludedNonVueCount: 0,
+    baselineExcludedProjectCount: 0,
+    baselineExcludedExternalCount: 0,
   });
   assert.deepEqual(
     result.shared.map((diagnostic: { file: string }) => diagnostic.file),
@@ -97,6 +99,8 @@ test("typecheck divergence separates false positives and false negatives", () =>
     falseNegativeRatio: 2 / 3,
     vizeExcludedNonVueCount: 0,
     baselineExcludedNonVueCount: 0,
+    baselineExcludedProjectCount: 0,
+    baselineExcludedExternalCount: 0,
   });
   assert.deepEqual(
     result.falsePositives.map((entry: { code: number }) => entry.code),
@@ -149,7 +153,24 @@ test("typecheck divergence records non-Vue diagnostics outside the comparison su
   assert.equal(result.summary.baselineDiagnosticCount, 0);
   assert.equal(result.summary.vizeExcludedNonVueCount, 1);
   assert.equal(result.summary.baselineExcludedNonVueCount, 2);
+  assert.equal(result.summary.baselineExcludedProjectCount, 0);
+  assert.equal(result.summary.baselineExcludedExternalCount, 0);
   assert.deepEqual(result.falsePositives, []);
+  assert.deepEqual(result.falseNegatives, []);
+});
+
+test("typecheck divergence records project-level and external baseline diagnostics", () => {
+  const result = compare(
+    [{ file: "src/App.vue", diagnostics: [] }],
+    [
+      "error TS2688: Cannot find type definition file for 'vitest/globals'.",
+      `${path.join(cwd, "..", "node_modules", "types.d.ts")}(1,1): error TS2304: external`,
+      "../external.vue(2,3): warning TS6133: external Vue file",
+    ].join("\n"),
+  );
+  assert.equal(result.summary.baselineDiagnosticCount, 0);
+  assert.equal(result.summary.baselineExcludedProjectCount, 1);
+  assert.equal(result.summary.baselineExcludedExternalCount, 2);
   assert.deepEqual(result.falseNegatives, []);
 });
 
@@ -185,8 +206,7 @@ test("typecheck divergence rejects ambiguous diagnostics and escaping paths", ()
       /positive safe integers/,
     ],
     [[{ file: "../App.vue", diagnostics: [] }], "", /stay inside/],
-    [validFiles, "error TS5058: missing config\n", /unparseable vue-tsc diagnostic/],
-    [validFiles, "../App.vue(1,1): error TS2322: escaped\n", /stay inside/],
+    [validFiles, "prefix error TS5058: missing config\n", /unparseable vue-tsc diagnostic/],
   ] as const) {
     assert.throws(() => compare(files as never, output), message);
   }
