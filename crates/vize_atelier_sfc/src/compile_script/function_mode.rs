@@ -10,6 +10,10 @@
 mod compiler;
 pub(crate) mod helpers;
 pub(crate) mod imports;
+mod model;
+
+#[cfg(test)]
+mod tests;
 
 pub use compiler::compile_script_setup;
 pub use helpers::contains_top_level_await;

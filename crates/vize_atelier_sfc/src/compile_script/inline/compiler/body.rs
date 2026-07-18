@@ -79,6 +79,7 @@ pub(super) fn compile_script_setup_inline_body(
         Option<String>,
         Option<String>,
         Option<String>,
+        Option<String>,
     )> = profile!(
         "atelier.script_inline.collect_model_infos",
         collect_model_infos(&ctx)

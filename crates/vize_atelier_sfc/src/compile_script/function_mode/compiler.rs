@@ -9,8 +9,7 @@ use vize_croquis::macros::runtime_erased_macro_names;
 
 use crate::script::{
     PropsDestructuredBindings, ScriptCompileContext, TemplateUsedIdentifiers, define_model_name,
-    model_modifiers_binding_name, resolve_template_used_identifiers, resolve_type_args,
-    transform_destructured_props,
+    resolve_template_used_identifiers, resolve_type_args, transform_destructured_props,
 };
 use crate::types::{BindingType, SfcError};
 
@@ -27,6 +26,7 @@ use super::super::statement_sections::extract_script_sections;
 use super::super::typescript::transform_typescript_to_js;
 use super::helpers::{collect_runtime_identifier_references, is_reserved_word};
 use super::imports::dedupe_imports;
+use super::model::emit_model_bindings;
 
 /// Compile script setup content following Vue.js core format
 #[allow(dead_code)]
@@ -574,37 +574,6 @@ fn emit_expose(output: &mut vize_carton::Vec<u8>, ctx: &ScriptCompileContext) {
         // No defineExpose, but still need to call __expose() for Vue runtime
         output.extend_from_slice(b"  __expose();\n");
     }
-}
-
-/// Emit defineModel bindings and return the binding names.
-fn emit_model_bindings(
-    output: &mut vize_carton::Vec<u8>,
-    ctx: &ScriptCompileContext,
-) -> Vec<String> {
-    let mut model_binding_names: Vec<String> = Vec::new();
-    for model_call in &ctx.macros.define_models {
-        if let Some(ref binding_name) = model_call.binding_name {
-            let model_name = define_model_name(ctx.source.as_str(), model_call);
-
-            output.extend_from_slice(b"  const ");
-            if let Some(ref modifiers_binding_name) =
-                model_modifiers_binding_name(ctx.source.as_str(), model_call)
-            {
-                output.push(b'[');
-                output.extend_from_slice(binding_name.as_bytes());
-                output.extend_from_slice(b", ");
-                output.extend_from_slice(modifiers_binding_name.as_bytes());
-                output.extend_from_slice(b"]");
-            } else {
-                output.extend_from_slice(binding_name.as_bytes());
-            }
-            output.extend_from_slice(b" = _useModel(__props, \"");
-            output.extend_from_slice(model_name.as_bytes());
-            output.extend_from_slice(b"\")\n");
-            model_binding_names.push(String::from(binding_name.as_str()));
-        }
-    }
-    model_binding_names
 }
 
 /// Build the list of bindings to include in `__returned__`.

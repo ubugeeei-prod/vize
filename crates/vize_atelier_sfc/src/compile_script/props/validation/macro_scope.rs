@@ -8,7 +8,7 @@ use oxc_span::SourceType;
 use oxc_syntax::symbol::SymbolFlags;
 use vize_carton::cstr;
 
-use crate::script::ScriptCompileContext;
+use crate::script::{ScriptCompileContext, define_model_prop_option_spans};
 use crate::types::{BindingType, SfcDescriptor, SfcError};
 
 use super::block_location_for_span;
@@ -75,16 +75,15 @@ fn hoisted_macro_spans(ctx: &ScriptCompileContext) -> Vec<HoistedMacroSpan> {
             });
         }
     }
-    spans.extend(
-        ctx.macros
-            .define_models
-            .iter()
-            .map(|call| HoistedMacroSpan {
+    spans.extend(ctx.macros.define_models.iter().flat_map(|call| {
+        define_model_prop_option_spans(ctx.source.as_str(), call)
+            .into_iter()
+            .map(|(start, end)| HoistedMacroSpan {
                 name: "defineModel",
-                start: call.start,
-                end: call.end,
-            }),
-    );
+                start,
+                end,
+            })
+    }));
     spans
 }
 

@@ -55,6 +55,7 @@ pub(super) fn build_model_props_emits(
         Option<String>,
         Option<String>,
         Option<String>,
+        Option<String>,
     )],
     is_ts: bool,
     needs_prop_type: bool,
@@ -68,7 +69,9 @@ pub(super) fn build_model_props_emits(
         // model props declaration: `{\n    "name": <opts>,\n    "nameModifiers": {},\n  }`
         let mut model_decl: Vec<u8> = Vec::new();
         model_decl.push(b'{');
-        for (model_name, _binding_name, _modifiers_binding_name, options, type_arg) in model_infos {
+        for (model_name, _binding_name, _modifiers_binding_name, options, _, type_arg) in
+            model_infos
+        {
             model_decl.extend_from_slice(b"\n    \"");
             model_decl.extend_from_slice(model_name.as_bytes());
             model_decl.extend_from_slice(b"\": ");
@@ -133,7 +136,7 @@ pub(super) fn build_model_props_emits(
     let model_emits: Vec<u8> = {
         let mut v = Vec::new();
         v.push(b'[');
-        for (i, (name, _, _, _, _)) in model_infos.iter().enumerate() {
+        for (i, (name, _, _, _, _, _)) in model_infos.iter().enumerate() {
             if i > 0 {
                 v.extend_from_slice(b", ");
             }
@@ -182,6 +185,7 @@ pub(super) fn collect_model_infos(
     Option<String>,
     Option<String>,
     Option<String>,
+    Option<String>,
 )> {
     ctx.macros
         .define_models
@@ -200,6 +204,7 @@ pub(super) fn collect_model_infos(
                 binding_name,
                 modifiers_binding_name,
                 metadata.options,
+                metadata.runtime_options,
                 m.type_args.clone(),
             )
         })

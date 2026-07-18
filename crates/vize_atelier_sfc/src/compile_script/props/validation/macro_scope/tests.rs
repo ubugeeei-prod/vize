@@ -79,6 +79,11 @@ fn rejects_setup_local_values_in_every_hoisted_runtime_macro() {
             "const local = makeValidator()\ndefineModel<string>({ validator: local })",
             "defineModel",
         ),
+        (
+            "defineModel prop option beside runtime accessor",
+            "const local = makeValidator()\ndefineModel<string>({ validator: local, get: value => value })",
+            "defineModel",
+        ),
     ];
 
     for (label, source, macro_name) in cases {
@@ -135,6 +140,14 @@ fn allows_values_that_remain_valid_after_macro_hoisting() {
         (
             "local value in a type query",
             "const runtime = { ready: true }\ndefineProps<{ value?: typeof runtime }>()",
+        ),
+        (
+            "defineModel runtime accessors",
+            "const local = computed(() => 1)\ndefineModel<number>({ get(value) { return value ?? local.value }, set(value) { return Math.max(local.value, value) } })",
+        ),
+        (
+            "defineModel modifiers binding in setter",
+            "const [model, modifiers] = defineModel<string>({ set(value) { return modifiers.trim ? value.trim() : value } })",
         ),
     ];
 

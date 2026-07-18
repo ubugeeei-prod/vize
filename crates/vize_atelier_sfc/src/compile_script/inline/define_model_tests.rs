@@ -57,15 +57,36 @@ const model = defineModel(('label') as const, {
         "expected model emits to use the AST string argument:\n{output}"
     );
     assert!(
-        normalized.contains(r#"const model = _useModel(__props, "label");"#),
-        "expected useModel to use the AST string argument:\n{output}"
+        normalized.contains(r#"const model = _useModel(__props, "label", {"#)
+            && normalized.contains("get(value) { return value; }")
+            && normalized.contains("set(value) { return value.trim(); }"),
+        "expected useModel to preserve runtime accessors:\n{output}"
     );
     assert!(
         !normalized.contains("modelValue"),
         "parenthesized/as string argument should not fall back to modelValue:\n{output}"
     );
+}
+
+#[test]
+fn define_model_runtime_accessors_can_reference_setup_bindings() {
+    let content = r#"
+const minimum = computed(() => 1)
+const [model, modifiers] = defineModel<number>({
+  get(value) {
+    return value ?? minimum.value
+  },
+  set(value) {
+    return modifiers.number ? Math.max(minimum.value, Number(value)) : value
+  },
+})
+"#;
+
+    let output = compile_setup(content);
+    assert!(output.contains("minimum.value"), "{output}");
+    assert!(output.contains("modifiers.number"), "{output}");
     assert!(
-        !normalized.contains("get(value)") && !normalized.contains("set(value)"),
-        "runtime-only model accessors should not be copied into props options:\n{output}"
+        output.contains("_useModel(__props, \"modelValue\", {"),
+        "{output}"
     );
 }

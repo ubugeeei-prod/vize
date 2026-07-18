@@ -102,6 +102,7 @@ pub(super) fn emit_setup_body(
         Option<String>,
         Option<String>,
         Option<String>,
+        Option<String>,
     )],
     setup_body_lines: &[String],
     source_is_ts: bool,
@@ -141,7 +142,9 @@ pub(super) fn emit_setup_body(
 
     // Model bindings: const model = _useModel<T>(__props, 'modelValue')
     if !model_infos.is_empty() {
-        for (model_name, binding_name, modifiers_binding_name, _, type_arg) in model_infos {
+        for (model_name, binding_name, modifiers_binding_name, _, runtime_options, type_arg) in
+            model_infos
+        {
             output.extend_from_slice(b"const ");
             if let Some(modifiers_binding_name) = modifiers_binding_name {
                 output.push(b'[');
@@ -165,7 +168,12 @@ pub(super) fn emit_setup_body(
             }
             output.extend_from_slice(b"(__props, \"");
             output.extend_from_slice(model_name.as_bytes());
-            output.extend_from_slice(b"\")\n");
+            output.push(b'"');
+            if let Some(runtime_options) = runtime_options {
+                output.extend_from_slice(b", ");
+                output.extend_from_slice(runtime_options.as_bytes());
+            }
+            output.extend_from_slice(b")\n");
         }
     }
 
