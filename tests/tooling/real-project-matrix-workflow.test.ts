@@ -53,11 +53,26 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     jobs?: Record<string, WorkflowJob>;
   };
   const steps = workflow.jobs?.["real-project-matrix"]?.steps ?? [];
+  const nodeSetupIndex = steps.findIndex((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
+  const hydrationIndex = steps.findIndex(
+    (step) => step.name === "Select and hydrate fixture shard",
+  );
   const hydration = steps.find((step) => step.name === "Select and hydrate fixture shard");
   const run = steps.find((step) => step.name === "Exercise real projects with every core tool");
   const summary = steps.find((step) => step.name === "Publish shard summary");
   const upload = steps.find((step) => step.name === "Upload shard report");
 
+  assert.notEqual(nodeSetupIndex, -1);
+  assert.notEqual(hydrationIndex, -1);
+  assert.ok(
+    nodeSetupIndex < hydrationIndex,
+    "Node 24 must be active before loading matrix scripts",
+  );
+  assert.deepEqual(steps[nodeSetupIndex].with, {
+    "node-version-file": ".node-version",
+    cache: true,
+    "run-install": false,
+  });
   assert.match(hydration?.run ?? "", /--list-fixture-paths/);
   assert.match(hydration?.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
   assert.match(hydration?.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);

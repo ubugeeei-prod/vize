@@ -36,6 +36,12 @@ jobs:
         with:
           persist-credentials: false
 
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
       - name: Select and hydrate fixture shard
         shell: bash
         run: |
@@ -52,12 +58,6 @@ jobs:
           mkdir -p "$FIXTURE_REPORT_DIR"
           printf '%s\n' "${fixture_paths[@]}" > "$FIXTURE_REPORT_DIR/selected-fixtures.txt"
           git submodule update --init --depth 1 -- "${fixture_paths[@]}"
-
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          cache: true
-          run-install: false
 
       - uses: ./.github/actions/setup-moonbit
 
