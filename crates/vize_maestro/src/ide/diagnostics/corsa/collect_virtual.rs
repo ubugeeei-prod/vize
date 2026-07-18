@@ -1,6 +1,7 @@
 //! Mapping Corsa virtual-document diagnostics back to the host SFC.
 
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url};
+use vize_carton::FxHashSet;
 
 use super::super::{VirtualTsResult, sources};
 use super::mapping::{map_diagnostic_with_source_mappings, source_offset_to_position};
@@ -197,14 +198,16 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
     deduplicate_diagnostics(mapped_diagnostics)
 }
 
-fn deduplicate_diagnostics(diagnostics: Vec<Diagnostic>) -> Vec<Diagnostic> {
-    let mut unique = Vec::with_capacity(diagnostics.len());
-    for diagnostic in diagnostics {
-        if !unique.contains(&diagnostic) {
-            unique.push(diagnostic);
+fn deduplicate_diagnostics(mut diagnostics: Vec<Diagnostic>) -> Vec<Diagnostic> {
+    let mut seen = FxHashSet::default();
+    diagnostics.retain(|diagnostic| match serde_json::to_vec(diagnostic) {
+        Ok(key) => seen.insert(key),
+        Err(error) => {
+            tracing::warn!("failed to serialize diagnostic deduplication key: {error}");
+            true
         }
-    }
-    unique
+    });
+    diagnostics
 }
 
 fn is_inferred_implicit_any_suggestion(
@@ -318,6 +321,10 @@ mod tests {
             message: "Cannot find name 'anotherBinding'.".into(),
             ..original.clone()
         };
+        let distinct_data = Diagnostic {
+            data: Some(serde_json::json!({ "origin": "second-pass" })),
+            ..original.clone()
+        };
 
         assert_eq!(
             deduplicate_diagnostics(vec![
@@ -325,8 +332,10 @@ mod tests {
                 distinct.clone(),
                 original.clone(),
                 distinct.clone(),
+                distinct_data.clone(),
+                distinct_data.clone(),
             ]),
-            vec![original, distinct],
+            vec![original, distinct, distinct_data],
         );
     }
 }
