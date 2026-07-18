@@ -16,6 +16,32 @@ use crate::commands::check::{
     },
 };
 
+pub(super) struct ExplicitAmbientImportContext<'a> {
+    project_root: &'a Path,
+    cwd: &'a Path,
+    tsconfig_path: &'a Path,
+    explicit_input_root: &'a Path,
+    include_jsx: bool,
+}
+
+impl<'a> ExplicitAmbientImportContext<'a> {
+    pub(super) fn new(
+        project_root: &'a Path,
+        cwd: &'a Path,
+        tsconfig_path: &'a Path,
+        explicit_input_root: &'a Path,
+        include_jsx: bool,
+    ) -> Self {
+        Self {
+            project_root,
+            cwd,
+            tsconfig_path,
+            explicit_input_root,
+            include_jsx,
+        }
+    }
+}
+
 pub(super) fn collect_default_run_files(
     project_root: &Path,
     cwd: &Path,
@@ -67,40 +93,31 @@ fn register_ambient_declaration_files(
     }
 }
 
-/// Explicit subsets omit ambient roots; pull package-local declarations back in
-/// (plus the local types they import) so global types stay in scope without
-/// widening package checks.
-#[allow(clippy::too_many_arguments)]
-pub(super) fn register_explicit_ambient_support(
+pub(super) fn register_explicit_ambient_imports(
     files: &mut Vec<PathBuf>,
-    project_root: &Path,
-    cwd: &Path,
-    tsconfig_path: Option<&Path>,
-    include_jsx: bool,
+    context: ExplicitAmbientImportContext<'_>,
     tsconfig_input_cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
-    explicit_input_root: &Path,
-    validate_inputs: bool,
 ) {
-    let keep_package_local = super::resolve::project_root_has_package_boundary(project_root);
-    let ambient_declarations =
-        collect_ambient_declaration_files(project_root, tsconfig_path, tsconfig_input_cache)
-            .into_iter()
-            .filter(|path| !keep_package_local || path.starts_with(project_root))
-            .collect::<Vec<_>>();
-    for path in &ambient_declarations {
-        if !files.contains(path) {
-            files.push(path.clone());
-        }
-    }
+    let keep_package_local =
+        super::resolve::project_root_has_package_boundary(context.project_root);
+    let ambient_declarations = collect_ambient_declaration_files(
+        context.project_root,
+        Some(context.tsconfig_path),
+        tsconfig_input_cache,
+    )
+    .into_iter()
+    .filter(|path| !keep_package_local || path.starts_with(context.project_root))
+    .collect::<Vec<_>>();
+    files.extend(ambient_declarations.iter().cloned());
     files.extend(collect_transitive_local_imports_from(
         &ambient_declarations,
-        cwd,
-        tsconfig_path,
-        include_jsx,
+        context.cwd,
+        Some(context.tsconfig_path),
+        context.include_jsx,
         canonical_paths,
-        Some(explicit_input_root),
-        validate_inputs,
+        Some(context.explicit_input_root),
+        true,
     ));
     files.sort();
     files.dedup();

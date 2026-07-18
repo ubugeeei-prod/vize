@@ -37,8 +37,8 @@ mod socket;
 mod tests;
 use collect::collect_check_files_with_ignores;
 use default_imports::{
-    canonical_file_set, collect_default_run_files, register_explicit_ambient_support,
-    register_transitive_local_imports,
+    ExplicitAmbientImportContext, canonical_file_set, collect_default_run_files,
+    register_explicit_ambient_imports, register_transitive_local_imports,
 };
 use diagnostics::{
     emit_json_output, is_reported, is_suppressed_false_positive, render_diagnostics,
@@ -218,19 +218,21 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             &mut tsconfig_input_cache,
         )
     };
-    // Explicit subsets omit ambient roots; pull package-local `.d.ts` files
-    // back in so global types stay in scope without widening package checks.
-    if !args.patterns.is_empty() && program_tsconfig_path.is_some() {
-        register_explicit_ambient_support(
+    // Explicit subsets need package-local ambient roots and their imported types.
+    if !args.patterns.is_empty()
+        && let Some(program_tsconfig_path) = program_tsconfig_path.as_deref()
+    {
+        register_explicit_ambient_imports(
             &mut files,
-            &project_root,
-            &cwd,
-            program_tsconfig_path.as_deref(),
-            jsx_typecheck,
+            ExplicitAmbientImportContext::new(
+                &project_root,
+                &cwd,
+                program_tsconfig_path,
+                &explicit_input_root,
+                jsx_typecheck,
+            ),
             &mut tsconfig_input_cache,
             &mut canonical_paths,
-            &explicit_input_root,
-            validate_inputs,
         );
     }
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
