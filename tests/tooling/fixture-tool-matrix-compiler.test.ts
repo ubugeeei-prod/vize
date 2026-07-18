@@ -67,6 +67,67 @@ test("fixture tool matrix does not allocate compiler output for a missing fixtur
   assert.deepEqual(compilerTempEntries(), before);
 });
 
+test("fixture tool matrix requires an explicit zero-file compiler expectation", () => {
+  const fixtureDir = fs.mkdtempSync(
+    path.join(root, "tests", "_fixtures", "tool-matrix-empty-compiler-"),
+  );
+  const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-empty-compiler-"));
+  const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-empty-compiler-report-"));
+  const executable = writeFakeVize(fakeDir, "process.exit(1);");
+  const project = {
+    id: "empty-compiler-fixture",
+    fixturePath: path.relative(root, fixtureDir),
+    vueGlobs: ["**/*.vue"],
+  };
+  const args = { dryRun: false, timeoutMs: 5_000 };
+  const launch = { command: executable, prefix: [], label: executable };
+  try {
+    const undeclared = runTool(project, "compiler", args, launch, reportDir);
+    assert.equal(undeclared.status, "failed");
+    assert.match(undeclared.failure, /compiler matched no Vue files/);
+
+    const declared = runTool(
+      { ...project, expectedVueFileCount: 0 },
+      "compiler",
+      args,
+      launch,
+      reportDir,
+    );
+    assert.equal(declared.status, "findings", JSON.stringify(declared));
+    const raw = JSON.parse(
+      fs.readFileSync(path.resolve(root, declared.outputPath as string), "utf8"),
+    );
+    assert.deepEqual(
+      {
+        inputFileCount: raw.compilerArtifacts.inputFileCount,
+        outputFileCount: raw.compilerArtifacts.outputFileCount,
+        errorCount: raw.compilerArtifacts.errorCount,
+        warningCount: raw.compilerArtifacts.warningCount,
+      },
+      { inputFileCount: 0, outputFileCount: 0, errorCount: 0, warningCount: 0 },
+    );
+    assert.equal(
+      raw.compilerArtifacts.sha256,
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    );
+
+    fs.writeFileSync(path.join(fixtureDir, "unexpected.vue"), "<template />\n");
+    const stale = runTool(
+      { ...project, expectedVueFileCount: 0 },
+      "compiler",
+      args,
+      launch,
+      reportDir,
+    );
+    assert.equal(stale.status, "failed");
+    assert.match(stale.failure, /compiler input count mismatch: expected 0, matched 1/);
+  } finally {
+    fs.rmSync(fixtureDir, { recursive: true, force: true });
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+    fs.rmSync(reportDir, { recursive: true, force: true });
+  }
+});
+
 test("fixture tool matrix mirrors compiler roots when validating artifact paths", () => {
   const cases = [
     {

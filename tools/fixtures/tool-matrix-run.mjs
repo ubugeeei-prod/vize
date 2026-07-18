@@ -72,6 +72,7 @@ export function runTool(project, tool, args, launch, outputDir) {
         payload.compilerArtifacts = inspectCompilerArtifacts(
           cwd,
           project.vueGlobs,
+          project.expectedVueFileCount,
           compilerOutputDir,
         );
       } catch (error) {
@@ -108,7 +109,7 @@ export function runTool(project, tool, args, launch, outputDir) {
   }
 }
 
-function inspectCompilerArtifacts(cwd, patterns, outputDir) {
+function inspectCompilerArtifacts(cwd, patterns, expectedFileCount, outputDir) {
   const inputPaths = [
     ...new Set(
       patterns.flatMap((pattern) =>
@@ -118,7 +119,14 @@ function inspectCompilerArtifacts(cwd, patterns, outputDir) {
       ),
     ),
   ].sort((left, right) => left.localeCompare(right));
-  if (inputPaths.length === 0) throw new Error("compiler matched no Vue files");
+  if (expectedFileCount != null && inputPaths.length !== expectedFileCount) {
+    throw new Error(
+      `compiler input count mismatch: expected ${expectedFileCount}, matched ${inputPaths.length}`,
+    );
+  }
+  if (inputPaths.length === 0 && expectedFileCount !== 0) {
+    throw new Error("compiler matched no Vue files");
+  }
 
   const outputPaths = collectFiles(outputDir);
   const nonJsonPaths = outputPaths.filter((entry) => !entry.endsWith(".json"));

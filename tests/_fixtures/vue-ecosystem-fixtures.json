@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "projects": [
     {
@@ -581,6 +581,7 @@
       "revision": "e6ab47cff0f3d201bb7f2504a5fa46419f4824eb",
       "license": { "spdx": "MIT", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
+      "expectedVueFileCount": 0,
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "curator-compare"
     },
@@ -1133,6 +1134,7 @@
       "vueGlobs": [
         "**/*.vue"
       ],
+      "expectedVueFileCount": 0,
       "coverage": [
         "compiler",
         "linter",

@@ -23,6 +23,7 @@ interface FixtureProject {
     files: string[];
   };
   vueGlobs: string[];
+  expectedVueFileCount?: 0;
   tsconfig?: string;
   coverage: string[];
   diff: FixtureDiff;
@@ -160,13 +161,26 @@ test("Vue ecosystem registry covers the requested projects", () => {
   const registry = readRegistry();
   const ids = new Set(registry.projects.map((project) => project.id));
 
-  assert.equal(registry.schemaVersion, 2);
+  assert.equal(registry.schemaVersion, 3);
   for (const id of requestedFixtures) {
     assert.ok(ids.has(id), `${id} should be registered`);
   }
   for (const id of requiredTypecheckProjects) {
     assert.ok(ids.has(id), `${id} should be registered for typechecker performance`);
   }
+});
+
+test("fixtures without Vue SFCs declare an exact zero-file expectation", () => {
+  const registry = readRegistry();
+  const projects = registry.projects.filter((project) => "expectedVueFileCount" in project);
+
+  assert.deepEqual(
+    projects.map((project) => ({ id: project.id, count: project.expectedVueFileCount })),
+    [
+      { id: "docsify", count: 0 },
+      { id: "vue-native-core", count: 0 },
+    ],
+  );
 });
 
 test("registered fixtures are pinned submodules with declared licenses", () => {
