@@ -36,7 +36,7 @@ const symbol = "packageBoundary";
 const sourceSha256 = "f5c888da7bae9c61151c7fbfde578ccdb768e75fbe2e69637d8298ca4f702c96";
 const cleanOutputSha256 = "84e9feaa14017c1c0e27a6b8955bd4a591b3b61e8708f3ead335aaa0c7c96013";
 const cleanCodeSha256 = "2e99ba339b7fb47f5788a990245b0292ede267d6bdfcb6c80cbe4c76da9cdebc";
-const brokenOutputSha256 = "15e571e43307b3ac025db3929f4f11029f1b7f5991d11b405433b6a31c5bc90e";
+const brokenOutputSha256 = "f71d3b39b2481594dc6ee9bf43911aaeca29194f95dd45e5f8c999d960ab04c1";
 const brokenCodeSha256 = "eed24c03d97029fca5d3d13f81ac416099d3876e7f36572d113acc0768872679";
 const cleanHref = ':href="String(to)"';
 const brokenHref = ':href="String(to"';
@@ -444,7 +444,7 @@ function assertBrokenBuild(result: BuildResult): void {
     {
       css: null,
       errors: [
-        'Template compilation errors: [CompilerError { code: InvalidExpression, message: "Error parsing JavaScript expression: Expected `)` but found `EOF`", loc: Some(SourceLocation { start: Position { offset: 157, line: 1, column: 158 }, end: Position { offset: 166, line: 1, column: 167 }, source: "String(to" }) }]',
+        'Template compilation errors: [CompilerError { code: InvalidExpression, message: "Error parsing JavaScript expression: mismatched expression delimiters", loc: Some(SourceLocation { start: Position { offset: 157, line: 1, column: 158 }, end: Position { offset: 166, line: 1, column: 167 }, source: "String(to" }) }]',
       ],
       filename: "AppLink.vue",
       macro_artifacts: [],
