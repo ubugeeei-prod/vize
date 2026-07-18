@@ -67,6 +67,73 @@ test("fixture tool matrix does not allocate compiler output for a missing fixtur
   assert.deepEqual(compilerTempEntries(), before);
 });
 
+test("fixture tool matrix mirrors compiler roots when validating artifact paths", () => {
+  const cases = [
+    {
+      name: "root-wide glob",
+      vueGlobs: ["**/*.vue"],
+      source: "src/nested/App.vue",
+      extraDirectories: [],
+      output: "src/nested/App.json",
+    },
+    {
+      name: "multiple existing roots",
+      vueGlobs: ["apps/**/*.vue", "packages/**/*.vue"],
+      source: "apps/admin/App.vue",
+      extraDirectories: ["packages"],
+      output: "apps/admin/App.json",
+    },
+    {
+      name: "missing roots are excluded",
+      vueGlobs: ["apps/**/*.vue", "missing/**/*.vue"],
+      source: "apps/admin/App.vue",
+      extraDirectories: [],
+      output: "admin/App.json",
+    },
+  ] as const;
+
+  for (const fixtureCase of cases) {
+    const fixtureDir = fs.mkdtempSync(
+      path.join(root, "tests", "_fixtures", "tool-matrix-compiler-layout-"),
+    );
+    const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-compiler-layout-"));
+    const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-compiler-report-"));
+    try {
+      for (const directory of fixtureCase.extraDirectories) {
+        fs.mkdirSync(path.join(fixtureDir, directory), { recursive: true });
+      }
+      const sourcePath = path.join(fixtureDir, fixtureCase.source);
+      fs.mkdirSync(path.dirname(sourcePath), { recursive: true });
+      fs.writeFileSync(sourcePath, "<template><main /></template>\n");
+
+      const executable = writeFakeVize(
+        fakeDir,
+        `import fs from "node:fs"; import path from "node:path";
+const output = process.argv[process.argv.indexOf("--output") + 1];
+const artifact = path.join(output, ${JSON.stringify(fixtureCase.output)});
+fs.mkdirSync(path.dirname(artifact), { recursive: true });
+fs.writeFileSync(artifact, JSON.stringify({ filename: ${JSON.stringify(path.basename(fixtureCase.source))}, code: "export default {}", css: null, errors: [], warnings: [], script_lang: "js", macro_artifacts: [] }) + "\\n");`,
+      );
+      const run = runTool(
+        {
+          id: `compiler-layout-${fixtureCase.name}`,
+          fixturePath: path.relative(root, fixtureDir),
+          vueGlobs: [...fixtureCase.vueGlobs],
+        },
+        "compiler",
+        { dryRun: false, timeoutMs: 5_000 },
+        { command: executable, prefix: [], label: executable },
+        reportDir,
+      );
+      assert.equal(run.status, "ok", `${fixtureCase.name}: ${JSON.stringify(run)}`);
+    } finally {
+      fs.rmSync(fixtureDir, { recursive: true, force: true });
+      fs.rmSync(fakeDir, { recursive: true, force: true });
+      fs.rmSync(reportDir, { recursive: true, force: true });
+    }
+  }
+});
+
 test("fixture tool matrix compiles every matched Vue file into validated JSON artifacts", () => {
   const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-tool-compiler-"));
   const executable = writeFakeVize(

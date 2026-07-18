@@ -13,6 +13,8 @@ import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { expectedCompilerOutputs } from "./tool-matrix-compiler-paths.mjs";
+
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 export function runTool(project, tool, args, launch, outputDir) {
@@ -125,7 +127,7 @@ function inspectCompilerArtifacts(cwd, patterns, outputDir) {
       `compiler artifact count mismatch: ${inputPaths.length} inputs, ${outputPaths.length} outputs`,
     );
   }
-  const inputByOutputPath = expectedCompilerOutputs(inputPaths);
+  const inputByOutputPath = expectedCompilerOutputs(cwd, patterns, inputPaths);
   const missingPaths = [...inputByOutputPath.keys()].filter(
     (entry) => !outputPaths.includes(entry),
   );
@@ -163,27 +165,6 @@ function inspectCompilerArtifacts(cwd, patterns, outputDir) {
     warningCount,
     sha256: digest.digest("hex"),
   };
-}
-
-function expectedCompilerOutputs(inputPaths) {
-  const parentSegments = inputPaths.map((entry) => entry.split("/").slice(0, -1));
-  const commonSegments = [];
-  for (let index = 0; parentSegments.every((segments) => segments[index] != null); index += 1) {
-    const segment = parentSegments[0][index];
-    if (!parentSegments.every((segments) => segments[index] === segment)) break;
-    commonSegments.push(segment);
-  }
-  const commonPrefix = commonSegments.length === 0 ? "" : `${commonSegments.join("/")}/`;
-  const outputs = new Map(
-    inputPaths.map((inputPath) => [
-      inputPath.slice(commonPrefix.length).replace(/\.vue$/, ".json"),
-      inputPath,
-    ]),
-  );
-  if (outputs.size !== inputPaths.length) {
-    throw new Error("compiler inputs map to duplicate output paths");
-  }
-  return outputs;
 }
 
 function collectFiles(root, directory = root, files = []) {
