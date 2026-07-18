@@ -11,11 +11,14 @@ use oxc_span::{GetSpan, SourceType};
 use vize_carton::{FxHashSet, String, ToCompactString};
 use vize_croquis::macros::{is_builtin_macro, is_runtime_erased_macro};
 
+use crate::script::is_static_enum;
+
 use super::runtime_bindings::collect_runtime_bindings;
 
 enum StatementBucket {
     Import,
     TypeDeclaration,
+    HoistedRuntime,
     Macro,
     Setup,
 }
@@ -90,6 +93,11 @@ pub(crate) fn extract_script_sections_from_program_with_options(
                     ts_declarations.push(normalize_preserved_segment(&segment));
                 }
             }
+            StatementBucket::HoistedRuntime => {
+                let mut segment = std::mem::take(&mut pending_gap);
+                segment.push_str(slice);
+                ts_declarations.push(normalize_preserved_segment(&segment));
+            }
             StatementBucket::Setup => {
                 let mut segment = std::mem::take(&mut pending_gap);
                 segment.push_str(slice);
@@ -125,6 +133,9 @@ fn classify_statement(
         Statement::ImportDeclaration(_) => StatementBucket::Import,
         Statement::TSInterfaceDeclaration(_) | Statement::TSTypeAliasDeclaration(_) => {
             StatementBucket::TypeDeclaration
+        }
+        Statement::TSEnumDeclaration(declaration) if is_static_enum(declaration) => {
+            StatementBucket::HoistedRuntime
         }
         Statement::ExportNamedDeclaration(export_decl) => {
             if export_decl.export_kind.is_type()
@@ -227,123 +238,4 @@ fn push_non_empty_lines(lines: &mut Vec<String>, segment: &str) {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::extract_script_sections;
-
-    #[test]
-    fn test_extract_script_sections_skips_next_line_macro_assignment() {
-        let content = r#"const props =
-  defineProps<{
-    name: string
-  }>()
-
-const count = 1
-"#;
-
-        let (_, setup_lines, ts_declarations) =
-            extract_script_sections(content, true).expect("sections should parse");
-
-        insta::assert_debug_snapshot!((&setup_lines, &ts_declarations));
-    }
-
-    #[test]
-    fn test_extract_script_sections_trims_leading_blank_lines_from_type_declarations() {
-        let content = r#"import { useStore } from 'vuex'
-
-interface RootState {
-  count: number
-}
-
-const store = useStore<RootState>()
-"#;
-
-        let (_, _, ts_declarations) =
-            extract_script_sections(content, true).expect("sections should parse");
-
-        assert_eq!(ts_declarations.len(), 1);
-        assert_eq!(
-            ts_declarations[0].as_str(),
-            "interface RootState {\n  count: number\n}"
-        );
-    }
-
-    #[test]
-    fn test_extract_script_sections_skips_ecosystem_compile_time_macro() {
-        let content = r#"definePage({
-  name: 'home',
-  meta: {
-    requiresAuth: true,
-  },
-})
-
-const msg = 'ready'
-"#;
-
-        let (_, setup_lines, ts_declarations) =
-            extract_script_sections(content, true).expect("sections should parse");
-
-        assert_eq!(setup_lines.len(), 1);
-        assert_eq!(setup_lines[0].as_str(), "const msg = 'ready'");
-        assert!(ts_declarations.is_empty());
-    }
-
-    #[test]
-    fn test_extract_script_sections_preserves_imported_define_page() {
-        let content = r#"import { definePage } from '@/page.js'
-
-definePage(() => ({
-  title: 'runtime page',
-}))
-
-const msg = 'ready'
-"#;
-
-        let (imports, setup_lines, ts_declarations) =
-            extract_script_sections(content, true).expect("sections should parse");
-
-        assert_eq!(imports.len(), 1);
-        assert!(setup_lines.iter().any(|line| line.contains("definePage")));
-        assert!(setup_lines.iter().any(|line| line.contains("const msg")));
-        assert!(ts_declarations.is_empty());
-    }
-
-    #[test]
-    fn test_extract_script_sections_skips_define_page_meta() {
-        let content = r#"definePageMeta({
-  name: 'docs',
-  meta: {
-    scrollMargin: 180,
-  },
-})
-
-const msg = 'ready'
-"#;
-
-        let (_, setup_lines, ts_declarations) =
-            extract_script_sections(content, true).expect("sections should parse");
-
-        assert_eq!(setup_lines.len(), 1);
-        assert_eq!(setup_lines[0].as_str(), "const msg = 'ready'");
-        assert!(ts_declarations.is_empty());
-    }
-
-    #[test]
-    fn test_extract_script_sections_skips_define_route_rules() {
-        let content = r#"defineRouteRules({
-  prerender: true,
-  cache: {
-    maxAge: 60,
-  },
-})
-
-const msg = 'ready'
-"#;
-
-        let (_, setup_lines, ts_declarations) =
-            extract_script_sections(content, true).expect("sections should parse");
-
-        assert_eq!(setup_lines.len(), 1);
-        assert_eq!(setup_lines[0].as_str(), "const msg = 'ready'");
-        assert!(ts_declarations.is_empty());
-    }
-}
+mod tests;

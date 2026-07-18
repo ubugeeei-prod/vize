@@ -17,6 +17,7 @@ mod define_props;
 mod define_props_destructure;
 mod define_slots;
 mod import_usage_check;
+mod static_expression;
 pub(crate) mod type_resolution;
 mod utils;
 
@@ -37,6 +38,7 @@ pub use import_usage_check::{
     TemplateUsedIdentifiers, is_used_in_template, resolve_template_used_identifiers,
     resolve_template_v_model_identifiers,
 };
+pub(crate) use static_expression::{is_static_enum, register_enum};
 pub(crate) use type_resolution::{
     build_interface_type_source, resolve_type_args, resolve_type_to_object_body,
 };

@@ -22,7 +22,7 @@ use super::helpers::{
     infer_binding_type, is_call_of, is_import_type_only, macro_binding_name,
     register_binding_pattern,
 };
-use crate::script::build_interface_type_source;
+use crate::script::{build_interface_type_source, register_enum};
 
 impl ScriptCompileContext {
     /// Parse the source with OXC and extract information
@@ -399,6 +399,7 @@ impl ScriptCompileContext {
                         .insert(id.name.to_compact_string(), BindingType::SetupConst);
                 }
             }
+            Statement::TSEnumDeclaration(e) => register_enum(&mut self.bindings, e),
             Statement::ExpressionStatement(expr_stmt) => {
                 // Handle standalone macro calls like defineExpose({...})
                 if let Some(macro_call) = extract_macro_from_expr(&expr_stmt.expression, source) {
@@ -435,7 +436,6 @@ impl ScriptCompileContext {
                     }
                 }
             }
-            // TypeScript declarations are handled in the first pass
             Statement::TSInterfaceDeclaration(_) | Statement::TSTypeAliasDeclaration(_) => {}
             _ => {}
         }

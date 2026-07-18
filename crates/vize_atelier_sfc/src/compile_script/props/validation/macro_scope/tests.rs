@@ -65,8 +65,8 @@ fn rejects_setup_local_values_in_every_hoisted_runtime_macro() {
             "defineOptions",
         ),
         (
-            "enum runtime value",
-            "enum local { Ready }\ndefineOptions({ ready: local.Ready })",
+            "runtime-dependent enum value",
+            "const seed = runtime()\nenum local { Ready = seed }\ndefineOptions({ ready: local.Ready })",
             "defineOptions",
         ),
         (
@@ -116,6 +116,10 @@ fn allows_values_that_remain_valid_after_macro_hoisting() {
         (
             "literal setup constant",
             "const fallback = 'ready'\nwithDefaults(defineProps<{ value?: string }>(), { value: fallback })",
+        ),
+        (
+            "static enum runtime value",
+            "enum Step { Name, General = 1 + 1 }\nwithDefaults(defineProps<{ step?: Step }>(), { step: Step.Name })",
         ),
         (
             "global binding",

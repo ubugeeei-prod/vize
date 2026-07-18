@@ -19,3 +19,27 @@ const [model, modifiers] = defineModel<number>({
     );
     assert!(result.code.contains("modifiers.number"), "{}", result.code);
 }
+
+#[test]
+fn emits_static_enums_before_the_component() {
+    let content = r#"
+enum Step { Name, General = 1 + 1 }
+const current = Step.Name
+"#;
+    let result = compile_script_setup(content, "ProfileForm", false, true, None).unwrap();
+
+    let step = result
+        .code
+        .find("enum Step")
+        .expect("enum should be emitted");
+    let component = result
+        .code
+        .find("const __sfc__")
+        .expect("component wrapper");
+    assert!(step < component, "{}", result.code);
+    assert!(
+        result.code.contains("const current = Step.Name"),
+        "{}",
+        result.code
+    );
+}

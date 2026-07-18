@@ -22,7 +22,6 @@ use super::super::props::{
     extract_prop_types_from_type_with_context, normalize_destructure_default_value,
     resolve_prop_js_type, runtime_prop_key, validate_macro_scope_and_props,
 };
-use super::super::statement_sections::extract_script_sections;
 use super::super::typescript::transform_typescript_to_js;
 use super::helpers::{collect_runtime_identifier_references, is_reserved_word};
 use super::imports::dedupe_imports;
@@ -59,20 +58,7 @@ pub fn compile_script_setup(
     // Check if we have props destructure
     let has_props_destructure = ctx.macros.props_destructure.is_some();
 
-    let (imports, setup_lines, _) = extract_script_sections(content, is_ts).unwrap_or_else(|| {
-        let setup_lines = content
-            .lines()
-            .filter_map(|line| {
-                let trimmed = line.trim();
-                if trimmed.is_empty() {
-                    None
-                } else {
-                    Some(line.to_compact_string())
-                }
-            })
-            .collect();
-        (Vec::new(), setup_lines, Vec::new())
-    });
+    let (imports, setup_lines, module_scope) = super::module_scope::extract(content);
 
     // Check if we need PropType import (type-based defineProps in non-vapor TS mode)
     let needs_prop_type = is_ts
@@ -125,6 +111,7 @@ pub fn compile_script_setup(
     for import in &deduped_imports {
         output.extend_from_slice(import.as_bytes());
     }
+    super::module_scope::emit_module_scope(&mut output, &module_scope);
 
     output.push(b'\n');
 

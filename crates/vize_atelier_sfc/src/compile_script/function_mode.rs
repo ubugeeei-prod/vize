@@ -11,6 +11,7 @@ mod compiler;
 pub(crate) mod helpers;
 pub(crate) mod imports;
 mod model;
+mod module_scope;
 
 #[cfg(test)]
 mod tests;
