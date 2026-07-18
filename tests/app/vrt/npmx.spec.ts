@@ -34,7 +34,7 @@ type VisualMode = "dev" | "preview";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR =
   process.env.VIZE_NPMX_VRT_OUTPUT_DIR ??
-  path.resolve(__dirname, "../../../__agent_only/npmx-vrt/artifacts");
+  path.resolve(__dirname, "../../../.vize/vrt/npmx/artifacts");
 const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
 const NPMX_VRT_TIMEOUT = 900_000;
 const modes: VisualMode[] = ["dev", "preview"];

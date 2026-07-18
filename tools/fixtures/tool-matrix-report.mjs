@@ -36,7 +36,7 @@ function main() {
 
   const outputDir = resolve(
     repoRoot,
-    args.outputDir ?? join("__agent_only", "fixture-tool-matrix", timestampSlug(new Date())),
+    args.outputDir ?? join(".vize", "fixture-tool-matrix", timestampSlug(new Date())),
   );
   const launch = resolveVizeLaunch(args.vizeBin, args.dryRun);
   mkdirSync(outputDir, { recursive: true });

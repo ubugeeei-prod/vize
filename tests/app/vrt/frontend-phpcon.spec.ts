@@ -29,7 +29,7 @@ type VisualMode = "dev" | "preview";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR =
   process.env.VIZE_FRONTEND_PHPCON_VRT_OUTPUT_DIR ??
-  path.resolve(__dirname, "../../../__agent_only/frontend-phpcon-vrt/artifacts");
+  path.resolve(__dirname, "../../../.vize/vrt/frontend-phpcon/artifacts");
 const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 const FRONTEND_PHPCON_VRT_TIMEOUT = 900_000;

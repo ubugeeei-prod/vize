@@ -28,7 +28,7 @@ type VisualMode = "dev" | "preview";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR =
   process.env.VIZE_VUEFES_VRT_OUTPUT_DIR ??
-  path.resolve(__dirname, "../../../__agent_only/vuefes-vrt/artifacts");
+  path.resolve(__dirname, "../../../.vize/vrt/vuefes/artifacts");
 const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 const VUEFES_VRT_TIMEOUT = 900_000;

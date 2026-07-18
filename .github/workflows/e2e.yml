@@ -319,9 +319,10 @@ jobs:
             tests/app/screenshots/
             tests/app/playwright-report/
             tests/playwright-report/
-            __agent_only/elk-vrt/artifacts/
-            __agent_only/frontend-phpcon-vrt/artifacts/
-            __agent_only/npmx-vrt/artifacts/
-            __agent_only/vuefes-vrt/artifacts/
+            .vize/vrt/elk/artifacts/
+            .vize/vrt/frontend-phpcon/artifacts/
+            .vize/vrt/misskey/artifacts/
+            .vize/vrt/npmx/artifacts/
+            .vize/vrt/vuefes/artifacts/
           if-no-files-found: ignore
           retention-days: 7

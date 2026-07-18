@@ -29,7 +29,7 @@ interface VisualRoute {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR =
   process.env.VIZE_ELK_VRT_OUTPUT_DIR ??
-  path.resolve(__dirname, "../../../__agent_only/elk-vrt/artifacts");
+  path.resolve(__dirname, "../../../.vize/vrt/elk/artifacts");
 const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
 const DEFAULT_MAX_DIFF_RATIO = 0.04;
 const ELK_MIN_CONTENT_TEXT_LENGTH = 40;

@@ -117,7 +117,7 @@ function writeInspectorReport(
 ): void {
   const outputRoot =
     process.env.VIZE_INSPECT_OUTPUT_DIR ??
-    path.join(REPO_ROOT, "__agent_only", "inspect", sanitizeName(appName));
+    path.join(REPO_ROOT, ".vize", "inspect", sanitizeName(appName));
   fs.mkdirSync(outputRoot, { recursive: true });
 
   fs.writeFileSync(path.join(outputRoot, `${target}.json`), JSON.stringify(report, null, 2) + "\n");
