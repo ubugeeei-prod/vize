@@ -118,6 +118,19 @@ export default { mixins: ([LocalMixin] satisfies readonly object[]) }
 }
 
 #[test]
+fn mixins_unwrap_angle_bracket_asserted_arrays() {
+    assert_typed_mixin_array(
+        r#"
+const LocalMixin = {
+  methods: { inheritedMethod() {} },
+  filters: { inheritedFilter(value) { return value } }
+}
+export default { mixins: (<const>[LocalMixin]) }
+"#,
+    );
+}
+
+#[test]
 fn class_component_decorator_filters_are_legacy_only() {
     let source = r#"
 import Vue from 'vue'
