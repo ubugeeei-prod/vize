@@ -40,7 +40,15 @@ export function snapshotFormatterInputs(cwd, patterns) {
   return digest.digest("hex");
 }
 
-export function validateFormatterOutput(project, stdout, stderr, exitCode, before, after) {
+export function validateFormatterOutput(
+  project,
+  stdout,
+  stderr,
+  exitCode,
+  before,
+  after,
+  expectedFiles = null,
+) {
   if (stdout !== "") invalid("stdout must be empty");
   if (before !== after) invalid("formatter check modified its working tree or input metadata");
   const normalizedStderr = stderr.replaceAll("\r\n", "\n");
@@ -57,12 +65,14 @@ export function validateFormatterOutput(project, stdout, stderr, exitCode, befor
   const lines = normalizedStderr.slice(0, -1).split("\n");
   const found = parseCount(lines[0], /^Found (\d+) file\(s\)$/, "found count");
   if (found === 0) invalid("non-empty fixture formatted zero files");
+  if (expectedFiles != null && found !== expectedFiles.length) {
+    invalid(`found count ${found} does not match ${expectedFiles.length} inputs`);
+  }
   const changedPaths = [];
   let index = 1;
   while (lines[index]?.startsWith("Would reformat: ")) {
     const candidate = lines[index].slice("Would reformat: ".length);
-    requireFormatterPath(candidate);
-    changedPaths.push(candidate);
+    changedPaths.push(normalizeFormatterPath(candidate));
     index += 1;
   }
   if (lines[index] !== "") invalid("missing blank line before formatter summary");
@@ -85,6 +95,13 @@ export function validateFormatterOutput(project, stdout, stderr, exitCode, befor
   if (index !== lines.length) invalid("formatter report contains unexpected lines");
   if (new Set(changedPaths).size !== changedPaths.length) {
     invalid("formatter report contains duplicate changed paths");
+  }
+  if (expectedFiles != null) {
+    const expectedSet = new Set(expectedFiles);
+    const unexpected = changedPaths.filter((file) => !expectedSet.has(file));
+    if (unexpected.length > 0) {
+      invalid(`changed files are not fixture inputs: ${unexpected.join(", ")}`);
+    }
   }
   if (changed !== changedPaths.length) {
     invalid(`changed count ${changed} does not match ${changedPaths.length} paths`);
@@ -127,7 +144,7 @@ function safeCount(value, label) {
   return count;
 }
 
-function requireFormatterPath(value) {
+function normalizeFormatterPath(value) {
   const bare = value.startsWith("./") ? value.slice(2) : value;
   if (
     bare.length === 0 ||
@@ -139,6 +156,7 @@ function requireFormatterPath(value) {
     invalid("changed file must be a normalized relative path");
   }
   if (!bare.endsWith(".vue")) invalid(`changed file is not a Vue SFC: ${value}`);
+  return bare;
 }
 
 function invalid(message) {

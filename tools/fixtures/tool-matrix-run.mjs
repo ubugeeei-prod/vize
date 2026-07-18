@@ -47,7 +47,7 @@ export function runTool(project, tool, args, launch, outputDir) {
   const formatterStateBefore =
     tool === "formatter" ? snapshotFormatterInputs(cwd, project.vueGlobs) : null;
   const expectedToolFiles =
-    tool === "typechecker" || tool === "linter"
+    tool === "typechecker" || tool === "linter" || tool === "formatter"
       ? collectVueInputPaths(cwd, project.vueGlobs)
       : null;
 
@@ -119,6 +119,7 @@ export function runTool(project, tool, args, launch, outputDir) {
           result.status,
           formatterStateBefore,
           formatterStateAfter,
+          expectedToolFiles,
         );
       } catch (error) {
         payload.validationError = errorMessage(error);

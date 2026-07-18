@@ -29,12 +29,15 @@ function changedReport() {
 
 test("formatter oracle accepts changed, mixed, clean, and zero-file reports", () => {
   assert.deepEqual(
-    validateFormatterOutput({ id: "changed" }, "", changedReport(), 1, "same", "same"),
+    validateFormatterOutput({ id: "changed" }, "", changedReport(), 1, "same", "same", [
+      "src/App.vue",
+      "src/Card.vue",
+    ]),
     {
       checkedFileCount: 2,
       changedFileCount: 2,
       unchangedFileCount: 0,
-      changedPathsSha256: "51d272a067976b5d31b5a538d475d04fe9c917837d342781ced092794acc5e2c",
+      changedPathsSha256: "60e7f3109278640e86d41597937d4032f96264285f92113a525cd05c56456913",
     },
   );
   assert.deepEqual(
@@ -53,6 +56,7 @@ test("formatter oracle accepts changed, mixed, clean, and zero-file reports", ()
       1,
       "same",
       "same",
+      ["src/App.vue", "src/Card.vue"],
     ),
     {
       checkedFileCount: 2,
@@ -69,6 +73,7 @@ test("formatter oracle accepts changed, mixed, clean, and zero-file reports", ()
       0,
       "same",
       "same",
+      ["src/App.vue"],
     ),
     {
       checkedFileCount: 1,
@@ -85,6 +90,7 @@ test("formatter oracle accepts changed, mixed, clean, and zero-file reports", ()
       1,
       "same",
       "same",
+      [],
     ),
     {
       checkedFileCount: 0,
@@ -140,6 +146,16 @@ test("formatter oracle rejects malformed, inconsistent, or mutating checks", () 
       stderr: "Found 0 file(s)\n\nChecked 0 file(s)\n",
       exitCode: 0,
       message: /non-empty fixture formatted zero files/,
+    },
+    {
+      name: "partial fixture coverage",
+      expectedFiles: ["src/App.vue", "src/Card.vue", "src/Other.vue"],
+      message: /found count 2 does not match 3 inputs/,
+    },
+    {
+      name: "changed path outside fixture inputs",
+      expectedFiles: ["src/Card.vue", "src/Other.vue"],
+      message: /changed files are not fixture inputs: src\/App\.vue/,
     },
     {
       name: "absolute Unix path",
@@ -217,6 +233,7 @@ test("formatter oracle rejects malformed, inconsistent, or mutating checks", () 
           fixtureCase.exitCode ?? 1,
           "same",
           fixtureCase.after ?? "same",
+          fixtureCase.expectedFiles ?? null,
         ),
       fixtureCase.message,
       fixtureCase.name,
@@ -277,6 +294,46 @@ process.exit(1);\n`,
     assert.match(run.failure, /modified its working tree or input metadata/);
     const raw = JSON.parse(fs.readFileSync(path.resolve(root, run.outputPath as string), "utf8"));
     assert.match(raw.validationError, /modified its working tree or input metadata/);
+  } finally {
+    fs.rmSync(fixtureDir, { recursive: true, force: true });
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+    fs.rmSync(reportDir, { recursive: true, force: true });
+  }
+});
+
+test("fixture tool matrix rejects partial formatter coverage", () => {
+  const fixtureDir = fs.mkdtempSync(
+    path.join(root, "tests", "_fixtures", "tool-matrix-formatter-partial-"),
+  );
+  const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-formatter-partial-"));
+  const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-formatter-partial-report-"));
+  const executable = path.join(fakeDir, "fake-vize.mjs");
+  fs.mkdirSync(path.join(fixtureDir, "src"), { recursive: true });
+  fs.writeFileSync(path.join(fixtureDir, "src", "App.vue"), "<template />\n");
+  fs.writeFileSync(path.join(fixtureDir, "src", "Card.vue"), "<template />\n");
+  fs.writeFileSync(
+    executable,
+    `#!/usr/bin/env node
+process.stderr.write("Found 1 file(s)\\n\\nChecked 1 file(s)\\n  1 file(s) already formatted\\n");\n`,
+  );
+  fs.chmodSync(executable, 0o755);
+
+  try {
+    const run = runTool(
+      {
+        id: "formatter-partial-fixture",
+        fixturePath: path.relative(root, fixtureDir),
+        vueGlobs: ["**/*.vue"],
+      },
+      "formatter",
+      { dryRun: false, timeoutMs: 5_000 },
+      { command: executable, prefix: [], label: executable },
+      reportDir,
+    );
+    assert.equal(run.status, "failed");
+    assert.match(run.failure, /found count 1 does not match 2 inputs/);
+    const raw = JSON.parse(fs.readFileSync(path.resolve(root, run.outputPath as string), "utf8"));
+    assert.match(raw.validationError, /found count 1 does not match 2 inputs/);
   } finally {
     fs.rmSync(fixtureDir, { recursive: true, force: true });
     fs.rmSync(fakeDir, { recursive: true, force: true });
