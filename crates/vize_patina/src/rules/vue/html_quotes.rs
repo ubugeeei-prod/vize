@@ -20,7 +20,7 @@
 //! ```
 
 use crate::context::LintContext;
-use crate::diagnostic::Severity;
+use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, PropNode};
 
@@ -81,26 +81,87 @@ impl Rule for HtmlQuotes {
                 match self.style {
                     HtmlQuotesOption::Double => {
                         if quote_char == Some(b'\'') {
-                            ctx.warn_with_help(
-                                ctx.t("vue/html-quotes.message_double"),
-                                &value.loc,
-                                ctx.t("vue/html-quotes.help"),
-                            );
+                            let message = ctx.t("vue/html-quotes.message_double");
+                            let help = ctx.t("vue/html-quotes.help");
+                            let mut diagnostic = LintDiagnostic::warn(
+                                META.name,
+                                message,
+                                value.loc.start.offset,
+                                value.loc.end.offset,
+                            )
+                            .with_help(help);
+                            if let Some(fix) = quote_fix(
+                                ctx.source,
+                                value.loc.start.offset,
+                                value.loc.end.offset,
+                                b'"',
+                                "Use double quotes",
+                            ) {
+                                diagnostic = diagnostic.with_fix(fix);
+                            }
+                            ctx.report(diagnostic);
                         }
                     }
                     HtmlQuotesOption::Single => {
                         if quote_char == Some(b'"') {
-                            ctx.warn_with_help(
-                                ctx.t("vue/html-quotes.message_single"),
-                                &value.loc,
-                                ctx.t("vue/html-quotes.help"),
-                            );
+                            let message = ctx.t("vue/html-quotes.message_single");
+                            let help = ctx.t("vue/html-quotes.help");
+                            let mut diagnostic = LintDiagnostic::warn(
+                                META.name,
+                                message,
+                                value.loc.start.offset,
+                                value.loc.end.offset,
+                            )
+                            .with_help(help);
+                            if let Some(fix) = quote_fix(
+                                ctx.source,
+                                value.loc.start.offset,
+                                value.loc.end.offset,
+                                b'\'',
+                                "Use single quotes",
+                            ) {
+                                diagnostic = diagnostic.with_fix(fix);
+                            }
+                            ctx.report(diagnostic);
                         }
                     }
                 }
             }
         }
     }
+}
+
+fn quote_fix(
+    source: &str,
+    start: u32,
+    end: u32,
+    expected_quote: u8,
+    message: &'static str,
+) -> Option<Fix> {
+    let opening = start.checked_sub(1)?;
+    let closing_end = end.checked_add(1)?;
+    let start_index = usize::try_from(start).ok()?;
+    let end_index = usize::try_from(end).ok()?;
+    let opening_index = usize::try_from(opening).ok()?;
+    let actual_quote = *source.as_bytes().get(opening_index)?;
+    if !matches!(actual_quote, b'\'' | b'"')
+        || source.as_bytes().get(end_index).copied() != Some(actual_quote)
+        || source
+            .as_bytes()
+            .get(start_index..end_index)?
+            .contains(&expected_quote)
+    {
+        return None;
+    }
+
+    let replacement = if expected_quote == b'"' { "\"" } else { "'" };
+    Some(Fix::with_edits(
+        message,
+        vec![
+            TextEdit::replace(opening, start, replacement),
+            TextEdit::replace(end, closing_end, replacement),
+        ],
+    ))
 }
 
 #[cfg(test)]
@@ -123,6 +184,29 @@ mod tests {
     }
 
     #[test]
+    fn test_double_quotes_fix_replaces_both_delimiters() {
+        let linter = create_linter();
+        let source = r#"<div class='foo'></div>"#;
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(result.warning_count, 1);
+        let fix = result.diagnostics[0]
+            .fix
+            .as_ref()
+            .expect("expected quote fix");
+        assert_eq!(fix.message, "Use double quotes");
+        assert_eq!(fix.edits.len(), 2);
+        assert_eq!(fix.apply(source), r#"<div class="foo"></div>"#);
+    }
+
+    #[test]
+    fn test_double_quotes_fix_is_omitted_when_value_contains_double_quote() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div title='say "hi"'></div>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+        assert!(!result.diagnostics[0].has_fix());
+    }
+
+    #[test]
     fn test_valid_no_value() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<input disabled />"#, "test.vue");
@@ -139,5 +223,35 @@ mod tests {
         // Parser preserves double quotes, so single-quote preference should warn
         let result = linter.lint_template(r#"<div class="foo"></div>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_single_quotes_fix_replaces_both_delimiters() {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(HtmlQuotes {
+            style: HtmlQuotesOption::Single,
+        }));
+        let linter = Linter::with_registry(registry);
+        let source = r#"<div class="foo"></div>"#;
+        let result = linter.lint_template(source, "test.vue");
+        let fix = result.diagnostics[0]
+            .fix
+            .as_ref()
+            .expect("expected quote fix");
+        assert_eq!(fix.message, "Use single quotes");
+        assert_eq!(fix.edits.len(), 2);
+        assert_eq!(fix.apply(source), "<div class='foo'></div>");
+    }
+
+    #[test]
+    fn test_single_quotes_fix_is_omitted_when_value_contains_single_quote() {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(HtmlQuotes {
+            style: HtmlQuotesOption::Single,
+        }));
+        let linter = Linter::with_registry(registry);
+        let result = linter.lint_template(r#"<div title="don't"></div>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+        assert!(!result.diagnostics[0].has_fix());
     }
 }
