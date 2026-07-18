@@ -7,6 +7,7 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -111,7 +112,9 @@ function inspectCompilerArtifacts(cwd, patterns, outputDir) {
   const inputPaths = [
     ...new Set(
       patterns.flatMap((pattern) =>
-        globSync(pattern, { cwd }).map((entry) => entry.replaceAll("\\", "/")),
+        globSync(pattern, { cwd })
+          .filter((entry) => statSync(resolve(cwd, entry)).isFile())
+          .map((entry) => entry.replaceAll("\\", "/")),
       ),
     ),
   ].sort((left, right) => left.localeCompare(right));

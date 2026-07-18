@@ -73,7 +73,7 @@ test("fixture tool matrix mirrors compiler roots when validating artifact paths"
       name: "root-wide glob",
       vueGlobs: ["**/*.vue"],
       source: "src/nested/App.vue",
-      extraDirectories: [],
+      extraDirectories: ["src/nested/component-library.vue"],
       output: "src/nested/App.json",
     },
     {
