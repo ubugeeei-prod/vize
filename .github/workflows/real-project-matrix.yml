@@ -60,6 +60,14 @@ jobs:
           printf '%s\n' "${fixture_paths[@]}" > "$FIXTURE_REPORT_DIR/selected-fixtures.txt"
           git submodule update --init --depth 1 -- "${fixture_paths[@]}"
 
+      - name: Install pinned typecheck baseline dependencies
+        run: |
+          node tools/fixtures/typecheck-dependency-prepare.mjs \
+            --output-dir "$FIXTURE_REPORT_DIR" \
+            --shard-index "$FIXTURE_SHARD_INDEX" \
+            --shard-count "$FIXTURE_SHARD_COUNT" \
+            --timeout-ms 600000
+
       - uses: ./.github/actions/setup-moonbit
 
       - name: Setup Rust
