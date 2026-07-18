@@ -62,7 +62,10 @@ test("fixture tool matrix emits read-only commands with machine-readable diagnos
     const runs = Object.fromEntries(
       report.projects[0].runs.map((entry: { tool: string }) => [entry.tool, entry]),
     ) as Record<string, { command: string }>;
-    assert.match(runs.compiler.command, /inspector .*--format json --template-syntax quirks/);
+    assert.match(
+      runs.compiler.command,
+      /build .*--format json --output '<compiler-output>' --template-syntax quirks --continue-on-error --no-config/,
+    );
     assert.match(
       runs.typechecker.command,
       /check .*--format json --no-config --tsconfig playground\/tsconfig\.json/,
@@ -175,7 +178,7 @@ test("fixture tool matrix preserves raw output for invalid JSON and spawn errors
       "--project",
       "vue-vben-admin",
       "--tool",
-      "compiler",
+      "linter",
       "--vize-bin",
       executable,
     ]);

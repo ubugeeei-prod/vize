@@ -1,0 +1,147 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const toolPath = path.join(root, "tools", "fixtures", "tool-matrix-report.mjs");
+
+function run(args: string[]) {
+  const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-tool-compiler-"));
+  const result = spawnSync(process.execPath, [toolPath, ...args, "--output-dir", outputDir], {
+    cwd: root,
+    encoding: "utf8",
+  });
+  return { outputDir, result };
+}
+
+function writeFakeVize(directory: string, body: string) {
+  const executable = path.join(directory, "fake-vize.mjs");
+  fs.writeFileSync(executable, `#!/usr/bin/env node\n${body}\n`);
+  fs.chmodSync(executable, 0o755);
+  return executable;
+}
+
+function withSyntheticFixture(runTest: () => void) {
+  const fixtureDir = path.join(root, "tests", "_fixtures", "_git", "vue-vben-admin");
+  const fixtureExisted = fs.existsSync(fixtureDir);
+  const syntheticDir = path.join(fixtureDir, "apps");
+  const syntheticDirExisted = fs.existsSync(syntheticDir);
+  const fixtureFile = path.join(syntheticDir, "vize-tool-matrix-test.vue");
+  fs.mkdirSync(syntheticDir, { recursive: true });
+  assert.equal(fs.existsSync(fixtureFile), false, fixtureFile);
+  fs.writeFileSync(fixtureFile, "<template><main /></template>\n");
+  try {
+    runTest();
+  } finally {
+    fs.rmSync(fixtureFile, { force: true });
+    if (!syntheticDirExisted) fs.rmdirSync(syntheticDir);
+    if (!fixtureExisted) fs.rmdirSync(fixtureDir);
+  }
+}
+
+test("fixture tool matrix compiles every matched Vue file into validated JSON artifacts", () => {
+  const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-tool-compiler-"));
+  const executable = writeFakeVize(
+    fakeDir,
+    `import fs from "node:fs"; import path from "node:path";
+if (process.argv[2] === "--version") process.exit(0);
+const output = process.argv[process.argv.indexOf("--output") + 1];
+fs.mkdirSync(output, { recursive: true });
+fs.writeFileSync(path.join(output, "synthetic.json"), JSON.stringify({ filename: "vize-tool-matrix-test.vue", code: "export default {}", css: null, errors: [], warnings: ["synthetic warning"], script_lang: "js", macro_artifacts: [] }) + "\\n");
+process.stdout.write("Built: vize-tool-matrix-test.vue\\n");`,
+  );
+  try {
+    withSyntheticFixture(() => {
+      const { outputDir, result } = run([
+        "--project",
+        "vue-vben-admin",
+        "--tool",
+        "compiler",
+        "--vize-bin",
+        executable,
+      ]);
+      try {
+        assert.equal(result.status, 0, result.stderr);
+        const report = JSON.parse(fs.readFileSync(path.join(outputDir, "summary.json"), "utf8"));
+        assert.deepEqual(
+          {
+            failedRuns: report.summary.failedRuns,
+            okRuns: report.summary.okRuns,
+            runStatus: report.projects[0].runs[0].status,
+          },
+          { failedRuns: 0, okRuns: 1, runStatus: "ok" },
+        );
+        const rawPath = path.resolve(root, report.projects[0].runs[0].outputPath);
+        const raw = JSON.parse(fs.readFileSync(rawPath, "utf8"));
+        assert.deepEqual(
+          {
+            inputFileCount: raw.compilerArtifacts.inputFileCount,
+            outputFileCount: raw.compilerArtifacts.outputFileCount,
+            errorCount: raw.compilerArtifacts.errorCount,
+            warningCount: raw.compilerArtifacts.warningCount,
+          },
+          { inputFileCount: 1, outputFileCount: 1, errorCount: 0, warningCount: 1 },
+        );
+        assert.match(raw.compilerArtifacts.sha256, /^[0-9a-f]{64}$/);
+        assert.equal("parsed" in raw, false);
+      } finally {
+        fs.rmSync(outputDir, { recursive: true, force: true });
+      }
+    });
+  } finally {
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+  }
+});
+
+test("fixture tool matrix rejects incomplete and malformed compiler artifacts", () => {
+  const cases = [
+    {
+      name: "missing",
+      body: `if (process.argv[2] === "--version") process.exit(0);`,
+      message: /compiler artifact count mismatch: 1 inputs, 0 outputs/,
+    },
+    {
+      name: "malformed",
+      body: `import fs from "node:fs"; import path from "node:path";
+if (process.argv[2] === "--version") process.exit(0);
+const output = process.argv[process.argv.indexOf("--output") + 1];
+fs.mkdirSync(output, { recursive: true });
+fs.writeFileSync(path.join(output, "synthetic.json"), "{}\\n");`,
+      message: /invalid compiler artifact keys in synthetic\.json/,
+    },
+  ] as const;
+
+  for (const fixtureCase of cases) {
+    const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), `vize-compiler-${fixtureCase.name}-`));
+    const executable = writeFakeVize(fakeDir, fixtureCase.body);
+    try {
+      withSyntheticFixture(() => {
+        const { outputDir, result } = run([
+          "--project",
+          "vue-vben-admin",
+          "--tool",
+          "compiler",
+          "--vize-bin",
+          executable,
+        ]);
+        try {
+          assert.equal(result.status, 1, fixtureCase.name);
+          const report = JSON.parse(fs.readFileSync(path.join(outputDir, "summary.json"), "utf8"));
+          assert.equal(report.summary.failedRuns, 1);
+          assert.match(report.projects[0].runs[0].failure, fixtureCase.message);
+          const rawPath = path.resolve(root, report.projects[0].runs[0].outputPath);
+          const raw = JSON.parse(fs.readFileSync(rawPath, "utf8"));
+          assert.match(raw.validationError, fixtureCase.message);
+        } finally {
+          fs.rmSync(outputDir, { recursive: true, force: true });
+        }
+      });
+    } finally {
+      fs.rmSync(fakeDir, { recursive: true, force: true });
+    }
+  }
+});

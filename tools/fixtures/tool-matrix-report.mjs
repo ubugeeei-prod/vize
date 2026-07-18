@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { resolveVizeLaunch, runTool } from "./tool-matrix-run.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..");
@@ -149,94 +150,6 @@ function printHelpAndExit() {
   process.exit(0);
 }
 
-function runTool(project, tool, args, launch, outputDir) {
-  const cwd = resolve(repoRoot, project.fixturePath);
-  const commandArgs = [...launch.prefix, ...toolArgs(project, tool)];
-  const base = {
-    tool,
-    command: displayCommand(launch.command, commandArgs),
-    cwd: relative(repoRoot, cwd),
-    durationMs: 0,
-    exitCode: null,
-    outputPath: null,
-  };
-  if (args.dryRun) return { ...base, status: "planned" };
-  if (!existsSync(cwd)) return { ...base, status: "missing-fixture" };
-
-  const startedAt = Date.now();
-  const result = spawnSync(launch.command, commandArgs, {
-    cwd,
-    encoding: "utf8",
-    env: { ...process.env, LANG: "C", LC_ALL: "C" },
-    maxBuffer: 1024 * 1024 * 1024,
-    timeout: args.timeoutMs,
-  });
-  const rawPath = join(outputDir, `${project.id}-${tool}.json`);
-  const completed = {
-    ...base,
-    durationMs: Date.now() - startedAt,
-    exitCode: result.status,
-    outputPath: relative(repoRoot, rawPath),
-  };
-  const payload = {
-    schema: "vize.fixtureToolRun",
-    version: 1,
-    project: project.id,
-    tool,
-    exitCode: result.status,
-    stdout: result.stdout ?? "",
-    stderr: result.stderr ?? "",
-  };
-  if (result.error != null) {
-    payload.spawnError = errorMessage(result.error);
-  } else if (tool !== "formatter" && (result.status === 0 || result.status === 1)) {
-    try {
-      payload.parsed = JSON.parse(result.stdout);
-    } catch (error) {
-      payload.parseError = errorMessage(error);
-    }
-  }
-  writeFileSync(rawPath, `${JSON.stringify(payload, null, 2)}\n`);
-
-  if (result.error != null) {
-    return { ...completed, status: "failed", failure: errorMessage(result.error) };
-  }
-  if (result.status !== 0 && result.status !== 1) {
-    return { ...completed, status: "failed", failure: failureOutput(result) };
-  }
-  if (payload.parseError != null) {
-    return {
-      ...completed,
-      status: "failed",
-      failure: `invalid JSON output: ${payload.parseError}`,
-    };
-  }
-  return { ...completed, status: result.status === 0 ? "ok" : "findings" };
-}
-
-function toolArgs(project, tool) {
-  if (tool === "compiler") {
-    return ["inspector", ...project.vueGlobs, "--format", "json", "--template-syntax", "quirks"];
-  }
-  if (tool === "linter") {
-    return [
-      "lint",
-      ...project.vueGlobs,
-      "--format",
-      "json",
-      "--preset",
-      "ecosystem",
-      "--no-config",
-    ];
-  }
-  if (tool === "typechecker") {
-    const args = ["check", ...project.vueGlobs, "--format", "json", "--no-config"];
-    if (project.tsconfig != null) args.push("--tsconfig", project.tsconfig);
-    return args;
-  }
-  return ["fmt", ...project.vueGlobs, "--check", "--no-config"];
-}
-
 function assertRegistryCoverage(registry, projects, tools) {
   for (const tool of tools) {
     if (!registry.requiredToolCoverage.includes(tool)) {
@@ -250,33 +163,6 @@ function assertRegistryCoverage(registry, projects, tools) {
       }
     }
   }
-}
-
-function resolveVizeLaunch(vizeBin, dryRun) {
-  const candidates = [
-    vizeBin,
-    process.env.VIZE_BIN,
-    join(repoRoot, "target", "ci", executableName("vize")),
-    join(repoRoot, "target", "debug", executableName("vize")),
-    join(repoRoot, "target", "release", executableName("vize")),
-  ]
-    .filter(Boolean)
-    .map((candidate) => resolve(candidate));
-  for (const candidate of candidates) {
-    if (!existsSync(candidate)) continue;
-    if (dryRun) return { command: candidate, prefix: [], label: candidate };
-    const probe = spawnSync(candidate, ["--version"], {
-      encoding: "utf8",
-      timeout: 10_000,
-    });
-    if (probe.status === 0) return { command: candidate, prefix: [], label: candidate };
-  }
-  if (vizeBin != null && !dryRun) throw new Error(`Vize executable is not runnable: ${vizeBin}`);
-  return {
-    command: "cargo",
-    prefix: ["run", "-q", "-p", "vize", "--"],
-    label: "cargo run -q -p vize --",
-  };
 }
 
 function renderMarkdown(report) {
@@ -350,23 +236,8 @@ function timestampSlug(date) {
     .replace(/\.\d{3}Z$/, "Z")
     .replace(/[:.]/g, "-");
 }
-function executableName(name) {
-  return process.platform === "win32" ? `${name}.exe` : name;
-}
 function errorMessage(error) {
   return error instanceof Error ? error.message : String(error);
-}
-function failureOutput(result) {
-  return { stdout: truncate(result.stdout), stderr: truncate(result.stderr) };
-}
-function truncate(value) {
-  return value.length <= 4000 ? value : `${value.slice(0, 4000)}\n...<truncated>`;
-}
-function displayCommand(command, args) {
-  return [command, ...args].map(shellQuote).join(" ");
-}
-function shellQuote(value) {
-  return /^[A-Za-z0-9_./:=@*-]+$/.test(value) ? value : `'${value.replaceAll("'", "'\\''")}'`;
 }
 
 try {
