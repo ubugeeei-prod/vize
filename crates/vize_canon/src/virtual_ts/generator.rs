@@ -489,6 +489,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // causing src_byte_offset drift that incorrectly skips user code.
             let mut src_byte_offset: usize = 0; // offset within script content
             let mut module_span_index = 0usize;
+            let named_value_export_starts =
+                self::script_module::collect_named_value_export_starts(script);
             let mut props_const_assertions = PropsConstAssertions::new(script, options_api);
             // Script-absolute offset right after the wrapped options object.
             let mut pending_wrap_close: Option<usize> = None;
@@ -496,12 +498,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             let mut pending_class_alias: Option<(usize, &str)> = None;
             let mut emitted_default_alias = false;
 
-            // Check if script uses import.meta and add a polyfill variable.
-            // This avoids TS1343 when module is not set to es2020+.
-            let uses_import_meta = script.contains("import.meta");
-            if uses_import_meta {
-                ts.push_str("  const __import_meta: any = {};\n");
-            }
+            let uses_import_meta = self::script_module::emit_import_meta_polyfill(&mut ts, script);
 
             for raw_line in script.split('\n') {
                 // Strip trailing \r for output (normalize CRLF to LF)
@@ -512,6 +509,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 // Skip lines that overlap with module-level spans (imports, re-exports, type decls)
                 let line_start = src_byte_offset;
                 let line_end = line_start + raw_line.len(); // use raw length for span check
+                let source_token_start = line_start + line.len() - line.trim_start().len();
                 while module_span_index < module_spans.len()
                     && module_spans[module_span_index].1 as usize <= line_start
                 {
@@ -649,7 +647,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             cstr!("{leading_ws}const __default__ ={}", default_expr).into(),
                         );
                     }
-                } else if trimmed_line.starts_with("export ")
+                } else if named_value_export_starts.contains(&(source_token_start as u32))
+                    && trimmed_line.starts_with("export ")
                     && !trimmed_line.starts_with("export type ")
                     && !trimmed_line.starts_with("export interface ")
                 {
