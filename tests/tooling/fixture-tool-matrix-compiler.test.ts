@@ -6,6 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { runTool } from "../../tools/fixtures/tool-matrix-run.mjs";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const toolPath = path.join(root, "tools", "fixtures", "tool-matrix-report.mjs");
 
@@ -43,6 +45,28 @@ function withSyntheticFixture(runTest: () => void) {
   }
 }
 
+test("fixture tool matrix does not allocate compiler output for a missing fixture", () => {
+  const compilerTempEntries = () =>
+    fs
+      .readdirSync(os.tmpdir())
+      .filter((entry) => entry.startsWith("vize-fixture-compiler-"))
+      .sort((left, right) => left.localeCompare(right));
+  const before = compilerTempEntries();
+  const run = runTool(
+    {
+      id: "missing-compiler-fixture",
+      fixturePath: "tests/_fixtures/_git/missing-compiler-fixture",
+      vueGlobs: ["**/*.vue"],
+    },
+    "compiler",
+    { dryRun: false, timeoutMs: 1_000 },
+    { command: process.execPath, prefix: [], label: process.execPath },
+    os.tmpdir(),
+  );
+  assert.equal(run.status, "missing-fixture");
+  assert.deepEqual(compilerTempEntries(), before);
+});
+
 test("fixture tool matrix compiles every matched Vue file into validated JSON artifacts", () => {
   const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-tool-compiler-"));
   const executable = writeFakeVize(
@@ -51,7 +75,7 @@ test("fixture tool matrix compiles every matched Vue file into validated JSON ar
 if (process.argv[2] === "--version") process.exit(0);
 const output = process.argv[process.argv.indexOf("--output") + 1];
 fs.mkdirSync(output, { recursive: true });
-fs.writeFileSync(path.join(output, "synthetic.json"), JSON.stringify({ filename: "vize-tool-matrix-test.vue", code: "export default {}", css: null, errors: [], warnings: ["synthetic warning"], script_lang: "js", macro_artifacts: [] }) + "\\n");
+fs.writeFileSync(path.join(output, "vize-tool-matrix-test.json"), JSON.stringify({ filename: "vize-tool-matrix-test.vue", code: "export default {}", css: null, errors: [], warnings: ["synthetic warning"], script_lang: "js", macro_artifacts: [] }) + "\\n");
 process.stdout.write("Built: vize-tool-matrix-test.vue\\n");`,
   );
   try {
@@ -86,7 +110,10 @@ process.stdout.write("Built: vize-tool-matrix-test.vue\\n");`,
           },
           { inputFileCount: 1, outputFileCount: 1, errorCount: 0, warningCount: 1 },
         );
-        assert.match(raw.compilerArtifacts.sha256, /^[0-9a-f]{64}$/);
+        assert.equal(
+          raw.compilerArtifacts.sha256,
+          "706ebeac28056a83af4a93074d352014f1f80d8427a5d9dd135ffc6c6473a796",
+        );
         assert.equal("parsed" in raw, false);
       } finally {
         fs.rmSync(outputDir, { recursive: true, force: true });
@@ -110,8 +137,28 @@ test("fixture tool matrix rejects incomplete and malformed compiler artifacts", 
 if (process.argv[2] === "--version") process.exit(0);
 const output = process.argv[process.argv.indexOf("--output") + 1];
 fs.mkdirSync(output, { recursive: true });
-fs.writeFileSync(path.join(output, "synthetic.json"), "{}\\n");`,
-      message: /invalid compiler artifact keys in synthetic\.json/,
+fs.writeFileSync(path.join(output, "vize-tool-matrix-test.json"), "{}\\n");`,
+      message: /invalid compiler artifact keys in vize-tool-matrix-test\.json/,
+    },
+    {
+      name: "unexpected-path",
+      body: `import fs from "node:fs"; import path from "node:path";
+if (process.argv[2] === "--version") process.exit(0);
+const output = process.argv[process.argv.indexOf("--output") + 1];
+fs.mkdirSync(output, { recursive: true });
+fs.writeFileSync(path.join(output, "unrelated.json"), JSON.stringify({ filename: "vize-tool-matrix-test.vue", code: "export default {}", css: null, errors: [], warnings: [], script_lang: "js", macro_artifacts: [] }));`,
+      message:
+        /compiler artifact path mismatch: missing \[vize-tool-matrix-test\.json\], unexpected \[unrelated\.json\]/,
+    },
+    {
+      name: "filename-mismatch",
+      body: `import fs from "node:fs"; import path from "node:path";
+if (process.argv[2] === "--version") process.exit(0);
+const output = process.argv[process.argv.indexOf("--output") + 1];
+fs.mkdirSync(output, { recursive: true });
+fs.writeFileSync(path.join(output, "vize-tool-matrix-test.json"), JSON.stringify({ filename: "other.vue", code: "export default {}", css: null, errors: [], warnings: [], script_lang: "js", macro_artifacts: [] }));`,
+      message:
+        /compiler filename mismatch in vize-tool-matrix-test\.json: expected vize-tool-matrix-test\.vue, received other\.vue/,
     },
   ] as const;
 

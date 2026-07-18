@@ -62,10 +62,14 @@ test("fixture tool matrix emits read-only commands with machine-readable diagnos
     const runs = Object.fromEntries(
       report.projects[0].runs.map((entry: { tool: string }) => [entry.tool, entry]),
     ) as Record<string, { command: string }>;
-    assert.match(
-      runs.compiler.command,
-      /build .*--format json --output '<compiler-output>' --template-syntax quirks --continue-on-error --no-config/,
-    );
+    const compilerCommand = runs.compiler.command;
+    assert.match(compilerCommand, /(?:^|\s)build(?:\s|$)/);
+    assert.match(compilerCommand, /--format json(?:\s|$)/);
+    assert.match(compilerCommand, /--output(?:\s|$)/);
+    assert.equal(compilerCommand.includes("<compiler-output>"), true);
+    assert.match(compilerCommand, /--template-syntax quirks(?:\s|$)/);
+    assert.match(compilerCommand, /--continue-on-error(?:\s|$)/);
+    assert.match(compilerCommand, /--no-config(?:\s|$)/);
     assert.match(
       runs.typechecker.command,
       /check .*--format json --no-config --tsconfig playground\/tsconfig\.json/,

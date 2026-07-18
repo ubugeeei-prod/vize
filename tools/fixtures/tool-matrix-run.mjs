@@ -17,8 +17,9 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 export function runTool(project, tool, args, launch, outputDir) {
   const cwd = resolve(repoRoot, project.fixturePath);
+  const fixtureExists = existsSync(cwd);
   const compilerOutputDir =
-    tool === "compiler" && !args.dryRun
+    tool === "compiler" && !args.dryRun && fixtureExists
       ? mkdtempSync(join(tmpdir(), "vize-fixture-compiler-"))
       : null;
   const commandArgs = [
@@ -34,7 +35,7 @@ export function runTool(project, tool, args, launch, outputDir) {
     outputPath: null,
   };
   if (args.dryRun) return { ...base, status: "planned" };
-  if (!existsSync(cwd)) return { ...base, status: "missing-fixture" };
+  if (!fixtureExists) return { ...base, status: "missing-fixture" };
 
   try {
     const startedAt = Date.now();
@@ -115,13 +116,23 @@ function inspectCompilerArtifacts(cwd, patterns, outputDir) {
   if (inputPaths.length === 0) throw new Error("compiler matched no Vue files");
 
   const outputPaths = collectFiles(outputDir);
-  const unexpected = outputPaths.filter((entry) => !entry.endsWith(".json"));
-  if (unexpected.length > 0) {
-    throw new Error(`compiler emitted non-JSON artifacts: ${unexpected.join(", ")}`);
+  const nonJsonPaths = outputPaths.filter((entry) => !entry.endsWith(".json"));
+  if (nonJsonPaths.length > 0) {
+    throw new Error(`compiler emitted non-JSON artifacts: ${nonJsonPaths.join(", ")}`);
   }
   if (outputPaths.length !== inputPaths.length) {
     throw new Error(
       `compiler artifact count mismatch: ${inputPaths.length} inputs, ${outputPaths.length} outputs`,
+    );
+  }
+  const inputByOutputPath = expectedCompilerOutputs(inputPaths);
+  const missingPaths = [...inputByOutputPath.keys()].filter(
+    (entry) => !outputPaths.includes(entry),
+  );
+  const unexpectedPaths = outputPaths.filter((entry) => !inputByOutputPath.has(entry));
+  if (missingPaths.length > 0 || unexpectedPaths.length > 0) {
+    throw new Error(
+      `compiler artifact path mismatch: missing [${missingPaths.join(", ")}], unexpected [${unexpectedPaths.join(", ")}]`,
     );
   }
 
@@ -140,7 +151,7 @@ function inspectCompilerArtifacts(cwd, patterns, outputDir) {
     } catch (error) {
       throw new Error(`invalid compiler JSON artifact ${outputPath}: ${errorMessage(error)}`);
     }
-    validateCompilerArtifact(outputPath, artifact);
+    validateCompilerArtifact(outputPath, artifact, inputByOutputPath.get(outputPath));
     errorCount += artifact.errors.length;
     warningCount += artifact.warnings.length;
   }
@@ -154,6 +165,27 @@ function inspectCompilerArtifacts(cwd, patterns, outputDir) {
   };
 }
 
+function expectedCompilerOutputs(inputPaths) {
+  const parentSegments = inputPaths.map((entry) => entry.split("/").slice(0, -1));
+  const commonSegments = [];
+  for (let index = 0; parentSegments.every((segments) => segments[index] != null); index += 1) {
+    const segment = parentSegments[0][index];
+    if (!parentSegments.every((segments) => segments[index] === segment)) break;
+    commonSegments.push(segment);
+  }
+  const commonPrefix = commonSegments.length === 0 ? "" : `${commonSegments.join("/")}/`;
+  const outputs = new Map(
+    inputPaths.map((inputPath) => [
+      inputPath.slice(commonPrefix.length).replace(/\.vue$/, ".json"),
+      inputPath,
+    ]),
+  );
+  if (outputs.size !== inputPaths.length) {
+    throw new Error("compiler inputs map to duplicate output paths");
+  }
+  return outputs;
+}
+
 function collectFiles(root, directory = root, files = []) {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const absolute = join(directory, entry.name);
@@ -164,7 +196,7 @@ function collectFiles(root, directory = root, files = []) {
   return files.sort((left, right) => left.localeCompare(right));
 }
 
-function validateCompilerArtifact(outputPath, artifact) {
+function validateCompilerArtifact(outputPath, artifact, inputPath) {
   if (artifact == null || typeof artifact !== "object" || Array.isArray(artifact)) {
     throw new Error(`invalid compiler artifact envelope: ${outputPath}`);
   }
@@ -181,8 +213,11 @@ function validateCompilerArtifact(outputPath, artifact) {
   if (JSON.stringify(actualKeys) !== JSON.stringify(expectedKeys)) {
     throw new Error(`invalid compiler artifact keys in ${outputPath}: ${actualKeys.join(", ")}`);
   }
-  if (typeof artifact.filename !== "string" || !artifact.filename.endsWith(".vue")) {
-    throw new Error(`invalid compiler filename in ${outputPath}`);
+  const expectedFilename = inputPath.slice(inputPath.lastIndexOf("/") + 1);
+  if (artifact.filename !== expectedFilename) {
+    throw new Error(
+      `compiler filename mismatch in ${outputPath}: expected ${expectedFilename}, received ${artifact.filename}`,
+    );
   }
   if (typeof artifact.code !== "string") throw new Error(`invalid compiler code in ${outputPath}`);
   if (artifact.css !== null && typeof artifact.css !== "string") {
