@@ -38,12 +38,11 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   assert.match(hydration?.run ?? "", /vp install --frozen-lockfile --prefer-offline/);
   assert.equal(
     steps.find((step) => step.name === "Build vize CLI")?.run,
-    "cargo build --profile ci -p vize",
+    "cargo build --profile ci -p vize --features legacy",
   );
-  assert.equal(
-    steps.find((step) => step.name === "Check Vue compiler and typecheck parity")?.run,
-    "vp run --filter './tests' test:check:fixtures",
-  );
+  const parity = steps.find((step) => step.name === "Check Vue compiler and typecheck parity");
+  assert.deepEqual(parity?.env, { VIZE_TEST_BIN: "target/ci/vize" });
+  assert.equal(parity?.run, "vp run --filter './tests' test:check:fixtures");
 
   const incremental = steps.find((step) => step.name === "Check incremental LSP against Misskey");
   assert.deepEqual(incremental?.env, { VIZE_LSP_BIN: "target/ci/vize" });
