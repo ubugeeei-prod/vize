@@ -1,9 +1,16 @@
 use oxc_ast::ast::{ArrayExpressionElement, Expression, ObjectExpression, ObjectPropertyKind};
+use oxc_syntax::identifier::is_identifier_part;
 use vize_carton::String;
 use vize_croquis::{Croquis, OptionGroup};
 
 pub(super) use crate::options_api_setup_spread::is_safe_value_identifier;
 use crate::virtual_ts::props::OptionsApiPropsSource;
+
+pub(super) fn follows_default_keyword(rest: &str) -> bool {
+    rest.chars()
+        .next()
+        .is_none_or(|ch| ch != '\\' && !is_identifier_part(ch))
+}
 
 pub(super) fn extend_options_api_descriptor_names<'a>(
     names: &mut Vec<&'a str>,
@@ -70,5 +77,23 @@ fn expression_must_stay_in_value_scope(expression: &Expression<'_>) -> bool {
             expression_must_stay_in_value_scope(&parenthesized.expression)
         }
         _ => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::follows_default_keyword;
+
+    #[test]
+    fn default_export_boundary_accepts_punctuation_but_not_identifiers() {
+        for rest in ["", " ", "{", "(", "/* comment */{"] {
+            assert!(follows_default_keyword(rest), "expected boundary: {rest}");
+        }
+        for rest in ["Thing", "π", "\\u0061"] {
+            assert!(
+                !follows_default_keyword(rest),
+                "identifier continuation is not a boundary: {rest}"
+            );
+        }
     }
 }

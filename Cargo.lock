@@ -3586,6 +3586,7 @@ dependencies = [
  "oxc_diagnostics",
  "oxc_parser",
  "oxc_span",
+ "oxc_syntax",
  "rayon",
  "serde",
  "serde_json",

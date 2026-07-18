@@ -557,7 +557,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 let trimmed_line = output_line.trim_start();
                 if let Some(default_expr) = trimmed_line
                     .strip_prefix("export default")
-                    .filter(|rest| rest.chars().next().is_none_or(char::is_whitespace))
+                    .filter(|rest| options_api_support::follows_default_keyword(rest))
                 {
                     emitted_default_alias = true;
                     let leading_ws = &output_line[..output_line.len() - trimmed_line.len()];
