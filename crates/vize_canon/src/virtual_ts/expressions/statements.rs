@@ -251,15 +251,25 @@ pub(super) fn generate_expression_statement(
     if trimmed_expression.is_empty() {
         return;
     }
+    let statement_expression =
+        if expr.kind == TemplateExpressionKind::VOn && trimmed_expression.starts_with(';') {
+            trimmed_expression
+                .trim_start_matches(|character: char| character == ';' || character.is_whitespace())
+        } else {
+            expression.as_ref()
+        };
+    if statement_expression.is_empty() {
+        return;
+    }
     let rewritten_expression =
-        rewrite_reserved_template_prop(trimmed_expression, template_prop_names);
+        rewrite_reserved_template_prop(statement_expression.trim(), template_prop_names);
     let generated_expression = rewritten_expression
         .as_ref()
-        .map_or_else(|| expression.as_ref(), |s| s.as_str());
+        .map_or_else(|| statement_expression, |s| s.as_str());
     let mapping_needle = if rewritten_expression.is_some() {
         generated_expression
     } else {
-        expression.as_ref()
+        statement_expression
     };
 
     let gen_stmt_start = ts.len();
