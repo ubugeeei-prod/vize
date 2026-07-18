@@ -27,6 +27,8 @@
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",
+        "packageManager": "pnpm",
+        "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -57,6 +59,8 @@
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",
+        "packageManager": "pnpm",
+        "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -87,6 +91,8 @@
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",
+        "packageManager": "pnpm",
+        "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -113,14 +119,7 @@
         "syntax-highlighter",
         "lsp"
       ],
-      "diff": "curator-compare",
-      "typecheckPerformance": {
-        "enabled": true,
-        "compareTo": "vue-tsc",
-        "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05,
-        "maxFalseNegativeRatio": 0.05
-      }
+      "diff": "curator-compare"
     },
     {
       "id": "reka-ui",
@@ -147,6 +146,8 @@
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",
+        "packageManager": "pnpm",
+        "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -183,6 +184,8 @@
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",
+        "packageManager": "pnpm",
+        "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -213,6 +216,8 @@
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",
+        "packageManager": "pnpm",
+        "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -239,14 +244,7 @@
         "syntax-highlighter",
         "lsp"
       ],
-      "diff": "curator-compare",
-      "typecheckPerformance": {
-        "enabled": true,
-        "compareTo": "vue-tsc",
-        "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05,
-        "maxFalseNegativeRatio": 0.05
-      }
+      "diff": "curator-compare"
     },
     {
       "id": "voicevox",
@@ -273,6 +271,8 @@
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",
+        "packageManager": "pnpm",
+        "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
         "maxFalsePositiveRatio": 0.02,
         "maxFalseNegativeRatio": 0.02,
@@ -304,6 +304,8 @@
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",
+        "packageManager": "pnpm",
+        "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
         "maxFalsePositiveRatio": 0.02,
         "maxFalseNegativeRatio": 0.02,
@@ -335,6 +337,8 @@
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",
+        "packageManager": "pnpm",
+        "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
         "maxFalsePositiveRatio": 0.02,
         "maxFalseNegativeRatio": 0.02,
@@ -683,7 +687,16 @@
       "vueGlobs": ["**/*.vue"],
       "tsconfig": "tsconfig.json",
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
-      "diff": "e2e-vrt"
+      "diff": "e2e-vrt",
+      "typecheckPerformance": {
+        "enabled": true,
+        "compareTo": "vue-tsc",
+        "packageManager": "yarn",
+        "lockfile": "yarn.lock",
+        "hangTimeoutMs": 300000,
+        "maxFalsePositiveRatio": 0.05,
+        "maxFalseNegativeRatio": 0.05
+      }
     },
     {
       "id": "vitepress",
@@ -868,7 +881,16 @@
       "vueGlobs": ["**/*.vue"],
       "tsconfig": "tsconfig.json",
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
-      "diff": "e2e-vrt"
+      "diff": "e2e-vrt",
+      "typecheckPerformance": {
+        "enabled": true,
+        "compareTo": "vue-tsc",
+        "packageManager": "yarn",
+        "lockfile": "yarn.lock",
+        "hangTimeoutMs": 300000,
+        "maxFalsePositiveRatio": 0.05,
+        "maxFalseNegativeRatio": 0.05
+      }
     },
     {
       "id": "vue-storefront",

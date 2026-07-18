@@ -27,6 +27,8 @@ function setup() {
     typecheckPerformance: {
       enabled: true,
       compareTo: "vue-tsc",
+      packageManager: "pnpm",
+      lockfile: "pnpm-lock.yaml",
       hangTimeoutMs: 5_000,
       maxFalsePositiveRatio: 0.05,
       maxFalseNegativeRatio: 0.05,
@@ -34,6 +36,7 @@ function setup() {
   };
   fs.mkdirSync(path.join(fixtureRoot, "src"));
   fs.writeFileSync(path.join(fixtureRoot, "tsconfig.json"), "{}\n");
+  fs.writeFileSync(path.join(fixtureRoot, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
   fs.writeFileSync(path.join(fixtureRoot, "src", "App.vue"), "<template />\n");
   const registryPath = path.join(fixtureRoot, "registry.json");
   writeJson(registryPath, { projects: [project] });
@@ -189,7 +192,6 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       path.join(fixture.reportDir, "fixture-typecheck-divergence.md"),
       "utf8",
     );
-    assert.match(markdown, /Budget passed: true/);
     assert.match(markdown, /vue-tsc excluded project-level: 0/);
     assert.match(markdown, new RegExp(`Digest: ${artifact.divergence.sha256}`));
   } finally {

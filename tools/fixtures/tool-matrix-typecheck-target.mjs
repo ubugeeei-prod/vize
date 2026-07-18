@@ -6,7 +6,19 @@ export function validateTypecheckPerformanceTarget(project, fixtureRoot) {
   if (project.typecheckPerformance.compareTo !== "vue-tsc") {
     invalid(project, "compareTo must be vue-tsc");
   }
-  const target = project.tsconfig;
+  requireFile(project, fixtureRoot, project.tsconfig, "tsconfig");
+  const manager = project.typecheckPerformance.packageManager;
+  const lockfiles = { pnpm: "pnpm-lock.yaml", yarn: "yarn.lock" };
+  if (!Object.hasOwn(lockfiles, manager)) {
+    invalid(project, "packageManager must be pnpm or yarn");
+  }
+  if (project.typecheckPerformance.lockfile !== lockfiles[manager]) {
+    invalid(project, `lockfile must be ${lockfiles[manager]} for ${manager}`);
+  }
+  requireFile(project, fixtureRoot, project.typecheckPerformance.lockfile, "lockfile");
+}
+
+function requireFile(project, fixtureRoot, target, label) {
   if (
     typeof target !== "string" ||
     target.length === 0 ||
@@ -16,16 +28,16 @@ export function validateTypecheckPerformanceTarget(project, fixtureRoot) {
     target.startsWith("./") ||
     target.split("/").some((segment) => segment === "" || segment === "." || segment === "..")
   ) {
-    invalid(project, "tsconfig must be a normalized relative path");
+    invalid(project, `${label} must be a normalized relative path`);
   }
   const resolved = resolve(fixtureRoot, target);
   let metadata;
   try {
     metadata = statSync(resolved);
   } catch {
-    invalid(project, `tsconfig does not exist: ${target}`);
+    invalid(project, `${label} does not exist: ${target}`);
   }
-  if (!metadata.isFile()) invalid(project, `tsconfig is not a file: ${target}`);
+  if (!metadata.isFile()) invalid(project, `${label} is not a file: ${target}`);
 }
 
 function invalid(project, message) {
