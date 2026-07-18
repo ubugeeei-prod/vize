@@ -6,6 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { validatedFileCount } from "../../tools/fixtures/tool-matrix-metrics.mjs";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const toolPath = path.join(root, "tools", "fixtures", "tool-matrix-report.mjs");
 
@@ -31,6 +33,29 @@ test("fixture tool matrix plans every registered project across all four require
     assert.equal(result.status, 0, result.stderr);
     const report = JSON.parse(fs.readFileSync(path.join(outputDir, "summary.json"), "utf8"));
     assert.equal(report.schema, "vize.fixtureToolMatrixReport");
+    assert.equal(report.version, 2);
+    assert.match(report.evidence.commitSha, /^[0-9a-f]{40}$/);
+    assert.deepEqual(Object.keys(report.evidence).sort(), ["commitSha", "machine", "runtime"]);
+    assert.deepEqual(Object.keys(report.evidence.runtime).sort(), ["name", "version"]);
+    assert.equal(report.evidence.runtime.name, "node");
+    assert.equal(report.evidence.runtime.version, process.versions.node);
+    assert.deepEqual(Object.keys(report.evidence.machine).sort(), [
+      "arch",
+      "cpuModel",
+      "logicalCpuCount",
+      "platform",
+      "totalMemoryBytes",
+    ]);
+    assert.equal(report.evidence.machine.platform, process.platform);
+    assert.equal(report.evidence.machine.arch, process.arch);
+    assert.ok(report.evidence.machine.cpuModel.length > 0);
+    assert.ok(report.evidence.machine.logicalCpuCount > 0);
+    assert.ok(report.evidence.machine.totalMemoryBytes > 0);
+    const markdown = fs.readFileSync(path.join(outputDir, "summary.md"), "utf8");
+    assert.match(markdown, new RegExp(`Commit: ${report.evidence.commitSha}`));
+    assert.match(markdown, /Runtime: node \d+\.\d+\.\d+/);
+    assert.match(markdown, /Machine: [^/]+\/[^,]+, \d+ logical CPUs, \d+ bytes memory/);
+    assert.match(markdown, /\| Project \| Tool \| Status \| Exit \| Files \| Duration \(ms\) \|/);
     assert.equal(report.summary.projectCount, 131);
     assert.equal(report.summary.toolCount, 4);
     assert.equal(report.summary.runCount, 524);
@@ -42,10 +67,38 @@ test("fixture tool matrix plans every registered project across all four require
         ["compiler", "typechecker", "linter", "formatter"],
         `${project.id} should exercise every requested tool`,
       );
+      for (const entry of project.runs) assert.equal(entry.fileCount, null);
     }
   } finally {
     fs.rmSync(outputDir, { recursive: true, force: true });
   }
+});
+
+test("fixture tool matrix rejects malformed commit evidence", () => {
+  const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-tool-matrix-sha-"));
+  try {
+    const result = spawnSync(process.execPath, [toolPath, "--dry-run", "--output-dir", outputDir], {
+      cwd: root,
+      encoding: "utf8",
+      env: { ...process.env, GITHUB_SHA: "not-a-full-sha" },
+    });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /GITHUB_SHA must be a full lowercase commit SHA/);
+    assert.equal(fs.existsSync(path.join(outputDir, "summary.json")), false);
+  } finally {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  }
+});
+
+test("fixture tool matrix derives checked file evidence from validated tool payloads", () => {
+  assert.equal(validatedFileCount("compiler", { compilerArtifacts: { inputFileCount: 7 } }), 7);
+  assert.equal(validatedFileCount("typechecker", { parsed: { fileCount: 5 } }), 5);
+  assert.equal(validatedFileCount("linter", { parsed: [{}, {}, {}] }), 3);
+  assert.equal(validatedFileCount("formatter", { formatterCheck: { checkedFileCount: 11 } }), 11);
+  assert.throws(
+    () => validatedFileCount("unknown", {}),
+    /Unsupported fixture matrix tool: unknown/,
+  );
 });
 
 test("fixture tool matrix emits read-only commands with machine-readable diagnostics", () => {

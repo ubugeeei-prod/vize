@@ -17,10 +17,10 @@ import { fileURLToPath } from "node:url";
 import { expectedCompilerOutputs } from "./tool-matrix-compiler-paths.mjs";
 import { snapshotFormatterInputs, validateFormatterOutput } from "./tool-matrix-formatter.mjs";
 import { validateLinterOutput } from "./tool-matrix-linter.mjs";
+import { validatedFileCount } from "./tool-matrix-metrics.mjs";
 import { validateTypecheckerOutput } from "./tool-matrix-typechecker.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
-
 export function runTool(project, tool, args, launch, outputDir) {
   const cwd = resolve(repoRoot, project.fixturePath);
   const fixtureExists = existsSync(cwd);
@@ -37,6 +37,7 @@ export function runTool(project, tool, args, launch, outputDir) {
     command: displayCommand(launch.command, commandArgs),
     cwd: relative(repoRoot, cwd),
     durationMs: 0,
+    fileCount: null,
     exitCode: null,
     outputPath: null,
   };
@@ -136,7 +137,11 @@ export function runTool(project, tool, args, launch, outputDir) {
         failure: `invalid JSON output: ${payload.parseError}`,
       };
     }
-    return { ...completed, status: result.status === 0 ? "ok" : "findings" };
+    return {
+      ...completed,
+      fileCount: validatedFileCount(tool, payload),
+      status: result.status === 0 ? "ok" : "findings",
+    };
   } finally {
     if (compilerOutputDir != null) rmSync(compilerOutputDir, { recursive: true, force: true });
   }

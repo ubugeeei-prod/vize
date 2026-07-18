@@ -94,6 +94,7 @@ test("fixture tool matrix requires an explicit zero-file compiler expectation", 
       reportDir,
     );
     assert.equal(declared.status, "findings", JSON.stringify(declared));
+    assert.equal(declared.fileCount, 0);
     const raw = JSON.parse(
       fs.readFileSync(path.resolve(root, declared.outputPath as string), "utf8"),
     );
@@ -187,6 +188,7 @@ fs.writeFileSync(artifact, JSON.stringify({ filename: ${JSON.stringify(path.base
         reportDir,
       );
       assert.equal(run.status, "ok", `${fixtureCase.name}: ${JSON.stringify(run)}`);
+      assert.equal(run.fileCount, 1, fixtureCase.name);
     } finally {
       fs.rmSync(fixtureDir, { recursive: true, force: true });
       fs.rmSync(fakeDir, { recursive: true, force: true });

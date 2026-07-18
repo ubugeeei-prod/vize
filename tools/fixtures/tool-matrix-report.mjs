@@ -1,5 +1,7 @@
 #!/usr/bin/env node
+import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { cpus, totalmem } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -34,8 +36,9 @@ function main() {
 
   const report = {
     schema,
-    version: 1,
+    version: 2,
     generatedAt: new Date().toISOString(),
+    evidence: collectEvidence(),
     registryPath: relative(repoRoot, registryPath),
     command: {
       vize: launch.label,
@@ -172,14 +175,17 @@ function renderMarkdown(report) {
     `Projects: ${report.summary.projectCount}`,
     `Tools: ${report.command.tools.join(", ")}`,
     `Runs: ${report.summary.runCount}`,
+    `Commit: ${report.evidence.commitSha}`,
+    `Runtime: ${report.evidence.runtime.name} ${report.evidence.runtime.version}`,
+    `Machine: ${report.evidence.machine.platform}/${report.evidence.machine.arch}, ${report.evidence.machine.logicalCpuCount} logical CPUs, ${report.evidence.machine.totalMemoryBytes} bytes memory`,
     "",
-    "| Project | Tool | Status | Exit | Duration (ms) | Output |",
-    "| --- | --- | --- | ---: | ---: | --- |",
+    "| Project | Tool | Status | Exit | Files | Duration (ms) | Output |",
+    "| --- | --- | --- | ---: | ---: | ---: | --- |",
   ];
   for (const project of report.projects) {
     for (const run of project.runs) {
       lines.push(
-        `| ${project.id} | ${run.tool} | ${run.status} | ${run.exitCode ?? "-"} | ${run.durationMs} | ${run.outputPath == null ? "-" : `\`${run.outputPath}\``} |`,
+        `| ${project.id} | ${run.tool} | ${run.status} | ${run.exitCode ?? "-"} | ${run.fileCount ?? "-"} | ${run.durationMs} | ${run.outputPath == null ? "-" : `\`${run.outputPath}\``} |`,
       );
     }
   }
@@ -211,6 +217,47 @@ function selectShard(projects, shardIndex, shardCount) {
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
+}
+function collectEvidence() {
+  const machineCpus = cpus();
+  const logicalCpuCount = machineCpus.length;
+  const totalMemoryBytes = totalmem();
+  if (!Number.isSafeInteger(logicalCpuCount) || logicalCpuCount < 1) {
+    throw new Error("Machine evidence requires at least one logical CPU");
+  }
+  if (!Number.isSafeInteger(totalMemoryBytes) || totalMemoryBytes < 1) {
+    throw new Error("Machine evidence requires positive total memory");
+  }
+  return {
+    commitSha: resolveCommitSha(),
+    runtime: { name: "node", version: process.versions.node },
+    machine: {
+      platform: process.platform,
+      arch: process.arch,
+      cpuModel: machineCpus[0]?.model.trim() || "unknown",
+      logicalCpuCount,
+      totalMemoryBytes,
+    },
+  };
+}
+function resolveCommitSha() {
+  const environmentSha = process.env.GITHUB_SHA;
+  if (environmentSha != null) return requireCommitSha(environmentSha, "GITHUB_SHA");
+  const result = spawnSync("git", ["rev-parse", "HEAD"], {
+    cwd: repoRoot,
+    encoding: "utf8",
+    timeout: 30_000,
+  });
+  if (result.error != null || result.status !== 0) {
+    throw new Error("Unable to resolve fixture matrix commit SHA");
+  }
+  return requireCommitSha(result.stdout.trim(), "git rev-parse HEAD");
+}
+function requireCommitSha(value, source) {
+  if (!/^[0-9a-f]{40}$/.test(value)) {
+    throw new Error(`${source} must be a full lowercase commit SHA`);
+  }
+  return value;
 }
 function splitCsv(value) {
   return value
