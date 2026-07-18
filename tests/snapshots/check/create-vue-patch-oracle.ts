@@ -23,10 +23,14 @@ import { LspSession } from "../../tooling/support/lsp/session.ts";
 const appPath = "template/bare/typescript/src/App.vue";
 const sourceSha256 = "bdafe70baf73a040d432b574108ce0e11823a3c1c1cc8bdfe01d118d6ff7d35a";
 const compiledCodeSha256 = "1216a548943fe8a09ab349a913c627d4115f93935b75ec89922415511475eff7";
+const formattedSourceSha256 = "c76449690404ce5538a17786fa17b812ceab69fe947dc5f29b408fc9354b4b53";
+const formattedCodeSha256 = "0a27e93344b74054768fd90a55023f5c670ddb8ad812bf98cf1e2e3036749836";
 const cleanHeading = "  <h1>You did it!</h1>";
 const brokenHeading = "  <h1>You did it!</h2>";
 const cleanHref = 'href="https://vuejs.org/"';
 const brokenHref = "href='https://vuejs.org/'";
+const formattedAnchor = '    <a href="https://vuejs.org/" rel="noopener" target="_blank">';
+const brokenFormattedAnchor = '    <a href="https://vuejs.org/" rel="noopener"  target="_blank">';
 
 type CompilerOutput = {
   code: string;
@@ -184,6 +188,86 @@ test("create-vue linter reports and repairs one exact HTML quote edit", async ()
       assert.equal(repaired.stdout, cleanFirst.stdout);
       assert.equal(idempotentFix.stdout, cleanFirst.stdout);
       assert.equal(fixture.read(appPath), source);
+      assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
+    },
+  );
+});
+
+test("create-vue formatter converges and repairs one exact attribute-spacing edit", async () => {
+  await withPinnedFixtureWorkspace(
+    { fixtureId: "create-vue", includePaths: [appPath] },
+    async (fixture) => {
+      const pinnedSource = fixture.read(appPath);
+      const sourceMode = fs.statSync(fixture.resolve(appPath)).mode & 0o777;
+      assert.equal(sha256(pinnedSource), sourceSha256, "pinned create-vue source changed");
+
+      const initialCheck = runFmt(fixture.workspaceDir, "--check");
+      assertFmtResult(initialCheck, 1, wouldReformatOutput);
+      assert.equal(fixture.read(appPath), pinnedSource, "--check must preserve pinned source");
+      assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
+
+      const initialWrite = runFmt(fixture.workspaceDir, "--write");
+      assertFmtResult(initialWrite, 0, reformattedOutput);
+      const formattedSource = fixture.read(appPath);
+      assert.notEqual(formattedSource, pinnedSource);
+      assert.equal(sha256(formattedSource), formattedSourceSha256);
+      assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
+      assert.equal(formattedSource.startsWith('<script setup lang="ts">\n\n</script>\n'), true);
+      assert.equal(formattedSource.endsWith("<style scoped>\n\n</style>\n"), true);
+      assert.equal(formattedSource.includes("\r"), false);
+      assert.equal(formattedSource.includes("  \n"), false, "canonical source has trailing spaces");
+      assert.equal(count(formattedSource, formattedAnchor), 1);
+      assert.equal(count(formattedSource, "You did it!"), 1);
+      assert.equal(count(formattedSource, "vuejs.org"), 2);
+
+      const compiled = runBuild(fixture.workspaceDir, ".vize-formatter-compile");
+      assertSuccessfulBuild(compiled);
+      assert.equal(sha256(compiled.output.code), formattedCodeSha256, compiled.output.code);
+      assert.deepEqual(
+        {
+          css: compiled.output.css,
+          errors: compiled.output.errors,
+          filename: compiled.output.filename,
+          macro_artifacts: compiled.output.macro_artifacts,
+          script_lang: compiled.output.script_lang,
+          warnings: compiled.output.warnings,
+        },
+        {
+          css: "\n\n",
+          errors: [],
+          filename: "App.vue",
+          macro_artifacts: [],
+          script_lang: "ts",
+          warnings: [],
+        },
+      );
+      assertParsesAsModule(compiled.output.code, "formatted create-vue App.json#code");
+
+      const cleanFirst = runFmt(fixture.workspaceDir, "--check");
+      const cleanSecond = runFmt(fixture.workspaceDir, "--check");
+      assertFmtResult(cleanFirst, 0, alreadyFormattedOutput);
+      assertFmtResult(cleanSecond, 0, alreadyFormattedOutput);
+      assert.deepEqual(cleanSecond, cleanFirst, "clean formatter output must be deterministic");
+
+      const brokenSource = fixture.applyExactPatch(appPath, formattedAnchor, brokenFormattedAnchor);
+      const brokenFirst = runFmt(fixture.workspaceDir, "--check");
+      const brokenSecond = runFmt(fixture.workspaceDir, "--check");
+      assertFmtResult(brokenFirst, 1, wouldReformatOutput);
+      assertFmtResult(brokenSecond, 1, wouldReformatOutput);
+      assert.deepEqual(brokenSecond, brokenFirst, "broken formatter output must be deterministic");
+      assert.equal(fixture.read(appPath), brokenSource, "--check must preserve broken source");
+      assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
+
+      const repaired = runFmt(fixture.workspaceDir, "--write");
+      assertFmtResult(repaired, 0, reformattedOutput);
+      assert.equal(fixture.read(appPath), formattedSource, "--write must restore canonical source");
+      assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
+
+      const repairedCheck = runFmt(fixture.workspaceDir, "--check");
+      const idempotentWrite = runFmt(fixture.workspaceDir, "--write");
+      assertFmtResult(repairedCheck, 0, alreadyFormattedOutput);
+      assertFmtResult(idempotentWrite, 0, unchangedOutput);
+      assert.equal(fixture.read(appPath), formattedSource);
       assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
     },
   );
@@ -549,6 +633,55 @@ function assertBrokenLint(result: LintResult): void {
       warningCount: 0,
     },
   ]);
+}
+
+type CommandResult = {
+  status: number | null;
+  stderr: string;
+  stdout: string;
+};
+
+const wouldReformatOutput = `Found 1 file(s)
+Would reformat: ${appPath}
+
+Checked 1 file(s)
+  1 file(s) would be reformatted
+`;
+
+const reformattedOutput = `Found 1 file(s)
+Reformatted: ${appPath}
+
+Formatted 1 file(s)
+  1 file(s) reformatted
+`;
+
+const alreadyFormattedOutput = `Found 1 file(s)
+
+Checked 1 file(s)
+  1 file(s) already formatted
+`;
+
+const unchangedOutput = `Found 1 file(s)
+
+Formatted 1 file(s)
+  1 file(s) unchanged
+`;
+
+function runFmt(workspaceDir: string, mode: "--check" | "--write"): CommandResult {
+  const [command, ...prefixArgs] = resolveVizeCommand();
+  const result = spawnSync(command, [...prefixArgs, "fmt", mode, appPath], {
+    cwd: workspaceDir,
+    encoding: "utf8",
+    env: { ...process.env, LANG: "C", LC_ALL: "C" },
+    maxBuffer: 64 * 1024 * 1024,
+    timeout: 120_000,
+  });
+  if (result.error != null) throw result.error;
+  return { status: result.status, stderr: result.stderr, stdout: result.stdout };
+}
+
+function assertFmtResult(result: CommandResult, status: number, stderr: string): void {
+  assert.deepEqual(result, { status, stdout: "", stderr });
 }
 
 function sha256(source: string | Buffer): string {
