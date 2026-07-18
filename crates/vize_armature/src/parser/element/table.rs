@@ -19,7 +19,8 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn should_foster_text(&self, content: &str) -> bool {
-        self.open_table_count > 0
+        !self.template_syntax.is_quirks()
+            && self.open_table_count > 0
             && content
                 .chars()
                 .any(|c| !matches!(c, ' ' | '\t' | '\n' | '\r' | '\u{000C}'))
@@ -27,7 +28,8 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn should_foster_start_tag(&self, tag: &str, is_html_element: bool) -> bool {
-        is_html_element
+        !self.template_syntax.is_quirks()
+            && is_html_element
             && self.open_table_count > 0
             && self.is_in_table_insertion_context()
             && !self.is_allowed_in_table_insertion_context(tag)

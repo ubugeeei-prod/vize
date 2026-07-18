@@ -8,6 +8,10 @@ use super::is_html_tree_element;
 
 impl<'a> Parser<'a> {
     pub(super) fn handle_in_body_start_tag(&mut self, tag: &str, offset: usize) {
+        if self.template_syntax.is_quirks() {
+            return;
+        }
+
         if tag.eq_ignore_ascii_case("html") || tag.eq_ignore_ascii_case("body") {
             return;
         }
@@ -150,7 +154,8 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn should_ignore_start_tag(&self, element: &ElementNode<'a>) -> bool {
-        is_html_tree_element(element)
+        !self.template_syntax.is_quirks()
+            && is_html_tree_element(element)
             && element.tag.eq_ignore_ascii_case("form")
             && self.open_form_count > 0
     }
