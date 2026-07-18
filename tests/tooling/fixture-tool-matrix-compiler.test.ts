@@ -248,8 +248,21 @@ process.stdout.write("Built: vize-tool-matrix-test.vue\\n");`,
             outputFileCount: raw.compilerArtifacts.outputFileCount,
             errorCount: raw.compilerArtifacts.errorCount,
             warningCount: raw.compilerArtifacts.warningCount,
+            findings: raw.compilerArtifacts.findings,
           },
-          { inputFileCount: 1, outputFileCount: 1, errorCount: 0, warningCount: 1 },
+          {
+            inputFileCount: 1,
+            outputFileCount: 1,
+            errorCount: 0,
+            warningCount: 1,
+            findings: [
+              {
+                file: "apps/vize-tool-matrix-test.vue",
+                errors: [],
+                warnings: ["synthetic warning"],
+              },
+            ],
+          },
         );
         assert.equal(
           raw.compilerArtifacts.sha256,

@@ -198,6 +198,7 @@ function inspectCompilerArtifacts(cwd, patterns, expectedFileCount, outputDir) {
   const digest = createHash("sha256");
   let errorCount = 0;
   let warningCount = 0;
+  const findings = [];
   for (const outputPath of outputPaths) {
     const source = readFileSync(join(outputDir, outputPath), "utf8");
     digest.update(outputPath);
@@ -210,9 +211,13 @@ function inspectCompilerArtifacts(cwd, patterns, expectedFileCount, outputDir) {
     } catch (error) {
       throw new Error(`invalid compiler JSON artifact ${outputPath}: ${errorMessage(error)}`);
     }
-    validateCompilerArtifact(outputPath, artifact, inputByOutputPath.get(outputPath));
+    const inputPath = inputByOutputPath.get(outputPath);
+    validateCompilerArtifact(outputPath, artifact, inputPath);
     errorCount += artifact.errors.length;
     warningCount += artifact.warnings.length;
+    if (artifact.errors.length > 0 || artifact.warnings.length > 0) {
+      findings.push({ file: inputPath, errors: artifact.errors, warnings: artifact.warnings });
+    }
   }
 
   return {
@@ -220,6 +225,7 @@ function inspectCompilerArtifacts(cwd, patterns, expectedFileCount, outputDir) {
     outputFileCount: outputPaths.length,
     errorCount,
     warningCount,
+    findings,
     sha256: digest.digest("hex"),
   };
 }
