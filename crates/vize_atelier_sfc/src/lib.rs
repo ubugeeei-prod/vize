@@ -1,7 +1,6 @@
 //! Vue Single File Component (.vue) compiler.
 //!
-//! This module provides parsing and compilation of Vue SFCs, following the
-//! Vue.js core structure:
+//! This module follows the Vue.js core structure for parsing and compilation:
 //!
 //! - `parse` - SFC parsing into descriptor blocks
 //! - `compile_script` - Script/script setup compilation
@@ -63,7 +62,8 @@ pub use compile::compile_sfc_with_template_syntax_and_codegen_options;
 pub use compile::compile_sfc_with_vue_parser_quirks;
 pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_template_syntax};
 pub use compile_script::props::{
-    validate_script_setup_semantics, validate_script_setup_semantics_located,
+    script_setup_has_semantic_validator_candidates, validate_script_setup_semantics,
+    validate_script_setup_semantics_located,
 };
 pub use css::{
     CssAstResult, CssCompileOptions, CssCompileResult, CssTargets, bundle_css, compile_css,

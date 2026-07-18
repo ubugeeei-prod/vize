@@ -6,7 +6,10 @@ use std::path::Path;
 
 use vize_carton::{String as CompactString, cstr};
 
-use vize_atelier_sfc::{SfcDescriptor, SfcError, validate_script_setup_semantics_located};
+use vize_atelier_sfc::{
+    SfcDescriptor, SfcError, script_setup_has_semantic_validator_candidates,
+    validate_script_setup_semantics_located,
+};
 
 use crate::batch::source_map::SfcBlockRange;
 use crate::batch::{Diagnostic, SfcBlockType};
@@ -24,10 +27,10 @@ pub(super) fn collect_sfc_compile_diagnostic(
     let script_setup = descriptor.script_setup.as_ref()?;
 
     // Cheap pre-filter: the only validator we currently run targets
-    // `const { ... = ... } = defineProps<...>()`. Skip the OXC parse entirely
-    // when none of those tokens appear, which is the common case for app
-    // components without destructured typed props.
-    if !script_setup_has_validator_candidates(&script_setup.content) {
+    // Skip the OXC parse entirely when neither props-default validation nor
+    // hoisted-macro scope validation can apply. The shared predicate is a
+    // strict superset of every semantic validator pattern.
+    if !script_setup_has_semantic_validator_candidates(&script_setup.content) {
         return None;
     }
 
@@ -39,15 +42,6 @@ pub(super) fn collect_sfc_compile_diagnostic(
         Ok(()) => None,
         Err(error) => Some(sfc_error_to_diagnostic(path, source, descriptor, &error)),
     }
-}
-
-/// Cheap byte-level filter — must be a strict superset of the patterns the
-/// underlying validators actually fire on, so we never miss a real diagnostic.
-fn script_setup_has_validator_candidates(content: &str) -> bool {
-    // Validator needs: typed defineProps (`defineProps<...>`) AND a destructure
-    // pattern (`{ ... = ... } = defineProps`). The combined presence of these
-    // two substrings is a tight enough filter for typical app code.
-    content.contains("defineProps<") && content.contains("= defineProps")
 }
 
 fn sfc_error_to_diagnostic(

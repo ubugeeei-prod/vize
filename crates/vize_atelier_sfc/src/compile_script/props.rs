@@ -18,12 +18,16 @@ pub use runtime_type::{
 };
 pub use text_resolve::extract_prop_types_from_type;
 pub use types::PropTypeInfo;
+pub use validation::script_setup_has_semantic_validator_candidates;
 pub use validation::{validate_script_setup_semantics, validate_script_setup_semantics_located};
 
 pub(crate) use defaults::normalize_destructure_default_value;
 pub(crate) use runtime_type::{runtime_prop_key, ts_type_to_js_type};
 pub(crate) use text_resolve::extract_prop_types_from_type_with_context;
-pub(crate) use validation::validate_props_destructure_default_types;
+pub(crate) use validation::{
+    validate_macro_scope_and_props, validate_macro_scope_for_descriptor,
+    validate_macro_scope_references, validate_props_destructure_default_types,
+};
 
 #[cfg(test)]
 mod tests;

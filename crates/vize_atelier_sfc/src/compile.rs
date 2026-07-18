@@ -15,7 +15,7 @@ mod tests;
 
 use crate::compile_script::artifacts::{erase_artifact_macro_statements, extract_macro_artifacts};
 use crate::compile_script::lazy_hydration::transform_lazy_hydration_macros;
-use crate::compile_script::props::is_valid_identifier;
+use crate::compile_script::props::{is_valid_identifier, validate_macro_scope_for_descriptor};
 use crate::compile_script::{TemplateParts, compile_script_setup_inline_with_context};
 use crate::compile_template::{
     TemplateBlockCompileContext, compile_template_block, compile_template_block_vapor,
@@ -34,6 +34,7 @@ use self::bindings::{
 };
 use self::helpers::{
     demote_v_model_reactive_const_bindings, extract_component_name, generate_scope_id,
+    trim_trailing_newlines,
 };
 use self::normal_script::extract_normal_script_content;
 use self::output_module::{
@@ -92,12 +93,6 @@ fn extract_descriptor_macro_artifacts(descriptor: &SfcDescriptor) -> Vec<SfcMacr
 
     artifacts.sort_by_key(|artifact| artifact.start);
     artifacts
-}
-
-fn trim_trailing_newlines(code: &mut String) {
-    while code.ends_with('\n') {
-        code.pop();
-    }
 }
 
 /// Compile an SFC descriptor into JavaScript and CSS
@@ -661,6 +656,7 @@ fn compile_sfc_inner(
             None => ctx.analyze(),
         }
     );
+    validate_macro_scope_for_descriptor(&ctx, setup_program.as_ref(), descriptor)?;
 
     // 3. Merge Props bindings from ScriptCompileContext (type resolution fallback)
     //    Croquis can't resolve interface references, so we take Props from the legacy analyzer

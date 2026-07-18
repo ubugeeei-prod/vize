@@ -138,3 +138,30 @@ const to = "/login"
         result.code
     );
 }
+
+#[test]
+fn test_with_defaults_rejects_setup_local_default_reference() {
+    let source = r#"<script setup lang="ts">
+const items = []
+
+withDefaults(defineProps<{
+  items?: string[]
+}>(), { items })
+</script>
+
+<template>{{ items.join() }}</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse reported SFC");
+    let error = compile_sfc(&descriptor, SfcCompileOptions::default())
+        .expect_err("compiler must reject a setup-local withDefaults reference");
+
+    assert_eq!(error.code.as_deref(), Some("SCRIPT_SETUP_MACRO_SCOPE"));
+    assert!(error.message.contains("`withDefaults()`"), "{error:?}");
+    assert!(error.message.contains("`items`"), "{error:?}");
+    let loc = error
+        .loc
+        .expect("compiler error should point at the reference");
+    assert_eq!(&source[loc.start..loc.end], "items");
+    assert_eq!((loc.start_line, loc.start_column), (6, 9));
+    assert_eq!((loc.end_line, loc.end_column), (6, 14));
+}

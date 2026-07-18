@@ -24,7 +24,9 @@ use crate::types::{CssModuleMapping, SfcError};
 use super::super::artifacts::erase_artifact_macro_statements;
 use super::super::function_mode::contains_top_level_await;
 use super::super::lazy_hydration::transform_lazy_hydration_macros;
-use super::super::props::validate_props_destructure_default_types;
+use super::super::props::{
+    validate_macro_scope_references, validate_props_destructure_default_types,
+};
 use super::super::statement_sections::extract_script_sections_from_program_with_options;
 use super::super::{ScriptCompileResult, TemplateParts};
 use body::compile_script_setup_inline_body;
@@ -145,6 +147,9 @@ pub(crate) fn compile_script_setup_inline_with_context(
             .map(|d| d.bindings.values().any(|b| b.default.is_some()))
             .unwrap_or(false);
 
+    if setup_program.is_none() {
+        validate_macro_scope_references(&ctx, 0, content)?;
+    }
     validate_props_destructure_default_types(&ctx, 0, content)?;
 
     let has_define_model = !ctx.macros.define_models.is_empty();

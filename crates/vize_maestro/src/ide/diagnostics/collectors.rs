@@ -376,7 +376,8 @@ impl DiagnosticService {
         let Some(script_setup) = descriptor.script_setup.as_ref() else {
             return Vec::new();
         };
-        if !script_setup_has_validator_candidates(&script_setup.content) {
+        if !vize_atelier_sfc::script_setup_has_semantic_validator_candidates(&script_setup.content)
+        {
             return Vec::new();
         }
 
@@ -675,12 +676,6 @@ fn script_source_type(lang: Option<&str>) -> Option<SourceType> {
     };
 
     SourceType::from_path(format!("script.{extension}")).ok()
-}
-
-/// See the canon batch path for rationale — keep this in sync with
-/// `crates/vize_canon/src/batch/virtual_project.rs`.
-fn script_setup_has_validator_candidates(content: &str) -> bool {
-    content.contains("defineProps<") && content.contains("= defineProps")
 }
 
 fn diagnostic_span(error: &oxc_diagnostics::OxcDiagnostic, source_len: usize) -> (usize, usize) {

@@ -1,4 +1,5 @@
 //! Tests for the diagnostics aggregation pipeline.
+mod macro_scope;
 mod self_closing_compatibility;
 use std::fs;
 
@@ -630,7 +631,6 @@ fn collect_produces_no_error_for_valid_jsx() {
     );
 }
 
-// ----------------------------------------------------------------------
 // VDOM/Vapor mode directives on JSX/TSX (#1498).
 //
 // `"use vue:vdom"` / `"use vue:vapor"` select a component's output mode. A

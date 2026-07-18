@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::cstr;
 mod graphql_generated;
+mod macro_scope;
 mod module_augmentations;
 mod ref_arity;
 mod setup_props;
@@ -1114,8 +1115,6 @@ fn test_source_type_for_path() {
     );
     assert_eq!(source_type_for_path(Path::new("foo.vue")), None);
 }
-
-// --- JSX/TSX opt-in type-checking (#1497, #1502) -------------------------
 
 #[test]
 fn jsx_typecheck_off_keeps_tsx_verbatim_passthrough() {

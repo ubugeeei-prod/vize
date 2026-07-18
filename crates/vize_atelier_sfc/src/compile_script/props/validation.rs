@@ -12,6 +12,13 @@ use crate::types::SfcError;
 use super::runtime_type::resolve_prop_js_type;
 use super::text_resolve::extract_prop_types_from_type_with_context;
 
+mod macro_scope;
+pub use macro_scope::script_setup_has_semantic_validator_candidates;
+pub(crate) use macro_scope::{
+    validate_macro_scope_and_props, validate_macro_scope_for_descriptor,
+    validate_macro_scope_references, validate_macro_scope_references_in_program,
+};
+
 /// Validate Vue-specific script-setup semantics that the TypeScript checker
 /// cannot derive on its own (currently: prop destructure defaults whose value
 /// disagrees with the declared prop type).
@@ -42,8 +49,11 @@ pub fn validate_script_setup_semantics_located(
     if script_setup_content.is_empty() {
         return Ok(());
     }
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, script_setup_content, SourceType::ts()).parse();
     let mut ctx = ScriptCompileContext::new(script_setup_content);
-    ctx.analyze();
+    ctx.analyze_program(&parsed.program, script_setup_content);
+    validate_macro_scope_references_in_program(&ctx, &parsed.program, block_start, sfc_source)?;
     validate_props_destructure_default_types(&ctx, block_start, sfc_source)
 }
 

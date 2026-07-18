@@ -34,6 +34,12 @@ pub(super) fn extract_component_name(filename: &str) -> String {
         .to_compact_string()
 }
 
+pub(super) fn trim_trailing_newlines(code: &mut String) {
+    while code.ends_with('\n') {
+        code.pop();
+    }
+}
+
 /// Rewrite selected `const reactive(...)` bindings to `let` only when `v-model`
 /// can actually assign to them from the template.
 ///
