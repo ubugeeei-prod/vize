@@ -7,9 +7,13 @@ const noFilesMessage =
   "No .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown files found matching the patterns";
 
 export function snapshotFormatterInputs(cwd, patterns) {
-  const inputPaths = [...new Set(patterns.flatMap((pattern) => globSync(pattern, { cwd })))].sort(
-    (left, right) => left.localeCompare(right),
-  );
+  const inputPaths = [
+    ...new Set(
+      patterns.flatMap((pattern) =>
+        globSync(pattern, { cwd, exclude: [".yarn/**", "**/node_modules/**"] }),
+      ),
+    ),
+  ].sort((left, right) => left.localeCompare(right));
   const digest = createHash("sha256");
   for (const inputPath of inputPaths) {
     const absolute = resolve(cwd, inputPath);

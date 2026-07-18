@@ -151,7 +151,7 @@ function inspectCompilerArtifacts(cwd, patterns, expectedFileCount, outputDir) {
   const inputPaths = [
     ...new Set(
       patterns.flatMap((pattern) =>
-        globSync(pattern, { cwd })
+        globSync(pattern, { cwd, exclude: [".yarn/**", "**/node_modules/**"] })
           .filter((entry) => statSync(resolve(cwd, entry)).isFile())
           .map((entry) => entry.replaceAll("\\", "/")),
       ),

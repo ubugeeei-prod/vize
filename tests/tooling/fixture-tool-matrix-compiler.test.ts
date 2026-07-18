@@ -136,6 +136,10 @@ test("fixture tool matrix mirrors compiler roots when validating artifact paths"
       vueGlobs: ["**/*.vue"],
       source: "src/nested/App.vue",
       extraDirectories: ["src/nested/component-library.vue"],
+      ignoredSources: [
+        ".yarn/unplugged/dependency/Hidden.vue",
+        "node_modules/dependency/Hidden.vue",
+      ],
       output: "src/nested/App.json",
     },
     {
@@ -143,6 +147,7 @@ test("fixture tool matrix mirrors compiler roots when validating artifact paths"
       vueGlobs: ["apps/**/*.vue", "packages/**/*.vue"],
       source: "apps/admin/App.vue",
       extraDirectories: ["packages"],
+      ignoredSources: [],
       output: "apps/admin/App.json",
     },
     {
@@ -150,6 +155,7 @@ test("fixture tool matrix mirrors compiler roots when validating artifact paths"
       vueGlobs: ["apps/**/*.vue", "missing/**/*.vue"],
       source: "apps/admin/App.vue",
       extraDirectories: [],
+      ignoredSources: [],
       output: "admin/App.json",
     },
   ] as const;
@@ -167,6 +173,11 @@ test("fixture tool matrix mirrors compiler roots when validating artifact paths"
       const sourcePath = path.join(fixtureDir, fixtureCase.source);
       fs.mkdirSync(path.dirname(sourcePath), { recursive: true });
       fs.writeFileSync(sourcePath, "<template><main /></template>\n");
+      for (const ignoredSource of fixtureCase.ignoredSources) {
+        const ignoredPath = path.join(fixtureDir, ignoredSource);
+        fs.mkdirSync(path.dirname(ignoredPath), { recursive: true });
+        fs.writeFileSync(ignoredPath, "<template><aside /></template>\n");
+      }
 
       const executable = writeFakeVize(
         fakeDir,
