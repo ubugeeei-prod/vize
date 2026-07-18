@@ -1,0 +1,142 @@
+import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { globSync, readFileSync, statSync } from "node:fs";
+import { isAbsolute, resolve } from "node:path";
+
+const noFilesMessage =
+  "No .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown files found matching the patterns";
+
+export function snapshotFormatterInputs(cwd, patterns) {
+  const inputPaths = [...new Set(patterns.flatMap((pattern) => globSync(pattern, { cwd })))].sort(
+    (left, right) => left.localeCompare(right),
+  );
+  const digest = createHash("sha256");
+  for (const inputPath of inputPaths) {
+    const absolute = resolve(cwd, inputPath);
+    const metadata = statSync(absolute, { bigint: true });
+    if (!metadata.isFile()) continue;
+    digest.update(inputPath.replaceAll("\\", "/"));
+    digest.update("\0");
+    digest.update(String(metadata.mode));
+    digest.update("\0");
+    digest.update(String(metadata.mtimeNs));
+    digest.update("\0");
+    digest.update(readFileSync(absolute));
+    digest.update("\0");
+  }
+  const status = spawnSync(
+    "git",
+    ["status", "--porcelain=v1", "-z", "--untracked-files=all", "--ignore-submodules=none"],
+    { cwd, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
+  );
+  if (status.error != null || status.status !== 0) {
+    throw new Error("failed to snapshot formatter working tree");
+  }
+  digest.update(status.stdout);
+  return digest.digest("hex");
+}
+
+export function validateFormatterOutput(project, stdout, stderr, exitCode, before, after) {
+  if (stdout !== "") invalid("stdout must be empty");
+  if (before !== after) invalid("formatter check modified its working tree or input metadata");
+  const normalizedStderr = stderr.replaceAll("\r\n", "\n");
+  if (!normalizedStderr.endsWith("\n")) invalid("stderr must end with a newline");
+
+  if (project.expectedVueFileCount === 0) {
+    if (normalizedStderr !== `${noFilesMessage}\n`) {
+      invalid("zero-file fixture emitted an unexpected report");
+    }
+    if (exitCode !== 1) invalid(`zero-file exit code ${exitCode} does not match expected 1`);
+    return formatterSummary(0, [], 0);
+  }
+
+  const lines = normalizedStderr.slice(0, -1).split("\n");
+  const found = parseCount(lines[0], /^Found (\d+) file\(s\)$/, "found count");
+  if (found === 0) invalid("non-empty fixture formatted zero files");
+  const changedPaths = [];
+  let index = 1;
+  while (lines[index]?.startsWith("Would reformat: ")) {
+    const candidate = lines[index].slice("Would reformat: ".length);
+    requireFormatterPath(candidate);
+    changedPaths.push(candidate);
+    index += 1;
+  }
+  if (lines[index] !== "") invalid("missing blank line before formatter summary");
+  index += 1;
+  const checked = parseCount(lines[index], /^Checked (\d+) file\(s\)$/, "checked count");
+  index += 1;
+
+  let changed = 0;
+  const changedMatch = /^  (\d+) file\(s\) would be reformatted$/.exec(lines[index] ?? "");
+  if (changedMatch != null) {
+    changed = safeCount(changedMatch[1], "changed count");
+    index += 1;
+  }
+  let unchanged = 0;
+  const unchangedMatch = /^  (\d+) file\(s\) already formatted$/.exec(lines[index] ?? "");
+  if (unchangedMatch != null) {
+    unchanged = safeCount(unchangedMatch[1], "unchanged count");
+    index += 1;
+  }
+  if (index !== lines.length) invalid("formatter report contains unexpected lines");
+  if (new Set(changedPaths).size !== changedPaths.length) {
+    invalid("formatter report contains duplicate changed paths");
+  }
+  if (changed !== changedPaths.length) {
+    invalid(`changed count ${changed} does not match ${changedPaths.length} paths`);
+  }
+  if (found !== checked || checked !== changed + unchanged) {
+    invalid(
+      `file counts do not reconcile: found ${found}, checked ${checked}, changed ${changed}, unchanged ${unchanged}`,
+    );
+  }
+  const expectedExitCode = changed > 0 ? 1 : 0;
+  if (exitCode !== expectedExitCode) {
+    invalid(`exit code ${exitCode} does not match expected ${expectedExitCode}`);
+  }
+  return formatterSummary(checked, changedPaths, unchanged);
+}
+
+function formatterSummary(checkedFileCount, changedPaths, unchangedFileCount) {
+  const digest = createHash("sha256");
+  for (const inputPath of [...changedPaths].sort((left, right) => left.localeCompare(right))) {
+    digest.update(inputPath);
+    digest.update("\0");
+  }
+  return {
+    checkedFileCount,
+    changedFileCount: changedPaths.length,
+    unchangedFileCount,
+    changedPathsSha256: digest.digest("hex"),
+  };
+}
+
+function parseCount(line, pattern, label) {
+  const match = pattern.exec(line ?? "");
+  if (match == null) invalid(`missing ${label}`);
+  return safeCount(match[1], label);
+}
+
+function safeCount(value, label) {
+  const count = Number(value);
+  if (!Number.isSafeInteger(count) || count < 0) invalid(`${label} is not a safe integer`);
+  return count;
+}
+
+function requireFormatterPath(value) {
+  const bare = value.startsWith("./") ? value.slice(2) : value;
+  if (
+    bare.length === 0 ||
+    isAbsolute(bare) ||
+    /^[A-Za-z]:[\\/]/.test(bare) ||
+    bare.includes("\\") ||
+    bare.split("/").some((segment) => segment === "" || segment === "." || segment === "..")
+  ) {
+    invalid("changed file must be a normalized relative path");
+  }
+  if (!bare.endsWith(".vue")) invalid(`changed file is not a Vue SFC: ${value}`);
+}
+
+function invalid(message) {
+  throw new Error(`invalid formatter check output: ${message}`);
+}

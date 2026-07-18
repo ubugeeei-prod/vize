@@ -15,6 +15,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { expectedCompilerOutputs } from "./tool-matrix-compiler-paths.mjs";
+import { snapshotFormatterInputs, validateFormatterOutput } from "./tool-matrix-formatter.mjs";
 import { validateLinterOutput } from "./tool-matrix-linter.mjs";
 import { validateTypecheckerOutput } from "./tool-matrix-typechecker.mjs";
 
@@ -41,6 +42,8 @@ export function runTool(project, tool, args, launch, outputDir) {
   };
   if (args.dryRun) return { ...base, status: "planned" };
   if (!fixtureExists) return { ...base, status: "missing-fixture" };
+  const formatterStateBefore =
+    tool === "formatter" ? snapshotFormatterInputs(cwd, project.vueGlobs) : null;
 
   try {
     const startedAt = Date.now();
@@ -99,6 +102,20 @@ export function runTool(project, tool, args, launch, outputDir) {
         } catch (error) {
           payload.validationError = errorMessage(error);
         }
+      }
+    } else if (tool === "formatter" && (result.status === 0 || result.status === 1)) {
+      try {
+        const formatterStateAfter = snapshotFormatterInputs(cwd, project.vueGlobs);
+        payload.formatterCheck = validateFormatterOutput(
+          project,
+          payload.stdout,
+          payload.stderr,
+          result.status,
+          formatterStateBefore,
+          formatterStateAfter,
+        );
+      } catch (error) {
+        payload.validationError = errorMessage(error);
       }
     }
     writeFileSync(rawPath, `${JSON.stringify(payload, null, 2)}\n`);
