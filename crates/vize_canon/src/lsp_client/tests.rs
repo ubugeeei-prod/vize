@@ -1,7 +1,6 @@
 use super::{
-    bootstrap::resolve_corsa_executable,
-    paths::resolve_temp_dir_base,
-    session::{build_session_document_uri, materialize_session_document},
+    bootstrap::resolve_corsa_executable, paths::resolve_temp_dir_base,
+    session::materialize_session_document, session_paths::build_session_document_uri,
     utils::convert_diagnostics,
 };
 use crate::file_uri::path_to_file_uri;

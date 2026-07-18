@@ -1,7 +1,12 @@
 #![allow(clippy::disallowed_types)]
 
-use super::{CorsaProjectClient, utils::remap_serialized_uris, virtual_overlay};
-use crate::file_uri::{file_uri_to_path, path_to_file_uri};
+use super::{
+    CorsaProjectClient,
+    session_paths::{build_materialized_session_document_uri, build_session_document_uri},
+    utils::remap_serialized_uris,
+    virtual_overlay,
+};
+use crate::file_uri::file_uri_to_path;
 use corsa::{
     CorsaError,
     api::{
@@ -13,18 +18,14 @@ use corsa::{
 };
 use lsp_types::Diagnostic;
 use serde_json::Value;
-use std::{
-    path::{Component, Path, PathBuf},
-    sync::Arc,
-};
+use std::{path::Path, sync::Arc};
 use vize_carton::{String, cstr};
 
 pub(super) fn spawn_project_session(
     executable: &str,
     cwd: &Path,
-    project_root: &Path,
+    config_path: &Path,
 ) -> Result<(ProjectSession, Arc<CapabilitiesResponse>), String> {
-    let config_path = project_root.join("tsconfig.json");
     let config_path_wire = config_path.to_string_lossy();
     let mode = api_mode_for_executable(executable);
     let session = match block_on(spawn_project_session_with_mode(
@@ -175,12 +176,16 @@ impl CorsaProjectClient {
     pub(super) fn sync_overlay_document(&mut self, uri: &str, content: &str) -> Result<(), String> {
         let previous = self.document_texts.insert(uri.into(), content.into());
 
+        if self.materialized_project_session {
+            return self.sync_materialized_overlay_document(uri, content);
+        }
+
         let document_uri = self.session_document_uri(uri);
         if previous.as_deref() == Some(content) {
             return Ok(());
         }
 
-        if document_uri == uri && !self.supports_overlay_api() {
+        if document_uri != uri || !self.supports_overlay_api() {
             return self.sync_materialized_overlay_document(uri, content);
         }
 
@@ -193,13 +198,6 @@ impl CorsaProjectClient {
                     previous.is_some(),
                 )
             });
-        if document_uri != uri {
-            // Remapped documents are materialized to disk; no overlay API is
-            // required, so runtimes without overlay support stay functional.
-            return block_on(self.session.refresh(file_changes))
-                .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"));
-        }
-
         let version = next_overlay_version(&mut self.overlay_versions, uri);
         match block_on(self.session.refresh_with_overlay_changes(
             file_changes,
@@ -227,6 +225,7 @@ impl CorsaProjectClient {
         uri: &str,
         content: &str,
     ) -> Result<(), String> {
+        self.activate_materialized_project_session()?;
         let document_uri = self
             .materialized_session_document_uri(uri)
             .ok_or_else(|| cstr!("Failed to derive materialized Corsa overlay path for {uri}"))?;
@@ -291,7 +290,7 @@ impl CorsaProjectClient {
         Some(self.remember_session_document_uri(uri, mapped))
     }
 
-    fn remember_session_document_uri(&mut self, uri: &str, mapped: String) -> String {
+    pub(super) fn remember_session_document_uri(&mut self, uri: &str, mapped: String) -> String {
         if let Some(previous) = self
             .session_document_uris
             .insert(uri.into(), mapped.clone())
@@ -322,89 +321,6 @@ fn next_overlay_version(versions: &mut vize_carton::FxHashMap<String, i32>, uri:
 fn load_file_text(uri: &str) -> Option<String> {
     let path = file_uri_to_path(uri)?;
     std::fs::read_to_string(path).ok().map(Into::into)
-}
-
-pub(super) fn build_session_document_uri(
-    uri: &str,
-    project_root: &Path,
-    overlay_confirmed: bool,
-) -> String {
-    let Some(external_path) = external_document_path(uri) else {
-        return uri.into();
-    };
-
-    // Keep real in-project files at real paths. Virtual mirrors (`*.vue.ts`,
-    // `*.html.ts`) can also stay there when Corsa overlay support is confirmed;
-    // otherwise materialize them under the session overlay root so imports
-    // never point at non-existent workspace files.
-    if external_path.starts_with(project_root)
-        && (external_path.exists()
-            || (overlay_confirmed && virtual_overlay::target_exists(&external_path)))
-    {
-        return path_to_file_uri(&external_path);
-    }
-
-    path_to_file_uri(&materialized_session_path(&external_path, project_root))
-}
-
-fn build_materialized_session_document_uri(uri: &str, project_root: &Path) -> Option<String> {
-    let external_path = external_document_path(uri)?;
-    Some(path_to_file_uri(&materialized_session_path(
-        &external_path,
-        project_root,
-    )))
-}
-
-fn materialized_session_path(external_path: &Path, project_root: &Path) -> PathBuf {
-    let mut session_path = overlay_root_for_project(project_root);
-    for component in external_path.components() {
-        match component {
-            Component::Prefix(prefix) => session_path.push(prefix.as_os_str()),
-            Component::RootDir | Component::CurDir => {}
-            Component::ParentDir => session_path.push("__parent__"),
-            Component::Normal(part) => session_path.push(part),
-        }
-    }
-
-    session_path
-}
-
-fn overlay_root_for_project(project_root: &Path) -> PathBuf {
-    if is_under_node_modules_vize(project_root) {
-        return project_root.join("overlays");
-    }
-
-    project_root
-        .join("node_modules")
-        .join(".vize")
-        .join("corsa-overlay")
-}
-
-fn is_under_node_modules_vize(path: &Path) -> bool {
-    let mut previous = None;
-    for component in path.components() {
-        let Some(name) = component.as_os_str().to_str() else {
-            previous = None;
-            continue;
-        };
-        if previous == Some("node_modules") && name == ".vize" {
-            return true;
-        }
-        previous = Some(name);
-    }
-    false
-}
-
-pub(super) fn external_document_path(uri: &str) -> Option<PathBuf> {
-    if let Some(path) = file_uri_to_path(uri) {
-        return Some(path);
-    }
-
-    let (scheme, path) = uri.split_once("://")?;
-    let mut session_path = PathBuf::from("__scheme__");
-    session_path.push(scheme);
-    session_path.push(path.trim_start_matches('/'));
-    Some(session_path)
 }
 
 /// The runtime advertised overlay support through `describeCapabilities`, but
@@ -490,9 +406,9 @@ pub(super) fn line_character_to_utf16_offset(text: &str, line: u32, character: u
 mod tests {
     use super::{
         api_mode_for_executable, build_session_document_uri, line_character_to_utf16_offset,
-        overlay_changes_error_is_unsupported, path_to_file_uri, should_retry_json_rpc,
-        uri_document_identifier,
+        overlay_changes_error_is_unsupported, should_retry_json_rpc, uri_document_identifier,
     };
+    use crate::file_uri::path_to_file_uri;
     use corsa::CorsaError;
     use corsa::api::{ApiMode, DocumentIdentifier};
 
@@ -519,10 +435,12 @@ mod tests {
         assert_eq!(mapped, uri, "in-project .vue.ts overlay must keep its path");
 
         let mapped_no_overlay = build_session_document_uri(&uri, &project, false);
-        assert_ne!(mapped_no_overlay, uri);
-        assert!(
-            mapped_no_overlay.contains("/node_modules/.vize/corsa-overlay/"),
-            "in-project .vue.ts overlay must materialize under the session overlay root without overlay support: {mapped_no_overlay}"
+        assert_eq!(
+            mapped_no_overlay,
+            path_to_file_uri(
+                &project.join("node_modules/.vize/corsa-overlay/src/components/Button.vue.ts")
+            ),
+            "in-project overlays must preserve their project-relative path"
         );
 
         // A path outside the project is still remapped into the overlay tree.

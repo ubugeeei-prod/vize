@@ -15,12 +15,14 @@ use vize_carton::{FxHashMap, String};
 mod bootstrap;
 mod diagnostics;
 mod diagnostics_api;
+mod diagnostics_lsp;
 mod lifecycle;
 mod lifecycle_setup;
 mod materialized_refresh;
 pub(crate) mod paths;
 mod queries;
 mod session;
+mod session_paths;
 mod utils;
 mod virtual_overlay;
 
@@ -34,6 +36,7 @@ pub struct CorsaProjectClient {
     session: ProjectSession,
     capabilities: Arc<CapabilitiesResponse>,
     overlay_api_disabled: bool,
+    materialized_project_session: bool,
     project_root: PathBuf,
     /// Cached diagnostics keyed by document URI.
     pub(crate) diagnostics: FxHashMap<String, Vec<Diagnostic>>,

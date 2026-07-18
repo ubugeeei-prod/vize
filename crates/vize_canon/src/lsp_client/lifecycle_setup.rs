@@ -1,4 +1,4 @@
-use super::paths::find_node_modules_with_vue;
+use super::{paths::find_node_modules_with_vue, session_paths::overlay_root_for_project};
 use serde_json::json;
 use std::{
     path::Path,
@@ -143,6 +143,39 @@ pub(super) fn write_temp_tsconfig(temp_dir_path: &Path) -> Result<(), String> {
     .map_err(|e| cstr!("Failed to write temp tsconfig.json: {e}"))
 }
 
+pub(super) fn workspace_config_path(project_root: &Path) -> std::path::PathBuf {
+    let tsconfig = project_root.join("tsconfig.json");
+    if tsconfig.is_file() {
+        return tsconfig;
+    }
+    let jsconfig = project_root.join("jsconfig.json");
+    if jsconfig.is_file() {
+        return jsconfig;
+    }
+    tsconfig
+}
+
+pub(super) fn write_materialized_project_tsconfig(
+    project_root: &Path,
+) -> Result<std::path::PathBuf, String> {
+    let overlay_root = overlay_root_for_project(project_root);
+    std::fs::create_dir_all(&overlay_root)
+        .map_err(|error| cstr!("Failed to create materialized Corsa project: {error}"))?;
+    let config_path = overlay_root.join("tsconfig.json");
+    let content = json!({
+        "extends": workspace_config_path(project_root).to_string_lossy(),
+        "compilerOptions": {
+            "allowImportingTsExtensions": true,
+            "noEmit": true
+        },
+        "include": ["**/*"],
+        "exclude": []
+    });
+    std::fs::write(&config_path, content.to_compact_string())
+        .map_err(|error| cstr!("Failed to write materialized Corsa tsconfig: {error}"))?;
+    Ok(config_path)
+}
+
 pub(super) fn write_vue_module_stubs(temp_dir_path: &Path) -> Result<(), String> {
     let content = r#"declare module "*.vue" {
   const component: import("vue").DefineComponent<any, any, any>;
@@ -169,4 +202,51 @@ pub(super) fn write_shared_helper_decls(temp_dir_path: &Path) -> Result<(), Stri
         crate::virtual_ts::SHARED_PREAMBLE_DTS,
     )
     .map_err(|e| cstr!("Failed to write shared helper declarations: {e}"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{workspace_config_path, write_materialized_project_tsconfig};
+
+    #[test]
+    fn materialized_project_config_extends_workspace_options_and_includes_overlays() {
+        let project = tempfile::TempDir::new().unwrap();
+        let root = project.path();
+        let workspace_config = root.join("tsconfig.json");
+        std::fs::write(&workspace_config, r#"{"compilerOptions":{"strict":false}}"#).unwrap();
+
+        let generated = write_materialized_project_tsconfig(root).unwrap();
+        let parsed: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(&generated).unwrap()).unwrap();
+
+        assert_eq!(workspace_config_path(root), workspace_config);
+        assert_eq!(
+            generated,
+            root.join("node_modules/.vize/corsa-overlay/tsconfig.json")
+        );
+        assert_eq!(
+            parsed["extends"],
+            workspace_config.to_string_lossy().as_ref()
+        );
+        assert_eq!(parsed["include"], serde_json::json!(["**/*"]));
+        assert_eq!(parsed["exclude"], serde_json::json!([]));
+        assert_eq!(parsed["compilerOptions"]["noEmit"], true);
+        assert_eq!(
+            parsed["compilerOptions"]["allowImportingTsExtensions"],
+            true
+        );
+        assert_eq!(
+            std::fs::read_to_string(workspace_config).unwrap(),
+            r#"{"compilerOptions":{"strict":false}}"#
+        );
+    }
+
+    #[test]
+    fn workspace_config_falls_back_to_jsconfig() {
+        let project = tempfile::TempDir::new().unwrap();
+        let jsconfig = project.path().join("jsconfig.json");
+        std::fs::write(&jsconfig, "{}").unwrap();
+
+        assert_eq!(workspace_config_path(project.path()), jsconfig);
+    }
 }

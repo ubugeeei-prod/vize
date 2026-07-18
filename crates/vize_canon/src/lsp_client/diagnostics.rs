@@ -1,10 +1,12 @@
 use super::{
     CorsaProjectClient, DiagnosticFetch, LspDiagnostic,
     diagnostics_api::{document_identifier_uri, flatten_file_diagnostics, map_project_diagnostics},
+    diagnostics_lsp::{initialize_lsp_client, request_lsp_document_diagnostics},
     session::uri_document_identifier,
+    session_paths::overlay_root_for_project,
     utils::convert_diagnostics,
 };
-use crate::file_uri::{file_uri_to_path, path_to_file_uri};
+use crate::file_uri::file_uri_to_path;
 use corsa::{
     CorsaError,
     jsonrpc::InboundEvent,
@@ -419,6 +421,15 @@ impl CorsaProjectClient {
             return Ok(Some(Vec::new()));
         }
 
+        if !self.materialized_project_session
+            && uris.iter().any(|uri| {
+                self.document_texts.contains_key(uri.as_str())
+                    && file_uri_to_path(uri.as_str()).is_none_or(|path| !path.exists())
+            })
+        {
+            self.activate_materialized_project_session()?;
+        }
+
         let client = block_on(LspClient::spawn(
             LspSpawnConfig::new(self.executable.as_str()).with_cwd(self.cwd.clone()),
         ))
@@ -426,7 +437,12 @@ impl CorsaProjectClient {
         let stop = Arc::new(AtomicBool::new(false));
         let responder = spawn_lsp_responder(client.clone(), stop.clone());
 
-        let initialize_result = initialize_lsp_client(&client, &self.project_root);
+        let lsp_project_root = if self.materialized_project_session {
+            overlay_root_for_project(&self.project_root)
+        } else {
+            self.project_root.clone()
+        };
+        let initialize_result = initialize_lsp_client(&client, &lsp_project_root);
         if let Err(error) = initialize_result {
             stop.store(true, Ordering::Relaxed);
             let _ = block_on(client.close());
@@ -515,70 +531,6 @@ fn lsp_diagnostics_error_is_transient(error: &str) -> bool {
 
 fn diagnostics_api_error_is_unsupported(error: &impl std::fmt::Display) -> bool {
     diagnostics_api_is_unsupported(cstr!("{error}").as_str())
-}
-
-fn initialize_lsp_client(client: &LspClient, project_root: &std::path::Path) -> Result<(), String> {
-    struct InitializeRequest;
-
-    impl lsp_types::request::Request for InitializeRequest {
-        type Params = serde_json::Value;
-        type Result = serde_json::Value;
-        const METHOD: &'static str = "initialize";
-    }
-
-    struct InitializedNotification;
-
-    impl lsp_types::notification::Notification for InitializedNotification {
-        type Params = serde_json::Value;
-        const METHOD: &'static str = "initialized";
-    }
-
-    let root_uri = path_to_file_uri(project_root);
-    block_on(client.request::<InitializeRequest>(serde_json::json!({
-        "processId": std::process::id(),
-        "rootUri": root_uri,
-        "capabilities": {
-            "textDocument": {
-                "publishDiagnostics": {},
-                "diagnostic": {
-                    "dynamicRegistration": false,
-                    "relatedDocumentSupport": true,
-                }
-            },
-            "workspace": {
-                "diagnostic": {
-                    "refreshSupport": true,
-                }
-            }
-        }
-    })))
-    .map_err(|error| cstr!("Failed to initialize Corsa LSP session: {error}"))?;
-    client
-        .notify::<InitializedNotification>(serde_json::json!({}))
-        .map_err(|error| cstr!("Failed to send LSP initialized notification: {error}"))?;
-    Ok(())
-}
-
-fn request_lsp_document_diagnostics(
-    client: &LspClient,
-    uri: &Uri,
-) -> Result<DocumentDiagnosticReportResult, String> {
-    struct RawDocumentDiagnosticRequest;
-
-    impl lsp_types::request::Request for RawDocumentDiagnosticRequest {
-        type Params = serde_json::Value;
-        type Result = DocumentDiagnosticReportResult;
-        const METHOD: &'static str = "textDocument/diagnostic";
-    }
-
-    block_on(
-        client.request::<RawDocumentDiagnosticRequest>(serde_json::json!({
-            "textDocument": {
-                "uri": uri,
-            }
-        })),
-    )
-    .map_err(|error| cstr!("{error}"))
 }
 
 fn spawn_lsp_responder(client: LspClient, stop: Arc<AtomicBool>) -> std::thread::JoinHandle<()> {

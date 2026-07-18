@@ -7,6 +7,7 @@ use super::{
     },
     paths::resolve_temp_dir_base,
     session::{materialize_session_document, uri_document_identifier},
+    session_paths::build_session_document_uri,
     virtual_overlay,
 };
 use corsa::{
@@ -106,7 +107,11 @@ impl CorsaProjectClient {
             return Ok(());
         }
 
-        if !self.supports_overlay_api() {
+        let overlay_supported = self.supports_overlay_api();
+        let requires_materialization = documents.iter().any(|(uri, _)| {
+            build_session_document_uri(uri, &self.project_root, overlay_supported) != *uri
+        });
+        if self.materialized_project_session || !overlay_supported || requires_materialization {
             for (uri, content) in documents {
                 self.clear_document_state(uri);
                 self.sync_overlay_document(uri, content)?;

@@ -1,9 +1,10 @@
 use std::path::{Path, PathBuf};
 
 use vize_canon::{CorsaBridge, CorsaBridgeConfig};
+use vize_carton::ToCompactString;
 
 #[test]
-fn bridge_vue_virtual_overlay_keeps_real_relative_import_base() {
+fn bridge_materialized_overlay_preserves_workspace_project_options() {
     let Some(corsa_path) = resolve_test_tsgo_binary() else {
         return;
     };
@@ -12,32 +13,28 @@ fn bridge_vue_virtual_overlay_keeps_real_relative_import_base() {
     let project_root = project.path();
     let src_dir = project_root.join("src");
     std::fs::create_dir_all(&src_dir).unwrap();
-    if link_workspace_node_modules(project_root).is_err() {
-        return;
-    }
+    std::fs::create_dir(project_root.join("node_modules")).unwrap();
 
-    std::fs::write(
-        project_root.join("tsconfig.json"),
-        r#"{
+    let tsconfig = r#"{
   "compilerOptions": {
-    "strict": true,
+    "strict": false,
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": { "@/*": ["./src/*"] }
   },
   "include": ["src/**/*"]
-}"#,
-    )
-    .unwrap();
+}"#;
+    std::fs::write(project_root.join("tsconfig.json"), tsconfig).unwrap();
     std::fs::write(src_dir.join("App.vue"), "<template><div /></template>\n").unwrap();
     std::fs::write(src_dir.join("Child.vue"), "<template><span /></template>\n").unwrap();
     std::fs::write(src_dir.join("util.ts"), "export const label = 'ok';\n").unwrap();
 
     let app_virtual_path = src_dir.join("App.vue.ts");
     let child_virtual_path = src_dir.join("Child.vue.ts");
-    let app_virtual = "import Child from './Child.vue.ts';\nimport { label } from './util';\nvoid Child;\nvoid label;\n";
+    let app_virtual = "import Child from './Child.vue.ts';\nimport { label } from '@/util';\nfunction identity(value) { return value; }\nvoid Child;\nvoid label;\nvoid identity;\n";
     let child_virtual = "export default {};\n";
 
     let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
@@ -48,56 +45,69 @@ fn bridge_vue_virtual_overlay_keeps_real_relative_import_base() {
     });
 
     let diagnostics = corsa::runtime::block_on(async {
-        if bridge.spawn().await.is_err() {
-            return None;
-        }
-        let child_uri = child_virtual_path.display().to_string();
-        if bridge
+        bridge.spawn().await.unwrap();
+        let child_uri = child_virtual_path.display().to_compact_string();
+        bridge
             .open_or_update_virtual_document(child_uri.as_str(), child_virtual)
             .await
-            .is_err()
-        {
-            let _ = bridge.shutdown().await;
-            return None;
-        }
-        let app_uri = app_virtual_path.display().to_string();
-        if bridge
+            .unwrap();
+        let app_uri = app_virtual_path.display().to_compact_string();
+        let app_uri = bridge
             .open_or_update_virtual_document(app_uri.as_str(), app_virtual)
             .await
-            .is_err()
-        {
-            let _ = bridge.shutdown().await;
-            return None;
-        }
-        let diagnostics = bridge.get_diagnostics(app_uri.as_str()).await.ok()?;
-        let _ = bridge.shutdown().await;
-        Some(diagnostics)
+            .unwrap();
+        let diagnostics = bridge.get_diagnostics(app_uri.as_str()).await.unwrap();
+        bridge.shutdown().await.unwrap();
+        diagnostics
     });
 
-    let Some(diagnostics) = diagnostics else {
-        return;
-    };
     assert!(
-        diagnostics
-            .iter()
-            .all(|diagnostic| !diagnostic.message.contains("Cannot find module")),
-        "unexpected module-resolution diagnostics: {diagnostics:#?}"
+        project_root
+            .join("node_modules/.vize/corsa-overlay/tsconfig.json")
+            .is_file(),
+        "virtual overlays must activate the materialized project"
     );
+    assert_eq!(
+        diagnostics.len(),
+        1,
+        "unexpected diagnostics: {diagnostics:#?}"
+    );
+    assert_eq!(diagnostics[0].code, Some(serde_json::json!(7044)));
+    assert_eq!(diagnostics[0].severity, Some(4));
+    assert_eq!(
+        diagnostics[0].message,
+        "Parameter 'value' implicitly has an 'any' type, but a better type may be inferred from usage."
+    );
+    assert_eq!(
+        std::fs::read_to_string(project_root.join("tsconfig.json")).unwrap(),
+        tsconfig
+    );
+    let overlay_src = project_root.join("node_modules/.vize/corsa-overlay/src");
+    assert_eq!(
+        std::fs::read_to_string(overlay_src.join("App.vue.ts")).unwrap(),
+        app_virtual
+    );
+    assert_eq!(
+        std::fs::read_to_string(overlay_src.join("Child.vue.ts")).unwrap(),
+        child_virtual
+    );
+    assert!(!app_virtual_path.exists());
+    assert!(!child_virtual_path.exists());
 }
 
 fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     let root = workspace_root();
-    for candidate in [
+    if let Some(resolved) = vize_carton::corsa_resolver::discover_corsa_in_ancestors(&root) {
+        return Some(resolved);
+    }
+    [
         root.parent()?.join("corsa-bind/.cache/tsgo"),
         root.parent()?
             .join("corsa-bind/ref/corsa-upstream/.cache/tsgo"),
         root.join("node_modules/.bin/tsgo"),
-    ] {
-        if candidate.exists() {
-            return Some(candidate);
-        }
-    }
-    None
+    ]
+    .into_iter()
+    .find(|candidate| candidate.exists())
 }
 
 fn workspace_root() -> PathBuf {
@@ -106,21 +116,4 @@ fn workspace_root() -> PathBuf {
         .and_then(Path::parent)
         .expect("vize_canon should live under crates/")
         .to_path_buf()
-}
-
-fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
-    let workspace_node_modules = workspace_root().join("node_modules");
-    if !workspace_node_modules.exists() {
-        return Ok(());
-    }
-
-    let target = project_root.join("node_modules");
-    #[cfg(unix)]
-    {
-        std::os::unix::fs::symlink(workspace_node_modules, target)
-    }
-    #[cfg(windows)]
-    {
-        std::os::windows::fs::symlink_dir(workspace_node_modules, target)
-    }
 }
