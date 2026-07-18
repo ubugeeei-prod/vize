@@ -61,7 +61,8 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   const dependency = steps.find(
     (step) => step.name === "Install pinned typecheck baseline dependencies",
   );
-  const dependencyIndex = steps.indexOf(dependency!);
+  assert.ok(dependency, "Missing 'Install pinned typecheck baseline dependencies' step");
+  const dependencyIndex = steps.indexOf(dependency);
   const run = steps.find((step) => step.name === "Exercise real projects with every core tool");
   const runIndex = steps.indexOf(run!);
   const divergence = steps.find((step) => step.name === "Record typechecker baseline divergence");
@@ -90,11 +91,11 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.doesNotMatch(hydration?.run ?? "", /--recursive/);
   assert.match(hydration?.run ?? "", /"\$\{fixture_paths\[@\]\}"/);
   assert.ok(hydrationIndex < dependencyIndex && dependencyIndex < runIndex);
-  assert.match(dependency?.run ?? "", /tools\/fixtures\/typecheck-dependency-prepare\.mjs/);
-  assert.match(dependency?.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
-  assert.match(dependency?.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
-  assert.match(dependency?.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
-  assert.match(dependency?.run ?? "", /--timeout-ms 600000/);
+  assert.match(dependency.run ?? "", /tools\/fixtures\/typecheck-dependency-prepare\.mjs/);
+  assert.match(dependency.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
+  assert.match(dependency.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
+  assert.match(dependency.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
+  assert.match(dependency.run ?? "", /--timeout-ms 600000/);
   assert.match(run?.run ?? "", /tools\/fixtures\/tool-matrix-report\.mjs/);
   assert.match(run?.run ?? "", /--vize-bin target\/ci\/vize/);
   assert.match(run?.run ?? "", /--timeout-ms 600000/);
