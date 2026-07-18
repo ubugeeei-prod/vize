@@ -1,9 +1,14 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
+import { assertParsesAsModule } from "../../_helpers/assertions.ts";
 import { withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
 import {
+  resolveVizeCommand,
   resolveTsgoBinary,
   runVizeCheck,
   symlinkVueTypes,
@@ -17,6 +22,16 @@ const sourcePath = "src/views/dashboard/admin/components/TransactionTable.vue";
 const cleanBinding = ':data="list"';
 const brokenBinding = ':data="missingList"';
 
+type CompilerOutput = {
+  code: string;
+  css: string | null;
+  errors: string[];
+  filename: string;
+  macro_artifacts: unknown[];
+  script_lang: string;
+  warnings: string[];
+};
+
 const missingListDiagnostic = {
   range: {
     start: { line: 1, character: 19 },
@@ -27,6 +42,81 @@ const missingListDiagnostic = {
   source: "vize/types",
   message: "Cannot find name 'missingList'.",
 };
+
+test("vue-element-admin compiler lowers legacy slot scopes and filters deterministically", async () => {
+  await withPinnedFixtureWorkspace(
+    { fixtureId: "vue-element-admin", includePaths: [sourcePath] },
+    async (fixture) => {
+      fixture.write("vize.config.json", json({ compiler: { compatibility: { vueVersion: "2" } } }));
+
+      const source = fixture.read(sourcePath);
+      const first = runVizeBuild(fixture.workspaceDir, sourcePath, ".vize-compiler-first");
+      const second = runVizeBuild(fixture.workspaceDir, sourcePath, ".vize-compiler-second");
+
+      assert.equal(first.status, 0, first.stderr || first.stdout);
+      assert.equal(second.status, 0, second.stderr || second.stdout);
+      assert.deepEqual(first.files, ["TransactionTable.json"]);
+      assert.deepEqual(second.files, first.files);
+      assert.equal(second.outputText, first.outputText, "compiler output must be byte-stable");
+      assert.equal(fixture.read(sourcePath), source, "compiler must not mutate the Vue source");
+
+      const output = first.output;
+      assert.deepEqual(
+        {
+          css: output.css,
+          errors: output.errors,
+          filename: output.filename,
+          macro_artifacts: output.macro_artifacts,
+          script_lang: output.script_lang,
+          warnings: output.warnings,
+        },
+        {
+          css: null,
+          errors: [],
+          filename: "TransactionTable.vue",
+          macro_artifacts: [],
+          script_lang: "js",
+          warnings: [],
+        },
+      );
+      assertParsesAsModule(output.code, "TransactionTable.json#code");
+
+      assert.equal(count(output.code, "resolveFilter as _resolveFilter"), 1, output.code);
+      assert.equal(count(output.code, "_resolveFilter("), 3, output.code);
+      for (const filter of ["orderNoFilter", "toThousandFilter", "statusFilter"]) {
+        assert.equal(
+          count(output.code, `const _filter_${filter} = _resolveFilter("${filter}")`),
+          1,
+          output.code,
+        );
+        assert.equal(count(output.code, `_filter_${filter}(`), 1, output.code);
+      }
+
+      assert.equal(count(output.code, "default: _withCtx((scope) => ["), 2, output.code);
+      assert.equal(count(output.code, "default: _withCtx(({row}) => ["), 1, output.code);
+      for (const expected of [
+        "_toDisplayString(_filter_orderNoFilter(scope.row.order_no))",
+        "_toDisplayString(_filter_toThousandFilter(scope.row.price))",
+        "type: _filter_statusFilter(row.status)",
+        "_toDisplayString(row.status)",
+      ]) {
+        assert.equal(count(output.code, expected), 1, `${expected}\n${output.code}`);
+      }
+
+      for (const forbidden of [
+        "slot-scope",
+        '_createElementVNode("template"',
+        "scope.row.order_no | orderNoFilter",
+        "scope.row.price | toThousandFilter",
+        "row.status | statusFilter",
+        "_ctx.scope",
+        "_ctx.row",
+      ]) {
+        assert.equal(output.code.includes(forbidden), false, `${forbidden}\n${output.code}`);
+      }
+    },
+  );
+});
 
 test("vue-element-admin legacy slot scopes recover exact CLI diagnostics", async () => {
   const corsaPath = resolveTsgoBinary();
@@ -140,6 +230,56 @@ function assertBrokenCheck(result: VizeCheckResult): void {
     warningCount: 0,
     fileCount: 1,
   });
+}
+
+function runVizeBuild(
+  workspaceDir: string,
+  input: string,
+  outputDirectory: string,
+): {
+  files: string[];
+  output: CompilerOutput;
+  outputText: string;
+  status: number | null;
+  stderr: string;
+  stdout: string;
+} {
+  const [command, ...prefixArgs] = resolveVizeCommand();
+  const result = spawnSync(
+    command,
+    [...prefixArgs, "build", input, "--format", "json", "--output", outputDirectory],
+    {
+      cwd: workspaceDir,
+      encoding: "utf8",
+      env: { ...process.env, LANG: "C", LC_ALL: "C" },
+      maxBuffer: 64 * 1024 * 1024,
+      timeout: 120_000,
+    },
+  );
+  if (result.error != null) throw result.error;
+
+  const outputRoot = path.join(workspaceDir, outputDirectory);
+  const files = fs.existsSync(outputRoot)
+    ? fs
+        .readdirSync(outputRoot, { recursive: true })
+        .map(String)
+        .filter((entry) => entry.endsWith(".json"))
+        .sort()
+    : [];
+  const outputText =
+    files.length === 1 ? fs.readFileSync(path.join(outputRoot, files[0]), "utf8") : "";
+  return {
+    files,
+    output: outputText === "" ? ({} as CompilerOutput) : (JSON.parse(outputText) as CompilerOutput),
+    outputText,
+    status: result.status,
+    stderr: result.stderr,
+    stdout: result.stdout,
+  };
+}
+
+function count(source: string, needle: string): number {
+  return source.split(needle).length - 1;
 }
 
 function json(value: unknown): string {

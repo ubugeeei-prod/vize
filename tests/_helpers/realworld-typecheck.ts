@@ -110,7 +110,7 @@ function runCommand(command: string, args: string[], cwd: string): CommandResult
   return { status: result.status, stderr: result.stderr, stdout: result.stdout };
 }
 
-function resolveVizeCommand(): string[] {
+export function resolveVizeCommand(): string[] {
   const candidates = [
     process.env.VIZE_TEST_BIN,
     path.join(repoRoot, "target/debug/vize"),

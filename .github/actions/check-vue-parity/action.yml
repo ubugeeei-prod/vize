@@ -20,10 +20,12 @@ runs:
 
     - name: Build vize CLI
       shell: bash
-      run: cargo build --profile ci -p vize
+      run: cargo build --profile ci -p vize --features legacy
 
     - name: Check Vue compiler and typecheck parity
       shell: bash
+      env:
+        VIZE_TEST_BIN: target/ci/vize
       run: vp run --filter './tests' test:check:fixtures
 
     - name: Check incremental LSP against Misskey

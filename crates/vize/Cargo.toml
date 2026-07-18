@@ -23,7 +23,11 @@ maestro = ["dep:vize_maestro"]
 profiling = []
 # Opt-in legacy Vue (v0 / v1 / v2) support. Off by default so the Vue 3 binary
 # never activates or compiles it; turns on the legacy feature across the stack.
-legacy = ["vize_canon/legacy", "vize_maestro?/legacy"]
+legacy = [
+  "vize_atelier_core/legacy",
+  "vize_canon/legacy",
+  "vize_maestro?/legacy",
+]
 
 [dependencies]
 # Vize crates (re-exported for unified documentation)
