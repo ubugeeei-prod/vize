@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { cpus, totalmem } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { resolveVizeLaunch, runTool } from "./tool-matrix-run.mjs";
+import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..");
@@ -25,6 +26,12 @@ function main() {
   if (args.listFixturePaths) {
     process.stdout.write(`${projects.map((project) => project.fixturePath).join("\n")}\n`);
     return;
+  }
+  if (!args.dryRun && tools.includes("typechecker")) {
+    for (const project of projects) {
+      const fixtureRoot = resolve(repoRoot, project.fixturePath);
+      if (existsSync(fixtureRoot)) validateTypecheckPerformanceTarget(project, fixtureRoot);
+    }
   }
 
   const outputDir = resolve(

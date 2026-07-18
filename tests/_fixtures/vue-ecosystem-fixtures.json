@@ -130,7 +130,7 @@
         "files": ["LICENSE"]
       },
       "vueGlobs": ["packages/**/*.vue"],
-      "tsconfig": "tsconfig.json",
+      "tsconfig": "packages/core/tsconfig.check.json",
       "coverage": [
         "compiler",
         "linter",
