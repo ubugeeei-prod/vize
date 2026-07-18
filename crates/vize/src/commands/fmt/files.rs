@@ -63,7 +63,7 @@ fn collect_walked_files(
     for entry in walker.filter_map(Result::ok) {
         let path = entry.path();
         if pattern.matches(path) && should_include_format_file(path, ignore_set) {
-            files.push(path.to_path_buf());
+            files.push(path.strip_prefix(".").unwrap_or(path).to_path_buf());
         }
     }
 }
@@ -338,10 +338,7 @@ mod tests {
         let files = collect_files(&[pattern], None);
         let _ = fs::remove_dir_all(&root);
 
-        assert_eq!(
-            files,
-            vec![PathBuf::from(".").join(relative_root.join("apps/web/src/App.vue"))]
-        );
+        assert_eq!(files, vec![relative_root.join("apps/web/src/App.vue")]);
     }
 
     fn unique_case_dir(name: &str) -> PathBuf {
