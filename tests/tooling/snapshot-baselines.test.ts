@@ -36,6 +36,8 @@ const assertionOnlyCheckTests = {
     "library patch oracle asserts exact package-resolution behavior across document versions",
   "vue-router-dmts-oracle":
     "declaration patch oracle asserts .d.mts resolution and dependent diagnostic refresh",
+  "vue-router-formatter-oracle":
+    "formatter oracle asserts exact fmt convergence, repair, idempotence, and compiled output",
   "vitepress-theme-oracle":
     "framework patch oracle asserts package exports and theme declaration refresh behavior",
   "vue-element-admin-legacy-oracle":
