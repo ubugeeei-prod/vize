@@ -51,7 +51,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   const divergence = compareTypecheckDiagnostics({
     projectId: project.id,
     cwd: fixtureRoot,
-    vizeReport: vizeRun.parsed,
+    vizeReport: vizeRun.payload.parsed,
     vueTscOutput: `${baseline.stdout ?? ""}\n${baseline.stderr ?? ""}`,
   });
   const budget = evaluateBudget(project.typecheckPerformance, divergence.summary);
@@ -62,6 +62,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     revision: project.revision,
     tsconfig: project.tsconfig,
     evidence: summary.evidence,
+    source: vizeRun.source,
     baseline: {
       command: displayCommand(vueTsc.path, baselineArgs),
       version: vueTsc.version,
@@ -107,10 +108,19 @@ function readAndValidateVizeRun(reportDir, project, summary) {
     throw new Error(`Fixture matrix summary has no successful typechecker run for ${project.id}`);
   }
   const expectedName = `${project.id}-typechecker.json`;
-  if (basename(runs[0].outputPath ?? "") !== expectedName) {
+  const reportedPath = runs[0].outputPath;
+  const artifactPath =
+    typeof reportedPath === "string" && !isAbsolute(reportedPath)
+      ? resolve(repoRoot, reportedPath)
+      : null;
+  if (
+    artifactPath !== resolve(reportDir, expectedName) ||
+    basename(reportedPath ?? "") !== expectedName
+  ) {
     throw new Error(`Fixture matrix typechecker output path is invalid for ${project.id}`);
   }
-  const payload = readJson(join(reportDir, expectedName));
+  const rawPayload = readFileSync(artifactPath, "utf8");
+  const payload = JSON.parse(rawPayload);
   const expectedKeys = [
     "exitCode",
     "parsed",
@@ -145,10 +155,20 @@ function readAndValidateVizeRun(reportDir, project, summary) {
     );
   }
   validateTypecheckerOutput(project, payload.parsed, payload.exitCode);
+  const expectedStatus = payload.exitCode === 0 ? "ok" : "findings";
+  if (runs[0].status !== expectedStatus) {
+    throw new Error(`Fixture matrix typechecker status is inconsistent for ${project.id}`);
+  }
   if (runs[0].fileCount !== payload.parsed.fileCount) {
     throw new Error(`Fixture matrix typechecker file count is inconsistent for ${project.id}`);
   }
-  return payload;
+  return {
+    payload,
+    source: {
+      payloadSha256: sha256(rawPayload),
+      fileCount: payload.parsed.fileCount,
+    },
+  };
 }
 
 function validatePerformanceConfig(performance) {

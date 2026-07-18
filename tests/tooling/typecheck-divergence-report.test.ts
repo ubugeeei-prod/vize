@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -35,7 +36,7 @@ function setup() {
   fs.writeFileSync(path.join(fixtureRoot, "tsconfig.json"), "{}\n");
   fs.writeFileSync(path.join(fixtureRoot, "src", "App.vue"), "<template />\n");
   const registryPath = path.join(fixtureRoot, "registry.json");
-  fs.writeFileSync(registryPath, `${JSON.stringify({ projects: [project] }, null, 2)}\n`);
+  writeJson(registryPath, { projects: [project] });
   const outputPath = path.join(reportDir, "fixture-typechecker.json");
   const parsed = {
     errorCount: 1,
@@ -43,72 +44,64 @@ function setup() {
     fileCount: 1,
     files: [{ file: "src/App.vue", diagnostics: ["error:1:1 [TS2322] shared"] }],
   };
-  fs.writeFileSync(
-    outputPath,
-    `${JSON.stringify(
-      {
-        schema: "vize.fixtureToolRun",
-        version: 1,
-        project: "fixture",
-        tool: "typechecker",
-        exitCode: 1,
-        stdout: JSON.stringify(parsed),
-        stderr: "",
-        parsed,
+  writeJson(outputPath, {
+    schema: "vize.fixtureToolRun",
+    version: 1,
+    project: "fixture",
+    tool: "typechecker",
+    exitCode: 1,
+    stdout: JSON.stringify(parsed),
+    stderr: "",
+    parsed,
+  });
+  writeJson(path.join(reportDir, "summary.json"), {
+    schema: "vize.fixtureToolMatrixReport",
+    version: 2,
+    evidence: {
+      commitSha,
+      runtime: { name: "node", version: process.versions.node },
+      machine: {
+        platform: process.platform,
+        arch: process.arch,
+        cpuModel: "synthetic",
+        logicalCpuCount: 1,
+        totalMemoryBytes: 1,
       },
-      null,
-      2,
-    )}\n`,
-  );
-  fs.writeFileSync(
-    path.join(reportDir, "summary.json"),
-    `${JSON.stringify(
+    },
+    projects: [
       {
-        schema: "vize.fixtureToolMatrixReport",
-        version: 2,
-        evidence: {
-          commitSha,
-          runtime: { name: "node", version: process.versions.node },
-          machine: {
-            platform: process.platform,
-            arch: process.arch,
-            cpuModel: "synthetic",
-            logicalCpuCount: 1,
-            totalMemoryBytes: 1,
-          },
-        },
-        projects: [
+        id: "fixture",
+        revision: project.revision,
+        runs: [
           {
-            id: "fixture",
-            revision: project.revision,
-            runs: [
-              {
-                tool: "typechecker",
-                status: "findings",
-                exitCode: 1,
-                fileCount: 1,
-                outputPath: "nested/fixture-typechecker.json",
-              },
-            ],
+            tool: "typechecker",
+            status: "findings",
+            exitCode: 1,
+            fileCount: 1,
+            outputPath: path.relative(root, outputPath),
           },
         ],
       },
-      null,
-      2,
-    )}\n`,
-  );
+    ],
+  });
   const vueTsc = path.join(fakeDir, "vue-tsc.mjs");
+  const invocationPath = path.join(fakeDir, "invocation.json");
   writeVueTsc(
     vueTsc,
     'process.stdout.write("src/App.vue(1,1): error TS2322: shared\\n"); process.exit(2);',
+    invocationPath,
   );
-  return { fixtureRoot, reportDir, fakeDir, registryPath, vueTsc, project };
+  return { fixtureRoot, reportDir, fakeDir, registryPath, outputPath, vueTsc, invocationPath };
 }
 
-function writeVueTsc(pathname: string, runBody: string) {
+function writeVueTsc(pathname: string, runBody: string, invocationPath?: string) {
+  const recordInvocation =
+    invocationPath == null
+      ? ""
+      : `fs.writeFileSync(${JSON.stringify(invocationPath)}, JSON.stringify({ cwd: process.cwd(), args: process.argv.slice(2) }));`;
   fs.writeFileSync(
     pathname,
-    `#!/usr/bin/env node\nif (process.argv.includes("--version")) { console.log("3.3.4"); process.exit(0); }\n${runBody}\n`,
+    `#!/usr/bin/env node\nimport fs from "node:fs";\nif (process.argv.includes("--version")) { console.log("3.3.4"); process.exit(0); }\n${recordInvocation}\n${runBody}\n`,
   );
   fs.chmodSync(pathname, 0o755);
 }
@@ -135,27 +128,44 @@ function cleanup(fixture: ReturnType<typeof setup>) {
   fs.rmSync(fixture.fakeDir, { recursive: true, force: true });
 }
 
+function readJson(pathname: string) {
+  return JSON.parse(fs.readFileSync(pathname, "utf8"));
+}
+
+function writeJson(pathname: string, value: unknown) {
+  fs.writeFileSync(pathname, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function updateJson(pathname: string, update: (value: any) => void) {
+  const value = readJson(pathname);
+  update(value);
+  writeJson(pathname, value);
+}
+
 test("typecheck divergence report binds baseline evidence to the matrix artifact", () => {
   const fixture = setup();
   try {
     const result = run(fixture);
     assert.equal(result.status, 0, result.stderr);
-    const artifact = JSON.parse(
-      fs.readFileSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"), "utf8"),
-    );
-    assert.deepEqual(Object.keys(artifact), [
-      "schema",
-      "version",
-      "project",
-      "revision",
-      "tsconfig",
-      "evidence",
+    const artifact = readJson(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"));
+    assert.deepEqual(Object.keys(artifact).sort(), [
       "baseline",
       "budget",
       "divergence",
+      "evidence",
+      "project",
+      "revision",
+      "schema",
+      "source",
+      "tsconfig",
+      "version",
     ]);
     assert.equal(artifact.schema, "vize.fixtureTypecheckDivergenceRun");
     assert.equal(artifact.evidence.commitSha, commitSha);
+    assert.deepEqual(artifact.source, {
+      payloadSha256: createHash("sha256").update(fs.readFileSync(fixture.outputPath)).digest("hex"),
+      fileCount: 1,
+    });
     assert.equal(artifact.baseline.exitCode, 2);
     assert.equal(artifact.baseline.version, "3.3.4");
     assert.ok(artifact.baseline.durationMs >= 0);
@@ -171,6 +181,10 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     assert.equal(artifact.divergence.summary.sharedCount, 1);
     assert.equal(artifact.divergence.summary.falsePositiveCount, 0);
     assert.equal(artifact.divergence.summary.falseNegativeCount, 0);
+    assert.deepEqual(readJson(fixture.invocationPath), {
+      cwd: fixture.fixtureRoot,
+      args: ["--noEmit", "--pretty", "false", "-p", "tsconfig.json"],
+    });
     const markdown = fs.readFileSync(
       path.join(fixture.reportDir, "fixture-typecheck-divergence.md"),
       "utf8",
@@ -185,14 +199,12 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
 test("typecheck divergence report records an unconfigured false-negative budget", () => {
   const fixture = setup();
   try {
-    const registry = JSON.parse(fs.readFileSync(fixture.registryPath, "utf8"));
+    const registry = readJson(fixture.registryPath);
     delete registry.projects[0].typecheckPerformance.maxFalseNegativeRatio;
-    fs.writeFileSync(fixture.registryPath, `${JSON.stringify(registry, null, 2)}\n`);
+    writeJson(fixture.registryPath, registry);
     const result = run(fixture);
     assert.equal(result.status, 0, result.stderr);
-    const artifact = JSON.parse(
-      fs.readFileSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"), "utf8"),
-    );
+    const artifact = readJson(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"));
     assert.equal(artifact.budget.maxFalseNegativeRatio, null);
     assert.equal(artifact.budget.falseNegativePassed, null);
     assert.equal(artifact.budget.passed, null);
@@ -205,9 +217,7 @@ test("typecheck divergence report fails closed on mismatched matrix artifacts", 
   const fixture = setup();
   try {
     const payloadPath = path.join(fixture.reportDir, "fixture-typechecker.json");
-    const payload = JSON.parse(fs.readFileSync(payloadPath, "utf8"));
-    payload.project = "wrong-project";
-    fs.writeFileSync(payloadPath, `${JSON.stringify(payload, null, 2)}\n`);
+    updateJson(payloadPath, (payload) => (payload.project = "wrong-project"));
     const result = run(fixture);
     assert.equal(result.status, 1);
     assert.match(result.stderr, /artifact identity is invalid/);
@@ -235,9 +245,7 @@ test("typecheck divergence report rejects parsed output that differs from stdout
   const fixture = setup();
   try {
     const payloadPath = path.join(fixture.reportDir, "fixture-typechecker.json");
-    const payload = JSON.parse(fs.readFileSync(payloadPath, "utf8"));
-    payload.parsed.errorCount = 2;
-    fs.writeFileSync(payloadPath, `${JSON.stringify(payload, null, 2)}\n`);
+    updateJson(payloadPath, (payload) => (payload.parsed.errorCount = 2));
     const result = run(fixture);
     assert.equal(result.status, 1);
     assert.match(result.stderr, /stdout does not match parsed output/);
@@ -250,12 +258,43 @@ test("typecheck divergence report rejects a mismatched matrix file count", () =>
   const fixture = setup();
   try {
     const summaryPath = path.join(fixture.reportDir, "summary.json");
-    const summary = JSON.parse(fs.readFileSync(summaryPath, "utf8"));
-    summary.projects[0].runs[0].fileCount = 2;
-    fs.writeFileSync(summaryPath, `${JSON.stringify(summary, null, 2)}\n`);
+    updateJson(summaryPath, (summary) => (summary.projects[0].runs[0].fileCount = 2));
     const result = run(fixture);
     assert.equal(result.status, 1);
     assert.match(result.stderr, /file count is inconsistent/);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("typecheck divergence report rejects a mismatched matrix status", () => {
+  const fixture = setup();
+  try {
+    const summaryPath = path.join(fixture.reportDir, "summary.json");
+    updateJson(summaryPath, (summary) => (summary.projects[0].runs[0].status = "ok"));
+    const result = run(fixture);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /status is inconsistent/);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("typecheck divergence report rejects an artifact outside the reported directory", () => {
+  const fixture = setup();
+  try {
+    const summaryPath = path.join(fixture.reportDir, "summary.json");
+    updateJson(
+      summaryPath,
+      (summary) =>
+        (summary.projects[0].runs[0].outputPath = path.relative(
+          root,
+          path.join(fixture.reportDir, "nested", "fixture-typechecker.json"),
+        )),
+    );
+    const result = run(fixture);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /output path is invalid/);
   } finally {
     cleanup(fixture);
   }
@@ -269,9 +308,9 @@ test("typecheck divergence report rejects invalid performance budgets", () => {
   ] as const) {
     const fixture = setup();
     try {
-      const registry = JSON.parse(fs.readFileSync(fixture.registryPath, "utf8"));
+      const registry = readJson(fixture.registryPath);
       registry.projects[0].typecheckPerformance[field] = value;
-      fs.writeFileSync(fixture.registryPath, `${JSON.stringify(registry, null, 2)}\n`);
+      writeJson(fixture.registryPath, registry);
       const result = run(fixture);
       assert.equal(result.status, 1);
       assert.match(result.stderr, message);
