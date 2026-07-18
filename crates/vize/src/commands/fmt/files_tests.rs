@@ -32,6 +32,31 @@ fn collect_files_ignores_supported_extension_directories() {
     assert_eq!(files_from_glob, expected);
 }
 
+#[test]
+fn explicit_relative_glob_respects_nested_gitignore() {
+    let cwd = std::env::current_dir().unwrap();
+    let relative_root =
+        PathBuf::from("tests").join(unique_case_dir("explicit-glob-ignore").file_name().unwrap());
+    let root = cwd.join(&relative_root);
+    let source = root.join("apps/web/src/App.vue");
+    let dependency = root.join("apps/web/node_modules/dependency/Hidden.vue");
+    let _ = fs::remove_dir_all(&root);
+    fs::create_dir_all(source.parent().unwrap()).unwrap();
+    fs::create_dir_all(dependency.parent().unwrap()).unwrap();
+    fs::write(&source, "<template><main /></template>").unwrap();
+    fs::write(&dependency, "<template><aside /></template>").unwrap();
+    fs::write(root.join("apps/web/.gitignore"), "node_modules/\n").unwrap();
+
+    let pattern = relative_root
+        .join("apps/**/*.vue")
+        .to_string_lossy()
+        .into_owned();
+    let files = collect_files(&[pattern], None);
+    let _ = fs::remove_dir_all(&root);
+
+    assert_eq!(files, vec![relative_root.join("apps/web/src/App.vue")]);
+}
+
 fn unique_case_dir(name: &str) -> PathBuf {
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
