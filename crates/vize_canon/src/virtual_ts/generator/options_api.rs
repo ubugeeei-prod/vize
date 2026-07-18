@@ -702,7 +702,7 @@ fn options_api_props_from_expression(
     match expression {
         Expression::ObjectExpression(object) => {
             let source = source_slice(script, object.span())?;
-            Some(props_source_from_object(object, source))
+            Some(props_source_from_object(source))
         }
         Expression::ArrayExpression(array) => {
             let mut names = Vec::new();

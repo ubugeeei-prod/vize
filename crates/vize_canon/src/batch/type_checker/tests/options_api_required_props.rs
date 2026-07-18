@@ -274,3 +274,59 @@ function onSelect(id: number) {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn reports_cross_file_mismatch_for_runtime_constructor_props() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case(
+        "options-runtime-constructor-props",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script>
+export default {
+  props: { count: Number },
+}
+</script>
+<template><span>{{ count }}</span></template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+<template><Child :count="'wrong'" /></template>
+"#,
+            ),
+        ],
+    );
+
+    let mut checker = match BatchTypeChecker::new(&project_root) {
+        Ok(checker) => checker,
+        Err(_) => {
+            let _ = std::fs::remove_dir_all(&project_root);
+            return;
+        }
+    };
+    checker.enable_options_api();
+    checker.scan_project().unwrap();
+    let result = checker.check_project().unwrap();
+    let mismatch = result.diagnostics.iter().any(|diagnostic| {
+        relative_path(&project_root, &diagnostic.file) == "src/Parent.vue"
+            && diagnostic
+                .message
+                .contains("not assignable to type 'number'")
+    });
+
+    assert!(
+        mismatch,
+        "runtime Number props must reject string bindings across SFCs: {:#?}",
+        result.diagnostics
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

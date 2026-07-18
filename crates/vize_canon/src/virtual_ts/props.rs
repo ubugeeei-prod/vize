@@ -195,9 +195,9 @@ fn append_model_props_type_literal(ts: &mut String, models: &[ModelDefinition]) 
 }
 
 /// Runtime `props:` source for Options API `export type Props` emission.
-/// `DeferredObject` is routed through setup scope for value-only object syntax.
+/// Objects are routed through setup scope so JavaScript values never leak into
+/// TypeScript type position.
 pub(crate) enum OptionsApiPropsSource {
-    Object(String),
     DeferredObject(String),
     Names(Vec<String>),
 }
@@ -293,12 +293,6 @@ fn emit_options_api_props_type(
     options_api_props: &OptionsApiPropsSource,
 ) {
     match options_api_props {
-        OptionsApiPropsSource::Object(source) => {
-            append!(
-                *ts,
-                "export type Props{generic_decl} = __RuntimePropShape<{source}>;\n"
-            );
-        }
         OptionsApiPropsSource::DeferredObject(_) => {}
         OptionsApiPropsSource::Names(names) => {
             append!(*ts, "export type Props{generic_decl} = {{\n");

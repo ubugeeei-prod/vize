@@ -325,10 +325,8 @@ fn test_options_api_template_bindings_use_default_instance_type() {
 
 #[test]
 fn test_options_api_emits_real_props_type_from_object_option() {
-    // A plain `<script>` Options API component with a runtime `props:` object
-    // must produce a real `export type Props` (via the shared
-    // `__RuntimePropShape<...>` machinery) instead of the historical `{}` no-op,
-    // so cross-file prop checking is no longer silently disabled.
+    // Runtime props are values, so keep the object in setup scope and derive a
+    // real `export type Props` from the captured value.
     let script = r#"export default {
     props: {
         initial: Number,
@@ -348,9 +346,9 @@ fn test_options_api_emits_real_props_type_from_object_option() {
 
     assert!(
         output.code.contains(
-            "export type Props = __RuntimePropShape<{\n        initial: Number,\n        label: { type: String, required: true },\n    }>;"
+            "const __vize_options_props = ({\n        initial: Number,\n        label: { type: String, required: true },\n    });"
         ),
-        "expected a real Props type derived from the runtime props option:\n{}",
+        "expected the runtime props object to remain in value scope:\n{}",
         output.code
     );
     assert!(
