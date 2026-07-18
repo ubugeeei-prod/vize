@@ -86,7 +86,10 @@ process.stdout.write("Built: vize-tool-matrix-test.vue\\n");`,
           },
           { inputFileCount: 1, outputFileCount: 1, errorCount: 0, warningCount: 1 },
         );
-        assert.match(raw.compilerArtifacts.sha256, /^[0-9a-f]{64}$/);
+        assert.equal(
+          raw.compilerArtifacts.sha256,
+          "472e9ac54a4318345412c8fab1f81aa472684be9d7c9791adea885dc5ef19a3f",
+        );
         assert.equal("parsed" in raw, false);
       } finally {
         fs.rmSync(outputDir, { recursive: true, force: true });

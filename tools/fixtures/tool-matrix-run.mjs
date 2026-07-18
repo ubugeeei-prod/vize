@@ -17,8 +17,9 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 export function runTool(project, tool, args, launch, outputDir) {
   const cwd = resolve(repoRoot, project.fixturePath);
+  const fixtureExists = existsSync(cwd);
   const compilerOutputDir =
-    tool === "compiler" && !args.dryRun
+    tool === "compiler" && !args.dryRun && fixtureExists
       ? mkdtempSync(join(tmpdir(), "vize-fixture-compiler-"))
       : null;
   const commandArgs = [
@@ -34,7 +35,7 @@ export function runTool(project, tool, args, launch, outputDir) {
     outputPath: null,
   };
   if (args.dryRun) return { ...base, status: "planned" };
-  if (!existsSync(cwd)) return { ...base, status: "missing-fixture" };
+  if (!fixtureExists) return { ...base, status: "missing-fixture" };
 
   try {
     const startedAt = Date.now();
