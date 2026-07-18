@@ -140,7 +140,7 @@ pub(super) fn generate_component_event_types(
         cstr!("(...args: {listener_args_type}) => unknown")
     } else {
         cstr!(
-            "unknown[] extends {args_type} ? (($event: {event_type}) => unknown) : ((...args: {listener_args_type}) => unknown)"
+            "unknown[] extends {args_type} ? ((...args: any[]) => unknown) : ((...args: {listener_args_type}) => unknown)"
         )
     };
     Some(ComponentEventTypes {

@@ -375,8 +375,8 @@ fn generate_scope_node(
                 // Type the listener against the FULL emit argument tuple so
                 // multi-arg emits keep every parameter (#1512). When the emit
                 // signature stays unresolved (`unknown[]`, e.g. a fallthrough
-                // DOM event on a component), standard mode falls back to one
-                // `$event`; legacy Vue 2 keeps custom event args variadic.
+                // DOM event on a component), it stays variadic because custom
+                // components may emit any number of arguments.
                 append!(
                     *ts,
                     "{indent}type {listener_type} = {listener_type_expr};\n",
