@@ -15,6 +15,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { expectedCompilerOutputs } from "./tool-matrix-compiler-paths.mjs";
+import { validateTypecheckerOutput } from "./tool-matrix-typechecker.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -83,6 +84,13 @@ export function runTool(project, tool, args, launch, outputDir) {
         payload.parsed = JSON.parse(result.stdout);
       } catch (error) {
         payload.parseError = errorMessage(error);
+      }
+      if (tool === "typechecker" && payload.parseError == null) {
+        try {
+          validateTypecheckerOutput(project, payload.parsed, result.status);
+        } catch (error) {
+          payload.validationError = errorMessage(error);
+        }
       }
     }
     writeFileSync(rawPath, `${JSON.stringify(payload, null, 2)}\n`);
