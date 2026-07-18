@@ -109,7 +109,6 @@ pub(super) fn register_explicit_ambient_imports(
     .into_iter()
     .filter(|path| !keep_package_local || path.starts_with(context.project_root))
     .collect::<Vec<_>>();
-    files.extend(ambient_declarations.iter().cloned());
     files.extend(collect_transitive_local_imports_from(
         &ambient_declarations,
         context.cwd,
@@ -119,6 +118,7 @@ pub(super) fn register_explicit_ambient_imports(
         Some(context.explicit_input_root),
         true,
     ));
+    files.extend(ambient_declarations);
     files.sort();
     files.dedup();
 }
