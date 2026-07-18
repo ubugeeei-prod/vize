@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { isAbsolute } from "node:path";
 
 const outputKeys = ["errorCount", "fileCount", "files", "warningCount"];
@@ -51,7 +52,9 @@ export function validateTypecheckerOutput(project, output, exitCode) {
   }
 
   const checkedFiles = output.files.slice(0, output.fileCount).map((file) => file.file);
-  const sortedFiles = [...checkedFiles].sort((left, right) => left.localeCompare(right));
+  const sortedFiles = [...checkedFiles].sort((left, right) =>
+    Buffer.compare(Buffer.from(left), Buffer.from(right)),
+  );
   if (JSON.stringify(checkedFiles) !== JSON.stringify(sortedFiles)) {
     invalid("checked file entries are not sorted");
   }

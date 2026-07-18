@@ -44,6 +44,15 @@ test("typechecker oracle accepts exact error, warning, project, and zero-file re
   projectOutput.errorCount = 2;
   validateTypecheckerOutput({ id: "project-error" }, projectOutput, 1);
 
+  const byteOrderedOutput = validOutput();
+  byteOrderedOutput.files = [
+    { file: "src/B.vue", diagnostics: ["error:1:1 [TS1] uppercase"] },
+    { file: "src/a.vue", diagnostics: ["error:1:1 [TS1] lowercase"] },
+  ];
+  byteOrderedOutput.fileCount = 2;
+  byteOrderedOutput.errorCount = 2;
+  validateTypecheckerOutput({ id: "byte-order" }, byteOrderedOutput, 1);
+
   validateTypecheckerOutput(
     { id: "no-sfc", expectedVueFileCount: 0 },
     { files: [], errorCount: 0, warningCount: 0, fileCount: 0 },
@@ -132,8 +141,8 @@ test("typechecker oracle rejects malformed or internally inconsistent reports", 
       name: "unsorted checked files",
       mutate: (output: any) => {
         output.files = [
-          { file: "src/B.vue", diagnostics: ["error:1:1 [TS1] B"] },
-          { file: "src/A.vue", diagnostics: ["error:1:1 [TS1] A"] },
+          { file: "src/a.vue", diagnostics: ["error:1:1 [TS1] lowercase"] },
+          { file: "src/B.vue", diagnostics: ["error:1:1 [TS1] uppercase"] },
         ];
         output.fileCount = 2;
         output.errorCount = 2;
