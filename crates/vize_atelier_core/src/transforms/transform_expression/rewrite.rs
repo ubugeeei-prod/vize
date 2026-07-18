@@ -177,6 +177,13 @@ pub(crate) fn rewrite_expression(
             parse_error: None,
         };
     }
+    if !super::expression_has_balanced_delimiters(content) {
+        return RewriteResult {
+            code: String::new(content),
+            used_unref: false,
+            parse_error: Some(String::new("mismatched expression delimiters")),
+        };
+    }
     // First, if this is TypeScript, strip type annotations
     let js_content = if ctx.options.is_ts {
         strip_typescript_from_expression(content)

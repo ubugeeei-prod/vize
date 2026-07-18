@@ -1,12 +1,13 @@
 use vize_atelier_core::steps::expression::{
-    MAX_EXPRESSION_NESTING_DEPTH, expression_exceeds_max_depth, expression_nesting_depth,
-    is_event_handler_reference_expression, is_function_expression,
-    prefix_identifiers_in_expression, strip_typescript_from_expression,
+    MAX_EXPRESSION_NESTING_DEPTH, expression_exceeds_max_depth, expression_has_balanced_delimiters,
+    expression_is_safe_to_parse, expression_nesting_depth, is_event_handler_reference_expression,
+    is_function_expression, prefix_identifiers_in_expression, strip_typescript_from_expression,
 };
 
 const TIMEOUT_REPRODUCER: &str = "\nd=\nd=efnuiProps<{[dnuiProps<{[d=efnuiProps<{[dnuiProps<{[defnuiProps<{[  cts<{[  oefnuiProps<{[dnuiProps<{[defnuiProps<{[  cts<{[  oo>>efnuiProps<{[  cts<{[  oefnuiProps<{[dnuiProps<{[defnuiProps<{[  cts<{[  oo>>> \x1a\x1a\x1a\x1a\x1atr";
 const SLOW_TYPE_ARGUMENT_REPRODUCER: &str = "eu.tfpS<{[ erntro-Coro-Couo<tidon<cttnS<{[ erntro-rntro-Coro-Couo<tidon<cttnS<{[ erntro-Coro-Couo<tidon<cttn<tuo<tidon<cttnS<{[ erntro-Coro-Coug<tidon<cttn<tidon<cttopti<nn<ctstrCoro[Couo<tidon<cttn<tuo<tidon<cttnS<{[ erntro-Coro-Couo<tidon<cttn<tidon<cttopti<nn<ctstrin<n<<on<ta<ts";
 const TIMEOUT_TYPE_ARGUMENT_REPRODUCER: &str = "eu.tfpS<{[ erntro-Coro-Couo<tidon<cttnS<{[ erntro-rntro-Coro-Couo<tidon<cttnS<{[ erntro-Coro-Couo<tidon<cttn<tuo<tidon<cttnS<{[ erntro-Coro-Couo<tidon<cttn<tidottn<tuo<tidon<cttnS<{[ erntro-Coro-Couo<tidon<cttn<tidon<cttopti<nn<ctsttro-Coro-Couo<tidon<cttnS<{[ erntro-rntro-Coro-Couo<tidon<cttnS<{[ erntro-Coro-Couo<tidon<cttn<tuo<tidon<cttnS<{[ erntro-Coro-Couo<tidon<cttn<tidottn<tuo<tidon<cttnS<{[ erntro-Coro-Couo<tidon<cttn<tidon<cttoptrin<n<<on<ta<ts";
+const MISMATCHED_DELIMITER_REPRODUCER: &str = "\ndennProps<[\n  ao?: stri,\t\n);\n";
 
 #[test]
 fn expression_guard_rejects_the_js_ts_timeout_reproducer() {
@@ -32,6 +33,42 @@ fn expression_guard_preserves_the_documented_boundary() {
 
     assert!(!expression_exceeds_max_depth(&allowed));
     assert!(expression_exceeds_max_depth(&rejected));
+}
+
+#[test]
+fn expression_guard_rejects_the_mismatched_delimiter_reproducer() {
+    assert_eq!(MISMATCHED_DELIMITER_REPRODUCER.len(), 30);
+    assert_eq!(expression_nesting_depth(MISMATCHED_DELIMITER_REPRODUCER), 1);
+    assert!(!expression_has_balanced_delimiters(
+        MISMATCHED_DELIMITER_REPRODUCER
+    ));
+    assert!(!expression_is_safe_to_parse(
+        MISMATCHED_DELIMITER_REPRODUCER
+    ));
+    assert!(!is_event_handler_reference_expression(
+        MISMATCHED_DELIMITER_REPRODUCER
+    ));
+    assert!(!is_function_expression(MISMATCHED_DELIMITER_REPRODUCER));
+    assert_eq!(
+        prefix_identifiers_in_expression(MISMATCHED_DELIMITER_REPRODUCER).as_str(),
+        MISMATCHED_DELIMITER_REPRODUCER
+    );
+    assert_eq!(
+        strip_typescript_from_expression(MISMATCHED_DELIMITER_REPRODUCER).as_str(),
+        MISMATCHED_DELIMITER_REPRODUCER
+    );
+}
+
+#[test]
+fn expression_guard_tracks_delimiter_kinds_without_scanning_literals() {
+    let balanced = r#"foo("]") + /[})]/u.test(value) + `] ${items.map((item) => ({ item }))}`"#;
+    assert!(expression_has_balanced_delimiters(balanced));
+    assert!(expression_is_safe_to_parse(balanced));
+
+    for mismatched in ["(]", "([)]", "foo(", "foo)", "`text ${foo)`"] {
+        assert!(!expression_has_balanced_delimiters(mismatched));
+        assert!(!expression_is_safe_to_parse(mismatched));
+    }
 }
 
 #[test]

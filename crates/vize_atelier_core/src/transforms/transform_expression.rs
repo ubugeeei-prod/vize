@@ -22,17 +22,17 @@ use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, lane::TransformC
 
 pub use inline_handler::process_inline_handler;
 pub use nesting::{
-    MAX_EXPRESSION_NESTING_DEPTH, expression_exceeds_max_depth, expression_nesting_depth,
+    MAX_EXPRESSION_NESTING_DEPTH, expression_exceeds_max_depth, expression_has_balanced_delimiters,
+    expression_is_safe_to_parse, expression_nesting_depth,
 };
 pub use prefix::{is_simple_identifier, prefix_identifiers_in_expression};
-pub use typescript::strip_typescript_from_expression;
-
 use rewrite::rewrite_expression;
+pub use typescript::strip_typescript_from_expression;
 
 /// Returns true if an expression is a callable reference that should be passed
 /// through directly as an event handler, not wrapped as `$event => (...)`.
 pub fn is_event_handler_reference_expression(content: &str) -> bool {
-    if expression_exceeds_max_depth(content) {
+    if !expression_is_safe_to_parse(content) {
         return false;
     }
     let allocator = oxc_allocator::Allocator::default();
@@ -56,7 +56,7 @@ pub fn is_event_handler_reference_expression(content: &str) -> bool {
 
 /// Returns true if the whole expression is a function / arrow function expression.
 pub fn is_function_expression(content: &str) -> bool {
-    if expression_exceeds_max_depth(content) {
+    if !expression_is_safe_to_parse(content) {
         return false;
     }
     let allocator = oxc_allocator::Allocator::default();

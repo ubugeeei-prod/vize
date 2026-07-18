@@ -9,10 +9,12 @@ pub const MAX_EXPRESSION_NESTING_DEPTH: usize = 31;
 /// Brackets and unambiguous TypeScript angles are paired, while decorator markers
 /// accumulate for OXC's recursive parser. Strings, template text, comments, and
 /// regexes are skipped; `${...}` template interpolations are scanned.
-pub fn expression_nesting_depth(content: &str) -> usize {
+fn analyze_expression_nesting(content: &str) -> (usize, bool) {
     let bytes = content.as_bytes();
-    let (mut bracket_depth, mut angle_depth, mut decorator_depth) = (0usize, 0usize, 0usize);
+    let (mut angle_depth, mut decorator_depth) = (0usize, 0usize);
     let mut max_depth = 0usize;
+    let mut delimiters = Vec::new();
+    let mut delimiters_balanced = true;
     let mut can_start_regex = true;
     let mut template_interpolation_depths = Vec::new();
     // Plain `foo < bar` is indistinguishable from a type argument to a byte
@@ -39,11 +41,11 @@ pub fn expression_nesting_depth(content: &str) -> usize {
                 let (next, has_interpolation) = skip_template_text(bytes, i + 1);
                 i = next;
                 if has_interpolation {
-                    bracket_depth += 1;
-                    template_interpolation_depths.push(bracket_depth);
+                    delimiters.push(b'}');
+                    template_interpolation_depths.push(delimiters.len());
                     let effective_angle_depth = if track_type_angles { angle_depth } else { 0 };
                     max_depth =
-                        max_depth.max(bracket_depth + effective_angle_depth + decorator_depth);
+                        max_depth.max(delimiters.len() + effective_angle_depth + decorator_depth);
                     can_start_regex = true;
                 } else {
                     can_start_regex = false;
@@ -75,24 +77,28 @@ pub fn expression_nesting_depth(content: &str) -> usize {
                 continue;
             }
             b'(' | b'[' | b'{' => {
-                bracket_depth += 1;
+                delimiters.push(match b {
+                    b'(' => b')',
+                    b'[' => b']',
+                    _ => b'}',
+                });
                 can_start_regex = true;
             }
             b')' | b']' => {
-                bracket_depth = bracket_depth.saturating_sub(1);
+                delimiters_balanced &= delimiters.pop() == Some(b);
                 can_start_regex = false;
             }
-            b'}' if template_interpolation_depths.last() == Some(&bracket_depth) => {
-                bracket_depth = bracket_depth.saturating_sub(1);
+            b'}' if template_interpolation_depths.last() == Some(&delimiters.len()) => {
+                delimiters_balanced &= delimiters.pop() == Some(b'}');
                 template_interpolation_depths.pop();
                 let (next, has_interpolation) = skip_template_text(bytes, i + 1);
                 i = next;
                 if has_interpolation {
-                    bracket_depth += 1;
-                    template_interpolation_depths.push(bracket_depth);
+                    delimiters.push(b'}');
+                    template_interpolation_depths.push(delimiters.len());
                     let effective_angle_depth = if track_type_angles { angle_depth } else { 0 };
                     max_depth =
-                        max_depth.max(bracket_depth + effective_angle_depth + decorator_depth);
+                        max_depth.max(delimiters.len() + effective_angle_depth + decorator_depth);
                     can_start_regex = true;
                 } else {
                     can_start_regex = false;
@@ -100,7 +106,7 @@ pub fn expression_nesting_depth(content: &str) -> usize {
                 continue;
             }
             b'}' => {
-                bracket_depth = bracket_depth.saturating_sub(1);
+                delimiters_balanced &= delimiters.pop() == Some(b'}');
                 can_start_regex = false;
             }
             b'<' => {
@@ -130,11 +136,29 @@ pub fn expression_nesting_depth(content: &str) -> usize {
         }
 
         let effective_angle_depth = if track_type_angles { angle_depth } else { 0 };
-        max_depth = max_depth.max(bracket_depth + effective_angle_depth + decorator_depth);
+        max_depth = max_depth.max(delimiters.len() + effective_angle_depth + decorator_depth);
         i += 1;
     }
 
-    max_depth
+    (
+        max_depth,
+        delimiters_balanced && delimiters.is_empty() && template_interpolation_depths.is_empty(),
+    )
+}
+
+pub fn expression_nesting_depth(content: &str) -> usize {
+    analyze_expression_nesting(content).0
+}
+
+/// Returns whether parentheses, brackets, and braces are correctly paired.
+pub fn expression_has_balanced_delimiters(content: &str) -> bool {
+    analyze_expression_nesting(content).1
+}
+
+/// Returns whether an expression can be handed to OXC's recursive parser safely.
+pub fn expression_is_safe_to_parse(content: &str) -> bool {
+    let (depth, balanced) = analyze_expression_nesting(content);
+    balanced && depth <= MAX_EXPRESSION_NESTING_DEPTH
 }
 
 /// Returns true if `content` exceeds [`MAX_EXPRESSION_NESTING_DEPTH`].

@@ -75,7 +75,7 @@ fn is_string_literal(content: &str) -> bool {
 }
 
 fn is_static_object_or_array_literal(content: &str) -> bool {
-    if crate::steps::expression::expression_exceeds_max_depth(content) {
+    if !crate::steps::expression::expression_is_safe_to_parse(content) {
         return false;
     }
     let mut wrapped = String::with_capacity(content.len() + 2);

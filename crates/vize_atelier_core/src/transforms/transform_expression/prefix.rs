@@ -106,7 +106,7 @@ pub fn prefix_identifiers_in_expression(content: &str) -> String {
     // Skip parsing for inputs that would overflow the parser stack — return
     // the original content unchanged so the compile lane emits a normal
     // diagnostic for the surrounding directive instead of aborting. (#956)
-    if super::expression_exceeds_max_depth(content) {
+    if !super::expression_is_safe_to_parse(content) {
         return String::new(content);
     }
     let allocator = OxcAllocator::default();

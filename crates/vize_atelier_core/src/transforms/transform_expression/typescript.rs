@@ -212,7 +212,7 @@ pub fn strip_typescript_from_expression(content: &str) -> String {
     // Skip parsing for inputs that would overflow the parser stack — return
     // the original content unchanged so the surrounding lane emits a
     // normal diagnostic instead of aborting. (#956)
-    if super::expression_exceeds_max_depth(content) {
+    if !super::expression_is_safe_to_parse(content) {
         return String::new(content);
     }
     // Only process if TypeScript syntax is detected

@@ -9,13 +9,13 @@ use libfuzzer_sys::fuzz_target;
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_atelier_core::steps::expression::expression_exceeds_max_depth;
+use vize_atelier_core::steps::expression::expression_is_safe_to_parse;
 
 fuzz_target!(|data: &[u8]| {
     let Ok(source) = std::str::from_utf8(data) else {
         return;
     };
-    if expression_exceeds_max_depth(source) {
+    if !expression_is_safe_to_parse(source) {
         return;
     }
 
@@ -23,7 +23,9 @@ fuzz_target!(|data: &[u8]| {
     let parser = Parser::new(
         &allocator,
         source,
-        SourceType::default().with_module(true).with_typescript(true),
+        SourceType::default()
+            .with_module(true)
+            .with_typescript(true),
     );
     let _ = parser.parse_expression();
 });

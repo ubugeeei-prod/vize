@@ -24,7 +24,7 @@ pub(super) fn get_slot_props(dir: &DirectiveNode<'_>) -> Option<vize_carton::Str
 /// e.g., "{ item = defaultItem }" -> "{ item = _ctx.defaultItem }"
 /// Only processes default value expressions, not the param names.
 pub(super) fn prefix_slot_defaults(source: &str) -> String {
-    if crate::steps::expression::expression_exceeds_max_depth(source) {
+    if !crate::steps::expression::expression_is_safe_to_parse(source) {
         return String::new(source);
     }
 
