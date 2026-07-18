@@ -56,11 +56,11 @@ test("fixture tool matrix plans every registered project across all four require
     assert.match(markdown, /Runtime: node \d+\.\d+\.\d+/);
     assert.match(markdown, /Machine: [^/]+\/[^,]+, \d+ logical CPUs, \d+ bytes memory/);
     assert.match(markdown, /\| Project \| Tool \| Status \| Exit \| Files \| Duration \(ms\) \|/);
-    assert.equal(report.summary.projectCount, 131);
+    assert.equal(report.summary.projectCount, 132);
     assert.equal(report.summary.toolCount, 4);
-    assert.equal(report.summary.runCount, 524);
-    assert.equal(report.summary.plannedRuns, 524);
-    assert.equal(report.projects.length, 131);
+    assert.equal(report.summary.runCount, 528);
+    assert.equal(report.summary.plannedRuns, 528);
+    assert.equal(report.projects.length, 132);
     for (const project of report.projects) {
       assert.deepEqual(
         project.runs.map((entry: { tool: string }) => entry.tool),
@@ -285,14 +285,14 @@ test("fixture tool matrix shards every project exactly once with balanced sizes"
       fs.rmSync(outputDir, { recursive: true, force: true });
     }
   }
-  assert.equal(projectIds.size, 131);
+  assert.equal(projectIds.size, 132);
   assert.deepEqual(
     [...new Set(shardSizes)].sort((a, b) => a - b),
-    [11, 12],
+    [12],
   );
   assert.equal(
     shardSizes.reduce((sum, size) => sum + size, 0),
-    131,
+    132,
   );
 });
 
