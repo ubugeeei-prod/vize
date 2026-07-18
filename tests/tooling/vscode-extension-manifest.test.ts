@@ -29,10 +29,38 @@ type Manifest = {
     configuration?: { title?: string; properties?: Record<string, ConfigurationProperty> };
     configurationDefaults?: Record<string, unknown>;
     colors?: Array<{ id?: string; defaults?: Record<string, string> }>;
+    grammars?: Array<{ path?: string; scopeName?: string }>;
     semanticTokenTypes?: Array<{ id?: string; superType?: string; description?: string }>;
     semanticTokenModifiers?: Array<{ id?: string; description?: string }>;
   };
 };
+
+test("multiline Vue script grammar is contributed", () => {
+  const grammar = readManifest().contributes?.grammars?.find(
+    (entry) => entry.scopeName === "source.vue.script",
+  );
+  assert.equal(grammar?.path, "./syntaxes/vue-script.tmLanguage.json");
+});
+
+test("multiline Vue script grammar preserves each declared dialect", () => {
+  type Rule = { contentName?: string; patterns?: Array<{ include?: string }> };
+  const grammar = JSON.parse(
+    fs.readFileSync(path.join(root, "editors/vscode/syntaxes/vue-script.tmLanguage.json"), "utf-8"),
+  ) as { repository?: Record<string, Rule> };
+  const repository = grammar.repository ?? {};
+  const cases = [
+    ["tsx", "source.tsx", "meta.embedded.block.tsx"],
+    ["ts", "source.ts", "meta.embedded.block.typescript"],
+    ["jsx", "source.js.jsx", "meta.embedded.block.jsx"],
+    ["js", "source.js", "meta.embedded.block.javascript"],
+  ];
+
+  for (const [dialect, include, contentName] of cases) {
+    const body = repository[`vue-script-body-${dialect}`];
+    assert.equal(body?.patterns?.[0]?.include, include, dialect);
+    assert.equal(body?.contentName, contentName, dialect);
+  }
+});
 
 function readManifest(): Manifest {
   return JSON.parse(

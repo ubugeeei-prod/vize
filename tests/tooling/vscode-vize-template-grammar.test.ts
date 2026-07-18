@@ -57,6 +57,7 @@ async function loadVueTextMateGrammar(scopeName = "source.vue") {
   const engine = await createOnigurumaEngine(fs.readFileSync(onigurumaWasmPath));
   const grammars = new Map<string, unknown>([
     ["source.vue", readJson("editors/vscode/syntaxes/vue.tmLanguage.json")],
+    ["source.vue.script", readJson("editors/vscode/syntaxes/vue-script.tmLanguage.json")],
     ["source.art-vue", readJson("editors/vscode/syntaxes/art-vue.tmLanguage.json")],
     ["source.ts", sourceTs],
     ["source.json", sourceJson],
@@ -267,6 +268,37 @@ test("vscode-vize grammar keeps TS generics and assertions inside attribute valu
     assertTextDoesNotHaveScope(tokens, "data-x", "meta.embedded.expression.vue");
     assertTextDoesNotHaveScope(tokens, "data-single", "meta.embedded.expression.vue");
     assertTextDoesNotHaveScope(tokens, "span", "meta.embedded.expression.vue");
+    assertTextDoesNotHaveScope(tokens, "after", "meta.embedded.type.typescript");
+  } finally {
+    registry.dispose();
+  }
+});
+
+test("vscode-vize grammar preserves multiline script generic parameters", async () => {
+  const { grammar, registry } = await loadVueTextMateGrammar();
+
+  try {
+    const tokens = tokenizeLines(grammar, [
+      "<script",
+      "  setup",
+      '  lang="ts"',
+      '  generic="',
+      "    Mode extends DateSelectionMode = 'single',",
+      "    TEvent extends CalendarEventLike = CalendarEventLike",
+      '  "',
+      ">",
+      "const selected = null",
+      "</script>",
+      "<template><div>after</div></template>",
+    ]);
+
+    for (const text of ["Mode", "DateSelectionMode", "TEvent", "CalendarEventLike"]) {
+      assertTextHasScope(tokens, text, "meta.embedded.type.typescript");
+      assertTextDoesNotHaveScope(tokens, text, "entity.other.attribute-name.html");
+    }
+    assertTextHasScope(tokens, "selected", "meta.embedded.block.typescript");
+    assertTextDoesNotHaveScope(tokens, "selected", "meta.embedded.type.typescript");
+    assertTextHasScope(tokens, "div", "entity.name.tag.html");
     assertTextDoesNotHaveScope(tokens, "after", "meta.embedded.type.typescript");
   } finally {
     registry.dispose();

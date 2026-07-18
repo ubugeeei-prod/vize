@@ -193,7 +193,7 @@ async function runSyntaxHighlightContributionSmoke() {
     { include: "#vue-comments" },
     { include: "#vue-template-pug" },
     { include: "#vue-template" },
-    { include: "#vue-script" },
+    { include: "source.vue.script" },
     { include: "#vue-style" },
     { include: "#vue-custom-block-json" },
     { include: "#vue-custom-block-yaml" },

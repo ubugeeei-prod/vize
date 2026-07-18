@@ -1,0 +1,108 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Vue Script",
+  "scopeName": "source.vue.script",
+  "patterns": [{ "include": "source.vue#vue-script" }, { "include": "#vue-script-multiline" }],
+  "repository": {
+    "vue-script-multiline": {
+      "begin": "(<)(script)\\b",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.script.html" }
+      },
+      "end": "(</)(script)(>)",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.script.html" },
+        "3": { "name": "punctuation.definition.tag.end.html" }
+      },
+      "patterns": [
+        { "include": "#vue-script-multiline-tsx-tail" },
+        { "include": "#vue-script-multiline-ts-tail" },
+        { "include": "#vue-script-multiline-jsx-tail" },
+        { "include": "#vue-script-tag-attributes" },
+        { "include": "#vue-script-body-js" }
+      ]
+    },
+    "vue-script-tag-attributes": {
+      "patterns": [
+        { "include": "source.vue#vue-generic-attribute" },
+        {
+          "match": "\\b(setup|lang|src|generic)\\b",
+          "name": "entity.other.attribute-name.html"
+        },
+        { "include": "source.vue#vue-tag-attributes" }
+      ]
+    },
+    "vue-script-multiline-tsx-tail": {
+      "begin": "\\b(lang)\\b\\s*(=)\\s*([\"'])(?:tsx|typescriptreact)(\\3)",
+      "beginCaptures": {
+        "1": { "name": "entity.other.attribute-name.html" },
+        "2": { "name": "punctuation.separator.key-value.html" },
+        "3": { "name": "punctuation.definition.string.begin.html" },
+        "4": { "name": "punctuation.definition.string.end.html" }
+      },
+      "end": "(?=</script>)",
+      "patterns": [
+        { "include": "#vue-script-tag-attributes" },
+        { "include": "#vue-script-body-tsx" }
+      ]
+    },
+    "vue-script-multiline-ts-tail": {
+      "begin": "\\b(lang)\\b\\s*(=)\\s*([\"'])(?:ts|typescript)(\\3)",
+      "beginCaptures": {
+        "1": { "name": "entity.other.attribute-name.html" },
+        "2": { "name": "punctuation.separator.key-value.html" },
+        "3": { "name": "punctuation.definition.string.begin.html" },
+        "4": { "name": "punctuation.definition.string.end.html" }
+      },
+      "end": "(?=</script>)",
+      "patterns": [
+        { "include": "#vue-script-tag-attributes" },
+        { "include": "#vue-script-body-ts" }
+      ]
+    },
+    "vue-script-multiline-jsx-tail": {
+      "begin": "\\b(lang)\\b\\s*(=)\\s*([\"'])(?:jsx|javascriptreact)(\\3)",
+      "beginCaptures": {
+        "1": { "name": "entity.other.attribute-name.html" },
+        "2": { "name": "punctuation.separator.key-value.html" },
+        "3": { "name": "punctuation.definition.string.begin.html" },
+        "4": { "name": "punctuation.definition.string.end.html" }
+      },
+      "end": "(?=</script>)",
+      "patterns": [
+        { "include": "#vue-script-tag-attributes" },
+        { "include": "#vue-script-body-jsx" }
+      ]
+    },
+    "vue-script-body-tsx": {
+      "begin": ">",
+      "beginCaptures": { "0": { "name": "punctuation.definition.tag.end.html" } },
+      "end": "(?=</script>)",
+      "contentName": "meta.embedded.block.tsx",
+      "patterns": [{ "include": "source.tsx" }]
+    },
+    "vue-script-body-ts": {
+      "begin": ">",
+      "beginCaptures": { "0": { "name": "punctuation.definition.tag.end.html" } },
+      "end": "(?=</script>)",
+      "contentName": "meta.embedded.block.typescript",
+      "patterns": [{ "include": "source.ts" }]
+    },
+    "vue-script-body-jsx": {
+      "begin": ">",
+      "beginCaptures": { "0": { "name": "punctuation.definition.tag.end.html" } },
+      "end": "(?=</script>)",
+      "contentName": "meta.embedded.block.jsx",
+      "patterns": [{ "include": "source.js.jsx" }]
+    },
+    "vue-script-body-js": {
+      "begin": ">",
+      "beginCaptures": { "0": { "name": "punctuation.definition.tag.end.html" } },
+      "end": "(?=</script>)",
+      "contentName": "meta.embedded.block.javascript",
+      "patterns": [{ "include": "source.js" }]
+    }
+  }
+}

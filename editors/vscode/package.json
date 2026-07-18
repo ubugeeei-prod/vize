@@ -12,9 +12,7 @@
     "language-server",
     "lsp",
     "sfc",
-    "vue",
-    "vue3",
-    "vuejs"
+    "vue"
   ],
   "homepage": "https://github.com/ubugeeei-prod/vize",
   "bugs": {
@@ -63,8 +61,7 @@
       {
         "id": "art-vue",
         "aliases": [
-          "Art Vue",
-          "art-vue"
+          "Art Vue"
         ],
         "extensions": [
           ".art.vue"
@@ -78,8 +75,7 @@
       {
         "id": "vue",
         "aliases": [
-          "Vue",
-          "vue"
+          "Vue"
         ],
         "extensions": [
           ".vue"
@@ -92,6 +88,10 @@
       }
     ],
     "grammars": [
+      {
+        "scopeName": "source.vue.script",
+        "path": "./syntaxes/vue-script.tmLanguage.json"
+      },
       {
         "language": "art-vue",
         "scopeName": "source.art-vue",

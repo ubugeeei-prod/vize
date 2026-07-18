@@ -54,6 +54,7 @@ async function loadVueTextMateGrammar() {
   const engine = await createOnigurumaEngine(fs.readFileSync(onigurumaWasmPath));
   const grammars = new Map<string, unknown>([
     ["source.vue", readJson("editors/vscode/syntaxes/vue.tmLanguage.json")],
+    ["source.vue.script", readJson("editors/vscode/syntaxes/vue-script.tmLanguage.json")],
     ["source.art-vue", readJson("editors/vscode/syntaxes/art-vue.tmLanguage.json")],
   ]);
   const registry = new Registry({
@@ -168,14 +169,13 @@ test("vscode-vize wires art-vue documents into editor features", () => {
     ),
     true,
   );
-  assert.equal(
+  assert.ok(
     manifest.contributes?.grammars?.some(
       (grammar) =>
         grammar.language === "art-vue" &&
         grammar.scopeName === "source.art-vue" &&
         grammar.path === "./syntaxes/art-vue.tmLanguage.json",
     ),
-    true,
   );
   const vueGrammarContribution = manifest.contributes?.grammars?.find(
     (grammar) => grammar.language === "vue",
@@ -191,7 +191,6 @@ test("vscode-vize wires art-vue documents into editor features", () => {
       assert.match(item.when ?? "", /editorLangId == art-vue/);
     }
   }
-
   const extensionSource = readText("editors/vscode/src/extension.ts");
   const extensionCoreSource = readText("editors/vscode/src/extension-core.ts");
 
