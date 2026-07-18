@@ -43,6 +43,44 @@ pub(super) fn collect_line_module_import_spans(script: &str) -> Vec<(u32, u32)> 
     include_leading_ts_directive_comments(script, spans)
 }
 
+pub(super) fn collect_named_value_export_starts(script: &str) -> FxHashSet<u32> {
+    if !script.lines().any(|line| {
+        let line = line.trim_start();
+        line.starts_with("export ")
+            && !line.starts_with("export default")
+            && !line.starts_with("export type ")
+            && !line.starts_with("export interface ")
+    }) {
+        return FxHashSet::default();
+    }
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, script, SourceType::ts().with_module(true)).parse();
+    let parsed = if parsed.panicked || !parsed.errors.is_empty() {
+        Parser::new(&allocator, script, SourceType::tsx().with_module(true)).parse()
+    } else {
+        parsed
+    };
+    if parsed.panicked {
+        return FxHashSet::default();
+    }
+
+    parsed
+        .program
+        .body
+        .iter()
+        .filter_map(|statement| {
+            let Statement::ExportNamedDeclaration(export) = statement else {
+                return None;
+            };
+            export
+                .declaration
+                .as_ref()
+                .is_some_and(declaration_has_runtime_value)
+                .then_some(export.span.start)
+        })
+        .collect()
+}
+
 pub(super) fn push_setup_return_fields(names: &[CompactString], fields: &mut Vec<CompactString>) {
     fields.extend(names.iter().cloned());
 }
@@ -153,6 +191,16 @@ fn collect_declaration_exports(
     }
 }
 
+fn declaration_has_runtime_value(declaration: &Declaration<'_>) -> bool {
+    matches!(
+        declaration,
+        Declaration::VariableDeclaration(_)
+            | Declaration::FunctionDeclaration(_)
+            | Declaration::ClassDeclaration(_)
+            | Declaration::TSEnumDeclaration(_)
+    )
+}
+
 fn collect_binding_names(
     pattern: &BindingPattern<'_>,
     seen: &mut FxHashSet<CompactString>,
@@ -236,7 +284,10 @@ fn contains_ts_suppression_directive(comment: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{CompactString, collect_line_module_import_spans, collect_named_value_exports};
+    use super::{
+        CompactString, collect_line_module_import_spans, collect_named_value_export_starts,
+        collect_named_value_exports,
+    };
 
     #[test]
     fn collect_import_span_includes_adjacent_ts_ignore_comment_group() {
@@ -269,5 +320,16 @@ mod tests {
         );
 
         assert_eq!(names, vec![CompactString::new("DiffDisplayMode")]);
+    }
+
+    #[test]
+    fn named_value_export_starts_exclude_nested_enum_members() {
+        let script =
+            "enum Modes {\n  export = 'export',\n}\nexport const selected = Modes.export;\n";
+        let starts = collect_named_value_export_starts(script);
+
+        assert_eq!(starts.len(), 1);
+        assert!(starts.contains(&(script.find("export const").unwrap() as u32)));
+        assert!(!starts.contains(&(script.find("export =").unwrap() as u32)));
     }
 }
