@@ -43,6 +43,13 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       expectedRunName: "Native Smoke",
     },
     {
+      workflowName: "Real Project Matrix",
+      workflowId: "real-project-matrix.yml",
+      ref,
+      inputs: {},
+      expectedRunName: `Real Project Matrix @ ${headSha}`,
+    },
+    {
       workflowName: "Fuzz",
       workflowId: "fuzz.yml",
       ref,

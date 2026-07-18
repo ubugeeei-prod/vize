@@ -5,6 +5,7 @@ export const requiredReleaseWorkflows = [
   "Fuzz",
   "Miri",
   "App E2E",
+  "Real Project Matrix",
   "Deploy docs",
 ];
 
@@ -35,6 +36,14 @@ export const requiredReleaseWorkflowEvidence = new Map([
     "App E2E",
     {
       path: ".github/workflows/e2e.yml",
+      events: ["schedule", "workflow_dispatch"],
+      branches: { schedule: ["main"] },
+    },
+  ],
+  [
+    "Real Project Matrix",
+    {
+      path: ".github/workflows/real-project-matrix.yml",
       events: ["schedule", "workflow_dispatch"],
       branches: { schedule: ["main"] },
     },
@@ -91,6 +100,7 @@ const requiredJobNames = new Map([
       ),
     ],
   ],
+  ["Real Project Matrix", Array.from({ length: 11 }, (_, shard) => `real projects (${shard}/11)`)],
 ]);
 
 function compareRuns(left, right) {

@@ -1,4 +1,5 @@
 name: Real Project Matrix
+run-name: Real Project Matrix @ ${{ github.sha }}
 
 on:
   workflow_dispatch:

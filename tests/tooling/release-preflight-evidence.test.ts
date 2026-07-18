@@ -146,4 +146,29 @@ test("matrix-sensitive release gates require every successful job", () => {
     () => assertRequiredWorkflowJobs("Native Smoke", nativeJobs.slice(1)),
     /Native host smoke \(linux-x64-gnu\)/,
   );
+
+  const realProjectJobs = Array.from({ length: 11 }, (_, shard) =>
+    successfulReleaseJob(`real projects (${shard}/11)`),
+  );
+  assert.doesNotThrow(() => assertRequiredWorkflowJobs("Real Project Matrix", realProjectJobs));
+  assert.throws(
+    () => assertRequiredWorkflowJobs("Real Project Matrix", realProjectJobs.slice(1)),
+    /real projects \(0\/11\)/,
+  );
+  assert.throws(
+    () =>
+      assertRequiredWorkflowJobs("Real Project Matrix", [
+        ...realProjectJobs,
+        successfulReleaseJob("real projects (0/11)"),
+      ]),
+    /real projects \(0\/11\).*found 2/,
+  );
+  assert.throws(
+    () =>
+      assertRequiredWorkflowJobs("Real Project Matrix", [
+        { ...realProjectJobs[0], conclusion: "failure" },
+        ...realProjectJobs.slice(1),
+      ]),
+    /real projects \(0\/11\) is completed\/failure/,
+  );
 });

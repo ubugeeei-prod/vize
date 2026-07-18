@@ -77,6 +77,13 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
         expectedRunName: "Native Smoke",
       },
       {
+        workflowName: "Real Project Matrix",
+        workflowId: "real-project-matrix.yml",
+        ref: "v1.2.3",
+        inputs: {},
+        expectedRunName: `Real Project Matrix @ ${releaseSha}`,
+      },
+      {
         workflowName: "Fuzz",
         workflowId: "fuzz.yml",
         ref: "v1.2.3",
@@ -159,6 +166,14 @@ test("Native Smoke uses its stable workflow title as evidence", () => {
   const native = readWorkflow(findReleasePlan("Native Smoke").workflowId);
   assert.equal(native.name, "Native Smoke");
   assert.equal(native["run-name"], undefined);
+});
+
+test("Real Project Matrix dispatch identifies its immutable target", () => {
+  const matrix = readWorkflow(findReleasePlan("Real Project Matrix").workflowId);
+  assert.equal(matrix.name, "Real Project Matrix");
+  assert.deepEqual(Object.keys(matrix.on?.workflow_dispatch?.inputs ?? {}), []);
+  assert.match(matrix["run-name"] ?? "", /^Real Project Matrix @ /);
+  assert.match(matrix["run-name"] ?? "", /github\.sha/);
 });
 
 test("on-demand gates correlate expanded display titles, never workflow names", () => {
@@ -245,7 +260,13 @@ test("release gate bootstrap dispatches only missing gates and waits for exact e
     pollIntervalMs: 1_000,
   });
 
-  assert.deepEqual(dispatched, ["Benchmark", "App E2E", "Native Smoke", "Fuzz"]);
+  assert.deepEqual(dispatched, [
+    "Benchmark",
+    "App E2E",
+    "Native Smoke",
+    "Real Project Matrix",
+    "Fuzz",
+  ]);
   assert.deepEqual([...selected.keys()], requiredReleaseWorkflows);
 });
 
@@ -265,7 +286,13 @@ test("release gate bootstrap attempts every missing dispatch before reporting fa
     }),
     /Failed to dispatch release gates:[\s\S]*Benchmark: dispatch denied[\s\S]*Fuzz: dispatch denied/,
   );
-  assert.deepEqual(attempts, ["Benchmark", "App E2E", "Native Smoke", "Fuzz"]);
+  assert.deepEqual(attempts, [
+    "Benchmark",
+    "App E2E",
+    "Native Smoke",
+    "Real Project Matrix",
+    "Fuzz",
+  ]);
 });
 
 test("release gate bootstrap never retries or hides a red latest run", async () => {
