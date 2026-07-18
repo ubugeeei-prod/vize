@@ -15,6 +15,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { expectedCompilerOutputs } from "./tool-matrix-compiler-paths.mjs";
+import { validateLinterOutput } from "./tool-matrix-linter.mjs";
 import { validateTypecheckerOutput } from "./tool-matrix-typechecker.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -88,6 +89,13 @@ export function runTool(project, tool, args, launch, outputDir) {
       if (tool === "typechecker" && payload.parseError == null) {
         try {
           validateTypecheckerOutput(project, payload.parsed, result.status);
+        } catch (error) {
+          payload.validationError = errorMessage(error);
+        }
+      }
+      if (tool === "linter" && payload.parseError == null) {
+        try {
+          validateLinterOutput(project, payload.parsed, result.status);
         } catch (error) {
           payload.validationError = errorMessage(error);
         }
