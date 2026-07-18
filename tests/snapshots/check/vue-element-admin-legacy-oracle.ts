@@ -21,6 +21,7 @@ import { LspSession } from "../../tooling/support/lsp/session.ts";
 const sourcePath = "src/views/dashboard/admin/components/TransactionTable.vue";
 const cleanBinding = ':data="list"';
 const brokenBinding = ':data="missingList"';
+const brokenLintBinding = 'v-bind:data="list"';
 
 type CompilerOutput = {
   code: string;
@@ -31,6 +32,23 @@ type CompilerOutput = {
   script_lang: string;
   warnings: string[];
 };
+
+type LintReport = Array<{
+  errorCount: number;
+  file: string;
+  messages: Array<{
+    column: number;
+    endColumn: number;
+    endLine: number;
+    help: string;
+    line: number;
+    message: string;
+    ruleDocsPath: string;
+    ruleId: string;
+    severity: number;
+  }>;
+  warningCount: number;
+}>;
 
 const missingListDiagnostic = {
   range: {
@@ -114,6 +132,60 @@ test("vue-element-admin compiler lowers legacy slot scopes and filters determini
       ]) {
         assert.equal(output.code.includes(forbidden), false, `${forbidden}\n${output.code}`);
       }
+    },
+  );
+});
+
+test("vue-element-admin linter reports and repairs one exact legacy SFC edit", async () => {
+  await withPinnedFixtureWorkspace(
+    { fixtureId: "vue-element-admin", includePaths: [sourcePath] },
+    async (fixture) => {
+      fixture.write(
+        "vize.config.json",
+        json({
+          compiler: { compatibility: { vueVersion: "2" } },
+          linter: {
+            preset: "incremental",
+            rules: { "vue/v-bind-style": "error" },
+          },
+        }),
+      );
+
+      const source = fixture.read(sourcePath);
+      const sourceMode = fs.statSync(fixture.resolve(sourcePath)).mode & 0o777;
+      const cleanFirst = runVizeLint(fixture.workspaceDir, sourcePath);
+      const cleanSecond = runVizeLint(fixture.workspaceDir, sourcePath);
+
+      assertCleanLint(cleanFirst);
+      assertCleanLint(cleanSecond);
+      assert.equal(cleanSecond.stdout, cleanFirst.stdout, "clean lint JSON must be byte-stable");
+      assert.equal(
+        fixture.read(sourcePath),
+        source,
+        "read-only lint must not mutate the Vue source",
+      );
+
+      const brokenSource = fixture.applyExactPatch(sourcePath, cleanBinding, brokenLintBinding);
+      const brokenFirst = runVizeLint(fixture.workspaceDir, sourcePath);
+      const brokenSecond = runVizeLint(fixture.workspaceDir, sourcePath);
+
+      assertBrokenLint(brokenFirst);
+      assertBrokenLint(brokenSecond);
+      assert.equal(brokenSecond.stdout, brokenFirst.stdout, "broken lint JSON must be byte-stable");
+      assert.equal(
+        fixture.read(sourcePath),
+        brokenSource,
+        "read-only lint must preserve the broken source",
+      );
+
+      const fixed = runVizeLint(fixture.workspaceDir, sourcePath, true);
+      assertCleanLint(fixed);
+      assert.equal(fixture.read(sourcePath), source, "--fix must restore the exact pinned source");
+      assert.equal(fs.statSync(fixture.resolve(sourcePath)).mode & 0o777, sourceMode);
+
+      const repaired = runVizeLint(fixture.workspaceDir, sourcePath);
+      assertCleanLint(repaired);
+      assert.equal(repaired.stdout, cleanFirst.stdout, "repaired lint JSON must match clean JSON");
     },
   );
 });
@@ -230,6 +302,73 @@ function assertBrokenCheck(result: VizeCheckResult): void {
     warningCount: 0,
     fileCount: 1,
   });
+}
+
+function assertCleanLint(result: VizeLintResult): void {
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(result.stderr, "");
+  assert.deepEqual(result.report, [
+    {
+      file: sourcePath,
+      messages: [],
+      errorCount: 0,
+      warningCount: 0,
+    },
+  ]);
+}
+
+function assertBrokenLint(result: VizeLintResult): void {
+  assert.equal(result.status, 1, result.stderr || result.stdout);
+  assert.equal(result.stderr, "");
+  assert.deepEqual(result.report, [
+    {
+      file: sourcePath,
+      messages: [
+        {
+          ruleId: "vue/v-bind-style",
+          ruleDocsPath: "docs/content/rules/vue.md",
+          severity: 2,
+          message: "[vize:vue/v-bind-style] Prefer shorthand `:` over `v-bind:`",
+          line: 2,
+          column: 13,
+          endLine: 2,
+          endColumn: 31,
+          help: 'Use :attr="value" instead of v-bind:attr="value"',
+        },
+      ],
+      errorCount: 1,
+      warningCount: 0,
+    },
+  ]);
+}
+
+type VizeLintResult = {
+  report: LintReport;
+  status: number | null;
+  stderr: string;
+  stdout: string;
+};
+
+function runVizeLint(workspaceDir: string, input: string, fix = false): VizeLintResult {
+  const [command, ...prefixArgs] = resolveVizeCommand();
+  const result = spawnSync(
+    command,
+    [...prefixArgs, "lint", input, "--format", "json", ...(fix ? ["--fix"] : [])],
+    {
+      cwd: workspaceDir,
+      encoding: "utf8",
+      env: { ...process.env, LANG: "C", LC_ALL: "C" },
+      maxBuffer: 64 * 1024 * 1024,
+      timeout: 120_000,
+    },
+  );
+  if (result.error != null) throw result.error;
+  return {
+    report: JSON.parse(result.stdout) as LintReport,
+    status: result.status,
+    stderr: result.stderr,
+    stdout: result.stdout,
+  };
 }
 
 function runVizeBuild(
