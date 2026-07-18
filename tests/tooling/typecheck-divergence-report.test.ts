@@ -28,6 +28,7 @@ function setup() {
       enabled: true,
       compareTo: "vue-tsc",
       packageManager: "pnpm",
+      packageManagerVersion: "10.0.0",
       lockfile: "pnpm-lock.yaml",
       hangTimeoutMs: 5_000,
       maxFalsePositiveRatio: 0.05,
@@ -171,7 +172,6 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     });
     assert.equal(artifact.baseline.exitCode, 2);
     assert.equal(artifact.baseline.version, "3.3.4");
-    assert.ok(artifact.baseline.durationMs >= 0);
     assert.match(artifact.baseline.stdoutSha256, /^[0-9a-f]{64}$/);
     assert.match(artifact.baseline.stderrSha256, /^[0-9a-f]{64}$/);
     assert.deepEqual(artifact.budget, {

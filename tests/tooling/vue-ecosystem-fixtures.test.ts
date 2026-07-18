@@ -30,7 +30,8 @@ interface FixtureProject {
   typecheckPerformance?: {
     enabled: boolean;
     compareTo: string;
-    packageManager: "pnpm" | "yarn";
+    packageManager: "npm" | "pnpm" | "yarn";
+    packageManagerVersion: string;
     lockfile: "pnpm-lock.yaml" | "yarn.lock";
     hangTimeoutMs: number;
     maxFalsePositiveRatio: number;
@@ -317,8 +318,11 @@ test("typecheck baselines have complete budgets and one target per matrix shard"
     assert.equal(performance.compareTo, "vue-tsc", `${project.id} baseline`);
     assert.equal(
       performance.lockfile,
-      performance.packageManager === "pnpm" ? "pnpm-lock.yaml" : "yarn.lock",
+      { npm: "package-lock.json", pnpm: "pnpm-lock.yaml", yarn: "yarn.lock" }[
+        performance.packageManager
+      ],
     );
+    assert.match(performance.packageManagerVersion, /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/);
     assert.ok(Number.isSafeInteger(performance.hangTimeoutMs));
     assert.ok(performance.hangTimeoutMs > 0 && performance.hangTimeoutMs <= 300_000);
     assert.ok(performance.maxFalsePositiveRatio >= 0 && performance.maxFalsePositiveRatio <= 1);

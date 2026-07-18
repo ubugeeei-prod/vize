@@ -15,6 +15,7 @@ test("fixture tool matrix requires an exact baseline tsconfig for performance ta
       enabled: true,
       compareTo: "vue-tsc",
       packageManager: "pnpm",
+      packageManagerVersion: "10.0.0",
       lockfile: "pnpm-lock.yaml",
     },
   };
@@ -32,6 +33,20 @@ test("fixture tool matrix requires an exact baseline tsconfig for performance ta
             ...project.typecheckPerformance,
             packageManager: "yarn",
             lockfile: "yarn.lock",
+          },
+        },
+        fixtureRoot,
+      ),
+    );
+    fs.writeFileSync(path.join(fixtureRoot, "package-lock.json"), "{}\n");
+    assert.doesNotThrow(() =>
+      validateTypecheckPerformanceTarget(
+        {
+          ...project,
+          typecheckPerformance: {
+            ...project.typecheckPerformance,
+            packageManager: "npm",
+            lockfile: "package-lock.json",
           },
         },
         fixtureRoot,
@@ -55,7 +70,7 @@ test("fixture tool matrix requires an exact baseline tsconfig for performance ta
       [
         {
           ...project,
-          typecheckPerformance: { ...project.typecheckPerformance, packageManager: "npm" },
+          typecheckPerformance: { ...project.typecheckPerformance, packageManager: "bun" },
         },
         /packageManager/,
       ],
@@ -65,6 +80,16 @@ test("fixture tool matrix requires an exact baseline tsconfig for performance ta
           typecheckPerformance: { ...project.typecheckPerformance, lockfile: "yarn.lock" },
         },
         /lockfile must be pnpm-lock.yaml/,
+      ],
+      [
+        {
+          ...project,
+          typecheckPerformance: {
+            ...project.typecheckPerformance,
+            packageManagerVersion: "latest",
+          },
+        },
+        /exact semantic version/,
       ],
       [
         {

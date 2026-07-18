@@ -8,9 +8,16 @@ export function validateTypecheckPerformanceTarget(project, fixtureRoot) {
   }
   requireFile(project, fixtureRoot, project.tsconfig, "tsconfig");
   const manager = project.typecheckPerformance.packageManager;
-  const lockfiles = { pnpm: "pnpm-lock.yaml", yarn: "yarn.lock" };
+  const lockfiles = { npm: "package-lock.json", pnpm: "pnpm-lock.yaml", yarn: "yarn.lock" };
   if (!Object.hasOwn(lockfiles, manager)) {
-    invalid(project, "packageManager must be pnpm or yarn");
+    invalid(project, "packageManager must be npm, pnpm, or yarn");
+  }
+  if (
+    !/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(
+      project.typecheckPerformance.packageManagerVersion ?? "",
+    )
+  ) {
+    invalid(project, "packageManagerVersion must be an exact semantic version");
   }
   if (project.typecheckPerformance.lockfile !== lockfiles[manager]) {
     invalid(project, `lockfile must be ${lockfiles[manager]} for ${manager}`);
