@@ -231,7 +231,7 @@ fn components_match(root: Component<'_>, candidate: Component<'_>) -> bool {
 }
 
 fn normalize_source_path(path: &Path) -> Option<String> {
-    components_to_relative(path.components())
+    components_to_relative(lexical_components(path).into_iter())
 }
 
 fn components_to_relative<'a>(components: impl Iterator<Item = Component<'a>>) -> Option<String> {
