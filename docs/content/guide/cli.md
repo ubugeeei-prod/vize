@@ -39,8 +39,7 @@ vp run vize:check
 vp run vize:ready
 ```
 
-Use `vp exec vize ...` for one-off local debugging, but prefer named scripts for documented
-workflows and CI.
+Use `vp exec vize ...` for one-off debugging; prefer named scripts for documented workflows and CI.
 
 ## Rust Binary Installation
 
@@ -92,10 +91,6 @@ When invoked without a command, `vize` defaults to `build`.
 | `musea`        | Musea subcommands and scaffolding               |
 | `lsp`          | Start the language server                       |
 | `ide`          | Install or manage editor integrations           |
-
-All `--profile` terminal reports are rendered by the local-only `vize_curator` crate. The
-instrumentation hooks remain in `vize_carton`, while curator owns the CLI report shape alongside
-inspector and agent-facing artifacts.
 
 ## Build
 
@@ -184,10 +179,7 @@ vize lint --preset essential --max-warnings 0 src
 vize lint --preset opinionated --help-level short src
 vize lint --cross-file --cross-file-tree src
 vize lint --strict-reactivity src
-vize lint --format ansi src
-vize lint --format plain src
 vize lint --format agent src
-vize lint --format markdown src
 ```
 
 ## Check
@@ -220,35 +212,18 @@ Key options:
 | `--declaration`     | Emit `.d.ts` output                                |
 | `--declaration-dir` | Output directory for emitted declarations          |
 
-Use `--corsa-path` when you want to pin a custom Corsa executable while developing Vize or testing a
-local `corsa-bind` checkout. The shared config key is `typeChecker.corsaPath`; `typeChecker.tsgoPath`
-is kept only as a compatibility alias.
-
-Useful patterns:
-
-```bash
-vize check --tsconfig tsconfig.app.json src
-vize check --show-virtual-ts src/components/App.vue
-vize check --profile src
-vize check --declaration --declaration-dir dist/types
-```
+Use `--corsa-path` to pin a custom Corsa executable while developing Vize or a local `corsa-bind`
+checkout. The shared config key is `typeChecker.corsaPath`; `typeChecker.tsgoPath` remains only as a
+compatibility alias.
 
 Project-wide template values and Vue ambient types should be visible through TypeScript project
 configuration. Include generated files such as `auto-imports.d.ts`, `components.d.ts`, or your own
-Vue declarations in `tsconfig.json`, then select that project with `--tsconfig` when needed:
+`declare module "vue"` augmentations in the `tsconfig.json` `include` globs, then select that project
+with `--tsconfig` when needed:
 
 ```json
 {
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts"]
-}
-```
-
-```ts
-// src/types/vue-app.d.ts
-declare module "vue" {
-  interface ComponentCustomProperties {
-    $t: (key: string) => string;
-  }
 }
 ```
 
@@ -261,14 +236,12 @@ vize doctor src packages/shared --format json
 ```
 
 `vize doctor` builds one deterministic application graph across Vue SFCs and script modules. The
-initial analyzer family covers dependency injection, unique element IDs, server/client boundaries,
-reactivity flow, asynchronous mutation risks, setup-context ownership, and circular imports. Vue
-diagnostics are mapped back to byte offsets in the authored `.vue` file, including components with
-both `<script>` and `<script setup>` blocks.
-
-Discovery follows standard source-control ignore files, rejects inputs outside the declared
-workspace, and fails closed when a component cannot be parsed. The command does not write source
-files.
+initial analyzers cover dependency injection, unique element IDs, server/client boundaries,
+reactivity flow, asynchronous mutation risks, setup-context ownership, and circular imports; Vue
+diagnostics map back to byte offsets in the authored `.vue` file, including components with both
+`<script>` and `<script setup>`. Discovery follows source-control ignore files, rejects inputs
+outside the declared workspace, fails closed when a component cannot be parsed, and never writes
+source files.
 
 Key options:
 
@@ -278,12 +251,11 @@ Key options:
 | `-f, --format` | Output format: `text` (default) or versioned `json`                             |
 | `--exit-zero`  | Return success even when a proven error would normally block                    |
 
-Exit status `0` means the configured gate passed, `1` means the report contains a certain or
-high-confidence error, and `2` means discovery, parsing, analysis, serialization, or output failed.
-Warnings and lower-confidence findings affect the health score but do not block by default.
-
-The JSON representation is deterministic and contains explicit format and scoring versions. It is
-the preferred interface for CI policies, editor integrations, dashboards, and AI tooling:
+Exit status `0` means the gate passed, `1` means a certain or high-confidence error, and `2` means
+discovery, parsing, analysis, serialization, or output failed. Warnings and lower-confidence findings
+affect the health score but do not block by default. The deterministic `--format json` report carries
+explicit format and scoring versions and is the preferred interface for CI, editors, dashboards, and
+AI tooling:
 
 ```bash
 vize doctor src --format json > doctor-report.json
@@ -304,8 +276,6 @@ cross-file graph, then produces a permalink plus a prefilled pull request link.
 
 Use `--format agent` when another local tool or AI agent needs the same repro without opening the
 browser. The report contains the exact payload, playground URL, summary metrics, and import graph.
-Payload, graph, and line diff metadata are built by the local-only `vize_curator` crate so CLI and
-playground inspection stay aligned.
 
 Key options:
 
@@ -332,13 +302,12 @@ vize clean --force
 vize clean path/to/project
 ```
 
-`vize clean` removes known Vize-owned local artifacts for the selected project root, then removes
-empty `.vize` and `node_modules/.vize` parents. The managed artifact list covers profile outputs,
-Musea reports/snapshots/tokens, Patina sessions, config schemas, LSP logs, socket leftovers, OXC
-dumps, Oxlint workaround files, and materialized Corsa project files. Unknown entries under `.vize`
-are preserved by default; use `--force` only when the selected artifact root should be removed
-wholesale. `--dry-run` prints the artifact paths that would be removed. Use `--scope node-modules`
-or `--scope project` when only one artifact root should be cleaned.
+`vize clean` removes known Vize-owned local artifacts (profile outputs, Musea
+reports/snapshots/tokens, Patina sessions, config schemas, LSP logs, socket leftovers, OXC dumps,
+Oxlint workaround files, and materialized Corsa project files) for the selected project root, then
+removes empty `.vize` and `node_modules/.vize` parents. Unknown entries under `.vize` are preserved
+unless `--force` removes the artifact root wholesale. `--dry-run` prints the paths that would be
+removed; `--scope node-modules` or `--scope project` limits cleanup to one artifact root.
 
 ## Ready
 
@@ -347,8 +316,8 @@ vize ready src
 vize ready --output dist src
 ```
 
-`vize ready` runs `fmt --write`, `lint`, `check`, and `build` in order. The command stops at the
-first failing step.
+`vize ready` runs `fmt --write`, `lint`, `check`, and `build` in order, stopping at the first failing
+step.
 
 Key options:
 
@@ -381,17 +350,10 @@ vize musea serve --port 6006
 vize musea new
 ```
 
-The `musea` subcommand currently focuses on scaffolding and experimental entry points.
-For day-to-day gallery development, the recommended workflow today is
-`@vizejs/vite-plugin-musea`.
-
-The npm package also exposes a convenience `vize musea` command that runs Vite with the Musea
-plugin installed in your project:
-
-```bash
-vp exec vize musea
-vp exec vize musea --build
-```
+The `musea` subcommand currently focuses on scaffolding and experimental entry points. For
+day-to-day gallery development, prefer `@vizejs/vite-plugin-musea`. The npm package also exposes a
+convenience `vize musea` command that runs Vite with the Musea plugin installed (`vp exec vize
+musea`, or add `--build` for a production build).
 
 ## LSP and IDE
 
@@ -402,9 +364,8 @@ vize ide vscode
 vize ide zed
 ```
 
-`vize lsp` starts the language server directly.
-`vize ide` adds editor-specific install and management commands for the VS Code and Zed
-integrations.
+`vize lsp` starts the language server directly. `vize ide` adds editor-specific install and
+management commands for the VS Code and Zed integrations.
 
 ## Global Options
 
