@@ -113,7 +113,7 @@ test("language-facing change classes are present in docs, contribution guide, an
 });
 
 test("docs navigation exposes the language engineering practices page", () => {
-  const navigation = readRepoFile("docs", "theme", "navigation.js");
+  const navigation = readRepoFile("docs", "theme", "i18n", "navigation.js");
   const navigationTest = readRepoFile("docs", "theme", "navigation.test.js");
   const architectureOverview = readRepoFile("docs", "content", "architecture", "overview.md");
   const productionReadiness = readRepoFile("docs", "release", "production-readiness.md");
