@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_sfc/src/compile/tests.rs
+source: crates/vize_atelier_sfc/src/compile/tests/vapor.rs
 expression: result.code.as_str()
 ---
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';

@@ -1,5 +1,6 @@
 mod define_props_regressions;
 mod options_api_events;
+mod vapor;
 use super::{compile_sfc, helpers, normal_script};
 use crate::types::{
     BindingType, ScriptCompileOptions, SfcCompileOptions, SfcCompileResult, TemplateCompileOptions,
@@ -2212,80 +2213,6 @@ const props = withDefaults(defineProps<MkPaginationOptions & {
     );
 
     let _ = fs::remove_dir_all(project);
-}
-
-#[test]
-fn test_template_only_sfc_vapor_output_mode() {
-    let source = r#"<template><div>{{ msg }}</div></template>"#;
-
-    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
-    let opts = SfcCompileOptions {
-        vapor: true,
-        ..Default::default()
-    };
-    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
-
-    insta::assert_snapshot!(result.code.as_str());
-}
-
-// Regression test for #3073: a Vapor SFC `<slot>` must lower to the Vapor
-// runtime's `createSlot`, never the vdom `renderSlot` helper, and nested slot
-// blocks must insert with the runtime's `insert(block, parent)` argument order.
-#[test]
-fn test_script_setup_sfc_vapor_slot_outlet() {
-    let source = r#"<script setup lang="ts"></script>
-
-<template>
-  <div><slot /></div>
-</template>"#;
-
-    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
-    let opts = SfcCompileOptions {
-        vapor: true,
-        script: ScriptCompileOptions {
-            is_ts: true,
-            ..Default::default()
-        },
-        template: TemplateCompileOptions {
-            is_ts: true,
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
-
-    insta::assert_snapshot!(result.code.as_str());
-}
-
-#[test]
-fn test_script_setup_sfc_vapor_output_mode() {
-    let source = r#"<script setup lang="ts">
-import { computed, ref } from 'vue'
-
-const count = ref(1)
-const doubled = computed(() => count.value * 2)
-</script>
-
-<template>
-  <div>{{ count }} {{ doubled }}</div>
-</template>"#;
-
-    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
-    let opts = SfcCompileOptions {
-        vapor: true,
-        script: ScriptCompileOptions {
-            is_ts: true,
-            ..Default::default()
-        },
-        template: TemplateCompileOptions {
-            is_ts: true,
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
-
-    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]

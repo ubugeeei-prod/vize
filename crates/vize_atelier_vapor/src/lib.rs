@@ -23,6 +23,8 @@ mod tests;
 mod tests_dotted_slots;
 #[cfg(test)]
 mod tests_setup_components;
+#[cfg(test)]
+mod tests_slot_outlets;
 
 pub use compile::{
     VaporCompileResult, VaporCompilerOptions, compile_vapor, compile_vapor_with_diagnostics,

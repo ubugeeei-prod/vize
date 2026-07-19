@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_vapor/src/tests.rs
+source: crates/vize_atelier_vapor/src/tests_slot_outlets.rs
 expression: code.as_str()
 ---
 import { createSlot as _createSlot, template as _template } from 'vue';
