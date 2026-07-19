@@ -15,7 +15,7 @@ fn accepts_the_shared_valid_contract_and_matches_canonical_artifacts() {
     assert!(contract.validate().is_empty());
 
     let canonical = canonical_json(&contract).unwrap();
-    let expected = fs::read_to_string(fixture("valid.canonical.json")).unwrap();
+    let expected = fs::read_to_string(fixture("valid.canonical")).unwrap();
     assert_eq!(canonical.as_slice(), expected.trim().as_bytes());
     assert_eq!(
         contract_fingerprint(&contract).unwrap(),
