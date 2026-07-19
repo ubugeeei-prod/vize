@@ -1,7 +1,7 @@
 //! Helpers for splicing `<script setup generic="...">` type parameters into
 //! hoisted type/interface declarations lifted to module scope.
 
-use vize_carton::{String, append};
+use vize_carton::{String, append, cstr};
 use vize_croquis::Croquis;
 
 use crate::virtual_ts::props::{
@@ -71,6 +71,105 @@ impl HoistedGenericAliases {
             );
         }
     }
+}
+
+/// Generic suffix (`<T extends string = any>`) for a module-scope type alias
+/// whose body references an SFC generic parameter. Empty when the alias
+/// references none, so non-generic aliases keep their exact shape. Every
+/// parameter carries a default (added by the caller), so bare references to
+/// the alias elsewhere in the module stay valid (#3065).
+pub(super) fn module_alias_generic_suffix(
+    generic_injection: Option<&(String, Vec<String>)>,
+    inner_type: &str,
+) -> String {
+    generic_injection
+        .filter(|(_, names)| references_any_identifier(inner_type, names))
+        .map(|(defaults, _)| cstr!("<{defaults}>"))
+        .unwrap_or_default()
+}
+
+/// Fallback type arguments instantiating a generic SFC's exported `Props` for
+/// the non-generic component constructor: each parameter's constraint when it
+/// is self-contained, `any` when the constraint names a sibling parameter (the
+/// name would dangle outside the parameter list), and `unknown` when
+/// unconstrained (keeps extracted component props inferable — #2701).
+pub(super) fn generic_fallback_args(generic_decl: &str) -> String {
+    let params = split_generic_params(generic_decl);
+    let names: Vec<String> = extract_generic_names(generic_decl)
+        .split(',')
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .map(String::from)
+        .collect();
+    let mut args = String::default();
+    for param in params {
+        if param.trim().is_empty() {
+            continue;
+        }
+        let arg = match param_constraint(param) {
+            Some(constraint) if references_any_identifier(constraint, &names) => "any",
+            Some(constraint) => constraint,
+            None => "unknown",
+        };
+        if !args.is_empty() {
+            args.push_str(", ");
+        }
+        args.push_str(arg);
+    }
+    args
+}
+
+/// Split a generic parameter list at depth-0 commas, tracking `<>` nesting
+/// (the same convention as the sibling parameter helpers in `props`).
+fn split_generic_params(list: &str) -> Vec<&str> {
+    let mut params = Vec::new();
+    let mut depth = 0i32;
+    let mut start = 0usize;
+    for (i, b) in list.bytes().enumerate() {
+        match b {
+            b'<' => depth += 1,
+            b'>' => depth -= 1,
+            b',' if depth == 0 => {
+                params.push(&list[start..i]);
+                start = i + 1;
+            }
+            _ => {}
+        }
+    }
+    params.push(&list[start..]);
+    params
+}
+
+/// Constraint text of one generic parameter declaration (`T extends X = D`
+/// -> `X`); `None` when the parameter is unconstrained. `const` modifiers and
+/// parameter defaults are excluded; `=>` arrows never terminate the
+/// constraint.
+fn param_constraint(param: &str) -> Option<&str> {
+    let bytes = param.as_bytes();
+    let mut depth = 0i32;
+    let mut start = None;
+    let mut i = 0usize;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'<' => depth += 1,
+            b'>' => depth -= 1,
+            b'=' if bytes.get(i + 1) == Some(&b'>') => i += 1,
+            b'=' if depth == 0 => break,
+            b'e' if depth == 0
+                && start.is_none()
+                && param[i..].starts_with("extends")
+                && (i == 0 || !is_ident_byte(bytes[i - 1]))
+                && !matches!(bytes.get(i + 7), Some(&b) if is_ident_byte(b)) =>
+            {
+                start = Some(i + 7);
+                i += 6;
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+    let constraint = param[start?..i.min(param.len())].trim();
+    (!constraint.is_empty()).then_some(constraint)
 }
 
 pub(super) fn is_ident_byte(b: u8) -> bool {
@@ -152,4 +251,52 @@ pub(super) fn generic_injection_point(decl: &str, type_name: &str) -> Option<usi
         return None;
     }
     Some(name_end)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{generic_fallback_args, module_alias_generic_suffix};
+    use vize_carton::String;
+
+    #[test]
+    fn fallback_args_use_constraints_and_keep_unconstrained_params_inferable() {
+        assert_eq!(
+            generic_fallback_args("T extends string = 'a'").as_str(),
+            "string"
+        );
+        assert_eq!(
+            generic_fallback_args("TValue = undefined").as_str(),
+            "unknown"
+        );
+        assert_eq!(generic_fallback_args("T = any").as_str(), "unknown");
+        assert_eq!(
+            generic_fallback_args("const T extends Record<string, any> = any").as_str(),
+            "Record<string, any>"
+        );
+        assert_eq!(
+            generic_fallback_args("Mode extends 'row' | 'cell' = any, TEvent extends Mode = any")
+                .as_str(),
+            "'row' | 'cell', any"
+        );
+    }
+
+    #[test]
+    fn module_alias_suffix_is_added_only_when_the_alias_references_a_generic() {
+        let injection = (
+            String::from("T extends string = any"),
+            vec![String::from("T")],
+        );
+        assert_eq!(
+            module_alias_generic_suffix(Some(&injection), "{ value: T | undefined }").as_str(),
+            "<T extends string = any>"
+        );
+        assert_eq!(
+            module_alias_generic_suffix(Some(&injection), "{ value: Tag }").as_str(),
+            ""
+        );
+        assert_eq!(
+            module_alias_generic_suffix(None, "{ value: T }").as_str(),
+            ""
+        );
+    }
 }

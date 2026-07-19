@@ -1,7 +1,9 @@
 use vize_carton::{String, append, cstr, profile};
 use vize_croquis::Croquis;
 
-use super::generics::{is_ident_byte, references_any_identifier, skip_ascii_ws};
+use super::generics::{
+    generic_fallback_args, is_ident_byte, references_any_identifier, skip_ascii_ws,
+};
 use crate::virtual_ts::props::{
     OptionsApiPropsSource, PropsTypeEmission, add_generic_defaults, extract_generic_names,
     generate_props_type, generate_props_variables, generate_setup_scoped_props_artifact,
@@ -195,28 +197,17 @@ impl SetupPropsPlan {
         }
     }
 
-    pub(super) fn generic_fallback_component_props_type_ref(&self, generic_names: &str) -> String {
+    pub(super) fn generic_fallback_component_props_type_ref(&self, generic_decl: &str) -> String {
         let props_type_ref = self.component_props_type_ref();
         if props_type_ref != "Props" {
             return props_type_ref.into();
         }
 
-        let mut unknown_args = String::default();
-        for _ in generic_names
-            .split(',')
-            .map(str::trim)
-            .filter(|name| !name.is_empty())
-        {
-            if !unknown_args.is_empty() {
-                unknown_args.push_str(", ");
-            }
-            unknown_args.push_str("unknown");
-        }
-
-        if unknown_args.is_empty() {
+        let args = generic_fallback_args(generic_decl);
+        if args.is_empty() {
             props_type_ref.into()
         } else {
-            cstr!("{props_type_ref}<{unknown_args}>")
+            cstr!("{props_type_ref}<{args}>")
         }
     }
 
@@ -224,10 +215,10 @@ impl SetupPropsPlan {
         &self,
         mut ts: &mut String,
         has_emits_for_props: bool,
-        generic_names: Option<&str>,
+        generic_decl: Option<&str>,
     ) {
-        let props_type_ref = generic_names
-            .map(|names| self.generic_fallback_component_props_type_ref(names))
+        let props_type_ref = generic_decl
+            .map(|decl| self.generic_fallback_component_props_type_ref(decl))
             .unwrap_or_else(|| self.component_props_type_ref().into());
         if has_emits_for_props {
             append!(

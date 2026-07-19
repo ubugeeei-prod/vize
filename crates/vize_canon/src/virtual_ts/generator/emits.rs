@@ -1,10 +1,70 @@
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 
+use super::generics::module_alias_generic_suffix;
 use crate::virtual_ts::{
     helpers::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER},
     props::{add_generic_defaults, strip_const_modifiers},
 };
+
+/// Inner type of a macro's `<...>` type-argument text.
+fn inner_type_of(type_args: &str) -> &str {
+    type_args
+        .strip_prefix('<')
+        .and_then(|s| s.strip_suffix('>'))
+        .unwrap_or(type_args)
+}
+
+/// Emit the module-scope `export type Slots` alias. When the slots type from
+/// `defineSlots` references an SFC generic parameter, the alias re-declares
+/// the parameters (with safe defaults) so declaration emit resolves them
+/// (#3065).
+pub(super) fn emit_slots_type(
+    ts: &mut String,
+    summary: &Croquis,
+    generic_injection: Option<&(String, Vec<String>)>,
+) {
+    let slots_type_args = summary
+        .macros
+        .define_slots()
+        .and_then(|m| m.type_args.as_ref());
+    if let Some(type_args) = slots_type_args {
+        let inner_type = inner_type_of(type_args);
+        let suffix = module_alias_generic_suffix(generic_injection, inner_type);
+        append!(*ts, "export type Slots{suffix} = {inner_type};\n");
+    } else {
+        ts.push_str("export type Slots = {};\n");
+    }
+}
+
+/// Emit the module-scope `export type Exposed` alias (for `InstanceType` and
+/// `useTemplateRef`); returns whether the component exposes anything. A typed
+/// `defineExpose` referencing an SFC generic parameter re-declares the
+/// parameters just like `Slots` (#3065).
+pub(super) fn emit_exposed_type(
+    ts: &mut String,
+    summary: &Croquis,
+    generic_injection: Option<&(String, Vec<String>)>,
+) -> bool {
+    let Some(expose) = summary.macros.define_expose() else {
+        return false;
+    };
+    if let Some(ref type_args) = expose.type_args {
+        let inner_type = inner_type_of(type_args);
+        let suffix = module_alias_generic_suffix(generic_injection, inner_type);
+        append!(*ts, "export type Exposed{suffix} = {inner_type};\n");
+        true
+    } else if expose.runtime_args.is_some() {
+        // Runtime args are returned from __setup() to keep them in scope.
+        // Use Awaited<ReturnType<...>> to handle both sync and async setup.
+        ts.push_str(
+            "export type Exposed = Awaited<ReturnType<typeof __setup>>[\"__vize_exposed\"];\n",
+        );
+        true
+    } else {
+        false
+    }
+}
 
 pub(super) struct EmitsInfo {
     pub(super) has_emits_for_props: bool,
@@ -70,10 +130,7 @@ pub(super) fn emit_emits_type(
 
     if !emits_already_defined {
         if let Some(type_args) = define_emits_type_args {
-            let inner_type = type_args
-                .strip_prefix('<')
-                .and_then(|s| s.strip_suffix('>'))
-                .unwrap_or(type_args.as_str());
+            let inner_type = inner_type_of(type_args);
             if has_model_emits {
                 append!(
                     *ts,

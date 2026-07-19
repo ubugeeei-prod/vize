@@ -17,7 +17,7 @@ mod spans;
 mod template_refs;
 use self::anchors::emit_setup_binding_anchors;
 use self::component_export::emit_default_export_declaration;
-use self::emits::{emit_emit_props_helper, emit_emits_type};
+use self::emits::{emit_emit_props_helper, emit_emits_type, emit_exposed_type, emit_slots_type};
 use self::generics::{HoistedGenericAliases, generic_injection_point, references_any_identifier};
 use self::global_components::GlobalComponentPlan;
 use self::imports::{
@@ -923,40 +923,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     );
 
     // Slots type
-    let slots_type_args = summary
-        .macros
-        .define_slots()
-        .and_then(|m| m.type_args.as_ref());
-    if let Some(type_args) = slots_type_args {
-        let inner_type = type_args
-            .strip_prefix('<')
-            .and_then(|s| s.strip_suffix('>'))
-            .unwrap_or(type_args.as_str());
-        append!(ts, "export type Slots = {inner_type};\n");
-    } else {
-        ts.push_str("export type Slots = {};\n");
-    }
+    emit_slots_type(&mut ts, summary, generic_injection.as_ref());
 
     // Exposed type (for InstanceType and useTemplateRef)
-    let has_exposed_type = summary
-        .macros
-        .define_expose()
-        .is_some_and(|expose| expose.type_args.is_some() || expose.runtime_args.is_some());
-    if let Some(expose) = summary.macros.define_expose() {
-        if let Some(ref type_args) = expose.type_args {
-            let inner_type = type_args
-                .strip_prefix('<')
-                .and_then(|s| s.strip_suffix('>'))
-                .unwrap_or(type_args.as_str());
-            append!(ts, "export type Exposed = {inner_type};\n");
-        } else if expose.runtime_args.is_some() {
-            // Runtime args are returned from __setup() to keep them in scope.
-            // Use Awaited<ReturnType<...>> to handle both sync and async setup.
-            ts.push_str(
-                "export type Exposed = Awaited<ReturnType<typeof __setup>>[\"__vize_exposed\"];\n",
-            );
-        }
-    }
+    let has_exposed_type = emit_exposed_type(&mut ts, summary, generic_injection.as_ref());
     ts.push('\n');
 
     emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble);
@@ -974,7 +944,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         emits_info.has_emits_for_props,
         generic_component_params
             .as_ref()
-            .map(|(_, names)| names.as_str()),
+            .map(|(decl, _)| decl.as_str()),
     );
     ts.push_str("  $emit: __EmitFn<Emits>;\n");
     ts.push_str("  $slots: Slots;\n");

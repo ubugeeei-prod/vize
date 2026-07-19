@@ -1,7 +1,6 @@
 ---
-source: crates/vize_canon/src/tests.rs
-assertion_line: 388
-expression: virtual_ts
+source: crates/vize_canon/src/virtual_ts/tests.rs
+expression: value
 ---
 /// <reference lib="es2022" />
 /// <reference lib="dom" />
@@ -49,16 +48,15 @@ type __VizeKebabOptionalKeys<T> = { [K in keyof T & string]: __VizeKebabCase<K> 
 type __VizeComponentProps<T> = T extends unknown ? Omit<T, __VizeKebabOptionalKeys<T>> & Partial<Pick<T, __VizeKebabOptionalKeys<T>>> & Partial<__VizeKebabProps<T>> & __VizeFallthroughAttrs : never;
 type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
-import { ref } from 'vue'
 
 // ========== Exported Types ==========
-export type Props<T extends string | number = any> = {
-  items: T[]
-  selected?: T
+export type Props<Mode extends 'row' | 'cell' = any, TEvent extends Mode = any> = {
+  mode: Mode;
+  event?: TEvent;
 };
 
 // ========== Setup Scope ==========
-function __setup<T extends string | number>() {
+function __setup<Mode extends 'row' | 'cell', TEvent extends Mode>() {
   type __VizeDefinePropsBooleanKeys<_T> = never;
   // Compiler macros (only valid in setup scope, not global)
   function defineProps<_T = unknown>(): __DefineProps<_T, Extract<__VizeDefinePropsBooleanKeys<_T>, keyof _T>>;
@@ -82,27 +80,23 @@ function __setup<T extends string | number>() {
 
   // User setup code
   
-  
   const props = defineProps<{
-    items: T[]
-    selected?: T
-  }>()
+    mode: Mode;
+    event?: TEvent;
+  }>();
   
-  const emit = defineEmits<{
-    (e: 'select', item: T): void
-  }>()
+  defineSlots<{
+    default: (props: { mode: Mode; event: TEvent | undefined }) => unknown;
+  }>();
   
-  const activeItem = ref<T | null>(null)
+  defineExpose<{
+    current: () => Mode;
+  }>();
   
-  // @vize-map: 6692:6886 -> 0:193
+  // @vize-map: 6722:6958 -> 0:207
 
   // ========== Template Scope (inherits from setup) ==========
-  // Ref type captures (before template scope shadows them)
-  type __R_activeItem = typeof activeItem;
   ;(function __template() {
-    // Auto-unwrap Vue refs in template scope
-    type __U<T> = T extends import('vue').Ref ? T['value'] : T;
-    var activeItem: __U<__R_activeItem> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = undefined as unknown as __Ctx;
@@ -114,61 +108,47 @@ function __setup<T extends string | number>() {
 
   // Props are available in template as variables
   // Access via `propName` or `props.propName`
-  const props: __DefineProps<Props<T>> = {} as __DefineProps<Props<T>>;
+  const props: __DefineProps<Props<Mode, TEvent>> = {} as __DefineProps<Props<Mode, TEvent>>;
   void props; // Mark as used to avoid TS6133
-  const items = props["items"];
-  void items;
-  const selected = props["selected"];
-  void selected;
+  const mode = props["mode"];
+  void mode;
+  const event = props["event"];
+  void event;
 
-
-  // v-for scope: item in props.items
-  __vForList(props.items).forEach(([item]) => {
-    void item;
-    void (String(item)); // VBind
-    // @vize-map: expr -> 326:338
-    void (item); // Interpolation
-    // @vize-map: expr -> 350:354
-  });
+  void (props.mode); // VBind
+  // @vize-map: expr -> 327:337
+  void (props.event); // VBind
+  // @vize-map: expr -> 347:358
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void activeItem; void emit; void items; void props; void ref; void selected;
+  void event; void mode; void props;
   })();
 }
 
 // Invoke setup to verify types
 __setup();
 
-export type Emits<T extends string | number = any> = {
-  (e: 'select', item: T): void
+export type Emits = {};
+export type Slots<Mode extends 'row' | 'cell' = any, TEvent extends Mode = any> = {
+  default: (props: { mode: Mode; event: TEvent | undefined }) => unknown;
 };
-export type Slots = {};
-
-type __VizeOverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
-type __VizeOverloadUnionRecursive<TOverload, TPartialOverload = unknown> = TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : __VizeOverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & __VizeOverloadProps<TOverload>> | ((...args: TArgs) => TReturn) : never;
-type __VizeOverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<__VizeOverloadUnionRecursive<(() => never) & TOverload>, TOverload extends () => never ? never : () => never>;
-type __VizeOverloadParameters<T extends (...args: any[]) => any> = Parameters<__VizeOverloadUnion<T>>;
-type __VizeIsStringLiteral<T> = T extends string ? string extends T ? false : true : false;
-type __VizeParametersToFns<T extends any[]> = { [K in T[0]]: __VizeIsStringLiteral<K> extends true ? (...args: T extends [e: infer E, ...args: infer P] ? K extends E ? P : never : never) => any : never };
-type __EmitOptions<T> = { [K in keyof __EmitShape<T> & string]: (...args: __EmitArgs<__EmitShape<T>, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? __VizeParametersToFns<__VizeOverloadParameters<__EmitShape<T>>> : {});
-type __VizeCamelize<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Head}${Capitalize<__VizeCamelize<Tail>>}` : S;
-type __VizeHandlerKey<K extends string> = `on${Capitalize<__VizeCamelize<K>>}`;
-type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKey<K>]?: __EmitOptions<T>[K] };
-
-type __VizeStaticEmitProps = __EmitProps<Emits>;
+export type Exposed<Mode extends 'row' | 'cell' = any, TEvent extends Mode = any> = {
+  current: () => Mode;
+};
 
 // ========== Default Export ==========
+type __VizeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };
 type __VizeComponentInstance = {
-  $props: __VizeComponentProps<Props<string | number>> & __EmitProps<Emits>;
+  $props: __VizeComponentProps<Props<'row' | 'cell', any>>;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
-};
+} & import('vue').ComponentPublicInstance & __VizeShallowUnwrapRef<Exposed>;
 type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;
-type __VizeGenericComponentConstructor = new <T extends string | number = any>(...args: any[]) => {
-  $props: __VizeComponentProps<Props<T>> & __EmitProps<Emits>;
+type __VizeGenericComponentConstructor = new <Mode extends 'row' | 'cell' = any, TEvent extends Mode = any>(...args: any[]) => {
+  $props: __VizeComponentProps<Props<Mode, TEvent>>;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
-};
+} & import('vue').ComponentPublicInstance & __VizeShallowUnwrapRef<Exposed>;
 type __VizeVueComponentOptions = {
   name?: string;
   __name?: string;
@@ -193,5 +173,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions & { __vizeCheck: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => void; __vizeResolveProps?: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => Props<T>; __vizeEmitProps?: __VizeStaticEmitProps; __vizeResolveEmitProps?: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => __EmitProps<Emits<T>>; };
+declare const __vize_component__: __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions & { __vizeCheck: <Mode extends 'row' | 'cell' = any, TEvent extends Mode = any>(props: Partial<Props<Mode, TEvent>> & Record<string, unknown>) => void; __vizeResolveProps?: <Mode extends 'row' | 'cell' = any, TEvent extends Mode = any>(props: Partial<Props<Mode, TEvent>> & Record<string, unknown>) => Props<Mode, TEvent>;  };
 export default __vize_component__;

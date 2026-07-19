@@ -8,6 +8,7 @@ use vize_carton::config::VueVersion;
 mod auto_import_shadowing;
 mod component_navigation;
 mod define_props_scope;
+mod generic_module_type_exports;
 mod legacy_nuxt2_page_context;
 mod no_check_template_bindings;
 mod options_api_props_spread;
@@ -1830,41 +1831,6 @@ const heightLimit = "65vh";
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(output.code.contains("heightLimit"));
-}
-
-#[test]
-fn test_script_setup_generic_param_injected_into_hoisted_type() {
-    // A type declared in `<script setup generic="T">` that references the
-    // generic parameter is lifted to module scope; the generic must be
-    // re-declared on it so `T` resolves there (a residual of the repro-8
-    // hoisting fix). Bare uses like `Option[]` still resolve via `= any`.
-    use vize_croquis::{Analyzer, AnalyzerOptions};
-
-    let script = r#"type Option = { key: T; label: string }
-
-defineProps<{
-  options: Option[]
-  current: T | undefined
-}>()
-"#;
-
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-    analyzer.analyze_script_setup_with_generic(script, Some("T extends string"));
-    let summary = analyzer.finish();
-
-    let output =
-        generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
-
-    let (module_scope, _setup_scope) = output
-        .code
-        .split_once("// ========== Setup Scope ==========")
-        .expect("setup scope marker present");
-
-    assert!(
-        module_scope.contains("type Option<T extends string = any> = { key: T; label: string }"),
-        "hoisted type should gain the SFC generic parameter so `T` resolves at module scope:\n{}",
-        output.code
-    );
 }
 
 #[test]
