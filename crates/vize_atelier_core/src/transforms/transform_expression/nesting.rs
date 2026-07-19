@@ -132,7 +132,13 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
             }
             b',' | b';' | b':' | b'?' | b'!' | b'=' | b'+' | b'-' | b'*' | b'/' | b'%' | b'&'
             | b'|' | b'^' | b'~' => can_start_regex = true,
-            _ => can_start_regex = b < 0x80,
+            // Every byte reaching this arm is identifier-like (`\` starts a
+            // Unicode identifier escape, `#` a private name, non-ASCII bytes
+            // continue multi-byte identifiers) or an invalid control
+            // character. None of them can precede a regex literal, and
+            // claiming they do lets `skip_regex` swallow arbitrary source —
+            // hiding real brackets from the depth guard (#3107).
+            _ => can_start_regex = false,
         }
 
         let effective_angle_depth = if track_type_angles { angle_depth } else { 0 };

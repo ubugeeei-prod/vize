@@ -142,6 +142,48 @@ fn expression_guard_scans_deep_template_interpolations_without_recursion() {
 }
 
 #[test]
+fn expression_guard_counts_brackets_after_a_backslash_slash_sequence() {
+    // Minimized from the js_ts_expression fuzz crash (#3107): after `v`, the
+    // `\` byte must not enable regex-literal detection, otherwise the
+    // following `/` swallows the rest of the source as a "regex" and the
+    // bracket run is hidden from the depth guard while OXC still recurses
+    // over every real `(`.
+    let reproducer = ["v\\/", &"(".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1)].concat();
+    assert_eq!(reproducer.len(), 35);
+    assert_eq!(
+        expression_nesting_depth(&reproducer),
+        MAX_EXPRESSION_NESTING_DEPTH + 1
+    );
+    assert!(expression_exceeds_max_depth(&reproducer));
+    assert!(!expression_has_balanced_delimiters(&reproducer));
+    assert!(!expression_is_safe_to_parse(&reproducer));
+    assert!(!is_event_handler_reference_expression(&reproducer));
+    assert!(!is_function_expression(&reproducer));
+    assert_eq!(
+        prefix_identifiers_in_expression(&reproducer).as_str(),
+        reproducer
+    );
+    assert_eq!(
+        strip_typescript_from_expression(&reproducer).as_str(),
+        reproducer
+    );
+
+    // The stack-overflow shape found by the fuzzer: tens of thousands of
+    // brackets hidden behind the same two-byte prefix.
+    let overflow = ["v\\/", &"(".repeat(60_000)].concat();
+    assert_eq!(expression_nesting_depth(&overflow), 60_000);
+    assert!(!expression_is_safe_to_parse(&overflow));
+}
+
+#[test]
+fn expression_guard_treats_slash_after_private_names_as_division() {
+    let expression = "a.#b / c / d";
+    assert_eq!(expression_nesting_depth(expression), 0);
+    assert!(expression_has_balanced_delimiters(expression));
+    assert!(expression_is_safe_to_parse(expression));
+}
+
+#[test]
 fn expression_guard_does_not_treat_relational_operators_as_type_angles() {
     let expression = std::iter::repeat_n("value < limit", MAX_EXPRESSION_NESTING_DEPTH + 1)
         .collect::<Vec<_>>()
