@@ -11,7 +11,7 @@ const GOOGLE_TRANSLATE_ENDPOINT = "https://translate.googleapis.com/translate_a/
 const EDGE_AUTH_ENDPOINT = "https://edge.microsoft.com/translate/auth";
 const EDGE_TRANSLATE_ENDPOINT =
   "https://api-edge.cognitive.microsofttranslator.com/translate?api-version=3.0";
-const CONTENT_DIR = resolve(import.meta.dirname, "../content");
+const CONTENT_DIR = resolve(import.meta.dirname, "../../content");
 const SOURCE_LOCALE = "en";
 const ALL_TARGET_LOCALES = ["ja", "zh-CN", "pt-BR", "fr"];
 const localeOption = process.argv.find((argument) => argument.startsWith("--locales="));

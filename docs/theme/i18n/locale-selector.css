@@ -1,0 +1,44 @@
+.docs-locale {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--octc-color-text-muted);
+  font-family: var(--octc-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+}
+
+.docs-locale-select {
+  height: 2rem;
+  max-width: 8.5rem;
+  padding: 0 1.75rem 0 0.55rem;
+  border: 1px solid var(--octc-color-border);
+  border-radius: 0;
+  color: var(--octc-color-text);
+  background: var(--octc-color-bg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.docs-locale-select:focus-visible {
+  outline: 2px solid var(--octc-color-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .docs-locale > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .docs-locale-select {
+    max-width: 6.75rem;
+  }
+}

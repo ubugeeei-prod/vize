@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-await import("./navigation.js");
+await import("./i18n/navigation.js");
 
 const navigation = globalThis.__vizeDocsNavigation;
 

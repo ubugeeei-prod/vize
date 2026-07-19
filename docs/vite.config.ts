@@ -11,7 +11,9 @@ if (puppeteerExecutablePath) {
 }
 
 const themeDir = resolve(import.meta.dirname, "theme");
-const themeCss = readFileSync(resolve(themeDir, "style.css"), "utf-8");
+const themeCss = ["style.css", "i18n/locale-selector.css"]
+  .map((file) => readFileSync(resolve(themeDir, file), "utf-8"))
+  .join("\n");
 const themeJs = buildDocsBackgroundScript(themeDir);
 
 export default defineConfig({

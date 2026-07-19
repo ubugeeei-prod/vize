@@ -1,4 +1,4 @@
-const vizeDocsNavigation = (() => {
+const vizeDocsI18nNavigation = (() => {
   const supportedLocales = [
     { code: "en", name: "English" },
     { code: "ja", name: "日本語" },
@@ -580,7 +580,7 @@ const vizeDocsNavigation = (() => {
 })();
 
 if (typeof globalThis !== "undefined") {
-  globalThis.__vizeDocsNavigation = vizeDocsNavigation;
+  globalThis.__vizeDocsNavigation = vizeDocsI18nNavigation;
 }
 
 (() => {
@@ -588,7 +588,7 @@ if (typeof globalThis !== "undefined") {
     return;
   }
 
-  const start = () => vizeDocsNavigation.initialize(document);
+  const start = () => vizeDocsI18nNavigation.initialize(document);
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start, { once: true });

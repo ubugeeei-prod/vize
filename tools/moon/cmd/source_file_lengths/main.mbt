@@ -58,6 +58,8 @@ fn is_excluded_path(path : String) -> Bool {
   path.has_suffix("Cargo.lock") ||
   path.has_suffix("pnpm-lock.yaml") ||
   path.has_suffix(".lock") ||
+  path.has_prefix("docs/content/ja/") || path.has_prefix("docs/content/zh-CN/") ||
+  path.has_prefix("docs/content/pt-BR/") || path.has_prefix("docs/content/fr/") ||
   path.contains(".min.") ||
   has_path_segment(path, "_fixtures") || has_path_segment(path, "__fixtures__") ||
   has_path_segment(path, "fixtures") || has_path_segment(path, "__snapshots__") ||
