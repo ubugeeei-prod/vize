@@ -1,0 +1,59 @@
+{
+  "name": "@vizejs/marquette",
+  "version": "0.298.0",
+  "description": "Typed application marquettes for every Vize target",
+  "keywords": [
+    "application-contract",
+    "marquette",
+    "type-safe",
+    "vize"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize.git",
+    "directory": "npm/marquette"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    },
+    "./schema": "./dist/application-contract.schema.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack && node scripts/copy-schema.mjs",
+    "check": "vp check README.md src scripts vite.config.ts && tsgo --noEmit -p tsconfig.json",
+    "check:fix": "vp check --fix README.md src scripts vite.config.ts",
+    "check:size": "node scripts/check-size.mjs",
+    "check:types": "tsgo --noEmit -p tsconfig.json",
+    "dev": "vp pack --watch",
+    "fmt": "vp fmt --write README.md src scripts vite.config.ts",
+    "test": "vp exec tsx --test src/**/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:typescript",
+    "@typescript/native-preview": "catalog:typescript",
+    "tsx": "catalog:typescript",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

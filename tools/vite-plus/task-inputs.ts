@@ -21,6 +21,7 @@ export const checkedPackages = [
   "./npm/framework/musea-nuxt",
   "./npm/mcp-musea",
   "./npm/fresco",
+  "./npm/marquette",
   "./npm/builder/vite/example",
   "./npm/builder/rspack/example",
   "./examples/vite-musea",
@@ -63,6 +64,7 @@ export const packedPackages = [
   "./npm/framework/musea-nuxt",
   "./npm/mcp-musea",
   "./npm/fresco",
+  "./npm/marquette",
 ] satisfies PackagePath[];
 
 export const testedPackages = [
@@ -73,6 +75,7 @@ export const testedPackages = [
   "./npm/builder/rspack",
   "./npm/framework/nuxt",
   "./npm/mcp-musea",
+  "./npm/marquette",
 ] satisfies PackagePath[];
 
 export const floatingPromiseTestPatterns = ["tests/**/*.ts"];

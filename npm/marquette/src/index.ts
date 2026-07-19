@@ -1,0 +1,23 @@
+export { defineApplicationMarquette, type MarquetteReferenceConstraints } from "./author.js";
+export {
+  MARQUETTE_FORMAT_VERSION,
+  type ApplicationMarquette,
+  type BackendFamily,
+  type BackendId,
+  type CapabilityDefinition,
+  type CapabilityId,
+  type EnvironmentConsumer,
+  type EnvironmentId,
+  type MarquetteBackend,
+  type MarquetteEnvironment,
+  type MarquetteProtocol,
+  type MarquetteRoute,
+  type MarquetteTarget,
+  type ProtocolFamily,
+  type ProtocolId,
+  type RenderingMode,
+  type RouteId,
+  type RuntimeFamily,
+  type ServerEnvironmentId,
+  type TargetId,
+} from "./model.js";
