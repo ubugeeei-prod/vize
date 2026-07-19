@@ -175,12 +175,12 @@ function createNavigationDocument(items) {
   return new TestDocument(nav);
 }
 
-function applyNavigation(document) {
+function applyNavigation(document, pathname = "/") {
   const previousDocument = globalThis.document;
   const previousWindow = globalThis.window;
 
   globalThis.document = document;
-  globalThis.window = { location: { origin: "https://docs.example.test" } };
+  globalThis.window = { location: { origin: "https://docs.example.test", pathname } };
 
   try {
     navigation.applyNavigationOrder(document);
@@ -294,4 +294,30 @@ void test("applyNavigationOrder hides dated blog posts from the More fallback", 
       labels: ["Internal Reference"],
     },
   ]);
+});
+
+void test("applyNavigationOrder keeps only the current locale and localizes labels", () => {
+  const document = createNavigationDocument([
+    ["/getting-started", "Getting Started"],
+    ["/ja/getting-started", "getting-started"],
+    ["/ja/guide/static-analysis", "static-analysis"],
+    ["/fr/getting-started", "getting-started"],
+  ]);
+
+  applyNavigation(document, "/ja/guide/static-analysis/index.html");
+
+  assert.deepEqual(sections(document), [
+    {
+      title: "スタート",
+      labels: ["はじめに"],
+    },
+    {
+      title: "静的解析",
+      labels: ["静的解析"],
+    },
+  ]);
+  assert.equal(
+    navigation.canonicalPath("/ja/guide/static-analysis/index.html"),
+    "/guide/static-analysis",
+  );
 });

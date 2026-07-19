@@ -1,0 +1,320 @@
+---
+title: 緑青のすべてのルール
+---
+<!-- Generated translation; source: rules/all.md -->
+
+
+# すべての緑青ルール
+
+このページには、`crates/vize_patina/src/rules` で宣言された 238 個の Patina ルール実装がすべてリストされています。カテゴリ ページには長い例が保存されています。このページは、対象範囲、デフォルトの重大度、プリセット メンバーシップ、修正可能性、およびソース実装に関するコンパクトなリファレンスです。
+
+プリセット名には Vize CLI の用語が使用されています。 oxlint プラグインのメタデータ名 `general-recommended` は、ここでは `happy-path` として示されています。 `_none_` は、ルールがオプトイン、ホスト主導、またはバンドルされた lint プリセットの範囲外であることを意味します。
+
+## カテゴリ
+
+|カテゴリー |ルール |
+| ------------------------------------------------ | ----: |
+| [必須](#essential-48) |    48 |
+| [強くお勧め](#strongly-recommended-12) |    12 |
+| [おすすめ](#recommended-41) |    41 |
+| [アクセシビリティ](#accessibility-31) |    31 |
+| [HTML 準拠](#html-conformance-9) |     9 |
+| [タイプ認識](#type-aware-5) |     5 |
+| [ベイパー](#vapor-7) |     7 |
+| [エコシステム](#ecosystem-9) |     9 |
+| [CSS](#css-10) |    10 |
+| [博物館](#musea-6) |     6 |
+| [スクリプト](#script-60) |    60 |
+
+## 必須 (48)
+
+|ルール |重大度 |プリセット |修正可能 |実装 |説明 |
+| -------------------------------------- | --------- | -------------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `petite-vue/no-unsupported-directive` | `error` | _なし_ |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/no_unsupported_directive.rs#L44) | petite-vue がサポートしていないディレクティブを禁止する |
+| `petite-vue/valid-v-effect` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_effect.rs#L35) | v-effect には空ではない式が必要です |
+| `petite-vue/valid-v-scope` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_scope.rs#L45) |オブジェクト リテラルをバインドするには v-scope が必要です |
+| `vue/multi-word-component-names` | `error` | `essential`、`nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs#L34) |コンポーネント名は複数の単語である必要があります |
+| `vue/no-child-content` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_child_content.rs#L30) | v-html または v-text を使用する場合は子コンテンツを禁止する |
+| `vue/no-deprecated-filter` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_filter.rs#L45) |パイプ演算子 | を使用した非推奨の Vue 2 フィルター構文を禁止します。
+| `vue/no-deprecated-functional-template` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs#L57) | SFC `&lt;template&gt;` の `functional` 属性を禁止します。
+| `vue/no-deprecated-html-element-is` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_html_element_is.rs#L39) |ネイティブ HTML 要素で `is` 属性を禁止する |
+| `vue/no-deprecated-router-link-tag-prop` | `error` | _なし_ |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_router_link_tag_prop.rs#L37) | <router-link> で `tag` プロパティを禁止します。
+| `vue/no-deprecated-scope-attribute` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs#L38) | <template> で非推奨の `scope` 属性を禁止します。
+| `vue/no-deprecated-slot-attribute` | `error` | _なし_ |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L38) |非推奨の `slot` 属性を禁止する |
+| `vue/no-deprecated-slot-scope-attribute` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_scope_attribute.rs#L33) |非推奨の `slot-scope` 属性を禁止する |
+| `vue/no-deprecated-v-bind-sync` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs#L42) | `v-bind` で非推奨の `.sync` 修飾子を禁止する |
+| `vue/no-deprecated-v-on-native-modifier` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs#L43) | `v-on` で非推奨の `.native` 修飾子を禁止します |
+| `vue/no-deprecated-v-on-number-modifiers` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs#L43) | `v-on` で非推奨の数値 `keyCode` 修飾子を禁止 |
+| `vue/no-dupe-v-else-if` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_dupe_v_else_if.rs#L34) | `v-if` / `v-else-if` チェーンで重複条件を禁止 |
+| `vue/no-duplicate-attributes` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs#L29) |同じ要素の重複した属性を禁止する |
+| `vue/no-mutating-props` | `error` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_mutating_props.rs#L55) |コンポーネントの小道具の変更を禁止する |
+| `vue/no-reserved-component-names` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_reserved_component_names.rs#L43) |コンポーネント名として予約名の使用を禁止する |
+| `vue/no-template-key` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_key.rs#L31) | `&lt;template&gt;` の `key` 属性を禁止 |
+| `vue/no-textarea-mustache` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_textarea_mustache.rs#L25) | `&lt;textarea&gt;` で口ひげ補間を禁止 |
+| `vue/no-unused-components` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_components.rs#L45) |テンプレート内で使用されていないコンポーネントの登録を禁止する |
+| `vue/no-unused-vars` | `warning` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_vars.rs#L49) | v-for および v-slot ディレクティブで未使用の変数定義を禁止します。
+| `vue/no-use-v-if-with-v-for` | `warning` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs#L35) | `v-for` と同じ要素で `v-if` を使用することを禁止します。
+| `vue/no-useless-template-attributes` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_useless_template_attributes.rs#L33) | `&lt;template&gt;` 要素の無駄な属性を禁止する |
+| `vue/no-v-for-template-key-on-child` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_for_template_key_on_child.rs#L30) | `&lt;template v-for&gt;` の子に対する `key` を禁止する |
+| `vue/no-v-html` | `warning` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_html.rs#L43) | XSS の脆弱性を防ぐために v-html に対して警告する |
+| `vue/no-v-text-v-html-on-component` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component.rs#L28) |コンポーネント要素で v-text / v-html を禁止する |
+| `vue/permitted-contents` | `error` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/permitted_contents.rs#L36) | HTML コンテンツ モデル ルールを強制する |
+| `vue/require-component-is` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_component_is.rs#L27) | `&lt;component&gt;` 要素には `v-bind:is` が必要です |
+| `vue/require-toggle-inside-transition` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_toggle_inside_transition.rs#L48) | `&lt;transition&gt;` | によってラップされた要素の切り替えが必要です。
+| `vue/require-v-for-key` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_v_for_key.rs#L27) | `v-for` ディレクティブでは `v-bind:key` が必要です。
+| `vue/use-v-on-exact` | `warning` | `essential`、`nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs#L28) |修飾子ベースのハンドラーがある場合、`v-on` に `.exact` 修飾子を適用します。
+| `vue/valid-attribute-name` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_attribute_name.rs#L27) |有効な属性名が必要です |
+| `vue/valid-template-root` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L82) | Vue 3 フラグメント セマンティクスに対して有効な `&lt;template&gt;` ルートを強制する |
+| `vue/valid-v-bind` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_bind.rs#L30) |有効な `v-bind` ディレクティブを強制する |
+| `vue/valid-v-cloak` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_cloak.rs#L27) |有効な `v-cloak` ディレクティブを強制する |
+| `vue/valid-v-else` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L30) |有効な `v-else` ディレクティブを強制する |
+| `vue/valid-v-for` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_for.rs#L30) |有効な `v-for` ディレクティブを強制する |
+| `vue/valid-v-html` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_html.rs#L28) |有効な `v-html` ディレクティブを強制する |
+| `vue/valid-v-if` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_if.rs#L29) |有効な `v-if` ディレクティブを強制する |
+| `vue/valid-v-memo` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_memo.rs#L27) |有効な `v-memo` ディレクティブを強制する |
+| `vue/valid-v-model` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_model.rs#L32) |有効な `v-model` ディレクティブを強制する |
+| `vue/valid-v-on` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_on.rs#L30) |有効な `v-on` ディレクティブを強制する |
+| `vue/valid-v-once` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_once.rs#L27) |有効な `v-once` ディレクティブを強制する |
+| `vue/valid-v-show` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_show.rs#L28) |有効な `v-show` ディレクティブを強制する |
+| `vue/valid-v-slot` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L26) |有効な `v-slot` ディレクティブを強制する |
+| `vue/valid-v-text` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_text.rs#L27) |有効な `v-text` ディレクティブを強制する |
+
+## 強くお勧めします (12)
+
+|ルール |重大度 |プリセット |修正可能 |実装 |説明 |
+| -------------------------------------- | --------- | ------------------------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `vue/attribute-hyphenation` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L27) |カスタム コンポーネントに属性命名スタイルを強制する |
+| `vue/component-definition-name-casing` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/component_definition_name_casing.rs#L28) |コンポーネント定義名に PascalCase を適用する |
+| `vue/html-quotes` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/html_quotes.rs#L27) | HTML 属性の引用符スタイルを強制する |
+| `vue/html-self-closing` | `warning` | `nuxt`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs#L27) |自動終了スタイルを強制する |
+| `vue/mustache-interpolation-spacing` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs#L26) |口ひげ補間内の一貫した間隔を強制する |
+| `vue/no-multi-spaces` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multi_spaces.rs#L24) |複数の連続したスペースを許可しない |
+| `vue/no-template-shadow` | `warning` | `nuxt`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_shadow.rs#L34) |外側のスコープ内の変数をシャドウする変数名を禁止する |
+| `vue/no-unused-properties` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_properties.rs#L44) | defineProps で定義された未使用のプロパティを禁止する |
+| `vue/prop-name-casing` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/prop_name_casing.rs#L26) |テンプレートでケバブケースの小道具名を強制する |
+| `vue/v-bind-style` | `warning` | `nuxt`、`opinionated` |はい | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L31) | `v-bind` ディレクティブ スタイルを強制する |
+| `vue/v-on-style` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/v_on_style.rs#L28) | `v-on` ディレクティブ スタイルを強制する |
+| `vue/v-slot-style` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/v_slot_style.rs#L27) | `v-slot` ディレクティブ スタイルを強制する |
+
+## 推奨 (41)
+
+|ルール |重大度 |プリセット |修正可能 |実装 |説明 |
+| -------------------------------------- | --------- | -------------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `ssr/no-browser-globals-in-ssr` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr.rs#L151) | SSR コンテキストでブラウザ専用グローバルを禁止する |
+| `ssr/no-hydration-mismatch` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ssr/no_hydration_mismatch.rs#L122) |水分補給の不一致を引き起こす非決定的な値を禁止する |
+| `vue/a11y-img-alt` | `warning` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/a11y_img_alt.rs#L33) |アクセシビリティのために画像に alt 属性を要求する |
+| `vue/attribute-order` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_order.rs#L36) |属性の一貫した順序を強制する |
+| `vue/component-name-in-template-casing` | `warning` | `nuxt`、`opinionated` |はい | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/component_name_in_template_casing.rs#L28) |テンプレート内のコンポーネント名に特定の大文字と小文字を強制する |
+| `vue/html-button-has-type` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_button_has_type.rs#L39) |ボタン要素に明示的な有効なタイプを要求する |
+| `vue/no-array-index-key` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_array_index_key.rs#L31) | v-for インデックス変数を :key | として直接使用することを禁止します。
+| `vue/no-bare-strings-in-template` | `warning` | _なし_ |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L46) |国際化する必要があるテンプレート内で人間が判読可能な生のテキストを禁止する |
+| `vue/no-boolean-attr-value` | `warning` | `nuxt`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs#L33) |ブール型 HTML 属性の明示的な値を禁止する |
+| `vue/no-empty-component-block` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_empty_component_block.rs#L42) |空の SFC ブロックを禁止する |
+| `vue/no-inline-style` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_inline_style.rs#L33) |インライン スタイル属性の使用を避ける |
+| `vue/no-invalid-html-attribute` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_invalid_html_attribute.rs#L12) | HTML 属性の無効な静的値を禁止する |
+| `vue/no-lone-template` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_lone_template.rs#L32) |不要な `&lt;template&gt;` 要素を禁止する |
+| `vue/no-multiple-objects-in-class` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_multiple_objects_in_class.rs#L29) | :class 配列バインディング内の複数のオブジェクト リテラルを禁止する |
+| `vue/no-negated-v-if-condition` | `warning` | `nuxt`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_negated_v_if_condition.rs#L37) |チェーンに v-else | がある場合、否定された v-if 条件を禁止します。
+| `vue/no-preprocessor-lang` | `warning` | `nuxt`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L22) |最新の CSS を優先して CSS プリプロセッサの使用を阻止する |
+| `vue/no-root-v-if` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_root_v_if.rs#L40) |テンプレートの単一ルート要素で v-if を禁止する |
+| `vue/no-script-non-standard-lang` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_script_non_standard_lang.rs#L44) |標準以外のスクリプト言語値を使用しないようにする |
+| `vue/no-src-attribute` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_src_attribute.rs#L45) | SFC ブロックの src 属性を推奨しない |
+| `vue/no-template-lang` | `warning` | `nuxt`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L38) |テンプレート ブロックの lang 属性を推奨しない |
+| `vue/no-template-target-blank` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_target_blank.rs#L34) | rel="noopener" のない target="\_blank" を禁止 |
+| `vue/no-undefined-refs` | `warning` | _なし_ |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_undefined_refs.rs#L11) |テンプレート内で未定義の変数参照を禁止する |
+| `vue/no-unsafe-url` | `warning` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unsafe_url.rs#L48) |安全でない可能性がある URL バインディングについて警告する |
+| `vue/no-unsandboxed-iframe` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unsandboxed_iframe.rs#L32) | iframe 要素にサンドボックス属性を要求する |
+| `vue/no-unused-refs` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_unused_refs.rs#L60) |レポート テンプレート参照 (ref="x") が <script> で参照されていません。
+| `vue/no-useless-mustaches` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_useless_mustaches.rs#L31) |式が定数文字列リテラルである口ひげ補間を禁止します。
+| `vue/no-useless-v-bind` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_useless_v_bind.rs#L29) |値がプレーン文字列リテラルである v-bind を禁止します。
+| `vue/no-v-text` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_v_text.rs#L31) | v-text ディレクティブを禁止します。口ひげ補間を好む |
+| `vue/prefer-props-shorthand` | `warning` | `nuxt`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs#L35) | props の短縮構文を推奨する (Vue 3.4+) |
+| `vue/prefer-true-attribute-shorthand` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L27) | `true` | にバインドされたブール属性の省略表現を優先します。
+| `vue/require-component-registration` | `warning` | `opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L53) |コンポーネントの明示的なインポートまたは登録が必要 |
+| `vue/require-scoped-style` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_scoped_style.rs#L49) |スタイルタグにスコープ付き属性を要求する |
+| `vue/scoped-event-names` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs#L35) | context:event 形式を使用してスコープ付きイベント名を推奨する |
+| `vue/sfc-element-order` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/sfc_element_order.rs#L34) | SFC のトップレベル要素の一貫した順序を強制する |
+| `vue/single-style-block` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/single_style_block.rs#L41) |単一のスタイル ブロックを使用することをお勧めします。
+| `vue/slot-name-casing` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L34) | v-slot 経由で使用される名前付きスロットに kebab-case を適用する |
+| `vue/this-in-template` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/this_in_template.rs#L33) |テンプレート式で `this.` を禁止する |
+| `vue/v-on-event-hyphenation` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L35) |コンポーネントの v-on でカスタム イベント名のハイフネーションを強制する |
+| `vue/v-on-handler-style` | `warning` | `nuxt`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33) | v-on ハンドラーをメソッド参照またはインライン関数として強制的に記述する |
+| `vue/warn-custom-block` | `warning` | `nuxt`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_block.rs#L40) | SFC ファイル内のカスタム ブロックについて警告する |
+| `vue/warn-custom-directive` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_directive.rs#L40) |登録が必要なカスタム ディレクティブについて警告する |
+
+## アクセシビリティ (31)
+
+|ルール |重大度 |プリセット |修正可能 |実装 |説明 |
+| -------------------------------------- | --------- | ------------------------------------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `a11y/alt-text` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/alt_text.rs#L33) |メディア要素に代替テキストを要求する |
+| `a11y/anchor-has-content` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L16) |アンカー要素にはアクセス可能なコンテンツが必要です。
+| `a11y/anchor-is-valid` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_is_valid.rs#L29) |アンカー要素に有効な href を適用する |
+| `a11y/aria-props` | `error` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_props.rs#L18) |無効な ARIA 属性を禁止する |
+| `a11y/aria-role` | `error` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_role.rs#L21) | ARIA ロールを持つ要素は、有効な非抽象 ARIA ロールを使用する必要があります。
+| `a11y/aria-unsupported-elements` | `error` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_unsupported_elements.rs#L18) | ARIA 属性をサポートしない要素では ARIA 属性を禁止します。
+| `a11y/click-events-have-key-events` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L17) |クリック イベントを伴うキーボード イベント ハンドラーを必要とする |
+| `a11y/form-control-has-label` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/form_control_has_label.rs#L18) |フォーム コントロールにラベルを関連付けることを要求する |
+| `a11y/heading-has-content` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/heading_has_content.rs#L15) |見出し要素にはアクセス可能なコンテンツが必要です |
+| `a11y/heading-levels` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/heading_levels.rs#L34) |見出しレベルのスキップを禁止する |
+| `a11y/iframe-has-title` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/iframe_has_title.rs#L14) | iframe 要素には title 属性が必要です。
+| `a11y/img-alt` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/img_alt.rs#L16) |アクセシビリティのために画像に alt 属性を要求する |
+| `a11y/interactive-supports-focus` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L30) |インタラクティブなロール要素をフォーカス可能にする必要がある |
+| `a11y/label-has-for` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L27) |ラベルにフォーム コントロールを関連付けることを要求する |
+| `a11y/landmark-roles` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/landmark_roles.rs#L41) |ランドマークの役割の配置と独自性を検証する |
+| `a11y/media-has-caption` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/media_has_caption.rs#L32) |メディア要素にはキャプションが必要です |
+| `a11y/mouse-events-have-key-events` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/mouse_events_have_key_events.rs#L28) |マウス イベントでフォーカス/ブラー イベントを必要とする |
+| `a11y/no-access-key` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_access_key.rs#L17) | accesskey 属性の使用を禁止する |
+| `a11y/no-aria-hidden-on-focusable` | `error` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs#L18) |フォーカス可能な要素で aria-hidden="true" を禁止する |
+| `a11y/no-autofocus` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_autofocus.rs#L17) | autofocus 属性の使用を禁止する |
+| `a11y/no-distracting-elements` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_distracting_elements.rs#L16) | <marquee> や <blink> などの気が散る要素を禁止します |
+| `a11y/no-i-for-icon` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_i_for_icon.rs#L34) |アイコンに <i> 要素の使用を禁止する |
+| `a11y/no-redundant-roles` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_redundant_roles.rs#L29) |冗長な ARIA ロールを禁止する |
+| `a11y/no-refer-to-non-existent-id` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs#L37) |存在しない ID への参照を禁止する |
+| `a11y/no-role-presentation-on-focusable` | `error` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_role_presentation_on_focusable.rs#L18) |フォーカス可能な要素で role="presentation" または role="none" を禁止する |
+| `a11y/no-static-element-interactions` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L28) |静的要素のイベント ハンドラーを禁止する |
+| `a11y/placeholder-label-option` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L35) |選択したプレースホルダー オプションで無効または非表示を要求する |
+| `a11y/role-has-required-aria-props` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/role_has_required_aria_props.rs#L29) | ARIA ロールには必須のプロパティが必要です。
+| `a11y/tabindex-no-positive` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/tabindex_no_positive.rs#L16) |正の tabindex 値を禁止する |
+| `a11y/use-list` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/use_list.rs#L33) |箇条書きのようなテキストにはリスト要素を使用することを提案します。
+| `vue/use-unique-element-ids` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_unique_element_ids.rs#L53) |静的リテラルの代わりに useId() を使用して一意の要素 ID を強制します。
+
+## HTML への準拠 (9)
+
+|ルール |重大度 |プリセット |修正可能 |実装 |説明 |
+| -------------------------------- | --------- | -------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `html/deprecated-attr` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_attr.rs#L31) |非推奨の HTML 属性を禁止する |
+| `html/deprecated-element` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_element.rs#L33) |非推奨の HTML 要素を禁止する |
+| `html/id-duplication` | `error` | `essential`、`happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/id_duplication.rs#L36) |重複する要素 ID を禁止する |
+| `html/no-consecutive-br` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_consecutive_br.rs#L29) |連続した <br> 要素を禁止する |
+| `html/no-dupe-style-properties` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/html/no_dupe_style_properties.rs#L35) |インライン スタイル属性で重複したプロパティを禁止する |
+| `html/no-duplicate-class` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/html/no_duplicate_class.rs#L30) |静的クラス属性で重複したクラス名を禁止する |
+| `html/no-duplicate-dt` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_duplicate_dt.rs#L40) | <dl> 内で重複する <dt> 名を禁止する |
+| `html/no-empty-palpable-content` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_empty_palpable_content.rs#L32) |表示されるコンテンツを期待する空の要素を禁止する |
+| `html/require-datetime` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/require_datetime.rs#L33) | <time> 要素に datetime 属性が必要 |
+
+## タイプ認識 (5)
+
+|ルール |重大度 |プリセット |修正可能 |実装 |説明 |
+| --------------------------------- | --------- | ------------------------------------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `type/no-floating-promises` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_floating_promises.rs#L13) |フローティング (未処理) Promise を禁止する |
+| `type/no-reactivity-loss` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_reactivity_loss.rs#L12) |割り当てと呼び出し全体でリアクティブな値のプレーン スナップショットを禁止する |
+| `type/no-unsafe-template-binding` | `warning` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_unsafe_template_binding.rs#L12) |安全でない型に解決されるテンプレート バインディングを禁止する |
+| `type/require-typed-emits` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_emits.rs#L54) | defineEmits | の型定義が必要です。
+| `type/require-typed-props` | `warning` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_props.rs#L57) | defineProps の型定義が必要 |
+
+## 蒸気 (7)
+
+|ルール |重大度 |プリセット |修正可能 |実装 |説明 |
+| -------------------------------- | --------- | ------------------------------------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `script/no-get-current-instance` | `error` | `opinionated`、`nuxt` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_get_current_instance.rs#L38) | Vapor モードで getCurrentInstance() を禁止します (null を返す) |
+| `script/no-next-tick` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_next_tick.rs#L40) | Vapor 指向のコンポーネントでの nextTick() の使用を禁止する |
+| `script/no-options-api` | `error` | `opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_options_api.rs#L43) | Vapor モードでオプション API パターンを禁止する |
+| `vapor/no-inline-template` | `error` | `nuxt`、`opinionated` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/no_inline_template.rs#L31) |非推奨の inline-template 属性を禁止する |
+| `vapor/no-vue-lifecycle-events` | `error` | `happy-path`、`nuxt`、`ecosystem`、`opinionated` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs#L34) | @vue:xxx 要素ごとのライフサイクル イベントを禁止します (Vapor ではサポートされていません)。
+| `vapor/prefer-static-class` | `warning` | `nuxt`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs#L31) |文字列リテラルには動的クラスバインディングよりも静的クラスを優先します。
+| `vapor/require-vapor-attribute` | `warning` | `nuxt`、`opinionated` |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/require_vapor_attribute.rs#L17) |スクリプト設定に蒸気属性を追加することを提案します |
+
+## エコシステム (9)
+
+|ルール |重大度 |プリセット |修正可能 |実装 |説明 |
+| ------------------------------------------ | --------- | ----------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| `ecosystem/nuxt-prefer-nuxt-link` | `warning` | `ecosystem` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/nuxt_prefer_nuxt_link.rs#L14) |内部アプリケーションリンクには NuxtLink を優先する |
+| `ecosystem/pinia-prefer-store-to-refs` | `warning` | `ecosystem` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/pinia_prefer_store_to_refs.rs#L17) | Pinia ストアを分割する場合は、storeToRefs() を優先してください。
+| `ecosystem/router-link-require-to` | `error` | `ecosystem` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/router_link_require_to.rs#L14) | RouterLink および NuxtLink コンポーネントに `to` ターゲットが必要 |
+| `ecosystem/void-link-require-href` | `error` | `ecosystem` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_require_href.rs#L13) | Void Vue Link コンポーネントには `href` が必要 |
+| `ecosystem/void-link-valid-method` | `warning` | `ecosystem` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_valid_method.rs#L14) |静的な Void Vue Link メソッドの小道具を検証する |
+| `ecosystem/vue-i18n-no-missing-key` | `warning` | `ecosystem` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/i18n_no_missing_key.rs#L17) |ローカル SFC メッセージにない静的 vue-i18n キーを報告する |
+| `ecosystem/vue-router-prefer-named-link` | `warning` | `ecosystem` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/vue_router_prefer_named_link.rs#L15) | RouterLink では静的パス文字列よりも名前付きルート オブジェクトを優先します。
+| `ecosystem/vue-router-prefer-named-push` | `warning` | `ecosystem` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/vue_router_prefer_named_push.rs#L19) | Vue Router のプログラムによるナビゲーションには名前付きルート オブジェクトを優先する |
+| `ecosystem/vue-test-utils-no-html-snapshot` | `warning` | `ecosystem` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/vue_test_utils_no_html_snapshot.rs#L15) | Vue Test Utils テストでは、wrapper.html() のスナップショットを避ける |
+
+## CSS (10)
+
+|ルール |重大度 |プリセット |修正可能 |実装 |説明 |
+| ------------------------------- | --------- | --------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `css/no-display-none` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_display_none.rs#L22) |表示の代わりに v-show を使用することを提案します: none |
+| `css/no-hardcoded-values` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_hardcoded_values.rs#L27) |ハードコードされた値の代わりに CSS 変数を使用することをお勧めします。
+| `css/no-id-selectors` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_id_selectors.rs#L16) | CSS で ID セレクターの使用を避ける |
+| `css/no-important` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_important.rs#L15) | CSS で ! important を使用しないようにする |
+| `css/no-utility-classes` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_utility_classes.rs#L34) |コンポーネント スタイルでユーティリティ クラスを実装しないように警告する |
+| `css/no-v-bind-performance` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_v_bind_performance.rs#L21) | CSS v-bind() のパフォーマンス コストについて警告する |
+| `css/prefer-logical-properties` | `warning` | `opinionated`、`nuxt` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L14) | i18n サポートを向上させるために CSS 論理プロパティを推奨する |
+| `css/prefer-nested-selectors` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_nested_selectors.rs#L11) |子孫セレクターには CSS ネストを使用することをお勧めします。
+| `css/prefer-slotted` | `warning` | `opinionated`、`nuxt` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_slotted.rs#L34) |スロット コンテンツのスタイル設定には ::v-slotted() をお勧めします。
+| `css/require-font-display` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L13) | @font-face ルールで font-display を要求する |
+
+## 美術館 (6)
+
+|ルール |重大度 |プリセット |修正可能 |実装 |説明 |
+| ---------------------------- | --------- | ------- | ------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `musea/no-empty-variant` | `warning` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/no_empty_variant.rs#L8) |空の <variant> ブロックを禁止する |
+| `musea/prefer-design-tokens` | `warning` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/prefer_design_tokens.rs#L33) |ハードコードされたプリミティブ値よりもデザイン トークン CSS 変数を優先します。
+| `musea/require-component` | `warning` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_component.rs#L11) | <art> ブロックにコンポーネント属性が必要 |
+| `musea/require-title` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L32) | <art> ブロックに title 属性が必要 |
+| `musea/unique-variant-names` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/unique_variant_names.rs#L10) |一意のバリアント名が必要 |
+| `musea/valid-variant` | `error` | _なし_ |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/valid_variant.rs#L8) | <variant> ブロックには name 属性が必要です |
+
+## スクリプト (60)
+
+|ルール |重大度 |プリセット |修正可能 |実装 |説明 |
+| ----------------------------------------------- | --------- | --------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `script/component-options-name-casing` | `error` | `opinionated`、`nuxt` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44) |コンポーネント `name` オプションに PascalCase を適用する |
+| `script/custom-event-name-casing` | `error` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L43) |発行されるカスタム イベント名にキャメルケースを強制する |
+| `script/define-emits-declaration` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_emits_declaration.rs#L39) |ランタイム/配列フォームに対して型ベースのdefineEmits<{}>()フォームを強制します。
+| `script/define-macros-order` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L46) | <script setup> で Vue コンパイラ マクロの一貫した順序を強制します。
+| `script/define-props-declaration` | `warning` | `opinionated`、`nuxt` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_declaration.rs#L40) |ランタイム/オブジェクト フォームに対して型ベースのdefineProps<{ ... }>() を強制します。
+| `script/define-props-destructuring` | `warning` | `opinionated`、`nuxt` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L34) | <script setup> でのdefinePropsの戻り値の構造化を禁止します。
+| `script/no-arrow-functions-in-watch` | `error` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs#L59) |オプション API 監視ハンドラーとしてのアロー関数を禁止する |
+| `script/no-async-in-computed` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_async_in_computed.rs#L45) |計算されたプロパティでの非同期関数を禁止する |
+| `script/no-boolean-default` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_boolean_default.rs#L54) |ブール型プロパティのデフォルトを禁止する |
+| `script/no-deep-destructure-in-props` | `warning` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L36) |深く入れ子になった構造の分割をdefinePropsで禁止する |
+| `script/no-deprecated-data-object-declaration` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L48) |コンポーネント データ オプションとしてオブジェクト リテラルを禁止します (Vue 3 には関数が必要です)。
+| `script/no-deprecated-dollar-listeners-api` | `error` | _なし_ |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L40) | Vue 3 で削除された $listeners インスタンス プロパティを禁止します ($attrs にマージされました)。
+| `script/no-deprecated-dollar-scopedslots-api` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L44) | Vue 3 で削除された $scopedSlots インスタンス プロパティを禁止します ($slots を使用します)。
+| `script/no-deprecated-events-api` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L42) |削除された Vue 2 イベント API ($on / $off / $once) を禁止する |
+| `script/no-deprecated-props-default-this` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71) | prop デフォルト/バリデーター関数内で `this` を禁止します (Vue 3 で削除されました) |
+| `script/no-dupe-keys` | `error` | _なし_ |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L52) |オプション API props/data/computed/methods/setup/inject | 全体での重複キーを禁止します。
+| `script/no-duplicate-attr-inheritance` | `warning` | `opinionated`、`nuxt` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L57) |明示的な `inheritAttrs: true` オプションに冗長のフラグを立てます (true がデフォルトです)。
+| `script/no-export-in-script-setup` | `error` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L45) | <script setup> 内のエクスポート ステートメントを禁止する |
+| `script/no-import-compiler-macros` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_import_compiler_macros.rs#L39) |自動インポートされる Vue コンパイラ マクロのインポートを禁止する |
+| `script/no-internal-imports` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L29) | Vue 内部モジュールからのインポートを禁止する |
+| `script/no-multiple-slot-args` | `warning` | `opinionated`、`nuxt` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_multiple_slot_args.rs#L61) |スコープ付きスロット関数呼び出しに複数の引数を渡すことを禁止します。
+| `script/no-potential-component-option-typo` | `error` | `opinionated`、`nuxt` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_potential_component_option_typo.rs#L19) |オプション API コンポーネントのオプション名の誤字の可能性がある場合にフラグを立てます。
+| `script/no-reactive-destructure` | `warning` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reactive_destructure.rs#L44) |反応性を失うリアクティブ オブジェクトの分割を禁止する |
+| `script/no-ref-as-operand` | `error` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_ref_as_operand.rs#L48) |オペランドとして使用する場合、参照バインド変数には `.value` 経由でアクセスする必要があります。
+| `script/no-required-prop-with-default` | `error` | `opinionated`、`nuxt` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L25) |必須である true とデフォルトの | を持つプロパティを禁止します。
+| `script/no-reserved-identifiers` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_identifiers.rs#L41) | Vue コンパイラの予約済み識別子の使用を禁止する |
+| `script/no-reserved-keys` | `error` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L32) | Vue で予約された名前をオプション API props/data/computed/methods/setup/inject キーとして許可しない |
+| `script/no-reserved-props` | `error` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs#L53) |コンポーネントの props 宣言で予約名を禁止する |
+| `script/no-restricted-globals` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_restricted_globals.rs#L57) |型付きラッパーを経由する必要があるランタイム環境グローバルへの参照を禁止します。
+| `script/no-restricted-members` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_restricted_members.rs#L53) |プロジェクトで構成された object.property メンバーのアクセスを禁止する |
+| `script/no-side-effects-in-computed-properties` | `error` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs#L70) |オプション API の計算ゲッターでの副作用を禁止する |
+| `script/no-top-level-ref-in-script` | `error` | _なし_ |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_top_level_ref_in_script.rs#L58) |クロスリクエスト状態の汚染を防ぐためにトップレベルの ref/reactive を禁止 |
+| `script/no-unstable-nested-components` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_unstable_nested_components.rs#L19) |セットアップ関数またはレンダリング関数内のコンポーネント定義を禁止する |
+| `script/no-unused-emit-declarations` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_unused_emit_declarations.rs#L50) |決して発行されない宣言されたイベントにフラグを立てます。
+| `script/no-use-computed-property-like-method` | `error` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L23) |オプション API の計算されたプロパティをメソッドのように呼び出すことを禁止します。
+| `script/no-with-defaults` | `warning` | _なし_ |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L40) | withDefaults を推奨せず、デフォルトを分割することを推奨します (Vue 3.5 以降) |
+| `script/prefer-computed` | `warning` | _なし_ |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L45) |派生リアクティブ状態には computed() を優先 |
+| `script/prefer-define-options` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52) | name/inheritAttrs のみを設定するプレーンな <script> よりも、defineOptions() を優先します。
+| `script/prefer-import-from-vue` | `warning` | _なし_ |はい | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L31) |内部パッケージではなく「vue」からのインポートを優先します。
+| `script/prefer-ref-over-reactive` | `warning` | _なし_ |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_ref_over_reactive.rs#L43) |状態管理には reactive() ではなく ref() を使用することをお勧めします。
+| `script/prefer-use-attrs` | `warning` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_attrs.rs#L37) | context.attrs ではなく useAttrs() を使用することをお勧めします。
+| `script/prefer-use-id` | `warning` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L40) |一意の ID を生成するには useId() を使用することをお勧めします (Vue 3.5 以降)。
+| `script/prefer-use-slots` | `warning` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_slots.rs#L37) | context.slots ではなく useSlots() を使用することをお勧めします。
+| `script/prefer-use-template-ref` | `warning` | _なし_ |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_template_ref.rs#L38) |テンプレート参照には ref(null) ではなく useTemplateRef を推奨します (Vue 3.5 以降)。
+| `script/require-default-prop` | `error` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_default_prop.rs#L58) |すべてのオプションの非ブール値プロパティにデフォルト値を要求します。
+| `script/require-explicit-emits` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L48) |発行されたイベントは、defineEmits または Emits オプションで宣言する必要があります。
+| `script/require-explicit-slots` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L61) | useSlots() 経由で消費されるスロットは、defineSlots<...>() で明示的に型指定する必要があります。
+| `script/require-function-return-type` | `warning` | _なし_ |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L48) |関数には戻り値の型の注釈が必要です。
+| `script/require-prop-type-constructor` | `error` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_prop_type_constructor.rs#L59) | prop `type` 値は文字列リテラルではなくコンストラクターである必要があります。
+| `script/require-prop-types` | `error` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) |すべての prop で型を宣言する必要があります。
+| `script/require-symbol-provide` | `warning` | _なし_ |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_symbol_provide.rs#L38) | Provide/Inject のインジェクション キーとして Symbol を使用することをお勧めします。
+| `script/require-typed-object-prop` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_typed_object_prop.rs#L63) |実行時タイプが `Object` または `Array` であるプロパティには明示的なタイプが必要です。
+| `script/require-typed-ref` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_typed_ref.rs#L52) |値なし、null、または未定義で初期化された ref() には明示的な型引数が必要です。
+| `script/require-valid-default-prop` | `error` | `opinionated`、`nuxt` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_valid_default_prop.rs#L68) |プロパティのデフォルト値がその宣言された型に対して有効であることを要求します。
+| `script/return-in-computed-property` | `error` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/return_in_computed_property.rs#L31) |すべての計算されたゲッターに戻り値が必要です。
+| `script/return-in-emits-validator` | `error` | `opinionated`、`nuxt` |いいえ | [出典](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L59) |すべてのオプション API で戻り値が必要な場合は、バリデーターを発行します。
+| `script/valid-define-emits` | `error` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_emits.rs#L45) |有効なdefineEmits()の使用法を強制します(型+実行時引数なし、ローカル参照なし、単一呼び出し)。
+| `script/valid-define-options` | `error` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_options.rs#L41) |有効なdefineOptions()の使用法を強制します(単一オブジェクト引数、props/emits/expose/slotsなし)。
+| `script/valid-define-props` | `error` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_props.rs#L44) |有効なdefineProps()の使用法を強制します(単一の呼び出し、型と実行時引数の両方ではなく、ローカル参照はありません)。
+| `script/valid-next-tick` | `warning` | `opinionated`、`nuxt` |いいえ | [ソース](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_next_tick.rs#L53) | nextTick() 呼び出しの結果を待機、連鎖、またはコールバックを与える必要があります。

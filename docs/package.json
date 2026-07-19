@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "generate:i18n": "node ./scripts/generate-i18n.mjs --accept-machine-translation",
     "generate:rules": "node ./scripts/generate-patina-rules-page.mjs",
     "dev": "vp build && vp preview",
     "build": "node ./scripts/ensure-browser.mjs && vp build",

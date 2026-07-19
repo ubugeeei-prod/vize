@@ -20,6 +20,21 @@ export default defineConfig({
       srcDir: "content",
       outDir: "dist",
 
+      i18n: {
+        enabled: true,
+        dir: "content/i18n",
+        defaultLocale: "en",
+        hideDefaultLocale: true,
+        check: true,
+        locales: [
+          { code: "en", name: "English" },
+          { code: "ja", name: "日本語" },
+          { code: "zh-CN", name: "简体中文" },
+          { code: "pt-BR", name: "Português" },
+          { code: "fr", name: "Français" },
+        ],
+      },
+
       ogImage: true,
       ogImageOptions: {
         template: resolve(themeDir, "og.vue"),
