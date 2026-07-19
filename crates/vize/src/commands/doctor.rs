@@ -53,6 +53,7 @@ enum DoctorError {
     CurrentDirectory(io::Error),
     InvalidRoot { path: PathBuf, source: io::Error },
     InvalidInput { path: PathBuf, reason: &'static str },
+    WalkDirectory { path: PathBuf, source: ignore::Error },
     ReadSource { path: PathBuf, source: io::Error },
     ParseSfc { path: PathBuf, message: String },
     Analysis(ApplicationAnalysisError),
@@ -77,6 +78,13 @@ impl fmt::Display for DoctorError {
                 write!(
                     formatter,
                     "invalid doctor input {}: {reason}",
+                    path.display()
+                )
+            }
+            Self::WalkDirectory { path, source } => {
+                write!(
+                    formatter,
+                    "cannot traverse directory {}: {source}",
                     path.display()
                 )
             }

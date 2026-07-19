@@ -91,9 +91,9 @@ fn discover_directory(
         .follow_links(false)
         .build()
     {
-        let entry = entry.map_err(|_| DoctorError::InvalidInput {
+        let entry = entry.map_err(|source| DoctorError::WalkDirectory {
             path: directory.to_path_buf(),
-            reason: "the directory cannot be traversed",
+            source,
         })?;
         if entry.file_type().is_some_and(|kind| kind.is_file()) {
             add_source_path(root, entry.path(), paths, seen)?;
