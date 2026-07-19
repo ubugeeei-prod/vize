@@ -1,0 +1,16 @@
+[package]
+name = "vize_doctor"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Whole-application health analysis contracts for Vize"
+metadata.vize.stability = "experimental"
+
+[dependencies]
+serde.workspace = true
+vize_carton.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

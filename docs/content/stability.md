@@ -93,6 +93,7 @@ details are not compatibility surfaces.
 | `vize_armature`      | Alpha-supported       | Tools that parse Vue templates            | `vize_armature::{parse, Parser, Tokenizer}`     | One minor with `#[deprecated]`         |
 | `vize_croquis`       | Compatibility preview | Semantic and type-aware tooling authors   | `vize_croquis::{Croquis, Drawer}`               | One minor with `#[deprecated]`         |
 | `vize_croquis_cf`    | Experimental          | Opt-in whole-project analysis experiments | `vize_croquis_cf::CrossFileAnalyzer`            | No minimum; note breaks when practical |
+| `vize_doctor`        | Experimental          | Application health analyzer authors       | `vize_doctor::{DoctorFinding, FindingEvidence}` | No minimum; note breaks when practical |
 | `vize_atelier_core`  | Alpha-supported       | Custom Vue compiler backend authors       | `vize_atelier_core::{transform, generate}`      | One minor with `#[deprecated]`         |
 | `vize_atelier_dom`   | Alpha-supported       | VDOM compiler and bundler integrations    | `vize_atelier_dom::compile_template`            | One minor with `#[deprecated]`         |
 | `vize_atelier_vapor` | Experimental          | Opt-in Vapor compiler integrations        | `vize_atelier_vapor::compile_vapor`             | No minimum; note breaks when practical |

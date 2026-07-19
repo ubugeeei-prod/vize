@@ -32,6 +32,7 @@ let pending_first_publish_crates : Array[String] = [
   "vize_croquis_cf",
   "vize_atelier_jsx",
   "vize_marquette",
+  "vize_doctor",
 ]
 
 /// Existing crates whose current version depends on a crate that still needs

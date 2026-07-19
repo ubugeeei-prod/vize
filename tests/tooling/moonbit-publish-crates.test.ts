@@ -1,10 +1,9 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import fs from "node:fs";
+import fs, { mkdtempSync, rmSync } from "node:fs";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
-import { mkdtempSync, rmSync } from "node:fs";
 
 import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
@@ -100,6 +99,7 @@ test("publish_crates only defers crates that have not been created on crates.io"
     "vize_croquis_cf",
     "vize_atelier_jsx",
     "vize_marquette",
+    "vize_doctor",
   ]);
 });
 

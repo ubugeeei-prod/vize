@@ -3685,6 +3685,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_doctor"
+version = "0.298.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "vize_carton",
+]
+
+[[package]]
 name = "vize_fresco"
 version = "0.298.0"
 dependencies = [
