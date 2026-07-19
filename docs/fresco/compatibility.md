@@ -22,11 +22,14 @@ affected rows in the same PR.
 | Fresco Vue layer | `npm/fresco/src` (`index.ts`, `app.ts`, `renderer.ts`, `accessibility.ts`, `components/`, `composables/`) |
 | Native bindings  | `npm/fresco-native/index.d.ts` (hand-written N-API declarations)                                          |
 | Rust renderer    | `crates/vize_fresco/src` (`component/`, `input/`, `layout/`, `render/`, `terminal/`, `text/`, `napi/`)    |
-| Ink              | `vadimdemedes/ink` README, v6 API surface (July 2026)                                                     |
-| OpenTUI          | opentui.com core-concepts/renderables documentation (July 2026)                                           |
-| Vue TermUI       | `posva/vue-termui` `main` branch exports (OpenTUI-based rewrite, July 2026)                               |
+| Ink              | `vadimdemedes/ink` README + v6 type declarations, retrieved 2026-07-19                                     |
+| OpenTUI          | opentui.com core-concepts/renderables documentation, retrieved 2026-07-19                                  |
+| Vue TermUI       | `posva/vue-termui` `main` branch exports (OpenTUI-based rewrite), retrieved 2026-07-19                     |
 
-Audited at commit `628ea1e7d` (2026-07-19). `—` means the surface has no equivalent.
+Audited at commit `628ea1e7d` (2026-07-19). External surfaces (Ink, OpenTUI, Vue TermUI) are
+pinned by retrieval date (2026-07-19) rather than by an upstream revision, since none publish
+per-release documentation snapshots; re-audit against those sources as of that date. `—` means the
+surface has no equivalent.
 
 ## Status legend
 
@@ -106,7 +109,7 @@ Fresco implements the full Ink v6 hook list under the same names, as Vue composa
 | ---------------------------------- | --------------------------------- | ---------------------------- | ---------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `useInput`                         | `onKeyDown` (per renderable)      | `onKeyDown`/`onKeyUp`        | `useInput` (+ `useKeyPress`)       | Partial     | Global subscription with Kitty press/repeat/release; not routed per element, no capture/bubble (M1).                                     |
 | `usePaste`                         | `onPaste`                         | —                            | `usePaste`                         | Implemented | Bracketed paste.                                                                                                                         |
-| `useApp`                           | renderer lifecycle                | `useExit`                    | `useApp`                           | Implemented | `exit`, terminal `width`/`height` refs, `render`, `clear`, `waitUntilRenderFlush`.                                                       |
+| `useApp`                           | renderer lifecycle                | `useExit`                    | `useApp`                           | Partial     | `exit`, terminal `width`/`height` refs, `render`, `clear`; `waitUntilRenderFlush` resolves immediately with no real flush barrier yet (see top-level API).                |
 | `useStdin`/`useStdout`/`useStderr` | —                                 | —                            | `useStdin`/`useStdout`/`useStderr` | Implemented | Backed by the app streams context; honors custom streams.                                                                                |
 | `useFocus`                         | `focus()`/`blur()` + focus events | `useCurrentFocusedElement`   | `useFocus`                         | Partial     | Flat ordered registry with `isActive`/`autoFocus`; global Tab/Shift+Tab traversal; no traps, delegation, or descendant-focus state (M1). |
 | `useFocusManager`                  | renderer focus APIs               | `useFocusManager`            | `useFocusManager`                  | Implemented | `focus`, `focusNext`/`focusPrevious`, enable/disable, `activeId`, `focusableIds`.                                                        |
