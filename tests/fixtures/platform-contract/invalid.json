@@ -1,0 +1,30 @@
+{
+  "formatVersion": 1,
+  "application": "Broken App",
+  "targets": ["web"],
+  "environments": [
+    {
+      "id": "client",
+      "target": "web",
+      "consumer": "client",
+      "runtime": "browser",
+      "dependsOn": ["missing"]
+    }
+  ],
+  "protocols": [
+    {
+      "id": "api.query",
+      "family": "schema-query",
+      "backend": "missing"
+    }
+  ],
+  "routes": [
+    {
+      "id": "home",
+      "path": "/",
+      "environment": "missing",
+      "rendering": "hybrid",
+      "protocol": "missing"
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vizejs.dev/schemas/platform/application-contract.schema.json",
+  "title": "Vize Application Platform Contract",
+  "description": "Versioned language-neutral application target, environment, backend, protocol, and route graph.",
+  "$ref": "#/$defs/contract",
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "target": {
+      "enum": ["web", "native", "desktop", "terminal"]
+    },
+    "runtime": {
+      "enum": [
+        "browser",
+        "javascript",
+        "rust",
+        "go",
+        "jvm",
+        "native",
+        "desktop",
+        "terminal",
+        "external"
+      ]
+    },
+    "capabilityDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "description": { "type": "string", "minLength": 1 },
+        "version": { "type": "integer", "minimum": 1, "default": 1 }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "target", "consumer", "runtime"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "target": { "$ref": "#/$defs/target" },
+        "consumer": { "enum": ["client", "server"] },
+        "runtime": { "$ref": "#/$defs/runtime" },
+        "entry": { "type": "string", "minLength": 1 },
+        "dependsOn": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/identifier" },
+          "uniqueItems": true,
+          "default": []
+        },
+        "capabilities": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/identifier" },
+          "uniqueItems": true,
+          "default": []
+        }
+      }
+    },
+    "backend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "family"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "family": { "enum": ["javascript", "rust", "go", "jvm", "external"] },
+        "environment": { "$ref": "#/$defs/identifier" },
+        "capabilities": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/identifier" },
+          "uniqueItems": true,
+          "default": []
+        }
+      }
+    },
+    "protocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "family", "backend"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "family": { "enum": ["schema-query", "typed-rpc", "binary-rpc"] },
+        "backend": { "$ref": "#/$defs/identifier" },
+        "capabilities": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/identifier" },
+          "uniqueItems": true,
+          "default": []
+        }
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "environment", "rendering"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "path": { "type": "string", "pattern": "^/" },
+        "environment": { "$ref": "#/$defs/identifier" },
+        "rendering": {
+          "enum": [
+            "client",
+            "static",
+            "server",
+            "stream",
+            "partial",
+            "hybrid",
+            "native",
+            "desktop",
+            "terminal"
+          ]
+        },
+        "backend": { "$ref": "#/$defs/identifier" },
+        "protocol": { "$ref": "#/$defs/identifier" },
+        "capabilities": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/identifier" },
+          "uniqueItems": true,
+          "default": []
+        }
+      }
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["application"],
+      "properties": {
+        "formatVersion": { "const": 1, "default": 1 },
+        "application": { "$ref": "#/$defs/identifier" },
+        "targets": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/target" },
+          "uniqueItems": true,
+          "default": []
+        },
+        "capabilities": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/identifier" },
+          "additionalProperties": { "$ref": "#/$defs/capabilityDefinition" },
+          "default": {}
+        },
+        "environments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/environment" },
+          "default": []
+        },
+        "backends": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/backend" },
+          "default": []
+        },
+        "protocols": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/protocol" },
+          "default": []
+        },
+        "routes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/route" },
+          "default": []
+        }
+      }
+    }
+  }
+}

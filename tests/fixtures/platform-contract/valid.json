@@ -1,0 +1,74 @@
+{
+  "formatVersion": 1,
+  "application": "universal-shop",
+  "targets": ["native", "web"],
+  "capabilities": {
+    "auth.session": {
+      "id": "auth.session",
+      "description": "Authenticated application session",
+      "version": 1
+    }
+  },
+  "environments": [
+    {
+      "id": "native",
+      "target": "native",
+      "consumer": "client",
+      "runtime": "native",
+      "entry": "src/native.ts",
+      "capabilities": ["auth.session"]
+    },
+    {
+      "id": "server",
+      "target": "web",
+      "consumer": "server",
+      "runtime": "rust",
+      "entry": "server/main.rs"
+    },
+    {
+      "id": "web",
+      "target": "web",
+      "consumer": "client",
+      "runtime": "browser",
+      "entry": "src/web.ts",
+      "dependsOn": ["server"],
+      "capabilities": ["auth.session"]
+    }
+  ],
+  "backends": [
+    {
+      "id": "api",
+      "family": "rust",
+      "environment": "server",
+      "capabilities": ["auth.session"]
+    }
+  ],
+  "protocols": [
+    {
+      "id": "api.query",
+      "family": "schema-query",
+      "backend": "api",
+      "capabilities": ["auth.session"]
+    }
+  ],
+  "routes": [
+    {
+      "id": "home",
+      "path": "/",
+      "environment": "web",
+      "rendering": "hybrid",
+      "backend": "api",
+      "protocol": "api.query",
+      "capabilities": ["auth.session"]
+    },
+    {
+      "id": "native-home",
+      "path": "/",
+      "environment": "native",
+      "rendering": "native",
+      "backend": "api",
+      "protocol": "api.query",
+      "capabilities": ["auth.session"]
+    }
+  ]
+}

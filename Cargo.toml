@@ -21,6 +21,7 @@ members = [
   "crates/vize_maestro",
   "crates/vize_curator",
   "crates/vize_fresco",
+  "crates/vize_platform",
   "tests/vize_test_runner",
 ]
 
@@ -48,6 +49,7 @@ vize_musea = { path = "crates/vize_musea", version = "=0.298.0" }
 vize_patina = { path = "crates/vize_patina", version = "=0.298.0" }
 vize_canon = { path = "crates/vize_canon", version = "=0.298.0", default-features = false }
 vize_fresco = { path = "crates/vize_fresco", version = "=0.298.0", default-features = false }
+vize_platform = { path = "crates/vize_platform", version = "=0.298.0" }
 
 # Workspace-only internal crates (always use the local path)
 vize_vitrine = { path = "crates/vize_vitrine", default-features = false }
