@@ -97,6 +97,18 @@ pub struct BuildArgs {
     #[arg(long, value_enum, default_value = "downcompile")]
     pub script_ext: ScriptExtension,
 
+    /// Emit `.d.ts` declaration files for the built SFCs
+    ///
+    /// Runs the same Corsa-backed emit as `vize check --declaration` over the
+    /// build inputs. Declarations mirror TypeScript's rootDir layout, so a
+    /// src-rooted library lands next to its compiled JavaScript.
+    #[arg(long, alias = "dts")]
+    pub declaration: bool,
+
+    /// Output directory for emitted `.d.ts` files (default: the build output directory)
+    #[arg(long, value_name = "DIR", requires = "declaration")]
+    pub declaration_dir: Option<PathBuf>,
+
     /// Number of threads (default: number of CPUs)
     #[arg(short = 'j', long)]
     pub threads: Option<usize>,

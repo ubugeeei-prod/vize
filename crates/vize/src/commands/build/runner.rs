@@ -7,6 +7,7 @@ mod cache;
 mod collect;
 mod compile;
 mod compile_stats;
+mod declarations;
 mod fallback;
 mod output;
 mod profile_facts;
@@ -29,7 +30,7 @@ use vize_curator::profile::{
 
 use super::{
     BuildArgs, OutputFormat,
-    config::{CompileError, CompileStats, ErrorPhase, FileProfile},
+    config::{CompileError, CompileStats, FileProfile},
 };
 
 use cache::StatsCompileCache;
@@ -59,6 +60,10 @@ pub(crate) fn run(args: BuildArgs) {
         eprintln!(
             "\x1b[31mError:\x1b[0m compiler.compatibility.hostCompiler=false is unsupported for Vue 2 compatibility mode"
         );
+        std::process::exit(1);
+    }
+    if args.declaration && matches!(args.format, OutputFormat::Stats) {
+        eprintln!("\x1b[31mError:\x1b[0m --declaration cannot be combined with --format stats");
         std::process::exit(1);
     }
 
@@ -268,61 +273,7 @@ pub(crate) fn run(args: BuildArgs) {
 
     // Show collected errors
     let errors = errors.into_inner().unwrap_or_default();
-    if !errors.is_empty() {
-        eprintln!();
-        eprintln!(
-            "\x1b[31m\u{2717} {} error(s) occurred:\x1b[0m",
-            errors.len()
-        );
-        eprintln!();
-
-        // Group errors by phase
-        let read_errors: Vec<_> = errors
-            .iter()
-            .filter(|e| e.phase == ErrorPhase::Read)
-            .collect();
-        let parse_errors: Vec<_> = errors
-            .iter()
-            .filter(|e| e.phase == ErrorPhase::Parse)
-            .collect();
-        let compile_errors: Vec<_> = errors
-            .iter()
-            .filter(|e| e.phase == ErrorPhase::Compile)
-            .collect();
-
-        if !read_errors.is_empty() {
-            eprintln!("  \x1b[31mRead errors ({}):\x1b[0m", read_errors.len());
-            for err in &read_errors {
-                eprintln!("    {} - {}", err.path.display(), err.error);
-            }
-            eprintln!();
-        }
-
-        if !parse_errors.is_empty() {
-            eprintln!("  \x1b[31mParse errors ({}):\x1b[0m", parse_errors.len());
-            for err in &parse_errors {
-                eprintln!("    \x1b[1m{}\x1b[0m", err.path.display());
-                for line in err.error.lines() {
-                    eprintln!("      {}", line);
-                }
-            }
-            eprintln!();
-        }
-
-        if !compile_errors.is_empty() {
-            eprintln!(
-                "  \x1b[31mCompile errors ({}):\x1b[0m",
-                compile_errors.len()
-            );
-            for err in &compile_errors {
-                eprintln!("    \x1b[1m{}\x1b[0m", err.path.display());
-                for line in err.error.lines() {
-                    eprintln!("      {}", line);
-                }
-            }
-            eprintln!();
-        }
-    }
+    fallback::report_errors(&errors);
 
     // Profile breakdown
     if args.profile {
@@ -453,6 +404,9 @@ pub(crate) fn run(args: BuildArgs) {
             success,
             total_elapsed.as_secs_f64()
         );
+        if args.declaration {
+            eprintln!("Skipping declaration emit because the build failed.");
+        }
         std::process::exit(1);
     } else {
         let file_word = if success == 1 { "file" } else { "files" };
@@ -462,5 +416,9 @@ pub(crate) fn run(args: BuildArgs) {
             file_word,
             total_elapsed.as_secs_f64()
         );
+    }
+
+    if args.declaration {
+        declarations::emit(&args, &planned_inputs);
     }
 }

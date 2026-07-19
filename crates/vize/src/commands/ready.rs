@@ -128,6 +128,8 @@ pub fn run(args: ReadyArgs) {
         custom_renderer: false,
         template_syntax: None,
         script_ext: args.script_ext,
+        declaration: false,
+        declaration_dir: None,
         threads: None,
         profile: false,
         slow_threshold: 100,

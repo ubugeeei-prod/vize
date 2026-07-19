@@ -15,7 +15,7 @@ mod nuxt;
 mod path_cache;
 mod patterns;
 mod reporting;
-mod runner;
+pub(crate) mod runner;
 mod tsconfig_inputs;
 
 use clap::Args;
