@@ -121,7 +121,9 @@ impl SetupTypeExportsPlan {
     /// scope. Used to distinguish a public `export type Props` from a private
     /// setup-scoped `type Props`, which is never re-exported.
     pub(super) fn exports_public_type(&self, name: &str) -> bool {
-        self.exports.iter().any(|export| export.name.as_str() == name)
+        self.exports
+            .iter()
+            .any(|export| export.name.as_str() == name)
     }
 
     pub(super) fn strip_modifiers(&self, line: &mut Cow<'_, str>, line_start: u32) {
@@ -260,7 +262,10 @@ mod tests {
         // inside `__setup`, where a retained modifier would be TS1184.
         let mut line = std::borrow::Cow::Borrowed(source);
         plan.strip_modifiers(&mut line, 0);
-        assert_eq!(line, " /* public */ type Box<T extends typeof value> = { value: T }");
+        assert_eq!(
+            line,
+            " /* public */ type Box<T extends typeof value> = { value: T }"
+        );
 
         // But it is never captured through the non-generic artifact path, which
         // would drop its type parameters.
