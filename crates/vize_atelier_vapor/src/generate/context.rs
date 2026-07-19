@@ -4,7 +4,7 @@ use super::{
     destructure::{parse_destructure_bindings, parse_destructure_names},
     expression,
 };
-use vize_atelier_core::options::BindingMetadata;
+use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, camelize, capitalize, cstr};
 use vize_croquis::builtins::is_global_allowed;
 
@@ -242,6 +242,25 @@ impl<'a> GenerateContext<'a> {
                     return Some(cstr!("{}.{}", scope.slot_props_var, slot_name));
                 }
             }
+        }
+
+        // Destructured props are compiled away from the setup return object, so
+        // template references must read the reactive props object (the render
+        // signature's `$props`), mirroring the vdom compiler's PROPS binding
+        // resolution. Aliased destructures read the original prop key; the
+        // alias map is consulted for both binding kinds because the merged
+        // script bindings can record an aliased local as plain `Props`.
+        if let Some(bindings) = self.binding_metadata
+            && matches!(
+                bindings.bindings.get(name),
+                Some(BindingType::Props | BindingType::PropsAliased)
+            )
+        {
+            let key = bindings
+                .props_aliases
+                .get(name)
+                .map_or(name, |key| key.as_str());
+            return Some(cstr!("$props.{}", key));
         }
 
         None

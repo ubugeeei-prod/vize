@@ -1,0 +1,38 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { createDynamicComponent as _createDynamicComponent, template as _template } from 'vue';
+
+const t0 = _template("hi")
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const n1 = _createDynamicComponent(() => ($props.tag), { "data-probe": undefined }, {
+    "default": () => {
+      const n0 = t0()
+      return n0
+    }
+  }, true)
+  return n1
+}
+const __vaporRender = render
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'anonymous',
+  props: {
+    tag: { type: String, required: false, default: "div" }
+  },
+  render: __vaporRender,
+  setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
+
+
+const __returned__ = {  }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+const __instance = _getCurrentInstance()
+const __ctx = _proxyRefs(__returned__)
+if (__instance) __instance.setupState = __ctx
+return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+}
+
+})

@@ -1,0 +1,17 @@
+---
+source: crates/vize_atelier_vapor/src/tests_setup_components.rs
+expression: result.code.as_str()
+---
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setProp as _setProp, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<span>   </span>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  _renderEffect(() => {
+    _setProp(n0, "id", $props.tag)
+    _setClass(n0, $props.kind)
+    _setText(x0, _toDisplayString($props.tag) + " " + _toDisplayString($props.kind.toUpperCase()))
+  })
+  return n0
+}
