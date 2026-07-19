@@ -652,11 +652,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             cstr!("{leading_ws}const __default__ ={}", default_expr).into(),
                         );
                     }
-                } else if named_value_export_starts.contains(&(source_token_start as u32))
-                    && trimmed_line.starts_with("export ")
-                    && !trimmed_line.starts_with("export type ")
-                    && !trimmed_line.starts_with("export interface ")
-                {
+                } else if named_value_export_starts.contains(&(source_token_start as u32)) {
                     let leading_ws = &output_line[..output_line.len() - trimmed_line.len()];
                     if let Some(rest) = trimmed_line.strip_prefix("export ") {
                         #[allow(clippy::disallowed_types)]
