@@ -13,6 +13,7 @@ Commands:
   check         Type check Vue, JSX, and TSX files
   inspector     Create playground compiler inspector payloads and agent reports
   curator       Curator utilities for diagnostics and reports
+  doctor        Analyze whole-application health
   clean         Remove Vize-generated cache artifacts
   check-server  Start type check JSON-RPC server (Unix only)
   musea         Start component gallery server

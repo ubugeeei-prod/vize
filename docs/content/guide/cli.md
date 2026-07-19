@@ -83,6 +83,7 @@ When invoked without a command, `vize` defaults to `build`.
 | `fmt`          | Format Vue SFC files                            |
 | `lint`         | Lint Vue SFC files                              |
 | `check`        | Type check Vue SFC, TS, TSX, and `.d.ts` inputs |
+| `doctor`       | Analyze whole-application health                |
 | `inspector`    | Create playground compiler inspector payloads   |
 | `clean`        | Remove Vize-generated cache artifacts           |
 | `ready`        | Run `fmt`, `lint`, `check`, and `build`         |
@@ -249,6 +250,43 @@ declare module "vue" {
     $t: (key: string) => string;
   }
 }
+```
+
+## Doctor
+
+```bash
+vize doctor
+vize doctor src
+vize doctor src packages/shared --format json
+```
+
+`vize doctor` builds one deterministic application graph across Vue SFCs and script modules. The
+initial analyzer family covers dependency injection, unique element IDs, server/client boundaries,
+reactivity flow, asynchronous mutation risks, setup-context ownership, and circular imports. Vue
+diagnostics are mapped back to byte offsets in the authored `.vue` file, including components with
+both `<script>` and `<script setup>` blocks.
+
+Discovery follows standard source-control ignore files, rejects inputs outside the declared
+workspace, and fails closed when a component cannot be parsed. The command does not write source
+files.
+
+Key options:
+
+| Option         | Description                                                                     |
+| -------------- | ------------------------------------------------------------------------------- |
+| `--root`       | Workspace boundary and base for report paths; defaults to the current directory |
+| `-f, --format` | Output format: `text` (default) or versioned `json`                             |
+| `--exit-zero`  | Return success even when a proven error would normally block                    |
+
+Exit status `0` means the configured gate passed, `1` means the report contains a certain or
+high-confidence error, and `2` means discovery, parsing, analysis, serialization, or output failed.
+Warnings and lower-confidence findings affect the health score but do not block by default.
+
+The JSON representation is deterministic and contains explicit format and scoring versions. It is
+the preferred interface for CI policies, editor integrations, dashboards, and AI tooling:
+
+```bash
+vize doctor src --format json > doctor-report.json
 ```
 
 ## Inspector

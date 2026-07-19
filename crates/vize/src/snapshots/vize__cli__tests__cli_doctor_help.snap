@@ -1,0 +1,34 @@
+---
+source: crates/vize/src/cli.rs
+expression: "command_help(\"doctor\")"
+---
+Analyze whole-application health
+
+Usage: doctor [OPTIONS] [PATHS]...
+
+Arguments:
+  [PATHS]...
+          Files or directories to analyze. Defaults to the workspace root
+
+          [default: .]
+
+Options:
+      --root <ROOT>
+          Workspace boundary used for discovery and report paths. Defaults to `.`
+
+          [default: .]
+
+  -f, --format <FORMAT>
+          Output format. Defaults to `text`
+
+          Possible values:
+          - text: Concise terminal-oriented health report
+          - json: Stable, versioned JSON report for automation and AI consumers
+
+          [default: text]
+
+      --exit-zero
+          Return success even when the report contains blocking findings. Defaults to false
+
+  -h, --help
+          Print help (see a summary with '-h')

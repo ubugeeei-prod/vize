@@ -39,6 +39,9 @@ enum Commands {
     /// Curator utilities for diagnostics and reports
     Curator(crate::commands::curator::CuratorArgs),
 
+    /// Analyze whole-application health
+    Doctor(crate::commands::doctor::DoctorArgs),
+
     /// Remove Vize-generated cache artifacts
     Clean(crate::commands::clean::CleanArgs),
 
@@ -86,6 +89,7 @@ fn run(cli: Cli) {
         Some(Commands::Check(args)) => crate::commands::check::run(args),
         Some(Commands::Inspector(args)) => crate::commands::inspector::run(args),
         Some(Commands::Curator(args)) => crate::commands::curator::run(args),
+        Some(Commands::Doctor(args)) => crate::commands::doctor::run(args),
         Some(Commands::Clean(args)) => crate::commands::clean::run(args),
         #[cfg(unix)]
         Some(Commands::CheckServer(args)) => crate::commands::check_server::run(args),
@@ -156,6 +160,11 @@ mod tests {
     #[test]
     fn curator_help_snapshot() {
         insta::assert_snapshot!("cli_curator_help", command_help("curator"));
+    }
+
+    #[test]
+    fn doctor_help_snapshot() {
+        insta::assert_snapshot!("cli_doctor_help", command_help("doctor"));
     }
 
     #[test]

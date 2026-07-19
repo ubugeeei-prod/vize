@@ -5,6 +5,7 @@ pub mod check;
 pub mod check_server;
 pub mod clean;
 pub mod curator;
+pub mod doctor;
 pub mod env_info;
 #[cfg(feature = "glyph")]
 pub mod fmt;

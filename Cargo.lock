@@ -3423,6 +3423,7 @@ dependencies = [
  "vize_croquis",
  "vize_croquis_cf",
  "vize_curator",
+ "vize_doctor",
  "vize_glyph",
  "vize_maestro",
  "vize_musea",
