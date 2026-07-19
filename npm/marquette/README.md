@@ -99,7 +99,8 @@ code.
 - The published application-contract schema is available from
   `@vizejs/marquette/schema`.
 - Every optional contract field documents its default in JSDoc.
-- Package builds enforce a 1 KiB gzip budget for the runtime entry.
+- Package builds enforce a 1 KiB gzip budget for authoring and a 3 KiB budget
+  for runtime validation.
 
 Marquette describes components and environments; it does not author UI
 components. Public Vize UI components use real `.vue` SFC files as their

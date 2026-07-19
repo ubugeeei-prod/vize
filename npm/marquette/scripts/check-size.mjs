@@ -4,20 +4,25 @@ import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const entryPath = path.join(packageRoot, "dist/index.mjs");
-const maximumGzipBytes = 1024;
-const gzipBytes = gzipSync(fs.readFileSync(entryPath), { level: 9 }).byteLength;
+const budgets = [
+  { entry: "@vizejs/marquette", file: "dist/index.mjs", maximumGzipBytes: 1024 },
+  {
+    entry: "@vizejs/marquette/validate",
+    file: "dist/validate.mjs",
+    maximumGzipBytes: 3072,
+  },
+];
 
-if (gzipBytes > maximumGzipBytes) {
-  throw new Error(
-    `@vizejs/marquette gzip size ${gzipBytes} bytes exceeds ${maximumGzipBytes} byte budget`,
-  );
+for (const { entry, file, maximumGzipBytes } of budgets) {
+  const gzipBytes = gzipSync(fs.readFileSync(path.join(packageRoot, file)), {
+    level: 9,
+  }).byteLength;
+
+  if (gzipBytes > maximumGzipBytes) {
+    throw new Error(
+      `${entry} gzip size ${gzipBytes} bytes exceeds ${maximumGzipBytes} byte budget`,
+    );
+  }
+
+  console.log(JSON.stringify({ entry, gzipBytes, maximumGzipBytes }));
 }
-
-console.log(
-  JSON.stringify({
-    entry: "@vizejs/marquette",
-    gzipBytes,
-    maximumGzipBytes,
-  }),
-);
