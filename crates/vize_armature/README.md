@@ -1,8 +1,7 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/assets/crates/vize_armature.svg" alt="vize_armature logo" width="120" height="120" />
-</p>
-
-# vize_armature
+<h1 align="center">
+  <img src="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/assets/crates/vize_armature.svg" alt="vize_armature logo" width="120" height="120" /><br>
+  vize_armature
+</h1>
 
 Support and deprecation guarantees are defined in the
 [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).

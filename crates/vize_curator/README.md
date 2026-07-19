@@ -1,8 +1,7 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/assets/crates/vize_curator.svg" alt="vize_curator logo" width="120" height="120" />
-</p>
-
-# vize_curator
+<h1 align="center">
+  <img src="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/assets/crates/vize_curator.svg" alt="vize_curator logo" width="120" height="120" /><br>
+  vize_curator
+</h1>
 
 `vize_curator` contains local-only inspection and reporting helpers for Vize.
 
