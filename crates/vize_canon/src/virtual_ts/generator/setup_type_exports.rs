@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use vize_carton::{String, append, cstr};
+use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 
 fn skip_trivia(source: &str, mut at: usize) -> usize {
@@ -68,6 +68,7 @@ impl SetupTypeExportsPlan {
     pub(super) fn new(summary: &Croquis, script: Option<&str>) -> Self {
         let mut export_starts = Vec::new();
         let mut exports = Vec::new();
+        let mut captured_names: FxHashSet<String> = FxHashSet::default();
 
         if let Some(script) = script {
             for declaration in summary.type_exports.iter().filter(|item| !item.hoisted) {
@@ -81,10 +82,27 @@ impl SetupTypeExportsPlan {
                 }
 
                 let name: String = declaration.name.as_str().into();
+                // Every analyzed setup-scoped export must lose its `export`
+                // modifier so the declaration is legal inside `__setup`; a
+                // retained modifier emitted in function scope is TS1184. Record
+                // the span before the guards below, which only decide whether we
+                // additionally capture a re-exportable artifact.
+                export_starts.push(declaration.start);
+                // Generic declarations cannot ride the non-generic
+                // `undefined as unknown as T` capture path: it drops their type
+                // parameters, and a value-dependent generic cannot be
+                // reconstructed at module scope. Strip the modifier (above) but
+                // skip artifact capture.
                 if exported_type_is_generic(source, &name) {
                     continue;
                 }
-                export_starts.push(declaration.start);
+                // Legal declaration merging (e.g. two `export interface
+                // Options`) surfaces the same name twice. Keep every modifier
+                // span, but capture a single artifact per exported name so the
+                // generated module has no duplicate bindings or aliases.
+                if !captured_names.insert(name.clone()) {
+                    continue;
+                }
                 exports.push(SetupTypeExport {
                     artifact: cstr!("__vize_exported_type_{name}"),
                     name,
@@ -97,6 +115,13 @@ impl SetupTypeExportsPlan {
             export_starts,
             exports,
         }
+    }
+
+    /// Whether `name` is captured as an explicit public re-export at module
+    /// scope. Used to distinguish a public `export type Props` from a private
+    /// setup-scoped `type Props`, which is never re-exported.
+    pub(super) fn exports_public_type(&self, name: &str) -> bool {
+        self.exports.iter().any(|export| export.name.as_str() == name)
     }
 
     pub(super) fn strip_modifiers(&self, line: &mut Cow<'_, str>, line_start: u32) {
@@ -231,14 +256,57 @@ mod tests {
             hoisted: false,
         });
         let plan = SetupTypeExportsPlan::new(&summary, Some(source));
+        // The `export` modifier is still stripped: a non-hoisted generic stays
+        // inside `__setup`, where a retained modifier would be TS1184.
         let mut line = std::borrow::Cow::Borrowed(source);
         plan.strip_modifiers(&mut line, 0);
-        assert_eq!(line, source);
+        assert_eq!(line, " /* public */ type Box<T extends typeof value> = { value: T }");
 
+        // But it is never captured through the non-generic artifact path, which
+        // would drop its type parameters.
         let mut fields = Vec::new();
         let mut setup = vize_carton::String::default();
         plan.emit_setup_artifacts(&mut setup, &mut fields);
         assert!(fields.is_empty());
         assert!(setup.is_empty());
+    }
+
+    #[test]
+    fn merged_interface_exports_capture_one_artifact_per_name() {
+        let script = "export interface Options { a: typeof value } export interface Options { b: typeof value }";
+        let first_start = script.find("export").unwrap() as u32;
+        let second_start = script.rfind("export").unwrap() as u32;
+        let mut summary = Croquis::new();
+        for start in [first_start, second_start] {
+            summary.type_exports.push(TypeExport {
+                name: "Options".into(),
+                kind: TypeExportKind::Interface,
+                start,
+                end: script.len() as u32,
+                hoisted: false,
+            });
+        }
+
+        let plan = SetupTypeExportsPlan::new(&summary, Some(script));
+
+        // Both `export` modifiers are stripped so neither merged declaration is
+        // illegal inside `__setup`.
+        let mut line = std::borrow::Cow::Borrowed(script);
+        plan.strip_modifiers(&mut line, 0);
+        assert_eq!(
+            line,
+            " interface Options { a: typeof value }  interface Options { b: typeof value }"
+        );
+
+        // But only one artifact/alias is emitted for the merged name.
+        let mut fields = Vec::new();
+        let mut setup = vize_carton::String::default();
+        plan.emit_setup_artifacts(&mut setup, &mut fields);
+        assert_eq!(fields, ["__vize_exported_type_Options"]);
+        assert_eq!(setup.matches("unknown as Options").count(), 1);
+
+        let mut module = vize_carton::String::default();
+        plan.emit_module_exports(&mut module);
+        assert_eq!(module.matches("export type Options =").count(), 1);
     }
 }

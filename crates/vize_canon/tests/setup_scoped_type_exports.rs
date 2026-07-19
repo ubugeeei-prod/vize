@@ -32,6 +32,18 @@ void props;
 <template><button /></template>
 "#;
 
+const PRIVATE_SETUP_PROPS_COMPONENT: &str = r#"<script setup lang="ts">
+const NATIVE_TYPES = ["button", "submit"] as const;
+type Props = {
+  nativeType: typeof NATIVE_TYPES[number];
+};
+const props = defineProps<Props>();
+void props;
+</script>
+
+<template><button /></template>
+"#;
+
 #[test]
 fn setup_value_dependent_exports_are_captured_and_reexported() {
     let virtual_ts = type_check_sfc(
@@ -143,6 +155,46 @@ fn exported_setup_scoped_props_have_one_public_declaration() {
     assert!(
         parsed.errors.is_empty(),
         "a public setup-scoped Props interface must remain parseable: {:#?}\n{virtual_ts}",
+        parsed.errors
+    );
+}
+
+#[test]
+fn private_setup_scoped_props_still_export_a_public_declaration() {
+    let virtual_ts = type_check_sfc(
+        PRIVATE_SETUP_PROPS_COMPONENT,
+        &SfcTypeCheckOptions::new("PrivateSetupButton.vue").with_virtual_ts(),
+    )
+    .virtual_ts
+    .expect("virtual TypeScript should be generated");
+
+    // The user's `Props` is private and value-dependent, so it stays inside
+    // `__setup` and is never re-exported by the type-export plan. The public
+    // `export type Props` consumers need must still be restored from the setup
+    // return, and there must be exactly one of them.
+    assert_eq!(
+        virtual_ts.match_indices("export type Props =").count(),
+        1,
+        "a private value-dependent Props must still yield one public export:\n{virtual_ts}"
+    );
+    assert!(
+        virtual_ts.contains(
+            "export type Props = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"]"
+        ),
+        "the public Props alias must resolve from the setup return:\n{virtual_ts}"
+    );
+    assert!(
+        !virtual_ts.contains("__VizeResolvedProps"),
+        "a private Props must not be treated as an existing public alias:\n{virtual_ts}"
+    );
+
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed =
+        oxc_parser::Parser::new(&allocator, virtual_ts.as_str(), oxc_span::SourceType::ts())
+            .parse();
+    assert!(
+        parsed.errors.is_empty(),
+        "a private setup-scoped Props must remain parseable: {:#?}\n{virtual_ts}",
         parsed.errors
     );
 }

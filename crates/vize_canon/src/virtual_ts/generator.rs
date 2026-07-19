@@ -454,7 +454,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         } else {
             None
         };
-    let setup_props_plan = SetupPropsPlan::new(summary, options_api_props.as_ref());
+    let setup_props_plan = SetupPropsPlan::new(
+        summary,
+        options_api_props.as_ref(),
+        setup_type_exports.exports_public_type("Props"),
+    );
     profile!("canon.virtual_ts.generate_props_type", {
         setup_props_plan.generate_props_type(
             &mut ts,

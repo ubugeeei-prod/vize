@@ -100,11 +100,19 @@ impl SetupPropsPlan {
     pub(super) fn new(
         summary: &Croquis,
         options_api_props: Option<&OptionsApiPropsSource>,
+        props_is_public_export: bool,
     ) -> Self {
-        let module_scope_declares_props = summary
-            .type_exports
-            .iter()
-            .any(|te| te.name.as_str() == "Props");
+        // A `Props` declaration only lands at module scope when it is hoisted
+        // (emitted directly at module level) or when it is a value-dependent
+        // export recaptured through the setup return (`props_is_public_export`).
+        // A private, non-hoisted `type Props` stays inside `__setup`, so it must
+        // NOT be treated as an existing public alias — otherwise the public
+        // `export type Props` consumers need is suppressed.
+        let module_scope_declares_props = props_is_public_export
+            || summary
+                .type_exports
+                .iter()
+                .any(|te| te.hoisted && te.name.as_str() == "Props");
         Self {
             defer: define_props_type_requires_setup_scope(summary),
             defer_options_api_props: !module_scope_declares_props
@@ -160,6 +168,9 @@ impl SetupPropsPlan {
     }
 
     pub(super) fn component_props_type_ref(&self) -> &'static str {
+        // Defer to `__VizeResolvedProps` only when a `Props` already lives at
+        // module scope; otherwise the public `Props` alias emitted from the
+        // setup return is the component prop source.
         if self.defer && self.module_scope_declares_props {
             "__VizeResolvedProps"
         } else {
@@ -247,10 +258,15 @@ impl SetupPropsPlan {
     ) {
         if self.defer {
             if self.module_scope_declares_props {
+                // A `Props` already lives at module scope (hoisted, or restored
+                // by the setup type-export plan); emit an internal alias for the
+                // component instance to avoid a duplicate public declaration.
                 ts.push_str(
                     "type __VizeResolvedProps = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];\n\n",
                 );
             } else {
+                // No `Props` exists at module scope (inline type args, or a
+                // private setup-scoped `Props`), so restore the public alias.
                 ts.push_str(
                     "export type Props = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];\n\n",
                 );
