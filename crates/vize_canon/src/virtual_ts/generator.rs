@@ -252,9 +252,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             module_spans.push((imp.start, imp.end));
         }
         if let Some(script) = script_content {
-            module_spans.extend(self::script_module::collect_line_module_import_spans(
-                script,
-            ));
+            module_spans.extend(self::script_module::collect_line_module_spans(script));
         }
         for re in &summary.re_exports {
             module_spans.push((re.start, re.end));

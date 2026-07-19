@@ -4,7 +4,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{BindingPattern, Declaration, Statement, TSEnumDeclaration};
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, FxHashSet, String as VizeString, append};
 
 pub(super) fn collect_normal_script_named_value_exports(
@@ -18,23 +18,29 @@ pub(super) fn collect_normal_script_named_value_exports(
     script.map(collect_named_value_exports).unwrap_or_default()
 }
 
-pub(super) fn collect_line_module_import_spans(script: &str) -> Vec<(u32, u32)> {
+pub(super) fn collect_line_module_spans(script: &str) -> Vec<(u32, u32)> {
     let mut spans = Vec::new();
     let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script, SourceType::tsx().with_module(true)).parse();
+    let parsed = Parser::new(&allocator, script, SourceType::ts().with_module(true)).parse();
+    let parsed = if parsed.panicked {
+        Parser::new(&allocator, script, SourceType::tsx().with_module(true)).parse()
+    } else {
+        parsed
+    };
     if parsed.panicked {
         return spans;
     }
 
     for statement in &parsed.program.body {
         match statement {
-            Statement::ImportDeclaration(decl) => {
-                spans.push((decl.span.start, decl.span.end));
+            Statement::ImportDeclaration(_)
+            | Statement::ExportAllDeclaration(_)
+            | Statement::TSModuleDeclaration(_)
+            | Statement::TSGlobalDeclaration(_) => {
+                let span = statement.span();
+                spans.push((span.start, span.end));
             }
             Statement::ExportNamedDeclaration(decl) if decl.source.is_some() => {
-                spans.push((decl.span.start, decl.span.end));
-            }
-            Statement::ExportAllDeclaration(decl) => {
                 spans.push((decl.span.start, decl.span.end));
             }
             _ => {}
@@ -294,14 +300,14 @@ fn contains_ts_suppression_directive(comment: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{
-        CompactString, collect_line_module_import_spans, collect_named_value_export_starts,
+        CompactString, collect_line_module_spans, collect_named_value_export_starts,
         collect_named_value_exports,
     };
 
     #[test]
     fn collect_import_span_includes_adjacent_ts_ignore_comment_group() {
         let script = "const before = 1;\n// FIXME: types\n// @ts-ignore\nimport Chart from \"chart.js/auto/auto\";\nconst after = 2;\n";
-        let spans = collect_line_module_import_spans(script);
+        let spans = collect_line_module_spans(script);
 
         assert_eq!(spans.len(), 1);
         assert_eq!(
@@ -313,7 +319,7 @@ mod tests {
     #[test]
     fn collect_import_span_leaves_regular_comments_in_script_body() {
         let script = "// import note\nimport Chart from \"chart.js/auto/auto\";\n";
-        let spans = collect_line_module_import_spans(script);
+        let spans = collect_line_module_spans(script);
 
         assert_eq!(spans.len(), 1);
         assert_eq!(
