@@ -1,0 +1,9 @@
+---
+source: crates/vize_atelier_vapor/src/tests.rs
+expression: code.as_str()
+---
+import { createSlot as _createSlot } from 'vue';
+export function render(_ctx) {
+const n0 = _createSlot("default", { kind: "primary", row: () => (_ctx.item), $: [() => (_ctx.extra)] })
+return n0
+}

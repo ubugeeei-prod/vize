@@ -30,6 +30,9 @@ pub(super) fn generate_set_template_ref(
 }
 
 /// Generate InsertNode
+///
+/// The Vapor runtime signature is `insert(block, parent, anchor?)`; multiple
+/// blocks are passed as one array block, a single block stays bare.
 pub(super) fn generate_insert_node(ctx: &mut GenerateContext, insert: &InsertNodeIRNode) {
     ctx.use_helper("insert");
     let parent = cstr!("n{}", insert.parent);
@@ -39,19 +42,24 @@ pub(super) fn generate_insert_node(ctx: &mut GenerateContext, insert: &InsertNod
         .map(|e| cstr!("n{e}"))
         .collect::<std::vec::Vec<_>>()
         .join(", ");
+    let block = if insert.elements.len() > 1 {
+        cstr!("[{}]", elements)
+    } else {
+        cstr!("{}", elements)
+    };
 
     if let Some(anchor) = insert.anchor {
-        ctx.push_line_fmt(format_args!(
-            "_insert({}, [{}], n{})",
-            parent, elements, anchor
-        ));
+        ctx.push_line_fmt(format_args!("_insert({}, {}, n{})", block, parent, anchor));
     } else {
-        ctx.push_line_fmt(format_args!("_insert({}, [{}])", parent, elements));
+        ctx.push_line_fmt(format_args!("_insert({}, {})", block, parent));
     }
 }
 
 /// Generate PrependNode
+///
+/// The Vapor runtime signature is `prepend(parent, ...blocks)`.
 pub(super) fn generate_prepend_node(ctx: &mut GenerateContext, prepend: &PrependNodeIRNode) {
+    ctx.use_helper("prepend");
     let parent = cstr!("n{}", prepend.parent);
     let elements = prepend
         .elements
@@ -60,7 +68,7 @@ pub(super) fn generate_prepend_node(ctx: &mut GenerateContext, prepend: &Prepend
         .collect::<std::vec::Vec<_>>()
         .join(", ");
 
-    ctx.push_line_fmt(format_args!("_prepend({}, [{}])", parent, elements));
+    ctx.push_line_fmt(format_args!("_prepend({}, {})", parent, elements));
 }
 
 /// Generate GetTextChild

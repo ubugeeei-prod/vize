@@ -3,9 +3,9 @@ source: crates/vize_atelier_vapor/src/tests.rs
 expression: code.as_str()
 ---
 import { createSlot as _createSlot, template as _template } from 'vue';
-const t0 = _template("<span>fallback</span>")
+const t0 = _template("fallback")
 export function render(_ctx) {
-const n0 = _createSlot("header", { item: () => (_ctx.x) }, () => {
+const n0 = _createSlot(() => (_ctx.slotName), { item: () => (_ctx.x) }, () => {
 const n1 = t0()
 return n1
 })

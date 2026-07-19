@@ -795,14 +795,79 @@ fn test_compile_slot_outlet_preserves_dynamic_name() {
 
     let code = normalize_code(&result.code);
     assert_parses_as_module(&code);
+    insta::assert_snapshot!(code.as_str());
+}
+
+#[test]
+fn test_compile_bare_default_slot_outlet() {
+    let allocator = Bump::new();
+    let result = compile_vapor(&allocator, r#"<slot />"#, Default::default());
+
     assert!(
-        code.contains(
-            r#"const n0 = _renderSlot($slots, _ctx.slotName, { "item": _ctx.x }, () => {"#
-        ),
-        "{}",
-        code
+        result.error_messages.is_empty(),
+        "Expected no errors: {:?}",
+        result.error_messages
     );
-    assert!(code.contains(r#"return n1"#), "{}", code);
+
+    let code = normalize_code(&result.code);
+    assert_parses_as_module(&code);
+    insta::assert_snapshot!(code.as_str());
+}
+
+#[test]
+fn test_compile_named_slot_outlet_without_props() {
+    let allocator = Bump::new();
+    let result = compile_vapor(&allocator, r#"<slot name="head" />"#, Default::default());
+
+    assert!(
+        result.error_messages.is_empty(),
+        "Expected no errors: {:?}",
+        result.error_messages
+    );
+
+    let code = normalize_code(&result.code);
+    assert_parses_as_module(&code);
+    insta::assert_snapshot!(code.as_str());
+}
+
+#[test]
+fn test_compile_default_slot_outlet_with_fallback_only() {
+    let allocator = Bump::new();
+    let result = compile_vapor(
+        &allocator,
+        r#"<slot><div>fb</div></slot>"#,
+        Default::default(),
+    );
+
+    assert!(
+        result.error_messages.is_empty(),
+        "Expected no errors: {:?}",
+        result.error_messages
+    );
+
+    let code = normalize_code(&result.code);
+    assert_parses_as_module(&code);
+    insta::assert_snapshot!(code.as_str());
+}
+
+#[test]
+fn test_compile_slot_outlet_static_and_spread_props() {
+    let allocator = Bump::new();
+    let result = compile_vapor(
+        &allocator,
+        r#"<slot kind="primary" :row="item" v-bind="extra" />"#,
+        Default::default(),
+    );
+
+    assert!(
+        result.error_messages.is_empty(),
+        "Expected no errors: {:?}",
+        result.error_messages
+    );
+
+    let code = normalize_code(&result.code);
+    assert_parses_as_module(&code);
+    insta::assert_snapshot!(code.as_str());
 }
 
 #[test]

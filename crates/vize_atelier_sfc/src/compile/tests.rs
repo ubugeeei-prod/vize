@@ -2228,6 +2228,35 @@ fn test_template_only_sfc_vapor_output_mode() {
     insta::assert_snapshot!(result.code.as_str());
 }
 
+// Regression test for #3073: a Vapor SFC `<slot>` must lower to the Vapor
+// runtime's `createSlot`, never the vdom `renderSlot` helper, and nested slot
+// blocks must insert with the runtime's `insert(block, parent)` argument order.
+#[test]
+fn test_script_setup_sfc_vapor_slot_outlet() {
+    let source = r#"<script setup lang="ts"></script>
+
+<template>
+  <div><slot /></div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        vapor: true,
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(result.code.as_str());
+}
+
 #[test]
 fn test_script_setup_sfc_vapor_output_mode() {
     let source = r#"<script setup lang="ts">
