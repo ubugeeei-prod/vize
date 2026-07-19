@@ -18,4 +18,5 @@ vize_carton.workspace = true
 vize_croquis_cf = { workspace = true, optional = true }
 
 [dev-dependencies]
+tempfile.workspace = true
 serde_json.workspace = true

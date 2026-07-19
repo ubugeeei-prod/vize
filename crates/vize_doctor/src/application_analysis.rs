@@ -7,7 +7,7 @@
 mod profile;
 
 use std::{
-    fmt,
+    fmt, fs,
     path::{Component, Path},
 };
 
@@ -178,12 +178,15 @@ fn source_location(
         })
 }
 
-/// Relativizes `path` against the workspace `root`, tolerating differences that
-/// do not change which file is referenced: lexical `.`/`..` noise and case-only
-/// mismatches in the workspace prefix on case-insensitive platforms
-/// (macOS/Windows). Symlinks are intentionally not resolved so the adapter keeps
-/// working without filesystem access (sources may be virtual or absent on disk).
+/// Relativizes `path` against the workspace without trusting lexical aliases.
+///
+/// Existing paths are canonicalized to resolve symlinks and filesystem case
+/// semantics. Virtual or removed sources fall back to exact lexical containment.
 fn relativize_within(path: &Path, root: &Path) -> Option<String> {
+    if let (Ok(path), Ok(root)) = (fs::canonicalize(path), fs::canonicalize(root)) {
+        return path.strip_prefix(root).ok().and_then(normalize_source_path);
+    }
+
     let path_components = lexical_components(path);
     let root_components = lexical_components(root);
     if path_components.len() < root_components.len() {
@@ -193,7 +196,7 @@ fn relativize_within(path: &Path, root: &Path) -> Option<String> {
     if root_components
         .iter()
         .zip(prefix)
-        .any(|(root_component, path_component)| !components_match(*root_component, *path_component))
+        .any(|(root_component, path_component)| root_component != path_component)
     {
         return None;
     }
@@ -214,20 +217,6 @@ fn lexical_components(path: &Path) -> Vec<Component<'_>> {
         }
     }
     normalized
-}
-
-/// Compares two path components, treating normal segments and Windows prefixes
-/// case-insensitively so a case-only workspace-prefix mismatch is accepted.
-fn components_match(root: Component<'_>, candidate: Component<'_>) -> bool {
-    match (root, candidate) {
-        (Component::Normal(root), Component::Normal(candidate)) => {
-            root.eq_ignore_ascii_case(candidate)
-        }
-        (Component::Prefix(root), Component::Prefix(candidate)) => {
-            root.as_os_str().eq_ignore_ascii_case(candidate.as_os_str())
-        }
-        (root, candidate) => root == candidate,
-    }
 }
 
 fn normalize_source_path(path: &Path) -> Option<String> {
