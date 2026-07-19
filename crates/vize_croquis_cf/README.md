@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/assets/crates/vize_croquis_cf.svg" alt="vize_croquis_cf logo" width="120" height="120" />
+</p>
+
 # vize_croquis_cf
 
 Support and deprecation guarantees are defined in the

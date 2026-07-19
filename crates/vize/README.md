@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/assets/crates/vize.svg" alt="vize logo" width="120" height="120" />
+</p>
+
 # vize
 
 `vize` is the Rust-native entry point for the Vize workspace.

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/assets/crates/vize_atelier_core.svg" alt="vize_atelier_core logo" width="120" height="120" />
+</p>
+
 # vize_atelier_core
 
 Support and deprecation guarantees are defined in the

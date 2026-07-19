@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/assets/crates/vize_atelier_sfc.svg" alt="vize_atelier_sfc logo" width="120" height="120" />
+</p>
+
 # vize_atelier_sfc
 
 Support and deprecation guarantees are defined in the

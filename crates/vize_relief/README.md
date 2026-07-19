@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/assets/crates/vize_relief.svg" alt="vize_relief logo" width="120" height="120" />
+</p>
+
 # vize_relief
 
 Support and deprecation guarantees are defined in the

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/assets/crates/vize_glyph.svg" alt="vize_glyph logo" width="120" height="120" />
+</p>
+
 # vize_glyph
 
 `vize_glyph` formats Vue Single File Components.
