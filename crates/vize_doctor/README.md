@@ -3,7 +3,7 @@
 `vize_doctor` defines the versioned contracts for Vize whole-application health
 analysis. It gives analyzers, the CLI, editors, CI, Musea, and automated tooling
 one deterministic representation for findings, evidence, fixes, provenance,
-and health assessments.
+scores, and health gates.
 
 Support and deprecation guarantees are defined in the
 [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
@@ -12,16 +12,18 @@ Support and deprecation guarantees are defined in the
 
 - authored source spans remain attached to primary and related evidence;
 - severity, confidence, impact, fix safety, and analysis cost are explicit;
-- contracts use language-neutral serialization;
-- findings contain no timestamps or process-specific values.
+- findings and nested evidence are normalized into deterministic order;
+- reports use versioned, language-neutral serialization;
+- default health gates never block on low-confidence findings;
+- report output contains no timestamps or process-specific values.
 
 ## Example
 
 ```rust
 use vize_doctor::{
-    AnalysisProvenance, DoctorCategory, DoctorFinding, FindingAssessment,
-    FindingConfidence, FindingImpact, FindingSeverity, HealthPenalty,
-    RuleCost, SourceLocation,
+    AnalysisProvenance, DoctorCategory, DoctorFinding, DoctorReport,
+    FindingAssessment, FindingConfidence, FindingImpact, FindingSeverity,
+    HealthPenalty, RuleCost, SourceLocation,
 };
 
 let finding = DoctorFinding::new(
@@ -39,8 +41,8 @@ let finding = DoctorFinding::new(
     AnalysisProvenance::new("reactivity-graph", RuleCost::Low),
 );
 
-assert_eq!(finding.code, "VIZE_DOCTOR_REACTIVITY_001");
-assert_eq!(finding.primary.path, "src/Counter.vue");
+let report = DoctorReport::new("example", [finding]);
+assert!(report.summary().has_blocking_errors);
 ```
 
 ## License

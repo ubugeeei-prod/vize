@@ -14,16 +14,18 @@
 //!
 //! - Findings preserve primary and related authored source spans.
 //! - Severity, confidence, impact, fix safety, and analysis cost are explicit.
+//! - Reports are deterministically ranked and scored.
 //! - Serialized property and enum names are language-neutral and versioned.
-//! - Findings contain no timestamps or process-specific values.
+//! - Reports contain no timestamps or process-specific values.
+//! - A blocking proven error remains blocking regardless of its health score.
 //!
 //! # Example
 //!
 //! ```
 //! use vize_doctor::{
-//!     AnalysisProvenance, DoctorCategory, DoctorFinding, FindingAssessment,
-//!     FindingConfidence, FindingImpact, FindingSeverity, HealthPenalty,
-//!     RuleCost, SourceLocation,
+//!     AnalysisProvenance, DoctorCategory, DoctorFinding, DoctorReport,
+//!     FindingAssessment, FindingConfidence, FindingImpact, FindingSeverity,
+//!     HealthPenalty, RuleCost, SourceLocation,
 //! };
 //!
 //! let finding = DoctorFinding::new(
@@ -40,15 +42,22 @@
 //!     "Move the read into the derived computation that owns the dependency.",
 //!     AnalysisProvenance::new("reactivity-graph", RuleCost::Low),
 //! );
-//! assert_eq!(finding.code, "VIZE_DOCTOR_REACTIVITY_001");
-//! assert_eq!(finding.primary.path, "src/Counter.vue");
+//! let report = DoctorReport::new("example", [finding]);
+//!
+//! assert!(report.summary().has_blocking_errors);
+//! assert_eq!(report.findings().len(), 1);
 //! ```
 
 mod model;
+mod report;
 
 pub use model::{
     AnalysisProvenance, DoctorCategory, DoctorFinding, EvidenceKind, FindingAssessment,
     FindingConfidence, FindingContext, FindingEvidence, FindingFix, FindingImpact, FindingSeverity,
     FixSafety, HealthPenalty, RelatedLocation, RuleCost, SourceLocation, SuppressionPolicy,
     TextEdit,
+};
+pub use report::{
+    CategoryHealth, DOCTOR_REPORT_FORMAT_VERSION, DOCTOR_SCORING_VERSION, DoctorReport,
+    DoctorSummary, FindingCounts,
 };
