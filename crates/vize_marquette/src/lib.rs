@@ -1,6 +1,10 @@
-//! Versioned application platform contracts for Vize.
+//! Versioned application marquettes for Vize.
 //!
-//! `vize_platform` defines the language-neutral graph shared by the web,
+//! **Experimental:** serialized contracts are versioned, but Rust API
+//! compatibility is not guaranteed until the marquette model is validated by
+//! multiple target adapters.
+//!
+//! `vize_marquette` defines the language-neutral graph shared by the web,
 //! native, desktop, terminal, backend, transport, testing, and gallery
 //! surfaces. The crate intentionally owns contracts rather than runtime
 //! implementations. Target-specific crates consume this model and report
@@ -17,7 +21,7 @@
 //! # Example
 //!
 //! ```
-//! use vize_platform::{
+//! use vize_marquette::{
 //!     ApplicationContract, Backend, BackendFamily, Environment,
 //!     EnvironmentConsumer, RuntimeFamily, Target,
 //! };

@@ -9,7 +9,7 @@ pub struct CanonicalContractError(serde_json::Error);
 
 impl std::fmt::Display for CanonicalContractError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        formatter.write_str("failed to serialize the platform contract")
+        formatter.write_str("failed to serialize the application marquette")
     }
 }
 

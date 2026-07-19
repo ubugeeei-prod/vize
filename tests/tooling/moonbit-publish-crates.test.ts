@@ -96,7 +96,11 @@ test("publish_crates exactly partitions every publishable workspace crate", () =
 });
 
 test("publish_crates only defers crates that have not been created on crates.io", () => {
-  assert.deepEqual(getPendingFirstPublishCrates(), ["vize_croquis_cf", "vize_atelier_jsx"]);
+  assert.deepEqual(getPendingFirstPublishCrates(), [
+    "vize_croquis_cf",
+    "vize_atelier_jsx",
+    "vize_marquette",
+  ]);
 });
 
 test("publish_crates only blocks crates that depend on first-publish exclusions", () => {

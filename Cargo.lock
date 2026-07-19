@@ -3761,6 +3761,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_marquette"
+version = "0.298.0"
+dependencies = [
+ "insta",
+ "serde",
+ "serde_json",
+ "sha2",
+ "vize_carton",
+]
+
+[[package]]
 name = "vize_musea"
 version = "0.298.0"
 dependencies = [
@@ -3802,17 +3813,6 @@ dependencies = [
  "vize_carton",
  "vize_croquis",
  "vize_relief",
-]
-
-[[package]]
-name = "vize_platform"
-version = "0.298.0"
-dependencies = [
- "insta",
- "serde",
- "serde_json",
- "sha2",
- "vize_carton",
 ]
 
 [[package]]

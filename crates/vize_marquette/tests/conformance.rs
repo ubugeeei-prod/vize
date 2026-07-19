@@ -1,10 +1,10 @@
 use std::{fs, path::PathBuf};
 
-use vize_platform::{ApplicationContract, canonical_json, contract_fingerprint};
+use vize_marquette::{ApplicationContract, canonical_json, contract_fingerprint};
 
 fn fixture(name: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/fixtures/platform-contract")
+        .join("../../tests/fixtures/marquette")
         .join(name)
 }
 

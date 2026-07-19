@@ -99,6 +99,7 @@ details are not compatibility surfaces.
 | `vize_atelier_ssr`   | Compatibility preview | SSR and framework integration authors     | `vize_atelier_ssr::compile_ssr`                 | One minor with `#[deprecated]`         |
 | `vize_atelier_sfc`   | Alpha-supported       | SFC tooling and bundler authors           | `vize_atelier_sfc::{parse_sfc, compile_sfc}`    | One minor with `#[deprecated]`         |
 | `vize_atelier_jsx`   | Compatibility preview | JSX/TSX compiler and tooling authors      | `vize_atelier_jsx::{compile_jsx, lower_source}` | One minor with `#[deprecated]`         |
+| `vize_marquette`     | Experimental          | Framework and target-adapter authors      | `vize_marquette::{ApplicationContract, Target}` | No minimum; note breaks when practical |
 | `vize_musea`         | Experimental          | Musea gallery and documentation tools     | `vize_musea::{parse_art, transform_to_csf}`     | No minimum; note breaks when practical |
 | `vize_fresco`        | Incubating            | TUI experiments                           | `vize_fresco::{RenderTree, LayoutEngine}`       | No minimum                             |
 | `vize_canon`         | Compatibility preview | Type-checker and editor integrations      | `vize_canon::{type_check_sfc, TypeChecker}`     | One minor with `#[deprecated]`         |

@@ -5,7 +5,7 @@ use vize_carton::{String, ToCompactString};
 
 use crate::ApplicationContract;
 
-/// Compatibility classification for one graph change.
+/// Compatibility classification for one marquette graph change.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum CompatibilityChangeKind {

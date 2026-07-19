@@ -1,11 +1,11 @@
 [package]
-name = "vize_platform"
+name = "vize_marquette"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Versioned application platform contracts for Vize"
+description = "Versioned application blueprints for Vize"
 metadata.vize.stability = "experimental"
 
 [dependencies]

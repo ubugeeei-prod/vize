@@ -289,7 +289,7 @@ impl Route {
     }
 }
 
-/// Complete, versioned application platform contract.
+/// Complete, versioned marquette for a Vize application.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ApplicationContract {

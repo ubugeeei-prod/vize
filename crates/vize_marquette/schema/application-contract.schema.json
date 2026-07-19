@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://vizejs.dev/schemas/platform/application-contract.schema.json",
-  "title": "Vize Application Platform Contract",
+  "$id": "https://vizejs.dev/schemas/marquette/application-contract.schema.json",
+  "title": "Vize Application Marquette",
   "description": "Versioned language-neutral application target, environment, backend, protocol, and route graph.",
   "$ref": "#/$defs/contract",
   "$defs": {

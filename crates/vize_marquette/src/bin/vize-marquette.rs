@@ -6,13 +6,13 @@ use std::{
     process::ExitCode,
 };
 
-use vize_platform::{ApplicationContract, canonical_json, contract_fingerprint};
+use vize_marquette::{ApplicationContract, canonical_json, contract_fingerprint};
 
 fn main() -> ExitCode {
     match run() {
         Ok(code) => code,
         Err(error) => {
-            eprintln!("vize-platform: {error}");
+            eprintln!("vize-marquette: {error}");
             ExitCode::FAILURE
         }
     }
@@ -22,7 +22,7 @@ fn run() -> Result<ExitCode, Box<dyn std::error::Error>> {
     let mut arguments = env::args().skip(1);
     let command = arguments
         .next()
-        .ok_or("usage: vize-platform validate|canonical|fingerprint <contract.json>")?;
+        .ok_or("usage: vize-marquette validate|canonical|fingerprint <contract.json>")?;
     let path = arguments.next().ok_or("missing contract path")?;
     if arguments.next().is_some() {
         return Err("unexpected additional arguments".into());
@@ -36,7 +36,7 @@ fn run() -> Result<ExitCode, Box<dyn std::error::Error>> {
             Ok(
                 if diagnostics
                     .iter()
-                    .any(|value| value.severity == vize_platform::DiagnosticSeverity::Error)
+                    .any(|value| value.severity == vize_marquette::DiagnosticSeverity::Error)
                 {
                     ExitCode::FAILURE
                 } else {
