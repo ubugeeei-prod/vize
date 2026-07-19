@@ -1,3 +1,4 @@
+use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_carton::{String, ToCompactString, cstr};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -21,6 +22,32 @@ pub(super) fn parse_destructure_names(pattern: &str) -> std::vec::Vec<String> {
         .into_iter()
         .map(|binding| binding.local)
         .collect()
+}
+
+/// Resolve a Vapor template reference that names a destructured prop to a read
+/// through the render signature's `$props`.
+///
+/// Destructured props are compiled away from the setup return object, so template
+/// references must read the reactive props object, mirroring the vdom compiler's
+/// PROPS binding resolution. Aliased destructures read the original prop key; the
+/// alias map is consulted for both binding kinds because the merged script bindings
+/// can record an aliased local as plain `Props`.
+pub(super) fn resolve_props_binding(
+    binding_metadata: Option<&BindingMetadata>,
+    name: &str,
+) -> Option<String> {
+    let bindings = binding_metadata?;
+    if !matches!(
+        bindings.bindings.get(name),
+        Some(BindingType::Props | BindingType::PropsAliased)
+    ) {
+        return None;
+    }
+    let key = bindings
+        .props_aliases
+        .get(name)
+        .map_or(name, |key| key.as_str());
+    Some(cstr!("$props.{}", key))
 }
 
 fn parse_pattern(pattern: &str, prefix: String, bindings: &mut std::vec::Vec<DestructureBinding>) {

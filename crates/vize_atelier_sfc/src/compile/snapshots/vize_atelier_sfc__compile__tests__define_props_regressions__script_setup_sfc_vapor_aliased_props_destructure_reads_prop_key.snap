@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_sfc/src/compile/tests.rs
+source: crates/vize_atelier_sfc/src/compile/tests/define_props_regressions.rs
 expression: result.code.as_str()
 ---
 import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'

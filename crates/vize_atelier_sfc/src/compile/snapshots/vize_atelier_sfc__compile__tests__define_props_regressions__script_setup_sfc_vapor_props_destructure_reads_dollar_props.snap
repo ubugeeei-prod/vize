@@ -1,32 +1,33 @@
 ---
-source: crates/vize_atelier_sfc/src/compile/tests.rs
+source: crates/vize_atelier_sfc/src/compile/tests/define_props_regressions.rs
 expression: result.code.as_str()
 ---
 import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
-import { createFor as _createFor, template as _template } from 'vue';
+import { createDynamicComponent as _createDynamicComponent, template as _template } from 'vue';
 
-const t0 = _template("<li></li>")
+const t0 = _template("hi")
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
-  const n0 = _createFor(() => (['a']), (_for_item0) => {
-    const n2 = t0()
-    return n2
-  }, (item) => (_ctx.props.itemKey(item)))
-  return n0
+  const n1 = _createDynamicComponent(() => ($props.tag), { "data-probe": undefined }, {
+    "default": () => {
+      const n0 = t0()
+      return n0
+    }
+  }, true)
+  return n1
 }
 const __vaporRender = render
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'anonymous',
   props: {
-    itemKey: { type: Function, required: true }
+    tag: { type: String, required: false, default: "div" }
   },
   render: __vaporRender,
   setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
 
-const props = __props;
 
-const __returned__ = { props }
+const __returned__ = {  }
 Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
 const __instance = _getCurrentInstance()
 const __ctx = _proxyRefs(__returned__)

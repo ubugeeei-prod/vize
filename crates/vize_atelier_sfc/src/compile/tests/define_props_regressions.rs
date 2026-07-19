@@ -1,5 +1,7 @@
 use super::super::compile_sfc;
-use crate::types::{BindingType, SfcCompileOptions};
+use crate::types::{
+    BindingType, ScriptCompileOptions, SfcCompileOptions, SfcCompileResult, TemplateCompileOptions,
+};
 use crate::{SfcParseOptions, parse_sfc};
 
 #[test]
@@ -164,4 +166,72 @@ withDefaults(defineProps<{
     assert_eq!(&source[loc.start..loc.end], "items");
     assert_eq!((loc.start_line, loc.start_column), (6, 9));
     assert_eq!((loc.end_line, loc.end_column), (6, 14));
+}
+
+fn compile_vapor_ts_sfc(source: &str) -> SfcCompileResult {
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        vapor: true,
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    compile_sfc(&descriptor, opts).expect("Failed to compile SFC")
+}
+
+// Regression test for #3072: a destructured prop is compiled out of the setup
+// return object, so the Vapor render must read it through `$props`, not `_ctx`.
+#[test]
+fn test_script_setup_sfc_vapor_props_destructure_reads_dollar_props() {
+    let result = compile_vapor_ts_sfc(
+        r#"<script setup lang="ts">
+const { tag = "div" } = defineProps<{ tag?: string }>();
+</script>
+
+<template>
+  <component :is="tag" data-probe>hi</component>
+</template>"#,
+    );
+
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+// Regression test for #3072: an aliased destructured prop resolves through the
+// original prop key on `$props`.
+#[test]
+fn test_script_setup_sfc_vapor_aliased_props_destructure_reads_prop_key() {
+    let result = compile_vapor_ts_sfc(
+        r#"<script setup lang="ts">
+const { tag: theTag = "div" } = defineProps<{ tag?: string }>();
+</script>
+
+<template>
+  <component :is="theTag" data-probe>hi</component>
+</template>"#,
+    );
+
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+// Regression test for #3072 (comment): `props.x` template references stay on
+// the setup context, and `props` is part of the setup return object.
+#[test]
+fn test_script_setup_sfc_vapor_props_object_reference_stays_on_ctx() {
+    let result = compile_vapor_ts_sfc(
+        r#"<script setup lang="ts">
+const props = defineProps<{ itemKey: (item: string) => PropertyKey }>();
+</script>
+
+<template>
+  <li v-for="item in ['a']" :key="props.itemKey(item)" />
+</template>"#,
+    );
+
+    insta::assert_snapshot!(result.code.as_str());
 }
