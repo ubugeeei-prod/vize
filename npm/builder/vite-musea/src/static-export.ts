@@ -1,22 +1,15 @@
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-import { generateGalleryBody, generateGalleryScript } from "./gallery/template.js";
-import { generateGalleryGlobalsScript } from "./gallery/globals.js";
 import { serializeScriptValue } from "./security.js";
-import {
-  publicBasePathFromViteBase,
-  rewriteGalleryBase,
-  rewriteGalleryTextAssetBase,
-} from "./static-base.js";
+import { publicBasePathFromViteBase } from "./static-base.js";
+import { emitGalleryShell, joinFileName } from "./static-gallery-shell.js";
 import {
   createStaticGalleryPayload,
   joinUrlPath,
   staticPreviewId,
   type StaticGalleryDataContext,
-  type StaticGalleryPayload,
 } from "./static-data.js";
 import type { ArtFileInfo } from "./types/index.js";
 import type { MuseaTokenPreviewConfig } from "./tokens/preview.js";
@@ -28,7 +21,6 @@ export const VIRTUAL_STATIC_RUNTIME = "virtual:musea-static-runtime";
 const RESOLVED_STATIC_RUNTIME = "\0musea-static-runtime";
 const STATIC_RUNTIME_INPUT_NAME = "musea-static-runtime";
 const STATIC_USER_INPUT_NAME = "musea-static-entry";
-const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
 export type StaticBuildInput = string | readonly string[] | Record<string, string> | undefined;
 type OutputBundle = Record<string, OutputChunk | { type: string; fileName: string }>;
@@ -164,50 +156,6 @@ function findRuntimeFileName(bundle: OutputBundle): string | null {
   return null;
 }
 
-async function emitGalleryShell(
-  emitFile: (asset: { type: "asset"; fileName: string; source: string | Uint8Array }) => void,
-  staticRoot: string,
-  ctx: StaticEmitContext,
-  payload: StaticGalleryPayload,
-): Promise<void> {
-  const galleryDir = resolveGalleryDistDir();
-  if (!galleryDir) {
-    const html = injectStaticGlobals(generateStaticFallbackGalleryHtml(ctx.basePath), ctx, payload);
-    emitFile({ type: "asset", fileName: joinFileName(staticRoot, "index.html"), source: html });
-    return;
-  }
-
-  for (const filePath of await collectFiles(galleryDir)) {
-    const relative = path.relative(galleryDir, filePath).split(path.sep).join("/");
-    const target = joinFileName(staticRoot, relative);
-    const content = await fs.promises.readFile(filePath);
-    if (relative === "index.html") {
-      const html = injectStaticGlobals(content.toString("utf-8"), ctx, payload);
-      emitFile({ type: "asset", fileName: target, source: rewriteGalleryBase(html, ctx.basePath) });
-    } else {
-      const source = rewriteGalleryTextAssetBase(content, relative, ctx.basePath);
-      emitFile({ type: "asset", fileName: target, source });
-    }
-  }
-}
-
-function generateStaticFallbackGalleryHtml(basePath: string): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Musea - Component Gallery</title>
-  <style>html,body{min-height:100%;margin:0}body{font-family:system-ui,sans-serif}</style>
-</head>
-<body>${generateGalleryBody(basePath)}
-
-  <script type="module">${generateGalleryScript(basePath)}
-  </script>
-</body>
-</html>`;
-}
-
 function emitPreviewHtml(
   emitFile: (asset: { type: "asset"; fileName: string; source: string }) => void,
   staticRoot: string,
@@ -264,22 +212,6 @@ function generateStaticPreviewHtml(
 </html>`;
 }
 
-function injectStaticGlobals(
-  html: string,
-  ctx: StaticEmitContext,
-  payload: StaticGalleryPayload,
-): string {
-  const script = `<script>${generateGalleryGlobalsScript({
-    basePath: ctx.basePath,
-    staticPreviews: payload.previews,
-    themeConfig: ctx.themeConfig,
-    tokenPreviewConfig: ctx.tokenPreviewConfig,
-  })}</script>`;
-  return html.includes("</head>")
-    ? html.replace("</head>", `${script}</head>`)
-    : `${script}${html}`;
-}
-
 function emitRootRedirect(
   emitFile: (asset: { type: "asset"; fileName: string; source: string }) => void,
   staticRoot: string,
@@ -312,31 +244,8 @@ async function emitAxeVendor(
   }
 }
 
-function resolveGalleryDistDir(): string | null {
-  const candidates = [path.join(moduleDir, "gallery"), path.resolve(moduleDir, "../dist/gallery")];
-  return candidates.find((candidate) => fs.existsSync(path.join(candidate, "index.html"))) ?? null;
-}
-
-async function collectFiles(dir: string): Promise<string[]> {
-  const entries = await fs.promises.readdir(dir, { withFileTypes: true });
-  const files: string[] = [];
-  for (const entry of entries) {
-    const filePath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...(await collectFiles(filePath)));
-    } else {
-      files.push(filePath);
-    }
-  }
-  return files;
-}
-
 function staticRootFromBasePath(basePath: string): string {
   return basePath.replace(/^\/+|\/+$/g, "");
-}
-
-function joinFileName(...parts: string[]): string {
-  return parts.filter(Boolean).join("/");
 }
 
 function relativeUrl(fromDir: string, toFile: string): string {
