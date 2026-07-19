@@ -200,7 +200,10 @@ fn component_prop_getter_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> Stri
             cstr!("() => ({})", resolved)
         }
     } else {
-        "undefined".to_compact_string()
+        // A valueless static attribute (`<Comp data-probe />`) is an empty
+        // string prop, matching the vdom compiler; `undefined` would drop the
+        // attribute from the rendered element entirely.
+        cstr!("() => (\"\")")
     }
 }
 
@@ -214,7 +217,7 @@ fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> 
         }
         ctx.resolve_expression(first.content.as_str())
     } else {
-        "undefined".to_compact_string()
+        cstr!("\"\"")
     }
 }
 

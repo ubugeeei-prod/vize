@@ -1,0 +1,10 @@
+---
+source: crates/vize_atelier_vapor/src/tests.rs
+expression: code.as_str()
+---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+export function render(_ctx) {
+const _component_MyComp = _resolveComponent("MyComp")
+const n0 = _createComponentWithFallback(_component_MyComp, { "data-probe": () => ("") }, null, true)
+return n0
+}
