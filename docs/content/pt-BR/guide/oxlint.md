@@ -1,15 +1,14 @@
 ---
 title: Oxlint Plugin
 ---
-<!-- Generated translation; source: guide/oxlint.md -->
 
+<!-- Generated translation; source: guide/oxlint.md -->
 
 # Oxlint Plugin
 
 `oxlint-plugin-vize` permite que o Oxlint execute diagnósticos do Vize Patina através do sistema de plugins JS da Oxlint.
 Use quando quiser as regras JS e TS nativas de Rust da Oxlint junto com os diagnósticos de
 conscientes do Vue da Vize em uma única execução.
-
 
 Para o pipeline nativo de verificação de lint e tipos fora do Oxlint, veja
 [Static Analysis](./static-analysis.md).
@@ -28,7 +27,6 @@ vp install -D oxlint oxlint-plugin-vize
 
 `oxlint-plugin-vize` resolve a vinculação nativa correspondente do Vize por meio de dependências opcionais, então
 a maioria dos usuários não precisa instalar `@vizejs/native` separadamente.
-
 
 ## Uso Básico
 
@@ -86,9 +84,8 @@ Exportações pré-definidas disponíveis incluem:
 vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 ```
 
-`oxlint-vize` é uma capa fina em torno de `oxlint` que suaviza `.vue` casos limite,  sem scripts
+`oxlint-vize` é uma capa fina em torno de `oxlint` que suaviza `.vue` casos limite, sem scripts
 enquanto a cobertura de plugins JS upstream continua melhorando.
-
 
 ## Configurações
 
@@ -120,14 +117,14 @@ As configurações são passadas por `settings.vize`:
 ## Limitações Atuais
 
 - `oxlint` brutas ainda podem perder alguns arquivos `.vue` sem `<script>` ou `<script setup>`. Uso
-`oxlint-vize` se seu projeto incluir SFCs apenas com templates.
+  `oxlint-vize` se seu projeto incluir SFCs apenas com templates.
   - Plugins JS Oxlint ainda ancoram os intervalos ao programa de script extraído, então template e style
-  diagnósticos ainda não preservam os intervalos originais de SFC em todos os formatadores.
+    diagnósticos ainda não preservam os intervalos originais de SFC em todos os formatadores.
 - `stylish` atualmente é o melhor formatador legível para humanos para saída mista Oxlint + Vize. JSON e
   outros formatos legíveis por máquina devem ser tratados como o melhor esforço para o modelo/estilo original
   posições.
 - Exportações de regras conscientes de tipos são experimentais. Use uma configuração `*WithTypeAware` e defina
-`settings.vize.typeAware: true` quando você quer o passe compartilhado de arquivo inteiro para executar essas regras com vontade.
+  `settings.vize.typeAware: true` quando você quer o passe compartilhado de arquivo inteiro para executar essas regras com vontade.
 
 ## Desenvolvimento Local
 

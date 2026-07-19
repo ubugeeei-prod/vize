@@ -2,8 +2,8 @@
 title: Réglage des performances
 description: Leçons pratiques de performance issues de la construction d’une chaîne d’outils Vue où l’analyse syntatique, l’allocation, le parallélisme et les boucles de rétroaction comptent tous.
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-performance-tuning-notes-for-a-vue-toolchain.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-performance-tuning-notes-for-a-vue-toolchain.md -->
 
 # Réglage des performances
 
@@ -22,7 +22,6 @@ description: Leçons pratiques de performance issues de la construction d’une 
 </span>
 </a>
 </div>
-
 
 Le réglage des performances dans une chaîne d’outils frontend n’est pas une seule astuce.
 

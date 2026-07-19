@@ -1,12 +1,12 @@
 ---
 title: MCPサーバー
 ---
-<!-- Generated translation; source: integrations/mcp.md -->
 
+<!-- Generated translation; source: integrations/mcp.md -->
 
 # MCPサーバー
 
->**⚠️ 進行中の作業:**Vize は積極的に開発中であり、まだ運用環境で使用する準備ができていません。 MCP サーバーの機能は予告なく変更される場合があります。
+> **⚠️ 進行中の作業:**Vize は積極的に開発中であり、まだ運用環境で使用する準備ができていません。 MCP サーバーの機能は予告なく変更される場合があります。
 
 Vize は、AI を活用した開発ワークフロー用に [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) サーバーを提供します。 MCP サーバーは、コンポーネント ギャラリー (Musea) と AI アシスタントの間のギャップを埋め、AI アシスタントが Vue コンポーネントを理解し、ナビゲートし、操作できるようにします。
 

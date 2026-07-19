@@ -1,8 +1,8 @@
 ---
 title: 编译器检查器
 ---
-<!-- Generated translation; source: guide/compiler-inspector.md -->
 
+<!-- Generated translation; source: guide/compiler-inspector.md -->
 
 # 编译检查员
 
@@ -74,16 +74,16 @@ vize inspector "src/**/*.vue" --format compare --output inspector-compare.json
 
 实用选项：
 
-|选项 |描述 |
-|------------------- |--------------------------------------------- |
-|`--target dom` |比较 VDOM 编译器输出 |
-|`--target ssr` |比较SSR编译器输出 |
-|`--format agent` |Emit agent-readable JSON with graph metadata |
-|`--format compare` |运行仅开发者CLI与Vue |
-|`--custom-renderer` |在游乐场启用自定义渲染模式 |
-|`--template-syntax` |选择`standard`、`strict`或`quirks` |
-|`--max-files <n>` |限制批处理有效载荷中的文件数量 |
-|`--playground-url` |覆盖用于链接的游乐场网址 |
+| 选项                | 描述                                         |
+| ------------------- | -------------------------------------------- |
+| `--target dom`      | 比较 VDOM 编译器输出                         |
+| `--target ssr`      | 比较SSR编译器输出                            |
+| `--format agent`    | Emit agent-readable JSON with graph metadata |
+| `--format compare`  | 运行仅开发者CLI与Vue                         |
+| `--custom-renderer` | 在游乐场启用自定义渲染模式                   |
+| `--template-syntax` | 选择`standard`、`strict`或`quirks`           |
+| `--max-files <n>`   | 限制批处理有效载荷中的文件数量               |
+| `--playground-url`  | 覆盖用于链接的游乐场网址                     |
 
 ## 公关工作流程
 

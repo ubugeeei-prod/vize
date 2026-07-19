@@ -1,8 +1,8 @@
 ---
 title: Vite Plugin
 ---
-<!-- Generated translation; source: guide/vite-plugin.md -->
 
+<!-- Generated translation; source: guide/vite-plugin.md -->
 
 # Vite Plugin
 
@@ -13,7 +13,6 @@ title: Vite Plugin
 > Ces voies non Vite restent instables et doivent être considérées comme expérimentales.
 
 `@vizejs/vite-plugin` fournit une compilation SFC Vue à vitesse native pour les projets Vite. Il est conçu comme un **remplacement direct** pour `@vitejs/plugin-vue` — vos composants Vue existants fonctionnent sans modification.
-
 
 ## Installation
 
@@ -183,24 +182,24 @@ vize({
 });
 ```
 
-| Option | Où le placer | Description |
-| ---------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `vueVersion` | `vize({ vueVersion })` | Réglez `0.11`, `1`, `2`ou `"legacy"` pour exécuter en mode compatibilité Vue non invasif et laissez la compilation SFC au compilateur hôte. |
-| `sourceMap` | `compiler.sourceMap` ou `vize({ sourceMap })` | Générez des cartes sources. Par défaut, développement activé, production désactivée. |
-| `ssr` | `compiler.ssr` ou `vize({ ssr })` | Force la compilation SSR quand le drapeau de compilation SSR de Vite ne suffit pas. |
-| `vapor` | `compiler.vapor` ou `vize({ vapor })` | Compile les modèles via le backend Vapor. |
-| `jsxMode` | `compiler.jsxMode` ou `vize({ jsxMode })` | Backend de sortie par défaut (`"vdom"` / `"vapor"`) pour `.jsx`/`.tsx` composants. Les directives `"use vue:*"` par composant l’emportent. |
-| `customRenderer` | `compiler.customRenderer` ou `vize({ customRenderer })` | Considérez les balises minuscules non HTML comme des éléments de rendu personnalisés. Utile pour les écosystèmes de rendu tels que TresJS. |
-| `templateSyntax` | `compiler.templateSyntax` ou `vize({ templateSyntax })` | Choisissez `"standard"`, `"strict"`ou `"quirks"` gestion de la syntaxe du modèle. |
-| `include` | `vite.include` ou `vize({ include })` | Des fichiers que le plugin devrait compiler. |
-| `exclude` | `vite.exclude` ou `vize({ exclude })` | Des fichiers que le plugin devrait ignorer. |
-| `scanPatterns` | `vite.scanPatterns` ou `vize({ scanPatterns })` | Des motifs glob utilisés pour la précompilation au démarrage. |
-| `ignorePatterns` | `vite.ignorePatterns` ou `vize({ ignorePatterns })` | Les motifs glob étaient sautés lors de la précompilation au démarrage. |
-| `configMode` | `vize({ configMode })` | Utilisez `"root"`, `"auto"`ou `false` pour le chargement de configuration partagé. |
-| `configFile` | `vize({ configFile })` | Chargez un fichier de configuration spécifique. |
-| `config` | `vize({ config })` | Configuration partagée en ligne pour les paramètres d’exécution de Vite Plus. |
-| `handleNodeModulesVue` | `vize({ handleNodeModulesVue })` | Compile `.vue` fichiers importés depuis `node_modules` à la demande. |
-| `debug` | `vize({ debug })` | Imprimer les journaux de débogage des plugins. |
+| Option                 | Où le placer                                            | Description                                                                                                                                 |
+| ---------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vueVersion`           | `vize({ vueVersion })`                                  | Réglez `0.11`, `1`, `2`ou `"legacy"` pour exécuter en mode compatibilité Vue non invasif et laissez la compilation SFC au compilateur hôte. |
+| `sourceMap`            | `compiler.sourceMap` ou `vize({ sourceMap })`           | Générez des cartes sources. Par défaut, développement activé, production désactivée.                                                        |
+| `ssr`                  | `compiler.ssr` ou `vize({ ssr })`                       | Force la compilation SSR quand le drapeau de compilation SSR de Vite ne suffit pas.                                                         |
+| `vapor`                | `compiler.vapor` ou `vize({ vapor })`                   | Compile les modèles via le backend Vapor.                                                                                                   |
+| `jsxMode`              | `compiler.jsxMode` ou `vize({ jsxMode })`               | Backend de sortie par défaut (`"vdom"` / `"vapor"`) pour `.jsx`/`.tsx` composants. Les directives `"use vue:*"` par composant l’emportent.  |
+| `customRenderer`       | `compiler.customRenderer` ou `vize({ customRenderer })` | Considérez les balises minuscules non HTML comme des éléments de rendu personnalisés. Utile pour les écosystèmes de rendu tels que TresJS.  |
+| `templateSyntax`       | `compiler.templateSyntax` ou `vize({ templateSyntax })` | Choisissez `"standard"`, `"strict"`ou `"quirks"` gestion de la syntaxe du modèle.                                                           |
+| `include`              | `vite.include` ou `vize({ include })`                   | Des fichiers que le plugin devrait compiler.                                                                                                |
+| `exclude`              | `vite.exclude` ou `vize({ exclude })`                   | Des fichiers que le plugin devrait ignorer.                                                                                                 |
+| `scanPatterns`         | `vite.scanPatterns` ou `vize({ scanPatterns })`         | Des motifs glob utilisés pour la précompilation au démarrage.                                                                               |
+| `ignorePatterns`       | `vite.ignorePatterns` ou `vize({ ignorePatterns })`     | Les motifs glob étaient sautés lors de la précompilation au démarrage.                                                                      |
+| `configMode`           | `vize({ configMode })`                                  | Utilisez `"root"`, `"auto"`ou `false` pour le chargement de configuration partagé.                                                          |
+| `configFile`           | `vize({ configFile })`                                  | Chargez un fichier de configuration spécifique.                                                                                             |
+| `config`               | `vize({ config })`                                      | Configuration partagée en ligne pour les paramètres d’exécution de Vite Plus.                                                               |
+| `handleNodeModulesVue` | `vize({ handleNodeModulesVue })`                        | Compile `.vue` fichiers importés depuis `node_modules` à la demande.                                                                        |
+| `debug`                | `vize({ debug })`                                       | Imprimer les journaux de débogage des plugins.                                                                                              |
 
 Recettes courantes :
 
@@ -230,7 +229,6 @@ vize({ vueVersion: 2 });
 pas de drapeaux de fonctionnalités du bundler Vue 3. Gardez le plugin de compilateur Vue existant, `vue-loader`, ou le
 propre compilateur de Nuxt 2 configurés normalement.
 
-
 ## Comment ça fonctionne
 
 Le plugin intercepte `.vue` requêtes de fichiers et les compile en utilisant le pipeline Rust-native de Vize via Node.js liaisons NAPI :
@@ -259,18 +257,18 @@ La même couche d’analyse sémantique est réutilisée par le linting et la v�
 
 ## Comparaison
 
-| Caractéristiques | @vitejs/plugin-vue | @vizejs/vite-plugin |
-| --------------------- | ------------------ | ---------------------------------- |
-| Langue | JavaScript | Rouille (NAPI) |
-| SFC Compilation | Oui | Oui |
-| Compilation de modèles | Oui | Oui |
-| Configuration du script | Oui | Oui |
-| Portée CSS | Oui | Oui |
-| Soutien SSR | Oui | Oui |
-| HMR | Oui | Oui (optimisation uniquement de style) |
-| Précompilation par lots | Non | Oui (parallèle via Rayon) |
-| CSS Extraction | Par composant | File indienne fusionnée |
-| Mode vapeur | Expérimental | Première classe (`vize_atelier_vapor`) |
+| Caractéristiques        | @vitejs/plugin-vue | @vizejs/vite-plugin                    |
+| ----------------------- | ------------------ | -------------------------------------- |
+| Langue                  | JavaScript         | Rouille (NAPI)                         |
+| SFC Compilation         | Oui                | Oui                                    |
+| Compilation de modèles  | Oui                | Oui                                    |
+| Configuration du script | Oui                | Oui                                    |
+| Portée CSS              | Oui                | Oui                                    |
+| Soutien SSR             | Oui                | Oui                                    |
+| HMR                     | Oui                | Oui (optimisation uniquement de style) |
+| Précompilation par lots | Non                | Oui (parallèle via Rayon)              |
+| CSS Extraction          | Par composant      | File indienne fusionnée                |
+| Mode vapeur             | Expérimental       | Première classe (`vize_atelier_vapor`) |
 
 ## Fonctionnalités avancées
 

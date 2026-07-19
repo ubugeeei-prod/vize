@@ -2,8 +2,8 @@
 title: ベーパーモード
 description: Vapor モードが Vize にとって重要な理由、および直接の詳細なコンパイラ パスが実行時のパフォーマンスよりも大きく変化する理由。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface.md -->
 
 # ベーパーモード
 

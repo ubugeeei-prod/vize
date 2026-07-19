@@ -1,12 +1,12 @@
 ---
 title: 博物館
 ---
-<!-- Generated translation; source: guide/musea.md -->
 
+<!-- Generated translation; source: guide/musea.md -->
 
 # 美術館
 
->**⚠️ 進行中の作業:**Musea はまだ進化中です。ファイル形式、API、UI の動作は変更される可能性があります。
+> **⚠️ 進行中の作業:**Musea はまだ進化中です。ファイル形式、API、UI の動作は変更される可能性があります。
 
 Musea は、Vize のアート ファイルおよびコンポーネント ギャラリーのツールチェーンです。
 
@@ -169,20 +169,20 @@ const sharedCount = ref(0);
 
 ### 解剖学
 
-|要素/マクロ |目的 |
-| -------------------------------- | -------------------------------------- |
-| `defineArt(source, options)` |ターゲット コンポーネントとアートのメタデータ |
-| `defineArt(...).title` |表示名 |
-| `defineArt(...).category` |サイドバーのグループ化 |
-| `defineArt(...).status` |オプションのステータスバッジ |
-| `defineArt(...).tags` |タグの検索とフィルタリング |
-| `<script setup>` |デフォルトのバリアントローカルセットアップ状態 |
-| `<script setup isolate="false">` |すべてのバリアント間でセットアップ状態を共有 |
-| `<art>` |ルート バリアント ブロック |
-| `<art title component ...>` |互換性メタデータ属性 |
-| `<variant>` |名前付きコンポーネントのバリエーション |
-| `default` |デフォルトのバリアントをマークします |
-| `args`、`viewport`、`skip-vrt` |オプションのバリアント構成 |
+| 要素/マクロ                      | 目的                                           |
+| -------------------------------- | ---------------------------------------------- |
+| `defineArt(source, options)`     | ターゲット コンポーネントとアートのメタデータ  |
+| `defineArt(...).title`           | 表示名                                         |
+| `defineArt(...).category`        | サイドバーのグループ化                         |
+| `defineArt(...).status`          | オプションのステータスバッジ                   |
+| `defineArt(...).tags`            | タグの検索とフィルタリング                     |
+| `<script setup>`                 | デフォルトのバリアントローカルセットアップ状態 |
+| `<script setup isolate="false">` | すべてのバリアント間でセットアップ状態を共有   |
+| `<art>`                          | ルート バリアント ブロック                     |
+| `<art title component ...>`      | 互換性メタデータ属性                           |
+| `<variant>`                      | 名前付きコンポーネントのバリエーション         |
+| `default`                        | デフォルトのバリアントをマークします           |
+| `args`、`viewport`、`skip-vrt`   | オプションのバリアント構成                     |
 
 バリアントがコンポーネントのコントラクトの一部である場合は、アート ファイルをコンポーネントの近くに置きます。
 

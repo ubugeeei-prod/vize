@@ -1,8 +1,8 @@
 ---
 title: SSRルール
 ---
-<!-- Generated translation; source: rules/ssr.md -->
 
+<!-- Generated translation; source: rules/ssr.md -->
 
 # SSR ルール
 

@@ -2,8 +2,8 @@
 title: 制作准备
 description: 为什么详尽的真实世界验证和社区反馈是从实验项目到生产准备工具链的路径。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-real-world-feedback-and-the-road-to-production-ready.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-real-world-feedback-and-the-road-to-production-ready.md -->
 
 # 制作准备就绪
 

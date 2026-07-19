@@ -2,8 +2,8 @@
 title: Vue como Língua
 description: Partindo da ideia de que o Vue é uma linguagem para interface de usuário, esta nota explica por que o desenvolvimento frontend precisa de um ambiente coerente em vez de ferramentas dispersas.
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-vue-as-a-language-and-the-strongest-frontend-environment.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-vue-as-a-language-and-the-strongest-frontend-environment.md -->
 
 # Vue como Língua
 
@@ -22,7 +22,6 @@ description: Partindo da ideia de que o Vue é uma linguagem para interface de u
 </span>
 </a>
 </div>
-
 
 Em ["Characterize Vue.js"](https://wtrclred.io/ja/posts/07), o Vue é apresentado não apenas como um framework de UI, mas como uma linguagem para descrever UI.
 

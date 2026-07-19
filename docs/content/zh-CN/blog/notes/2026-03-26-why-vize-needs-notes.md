@@ -2,8 +2,8 @@
 title: 笔记巷
 description: 一些项目更新需要上下文空间，而不仅仅是变更日志条目。
 ---
-<!-- Generated translation; source: blog/notes/2026-03-26-why-vize-needs-notes.md -->
 
+<!-- Generated translation; source: blog/notes/2026-03-26-why-vize-needs-notes.md -->
 
 # 笔记巷
 

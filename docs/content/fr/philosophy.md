@@ -1,8 +1,8 @@
 ---
 title: Philosophie
 ---
-<!-- Generated translation; source: philosophy.md -->
 
+<!-- Generated translation; source: philosophy.md -->
 
 # Philosophie
 
@@ -53,22 +53,22 @@ Ce principe s’étend à l’écosystème plus large. Le plugin Vite de Vize es
 
 Chaque caisse Vize porte le nom d’un concept issu des arts visuels — peinture, sculpture et conservation muséale. Ce n’est pas une pure fantaisie. La convention de nommage encode une philosophie : **le code est un médium créatif**, et les outils qui le façonnent doivent refléter l’artisanat impliqué.
 
-| Caisse | Origine artistique | Rôle |
-| ------------ | ------------------------------- | --------------------------------------- |
-| **Carton** | Dossier de portfolio d’artiste | Utilitaires partagés — la boîte à outils |
-| **Relief** | Projection sculpturale de surface | AST — la surface structurée du code |
-| **Armature** | Squelette soutenant une sculpture | Analyseur syntaxique — le cadre structurel |
-| **Croquis** | Esquisse gestuel rapide | Analyse sémantique — capture de l’essence |
-| **Atelier** | Atelier d’artiste | Compilateur — où la transformation a lieu |
-| **Vitrine** | Vitrine en verre | Reliures — exposant l’œuvre |
-| **Canon** | Standard des proportions idéales | Vérificateur de type — garantir la justesse |
-| **Patine** | Qualité de surface vieillie | Linter — polissage de la surface |
-| **Glyphe** | Symbole ou forme de lettre gravée | Formateur — façonnage du texte |
-| **Maestro** | Chef d’orchestre principal | LSP — orchestrer l’expérience |
-| **Musea** | Pluriel de musée | Galerie composante — exposition de l’œuvre |
-| **Fresque** | Technique de peinture murale | Cadre TUI — peindre le terminal |
+| Caisse       | Origine artistique                | Rôle                                        |
+| ------------ | --------------------------------- | ------------------------------------------- |
+| **Carton**   | Dossier de portfolio d’artiste    | Utilitaires partagés — la boîte à outils    |
+| **Relief**   | Projection sculpturale de surface | AST — la surface structurée du code         |
+| **Armature** | Squelette soutenant une sculpture | Analyseur syntaxique — le cadre structurel  |
+| **Croquis**  | Esquisse gestuel rapide           | Analyse sémantique — capture de l’essence   |
+| **Atelier**  | Atelier d’artiste                 | Compilateur — où la transformation a lieu   |
+| **Vitrine**  | Vitrine en verre                  | Reliures — exposant l’œuvre                 |
+| **Canon**    | Standard des proportions idéales  | Vérificateur de type — garantir la justesse |
+| **Patine**   | Qualité de surface vieillie       | Linter — polissage de la surface            |
+| **Glyphe**   | Symbole ou forme de lettre gravée | Formateur — façonnage du texte              |
+| **Maestro**  | Chef d’orchestre principal        | LSP — orchestrer l’expérience               |
+| **Musea**    | Pluriel de musée                  | Galerie composante — exposition de l’œuvre  |
+| **Fresque**  | Technique de peinture murale      | Cadre TUI — peindre le terminal             |
 
-Ce système de dénomination a un but pratique : il rend la hiérarchie des caisses intuitive. Quand vous voyez `vize_atelier_dom`, vous comprenez immédiatement qu’il s’agit d’un *atelier* qui produit *des sorties VDOM*. Quand vous voyez `vize_patina`, vous savez que cela *polissent* votre code.
+Ce système de dénomination a un but pratique : il rend la hiérarchie des caisses intuitive. Quand vous voyez `vize_atelier_dom`, vous comprenez immédiatement qu’il s’agit d’un _atelier_ qui produit _des sorties VDOM_. Quand vous voyez `vize_patina`, vous savez que cela _polissent_ votre code.
 
 #### L’analogie de la sculpture
 
@@ -76,29 +76,29 @@ L’analogie la plus profonde se situe entre la compilation logicielle et la scu
 
 1. **Armature** — Le sculpteur commence par construire une armature : un squelette en fil de fer qui définit la structure de base. Dans Vize, l’analyseur (`vize_armature`) construit le cadre structurel (AST) à partir du texte source brut.
 
-2. **Relief** — Le sculpteur construit la surface sur l’armadura, créant un *relief* — une surface structurée qui s’avance depuis un plan plat. Dans Vize, l’AST (`vize_relief`) donne une forme structurée et tridimensionnelle à ce qui était à l’origine un texte plat.
+2. **Relief** — Le sculpteur construit la surface sur l’armadura, créant un _relief_ — une surface structurée qui s’avance depuis un plan plat. Dans Vize, l’AST (`vize_relief`) donne une forme structurée et tridimensionnelle à ce qui était à l’origine un texte plat.
 
-3. **Croquis** — Avant de s’engager dans une sculpture finale, l’artiste réalise des croquis rapides (*croquis*) pour comprendre le caractère essentiel du sujet. Dans Vize, l’analyse sémantique (`vize_croquis`) est un passage rapide qui capture le sens du code — quelles variables sont liées, quelles expressions sont valides — sans s’engager dans une cible de compilation.
+3. **Croquis** — Avant de s’engager dans une sculpture finale, l’artiste réalise des croquis rapides (_croquis_) pour comprendre le caractère essentiel du sujet. Dans Vize, l’analyse sémantique (`vize_croquis`) est un passage rapide qui capture le sens du code — quelles variables sont liées, quelles expressions sont valides — sans s’engager dans une cible de compilation.
 
-4. **Atelier** — Le sculpteur se déplace vers *l’atelier* (atelier) pour créer la pièce finale. Plusieurs ateliers peuvent produire différentes interprétations du même sujet. Dans Vize, les backends de compilation (`vize_atelier_dom`, `vize_atelier_vapor`, `vize_atelier_ssr`) sont différents ateliers qui produisent différentes versions (VDOM, Vapor, SSR) du même AST analysé.
+4. **Atelier** — Le sculpteur se déplace vers _l’atelier_ (atelier) pour créer la pièce finale. Plusieurs ateliers peuvent produire différentes interprétations du même sujet. Dans Vize, les backends de compilation (`vize_atelier_dom`, `vize_atelier_vapor`, `vize_atelier_ssr`) sont différents ateliers qui produisent différentes versions (VDOM, Vapor, SSR) du même AST analysé.
 
-5. **Vitrine** — L’œuvre finie est placée dans une *vitrine* (vitrine en verre) afin que d’autres puissent l’observer. Dans Vize, les liaisons (`vize_vitrine`) sont une couche transparente qui permet aux consommateurs JavaScript d’accéder à la sortie compilée.
+5. **Vitrine** — L’œuvre finie est placée dans une _vitrine_ (vitrine en verre) afin que d’autres puissent l’observer. Dans Vize, les liaisons (`vize_vitrine`) sont une couche transparente qui permet aux consommateurs JavaScript d’accéder à la sortie compilée.
 
-6. **Musea** — Enfin, les œuvres sont exposées dans un *musée* pour leur appréciation et leur étude. Dans Vize, la galerie de composants (`vize_musea`) est l’endroit où les composants sont exposés, explorés et documentés.
+6. **Musea** — Enfin, les œuvres sont exposées dans un _musée_ pour leur appréciation et leur étude. Dans Vize, la galerie de composants (`vize_musea`) est l’endroit où les composants sont exposés, explorés et documentés.
 
 #### L’analogie des métiers de qualité
 
 Les caisses restantes suivent une analogie de savoir-faire :
 
-- **Canon** (vérificateur de type) — En sculpture classique, le *canon* était une norme d’une dimension humaine idéale. Polykleitos a écrit le *Kanon* définissant les rapports mathématiques pour la figure parfaite. Dans Vize, le vérificateur de caractères impose les « proportions idéales » de votre code — les types doivent être corrects, les accessoires doivent correspondre, les émissions doivent être conformes.
+- **Canon** (vérificateur de type) — En sculpture classique, le _canon_ était une norme d’une dimension humaine idéale. Polykleitos a écrit le _Kanon_ définissant les rapports mathématiques pour la figure parfaite. Dans Vize, le vérificateur de caractères impose les « proportions idéales » de votre code — les types doivent être corrects, les accessoires doivent correspondre, les émissions doivent être conformes.
 
-- **Patine** (linter) — Une *patine* est la finition de surface qui se développe sur des matériaux vieillissants, indiquant la qualité et le soin. Une sculpture en bronze à la riche patine a été bien entretenue. Dans Vize, le linter examine la surface de votre code, identifiant les problèmes qui affectent sa qualité.
+- **Patine** (linter) — Une _patine_ est la finition de surface qui se développe sur des matériaux vieillissants, indiquant la qualité et le soin. Une sculpture en bronze à la riche patine a été bien entretenue. Dans Vize, le linter examine la surface de votre code, identifiant les problèmes qui affectent sa qualité.
 
-- **Glyphe** (formateur) — Un *glyphe* est un symbole ou une forme de lettre gravée — pensez aux formes de lettres précises et cohérentes dans une police. Chaque glyphe a des proportions et des espacements exacts. Dans Vize, le formateur garantit que votre code a des proportions cohérentes et précises.
+- **Glyphe** (formateur) — Un _glyphe_ est un symbole ou une forme de lettre gravée — pensez aux formes de lettres précises et cohérentes dans une police. Chaque glyphe a des proportions et des espacements exacts. Dans Vize, le formateur garantit que votre code a des proportions cohérentes et précises.
 
-- **Maestro** (LSP) — Un *maestro* est le chef d’orchestre qui orchestre un ensemble en une performance unifiée. Dans Vize, le serveur LSP orchestre toutes les fonctionnalités du langage (complétion, diagnostic, mise en forme, navigation) dans une expérience d’éditeur unifiée.
+- **Maestro** (LSP) — Un _maestro_ est le chef d’orchestre qui orchestre un ensemble en une performance unifiée. Dans Vize, le serveur LSP orchestre toutes les fonctionnalités du langage (complétion, diagnostic, mise en forme, navigation) dans une expérience d’éditeur unifiée.
 
-- **Fresque** (TUI) — Une *fresque* est une technique de peinture où un pigment est appliqué sur un plâtre humide, devenant ainsi une partie intégrante du mur lui-même. Dans Vize, le cadre TUI « peint » directement sur la surface du terminal.
+- **Fresque** (TUI) — Une _fresque_ est une technique de peinture où un pigment est appliqué sur un plâtre humide, devenant ainsi une partie intégrante du mur lui-même. Dans Vize, le cadre TUI « peint » directement sur la surface du terminal.
 
 ### 5. Pensée d’abord en mode vapeur
 
@@ -134,18 +134,16 @@ Il reste encore de nombreux défis non résolus dans ce domaine — interopérab
 
 [Vite+](https://viteplus.dev/) et [OXC](https://oxc.rs) sont des chaînes d’outils **indépendantes du cadre** — elles fournissent des capacités de regroupement, d’analyse syntaxique, de linting et de formatage JS/TS/CSS à usage général qui fonctionnent sur n’importe quel framework. Vize est **spécifique à Vue** et est conçu pour **s’intégrer à** ces outils d’écosystème plutôt que pour les concurrencer.
 
-
 Vize dépend directement d’OXC pour l’analyse JavaScript/TypeScript et de LightningCSS pour le traitement CSS au sein des SFC Vue. Le linter (patine) et le formateur (glyphe) de Vize traitent des préoccupations spécifiques à Vue (directives de modèles, structure SFC, conventions de composants) qui ne relèvent pas du cadre des outils indépendants du cadre. Une intégration plus approfondie avec OXC est prévue — par exemple, déléguer `<script>` linting/formatage de blocs à OXC tandis que Vize gère les couches de coordination `<template>` et SFC spécifiques à Vue. Le plugin Vite de Vize (`@vizejs/vite-plugin`) est construit sur Vite et conçu pour remplacer directement `@vitejs/plugin-vue`, intégrant pleinement l’écosystème Vite.
 
 En tant qu’auteur de Vize, je ([@ubugeeei](https://github.com/ubugeeei)) veux être clair : **je n’ai aucune intention adversaire envers aucun de ces projets.** Je suis totalement ouverte à la collaboration et je crois que les meilleurs résultats viennent d’outils qui se complètent. Si des changements sont nécessaires de part et d’autre pour permettre une meilleure intégration, je suis prêt à travailler ensemble pour y parvenir.
 
 ## Le nom
 
-* *Vize** (*/viːz/*) est dérivé de trois mots :
+- _Vize\*\* (_/viːz/\*) est dérivé de trois mots :
 
+* **Vizir** — un conseiller ou un conseiller sage
+* **Visière** — quelque chose qui vous aide à voir clairement
+* **Conseiller** — un guide qui vous aide à prendre de meilleures décisions
 
-- **Vizir** — un conseiller ou un conseiller sage
-- **Visière** — quelque chose qui vous aide à voir clairement
-- **Conseiller** — un guide qui vous aide à prendre de meilleures décisions
-
-Ensemble, ils décrivent un outil qui *voit à travers votre code* et *vous conseille judicieusement*. La prononciation rime avec « breeze » — rapide, sans effort et rafraîchissante.
+Ensemble, ils décrivent un outil qui _voit à travers votre code_ et _vous conseille judicieusement_. La prononciation rime avec « breeze » — rapide, sans effort et rafraîchissante.

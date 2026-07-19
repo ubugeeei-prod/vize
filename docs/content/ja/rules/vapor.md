@@ -1,8 +1,8 @@
 ---
 title: 蒸気のルール
 ---
-<!-- Generated translation; source: rules/vapor.md -->
 
+<!-- Generated translation; source: rules/vapor.md -->
 
 # 蒸気ルール
 

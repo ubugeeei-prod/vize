@@ -1,8 +1,8 @@
 ---
 title: 贡献
 ---
-<!-- Generated translation; source: contributing.md -->
 
+<!-- Generated translation; source: contributing.md -->
 
 # 贡献
 

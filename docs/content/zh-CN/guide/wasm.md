@@ -1,12 +1,12 @@
 ---
 title: WASM绑定
 ---
-<!-- Generated translation; source: guide/wasm.md -->
 
+<!-- Generated translation; source: guide/wasm.md -->
 
 # WASM绑定
 
->**⚠️ 正在开发中：**Vize正在积极开发中，尚未准备好投入生产使用。WASM API 可能会在没有预告的情况下发生更改。
+> **⚠️ 正在开发中：**Vize正在积极开发中，尚未准备好投入生产使用。WASM API 可能会在没有预告的情况下发生更改。
 
 `@vizejs/wasm` 提供 WebAssembly 绑定，用于直接在浏览器中运行 Vue 编译器。这使得无需服务器的实时SFC编译、打印和格式化成为可能——非常适合游乐场、文档和教育工具。
 
@@ -179,11 +179,11 @@ wasm-bindgen \
 
 所有产生诊断（lint、编译错误）的 WASM API 都支持本地化消息：
 
-|代码 |语言 |
-|---- |----------------- |
-|`en` |英语（默认） |
-|`ja` |日语（日本語）|
-|`zh` |中文（中文）|
+| 代码 | 语言           |
+| ---- | -------------- |
+| `en` | 英语（默认）   |
+| `ja` | 日语（日本語） |
+| `zh` | 中文（中文）   |
 
 将`locale`选项传递给任何产生诊断的API：
 

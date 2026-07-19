@@ -1,8 +1,8 @@
 ---
 title: Anotações de Comentários
 ---
-<!-- Generated translation; source: guide/comment-annotations.md -->
 
+<!-- Generated translation; source: guide/comment-annotations.md -->
 
 # Anotações de Comentários
 
@@ -58,11 +58,11 @@ Anule a gravidade dos diagnósticos na próxima linha.
 </template>
 ```
 
-| Valor | Efeito |
-| ------- | -------------------- |
-| `warn` | Rebaixamento para aviso |
-| `error` | Upgrade para erro |
-| `off` | Suprimir completamente |
+| Valor   | Efeito                  |
+| ------- | ----------------------- |
+| `warn`  | Rebaixamento para aviso |
+| `error` | Upgrade para erro       |
+| `off`   | Suprimir completamente  |
 
 ### `@vize:todo`
 
@@ -121,16 +121,16 @@ Marque um nó para ser desmontado em builds de produção, mantido em desenvolvi
 
 ### Resumo
 
-| Diretiva | Efeito | Gravidade |
-| ------------------------ | ---------------------------------- | -------- |
-| `@vize:expected` | Espere diagnóstico na próxima linha | — |
-| `@vize:ignore-start/end` | Suprimir todos os diagnósticos na região | — |
-| `@vize:level(...)` | Anular a severidade da próxima linha | — |
-| `@vize:todo <msg>` | Emitir TODO | Aviso |
-| `@vize:fixme <msg>` | Emit FIXME | Erro |
-| `@vize:deprecated <msg>` | Emitir aviso de descontinuação | Aviso |
-| `@vize:docs <text>` | Documentação (sem efeito de fiapo) | — |
-| `@vize:dev-only` | Tira em produção | — |
+| Diretiva                 | Efeito                                   | Gravidade |
+| ------------------------ | ---------------------------------------- | --------- |
+| `@vize:expected`         | Espere diagnóstico na próxima linha      | —         |
+| `@vize:ignore-start/end` | Suprimir todos os diagnósticos na região | —         |
+| `@vize:level(...)`       | Anular a severidade da próxima linha     | —         |
+| `@vize:todo <msg>`       | Emitir TODO                              | Aviso     |
+| `@vize:fixme <msg>`      | Emit FIXME                               | Erro      |
+| `@vize:deprecated <msg>` | Emitir aviso de descontinuação           | Aviso     |
+| `@vize:docs <text>`      | Documentação (sem efeito de fiapo)       | —         |
+| `@vize:dev-only`         | Tira em produção                         | —         |
 
 ## Supressão de Script (`@vize forget`)
 
@@ -162,12 +162,12 @@ Sem a anotação, o Vize alertaria que desestruturar um valor de retorno de `inj
 
 ### Regras
 
-| Governo | Descrição |
-| --------------- | -------------------------------------------------------------------- |
-| Motivo necessário | `// @vize forget` sem motivo é um erro |
-| Cólon necessário | Deve usar `// @vize forget: <reason>` (dois pontos antes do motivo) |
-| Apenas a próxima linha | Aplica-se à próxima linha sem comentário, não vazia |
-| Sem órfãos | Uma supressão no final de um arquivo sem código após ele é um erro |
+| Governo                | Descrição                                                           |
+| ---------------------- | ------------------------------------------------------------------- |
+| Motivo necessário      | `// @vize forget` sem motivo é um erro                              |
+| Cólon necessário       | Deve usar `// @vize forget: <reason>` (dois pontos antes do motivo) |
+| Apenas a próxima linha | Aplica-se à próxima linha sem comentário, não vazia                 |
+| Sem órfãos             | Uma supressão no final de um arquivo sem código após ele é um erro  |
 
 ### Supressões Múltiplas
 
@@ -199,12 +199,12 @@ const { count } = inject("state");
 
 ### Razões Comuns
 
-| Motivo | Quando usar |
-| ---------------------------- | ---------------------------------- |
-| `intentionally non-reactive` | O valor não precisa ser reativo |
-| `read-only access` | Apenas lendo, não acompanhando as mudanças |
-| `legacy code` | Problema conhecido, vou refatorar depois |
-| `third-party integration` | Exigido pela biblioteca externa |
+| Motivo                       | Quando usar                                |
+| ---------------------------- | ------------------------------------------ |
+| `intentionally non-reactive` | O valor não precisa ser reativo            |
+| `read-only access`           | Apenas lendo, não acompanhando as mudanças |
+| `legacy code`                | Problema conhecido, vou refatorar depois   |
+| `third-party integration`    | Exigido pela biblioteca externa            |
 
 ### Exemplos inválidos
 

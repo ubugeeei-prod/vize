@@ -2,8 +2,8 @@
 title: 注意事項
 description: 開発ブログ、アーキテクチャ ノート、および広範なプロジェクトの更新に関する不定期の投稿。
 ---
-<!-- Generated translation; source: blog/notes/index.md -->
 
+<!-- Generated translation; source: blog/notes/index.md -->
 
 # 注記
 

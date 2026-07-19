@@ -1,8 +1,8 @@
 ---
 title: Tests et retour d’information
 ---
-<!-- Generated translation; source: guide/testing.md -->
 
+<!-- Generated translation; source: guide/testing.md -->
 
 # Tests et retour d’information
 
@@ -42,8 +42,8 @@ Si un cas manque ou un résultat semble erroné, c’est exactement le type de r
 - **Si possible, attachez une reproduction minimale** au suivi GitHub - le plus petit fichier `.vue` (ou
   petit projet) qui montre toujours le problème. Un lien Playground Inspector fonctionne très bien.
 - Les rapports de correction, les reproductions, les résultats de benchmark et les résultats de compatibilité aident tous. Voir le
-[Contributing](../contributing.md) guide et
-[Support](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md).
+  [Contributing](../contributing.md) guide et
+  [Support](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md).
 
 ## Mesure de la performance
 

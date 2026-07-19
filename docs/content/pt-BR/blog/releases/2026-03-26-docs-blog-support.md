@@ -2,8 +2,8 @@
 title: Docs Blog
 description: A documentação do Vize agora pode hospedar tanto as notas de lançamento quanto as irregulares.
 ---
-<!-- Generated translation; source: blog/releases/2026-03-26-docs-blog-support.md -->
 
+<!-- Generated translation; source: blog/releases/2026-03-26-docs-blog-support.md -->
 
 # Docs Blog
 
@@ -22,7 +22,6 @@ description: A documentação do Vize agora pode hospedar tanto as notas de lan�
 </span>
 </a>
 </div>
-
 
 A documentação do Vize agora pode hospedar dois tipos de posts diretamente dentro de `docs/content/blog/`:
 

@@ -2,8 +2,8 @@
 title: Blog
 description: Notas de lançamento e notas irregulares do projeto Vize.
 ---
-<!-- Generated translation; source: blog/index.md -->
 
+<!-- Generated translation; source: blog/index.md -->
 
 # Blog
 
@@ -16,14 +16,12 @@ Os documentos do Vize agora têm duas rotas de escrita:
 <p>Mudanças lançadas, destaques de lançamento, notas de migração e orientações de lançamento.</p>
 </a>
 
-
 <a class="blog-card" href="./notes/">
 <span class="blog-card-kicker">Acompanhar</span>
 <strong>Notas</strong>
 <p>Postagens irregulares para devlogs, writeups de design, notas de arquitetura e atualizações dos bastidores.</p>
 </a>
 </div>
-
 
 ## Como Publicar
 
@@ -102,4 +100,5 @@ Os documentos do Vize agora têm duas rotas de escrita:
 <strong>Notas Lane</strong>
 <span>Algumas atualizações de projetos precisam de espaço para contexto, não apenas uma entrada no registro de mudanças.</span>
 </a>
+
 </div>

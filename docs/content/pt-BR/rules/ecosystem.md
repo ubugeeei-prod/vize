@@ -1,8 +1,8 @@
 ---
 title: Regras do Ecossistema
 ---
-<!-- Generated translation; source: rules/ecosystem.md -->
 
+<!-- Generated translation; source: rules/ecosystem.md -->
 
 # Regras do Ecossistema
 

@@ -2,8 +2,8 @@
 title: Notas de Lançamento
 description: Anúncios de versões, changelogs, notas de migração e destaques de lançamento.
 ---
-<!-- Generated translation; source: blog/releases/index.md -->
 
+<!-- Generated translation; source: blog/releases/index.md -->
 
 # Notas de Lançamento
 

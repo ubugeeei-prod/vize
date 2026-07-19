@@ -1,8 +1,8 @@
 ---
 title: 構成
 ---
-<!-- Generated translation; source: guide/configuration.md -->
 
+<!-- Generated translation; source: guide/configuration.md -->
 
 # 構成
 
@@ -189,22 +189,22 @@ lsp {
 これらのオプションは `compiler` の下にあります。これらはスキーマでサポートされており、`defineConfig` を通じて共有されます。そうではない
 すべての統合はまだすべてのフィールドを消費します。
 
-|オプション |値 |共通用途 |
-| ------------------- | -------------------------------------- | -------------------------------------------------------------- |
-| `sourceMap` | `boolean` | Vite プラグインでソース マップを有効にする |
-| `ssr` | `boolean` | Vite の SSR ビルド フラグに依存しない場合の SSR 用のコンパイル |
-| `vapor` | `boolean` | Vapor モードのコンパイルを有効にする |
-| `jsxMode` | `"vdom"` または `"vapor"` | `.jsx`/`.tsx` コンポーネントのデフォルトの出力バックエンド |
-| `customRenderer` | `boolean` |小文字の非 HTML タグをカスタム レンダラー要素として扱う |
-| `templateSyntax` | `"standard"`、`"strict"`、または `"quirks"` |テンプレート構文の警告、エラー、または Vue-quirk 処理を選択します。
-| `scriptExt` | `"ts"` または `"js"` | npm build コマンドで TS 出力を保存するか、JS にダウンコンパイルします。
-| `mode` | `"module"` または `"function"` |下位レベルのコンパイラ出力モード |
-| `prefixIdentifiers` | `boolean` |テンプレート識別子の先頭に `_ctx` を付けます。
-| `hoistStatic` | `boolean` |静的ノードのホイスティングを制御する |
-| `cacheHandlers` | `boolean` |イベント ハンドラーのキャッシュを制御する |
-| `isTs` | `boolean` |スクリプト ブロックを TypeScript として解析する |
-| `runtimeModuleName` | `string` |ランタイムインポートモジュールをオーバーライドする |
-| `runtimeGlobalName` | `string` |関数/IIFE スタイルの出力のランタイム グローバルをオーバーライドする |
+| オプション          | 値                                          | 共通用途                                                                |
+| ------------------- | ------------------------------------------- | ----------------------------------------------------------------------- |
+| `sourceMap`         | `boolean`                                   | Vite プラグインでソース マップを有効にする                              |
+| `ssr`               | `boolean`                                   | Vite の SSR ビルド フラグに依存しない場合の SSR 用のコンパイル          |
+| `vapor`             | `boolean`                                   | Vapor モードのコンパイルを有効にする                                    |
+| `jsxMode`           | `"vdom"` または `"vapor"`                   | `.jsx`/`.tsx` コンポーネントのデフォルトの出力バックエンド              |
+| `customRenderer`    | `boolean`                                   | 小文字の非 HTML タグをカスタム レンダラー要素として扱う                 |
+| `templateSyntax`    | `"standard"`、`"strict"`、または `"quirks"` | テンプレート構文の警告、エラー、または Vue-quirk 処理を選択します。     |
+| `scriptExt`         | `"ts"` または `"js"`                        | npm build コマンドで TS 出力を保存するか、JS にダウンコンパイルします。 |
+| `mode`              | `"module"` または `"function"`              | 下位レベルのコンパイラ出力モード                                        |
+| `prefixIdentifiers` | `boolean`                                   | テンプレート識別子の先頭に `_ctx` を付けます。                          |
+| `hoistStatic`       | `boolean`                                   | 静的ノードのホイスティングを制御する                                    |
+| `cacheHandlers`     | `boolean`                                   | イベント ハンドラーのキャッシュを制御する                               |
+| `isTs`              | `boolean`                                   | スクリプト ブロックを TypeScript として解析する                         |
+| `runtimeModuleName` | `string`                                    | ランタイムインポートモジュールをオーバーライドする                      |
+| `runtimeGlobalName` | `string`                                    | 関数/IIFE スタイルの出力のランタイム グローバルをオーバーライドする     |
 
 Vite プロジェクトの場合、直接プラグイン オプションが共有設定をオーバーライドします。
 

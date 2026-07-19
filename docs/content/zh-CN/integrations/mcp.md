@@ -1,12 +1,12 @@
 ---
 title: MCP服务器
 ---
-<!-- Generated translation; source: integrations/mcp.md -->
 
+<!-- Generated translation; source: integrations/mcp.md -->
 
 # MCP服务器
 
->**⚠️ 正在开发中：**Vize正在积极开发中，尚未准备好投入生产使用。MCP服务器功能可能会在未通知的情况下发生变化。
+> **⚠️ 正在开发中：**Vize正在积极开发中，尚未准备好投入生产使用。MCP服务器功能可能会在未通知的情况下发生变化。
 
 Vize为AI驱动的开发工作流提供了[模型上下文协议（MCP）](https://modelcontextprotocol.io/)服务器。MCP服务器连接了你的组件库（Musea）与AI助手之间的差距，使它们能够理解、导航并操作你的Vue组件。
 

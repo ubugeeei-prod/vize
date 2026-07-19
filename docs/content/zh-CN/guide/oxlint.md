@@ -1,8 +1,8 @@
 ---
 title: Oxlint 插件
 ---
-<!-- Generated translation; source: guide/oxlint.md -->
 
+<!-- Generated translation; source: guide/oxlint.md -->
 
 # Oxlint 插件
 
@@ -15,7 +15,7 @@ title: Oxlint 插件
 
 > [!重要]
 > 该软件包可在 npm 上使用，但集成阶段还处于早期阶段。对于人类可读终端
->输出，偏好`oxlint-vize -f stylish`，而原版SFC的射程保真度也在不断提升。
+> 输出，偏好`oxlint-vize -f stylish`，而原版SFC的射程保真度也在不断提升。
 
 ## 安装
 

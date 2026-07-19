@@ -1,8 +1,8 @@
 ---
 title: VS Code
 ---
-<!-- Generated translation; source: integrations/vscode.md -->
 
+<!-- Generated translation; source: integrations/vscode.md -->
 
 # Intégration VS Code
 
@@ -53,33 +53,33 @@ existants.
 
 ### Contextes courants
 
-| Cadre | Objectif |
-| ---------------------------- | -------------------------------------------------- |
-| `vize.enable` | Activez l’extension et le serveur de langage |
-| `vize.serverPath` | Écraser le chemin exécutable `vize` |
-| `vize.lint.enable` | Activer le diagnostic des peluches |
-| `vize.typecheck.enable` | Activez les diagnostics sensibles au type et les fonctionnalités backend |
-| `vize.editor.enable` | Activez le pack d’assistance à l’éditeur |
-| `vize.completion.enable` | Activer la complétion |
-| `vize.formatting.enable` | Activer la mise en forme des documents |
-| `vize.definition.enable` | Activer la définition directe |
-| `vize.references.enable` | Activer les références |
-| `vize.hover.enable` | Activer le survol |
-| `vize.codeActions.enable` | Activez les solutions rapides pour les peluches |
-| `vize.semanticTokens.enable` | Activer les jetons sémantiques |
-| `vize.trace.server` | Communication LSP de trace |
+| Cadre                        | Objectif                                                                 |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| `vize.enable`                | Activez l’extension et le serveur de langage                             |
+| `vize.serverPath`            | Écraser le chemin exécutable `vize`                                      |
+| `vize.lint.enable`           | Activer le diagnostic des peluches                                       |
+| `vize.typecheck.enable`      | Activez les diagnostics sensibles au type et les fonctionnalités backend |
+| `vize.editor.enable`         | Activez le pack d’assistance à l’éditeur                                 |
+| `vize.completion.enable`     | Activer la complétion                                                    |
+| `vize.formatting.enable`     | Activer la mise en forme des documents                                   |
+| `vize.definition.enable`     | Activer la définition directe                                            |
+| `vize.references.enable`     | Activer les références                                                   |
+| `vize.hover.enable`          | Activer le survol                                                        |
+| `vize.codeActions.enable`    | Activez les solutions rapides pour les peluches                          |
+| `vize.semanticTokens.enable` | Activer les jetons sémantiques                                           |
+| `vize.trace.server`          | Communication LSP de trace                                               |
 
 ### Commandes utiles
 
-| Commandement | Objectif |
-| ----------------------------------------- | --------------------------------------------------- |
-| `Vize: Show Status` | Ouvrir le hub d’action d’état et de configuration |
-| `Vize: Enable Recommended Profile` | Activez la peluche, la vérification de la police et l’assistance à l’éditeur |
-| `Vize: Enable Lint-Only Profile` | Activez les diagnostics tout en gardant d’autres outils en usage |
-| `Vize: Select Language Server Executable` | Définir `vize.serverPath` depuis un sélecteur de fichiers |
-| `Vize: Disable Language Server` | Arrêtez Vize pour la configuration cible actuelle |
-| `Vize: Restart Language Server` | Redémarrer le serveur de langage |
-| `Vize: Show Output Channel` | Afficher les extensions et les journaux LSP |
+| Commandement                              | Objectif                                                                     |
+| ----------------------------------------- | ---------------------------------------------------------------------------- |
+| `Vize: Show Status`                       | Ouvrir le hub d’action d’état et de configuration                            |
+| `Vize: Enable Recommended Profile`        | Activez la peluche, la vérification de la police et l’assistance à l’éditeur |
+| `Vize: Enable Lint-Only Profile`          | Activez les diagnostics tout en gardant d’autres outils en usage             |
+| `Vize: Select Language Server Executable` | Définir `vize.serverPath` depuis un sélecteur de fichiers                    |
+| `Vize: Disable Language Server`           | Arrêtez Vize pour la configuration cible actuelle                            |
+| `Vize: Restart Language Server`           | Redémarrer le serveur de langage                                             |
+| `Vize: Show Output Channel`               | Afficher les extensions et les journaux LSP                                  |
 
 ### Ce que l’extension utilise
 
@@ -113,7 +113,6 @@ code --install-extension dist/vize.vsix
 `Vize Art` fournit la surlignance de syntaxe pour les fichiers `*.art.vue` Musea.
 Son identifiant d’extension Marketplace est `vize.vize-art`.
 
-
 Il reconnaît :
 
 - `<art>` blocs de métadonnées
@@ -124,7 +123,6 @@ Il reconnaît :
 
 `vize lsp` suit le protocole Language Server et peut être utilisé par des éditeurs tels que Neovim, Helix,
 Zed et Emacs.
-
 
 Exemple de configuration Neovim :
 

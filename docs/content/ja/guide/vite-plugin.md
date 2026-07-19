@@ -1,14 +1,14 @@
 ---
 title: Viteプラグイン
 ---
-<!-- Generated translation; source: guide/vite-plugin.md -->
 
+<!-- Generated translation; source: guide/vite-plugin.md -->
 
 # Vite プラグイン
 
->**⚠️ 進行中の作業:**Vize は積極的に開発中であり、まだ運用環境で使用する準備ができていません。重要なプロジェクトに採用する前に、徹底的にテストしてください。
+> **⚠️ 進行中の作業:**Vize は積極的に開発中であり、まだ運用環境で使用する準備ができていません。重要なプロジェクトに採用する前に、徹底的にテストしてください。
 
->**バンドラーのステータス:**`@vizejs/vite-plugin` は現在最も安定したバンドラー統合です。
+> **バンドラーのステータス:**`@vizejs/vite-plugin` は現在最も安定したバンドラー統合です。
 > rollup / webpack / esbuild の場合は `@vizejs/unplugin` を使用し、Rspack の場合は `@vizejs/rspack-plugin` を使用します。
 > これらの非 Vite パスはまだ不安定なので、実験的なものとして扱う必要があります。
 
@@ -182,24 +182,24 @@ vize({
 });
 ```
 
-|オプション |どこに設定するか |説明 |
-| ---------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `vueVersion` | `vize({ vueVersion })` | `0.11`、`1`、`2`、または `"legacy"` を非侵襲的なレガシー Vue 互換モードで実行し、SFC コンパイルをホスト コンパイラーに任せるように設定します。 |
-| `sourceMap` | `compiler.sourceMap` または `vize({ sourceMap })` |ソースマップを生成します。デフォルトでは開発がオン、本番がオフになっています。                                                                        |
-| `ssr` | `compiler.ssr` または `vize({ ssr })` | Vite の SSR ビルド フラグが不十分な場合に SSR を強制的にコンパイルします。                                                                          |
-| `vapor` | `compiler.vapor` または `vize({ vapor })` | Vapor バックエンドを通じてテンプレートをコンパイルします。                                                                                             |
-| `jsxMode` | `compiler.jsxMode` または `vize({ jsxMode })` | `.jsx`/`.tsx` コンポーネントのデフォルトの出力バックエンド (`"vdom"` / `"vapor"`)。コンポーネントごとの `"use vue:*"` ディレクティブはこれをオーバーライドします。          |
-| `customRenderer` | `compiler.customRenderer` または `vize({ customRenderer })` |小文字の非 HTML タグをカスタム レンダラー要素として扱います。 TresJS などのレンダラー エコシステムに役立ちます。                                |
-| `templateSyntax` | `compiler.templateSyntax` または `vize({ templateSyntax })` | `"standard"`、`"strict"`、または `"quirks"` テンプレート構文処理を選択します。                                                                 |
-| `include` | `vite.include` または `vize({ include })` |プラグインがコンパイルする必要があるファイル。                                                                                                    |
-| `exclude` | `vite.exclude` または `vize({ exclude })` |プラグインが無視する必要があるファイル。                                                                                                     |
-| `scanPatterns` | `vite.scanPatterns` または `vize({ scanPatterns })` |起動時のプリコンパイルに使用される Glob パターン。                                                                                          |
-| `ignorePatterns` | `vite.ignorePatterns` または `vize({ ignorePatterns })` |起動時のプリコンパイル中に Glob パターンがスキップされました。                                                                                    |
-| `configMode` | `vize({ configMode })` |共有設定の読み込みには、`"root"`、`"auto"`、または `false` を使用します。                                                                            |
-| `configFile` | `vize({ configFile })` |特定の構成ファイルをロードします。                                                                                                             |
-| `config` | `vize({ config })` | Vite Plus ランタイム設定のインライン共有構成。                                                                                     |
-| `handleNodeModulesVue` | `vize({ handleNodeModulesVue })` | `node_modules` からインポートされた `.vue` ファイルをオンデマンドでコンパイルします。                                                                             |
-| `debug` | `vize({ debug })` |プラグインのデバッグ ログを出力します。                                                                                                                 |
+| オプション             | どこに設定するか                                            | 説明                                                                                                                                                               |
+| ---------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `vueVersion`           | `vize({ vueVersion })`                                      | `0.11`、`1`、`2`、または `"legacy"` を非侵襲的なレガシー Vue 互換モードで実行し、SFC コンパイルをホスト コンパイラーに任せるように設定します。                     |
+| `sourceMap`            | `compiler.sourceMap` または `vize({ sourceMap })`           | ソースマップを生成します。デフォルトでは開発がオン、本番がオフになっています。                                                                                     |
+| `ssr`                  | `compiler.ssr` または `vize({ ssr })`                       | Vite の SSR ビルド フラグが不十分な場合に SSR を強制的にコンパイルします。                                                                                         |
+| `vapor`                | `compiler.vapor` または `vize({ vapor })`                   | Vapor バックエンドを通じてテンプレートをコンパイルします。                                                                                                         |
+| `jsxMode`              | `compiler.jsxMode` または `vize({ jsxMode })`               | `.jsx`/`.tsx` コンポーネントのデフォルトの出力バックエンド (`"vdom"` / `"vapor"`)。コンポーネントごとの `"use vue:*"` ディレクティブはこれをオーバーライドします。 |
+| `customRenderer`       | `compiler.customRenderer` または `vize({ customRenderer })` | 小文字の非 HTML タグをカスタム レンダラー要素として扱います。 TresJS などのレンダラー エコシステムに役立ちます。                                                   |
+| `templateSyntax`       | `compiler.templateSyntax` または `vize({ templateSyntax })` | `"standard"`、`"strict"`、または `"quirks"` テンプレート構文処理を選択します。                                                                                     |
+| `include`              | `vite.include` または `vize({ include })`                   | プラグインがコンパイルする必要があるファイル。                                                                                                                     |
+| `exclude`              | `vite.exclude` または `vize({ exclude })`                   | プラグインが無視する必要があるファイル。                                                                                                                           |
+| `scanPatterns`         | `vite.scanPatterns` または `vize({ scanPatterns })`         | 起動時のプリコンパイルに使用される Glob パターン。                                                                                                                 |
+| `ignorePatterns`       | `vite.ignorePatterns` または `vize({ ignorePatterns })`     | 起動時のプリコンパイル中に Glob パターンがスキップされました。                                                                                                     |
+| `configMode`           | `vize({ configMode })`                                      | 共有設定の読み込みには、`"root"`、`"auto"`、または `false` を使用します。                                                                                          |
+| `configFile`           | `vize({ configFile })`                                      | 特定の構成ファイルをロードします。                                                                                                                                 |
+| `config`               | `vize({ config })`                                          | Vite Plus ランタイム設定のインライン共有構成。                                                                                                                     |
+| `handleNodeModulesVue` | `vize({ handleNodeModulesVue })`                            | `node_modules` からインポートされた `.vue` ファイルをオンデマンドでコンパイルします。                                                                              |
+| `debug`                | `vize({ debug })`                                           | プラグインのデバッグ ログを出力します。                                                                                                                            |
 
 一般的なレシピ:
 
@@ -257,18 +257,18 @@ Vue 3 バンドラー機能フラグを挿入します。既存の Vue コンパ
 
 ## 比較
 
-|特集 | @vitejs/plugin-vue | @vizejs/vite-plugin |
-| --------------------- | ------------------ | ---------------------------------- |
-|言語 | JavaScript | Rust (NAPI) |
-| SFC コンピレーション |はい |はい |
-|テンプレートのコンパイル |はい |はい |
-|スクリプトのセットアップ |はい |はい |
-| CSS スコープ |はい |はい |
-| SSRサポート |はい |はい |
-| HMR |はい |はい (スタイルのみの最適化) |
-|バッチプリコンパイル |いいえ |はい (レーヨン経由の平行) |
-| CSS抽出 |コンポーネントごと |結合された単一ファイル |
-|蒸気モード |実験的 |ファーストクラス (`vize_atelier_vapor`) |
+| 特集                     | @vitejs/plugin-vue | @vizejs/vite-plugin                     |
+| ------------------------ | ------------------ | --------------------------------------- |
+| 言語                     | JavaScript         | Rust (NAPI)                             |
+| SFC コンピレーション     | はい               | はい                                    |
+| テンプレートのコンパイル | はい               | はい                                    |
+| スクリプトのセットアップ | はい               | はい                                    |
+| CSS スコープ             | はい               | はい                                    |
+| SSRサポート              | はい               | はい                                    |
+| HMR                      | はい               | はい (スタイルのみの最適化)             |
+| バッチプリコンパイル     | いいえ             | はい (レーヨン経由の平行)               |
+| CSS抽出                  | コンポーネントごと | 結合された単一ファイル                  |
+| 蒸気モード               | 実験的             | ファーストクラス (`vize_atelier_vapor`) |
 
 ## 高度な機能
 

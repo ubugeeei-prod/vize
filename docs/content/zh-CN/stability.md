@@ -2,8 +2,8 @@
 title: 稳定性
 description: Vize v1 alpha 支持层级、兼容性承诺以及实验性表面。
 ---
-<!-- Generated translation; source: stability.md -->
 
+<!-- Generated translation; source: stability.md -->
 
 # 稳定
 
@@ -23,15 +23,15 @@ Vize正朝着v1 alpha迈进。alpha 合同故意比稳定的 v1 更窄
 
 v1 alpha 系列采用以下规则：
 
-|表面 |阿尔法期望值 |
-|------------------------------------ |---------------------------------------------------------------------------------- |
-|已发布的软件包名称 |应保持可用或随迁移说明一起发货 |
-|文档化的CLI命令和标志 |应避免无声的行为改变 |
-|文档配置字段 |除非发布说明提到变更，否则名称和数值形状应该保持稳定 |
-|文档中列出的诊断代码 |应保持可识别性，以便抑制和修复报告有用 |
-|已发布的Rust箱子API |请按照下面的每个箱子等级和弃用合同 |
-|未出口的Rust箱内部结构 |在v1稳定之前，若不支持迁移，可能会有所变化 |
-|生成代码与虚拟TS输出 |根据需要调整以保证正确性、兼容性、性能或诊断 |
+| 表面                   | 阿尔法期望值                                         |
+| ---------------------- | ---------------------------------------------------- |
+| 已发布的软件包名称     | 应保持可用或随迁移说明一起发货                       |
+| 文档化的CLI命令和标志  | 应避免无声的行为改变                                 |
+| 文档配置字段           | 除非发布说明提到变更，否则名称和数值形状应该保持稳定 |
+| 文档中列出的诊断代码   | 应保持可识别性，以便抑制和修复报告有用               |
+| 已发布的Rust箱子API    | 请按照下面的每个箱子等级和弃用合同                   |
+| 未出口的Rust箱内部结构 | 在v1稳定之前，若不支持迁移，可能会有所变化           |
+| 生成代码与虚拟TS输出   | 根据需要调整以保证正确性、兼容性、性能或诊断         |
 
 ## 运行时支持
 
@@ -57,10 +57,10 @@ Tarball 在 NPM 包发布前安装烟雾。运行时烟雾检查`vize --version`
 可选依赖解析器，直到容器化的Alpine烟雾能够分阶段匹配的本地人
 塔博尔：
 
-|目标 |主持跑者空档 |补偿覆盖 |
-|---------------- |----------------------------------------------------------------- |------------------------------------------------------------------ |
-|Linux-x64-musl |没有 GitHub 托管的 Alpine/musl 虚拟机作为原生运行工具可用 |建造工作会发出musl tarball;手动`node:alpine`烟雾。     |
-|Linux-arm64-musl |Arm64托管运行器是Ubuntu GNU，不是Alpine/musl原生主机 |建造工作发射arm64musl tarball;手动Alpine Arm64烟雾。|
+| 目标             | 主持跑者空档                                              | 补偿覆盖                                             |
+| ---------------- | --------------------------------------------------------- | ---------------------------------------------------- |
+| Linux-x64-musl   | 没有 GitHub 托管的 Alpine/musl 虚拟机作为原生运行工具可用 | 建造工作会发出musl tarball;手动`node:alpine`烟雾。   |
+| Linux-arm64-musl | Arm64托管运行器是Ubuntu GNU，不是Alpine/musl原生主机      | 建造工作发射arm64musl tarball;手动Alpine Arm64烟雾。 |
 
 这些缺口的缩小与[#493](https://github.com/ubugeeei-prod/vize/issues/493)并列追踪。
 
@@ -72,12 +72,12 @@ Tarball 在 NPM 包发布前安装烟雾。运行时烟雾检查`vize --version`
 
 ## 包支持层级
 
-|等级 |包裹 |合同 |
-|--------------------- |--------------------------------------------------------------------------------------------- |---------------------------------------------------------------------------------------------- |
-|Alpha支持|`vize`，`@vizejs/native`，`@vizejs/vite-plugin` |旨在早期生产试验，配合发布说明支持的破坏性变更。               |
-|兼容性预览 |`@vizejs/unplugin`，`@vizejs/rspack-plugin`，`@vizejs/nuxt`，`@vizejs/musea-nuxt` |预计适用于常见的主机配置，但主机与框架的兼容性可能会迅速变化。   |
-|实验 |`oxlint-plugin-vize`，`@vizejs/vite-plugin-musea`，`@vizejs/musea-mcp-server`，`@vizejs/wasm` |公开包，但 API、命令、输出和工作流形状在 alpha 阶段可能会发生变化。      |
-|孵化 |`@vizejs/fresco`、`@vizejs/fresco-native`、编辑器扩展包 |对开发和反馈很有用，但尚未成为v1 alpha Ready Production目标的一部分。|
+| 等级       | 包裹                                                                                          | 合同                                                                  |
+| ---------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Alpha支持  | `vize`，`@vizejs/native`，`@vizejs/vite-plugin`                                               | 旨在早期生产试验，配合发布说明支持的破坏性变更。                      |
+| 兼容性预览 | `@vizejs/unplugin`，`@vizejs/rspack-plugin`，`@vizejs/nuxt`，`@vizejs/musea-nuxt`             | 预计适用于常见的主机配置，但主机与框架的兼容性可能会迅速变化。        |
+| 实验       | `oxlint-plugin-vize`，`@vizejs/vite-plugin-musea`，`@vizejs/musea-mcp-server`，`@vizejs/wasm` | 公开包，但 API、命令、输出和工作流形状在 alpha 阶段可能会发生变化。   |
+| 孵化       | `@vizejs/fresco`、`@vizejs/fresco-native`、编辑器扩展包                                       | 对开发和反馈很有用，但尚未成为v1 alpha Ready Production目标的一部分。 |
 
 ## 锈箱支撑等级
 
@@ -88,23 +88,23 @@ Tarball 在 NPM 包发布前安装烟雾。运行时烟雾检查`vize --version`
 
 <!-- rust-crate-support:start -->
 
-|箱子 |等级 |目标观众 |公共入口 |移除/废弃 |
-|-------------------- |--------------------- |----------------------------------------- |----------------------------------------------- |-------------------------------------- |
-|`vize_carton` |Alpha支持|Vize 编译器和库作者 |`vize_carton::{Allocator, Bump, FxHashMap}` |一个辅修`#[deprecated]` |
-|`vize_relief` |Alpha支持|AST 与编译器集成作者 |`vize_relief::{RootNode, CompilerOptions}` |一个辅修`#[deprecated]` |
-|`vize_armature` |Alpha支持|解析 Vue 模板的工具 |`vize_armature::{parse, Parser, Tokenizer}` |一个辅修`#[deprecated]` |
-|`vize_croquis` |兼容性预览 |语义与类型感知工具作者 |`vize_croquis::{Croquis, Drawer}` |一个小调，`#[deprecated]` |
-|`vize_croquis_cf` |实验 |自愿参与的全项目分析实验 |`vize_croquis_cf::CrossFileAnalyzer` |没有最低要求;实用时会断音 |
-|`vize_atelier_core` |Alpha支持|Custom Vue 编译器后端作者 |`vize_atelier_core::{transform, generate}` |一个辅修`#[deprecated]` |
-|`vize_atelier_dom` |Alpha支持|VDOM编译器和捆绑器集成 |`vize_atelier_dom::compile_template` |一个辅修`#[deprecated]` |
-|`vize_atelier_vapor` |实验 |选择加入的蒸汽编译器集成 |`vize_atelier_vapor::compile_vapor` |没有最低要求;实用时会断音 |
-|`vize_atelier_ssr` |兼容性预览 |SSR与框架集成作者 |`vize_atelier_ssr::compile_ssr` |一个辅修`#[deprecated]` |
-|`vize_atelier_sfc` |Alpha支持|SFC工具与捆绑器作者 |`vize_atelier_sfc::{parse_sfc, compile_sfc}` |一个辅修`#[deprecated]` |
-|`vize_atelier_jsx` |兼容性预览 |JSX/TSX 编译器及工具作者 |`vize_atelier_jsx::{compile_jsx, lower_source}` |一个辅修`#[deprecated]` |
-|`vize_musea` |实验 |博物馆画廊与文档工具 |`vize_musea::{parse_art, transform_to_csf}` |没有最低要求;实用时会断音 |
-|`vize_fresco` |孵化 |TUI实验 |`vize_fresco::{RenderTree, LayoutEngine}` |没有最低限度 |
-|`vize_canon` |兼容性预览 |类型检查与编辑器集成 |`vize_canon::{type_check_sfc, TypeChecker}` |一个辅修`#[deprecated]` |
-|`vize_patina` |兼容性预览 |Linter 和 Oxlint 积分 |`vize_patina::{lint, Linter}` |一个辅修`#[deprecated]` |
+| 箱子                 | 等级       | 目标观众                  | 公共入口                                        | 移除/废弃                 |
+| -------------------- | ---------- | ------------------------- | ----------------------------------------------- | ------------------------- |
+| `vize_carton`        | Alpha支持  | Vize 编译器和库作者       | `vize_carton::{Allocator, Bump, FxHashMap}`     | 一个辅修`#[deprecated]`   |
+| `vize_relief`        | Alpha支持  | AST 与编译器集成作者      | `vize_relief::{RootNode, CompilerOptions}`      | 一个辅修`#[deprecated]`   |
+| `vize_armature`      | Alpha支持  | 解析 Vue 模板的工具       | `vize_armature::{parse, Parser, Tokenizer}`     | 一个辅修`#[deprecated]`   |
+| `vize_croquis`       | 兼容性预览 | 语义与类型感知工具作者    | `vize_croquis::{Croquis, Drawer}`               | 一个小调，`#[deprecated]` |
+| `vize_croquis_cf`    | 实验       | 自愿参与的全项目分析实验  | `vize_croquis_cf::CrossFileAnalyzer`            | 没有最低要求;实用时会断音 |
+| `vize_atelier_core`  | Alpha支持  | Custom Vue 编译器后端作者 | `vize_atelier_core::{transform, generate}`      | 一个辅修`#[deprecated]`   |
+| `vize_atelier_dom`   | Alpha支持  | VDOM编译器和捆绑器集成    | `vize_atelier_dom::compile_template`            | 一个辅修`#[deprecated]`   |
+| `vize_atelier_vapor` | 实验       | 选择加入的蒸汽编译器集成  | `vize_atelier_vapor::compile_vapor`             | 没有最低要求;实用时会断音 |
+| `vize_atelier_ssr`   | 兼容性预览 | SSR与框架集成作者         | `vize_atelier_ssr::compile_ssr`                 | 一个辅修`#[deprecated]`   |
+| `vize_atelier_sfc`   | Alpha支持  | SFC工具与捆绑器作者       | `vize_atelier_sfc::{parse_sfc, compile_sfc}`    | 一个辅修`#[deprecated]`   |
+| `vize_atelier_jsx`   | 兼容性预览 | JSX/TSX 编译器及工具作者  | `vize_atelier_jsx::{compile_jsx, lower_source}` | 一个辅修`#[deprecated]`   |
+| `vize_musea`         | 实验       | 博物馆画廊与文档工具      | `vize_musea::{parse_art, transform_to_csf}`     | 没有最低要求;实用时会断音 |
+| `vize_fresco`        | 孵化       | TUI实验                   | `vize_fresco::{RenderTree, LayoutEngine}`       | 没有最低限度              |
+| `vize_canon`         | 兼容性预览 | 类型检查与编辑器集成      | `vize_canon::{type_check_sfc, TypeChecker}`     | 一个辅修`#[deprecated]`   |
+| `vize_patina`        | 兼容性预览 | Linter 和 Oxlint 积分     | `vize_patina::{lint, Linter}`                   | 一个辅修`#[deprecated]`   |
 
 <!-- rust-crate-support:end -->
 
@@ -118,11 +118,11 @@ Tarball 在 NPM 包发布前安装烟雾。运行时烟雾检查`vize --version`
 基线。等待首次发布或被封锁的箱子，一旦其发布，就会加入该矩阵
 基线数据已提供。在此之前，元数据/表/发布列表检查仍然适用。
 
-|等级 |CI解释 |
-|--------------------------------------- |---------------------------------------------------------------------------------------------------------------------- |
-|Alpha支持/兼容性预览|API 中断必须被修复，或遵循支持策略的弃用窗口，并带有常规中断标记。|
-|实验 |门意外漂移;有意断裂可能会使用无废止窗口的断裂标记。       |
-|孵化 |同样的检测效果适用，但整个API或箱子在任何版本中都可能被替换或移除。                    |
+| 等级                 | CI解释                                                              |
+| -------------------- | ------------------------------------------------------------------- |
+| Alpha支持/兼容性预览 | API 中断必须被修复，或遵循支持策略的弃用窗口，并带有常规中断标记。  |
+| 实验                 | 门意外漂移;有意断裂可能会使用无废止窗口的断裂标记。                 |
+| 孵化                 | 同样的检测效果适用，但整个API或箱子在任何版本中都可能被替换或移除。 |
 
 CI识别的断开标记是常规变更标题中的`!`，或
 `BREAKING CHANGE:`脚。通过任何一个标记的门槛都不会免除退役

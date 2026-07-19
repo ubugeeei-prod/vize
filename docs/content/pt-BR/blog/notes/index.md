@@ -2,8 +2,8 @@
 title: Notas
 description: Postagens irregulares para devlogs, notas de arquitetura e atualizações mais amplas de projetos.
 ---
-<!-- Generated translation; source: blog/notes/index.md -->
 
+<!-- Generated translation; source: blog/notes/index.md -->
 
 # Notas
 

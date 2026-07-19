@@ -2,8 +2,8 @@
 title: テストとエージェント
 description: エージェントが開発ループの一部である場合、スナップショットを多用するテスト、現実世界のフィクスチャ、決定論的チェックがより重要になる理由。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-testing-agentic-coding-and-trust.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-testing-agentic-coding-and-trust.md -->
 
 # テストとエージェント
 

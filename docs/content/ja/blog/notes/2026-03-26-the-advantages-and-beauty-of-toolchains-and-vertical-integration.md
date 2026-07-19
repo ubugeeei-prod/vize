@@ -2,8 +2,8 @@
 title: 垂直ツールチェーン
 description: より多くのスタックを所有すると、開発者ツールの速度、一貫性、さらには美的品質が向上する理由。
 ---
-<!-- Generated translation; source: blog/notes/2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration.md -->
 
+<!-- Generated translation; source: blog/notes/2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration.md -->
 
 # 垂直ツールチェーン
 

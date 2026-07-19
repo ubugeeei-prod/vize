@@ -1,27 +1,27 @@
 ---
 title: はじめる
 ---
-<!-- Generated translation; source: getting-started.md -->
 
+<!-- Generated translation; source: getting-started.md -->
 
 # はじめる
 
->**⚠️ 進行中の作業:**Vize は積極的に開発中であり、まだ運用環境で使用する準備ができていません。 API とパッケージの境界は予告なく変更される場合があります。
+> **⚠️ 進行中の作業:**Vize は積極的に開発中であり、まだ運用環境で使用する準備ができていません。 API とパッケージの境界は予告なく変更される場合があります。
 
 ## ヴィゼとは何ですか?
 
 Vize (_/viːz/_) は、Rust で書かれた Vue.js ツールチェーンです。ワークスペースには共有が含まれています
 以下の構成要素:
 
-|エリア |メイン Rust クレート |ユーザー向けのエントリ ポイント |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-|編集 | [`vize_atelier_core`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_core)、[`vize_atelier_dom`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_dom)、[`vize_atelier_vapor`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_vapor)、[`vize_atelier_ssr`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_ssr)、 [`vize_atelier_sfc`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_sfc) | `@vizejs/vite-plugin`、npm `vize:build` スクリプト |
-|糸くず | [`vize_patina`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_patina) | npm `vize:lint` スクリプト、`oxlint-plugin-vize` |
-|フォーマット | [`vize_glyph`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_glyph) | npm `vize:fmt` スクリプト |
-|タイプチェック | [`vize_canon`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_canon) | npm `vize:check` スクリプト |
-|エディターのサポート | [`vize_maestro`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_maestro) | VS コード、ゼッド、ラスト `vize lsp` |
-|美術館の美術道具 | [`vize_musea`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_musea) | `@vizejs/vite-plugin-musea` |
-|バインディング | [`vize_vitrine`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_vitrine) | `@vizejs/native`、`@vizejs/wasm` |
+| エリア               | メイン Rust クレート                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | ユーザー向けのエントリ ポイント                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| 編集                 | [`vize_atelier_core`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_core)、[`vize_atelier_dom`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_dom)、[`vize_atelier_vapor`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_vapor)、[`vize_atelier_ssr`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_ssr)、 [`vize_atelier_sfc`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_sfc) | `@vizejs/vite-plugin`、npm `vize:build` スクリプト |
+| 糸くず               | [`vize_patina`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_patina)                                                                                                                                                                                                                                                                                                                                                                                                              | npm `vize:lint` スクリプト、`oxlint-plugin-vize`   |
+| フォーマット         | [`vize_glyph`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_glyph)                                                                                                                                                                                                                                                                                                                                                                                                                | npm `vize:fmt` スクリプト                          |
+| タイプチェック       | [`vize_canon`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_canon)                                                                                                                                                                                                                                                                                                                                                                                                                | npm `vize:check` スクリプト                        |
+| エディターのサポート | [`vize_maestro`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_maestro)                                                                                                                                                                                                                                                                                                                                                                                                            | VS コード、ゼッド、ラスト `vize lsp`               |
+| 美術館の美術道具     | [`vize_musea`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_musea)                                                                                                                                                                                                                                                                                                                                                                                                                | `@vizejs/vite-plugin-musea`                        |
+| バインディング       | [`vize_vitrine`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_vitrine)                                                                                                                                                                                                                                                                                                                                                                                                            | `@vizejs/native`、`@vizejs/wasm`                   |
 
 このガイドでは、JavaScript パッケージ管理とプロジェクト コマンドに [Vite+](https://viteplus.dev/) (`vp`) を推奨します。ワークスペースの基礎となるツールを使用しながら、パッケージ マネージャー間でインストールと実行のフローの一貫性を保ちます。
 
@@ -37,14 +37,14 @@ curl -fsSL https://vite.plus | bash
 
 大まかに言うと、Vize はいくつかの再利用可能なレーンに分割されています。
 
-|レーン |パッケージまたはスクリプト |得られるもの |
-| ----------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- |
-|コンパイル | `@vizejs/vite-plugin`、`vize:build` | Rust ネイティブ Vue SFC コンパイル、SSR 出力、Vapor モード、スコープ付き CSS 処理 |
-|静的解析 | `vize:lint`、`oxlint-plugin-vize` | Vue テンプレート、スクリプト、CSS、a11y、SSR、Vapor、Musea、クロスファイル、およびタイプ認識診断 |
-|タイプチェック | `vize:check` |仮想 TypeScript の生成、プロジェクト診断、Vue からソースへの診断マッピング |
-|フォーマット | `vize:fmt` |プロジェクトおよび CLI オプションを使用した Vue SFC フォーマット |
-|コンポーネントギャラリー | `@vizejs/vite-plugin-musea`、`musea-vrt` |アート ファイル、コンポーネント バリアント、プレビュー セットアップ、デザイン トークン、a11y、VRT |
-|エディターのサポート | VS コード、ゼッド、ラスト `vize lsp` |オプトイン診断とエディター機能 |
+| レーン                   | パッケージまたはスクリプト               | 得られるもの                                                                                      |
+| ------------------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| コンパイル               | `@vizejs/vite-plugin`、`vize:build`      | Rust ネイティブ Vue SFC コンパイル、SSR 出力、Vapor モード、スコープ付き CSS 処理                 |
+| 静的解析                 | `vize:lint`、`oxlint-plugin-vize`        | Vue テンプレート、スクリプト、CSS、a11y、SSR、Vapor、Musea、クロスファイル、およびタイプ認識診断  |
+| タイプチェック           | `vize:check`                             | 仮想 TypeScript の生成、プロジェクト診断、Vue からソースへの診断マッピング                        |
+| フォーマット             | `vize:fmt`                               | プロジェクトおよび CLI オプションを使用した Vue SFC フォーマット                                  |
+| コンポーネントギャラリー | `@vizejs/vite-plugin-musea`、`musea-vrt` | アート ファイル、コンポーネント バリアント、プレビュー セットアップ、デザイン トークン、a11y、VRT |
+| エディターのサポート     | VS コード、ゼッド、ラスト `vize lsp`     | オプトイン診断とエディター機能                                                                    |
 
 lint および型チェック モデルについては、[静的解析](./guide/static-analysis.md) を参照してください。
 具体的なルール出力の [ルール](./rules/index.md)、および

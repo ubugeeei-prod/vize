@@ -1,8 +1,8 @@
 ---
 title: Regras HTML
 ---
-<!-- Generated translation; source: rules/html.md -->
 
+<!-- Generated translation; source: rules/html.md -->
 
 # Regras HTML
 

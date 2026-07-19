@@ -2,8 +2,8 @@
 title: Notes
 description: Publications irrégulières pour les devlogs, notes d’architecture et mises à jour plus larges des projets.
 ---
-<!-- Generated translation; source: blog/notes/index.md -->
 
+<!-- Generated translation; source: blog/notes/index.md -->
 
 # Notes
 

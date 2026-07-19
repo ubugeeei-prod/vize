@@ -2,8 +2,8 @@
 title: 性能调校
 description: 构建 Vue 工具链的实用性能经验教训，其中解析、分配、并行性和反馈循环都很重要。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-performance-tuning-notes-for-a-vue-toolchain.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-performance-tuning-notes-for-a-vue-toolchain.md -->
 
 # 表演调校
 

@@ -1,8 +1,8 @@
 ---
 title: 跨文件复杂性
 ---
-<!-- Generated translation; source: guide/cross-file-complexity.md -->
 
+<!-- Generated translation; source: guide/cross-file-complexity.md -->
 
 # 跨档复杂性
 
@@ -23,23 +23,23 @@ Vize的跨文件复杂度报告是由Croquis制作的项目图摘要。它不是
 
 报告既揭示了原始信号，也提供了衍生分数。
 
-|场 |含义 |
-|----------------- |---------------------------------------------------------------------------------------------------------------------------------- |
-|`cyclomaticScore` |分量碱计数 + `v-if` + `v-for` + `v-if` 中的布尔算子。                                                            |
-|`cognitiveScore` |组件树模板嵌套分数，涵盖`v-if`、`v-for`和范围槽。                                                   |
-|`totalScore` |维度得分之和：模板流量、槽位、道具钻孔、全局状态、提供/注入、跳跃计量和反应图。|
-|`band` |面向人类的桶：`low`、`moderate`、`high`或`extreme`。                                                                     |
+| 场                | 含义                                                                            |
+| ----------------- | ------------------------------------------------------------------------------- |
+| `cyclomaticScore` | 分量碱计数 + `v-if` + `v-for` + `v-if` 中的布尔算子。                           |
+| `cognitiveScore`  | 组件树模板嵌套分数，涵盖`v-if`、`v-for`和范围槽。                               |
+| `totalScore`      | 维度得分之和：模板流量、槽位、道具钻孔、全局状态、提供/注入、跳跃计量和反应图。 |
+| `band`            | 面向人类的桶：`low`、`moderate`、`high`或`extreme`。                            |
 
 原始输入还会保留分数后面的数字，包括：
 
-|信号 |为什么重要 |
-|------------------------------------------------------------------ |-------------------------------------------------------------------------------------------------------------- |
-|`componentTreeVIfMaxDepth` |长路径跨父组件和子组件需要更多状态来测试。                           |
-|`componentTreeVForMaxDepth` |跨组件边界嵌套的循环会放大渲染和数据形状的复杂性。                            |
-|`componentTreeScopedSlotMaxDepth` |带范围槽将父模板和子模板耦合，因此它们的深度与普通槽数分开追踪。|
-|`propDrillingEdgeCount` |道具边表示跨界数据流。                                                                 |
-|`provideInjectMaxDepth`和`provideInjectReferenceCount` |深层或宽广的DI树会让本地所有权检查变得更困难。                                              |
-|`reactiveNodeCount`、`reactiveEdgeCount`和`reactiveCycleCount` |反应式图捕捉声明级别的状态、效应和易丢失周期。                              |
+| 信号                                                           | 为什么重要                                                       |
+| -------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `componentTreeVIfMaxDepth`                                     | 长路径跨父组件和子组件需要更多状态来测试。                       |
+| `componentTreeVForMaxDepth`                                    | 跨组件边界嵌套的循环会放大渲染和数据形状的复杂性。               |
+| `componentTreeScopedSlotMaxDepth`                              | 带范围槽将父模板和子模板耦合，因此它们的深度与普通槽数分开追踪。 |
+| `propDrillingEdgeCount`                                        | 道具边表示跨界数据流。                                           |
+| `provideInjectMaxDepth`和`provideInjectReferenceCount`         | 深层或宽广的DI树会让本地所有权检查变得更困难。                   |
+| `reactiveNodeCount`、`reactiveEdgeCount`和`reactiveCycleCount` | 反应式图捕捉声明级别的状态、效应和易丢失周期。                   |
 
 ## 组成边界
 

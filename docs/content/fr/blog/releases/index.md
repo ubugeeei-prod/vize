@@ -2,8 +2,8 @@
 title: Notes de sortie
 description: Annonces de versions, journaux de modifications, notes de migration et points forts des sorties.
 ---
-<!-- Generated translation; source: blog/releases/index.md -->
 
+<!-- Generated translation; source: blog/releases/index.md -->
 
 # Notes de sortie
 

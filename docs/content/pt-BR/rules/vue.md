@@ -1,8 +1,8 @@
 ---
 title: Regras do Vue
 ---
-<!-- Generated translation; source: rules/vue.md -->
 
+<!-- Generated translation; source: rules/vue.md -->
 
 # Regras do Vue
 
@@ -381,136 +381,103 @@ configuradas pelo nome.
 `vue/attribute-hyphenation` impõe o estilo de nomeação de atributos em componentes personalizados. Padrão:
 `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
 
-
 `vue/attribute-order` impõe uma ordem de atributos estável. Padrão: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
-
 
 `vue/component-definition-name-casing` impõe nomes de definição de componentes do PascalCase. Padrão:
 `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
 
-
 `vue/component-name-in-template-casing` aplica a inclusão de nomes de componentes em templates. Padrão:
 `warning`. Presets: `nuxt`, `opinionated`.
-
 
 `vue/html-quotes` impõe o estilo de aspas para atributos HTML. Padrão: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
 
-
 `vue/html-self-closing` impõe um estilo de auto-fechamento. Padrão: `warning`. Presets: `nuxt`,
 `opinionated`.
-
 
 `vue/multi-word-component-names` exige que os nomes dos componentes contenham mais de uma palavra. Padrão:
 `error`. Presets: `essential`, `nuxt`, `opinionated`.
 
-
 `vue/mustache-interpolation-spacing` impõe espaçamento dentro da interpolação do bigode. Padrão:
 `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
-
 
 `vue/no-boolean-attr-value` não permite valores explícitos para atributos HTML booleanos. Padrão:
 `warning`. Presets: `nuxt`, `opinionated`.
 
-
 `vue/no-inline-style` desencoraja atributos de `style` em linha. Padrão: `warning`. Presets: `nuxt`,
 `opinionated`.
-
 
 `vue/no-lone-template` proíbe embalagens `<template>` desnecessárias. Padrão: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
 
-
 `vue/no-multi-spaces` proíbe espaços repetidos em templates. Padrão: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
-
 
 `vue/no-preprocessor-lang` desencoraja linguagens de pré-processador CSS em blocos SFC. Padrão: `warning`.
 Presets: `nuxt`, `opinionated`.
 
-
 `vue/no-reserved-component-names` não permite nomes reservados de HTML ou Vue como nomes de componentes. Padrão:
 `error`. Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
-
 
 `vue/no-script-non-standard-lang` desencoraja linguagens de script não padrão. Padrão: `warning`.
 Presets: `nuxt`, `opinionated`.
 
-
 `vue/no-src-attribute` desencoraja atributos externos de `src` nos blocos SFC. Padrão: `warning`.
 Presets: `nuxt`, `opinionated`.
-
 
 `vue/no-template-key` proíbe `key` `<template>`. Padrão: `error`. Presets: `essential`,
 `happy-path`, `nuxt`, `opinionated`.
 
-
 `vue/no-template-lang` desencoraja `lang` em `<template>`. Padrão: `warning`. Presets: `nuxt`,
 `opinionated`.
-
 
 `vue/no-textarea-mustache` impede a interpolação do bigode dentro `<textarea>`. Padrão: `error`.
 Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
 
-
 `vue/no-unused-vars` reporta variáveis não utilizadas introduzidas por `v-for` e `v-slot`. Padrão:
 `warning`. Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
-
 
 `vue/no-useless-template-attributes` desabilita atributos em `<template>` que o Vue ignora. Padrão:
 `error`. Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
 
-
 `vue/no-v-text-v-html-on-component` não permite `v-text` ou `v-html` sobre elementos componentes. Padrão:
 `error`. Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
-
 
 `vue/permitted-contents` aplica regras de modelos de conteúdo HTML dentro dos templates do Vue. Padrão: `error`.
 Presets: `happy-path`, `nuxt`, `opinionated`.
 
-
 `vue/prefer-props-shorthand` recomenda sintaxe abreviada para adereços. Padrão: `warning`. Presets:
 `nuxt`, `opinionated`.
-
 
 `vue/prop-name-casing` impõe nomes de adereços de caixas de kebab nos modelos. Padrão: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
 
-
 `vue/require-component-registration` requer importação ou registro explícito de componentes. Padrão:
 `warning`. Presets: `opinionated`.
-
 
 `vue/require-scoped-style` exige `scoped` em blocos no estilo SFC. Padrão: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
 
-
 `vue/scoped-event-names` recomenda nomes de eventos com escopo, como `form:submit`. Padrão: `warning`.
 Presets: `nuxt`, `opinionated`.
-
 
 `vue/sfc-element-order` impõe a ordem dos blocos SFC de nível superior. Padrão: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
 
-
 `vue/single-style-block` recomenda manter os estilos em um único bloco. Padrão: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
-
 
 `vue/use-v-on-exact` impõe `.exact` quando manipuladores baseados em modificadores coexistem. Padrão: `warning`.
 Presets: `essential`, `nuxt`, `opinionated`.
 
-
 `vue/v-bind-style`, `vue/v-on-style`e `vue/v-slot-style` impõem preferências de estilo diretivo.
 Padrão: `warning`. Presets: `nuxt` e/ou `happy-path`, mais `opinionated`.
-
 
 `vue/valid-attribute-name`, `vue/valid-v-bind`, `vue/valid-v-else`, `vue/valid-v-for`,
 `vue/valid-v-if`, `vue/valid-v-memo`, `vue/valid-v-model`, `vue/valid-v-on`, `vue/valid-v-show`,
 e `vue/valid-v-slot` reportam a sintaxe inválida da diretiva do Vue. Padrão: `error`. Presets:
 `essential`, `happy-path`, `nuxt`, `opinionated`.
-
 
 `vue/warn-custom-block` e `vue/warn-custom-directive` alertam sobre pontos de extensão personalizados do Vue que
 precisam de suporte ou registro de hosts. Padrão: `warning`. Presets: `nuxt`, `opinionated`.

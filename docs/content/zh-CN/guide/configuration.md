@@ -1,8 +1,8 @@
 ---
 title: 配置
 ---
-<!-- Generated translation; source: guide/configuration.md -->
 
+<!-- Generated translation; source: guide/configuration.md -->
 
 # 配置
 
@@ -189,22 +189,22 @@ lsp {
 这些选项属于`compiler`。它们是基于模式支持的，并通过`defineConfig`共享;不是
 每一次积分都会消耗所有领域。
 
-|选项 |价值观 |常见用途 |
-|------------------- |--------------------------------------- |---------------------------------------------------------------- |
-|`sourceMap` |`boolean` |在 Vite 插件 | 中启用源映射
-|`ssr` |`boolean` |在不依赖Vite的SSR构建标志时编译为SSR |
-|`vapor` |`boolean` |启用蒸汽模式编译 |
-|`jsxMode` |`"vdom"`或`"vapor"` |`.jsx`/`.tsx`组件的默认输出后端 |
-|`customRenderer` |`boolean` |将小写非HTML标签视为自定义渲染器元素 |
-|`templateSyntax` |`"standard"`、`"strict"`或`"quirks"` |模板语法选择警告、错误或Vue-quirk处理 |
-|`scriptExt` |`"ts"`或`"js"` |保留TS输出或在npm build命令中下编译为JS |
-|`mode` |`"module"`或`"function"` |低级别编译器输出模式 |
-|`prefixIdentifiers` |`boolean` |模板标识符前缀为`_ctx` |
-|`hoistStatic` |`boolean` |控制静态节点起重 |
-|`cacheHandlers` |`boolean` |控制事件处理缓存 |
-|`isTs` |`boolean` |解析脚本块作为TypeScript |
-|`runtimeModuleName` |`string` |覆盖运行时导入模块 |
-|`runtimeGlobalName` |`string` |覆盖函数/IIFE风格输出的全局运行时 |
+| 选项                | 价值观                               | 常见用途                                |
+| ------------------- | ------------------------------------ | --------------------------------------- | ------------ |
+| `sourceMap`         | `boolean`                            | 在 Vite 插件                            | 中启用源映射 |
+| `ssr`               | `boolean`                            | 在不依赖Vite的SSR构建标志时编译为SSR    |
+| `vapor`             | `boolean`                            | 启用蒸汽模式编译                        |
+| `jsxMode`           | `"vdom"`或`"vapor"`                  | `.jsx`/`.tsx`组件的默认输出后端         |
+| `customRenderer`    | `boolean`                            | 将小写非HTML标签视为自定义渲染器元素    |
+| `templateSyntax`    | `"standard"`、`"strict"`或`"quirks"` | 模板语法选择警告、错误或Vue-quirk处理   |
+| `scriptExt`         | `"ts"`或`"js"`                       | 保留TS输出或在npm build命令中下编译为JS |
+| `mode`              | `"module"`或`"function"`             | 低级别编译器输出模式                    |
+| `prefixIdentifiers` | `boolean`                            | 模板标识符前缀为`_ctx`                  |
+| `hoistStatic`       | `boolean`                            | 控制静态节点起重                        |
+| `cacheHandlers`     | `boolean`                            | 控制事件处理缓存                        |
+| `isTs`              | `boolean`                            | 解析脚本块作为TypeScript                |
+| `runtimeModuleName` | `string`                             | 覆盖运行时导入模块                      |
+| `runtimeGlobalName` | `string`                             | 覆盖函数/IIFE风格输出的全局运行时       |
 
 对于 Vite 项目，直接插件选项覆盖共享配置：
 

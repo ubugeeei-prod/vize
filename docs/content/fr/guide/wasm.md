@@ -1,15 +1,14 @@
 ---
 title: Reliures WASM
 ---
-<!-- Generated translation; source: guide/wasm.md -->
 
+<!-- Generated translation; source: guide/wasm.md -->
 
 # Reliures WASM
 
 > **⚠️ Travaux en cours :** Vize est en développement actif et n’est pas encore prêt pour une utilisation en production. Les API WASM peuvent changer sans préavis.
 
 `@vizejs/wasm` fournit des liaisons WebAssembly pour exécuter directement le compilateur Vue dans le navigateur. Cela permet la compilation, le linting et la mise en forme SFC en temps réel sans serveur — idéal pour les terrains de jeux, la documentation et les outils éducatifs.
-
 
 Les liaisons WASM sont compilées à partir de la même base de code Rust que les liaisons CLI et NAPI (`vize_vitrine`), garantissant une sortie de compilation identique sur toutes les plateformes.
 
@@ -180,11 +179,11 @@ wasm-bindgen \
 
 Toutes les API WASM qui produisent des diagnostics (lint, erreurs de compilation) prennent en charge des messages localisés :
 
-| Code | Langue |
-| ---- | ----------------- |
+| Code | Langue               |
+| ---- | -------------------- |
 | `en` | Anglais (par défaut) |
-| `ja` | Japonais (日本語) |
-| `zh` | Chinois (中文) |
+| `ja` | Japonais (日本語)    |
+| `zh` | Chinois (中文)       |
 
 Passez l’option `locale` à toute API qui produit des diagnostics :
 

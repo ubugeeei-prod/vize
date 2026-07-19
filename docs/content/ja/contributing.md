@@ -1,8 +1,8 @@
 ---
 title: 貢献する
 ---
-<!-- Generated translation; source: contributing.md -->
 
+<!-- Generated translation; source: contributing.md -->
 
 # 貢献する
 

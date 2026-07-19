@@ -1,8 +1,8 @@
 ---
 title: Oxlint プラグイン
 ---
-<!-- Generated translation; source: guide/oxlint.md -->
 
+<!-- Generated translation; source: guide/oxlint.md -->
 
 # Oxlint プラグイン
 

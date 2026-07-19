@@ -1,8 +1,8 @@
 ---
 title: Musea
 ---
-<!-- Generated translation; source: guide/musea.md -->
 
+<!-- Generated translation; source: guide/musea.md -->
 
 # Musea
 
@@ -73,7 +73,6 @@ vp exec vize musea --build
 `musea()` options suppriment la configuration partagée. Mettez les paramètres par défaut stables du projet dans `vize.config.ts` et gardez
 paramètres de prévisualisation uniquement dans `vite.config.ts`.
 
-
 ```ts
 // vize.config.ts
 import { defineConfig } from "vize";
@@ -127,10 +126,8 @@ plus les métadonnées qui vivaient autrefois sur `<art>`. On préfère une cha�
 La chaîne source participe à la complétion de chemin, au diagnostic des fichiers non résolus, aux liens de documents et à
 go-to-definition.
 
-
 `<art title="..." component="...">` fonctionne toujours pour la compatibilité, et les attributs explicites de `<art>`
 `defineArt` outrepasser les métadonnées lorsque les deux sont présents.
-
 
 ### État variant local
 
@@ -172,20 +169,20 @@ const sharedCount = ref(0);
 
 ### Anatomie
 
-| Élément / Macro | Objectif |
-| -------------------------------- | -------------------------------------- |
-| `defineArt(source, options)` | Composant cible et métadonnées artistiques |
-| `defineArt(...).title` | Nom d’affichage |
-| `defineArt(...).category` | Regroupement dans la barre latérale |
-| `defineArt(...).status` | Insigne de statut optionnel |
-| `defineArt(...).tags` | Balises de recherche et de filtrage |
-| `<script setup>` | État de configuration variant local par défaut |
+| Élément / Macro                  | Objectif                                                 |
+| -------------------------------- | -------------------------------------------------------- |
+| `defineArt(source, options)`     | Composant cible et métadonnées artistiques               |
+| `defineArt(...).title`           | Nom d’affichage                                          |
+| `defineArt(...).category`        | Regroupement dans la barre latérale                      |
+| `defineArt(...).status`          | Insigne de statut optionnel                              |
+| `defineArt(...).tags`            | Balises de recherche et de filtrage                      |
+| `<script setup>`                 | État de configuration variant local par défaut           |
 | `<script setup isolate="false">` | État partagé de configuration entre toutes les variantes |
-| `<art>` | Bloc des variantes racines |
-| `<art title component ...>` | Attributs de métadonnées de compatibilité |
-| `<variant>` | Variation des composantes nommées |
-| `default` | Marque la variante par défaut |
-| `args`, `viewport`, `skip-vrt` | Configuration variante optionnelle |
+| `<art>`                          | Bloc des variantes racines                               |
+| `<art title component ...>`      | Attributs de métadonnées de compatibilité                |
+| `<variant>`                      | Variation des composantes nommées                        |
+| `default`                        | Marque la variante par défaut                            |
+| `args`, `viewport`, `skip-vrt`   | Configuration variante optionnelle                       |
 
 Gardez les fichiers d’art près du composant lorsque les variantes font partie du contrat du composant :
 
@@ -241,7 +238,6 @@ Le pipeline de palettes peut déduire des contrôles interactifs à partir des m
 
 `@vizejs/vite-plugin-musea` peut ingérer un fichier de jeton compatible avec le Dictionnaire de style et l’exposer dans
 l’interface de la galerie.
-
 
 ```ts
 musea({
@@ -339,7 +335,6 @@ musea({
 
 `vize musea` existe dans la ligne de ligne de Rust, mais le flux de travail recommandé de Musea aujourd’hui reste le chemin Vite
 plugin. Considérez la sous-commande Rust comme expérimentale pendant que le flux de travail dédié de la galerie se stabilise.
-
 
 La sous-commande Rust peut enchaîner un projet artistique de départ :
 

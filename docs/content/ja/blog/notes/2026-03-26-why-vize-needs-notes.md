@@ -2,8 +2,8 @@
 title: ノートレーン
 description: 一部のプロジェクトの更新には、単なる変更ログのエントリではなく、コンテキストを考慮する余地が必要です。
 ---
-<!-- Generated translation; source: blog/notes/2026-03-26-why-vize-needs-notes.md -->
 
+<!-- Generated translation; source: blog/notes/2026-03-26-why-vize-needs-notes.md -->
 
 # ノートレーン
 

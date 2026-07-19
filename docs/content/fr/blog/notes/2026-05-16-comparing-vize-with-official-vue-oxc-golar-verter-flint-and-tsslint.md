@@ -2,8 +2,8 @@
 title: Comparaison des outillages
 description: Une comparaison pratique de Vize et des projets voisins à travers les outillages officiels Vue, Oxc, Golar, Verter, Flint et TSSLint.
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-comparing-vize-with-official-vue-oxc-golar-verter-flint-and-tsslint.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-comparing-vize-with-official-vue-oxc-golar-verter-flint-and-tsslint.md -->
 
 # Comparaison des outillages
 
@@ -23,7 +23,6 @@ description: Une comparaison pratique de Vize et des projets voisins à travers 
 </a>
 </div>
 
-
 Vize est suffisamment proche de plusieurs projets pour que la comparaison soit inévitable.
 
 Cette comparaison est utile, mais seulement si l’axe est clair. « Plus vite » ne suffit pas. « Rouille » ne suffit pas. Le « soutien Vue » ne suffit pas.
@@ -34,21 +33,20 @@ La vraie question est : **quelle couche chaque projet souhaite-t-elle posséder 
 
 ## Carte rapide
 
-| Projet | Centre de gravité | Comment Vize s’y rapporte-t-il |
-| -------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Outillages officiels de Vue | La base de production pour les outils du compilateur et du langage Vue | Vize est indépendant et expérimental, il doit donc considérer cela comme point de référence |
-| Oxc / Oxlint | Infrastructure générale JavaScript et TypeScript | Vize peut réutiliser et coopérer avec Oxc tout en possédant une sémantique spécifique à Vue. |
-| Golar | `typescript-go`vérification des types en langage intégré | Vize propose une gamme d’outils Vue plus large que la vérification de type seule |
-| Verter | Compilateur et chaîne d’outils Vue de nouvelle génération alternatif | Plus proche en ambition, différent en architecture et en forme de produit |
-| Flint | Linting JS/TS amical et typé avec des valeurs par défaut fortes | Complémentaire pour le linting TS général, pas une chaîne d’outils SFC Vue |
-| TSSLint | Linting natif TypeScript à l’intérieur du serveur de langue | Idée de linting sémantique solide, mais pas une pile complète de compilateurs/linter/galeries Vue |
+| Projet                      | Centre de gravité                                                      | Comment Vize s’y rapporte-t-il                                                                    |
+| --------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Outillages officiels de Vue | La base de production pour les outils du compilateur et du langage Vue | Vize est indépendant et expérimental, il doit donc considérer cela comme point de référence       |
+| Oxc / Oxlint                | Infrastructure générale JavaScript et TypeScript                       | Vize peut réutiliser et coopérer avec Oxc tout en possédant une sémantique spécifique à Vue.      |
+| Golar                       | `typescript-go`vérification des types en langage intégré               | Vize propose une gamme d’outils Vue plus large que la vérification de type seule                  |
+| Verter                      | Compilateur et chaîne d’outils Vue de nouvelle génération alternatif   | Plus proche en ambition, différent en architecture et en forme de produit                         |
+| Flint                       | Linting JS/TS amical et typé avec des valeurs par défaut fortes        | Complémentaire pour le linting TS général, pas une chaîne d’outils SFC Vue                        |
+| TSSLint                     | Linting natif TypeScript à l’intérieur du serveur de langue            | Idée de linting sémantique solide, mais pas une pile complète de compilateurs/linter/galeries Vue |
 
 ## Outillages officiels de Vue
 
 La pile officielle compte d’abord.
 
 [Vue Language Tools](https://github.com/vuejs/language-tools), `vue-tsc`, les paquets compilateurs Vue et les intégrations officielles des éditeurs constituent la base de production. Lorsque Vize est en désaccord avec le comportement officiel, ce désaccord n’est pas automatiquement une idée audacieuse. La plupart du temps, c’est une correction nécessaire, une implémentation incomplète, ou un point où Vize a besoin d’une histoire de compatibilité plus claire.
-
 
 Cela ne rend pas Vize inutile.
 
@@ -59,7 +57,6 @@ Vize peut expérimenter une architecture native Rust plus unifiée, mais il doit
 ## Oxc et Oxlint
 
 [Oxc](https://oxc.rs/) est un projet d’infrastructure compilateur JavaScript et TypeScript à usage général. [Oxlint](https://oxc.rs/docs/guide/usage/linter.html)'est le linter haute performance construit sur ce monde.
-
 
 Vize ne devrait pas concurrencer Oxc au niveau JavaScript et TypeScript. Ce serait du gaspillage. Oxc offre déjà à l’écosystème un analyseur rapide, une infrastructure sémantique, une direction de formatage, une direction linter, et un ensemble croissant de primitives partagées.
 
@@ -76,7 +73,6 @@ L’oxc peut être la base générale JS/TS. Vize peut être la chaîne d’outi
 ## Golar
 
 [Golar](https://github.com/auvred/golar) est intéressant car il prend `typescript-go` sérieux pour les langages embarqués.
-
 
 Son cœur est la vérification de type, le code virtuel et l’intégration `tsgo` . Pour Vue, cela le place naturellement proche du modèle officiel de base linguistique. C’est une bonne et pratique forme : réutiliser la machine de code virtuel de Vue et rendre le moteur TypeScript plus rapide ou plus flexible.
 
@@ -95,7 +91,6 @@ La différence est la suivante :
 
 [Verter](https://github.com/pikax/verter) est probablement la comparaison la plus proche philosophiquement.
 
-
 Il pose aussi une grande question : à quoi ressemblerait une chaîne d’outils Vue de nouvelle génération si nous étions prêts à repenser les couches ?
 
 C’est proche de la question de Vize. Les deux projets se soucient du comportement des compilateurs, des outils du langage, du diagnostic, et d’une expérience plus stricte que ce qu’un simple ensemble de plugins sans lien peut offrir.
@@ -112,7 +107,6 @@ Je ne considère pas Verter comme un ennemi. C’est une autre expérience séri
 
 [Flint](https://www.flint.fyi/) est une comparaison différente.
 
-
 C’est un linter JavaScript et TypeScript mettant l’accent sur les paramètres par défaut utiles, la mise en cache et le linting typé. C’est précieux car l’écosystème JS/TS pose un vrai problème : le linting uniquement syntaxique est rapide mais incomplet, tandis que le linting sémantique peut devenir lent et coûteux opérationnellement.
 
 Vize est d’accord avec le principe que le retour sémantique doit être pratique, rapide et agréable.
@@ -128,7 +122,6 @@ La forme complémentaire est :
 ## TSSLint
 
 [TSSLint](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-tsslint) est important car il traite le linting sémantique de TypeScript comme quelque chose pouvant être proche du serveur du langage TypeScript.
-
 
 Cette idée est convaincante : si le vérificateur TypeScript a déjà un projet ouvert, pourquoi reconstruire le monde dans un processus linter séparé juste pour répondre à des questions sémantiques ?
 

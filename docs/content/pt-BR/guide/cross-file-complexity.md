@@ -1,8 +1,8 @@
 ---
 title: Complexidade entre arquivos
 ---
-<!-- Generated translation; source: guide/cross-file-complexity.md -->
 
+<!-- Generated translation; source: guide/cross-file-complexity.md -->
 
 # Complexidade entre arquivos
 
@@ -23,29 +23,29 @@ O modelo mapeia três sinais de complexidade para o Vue:
 
 O relatório expõe tanto sinais brutos quanto pontuações derivadas.
 
-| Campo | Significado |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `cyclomaticScore` | Contagem de base de componentes + `v-if` + `v-for` + operadores booleanos em `v-if`. |
-| `cognitiveScore` | Pontuação de aninhamento de templates de árvore de componentes entre `v-if`, `v-for`, e slots com escopo. |
-| `totalScore` | Soma dos escorações dimensionais: fluxo do modelo, slots, perfuração de prop, estado global, fornecer/injeção, atrações de falha e grafo reativo. |
-| `band` | Balde voltado para humanos: `low`, `moderate`, `high`ou `extreme`. |
+| Campo             | Significado                                                                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cyclomaticScore` | Contagem de base de componentes + `v-if` + `v-for` + operadores booleanos em `v-if`.                                                              |
+| `cognitiveScore`  | Pontuação de aninhamento de templates de árvore de componentes entre `v-if`, `v-for`, e slots com escopo.                                         |
+| `totalScore`      | Soma dos escorações dimensionais: fluxo do modelo, slots, perfuração de prop, estado global, fornecer/injeção, atrações de falha e grafo reativo. |
+| `band`            | Balde voltado para humanos: `low`, `moderate`, `high`ou `extreme`.                                                                                |
 
 A entrada bruta também mantém os números atrás da pontuação, incluindo:
 
-| Sinal | Por que isso importa |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| `componentTreeVIfMaxDepth` | Caminhos condicionais longos entre componentes pai e filho precisam de mais estados para serem testados. |
-| `componentTreeVForMaxDepth` | Loops aninhados entre os limites dos componentes amplificam a complexidade de renderização e forma dos dados. |
-| `componentTreeScopedSlotMaxDepth` | Slots com escopo combinam modelos de pai e filho, então a profundidade deles é acompanhada separadamente da contagem comum de slots. |
-| `propDrillingEdgeCount` | As arestas de prop indicam fluxo de dados transfronteiriço. |
-| `provideInjectMaxDepth` e `provideInjectReferenceCount` | Árvores DI profundas ou amplas dificultam a inspeção local da propriedade. |
-| `reactiveNodeCount`, `reactiveEdgeCount`e `reactiveCycleCount` | Grafos reativos capturam estados em nível de declaração, efeitos e ciclos propensos a perdas. |
+| Sinal                                                          | Por que isso importa                                                                                                                 |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `componentTreeVIfMaxDepth`                                     | Caminhos condicionais longos entre componentes pai e filho precisam de mais estados para serem testados.                             |
+| `componentTreeVForMaxDepth`                                    | Loops aninhados entre os limites dos componentes amplificam a complexidade de renderização e forma dos dados.                        |
+| `componentTreeScopedSlotMaxDepth`                              | Slots com escopo combinam modelos de pai e filho, então a profundidade deles é acompanhada separadamente da contagem comum de slots. |
+| `propDrillingEdgeCount`                                        | As arestas de prop indicam fluxo de dados transfronteiriço.                                                                          |
+| `provideInjectMaxDepth` e `provideInjectReferenceCount`        | Árvores DI profundas ou amplas dificultam a inspeção local da propriedade.                                                           |
+| `reactiveNodeCount`, `reactiveEdgeCount`e `reactiveCycleCount` | Grafos reativos capturam estados em nível de declaração, efeitos e ciclos propensos a perdas.                                        |
 
 ## Limites Componentes
 
 A complexidade do template não se limita a um único SFC. O Croquis constrói primeiro um registro de módulos e um grafo de
 de uso de componentes, depois percorre as arestas dos componentes com proteção de ciclo. Um pai `v-if` ao redor de uma criança, um pai
- `v-for` ao redor de uma criança, e um slot com escopo filho contribuem todos para a mesma árvore de componentes
+`v-for` ao redor de uma criança, e um slot com escopo filho contribuem todos para a mesma árvore de componentes
 caminho de aninhamento.
 
 Isso significa que um componente com aparência rasa ainda pode produzir uma pontuação alta quando avança em slots com escopo,

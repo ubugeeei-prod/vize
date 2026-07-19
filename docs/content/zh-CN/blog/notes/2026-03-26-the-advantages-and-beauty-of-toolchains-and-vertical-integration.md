@@ -2,8 +2,8 @@
 title: 垂直工具链
 description: 为什么拥有更多堆栈能提升开发者工具的速度、连贯性，甚至美观品质。
 ---
-<!-- Generated translation; source: blog/notes/2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration.md -->
 
+<!-- Generated translation; source: blog/notes/2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration.md -->
 
 # 垂直工具链
 

@@ -2,8 +2,8 @@
 title: 本番環境に対応
 description: 徹底的な現実世界の検証とコミュニティからのフィードバックが、実験プロジェクトから運用準備が整ったツールチェーンへの道となる理由。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-real-world-feedback-and-the-road-to-production-ready.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-real-world-feedback-and-the-road-to-production-ready.md -->
 
 # 実稼働準備完了
 

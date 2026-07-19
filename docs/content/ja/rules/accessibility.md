@@ -1,8 +1,8 @@
 ---
 title: アクセシビリティルール
 ---
-<!-- Generated translation; source: rules/accessibility.md -->
 
+<!-- Generated translation; source: rules/accessibility.md -->
 
 # アクセシビリティ ルール
 

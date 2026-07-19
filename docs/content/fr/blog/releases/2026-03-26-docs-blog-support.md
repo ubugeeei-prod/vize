@@ -2,8 +2,8 @@
 title: Docs Blog
 description: La documentation Vize peut désormais héberger à la fois des notes de publication et des notes irrégulières.
 ---
-<!-- Generated translation; source: blog/releases/2026-03-26-docs-blog-support.md -->
 
+<!-- Generated translation; source: blog/releases/2026-03-26-docs-blog-support.md -->
 
 # Docs Blog
 
@@ -22,7 +22,6 @@ description: La documentation Vize peut désormais héberger à la fois des note
 </span>
 </a>
 </div>
-
 
 La documentation Vize peut désormais héberger deux types de publications directement à l’intérieur de `docs/content/blog/`:
 

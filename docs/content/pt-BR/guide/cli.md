@@ -1,8 +1,8 @@
 ---
 title: CLI
 ---
-<!-- Generated translation; source: guide/cli.md -->
 
+<!-- Generated translation; source: guide/cli.md -->
 
 # Referência CLI
 
@@ -64,12 +64,12 @@ cargo install --path crates/vize --force --locked
 
 ## Scripts de Pacote npm vs CLI Rust
 
-| Need | Ponto de entrada recomendado |
-| ---------------------------------------------------------------------- | ------------------------------------ |
-| Pacotes de scripts para build, formatar, lint, check, ready e upgrade | `vp run vize:*` do pacote NPM |
-| Verificação de tipos apoiada por projetos em `.vue`, `.ts`, `.tsx`e `.d.ts` | Ferrugem `vize check` |
-| LSP, configuração do IDE, `check-server`e artefatos de perfilamento | Ferrugem `vize` binário |
-| Plugin Shared Vite, comando npm package e configurações da CLI do Rust | `vize.config.*` |
+| Need                                                                        | Ponto de entrada recomendado  |
+| --------------------------------------------------------------------------- | ----------------------------- |
+| Pacotes de scripts para build, formatar, lint, check, ready e upgrade       | `vp run vize:*` do pacote NPM |
+| Verificação de tipos apoiada por projetos em `.vue`, `.ts`, `.tsx`e `.d.ts` | Ferrugem `vize check`         |
+| LSP, configuração do IDE, `check-server`e artefatos de perfilamento         | Ferrugem `vize` binário       |
+| Plugin Shared Vite, comando npm package e configurações da CLI do Rust      | `vize.config.*`               |
 
 ## Comandos
 
@@ -79,20 +79,20 @@ vize [COMMAND]
 
 Quando invocado sem um comando, `vize` por padrão é `build`.
 
-| Comando | Descrição |
-| -------------- | ----------------------------------------------- |
-| `build` | Compilar arquivos SFC do Vue |
-| `fmt` | Formatar arquivos SFC Vue |
-| `lint` | Arquivos SFC Lint Vue |
-| `check` | Entradas de verificação de tipo Vue SFC, TS, TSX e `.d.ts` |
-| `inspector` | Criar cargas úteis para inspetores de compiladores de playground |
-| `clean` | Remover artefatos de cache gerados pelo Vize |
-| `ready` | Execute `fmt`, `lint`, `check`e `build` |
-| `upgrade` | Atualize a CLI instalada |
-| `check-server` | Inicie o servidor Unix JSON-RPC typecheck |
-| `musea` | Subcomandos e andaimes de Musea |
-| `lsp` | Inicie o servidor de idiomas |
-| `ide` | Instalar ou gerenciar integrações de editores |
+| Comando        | Descrição                                                        |
+| -------------- | ---------------------------------------------------------------- |
+| `build`        | Compilar arquivos SFC do Vue                                     |
+| `fmt`          | Formatar arquivos SFC Vue                                        |
+| `lint`         | Arquivos SFC Lint Vue                                            |
+| `check`        | Entradas de verificação de tipo Vue SFC, TS, TSX e `.d.ts`       |
+| `inspector`    | Criar cargas úteis para inspetores de compiladores de playground |
+| `clean`        | Remover artefatos de cache gerados pelo Vize                     |
+| `ready`        | Execute `fmt`, `lint`, `check`e `build`                          |
+| `upgrade`      | Atualize a CLI instalada                                         |
+| `check-server` | Inicie o servidor Unix JSON-RPC typecheck                        |
+| `musea`        | Subcomandos e andaimes de Musea                                  |
+| `lsp`          | Inicie o servidor de idiomas                                     |
+| `ide`          | Instalar ou gerenciar integrações de editores                    |
 
 Todos os relatórios `--profile` terminais são feitos pela caixa de `vize_curator` apenas local. Os ganchos de instrumentação
 permanecem em `vize_carton`, enquanto o curador possui a forma do relatório CLI ao lado
@@ -108,17 +108,17 @@ vize build --profile src
 
 Principais opções:
 
-| Opção | Descrição |
-| --------------------- | ---------------------------------------------------------------------- |
-| `-o, --output` | Saída relativa à fonte abaixo da raiz de entrada comum; rejeita colisões |
-| `-f, --format` | Formato de saída: `js`, `json`, `stats` |
-| `--ssr` | Habilitar compilação SSR |
-| `--script-ext` | `preserve` ou `downcompile` |
-| `--declaration` | Emitir `.d.ts` arquivos para os SFCs construídos (alias: `--dts`) |
-| `--declaration-dir` | Diretório de saída de declaração (padrão: o diretório de saída da compilação) |
-| `-j, --threads` | Substituição da contagem de threads |
-| `--profile` | Perfil de tempo de impressão |
-| `--continue-on-error` | Continue compilando e reporte falhas no final |
+| Opção                 | Descrição                                                                     |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `-o, --output`        | Saída relativa à fonte abaixo da raiz de entrada comum; rejeita colisões      |
+| `-f, --format`        | Formato de saída: `js`, `json`, `stats`                                       |
+| `--ssr`               | Habilitar compilação SSR                                                      |
+| `--script-ext`        | `preserve` ou `downcompile`                                                   |
+| `--declaration`       | Emitir `.d.ts` arquivos para os SFCs construídos (alias: `--dts`)             |
+| `--declaration-dir`   | Diretório de saída de declaração (padrão: o diretório de saída da compilação) |
+| `-j, --threads`       | Substituição da contagem de threads                                           |
+| `--profile`           | Perfil de tempo de impressão                                                  |
+| `--continue-on-error` | Continue compilando e reporte falhas no final                                 |
 
 ## Formato
 
@@ -129,20 +129,20 @@ vize fmt --write src
 
 Principais opções:
 
-| Opção | Descrição |
-| ---------------------------------- | ---------------------------------------------------- |
-| `--check` | Arquivos de reporte que mudariam |
-| `-w, --write` | Saída formatada de escrita |
-| `--single-quote` | Estilo de citação com alternância de string |
-| `--print-width` | Largura máxima da linha |
-| `--tab-width` | Largura da indentação |
-| `--use-tabs` | Alternar abas vs espaços |
-| `--no-semi` | Omita pontos e vírgulas |
-| `--sort-attributes` | Atributos do modelo de ordenação |
-| `--single-attribute-per-line` | Coloque um atributo por linha |
-| `--max-attributes-per-line` | Enrolar após uma determinada contagem de atributos |
+| Opção                              | Descrição                                              |
+| ---------------------------------- | ------------------------------------------------------ |
+| `--check`                          | Arquivos de reporte que mudariam                       |
+| `-w, --write`                      | Saída formatada de escrita                             |
+| `--single-quote`                   | Estilo de citação com alternância de string            |
+| `--print-width`                    | Largura máxima da linha                                |
+| `--tab-width`                      | Largura da indentação                                  |
+| `--use-tabs`                       | Alternar abas vs espaços                               |
+| `--no-semi`                        | Omita pontos e vírgulas                                |
+| `--sort-attributes`                | Atributos do modelo de ordenação                       |
+| `--single-attribute-per-line`      | Coloque um atributo por linha                          |
+| `--max-attributes-per-line`        | Enrolar após uma determinada contagem de atributos     |
 | `--normalize-directive-shorthands` | Normalizar `v-bind:` / `v-on:` / `v-slot:` abreviações |
-| `--profile` | Perfil de tempo de impressão |
+| `--profile`                        | Perfil de tempo de impressão                           |
 
 ## Fiapos
 
@@ -154,29 +154,29 @@ vize lint --help-level short src
 
 Principais opções:
 
-| Opção | Descrição |
-| --------------------- | ------------------------------------------------------------------------------------------ |
-| `--fix` | Aplique correções automáticas seguras de regras que forneçam edições de texto, depois reporte os diagnósticos restantes |
-| `-f, --format` | Formato de saída: `text`, `ansi`, `plain`, `json`, `stylish`, `markdown`, `html`ou `agent` |
-| `--max-warnings` | Falha quando os avisos excedem o limite |
-| `-q, --quiet` | Resumo do programa apenas |
-| `--help-level` | `full`, `short`ou `none` |
-| `--preset` | `happy-path`, `opinionated`, `essential`, `incremental`ou `nuxt` |
-| `--cross-file` | Ative verificações de arquivo entre arquivos opt-in |
-| `--cross-file-tree` | Imprima a árvore de fornecer/injeção quando o linting entre arquivos estiver ativado |
-| `--strict-reactivity` | Permitir linting nativo de perda de reatividade respaldado por checker |
-| `--profile` | Perfil de tempo de impressão |
-| `--slow-threshold` | Limiar lento de arquivo para saída de perfil |
+| Opção                 | Descrição                                                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `--fix`               | Aplique correções automáticas seguras de regras que forneçam edições de texto, depois reporte os diagnósticos restantes |
+| `-f, --format`        | Formato de saída: `text`, `ansi`, `plain`, `json`, `stylish`, `markdown`, `html`ou `agent`                              |
+| `--max-warnings`      | Falha quando os avisos excedem o limite                                                                                 |
+| `-q, --quiet`         | Resumo do programa apenas                                                                                               |
+| `--help-level`        | `full`, `short`ou `none`                                                                                                |
+| `--preset`            | `happy-path`, `opinionated`, `essential`, `incremental`ou `nuxt`                                                        |
+| `--cross-file`        | Ative verificações de arquivo entre arquivos opt-in                                                                     |
+| `--cross-file-tree`   | Imprima a árvore de fornecer/injeção quando o linting entre arquivos estiver ativado                                    |
+| `--strict-reactivity` | Permitir linting nativo de perda de reatividade respaldado por checker                                                  |
+| `--profile`           | Perfil de tempo de impressão                                                                                            |
+| `--slow-threshold`    | Limiar lento de arquivo para saída de perfil                                                                            |
 
 Presets são destinados à adoção em etapas:
 
-| Preset | Use quando |
-| ------------- | ---------------------------------------------------------------------- |
-| `essential` | Você quer diagnósticos orientados à correção em CI |
-| `happy-path` | Você quer o pacote recomendado padrão |
+| Preset        | Use quando                                                                          |
+| ------------- | ----------------------------------------------------------------------------------- |
+| `essential`   | Você quer diagnósticos orientados à correção em CI                                  |
+| `happy-path`  | Você quer o pacote recomendado padrão                                               |
 | `opinionated` | Você quer convenções mais fortes, regras de roteiro e candidatos com perfil de tipo |
-| `incremental` | Você só quer regras explicitamente configuradas |
-| `nuxt` | Você quer regras opinativas com suposições de componentes de Nuxt |
+| `incremental` | Você só quer regras explicitamente configuradas                                     |
+| `nuxt`        | Você quer regras opinativas com suposições de componentes de Nuxt                   |
 
 Exemplos:
 
@@ -202,25 +202,24 @@ vize check --profile src
 
 `vize check` é respaldado por sessões de projetos `vize_canon` e Corsa expostas por meio de [`corsa-bind`](https://github.com/ubugeeei/corsa-bind). O Vize gera TypeScript virtual para SFCs do Vue, executa diagnósticos de projeto em um caminho nativo e mapeia os resultados de volta para as localizações originais.
 
-
 Quando não há caminhos explícitos, `vize check` usa `tsconfig.json` `files` / `include` /
 `exclude` se disponível. Entradas explícitas podem ser arquivos, diretórios ou globos e podem incluir `.vue`,
 `.ts`, `.tsx`e `.d.ts`.
 
 Principais opções:
 
-| Opção | Descrição |
-| ------------------- | -------------------------------------------------- |
-| `-s, --socket` | Conecte-se a um `check-server` em funcionamento |
-| `--tsconfig` | Sobreposição `tsconfig.json` |
-| `-f, --format` | Formato de saída: `text` ou `json` |
-| `--show-virtual-ts` | TypeScript virtual gerado por impressão |
-| `-q, --quiet` | Resumo do programa apenas |
-| `--profile` | Escreva artefatos de perfil em `node_modules/.vize` |
-| `--corsa-path` | Sobrescrever o caminho executável Corsa |
-| `--servers` | Contagem reservada de servidores Corsa; somente `1` é suportado |
-| `--declaration` | Emita `.d.ts` saída |
-| `--declaration-dir` | Diretório de saída para declarações emitidas |
+| Opção               | Descrição                                                       |
+| ------------------- | --------------------------------------------------------------- |
+| `-s, --socket`      | Conecte-se a um `check-server` em funcionamento                 |
+| `--tsconfig`        | Sobreposição `tsconfig.json`                                    |
+| `-f, --format`      | Formato de saída: `text` ou `json`                              |
+| `--show-virtual-ts` | TypeScript virtual gerado por impressão                         |
+| `-q, --quiet`       | Resumo do programa apenas                                       |
+| `--profile`         | Escreva artefatos de perfil em `node_modules/.vize`             |
+| `--corsa-path`      | Sobrescrever o caminho executável Corsa                         |
+| `--servers`         | Contagem reservada de servidores Corsa; somente `1` é suportado |
+| `--declaration`     | Emita `.d.ts` saída                                             |
+| `--declaration-dir` | Diretório de saída para declarações emitidas                    |
 
 Use `--corsa-path` quando quiser fixar um executável Corsa personalizado enquanto desenvolve o Vize ou testa um
 `corsa-bind` local de verificação. A chave de configuração compartilhada é `typeChecker.corsaPath`; `typeChecker.tsgoPath`
@@ -267,7 +266,6 @@ vize inspector src --format agent --output inspector-agent.json
 inspetor do compilador. O navegador então inspeciona a saída do Vue, a saída do Vize, Virtual TS, VIR e o grafo cruzado de arquivos
 , depois produz um permalink mais um link de pull request pré-preenchido.
 
-
 Use `--format agent` quando outra ferramenta local ou agente de IA precisar da mesma reprodução sem abrir o navegador
 . O relatório contém a carga útil exata, URL do playground, métricas resumo e gráfico de importação.
 Metadados de carga útil, gráfico e diferencial de linha são construídos pela caixa de `vize_curator` local exclusiva para que a CLI e
@@ -275,15 +273,15 @@ inspeção do playground permaneçam alinhadas.
 
 Principais opções:
 
-| Opção | Descrição |
-| ------------------- | ---------------------------------------- |
-| `-f, --format` | Formato de saída: `url`, `json`ou `agent` |
-| `--target` | Destino do compilador: `dom` ou `ssr` |
-| `--playground-url` | URL base do playground para links gerados |
-| `--max-files` | Arquivos de limite incluídos em uma carga útil batch |
+| Opção               | Descrição                                            |
+| ------------------- | ---------------------------------------------------- |
+| `-f, --format`      | Formato de saída: `url`, `json`ou `agent`            |
+| `--target`          | Destino do compilador: `dom` ou `ssr`                |
+| `--playground-url`  | URL base do playground para links gerados            |
+| `--max-files`       | Arquivos de limite incluídos em uma carga útil batch |
 | `--custom-renderer` | Ativar a comparação de renderizadores personalizados |
-| `--template-syntax` | Escolha `standard`, `strict`ou `quirks` |
-| `-o, --output` | Escreva a URL ou o payload JSON em um arquivo |
+| `--template-syntax` | Escolha `standard`, `strict`ou `quirks`              |
+| `-o, --output`      | Escreva a URL ou o payload JSON em um arquivo        |
 
 Veja [Compiler Inspector](./compiler-inspector.md) para o fluxo de trabalho dos colaboradores.
 
@@ -306,7 +304,6 @@ são preservadas por padrão; Use `--force` apenas quando a raiz do artefato sel
 por completo. `--dry-run` imprime os caminhos dos artefatos que seriam removidos. Use `--scope node-modules`
 ou `--scope project` quando apenas uma raiz de artefato deve ser limpa.
 
-
 ## Pronto
 
 ```bash
@@ -317,14 +314,13 @@ vize ready --output dist src
 `vize ready` executa `fmt --write`, `lint`, `check`e `build` em ordem. O comando para no
 primeiro passo que falha.
 
-
 Principais opções:
 
-| Opção | Descrição |
-| -------------- | ----------------------------------- |
+| Opção          | Descrição                                |
+| -------------- | ---------------------------------------- |
 | `-o, --output` | Diretório de saída para a etapa de build |
-| `--ssr` | Habilitar compilação SSR para build |
-| `--script-ext` | `preserve` ou `downcompile` |
+| `--ssr`        | Habilitar compilação SSR para build      |
+| `--script-ext` | `preserve` ou `downcompile`              |
 
 ## Atualização
 
@@ -373,7 +369,6 @@ vize ide zed
 `vize lsp` inicia o servidor de idiomas diretamente.
 `vize ide` adiciona comandos de instalação e gerenciamento específicos do editor para as integrações VS Code e Zed
 .
-
 
 ## Opções Globais
 

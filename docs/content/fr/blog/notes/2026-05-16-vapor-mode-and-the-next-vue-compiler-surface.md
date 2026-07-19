@@ -2,8 +2,8 @@
 title: Mode vapeur
 description: Pourquoi le mode Vapor est important pour Vize, et pourquoi un chemin de compilateur direct et précis change plus que la performance à l’exécution.
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface.md -->
 
 # Mode vapeur
 
@@ -22,7 +22,6 @@ description: Pourquoi le mode Vapor est important pour Vize, et pourquoi un chem
 </span>
 </a>
 </div>
-
 
 Le mode Vapor est facile à décrire trop étroitement.
 

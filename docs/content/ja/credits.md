@@ -2,8 +2,8 @@
 title: クレジット
 description: Vize を形作る人々とコミュニティのフィードバック。
 ---
-<!-- Generated translation; source: credits.md -->
 
+<!-- Generated translation; source: credits.md -->
 
 # クレジット
 

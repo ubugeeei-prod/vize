@@ -1,8 +1,8 @@
 ---
 title: Commencer
 ---
-<!-- Generated translation; source: getting-started.md -->
 
+<!-- Generated translation; source: getting-started.md -->
 
 # Commencer
 
@@ -10,18 +10,18 @@ title: Commencer
 
 ## Qu’est-ce que Vize ?
 
-Vize (*/viːz/*) est une chaîne d’outils Vue.js écrite en Rust. L’espace de travail contient des blocs de construction
+Vize (_/viːz/_) est une chaîne d’outils Vue.js écrite en Rust. L’espace de travail contient des blocs de construction
 partagés pour :
 
-| Superficie | Caisse principale de rouille | Point d’entrée orienté utilisateur |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Compilation | [`vize_atelier_core`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_core), [`vize_atelier_dom`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_dom), [`vize_atelier_vapor`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_vapor), [`vize_atelier_ssr`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_ssr), [`vize_atelier_sfc`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_sfc) | `@vizejs/vite-plugin`, npm `vize:build` script |
-| Peluches | [`vize_patina`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_patina) | NPM `vize:lint` script, `oxlint-plugin-vize` |
-| Format | [`vize_glyph`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_glyph) | Script `vize:fmt` NPM |
-| Contrôle de type | [`vize_canon`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_canon) | NPM `vize:check` script |
-| Support des éditeurs | [`vize_maestro`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_maestro) | VS Code, Zed, Rust `vize lsp` |
-| Outils d’art de la musea | [`vize_musea`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_musea) | `@vizejs/vite-plugin-musea` |
-| Reliures | [`vize_vitrine`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_vitrine) | `@vizejs/native`, `@vizejs/wasm` |
+| Superficie               | Caisse principale de rouille                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Point d’entrée orienté utilisateur             |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Compilation              | [`vize_atelier_core`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_core), [`vize_atelier_dom`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_dom), [`vize_atelier_vapor`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_vapor), [`vize_atelier_ssr`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_ssr), [`vize_atelier_sfc`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_sfc) | `@vizejs/vite-plugin`, npm `vize:build` script |
+| Peluches                 | [`vize_patina`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_patina)                                                                                                                                                                                                                                                                                                                                                                                                             | NPM `vize:lint` script, `oxlint-plugin-vize`   |
+| Format                   | [`vize_glyph`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_glyph)                                                                                                                                                                                                                                                                                                                                                                                                               | Script `vize:fmt` NPM                          |
+| Contrôle de type         | [`vize_canon`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_canon)                                                                                                                                                                                                                                                                                                                                                                                                               | NPM `vize:check` script                        |
+| Support des éditeurs     | [`vize_maestro`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_maestro)                                                                                                                                                                                                                                                                                                                                                                                                           | VS Code, Zed, Rust `vize lsp`                  |
+| Outils d’art de la musea | [`vize_musea`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_musea)                                                                                                                                                                                                                                                                                                                                                                                                               | `@vizejs/vite-plugin-musea`                    |
+| Reliures                 | [`vize_vitrine`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_vitrine)                                                                                                                                                                                                                                                                                                                                                                                                           | `@vizejs/native`, `@vizejs/wasm`               |
 
 Ce guide recommande [Vite+](https://viteplus.dev/) (`vp`) pour la gestion de paquets JavaScript et les commandes de projet. Cela maintient la cohérence du flux d’installation et d’exécutif entre les gestionnaires de paquets tout en utilisant l’outil sous-jacent de l’espace de travail.
 
@@ -37,14 +37,14 @@ Consultez les [Vite+ docs](https://viteplus.dev/) et les [Installing Dependencie
 
 À un niveau général, Vize est divisé en quelques voies réutilisables :
 
-| Voie | Paquet ou script | Ce que tu obtiens |
-| ----------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Compiler | `@vizejs/vite-plugin`, `vize:build` | Compilation SFC Vue native Rust, sortie SSR, mode Vapor, gestion CSS à portée portée |
-| Analyse statique | `vize:lint`, `oxlint-plugin-vize` | Modèle Vue, script, CSS, a11y, SSR, Vapor, Musea, diagnostics cross-file et sensibles aux types |
-| Contrôle de type | `vize:check` | Génération de Virtual TypeScript, diagnostic de projet, mappage de diagnostic Vue vers la source |
-| Format | `vize:fmt` | Mise en page SFC Vue avec options de projet et de CLI |
+| Voie                  | Paquet ou script                         | Ce que tu obtiens                                                                                           |
+| --------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Compiler              | `@vizejs/vite-plugin`, `vize:build`      | Compilation SFC Vue native Rust, sortie SSR, mode Vapor, gestion CSS à portée portée                        |
+| Analyse statique      | `vize:lint`, `oxlint-plugin-vize`        | Modèle Vue, script, CSS, a11y, SSR, Vapor, Musea, diagnostics cross-file et sensibles aux types             |
+| Contrôle de type      | `vize:check`                             | Génération de Virtual TypeScript, diagnostic de projet, mappage de diagnostic Vue vers la source            |
+| Format                | `vize:fmt`                               | Mise en page SFC Vue avec options de projet et de CLI                                                       |
 | Galerie de composants | `@vizejs/vite-plugin-musea`, `musea-vrt` | Fichiers artistiques, variantes composantes, configuration de prévisualisation, jetons de design, a11y, VRT |
-| Support des éditeurs | VS Code, Zed, Rust `vize lsp` | Diagnostics et fonctionnalités d’éditeur en option |
+| Support des éditeurs  | VS Code, Zed, Rust `vize lsp`            | Diagnostics et fonctionnalités d’éditeur en option                                                          |
 
 Voir [Static Analysis](./guide/static-analysis.md) pour le modèle de vérification de lint et de type,
 [Rules](./rules/index.md) pour la sortie de règles concrètes, et
@@ -176,7 +176,6 @@ vize lsp
 ## Vérification de type native
 
 `vize check` est alimenté par `vize_canon`, qui s’appuie désormais sur [`corsa-bind`](https://github.com/ubugeeei/corsa-bind) sessions de projet pour des diagnostics natifs TypeScript. Vize génère un TypeScript virtuel pour les SFC Vue, demande à Corsa des diagnostics conscients du projet, puis remappe les résultats sur les fichiers originaux `.vue`, `.ts`, `.tsx`et `.d.ts`.
-
 
 Cette voie est encore en train de mûrir, donc la vérification des types d’éditeurs reste une option volontaire pour l’instant. La pile d’exécution
 est le paquet `@typescript/native-preview`, Corsa/corsa-bind est la couche API avec laquelle Vize

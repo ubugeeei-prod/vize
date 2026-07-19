@@ -1,8 +1,8 @@
 ---
 title: Fluxos de Trabalho do Usuário
 ---
-<!-- Generated translation; source: guide/workflows.md -->
 
+<!-- Generated translation; source: guide/workflows.md -->
 
 # Fluxos de Trabalho do Usuário
 
@@ -39,7 +39,6 @@ Prefira scripts nomeados a comandos únicos para que execuções locais e de CI 
 
 `vize ready` é o portão local amplo. Em repositórios maiores, mantenha também os comandos individuais para que
 desenvolvedores possam isolar falhas de formatação, lint, verificação de tipos e compiladores.
-
 
 ## Configurar uma vez
 

@@ -1,8 +1,8 @@
 ---
 title: Règles de la Musea et du CSS
 ---
-<!-- Generated translation; source: rules/musea-and-css.md -->
 
+<!-- Generated translation; source: rules/musea-and-css.md -->
 
 # Règles de la Musea et du CSS
 
@@ -382,6 +382,5 @@ Bon :
 
 `css/no-utility-classes` met en garde contre l’implémentation de classes utilitaires dans les styles de composants. Par défaut :
 `warning`.
-
 
 `css/prefer-nested-selectors` recommande le CSS nesting pour les sélectionneurs descendants. Par défaut : `warning`.

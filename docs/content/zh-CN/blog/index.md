@@ -2,8 +2,8 @@
 title: 博客
 description: Vize 项目的发布说明和不规则说明。
 ---
-<!-- Generated translation; source: blog/index.md -->
 
+<!-- Generated translation; source: blog/index.md -->
 
 # 博客
 

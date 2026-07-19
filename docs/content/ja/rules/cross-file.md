@@ -1,8 +1,8 @@
 ---
 title: ファイル間ルール
 ---
-<!-- Generated translation; source: rules/cross-file.md -->
 
+<!-- Generated translation; source: rules/cross-file.md -->
 
 # クロスファイルルール
 

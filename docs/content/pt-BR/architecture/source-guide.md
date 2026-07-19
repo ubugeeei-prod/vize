@@ -1,8 +1,8 @@
 ---
 title: Guia de Fontes
 ---
-<!-- Generated translation; source: architecture/source-guide.md -->
 
+<!-- Generated translation; source: architecture/source-guide.md -->
 
 # Guia de Fontes
 
@@ -15,14 +15,14 @@ de relacionamento de alto nível, depois use este guia para encontrar os arquivo
 O Vize mantém a maior parte do comportamento do produto no espaço de trabalho Rust, com os pacotes JavaScript atuando como camadas
 distribuição e integração.
 
-| Caminho | O que vive lá |
-| --------- | ----------------------------------------------------------------------------------------------------------------- |
+| Caminho   | O que vive lá                                                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `crates/` | Rust crates para análise sintática, análise, compilação, linting, formatação, verificação de tipos, LSP, CLI e bindings nativos |
-| `npm/` | Pacotes JavaScript para Vite, Nuxt, extensões de editores, integrações com Musea e wrappers de pacotes publicados |
-| `docs/` | Documentação para usuários, notas de arquitetura, notas de atualização e o tema do site docs |
-| `tests/` | Fixtures cross-package, projetos do mundo real, testes de ferramentas e governança snapshot |
-| `bench/` | Scripts de comparação de desempenho e fiscalização de benchmarks de PR |
-| `tools/` | Automação de repositórios que não faz parte do produto enviado |
+| `npm/`    | Pacotes JavaScript para Vite, Nuxt, extensões de editores, integrações com Musea e wrappers de pacotes publicados               |
+| `docs/`   | Documentação para usuários, notas de arquitetura, notas de atualização e o tema do site docs                                    |
+| `tests/`  | Fixtures cross-package, projetos do mundo real, testes de ferramentas e governança snapshot                                     |
+| `bench/`  | Scripts de comparação de desempenho e fiscalização de benchmarks de PR                                                          |
+| `tools/`  | Automação de repositórios que não faz parte do produto enviado                                                                  |
 
 Quando uma mudança cruza diretórios, o proprietário geralmente é a camada que cria o comportamento
 visível para o usuário. Por exemplo, uma alteração de saída do compilador pertence a `crates/`, mesmo quando a reprodução vem de
@@ -48,35 +48,35 @@ adicionar apenas o comportamento que possui.
 
 ## Pontos de Entrada na Caixa
 
-| Área de mudança | Comece aqui | Então verifique |
-| ------------------------------ | -------------------------------------- | ------------------------------------------------------------------ |
-| Análise sintática de templates | `crates/vize_armature/src/lib.rs` | Fixtures do parser e snapshots AST esperados |
-| Forma AST e opções do compilador | `crates/vize_relief/src/lib.rs` | Compiladores posteriores, chamadas LINT e Formatter |
-| Semântica de template | `crates/vize_croquis/src/lib.rs` | helpers de escopo, vinculação, reatividade e TypeScript virtual |
-| Comportamento do compilador compartilhado | `crates/vize_atelier_core/src/lib.rs` | Caixas de ateliê específicas para backend |
-| Saída do modelo de cliente | `crates/vize_atelier_dom/src/lib.rs` | snapshots de código gerados e testes de fixture em tempo de execução |
-| Saída de vapor | `crates/vize_atelier_vapor/src/lib.rs` | Regras específicas de vapor e saída de jogos do mundo real |
-| Saída SSR | `crates/vize_atelier_ssr/src/lib.rs` | Snapshots SSR, fuga e comportamento de hidratação |
-| Orquestração SFC | `crates/vize_atelier_sfc/src/lib.rs` | script, template, style, HMR e caminhos de source-map |
-| Regras de fiapos | `crates/vize_patina/src/lib.rs` | Snapshots de regras e diagnósticos localizados |
-| Verificação de tipos | `crates/vize_canon/src/lib.rs` | gerou TS virtual e diagnósticos `corsa-bind` |
-| Comportamento dos LSP | `crates/vize_maestro/src/lib.rs` | Manipuladores de servidores, documentos virtuais e testes de fumaça do editor |
-| Formatação | `crates/vize_glyph/src/lib.rs` | Instantâneos dourados de formatação |
-| Fixações nativas e WASM | `crates/vize_vitrine/src/lib.rs` | Envelopes de pacotes NPM e declarações de tipo geradas |
-| Comportamento da CLI | `crates/vize/src/main.rs` | módulos de comando, snapshots e testes de integração build/check/lint |
+| Área de mudança                           | Comece aqui                            | Então verifique                                                               |
+| ----------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------------- |
+| Análise sintática de templates            | `crates/vize_armature/src/lib.rs`      | Fixtures do parser e snapshots AST esperados                                  |
+| Forma AST e opções do compilador          | `crates/vize_relief/src/lib.rs`        | Compiladores posteriores, chamadas LINT e Formatter                           |
+| Semântica de template                     | `crates/vize_croquis/src/lib.rs`       | helpers de escopo, vinculação, reatividade e TypeScript virtual               |
+| Comportamento do compilador compartilhado | `crates/vize_atelier_core/src/lib.rs`  | Caixas de ateliê específicas para backend                                     |
+| Saída do modelo de cliente                | `crates/vize_atelier_dom/src/lib.rs`   | snapshots de código gerados e testes de fixture em tempo de execução          |
+| Saída de vapor                            | `crates/vize_atelier_vapor/src/lib.rs` | Regras específicas de vapor e saída de jogos do mundo real                    |
+| Saída SSR                                 | `crates/vize_atelier_ssr/src/lib.rs`   | Snapshots SSR, fuga e comportamento de hidratação                             |
+| Orquestração SFC                          | `crates/vize_atelier_sfc/src/lib.rs`   | script, template, style, HMR e caminhos de source-map                         |
+| Regras de fiapos                          | `crates/vize_patina/src/lib.rs`        | Snapshots de regras e diagnósticos localizados                                |
+| Verificação de tipos                      | `crates/vize_canon/src/lib.rs`         | gerou TS virtual e diagnósticos `corsa-bind`                                  |
+| Comportamento dos LSP                     | `crates/vize_maestro/src/lib.rs`       | Manipuladores de servidores, documentos virtuais e testes de fumaça do editor |
+| Formatação                                | `crates/vize_glyph/src/lib.rs`         | Instantâneos dourados de formatação                                           |
+| Fixações nativas e WASM                   | `crates/vize_vitrine/src/lib.rs`       | Envelopes de pacotes NPM e declarações de tipo geradas                        |
+| Comportamento da CLI                      | `crates/vize/src/main.rs`              | módulos de comando, snapshots e testes de integração build/check/lint         |
 
 Prefiro seguir o ponto de entrada da caixa pública primeiro. Muitas caixas possuem módulos compactos `lib.rs` que
 reexportar os módulos internos que o contribuinte deve tocar.
 
 ## Pontos de Entrada de Pacotes JavaScript
 
-| Pacote | Entrada de fonte | Limite de ferrugem |
-| --------------------------- | -------------------------------------------------------------- | --------------------------------------------- |
-| `@vizejs/vite-plugin` | `npm/builder/vite/src/index.ts` | `@vizejs/native` por `vize_vitrine` |
-| `@vizejs/nuxt` | `npm/framework/nuxt/src/index.ts` | Opções de plugins Vite e integração de componentes |
-| `@vizejs/wasm` | gerado pacotes por volta de `vize_vitrine` exportações WASM | `crates/vize_vitrine/src/wasm` |
-| `@vizejs/vite-plugin-musea` | `npm/builder/vite-musea/src/index.ts` e código de pacote relacionado | `vize_musea` APIs expostas por meio de bindings |
-| `oxlint-plugin-vize` | `npm/oxint/src/index.ts` | `vize_patina` diagnóstico por meio de fixações |
+| Pacote                      | Entrada de fonte                                                     | Limite de ferrugem                                 |
+| --------------------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
+| `@vizejs/vite-plugin`       | `npm/builder/vite/src/index.ts`                                      | `@vizejs/native` por `vize_vitrine`                |
+| `@vizejs/nuxt`              | `npm/framework/nuxt/src/index.ts`                                    | Opções de plugins Vite e integração de componentes |
+| `@vizejs/wasm`              | gerado pacotes por volta de `vize_vitrine` exportações WASM          | `crates/vize_vitrine/src/wasm`                     |
+| `@vizejs/vite-plugin-musea` | `npm/builder/vite-musea/src/index.ts` e código de pacote relacionado | `vize_musea` APIs expostas por meio de bindings    |
+| `oxlint-plugin-vize`        | `npm/oxint/src/index.ts`                                             | `vize_patina` diagnóstico por meio de fixações     |
 
 Use testes de pacote para fiação de integração, mas mantenha a semântica da linguagem nos testes Rust. A camada
 pacote deve provar principalmente que opções, módulos virtuais, HMR e chamadas nativas estão conectadas.
@@ -126,9 +126,9 @@ de JSON ou texto, inventários e verificações de aprovação/reprovação, cuj
 Mantenha um script em Node (`.mjs`) quando o MoonBit adicionaria atrito em vez de removê-lo:
 
 - Ele é importado como módulo por outro JavaScript ou por uma suíte `node --test` (por exemplo,
-`tools/github/release-platforms.mjs`), então reescrevê-lo dividiria uma fonte em dois idiomas.
+  `tools/github/release-platforms.mjs`), então reescrevê-lo dividiria uma fonte em dois idiomas.
   - Depende do ecossistema npm (bibliotecas globbing, ferramentas de pacotes, SDKs de ação do GitHub) ou de
-  APIs exclusivas para nós que não têm equivalente ao MoonBit.
+    APIs exclusivas para nós que não têm equivalente ao MoonBit.
 - É grande ou exploratório o suficiente para que seu comportamento ainda não seja definido por um teste de saída completa; Não
   migrar qualquer coisa que possa quebrar o IC sem esse tipo de teste.
 

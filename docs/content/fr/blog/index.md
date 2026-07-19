@@ -2,8 +2,8 @@
 title: Blog
 description: Notes de publication et notes irrégulières du projet Vize.
 ---
-<!-- Generated translation; source: blog/index.md -->
 
+<!-- Generated translation; source: blog/index.md -->
 
 # Blog
 
@@ -16,14 +16,12 @@ La documentation Vize dispose désormais de deux voies d’écriture :
 <p>modifications de la sortie, points forts de sortie, notes de migration et directives de déploiement.</p>
 </a>
 
-
 <a class="blog-card" href="./notes/">
 <span class="blog-card-kicker">Suivre</span>
 <strong>Notes</strong>
 <p>Posts irréguliers pour les devlogs, les write-ups de design, les notes d’architecture et les mises à jour en coulisses.</p>
 </a>
 </div>
-
 
 ## Comment publier
 
@@ -102,4 +100,5 @@ La documentation Vize dispose désormais de deux voies d’écriture :
 <strong>Notes Lane</strong>
 <span>Certaines mises à jour de projets nécessitent un contexte, pas seulement une entrée dans le journal des modifications.</span>
 </a>
+
 </div>

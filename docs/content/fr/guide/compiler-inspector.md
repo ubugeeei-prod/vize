@@ -1,8 +1,8 @@
 ---
 title: Inspecteur de compilateur
 ---
-<!-- Generated translation; source: guide/compiler-inspector.md -->
 
+<!-- Generated translation; source: guide/compiler-inspector.md -->
 
 # Inspecteur de compilateur
 
@@ -74,16 +74,16 @@ par les liaisons WASM du playground pour les métadonnées des diff de graphes e
 
 Options utiles :
 
-| Option | Description |
-| ------------------- | --------------------------------------------- |
-| `--target dom` | Comparer la sortie du compilateur VDOM |
-| `--target ssr` | Comparer la sortie du compilateur SSR |
-| `--format agent` | Émettre du JSON lisible par agent avec métadonnées de graphe |
-| `--format compare` | Lancer une comparaison de CLI uniquement développeur avec Vue |
-| `--custom-renderer` | Activez le mode de rendu personnalisé dans le terrain de jeu |
-| `--template-syntax` | Choisissez `standard`, `strict`ou `quirks` |
-| `--max-files <n>` | Limiter le nombre de fichiers dans une charge utile batch |
-| `--playground-url` | Écraser l’URL de playground utilisée pour les liens |
+| Option              | Description                                                   |
+| ------------------- | ------------------------------------------------------------- |
+| `--target dom`      | Comparer la sortie du compilateur VDOM                        |
+| `--target ssr`      | Comparer la sortie du compilateur SSR                         |
+| `--format agent`    | Émettre du JSON lisible par agent avec métadonnées de graphe  |
+| `--format compare`  | Lancer une comparaison de CLI uniquement développeur avec Vue |
+| `--custom-renderer` | Activez le mode de rendu personnalisé dans le terrain de jeu  |
+| `--template-syntax` | Choisissez `standard`, `strict`ou `quirks`                    |
+| `--max-files <n>`   | Limiter le nombre de fichiers dans une charge utile batch     |
+| `--playground-url`  | Écraser l’URL de playground utilisée pour les liens           |
 
 ## Flux de travail RP
 

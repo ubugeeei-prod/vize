@@ -1,8 +1,8 @@
 ---
 title: Musea と CSS ルール
 ---
-<!-- Generated translation; source: rules/musea-and-css.md -->
 
+<!-- Generated translation; source: rules/musea-and-css.md -->
 
 # Musea と CSS ルール
 

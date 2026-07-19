@@ -2,8 +2,8 @@
 title: Ajuste de Performance
 description: Lições práticas de performance ao construir uma caixa de ferramentas Vue onde parsing, alocação, paralelismo e loops de feedback são todos importantes.
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-performance-tuning-notes-for-a-vue-toolchain.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-performance-tuning-notes-for-a-vue-toolchain.md -->
 
 # Ajuste de Performance
 
@@ -22,7 +22,6 @@ description: Lições práticas de performance ao construir uma caixa de ferrame
 </span>
 </a>
 </div>
-
 
 Ajuste de desempenho em uma cadeia de ferramentas frontend não é um truque só.
 

@@ -1,8 +1,8 @@
 ---
 title: 静的解析
 ---
-<!-- Generated translation; source: guide/static-analysis.md -->
 
+<!-- Generated translation; source: guide/static-analysis.md -->
 
 # 静的解析
 
@@ -15,13 +15,13 @@ Vize の分析スタックは、コンパイラー、リンター、型チェッ
 
 ## パイプライン
 
-|レイヤー |何をするのか |使用者 |
-| -------- | ---------------------------------------------------------------------- | ------------------------------------------------ |
-|アーマチュア | Vue テンプレートと SFC 構造をトークン化して解析します |コンパイラ、リンター、フォーマッタ |
-|クロッキー |スコープ、バインディングメタデータ、マクロ情報、ファイル間グラフを構築します。コンパイラ、lint、型認識チェック |
-|緑青 | Vue、スクリプト、CSS、a11y、SSR、Vapor、Musea、および型認識の lint ルールを実行します。 `vize lint`、エディタ診断、Oxlint ブリッジ |
-|キヤノン |仮想 TypeScript を生成し、診断を Vue ファイルにマッピングします。 `vize check`、エディターの種類のチェック |
-|マエストロ | LSP を通じて診断機能とエディター機能を公開します | `vize lsp`、VS コード、ゼッド |
+| レイヤー     | 何をするのか                                                                                                                       | 使用者                             |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| アーマチュア | Vue テンプレートと SFC 構造をトークン化して解析します                                                                              | コンパイラ、リンター、フォーマッタ |
+| クロッキー   | スコープ、バインディングメタデータ、マクロ情報、ファイル間グラフを構築します。コンパイラ、lint、型認識チェック                     |
+| 緑青         | Vue、スクリプト、CSS、a11y、SSR、Vapor、Musea、および型認識の lint ルールを実行します。 `vize lint`、エディタ診断、Oxlint ブリッジ |
+| キヤノン     | 仮想 TypeScript を生成し、診断を Vue ファイルにマッピングします。 `vize check`、エディターの種類のチェック                         |
+| マエストロ   | LSP を通じて診断機能とエディター機能を公開します                                                                                   | `vize lsp`、VS コード、ゼッド      |
 
 これは、静的分析はリンティングだけではないことを意味します。テンプレートバインディング、コンパイラマクロ、コンポーネント
 メタデータ、提供/注入関係、反応性フロー、生成された仮想 TypeScript、および
@@ -103,29 +103,29 @@ Patina は lint ルール レイヤーです。ルールは、SFC ソース、�
 ルール名、カテゴリ、デフォルトの重大度、ヘルプ テキスト、修正可能かどうか。プリセットはただ
 どのルールを一緒に有効にするかを決定するレジストリ。
 
-|エリア |ルールの例 |内容 |
-| ------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| Vue の正確性 | `vue/require-v-for-key`、`vue/valid-v-model`、`vue/no-use-v-if-with-v-for` | 1 つのコンポーネントにローカルなテンプレート セマンティクス |
-| Vue のセキュリティ | `vue/no-v-html`、`vue/no-unsafe-url` | XSS が発生しやすい HTML および URL シンク |
-| Vue の構造 | `vue/sfc-element-order`、`vue/require-scoped-style`、`vue/no-unused-components` | SFCの形状と部品の使い方とメンテナンス性 |
-|スクリプトの規則 | `script/no-options-api`、`script/no-get-current-instance`、`script/prefer-import-from-vue` | Vue 構成 API とコンパイラ マクロの規則 |
-| CSS | `css/no-important`、`css/no-hardcoded-values`、`css/prefer-logical-properties` |スタイル ブロックとデザイン システムに適した CSS |
-|アクセシビリティ | `a11y/img-alt`、`a11y/anchor-has-content`、`a11y/label-has-for` |アクセシブルなマークアップとインタラクション パターン |
-| HTML | `html/deprecated-element`、`html/id-duplication`、`html/no-empty-palpable-content` | HTML の有効性とセマンティック マークアップ |
-| SSR | `ssr/no-browser-globals-in-ssr`、`ssr/no-hydration-mismatch` |サーバー/クライアント レンダリングの危険 |
-|蒸気 | `vapor/no-vue-lifecycle-events`、`vapor/no-inline-template`、`vapor/require-vapor-attribute` |蒸気指向のテンプレート制約 |
-|美術館 | `musea/require-title`、`musea/valid-variant`、`musea/prefer-design-tokens` |コンポーネント ギャラリーとバリアント オーサリング |
-|タイプ認識分析 | `type/require-typed-props`、`type/require-typed-emits`、`type/no-reactivity-loss` |セマンティックまたはチェッカーに基づくコンテキストを必要とするルール |
+| エリア             | ルールの例                                                                                   | 内容                                                                 |
+| ------------------ | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Vue の正確性       | `vue/require-v-for-key`、`vue/valid-v-model`、`vue/no-use-v-if-with-v-for`                   | 1 つのコンポーネントにローカルなテンプレート セマンティクス          |
+| Vue のセキュリティ | `vue/no-v-html`、`vue/no-unsafe-url`                                                         | XSS が発生しやすい HTML および URL シンク                            |
+| Vue の構造         | `vue/sfc-element-order`、`vue/require-scoped-style`、`vue/no-unused-components`              | SFCの形状と部品の使い方とメンテナンス性                              |
+| スクリプトの規則   | `script/no-options-api`、`script/no-get-current-instance`、`script/prefer-import-from-vue`   | Vue 構成 API とコンパイラ マクロの規則                               |
+| CSS                | `css/no-important`、`css/no-hardcoded-values`、`css/prefer-logical-properties`               | スタイル ブロックとデザイン システムに適した CSS                     |
+| アクセシビリティ   | `a11y/img-alt`、`a11y/anchor-has-content`、`a11y/label-has-for`                              | アクセシブルなマークアップとインタラクション パターン                |
+| HTML               | `html/deprecated-element`、`html/id-duplication`、`html/no-empty-palpable-content`           | HTML の有効性とセマンティック マークアップ                           |
+| SSR                | `ssr/no-browser-globals-in-ssr`、`ssr/no-hydration-mismatch`                                 | サーバー/クライアント レンダリングの危険                             |
+| 蒸気               | `vapor/no-vue-lifecycle-events`、`vapor/no-inline-template`、`vapor/require-vapor-attribute` | 蒸気指向のテンプレート制約                                           |
+| 美術館             | `musea/require-title`、`musea/valid-variant`、`musea/prefer-design-tokens`                   | コンポーネント ギャラリーとバリアント オーサリング                   |
+| タイプ認識分析     | `type/require-typed-props`、`type/require-typed-emits`、`type/no-reactivity-loss`            | セマンティックまたはチェッカーに基づくコンテキストを必要とするルール |
 
 組み込みのプリセットは、段階的な導入をサポートすることを目的としています。
 
-|プリセット |形状 |
-| ------------- | -------------------------------------------------------------------- |
-| `essential` |エラーに重点を置いた Vue の正確性、セキュリティ、最小限の HTML チェック |
-| `happy-path` |正確性、セキュリティ、a11y、SSR、セマンティック チェックのためのデフォルト バンドル |
-| `opinionated` | `happy-path` に加えて、より強力な規則、スクリプト ルール、および型ルール |
-| `nuxt` | Nuxt の自動インポートの前提に合わせて調整された独自のルール |
-| `incremental` |ホスト主導のルールごとの導入のための空の出発点 |
+| プリセット    | 形状                                                                                |
+| ------------- | ----------------------------------------------------------------------------------- |
+| `essential`   | エラーに重点を置いた Vue の正確性、セキュリティ、最小限の HTML チェック             |
+| `happy-path`  | 正確性、セキュリティ、a11y、SSR、セマンティック チェックのためのデフォルト バンドル |
+| `opinionated` | `happy-path` に加えて、より強力な規則、スクリプト ルール、および型ルール            |
+| `nuxt`        | Nuxt の自動インポートの前提に合わせて調整された独自のルール                         |
+| `incremental` | ホスト主導のルールごとの導入のための空の出発点                                      |
 
 ## 移行プラグマとカスタム ルール
 
@@ -193,20 +193,20 @@ vp run vize:lint:cross-file-tree
 
 下位レベルのクロスファイル エンジンは、現在の CLI サーフェスよりも広範です。
 
-|ファイル間オプション |意図された診断または事実 |
-| ------------------------- | --------------------------------------------------------------------------- |
-| `provide_inject` |一致しないインジェクト、未使用のプロバイダー、文字列キーの警告、非リアクティブなフロー |
-| `unique_ids` |重複 ID と非固有 ID がループ内に導入される |
-| `reactivity_tracking` |プロップの構造破壊、エイリアシング、およびコンポーネント間の反応性の損失 |
-| `race_conditions` |提供された状態または共有された状態を介して競合できる非同期状態の更新 |
-| `fallthrough_attrs` | `$attrs`、`inheritAttrs`、およびマルチルートフォールスルーの危険 |
-| `component_emits` |宣言されていないエミット、未使用のエミット、プロデューサーのないリスナー |
-| `event_bubbling` |処理されずにコンポーネントの境界を飛び越えるイベント |
-| `server_client_boundary` | SSR/クライアント境界付近のブラウザ API の使用とハイドレーションのリスク |
-| `error_suspense_boundary` |有用なサスペンスまたはエラー境界のない非同期コンポーネント |
-| `circular_dependencies` |輸入サイクルと深い輸入チェーン |
-| `component_resolution` |未登録または未解決のコンポーネントの使用法 |
-| `props_validation` |必要なプロパティが欠落しており、子プロパティのタイプが一致しません。
+| ファイル間オプション      | 意図された診断または事実                                                               |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| `provide_inject`          | 一致しないインジェクト、未使用のプロバイダー、文字列キーの警告、非リアクティブなフロー |
+| `unique_ids`              | 重複 ID と非固有 ID がループ内に導入される                                             |
+| `reactivity_tracking`     | プロップの構造破壊、エイリアシング、およびコンポーネント間の反応性の損失               |
+| `race_conditions`         | 提供された状態または共有された状態を介して競合できる非同期状態の更新                   |
+| `fallthrough_attrs`       | `$attrs`、`inheritAttrs`、およびマルチルートフォールスルーの危険                       |
+| `component_emits`         | 宣言されていないエミット、未使用のエミット、プロデューサーのないリスナー               |
+| `event_bubbling`          | 処理されずにコンポーネントの境界を飛び越えるイベント                                   |
+| `server_client_boundary`  | SSR/クライアント境界付近のブラウザ API の使用とハイドレーションのリスク                |
+| `error_suspense_boundary` | 有用なサスペンスまたはエラー境界のない非同期コンポーネント                             |
+| `circular_dependencies`   | 輸入サイクルと深い輸入チェーン                                                         |
+| `component_resolution`    | 未登録または未解決のコンポーネントの使用法                                             |
+| `props_validation`        | 必要なプロパティが欠落しており、子プロパティのタイプが一致しません。                   |
 
 方向性は、デフォルトで単一ファイルのリンティングを高速に保ち、ファイル間のグループを明示的に公開することです。
 これらは成熟し、信頼性の高いプロジェクトの事実を、
@@ -349,4 +349,5 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 5. より深い分析の恩恵を受けるプロジェクトに対して、ファイル間および厳密な反応性チェックを追加します。
 
 単一の品質ゲートの場合、`vize ready src` を実行する `vize:ready` パッケージ スクリプトは `fmt を実行します。
+
 - -write`, `lint`, `check`, and `build` を順番に実行し、最初に失敗したステップで停止します。

@@ -1,12 +1,12 @@
 ---
 title: 努克斯特
 ---
-<!-- Generated translation; source: integrations/nuxt.md -->
 
+<!-- Generated translation; source: integrations/nuxt.md -->
 
 # Nuxt 整合
 
->**⚠️ 正在开发中：**Vize正在积极开发中，尚未准备好投入生产使用。在Nuxt项目中采用前请彻底测试。
+> **⚠️ 正在开发中：**Vize正在积极开发中，尚未准备好投入生产使用。在Nuxt项目中采用前请彻底测试。
 
 Vize通过`@vizejs/nuxt`模块提供一流的Nuxt集成。这用 Vize 的 Rust 原生编译器取代了 Nuxt 默认的 Vue 编译器，从而在 Nuxt 项目中实现了同样的速度提升。
 
@@ -99,15 +99,15 @@ export default defineNuxtConfig({
 });
 ```
 
-|选项 |类型 |默认 |描述 |
-|--------------------- |------------------------------------ |-------------------------- |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|`compatibility` |`VizeNuxtCompatibilityOptions` |自动检测 |覆盖检测到Nuxt/Vue主版本的异常包装。Nuxt 2 默认支持 Vue 2 主机-编译器兼容性;Nuxt 3/4默认使用 Vue 3。Vue 0.11/1/2 均使用主机编译器模式。                   |
-|`compiler` |`boolean \| VizeNuxtCompilerOptions` |`true` |使 Vize 成为 Vue SFC 编译器。传递对象会将选项转发给`@vizejs/vite-plugin`，同时保持 Nuxt 默认的 `root`、`devUrlBase`、按需 `scanPatterns` 和依赖 SFC 处理。|
-|`bridge` |`boolean \| VizeNuxtBridgeOptions` |`true` |控制 Nuxt 变换桥，用于自动导入、组件导入、i18n 辅助工具以及 Vize 虚拟模块上的稳定异步数据键。                                                                     |
-|`unocss` |`boolean \| VizeNuxtUnoCssOptions` |`true` |控制 Vize 虚拟模块的 UnoCSS 桥接器。`originalSource: false` 会禁用读取源 SFC;`maxBytes`限制了内存的使用。                                                                      |
-|`dev.stylesheetLinks` |`boolean` |`true` |支持仅限开发者的SSR HTML样式表链接清理，用于Vize生成的Nuxt资源URL。                                                                                                                         |
-|`musea` |`boolean \| MuseaOptions` |`false` |选择加入 Musea 画廊集成。使用`true` 来设置 Musea 默认值，或传递对象以配置包含模式、令牌、预览 CSS 和路由。                                                         |
-|`nuxtMusea` |`NuxtMuseaOptions` |`{ route: { path: "/" } }` |文档说明了 Musea 预览助手使用的 Nuxt 模拟形状。Nuxt 模块不会全局安装模拟层，因为这样做会影响 Nuxt 自身的`#imports`。                                    |
+| 选项                  | 类型                                 | 默认                       | 描述                                                                                                                                                       |
+| --------------------- | ------------------------------------ | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `compatibility`       | `VizeNuxtCompatibilityOptions`       | 自动检测                   | 覆盖检测到Nuxt/Vue主版本的异常包装。Nuxt 2 默认支持 Vue 2 主机-编译器兼容性;Nuxt 3/4默认使用 Vue 3。Vue 0.11/1/2 均使用主机编译器模式。                    |
+| `compiler`            | `boolean \| VizeNuxtCompilerOptions` | `true`                     | 使 Vize 成为 Vue SFC 编译器。传递对象会将选项转发给`@vizejs/vite-plugin`，同时保持 Nuxt 默认的 `root`、`devUrlBase`、按需 `scanPatterns` 和依赖 SFC 处理。 |
+| `bridge`              | `boolean \| VizeNuxtBridgeOptions`   | `true`                     | 控制 Nuxt 变换桥，用于自动导入、组件导入、i18n 辅助工具以及 Vize 虚拟模块上的稳定异步数据键。                                                              |
+| `unocss`              | `boolean \| VizeNuxtUnoCssOptions`   | `true`                     | 控制 Vize 虚拟模块的 UnoCSS 桥接器。`originalSource: false` 会禁用读取源 SFC;`maxBytes`限制了内存的使用。                                                  |
+| `dev.stylesheetLinks` | `boolean`                            | `true`                     | 支持仅限开发者的SSR HTML样式表链接清理，用于Vize生成的Nuxt资源URL。                                                                                        |
+| `musea`               | `boolean \| MuseaOptions`            | `false`                    | 选择加入 Musea 画廊集成。使用`true` 来设置 Musea 默认值，或传递对象以配置包含模式、令牌、预览 CSS 和路由。                                                 |
+| `nuxtMusea`           | `NuxtMuseaOptions`                   | `{ route: { path: "/" } }` | 文档说明了 Musea 预览助手使用的 Nuxt 模拟形状。Nuxt 模块不会全局安装模拟层，因为这样做会影响 Nuxt 自身的`#imports`。                                       |
 
 ## 高级设置
 
@@ -261,10 +261,7 @@ export default ((app) => {
 
 安装Nuxt模块时：
 
-1.**Vite 插件注入**— 该模块将`@vizejs/vite-plugin`注册为 Vite 插件，拦截`.vue`文件编译。
-2.**兼容性提示**— 该插件会暴露一个`@vitejs/plugin-vue`兼容API，因此Nuxt的内部检查（用于探测Vue插件）能够正常工作。
-3.**SSR 支持**— Vize 的`vize_atelier_ssr`负责服务器端编译。该插件隔离客户端和服务器环境变量，以防止交叉污染。
-4.**Nuxt 功能被保留**— 自动导入、组合、中间件及其他 Nuxt 功能通过 Nuxt 自身的变换层工作，该层运行于 Vize 编译之后。
+1.**Vite 插件注入**— 该模块将`@vizejs/vite-plugin`注册为 Vite 插件，拦截`.vue`文件编译。2.**兼容性提示**— 该插件会暴露一个`@vitejs/plugin-vue`兼容API，因此Nuxt的内部检查（用于探测Vue插件）能够正常工作。3.**SSR 支持**— Vize 的`vize_atelier_ssr`负责服务器端编译。该插件隔离客户端和服务器环境变量，以防止交叉污染。4.**Nuxt 功能被保留**— 自动导入、组合、中间件及其他 Nuxt 功能通过 Nuxt 自身的变换层工作，该层运行于 Vize 编译之后。
 
 ## 现实世界的例子
 

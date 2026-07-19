@@ -1,8 +1,8 @@
 ---
 title: Integrações experimentais de bundlers
 ---
-<!-- Generated translation; source: guide/unplugin.md -->
 
+<!-- Generated translation; source: guide/unplugin.md -->
 
 # Integrações experimentais de bundlers
 

@@ -1,14 +1,14 @@
 ---
 title: Vite 插件
 ---
-<!-- Generated translation; source: guide/vite-plugin.md -->
 
+<!-- Generated translation; source: guide/vite-plugin.md -->
 
 # Vite 插件
 
->**⚠️ 正在开发中：**Vize正在积极开发中，尚未准备好投入生产使用。在采用非简单项目前，请彻底测试。
+> **⚠️ 正在开发中：**Vize正在积极开发中，尚未准备好投入生产使用。在采用非简单项目前，请彻底测试。
 
->**捆绑状态：**`@vizejs/vite-plugin`目前是最稳定的捆绑器集成。
+> **捆绑状态：**`@vizejs/vite-plugin`目前是最稳定的捆绑器集成。
 > rollup/webpack/esbuild用`@vizejs/unplugin`，Rspack用`@vizejs/rspack-plugin`。
 > 这些非Vite路径仍然不稳定，应被视为实验性。
 
@@ -182,24 +182,24 @@ vize({
 });
 ```
 
-|选项 |设置在哪里 |描述 |
-|---------------------- |------------------------------------------------------- |---------------------------------------------------------------------------------------------------------------------------------------- |
-|`vueVersion` |`vize({ vueVersion })` |将`0.11`、`1`、`2`或`"legacy"`设置为非侵入式的遗留Vue兼容性模式运行，SFC编译则交由主机编译器完成。|
-|`sourceMap` |`compiler.sourceMap`或`vize({ sourceMap })` |生成源图。默认是开启开发，关闭生产。                                                                       |
-|`ssr` |`compiler.ssr`或`vize({ ssr })` |当Vite的SSR构建旗帜不够时，强制SSR汇编。                                                                         |
-|`vapor` |`compiler.vapor`或`vize({ vapor })` |通过Vapor后端编译模板。                                                                                            |
-|`jsxMode` |`compiler.jsxMode`或`vize({ jsxMode })` |`.jsx`/`.tsx`组件的默认输出后端（`"vdom"` / `"vapor"`）。每个组件的 `"use vue:*"` 指令覆盖了它。         |
-|`customRenderer` |`compiler.customRenderer`或`vize({ customRenderer })` |把小写非HTML标签当作自定义渲染器元素。对于像 TresJS 这样的渲染器生态系统非常有用。                               |
-|`templateSyntax` |`compiler.templateSyntax`或`vize({ templateSyntax })` |选择`"standard"`、`"strict"`或`"quirks"`模板语法处理。                                                                |
-|`include` |`vite.include`或`vize({ include })` |插件应该编译的文件。                                                                                                   |
-|`exclude` |`vite.exclude`或`vize({ exclude })` |这些文件是插件应该忽略的。                                                                                                    |
-|`scanPatterns` |`vite.scanPatterns`或`vize({ scanPatterns })` |用于启动预编译的球状模式。                                                                                         |
-|`ignorePatterns` |`vite.ignorePatterns`或`vize({ ignorePatterns })` |启动前编译时，球状模式跳过。                                                                                   |
-|`configMode` |`vize({ configMode })` |使用`"root"`、`"auto"`或`false`来实现共享配置加载。                                                                           |
-|`configFile` |`vize({ configFile })` |加载一个特定的配置文件。                                                                                                            |
-|`config` |`vize({ config })` |Vite Plus 运行时设置的内联共享配置。                                                                                    |
-|`handleNodeModulesVue` |`vize({ handleNodeModulesVue })` |按需编译`.vue`从`node_modules`导入的文件。                                                                            |
-|`debug` |`vize({ debug })` |打印插件调试日志。                                                                                                                |
+| 选项                   | 设置在哪里                                            | 描述                                                                                               |
+| ---------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `vueVersion`           | `vize({ vueVersion })`                                | 将`0.11`、`1`、`2`或`"legacy"`设置为非侵入式的遗留Vue兼容性模式运行，SFC编译则交由主机编译器完成。 |
+| `sourceMap`            | `compiler.sourceMap`或`vize({ sourceMap })`           | 生成源图。默认是开启开发，关闭生产。                                                               |
+| `ssr`                  | `compiler.ssr`或`vize({ ssr })`                       | 当Vite的SSR构建旗帜不够时，强制SSR汇编。                                                           |
+| `vapor`                | `compiler.vapor`或`vize({ vapor })`                   | 通过Vapor后端编译模板。                                                                            |
+| `jsxMode`              | `compiler.jsxMode`或`vize({ jsxMode })`               | `.jsx`/`.tsx`组件的默认输出后端（`"vdom"` / `"vapor"`）。每个组件的 `"use vue:*"` 指令覆盖了它。   |
+| `customRenderer`       | `compiler.customRenderer`或`vize({ customRenderer })` | 把小写非HTML标签当作自定义渲染器元素。对于像 TresJS 这样的渲染器生态系统非常有用。                 |
+| `templateSyntax`       | `compiler.templateSyntax`或`vize({ templateSyntax })` | 选择`"standard"`、`"strict"`或`"quirks"`模板语法处理。                                             |
+| `include`              | `vite.include`或`vize({ include })`                   | 插件应该编译的文件。                                                                               |
+| `exclude`              | `vite.exclude`或`vize({ exclude })`                   | 这些文件是插件应该忽略的。                                                                         |
+| `scanPatterns`         | `vite.scanPatterns`或`vize({ scanPatterns })`         | 用于启动预编译的球状模式。                                                                         |
+| `ignorePatterns`       | `vite.ignorePatterns`或`vize({ ignorePatterns })`     | 启动前编译时，球状模式跳过。                                                                       |
+| `configMode`           | `vize({ configMode })`                                | 使用`"root"`、`"auto"`或`false`来实现共享配置加载。                                                |
+| `configFile`           | `vize({ configFile })`                                | 加载一个特定的配置文件。                                                                           |
+| `config`               | `vize({ config })`                                    | Vite Plus 运行时设置的内联共享配置。                                                               |
+| `handleNodeModulesVue` | `vize({ handleNodeModulesVue })`                      | 按需编译`.vue`从`node_modules`导入的文件。                                                         |
+| `debug`                | `vize({ debug })`                                     | 打印插件调试日志。                                                                                 |
 
 常见食谱：
 
@@ -257,18 +257,18 @@ vize({ vueVersion: 2 });
 
 ## 比较
 
-|特色 |@vitejs/plugin-vue |@vizejs/vite-plugin |
-|--------------------- |------------------ |---------------------------------- |
-|语言 |JavaScript |锈蚀（NAPI）|
-|SFC合辑 |是的 |是的 |
-|模板汇编 |是的 |是的 |
-|脚本设置 |是的 |是的 |
-|CSS 范围 |是的 |是的 |
-|SSR支持|是的 |是的 |
-|HMR |是的 |是的（仅样式优化） |
-|批次预编译 |不 |是的（通过人造丝平行） |
-|CSS 提取 |每个组件 |合并单文件 |
-|蒸汽模式 |实验 |一等舱（`vize_atelier_vapor`） |
+| 特色       | @vitejs/plugin-vue | @vizejs/vite-plugin            |
+| ---------- | ------------------ | ------------------------------ |
+| 语言       | JavaScript         | 锈蚀（NAPI）                   |
+| SFC合辑    | 是的               | 是的                           |
+| 模板汇编   | 是的               | 是的                           |
+| 脚本设置   | 是的               | 是的                           |
+| CSS 范围   | 是的               | 是的                           |
+| SSR支持    | 是的               | 是的                           |
+| HMR        | 是的               | 是的（仅样式优化）             |
+| 批次预编译 | 不                 | 是的（通过人造丝平行）         |
+| CSS 提取   | 每个组件           | 合并单文件                     |
+| 蒸汽模式   | 实验               | 一等舱（`vize_atelier_vapor`） |
 
 ## 高级功能
 

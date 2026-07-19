@@ -2,8 +2,8 @@
 title: 文档博客
 description: Vize文档现在既可以托管发布说明，也可以承载不规则说明。
 ---
-<!-- Generated translation; source: blog/releases/2026-03-26-docs-blog-support.md -->
 
+<!-- Generated translation; source: blog/releases/2026-03-26-docs-blog-support.md -->
 
 # 医生博客
 

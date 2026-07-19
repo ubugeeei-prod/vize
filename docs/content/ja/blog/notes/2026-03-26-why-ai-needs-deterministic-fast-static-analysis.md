@@ -2,8 +2,8 @@
 title: AIの静的解析
 description: AI がより多くのコードを作成するにつれて、より高速で信頼性の高い静的フィードバックが必要になります。
 ---
-<!-- Generated translation; source: blog/notes/2026-03-26-why-ai-needs-deterministic-fast-static-analysis.md -->
 
+<!-- Generated translation; source: blog/notes/2026-03-26-why-ai-needs-deterministic-fast-static-analysis.md -->
 
 # AI の静的解析
 

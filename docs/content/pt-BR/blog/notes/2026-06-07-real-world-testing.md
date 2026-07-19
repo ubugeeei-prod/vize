@@ -2,8 +2,8 @@
 title: Testes no Mundo Real
 description: O Vize entra na fase de Testes do Mundo Real — projetos reais são agora a suíte de testes, com um roteiro claro para a v1.0.0.
 ---
-<!-- Generated translation; source: blog/notes/2026-06-07-real-world-testing.md -->
 
+<!-- Generated translation; source: blog/notes/2026-06-07-real-world-testing.md -->
 
 # Testes no Mundo Real
 
@@ -22,7 +22,6 @@ description: O Vize entra na fase de Testes do Mundo Real — projetos reais sã
 </span>
 </a>
 </div>
-
 
 <video class="blog-post-video" src="/blog/vize-real-world-testing.mp4" controls muted playsinline loop preload="metadata" aria-label="Real World Testing PV"></video>
 

@@ -2,8 +2,8 @@
 title: ドキュメント ブログ
 description: Vize ドキュメントでは、リリース ノートと不定期ノートの両方をホストできるようになりました。
 ---
-<!-- Generated translation; source: blog/releases/2026-03-26-docs-blog-support.md -->
 
+<!-- Generated translation; source: blog/releases/2026-03-26-docs-blog-support.md -->
 
 # ドキュメント ブログ
 

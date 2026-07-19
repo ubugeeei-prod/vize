@@ -1,14 +1,14 @@
 ---
 title: JSX与多伦多证券交易所
 ---
-<!-- Generated translation; source: guide/jsx.md -->
 
+<!-- Generated translation; source: guide/jsx.md -->
 
 # JSX与多伦多证券交易所
 
->**状态：**JSX/TSX 涵盖编译器、打印器、类型检查器、LSP 和格式化器。
->类型识别检查保持选择加入状态，确保 React `.tsx` 文件不会被误当为 Vue JSX。
->独立`.jsx`/`.tsx`模块的HMR仍然是主要的集成空白。
+> **状态：**JSX/TSX 涵盖编译器、打印器、类型检查器、LSP 和格式化器。
+> 类型识别检查保持选择加入状态，确保 React `.tsx` 文件不会被误当为 Vue JSX。
+> 独立`.jsx`/`.tsx`模块的HMR仍然是主要的集成空白。
 
 Vize 通过**相同的编译器箱**编译 `.jsx` 和 Vue 组件 `.tsx` Vue 组件`.vue`
 单文件组件——VDOM和Vapor后端，Croquis语义分析，Canon类型
@@ -109,7 +109,7 @@ const Badge = ({ count = 0 }: { count?: number }) => <span class="badge">{count}
 Vue特有加法是[下文](#scoped-styles)描述的`<style scoped>`元素。
 
 > 上述仅类型创作形式是支持的通用情况。合成运行时间`props`
->元数据和`defineComponent(() => () => vnode)`设置表单，都是计划中的后续。
+> 元数据和`defineComponent(() => () => vnode)`设置表单，都是计划中的后续。
 
 ## 支持JSX表面
 
@@ -361,7 +361,7 @@ vize fmt src --write
 
 ## 打字检查
 
-JSX/TSX类型检查通过`typeChecker.jsxTypecheck`为**选择加入**，默认为**`false`****。
+JSX/TSX类型检查通过`typeChecker.jsxTypecheck`为**选择加入**，默认为**`false`\*\***。
 默认情况下是故意关闭的：仓库可能包含 React `.tsx` 文件，而这些文件不该存在
 类型校对为 Vue JSX。
 
@@ -441,7 +441,7 @@ vize check src
 ## 绒毛
 
 Vize的Patina 绒毛规则在JSX/TSX上通过直接从OXC投影的零成本规则IR运行
-AST**。标记导向规则不会重建合成的SFC模板;它们读取JSX元素
+AST\*\*。标记导向规则不会重建合成的SFC模板;它们读取JSX元素
 属性直接。需要Vue模板形状的规则，比如`.map(...)`列表键检查，会运行
 在倒下的救济树上方。语义规则由Croquis支持，该分析层同样用于
 SFC。

@@ -2,8 +2,8 @@
 title: Prêt à la production
 description: Pourquoi une validation exhaustive du monde réel et un retour d’information communautaire sont le chemin du projet expérimental à la chaîne d’outils prête à la production.
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-real-world-feedback-and-the-road-to-production-ready.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-real-world-feedback-and-the-road-to-production-ready.md -->
 
 # Prêt à la production
 
@@ -22,7 +22,6 @@ description: Pourquoi une validation exhaustive du monde réel et un retour d’
 </span>
 </a>
 </div>
-
 
 Vize est encore expérimental.
 

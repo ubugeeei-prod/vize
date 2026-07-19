@@ -1,15 +1,15 @@
 ---
 title: VS Code
 ---
-<!-- Generated translation; source: integrations/vscode.md -->
 
+<!-- Generated translation; source: integrations/vscode.md -->
 
 # VS 代码集成
 
->**⚠️ 正在进行中：**Vize 的编辑支持仍处于实验阶段。
+> **⚠️ 正在进行中：**Vize 的编辑支持仍处于实验阶段。
 
->**重要：**日常的Vue编辑器支持请继续使用官方的Vue语言工具
->（`vuejs/language-tools`）暂时。Vize专为增量选择加入评估设计。
+> **重要：**日常的Vue编辑器支持请继续使用官方的Vue语言工具
+> （`vuejs/language-tools`）暂时。Vize专为增量选择加入评估设计。
 
 该仓库包含两个实验性的 VS Code 扩展：
 
@@ -53,33 +53,33 @@ Vize状态栏条项会`Vize: Show Status`打开，显示配置文件切换器和
 
 ### 常见设定
 
-|背景 |目的 |
-|---------------------------- |-------------------------------------------------- |
-|`vize.enable` |启用扩展和语言服务器 |
-|`vize.serverPath` |覆盖`vize`可执行路径 |
-|`vize.lint.enable` |启用绒毛诊断 |
-|`vize.typecheck.enable` |启用类型感知诊断和后端功能 |
-|`vize.editor.enable` |启用编辑器辅助包 |
-|`vize.completion.enable` |启用完备化 |
-|`vize.formatting.enable` |启用文档格式化 |
-|`vize.definition.enable` |启用访问定义 |
-|`vize.references.enable` |启用参考文献 |
-|`vize.hover.enable` |启用悬停 |
-|`vize.codeActions.enable` |启用绒毛快速修复 |
-|`vize.semanticTokens.enable` |启用语义标记 |
-|`vize.trace.server` |跟踪 LSP 通信 |
+| 背景                         | 目的                       |
+| ---------------------------- | -------------------------- |
+| `vize.enable`                | 启用扩展和语言服务器       |
+| `vize.serverPath`            | 覆盖`vize`可执行路径       |
+| `vize.lint.enable`           | 启用绒毛诊断               |
+| `vize.typecheck.enable`      | 启用类型感知诊断和后端功能 |
+| `vize.editor.enable`         | 启用编辑器辅助包           |
+| `vize.completion.enable`     | 启用完备化                 |
+| `vize.formatting.enable`     | 启用文档格式化             |
+| `vize.definition.enable`     | 启用访问定义               |
+| `vize.references.enable`     | 启用参考文献               |
+| `vize.hover.enable`          | 启用悬停                   |
+| `vize.codeActions.enable`    | 启用绒毛快速修复           |
+| `vize.semanticTokens.enable` | 启用语义标记               |
+| `vize.trace.server`          | 跟踪 LSP 通信              |
 
 ### 有用的指令
 
-|指挥 |目的 |
-|----------------------------------------- |--------------------------------------------------- |
-|`Vize: Show Status` |打开状态与设置操作中心 |
-|`Vize: Enable Recommended Profile` |启用除絮、字体检查和编辑协助 |
-|`Vize: Enable Lint-Only Profile` |在保持其他工具使用的同时启用诊断 |
-|`Vize: Select Language Server Executable` |从文件选择器中设置`vize.serverPath` |
-|`Vize: Disable Language Server` |当前配置目标的停止Viceze|
-|`Vize: Restart Language Server` |重启语言服务器 |
-|`Vize: Show Output Channel` |显示扩展和 LSP 日志 |
+| 指挥                                      | 目的                                |
+| ----------------------------------------- | ----------------------------------- |
+| `Vize: Show Status`                       | 打开状态与设置操作中心              |
+| `Vize: Enable Recommended Profile`        | 启用除絮、字体检查和编辑协助        |
+| `Vize: Enable Lint-Only Profile`          | 在保持其他工具使用的同时启用诊断    |
+| `Vize: Select Language Server Executable` | 从文件选择器中设置`vize.serverPath` |
+| `Vize: Disable Language Server`           | 当前配置目标的停止Viceze            |
+| `Vize: Restart Language Server`           | 重启语言服务器                      |
+| `Vize: Show Output Channel`               | 显示扩展和 LSP 日志                 |
 
 ### 扩展使用情况
 

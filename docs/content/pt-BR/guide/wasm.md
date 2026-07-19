@@ -1,15 +1,14 @@
 ---
 title: Encadernações WASM
 ---
-<!-- Generated translation; source: guide/wasm.md -->
 
+<!-- Generated translation; source: guide/wasm.md -->
 
 # Encadernações WASM
 
 > **⚠️ Trabalho em andamento:** O Vize está em desenvolvimento ativo e ainda não está pronto para uso em produção. APIs do WASM podem mudar sem aviso prévio.
 
 `@vizejs/wasm` fornece bindings WebAssembly para executar o compilador Vue diretamente no navegador. Isso permite compilação, linting e formatação de SFC em tempo real sem servidor — ideal para playgrounds, documentação e ferramentas educacionais.
-
 
 As ligações WASM são compiladas a partir do mesmo código Rust que as ligações CLI e NAPI (`vize_vitrine`), garantindo saída de compilação idêntica em todas as plataformas.
 
@@ -180,11 +179,11 @@ wasm-bindgen \
 
 Todas as APIs WASM que produzem diagnósticos (lint, erros de compilação) suportam mensagens localizadas:
 
-| Código | Idioma |
-| ---- | ----------------- |
-| `en` | Inglês (padrão) |
-| `ja` | Japonês (日本語) |
-| `zh` | Chinês (中文) |
+| Código | Idioma           |
+| ------ | ---------------- |
+| `en`   | Inglês (padrão)  |
+| `ja`   | Japonês (日本語) |
+| `zh`   | Chinês (中文)    |
 
 Passe a opção `locale` para qualquer API que produza diagnósticos:
 

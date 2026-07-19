@@ -2,8 +2,8 @@
 title: 制作人员
 description: 塑造了Vize的人们和社区反馈。
 ---
-<!-- Generated translation; source: credits.md -->
 
+<!-- Generated translation; source: credits.md -->
 
 # 制作人员名单
 

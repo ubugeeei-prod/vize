@@ -2,8 +2,8 @@
 title: パフォーマンスチューニング
 description: 解析、割り当て、並列処理、フィードバック ループがすべて重要となる Vue ツールチェーンの構築から得られる実践的なパフォーマンスのレッスン。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-performance-tuning-notes-for-a-vue-toolchain.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-performance-tuning-notes-for-a-vue-toolchain.md -->
 
 # パフォーマンスチューニング
 

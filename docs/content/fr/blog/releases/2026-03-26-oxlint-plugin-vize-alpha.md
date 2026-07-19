@@ -2,8 +2,8 @@
 title: oxlint-plugin-vize Alpha
 description: Un nouveau pont plugin Oxlint JS regroupe les diagnostics Vize Patina dans une seule exécution Oxlint pour les SFC Vue.
 ---
-<!-- Generated translation; source: blog/releases/2026-03-26-oxlint-plugin-vize-alpha.md -->
 
+<!-- Generated translation; source: blog/releases/2026-03-26-oxlint-plugin-vize-alpha.md -->
 
 # `oxlint-plugin-vize` Alpha
 
@@ -23,7 +23,6 @@ description: Un nouveau pont plugin Oxlint JS regroupe les diagnostics Vize Pati
 </a>
 </div>
 
-
 Aujourd’hui, j’ouvre la première alpha de `oxlint-plugin-vize`, un nouveau pont plugin Oxlint JS pour Vize Patina.
 
 L’objectif est simple : garder [Oxlint](https://oxc.rs/docs/guide/usage/linter) principal runner pour les règles JavaScript et TypeScript, tout en permettant à Vize de contribuer avec des diagnostics spécifiques à Vue dans la même exécution. Au lieu de choisir entre Oxlint et Patina, cet alpha consiste à les faire travailler ensemble.
@@ -31,7 +30,6 @@ L’objectif est simple : garder [Oxlint](https://oxc.rs/docs/guide/usage/linter
 ## Ce que c’est
 
 `oxlint-plugin-vize` permet à Oxlint d’exécuter Patina via la liaison native de Vize tout en utilisant le modèle de plugin JS et la configuration des règles d’Oxlint.
-
 
 Cela signifie qu’un seul `.oxlintrc.json` peut mélanger des règles comme :
 

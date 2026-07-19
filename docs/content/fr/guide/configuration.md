@@ -1,8 +1,8 @@
 ---
 title: Configuration
 ---
-<!-- Generated translation; source: guide/configuration.md -->
 
+<!-- Generated translation; source: guide/configuration.md -->
 
 # Configuration
 
@@ -189,22 +189,22 @@ lsp {
 Ces options sont placées sous `compiler`. Ils sont soutenus par un schéma et partagés via `defineConfig`; Pas
 chaque intégration consomme tous les domaines pour l’instant.
 
-| Option | Valeurs | Usage courant |
-| ------------------- | --------------------------------------- | ---------------------------------------------------------------- |
-| `sourceMap` | `boolean` | Activer les cartes sources dans le plugin Vite |
-| `ssr` | `boolean` | Compiler pour SSR lorsque vous ne dépendez pas du drapeau de compilation SSR de Vite |
-| `vapor` | `boolean` | Activer la compilation en mode Vapor |
-| `jsxMode` | `"vdom"` ou `"vapor"` | Backend de sortie par défaut pour les composants `.jsx`/`.tsx` |
-| `customRenderer` | `boolean` | Considérez les balises minuscules non HTML comme des éléments de rendu personnalisés |
-| `templateSyntax` | `"standard"`, `"strict"`ou `"quirks"` | Choisissez la gestion des avertissements, des erreurs ou des particularités Vue pour la syntaxe des modèles |
-| `scriptExt` | `"ts"` ou `"js"` | Conserver la sortie TS ou décompiler vers JS dans la commande de compilation npm |
-| `mode` | `"module"` ou `"function"` | Mode de sortie de compilateur de bas niveau |
-| `prefixIdentifiers` | `boolean` | Identifiants de modèles préfixes avec `_ctx` |
-| `hoistStatic` | `boolean` | Contrôle du levage statique du nœud |
-| `cacheHandlers` | `boolean` | Mise en cache du gestionnaire d’événements de contrôle |
-| `isTs` | `boolean` | Analyser les blocs de script sous forme de TypeScript |
-| `runtimeModuleName` | `string` | Module d’importation à l’exécution de surcharge |
-| `runtimeGlobalName` | `string` | Surpasser globalement l’exécution pour la sortie fonction/IIFE |
+| Option              | Valeurs                               | Usage courant                                                                                               |
+| ------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `sourceMap`         | `boolean`                             | Activer les cartes sources dans le plugin Vite                                                              |
+| `ssr`               | `boolean`                             | Compiler pour SSR lorsque vous ne dépendez pas du drapeau de compilation SSR de Vite                        |
+| `vapor`             | `boolean`                             | Activer la compilation en mode Vapor                                                                        |
+| `jsxMode`           | `"vdom"` ou `"vapor"`                 | Backend de sortie par défaut pour les composants `.jsx`/`.tsx`                                              |
+| `customRenderer`    | `boolean`                             | Considérez les balises minuscules non HTML comme des éléments de rendu personnalisés                        |
+| `templateSyntax`    | `"standard"`, `"strict"`ou `"quirks"` | Choisissez la gestion des avertissements, des erreurs ou des particularités Vue pour la syntaxe des modèles |
+| `scriptExt`         | `"ts"` ou `"js"`                      | Conserver la sortie TS ou décompiler vers JS dans la commande de compilation npm                            |
+| `mode`              | `"module"` ou `"function"`            | Mode de sortie de compilateur de bas niveau                                                                 |
+| `prefixIdentifiers` | `boolean`                             | Identifiants de modèles préfixes avec `_ctx`                                                                |
+| `hoistStatic`       | `boolean`                             | Contrôle du levage statique du nœud                                                                         |
+| `cacheHandlers`     | `boolean`                             | Mise en cache du gestionnaire d’événements de contrôle                                                      |
+| `isTs`              | `boolean`                             | Analyser les blocs de script sous forme de TypeScript                                                       |
+| `runtimeModuleName` | `string`                              | Module d’importation à l’exécution de surcharge                                                             |
+| `runtimeGlobalName` | `string`                              | Surpasser globalement l’exécution pour la sortie fonction/IIFE                                              |
 
 Pour les projets Vite, les options de plugin direct suppriment la configuration partagée :
 
@@ -227,7 +227,6 @@ export default defineConfig({
 ## Syntaxe des modèles
 
 `compiler.templateSyntax` par défaut sur `"standard"`.
-
 
 - `"standard"` accepte une syntaxe invalide récupérable, émet des avertissements et réécrit en sortie valide.
 - `"strict"` rapporte une syntaxe invalide comme étant des erreurs de compilation.
@@ -269,8 +268,9 @@ auto-fermantes.
 > [JSX & TSX guide](./jsx.md). Cette section ne couvre que les clés de configuration en mode de sortie.
 
 Vize compile les composants Vue `.jsx`/`.tsx` en sortie soit en DOM Virtual, soit en sortie
-[Vapor](https://blog.vuejs.org/posts/vue-vapor). `compiler.jsxMode` sélectionne le **global
-* * par défaut pour les composants qui ne s’inscrivent pas explicitement ; par défaut, il est `"vdom"`.
+[Vapor](https://blog.vuejs.org/posts/vue-vapor). `compiler.jsxMode` sélectionne le \*\*global
+
+- - par défaut pour les composants qui ne s’inscrivent pas explicitement ; par défaut, il est `"vdom"`.
 
 ```ts
 // vize.config.ts
@@ -288,7 +288,6 @@ export default defineConfig({
 contrôle le backend par défaut pour JSX/TSX. Un projet peut garder les SFC sur VDOM tout en mettant par défaut JSX sur
 Vapor, ou inversement. Le plugin Vite accepte aussi `jsxMode` directement comme option plugin, ce qui
 remplace la configuration partagée.
-
 
 ### Directives par composant
 
@@ -342,7 +341,6 @@ diagnostiquées. Des prologues sans lien comme `"use strict"` sont laissés inta
 
 `dialect` sélectionne le profil dialectal Vue pour les documents HTML autonomes (`.html`/`.htm`) :
 
-
 ```json
 {
   "dialect": "petite-vue"
@@ -351,8 +349,8 @@ diagnostiquées. Des prologues sans lien comme `"use strict"` sont laissés inta
 
 - `"vue"` considère les documents HTML autonomes comme de simples documents Vue-from-CDN.
 - `"petite-vue"` opte pour intégrer des documents HTML autonomes dans le
-[petite-vue](https://github.com/vuejs/petite-vue) dialecte (complétions`v-scope`/`v-effect`
- et fonctionnalités IDE sensibles à la petite vue).
+  [petite-vue](https://github.com/vuejs/petite-vue) dialecte (complétions`v-scope`/`v-effect`
+  et fonctionnalités IDE sensibles à la petite vue).
 
 Lorsque la clé est absente, le dialecte est détecté structurellement par document : un `<script src>`
 résolvant vers le package petite-vue, une importation ES en ligne de `petite-vue`, ou un appel `PetiteVue.createApp`
@@ -399,7 +397,6 @@ et ne fonctionne que pour des composants non`<script setup>`, de sorte que le ch
 `optionsApi: false` pour vous désinscrire. Le support Legacy Vue 2.7 / Nuxt 2 (`typeChecker.legacyVue2`, qui ajoute
 les globals de modèles Nuxt 2) est un op-in séparé `legacy`-build.
 
-
 `typeChecker.tsconfig` et `typeChecker.corsaPath` font partie du schéma partagé, mais le chemin Corsa
 soutenu par le projet est aujourd’hui la surface Rust CLI. `corsaPath` est partagé par `vize check`,
 `vize lint`sensibles au type , et `vize lsp` (`typeChecker.tsgoPath` est un alias obsolète) ; la pile
@@ -407,7 +404,6 @@ soutenu par le projet est aujourd’hui la surface Rust CLI. `corsaPath` est par
 installé. Gardez les déclarations d’ambiance, les fichiers d’auto-importation générés, les alias de chemin et les déclarations Vue
 `ComponentCustomProperties` dans votre `tsconfig.json`de projet, et utilisez un script de paquet
 comme `vize:check:app` pour `--tsconfig` ou `--corsa-path` overrides.
-
 
 ```json
 {
@@ -420,7 +416,6 @@ comme `vize:check:app` pour `--tsconfig` ou `--corsa-path` overrides.
 
 `typeChecker.servers` est réservé aux futurs pools de travailleurs Corsa. Le runner direct de session de projet
 ne supporte actuellement que `1`; les valeurs plus élevées échouent rapidement au lieu de faire semblant d’ajuster la concurrence.
-
 
 ## Musea Options
 

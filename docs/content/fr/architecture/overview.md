@@ -1,8 +1,8 @@
 ---
 title: Architecture
 ---
-<!-- Generated translation; source: architecture/overview.md -->
 
+<!-- Generated translation; source: architecture/overview.md -->
 
 # Aperçu de l’architecture
 
@@ -115,25 +115,25 @@ compilateur, analyseur, vérificateur de type, formateur, LSP et release sur les
 
 ## Responsabilités en caisse
 
-| Couche | Caisse | Rôle |
-| ------------- | -------------------- | ------------------------------------------------------ |
-| Fondation | `vize_carton` | Utilités partagées, allocateur d’arène, internat de chaînes |
-| AST | `vize_relief` | Définitions de nœuds AST, types d’erreurs, options de compilateur |
-| Analyse syntaxique | `vize_armature` | Tokenizer + analyseur de descente récursive |
-| Analyse | `vize_croquis` | Analyse sémantique, suivi de la portée de la caméra, détection de liaison |
-| Compilation | `vize_atelier_core` | Voie de transformation partagée, utilitaires de codegen, cartes de sources |
-| Compilation | `vize_atelier_dom` | Génération de code VDOM |
-| Compilation | `vize_atelier_vapor` | Génération de codes en mode vapeur |
-| Compilation | `vize_atelier_sfc` | Orchestration SFC (script + modèle + style + HMR) |
-| Compilation | `vize_atelier_ssr` | Compilation de rendu côté serveur |
-| Reliures | `vize_vitrine` | Node.js (NAPI) + Fixations WASM |
-| CLI | `vize` | Interface en ligne de commande (clap + rayon) |
-| Vérification de type | `vize_canon` | Diagnostics natifs TypeScript et Vue via `corsa-bind` |
-| Linting | `vize_patina` | Vue.js Linter avec i18N (EN/Ja/ZH) |
-| Mise en forme | `vize_glyph` | Vue.js formateur (modèle + script + style) |
-| LSP | `vize_maestro` | Protocole de Serveur de Langage (tour-lsp) |
-| Musea | `vize_musea` | Analyse artistique, documentation, palette, autogénération et cœur VRT |
-| TUI | `vize_fresco` | Cadre d’interface utilisateur terminale (terme croisé + taffy) |
+| Couche               | Caisse               | Rôle                                                                       |
+| -------------------- | -------------------- | -------------------------------------------------------------------------- |
+| Fondation            | `vize_carton`        | Utilités partagées, allocateur d’arène, internat de chaînes                |
+| AST                  | `vize_relief`        | Définitions de nœuds AST, types d’erreurs, options de compilateur          |
+| Analyse syntaxique   | `vize_armature`      | Tokenizer + analyseur de descente récursive                                |
+| Analyse              | `vize_croquis`       | Analyse sémantique, suivi de la portée de la caméra, détection de liaison  |
+| Compilation          | `vize_atelier_core`  | Voie de transformation partagée, utilitaires de codegen, cartes de sources |
+| Compilation          | `vize_atelier_dom`   | Génération de code VDOM                                                    |
+| Compilation          | `vize_atelier_vapor` | Génération de codes en mode vapeur                                         |
+| Compilation          | `vize_atelier_sfc`   | Orchestration SFC (script + modèle + style + HMR)                          |
+| Compilation          | `vize_atelier_ssr`   | Compilation de rendu côté serveur                                          |
+| Reliures             | `vize_vitrine`       | Node.js (NAPI) + Fixations WASM                                            |
+| CLI                  | `vize`               | Interface en ligne de commande (clap + rayon)                              |
+| Vérification de type | `vize_canon`         | Diagnostics natifs TypeScript et Vue via `corsa-bind`                      |
+| Linting              | `vize_patina`        | Vue.js Linter avec i18N (EN/Ja/ZH)                                         |
+| Mise en forme        | `vize_glyph`         | Vue.js formateur (modèle + script + style)                                 |
+| LSP                  | `vize_maestro`       | Protocole de Serveur de Langage (tour-lsp)                                 |
+| Musea                | `vize_musea`         | Analyse artistique, documentation, palette, autogénération et cœur VRT     |
+| TUI                  | `vize_fresco`        | Cadre d’interface utilisateur terminale (terme croisé + taffy)             |
 
 L’interface de la galerie et l’intégration dev-server pour Musea sont disponibles dans le paquet JavaScript
 `@vizejs/vite-plugin-musea`; la caisse de rouille se concentre sur l’analyse et le noyau de génération.
@@ -142,20 +142,20 @@ L’interface de la galerie et l’intégration dev-server pour Musea sont dispo
 
 Les caisses Vize portent leur nom **d’une terminologie artistique et sculpturale**, reflétant la façon dont chaque composant façonne et transforme le code Vue. Ce système de dénomination est plus qu’esthétique — il encode le rôle et les relations entre les caisses. Voir [Philosophy](../philosophy.md) pour la justification complète.
 
-| Nom | Origine | Analogie artistique | Rôle technique |
-| ------------ | ------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| **Carton** | /kɑːˈtɒn/ | Boîtier portfolio d’artiste — stocke et organise les outils | Utilités partagées — la boîte à outils fondamentale dont chaque caisse dépend |
-| **Relief** | /rɪˈliːf/ | Technique sculpturale qui projette sur une surface plane | L’AST — une surface structurée qui donne forme au code source brut |
-| **Armature** | /ˈɑːrmətʃər/ | Squelette interne soutenant une sculpture | L’analyseur syntaxique — le cadre structurel qui soutient l’AST |
-| **Croquis** | /kʁɔ.ki/ | Esquisse gestuel rapide capturant l’essence d’un sujet | Analyse sémantique — un aperçu rapide qui saisit la signification du code |
-| **Atelier** | /ˌætəlˈjeɪ/ | Atelier d’artiste où la création a lieu | Espaces de travail de compilateur — où le code est transformé en sa forme finale |
-| **Vitrine** | /vɪˈtriːn/ | Vitrine en verre dans un musée | Bindings — une couche transparente qui expose le compilateur aux consommateurs externes |
-| **Canon** | /ˈkænən/ | Standard des proportions idéales en sculpture classique | Vérificateur de type — garantit que le code est conforme à la norme de correction |
-| **Patine** | /ˈpætɪnə/ | Finition de surface vieillie qui témoigne de qualité et de soin | Linter — peaufine le code en identifiant les problèmes qui affectent la qualité |
-| **Glyphe** | /ɡlɪf/ | Symbole ou forme de lettre sculptée avec des proportions précises | Formateur — façonne le code en formes de lettres cohérentes et lisibles |
-| **Maestro** | /ˈmaɪstroʊ/ | Chef d’orchestre maître qui orchestre un ensemble | LSP — orchestre toutes les fonctionnalités linguistiques dans une expérience d’éditeur unifiée |
-| **Musea** | /mjuːˈziːə/ | Pluriel de musée — un espace d’exposition d’art | Galerie de composants — un espace pour exposer et explorer des composants |
-| **Fresque** | /ˈfrɛskoʊ/ | Technique de peinture appliquée aux murs en plâtre humide | Cadre TUI — peindre les interfaces sur la surface du terminal |
+| Nom          | Origine      | Analogie artistique                                               | Rôle technique                                                                                 |
+| ------------ | ------------ | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Carton**   | /kɑːˈtɒn/    | Boîtier portfolio d’artiste — stocke et organise les outils       | Utilités partagées — la boîte à outils fondamentale dont chaque caisse dépend                  |
+| **Relief**   | /rɪˈliːf/    | Technique sculpturale qui projette sur une surface plane          | L’AST — une surface structurée qui donne forme au code source brut                             |
+| **Armature** | /ˈɑːrmətʃər/ | Squelette interne soutenant une sculpture                         | L’analyseur syntaxique — le cadre structurel qui soutient l’AST                                |
+| **Croquis**  | /kʁɔ.ki/     | Esquisse gestuel rapide capturant l’essence d’un sujet            | Analyse sémantique — un aperçu rapide qui saisit la signification du code                      |
+| **Atelier**  | /ˌætəlˈjeɪ/  | Atelier d’artiste où la création a lieu                           | Espaces de travail de compilateur — où le code est transformé en sa forme finale               |
+| **Vitrine**  | /vɪˈtriːn/   | Vitrine en verre dans un musée                                    | Bindings — une couche transparente qui expose le compilateur aux consommateurs externes        |
+| **Canon**    | /ˈkænən/     | Standard des proportions idéales en sculpture classique           | Vérificateur de type — garantit que le code est conforme à la norme de correction              |
+| **Patine**   | /ˈpætɪnə/    | Finition de surface vieillie qui témoigne de qualité et de soin   | Linter — peaufine le code en identifiant les problèmes qui affectent la qualité                |
+| **Glyphe**   | /ɡlɪf/       | Symbole ou forme de lettre sculptée avec des proportions précises | Formateur — façonne le code en formes de lettres cohérentes et lisibles                        |
+| **Maestro**  | /ˈmaɪstroʊ/  | Chef d’orchestre maître qui orchestre un ensemble                 | LSP — orchestre toutes les fonctionnalités linguistiques dans une expérience d’éditeur unifiée |
+| **Musea**    | /mjuːˈziːə/  | Pluriel de musée — un espace d’exposition d’art                   | Galerie de composants — un espace pour exposer et explorer des composants                      |
+| **Fresque**  | /ˈfrɛskoʊ/   | Technique de peinture appliquée aux murs en plâtre humide         | Cadre TUI — peindre les interfaces sur la surface du terminal                                  |
 
 ### Pourquoi la terminologie artistique ?
 
@@ -169,20 +169,20 @@ L’analogie entre la compilation logicielle et la création artistique est éto
 - Le **linter** (Patina) examine la finition de surface — identifiant les imperfections qui affectent la qualité globale
 - Le **formateur** (Glyphe) assure des proportions cohérentes — comme un typographe sculptant des formes de lettres avec un espacement précis
 
-Cette convention de nommage rend la hiérarchie des caisses intuitive : quand vous voyez `vize_atelier_dom`, vous comprenez immédiatement qu’il s’agit d’un *atelier* qui produit *des sorties VDOM*.
+Cette convention de nommage rend la hiérarchie des caisses intuitive : quand vous voyez `vize_atelier_dom`, vous comprenez immédiatement qu’il s’agit d’un _atelier_ qui produit _des sorties VDOM_.
 
 ## Dépendances externes
 
 Vize s’intègre à l’écosystème plus large de Rust pour des tâches spécialisées :
 
-| Dépendance | Objectif | Utilisé par |
-| -------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
-| [OXC](https://oxc.rs/) | Analyse AST JavaScript/TypeScript | `vize_croquis`, `vize_atelier_core` |
-| [Rayon](https://docs.rs/rayon) | Multithreading en parallèle de données | `vize`, `vize_vitrine` |
-| [bumpalo](https://docs.rs/bumpalo) | Allocation d’arène pour les nœuds AST | `vize_carton` |
-| [LightningCSS](https://lightningcss.dev/) | Analyse et transformation CSS | `vize_atelier_sfc` |
-| [`corsa-bind`](https://github.com/ubugeeei/corsa-bind) | Sessions de projet et diagnostics natifs TypeScript | `vize_canon`, `vize_maestro`, `vize_patina` |
-| [tower-lsp](https://docs.rs/tower-lsp) | Cadre serveur LSP | `vize_maestro` |
-| [clap](https://docs.rs/clap) | Analyse syntaxique des arguments CLI | `vize` |
-| [wasm-bindgen](https://rustwasm.github.io/wasm-bindgen/) | Interopérative WASM-JavaScript | `vize_vitrine` |
-| [napi-rs](https://napi.rs/) | Node.js liaisons d’addons natifs | `vize_vitrine` |
+| Dépendance                                               | Objectif                                            | Utilisé par                                 |
+| -------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------- |
+| [OXC](https://oxc.rs/)                                   | Analyse AST JavaScript/TypeScript                   | `vize_croquis`, `vize_atelier_core`         |
+| [Rayon](https://docs.rs/rayon)                           | Multithreading en parallèle de données              | `vize`, `vize_vitrine`                      |
+| [bumpalo](https://docs.rs/bumpalo)                       | Allocation d’arène pour les nœuds AST               | `vize_carton`                               |
+| [LightningCSS](https://lightningcss.dev/)                | Analyse et transformation CSS                       | `vize_atelier_sfc`                          |
+| [`corsa-bind`](https://github.com/ubugeeei/corsa-bind)   | Sessions de projet et diagnostics natifs TypeScript | `vize_canon`, `vize_maestro`, `vize_patina` |
+| [tower-lsp](https://docs.rs/tower-lsp)                   | Cadre serveur LSP                                   | `vize_maestro`                              |
+| [clap](https://docs.rs/clap)                             | Analyse syntaxique des arguments CLI                | `vize`                                      |
+| [wasm-bindgen](https://rustwasm.github.io/wasm-bindgen/) | Interopérative WASM-JavaScript                      | `vize_vitrine`                              |
+| [napi-rs](https://napi.rs/)                              | Node.js liaisons d’addons natifs                    | `vize_vitrine`                              |

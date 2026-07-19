@@ -70,8 +70,8 @@ features:
     details: Notas de lançamento para mudanças enviadas, além de notas irregulares para atualizações de design, devlogs e pensamento de projetos.
     link: pt-BR/blog/index.md
 ---
-<!-- Generated translation; source: index.md -->
 
+<!-- Generated translation; source: index.md -->
 
 ## Direção Atual
 
@@ -93,8 +93,7 @@ do editor e metadados da galeria de componentes. O fluxo prático está document
 
 ![ubugeeei](https://github.com/ubugeeei.png)
 
-* *[ubugeeei](https://github.com/ubugeeei)** é engenheira de software baseada em Tóquio, atuando em Vue, Rust, design e ferramentas de linguagem.
-
+- \*[ubugeeei](https://github.com/ubugeeei)\*\* é engenheira de software baseada em Tóquio, atuando em Vue, Rust, design e ferramentas de linguagem.
 
 Ele faz parte da [Vue.js Core Team](https://vuejs.org/about/team.html) [Vue.js Japan User Group](https://github.com/vuejs-jp) equipe central, contribuidor [Vite+](https://github.com/voidzero-dev/vite-plus) núcleo e engenheiro-chefe da [mates-dev](https://github.com/mates-dev).
 

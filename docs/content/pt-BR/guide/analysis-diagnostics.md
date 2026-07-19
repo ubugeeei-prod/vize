@@ -1,8 +1,8 @@
 ---
 title: Diagnóstico de Análise
 ---
-<!-- Generated translation; source: guide/analysis-diagnostics.md -->
 
+<!-- Generated translation; source: guide/analysis-diagnostics.md -->
 
 # Diagnóstico de Análise
 

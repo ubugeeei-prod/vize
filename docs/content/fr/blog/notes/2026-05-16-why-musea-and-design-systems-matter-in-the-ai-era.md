@@ -2,8 +2,8 @@
 title: Musea & IA
 description: L’IA peut générer rapidement une interface utilisateur, mais Musea et les systèmes de conception rendent l’intention, les contraintes, l’accessibilité et le flux de travail de relecture durables.
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era.md -->
 
 # Musea & IA
 
@@ -22,7 +22,6 @@ description: L’IA peut générer rapidement une interface utilisateur, mais Mu
 </span>
 </a>
 </div>
-
 
 ![Musea home view showing a design-system gallery surface](/musea-home.png)
 

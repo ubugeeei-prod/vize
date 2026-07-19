@@ -2,8 +2,8 @@
 title: oxlint-plugin-vize アルファ版
 description: 新しい Oxlint JS プラグイン ブリッジにより、Vize Patina 診断が Vue SFC の単一の Oxlint 実行に組み込まれます。
 ---
-<!-- Generated translation; source: blog/releases/2026-03-26-oxlint-plugin-vize-alpha.md -->
 
+<!-- Generated translation; source: blog/releases/2026-03-26-oxlint-plugin-vize-alpha.md -->
 
 # `oxlint-plugin-vize` アルファ
 

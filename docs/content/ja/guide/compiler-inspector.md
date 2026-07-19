@@ -1,8 +1,8 @@
 ---
 title: コンパイラインスペクタ
 ---
-<!-- Generated translation; source: guide/compiler-inspector.md -->
 
+<!-- Generated translation; source: guide/compiler-inspector.md -->
 
 # コンパイラインスペクタ
 
@@ -74,16 +74,16 @@ vize inspector "src/**/*.vue" --format compare --output inspector-compare.json
 
 便利なオプション:
 
-|オプション |説明 |
-| ------------------- | ----------------------------------------------- |
-| `--target dom` | VDOM コンパイラの出力を比較する |
-| `--target ssr` | SSR コンパイラの出力を比較する |
-| `--format agent` |グラフのメタデータを含むエージェントが読み取り可能な JSON を出力する |
-| `--format compare` | Vue に対して開発専用 CLI 比較を実行する |
-| `--custom-renderer` |プレイグラウンドでカスタム レンダラー モードを有効にする |
-| `--template-syntax` | `standard`、`strict`、または `quirks` を選択します |
-| `--max-files <n>` |バッチ ペイロード内のファイル数を制限する |
-| `--playground-url` |リンクに使用されるプレイグラウンド URL をオーバーライドする |
+| オプション          | 説明                                                                 |
+| ------------------- | -------------------------------------------------------------------- |
+| `--target dom`      | VDOM コンパイラの出力を比較する                                      |
+| `--target ssr`      | SSR コンパイラの出力を比較する                                       |
+| `--format agent`    | グラフのメタデータを含むエージェントが読み取り可能な JSON を出力する |
+| `--format compare`  | Vue に対して開発専用 CLI 比較を実行する                              |
+| `--custom-renderer` | プレイグラウンドでカスタム レンダラー モードを有効にする             |
+| `--template-syntax` | `standard`、`strict`、または `quirks` を選択します                   |
+| `--max-files <n>`   | バッチ ペイロード内のファイル数を制限する                            |
+| `--playground-url`  | リンクに使用されるプレイグラウンド URL をオーバーライドする          |
 
 ## PR ワークフロー
 

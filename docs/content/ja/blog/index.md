@@ -2,8 +2,8 @@
 title: ブログ
 description: Vize プロジェクトのリリースノートと不定期ノート。
 ---
-<!-- Generated translation; source: blog/index.md -->
 
+<!-- Generated translation; source: blog/index.md -->
 
 # ブログ
 

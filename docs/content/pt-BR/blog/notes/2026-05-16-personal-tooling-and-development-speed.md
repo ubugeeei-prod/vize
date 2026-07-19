@@ -2,8 +2,8 @@
 title: Velocidade Pessoal
 description: Por que o Vize ser independente e pessoal pode ser uma vantagem para exploração, rapidez e design ambicioso de uma cadeia de ferramentas.
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-personal-tooling-and-development-speed.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-personal-tooling-and-development-speed.md -->
 
 # Velocidade Pessoal
 
@@ -22,7 +22,6 @@ description: Por que o Vize ser independente e pessoal pode ser uma vantagem par
 </span>
 </a>
 </div>
-
 
 Vize é independente.
 

@@ -1,8 +1,8 @@
 ---
 title: Vue规则
 ---
-<!-- Generated translation; source: rules/vue.md -->
 
+<!-- Generated translation; source: rules/vue.md -->
 
 # Vue 规则
 

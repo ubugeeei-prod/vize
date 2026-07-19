@@ -2,8 +2,8 @@
 title: Vitesse personnelle
 description: Pourquoi le fait que Vize soit indépendant et personnel peut être un avantage pour l’exploration, la rapidité et la conception ambitieuse de la chaîne d’outils.
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-personal-tooling-and-development-speed.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-personal-tooling-and-development-speed.md -->
 
 # Vitesse personnelle
 
@@ -22,7 +22,6 @@ description: Pourquoi le fait que Vize soit indépendant et personnel peut être
 </span>
 </a>
 </div>
-
 
 Vize est indépendant.
 

@@ -2,8 +2,8 @@
 title: 真实世界测试
 description: Vize进入了真实世界测试阶段——真正的项目现在是测试套件，明确了通往v1.0.0的路线图。
 ---
-<!-- Generated translation; source: blog/notes/2026-06-07-real-world-testing.md -->
 
+<!-- Generated translation; source: blog/notes/2026-06-07-real-world-testing.md -->
 
 # 真实世界测试
 

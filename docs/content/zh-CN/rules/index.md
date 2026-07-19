@@ -1,8 +1,8 @@
 ---
 title: 规则
 ---
-<!-- Generated translation; source: rules/index.md -->
 
+<!-- Generated translation; source: rules/index.md -->
 
 # 规则
 

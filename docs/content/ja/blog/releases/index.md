@@ -2,8 +2,8 @@
 title: リリースノート
 description: バージョンのお知らせ、変更履歴、移行メモ、および出荷されたハイライト。
 ---
-<!-- Generated translation; source: blog/releases/index.md -->
 
+<!-- Generated translation; source: blog/releases/index.md -->
 
 # リリースノート
 

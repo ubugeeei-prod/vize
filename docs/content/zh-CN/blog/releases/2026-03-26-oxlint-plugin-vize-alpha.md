@@ -2,8 +2,8 @@
 title: oxlint-plugin-vize Alpha
 description: 新的 Oxlint JS 插件桥接将 Vize Patina 诊断整合到单一 Vue SFC 运行中。
 ---
-<!-- Generated translation; source: blog/releases/2026-03-26-oxlint-plugin-vize-alpha.md -->
 
+<!-- Generated translation; source: blog/releases/2026-03-26-oxlint-plugin-vize-alpha.md -->
 
 # `oxlint-plugin-vize`阿尔法
 

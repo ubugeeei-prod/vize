@@ -1,8 +1,8 @@
 ---
 title: Complexité croisée de fichiers
 ---
-<!-- Generated translation; source: guide/cross-file-complexity.md -->
 
+<!-- Generated translation; source: guide/cross-file-complexity.md -->
 
 # Complexité croisée de fichiers
 
@@ -23,29 +23,29 @@ Le modèle associe trois signaux de complexité à Vue :
 
 Le rapport expose à la fois les signaux bruts et les scores dérivés.
 
-| Terrain | Signification |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `cyclomaticScore` | Nombre de bases des composants + `v-if` + `v-for` + opérateurs booléens dans `v-if`. |
-| `cognitiveScore` | Score de imbrication des modèles d’arbre de composants sur `v-if`, `v-for`, et emplacements de portée (scoped). |
-| `totalScore` | Somme des scores dimensionnels : flux de modèles, fentes, forage de prop, état global, fourni/injecter, attraits à fallthrough et graphe réactif. |
-| `band` | Seau face à l’humain : `low`, `moderate`, `high`ou `extreme`. |
+| Terrain           | Signification                                                                                                                                     |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cyclomaticScore` | Nombre de bases des composants + `v-if` + `v-for` + opérateurs booléens dans `v-if`.                                                              |
+| `cognitiveScore`  | Score de imbrication des modèles d’arbre de composants sur `v-if`, `v-for`, et emplacements de portée (scoped).                                   |
+| `totalScore`      | Somme des scores dimensionnels : flux de modèles, fentes, forage de prop, état global, fourni/injecter, attraits à fallthrough et graphe réactif. |
+| `band`            | Seau face à l’humain : `low`, `moderate`, `high`ou `extreme`.                                                                                     |
 
 L’entrée brute conserve également les chiffres derrière le score, notamment :
 
-| Signal | Pourquoi cela compte |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| `componentTreeVIfMaxDepth` | Les longs chemins conditionnels entre les composants parent et enfant nécessitent plus d’états pour être testés. |
-| `componentTreeVForMaxDepth` | Les boucles imbriquées sur les limites des composants amplifient la complexité du rendu et de la forme des données. |
-| `componentTreeScopedSlotMaxDepth` | Les machines à sous à portée associent des modèles parent et enfant, de sorte que leur profondeur est suivie séparément du nombre habituel de fentes. |
-| `propDrillingEdgeCount` | Les arêtes de prop indiquent un flux de données transfrontalier. |
-| `provideInjectMaxDepth` et `provideInjectReferenceCount` | Les arbres DI profonds ou larges rendent la propriété locale plus difficile à inspecter. |
-| `reactiveNodeCount`, `reactiveEdgeCount`, et `reactiveCycleCount` | Les graphes réactifs capturent l’état au niveau de déclaration, les effets et les cycles sujets à la perte. |
+| Signal                                                            | Pourquoi cela compte                                                                                                                                  |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `componentTreeVIfMaxDepth`                                        | Les longs chemins conditionnels entre les composants parent et enfant nécessitent plus d’états pour être testés.                                      |
+| `componentTreeVForMaxDepth`                                       | Les boucles imbriquées sur les limites des composants amplifient la complexité du rendu et de la forme des données.                                   |
+| `componentTreeScopedSlotMaxDepth`                                 | Les machines à sous à portée associent des modèles parent et enfant, de sorte que leur profondeur est suivie séparément du nombre habituel de fentes. |
+| `propDrillingEdgeCount`                                           | Les arêtes de prop indiquent un flux de données transfrontalier.                                                                                      |
+| `provideInjectMaxDepth` et `provideInjectReferenceCount`          | Les arbres DI profonds ou larges rendent la propriété locale plus difficile à inspecter.                                                              |
+| `reactiveNodeCount`, `reactiveEdgeCount`, et `reactiveCycleCount` | Les graphes réactifs capturent l’état au niveau de déclaration, les effets et les cycles sujets à la perte.                                           |
 
 ## Frontières composantes
 
 La complexité des modèles n’est pas limitée à un seul SFC. Croquis construit d’abord un registre de modules et un graphe d’utilisation des composants
 , puis parcourt les arêtes des composants avec une protection de cycle. Un parent `v-if` autour d’un enfant, un parent
- `v-for` autour d’un enfant, et un emplacement avec portée enfant contribuent tous au même arbre de composants
+`v-for` autour d’un enfant, et un emplacement avec portée enfant contribuent tous au même arbre de composants
 chemin de nidification.
 
 Cela signifie qu’un composant peu profond peut tout de même produire un score élevé lorsqu’il avance des emplacements à portée de portée,

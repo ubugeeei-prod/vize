@@ -1,27 +1,27 @@
 ---
 title: 入门指南
 ---
-<!-- Generated translation; source: getting-started.md -->
 
+<!-- Generated translation; source: getting-started.md -->
 
 # 开始
 
->**⚠️ 正在开发中：**Vize正在积极开发中，尚未准备好投入生产使用。API 和包边界可能会在没有预告的情况下发生变化。
+> **⚠️ 正在开发中：**Vize正在积极开发中，尚未准备好投入生产使用。API 和包边界可能会在没有预告的情况下发生变化。
 
 ## 什么是Vize？
 
 Vize（_/viːz/_）是用Rust编写的Vue.js工具链。工作区包含共享
 以下构件：
 
-|面积 |主锈箱 |面向用户的入口 |
-|--------------- |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------- |
-|合辑 |[`vize_atelier_core`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_core)、[`vize_atelier_dom`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_dom)、[`vize_atelier_vapor`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_vapor)、[`vize_atelier_ssr`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_ssr)、[`vize_atelier_sfc`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_sfc) |`@vizejs/vite-plugin`，NPM `vize:build` 脚本 |
-|绒毛 |[`vize_patina`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_patina)|NPM `vize:lint`脚本，`oxlint-plugin-vize` |
-|格式 |[`vize_glyph`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_glyph)|NPM `vize:fmt`脚本 |
-|类型检查 |[`vize_canon`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_canon)|NPM `vize:check`脚本 |
-|编辑支持 |[`vize_maestro`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_maestro)|VS Code、Zed、Rust `vize lsp` |
-|Musea艺术工具 |[`vize_musea`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_musea)|`@vizejs/vite-plugin-musea` |
-|装订 |[`vize_vitrine`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_vitrine)|`@vizejs/native`，`@vizejs/wasm` |
+| 面积          | 主锈箱                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 面向用户的入口                               |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| 合辑          | [`vize_atelier_core`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_core)、[`vize_atelier_dom`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_dom)、[`vize_atelier_vapor`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_vapor)、[`vize_atelier_ssr`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_ssr)、[`vize_atelier_sfc`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_sfc) | `@vizejs/vite-plugin`，NPM `vize:build` 脚本 |
+| 绒毛          | [`vize_patina`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_patina)                                                                                                                                                                                                                                                                                                                                                                                                             | NPM `vize:lint`脚本，`oxlint-plugin-vize`    |
+| 格式          | [`vize_glyph`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_glyph)                                                                                                                                                                                                                                                                                                                                                                                                               | NPM `vize:fmt`脚本                           |
+| 类型检查      | [`vize_canon`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_canon)                                                                                                                                                                                                                                                                                                                                                                                                               | NPM `vize:check`脚本                         |
+| 编辑支持      | [`vize_maestro`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_maestro)                                                                                                                                                                                                                                                                                                                                                                                                           | VS Code、Zed、Rust `vize lsp`                |
+| Musea艺术工具 | [`vize_musea`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_musea)                                                                                                                                                                                                                                                                                                                                                                                                               | `@vizejs/vite-plugin-musea`                  |
+| 装订          | [`vize_vitrine`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_vitrine)                                                                                                                                                                                                                                                                                                                                                                                                           | `@vizejs/native`，`@vizejs/wasm`             |
 
 本指南推荐使用 [Vite+](https://viteplus.dev/)（`vp`）来管理 JavaScript 包和项目命令。它保持了安装和执行流程在不同包管理器之间的一致性，同时仍使用工作区底层工具。
 
@@ -37,14 +37,14 @@ curl -fsSL https://vite.plus | bash
 
 从大层面来看，Vice被划分为几个可重复使用的通道：
 
-|莱恩 |包或脚本 |你得到了什么 |
-|----------------- |---------------------------------------- |------------------------------------------------------------------------------------------ |
-|编译 |`@vizejs/vite-plugin`，`vize:build` |Rust原生的Vue SFC编译，SSR输出，Vapor模式，Scoped CSS处理|
-|静态分析 |`vize:lint`，`oxlint-plugin-vize` |Vue模板、脚本、CSS、a11y、SSR、Vapor、Musea、跨文件和类型感知诊断 |
-|类型检查 |`vize:check` |虚拟TypeScript生成、项目诊断、Vue到源的诊断映射 |
-|格式 |`vize:fmt` |Vue SFC 格式化及项目和 CLI 选项 |
-|组件画廊 |`@vizejs/vite-plugin-musea`，`musea-vrt` |艺术文件、组件变体、预览设置、设计标记、a11y、VRT |
-|编辑支持 |VS Code、Zed、Rust `vize lsp` |选择加入的诊断和编辑器功能 |
+| 莱恩     | 包或脚本                                 | 你得到了什么                                                      |
+| -------- | ---------------------------------------- | ----------------------------------------------------------------- |
+| 编译     | `@vizejs/vite-plugin`，`vize:build`      | Rust原生的Vue SFC编译，SSR输出，Vapor模式，Scoped CSS处理         |
+| 静态分析 | `vize:lint`，`oxlint-plugin-vize`        | Vue模板、脚本、CSS、a11y、SSR、Vapor、Musea、跨文件和类型感知诊断 |
+| 类型检查 | `vize:check`                             | 虚拟TypeScript生成、项目诊断、Vue到源的诊断映射                   |
+| 格式     | `vize:fmt`                               | Vue SFC 格式化及项目和 CLI 选项                                   |
+| 组件画廊 | `@vizejs/vite-plugin-musea`，`musea-vrt` | 艺术文件、组件变体、预览设置、设计标记、a11y、VRT                 |
+| 编辑支持 | VS Code、Zed、Rust `vize lsp`            | 选择加入的诊断和编辑器功能                                        |
 
 关于lint和类型检查模型，请参见[静态分析](./guide/static-analysis.md)
 [规则](./rules/index.md) 用于具体规则输出，且
@@ -175,7 +175,7 @@ vize lsp
 
 ## 本地类型检查
 
-`vize check` 由 `vize_canon` 驱动，现在  依赖于 [`corsa-bind`](https://github.com/ubugeeei/corsa-bind) 项目会话来实现原生 TypeScript 诊断。Vize为Vue SFC生成虚拟TypeScript，向Corsa请求项目感知诊断，然后将结果映射到原始的`.vue`、`.ts`、`.tsx`和`.d.ts`文件上。
+`vize check` 由 `vize_canon` 驱动，现在 依赖于 [`corsa-bind`](https://github.com/ubugeeei/corsa-bind) 项目会话来实现原生 TypeScript 诊断。Vize为Vue SFC生成虚拟TypeScript，向Corsa请求项目感知诊断，然后将结果映射到原始的`.vue`、`.ts`、`.tsx`和`.d.ts`文件上。
 
 这条路径仍在成熟中，因此编辑器类型检查目前仍是选择加入的功能。该
 运行时栈是`@typescript/native-preview`包，Corsa/corsa-bind 是 API 层 Vize。

@@ -2,8 +2,8 @@
 title: 現実世界でのテスト
 description: Vize は現実世界のテスト段階に入ります。実際のプロジェクトは現在テスト スイートであり、v1.0.0 への明確なロードマップがあります。
 ---
-<!-- Generated translation; source: blog/notes/2026-06-07-real-world-testing.md -->
 
+<!-- Generated translation; source: blog/notes/2026-06-07-real-world-testing.md -->
 
 # 現実世界でのテスト
 

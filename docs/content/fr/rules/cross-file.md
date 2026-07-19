@@ -1,8 +1,8 @@
 ---
 title: Règles croisées
 ---
-<!-- Generated translation; source: rules/cross-file.md -->
 
+<!-- Generated translation; source: rules/cross-file.md -->
 
 # Règles croisées
 

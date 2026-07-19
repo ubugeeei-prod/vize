@@ -1,8 +1,8 @@
 ---
 title: Instantané du benchmark Blacksmith
 ---
-<!-- Generated translation; source: architecture/performance-blacksmith.md -->
 
+<!-- Generated translation; source: architecture/performance-blacksmith.md -->
 
 # Instantané du benchmark Blacksmith
 
@@ -18,16 +18,16 @@ Runner : `blacksmith-32vcpu-ubuntu-2404` (32 CPU logique, AMD EPYC, 32 vCPU / 12
 Entrée : 15 000 fichiers SFC générés (58,7 Mo). Médiane de 5 descentes mesurées après 1 ou plus de course d’échauffement.
 Large SFC : 900 blocs modèles répétés (674,9 Ko). Import Nuxt set : 500 fichiers SFC.
 
-| Surface | Dossiers | Outil existant | Médiane existante | Vize 1T | Vize max | Accélération |
-| --------------------------- | -----: | ---------------------- | --------------: | ------: | -------: | ------: |
-| Compilation SFC | 15,000 | @vue/compilateur-sfc (1T) | 17,54s | 3,23 s | 290,8 ms | 60,3x |
-| Grande compilation SFC | 1 | @vue/compilateur-sfc (1T) | 192,6 ms | 62,6 ms | 56,3 ms | 3,4x |
-| Contrôle de type grand SFC | 1 | Vue-TSC | 1,69s | 178,7 ms | 178,0 ms | 9,5x |
-| Peluches | 15,000 | eslint-plugin-vue (1T) | 54,32 | 1,91 | 279,3 ms | 194,5x |
-| Format | 15,000 | Prettier CLI | 143,61s | 10,15 s | 1,79s | 80,3x |
-| Contrôle de type | 500 | Vue-TSC | 5,36 s | 500,5 ms | 430,1 ms | 12,5x |
-| Build Vite (de bout en bout) | 1,000 | @vitejs/plugin-vue | 1,66 s | N/D | 732,5 ms | 2,3x |
-| Construction Nuxt SPA (de bout en bout) | 500 | Compilateur par défaut Nuxt | 6,79s | N/D | 6,42s | 1.1x |
+| Surface                                 | Dossiers | Outil existant              | Médiane existante |  Vize 1T | Vize max | Accélération |
+| --------------------------------------- | -------: | --------------------------- | ----------------: | -------: | -------: | -----------: |
+| Compilation SFC                         |   15,000 | @vue/compilateur-sfc (1T)   |            17,54s |   3,23 s | 290,8 ms |        60,3x |
+| Grande compilation SFC                  |        1 | @vue/compilateur-sfc (1T)   |          192,6 ms |  62,6 ms |  56,3 ms |         3,4x |
+| Contrôle de type grand SFC              |        1 | Vue-TSC                     |             1,69s | 178,7 ms | 178,0 ms |         9,5x |
+| Peluches                                |   15,000 | eslint-plugin-vue (1T)      |             54,32 |     1,91 | 279,3 ms |       194,5x |
+| Format                                  |   15,000 | Prettier CLI                |           143,61s |  10,15 s |    1,79s |        80,3x |
+| Contrôle de type                        |      500 | Vue-TSC                     |            5,36 s | 500,5 ms | 430,1 ms |        12,5x |
+| Build Vite (de bout en bout)            |    1,000 | @vitejs/plugin-vue          |            1,66 s |      N/D | 732,5 ms |         2,3x |
+| Construction Nuxt SPA (de bout en bout) |      500 | Compilateur par défaut Nuxt |             6,79s |      N/D |    6,42s |         1.1x |
 
 Notes d’équité :
 
@@ -51,72 +51,71 @@ node bench/compare-tools.mjs --input bench/__in__ --vize-bin target/release/vize
 <details>
 <summary>Détails des variantes et temps bruts</summary>
 
-
 ### Compilation SFC
 
-| Variante | Médiane | Débit | Parcours bruts mesurés |
-| --------------------------------------- | ------: | ------------: | ------------------------------------------- |
-| @vue/compilateur-sfc (1T) | 17,54s | 855 fichiers/s | 17,88s, 17,59s, 17,49s, 17,54s, 17,32s |
-| @vue/compiler-sfc (32 travailleurs) | 5,90s | 2,5k fichiers/s | 5,89s, 5,90s, 5,86s, 5,95s, 6,09s |
-| Boucle native Vize (1T) | 3,23 s | 4.6k fichiers/s | 3,10s, 3,13s, 3,36s, 3,36s, 3,23s |
-| Résultats natifs batch Vize (max) | 290,8 ms | 51,6k fichiers/s | 290,8 ms, 272,9 ms, 302,8 ms, 274,7 ms, 302,9 ms |
+| Variante                                                      |  Médiane |            Débit | Parcours bruts mesurés                           |
+| ------------------------------------------------------------- | -------: | ---------------: | ------------------------------------------------ |
+| @vue/compilateur-sfc (1T)                                     |   17,54s |   855 fichiers/s | 17,88s, 17,59s, 17,49s, 17,54s, 17,32s           |
+| @vue/compiler-sfc (32 travailleurs)                           |    5,90s |  2,5k fichiers/s | 5,89s, 5,90s, 5,86s, 5,95s, 6,09s                |
+| Boucle native Vize (1T)                                       |   3,23 s |  4.6k fichiers/s | 3,10s, 3,13s, 3,36s, 3,36s, 3,23s                |
+| Résultats natifs batch Vize (max)                             | 290,8 ms | 51,6k fichiers/s | 290,8 ms, 272,9 ms, 302,8 ms, 274,7 ms, 302,9 ms |
 | Statistiques natives Vize uniquement pour les lots (core max) | 178,8 ms | 83,9k fichiers/s | 172,9 ms, 174,3 ms, 178,8 ms, 180,3 ms, 180,1 ms |
 
 ### Grande compilation SFC
 
-| Variante | Médiane | Débit | Parcours bruts mesurés |
-| --------------------------------------- | ------: | ---------: | ------------------------------------------- |
-| @vue/compilateur-sfc (1T) | 192,6 ms | 5 fichiers/s | 192,6 ms, 192,6 ms, 197,2 ms, 195,9 ms, 190,7 ms |
-| @vue/compiler-sfc (1 travailleur actif) | 479,8 ms | 2 fichiers/s | 468,3 ms, 475,4 ms, 479,8 ms, 555,9 ms, 493,1 ms |
-| Boucle native Vize (1T) | 62,6 ms | 16 fichiers/s | 62,6 ms, 55,1 ms, 65,2 ms, 57,1 ms, 65,0 ms |
-| Résultats natifs batch Vize (max) | 56,3 ms | 18 fichiers/s | 54,8 ms, 54,3 ms, 56,3 ms, 56,4 ms, 56,8 ms |
-| Statistiques natives Vize uniquement pour les lots (core max) | 55,7 ms | 18 fichiers/s | 56,7 ms, 53,4 ms, 55,7 ms, 55,3 ms, 55,8 ms |
+| Variante                                                      |  Médiane |         Débit | Parcours bruts mesurés                           |
+| ------------------------------------------------------------- | -------: | ------------: | ------------------------------------------------ |
+| @vue/compilateur-sfc (1T)                                     | 192,6 ms |  5 fichiers/s | 192,6 ms, 192,6 ms, 197,2 ms, 195,9 ms, 190,7 ms |
+| @vue/compiler-sfc (1 travailleur actif)                       | 479,8 ms |  2 fichiers/s | 468,3 ms, 475,4 ms, 479,8 ms, 555,9 ms, 493,1 ms |
+| Boucle native Vize (1T)                                       |  62,6 ms | 16 fichiers/s | 62,6 ms, 55,1 ms, 65,2 ms, 57,1 ms, 65,0 ms      |
+| Résultats natifs batch Vize (max)                             |  56,3 ms | 18 fichiers/s | 54,8 ms, 54,3 ms, 56,3 ms, 56,4 ms, 56,8 ms      |
+| Statistiques natives Vize uniquement pour les lots (core max) |  55,7 ms | 18 fichiers/s | 56,7 ms, 53,4 ms, 55,7 ms, 55,3 ms, 55,8 ms      |
 
 ### Contrôle de type grand SFC
 
-| Variante | Médiane | Débit | Parcours bruts mesurés |
-| ---------------- | ------: | ---------: | ------------------------------------------- |
-| Vue-TSC | 1,69s | 1 fichier/s | 1,70s, 1,72s, 1,68s, 1,62s, 1,69s |
-| Contrôle Vize (1T) | 178,7 ms | 6 fichiers/s | 176,2 ms, 178,4 ms, 179,1 ms, 189,4 ms, 178,7 ms |
+| Variante                |  Médiane |        Débit | Parcours bruts mesurés                           |
+| ----------------------- | -------: | -----------: | ------------------------------------------------ |
+| Vue-TSC                 |    1,69s |  1 fichier/s | 1,70s, 1,72s, 1,68s, 1,62s, 1,69s                |
+| Contrôle Vize (1T)      | 178,7 ms | 6 fichiers/s | 176,2 ms, 178,4 ms, 179,1 ms, 189,4 ms, 178,7 ms |
 | Vérification Vize (max) | 178,0 ms | 6 fichiers/s | 177,7 ms, 178,0 ms, 177,5 ms, 189,5 ms, 194,5 ms |
 
 ### Peluches
 
-| Variante | Médiane | Débit | Parcours bruts mesurés |
-| ------------------------------ | ------: | ------------: | ------------------------------------------- |
-| eslint-plugin-vue (1T) | 54,32 | 276 fichiers/s | 54,32s, 54,44s, 53,47s, 54,35s, 54,06s |
-| eslint-plugin-vue (32 ouvriers) | 13,47s | 1.1k fichiers/s | 13,41s, 13,61s, 13,63s, 13,26s, 13,47s |
-| Pelotte Vize (1T) | 1,91 | 7,9k fichiers/s | 1,88s, 1,84s, 1,91s, 1,91s, 1,97s |
-| Peluches Vize (max) | 279,3 ms | 53,7k fichiers/s | 275,8 ms, 272,1 ms, 287,9 ms, 287,1 ms, 279,3 ms |
+| Variante                        |  Médiane |            Débit | Parcours bruts mesurés                           |
+| ------------------------------- | -------: | ---------------: | ------------------------------------------------ |
+| eslint-plugin-vue (1T)          |    54,32 |   276 fichiers/s | 54,32s, 54,44s, 53,47s, 54,35s, 54,06s           |
+| eslint-plugin-vue (32 ouvriers) |   13,47s |  1.1k fichiers/s | 13,41s, 13,61s, 13,63s, 13,26s, 13,47s           |
+| Pelotte Vize (1T)               |     1,91 |  7,9k fichiers/s | 1,88s, 1,84s, 1,91s, 1,91s, 1,97s                |
+| Peluches Vize (max)             | 279,3 ms | 53,7k fichiers/s | 275,8 ms, 272,1 ms, 287,9 ms, 287,1 ms, 279,3 ms |
 
 ### Format
 
-| Variante | Médiane | Débit | Parcours bruts mesurés |
-| -------------- | ------: | -----------: | ------------------------------------------- |
-| Prettier CLI | 143,61s | 104 fichiers/s | 142,61s, 142,38s, 143,61s, 145,98s, 144,94s |
-| Vize fmt (1T) | 10,15 s | 1.5k fichiers/s | 10,10, 10,26s, 10,15s, 10,43s, 9,82s |
-| Vize FMT (max) | 1,79s | 8,4k fichiers/s | 1,78s, 1,79s, 1,82s, 1,82s, 1,78s |
+| Variante       | Médiane |           Débit | Parcours bruts mesurés                      |
+| -------------- | ------: | --------------: | ------------------------------------------- |
+| Prettier CLI   | 143,61s |  104 fichiers/s | 142,61s, 142,38s, 143,61s, 145,98s, 144,94s |
+| Vize fmt (1T)  | 10,15 s | 1.5k fichiers/s | 10,10, 10,26s, 10,15s, 10,43s, 9,82s        |
+| Vize FMT (max) |   1,79s | 8,4k fichiers/s | 1,78s, 1,79s, 1,82s, 1,82s, 1,78s           |
 
 ### Contrôle de type
 
-| Variante | Médiane | Débit | Parcours bruts mesurés |
-| ---------------- | ------: | -----------: | ------------------------------------------- |
-| Vue-TSC | 5,36 s | 93 fichiers/s | 5,46s, 5,36s, 5,50s, 5,34s, 5,36s |
-| Contrôle Vize (1T) | 500,5 ms | 999 fichiers/s | 489,1 ms, 513,6 ms, 500,5 ms, 504,0 ms, 491,2 ms |
+| Variante                |  Médiane |           Débit | Parcours bruts mesurés                           |
+| ----------------------- | -------: | --------------: | ------------------------------------------------ |
+| Vue-TSC                 |   5,36 s |   93 fichiers/s | 5,46s, 5,36s, 5,50s, 5,34s, 5,36s                |
+| Contrôle Vize (1T)      | 500,5 ms |  999 fichiers/s | 489,1 ms, 513,6 ms, 500,5 ms, 504,0 ms, 491,2 ms |
 | Vérification Vize (max) | 430,1 ms | 1,2k fichiers/s | 427,4 ms, 430,1 ms, 421,3 ms, 438,8 ms, 431,3 ms |
 
 ### Build Vite (de bout en bout)
 
-| Variante | Médiane | Débit | Parcours bruts mesurés |
-| ------------------- | ------: | -----------: | ------------------------------------------- |
-| @vitejs/plugin-vue | 1,66 s | 601 fichiers/s | 1,65s, 1,61s, 1,69s, 1,66s, 1,95s |
+| Variante            |  Médiane |           Débit | Parcours bruts mesurés                           |
+| ------------------- | -------: | --------------: | ------------------------------------------------ |
+| @vitejs/plugin-vue  |   1,66 s |  601 fichiers/s | 1,65s, 1,61s, 1,69s, 1,66s, 1,95s                |
 | @vizejs/vite-plugin | 732,5 ms | 1,4k fichiers/s | 732,5 ms, 713,2 ms, 746,2 ms, 691,9 ms, 752,8 ms |
 
 ### Construction Nuxt SPA (de bout en bout)
 
-| Variante | Médiane | Débit | Parcours bruts mesurés |
-| --------------------- | -----: | ---------: | --------------------------------- |
-| Compilateur par défaut Nuxt | 6,79s | 74 fichiers/s | 6,74s, 6,73s, 6,86s, 6,89s, 6,79s |
-| @vizejs/Nuxt | 6,42s | 78 fichiers/s | 6,36s, 6,42s, 6,31s, 6,50s, 6,50s |
+| Variante                    | Médiane |         Débit | Parcours bruts mesurés            |
+| --------------------------- | ------: | ------------: | --------------------------------- |
+| Compilateur par défaut Nuxt |   6,79s | 74 fichiers/s | 6,74s, 6,73s, 6,86s, 6,89s, 6,79s |
+| @vizejs/Nuxt                |   6,42s | 78 fichiers/s | 6,36s, 6,42s, 6,31s, 6,50s, 6,50s |
 
 </details>

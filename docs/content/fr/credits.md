@@ -2,8 +2,8 @@
 title: Crédits
 description: Les retours des personnes et de la communauté qui ont façonné Vize.
 ---
-<!-- Generated translation; source: credits.md -->
 
+<!-- Generated translation; source: credits.md -->
 
 # Crédits
 

@@ -2,8 +2,8 @@
 title: Testes e Agentes
 description: Por que testes com muitos snapshots, fixaturas do mundo real e verificações determinísticas importam mais quando agentes fazem parte do ciclo de desenvolvimento.
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-testing-agentic-coding-and-trust.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-testing-agentic-coding-and-trust.md -->
 
 # Testes e Agentes
 
@@ -22,7 +22,6 @@ description: Por que testes com muitos snapshots, fixaturas do mundo real e veri
 </span>
 </a>
 </div>
-
 
 A Codificação Agential muda o papel dos testes.
 

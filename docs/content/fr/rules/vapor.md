@@ -1,8 +1,8 @@
 ---
 title: Règles de la vapeur
 ---
-<!-- Generated translation; source: rules/vapor.md -->
 
+<!-- Generated translation; source: rules/vapor.md -->
 
 # Règles de la vapeur
 

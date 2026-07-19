@@ -2,8 +2,8 @@
 title: 发行说明
 description: 版本公告、变更日志、迁移说明和发布重点。
 ---
-<!-- Generated translation; source: blog/releases/index.md -->
 
+<!-- Generated translation; source: blog/releases/index.md -->
 
 # 发行说明
 

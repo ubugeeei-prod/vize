@@ -1,8 +1,8 @@
 ---
 title: HTML ルール
 ---
-<!-- Generated translation; source: rules/html.md -->
 
+<!-- Generated translation; source: rules/html.md -->
 
 # HTML ルール
 

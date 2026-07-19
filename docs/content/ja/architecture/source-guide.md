@@ -1,8 +1,8 @@
 ---
 title: ソースガイド
 ---
-<!-- Generated translation; source: architecture/source-guide.md -->
 
+<!-- Generated translation; source: architecture/source-guide.md -->
 
 # ソースガイド
 
@@ -15,14 +15,14 @@ title: ソースガイド
 Vize はほとんどの製品の動作を Rust ワークスペースに保持し、JavaScript パッケージは次のように機能します。
 配布層と統合層。
 
-|パス |そこに住むもの |
-| --------- | ------------------------------------------------------------------------------------------------------------------ |
-| `crates/` |解析、分析、コンパイル、リンティング、フォーマット、型チェック、LSP、CLI、およびネイティブ バインディング用の Rust クレート |
-| `npm/` | Vite、Nuxt、エディター拡張機能、Musea 統合、および公開パッケージ ラッパー用の JavaScript パッケージ |
-| `docs/` |ユーザー ドキュメント、アーキテクチャ ノート、リリース ノート、ドキュメント サイトのテーマ |
-| `tests/` |クロスパッケージのフィクスチャ、実際のプロジェクト、ツールのテスト、およびスナップショットのガバナンス |
-| `bench/` |パフォーマンス比較スクリプトと PR ベンチマーク予算の適用 |
-| `tools/` |出荷された製品の一部ではないリポジトリの自動化 |
+| パス      | そこに住むもの                                                                                                              |
+| --------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `crates/` | 解析、分析、コンパイル、リンティング、フォーマット、型チェック、LSP、CLI、およびネイティブ バインディング用の Rust クレート |
+| `npm/`    | Vite、Nuxt、エディター拡張機能、Musea 統合、および公開パッケージ ラッパー用の JavaScript パッケージ                         |
+| `docs/`   | ユーザー ドキュメント、アーキテクチャ ノート、リリース ノート、ドキュメント サイトのテーマ                                  |
+| `tests/`  | クロスパッケージのフィクスチャ、実際のプロジェクト、ツールのテスト、およびスナップショットのガバナンス                      |
+| `bench/`  | パフォーマンス比較スクリプトと PR ベンチマーク予算の適用                                                                    |
+| `tools/`  | 出荷された製品の一部ではないリポジトリの自動化                                                                              |
 
 変更がディレクトリをまたぐ場合、所有者は通常、ユーザーに表示されるファイルを作成するレイヤーになります。
 行動。たとえば、コンパイラ出力の変更は、再現元が `crates/` である場合でも、
@@ -48,35 +48,35 @@ graph LR
 
 ## クレートエントリーポイント
 
-|エリア変更 |ここから始めましょう |次に、 | をチェックしてください。
-| ------------------------------ | -------------------------------------- | ------------------------------------------------------------------ |
-|テンプレートの解析 | `crates/vize_armature/src/lib.rs` |パーサー フィクスチャと予想される AST スナップショット |
-| AST 形状とコンパイラ オプション | `crates/vize_relief/src/lib.rs` |ダウンストリームのコンパイラ、lint、およびフォーマッタの呼び出し元 |
-|テンプレートのセマンティクス | `crates/vize_croquis/src/lib.rs` |スコープ、バインディング、反応性、および仮想 TypeScript ヘルパー |
-|共有コンパイラの動作 | `crates/vize_atelier_core/src/lib.rs` |バックエンド固有のアトリエクレート |
-|クライアントテンプレートの出力 | `crates/vize_atelier_dom/src/lib.rs` |生成されたコードのスナップショットとランタイム フィクスチャ テスト |
-|蒸気出力 | `crates/vize_atelier_vapor/src/lib.rs` |蒸気固有のルールと実際のフィクスチャの出力 |
-| SSR出力 | `crates/vize_atelier_ssr/src/lib.rs` | SSR スナップショット、脱出、および水分補給の動作 |
-| SFCオーケストレーション | `crates/vize_atelier_sfc/src/lib.rs` |スクリプト、テンプレート、スタイル、HMR、およびソースマップのパス |
-|リントのルール | `crates/vize_patina/src/lib.rs` |ルールのスナップショットとローカライズされた診断 |
-|型チェック | `crates/vize_canon/src/lib.rs` |生成された仮想 TS および `corsa-bind` 診断 |
-| LSP の動作 | `crates/vize_maestro/src/lib.rs` |サーバー ハンドラー、仮想ドキュメント、およびエディターのスモーク テスト |
-|フォーマット | `crates/vize_glyph/src/lib.rs` |ゴールデンフォーマットスナップショット |
-|ネイティブおよび WASM バインディング | `crates/vize_vitrine/src/lib.rs` | npm パッケージ ラッパーと生成された型宣言 |
-| CLI の動作 | `crates/vize/src/main.rs` |コマンド モジュール、スナップショット、ビルド/チェック/lint 統合テスト |
+| エリア変更                           | ここから始めましょう                   | 次に、                                                                   | をチェックしてください。 |
+| ------------------------------------ | -------------------------------------- | ------------------------------------------------------------------------ | ------------------------ |
+| テンプレートの解析                   | `crates/vize_armature/src/lib.rs`      | パーサー フィクスチャと予想される AST スナップショット                   |
+| AST 形状とコンパイラ オプション      | `crates/vize_relief/src/lib.rs`        | ダウンストリームのコンパイラ、lint、およびフォーマッタの呼び出し元       |
+| テンプレートのセマンティクス         | `crates/vize_croquis/src/lib.rs`       | スコープ、バインディング、反応性、および仮想 TypeScript ヘルパー         |
+| 共有コンパイラの動作                 | `crates/vize_atelier_core/src/lib.rs`  | バックエンド固有のアトリエクレート                                       |
+| クライアントテンプレートの出力       | `crates/vize_atelier_dom/src/lib.rs`   | 生成されたコードのスナップショットとランタイム フィクスチャ テスト       |
+| 蒸気出力                             | `crates/vize_atelier_vapor/src/lib.rs` | 蒸気固有のルールと実際のフィクスチャの出力                               |
+| SSR出力                              | `crates/vize_atelier_ssr/src/lib.rs`   | SSR スナップショット、脱出、および水分補給の動作                         |
+| SFCオーケストレーション              | `crates/vize_atelier_sfc/src/lib.rs`   | スクリプト、テンプレート、スタイル、HMR、およびソースマップのパス        |
+| リントのルール                       | `crates/vize_patina/src/lib.rs`        | ルールのスナップショットとローカライズされた診断                         |
+| 型チェック                           | `crates/vize_canon/src/lib.rs`         | 生成された仮想 TS および `corsa-bind` 診断                               |
+| LSP の動作                           | `crates/vize_maestro/src/lib.rs`       | サーバー ハンドラー、仮想ドキュメント、およびエディターのスモーク テスト |
+| フォーマット                         | `crates/vize_glyph/src/lib.rs`         | ゴールデンフォーマットスナップショット                                   |
+| ネイティブおよび WASM バインディング | `crates/vize_vitrine/src/lib.rs`       | npm パッケージ ラッパーと生成された型宣言                                |
+| CLI の動作                           | `crates/vize/src/main.rs`              | コマンド モジュール、スナップショット、ビルド/チェック/lint 統合テスト   |
 
 最初にパブリック クレートのエントリ ポイントに従うことをお勧めします。多くのクレートにはコンパクトな `lib.rs` モジュールが含まれています。
 貢献者が触れることが予想される内部モジュールを再エクスポートします。
 
 ## JavaScript パッケージのエントリ ポイント
 
-|パッケージ |ソースエントリ |錆びの境界 |
-| ------------------------- | -------------------------------------------------------------- | ----------------------------------------------- |
-| `@vizejs/vite-plugin` | `npm/builder/vite/src/index.ts` | `@vizejs/native` ～ `vize_vitrine` |
-| `@vizejs/nuxt` | `npm/framework/nuxt/src/index.ts` | Vite プラグイン オプションとコンポーネントの統合 |
-| `@vizejs/wasm` | `vize_vitrine` WASM エクスポートに関する生成されたパッケージ | `crates/vize_vitrine/src/wasm` |
+| パッケージ                  | ソースエントリ                                                    | 錆びの境界                                        |
+| --------------------------- | ----------------------------------------------------------------- | ------------------------------------------------- |
+| `@vizejs/vite-plugin`       | `npm/builder/vite/src/index.ts`                                   | `@vizejs/native` ～ `vize_vitrine`                |
+| `@vizejs/nuxt`              | `npm/framework/nuxt/src/index.ts`                                 | Vite プラグイン オプションとコンポーネントの統合  |
+| `@vizejs/wasm`              | `vize_vitrine` WASM エクスポートに関する生成されたパッケージ      | `crates/vize_vitrine/src/wasm`                    |
 | `@vizejs/vite-plugin-musea` | `npm/builder/vite-musea/src/index.ts` および関連パッケージ コード | `vize_musea` バインディングを通じて公開される API |
-| `oxlint-plugin-vize` | `npm/oxint/src/index.ts` |バインディングによる `vize_patina` 診断 |
+| `oxlint-plugin-vize`        | `npm/oxint/src/index.ts`                                          | バインディングによる `vize_patina` 診断           |
 
 統合配線にはパッケージ テストを使用しますが、言語セマンティクスは Rust テストに保持します。パッケージ
 レイヤーは主に、オプション、仮想モジュール、HMR、およびネイティブ呼び出しが接続されていることを証明する必要があります。

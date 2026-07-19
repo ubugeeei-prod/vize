@@ -2,8 +2,8 @@
 title: Notes Lane
 description: Certaines mises à jour de projets nécessitent une place pour le contexte, pas seulement une entrée dans le journal des modifications.
 ---
-<!-- Generated translation; source: blog/notes/2026-03-26-why-vize-needs-notes.md -->
 
+<!-- Generated translation; source: blog/notes/2026-03-26-why-vize-needs-notes.md -->
 
 # Notes Lane
 
@@ -22,7 +22,6 @@ description: Certaines mises à jour de projets nécessitent une place pour le c
 </span>
 </a>
 </div>
-
 
 Les documents de référence sont excellents pour répondre à la question « comment utiliser ça ? » Ils sont bien moins efficaces pour répondre à des questions telles que :
 

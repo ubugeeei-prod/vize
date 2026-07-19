@@ -1,8 +1,8 @@
 ---
 title: Inspetor de Compiladores
 ---
-<!-- Generated translation; source: guide/compiler-inspector.md -->
 
+<!-- Generated translation; source: guide/compiler-inspector.md -->
 
 # Inspetor de Compiladores
 
@@ -74,16 +74,16 @@ navegador alinhados, enquanto o compilador oficial do Vue roda dentro do navegad
 
 Opções úteis:
 
-| Opção | Descrição |
-| ------------------- | --------------------------------------------- |
-| `--target dom` | Compare a saída do compilador VDOM |
-| `--target ssr` | Compare a saída do compilador SSR |
-| `--format agent` | Emita JSON legível por agente com metadados de grafo |
-| `--format compare` | Faça uma comparação de CLI só para desenvolvedores com o Vue |
-| `--custom-renderer` | Ative o modo de renderização personalizada no playground |
-| `--template-syntax` | Escolha `standard`, `strict`ou `quirks` |
-| `--max-files <n>` | Limite o número de arquivos em uma carga útil batch |
-| `--playground-url` | Substitua a URL do playground usada para links |
+| Opção               | Descrição                                                    |
+| ------------------- | ------------------------------------------------------------ |
+| `--target dom`      | Compare a saída do compilador VDOM                           |
+| `--target ssr`      | Compare a saída do compilador SSR                            |
+| `--format agent`    | Emita JSON legível por agente com metadados de grafo         |
+| `--format compare`  | Faça uma comparação de CLI só para desenvolvedores com o Vue |
+| `--custom-renderer` | Ative o modo de renderização personalizada no playground     |
+| `--template-syntax` | Escolha `standard`, `strict`ou `quirks`                      |
+| `--max-files <n>`   | Limite o número de arquivos em uma carga útil batch          |
+| `--playground-url`  | Substitua a URL do playground usada para links               |
 
 ## Fluxo de Trabalho de Relações Públicas
 

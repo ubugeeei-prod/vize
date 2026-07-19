@@ -2,8 +2,8 @@
 title: 蒸汽模式
 description: 为什么蒸气模式对Vize很重要，以及为什么直接的细粒度编译器路径比运行时性能带来的影响更大。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface.md -->
 
 # 蒸汽模式
 

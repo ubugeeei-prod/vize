@@ -1,8 +1,8 @@
 ---
 title: Serveur MCP
 ---
-<!-- Generated translation; source: integrations/mcp.md -->
 
+<!-- Generated translation; source: integrations/mcp.md -->
 
 # Serveur MCP
 

@@ -1,8 +1,8 @@
 ---
 title: 生态系统规则
 ---
-<!-- Generated translation; source: rules/ecosystem.md -->
 
+<!-- Generated translation; source: rules/ecosystem.md -->
 
 # 生态系统规则
 

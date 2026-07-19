@@ -1,12 +1,12 @@
 ---
 title: 实验性捆绑器集成
 ---
-<!-- Generated translation; source: guide/unplugin.md -->
 
+<!-- Generated translation; source: guide/unplugin.md -->
 
 # 实验性捆绑器积分
 
->**⚠️ 实验性：**`@vizejs/unplugin`和`@vizejs/rspack-plugin`仍然不稳定。
+> **⚠️ 实验性：**`@vizejs/unplugin`和`@vizejs/rspack-plugin`仍然不稳定。
 > `@vizejs/vite-plugin`至今仍是推荐且测试最完善的捆绑器集成。
 
 Vize 提供了一个实验性的 [unplugin](https://unplugin.unjs.io/) 包，适用于 `rollup`、`webpack` 和 `esbuild`，以及一个专用的 `Rspack` 包：

@@ -2,8 +2,8 @@
 title: Créditos
 description: Pessoas e feedback da comunidade que moldaram a Vize.
 ---
-<!-- Generated translation; source: credits.md -->
 
+<!-- Generated translation; source: credits.md -->
 
 # Créditos
 

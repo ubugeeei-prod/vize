@@ -2,8 +2,8 @@
 title: 博物館とAI
 description: AI は UI を迅速に生成できますが、Musea とデザイン システムは、意図、制約、アクセシビリティ、レビュー ワークフローを永続的にします。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era.md -->
 
 # 美術館とAI
 

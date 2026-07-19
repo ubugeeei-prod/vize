@@ -70,8 +70,8 @@ features:
     details: Des notes de version pour les modifications expédiées, ainsi que des notes irrégulières pour les mises à jour de conception, les devlogs et la réflexion projet.
     link: fr/blog/index.md
 ---
-<!-- Generated translation; source: index.md -->
 
+<!-- Generated translation; source: index.md -->
 
 ## Direction actuelle
 
@@ -93,8 +93,7 @@ modèle sémantique, puis alimente les règles de lint Patina, le TypeScript vir
 
 ![ubugeeei](https://github.com/ubugeeei.png)
 
-* *[ubugeeei](https://github.com/ubugeeei)** est ingénieur logiciel basé à Tokyo, travaillant dans les domaines Vue, Rust, design et outils de langage.
-
+- \*[ubugeeei](https://github.com/ubugeeei)\*\* est ingénieur logiciel basé à Tokyo, travaillant dans les domaines Vue, Rust, design et outils de langage.
 
 Il fait partie de l’équipe centrale [Vue.js Core Team](https://vuejs.org/about/team.html) [Vue.js Japan User Group](https://github.com/vuejs-jp) , contributeur principal [Vite+](https://github.com/voidzero-dev/vite-plus) et ingénieur en chef chez [mates-dev](https://github.com/mates-dev).
 

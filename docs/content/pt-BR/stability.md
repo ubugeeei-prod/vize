@@ -2,8 +2,8 @@
 title: Estabilidade
 description: Níveis de suporte ao Vize v1 alpha, promessas de compatibilidade e superfícies experimentais.
 ---
-<!-- Generated translation; source: stability.md -->
 
+<!-- Generated translation; source: stability.md -->
 
 # Estabilidade
 
@@ -23,15 +23,15 @@ códigos de diagnóstico ou saída gerada.
 
 A linha alfa v1 usa estas regras:
 
-| Superfície | Expectativa Alpha |
-| ------------------------------------ | ---------------------------------------------------------------------------------- |
-| Nomes de pacotes publicados | Deve permanecer disponível ou ser enviado com notas de migração |
-| Comandos e sinalizações CLI documentados | Deve evitar mudanças de comportamento silenciosas |
-| Campos de configuração documentados | Deve manter nomes e formas de valor estáveis, a menos que as notas de lançamento indicem uma mudança |
-| Códigos diagnósticos listados nos documentos | Devem permanecer reconhecíveis para que supressões e relatórios de correção continuem úteis |
-| APIs publicadas do Rust crate | Siga abaixo o nível por caixa e o contrato de depreciação |
-| Componentes internos da caixa Rust não exportados | Pode mudar sem suporte à migração antes da v1 estável |
-| Código gerado e saída virtual de TS | Pode mudar quando necessário para correção, compatibilidade, desempenho ou diagnóstico |
+| Superfície                                        | Expectativa Alpha                                                                                    |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Nomes de pacotes publicados                       | Deve permanecer disponível ou ser enviado com notas de migração                                      |
+| Comandos e sinalizações CLI documentados          | Deve evitar mudanças de comportamento silenciosas                                                    |
+| Campos de configuração documentados               | Deve manter nomes e formas de valor estáveis, a menos que as notas de lançamento indicem uma mudança |
+| Códigos diagnósticos listados nos documentos      | Devem permanecer reconhecíveis para que supressões e relatórios de correção continuem úteis          |
+| APIs publicadas do Rust crate                     | Siga abaixo o nível por caixa e o contrato de depreciação                                            |
+| Componentes internos da caixa Rust não exportados | Pode mudar sem suporte à migração antes da v1 estável                                                |
+| Código gerado e saída virtual de TS               | Pode mudar quando necessário para correção, compatibilidade, desempenho ou diagnóstico               |
 
 ## Suporte em Tempo de Execução
 
@@ -57,10 +57,10 @@ Eles são cobertos por artefatos de build por plataforma, além do `@vizejs/nati
 resolvedor de dependência opcional até que uma fumaça Alpine conteinerizada possa preparar o
 tarball nativo correspondente:
 
-| Alvo | Intervalo de corredores hospedados | Cobertura compensatória |
-| ---------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Linux-x64-musl | Nenhuma VM Alpine/musl hospedada no GitHub está disponível como runner nativo | O projeto de construção emite a bola de tar musl; Manual `node:alpine` fumaça. |
-| Linux-ARM64-MUSL | Os runners hospedados em Arm64 são Ubuntu GNU, não hosts nativos Alpine/musl | O projeto de construção emite a bola de bolas de bolas de musl arm64; manual Alpine arm64 fumaça. |
+| Alvo             | Intervalo de corredores hospedados                                            | Cobertura compensatória                                                                           |
+| ---------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Linux-x64-musl   | Nenhuma VM Alpine/musl hospedada no GitHub está disponível como runner nativo | O projeto de construção emite a bola de tar musl; Manual `node:alpine` fumaça.                    |
+| Linux-ARM64-MUSL | Os runners hospedados em Arm64 são Ubuntu GNU, não hosts nativos Alpine/musl  | O projeto de construção emite a bola de bolas de bolas de musl arm64; manual Alpine arm64 fumaça. |
 
 O fechamento desses intervalos é acompanhado junto com [#493](https://github.com/ubugeeei-prod/vize/issues/493).
 
@@ -72,12 +72,12 @@ a mudança é mencionada nas notas de lançamento quando muda. Empacotadores pos
 
 ## Níveis de Suporte a Pacotes
 
-| Tier | Pacotes | Contrato |
-| --------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Suporte Alpha | `vize`, `@vizejs/native`, `@vizejs/vite-plugin` | Destinado a testes iniciais de produção com alterações de quebra respaldadas por releasenote de lançamento. |
-| Prévia de compatibilidade | `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/musea-nuxt` | Espera-se que funcione para configurações comuns de host, mas a compatibilidade host-framework pode avançar rapidamente. |
-| Experimental | `oxlint-plugin-vize`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/wasm` | Pacotes públicos, mas APIs, comandos, saída e formato de fluxo de trabalho podem mudar durante o alfa. |
-| Incubação | `@vizejs/fresco`, `@vizejs/fresco-native`, pacotes de extensão de editor | Útil para desenvolvimento e feedback, mas ainda não faz parte da meta de produção da alpha v1. |
+| Tier                      | Pacotes                                                                                       | Contrato                                                                                                                 |
+| ------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Suporte Alpha             | `vize`, `@vizejs/native`, `@vizejs/vite-plugin`                                               | Destinado a testes iniciais de produção com alterações de quebra respaldadas por releasenote de lançamento.              |
+| Prévia de compatibilidade | `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/musea-nuxt`             | Espera-se que funcione para configurações comuns de host, mas a compatibilidade host-framework pode avançar rapidamente. |
+| Experimental              | `oxlint-plugin-vize`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/wasm` | Pacotes públicos, mas APIs, comandos, saída e formato de fluxo de trabalho podem mudar durante o alfa.                   |
+| Incubação                 | `@vizejs/fresco`, `@vizejs/fresco-native`, pacotes de extensão de editor                      | Útil para desenvolvimento e feedback, mas ainda não faz parte da meta de produção da alpha v1.                           |
 
 ## Níveis de Suporte de Caixas de Ferrugem
 
@@ -88,23 +88,23 @@ implementação não são superfícies de compatibilidade.
 
 <!-- rust-crate-support:start -->
 
-| Caixa | Tier | Público-alvo | Ponto de entrada pública | Remoção / depreciação |
-| -------------------- | --------------------- | ----------------------------------------- | ----------------------------------------------- | -------------------------------------- |
-| `vize_carton` | Suporte Alpha | Autores do compilador e biblioteca Vize | `vize_carton::{Allocator, Bump, FxHashMap}` | Um minor com `#[deprecated]` |
-| `vize_relief` | Suporte Alpha | Autores do AST e integração de compiladores | `vize_relief::{RootNode, CompilerOptions}` | Um minor com `#[deprecated]` |
-| `vize_armature` | Suporte Alpha | Ferramentas que analisam templates do Vue | `vize_armature::{parse, Parser, Tokenizer}` | Uma menor com `#[deprecated]` |
-| `vize_croquis` | Prévia de compatibilidade | Autores de ferramentas semânticas e com perfil de tipos | `vize_croquis::{Croquis, Drawer}` | Um minor com `#[deprecated]` |
-| `vize_croquis_cf` | Experimental | Experimentos de análise de projeto inteiro com opt-in | `vize_croquis_cf::CrossFileAnalyzer` | Sem mínimo; Quebras de nota quando prático |
-| `vize_atelier_core` | Suporte Alpha | Autores de backend de compiladores personalizados do Vue | `vize_atelier_core::{transform, generate}` | Um menor com `#[deprecated]` |
-| `vize_atelier_dom` | Suporte Alpha | Integrações com compiladores e bundlers VDOM | `vize_atelier_dom::compile_template` | Um minor com `#[deprecated]` |
-| `vize_atelier_vapor` | Experimental | Integrações com compiladores Opt-in com Vapor | `vize_atelier_vapor::compile_vapor` | Sem mínimo; Quebras de nota quando prático |
-| `vize_atelier_ssr` | Prévia de compatibilidade | Autores de SSR e integração de frameworks | `vize_atelier_ssr::compile_ssr` | Um menor com `#[deprecated]` |
-| `vize_atelier_sfc` | Suporte Alpha | Autores de ferramentas e bundlers SFC | `vize_atelier_sfc::{parse_sfc, compile_sfc}` | Um minor com `#[deprecated]` |
-| `vize_atelier_jsx` | Prévia de compatibilidade | Autores do compilador e ferramentas JSX/TSX | `vize_atelier_jsx::{compile_jsx, lower_source}` | Um minor com `#[deprecated]` |
-| `vize_musea` | Experimental | Galeria de Musea e ferramentas de documentação | `vize_musea::{parse_art, transform_to_csf}` | Sem mínimo; Quebras de nota quando prático |
-| `vize_fresco` | Incubação | Experimentos TUI | `vize_fresco::{RenderTree, LayoutEngine}` | Sem mínimo |
-| `vize_canon` | Prévia de compatibilidade | Integrações com verificador de tipos e editor | `vize_canon::{type_check_sfc, TypeChecker}` | Uma menor com `#[deprecated]` |
-| `vize_patina` | Prévia de compatibilidade | Integrações Linter e Oxlint | `vize_patina::{lint, Linter}` | Um minor com `#[deprecated]` |
+| Caixa                | Tier                      | Público-alvo                                             | Ponto de entrada pública                        | Remoção / depreciação                      |
+| -------------------- | ------------------------- | -------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------ |
+| `vize_carton`        | Suporte Alpha             | Autores do compilador e biblioteca Vize                  | `vize_carton::{Allocator, Bump, FxHashMap}`     | Um minor com `#[deprecated]`               |
+| `vize_relief`        | Suporte Alpha             | Autores do AST e integração de compiladores              | `vize_relief::{RootNode, CompilerOptions}`      | Um minor com `#[deprecated]`               |
+| `vize_armature`      | Suporte Alpha             | Ferramentas que analisam templates do Vue                | `vize_armature::{parse, Parser, Tokenizer}`     | Uma menor com `#[deprecated]`              |
+| `vize_croquis`       | Prévia de compatibilidade | Autores de ferramentas semânticas e com perfil de tipos  | `vize_croquis::{Croquis, Drawer}`               | Um minor com `#[deprecated]`               |
+| `vize_croquis_cf`    | Experimental              | Experimentos de análise de projeto inteiro com opt-in    | `vize_croquis_cf::CrossFileAnalyzer`            | Sem mínimo; Quebras de nota quando prático |
+| `vize_atelier_core`  | Suporte Alpha             | Autores de backend de compiladores personalizados do Vue | `vize_atelier_core::{transform, generate}`      | Um menor com `#[deprecated]`               |
+| `vize_atelier_dom`   | Suporte Alpha             | Integrações com compiladores e bundlers VDOM             | `vize_atelier_dom::compile_template`            | Um minor com `#[deprecated]`               |
+| `vize_atelier_vapor` | Experimental              | Integrações com compiladores Opt-in com Vapor            | `vize_atelier_vapor::compile_vapor`             | Sem mínimo; Quebras de nota quando prático |
+| `vize_atelier_ssr`   | Prévia de compatibilidade | Autores de SSR e integração de frameworks                | `vize_atelier_ssr::compile_ssr`                 | Um menor com `#[deprecated]`               |
+| `vize_atelier_sfc`   | Suporte Alpha             | Autores de ferramentas e bundlers SFC                    | `vize_atelier_sfc::{parse_sfc, compile_sfc}`    | Um minor com `#[deprecated]`               |
+| `vize_atelier_jsx`   | Prévia de compatibilidade | Autores do compilador e ferramentas JSX/TSX              | `vize_atelier_jsx::{compile_jsx, lower_source}` | Um minor com `#[deprecated]`               |
+| `vize_musea`         | Experimental              | Galeria de Musea e ferramentas de documentação           | `vize_musea::{parse_art, transform_to_csf}`     | Sem mínimo; Quebras de nota quando prático |
+| `vize_fresco`        | Incubação                 | Experimentos TUI                                         | `vize_fresco::{RenderTree, LayoutEngine}`       | Sem mínimo                                 |
+| `vize_canon`         | Prévia de compatibilidade | Integrações com verificador de tipos e editor            | `vize_canon::{type_check_sfc, TypeChecker}`     | Uma menor com `#[deprecated]`              |
+| `vize_patina`        | Prévia de compatibilidade | Integrações Linter e Oxlint                              | `vize_patina::{lint, Linter}`                   | Um minor com `#[deprecated]`               |
 
 <!-- rust-crate-support:end -->
 
@@ -118,12 +118,11 @@ uma caixa publicável não possa alterar silenciosamente o contrato.
 baselines. Uma caixa aguardando sua primeira publicação, ou bloqueada em uma, se junta a essa matriz assim que sua linha de base
 está disponível. Até lá, a verificação de metadados/tabela/lista de lançamento ainda se aplica.
 
-
-| Tier | Interpretação de CI |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Tier                                                  | Interpretação de CI                                                                                                                            |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | Suporte a Alpha / Pré-visualização de compatibilidade | Uma quebra de API deve ser corrigida ou seguir a janela de decontinuação da política de suporte e carregar um marcador de quebra convencional. |
-| Experimental | O portão capta deriva acidental; uma quebra intencional pode usar um marcador de quebra sem janela de depreciação. |
-| Incubação | A mesma detecção se aplica, mas toda a API ou caixa pode ser substituída ou removida em qualquer versão. |
+| Experimental                                          | O portão capta deriva acidental; uma quebra intencional pode usar um marcador de quebra sem janela de depreciação.                             |
+| Incubação                                             | A mesma detecção se aplica, mas toda a API ou caixa pode ser substituída ou removida em qualquer versão.                                       |
 
 Os marcadores de quebra reconhecidos pelo CI são uma `!` no título de mudança convencional ou um
 `BREAKING CHANGE:` rodapés. Passar pelo portão com qualquer um dos marcadores não dispensa a janela de

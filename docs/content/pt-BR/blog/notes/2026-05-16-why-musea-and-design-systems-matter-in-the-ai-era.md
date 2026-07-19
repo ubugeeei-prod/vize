@@ -2,8 +2,8 @@
 title: Musea & IA
 description: A IA pode gerar UI rapidamente, mas o Musea e os sistemas de design tornam a intenção, as restrições, a acessibilidade e o fluxo de trabalho de revisão duráveis.
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era.md -->
 
 # Musea & IA
 
@@ -22,7 +22,6 @@ description: A IA pode gerar UI rapidamente, mas o Musea e os sistemas de design
 </span>
 </a>
 </div>
-
 
 ![Musea home view showing a design-system gallery surface](/musea-home.png)
 

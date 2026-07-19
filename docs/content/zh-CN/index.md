@@ -69,8 +69,8 @@ features:
     details: 发布内容说明，包括已发布变更的说明，以及不定期的设计更新、开发日志和项目思考笔记。
     link: zh-CN/blog/index.md
 ---
-<!-- Generated translation; source: index.md -->
 
+<!-- Generated translation; source: index.md -->
 
 ## 当前方向
 
@@ -92,7 +92,7 @@ TypeScript项目诊断在原生路径上运行更长时间。
 
 ![乌布吉埃伊](https://github.com/ubugeeei.png)
 
-* *[ubugeeei](https://github.com/ubugeeei)**是一位常驻东京的软件工程师，专注于Vue、Rust、设计和语言工具领域。
+- \*[ubugeeei](https://github.com/ubugeeei)\*\*是一位常驻东京的软件工程师，专注于Vue、Rust、设计和语言工具领域。
 
 他是 [Vue.js 核心团队](https://vuejs.org/about/team.html)成员、[Vue.js 日本用户组](https://github.com/vuejs-jp)核心成员、[Vite+](https://github.com/voidzero-dev/vite-plus)核心贡献者，以及 [mates-dev](https://github.com/mates-dev)的首席工程师。
 

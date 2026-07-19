@@ -1,8 +1,8 @@
 ---
 title: Contribuição
 ---
-<!-- Generated translation; source: contributing.md -->
 
+<!-- Generated translation; source: contributing.md -->
 
 # Contribuição
 
@@ -153,7 +153,7 @@ podem ser empacotados com `vize inspector <file-or-glob>`, e a transferência de
 ## Pull Requests
 
 - Use Commits Convencionais para mensagens de commit e títulos de PR, como
-`fix(vite-plugin): surface SFC compile errors`.
+  `fix(vite-plugin): surface SFC compile errors`.
   - Mantenha os PRs focados em uma única mudança comportamental ou em uma mudança de documentação/governança.
 - Inclua comandos de verificação no órgão de PR.
 - Não atualize grandes linhas de base snapshot a menos que o PR seja especificamente sobre essas saídas.

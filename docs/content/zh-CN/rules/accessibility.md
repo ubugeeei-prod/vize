@@ -1,8 +1,8 @@
 ---
 title: 无障碍规则
 ---
-<!-- Generated translation; source: rules/accessibility.md -->
 
+<!-- Generated translation; source: rules/accessibility.md -->
 
 # 无障碍规则
 

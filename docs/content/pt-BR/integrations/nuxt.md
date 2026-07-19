@@ -1,8 +1,8 @@
 ---
 title: Nuxt
 ---
-<!-- Generated translation; source: integrations/nuxt.md -->
 
+<!-- Generated translation; source: integrations/nuxt.md -->
 
 # Integração Nuxt
 
@@ -58,7 +58,6 @@ como `%40fs/` e caminhos codificados `assets/` , enquanto descartam caminhos de 
 `@vizejs/nuxt` mantém o simples `compiler: true | false` switch, mas as opções do módulo também expõem
 o compilador Vize e as pontes de compatibilidade Nuxt para projetos que precisam de controle mais rigoroso:
 
-
 ```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
@@ -100,15 +99,15 @@ export default defineNuxtConfig({
 });
 ```
 
-| Opção | Tipo | Padrão | Descrição |
-| --------------------- | ------------------------------------ | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `compatibility` | `VizeNuxtCompatibilityOptions` | Auto-detectado | As sobrescrituras detectaram versões maiores do Nuxt/Vue para embalagens incomuns. O Nuxt 2 utiliza por padrão a compatibilidade host-compilador do Vue 2; O Nuxt 3/4 é o padrão do Vue 3. O Vue 0.11/1/2 todos usam o modo host-compilador. |
-| `compiler` | `boolean \| VizeNuxtCompilerOptions` | `true` | Habilita o Vize como compilador SFC do Vue. Passar um objeto encaminha opções para `@vizejs/vite-plugin` enquanto mantém os padrões Nuxt para `root`, `devUrlBase`, `scanPatterns`sob demanda e gerenciamento de SFC de dependência. |
-| `bridge` | `boolean \| VizeNuxtBridgeOptions` | `true` | Controla a ponte de transformação Nuxt para autoimportações, importações de componentes, auxiliares i18n e chaves de dados assíncronas estáveis em módulos virtuais do Vize. |
-| `unocss` | `boolean \| VizeNuxtUnoCssOptions` | `true` | Controla a ponte UnoCSS para módulos virtuais Vize. `originalSource: false` desativa a leitura de SFCs de fonte; `maxBytes` limita o uso de memória. |
-| `dev.stylesheetLinks` | `boolean` | `true` | Permite a limpeza de links de SSR HTML apenas para desenvolvedores para URLs de assets Nuxt gerados pelo Vize. |
-| `musea` | `boolean \| MuseaOptions` | `false` | Opta pela integração com a galeria Musea. Use `true` para os padrões do Musea ou passe um objeto para configurar padrões de inclusão, tokens, CSS de pré-visualização e roteamento. |
-| `nuxtMusea` | `NuxtMuseaOptions` | `{ route: { path: "/" } }` | Documenta a forma simulada Nuxt usada pelos ajudantes de pré-visualização do Musea. O módulo Nuxt não instala a camada mock globalmente porque isso faria sombra para a própria `#imports`do Nuxt. |
+| Opção                 | Tipo                                 | Padrão                     | Descrição                                                                                                                                                                                                                                    |
+| --------------------- | ------------------------------------ | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `compatibility`       | `VizeNuxtCompatibilityOptions`       | Auto-detectado             | As sobrescrituras detectaram versões maiores do Nuxt/Vue para embalagens incomuns. O Nuxt 2 utiliza por padrão a compatibilidade host-compilador do Vue 2; O Nuxt 3/4 é o padrão do Vue 3. O Vue 0.11/1/2 todos usam o modo host-compilador. |
+| `compiler`            | `boolean \| VizeNuxtCompilerOptions` | `true`                     | Habilita o Vize como compilador SFC do Vue. Passar um objeto encaminha opções para `@vizejs/vite-plugin` enquanto mantém os padrões Nuxt para `root`, `devUrlBase`, `scanPatterns`sob demanda e gerenciamento de SFC de dependência.         |
+| `bridge`              | `boolean \| VizeNuxtBridgeOptions`   | `true`                     | Controla a ponte de transformação Nuxt para autoimportações, importações de componentes, auxiliares i18n e chaves de dados assíncronas estáveis em módulos virtuais do Vize.                                                                 |
+| `unocss`              | `boolean \| VizeNuxtUnoCssOptions`   | `true`                     | Controla a ponte UnoCSS para módulos virtuais Vize. `originalSource: false` desativa a leitura de SFCs de fonte; `maxBytes` limita o uso de memória.                                                                                         |
+| `dev.stylesheetLinks` | `boolean`                            | `true`                     | Permite a limpeza de links de SSR HTML apenas para desenvolvedores para URLs de assets Nuxt gerados pelo Vize.                                                                                                                               |
+| `musea`               | `boolean \| MuseaOptions`            | `false`                    | Opta pela integração com a galeria Musea. Use `true` para os padrões do Musea ou passe um objeto para configurar padrões de inclusão, tokens, CSS de pré-visualização e roteamento.                                                          |
+| `nuxtMusea`           | `NuxtMuseaOptions`                   | `{ route: { path: "/" } }` | Documenta a forma simulada Nuxt usada pelos ajudantes de pré-visualização do Musea. O módulo Nuxt não instala a camada mock globalmente porque isso faria sombra para a própria `#imports`do Nuxt.                                           |
 
 ## Configuração Avançada
 

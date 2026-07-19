@@ -2,8 +2,8 @@
 title: 言語としての Vue
 description: このノートでは、Vue は UI 用の言語であるという考えに基づいて、フロントエンド開発に分散したツールではなく一貫した環境が必要な理由を説明します。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-vue-as-a-language-and-the-strongest-frontend-environment.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-vue-as-a-language-and-the-strongest-frontend-environment.md -->
 
 # 言語としての Vue
 

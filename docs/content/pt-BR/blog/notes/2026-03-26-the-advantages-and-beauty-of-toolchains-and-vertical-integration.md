@@ -2,8 +2,8 @@
 title: Cadeias de Ferramentas Verticais
 description: Por que possuir mais da pilha pode melhorar a velocidade, a coerência e até a qualidade estética das ferramentas de desenvolvimento.
 ---
-<!-- Generated translation; source: blog/notes/2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration.md -->
 
+<!-- Generated translation; source: blog/notes/2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration.md -->
 
 # Cadeias de Ferramentas Verticais
 
@@ -22,7 +22,6 @@ description: Por que possuir mais da pilha pode melhorar a velocidade, a coerên
 </span>
 </a>
 </div>
-
 
 Um dos instintos mais fortes nas ferramentas modernas é a especialização.
 

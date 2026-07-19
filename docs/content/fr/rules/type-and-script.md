@@ -1,8 +1,8 @@
 ---
 title: Règles de type et de script
 ---
-<!-- Generated translation; source: rules/type-and-script.md -->
 
+<!-- Generated translation; source: rules/type-and-script.md -->
 
 # Règles de type et de script
 
@@ -22,7 +22,6 @@ saute la passe de règles à damier au lieu de supprimer silencieusement les rè
 `typeChecker.corsaPath` lorsque le projet a besoin d’un binaire explicite `tsgo` ou Corsa. Les valeurs par défaut restent
 coût zéro : Patina ne sélectionne pas les SFC pour le linting à damier ni ne commence Corsa à moins que le drapeau,
 `linter.typeAware`, ou une règle de `type/*` explicitement activée ne l’accepte.
-
 
 ```ts
 export default defineConfig({

@@ -2,8 +2,8 @@
 title: 人工智能的静态分析
 description: 随着人工智能写代码的增加，我们需要更快、更可靠的静态反馈，而不是更少。
 ---
-<!-- Generated translation; source: blog/notes/2026-03-26-why-ai-needs-deterministic-fast-static-analysis.md -->
 
+<!-- Generated translation; source: blog/notes/2026-03-26-why-ai-needs-deterministic-fast-static-analysis.md -->
 
 # 人工智能静态分析
 
@@ -106,8 +106,8 @@ description: 随着人工智能写代码的增加，我们需要更快、更可�
 
 当LLM能针对确定性结构而非模糊的失败报告工作时，它更有用。“此位置有`vize/vue/require-v-for-key`错误”比“模板似乎有问题”更适合自动修复。
 
-所以未来不是静态分析_instead of_人工智能。
-它是人工智能_on顶级静态分析of_。
+所以未来不是静态分析*instead of*人工智能。
+它是人工智能*on顶级静态分析of*。
 
 ## AI写的代码越多，我们越需要快速的拒绝
 

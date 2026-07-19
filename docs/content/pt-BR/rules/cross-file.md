@@ -1,8 +1,8 @@
 ---
 title: Regras de Arquivo Cruzado
 ---
-<!-- Generated translation; source: rules/cross-file.md -->
 
+<!-- Generated translation; source: rules/cross-file.md -->
 
 # Regras de Arquivo Cruzado
 

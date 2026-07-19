@@ -1,8 +1,8 @@
 ---
 title: Solução de problemas
 ---
-<!-- Generated translation; source: guide/troubleshooting.md -->
 
+<!-- Generated translation; source: guide/troubleshooting.md -->
 
 # Solução de problemas
 
@@ -23,7 +23,6 @@ Um caso comum de migração é a sintaxe auto-fechante em elementos HTML não nu
 `<div />` e `<span />` não são elementos HTML válidos e auto-fechados. O modo padrão os reescreve como
 elementos vazios, equivalentes a `<div></div>` e `<span></span>`, e emite um aviso. O modo estrito
 os reporta como erros. O modo Quirks os mantém como sai que se fecha sozinho sem aviso.
-
 
 Prefira escrever etiquetas finais explícitas:
 

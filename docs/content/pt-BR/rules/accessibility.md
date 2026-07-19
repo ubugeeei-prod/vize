@@ -1,8 +1,8 @@
 ---
 title: Regras de Acessibilidade
 ---
-<!-- Generated translation; source: rules/accessibility.md -->
 
+<!-- Generated translation; source: rules/accessibility.md -->
 
 # Regras de Acessibilidade
 
@@ -254,78 +254,59 @@ Bom:
 `a11y/anchor-has-content` exige que os elementos âncora tenham conteúdo acessível. Padrão: `warning`.
 Presets: `happy-path`, `nuxt`, `opinionated`.
 
-
 `a11y/aria-props` proíbe atributos ARIA inválidos. Padrão: `error`. Presets: `happy-path`,
 `nuxt`, `opinionated`.
-
 
 `a11y/aria-role` exige funções válidas e não abstratas na ARIA. Padrão: `error`. Presets: `happy-path`,
 `nuxt`, `opinionated`.
 
-
 `a11y/aria-unsupported-elements` proíbe atributos ARIA em elementos que não os suportam.
 Padrão: `error`. Presets: `happy-path`, `nuxt`, `opinionated`.
-
 
 `a11y/heading-has-content` exige que elementos de título tenham conteúdo acessível. Padrão: `warning`.
 Presets: `happy-path`, `nuxt`, `opinionated`.
 
-
 `a11y/heading-levels` proíbe níveis de cabeçalhos pulados. Padrão: `warning`. Presets: `nuxt`,
 `opinionated`.
-
 
 `a11y/iframe-has-title` exige que `<iframe>` tenha um `title`. Padrão: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
 
-
 `a11y/landmark-roles` valida a colocação e a singularidade de papéis marcantes. Padrão: `warning`.
 Presets: `nuxt`, `opinionated`.
-
 
 `a11y/media-has-caption` exige legendas para elementos de mídia. Padrão: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
 
-
 `a11y/mouse-events-have-key-events` requer manipuladores de foco e desfoque quando são usados manipuladores de mouse.
 Padrão: `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
-
 
 `a11y/no-access-key` não permite o atributo `accesskey`. Padrão: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
 
-
 `a11y/no-autofocus` proíbe `autofocus`. Padrão: `warning`. Presets: `happy-path`, `nuxt`,
 `opinionated`.
-
 
 `a11y/no-distracting-elements` proíbe elementos distrativos como `<marquee>` e `<blink>`.
 Padrão: `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
 
-
 `a11y/no-i-for-icon` desencoraja o uso de `<i>` como elemento exclusivo de ícones. Padrão: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
-
 
 `a11y/no-redundant-roles` proíbe funções ARIA que dupliquem semântica nativa. Padrão:
 `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
 
-
 `a11y/no-refer-to-non-existent-id` relata referências ARIA a documentos de identidade desaparecidos. Padrão: `warning`.
 Presets: `happy-path`, `nuxt`, `opinionated`.
-
 
 `a11y/no-role-presentation-on-focusable` proíbe `role="presentation"` ou `role="none"` em
 elementos focáveis. Padrão: `error`. Presets: `happy-path`, `nuxt`, `opinionated`.
 
-
 `a11y/placeholder-label-option` exige valores de `<option>` desativados ou ocultos.
 padrão: `warning`. Presets: `nuxt`, `opinionated`.
 
-
 `a11y/role-has-required-aria-props` exige que os papéis incluam seus atributos exigidos pela ARIA.
 Padrão: `warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
-
 
 `a11y/use-list` sugere elementos de lista para texto em tópicos. Padrão: `warning`. Presets: `nuxt`,
 `opinionated`.

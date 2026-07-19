@@ -2,8 +2,8 @@
 title: Chaînes d’outils verticales
 description: Pourquoi posséder plus de piles peut améliorer la vitesse, la cohérence, et même la qualité esthétique des outils de développement.
 ---
-<!-- Generated translation; source: blog/notes/2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration.md -->
 
+<!-- Generated translation; source: blog/notes/2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration.md -->
 
 # Chaînes d’outils verticales
 
@@ -22,7 +22,6 @@ description: Pourquoi posséder plus de piles peut améliorer la vitesse, la coh
 </span>
 </a>
 </div>
-
 
 L’un des instincts les plus forts dans l’outillage moderne est la spécialisation.
 

@@ -2,8 +2,8 @@
 title: Análise Estática para IA
 description: À medida que a IA escreve mais código, precisamos de um feedback estático mais rápido e confiável, não menos.
 ---
-<!-- Generated translation; source: blog/notes/2026-03-26-why-ai-needs-deterministic-fast-static-analysis.md -->
 
+<!-- Generated translation; source: blog/notes/2026-03-26-why-ai-needs-deterministic-fast-static-analysis.md -->
 
 # Análise Estática para IA
 
@@ -22,7 +22,6 @@ description: À medida que a IA escreve mais código, precisamos de um feedback 
 </span>
 </a>
 </div>
-
 
 Uma reação comum ao surgimento das ferramentas de codificação por IA é: talvez a análise estática importe menos agora.
 
@@ -107,8 +106,8 @@ Esse é exatamente o tipo de sinal que sistemas de IA podem usar bem.
 
 Um LLM é muito mais útil quando pode funcionar contra estrutura determinística em vez de relatórios vagos de falha. "Há um erro de `vize/vue/require-v-for-key` neste local" é um substrato muito melhor para reparo automatizado do que "algo parece errado no seu modelo."
 
-Então, o futuro não é IA *em vez de* análise estática.
-É IA *sobre* análise estática.
+Então, o futuro não é IA _em vez de_ análise estática.
+É IA _sobre_ análise estática.
 
 ## Quanto mais código a IA escreve, mais precisamos de rejeição rápida
 

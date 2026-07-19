@@ -2,8 +2,8 @@
 title: 工具比较
 description: Vise及附近项目在官方Vue工具、Oxc、Golar、Verter、Flint和TSSLint的实际比较。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-comparing-vize-with-official-vue-oxc-golar-verter-flint-and-tsslint.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-comparing-vize-with-official-vue-oxc-golar-verter-flint-and-tsslint.md -->
 
 # 工具比较
 
@@ -33,14 +33,14 @@ Vize与多个项目关系密切，因此不可避免地会被比较。
 
 ## 快速地图
 
-|项目 |重心 |Vize与其的关系 |
-|-------------------- |------------------------------------------------------------- |---------------------------------------------------------------------------------- |
-|官方Vue工具 |Vue编译器和语言工具的生产基线|Vize是独立且实验性的，因此必须将其视为参考点|
-|Oxc / Oxlint |通用JavaScript和TypeScript基础设施 |Vize可以在拥有Vue特有语义|的同时，重用并与Oxc协作。
-|戈拉尔 |基于`typescript-go`的嵌入语言类型检查 |Vize 的工具链范围比单纯的类型检查 |
-|维尔特 |替代下一代Vue编译器和工具链 |雄心最接近，架构和产品形态各异 |
-|弗林特 |友好的、带有强默认值的 JS/TS 字样 |补充一般TS线条，不是Vue SFC工具链 |
-|TSSLint |语言服务器内的TypeScript原生linting（linting） |这是一个强烈的语义填充想法，但不是完整的Vue编译器/打印/画廊栈 |
+| 项目         | 重心                                           | Vize与其的关系                                                |
+| ------------ | ---------------------------------------------- | ------------------------------------------------------------- | ------------------------- |
+| 官方Vue工具  | Vue编译器和语言工具的生产基线                  | Vize是独立且实验性的，因此必须将其视为参考点                  |
+| Oxc / Oxlint | 通用JavaScript和TypeScript基础设施             | Vize可以在拥有Vue特有语义                                     | 的同时，重用并与Oxc协作。 |
+| 戈拉尔       | 基于`typescript-go`的嵌入语言类型检查          | Vize 的工具链范围比单纯的类型检查                             |
+| 维尔特       | 替代下一代Vue编译器和工具链                    | 雄心最接近，架构和产品形态各异                                |
+| 弗林特       | 友好的、带有强默认值的 JS/TS 字样              | 补充一般TS线条，不是Vue SFC工具链                             |
+| TSSLint      | 语言服务器内的TypeScript原生linting（linting） | 这是一个强烈的语义填充想法，但不是完整的Vue编译器/打印/画廊栈 |
 
 ## 官方Vue模具
 

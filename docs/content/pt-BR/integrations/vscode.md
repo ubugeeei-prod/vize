@@ -1,8 +1,8 @@
 ---
 title: VS Code
 ---
-<!-- Generated translation; source: integrations/vscode.md -->
 
+<!-- Generated translation; source: integrations/vscode.md -->
 
 # Integração com VS Code
 
@@ -53,33 +53,33 @@ existentes do Vue.
 
 ### Configurações Comuns
 
-| Ambientação | Propósito |
-| ---------------------------- | -------------------------------------------------- |
-| `vize.enable` | Ativar a extensão e o servidor de idiomas |
-| `vize.serverPath` | Sobrescreva o caminho executável `vize` |
-| `vize.lint.enable` | Habilitar diagnósticos de lint |
-| `vize.typecheck.enable` | Habilitar diagnósticos conscientes de tipos e recursos de backend |
-| `vize.editor.enable` | Ative o pacote de assistência para editores |
-| `vize.completion.enable` | Permitir a conclusão |
-| `vize.formatting.enable` | Ativar a formatação de documentos |
-| `vize.definition.enable` | Ativar a definição de acesso |
-| `vize.references.enable` | Habilitar referências |
-| `vize.hover.enable` | Ativar o hover |
-| `vize.codeActions.enable` | Ativar correções rápidas para fiapos |
-| `vize.semanticTokens.enable` | Habilitar tokens semânticos |
-| `vize.trace.server` | Comunicação por traço LSP |
+| Ambientação                  | Propósito                                                         |
+| ---------------------------- | ----------------------------------------------------------------- |
+| `vize.enable`                | Ativar a extensão e o servidor de idiomas                         |
+| `vize.serverPath`            | Sobrescreva o caminho executável `vize`                           |
+| `vize.lint.enable`           | Habilitar diagnósticos de lint                                    |
+| `vize.typecheck.enable`      | Habilitar diagnósticos conscientes de tipos e recursos de backend |
+| `vize.editor.enable`         | Ative o pacote de assistência para editores                       |
+| `vize.completion.enable`     | Permitir a conclusão                                              |
+| `vize.formatting.enable`     | Ativar a formatação de documentos                                 |
+| `vize.definition.enable`     | Ativar a definição de acesso                                      |
+| `vize.references.enable`     | Habilitar referências                                             |
+| `vize.hover.enable`          | Ativar o hover                                                    |
+| `vize.codeActions.enable`    | Ativar correções rápidas para fiapos                              |
+| `vize.semanticTokens.enable` | Habilitar tokens semânticos                                       |
+| `vize.trace.server`          | Comunicação por traço LSP                                         |
 
 ### Comandos Úteis
 
-| Comando | Propósito |
-| ----------------------------------------- | --------------------------------------------------- |
-| `Vize: Show Status` | Abra o hub de status e de ação de configuração |
-| `Vize: Enable Recommended Profile` | Ative fiapos, verificação de digitação e assistência para editores |
-| `Vize: Enable Lint-Only Profile` | Ative diagnósticos enquanto mantém outras ferramentas em uso |
-| `Vize: Select Language Server Executable` | Definir `vize.serverPath` a partir de um seletor de arquivos |
-| `Vize: Disable Language Server` | Pare o Vize para o alvo de configuração atual |
-| `Vize: Restart Language Server` | Reiniciar o servidor de idiomas |
-| `Vize: Show Output Channel` | Extensão de mostrar e logs LSP |
+| Comando                                   | Propósito                                                          |
+| ----------------------------------------- | ------------------------------------------------------------------ |
+| `Vize: Show Status`                       | Abra o hub de status e de ação de configuração                     |
+| `Vize: Enable Recommended Profile`        | Ative fiapos, verificação de digitação e assistência para editores |
+| `Vize: Enable Lint-Only Profile`          | Ative diagnósticos enquanto mantém outras ferramentas em uso       |
+| `Vize: Select Language Server Executable` | Definir `vize.serverPath` a partir de um seletor de arquivos       |
+| `Vize: Disable Language Server`           | Pare o Vize para o alvo de configuração atual                      |
+| `Vize: Restart Language Server`           | Reiniciar o servidor de idiomas                                    |
+| `Vize: Show Output Channel`               | Extensão de mostrar e logs LSP                                     |
 
 ### O que a extensão usa
 
@@ -113,7 +113,6 @@ code --install-extension dist/vize.vsix
 `Vize Art` fornece destaque de sintaxe para arquivos de `*.art.vue` Musea.
 O ID da extensão do Marketplace é `vize.vize-art`.
 
-
 Reconhece:
 
 - `<art>` blocos de metadados
@@ -124,7 +123,6 @@ Reconhece:
 
 `vize lsp` segue o Protocolo de Servidor de Linguagem e pode ser usado por editores como Neovim, Helix,
 Zed e Emacs.
-
 
 Exemplo de configuração do Neovim:
 

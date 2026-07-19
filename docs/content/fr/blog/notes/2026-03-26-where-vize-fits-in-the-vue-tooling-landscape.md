@@ -2,8 +2,8 @@
 title: Carte d’outillage Vue
 description: Une carte de la position de Vize dans le paysage actuel des outils de Vue, et de la façon dont il diffère des projets adjacents.
 ---
-<!-- Generated translation; source: blog/notes/2026-03-26-where-vize-fits-in-the-vue-tooling-landscape.md -->
 
+<!-- Generated translation; source: blog/notes/2026-03-26-where-vize-fits-in-the-vue-tooling-landscape.md -->
 
 # Carte d’outillage Vue
 
@@ -23,7 +23,6 @@ description: Une carte de la position de Vize dans le paysage actuel des outils 
 </a>
 </div>
 
-
 Une des raisons pour lesquelles Vize est facile à mal comprendre est qu’il chevauche plusieurs outils que les gens connaissent déjà, mais pas toujours au même niveau.
 
 Certains de ces projets sont officiels. Certains sont indépendants du framework. Certains sont centrés sur l’éditeur. Certains sont axés sur le compilateur en premier. D’autres concernent principalement la vérification des types. Certains essaient de devenir une véritable chaîne d’outils.
@@ -34,14 +33,14 @@ Donc la question la plus utile n’est pas « lequel est le meilleur ? » C’es
 
 Voici la façon la plus rapide de les positionner :
 
-| Projet | Centre de gravité principal | Ce qu’il n’est pas |
-| ---------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| **Vize** | Chaîne d’outils complète indépendante Vue en Rust | Pas la pile officielle d’éditeurs Vue |
-| **Outils linguistiques Vue** | Éditeur officiel Vue + outils de vérification de type | Pas une chaîne d’outils complète de compilation/linter/formateur |
-| **Golar** | `typescript-go`cadre de vérification des types en langage intégré | Ce n’est pas une chaîne d’outils complète spécifique à Vue |
-| **Verter** | Compilateur complet Vue alternatif + LSP + chaîne d’outils de compilation | Ce n’est pas la chaîne d’outils officielle de Vue |
-| **Vite+** | Point d’entrée unifié du développement web à travers les runtimes, la gestion de paquets, le développement/construction/vérification/test | Pas un compilateur ou un linter spécifique à Vue |
-| **Oxlint** | Lintiere JS/TS haute performance | Ce n’est pas une pile complète de peluches consciente des modèles Vue à elle seule |
+| Projet                       | Centre de gravité principal                                                                                                               | Ce qu’il n’est pas                                                                 |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| **Vize**                     | Chaîne d’outils complète indépendante Vue en Rust                                                                                         | Pas la pile officielle d’éditeurs Vue                                              |
+| **Outils linguistiques Vue** | Éditeur officiel Vue + outils de vérification de type                                                                                     | Pas une chaîne d’outils complète de compilation/linter/formateur                   |
+| **Golar**                    | `typescript-go`cadre de vérification des types en langage intégré                                                                         | Ce n’est pas une chaîne d’outils complète spécifique à Vue                         |
+| **Verter**                   | Compilateur complet Vue alternatif + LSP + chaîne d’outils de compilation                                                                 | Ce n’est pas la chaîne d’outils officielle de Vue                                  |
+| **Vite+**                    | Point d’entrée unifié du développement web à travers les runtimes, la gestion de paquets, le développement/construction/vérification/test | Pas un compilateur ou un linter spécifique à Vue                                   |
+| **Oxlint**                   | Lintiere JS/TS haute performance                                                                                                          | Ce n’est pas une pile complète de peluches consciente des modèles Vue à elle seule |
 
 Si vous gardez cette table en tête, la plupart de la confusion disparaît.
 
@@ -107,7 +106,6 @@ Si votre priorité est le support de l’éditeur prêt pour la production aujou
 
 [Golar](https://github.com/auvred/golar) n’est pas vraiment « une autre chaîne d’outils Vue » au même sens.
 
-
 Golar se décrit comme un cadre de langage embarqué basé sur `typescript-go`. Pour Vue en particulier, il réutilise la machinerie officielle `@vue/language-core` et se concentre sur la création de langages basés sur des extensions comme `.vue`, `.astro`et `.svelte` compatibles avec `tsgo`.
 
 Cela signifie que le centre de gravité de Golar est :
@@ -137,7 +135,6 @@ Ainsi, Golar est plus proche de « faire fonctionner `tsgo` bien pour les langag
 
 [Verter](https://github.com/pikax/verter) est probablement le voisin philosophique le plus proche de cette liste.
 
-
 Comme Vize, Verter vise haut. Sa vision publique est un hybride Rust + TypeScript Vue compilateur, LSP, outil de compilation, linter et une chaîne d’outils plus large. Cela le place dans la même famille générale que Vize : ambitieux, full-stack, et prêt à repenser la chaîne d’outils Vue au lieu de ne patcher qu’une seule couche.
 
 C’est là que les différences deviennent plus liées à la forme et à l’architecture du produit qu’à la catégorie :
@@ -155,7 +152,6 @@ Je ne décrirais donc pas Verter comme « la même chose avec un autre nom ». I
 ## Vize vs Vite+
 
 [Vite+](https://viteplus.dev/) se situe à une autre couche.
-
 
 Vite+ est un point d’entrée unifié pour le développement web de manière plus générale. Sa mission est de gérer la configuration à l’exécution, la gestion des paquets, le développement, la vérification, les tests, la compilation, l’emballage et l’exécution des tâches monodépôt dans un seul flux de travail. Il rassemble Vite, Vitest, Oxlint, Oxfmt, Rolldown, tsdown et les outillages associés.
 
@@ -178,7 +174,6 @@ Donc ce n’est pas vraiment une compétition :
 ## Vize contre Oxlint
 
 [Oxlint](https://oxc.rs/docs/guide/usage/linter) est aussi à un niveau différent.
-
 
 Oxlint est le linter haute performance JavaScript et TypeScript de l’écosystème Oxc. Il est excellent pour les règles générales JS/TS et les flux de travail de plus en plus sensibles aux types, mais il n’est pas destiné à remplacer tous les diagnostics compatibles avec les modèles Vue.
 

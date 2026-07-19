@@ -1,8 +1,8 @@
 ---
 title: JSX & TSX
 ---
-<!-- Generated translation; source: guide/jsx.md -->
 
+<!-- Generated translation; source: guide/jsx.md -->
 
 # JSX & TSX
 
@@ -24,7 +24,6 @@ la même expérience d’éditeur qu’un SFC — mais créé comme une fonction
 `.jsx` et `.tsx` fichiers sont automatiquement acheminés via les plugins bundler Vize — il n’y a pas de
 drapeau d’adhésion pour les compiler. Tout projet utilisant déjà une intégration Vize bundler bénéficie du support JSX/TSX
 :
-
 
 - `@vizejs/vite-plugin`
 - `@vizejs/unplugin` (enroulement / webpack / esbuild)
@@ -188,7 +187,6 @@ composants individuels peuvent le surpasser.
 `compiler.jsxMode` définit le backend global par défaut pour `.jsx`/`.tsx` composants. Il accepte `"vdom"`
 ou `"vapor"` et passe par défaut à `"vdom"`.
 
-
 ```ts
 // vize.config.ts
 import { defineConfig } from "vize";
@@ -205,7 +203,6 @@ export default defineConfig({
 contrôle le backend par défaut pour JSX/TSX. Un projet peut garder les SFC sur VDOM tout en mettant par défaut JSX sur
 Vapor, ou inversement. Le plugin Vite accepte aussi `jsxMode` directement comme option plugin, ce qui
 remplace la configuration partagée.
-
 
 ### Directives par composant
 
@@ -253,9 +250,9 @@ Le mode de sortie d’un composant se résout dans cet ordre :
 Les directives mal formées ou contradictoires sont signalées plutôt que silencieusement ignorées :
 
 - Une directive qui commence par `"use vue:"` mais ne nomme pas de mode connu (une faute de frappe telle que
-`"use vue:vdomx"`) est une erreur de compilation.
+  `"use vue:vdomx"`) est une erreur de compilation.
   - Deux directives de mode conflictuelles dans un composant (`"use vue:vapor"` suivies de `"use vue:vdom"`)
-  sont diagnostiqués ; La première directive l’emporte toujours pour le mode Résolu.
+    sont diagnostiqués ; La première directive l’emporte toujours pour le mode Résolu.
 - Des prologues sans lien comme `"use strict"` restent intacts.
 
 ## Styles à portée
@@ -329,11 +326,10 @@ mais conservez-le pour les cas où une feuille de style à portée doit vraiment
 La syntaxe CSS `v-bind(...)` fonction littérale utilisée dans un bloc SFC `<style>` n’est pas un formulaire d’auteur
 supporté dans un bloc de style JSX.
 
-
 ## Mise en forme
 
 Glyph formate le contenu des scripts JSX/TSX avec l’analyseur et le formateur OXC. Dans `.vue` fichiers,
-`<script lang="jsx">`, `<script lang="tsx">``<script setup lang="tsx">` et  sont analysés en JSX/TSX
+`<script lang="jsx">`, `<script lang="tsx">``<script setup lang="tsx">` et sont analysés en JSX/TSX
 au lieu de revenir à un simple TypeScript, donc les enfants JSX et les annotations TSX sont formatés comme
 syntaxe réelle :
 

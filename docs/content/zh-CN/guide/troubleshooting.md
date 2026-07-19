@@ -1,8 +1,8 @@
 ---
 title: 故障排除
 ---
-<!-- Generated translation; source: guide/troubleshooting.md -->
 
+<!-- Generated translation; source: guide/troubleshooting.md -->
 
 # 故障排除
 

@@ -2,8 +2,8 @@
 title: 博物馆与人工智能
 description: AI可以快速生成UI，但Musea和设计系统使意图、约束、可访问性和审阅工作流程变得持久。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era.md -->
 
 # 博物馆与人工智能
 

@@ -2,8 +2,8 @@
 title: Vue en tant que langue
 description: S’appuyant sur l’idée que Vue est un langage pour l’interface utilisateur, cette note explique pourquoi le développement frontend a besoin d’un environnement cohérent plutôt que d’outils dispersés.
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-vue-as-a-language-and-the-strongest-frontend-environment.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-vue-as-a-language-and-the-strongest-frontend-environment.md -->
 
 # Vue en tant que langue
 
@@ -22,7 +22,6 @@ description: S’appuyant sur l’idée que Vue est un langage pour l’interfac
 </span>
 </a>
 </div>
-
 
 En ["Characterize Vue.js"](https://wtrclred.io/ja/posts/07), Vue est présenté non seulement comme un cadre d’interface utilisateur, mais aussi comme un langage pour décrire l’interface utilisateur.
 

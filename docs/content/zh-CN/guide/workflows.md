@@ -1,8 +1,8 @@
 ---
 title: 用户工作流程
 ---
-<!-- Generated translation; source: guide/workflows.md -->
 
+<!-- Generated translation; source: guide/workflows.md -->
 
 # 用户工作流程
 

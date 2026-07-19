@@ -1,12 +1,12 @@
 ---
 title: ナクスト
 ---
-<!-- Generated translation; source: integrations/nuxt.md -->
 
+<!-- Generated translation; source: integrations/nuxt.md -->
 
 # Nuxt の統合
 
->**⚠️ 進行中の作業:**Vize は積極的に開発中であり、まだ運用環境で使用する準備ができていません。 Nuxt プロジェクトに採用する前に徹底的にテストしてください。
+> **⚠️ 進行中の作業:**Vize は積極的に開発中であり、まだ運用環境で使用する準備ができていません。 Nuxt プロジェクトに採用する前に徹底的にテストしてください。
 
 Vize は、`@vizejs/nuxt` モジュールを通じてファーストクラスの Nuxt 統合を提供します。これにより、Nuxt のデフォルトの Vue コンパイラが Vize の Rust ネイティブ コンパイラに置き換えられ、Nuxt プロジェクトでも同様の速度向上が実現します。
 
@@ -99,15 +99,15 @@ export default defineNuxtConfig({
 });
 ```
 
-|オプション |タイプ |デフォルト |説明 |
-| --------------------- | ------------------------------------ | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `compatibility` | `VizeNuxtCompatibilityOptions` |自動検出 |異常なラッパーに対して検出された Nuxt/Vue メジャー バージョンをオーバーライドします。 Nuxt 2 はデフォルトで Vue 2 ホストコンパイラー互換性を持っています。 Nuxt 3/4 のデフォルトは Vue 3 です。Vue 0.11/1/2 はすべてホスト コンパイラー モードを使用します。                    |
-| `compiler` | `boolean \| VizeNuxtCompilerOptions` | `true` | Vize を Vue SFC コンパイラーとして有効にします。オブジェクトを渡すと、`root`、`devUrlBase`、オンデマンド `scanPatterns`、依存関係 SFC 処理の Nuxt デフォルトを維持しながら、オプションが `@vizejs/vite-plugin` に転送されます。 |
-| `bridge` | `boolean \| VizeNuxtBridgeOptions` | `true` | Vize 仮想モジュール上の自動インポート、コンポーネント インポート、i18n ヘルパー、安定した非同期データ キー用の Nuxt 変換ブリッジを制御します。                                                                      |
-| `unocss` | `boolean \| VizeNuxtUnoCssOptions` | `true` | Vize 仮想モジュールの UnoCSS ブリッジを制御します。 `originalSource: false` はソース SFC の読み取りを無効にします。 `maxBytes` はメモリ使用量を制限します。                                                                       |
-| `dev.stylesheetLinks` | `boolean` | `true` | Vize で生成された Nuxt アセット URL の開発専用 SSR HTML スタイルシート リンクのクリーンアップを有効にします。                                                                                                                          |
-| `musea` | `boolean \| MuseaOptions` | `false` | Musea ギャラリーの統合を選択します。 Musea のデフォルトに `true` を使用するか、パターン、トークン、プレビュー CSS、ルーティングなどを構成するオブジェクトを渡します。                                                          |
-| `nuxtMusea` | `NuxtMuseaOptions` | `{ route: { path: "/" } }` | Musea プレビュー ヘルパーで使用される Nuxt モック シェイプを文書化します。 Nuxt モジュールはモック レイヤーをグローバルにインストールしません。そうすると、Nuxt 自体の `#imports` がシャドウされるためです。                                     |
+| オプション            | タイプ                               | デフォルト                 | 説明                                                                                                                                                                                                                                                         |
+| --------------------- | ------------------------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `compatibility`       | `VizeNuxtCompatibilityOptions`       | 自動検出                   | 異常なラッパーに対して検出された Nuxt/Vue メジャー バージョンをオーバーライドします。 Nuxt 2 はデフォルトで Vue 2 ホストコンパイラー互換性を持っています。 Nuxt 3/4 のデフォルトは Vue 3 です。Vue 0.11/1/2 はすべてホスト コンパイラー モードを使用します。 |
+| `compiler`            | `boolean \| VizeNuxtCompilerOptions` | `true`                     | Vize を Vue SFC コンパイラーとして有効にします。オブジェクトを渡すと、`root`、`devUrlBase`、オンデマンド `scanPatterns`、依存関係 SFC 処理の Nuxt デフォルトを維持しながら、オプションが `@vizejs/vite-plugin` に転送されます。                              |
+| `bridge`              | `boolean \| VizeNuxtBridgeOptions`   | `true`                     | Vize 仮想モジュール上の自動インポート、コンポーネント インポート、i18n ヘルパー、安定した非同期データ キー用の Nuxt 変換ブリッジを制御します。                                                                                                               |
+| `unocss`              | `boolean \| VizeNuxtUnoCssOptions`   | `true`                     | Vize 仮想モジュールの UnoCSS ブリッジを制御します。 `originalSource: false` はソース SFC の読み取りを無効にします。 `maxBytes` はメモリ使用量を制限します。                                                                                                  |
+| `dev.stylesheetLinks` | `boolean`                            | `true`                     | Vize で生成された Nuxt アセット URL の開発専用 SSR HTML スタイルシート リンクのクリーンアップを有効にします。                                                                                                                                                |
+| `musea`               | `boolean \| MuseaOptions`            | `false`                    | Musea ギャラリーの統合を選択します。 Musea のデフォルトに `true` を使用するか、パターン、トークン、プレビュー CSS、ルーティングなどを構成するオブジェクトを渡します。                                                                                        |
+| `nuxtMusea`           | `NuxtMuseaOptions`                   | `{ route: { path: "/" } }` | Musea プレビュー ヘルパーで使用される Nuxt モック シェイプを文書化します。 Nuxt モジュールはモック レイヤーをグローバルにインストールしません。そうすると、Nuxt 自体の `#imports` がシャドウされるためです。                                                 |
 
 ## 高度なセットアップ
 
@@ -261,10 +261,7 @@ export default ((app) => {
 
 Nuxt モジュールがインストールされている場合:
 
-1.**Vite プラグイン挿入**— モジュールは `@vizejs/vite-plugin` を Vite プラグインとして登録し、`.vue` ファイルのコンパイルをインターセプトします。
-2.**互換性シム**— プラグインは `@vitejs/plugin-vue` 互換性 API を公開するため、Nuxt の内部チェック (Vue プラグインのプローブ) が正しく機能します。
-3.**SSR サポート**— Vize の `vize_atelier_ssr` はサーバー側のコンパイルを処理します。このプラグインは、クライアントとサーバーの環境変数を分離して、相互汚染を防ぎます。
-4.**Nuxt 機能の保持**— 自動インポート、コンポーザブル、ミドルウェア、その他の Nuxt 機能は、Vize のコンパイル後に実行される Nuxt 独自の変換レイヤーを通じて機能します。
+1.**Vite プラグイン挿入**— モジュールは `@vizejs/vite-plugin` を Vite プラグインとして登録し、`.vue` ファイルのコンパイルをインターセプトします。2.**互換性シム**— プラグインは `@vitejs/plugin-vue` 互換性 API を公開するため、Nuxt の内部チェック (Vue プラグインのプローブ) が正しく機能します。3.**SSR サポート**— Vize の `vize_atelier_ssr` はサーバー側のコンパイルを処理します。このプラグインは、クライアントとサーバーの環境変数を分離して、相互汚染を防ぎます。4.**Nuxt 機能の保持**— 自動インポート、コンポーザブル、ミドルウェア、その他の Nuxt 機能は、Vize のコンパイル後に実行される Nuxt 独自の変換レイヤーを通じて機能します。
 
 ## 実際の例
 

@@ -2,8 +2,8 @@
 title: 个人速度
 description: 为什么Vize独立且个性化，能在探索、速度和雄心勃勃的工具链设计中带来优势。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-personal-tooling-and-development-speed.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-personal-tooling-and-development-speed.md -->
 
 # 个人速度
 

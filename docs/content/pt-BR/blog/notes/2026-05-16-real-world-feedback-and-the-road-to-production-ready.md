@@ -2,8 +2,8 @@
 title: Pronto para Produção
 description: Por que validação exaustiva do mundo real e feedback da comunidade são o caminho do projeto experimental até a cadeia de ferramentas pronta para produção.
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-real-world-feedback-and-the-road-to-production-ready.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-real-world-feedback-and-the-road-to-production-ready.md -->
 
 # Pronto para Produção
 
@@ -22,7 +22,6 @@ description: Por que validação exaustiva do mundo real e feedback da comunidad
 </span>
 </a>
 </div>
-
 
 Vize ainda é experimental.
 

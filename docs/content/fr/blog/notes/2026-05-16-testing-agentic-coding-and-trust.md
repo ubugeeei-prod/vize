@@ -2,8 +2,8 @@
 title: Tests & Agents
 description: Pourquoi les tests axés sur les instantanés, les fixatures réelles et les vérifications déterministes sont plus importantes lorsque les agents font partie de la boucle de développement.
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-testing-agentic-coding-and-trust.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-testing-agentic-coding-and-trust.md -->
 
 # Tests & Agents
 
@@ -22,7 +22,6 @@ description: Pourquoi les tests axés sur les instantanés, les fixatures réell
 </span>
 </a>
 </div>
-
 
 Le codage agent change le rôle des tests.
 

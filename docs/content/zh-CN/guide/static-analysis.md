@@ -1,8 +1,8 @@
 ---
 title: 静态分析
 ---
-<!-- Generated translation; source: guide/static-analysis.md -->
 
+<!-- Generated translation; source: guide/static-analysis.md -->
 
 # 静态分析
 
@@ -15,13 +15,13 @@ Vize的分析栈由编译器、linter、类型检查器、编辑器服务器和M
 
 ## 管道
 
-|图层 |它的作用 |由|
-|-------- |------------------------------------------------------------------------- |---------------------------------------------- |
-|骨架 |分词化并解析Vue模板和SFC结构 |编译器，LINTER，格式化器 |
-|克罗奎斯 |构建作用域、绑定元数据、宏信息和跨文件图表 |编译器、lint、类型识别检查 |
-|铜绿 |运行 Vue、脚本、CSS、a11y、SSR、Vapor、Musa 和类型识别 lint 规则 |`vize lint`，编辑诊断，Oxlint 桥 |
-|正史 |生成虚拟 TypeScript，并将诊断映射回 Vue 文件 |`vize check`，编辑器类型检查 |
-|指挥 |通过LSP |`vize lsp`，VS Code，Zed |
+| 图层     | 它的作用                                                         | 由                               |
+| -------- | ---------------------------------------------------------------- | -------------------------------- |
+| 骨架     | 分词化并解析Vue模板和SFC结构                                     | 编译器，LINTER，格式化器         |
+| 克罗奎斯 | 构建作用域、绑定元数据、宏信息和跨文件图表                       | 编译器、lint、类型识别检查       |
+| 铜绿     | 运行 Vue、脚本、CSS、a11y、SSR、Vapor、Musa 和类型识别 lint 规则 | `vize lint`，编辑诊断，Oxlint 桥 |
+| 正史     | 生成虚拟 TypeScript，并将诊断映射回 Vue 文件                     | `vize check`，编辑器类型检查     |
+| 指挥     | 通过LSP                                                          | `vize lsp`，VS Code，Zed         |
 
 这意味着静态分析不仅仅是绒毛。模板绑定、编译器宏、组件
 元数据、提供/注入关系、反应流、生成的虚拟 TypeScript，以及
@@ -103,29 +103,29 @@ JSON 模型提供诊断、报告、编辑器表面以及 Playground 的**Reactiv
 规则名称、类别、默认严重度、帮助文本以及是否可修复。预设只是
 决定哪些规则可以一起启用的注册机构。
 
-|面积 |示例规则 |内容涵盖 |
-|------------------- |-------------------------------------------------------------------------------------------- |-------------------------------------------------- |
-|Vue 正确性 |`vue/require-v-for-key`，`vue/valid-v-model`，`vue/no-use-v-if-with-v-for` |本地于一个组件的模板语义 |
-|Vue 安全 |`vue/no-v-html`，`vue/no-unsafe-url` |XSS倾向的HTML和URL汇入 |
-|Vue结构 |`vue/sfc-element-order`，`vue/require-scoped-style`，`vue/no-unused-components` |SFC形状、组件使用及可维护性 |
-|文字惯例 |`script/no-options-api`，`script/no-get-current-instance`，`script/prefer-import-from-vue` |Vue Composition API 和编译器宏约定 |
-|CSS |`css/no-important`，`css/no-hardcoded-values`，`css/prefer-logical-properties` |样式块和设计系统友好的CSS |
-|无障碍 |`a11y/img-alt`，`a11y/anchor-has-content`，`a11y/label-has-for` |可访问标记与交互模式 |
-|HTML |`html/deprecated-element`，`html/id-duplication`，`html/no-empty-palpable-content` |HTML 有效性与语义标记 |
-|SSR |`ssr/no-browser-globals-in-ssr`，`ssr/no-hydration-mismatch` |服务器/客户端渲染危害 |
-|蒸汽 |`vapor/no-vue-lifecycle-events`，`vapor/no-inline-template`，`vapor/require-vapor-attribute` |面向蒸汽的模板约束 |
-|博物馆 |`musea/require-title`，`musea/valid-variant`，`musea/prefer-design-tokens` |组件画廊与变体创作 |
-|类型感知分析 |`type/require-typed-props`，`type/require-typed-emits`，`type/no-reactivity-loss` |需要语义或跳棋支持上下文的规则 |
+| 面积         | 示例规则                                                                                     | 内容涵盖                           |
+| ------------ | -------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Vue 正确性   | `vue/require-v-for-key`，`vue/valid-v-model`，`vue/no-use-v-if-with-v-for`                   | 本地于一个组件的模板语义           |
+| Vue 安全     | `vue/no-v-html`，`vue/no-unsafe-url`                                                         | XSS倾向的HTML和URL汇入             |
+| Vue结构      | `vue/sfc-element-order`，`vue/require-scoped-style`，`vue/no-unused-components`              | SFC形状、组件使用及可维护性        |
+| 文字惯例     | `script/no-options-api`，`script/no-get-current-instance`，`script/prefer-import-from-vue`   | Vue Composition API 和编译器宏约定 |
+| CSS          | `css/no-important`，`css/no-hardcoded-values`，`css/prefer-logical-properties`               | 样式块和设计系统友好的CSS          |
+| 无障碍       | `a11y/img-alt`，`a11y/anchor-has-content`，`a11y/label-has-for`                              | 可访问标记与交互模式               |
+| HTML         | `html/deprecated-element`，`html/id-duplication`，`html/no-empty-palpable-content`           | HTML 有效性与语义标记              |
+| SSR          | `ssr/no-browser-globals-in-ssr`，`ssr/no-hydration-mismatch`                                 | 服务器/客户端渲染危害              |
+| 蒸汽         | `vapor/no-vue-lifecycle-events`，`vapor/no-inline-template`，`vapor/require-vapor-attribute` | 面向蒸汽的模板约束                 |
+| 博物馆       | `musea/require-title`，`musea/valid-variant`，`musea/prefer-design-tokens`                   | 组件画廊与变体创作                 |
+| 类型感知分析 | `type/require-typed-props`，`type/require-typed-emits`，`type/no-reactivity-loss`            | 需要语义或跳棋支持上下文的规则     |
 
 内置预设旨在分阶段支持采用：
 
-|预设 |形状 |
-|------------- |-------------------------------------------------------------------- |
-|`essential` |以错误为中心的Vue正确性、安全性及最小化的HTML检查 |
-|`happy-path` |默认捆绑包：正确性、安全性、a11y、SSR、语义检查 |
-|`opinionated` |`happy-path` 加上更强的约定、脚本规则和类型规则 |
-|`nuxt` |针对Nuxt自动导入假设调整的观点规则 |
-|`incremental` |主机驱动、逐条规则采用的空白起点 |
+| 预设          | 形状                                              |
+| ------------- | ------------------------------------------------- |
+| `essential`   | 以错误为中心的Vue正确性、安全性及最小化的HTML检查 |
+| `happy-path`  | 默认捆绑包：正确性、安全性、a11y、SSR、语义检查   |
+| `opinionated` | `happy-path` 加上更强的约定、脚本规则和类型规则   |
+| `nuxt`        | 针对Nuxt自动导入假设调整的观点规则                |
+| `incremental` | 主机驱动、逐条规则采用的空白起点                  |
 
 ## 移民规范与习俗规则
 
@@ -193,20 +193,20 @@ vp run vize:lint:cross-file-tree
 
 较低层级的跨文件引擎比当前的CLI表面更宽泛：
 
-|跨文件选项 |预期诊断或事实 |
-|------------------------- |--------------------------------------------------------------------------- |
-|`provide_inject` |未匹配注入、未使用供给、字符串键警告、非反应流 |
-|`unique_ids` |循环中引入的重复ID和非唯一ID |
-|`reactivity_tracking` |道具结构、混叠与跨组分反应性损失 |
-|`race_conditions` |异步状态更新可以快速切换已提供或共享状态 |
-|`fallthrough_attrs` |`$attrs`、`inheritAttrs`和多根倒塌危险 |
-|`component_emits` |未申报的发射台、未使用的发射台和没有制作人的听众 |
-|`event_bubbling` |在组件边界中冒泡而未被处理的事件 |
-|`server_client_boundary` |浏览器API使用及SSR/客户端边界下的水合风险 |
-|`error_suspense_boundary` |无实用的延迟或误差边界的异步分量 |
-|`circular_dependencies` |导入周期与深度导入链 |
-|`component_resolution` |未注册或未解决组件使用 |
-|`props_validation` |缺少必需道具和子道具类型不匹配 |
+| 跨文件选项                | 预期诊断或事实                                   |
+| ------------------------- | ------------------------------------------------ |
+| `provide_inject`          | 未匹配注入、未使用供给、字符串键警告、非反应流   |
+| `unique_ids`              | 循环中引入的重复ID和非唯一ID                     |
+| `reactivity_tracking`     | 道具结构、混叠与跨组分反应性损失                 |
+| `race_conditions`         | 异步状态更新可以快速切换已提供或共享状态         |
+| `fallthrough_attrs`       | `$attrs`、`inheritAttrs`和多根倒塌危险           |
+| `component_emits`         | 未申报的发射台、未使用的发射台和没有制作人的听众 |
+| `event_bubbling`          | 在组件边界中冒泡而未被处理的事件                 |
+| `server_client_boundary`  | 浏览器API使用及SSR/客户端边界下的水合风险        |
+| `error_suspense_boundary` | 无实用的延迟或误差边界的异步分量                 |
+| `circular_dependencies`   | 导入周期与深度导入链                             |
+| `component_resolution`    | 未注册或未解决组件使用                           |
+| `props_validation`        | 缺少必需道具和子道具类型不匹配                   |
 
 其指导原则是默认保持单文件linting快速，明确暴露跨文件组，如下
 它们成熟，并将高置信度项目事实导入与
@@ -349,4 +349,5 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 5. 为需要深入分析的项目添加跨文件和严格的反应性检查。
 
 对于单一质量门，运行 `vize ready src` 的 `vize:ready` 包脚本会依次执行 `fmt
-- -write`、`lint`、`check` 和 `build`，并在第一个失败的步骤停止。
+
+- -write`、`lint`、`check`和`build`，并在第一个失败的步骤停止。

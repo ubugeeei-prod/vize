@@ -1,8 +1,8 @@
 ---
 title: テストとフィードバック
 ---
-<!-- Generated translation; source: guide/testing.md -->
 
+<!-- Generated translation; source: guide/testing.md -->
 
 # テストとフィードバック
 

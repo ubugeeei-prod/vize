@@ -2,8 +2,8 @@
 title: Tests dans le monde réel
 description: Vize entre dans la phase de Real World Testing — les projets réels sont désormais la suite de tests, avec une feuille de route claire vers la version 1.0.0.
 ---
-<!-- Generated translation; source: blog/notes/2026-06-07-real-world-testing.md -->
 
+<!-- Generated translation; source: blog/notes/2026-06-07-real-world-testing.md -->
 
 # Tests dans le monde réel
 
@@ -22,7 +22,6 @@ description: Vize entre dans la phase de Real World Testing — les projets rée
 </span>
 </a>
 </div>
-
 
 <video class="blog-post-video" src="/blog/vize-real-world-testing.mp4" controls muted playsinline loop preload="metadata" aria-label="Real World Testing PV"></video>
 

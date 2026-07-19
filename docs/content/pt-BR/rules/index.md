@@ -1,8 +1,8 @@
 ---
 title: Regras
 ---
-<!-- Generated translation; source: rules/index.md -->
 
+<!-- Generated translation; source: rules/index.md -->
 
 # Regras
 
@@ -27,7 +27,7 @@ ESLint.
   Vue Test Utils e Void Vue.
 - [Musea and CSS rules](./musea-and-css.md): Verificações de blocos de arte Musea e diagnósticos de estilo.
 - [Cross-file rules](./cross-file.md): diagnósticos de grafos de projeto emitidos por
-`vize lint --cross-file`.
+  `vize lint --cross-file`.
 
 ## Presets
 
@@ -37,10 +37,8 @@ e adiciona Vue Router, Vue I18n, Pinia, Vue Test Utils, Nuxt e verificações Vo
 inclui expectativas de SSR orientadas para Nuxt e expectativas para Vapor. `opinionated` é o preset
 mais amplo embutido.
 
-
 `incremental` começa vazio. Use-o quando um host quiser optar por regras específicas sem herdar um preset
 maior.
-
 
 ## Configuração Consciente de Tipos
 

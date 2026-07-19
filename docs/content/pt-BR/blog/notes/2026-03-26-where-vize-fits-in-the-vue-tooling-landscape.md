@@ -2,8 +2,8 @@
 title: Mapa de Ferramentas Vue
 description: Um mapa de onde o Vize está localizado na atual paisagem de ferramentas do Vue e como ele difere de projetos adjacentes.
 ---
-<!-- Generated translation; source: blog/notes/2026-03-26-where-vize-fits-in-the-vue-tooling-landscape.md -->
 
+<!-- Generated translation; source: blog/notes/2026-03-26-where-vize-fits-in-the-vue-tooling-landscape.md -->
 
 # Mapa de Ferramentas Vue
 
@@ -23,7 +23,6 @@ description: Um mapa de onde o Vize está localizado na atual paisagem de ferram
 </a>
 </div>
 
-
 Uma razão pela qual o Vize é fácil de entender errado é que ele se sobrepõe a várias ferramentas que as pessoas já conhecem, mas nem sempre na mesma camada.
 
 Alguns desses projetos são oficiais. Alguns são agnósticos em relação ao framework. Alguns são editores em primeiro lugar. Alguns são focados no compilador. Alguns são principalmente sobre verificação de tipos. Alguns estão tentando se tornar uma cadeia de ferramentas completa.
@@ -34,14 +33,14 @@ Então, a pergunta mais útil não é "qual deles é melhor?" É: **qual problem
 
 Aqui está a maneira mais rápida de posicioná-los:
 
-| Projeto | Centro principal de gravidade | O que não é |
-| ---------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| **Vize** | Cadeia de ferramentas independente completa do Vue em Rust | Não é a pilha oficial do editor do Vue |
-| **Ferramentas de Linguagem Vue** | Editor oficial do Vue + ferramentas de verificação de tipos | Não é uma cadeia completa de compiladores/linter/formateadores |
-| **Golar** | `typescript-go`framework de verificação de tipos em linguagem embutida baseado em linguagem | Não é uma cadeia de ferramentas específica para a Vue |
-| **Verter** | Compilador completo alternativo de Vue + LSP + toolchain de compilação | Não é a cadeia oficial de ferramentas do Vue |
-| **Vite+** | Ponto de entrada unificado para desenvolvimento web em runtimes, gerenciamento de pacotes, desenvolvimento/construção/verificação/teste | Não é um compilador ou linter específico do Vue |
-| **Oxlint** | Linter JS/TS de alto desempenho | Não é uma pilha completa de fiapos que conheça o modelo Vue sozinha |
+| Projeto                          | Centro principal de gravidade                                                                                                           | O que não é                                                         |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **Vize**                         | Cadeia de ferramentas independente completa do Vue em Rust                                                                              | Não é a pilha oficial do editor do Vue                              |
+| **Ferramentas de Linguagem Vue** | Editor oficial do Vue + ferramentas de verificação de tipos                                                                             | Não é uma cadeia completa de compiladores/linter/formateadores      |
+| **Golar**                        | `typescript-go`framework de verificação de tipos em linguagem embutida baseado em linguagem                                             | Não é uma cadeia de ferramentas específica para a Vue               |
+| **Verter**                       | Compilador completo alternativo de Vue + LSP + toolchain de compilação                                                                  | Não é a cadeia oficial de ferramentas do Vue                        |
+| **Vite+**                        | Ponto de entrada unificado para desenvolvimento web em runtimes, gerenciamento de pacotes, desenvolvimento/construção/verificação/teste | Não é um compilador ou linter específico do Vue                     |
+| **Oxlint**                       | Linter JS/TS de alto desempenho                                                                                                         | Não é uma pilha completa de fiapos que conheça o modelo Vue sozinha |
 
 Se você mantiver essa tabela na cabeça, a maior parte da confusão desaparece.
 
@@ -107,7 +106,6 @@ Se sua prioridade é o suporte ao editor pronto para produção hoje, a stack of
 
 [Golar](https://github.com/auvred/golar) não é realmente "outra cadeia de ferramentas do Vue" no mesmo sentido.
 
-
 Golar se descreve como um framework de linguagem embutida baseado em `typescript-go`. Para o Vue especificamente, ele reutiliza a maquinaria oficial do `@vue/language-core` e foca em fazer linguagens baseadas em extensões como `.vue`, `.astro`e `.svelte` funcionarem com `tsgo`.
 
 Isso significa que o centro de gravidade de Golar é:
@@ -137,7 +135,6 @@ Assim, o Golar está mais próximo de "fazer `tsgo` funcionarem bem para linguag
 
 [Verter](https://github.com/pikax/verter) provavelmente é o vizinho filosófico mais próximo dessa lista.
 
-
 Assim como Vize, Verter mira alto. Sua visão pública é um compilador híbrido Rust + TypeScript Vue, LSP, ferramenta de compilação, linter e uma cadeia de ferramentas mais ampla. Isso o coloca na mesma família geral do Vize: ambicioso, full-stack e disposto a repensar a caixa de ferramentas do Vue em vez de corrigir apenas uma camada.
 
 É aí que as diferenças se tornam mais sobre a forma e arquitetura do produto do que sobre categoria:
@@ -155,7 +152,6 @@ Então eu não descreveria Verter como "a mesma coisa com outro nome." É melhor
 ## Vize vs Vite+
 
 [Vite+](https://viteplus.dev/) está em uma camada diferente.
-
 
 Vite+ é um ponto de entrada unificado para o desenvolvimento web de forma mais ampla. Sua função é gerenciar a configuração em tempo de execução, gerenciamento de pacotes, desenvolvimento, verificação, teste, construção, empacotamento e execução de tarefas monorepo em um único fluxo de trabalho. Ela reúne ferramentas Vite, Vitest, Oxlint, Oxfmt, Rolldown, tsdown e ferramentas relacionadas.
 
@@ -178,7 +174,6 @@ Então, isso não é realmente uma competição:
 ## Vize vs Oxlint
 
 [Oxlint](https://oxc.rs/docs/guide/usage/linter) também está em uma camada diferente.
-
 
 Oxlint é o linter de alto desempenho em JavaScript e TypeScript do ecossistema Oxc. Ele é excelente em regras gerais de JS/TS e fluxos de trabalho cada vez mais conscientes de tipos, mas sozinho não foi feito para substituir todos os diagnósticos conscientes de templates do Vue.
 

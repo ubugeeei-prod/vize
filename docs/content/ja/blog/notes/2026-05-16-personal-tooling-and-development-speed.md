@@ -2,8 +2,8 @@
 title: 個人の速度
 description: Vize が独立して個人的なものであることが、探索、スピード、野心的なツールチェーン設計にとって利点となる理由。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-personal-tooling-and-development-speed.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-personal-tooling-and-development-speed.md -->
 
 # 個人速度
 

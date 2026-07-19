@@ -1,8 +1,8 @@
 ---
 title: ユーザーのワークフロー
 ---
-<!-- Generated translation; source: guide/workflows.md -->
 
+<!-- Generated translation; source: guide/workflows.md -->
 
 # ユーザーワークフロー
 

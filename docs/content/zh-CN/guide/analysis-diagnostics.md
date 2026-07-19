@@ -1,8 +1,8 @@
 ---
 title: 分析诊断
 ---
-<!-- Generated translation; source: guide/analysis-diagnostics.md -->
 
+<!-- Generated translation; source: guide/analysis-diagnostics.md -->
 
 # 分析诊断
 

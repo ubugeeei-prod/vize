@@ -1,8 +1,8 @@
 ---
 title: 类型与脚本规则
 ---
-<!-- Generated translation; source: rules/type-and-script.md -->
 
+<!-- Generated translation; source: rules/type-and-script.md -->
 
 # 类型与文字规则
 

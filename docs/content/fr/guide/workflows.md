@@ -1,8 +1,8 @@
 ---
 title: Flux de travail utilisateurs
 ---
-<!-- Generated translation; source: guide/workflows.md -->
 
+<!-- Generated translation; source: guide/workflows.md -->
 
 # Flux de travail utilisateurs
 
@@ -39,7 +39,6 @@ Privilégiez les scripts nommés aux commandes ponctuelles afin que les exécuti
 
 `vize ready` est la large porte locale. Dans les dépôts plus grands, conservez aussi les commandes individuelles afin
 développeurs puissent isoler la mise en forme, le lint, la vérification de type et les défaillances du compilateur.
-
 
 ## Configurer une fois
 

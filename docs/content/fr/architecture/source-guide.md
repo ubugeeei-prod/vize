@@ -1,8 +1,8 @@
 ---
 title: Guide des sources
 ---
-<!-- Generated translation; source: architecture/source-guide.md -->
 
+<!-- Generated translation; source: architecture/source-guide.md -->
 
 # Guide des sources
 
@@ -15,14 +15,14 @@ de haut niveau, puis utilisez ce guide pour trouver les fichiers d’implémenta
 Vize conserve la plupart des comportements produits dans l’espace de travail Rust, les paquets JavaScript agissant comme
 couches de distribution et d’intégration.
 
-| Chemin | Ce qui y vit |
-| --------- | ----------------------------------------------------------------------------------------------------------------- |
+| Chemin    | Ce qui y vit                                                                                                                              |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `crates/` | Rust crates pour l’analyse, la compilation, le linting, la mise en forme, la vérification de type, le LSP, la CLI et les liaisons natives |
-| `npm/` | Packages JavaScript pour Vite, Nuxt, extensions d’éditeurs, intégrations Musea, et wrappers de paquets publiés |
-| `docs/` | Documentation utilisateur, notes d’architecture, notes de version et thème du site docs |
-| `tests/` | Fixtures inter-packages, projets réels, tests d’outillages et gouvernance instantanée |
-| `bench/` | Scripts de comparaison de performance et application budgétaire des benchmarks de RP |
-| `tools/` | Automatisation de dépôt qui ne fait pas partie du produit expédié |
+| `npm/`    | Packages JavaScript pour Vite, Nuxt, extensions d’éditeurs, intégrations Musea, et wrappers de paquets publiés                            |
+| `docs/`   | Documentation utilisateur, notes d’architecture, notes de version et thème du site docs                                                   |
+| `tests/`  | Fixtures inter-packages, projets réels, tests d’outillages et gouvernance instantanée                                                     |
+| `bench/`  | Scripts de comparaison de performance et application budgétaire des benchmarks de RP                                                      |
+| `tools/`  | Automatisation de dépôt qui ne fait pas partie du produit expédié                                                                         |
 
 Lorsqu’un changement traverse les répertoires, le propriétaire est généralement la couche qui crée le comportement
 visible par l’utilisateur. Par exemple, un changement de sortie du compilateur appartient à `crates/`, même lorsque la reproduction provient de
@@ -48,35 +48,35 @@ n’ajouter que le comportement qu’elle possède.
 
 ## Points d’entrée de caisse
 
-| Changement de zone | Commencez ici | Alors vérifie |
-| ------------------------------ | -------------------------------------- | ------------------------------------------------------------------ |
-| Analyse syntaxique de modèles | `crates/vize_armature/src/lib.rs` | Fixatures de parseurs et instantanés AST attendus |
-| Forme AST et options du compilateur | `crates/vize_relief/src/lib.rs` | compilateur en aval, appels LINT et formateur |
-| Sémantique des modèles | `crates/vize_croquis/src/lib.rs` | Helpers de portée, liaison, réactivité et TypeScript virtuels |
-| Comportement partagé du compilateur | `crates/vize_atelier_core/src/lib.rs` | Caisses d’atelier spécifiques au backend |
-| Sortie du modèle client | `crates/vize_atelier_dom/src/lib.rs` | Instantanés de code générés et tests d’accessoires à l’exécution |
-| Sortie de vapeur | `crates/vize_atelier_vapor/src/lib.rs` | Règles spécifiques à la vapeur et sortie réelle des matchs |
-| Sortie SSR | `crates/vize_atelier_ssr/src/lib.rs` | Instantanés SSR, évasion et comportement d’hydratation |
-| Orchestration SFC | `crates/vize_atelier_sfc/src/lib.rs` | script, modèle, style, HMR et chemins de la source-map |
-| Règles de peluches | `crates/vize_patina/src/lib.rs` | Instantanés de règles et diagnostics localisés |
-| Vérification de type | `crates/vize_canon/src/lib.rs` | TS et diagnostics `corsa-bind` virtuels générés |
-| Comportement des LSP | `crates/vize_maestro/src/lib.rs` | Gestionnaires de serveurs, documents virtuels et tests de fumée de l’éditeur |
-| Mise en forme | `crates/vize_glyph/src/lib.rs` | Instantanés dorés de mise en forme |
-| Fixations natives et WASM | `crates/vize_vitrine/src/lib.rs` | Enveloppes de paquets NPM et déclarations de types générées |
-| Comportement de la CLI | `crates/vize/src/main.rs` | modules de commande, snapshots, et tests d’intégration build/check/lint |
+| Changement de zone                  | Commencez ici                          | Alors vérifie                                                                |
+| ----------------------------------- | -------------------------------------- | ---------------------------------------------------------------------------- |
+| Analyse syntaxique de modèles       | `crates/vize_armature/src/lib.rs`      | Fixatures de parseurs et instantanés AST attendus                            |
+| Forme AST et options du compilateur | `crates/vize_relief/src/lib.rs`        | compilateur en aval, appels LINT et formateur                                |
+| Sémantique des modèles              | `crates/vize_croquis/src/lib.rs`       | Helpers de portée, liaison, réactivité et TypeScript virtuels                |
+| Comportement partagé du compilateur | `crates/vize_atelier_core/src/lib.rs`  | Caisses d’atelier spécifiques au backend                                     |
+| Sortie du modèle client             | `crates/vize_atelier_dom/src/lib.rs`   | Instantanés de code générés et tests d’accessoires à l’exécution             |
+| Sortie de vapeur                    | `crates/vize_atelier_vapor/src/lib.rs` | Règles spécifiques à la vapeur et sortie réelle des matchs                   |
+| Sortie SSR                          | `crates/vize_atelier_ssr/src/lib.rs`   | Instantanés SSR, évasion et comportement d’hydratation                       |
+| Orchestration SFC                   | `crates/vize_atelier_sfc/src/lib.rs`   | script, modèle, style, HMR et chemins de la source-map                       |
+| Règles de peluches                  | `crates/vize_patina/src/lib.rs`        | Instantanés de règles et diagnostics localisés                               |
+| Vérification de type                | `crates/vize_canon/src/lib.rs`         | TS et diagnostics `corsa-bind` virtuels générés                              |
+| Comportement des LSP                | `crates/vize_maestro/src/lib.rs`       | Gestionnaires de serveurs, documents virtuels et tests de fumée de l’éditeur |
+| Mise en forme                       | `crates/vize_glyph/src/lib.rs`         | Instantanés dorés de mise en forme                                           |
+| Fixations natives et WASM           | `crates/vize_vitrine/src/lib.rs`       | Enveloppes de paquets NPM et déclarations de types générées                  |
+| Comportement de la CLI              | `crates/vize/src/main.rs`              | modules de commande, snapshots, et tests d’intégration build/check/lint      |
 
 Privilégiez d’abord le point d’entrée public de la caisse. De nombreuses caisses disposent de modules `lib.rs` compacts qui
 réexporter les modules internes qu’un contributeur est censé toucher.
 
 ## Points d’entrée de paquets JavaScript
 
-| Package | Entrée de source | Limite de rouille |
-| --------------------------- | -------------------------------------------------------------- | --------------------------------------------- |
-| `@vizejs/vite-plugin` | `npm/builder/vite/src/index.ts` | `@vizejs/native` à travers `vize_vitrine` |
-| `@vizejs/nuxt` | `npm/framework/nuxt/src/index.ts` | Options de plugins Vite et intégration des composants |
-| `@vizejs/wasm` | généré des paquets autour `vize_vitrine` exportations WASM | `crates/vize_vitrine/src/wasm` |
-| `@vizejs/vite-plugin-musea` | `npm/builder/vite-musea/src/index.ts` et code de package associé | `vize_musea` API exposées via des liaisons |
-| `oxlint-plugin-vize` | `npm/oxint/src/index.ts` | `vize_patina` diagnostic par liaisons |
+| Package                     | Entrée de source                                                 | Limite de rouille                                     |
+| --------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------- |
+| `@vizejs/vite-plugin`       | `npm/builder/vite/src/index.ts`                                  | `@vizejs/native` à travers `vize_vitrine`             |
+| `@vizejs/nuxt`              | `npm/framework/nuxt/src/index.ts`                                | Options de plugins Vite et intégration des composants |
+| `@vizejs/wasm`              | généré des paquets autour `vize_vitrine` exportations WASM       | `crates/vize_vitrine/src/wasm`                        |
+| `@vizejs/vite-plugin-musea` | `npm/builder/vite-musea/src/index.ts` et code de package associé | `vize_musea` API exposées via des liaisons            |
+| `oxlint-plugin-vize`        | `npm/oxint/src/index.ts`                                         | `vize_patina` diagnostic par liaisons                 |
 
 Utilisez les tests de paquet pour le câblage d’intégration, mais gardez la sémantique du langage dans les tests Rust. La couche package
 devrait surtout prouver que les options, modules virtuels, HMR et appels natifs sont connectés.
@@ -126,9 +126,9 @@ JSON ou texte, inventaires et vérifications de réussite/échec dont la correct
 Gardez un script dans Node (`.mjs`) lorsque MoonBit ajouterait de la friction plutôt que de la supprimer :
 
 - Il est importé sous forme de module par d’autres JavaScript ou par une suite `node --test` (par exemple
-`tools/github/release-platforms.mjs`), donc la réécrire diviserait une source en deux langues.
+  `tools/github/release-platforms.mjs`), donc la réécrire diviserait une source en deux langues.
   - Cela dépend de l’écosystème npm (bibliothèques globbing, outils de paquets, SDKs d’action GitHub) ou de
-  API uniquement pour les nœuds qui n’ont pas d’équivalent MoonBit.
+    API uniquement pour les nœuds qui n’ont pas d’équivalent MoonBit.
 - Il est suffisamment vaste ou exploratoire pour que son comportement ne soit pas encore déterminé par un test à sortie complète ; Ne le fais pas
   migrer tout ce qui pourrait casser le CI sans un tel test.
 

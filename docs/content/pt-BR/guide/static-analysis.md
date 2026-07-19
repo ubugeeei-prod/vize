@@ -1,8 +1,8 @@
 ---
 title: Análise Estática
 ---
-<!-- Generated translation; source: guide/static-analysis.md -->
 
+<!-- Generated translation; source: guide/static-analysis.md -->
 
 # Análise Estática
 
@@ -15,13 +15,13 @@ Os exemplos abaixo assumem que o pacote `vize` npm é instalado e chamado a part
 
 ## Pipeline
 
-| Camada | O que ele faz | Usado por |
-| -------- | ------------------------------------------------------------------------- | ---------------------------------------------- |
-| Armadura | Tokeniza e analisa templates Vue e estrutura SFC | compilador, linter, formatador |
-| Croquis | Constrói escopos, vinculação de metadados, informações macro e gráficos de arquivo cruzado | Compilador, LINT e verificações conscientes de tipos |
-| Pátina | Roda Vue, script, CSS, a11y, SSR, Vapor, Musea e regras de lint conscientes de tipos | `vize lint`, diagnóstico do editor, ponte Oxlint |
-| Canon | Gera TypeScript virtual e mapeia diagnósticos de volta para arquivos do Vue | `vize check`, verificação de tipos de editor |
-| Maestro | Expõe diagnósticos e recursos do editor por meio do LSP | `vize lsp`, VS Code, Zed |
+| Camada   | O que ele faz                                                                              | Usado por                                            |
+| -------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| Armadura | Tokeniza e analisa templates Vue e estrutura SFC                                           | compilador, linter, formatador                       |
+| Croquis  | Constrói escopos, vinculação de metadados, informações macro e gráficos de arquivo cruzado | Compilador, LINT e verificações conscientes de tipos |
+| Pátina   | Roda Vue, script, CSS, a11y, SSR, Vapor, Musea e regras de lint conscientes de tipos       | `vize lint`, diagnóstico do editor, ponte Oxlint     |
+| Canon    | Gera TypeScript virtual e mapeia diagnósticos de volta para arquivos do Vue                | `vize check`, verificação de tipos de editor         |
+| Maestro  | Expõe diagnósticos e recursos do editor por meio do LSP                                    | `vize lsp`, VS Code, Zed                             |
 
 Isso significa que análise estática não é apenas linting. Vinculações de templates, macros do compilador, metadados
 componentes, relações de fornecimento e injeção, fluxo de reatividade, TypeScript virtual gerado e metadados
@@ -103,29 +103,29 @@ Pátina é a camada de regra de fiapo. Regras são pequenos visitantes sobre a f
 seu nome da regra, categoria, severidade padrão, texto de ajuda e se ela é corrigível. Presets são apenas
 registros que decidem quais regras são ativadas juntos.
 
-| Área | Regras de exemplo | O que eles cobrem |
-| ------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| Correção do Vue | `vue/require-v-for-key`, `vue/valid-v-model`, `vue/no-use-v-if-with-v-for` | Semântica de template que é local para um componente |
-| Segurança Vue | `vue/no-v-html`, `vue/no-unsafe-url` | Sinks de HTML e URL propensos a XSS |
-| Estrutura da vista | `vue/sfc-element-order`, `vue/require-scoped-style`, `vue/no-unused-components` | Formato do SFC, uso de componentes e manutenibilidade |
-| Convenções de escrita | `script/no-options-api`, `script/no-get-current-instance`, `script/prefer-import-from-vue` | API de composição do Vue e convenções de macro do compilador |
-| CSS | `css/no-important`, `css/no-hardcoded-values`, `css/prefer-logical-properties` | Blocos de estilo e CSS amigáveis ao sistema de design |
-| Acessibilidade | `a11y/img-alt`, `a11y/anchor-has-content`, `a11y/label-has-for` | Marcação acessível e padrões de interação |
-| HTML | `html/deprecated-element`, `html/id-duplication`, `html/no-empty-palpable-content` | Validade HTML e marcação semântica |
-| SSR | `ssr/no-browser-globals-in-ssr`, `ssr/no-hydration-mismatch` | Perigos de renderização de servidor/cliente |
-| Vapor | `vapor/no-vue-lifecycle-events`, `vapor/no-inline-template`, `vapor/require-vapor-attribute` | Restrições de template orientadas a vapor |
-| Musea | `musea/require-title`, `musea/valid-variant`, `musea/prefer-design-tokens` | Galeria de componentes e autoria de variantes |
-| Análise consciente de tipos | `type/require-typed-props`, `type/require-typed-emits`, `type/no-reactivity-loss` | Regras que precisam de contexto semântico ou respaldado por damas |
+| Área                        | Regras de exemplo                                                                            | O que eles cobrem                                                 |
+| --------------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Correção do Vue             | `vue/require-v-for-key`, `vue/valid-v-model`, `vue/no-use-v-if-with-v-for`                   | Semântica de template que é local para um componente              |
+| Segurança Vue               | `vue/no-v-html`, `vue/no-unsafe-url`                                                         | Sinks de HTML e URL propensos a XSS                               |
+| Estrutura da vista          | `vue/sfc-element-order`, `vue/require-scoped-style`, `vue/no-unused-components`              | Formato do SFC, uso de componentes e manutenibilidade             |
+| Convenções de escrita       | `script/no-options-api`, `script/no-get-current-instance`, `script/prefer-import-from-vue`   | API de composição do Vue e convenções de macro do compilador      |
+| CSS                         | `css/no-important`, `css/no-hardcoded-values`, `css/prefer-logical-properties`               | Blocos de estilo e CSS amigáveis ao sistema de design             |
+| Acessibilidade              | `a11y/img-alt`, `a11y/anchor-has-content`, `a11y/label-has-for`                              | Marcação acessível e padrões de interação                         |
+| HTML                        | `html/deprecated-element`, `html/id-duplication`, `html/no-empty-palpable-content`           | Validade HTML e marcação semântica                                |
+| SSR                         | `ssr/no-browser-globals-in-ssr`, `ssr/no-hydration-mismatch`                                 | Perigos de renderização de servidor/cliente                       |
+| Vapor                       | `vapor/no-vue-lifecycle-events`, `vapor/no-inline-template`, `vapor/require-vapor-attribute` | Restrições de template orientadas a vapor                         |
+| Musea                       | `musea/require-title`, `musea/valid-variant`, `musea/prefer-design-tokens`                   | Galeria de componentes e autoria de variantes                     |
+| Análise consciente de tipos | `type/require-typed-props`, `type/require-typed-emits`, `type/no-reactivity-loss`            | Regras que precisam de contexto semântico ou respaldado por damas |
 
 Os presets embutidos têm como objetivo apoiar a adoção em etapas:
 
-| Preset | Formato |
-| ------------- | -------------------------------------------------------------------- |
-| `essential` | Correção focada em erros no Vue, segurança e checagens mínimas de HTML |
-| `happy-path` | Pacote padrão para correção, segurança, a11y, SSR, verificações semânticas |
-| `opinionated` | `happy-path` mais convenções, regras de script e regras de tipo mais fortes |
-| `nuxt` | Regras opinativas ajustadas para as suposições de importação automática da Nuxt |
-| `incremental` | Ponto de partida vazio para adoção governada pelo host, regra por regra |
+| Preset        | Formato                                                                         |
+| ------------- | ------------------------------------------------------------------------------- |
+| `essential`   | Correção focada em erros no Vue, segurança e checagens mínimas de HTML          |
+| `happy-path`  | Pacote padrão para correção, segurança, a11y, SSR, verificações semânticas      |
+| `opinionated` | `happy-path` mais convenções, regras de script e regras de tipo mais fortes     |
+| `nuxt`        | Regras opinativas ajustadas para as suposições de importação automática da Nuxt |
+| `incremental` | Ponto de partida vazio para adoção governada pelo host, regra por regra         |
 
 ## Pragmas de Migração e Regras Personalizadas
 
@@ -193,20 +193,20 @@ vp run vize:lint:cross-file-tree
 
 O motor cross-file de nível inferior é mais amplo do que a superfície CLI atual:
 
-| Opção de cruzar limas | Diagnósticos ou fatos pretendidos |
-| ------------------------- | --------------------------------------------------------------------------- |
-| `provide_inject` | Injeções não combinadas, fornecimentos não utilizados, avisos de string-key, fluxos não reativos |
-| `unique_ids` | IDs duplicados e IDs não únicos introduzidos dentro dos loops |
-| `reactivity_tracking` | Desestruturação de hélices, aliasing e perda de reatividade entre componentes |
-| `race_conditions` | Atualizações de estado assíncrono que podem passar rapidamente pelo estado fornecido ou compartilhado |
-| `fallthrough_attrs` | `$attrs`, `inheritAttrs`, e riscos de queda com múltiplas raízes |
-| `component_emits` | Emitentes não declarados, não utilizados e ouvintes sem produtor |
-| `event_bubbling` | Eventos que atravessa os limites dos componentes sem serem tratados |
-| `server_client_boundary` | Uso da API do navegador e riscos de hidratação ao redor dos limites SSR/cliente |
-| `error_suspense_boundary` | Componentes assíncronos sem limites úteis de suspense ou erro |
-| `circular_dependencies` | Ciclos de importação e cadeias profundas de importação |
-| `component_resolution` | Uso de componentes não registrados ou não resolvidos |
-| `props_validation` | Adereços necessários faltando e incompatibilidades no tipo de prop infantil |
+| Opção de cruzar limas     | Diagnósticos ou fatos pretendidos                                                                     |
+| ------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `provide_inject`          | Injeções não combinadas, fornecimentos não utilizados, avisos de string-key, fluxos não reativos      |
+| `unique_ids`              | IDs duplicados e IDs não únicos introduzidos dentro dos loops                                         |
+| `reactivity_tracking`     | Desestruturação de hélices, aliasing e perda de reatividade entre componentes                         |
+| `race_conditions`         | Atualizações de estado assíncrono que podem passar rapidamente pelo estado fornecido ou compartilhado |
+| `fallthrough_attrs`       | `$attrs`, `inheritAttrs`, e riscos de queda com múltiplas raízes                                      |
+| `component_emits`         | Emitentes não declarados, não utilizados e ouvintes sem produtor                                      |
+| `event_bubbling`          | Eventos que atravessa os limites dos componentes sem serem tratados                                   |
+| `server_client_boundary`  | Uso da API do navegador e riscos de hidratação ao redor dos limites SSR/cliente                       |
+| `error_suspense_boundary` | Componentes assíncronos sem limites úteis de suspense ou erro                                         |
+| `circular_dependencies`   | Ciclos de importação e cadeias profundas de importação                                                |
+| `component_resolution`    | Uso de componentes não registrados ou não resolvidos                                                  |
+| `props_validation`        | Adereços necessários faltando e incompatibilidades no tipo de prop infantil                           |
 
 A direção é manter o linting de arquivo único rápido por padrão, expor grupos de arquivos cruzados explicitamente à medida que amadurecem
 eles amadurecem e rotear fatos de projeto de alta confiança para o mesmo fluxo de diagnóstico usado pela CLI
@@ -217,7 +217,6 @@ eles amadurecem e rotear fatos de projeto de alta confiança para o mesmo fluxo 
 `vize check` gera TypeScript virtual para SFCs do Vue e solicita aos projetos Corsa
 diagnósticos. Ele verifica `.vue`, `.ts`, `.tsx``.d.ts` e mapeia diagnósticos de volta para os arquivos fonte
 originais.
-
 
 ```json
 {
@@ -350,4 +349,5 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 5. Adicione verificações de reatividade entre arquivos e rigorosas para projetos que se beneficiam de uma análise mais profunda.
 
 Para uma única porta de qualidade, um script de `vize:ready` pacote rodando `vize ready src` executa `fmt
+
 - -write`, `lint`, `check`e `build` em ordem e para na primeira etapa que falha.

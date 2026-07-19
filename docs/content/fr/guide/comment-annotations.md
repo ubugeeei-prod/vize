@@ -1,8 +1,8 @@
 ---
 title: Annotations de commentaires
 ---
-<!-- Generated translation; source: guide/comment-annotations.md -->
 
+<!-- Generated translation; source: guide/comment-annotations.md -->
 
 # Annotations de commentaires
 
@@ -58,11 +58,11 @@ Passer outre la gravité des diagnostics sur la ligne suivante.
 </template>
 ```
 
-| Valeur | Effet |
-| ------- | -------------------- |
-| `warn` | Rétrogradation en avertissement |
-| `error` | Passer à l’erreur |
-| `off` | Supprimer complètement |
+| Valeur  | Effet                           |
+| ------- | ------------------------------- |
+| `warn`  | Rétrogradation en avertissement |
+| `error` | Passer à l’erreur               |
+| `off`   | Supprimer complètement          |
 
 ### `@vize:todo`
 
@@ -121,16 +121,16 @@ Marquez un nœud à dépouiller dans les versions de production, gardé en déve
 
 ### Résumé
 
-| Directive | Effet | Gravité |
-| ------------------------ | ---------------------------------- | -------- |
-| `@vize:expected` | Attendez-vous à un diagnostic sur la ligne suivante | — |
-| `@vize:ignore-start/end` | Supprimer tous les diagnostics dans la région | — |
-| `@vize:level(...)` | Annuler la sévérité de la ligne suivante | — |
-| `@vize:todo <msg>` | Émettre TODO | Avertissement |
-| `@vize:fixme <msg>` | Émet FIXME | Erreur |
-| `@vize:deprecated <msg>` | Émettre un avis de dépréciation | Avertissement |
-| `@vize:docs <text>` | Documentation (sans effet de peluche) | — |
-| `@vize:dev-only` | Bande dessinée en production | — |
+| Directive                | Effet                                               | Gravité       |
+| ------------------------ | --------------------------------------------------- | ------------- |
+| `@vize:expected`         | Attendez-vous à un diagnostic sur la ligne suivante | —             |
+| `@vize:ignore-start/end` | Supprimer tous les diagnostics dans la région       | —             |
+| `@vize:level(...)`       | Annuler la sévérité de la ligne suivante            | —             |
+| `@vize:todo <msg>`       | Émettre TODO                                        | Avertissement |
+| `@vize:fixme <msg>`      | Émet FIXME                                          | Erreur        |
+| `@vize:deprecated <msg>` | Émettre un avis de dépréciation                     | Avertissement |
+| `@vize:docs <text>`      | Documentation (sans effet de peluche)               | —             |
+| `@vize:dev-only`         | Bande dessinée en production                        | —             |
 
 ## Suppression de script (`@vize forget`)
 
@@ -162,12 +162,12 @@ Sans cette annotation, Vize avertirait que déstructurer une valeur de retour de
 
 ### Règles
 
-| Règne | Description |
-| --------------- | -------------------------------------------------------------------- |
-| Raison requise | `// @vize forget` sans raison est une erreur |
-| Côlon requis | Doit utiliser `// @vize forget: <reason>` (deux-points avant la raison) |
-| Ligne suivante seulement | S’applique à la ligne suivante non commentée, non vide |
-| Pas d’orphelins | Une suppression à la fin d’un fichier sans code après est une erreur |
+| Règne                    | Description                                                             |
+| ------------------------ | ----------------------------------------------------------------------- |
+| Raison requise           | `// @vize forget` sans raison est une erreur                            |
+| Côlon requis             | Doit utiliser `// @vize forget: <reason>` (deux-points avant la raison) |
+| Ligne suivante seulement | S’applique à la ligne suivante non commentée, non vide                  |
+| Pas d’orphelins          | Une suppression à la fin d’un fichier sans code après est une erreur    |
 
 ### Suppressions multiples
 
@@ -199,12 +199,12 @@ const { count } = inject("state");
 
 ### Raisons courantes
 
-| Raison | Quand utiliser |
-| ---------------------------- | ---------------------------------- |
-| `intentionally non-reactive` | La valeur n’a pas besoin d’être réactive |
-| `read-only access` | Seulement la lecture, pas le suivi des changements |
-| `legacy code` | Problème connu, je vais refactoriser plus tard |
-| `third-party integration` | Exigé par une bibliothèque externe |
+| Raison                       | Quand utiliser                                     |
+| ---------------------------- | -------------------------------------------------- |
+| `intentionally non-reactive` | La valeur n’a pas besoin d’être réactive           |
+| `read-only access`           | Seulement la lecture, pas le suivi des changements |
+| `legacy code`                | Problème connu, je vais refactoriser plus tard     |
+| `third-party integration`    | Exigé par une bibliothèque externe                 |
 
 ### Exemples invalides
 

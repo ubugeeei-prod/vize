@@ -2,8 +2,8 @@
 title: Vue 作为语言
 description: 基于Vue是UI语言的理念，本文解释了为什么前端开发需要一个连贯的环境，而非分散的工具。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-vue-as-a-language-and-the-strongest-frontend-environment.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-vue-as-a-language-and-the-strongest-frontend-environment.md -->
 
 # Vue 作为语言
 

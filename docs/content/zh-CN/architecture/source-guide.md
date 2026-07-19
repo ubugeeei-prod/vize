@@ -1,8 +1,8 @@
 ---
 title: 来源指南
 ---
-<!-- Generated translation; source: architecture/source-guide.md -->
 
+<!-- Generated translation; source: architecture/source-guide.md -->
 
 # 源码指南
 
@@ -15,14 +15,14 @@ title: 来源指南
 Vize 将大多数产品行为保留在 Rust 工作区中，JavaScript 包充当
 分布层和集成层。
 
-|路径|那里住着什么|
-| ---------| --------------------------------------------------------------------------------------------------------------------------------- |
-| `crates/` |用于解析、分析、编译、linting、格式化、类型检查、LSP、CLI 和本机绑定的 Rust 箱 |
-| `npm/` |用于 Vite、Nuxt、编辑器扩展、Musea 集成和已发布的包包装器的 JavaScript 包 |
-| `docs/` |用户文档、架构说明、发行说明和文档站点主题 |
-| `tests/` |跨包装置、实际项目、工具测试和快照治理 |
-| `bench/` |性能比较脚本和 PR 基准预算执行 |
-| `tools/` |不属于已发货产品的存储库自动化 |
+| 路径      | 那里住着什么                                                                   |
+| --------- | ------------------------------------------------------------------------------ |
+| `crates/` | 用于解析、分析、编译、linting、格式化、类型检查、LSP、CLI 和本机绑定的 Rust 箱 |
+| `npm/`    | 用于 Vite、Nuxt、编辑器扩展、Musea 集成和已发布的包包装器的 JavaScript 包      |
+| `docs/`   | 用户文档、架构说明、发行说明和文档站点主题                                     |
+| `tests/`  | 跨包装置、实际项目、工具测试和快照治理                                         |
+| `bench/`  | 性能比较脚本和 PR 基准预算执行                                                 |
+| `tools/`  | 不属于已发货产品的存储库自动化                                                 |
 
 当更改跨越目录时，所有者通常是创建用户可见的层
 行为。例如，编译器输出更改属于 `crates/`，即使重现来自
@@ -48,22 +48,22 @@ graph LR
 
 ## 板条箱入口点
 
-|更改区域 |从这里开始 |然后检查 |
-| ------------------------------------------ | -------------------------------------- | ------------------------------------------------------------------ |
-|模板解析 | `crates/vize_armature/src/lib.rs` |解析器装置和预期的 AST 快照 |
-| AST 形状和编译器选项 | `crates/vize_relief/src/lib.rs` |下游编译器、lint 和格式化程序调用程序 |
-|模板语义 | `crates/vize_croquis/src/lib.rs` |范围、绑定、反应性和虚拟 TypeScript 助手 |
-|共享编译器行为 | `crates/vize_atelier_core/src/lib.rs` |后端特定工作室箱 |
-|客户端模板输出 | `crates/vize_atelier_dom/src/lib.rs` |生成的代码快照和运行时夹具测试
-|蒸汽输出| `crates/vize_atelier_vapor/src/lib.rs` |特定于蒸汽的规则和现实世界的夹具输出 |
-|固态继电器输出| `crates/vize_atelier_ssr/src/lib.rs` | SSR 快照、逃逸和水合行为 |
-|证监会编排| `crates/vize_atelier_sfc/src/lib.rs` |脚本、模板、样式、HMR 和源映射路径 |
-|皮棉规则 | `crates/vize_patina/src/lib.rs` |规则快照和本地化诊断|
-|类型检查 | `crates/vize_canon/src/lib.rs` |生成虚拟TS和`corsa-bind`诊断|
-| LSP 行为 | `crates/vize_maestro/src/lib.rs` |服务器处理程序、虚拟文档和编辑器冒烟测试|
-|格式化| `crates/vize_glyph/src/lib.rs` |黄金格式快照|
-|本机和 WASM 绑定 | `crates/vize_vitrine/src/lib.rs` | npm 包包装器和生成的类型声明 |
-| CLI 行为 | `crates/vize/src/main.rs` |命令模块、快照和构建/检查/lint 集成测试 |
+| 更改区域             | 从这里开始                             | 然后检查                                 |
+| -------------------- | -------------------------------------- | ---------------------------------------- |
+| 模板解析             | `crates/vize_armature/src/lib.rs`      | 解析器装置和预期的 AST 快照              |
+| AST 形状和编译器选项 | `crates/vize_relief/src/lib.rs`        | 下游编译器、lint 和格式化程序调用程序    |
+| 模板语义             | `crates/vize_croquis/src/lib.rs`       | 范围、绑定、反应性和虚拟 TypeScript 助手 |
+| 共享编译器行为       | `crates/vize_atelier_core/src/lib.rs`  | 后端特定工作室箱                         |
+| 客户端模板输出       | `crates/vize_atelier_dom/src/lib.rs`   | 生成的代码快照和运行时夹具测试           |
+| 蒸汽输出             | `crates/vize_atelier_vapor/src/lib.rs` | 特定于蒸汽的规则和现实世界的夹具输出     |
+| 固态继电器输出       | `crates/vize_atelier_ssr/src/lib.rs`   | SSR 快照、逃逸和水合行为                 |
+| 证监会编排           | `crates/vize_atelier_sfc/src/lib.rs`   | 脚本、模板、样式、HMR 和源映射路径       |
+| 皮棉规则             | `crates/vize_patina/src/lib.rs`        | 规则快照和本地化诊断                     |
+| 类型检查             | `crates/vize_canon/src/lib.rs`         | 生成虚拟TS和`corsa-bind`诊断             |
+| LSP 行为             | `crates/vize_maestro/src/lib.rs`       | 服务器处理程序、虚拟文档和编辑器冒烟测试 |
+| 格式化               | `crates/vize_glyph/src/lib.rs`         | 黄金格式快照                             |
+| 本机和 WASM 绑定     | `crates/vize_vitrine/src/lib.rs`       | npm 包包装器和生成的类型声明             |
+| CLI 行为             | `crates/vize/src/main.rs`              | 命令模块、快照和构建/检查/lint 集成测试  |
 
 更喜欢首先遵循公共板条箱入口点。许多板条箱都有紧凑型 `lib.rs` 模块，
 重新导出贡献者预期接触的内部模块。

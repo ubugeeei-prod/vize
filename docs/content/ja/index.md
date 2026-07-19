@@ -69,8 +69,8 @@ features:
     details: 出荷された変更に関するリリース ノートに加え、設計の更新、開発ブログ、プロジェクトの考え方に関する不定期のノート。
     link: ja/blog/index.md
 ---
-<!-- Generated translation; source: index.md -->
 
+<!-- Generated translation; source: index.md -->
 
 ## 現在の方向
 
@@ -92,7 +92,7 @@ TypeScript プロジェクトの診断をネイティブ パスで行う時間�
 
 ![ウブゲエイ](https://github.com/ubugeeei.png)
 
-* *[ubugeeei](https://github.com/ubugeeei)**は東京を拠点とするソフトウェア エンジニアで、Vue、Rust、デザイン、言語ツールを担当しています。
+- \*[ubugeeei](https://github.com/ubugeeei)\*\*は東京を拠点とするソフトウェア エンジニアで、Vue、Rust、デザイン、言語ツールを担当しています。
 
 彼は [Vue.js コア チーム](https://vuejs.org/about/team.html)、[Vue.js 日本ユーザー グループ](https://github.com/vuejs-jp) コア スタッフ、[Vite+](https://github.com/voidzero-dev/vite-plus) コア コントリビューター、[mates-dev](https://github.com/mates-dev) のチーフ エンジニアの一員です。
 

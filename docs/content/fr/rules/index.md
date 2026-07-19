@@ -1,8 +1,8 @@
 ---
 title: Règles
 ---
-<!-- Generated translation; source: rules/index.md -->
 
+<!-- Generated translation; source: rules/index.md -->
 
 # Règles
 
@@ -27,7 +27,7 @@ proche des exemples Mauvais/Bons afin que la référence puisse être lue comme 
   Vue Test Utils et Void Vue.
 - [Musea and CSS rules](./musea-and-css.md): Contrôles de blocs d’art Musea et diagnostics de style.
 - [Cross-file rules](./cross-file.md): diagnostic du graphe de projet émis par
-`vize lint --cross-file`.
+  `vize lint --cross-file`.
 
 ## Presets
 
@@ -37,10 +37,8 @@ et ajoute Vue Router, Vue I18n, Pinia, Vue Test Utils, Nuxt et Void Vue Checks. 
 inclut les attentes SSR orientées Nuxt et les attentes Vapor. `opinionated` est le préréglage intégré
 le plus large.
 
-
 `incremental` commence vide. Utilisez-le lorsqu’un hôte souhaite choisir des règles spécifiques sans hériter d’un préréglage
 plus grand.
-
 
 ## Configuration sensible aux types
 

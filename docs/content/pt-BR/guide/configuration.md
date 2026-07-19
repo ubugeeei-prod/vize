@@ -1,8 +1,8 @@
 ---
 title: Configuração
 ---
-<!-- Generated translation; source: guide/configuration.md -->
 
+<!-- Generated translation; source: guide/configuration.md -->
 
 # Configuração
 
@@ -189,22 +189,22 @@ lsp {
 Essas opções estão sob `compiler`. Eles são respaldados por esquemas e compartilhados por meio de `defineConfig`; Não
 toda integração consome todos os campos ainda.
 
-| Opção | Valores | Uso comum |
-| ------------------- | --------------------------------------- | ---------------------------------------------------------------- |
-| `sourceMap` | `boolean` | Habilitar os mapas de origem no plugin Vite |
-| `ssr` | `boolean` | Compilar para SSR quando não estiver dependendo da flag de build SSR do Vite |
-| `vapor` | `boolean` | Ativar compilação em modo vapor |
-| `jsxMode` | `"vdom"` ou `"vapor"` | Backend de saída padrão para componentes `.jsx`/`.tsx` |
-| `customRenderer` | `boolean` | Trate tags minúsculas que não sejam HTML como elementos de renderização personalizados |
-| `templateSyntax` | `"standard"`, `"strict"`ou `"quirks"` | Escolha o tratamento de aviso, erro ou peculiaridade do Vue para a sintaxe do modelo |
-| `scriptExt` | `"ts"` ou `"js"` | Preserve a saída do TS ou faça downcompile para JS no comando de build npm |
-| `mode` | `"module"` ou `"function"` | Modo de saída de compilador de nível inferior |
-| `prefixIdentifiers` | `boolean` | Identificadores de prefixos com `_ctx` |
-| `hoistStatic` | `boolean` | Controle o içamento estático do nó |
-| `cacheHandlers` | `boolean` | Cache do gerenciador de eventos de controle |
-| `isTs` | `boolean` | Analisar blocos de script como TypeScript |
-| `runtimeModuleName` | `string` | Módulo de importação em tempo de execução Override |
-| `runtimeGlobalName` | `string` | Override global em tempo de execução para saída no estilo função/IIFE |
+| Opção               | Valores                               | Uso comum                                                                              |
+| ------------------- | ------------------------------------- | -------------------------------------------------------------------------------------- |
+| `sourceMap`         | `boolean`                             | Habilitar os mapas de origem no plugin Vite                                            |
+| `ssr`               | `boolean`                             | Compilar para SSR quando não estiver dependendo da flag de build SSR do Vite           |
+| `vapor`             | `boolean`                             | Ativar compilação em modo vapor                                                        |
+| `jsxMode`           | `"vdom"` ou `"vapor"`                 | Backend de saída padrão para componentes `.jsx`/`.tsx`                                 |
+| `customRenderer`    | `boolean`                             | Trate tags minúsculas que não sejam HTML como elementos de renderização personalizados |
+| `templateSyntax`    | `"standard"`, `"strict"`ou `"quirks"` | Escolha o tratamento de aviso, erro ou peculiaridade do Vue para a sintaxe do modelo   |
+| `scriptExt`         | `"ts"` ou `"js"`                      | Preserve a saída do TS ou faça downcompile para JS no comando de build npm             |
+| `mode`              | `"module"` ou `"function"`            | Modo de saída de compilador de nível inferior                                          |
+| `prefixIdentifiers` | `boolean`                             | Identificadores de prefixos com `_ctx`                                                 |
+| `hoistStatic`       | `boolean`                             | Controle o içamento estático do nó                                                     |
+| `cacheHandlers`     | `boolean`                             | Cache do gerenciador de eventos de controle                                            |
+| `isTs`              | `boolean`                             | Analisar blocos de script como TypeScript                                              |
+| `runtimeModuleName` | `string`                              | Módulo de importação em tempo de execução Override                                     |
+| `runtimeGlobalName` | `string`                              | Override global em tempo de execução para saída no estilo função/IIFE                  |
 
 Para projetos Vite, opções diretas de plugins sobrepõem a configuração compartilhada:
 
@@ -227,7 +227,6 @@ export default defineConfig({
 ## Sintaxe do Template
 
 `compiler.templateSyntax` padrão para `"standard"`.
-
 
 - `"standard"` aceita sintaxe inválida recuperável, emite avisos e reescreve para saída válida.
 - `"strict"` reporta sintaxe inválida como erros de compilação.
@@ -269,8 +268,9 @@ auto-fechadas.
 > [JSX & TSX guide](./jsx.md). Esta seção cobre apenas as chaves de configuração do modo de saída.
 
 O Vize compila componentes `.jsx`/`.tsx` Vue para saída Virtual DOM ou
-[Vapor](https://blog.vuejs.org/posts/vue-vapor). `compiler.jsxMode` seleciona o **global
-* * padrão para componentes que não optam explicitamente; Ele é o padrão `"vdom"`.
+[Vapor](https://blog.vuejs.org/posts/vue-vapor). `compiler.jsxMode` seleciona o \*\*global
+
+- - padrão para componentes que não optam explicitamente; Ele é o padrão `"vdom"`.
 
 ```ts
 // vize.config.ts
@@ -288,7 +288,6 @@ export default defineConfig({
 controla o backend padrão para JSX/TSX. Um projeto pode manter SFCs no VDOM enquanto o JSX é usado por padrão para
 Vapor, ou vice-versa. O plugin Vite também aceita `jsxMode` diretamente como opção de plugin, o que
 sobrepõe a configuração compartilhada.
-
 
 ### Diretivas por componente
 
@@ -342,7 +341,6 @@ diagnosticadas. Prólogos não relacionados, como `"use strict"`, ficam intocado
 
 `dialect` seleciona o perfil do dialeto Vue para documentos HTML independentes (`.html`/`.htm`):
 
-
 ```json
 {
   "dialect": "petite-vue"
@@ -351,8 +349,8 @@ diagnosticadas. Prólogos não relacionados, como `"use strict"`, ficam intocado
 
 - `"vue"` trata documentos HTML autônomos como documentos simples do Vue a partir do CDN.
 - `"petite-vue"` opta documentos HTML autônomos para o
-[petite-vue](https://github.com/vuejs/petite-vue) dialeto (completações`v-scope`/`v-effect`
- e recursos IDE conscientes da petite-vue).
+  [petite-vue](https://github.com/vuejs/petite-vue) dialeto (completações`v-scope`/`v-effect`
+  e recursos IDE conscientes da petite-vue).
 
 Quando a chave está ausente, o dialeto é detectado estruturalmente por documento: um `<script src>`
 resolvendo para o pacote petite-vue, uma importação ES inline de `petite-vue`ou uma chamada `PetiteVue.createApp`
@@ -399,7 +397,6 @@ e roda apenas para componentes não`<script setup>`, para que o caminho comum pe
 `optionsApi: false` para optar por não participar. O suporte legado para Vue 2.7 / Nuxt 2 (`typeChecker.legacyVue2`, que adiciona
 os globais de templates Nuxt 2) é um opt-in separado para build `legacy`.
 
-
 `typeChecker.tsconfig` e `typeChecker.corsaPath` fazem parte do esquema compartilhado, mas o caminho Corsa
 apoiado por projetos é hoje a superfície Rust CLI. `corsaPath` é compartilhado por `vize check`,
 `vize lint`conscientes de tipo , e `vize lsp` (`typeChecker.tsgoPath` é um pseudônimo obsoleto); a pilha de
@@ -407,7 +404,6 @@ em tempo de execução é `@typescript/native-preview`, a camada API Corsa/corsa
 . Mantenha declarações ambientais, arquivos gerados de autoimportação, aliases de caminho e declarações do Vue
 `ComponentCustomProperties` no seu projeto `tsconfig.json`, e use um script de pacote
 como `vize:check:app` para `--tsconfig` ou `--corsa-path` sobrescrições.
-
 
 ```json
 {
@@ -420,7 +416,6 @@ como `vize:check:app` para `--tsconfig` ou `--corsa-path` sobrescrições.
 
 `typeChecker.servers` é reservado para futuros grupos de trabalhadores da Corsa. O executor direto de sessão de projeto
 atualmente suporta apenas `1`; valores maiores falham rápido em vez de fingir ajustar a concorrência.
-
 
 ## Opções de Musea
 

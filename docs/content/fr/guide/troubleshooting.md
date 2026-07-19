@@ -1,8 +1,8 @@
 ---
 title: Dépannage
 ---
-<!-- Generated translation; source: guide/troubleshooting.md -->
 
+<!-- Generated translation; source: guide/troubleshooting.md -->
 
 # Dépannage
 
@@ -23,7 +23,6 @@ Un cas courant de migration est la syntaxe auto-fermeture sur des éléments HTM
 `<div />` et `<span />` ne sont pas des éléments HTML valides auto-fermants. Le mode standard les réécrit comme
 éléments vides, équivalents à `<div></div>` et `<span></span>`, et émet un avertissement. Le mode strict
 les signale comme des erreurs. Le mode Alter les maintient comme des feuilles qui se ferment automatiquement sans avertissement.
-
 
 Préfèrent écrire des balises de fin explicites :
 

@@ -2,8 +2,8 @@
 title: 检测与药物
 description: 为什么当代理成为开发循环的一部分时，快照密集的测试、真实世界的装配和确定性检查更为重要。
 ---
-<!-- Generated translation; source: blog/notes/2026-05-16-testing-agentic-coding-and-trust.md -->
 
+<!-- Generated translation; source: blog/notes/2026-05-16-testing-agentic-coding-and-trust.md -->
 
 # 测试与特工
 

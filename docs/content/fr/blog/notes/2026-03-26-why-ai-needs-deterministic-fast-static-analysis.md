@@ -2,8 +2,8 @@
 title: Analyse statique pour l’IA
 description: À mesure que l’IA écrit plus de code, nous avons besoin d’un retour statique plus rapide et plus fiable, pas moins.
 ---
-<!-- Generated translation; source: blog/notes/2026-03-26-why-ai-needs-deterministic-fast-static-analysis.md -->
 
+<!-- Generated translation; source: blog/notes/2026-03-26-why-ai-needs-deterministic-fast-static-analysis.md -->
 
 # Analyse statique pour l’IA
 
@@ -22,7 +22,6 @@ description: À mesure que l’IA écrit plus de code, nous avons besoin d’un 
 </span>
 </a>
 </div>
-
 
 Une réaction courante à l’essor des outils de codage par IA est : peut-être que l’analyse statique compte moins aujourd’hui.
 
@@ -107,8 +106,8 @@ C’est exactement le type de signal que les systèmes d’IA peuvent bien utili
 
 Un LLM est bien plus utile lorsqu’il peut fonctionner contre une structure déterministe plutôt que contre des rapports de défaillance vagues. « Il y a une erreur de `vize/vue/require-v-for-key` à cet endroit » est un bien meilleur substrat pour une réparation automatisée que « quelque chose semble étrange dans votre modèle ».
 
-Ainsi, l’avenir n’est pas l’IA *plutôt que l’analyse* statique.
-C’est de l’IA *par-dessus une* analyse statique.
+Ainsi, l’avenir n’est pas l’IA _plutôt que l’analyse_ statique.
+C’est de l’IA _par-dessus une_ analyse statique.
 
 ## Plus l’IA écrit de code, plus nous avons besoin d’un rejet rapide
 

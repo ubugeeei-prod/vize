@@ -1,8 +1,8 @@
 ---
 title: Servidor MCP
 ---
-<!-- Generated translation; source: integrations/mcp.md -->
 
+<!-- Generated translation; source: integrations/mcp.md -->
 
 # Servidor MCP
 

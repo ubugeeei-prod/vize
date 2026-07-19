@@ -1,8 +1,8 @@
 ---
 title: 跨档规则
 ---
-<!-- Generated translation; source: rules/cross-file.md -->
 
+<!-- Generated translation; source: rules/cross-file.md -->
 
 # 跨档规则
 

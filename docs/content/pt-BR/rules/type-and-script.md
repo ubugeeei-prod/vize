@@ -1,8 +1,8 @@
 ---
 title: Regras de Tipo e Script
 ---
-<!-- Generated translation; source: rules/type-and-script.md -->
 
+<!-- Generated translation; source: rules/type-and-script.md -->
 
 # Regras de Tipo e Script
 
@@ -22,7 +22,6 @@ pula a passagem de regras com checker, em vez de silenciosamente descartar as re
 `typeChecker.corsaPath` quando o projeto precisar de um binário `tsgo` explícito ou Corsa. Os padrões permanecem
 custo zero: Patina não analisa SFCs para linting com xadrez nem inicia Corsa a menos que a bandeira,
 `linter.typeAware`, ou uma regra de `type/*` explicitamente ativada opte.
-
 
 ```ts
 export default defineConfig({

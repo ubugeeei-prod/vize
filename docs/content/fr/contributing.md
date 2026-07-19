@@ -1,8 +1,8 @@
 ---
 title: Contributions
 ---
-<!-- Generated translation; source: contributing.md -->
 
+<!-- Generated translation; source: contributing.md -->
 
 # Contributions
 
@@ -153,7 +153,7 @@ luminaire minimisé ou instantané complet qui transforme le résultat en contra
 ## Demandes de tirage
 
 - Utilisez les commits conventionnels pour les messages de commit et les titres PR, tels que
-`fix(vite-plugin): surface SFC compile errors`.
+  `fix(vite-plugin): surface SFC compile errors`.
   - Gardez les RP concentrés sur un seul changement de comportement ou un changement de documentation/gouvernance.
 - Inclure des commandes de vérification dans l’organisme de relations publiques.
 - Ne rafraîchissez pas de grandes lignes de base snapshot à moins que la PR ne porte spécifiquement sur ces sorties.

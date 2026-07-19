@@ -2,8 +2,8 @@
 title: Notas Lane
 description: Algumas atualizações de projetos precisam de espaço para contexto, não apenas uma entrada no registro de mudanças.
 ---
-<!-- Generated translation; source: blog/notes/2026-03-26-why-vize-needs-notes.md -->
 
+<!-- Generated translation; source: blog/notes/2026-03-26-why-vize-needs-notes.md -->
 
 # Notas Lane
 
@@ -22,7 +22,6 @@ description: Algumas atualizações de projetos precisam de espaço para context
 </span>
 </a>
 </div>
-
 
 Documentos de referência são ótimos para responder "como uso isso?" Eles são muito piores em responder perguntas como:
 

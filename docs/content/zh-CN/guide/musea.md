@@ -1,12 +1,12 @@
 ---
 title: 博物馆
 ---
-<!-- Generated translation; source: guide/musea.md -->
 
+<!-- Generated translation; source: guide/musea.md -->
 
 # 博物馆
 
->**⚠️ 进行中的作品：**Musea仍在不断发展。文件格式、API 和界面行为可能会发生变化。
+> **⚠️ 进行中的作品：**Musea仍在不断发展。文件格式、API 和界面行为可能会发生变化。
 
 Musea是Vize的艺术文件和组件画廊工具链。
 
@@ -169,20 +169,20 @@ const sharedCount = ref(0);
 
 ### 解剖学
 
-|元素 / 宏 |目的 |
-|-------------------------------- |-------------------------------------- |
-|`defineArt(source, options)` |目标组件与艺术元数据 |
-|`defineArt(...).title` |显示名称 |
-|`defineArt(...).category` |侧边栏分组 |
-|`defineArt(...).status` |可选身份徽章 |
-|`defineArt(...).tags` |搜索和筛选标签 |
-|`<script setup>` |变体本地设置状态默认 |
-|`<script setup isolate="false">` |所有变体共享设置状态 |
-|`<art>` |根变体块 |
-|`<art title component ...>` |兼容性元数据属性 |
-|`<variant>` |命名分量变体 |
-|`default` |标记默认变体 |
-|`args`，`viewport`，`skip-vrt` |可选变体配置 |
+| 元素 / 宏                        | 目的                 |
+| -------------------------------- | -------------------- |
+| `defineArt(source, options)`     | 目标组件与艺术元数据 |
+| `defineArt(...).title`           | 显示名称             |
+| `defineArt(...).category`        | 侧边栏分组           |
+| `defineArt(...).status`          | 可选身份徽章         |
+| `defineArt(...).tags`            | 搜索和筛选标签       |
+| `<script setup>`                 | 变体本地设置状态默认 |
+| `<script setup isolate="false">` | 所有变体共享设置状态 |
+| `<art>`                          | 根变体块             |
+| `<art title component ...>`      | 兼容性元数据属性     |
+| `<variant>`                      | 命名分量变体         |
+| `default`                        | 标记默认变体         |
+| `args`，`viewport`，`skip-vrt`   | 可选变体配置         |
 
 当变体是组件合同的一部分时，保持美术文件靠近组件：
 

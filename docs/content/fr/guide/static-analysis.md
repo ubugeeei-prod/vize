@@ -1,8 +1,8 @@
 ---
 title: Analyse statique
 ---
-<!-- Generated translation; source: guide/static-analysis.md -->
 
+<!-- Generated translation; source: guide/static-analysis.md -->
 
 # Analyse statique
 
@@ -15,13 +15,13 @@ est le flux de travail recommandé pour les applications.
 
 ## Pipeline
 
-| Couche | Ce que ça fait | Utilisé par |
-| -------- | ------------------------------------------------------------------------- | ---------------------------------------------- |
-| Armature | Tokenise et analyse les modèles Vue et la structure SFC | compilateur, linter, formateur |
-| Croquis | Construit des périmètres, des métadonnées de liaison, des informations macro et des graphiques croisés | Compilation, LINT, vérifications sensibles aux types |
-| Patine | Utilise Vue, script, CSS, a11y, SSR, Vapor, Musea, et des règles de type sensibles aux types | `vize lint`, diagnostic de l’éditeur, pont Oxlint |
-| Canon | Génère un TypeScript virtuel et associe les diagnostics aux fichiers Vue | `vize check`, vérification du type d’éditeur |
-| Maestro | Expose les fonctionnalités de diagnostic et d’éditeur via LSP | `vize lsp`, VS Code, Zed |
+| Couche   | Ce que ça fait                                                                                         | Utilisé par                                          |
+| -------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| Armature | Tokenise et analyse les modèles Vue et la structure SFC                                                | compilateur, linter, formateur                       |
+| Croquis  | Construit des périmètres, des métadonnées de liaison, des informations macro et des graphiques croisés | Compilation, LINT, vérifications sensibles aux types |
+| Patine   | Utilise Vue, script, CSS, a11y, SSR, Vapor, Musea, et des règles de type sensibles aux types           | `vize lint`, diagnostic de l’éditeur, pont Oxlint    |
+| Canon    | Génère un TypeScript virtuel et associe les diagnostics aux fichiers Vue                               | `vize check`, vérification du type d’éditeur         |
+| Maestro  | Expose les fonctionnalités de diagnostic et d’éditeur via LSP                                          | `vize lsp`, VS Code, Zed                             |
 
 Cela signifie que l’analyse statique n’est pas seulement un linting. Les liaisons de templates, les macros du compilateur, les métadonnées
 composants, les relations de fournisseur/injection, le flux de réactivité, le TypeScript virtuel généré et
@@ -103,29 +103,29 @@ les éléments du modèle, les directives, `v-for`, `v-if`et les interpolations.
 son nom de règle, sa catégorie, sa gravité par défaut, son texte d’aide et sa capacité à être corrigée. Les préréglages ne sont que
 registres qui décident ensemble quelles règles sont activées.
 
-| Superficie | Exemples de règles | Ce qu’ils couvrent |
-| ------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| Correction de la vue | `vue/require-v-for-key`, `vue/valid-v-model`, `vue/no-use-v-if-with-v-for` | Sémantique de modèles locales à un composant |
-| Sécurité Vue | `vue/no-v-html`, `vue/no-unsafe-url` | Des ennuis HTML et URL sujets à XSS |
-| Structure de la vue | `vue/sfc-element-order`, `vue/require-scoped-style`, `vue/no-unused-components` | Forme du SFC, utilisation des composants et maintenabilité |
-| Conventions d’écriture | `script/no-options-api`, `script/no-get-current-instance`, `script/prefer-import-from-vue` | API Vue Composition et conventions de macro du compilateur |
-| CSS | `css/no-important`, `css/no-hardcoded-values`, `css/prefer-logical-properties` | Blocs de style et CSS adapté aux systèmes de conception |
-| Accessibilité | `a11y/img-alt`, `a11y/anchor-has-content`, `a11y/label-has-for` | Balisage accessible et motifs d’interaction |
-| HTML | `html/deprecated-element`, `html/id-duplication`, `html/no-empty-palpable-content` | Validité HTML et balisage sémantique |
-| SSR | `ssr/no-browser-globals-in-ssr`, `ssr/no-hydration-mismatch` | Dangers de rendu serveur/client |
-| Vapeur | `vapor/no-vue-lifecycle-events`, `vapor/no-inline-template`, `vapor/require-vapor-attribute` | Contraintes de gabarit orientées vapeur |
-| Musea | `musea/require-title`, `musea/valid-variant`, `musea/prefer-design-tokens` | Galerie de composants et création de variantes |
-| Analyse en fonction du type | `type/require-typed-props`, `type/require-typed-emits`, `type/no-reactivity-loss` | Règles nécessitant un contexte sémantique ou appuyé sur des damiers |
+| Superficie                  | Exemples de règles                                                                           | Ce qu’ils couvrent                                                  |
+| --------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Correction de la vue        | `vue/require-v-for-key`, `vue/valid-v-model`, `vue/no-use-v-if-with-v-for`                   | Sémantique de modèles locales à un composant                        |
+| Sécurité Vue                | `vue/no-v-html`, `vue/no-unsafe-url`                                                         | Des ennuis HTML et URL sujets à XSS                                 |
+| Structure de la vue         | `vue/sfc-element-order`, `vue/require-scoped-style`, `vue/no-unused-components`              | Forme du SFC, utilisation des composants et maintenabilité          |
+| Conventions d’écriture      | `script/no-options-api`, `script/no-get-current-instance`, `script/prefer-import-from-vue`   | API Vue Composition et conventions de macro du compilateur          |
+| CSS                         | `css/no-important`, `css/no-hardcoded-values`, `css/prefer-logical-properties`               | Blocs de style et CSS adapté aux systèmes de conception             |
+| Accessibilité               | `a11y/img-alt`, `a11y/anchor-has-content`, `a11y/label-has-for`                              | Balisage accessible et motifs d’interaction                         |
+| HTML                        | `html/deprecated-element`, `html/id-duplication`, `html/no-empty-palpable-content`           | Validité HTML et balisage sémantique                                |
+| SSR                         | `ssr/no-browser-globals-in-ssr`, `ssr/no-hydration-mismatch`                                 | Dangers de rendu serveur/client                                     |
+| Vapeur                      | `vapor/no-vue-lifecycle-events`, `vapor/no-inline-template`, `vapor/require-vapor-attribute` | Contraintes de gabarit orientées vapeur                             |
+| Musea                       | `musea/require-title`, `musea/valid-variant`, `musea/prefer-design-tokens`                   | Galerie de composants et création de variantes                      |
+| Analyse en fonction du type | `type/require-typed-props`, `type/require-typed-emits`, `type/no-reactivity-loss`            | Règles nécessitant un contexte sémantique ou appuyé sur des damiers |
 
 Les préréglages intégrés sont destinés à soutenir l’adoption par étapes :
 
-| Préréglage | Forme |
-| ------------- | -------------------------------------------------------------------- |
-| `essential` | Correction Vue axée sur les erreurs, sécurité et vérifications HTML minimales |
-| `happy-path` | Bundle par défaut pour la correction, la sécurité, a11y, SSR, vérifications sémantiques |
-| `opinionated` | `happy-path` plus des conventions, règles de script et règles de type plus fortes |
-| `nuxt` | Règles opiniâtes ajustées aux hypothèses d’importation automatique de Nuxt |
-| `incremental` | Point de départ vide pour une adoption guidée par l’hôte, règle par règle |
+| Préréglage    | Forme                                                                                   |
+| ------------- | --------------------------------------------------------------------------------------- |
+| `essential`   | Correction Vue axée sur les erreurs, sécurité et vérifications HTML minimales           |
+| `happy-path`  | Bundle par défaut pour la correction, la sécurité, a11y, SSR, vérifications sémantiques |
+| `opinionated` | `happy-path` plus des conventions, règles de script et règles de type plus fortes       |
+| `nuxt`        | Règles opiniâtes ajustées aux hypothèses d’importation automatique de Nuxt              |
+| `incremental` | Point de départ vide pour une adoption guidée par l’hôte, règle par règle               |
 
 ## Pragmas de migration et règles de coutume
 
@@ -193,20 +193,20 @@ vp run vize:lint:cross-file-tree
 
 Le moteur cross-file de bas niveau est plus large que la surface actuelle de la CLI :
 
-| Option de cross-file | Diagnostics ou faits prévus |
-| ------------------------- | --------------------------------------------------------------------------- |
-| `provide_inject` | Injections non appariées, fournitures inutilisées, avertissements de string-key, flux non réactifs |
-| `unique_ids` | Des identifiants dupliqués et des identifiants non uniques introduits à l’intérieur des boucles |
-| `reactivity_tracking` | Déstructuration des hélices, aliasing et perte de réactivité croisée |
-| `race_conditions` | Mises à jour d’état asynchrones pouvant passer rapidement par l’état fourni ou partagé |
-| `fallthrough_attrs` | `$attrs`, `inheritAttrs`, et les risques de chute à racines multiples |
-| `component_emits` | Émissions non déclarées, émissions non utilisées, et auditeurs sans producteur |
-| `event_bubbling` | Des événements qui débordent les frontières des composants sans être gérés |
-| `server_client_boundary` | Utilisation de l’API de navigateur et risques d’hydratation autour des frontières SSR/client |
-| `error_suspense_boundary` | Composants asynchrones sans limites de suspense ou d’erreur utiles |
-| `circular_dependencies` | Cycles d’importation et chaînes d’importation profondes |
-| `component_resolution` | Utilisation de composants non enregistrés ou non résolus |
-| `props_validation` | Accessoires manquants et types d’accessoires pour enfants |
+| Option de cross-file      | Diagnostics ou faits prévus                                                                        |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| `provide_inject`          | Injections non appariées, fournitures inutilisées, avertissements de string-key, flux non réactifs |
+| `unique_ids`              | Des identifiants dupliqués et des identifiants non uniques introduits à l’intérieur des boucles    |
+| `reactivity_tracking`     | Déstructuration des hélices, aliasing et perte de réactivité croisée                               |
+| `race_conditions`         | Mises à jour d’état asynchrones pouvant passer rapidement par l’état fourni ou partagé             |
+| `fallthrough_attrs`       | `$attrs`, `inheritAttrs`, et les risques de chute à racines multiples                              |
+| `component_emits`         | Émissions non déclarées, émissions non utilisées, et auditeurs sans producteur                     |
+| `event_bubbling`          | Des événements qui débordent les frontières des composants sans être gérés                         |
+| `server_client_boundary`  | Utilisation de l’API de navigateur et risques d’hydratation autour des frontières SSR/client       |
+| `error_suspense_boundary` | Composants asynchrones sans limites de suspense ou d’erreur utiles                                 |
+| `circular_dependencies`   | Cycles d’importation et chaînes d’importation profondes                                            |
+| `component_resolution`    | Utilisation de composants non enregistrés ou non résolus                                           |
+| `props_validation`        | Accessoires manquants et types d’accessoires pour enfants                                          |
 
 L’objectif est de maintenir le linting d’un seul fichier rapide par défaut, d’exposer explicitement les groupes de fichiers croisés au fur et
 ils mûrissent, et de router les faits de projet à haute confiance dans le même flux de diagnostic utilisé par la
@@ -217,7 +217,6 @@ CLI, le pont Oxlint et le serveur éditeur.
 `vize check` génère un TypeScript virtuel pour les SFC Vue et demande aux sessions du projet Corsa des diagnostics
 . Il vérifie `.vue`, `.ts`, `.tsx`et `.d.ts` entrées et redistribue les diagnostics aux fichiers sources
 originaux.
-
 
 ```json
 {
@@ -350,4 +349,5 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 5. Ajoutez des vérifications croisées et strictes de réactivité pour les projets bénéficiant d’une analyse plus approfondie.
 
 Pour une seule porte de qualité, un script de paquet `vize:ready` exécutant `vize ready src` exécute `fmt
+
 - -write`, `lint`, `check`et `build` dans l’ordre et s’arrête à la première étape défaillante.

@@ -1,8 +1,8 @@
 ---
 title: JSX & TSX
 ---
-<!-- Generated translation; source: guide/jsx.md -->
 
+<!-- Generated translation; source: guide/jsx.md -->
 
 # JSX & TSX
 
@@ -24,7 +24,6 @@ a mesma experiência de editor que um SFC — só que criado como uma função t
 `.jsx` e `.tsx` arquivos são roteados automaticamente pelos plugins bundler do Vize — não há flag de
 de opt-in para compilar. Qualquer projeto que já use integração com bundler Vize recebe suporte a JSX/TSX
 :
-
 
 - `@vizejs/vite-plugin`
 - `@vizejs/unplugin` (rollup / webpack / esbuild)
@@ -188,7 +187,6 @@ componentes individuais podem sobrepor-se.
 `compiler.jsxMode` define o backend global padrão para `.jsx`/`.tsx` componentes. Aceita `"vdom"`
 ou `"vapor"` e o padrão é `"vdom"`.
 
-
 ```ts
 // vize.config.ts
 import { defineConfig } from "vize";
@@ -205,7 +203,6 @@ export default defineConfig({
 controla o backend padrão para JSX/TSX. Um projeto pode manter SFCs no VDOM enquanto o JSX é usado por padrão para
 Vapor, ou vice-versa. O plugin Vite também aceita `jsxMode` diretamente como opção de plugin, o que
 sobrepõe a configuração compartilhada.
-
 
 ### Diretivas por componente
 
@@ -253,9 +250,9 @@ O modo de saída de um componente resolve nesta ordem:
 Diretrizes mal formadas ou conflitantes são reportadas, em vez de ignoradas silenciosamente:
 
 - Uma diretiva que começa com `"use vue:"` , mas não nomeia um modo conhecido (um erro de digitação como
-`"use vue:vdomx"`) é um erro de compilação.
+  `"use vue:vdomx"`) é um erro de compilação.
   - Duas diretivas de modo conflitantes em um componente (`"use vue:vapor"` seguidas por `"use vue:vdom"`)
-  são diagnosticados; A primeira diretriz ainda vence no modo resolvido.
+    são diagnosticados; A primeira diretriz ainda vence no modo resolvido.
 - Prólogos não relacionados, como `"use strict"` ficam intocados.
 
 ## Estilos com mira
@@ -329,11 +326,10 @@ mas mantenha-o para casos em que uma folha de estilos com escopo realmente preci
 A sintaxe literal CSS `v-bind(...)` função usada dentro de um bloco SFC `<style>` não é uma forma suportada
 de autoria dentro de um bloco estilo JSX.
 
-
 ## Formatação
 
 Glyph formata o conteúdo do script JSX/TSX com o parser e formatador OXC. Em arquivos `.vue`,
-`<script lang="jsx">`, `<script lang="tsx">``<script setup lang="tsx">` e  são analisados como JSX/TSX
+`<script lang="jsx">`, `<script lang="tsx">``<script setup lang="tsx">` e são analisados como JSX/TSX
 em vez de recorrer ao TypeScript simples, então filhos JSX e anotações TSX são formatados como
 sintaxe real:
 

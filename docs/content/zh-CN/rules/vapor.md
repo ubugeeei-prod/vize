@@ -1,8 +1,8 @@
 ---
 title: 蒸汽规则
 ---
-<!-- Generated translation; source: rules/vapor.md -->
 
+<!-- Generated translation; source: rules/vapor.md -->
 
 # 蒸汽统治
 

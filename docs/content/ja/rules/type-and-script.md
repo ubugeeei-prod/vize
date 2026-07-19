@@ -1,8 +1,8 @@
 ---
 title: タイプとスクリプトのルール
 ---
-<!-- Generated translation; source: rules/type-and-script.md -->
 
+<!-- Generated translation; source: rules/type-and-script.md -->
 
 # タイプとスクリプトのルール
 

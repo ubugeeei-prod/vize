@@ -1,8 +1,8 @@
 ---
 title: 评论注释
 ---
-<!-- Generated translation; source: guide/comment-annotations.md -->
 
+<!-- Generated translation; source: guide/comment-annotations.md -->
 
 # 评论注释
 
@@ -58,11 +58,11 @@ Vize 提供基于注释的注释来控制 linting、诊断和代码生成行为�
 </template>
 ```
 
-|价值 |效果 |
-|------- |-------------------- |
-|`warn` |降级为警告 |
-|`error` |升级到错误 |
-|`off` |完全压制 |
+| 价值    | 效果       |
+| ------- | ---------- |
+| `warn`  | 降级为警告 |
+| `error` | 升级到错误 |
+| `off`   | 完全压制   |
 
 ### `@vize:todo`
 
@@ -121,16 +121,16 @@ Vize 提供基于注释的注释来控制 linting、诊断和代码生成行为�
 
 ### 摘要
 
-|指令 |效果 |严重程度 |
-|------------------------ |---------------------------------- |-------- |
-|`@vize:expected` |下一行有诊断 |—        |
-|`@vize:ignore-start/end` |抑制区域内所有诊断 |—        |
-|`@vize:level(...)` |覆盖下一行严重度 |—        |
-|`@vize:todo <msg>` |发出 TODO |警告 |
-|`@vize:fixme <msg>` |发射修正我 |错误 |
-|`@vize:deprecated <msg>` |发布弃用通知 |警告 |
-|`@vize:docs <text>` |文档（无绒毛效应） |—        |
-|`@vize:dev-only` |制作中的连环画 |—        |
+| 指令                     | 效果               | 严重程度 |
+| ------------------------ | ------------------ | -------- |
+| `@vize:expected`         | 下一行有诊断       | —        |
+| `@vize:ignore-start/end` | 抑制区域内所有诊断 | —        |
+| `@vize:level(...)`       | 覆盖下一行严重度   | —        |
+| `@vize:todo <msg>`       | 发出 TODO          | 警告     |
+| `@vize:fixme <msg>`      | 发射修正我         | 错误     |
+| `@vize:deprecated <msg>` | 发布弃用通知       | 警告     |
+| `@vize:docs <text>`      | 文档（无绒毛效应） | —        |
+| `@vize:dev-only`         | 制作中的连环画     | —        |
 
 ## 剧本压制（`@vize forget`）
 
@@ -162,12 +162,12 @@ const { count } = inject("state");
 
 ### 规则
 
-|规则 |描述 |
-|--------------- |-------------------------------------------------------------------- |
-|需要理由 |`// @vize forget`没有理由就是错误 |
-|需要结肠 |必须使用`// @vize forget: <reason>`（冒号加于理由前） |
-|仅限下一行 |适用于下一个非注释、非空行 |
-|无孤儿 |文件末尾没有代码的抑制是错误 |
+| 规则       | 描述                                                  |
+| ---------- | ----------------------------------------------------- |
+| 需要理由   | `// @vize forget`没有理由就是错误                     |
+| 需要结肠   | 必须使用`// @vize forget: <reason>`（冒号加于理由前） |
+| 仅限下一行 | 适用于下一个非注释、非空行                            |
+| 无孤儿     | 文件末尾没有代码的抑制是错误                          |
 
 ### 多重抑制
 
@@ -199,12 +199,12 @@ const { count } = inject("state");
 
 ### 常见原因
 
-|原因 |何时使用 |
-|---------------------------- |---------------------------------- |
-|`intentionally non-reactive` |价值不必是反应性的 |
-|`read-only access` |只读，不跟踪变更 |
-|`legacy code` |已知问题，稍后会重构 |
-|`third-party integration` |外部库要求 |
+| 原因                         | 何时使用             |
+| ---------------------------- | -------------------- |
+| `intentionally non-reactive` | 价值不必是反应性的   |
+| `read-only access`           | 只读，不跟踪变更     |
+| `legacy code`                | 已知问题，稍后会重构 |
+| `third-party integration`    | 外部库要求           |
 
 ### 无效示例
 
