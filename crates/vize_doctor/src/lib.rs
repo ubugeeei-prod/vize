@@ -18,6 +18,8 @@
 //! - Serialized property and enum names are language-neutral and versioned.
 //! - Reports contain no timestamps or process-specific values.
 //! - A blocking proven error remains blocking regardless of its health score.
+//! - The optional `application-analysis` adapter is disabled by default.
+//! - Enabled adapters reuse registered whole-project analysis without reparsing.
 //!
 //! # Example
 //!
@@ -48,6 +50,8 @@
 //! assert_eq!(report.findings().len(), 1);
 //! ```
 
+#[cfg(feature = "application-analysis")]
+pub mod application_analysis;
 mod model;
 mod report;
 

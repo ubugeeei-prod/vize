@@ -17,6 +17,14 @@ Support and deprecation guarantees are defined in the
 - default health gates never block on low-confidence findings;
 - report output contains no timestamps or process-specific values.
 
+## Application analysis
+
+The `application-analysis` feature is disabled by default so consumers that
+only exchange finding and report contracts do not link the analysis engine.
+When enabled, the adapter converts an existing Vize whole-project analysis into
+source-aware findings and reports without reparsing files. It fails closed if a
+diagnostic references a stale file or a path outside the declared workspace.
+
 ## Example
 
 ```rust
