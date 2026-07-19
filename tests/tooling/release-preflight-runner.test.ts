@@ -103,6 +103,7 @@ test("release metadata inventory discovers every non-private npm and editor pack
       "npm/framework/nuxt/package.json",
       "npm/fresco-native/package.json",
       "npm/fresco/package.json",
+      "npm/marquette/package.json",
       "npm/mcp-musea/package.json",
       "npm/native/package.json",
       "npm/oxint/package.json",
