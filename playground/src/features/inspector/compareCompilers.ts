@@ -77,6 +77,10 @@ async function compileOfficialVue(
 
   try {
     const officialTarget = officialTargetFor(target);
+    // The official compiler auto-detects a `vapor` attr on `<script>` blocks;
+    // forcing the option keeps the reference honest when the inspector target
+    // is Vapor but the source omits the attr.
+    const vapor = target === "vapor";
     const parsed = parse(file.source, { filename: file.path });
     const descriptor = parsed.descriptor;
     const isTypeScript = descriptorUsesTypeScript(descriptor);
@@ -94,12 +98,14 @@ async function compileOfficialVue(
         id: file.path,
         inlineTemplate,
         isProd: true,
+        vapor,
         templateOptions: inlineTemplate
           ? {
               filename: file.path,
               id: file.path,
               scoped,
               isProd: true,
+              vapor,
               compilerOptions: {
                 expressionPlugins: isTypeScript ? ["typescript"] : undefined,
               },
@@ -119,6 +125,7 @@ async function compileOfficialVue(
         scoped,
         isProd: true,
         ssr: officialTarget === "ssr",
+        vapor,
         compilerOptions: {
           bindingMetadata,
           expressionPlugins: isTypeScript ? ["typescript"] : undefined,
@@ -172,10 +179,10 @@ async function compileVize(
       templateSyntax: options.templateSyntax,
     };
     const result = compiler.compileSfc(file.source, compileOptions);
-    const code =
-      target === "vapor"
-        ? result.template?.code || result.script?.code || ""
-        : result.script?.code || result.template?.code || "";
+    // `script.code` always carries the full compiled SFC module. Preferring
+    // `template.code` for Vapor showed the template-only render function and
+    // silently dropped every `<script setup>` statement (#2969).
+    const code = result.script?.code || result.template?.code || "";
     const parser = descriptorUsesTypeScript(result.descriptor as SFCDescriptor)
       ? "typescript"
       : "babel";
