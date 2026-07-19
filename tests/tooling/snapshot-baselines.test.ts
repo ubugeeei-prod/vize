@@ -22,6 +22,8 @@ const completeCheckSnapshotTests = [
 
 const assertionOnlyCheckTests = {
   "class-component": "class-component vue-tsc parity has known upstream-noisy diagnostics",
+  "create-vue-generated-template-oracle":
+    "generated-template patch oracle asserts exact batch typechecker and vue-tsc parity",
   "create-vue-patch-oracle":
     "patch oracle asserts exact live CLI and LSP behavior across document versions",
   "element-plus-slot-oracle":
