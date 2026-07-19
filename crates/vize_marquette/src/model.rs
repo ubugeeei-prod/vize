@@ -31,6 +31,7 @@ pub enum RuntimeFamily {
     /// Web browser runtime.
     Browser,
     /// JavaScript server or worker runtime.
+    #[serde(rename = "javascript")]
     JavaScript,
     /// Rust executable or library runtime.
     Rust,
@@ -63,6 +64,7 @@ pub enum EnvironmentConsumer {
 #[serde(rename_all = "kebab-case")]
 pub enum BackendFamily {
     /// Backend hosted by the JavaScript application runtime.
+    #[serde(rename = "javascript")]
     JavaScript,
     /// Rust application or service.
     Rust,

@@ -142,6 +142,7 @@ pub fn compare_contracts(
     CompatibilityReport { changes }
 }
 
+/// Compares a named collection by stable identifier.
 fn compare_by_id<T: PartialEq>(
     collection: &str,
     previous: &[T],
@@ -170,10 +171,12 @@ fn compare_by_id<T: PartialEq>(
     }
 }
 
+/// Creates a breaking compatibility change for one collection member.
 fn breaking(collection: &str, id: &str, message: &str) -> CompatibilityChange {
     change(CompatibilityChangeKind::Breaking, collection, id, message)
 }
 
+/// Creates a compatibility change with a deterministic graph path.
 fn change(
     kind: CompatibilityChangeKind,
     collection: &str,

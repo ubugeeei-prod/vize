@@ -8,6 +8,7 @@ use std::{
 
 use vize_marquette::{ApplicationContract, canonical_json, contract_fingerprint};
 
+/// Runs the marquette CLI and renders errors without panicking.
 fn main() -> ExitCode {
     match run() {
         Ok(code) => code,
@@ -18,6 +19,7 @@ fn main() -> ExitCode {
     }
 }
 
+/// Parses one command and returns its process-level result.
 fn run() -> Result<ExitCode, Box<dyn std::error::Error>> {
     let mut arguments = env::args().skip(1);
     let command = arguments

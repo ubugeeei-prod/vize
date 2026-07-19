@@ -47,6 +47,9 @@ mod compatibility;
 mod model;
 mod validate;
 
+#[cfg(test)]
+mod model_tests;
+
 pub use canonical::{CanonicalContractError, canonical_json, contract_fingerprint};
 pub use compatibility::{
     CompatibilityChange, CompatibilityChangeKind, CompatibilityReport, compare_contracts,

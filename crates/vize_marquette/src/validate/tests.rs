@@ -1,7 +1,7 @@
 use super::*;
 use crate::{
-    Backend, BackendFamily, Environment, Protocol, ProtocolFamily, RenderingMode, Route,
-    RuntimeFamily, Target,
+    Backend, BackendFamily, CapabilityDefinition, Environment, Protocol, ProtocolFamily,
+    RenderingMode, Route, RuntimeFamily, Target,
 };
 
 #[test]
@@ -70,4 +70,34 @@ fn reports_cycles_and_cross_reference_errors() {
     assert!(codes.contains("VIZE_MARQUETTE_014"));
     assert!(codes.contains("VIZE_MARQUETTE_015"));
     assert!(codes.contains("VIZE_MARQUETTE_022"));
+}
+
+#[test]
+fn rejects_empty_capability_descriptions_and_explains_duplicate_routes() {
+    let mut contract = ApplicationContract::new("shop");
+    contract.targets.insert(Target::Web);
+    contract.environments.push(Environment::new(
+        "browser",
+        Target::Web,
+        EnvironmentConsumer::Client,
+        RuntimeFamily::Browser,
+    ));
+    contract.capabilities.insert(
+        "auth.session".into(),
+        CapabilityDefinition::new("auth.session", "   "),
+    );
+    contract.routes.extend([
+        Route::new("home", "/", "browser", RenderingMode::Client),
+        Route::new("landing", "/", "browser", RenderingMode::Client),
+    ]);
+
+    let diagnostics = validate_contract(&contract);
+    assert!(diagnostics.iter().any(|diagnostic| {
+        diagnostic.code == "VIZE_MARQUETTE_024"
+            && diagnostic.message == "capability description must not be empty"
+    }));
+    assert!(diagnostics.iter().any(|diagnostic| {
+        diagnostic.code == "VIZE_MARQUETTE_019"
+            && diagnostic.message == "route path is already used by route \"home\""
+    }));
 }

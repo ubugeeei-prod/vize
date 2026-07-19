@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
-use vize_carton::String;
+use vize_carton::{String, cstr};
 
 use crate::{ApplicationContract, CONTRACT_FORMAT_VERSION, EnvironmentConsumer, RuntimeFamily};
 
@@ -39,6 +39,7 @@ pub struct ContractDiagnostic {
 }
 
 impl ContractDiagnostic {
+    /// Creates an error diagnostic that prevents adapter execution.
     fn error(code: &'static str, path: impl Into<String>, message: impl Into<String>) -> Self {
         Self {
             code,
@@ -48,6 +49,7 @@ impl ContractDiagnostic {
         }
     }
 
+    /// Creates a warning diagnostic for a valid but suspicious contract.
     fn warning(code: &'static str, path: impl Into<String>, message: impl Into<String>) -> Self {
         Self {
             code,
@@ -104,6 +106,13 @@ pub fn validate_contract(contract: &ApplicationContract) -> Vec<ContractDiagnost
                 "VIZE_MARQUETTE_005",
                 contract_path("capabilities", key),
                 "capability version must be greater than zero",
+            ));
+        }
+        if capability.description.trim().is_empty() {
+            diagnostics.push(ContractDiagnostic::error(
+                "VIZE_MARQUETTE_024",
+                contract_path("capabilities", key),
+                "capability description must not be empty",
             ));
         }
     }
@@ -283,7 +292,7 @@ pub fn validate_contract(contract: &ApplicationContract) -> Vec<ContractDiagnost
             diagnostics.push(ContractDiagnostic::error(
                 "VIZE_MARQUETTE_019",
                 path,
-                previous.clone(),
+                cstr!("route path is already used by route \"{previous}\""),
             ));
         }
     }

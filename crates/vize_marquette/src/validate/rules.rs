@@ -6,6 +6,7 @@ use crate::{ApplicationContract, RenderingMode, Target};
 
 use super::ContractDiagnostic;
 
+/// Validates and collects unique identifiers for one contract collection.
 pub(super) fn collect_unique_ids<'a>(
     collection: &str,
     ids: impl Iterator<Item = &'a String>,
@@ -30,6 +31,7 @@ pub(super) fn collect_unique_ids<'a>(
     unique
 }
 
+/// Validates the portable lowercase identifier grammar used by every adapter.
 pub(super) fn validate_identifier(
     id: &str,
     path: &str,
@@ -52,6 +54,7 @@ pub(super) fn validate_identifier(
     }
 }
 
+/// Reports capability references that are absent from the root declaration.
 pub(super) fn validate_capabilities(
     path: &str,
     required: &BTreeSet<String>,
@@ -69,6 +72,7 @@ pub(super) fn validate_capabilities(
     }
 }
 
+/// Reports cycles in the environment dependency graph.
 pub(super) fn validate_environment_cycles(
     contract: &ApplicationContract,
     diagnostics: &mut Vec<ContractDiagnostic>,
@@ -92,6 +96,7 @@ pub(super) fn validate_environment_cycles(
     }
 }
 
+/// Visits one dependency node and returns whether its path closes a cycle.
 pub(super) fn has_cycle<'a>(
     id: &'a String,
     graph: &BTreeMap<&'a String, &'a BTreeSet<String>>,
@@ -116,6 +121,7 @@ pub(super) fn has_cycle<'a>(
     cyclic
 }
 
+/// Ensures a route's rendering mode can execute on its target environment.
 pub(super) fn validate_rendering_target(
     contract: &ApplicationContract,
     route: &crate::Route,
@@ -149,6 +155,7 @@ pub(super) fn validate_rendering_target(
     }
 }
 
+/// Builds the stable diagnostic path for a named collection member.
 pub(super) fn contract_path(collection: &str, id: &str) -> String {
     let mut path = collection.to_compact_string();
     path.push('.');
