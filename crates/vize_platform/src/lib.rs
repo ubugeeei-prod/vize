@@ -6,6 +6,11 @@
 //! implementations. Target-specific crates consume this model and report
 //! their capabilities through it.
 //!
+//! # Stability
+//!
+//! **Experimental.** Public APIs may change or disappear in any release. See the
+//! [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+//!
 //! # Design guarantees
 //!
 //! - Serialized names are stable and independent from Rust type names.

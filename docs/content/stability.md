@@ -103,6 +103,7 @@ details are not compatibility surfaces.
 | `vize_fresco`        | Incubating            | TUI experiments                           | `vize_fresco::{RenderTree, LayoutEngine}`       | No minimum                             |
 | `vize_canon`         | Compatibility preview | Type-checker and editor integrations      | `vize_canon::{type_check_sfc, TypeChecker}`     | One minor with `#[deprecated]`         |
 | `vize_patina`        | Compatibility preview | Linter and Oxlint integrations            | `vize_patina::{lint, Linter}`                   | One minor with `#[deprecated]`         |
+| `vize_platform`      | Experimental          | Cross-language platform contract authors  | `vize_platform::ApplicationContract`            | No minimum; note breaks when practical |
 
 <!-- rust-crate-support:end -->
 
