@@ -13,6 +13,9 @@ use serde_json::Value;
 use std::path::Path;
 use vize_carton::{FxHashMap, String, ToCompactString};
 
+mod nesting;
+mod normalize;
+
 /// Convert major version to LightningCSS format (major << 16)
 pub(crate) fn version_to_u32(major: u32) -> u32 {
     major << 16
@@ -39,6 +42,14 @@ pub(crate) fn parse_css_ast_internal(
     custom_media: bool,
     css_modules: bool,
 ) -> CssAstInternalResult {
+    if nesting::css_nesting_exceeds_max_depth(css) {
+        return CssAstInternalResult {
+            ast: None,
+            errors: vec![String::from(nesting::NESTING_DEPTH_ERROR)],
+            warnings: vec![],
+        };
+    }
+
     let mut flags = ParserFlags::NESTING | ParserFlags::DEEP_SELECTOR_COMBINATOR;
     if custom_media {
         flags |= ParserFlags::CUSTOM_MEDIA;
@@ -97,7 +108,7 @@ pub(crate) fn print_css_ast_internal(
     minify: bool,
     targets: Targets,
 ) -> CssInternalResult {
-    normalize_image_set_file_types(&mut ast);
+    normalize::normalize_image_set_file_types(&mut ast);
 
     let mut stylesheet: StyleSheet = match StyleSheet::deserialize(ast.into_deserializer()) {
         Ok(stylesheet) => stylesheet,
@@ -171,26 +182,6 @@ pub(crate) fn print_css_ast_internal(
     }
 }
 
-fn normalize_image_set_file_types(value: &mut Value) {
-    match value {
-        Value::Object(map) => {
-            if map.get("fileType") == Some(&Value::Null) {
-                map.remove("fileType");
-            }
-
-            for child in map.values_mut() {
-                normalize_image_set_file_types(child);
-            }
-        }
-        Value::Array(items) => {
-            for child in items {
-                normalize_image_set_file_types(child);
-            }
-        }
-        _ => {}
-    }
-}
-
 /// Internal CSS compilation with owned strings to avoid borrow issues
 pub(crate) fn compile_css_internal(
     css: &str,
@@ -200,6 +191,14 @@ pub(crate) fn compile_css_internal(
     custom_media: bool,
     css_modules: bool,
 ) -> CssInternalResult {
+    if nesting::css_nesting_exceeds_max_depth(css) {
+        return CssInternalResult {
+            code: css.to_compact_string(),
+            errors: vec![String::from(nesting::NESTING_DEPTH_ERROR)],
+            exports: None,
+        };
+    }
+
     let mut flags = ParserFlags::NESTING | ParserFlags::DEEP_SELECTOR_COMBINATOR;
     if custom_media {
         flags |= ParserFlags::CUSTOM_MEDIA;
