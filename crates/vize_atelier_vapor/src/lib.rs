@@ -25,6 +25,8 @@ mod tests_dotted_slots;
 mod tests_setup_components;
 #[cfg(test)]
 mod tests_slot_outlets;
+#[cfg(test)]
+mod tests_valueless_attr;
 
 pub use compile::{
     VaporCompileResult, VaporCompilerOptions, compile_vapor, compile_vapor_with_diagnostics,

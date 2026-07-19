@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_vapor/src/tests.rs
+source: crates/vize_atelier_vapor/src/tests_valueless_attr.rs
 expression: code.as_str()
 ---
 import { createDynamicComponent as _createDynamicComponent, template as _template } from 'vue';
