@@ -104,7 +104,7 @@ impl SetupPropsPlan {
         let module_scope_declares_props = summary
             .type_exports
             .iter()
-            .any(|te| te.hoisted && te.name.as_str() == "Props");
+            .any(|te| te.name.as_str() == "Props");
         Self {
             defer: define_props_type_requires_setup_scope(summary),
             defer_options_api_props: !module_scope_declares_props

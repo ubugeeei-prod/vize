@@ -12,6 +12,7 @@ mod props_anchors;
 mod script_module;
 mod setup_helpers;
 mod setup_props;
+mod setup_type_exports;
 mod spans;
 mod template_refs;
 use self::anchors::emit_setup_binding_anchors;
@@ -33,6 +34,7 @@ use self::options_api_props_identifiers::PropsConstAssertions;
 use self::props_anchors::emit_setup_scope_prop_anchors;
 use self::setup_helpers::emit_setup_helpers;
 use self::setup_props::SetupPropsPlan;
+use self::setup_type_exports::SetupTypeExportsPlan;
 use self::spans::{
     DEFINE_COMPONENT_REF, merge_overlapping_spans, rewrite_export_default_for_module_scope,
     template_usage,
@@ -213,6 +215,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         has_script_setup,
         has_plain_script_scope,
     );
+    let setup_type_exports = SetupTypeExportsPlan::new(summary, script_content);
 
     // Classify the main `<script>` default export in one parse. A plain
     // `export default { ... }` (Options API shape) gets wrapped with Vue's
@@ -527,9 +530,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 ts.push_str("  "); // indentation (not in source)
                 let gen_content_start = ts.len();
 
-                // Process the line: strip `export` keyword (invalid inside function),
-                // replace import.meta with polyfill variable
                 let mut output_line = std::borrow::Cow::Borrowed(line);
+                setup_type_exports.strip_modifiers(&mut output_line, line_start as u32);
 
                 // Close the `defineComponent(` wrap right after the wrapped
                 // options object's closing brace.
@@ -661,7 +663,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         }
                     }
                 }
-
                 // Replace import.meta with polyfill variable to avoid TS1343
                 if uses_import_meta && output_line.contains("import.meta") {
                     #[allow(clippy::disallowed_types)]
@@ -882,11 +883,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         }
     });
 
-    // Return runtime-derived type artifacts from __setup() so their types can be
-    // extracted at module level while keeping each runtime expression in setup
-    // scope, where script-setup bindings are defined.
     let mut setup_return_fields: Vec<String> = Vec::new();
     self::script_module::push_setup_return_fields(&named_value_exports, &mut setup_return_fields);
+    setup_type_exports.emit_setup_artifacts(&mut ts, &mut setup_return_fields);
     let mut setup_artifact_return_fields = Vec::new();
     setup_props_plan.push_return_field(&mut setup_artifact_return_fields);
     setup_return_fields.extend(setup_artifact_return_fields.into_iter().map(String::from));
@@ -916,6 +915,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // Invoke setup to keep diagnostics inside the generated setup body.
     ts.push_str("// Invoke setup to verify types\n");
     self::script_module::emit_setup_invocation_and_exports(&mut ts, &named_value_exports);
+    setup_type_exports.emit_module_exports(&mut ts);
 
     setup_props_plan.emit_module_export(&mut ts, options_api_props.as_ref());
 
