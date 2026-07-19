@@ -54,12 +54,7 @@ function outputText(run: CompilerRun): string {
   return run.error ?? run.formattedCode ?? run.code;
 }
 
-function formatTypeCheckDiagnostic(diagnostic: TypeCheckDiagnostic): string {
-  const code = diagnostic.code ? ` ${diagnostic.code}` : "";
-  return `${diagnostic.severity}${code}: ${diagnostic.message}`;
-}
-
-function formatCroquisDiagnostic(diagnostic: CroquisDiagnostic): string {
+function formatDiagnostic(diagnostic: TypeCheckDiagnostic | CroquisDiagnostic): string {
   const code = diagnostic.code ? ` ${diagnostic.code}` : "";
   return `${diagnostic.severity}${code}: ${diagnostic.message}`;
 }
@@ -77,9 +72,8 @@ async function compileOfficialVue(
 
   try {
     const officialTarget = officialTargetFor(target);
-    // The official compiler auto-detects a `vapor` attr on `<script>` blocks;
-    // forcing the option keeps the reference honest when the inspector target
-    // is Vapor but the source omits the attr.
+    // Force `vapor` so the reference stays honest when the target is Vapor but
+    // the source omits the `vapor` attr the official compiler auto-detects.
     const vapor = target === "vapor";
     const parsed = parse(file.source, { filename: file.path });
     const descriptor = parsed.descriptor;
@@ -179,9 +173,8 @@ async function compileVize(
       templateSyntax: options.templateSyntax,
     };
     const result = compiler.compileSfc(file.source, compileOptions);
-    // `script.code` always carries the full compiled SFC module. Preferring
-    // `template.code` for Vapor showed the template-only render function and
-    // silently dropped every `<script setup>` statement (#2969).
+    // Prefer `script.code` (the full compiled SFC module); using `template.code`
+    // for Vapor dropped every `<script setup>` statement (#2969).
     const code = result.script?.code || result.template?.code || "";
     const parser = descriptorUsesTypeScript(result.descriptor as SFCDescriptor)
       ? "typescript"
@@ -225,7 +218,7 @@ async function inspectVirtualTs(compiler: WasmModule, file: InspectorFile): Prom
       code,
       formattedCode,
       parser: "typescript",
-      warnings: result.diagnostics.map(formatTypeCheckDiagnostic),
+      warnings: result.diagnostics.map(formatDiagnostic),
       error: null,
       timeMs: performance.now() - start,
     };
@@ -254,7 +247,7 @@ function inspectVir(compiler: WasmModule, file: InspectorFile): CompilerRun {
       code,
       formattedCode: code,
       parser: "babel",
-      warnings: result.diagnostics.map(formatCroquisDiagnostic),
+      warnings: result.diagnostics.map(formatDiagnostic),
       error: null,
       timeMs: performance.now() - start,
     };
