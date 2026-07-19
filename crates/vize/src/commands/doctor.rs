@@ -51,11 +51,26 @@ pub struct DoctorArgs {
 #[derive(Debug)]
 enum DoctorError {
     CurrentDirectory(io::Error),
-    InvalidRoot { path: PathBuf, source: io::Error },
-    InvalidInput { path: PathBuf, reason: &'static str },
-    WalkDirectory { path: PathBuf, source: ignore::Error },
-    ReadSource { path: PathBuf, source: io::Error },
-    ParseSfc { path: PathBuf, message: String },
+    InvalidRoot {
+        path: PathBuf,
+        source: io::Error,
+    },
+    InvalidInput {
+        path: PathBuf,
+        reason: &'static str,
+    },
+    WalkDirectory {
+        path: PathBuf,
+        source: ignore::Error,
+    },
+    ReadSource {
+        path: PathBuf,
+        source: io::Error,
+    },
+    ParseSfc {
+        path: PathBuf,
+        message: String,
+    },
     Analysis(ApplicationAnalysisError),
     Serialize(serde_json::Error),
     Write(io::Error),
