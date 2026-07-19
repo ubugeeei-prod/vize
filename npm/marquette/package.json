@@ -36,7 +36,7 @@
   "publishConfig": {
     "access": "public"
   },
-    "scripts": {
+  "scripts": {
     "build": "vp pack && node scripts/copy-schema.mjs && node scripts/check-size.mjs",
     "check": "vp check README.md package.json tsconfig.json src scripts vite.config.ts && tsgo --noEmit -p tsconfig.json",
     "check:fix": "vp check --fix README.md package.json tsconfig.json src scripts vite.config.ts",
