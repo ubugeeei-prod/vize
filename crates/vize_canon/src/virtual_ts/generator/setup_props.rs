@@ -1,4 +1,4 @@
-use vize_carton::{String, append, cstr};
+use vize_carton::{String, append, cstr, profile};
 use vize_croquis::Croquis;
 
 use super::generics::{is_ident_byte, references_any_identifier, skip_ascii_ws};
@@ -88,6 +88,23 @@ pub(super) fn define_props_type_requires_setup_scope(summary: &Croquis) -> bool 
         .collect();
     !non_hoisted_type_names.is_empty()
         && references_any_identifier(inner_type, &non_hoisted_type_names)
+}
+
+/// Build the setup props plan and emit the module-level props type in one step.
+/// Keeps `generator.rs` from re-threading `options_api_props` through a second
+/// call site (and from growing past the source-length gate).
+pub(super) fn generate_setup_props(
+    ts: &mut String,
+    summary: &Croquis,
+    generic_param: Option<&str>,
+    options_api_props: Option<&OptionsApiPropsSource>,
+    props_is_public_export: bool,
+) -> SetupPropsPlan {
+    let plan = SetupPropsPlan::new(summary, options_api_props, props_is_public_export);
+    profile!("canon.virtual_ts.generate_props_type", {
+        plan.generate_props_type(ts, summary, generic_param, options_api_props);
+    });
+    plan
 }
 
 pub(super) struct SetupPropsPlan {

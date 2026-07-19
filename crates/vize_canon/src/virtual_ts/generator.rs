@@ -33,7 +33,7 @@ use self::options_api::{
 use self::options_api_props_identifiers::PropsConstAssertions;
 use self::props_anchors::emit_setup_scope_prop_anchors;
 use self::setup_helpers::emit_setup_helpers;
-use self::setup_props::SetupPropsPlan;
+use self::setup_props::generate_setup_props;
 use self::setup_type_exports::SetupTypeExportsPlan;
 use self::spans::{
     DEFINE_COMPONENT_REF, merge_overlapping_spans, rewrite_export_default_for_module_scope,
@@ -454,19 +454,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         } else {
             None
         };
-    let setup_props_plan = SetupPropsPlan::new(
+    let setup_props_plan = generate_setup_props(
+        &mut ts,
         summary,
+        generic_param,
         options_api_props.as_ref(),
         setup_type_exports.exports_public_type("Props"),
     );
-    profile!("canon.virtual_ts.generate_props_type", {
-        setup_props_plan.generate_props_type(
-            &mut ts,
-            summary,
-            generic_param,
-            options_api_props.as_ref(),
-        )
-    });
 
     // Setup scope: function that contains setup helpers and script content
     ts.push_str("// ========== Setup Scope ==========\n");
