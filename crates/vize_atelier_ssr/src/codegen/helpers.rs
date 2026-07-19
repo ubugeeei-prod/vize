@@ -1,12 +1,15 @@
 //! HTML escaping utilities and child/control-flow processing for SSR codegen.
 
+mod destructure;
+
 use vize_atelier_core::{
     CommentNode, ElementType, ForNode, IfNode, InterpolationNode, PropNode, RuntimeHelper,
     TemplateChildNode, TextNode,
 };
 
 use super::SsrCodegenContext;
-use vize_carton::{FxHashSet, String, ToCompactString, cstr};
+pub(crate) use destructure::{collect_for_scoped_params, extract_destructure_params};
+use vize_carton::{String, ToCompactString, cstr};
 
 impl<'a> SsrCodegenContext<'a> {
     /// Process a list of children nodes
@@ -304,128 +307,6 @@ impl<'a> SsrCodegenContext<'a> {
             }
         }
     }
-}
-
-pub(crate) fn collect_for_scoped_params(for_node: &ForNode) -> FxHashSet<String> {
-    let mut params = FxHashSet::default();
-
-    if let Some(value) = &for_node.value_alias {
-        collect_expression_params(value, &mut params);
-    }
-    if let Some(key) = &for_node.key_alias {
-        collect_expression_params(key, &mut params);
-    }
-    if let Some(index) = &for_node.object_index_alias {
-        collect_expression_params(index, &mut params);
-    }
-
-    params
-}
-
-pub(crate) fn collect_expression_params(
-    expr: &vize_atelier_core::ExpressionNode,
-    params: &mut FxHashSet<String>,
-) {
-    let content = match expr {
-        vize_atelier_core::ExpressionNode::Simple(simple) => simple.content.clone(),
-        vize_atelier_core::ExpressionNode::Compound(compound) => {
-            let mut content = String::default();
-            for child in &compound.children {
-                use vize_atelier_core::CompoundExpressionChild;
-                match child {
-                    CompoundExpressionChild::Simple(simple) => content.push_str(&simple.content),
-                    CompoundExpressionChild::String(value) => content.push_str(value),
-                    _ => {}
-                }
-            }
-            if content.is_empty() {
-                compound.loc.source.clone()
-            } else {
-                content
-            }
-        }
-    };
-    extract_destructure_params(content.trim(), params);
-}
-
-pub(crate) fn extract_destructure_params(value: &str, params: &mut FxHashSet<String>) {
-    if value.starts_with('(') && value.ends_with(')') {
-        extract_destructure_params(value[1..value.len() - 1].trim(), params);
-        return;
-    }
-    if value.contains(',') && !value.starts_with('{') && !value.starts_with('[') {
-        for part in split_top_level(value)
-            .into_iter()
-            .filter(|part| *part != value)
-        {
-            extract_destructure_params(part.trim(), params);
-        }
-        return;
-    }
-    if value.starts_with('{') && value.ends_with('}') {
-        for part in split_top_level(&value[1..value.len() - 1]) {
-            let part = part.trim();
-            if let Some(rest) = part.strip_prefix("...") {
-                collect_identifier_param(rest.trim(), params);
-                continue;
-            }
-            if let Some(eq_pos) = part.find('=') {
-                extract_destructure_params(part[..eq_pos].trim(), params);
-                continue;
-            }
-            if let Some(colon_pos) = part.find(':') {
-                extract_destructure_params(part[colon_pos + 1..].trim(), params);
-                continue;
-            }
-            extract_destructure_params(part, params);
-        }
-    } else if value.starts_with('[') && value.ends_with(']') {
-        for part in split_top_level(&value[1..value.len() - 1]) {
-            let part = part.trim();
-            if let Some(rest) = part.strip_prefix("...") {
-                collect_identifier_param(rest.trim(), params);
-            } else {
-                extract_destructure_params(part, params);
-            }
-        }
-    } else {
-        collect_identifier_param(value, params);
-    }
-}
-fn collect_identifier_param(value: &str, params: &mut FxHashSet<String>) {
-    if is_valid_identifier(value) {
-        params.insert(value.to_compact_string());
-    }
-}
-
-fn split_top_level(value: &str) -> std::vec::Vec<&str> {
-    let mut parts = std::vec::Vec::new();
-    let mut depth = 0i32;
-    let mut start = 0;
-
-    for (index, byte) in value.bytes().enumerate() {
-        match byte {
-            b'{' | b'[' | b'(' => depth += 1,
-            b'}' | b']' | b')' => depth -= 1,
-            b',' if depth == 0 => {
-                parts.push(&value[start..index]);
-                start = index + 1;
-            }
-            _ => {}
-        }
-    }
-
-    parts.push(&value[start..]);
-    parts
-}
-
-fn is_valid_identifier(value: &str) -> bool {
-    let mut chars = value.chars();
-    match chars.next() {
-        Some(c) if c.is_ascii_alphabetic() || c == '_' || c == '$' => {}
-        _ => return false,
-    }
-    chars.all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
 }
 
 /// Escape HTML special characters

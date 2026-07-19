@@ -1,5 +1,5 @@
 use vize_atelier_core::options::{BindingMetadata, BindingType};
-use vize_carton::{String, ToCompactString, cstr};
+use vize_carton::{SmallVec, String, ToCompactString, cstr};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(super) struct DestructureBinding {
@@ -51,64 +51,49 @@ pub(super) fn resolve_props_binding(
 }
 
 fn parse_pattern(pattern: &str, prefix: String, bindings: &mut std::vec::Vec<DestructureBinding>) {
-    let pattern = strip_wrapping_parens(pattern.trim());
+    let mut pending = SmallVec::<[(&str, String); 8]>::new();
+    pending.push((pattern, prefix));
 
-    if pattern.starts_with('{') && pattern.ends_with('}') {
-        parse_object_pattern(pattern, prefix, bindings);
-    } else if pattern.starts_with('[') && pattern.ends_with(']') {
-        parse_array_pattern(pattern, prefix, bindings);
-    } else if is_valid_ident(pattern) {
-        bindings.push(DestructureBinding {
-            local: pattern.to_compact_string(),
-            path: prefix,
-        });
-    }
-}
+    while let Some((pattern, prefix)) = pending.pop() {
+        let pattern = strip_wrapping_parens(strip_default(pattern.trim()));
 
-fn parse_object_pattern(
-    pattern: &str,
-    prefix: String,
-    bindings: &mut std::vec::Vec<DestructureBinding>,
-) {
-    let inner = &pattern[1..pattern.len() - 1];
-    for part in split_top_level(inner) {
-        let part = part.trim();
-        if part.is_empty() || part.starts_with("...") {
-            continue;
-        }
+        if pattern.starts_with('{') && pattern.ends_with('}') {
+            let inner = &pattern[1..pattern.len() - 1];
+            for part in split_top_level(inner).into_iter().rev() {
+                let part = part.trim();
+                if part.is_empty() || part.starts_with("...") {
+                    continue;
+                }
 
-        if let Some(colon) = find_top_level_char(part, ':') {
-            let key = part[..colon].trim();
-            let value = strip_default(part[colon + 1..].trim());
-            let Some(segment) = object_path_segment(key) else {
-                continue;
-            };
-            parse_pattern(value, cstr!("{prefix}{segment}"), bindings);
-            continue;
-        }
+                if let Some(colon) = find_top_level_char(part, ':') {
+                    let key = part[..colon].trim();
+                    let Some(segment) = object_path_segment(key) else {
+                        continue;
+                    };
+                    pending.push((part[colon + 1..].trim(), cstr!("{prefix}{segment}")));
+                    continue;
+                }
 
-        let name = strip_default(part);
-        if is_valid_ident(name) {
+                let name = strip_default(part);
+                if is_valid_ident(name) {
+                    pending.push((name, cstr!("{prefix}.{}", name)));
+                }
+            }
+        } else if pattern.starts_with('[') && pattern.ends_with(']') {
+            let inner = &pattern[1..pattern.len() - 1];
+            for (index, part) in split_top_level(inner).into_iter().enumerate().rev() {
+                let part = part.trim();
+                if part.is_empty() || part.starts_with("...") {
+                    continue;
+                }
+                pending.push((part, cstr!("{prefix}[{index}]")));
+            }
+        } else if is_valid_ident(pattern) {
             bindings.push(DestructureBinding {
-                local: name.to_compact_string(),
-                path: cstr!("{prefix}.{}", name),
+                local: pattern.to_compact_string(),
+                path: prefix,
             });
         }
-    }
-}
-
-fn parse_array_pattern(
-    pattern: &str,
-    prefix: String,
-    bindings: &mut std::vec::Vec<DestructureBinding>,
-) {
-    let inner = &pattern[1..pattern.len() - 1];
-    for (index, part) in split_top_level(inner).into_iter().enumerate() {
-        let part = part.trim();
-        if part.is_empty() || part.starts_with("...") {
-            continue;
-        }
-        parse_pattern(strip_default(part), cstr!("{prefix}[{index}]"), bindings);
     }
 }
 
@@ -274,6 +259,7 @@ fn is_valid_ident(s: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::parse_destructure_bindings;
+    use vize_carton::String;
 
     #[test]
     fn parses_object_aliases_and_nested_paths() {
@@ -311,5 +297,29 @@ mod tests {
             pairs,
             vec![("first", "[0]"), ("secondId", "[1].id"), ("third", "[2]"),]
         );
+    }
+
+    #[test]
+    fn parses_deep_nesting_on_a_small_stack() {
+        let depth = 512;
+        let mut pattern = String::with_capacity(depth * 4 + 5);
+        for _ in 0..depth {
+            pattern.push_str("{x:");
+        }
+        pattern.push_str("value");
+        for _ in 0..depth {
+            pattern.push('}');
+        }
+
+        let bindings = std::thread::Builder::new()
+            .stack_size(64 * 1024)
+            .spawn(move || parse_destructure_bindings(&pattern))
+            .expect("spawn destructure parser thread")
+            .join()
+            .expect("parse bindings without overflowing the stack");
+
+        assert_eq!(bindings.len(), 1);
+        assert_eq!(bindings[0].local, "value");
+        assert_eq!(bindings[0].path, ".x".repeat(depth));
     }
 }

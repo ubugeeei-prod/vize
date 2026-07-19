@@ -4,8 +4,7 @@
 //! and utility predicates for v-for rendering.
 
 use crate::{ElementNode, ExpressionNode, PropNode};
-use vize_carton::String;
-use vize_carton::ToCompactString;
+use vize_carton::{SmallVec, String, ToCompactString};
 
 /// Extract parameter names from a v-for callback expression.
 /// Handles simple identifiers ("item"), destructuring patterns ("{ id, name }"),
@@ -19,74 +18,73 @@ pub(crate) fn extract_for_params(expr: &ExpressionNode<'_>, params: &mut Vec<Str
     extract_destructure_params(content.trim(), params);
 }
 
-/// Recursively extract parameter names from a destructuring pattern string.
+/// Extract parameter names from a destructuring pattern string.
+///
+/// Template aliases are untrusted, so nested patterns are processed on an
+/// explicit work stack instead of consuming the process stack.
 pub(crate) fn extract_destructure_params(trimmed: &str, params: &mut Vec<String>) {
-    if trimmed.contains(',') && !trimmed.starts_with('{') && !trimmed.starts_with('[') {
-        for part in split_top_level(trimmed)
-            .into_iter()
-            .filter(|part| *part != trimmed)
-        {
-            let part = part.trim();
-            if !part.is_empty() {
-                extract_destructure_params(part, params);
-            }
-        }
-        return;
-    }
+    let mut pending = SmallVec::<[&str; 8]>::new();
+    pending.push(trimmed);
 
-    if trimmed.starts_with('{') && trimmed.ends_with('}') {
-        let inner = &trimmed[1..trimmed.len() - 1];
-        // Split by commas at the top level (respecting nested braces/brackets)
-        for part in split_top_level(inner) {
-            let part = part.trim();
-            // Handle rest element: ...rest
-            if let Some(rest) = part.strip_prefix("...") {
-                let rest = rest.trim();
-                if !rest.is_empty() && is_valid_ident(rest) {
-                    params.push(rest.to_compact_string());
+    while let Some(trimmed) = pending.pop() {
+        if trimmed.contains(',') && !trimmed.starts_with('{') && !trimmed.starts_with('[') {
+            for part in split_top_level(trimmed).into_iter().rev() {
+                if part == trimmed {
+                    continue;
                 }
-                continue;
-            }
-            // Handle renaming/nested: "original: value"
-            if let Some(colon_pos) = find_top_level_char(part, ':') {
-                let value = strip_default_value(part[colon_pos + 1..].trim());
-                // Value might be another destructure pattern or a simple identifier
-                if value.starts_with('{') || value.starts_with('[') {
-                    extract_destructure_params(value, params);
-                } else if is_valid_ident(value) {
-                    params.push(value.to_compact_string());
+                let part = part.trim();
+                if !part.is_empty() {
+                    pending.push(part);
                 }
-                continue;
             }
-
-            // Handle default values: "item = default" -- take name before =
-            let part = strip_default_value(part);
-            // Simple identifier
-            if !part.is_empty() && is_valid_ident(part) {
-                params.push(part.to_compact_string());
-            }
+            continue;
         }
-    } else if trimmed.starts_with('[') && trimmed.ends_with(']') {
-        let inner = &trimmed[1..trimmed.len() - 1];
-        for part in split_top_level(inner) {
-            let part = part.trim();
-            if let Some(rest) = part.strip_prefix("...") {
-                let rest = rest.trim();
-                if !rest.is_empty() && is_valid_ident(rest) {
-                    params.push(rest.to_compact_string());
-                }
-                continue;
-            }
 
-            let part = strip_default_value(part);
-            if part.starts_with('{') || part.starts_with('[') {
-                extract_destructure_params(part, params);
-            } else if !part.is_empty() && is_valid_ident(part) {
-                params.push(part.to_compact_string());
+        if trimmed.starts_with('{') && trimmed.ends_with('}') {
+            let inner = &trimmed[1..trimmed.len() - 1];
+            for part in split_top_level(inner).into_iter().rev() {
+                let part = part.trim();
+                if let Some(rest) = part.strip_prefix("...") {
+                    let rest = rest.trim();
+                    if !rest.is_empty() {
+                        pending.push(rest);
+                    }
+                    continue;
+                }
+
+                if let Some(colon_pos) = find_top_level_char(part, ':') {
+                    let value = strip_default_value(part[colon_pos + 1..].trim());
+                    if !value.is_empty() {
+                        pending.push(value);
+                    }
+                    continue;
+                }
+
+                let part = strip_default_value(part);
+                if !part.is_empty() {
+                    pending.push(part);
+                }
             }
+        } else if trimmed.starts_with('[') && trimmed.ends_with(']') {
+            let inner = &trimmed[1..trimmed.len() - 1];
+            for part in split_top_level(inner).into_iter().rev() {
+                let part = part.trim();
+                if let Some(rest) = part.strip_prefix("...") {
+                    let rest = rest.trim();
+                    if !rest.is_empty() {
+                        pending.push(rest);
+                    }
+                    continue;
+                }
+
+                let part = strip_default_value(part);
+                if !part.is_empty() {
+                    pending.push(part);
+                }
+            }
+        } else if is_valid_ident(trimmed) {
+            params.push(trimmed.to_compact_string());
         }
-    } else if is_valid_ident(trimmed) {
-        params.push(trimmed.to_compact_string());
     }
 }
 
@@ -248,6 +246,7 @@ pub(crate) fn should_skip_prop(p: &PropNode<'_>) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{extract_destructure_params, is_numeric_content, split_top_level};
+    use vize_carton::String;
 
     /// Test numeric source detection for v-for range expressions.
     #[test]
@@ -306,6 +305,32 @@ mod tests {
         let mut params = Vec::new();
         extract_destructure_params("item, index", &mut params);
         assert_eq!(params, ["item", "index"]);
+    }
+
+    #[test]
+    fn extract_destructure_params_handles_deep_nesting_on_a_small_stack() {
+        let depth = 512;
+        let mut pattern = String::with_capacity(depth * 4 + 5);
+        for _ in 0..depth {
+            pattern.push_str("{x:");
+        }
+        pattern.push_str("value");
+        for _ in 0..depth {
+            pattern.push('}');
+        }
+
+        let params = std::thread::Builder::new()
+            .stack_size(64 * 1024)
+            .spawn(move || {
+                let mut params = Vec::new();
+                extract_destructure_params(&pattern, &mut params);
+                params
+            })
+            .expect("spawn extraction thread")
+            .join()
+            .expect("extract parameters without overflowing the stack");
+
+        assert_eq!(params, ["value"]);
     }
 
     #[test]
