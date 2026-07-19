@@ -147,6 +147,26 @@ void test("returns diagnostics in stable path, code, and message order", () => {
   );
 });
 
+void test("normalizes set-backed references before producing diagnostics", () => {
+  const diagnostics = validateApplicationMarquette({
+    application: "deduplicated",
+    targets: ["web"],
+    environments: [
+      {
+        id: "server",
+        target: "web",
+        consumer: "server",
+        runtime: "javascript",
+        dependsOn: ["missing", "missing"],
+        capabilities: ["missing", "missing"],
+      },
+    ],
+  });
+
+  assert.equal(diagnostics.filter(({ code }) => code === "VIZE_MARQUETTE_009").length, 1);
+  assert.equal(diagnostics.filter(({ code }) => code === "VIZE_MARQUETTE_021").length, 1);
+});
+
 void test("covers every stable validation diagnostic", () => {
   const marquette = {
     formatVersion: 2,

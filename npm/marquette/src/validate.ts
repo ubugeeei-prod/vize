@@ -86,7 +86,7 @@ export function validateApplicationMarquette(
         error("VIZE_MARQUETTE_007", path, "environment target must be declared in targets"),
       );
     }
-    for (const dependency of environment.dependsOn ?? []) {
+    for (const dependency of [...new Set(environment.dependsOn ?? [])].sort()) {
       if (dependency === environment.id) {
         diagnostics.push(error("VIZE_MARQUETTE_008", path, "environment cannot depend on itself"));
       } else if (!environmentIds.has(dependency)) {
@@ -239,7 +239,7 @@ function validateCapabilities(
   declared: ReadonlySet<string>,
   diagnostics: MarquetteDiagnostic[],
 ): void {
-  for (const capability of capabilities ?? []) {
+  for (const capability of [...new Set(capabilities ?? [])].sort()) {
     if (!declared.has(capability)) {
       diagnostics.push(error("VIZE_MARQUETTE_021", path, "referenced capability is not declared"));
     }
