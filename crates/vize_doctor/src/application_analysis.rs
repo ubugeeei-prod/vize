@@ -6,7 +6,10 @@
 
 mod profile;
 
-use std::{fmt, path::Component};
+use std::{
+    fmt,
+    path::{Component, Path},
+};
 
 use vize_carton::{String, cstr};
 use vize_croquis_cf::{CrossFileAnalyzer, CrossFileDiagnostic, CrossFileResult, FileId};
@@ -164,27 +167,76 @@ fn source_location(
                 related,
             })?;
     let relative = match analyzer.registry().project_root() {
-        Some(root) => path.strip_prefix(root).map_err(|_| {
-            outside_workspace_error(diagnostic, path.to_string_lossy().as_ref(), related)
-        })?,
-        None if path.is_relative() => path,
-        None => {
-            return Err(outside_workspace_error(
-                diagnostic,
-                path.to_string_lossy().as_ref(),
-                related,
-            ));
-        }
+        Some(root) => relativize_within(path, root),
+        None if path.is_relative() => normalize_source_path(path),
+        None => None,
     };
-    let normalized = normalize_source_path(relative).ok_or_else(|| {
-        outside_workspace_error(diagnostic, path.to_string_lossy().as_ref(), related)
-    })?;
-    Ok(SourceLocation::new(normalized, start, end))
+    relative
+        .map(|normalized| SourceLocation::new(normalized, start, end))
+        .ok_or_else(|| {
+            outside_workspace_error(diagnostic, path.to_string_lossy().as_ref(), related)
+        })
 }
 
-fn normalize_source_path(path: &std::path::Path) -> Option<String> {
-    let mut normalized = String::default();
+/// Relativizes `path` against the workspace `root`, tolerating differences that
+/// do not change which file is referenced: lexical `.`/`..` noise and case-only
+/// mismatches in the workspace prefix on case-insensitive platforms
+/// (macOS/Windows). Symlinks are intentionally not resolved so the adapter keeps
+/// working without filesystem access (sources may be virtual or absent on disk).
+fn relativize_within(path: &Path, root: &Path) -> Option<String> {
+    let path_components = lexical_components(path);
+    let root_components = lexical_components(root);
+    if path_components.len() < root_components.len() {
+        return None;
+    }
+    let (prefix, rest) = path_components.split_at(root_components.len());
+    if root_components
+        .iter()
+        .zip(prefix)
+        .any(|(root_component, path_component)| !components_match(*root_component, *path_component))
+    {
+        return None;
+    }
+    components_to_relative(rest.iter().copied())
+}
+
+/// Lexically normalizes a path into its components, dropping `.` and collapsing
+/// `..` against preceding normal segments without touching the filesystem.
+fn lexical_components(path: &Path) -> Vec<Component<'_>> {
+    let mut normalized: Vec<Component> = Vec::new();
     for component in path.components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir if matches!(normalized.last(), Some(Component::Normal(_))) => {
+                normalized.pop();
+            }
+            other => normalized.push(other),
+        }
+    }
+    normalized
+}
+
+/// Compares two path components, treating normal segments and Windows prefixes
+/// case-insensitively so a case-only workspace-prefix mismatch is accepted.
+fn components_match(root: Component<'_>, candidate: Component<'_>) -> bool {
+    match (root, candidate) {
+        (Component::Normal(root), Component::Normal(candidate)) => {
+            root.eq_ignore_ascii_case(candidate)
+        }
+        (Component::Prefix(root), Component::Prefix(candidate)) => {
+            root.as_os_str().eq_ignore_ascii_case(candidate.as_os_str())
+        }
+        (root, candidate) => root == candidate,
+    }
+}
+
+fn normalize_source_path(path: &Path) -> Option<String> {
+    components_to_relative(path.components())
+}
+
+fn components_to_relative<'a>(components: impl Iterator<Item = Component<'a>>) -> Option<String> {
+    let mut normalized = String::default();
+    for component in components {
         match component {
             Component::Normal(segment) => {
                 let segment = segment.to_str()?;

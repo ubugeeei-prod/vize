@@ -234,6 +234,33 @@ fn rejects_absolute_sources_without_a_workspace_boundary() {
 }
 
 #[test]
+fn accepts_case_mismatched_workspace_prefix() {
+    // On case-insensitive filesystems (macOS/Windows) the registered source and
+    // the workspace root can differ only by case in the shared prefix. The
+    // containment check must still relativize the path instead of rejecting it
+    // as outside the workspace.
+    let mut analyzer =
+        CrossFileAnalyzer::with_project_root(CrossFileOptions::minimal(), "/Workspace");
+    let app = analyzer.add_file("/workspace/src/App.ts", "export const app = 1");
+    let result = CrossFileResult {
+        diagnostics: vec![CrossFileDiagnostic::new(
+            CrossFileDiagnosticKind::UnresolvedImport {
+                specifier: "./missing".into(),
+                import_offset: 0,
+            },
+            DiagnosticSeverity::Error,
+            app,
+            0,
+            "Import cannot be resolved",
+        )],
+        ..CrossFileResult::default()
+    };
+
+    let findings = findings_from_application_graph(&analyzer, &result).unwrap();
+    assert_eq!(findings[0].primary.path, "src/App.ts");
+}
+
+#[test]
 fn report_output_is_independent_of_source_diagnostic_order() {
     let (analyzer, app, _) = analyzer_with_files();
     let first = CrossFileDiagnostic::new(
