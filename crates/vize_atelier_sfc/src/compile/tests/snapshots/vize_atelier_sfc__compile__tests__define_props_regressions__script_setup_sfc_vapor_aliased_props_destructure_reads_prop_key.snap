@@ -8,7 +8,7 @@ import { createDynamicComponent as _createDynamicComponent, template as _templat
 const t0 = _template("hi")
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
-  const n1 = _createDynamicComponent(() => ($props.tag), { "data-probe": undefined }, {
+  const n1 = _createDynamicComponent(() => ($props.tag), { "data-probe": () => ("") }, {
     "default": () => {
       const n0 = t0()
       return n0
