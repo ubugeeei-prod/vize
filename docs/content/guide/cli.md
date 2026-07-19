@@ -251,10 +251,6 @@ declare module "vue" {
 }
 ```
 
-```bash
-vize check --tsconfig tsconfig.app.json src
-```
-
 ## Inspector
 
 ```bash
