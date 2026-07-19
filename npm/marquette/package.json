@@ -31,6 +31,11 @@
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
     },
+    "./validate": {
+      "types": "./dist/validate.d.mts",
+      "import": "./dist/validate.mjs",
+      "default": "./dist/validate.mjs"
+    },
     "./schema": "./dist/application-contract.schema.json"
   },
   "publishConfig": {
