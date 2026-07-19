@@ -178,7 +178,13 @@ pub(super) fn extract_runtime_prop_type(
                 if has_type {
                     union.push_str(" | ");
                 }
-                union.push_str(prop_type.as_str());
+                if arr.elements.len() > 1 && prop_type.contains("=>") {
+                    union.push('(');
+                    union.push_str(prop_type.as_str());
+                    union.push(')');
+                } else {
+                    union.push_str(prop_type.as_str());
+                }
                 has_type = true;
             }
             has_type.then(|| CompactString::new(union.as_str()))

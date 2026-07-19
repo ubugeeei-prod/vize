@@ -47,4 +47,7 @@ mod legacy_vue2_tests;
 mod props_destructure_tests;
 
 #[cfg(test)]
+mod runtime_props_tests;
+
+#[cfg(test)]
 mod options_api_emits_tests;
