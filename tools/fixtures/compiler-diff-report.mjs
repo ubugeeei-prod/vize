@@ -17,8 +17,7 @@ function main() {
   const targets = args.targets.length === 0 ? defaultTargets : args.targets;
   const outputDir = resolve(
     repoRoot,
-    args.outputDir ??
-      join(".vize", "artifacts", "compiler-diff-report", timestampSlug(new Date())),
+    args.outputDir ?? join(".vize", "artifacts", "compiler-diff-report", timestampSlug(new Date())),
   );
   const launch = resolveVizeLaunch(args.vizeBin);
 
