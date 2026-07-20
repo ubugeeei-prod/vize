@@ -60,7 +60,8 @@ jobs:
             './npm/builder/vite-musea' \
             './npm/builder/rspack' \
             './npm/framework/musea-nuxt' \
-            './npm/framework/nuxt' 2>&1 | tee "$OUTPUT_FILE"; then
+            './npm/framework/nuxt' \
+            './npm/ui/core' 2>&1 | tee "$OUTPUT_FILE"; then
             exit 0
           fi
           if grep -q "The app https://github.com/apps/pkg-pr-new is not installed" "$OUTPUT_FILE"; then

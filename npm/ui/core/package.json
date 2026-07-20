@@ -37,7 +37,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "pnpm lint:sfc && vp pack",
+    "build": "vp pack",
     "dev": "vp pack --watch",
     "lint:sfc": "vp exec node scripts/lint-sfc.ts src",
     "pretest": "vp pack && pnpm check:size",
