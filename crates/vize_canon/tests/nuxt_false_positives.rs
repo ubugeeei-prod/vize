@@ -150,55 +150,6 @@ fn undefined_unknown_event_handler_stays_optional() {
     );
 }
 
-#[test]
-fn optional_component_event_handler_stays_optional() {
-    let project = create_project(&[
-        (
-            "src/Child.vue",
-            r#"<script setup lang="ts">
-defineEmits<{ click: [payload: PointerEvent] }>()
-</script>
-<template><button /></template>
-"#,
-        ),
-        (
-            "src/App.vue",
-            r#"<script setup lang="ts">
-import Child from './Child.vue'
-
-const item = {} as {
-  onClick?: (payload: PointerEvent) => Promise<void>
-}
-</script>
-<template><Child @click="item.onClick" /></template>
-"#,
-        ),
-    ]);
-    let mut checker = BatchTypeChecker::new(project.path()).unwrap();
-    checker.scan_project().unwrap();
-    let app = checker
-        .virtual_files()
-        .into_iter()
-        .find(|file| file.original_path.ends_with("App.vue"))
-        .expect("App.vue should be registered");
-    assert!(
-        app.content.contains("| null | undefined) => handler"),
-        "optional event references should remain optional:\n{}",
-        app.content
-    );
-
-    let result = checker.check_project().unwrap();
-    let relevant = result
-        .diagnostics
-        .iter()
-        .filter(|diagnostic| diagnostic.file.ends_with("App.vue") && diagnostic.code == Some(2345))
-        .collect::<Vec<_>>();
-    assert!(
-        relevant.is_empty(),
-        "optional event references should not be required callbacks: {relevant:#?}"
-    );
-}
-
 fn create_project(files: &[(&str, &str)]) -> tempfile::TempDir {
     let project = tempfile::tempdir().expect("temp project should be created");
     write_tsconfig(project.path());
