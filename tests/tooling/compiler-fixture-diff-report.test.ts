@@ -9,6 +9,16 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const toolPath = path.join(root, "tools", "fixtures", "compiler-diff-report.mjs");
 
+test("compiler fixture diff reporter documents the shared artifact directory", () => {
+  const result = spawnSync(process.execPath, [toolPath, "--help"], {
+    cwd: root,
+    encoding: "utf8",
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Defaults under \.vize\/artifacts\/compiler-diff-report\./);
+});
+
 test("compiler fixture diff reporter dry-runs selected registry projects", () => {
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-compiler-diff-report-"));
   try {

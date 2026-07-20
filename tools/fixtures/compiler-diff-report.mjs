@@ -17,7 +17,8 @@ function main() {
   const targets = args.targets.length === 0 ? defaultTargets : args.targets;
   const outputDir = resolve(
     repoRoot,
-    args.outputDir ?? join(".vize", "compiler-diff-report", timestampSlug(new Date())),
+    args.outputDir ??
+      join(".vize", "artifacts", "compiler-diff-report", timestampSlug(new Date())),
   );
   const launch = resolveVizeLaunch(args.vizeBin);
 
@@ -173,7 +174,7 @@ Options:
   --target <dom|ssr>        Limit target; repeat or comma-separate. Defaults to dom,ssr.
   --max-files <n>           Forward a per-project file limit to vize inspector.
   --template-syntax <mode>  Forward template syntax mode. Defaults to quirks.
-  --output-dir <dir>        Report directory. Defaults under .vize/compiler-diff-report.
+  --output-dir <dir>        Report directory. Defaults under .vize/artifacts/compiler-diff-report.
   --vize-bin <path>         vize binary. Defaults to VIZE_BIN, target/ci, target/debug, or cargo.
   --timeout-ms <n>          Per project/target timeout. Defaults to 300000.
   --dry-run                 Write the planned report without invoking vize.
