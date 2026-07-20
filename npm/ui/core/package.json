@@ -1,0 +1,66 @@
+{
+  "name": "@vizeui/core",
+  "version": "0.298.0",
+  "description": "Accessible, headless, Native CSS-first UI primitives",
+  "keywords": [
+    "accessibility",
+    "headless",
+    "type-safe",
+    "vize",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize.git",
+    "directory": "npm/ui/core"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "lint:sfc": "vp exec node scripts/lint-sfc.ts src",
+    "pretest": "pnpm lint:sfc && pnpm build && pnpm check:size",
+    "test": "vp exec node --test 'src/**/*.test.ts'",
+    "check": "pnpm lint:sfc && vp check src scripts vite.config.ts",
+    "check:fix": "vp check --fix src scripts vite.config.ts",
+    "check:size": "node scripts/check-size.mjs",
+    "fmt": "vp fmt --write src scripts vite.config.ts"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:typescript",
+    "@vitejs/plugin-vue": "catalog:vite-stack",
+    "@vizejs/native": "workspace:*",
+    "@vizeui/tooling": "workspace:*",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
