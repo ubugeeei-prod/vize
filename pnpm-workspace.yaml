@@ -2,6 +2,7 @@ packages:
   - "playground"
   - "npm/*"
   - "npm/builder/*"
+  - "npm/compose/*"
   - "editors/*"
   - "npm/framework/*"
   - "npm/ui/*"
