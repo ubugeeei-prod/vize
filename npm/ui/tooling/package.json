@@ -1,0 +1,23 @@
+{
+  "name": "@vizeui/tooling",
+  "version": "0.298.0",
+  "private": true,
+  "description": "Internal source-quality tooling for Vize UI packages",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./lint-sfc": "./lint-sfc.ts"
+  },
+  "scripts": {
+    "check": "vp check lint-sfc.ts lint-sfc.test.ts",
+    "fmt": "vp fmt --write lint-sfc.ts lint-sfc.test.ts",
+    "test": "vp exec node --test lint-sfc.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
