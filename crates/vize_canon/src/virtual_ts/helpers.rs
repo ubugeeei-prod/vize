@@ -73,15 +73,11 @@ macro_rules! vue_type_helpers_text {
 }
 
 /// Emit-overload helper text shared between the per-file embedded emission and
-/// the hoisted ambient helpers file. Each line ends with `\n`.
-///
-/// Deliberately excludes `__EmitProps`: that alias is emitted per-file and only
-/// for components that actually declare emits, so it stays out of the shared
-/// hoisted helper text, exactly as before hoisting.
-///
-/// Overload extraction is capped at 32 steps. Generic call signatures may not
-/// converge structurally, while 32 still preserves a broad public event
-/// surface without exhausting the type checker's instantiation budget.
+/// the hoisted ambient helpers file. Each line ends with `\n`. Deliberately
+/// excludes `__EmitProps`: that alias is emitted per-file only for components
+/// that declare emits, so it stays out of the shared hoisted helper text.
+/// Overload extraction is capped at 32 steps because generic call signatures
+/// may not converge structurally; 32 keeps a broad event surface within budget.
 macro_rules! emit_overload_helpers_text {
     () => {
         concat!(
