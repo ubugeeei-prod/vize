@@ -7,11 +7,10 @@ import { inspectorReportDirectory } from "../_helpers/inspector-parity.ts";
 test("inspector reports use the shared artifact directory by default", () => {
   const outputDirectory = inspectorReportDirectory("Example / Application");
 
-  assert.match(
-    outputDirectory,
-    new RegExp(
-      `${escapeRegExp(path.join(".vize", "artifacts", "inspect", "Example-Application"))}$`,
-    ),
+  const expectedSuffix = path.join(".vize", "artifacts", "inspect", "Example-Application");
+  assert.ok(
+    outputDirectory.endsWith(expectedSuffix),
+    `Expected path to end with "${expectedSuffix}", but got "${outputDirectory}"`,
   );
 });
 
@@ -21,7 +20,3 @@ test("inspector reports preserve an explicit output directory", () => {
     "/tmp/inspection-output",
   );
 });
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
