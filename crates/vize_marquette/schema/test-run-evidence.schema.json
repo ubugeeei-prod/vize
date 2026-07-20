@@ -1,0 +1,292 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vizejs.dev/schemas/marquette/test-run-evidence.schema.json",
+  "title": "Vize Test Run Evidence",
+  "description": "Language-neutral evidence that binds completed test executions to one application release candidate.",
+  "$ref": "#/$defs/evidence",
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "sourceRevision": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40,128}$"
+    },
+    "contentReference": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "retainedEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference", "fingerprint"],
+      "properties": {
+        "reference": { "$ref": "#/$defs/contentReference" },
+        "fingerprint": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "fingerprint", "sizeBytes"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "fingerprint": { "$ref": "#/$defs/digest" },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "runner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identity",
+        "authenticationEvidence",
+        "isolation",
+        "invocationFingerprint",
+        "environmentEvidence",
+        "environmentFingerprint"
+      ],
+      "properties": {
+        "identity": { "$ref": "#/$defs/identifier" },
+        "authenticationEvidence": { "$ref": "#/$defs/retainedEvidence" },
+        "isolation": { "enum": ["dedicated", "ephemeral"] },
+        "invocationFingerprint": { "$ref": "#/$defs/digest" },
+        "environmentEvidence": { "$ref": "#/$defs/retainedEvidence" },
+        "environmentFingerprint": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["targetIds", "suiteIds"],
+      "properties": {
+        "targetIds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        },
+        "suiteIds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 512,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        }
+      }
+    },
+    "targetExecution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "environment"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "kind": { "enum": ["web", "native", "desktop", "terminal", "server"] },
+        "environment": { "$ref": "#/$defs/identifier" }
+      }
+    },
+    "suiteExecution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "targetId",
+        "kind",
+        "shardIndex",
+        "shardCount",
+        "outcome",
+        "passed",
+        "failed",
+        "skipped",
+        "retries",
+        "durationMs",
+        "invocationFingerprint",
+        "report",
+        "log"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "targetId": { "$ref": "#/$defs/identifier" },
+        "kind": {
+          "enum": [
+            "unit",
+            "integration",
+            "contract",
+            "end-to-end",
+            "accessibility",
+            "visual",
+            "performance",
+            "resilience",
+            "installation",
+            "upgrade",
+            "migration"
+          ]
+        },
+        "shardIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "shardCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "outcome": { "enum": ["passed", "failed", "cancelled"] },
+        "passed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "durationMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invocationFingerprint": { "$ref": "#/$defs/digest" },
+        "report": { "$ref": "#/$defs/retainedEvidence" },
+        "log": { "$ref": "#/$defs/retainedEvidence" }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verifier",
+        "completedAt",
+        "outcome",
+        "targetCount",
+        "suiteCount",
+        "passed",
+        "failed",
+        "skipped",
+        "retries",
+        "evidence"
+      ],
+      "properties": {
+        "verifier": { "$ref": "#/$defs/identifier" },
+        "completedAt": { "$ref": "#/$defs/timestamp" },
+        "outcome": { "enum": ["accepted", "rejected"] },
+        "targetCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        },
+        "suiteCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "evidence": { "$ref": "#/$defs/retainedEvidence" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "formatVersion",
+        "id",
+        "application",
+        "environment",
+        "contractFingerprint",
+        "sourceRevision",
+        "release",
+        "artifact",
+        "startedAt",
+        "completedAt",
+        "validUntil",
+        "runner",
+        "selection",
+        "targets",
+        "suites",
+        "verification"
+      ],
+      "properties": {
+        "format": { "const": "vize.test-run.evidence" },
+        "formatVersion": { "const": 1, "default": 1 },
+        "id": { "$ref": "#/$defs/identifier" },
+        "application": { "$ref": "#/$defs/identifier" },
+        "environment": { "$ref": "#/$defs/identifier" },
+        "contractFingerprint": { "$ref": "#/$defs/digest" },
+        "sourceRevision": { "$ref": "#/$defs/sourceRevision" },
+        "release": { "$ref": "#/$defs/nonEmptyString" },
+        "artifact": { "$ref": "#/$defs/artifact" },
+        "startedAt": { "$ref": "#/$defs/timestamp" },
+        "completedAt": { "$ref": "#/$defs/timestamp" },
+        "validUntil": { "$ref": "#/$defs/timestamp" },
+        "runner": { "$ref": "#/$defs/runner" },
+        "selection": { "$ref": "#/$defs/selection" },
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "items": { "$ref": "#/$defs/targetExecution" }
+        },
+        "suites": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 512,
+          "items": { "$ref": "#/$defs/suiteExecution" }
+        },
+        "verification": { "$ref": "#/$defs/verification" }
+      }
+    }
+  }
+}
