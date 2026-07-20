@@ -318,10 +318,8 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
-      - name: Build native package
-        run: vp run --filter './npm/native' build:ci
-      - name: Lint UI SFC packages
-        run: vp run --filter './npm/ui/core' lint:sfc
+      - name: Build native package and lint UI SFC packages
+        run: vp run --filter './npm/native' build:ci && vp run --filter './npm/ui/core' lint:sfc
       - name: Build JS packages
         run: vp run --workspace-root build:packages
       - name: Stage shared JS build artifacts
