@@ -34,6 +34,31 @@
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
     },
+    "./button": {
+      "types": "./dist/button.d.mts",
+      "import": "./dist/button.mjs",
+      "default": "./dist/button.mjs"
+    },
+    "./checkbox": {
+      "types": "./dist/checkbox.d.mts",
+      "import": "./dist/checkbox.mjs",
+      "default": "./dist/checkbox.mjs"
+    },
+    "./controllable-state": {
+      "types": "./dist/controllable-state.d.mts",
+      "import": "./dist/controllable-state.mjs",
+      "default": "./dist/controllable-state.mjs"
+    },
+    "./primitive": {
+      "types": "./dist/primitive.d.mts",
+      "import": "./dist/primitive.mjs",
+      "default": "./dist/primitive.mjs"
+    },
+    "./visually-hidden": {
+      "types": "./dist/visually-hidden.d.mts",
+      "import": "./dist/visually-hidden.mjs",
+      "default": "./dist/visually-hidden.mjs"
+    },
     "./style.css": "./dist/style.css"
   },
   "publishConfig": {
