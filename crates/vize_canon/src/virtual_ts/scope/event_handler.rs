@@ -54,25 +54,25 @@ pub(super) fn generate_event_handler_expressions(
                 let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
                 append!(
                     *ts,
-                    "{indent}const {handler_name} = ((handler: {listener_type}) => handler)(({content}));\n",
+                    "{indent}const {handler_name} = ((handler: {listener_type} | null | undefined) => handler)(({content}));\n",
                     indent = handler_indent,
                 );
                 append!(
                     *ts,
-                    "{indent}{handler_name}(...__vize_args);  // handler expression\n",
+                    "{indent}if ({handler_name}) {handler_name}(...__vize_args);  // handler expression\n",
                     indent = handler_indent,
                 );
             } else if is_implicit_reference {
                 let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
                 append!(
                     *ts,
-                    "{indent}const {handler_name} = ((handler: ($event: {event_type}) => unknown) => handler)(({content}));\n",
+                    "{indent}const {handler_name} = ((handler: (($event: {event_type}) => unknown) | null | undefined) => handler)(({content}));\n",
                     indent = handler_indent,
                     event_type = ctx.event_type,
                 );
                 append!(
                     *ts,
-                    "{indent}{handler_name}($event);  // handler expression\n",
+                    "{indent}if ({handler_name}) {handler_name}($event);  // handler expression\n",
                     indent = handler_indent,
                 );
             } else if let Some(event_arg) = inline_callback_arg {
