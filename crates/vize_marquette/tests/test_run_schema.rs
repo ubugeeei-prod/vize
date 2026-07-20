@@ -44,6 +44,12 @@ fn test_run_schema_is_strict_and_versioned() {
         schema["$defs"]["evidence"]["properties"]["formatVersion"]["const"],
         1
     );
+    assert!(
+        schema["$defs"]["timestamp"]["pattern"]
+            .as_str()
+            .unwrap()
+            .ends_with("Z$")
+    );
 
     assert_eq!(
         count_open_object_schemas(&schema),
