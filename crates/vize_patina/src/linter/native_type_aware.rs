@@ -16,6 +16,8 @@ mod reactivity_loss;
 mod rule_queries;
 mod script_options;
 mod source_path;
+#[cfg(test)]
+mod template_component_tests;
 mod template_queries;
 
 #[cfg(test)]
