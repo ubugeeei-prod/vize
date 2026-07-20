@@ -18,6 +18,8 @@ mod script_options;
 mod template_queries;
 
 #[cfg(test)]
+mod template_globals_tests;
+#[cfg(test)]
 mod tests;
 
 const RULE_REQUIRE_TYPED_PROPS: &str = "type/require-typed-props";
