@@ -27,7 +27,7 @@ use super::emit::{
 };
 use super::event_handler::generate_event_handler_expressions;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
-use super::vif_guard::common_vif_guard_prefix_outside_v_for_scope;
+use super::vif_guard::{callback_vif_guard, common_vif_guard_prefix_outside_v_for_scope};
 
 /// Generate scope closures from Croquis scope chain.
 /// Uses recursive tree-based generation so nested v-for/v-slot scopes
@@ -265,15 +265,26 @@ fn generate_scope_node(
                 data.source.as_str(),
             );
 
+            // A positive narrowing established outside a callback is not
+            // retained for captured object properties. Recheck those terms in
+            // the generated callback so discriminated unions stay narrowed.
+            let callback_guard = enclosing_guard.and_then(callback_vif_guard);
+            let callback_indent = if let Some(guard) = callback_guard.as_deref() {
+                append!(*ts, "{vfor_inner_indent}if ({guard}) {{\n");
+                cstr!("{vfor_inner_indent}  ")
+            } else {
+                vfor_inner_indent.clone()
+            };
+
             // Mark v-for variables as used to avoid TS6133
             for value in &data.value_bindings {
-                append!(*ts, "{vfor_inner_indent}void {value};\n");
+                append!(*ts, "{callback_indent}void {value};\n");
             }
             if let Some(ref key) = data.key_alias {
-                append!(*ts, "{vfor_inner_indent}void {key};\n");
+                append!(*ts, "{callback_indent}void {key};\n");
             }
             if let Some(ref index) = data.index_alias {
-                append!(*ts, "{vfor_inner_indent}void {index};\n");
+                append!(*ts, "{callback_indent}void {index};\n");
             }
 
             // Generate expressions in this scope
@@ -287,15 +298,19 @@ fn generate_scope_node(
                     ctx.template_prop_names,
                     ctx.skipped_expression_ranges,
                     ctx.template_offset,
-                    (&vfor_inner_indent, enclosing_guard),
+                    (&callback_indent, enclosing_guard),
                 );
             }
 
             // Recursively generate child scopes inside this closure
             profile!(
                 "canon.virtual_ts.child_scopes",
-                generate_child_scopes(ts, mappings, ctx, scope_id, &vfor_inner_indent)
+                generate_child_scopes(ts, mappings, ctx, scope_id, &callback_indent)
             );
+
+            if callback_guard.is_some() {
+                append!(*ts, "{vfor_inner_indent}}}\n");
+            }
 
             ts.push_str(&loop_indent);
             ts.push_str("});\n");

@@ -19,6 +19,21 @@ pub(super) fn common_vif_guard_prefix_for_guards(guards: &[&str]) -> Option<Stri
     common_guard_prefix_from_terms(first, rest.iter().copied())
 }
 
+/// Return the positive guard terms that must be repeated inside a generated
+/// callback to restore narrowing for captured object properties.
+///
+/// Negated branch terms are intentionally omitted. Rechecking an exclusion
+/// after the surrounding control flow has already narrowed the discriminant
+/// can itself produce an impossible-comparison diagnostic.
+pub(super) fn callback_vif_guard(guard: &str) -> Option<String> {
+    let positive_terms: Vec<_> = split_guard_terms(guard)
+        .into_iter()
+        .filter(|term| !term.trim_start().starts_with('!'))
+        .collect();
+
+    (!positive_terms.is_empty()).then(|| String::from(positive_terms.join(" && ").as_str()))
+}
+
 /// Remove a guard prefix that is already active in the surrounding generated
 /// control flow.
 ///
@@ -158,7 +173,21 @@ fn references_any_alias(term: &str, aliases: &[&str]) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::remove_enclosing_vif_guard_prefix;
+    use super::{callback_vif_guard, remove_enclosing_vif_guard_prefix};
+
+    #[test]
+    fn callback_guard_keeps_positive_narrowing_terms() {
+        assert_eq!(
+            callback_vif_guard("!(item.type === 'text') && ready && (item.type === 'container')")
+                .as_deref(),
+            Some("ready && (item.type === 'container')")
+        );
+    }
+
+    #[test]
+    fn callback_guard_omits_negated_branch_terms() {
+        assert_eq!(callback_vif_guard("!(item.type === 'text')"), None);
+    }
 
     #[test]
     fn removes_an_exact_enclosing_guard() {
