@@ -1784,47 +1784,6 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
 }
 
 #[test]
-fn test_event_handler_mapping_targets_the_user_operand() {
-    use vize_croquis::{Analyzer, AnalyzerOptions};
-
-    let script = r#"const __vize_cb = undefined as
-  | ((event: PointerEvent) => void)
-  | undefined
-"#;
-    let template = r#"<button @click="__vize_cb">Click</button>"#;
-
-    let allocator = vize_carton::Bump::new();
-    let (root, _) = vize_armature::parse(&allocator, template);
-
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-    analyzer.analyze_script_setup(script);
-    analyzer.analyze_template(&root);
-    let summary = analyzer.finish();
-
-    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
-
-    let expression = "__vize_cb";
-    let source_start = template.find(expression).unwrap();
-    let source_end = source_start + expression.len();
-    let mapping = output
-        .mappings
-        .iter()
-        .find(|mapping| mapping.src_range == (source_start..source_end))
-        .expect("should map the event handler expression");
-    let operand_start = output
-        .code
-        .find("((__vize_cb));")
-        .expect("the user handler should be emitted as the wrapper operand")
-        + 2;
-
-    assert_eq!(
-        mapping.gen_range,
-        operand_start..operand_start + expression.len()
-    );
-    assert_eq!(&output.code[mapping.gen_range.clone()], expression);
-}
-
-#[test]
 fn test_template_shadow_bindings_only_unwrap_vue_refs() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 

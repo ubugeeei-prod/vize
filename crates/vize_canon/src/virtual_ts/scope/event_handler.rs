@@ -1,9 +1,7 @@
 //! Event-handler expression generation and the lightweight JS scanning helpers
 //! used to classify handler bodies (callable references vs. inline callbacks).
 
-use vize_carton::String;
-use vize_carton::append;
-use vize_carton::cstr;
+use vize_carton::{String, append, cstr};
 
 use crate::virtual_ts::expressions::rewrite_reserved_template_prop;
 use crate::virtual_ts::types::VizeMapping;
