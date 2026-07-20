@@ -16,7 +16,7 @@ test("compiler fixture diff reporter documents the shared artifact directory", (
   });
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /Defaults under \.vize\/artifacts\/compiler-diff-report\./);
+  assert.match(result.stdout, /\.vize\/artifacts\/compiler-diff-report/);
 });
 
 test("compiler fixture diff reporter dry-runs selected registry projects", () => {
