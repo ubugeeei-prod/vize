@@ -15,6 +15,7 @@ mod parsing;
 mod reactivity_loss;
 mod rule_queries;
 mod script_options;
+mod source_path;
 mod template_queries;
 
 #[cfg(test)]

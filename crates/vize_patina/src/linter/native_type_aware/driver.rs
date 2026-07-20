@@ -4,7 +4,7 @@ use super::{
     RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
     has_promise_like_return, has_unsafe_template_type, push_warning,
     should_warn_for_emit_validator, should_warn_for_prop_access, should_warn_for_reactivity_loss,
-    with_corsa_session,
+    source_path::absolute_source_file, with_corsa_session,
 };
 use super::{
     markers::{QueryKind, push_promise_marker},
@@ -14,7 +14,6 @@ use super::{
     template_queries::{TemplateQueryKind, collect_template_query_sets},
 };
 use crate::diagnostic::LintDiagnostic;
-use std::path::Path;
 use vize_armature::Parser as TemplateParser;
 use vize_carton::{FxHashSet, profile};
 use vize_croquis::{
@@ -126,7 +125,7 @@ pub(super) fn lint_with_descriptor<'a>(
         .as_ref()
         .map(|(_, offset, _, _)| *offset)
         .unwrap_or(0);
-    let from_file = Path::new(filename).parent();
+    let from_file = absolute_source_file(filename);
     let parse_result = profile!("patina.type_aware.script_parse", {
         if let Some(script_setup) = descriptor.script_setup.as_ref() {
             let generic = script_setup
@@ -155,7 +154,7 @@ pub(super) fn lint_with_descriptor<'a>(
                 .and_then(|(root, _, _, has_fatal)| (!*has_fatal).then_some(root)),
             &config,
             None,
-            from_file,
+            Some(from_file.as_path()),
         )
     );
 
