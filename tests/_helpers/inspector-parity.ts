@@ -115,10 +115,7 @@ function writeInspectorReport(
   target: "dom" | "ssr",
   report: InspectorCompareReport,
 ): void {
-  const outputRoot = inspectorReportDirectory(
-    appName,
-    process.env.VIZE_INSPECT_OUTPUT_DIR,
-  );
+  const outputRoot = inspectorReportDirectory(appName, process.env.VIZE_INSPECT_OUTPUT_DIR);
   fs.mkdirSync(outputRoot, { recursive: true });
 
   fs.writeFileSync(path.join(outputRoot, `${target}.json`), JSON.stringify(report, null, 2) + "\n");
@@ -149,13 +146,9 @@ function writeInspectorReport(
  * @param outputDirectory - Explicit directory supplied by the test environment.
  * @default `<repository>/.vize/artifacts/inspect/<application>`
  */
-export function inspectorReportDirectory(
-  appName: string,
-  outputDirectory?: string,
-): string {
+export function inspectorReportDirectory(appName: string, outputDirectory?: string): string {
   return (
-    outputDirectory ??
-    path.join(REPO_ROOT, ".vize", "artifacts", "inspect", sanitizeName(appName))
+    outputDirectory ?? path.join(REPO_ROOT, ".vize", "artifacts", "inspect", sanitizeName(appName))
   );
 }
 
