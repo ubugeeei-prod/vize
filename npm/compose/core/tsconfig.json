@@ -7,7 +7,7 @@
     "erasableSyntaxOnly": true,
     "rewriteRelativeImportExtensions": true,
     "types": ["node"],
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022", "ESNext.Intl", "DOM", "DOM.Iterable"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
