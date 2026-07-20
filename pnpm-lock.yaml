@@ -109,6 +109,9 @@ catalogs:
     '@pkl-community/pkl':
       specifier: 0.30.2
       version: 0.30.2
+    ajv:
+      specifier: 8.20.0
+      version: 8.20.0
     glob:
       specifier: 13.0.6
       version: 13.0.6
@@ -235,6 +238,9 @@ importers:
       '@typescript/native-preview':
         specifier: catalog:typescript
         version: 7.0.0-dev.20260602.1
+      ajv:
+        specifier: catalog:repo-tooling
+        version: 8.20.0
       glob:
         specifier: catalog:repo-tooling
         version: 13.0.6

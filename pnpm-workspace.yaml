@@ -44,6 +44,7 @@ catalogs:
   repo-tooling:
     "@iarna/toml": "2.2.5"
     "@pkl-community/pkl": "0.30.2"
+    ajv: "8.20.0"
     glob: "13.0.6"
     json-schema-to-typescript: "15.0.4"
     pkg-pr-new: "0.0.73"
