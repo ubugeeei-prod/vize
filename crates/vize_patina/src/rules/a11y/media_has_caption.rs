@@ -26,7 +26,7 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, TemplateChildNode};
 
-use super::helpers::get_static_attribute_value;
+use super::helpers::{get_static_attribute_value, has_named_prop};
 use vize_relief::PropNode;
 
 static META: RuleMeta = RuleMeta {
@@ -80,13 +80,12 @@ impl Rule for MediaHasCaption {
             return;
         }
 
-        // aria-label satisfies the requirement
-        if get_static_attribute_value(element, "aria-label").is_some() {
+        // Static and bound accessible names satisfy the requirement.
+        if has_named_prop(element, "aria-label") {
             return;
         }
 
-        // aria-labelledby satisfies the requirement
-        if get_static_attribute_value(element, "aria-labelledby").is_some() {
+        if has_named_prop(element, "aria-labelledby") {
             return;
         }
 
@@ -140,6 +139,26 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<video src="movie.mp4" aria-label="Movie clip"></video>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_video_with_bound_aria_label() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<video src="movie.mp4" :aria-label="label"></video>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_audio_with_bound_aria_labelledby() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<audio src="podcast.mp3" :aria-labelledby="labelId"></audio>"#,
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);

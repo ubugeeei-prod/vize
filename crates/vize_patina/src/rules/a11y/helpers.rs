@@ -105,7 +105,7 @@ pub fn is_focusable_element(element: &ElementNode) -> bool {
     false
 }
 
-fn has_named_prop(element: &ElementNode, name: &str) -> bool {
+pub(super) fn has_named_prop(element: &ElementNode, name: &str) -> bool {
     element.props.iter().any(|prop| match prop {
         PropNode::Attribute(attr) => attr.name == name,
         PropNode::Directive(dir) if dir.name == "bind" => {
