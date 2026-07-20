@@ -19,5 +19,19 @@ test("test-run schema satisfies its declared dialect", () => {
     validateFormats: false,
   });
 
+  assert.equal(validator.validateSchema(schema), true, validator.errorsText());
   assert.doesNotThrow(() => validator.compile(schema));
+});
+
+test("dialect validation rejects malformed schemas", () => {
+  const validator = new Ajv2020({
+    strict: true,
+    validateFormats: false,
+  });
+  const invalidSchema = {
+    ...schema,
+    type: 42,
+  };
+
+  assert.equal(validator.validateSchema(invalidSchema), false);
 });
