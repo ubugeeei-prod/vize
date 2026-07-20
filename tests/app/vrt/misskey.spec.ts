@@ -30,7 +30,7 @@ interface VisualRoute {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR =
   process.env.VIZE_MISSKEY_VRT_OUTPUT_DIR ??
-  path.resolve(__dirname, "../../../.vize/vrt/misskey/artifacts");
+  path.resolve(__dirname, "../../../.vize/artifacts/misskey-vrt/artifacts");
 const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 const MISSKEY_VRT_TIMEOUT = 900_000;

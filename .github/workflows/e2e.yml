@@ -319,10 +319,10 @@ jobs:
             tests/app/screenshots/
             tests/app/playwright-report/
             tests/playwright-report/
-            .vize/vrt/elk/artifacts/
-            .vize/vrt/frontend-phpcon/artifacts/
-            .vize/vrt/misskey/artifacts/
-            .vize/vrt/npmx/artifacts/
-            .vize/vrt/vuefes/artifacts/
+            .vize/artifacts/elk-vrt/artifacts/
+            .vize/artifacts/frontend-phpcon-vrt/artifacts/
+            .vize/artifacts/misskey-vrt/artifacts/
+            .vize/artifacts/npmx-vrt/artifacts/
+            .vize/artifacts/vuefes-vrt/artifacts/
           if-no-files-found: ignore
           retention-days: 7
