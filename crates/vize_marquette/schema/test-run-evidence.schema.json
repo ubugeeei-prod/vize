@@ -28,6 +28,11 @@
       "minLength": 1,
       "maxLength": 256
     },
+    "nonNegativeCount": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
     "timestamp": {
       "type": "string",
       "format": "date-time",
@@ -155,26 +160,10 @@
           "maximum": 1024
         },
         "outcome": { "enum": ["passed", "failed", "cancelled"] },
-        "passed": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4294967295
-        },
-        "failed": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4294967295
-        },
-        "skipped": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4294967295
-        },
-        "retries": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4294967295
-        },
+        "passed": { "$ref": "#/$defs/nonNegativeCount" },
+        "failed": { "$ref": "#/$defs/nonNegativeCount" },
+        "skipped": { "$ref": "#/$defs/nonNegativeCount" },
+        "retries": { "$ref": "#/$defs/nonNegativeCount" },
         "durationMs": {
           "type": "integer",
           "minimum": 1,
@@ -214,26 +203,10 @@
           "minimum": 1,
           "maximum": 512
         },
-        "passed": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4294967295
-        },
-        "failed": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4294967295
-        },
-        "skipped": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4294967295
-        },
-        "retries": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4294967295
-        },
+        "passed": { "$ref": "#/$defs/nonNegativeCount" },
+        "failed": { "$ref": "#/$defs/nonNegativeCount" },
+        "skipped": { "$ref": "#/$defs/nonNegativeCount" },
+        "retries": { "$ref": "#/$defs/nonNegativeCount" },
         "evidence": { "$ref": "#/$defs/retainedEvidence" }
       }
     },
