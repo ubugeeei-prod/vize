@@ -44,6 +44,11 @@
       "import": "./dist/checkbox.mjs",
       "default": "./dist/checkbox.mjs"
     },
+    "./context": {
+      "types": "./dist/context.d.mts",
+      "import": "./dist/context.mjs",
+      "default": "./dist/context.mjs"
+    },
     "./controllable-state": {
       "types": "./dist/controllable-state.d.mts",
       "import": "./dist/controllable-state.mjs",

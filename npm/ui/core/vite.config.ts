@@ -12,6 +12,7 @@ export default defineConfig({
       index: "src/index.ts",
       button: "src/button.ts",
       checkbox: "src/checkbox.ts",
+      context: "src/context.ts",
       "controllable-state": "src/controllable-state.ts",
       primitive: "src/primitive.ts",
       "visually-hidden": "src/visually-hidden.ts",
