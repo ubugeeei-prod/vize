@@ -42,7 +42,7 @@
     "lint:sfc": "vp exec node scripts/lint-sfc.ts src",
     "pretest": "pnpm lint:sfc && pnpm build && pnpm check:size",
     "test": "vp exec node --test 'src/**/*.test.ts'",
-    "check": "pnpm lint:sfc && vp check src scripts vite.config.ts",
+    "check": "vp check src scripts vite.config.ts",
     "check:fix": "vp check --fix src scripts vite.config.ts",
     "check:size": "node scripts/check-size.mjs",
     "fmt": "vp fmt --write src scripts vite.config.ts"
