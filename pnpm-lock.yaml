@@ -394,6 +394,25 @@ importers:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
 
+  npm/compose/temporal:
+    dependencies:
+      temporal-polyfill-lite:
+        specifier: 0.4.2
+        version: 0.4.2
+    devDependencies:
+      '@types/node':
+        specifier: catalog:typescript
+        version: 25.9.2
+      typescript:
+        specifier: catalog:typescript
+        version: 6.0.3
+      vite-plus:
+        specifier: catalog:vite-stack
+        version: 0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(vite@8.0.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(yaml@2.9.0))(yaml@2.9.0)
+      vue:
+        specifier: catalog:vue-stable
+        version: 3.5.35(typescript@6.0.3)
+
   npm/fresco:
     dependencies:
       '@vizejs/fresco-native':
@@ -9568,6 +9587,9 @@ packages:
         optional: true
       uglify-js:
         optional: true
+
+  temporal-polyfill-lite@0.4.2:
+    resolution: {integrity: sha512-AguA4sTLtAnpoJ62dk/kjssR5Tt1JmodrjS4r1o9IDkmxWJsqLJNsyicAZTpMY/Dt5AKF1tbkL9P84wGsXPhAQ==}
 
   terser@5.47.1:
     resolution: {integrity: sha512-tPbLXTI6ohPASb/1YViL428oEHu6/qv1OxqYnfaonVCFHqx4+wCd95pHrQWsL5X4pl90CTyW9piSAsS2L0VoMw==}
@@ -19419,6 +19441,8 @@ snapshots:
     optionalDependencies:
       esbuild: 0.28.1
       postcss: 8.5.15
+
+  temporal-polyfill-lite@0.4.2: {}
 
   terser@5.47.1:
     dependencies:

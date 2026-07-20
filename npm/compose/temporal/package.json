@@ -1,0 +1,64 @@
+{
+  "name": "@vizecompose/temporal",
+  "version": "0.298.0",
+  "description": "Reactive, standards-based date and time utilities for Vize applications",
+  "keywords": [
+    "composables",
+    "date",
+    "temporal",
+    "time",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize.git",
+    "directory": "npm/compose/temporal"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "pretest": "vp pack && pnpm check:size",
+    "test": "vp exec node --test 'src/**/*.test.ts'",
+    "check": "vp check src scripts vite.config.ts",
+    "check:fix": "vp check --fix src scripts vite.config.ts",
+    "check:size": "node scripts/check-size.mjs",
+    "fmt": "vp fmt --write src scripts vite.config.ts"
+  },
+  "dependencies": {
+    "temporal-polyfill-lite": "0.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:typescript",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
