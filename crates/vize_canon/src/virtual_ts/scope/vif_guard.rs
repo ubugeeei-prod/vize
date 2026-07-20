@@ -28,7 +28,7 @@ pub(super) fn common_vif_guard_prefix_for_guards(guards: &[&str]) -> Option<Stri
 pub(super) fn callback_vif_guard(guard: &str) -> Option<String> {
     let positive_terms: Vec<_> = split_guard_terms(guard)
         .into_iter()
-        .filter(|term| !term.trim_start().starts_with('!'))
+        .filter(|term| !term.starts_with('!'))
         .collect();
 
     (!positive_terms.is_empty()).then(|| String::from(positive_terms.join(" && ").as_str()))
