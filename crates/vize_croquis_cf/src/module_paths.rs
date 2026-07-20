@@ -3,6 +3,10 @@
 use std::path::{Component, Path, PathBuf};
 
 /// Build normalized source candidates for an import specifier.
+///
+/// Authored imports can retain the extension used by emitted runtime files.
+/// The corresponding source extensions are therefore checked after the exact
+/// path, without consulting the host filesystem.
 pub(crate) fn import_candidates(specifier: &str, from_dir: Option<&Path>) -> Vec<PathBuf> {
     let mut bases = Vec::new();
 
@@ -29,20 +33,49 @@ pub(crate) fn import_candidates(specifier: &str, from_dir: Option<&Path>) -> Vec
                 ".vue",
                 ".ts",
                 ".tsx",
+                ".mts",
+                ".cts",
                 ".js",
                 ".jsx",
+                ".mjs",
+                ".cjs",
                 "/index.vue",
                 "/index.ts",
                 "/index.tsx",
+                "/index.mts",
+                "/index.cts",
                 "/index.js",
                 "/index.jsx",
+                "/index.mjs",
+                "/index.cjs",
             ] {
                 candidates.push(normalize_logical_path(path_with_suffix(&base, suffix)));
             }
+        } else {
+            push_runtime_source_substitutions(&base, &mut candidates);
         }
     }
 
     candidates
+}
+
+fn push_runtime_source_substitutions(base: &Path, candidates: &mut Vec<PathBuf>) {
+    let Some(extension) = base.extension().and_then(|value| value.to_str()) else {
+        return;
+    };
+    let source_extensions: &[&str] = match extension {
+        "js" => &["ts", "tsx"],
+        "jsx" => &["tsx", "ts"],
+        "mjs" => &["mts"],
+        "cjs" => &["cts"],
+        _ => &[],
+    };
+
+    for source_extension in source_extensions {
+        candidates.push(normalize_logical_path(
+            base.with_extension(source_extension),
+        ));
+    }
 }
 
 fn path_with_suffix(base: &Path, suffix: &str) -> PathBuf {
@@ -94,5 +127,23 @@ mod tests {
 
         assert_eq!(candidates[0], PathBuf::from("src/components/Button"));
         assert!(candidates.contains(&PathBuf::from("src/components/Button.vue")));
+    }
+
+    #[test]
+    fn runtime_extension_candidates_include_authored_sources() {
+        let candidates = import_candidates("../primitive.js", Some(Path::new("src/components")));
+
+        assert_eq!(candidates[0], PathBuf::from("src/primitive.js"));
+        assert!(candidates.contains(&PathBuf::from("src/primitive.ts")));
+        assert!(candidates.contains(&PathBuf::from("src/primitive.tsx")));
+    }
+
+    #[test]
+    fn module_runtime_extensions_map_to_matching_sources() {
+        let module = import_candidates("./worker.mjs", Some(Path::new("src")));
+        let common = import_candidates("./worker.cjs", Some(Path::new("src")));
+
+        assert!(module.contains(&PathBuf::from("src/worker.mts")));
+        assert!(common.contains(&PathBuf::from("src/worker.cts")));
     }
 }

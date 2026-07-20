@@ -276,4 +276,21 @@ mod tests {
             "relative import must not also edge to the unrelated admin/Button.vue"
         );
     }
+
+    #[test]
+    fn runtime_extension_import_resolves_to_authored_source() {
+        let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::default());
+        let consumer_id = analyzer.add_file(
+            Path::new("src/consumer.ts"),
+            "import { value } from './state.js'\nvoid value\n",
+        );
+        let source_id = analyzer.add_file(Path::new("src/state.ts"), "export const value = 1\n");
+
+        analyzer.rebuild_import_edges();
+
+        assert!(
+            import_edge_target(&analyzer, consumer_id, source_id),
+            "runtime extension should resolve to the authored source file"
+        );
+    }
 }
