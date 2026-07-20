@@ -885,6 +885,9 @@ importers:
 
   npm/ui/core:
     devDependencies:
+      '@tsdown/css':
+        specifier: catalog:content
+        version: 0.22.0(jiti@2.7.0)(postcss@8.5.15)(tsdown@0.22.0)(tsx@4.22.4)(yaml@2.9.0)
       '@types/node':
         specifier: catalog:typescript
         version: 25.9.2

@@ -12,6 +12,10 @@ export default defineConfig({
     format: "esm",
     dts: { vue: true },
     plugins: [vue()],
+    css: {
+      inject: true,
+      minify: true,
+    },
     clean: true,
     deps: {
       neverBundle: ["vue"],

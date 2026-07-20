@@ -23,7 +23,9 @@
     "dist"
   ],
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/*.css"
+  ],
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "exports": {
@@ -31,7 +33,8 @@
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
-    }
+    },
+    "./style.css": "./dist/style.css"
   },
   "publishConfig": {
     "access": "public"
@@ -48,6 +51,7 @@
     "fmt": "vp fmt --write src scripts vite.config.ts"
   },
   "devDependencies": {
+    "@tsdown/css": "catalog:content",
     "@types/node": "catalog:typescript",
     "@vitejs/plugin-vue": "catalog:vite-stack",
     "@vizejs/native": "workspace:*",
