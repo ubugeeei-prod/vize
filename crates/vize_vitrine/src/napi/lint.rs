@@ -19,6 +19,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use vize_carton::append;
 
 use super::lint_fix::{is_lintable_extension, lint_file_with_optional_fix, lint_source};
+mod empty_result;
 mod lint_options;
 use lint_options::{
     LintOptionsNapi, LintResultNapi, PatinaLintOptionsNapi, configure_type_aware_lint,
@@ -298,6 +299,11 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
 
     let opts = options.unwrap_or_default();
     let start = Instant::now();
+    let format = opts
+        .format
+        .as_deref()
+        .and_then(OutputFormat::parse)
+        .unwrap_or(OutputFormat::Text);
 
     // Collect .vue files using glob patterns or directory walking
     let files: Vec<std::path::PathBuf> = patterns
@@ -335,10 +341,7 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
 
     if files.is_empty() {
         return Ok(LintResultNapi {
-            output: format!(
-                "No .vue or .html files found matching patterns: {:?}",
-                patterns
-            ),
+            output: empty_result::format_empty_lint_output(&patterns, format),
             error_count: 0,
             warning_count: 0,
             file_count: 0,
@@ -374,12 +377,6 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
 
     let total_errors = error_count.load(Ordering::Relaxed);
     let total_warnings = warning_count.load(Ordering::Relaxed);
-
-    let format = opts
-        .format
-        .as_deref()
-        .and_then(OutputFormat::parse)
-        .unwrap_or(OutputFormat::Text);
 
     let quiet = opts.quiet.unwrap_or(false);
 
