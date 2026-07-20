@@ -1,6 +1,7 @@
 use oxc_ast::ast::{CallExpression, Expression};
 
 use crate::reactivity::ReactiveKind;
+use crate::scope::ScopeKind;
 use crate::setup_context::SetupContextViolationKind;
 use vize_carton::{CompactString, FxHashMap};
 use vize_relief::BindingType;
@@ -52,8 +53,10 @@ pub fn detect_setup_context_violation(
     result: &mut ScriptParseResult,
     call: &CallExpression<'_>,
 ) -> bool {
-    // Only detect in non-setup scripts
-    if !result.is_non_setup_script {
+    // Only record calls made directly in a plain script's module scope.
+    if !result.is_non_setup_script
+        || result.scopes.current_scope().kind != ScopeKind::NonScriptSetup
+    {
         return false;
     }
 
