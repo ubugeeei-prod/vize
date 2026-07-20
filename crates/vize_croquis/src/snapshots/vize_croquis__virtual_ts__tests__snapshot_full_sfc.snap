@@ -52,6 +52,7 @@ function __setup() {
     // Template refs (auto-unwrapped)
     const __unwrapped_count = count.value;
     
+    const $attrs: Readonly<Record<string, unknown>> = {};
     // Template expressions
     const __expr_0 = increment;
     const __expr_1 = count;

@@ -56,6 +56,7 @@ impl VirtualTsGenerator {
             self.write_line("");
         }
 
+        self.emit_template_globals();
         // Profile the full child walk as one span. This keeps virtual TS
         // generation observable without wrapping every recursive template node
         // and paying guard overhead proportional to AST size.
@@ -76,12 +77,11 @@ impl VirtualTsGenerator {
         self.emit_line(";(function __template() {");
         self.indent_level += 1;
 
-        // Declare refs for template ref access
         profile!(
             "croquis.virtual_ts.template.emit_ref_declarations",
             self.emit_template_ref_declarations(bindings)
         );
-
+        self.emit_template_globals();
         // Same coarse span as the standalone path: the emitted code is built by
         // the recursive walk, but profiling each child would dominate small
         // templates and add noise to large ones.

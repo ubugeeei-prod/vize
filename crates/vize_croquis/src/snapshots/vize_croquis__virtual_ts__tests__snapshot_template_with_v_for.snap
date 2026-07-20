@@ -9,6 +9,7 @@ expression: output.content
 declare const __ctx: { items: any };
 const { items } = __ctx;
 
+const $attrs: Readonly<Record<string, unknown>> = {};
 // Template expressions
 // v-for scope
 {

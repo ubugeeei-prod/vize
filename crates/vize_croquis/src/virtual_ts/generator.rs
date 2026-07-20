@@ -8,6 +8,7 @@ mod macro_type_arguments;
 mod options_api;
 mod script;
 mod template;
+mod template_globals;
 
 use std::path::Path;
 

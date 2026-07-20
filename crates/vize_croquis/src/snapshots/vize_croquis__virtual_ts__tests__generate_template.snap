@@ -9,5 +9,6 @@ expression: output.content.as_str()
 declare const __ctx: { message: any };
 const { message } = __ctx;
 
+const $attrs: Readonly<Record<string, unknown>> = {};
 // Template expressions
 const __expr_0 = message;
