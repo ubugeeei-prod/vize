@@ -37,10 +37,10 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack",
+    "build": "pnpm lint:sfc && vp pack",
     "dev": "vp pack --watch",
     "lint:sfc": "vp exec node scripts/lint-sfc.ts src",
-    "pretest": "pnpm lint:sfc && pnpm build && pnpm check:size",
+    "pretest": "vp pack && pnpm check:size",
     "test": "vp exec node --test 'src/**/*.test.ts'",
     "check": "vp check src scripts vite.config.ts",
     "check:fix": "vp check --fix src scripts vite.config.ts",
