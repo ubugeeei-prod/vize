@@ -54,7 +54,7 @@ pub(super) fn generate_event_handler_expressions(
                 let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
                 append!(
                     *ts,
-                    "{indent}const {handler_name} = ((handler: {listener_type} | null | undefined) => handler)(({content}));\n",
+                    "{indent}const {handler_name} = ((__vize_cb: {listener_type} | null | undefined) => __vize_cb)(({content}));\n",
                     indent = handler_indent,
                 );
                 append!(
@@ -66,7 +66,7 @@ pub(super) fn generate_event_handler_expressions(
                 let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
                 append!(
                     *ts,
-                    "{indent}const {handler_name} = ((handler: (($event: {event_type}) => unknown) | null | undefined) => handler)(({content}));\n",
+                    "{indent}const {handler_name} = ((__vize_cb: ((_e: {event_type}) => unknown) | null | undefined) => __vize_cb)(({content}));\n",
                     indent = handler_indent,
                     event_type = ctx.event_type,
                 );

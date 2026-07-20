@@ -141,7 +141,7 @@ const item = {} as {
         .find(|file| file.original_path.ends_with("App.vue"))
         .expect("App.vue should be registered");
     assert!(
-        app.content.contains("| null | undefined) => handler"),
+        app.content.contains("| null | undefined) => __vize_cb"),
         "optional event references should remain optional:\n{}",
         app.content
     );
