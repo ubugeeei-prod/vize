@@ -10,7 +10,7 @@ metadata.vize.stability = "alpha-supported"
 
 [features]
 default = ["native"]
-native = ["dep:lightningcss", "lightningcss/serde"]
+native = ["dep:lightningcss", "lightningcss/serde", "dep:parcel_selectors"]
 
 [dependencies]
 vize_carton = { workspace = true }
@@ -36,6 +36,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 lightningcss = { workspace = true, optional = true }
+parcel_selectors = { workspace = true, optional = true }
 regex = { workspace = true }
 sha2 = { workspace = true }
 

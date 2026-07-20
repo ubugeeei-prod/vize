@@ -133,6 +133,7 @@ mimalloc = "=0.1.52"
 
 # CSS
 lightningcss = "=1.0.0-alpha.71"
+parcel_selectors = "=0.28.2"
 
 # Terminal / layout
 crossterm = "=0.29.0"

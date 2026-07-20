@@ -3525,6 +3525,7 @@ dependencies = [
  "oxc_span",
  "oxc_syntax",
  "oxc_transformer",
+ "parcel_selectors",
  "pklrust",
  "regex",
  "serde",
