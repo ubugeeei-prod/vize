@@ -14,9 +14,15 @@ void test("discovers every SFC with the opinionated Vize contract", async () => 
 
   assert.deepEqual(
     results.map((result) => result.filename),
-    ["src/VisuallyHidden.vue"],
+    ["src/PrimitiveElement.vue", "src/VisuallyHidden.vue"],
   );
   assert.deepEqual(requests, [
+    {
+      filename: new URL("./PrimitiveElement.vue", import.meta.url).pathname,
+      preset: "opinionated",
+      typeAware: true,
+      helpLevel: "short",
+    },
     {
       filename: new URL("./VisuallyHidden.vue", import.meta.url).pathname,
       preset: "opinionated",
