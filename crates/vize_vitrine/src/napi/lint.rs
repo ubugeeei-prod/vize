@@ -10,7 +10,6 @@
     clippy::disallowed_macros
 )]
 
-use glob::glob;
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
@@ -18,8 +17,9 @@ use serde_json::{Value, json};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use vize_carton::append;
 
-use super::lint_fix::{is_lintable_extension, lint_file_with_optional_fix, lint_source};
+use super::lint_fix::{lint_file_with_optional_fix, lint_source};
 mod empty_result;
+mod file_collection;
 mod lint_options;
 use lint_options::{
     LintOptionsNapi, LintResultNapi, PatinaLintOptionsNapi, configure_type_aware_lint,
@@ -293,7 +293,6 @@ pub fn get_patina_rules() -> Result<Value> {
 /// Lint Vue SFC files matching patterns (native multithreading, .gitignore-aware)
 #[napi]
 pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<LintResultNapi> {
-    use ignore::Walk;
     use std::time::Instant;
     use vize_patina::{HelpLevel, OutputFormat, format_results, format_summary};
 
@@ -305,39 +304,7 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
         .and_then(OutputFormat::parse)
         .unwrap_or(OutputFormat::Text);
 
-    // Collect .vue files using glob patterns or directory walking
-    let files: Vec<std::path::PathBuf> = patterns
-        .iter()
-        .flat_map(|pattern| {
-            if pattern.contains('*') || pattern.contains('?') || pattern.contains('[') {
-                // Use glob for pattern matching
-                glob(pattern)
-                    .ok()
-                    .into_iter()
-                    .flatten()
-                    .filter_map(|r| r.ok())
-                    .filter(|p| {
-                        p.extension()
-                            .and_then(|ext| ext.to_str())
-                            .is_some_and(is_lintable_extension)
-                            && !p.components().any(|c| c.as_os_str() == "node_modules")
-                    })
-                    .collect::<Vec<_>>()
-            } else {
-                // Use directory walking for paths (respects .gitignore)
-                Walk::new(pattern)
-                    .filter_map(|e| e.ok())
-                    .filter(|e| {
-                        e.path()
-                            .extension()
-                            .and_then(|ext| ext.to_str())
-                            .is_some_and(is_lintable_extension)
-                    })
-                    .map(|e| e.path().to_path_buf())
-                    .collect::<Vec<_>>()
-            }
-        })
-        .collect();
+    let files = file_collection::collect_lint_files(&patterns);
 
     if files.is_empty() {
         return Ok(LintResultNapi {
