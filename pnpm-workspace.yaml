@@ -4,6 +4,7 @@ packages:
   - "npm/builder/*"
   - "editors/*"
   - "npm/framework/*"
+  - "npm/ui/*"
   - "!editors/vscode-art"
   - "!editors/vscode"
   - "npm/builder/vite/example"
