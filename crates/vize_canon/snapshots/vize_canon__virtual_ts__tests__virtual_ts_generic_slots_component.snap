@@ -118,8 +118,8 @@ function __setup<T extends string = 'a'>() {
 
   // @click handler
   (($event: PointerEvent) => {
-    const __vize_handler_8_33 = ((handler: ($event: PointerEvent) => unknown) => handler)((onClick));
-    __vize_handler_8_33($event);  // handler expression
+    const __vize_handler_8_33 = ((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((onClick));
+    if (__vize_handler_8_33) __vize_handler_8_33($event);  // handler expression
     // @vize-map: handler -> 403:410
   })({} as PointerEvent);
 

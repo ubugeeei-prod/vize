@@ -145,16 +145,61 @@ const item = {} as {
         "optional event references should remain optional:\n{}",
         app.content
     );
+    assert!(
+        app.content.contains("if (__vize_handler_"),
+        "optional event references should be guarded before invocation:\n{}",
+        app.content
+    );
 
     let result = checker.check_project().unwrap();
     let relevant = result
         .diagnostics
         .iter()
-        .filter(|diagnostic| diagnostic.file.ends_with("App.vue") && diagnostic.code == Some(2345))
+        .filter(|diagnostic| diagnostic.file.ends_with("App.vue"))
         .collect::<Vec<_>>();
     assert!(
         relevant.is_empty(),
-        "optional event references should not be required callbacks: {relevant:#?}"
+        "optional event references should not produce diagnostics: {relevant:#?}"
+    );
+}
+
+#[test]
+fn optional_native_event_handler_stays_optional() {
+    let source = r#"<script setup lang="ts">
+const item = {} as {
+  onClick?: (payload: PointerEvent) => Promise<void>
+}
+</script>
+<template><button @click="item.onClick">Click</button></template>
+"#;
+    let project = create_project(&[("src/App.vue", source)]);
+    let mut checker = BatchTypeChecker::new(project.path()).unwrap();
+    checker.scan_project().unwrap();
+    let app = checker
+        .virtual_files()
+        .into_iter()
+        .find(|file| file.original_path.ends_with("App.vue"))
+        .expect("App.vue should be registered");
+    assert!(
+        app.content.contains("| null | undefined) => __vize_cb"),
+        "optional native event references should remain optional:\n{}",
+        app.content
+    );
+    assert!(
+        app.content.contains("if (__vize_handler_"),
+        "optional native event references should be guarded before invocation:\n{}",
+        app.content
+    );
+
+    let result = checker.check_project().unwrap();
+    let relevant = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.file.ends_with("App.vue"))
+        .collect::<Vec<_>>();
+    assert!(
+        relevant.is_empty(),
+        "optional native event references should not produce diagnostics: {relevant:#?}"
     );
 }
 

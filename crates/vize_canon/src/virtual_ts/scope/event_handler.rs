@@ -6,7 +6,6 @@ use vize_carton::append;
 use vize_carton::cstr;
 
 use crate::virtual_ts::expressions::rewrite_reserved_template_prop;
-use crate::virtual_ts::helpers::generated_text_range;
 use crate::virtual_ts::types::VizeMapping;
 
 use super::context::EventHandlerExprContext;
@@ -40,7 +39,6 @@ pub(super) fn generate_event_handler_expressions(
                 String::from(ctx.indent)
             };
 
-            let gen_stmt_start = ts.len();
             // Component `@event` handlers carry the full emit listener type so
             // multi-arg emits keep every parameter (#1512). Both a bare callable
             // reference and an inline arrow/function are checked against the
@@ -48,33 +46,43 @@ pub(super) fn generate_event_handler_expressions(
             // argument spread. `__vize_args` is `Parameters<listener>` (a tuple),
             // so the spread always targets the listener's own parameter list,
             // verifying each parameter while avoiding TS2556.
-            if let Some(listener_type) = ctx.event_listener_type
+            let gen_range = if let Some(listener_type) = ctx.event_listener_type
                 && (is_implicit_reference || inline_callback_arg.is_some())
             {
                 let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
                 append!(
                     *ts,
-                    "{indent}const {handler_name} = ((__vize_cb: {listener_type} | null | undefined) => __vize_cb)(({content}));\n",
+                    "{indent}const {handler_name} = ((__vize_cb: {listener_type} | null | undefined) => __vize_cb)((",
                     indent = handler_indent,
                 );
+                let mapped_start = ts.len();
+                ts.push_str(content);
+                let mapped_end = ts.len();
+                ts.push_str("));\n");
                 append!(
                     *ts,
                     "{indent}if ({handler_name}) {handler_name}(...__vize_args);  // handler expression\n",
                     indent = handler_indent,
                 );
+                mapped_start..mapped_end
             } else if is_implicit_reference {
                 let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
                 append!(
                     *ts,
-                    "{indent}const {handler_name} = ((__vize_cb: ((_e: {event_type}) => unknown) | null | undefined) => __vize_cb)(({content}));\n",
+                    "{indent}const {handler_name} = ((__vize_cb: ((_e: {event_type}) => unknown) | null | undefined) => __vize_cb)((",
                     indent = handler_indent,
                     event_type = ctx.event_type,
                 );
+                let mapped_start = ts.len();
+                ts.push_str(content);
+                let mapped_end = ts.len();
+                ts.push_str("));\n");
                 append!(
                     *ts,
                     "{indent}if ({handler_name}) {handler_name}($event);  // handler expression\n",
                     indent = handler_indent,
                 );
+                mapped_start..mapped_end
             } else if let Some(event_arg) = inline_callback_arg {
                 // Wrap the inline callback invocation in a closure that
                 // re-declares `$event` typed against the handler's event type.
@@ -84,24 +92,25 @@ pub(super) fn generate_event_handler_expressions(
                 // `$event` directly (#2224 — `Cannot find name '$event'`).
                 append!(
                     *ts,
-                    "{indent}(($event: {event_type}) => {{ ({content})({event_arg}); }})($event);  // handler expression\n",
+                    "{indent}(($event: {event_type}) => {{ (",
                     indent = handler_indent,
                     event_type = ctx.event_type,
                 );
+                let mapped_start = ts.len();
+                ts.push_str(content);
+                let mapped_end = ts.len();
+                append!(*ts, ")({event_arg}); }})($event);  // handler expression\n");
+                mapped_start..mapped_end
             } else {
-                append!(
-                    *ts,
-                    "{indent}{content};  // handler expression\n",
-                    indent = handler_indent
-                );
-            }
-            let gen_stmt_end = ts.len();
+                append!(*ts, "{indent}", indent = handler_indent);
+                let mapped_start = ts.len();
+                ts.push_str(content);
+                let mapped_end = ts.len();
+                ts.push_str(";  // handler expression\n");
+                mapped_start..mapped_end
+            };
             mappings.push(VizeMapping {
-                gen_range: generated_text_range(
-                    &ts[gen_stmt_start..gen_stmt_end],
-                    content,
-                    gen_stmt_start,
-                ),
+                gen_range,
                 src_range: src_start..src_end,
                 sub_spans: Vec::new(),
             });
