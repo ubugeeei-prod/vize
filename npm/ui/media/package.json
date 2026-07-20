@@ -37,6 +37,11 @@
       "import": "./dist/pdf.mjs",
       "default": "./dist/pdf.mjs"
     },
+    "./qr": {
+      "types": "./dist/qr.d.mts",
+      "import": "./dist/qr.mjs",
+      "default": "./dist/qr.mjs"
+    },
     "./source": {
       "types": "./dist/source.d.mts",
       "import": "./dist/source.mjs",
@@ -49,17 +54,29 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
-    "pretest": "vp pack && pnpm check:size",
+    "lint:sfc": "vp exec node scripts/lint-sfc.ts src",
+    "pretest": "pnpm lint:sfc && vp pack && pnpm check:size",
     "test": "vp exec node --test 'src/**/*.test.ts'",
-    "check": "vp check src scripts vite.config.ts",
+    "check": "pnpm lint:sfc && vp check src scripts vite.config.ts",
     "check:fix": "vp check --fix src scripts vite.config.ts",
     "check:size": "node scripts/check-size.mjs",
     "fmt": "vp fmt --write src scripts vite.config.ts"
   },
+  "dependencies": {
+    "uqr": "0.1.3"
+  },
   "devDependencies": {
     "@types/node": "catalog:typescript",
+    "@vitejs/plugin-vue": "catalog:vite-stack",
+    "@vizejs/native": "workspace:*",
+    "@vizeui/tooling": "workspace:*",
     "typescript": "catalog:typescript",
-    "vite-plus": "catalog:vite-stack"
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
   },
   "engines": {
     "node": ">=24"

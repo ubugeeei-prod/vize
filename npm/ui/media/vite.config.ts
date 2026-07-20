@@ -1,3 +1,4 @@
+import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
@@ -10,10 +11,15 @@ export default defineConfig({
     entry: {
       index: "src/index.ts",
       pdf: "src/pdf.ts",
+      qr: "src/qr.ts",
       source: "src/media-source.ts",
     },
     format: "esm",
-    dts: true,
+    dts: { vue: true },
+    plugins: [vue()],
     clean: true,
+    deps: {
+      neverBundle: ["vue", "uqr"],
+    },
   },
 });
