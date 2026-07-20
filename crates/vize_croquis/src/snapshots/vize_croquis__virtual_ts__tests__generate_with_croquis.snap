@@ -41,7 +41,7 @@ function __setup<T extends string>() {
   function withDefaults<T, D extends __WithDefaultsArgs<T>>(props: T, defaults: D): __WithDefaultsResult<T, D> { return undefined as unknown as __WithDefaultsResult<T, D>; }
   const $event: Event = undefined as unknown as Event;
   function useTemplateRef<T = any>(key: string): $Vue['ShallowRef']<T | null> { return undefined as unknown as $Vue['ShallowRef']<T | null>; }
-  type __Props = <{ name: string }>;
+  type __Props = { name: string };
   
   // User setup code
   

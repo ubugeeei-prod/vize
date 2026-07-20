@@ -282,21 +282,20 @@ impl VirtualTsGenerator {
         // useTemplateRef (Vue 3.5+)
         self.emit_line("function useTemplateRef<T = any>(key: string): $Vue['ShallowRef']<T | null> { return undefined as unknown as $Vue['ShallowRef']<T | null>; }");
 
-        // If macros were actually used, emit type aliases based on their type arguments
         if let Some(props) = macros.define_props()
             && let Some(ref type_args) = props.type_args
         {
-            self.emit_line(&format!("type __Props = {};", type_args));
+            self.emit_macro_type_alias("__Props", type_args);
         }
         if let Some(emits) = macros.define_emits()
             && let Some(ref type_args) = emits.type_args
         {
-            self.emit_line(&format!("type __Emits = {};", type_args));
+            self.emit_macro_type_alias("__Emits", type_args);
         }
         if let Some(expose) = macros.define_expose() {
             // Generate exposed interface type for InstanceType and useTemplateRef
             if let Some(ref type_args) = expose.type_args {
-                self.emit_line(&format!("type __Exposed = {};", type_args));
+                self.emit_macro_type_alias("__Exposed", type_args);
             } else if let Some(ref runtime_args) = expose.runtime_args {
                 // If runtime args are provided, infer type from the object
                 self.emit_line(&format!("type __Exposed = typeof ({});", runtime_args));
@@ -309,7 +308,7 @@ impl VirtualTsGenerator {
         if let Some(slots) = macros.define_slots()
             && let Some(ref type_args) = slots.type_args
         {
-            self.emit_line(&format!("type __Slots = {};", type_args));
+            self.emit_macro_type_alias("__Slots", type_args);
         }
 
         self.emit_line("");
