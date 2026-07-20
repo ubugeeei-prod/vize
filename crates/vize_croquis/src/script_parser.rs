@@ -51,3 +51,6 @@ mod runtime_props_tests;
 
 #[cfg(test)]
 mod options_api_emits_tests;
+
+#[cfg(test)]
+mod setup_context_scope_tests;
