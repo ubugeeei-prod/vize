@@ -1,5 +1,6 @@
+use crate::module_paths::{import_candidates, normalize_logical_path};
 use crate::registry::ModuleRegistry;
-use std::path::{Component, Path, PathBuf};
+use std::path::Path;
 
 /// Try to resolve an import specifier to a file in the registry.
 #[allow(clippy::disallowed_macros)]
@@ -33,67 +34,6 @@ pub(super) fn resolve_import(
 
     // For absolute or other paths, check directly
     registry.get_by_path(specifier).is_some()
-}
-
-/// Build the set of canonical candidate paths a relative import specifier may
-/// resolve to, trying the common module extensions and `index` files.
-fn import_candidates(specifier: &str, from_dir: Option<&Path>) -> Vec<PathBuf> {
-    let base = from_dir
-        .filter(|dir| !dir.as_os_str().is_empty())
-        .map_or_else(|| PathBuf::from(specifier), |dir| dir.join(specifier));
-
-    let mut candidates = Vec::new();
-    let has_extension = base.extension().is_some();
-    candidates.push(normalize_logical_path(base.clone()));
-
-    if !has_extension {
-        for suffix in [
-            ".vue",
-            ".ts",
-            ".tsx",
-            ".js",
-            ".jsx",
-            "/index.vue",
-            "/index.ts",
-            "/index.tsx",
-            "/index.js",
-            "/index.jsx",
-        ] {
-            candidates.push(normalize_logical_path(path_with_suffix(&base, suffix)));
-        }
-    }
-
-    candidates
-}
-
-fn path_with_suffix(base: &Path, suffix: &str) -> PathBuf {
-    if let Some(index_file) = suffix.strip_prefix('/') {
-        base.join(index_file)
-    } else {
-        let mut value = base.as_os_str().to_os_string();
-        value.push(suffix);
-        PathBuf::from(value)
-    }
-}
-
-/// Normalize a path by collapsing `.`/`..` segments without touching the
-/// filesystem, yielding a canonical logical path for comparison.
-fn normalize_logical_path(path: PathBuf) -> PathBuf {
-    let mut normalized = PathBuf::new();
-
-    for component in path.components() {
-        match component {
-            Component::CurDir => {}
-            Component::ParentDir => {
-                normalized.pop();
-            }
-            Component::Normal(part) => normalized.push(part),
-            Component::RootDir => normalized.push(Path::new("/")),
-            Component::Prefix(prefix) => normalized.push(prefix.as_os_str()),
-        }
-    }
-
-    normalized
 }
 
 #[cfg(test)]

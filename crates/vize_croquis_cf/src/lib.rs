@@ -54,6 +54,7 @@
 mod analyzer;
 mod diagnostics;
 mod graph;
+mod module_paths;
 mod registry;
 mod suppression;
 
