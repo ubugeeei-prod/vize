@@ -16,8 +16,8 @@ void test("preserves required accessibility CSS in the public entry", async () =
   assert.equal(manifest.exports["./style.css"], "./dist/style.css");
 
   const entry = await readFile(new URL("dist/index.mjs", packageDirectory), "utf8");
-  assert.match(entry, /import ["']\.\/style\.css["'];/);
+  assert.match(entry, /import\s*["']\.\/style\.css["'];?/);
 
   const style = await readFile(new URL("dist/style.css", packageDirectory), "utf8");
-  assert.match(style, /data-vize-ui=visually-hidden/);
+  assert.match(style, /data-vize-ui=["']?visually-hidden["']?/);
 });
