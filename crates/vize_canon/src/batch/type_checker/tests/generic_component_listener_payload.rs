@@ -2,6 +2,7 @@ use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diag
 
 mod callback_prop_shorthand;
 mod dynamic_member_component_events;
+mod overload_depth;
 
 #[test]
 fn batch_type_checker_accepts_component_fallthrough_touch_listener() {

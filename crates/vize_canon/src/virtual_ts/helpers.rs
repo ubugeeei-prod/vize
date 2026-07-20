@@ -78,11 +78,15 @@ macro_rules! vue_type_helpers_text {
 /// Deliberately excludes `__EmitProps`: that alias is emitted per-file and only
 /// for components that actually declare emits, so it stays out of the shared
 /// hoisted helper text, exactly as before hoisting.
+///
+/// Overload extraction is capped at 32 steps. Generic call signatures may not
+/// converge structurally, while 32 still preserves a broad public event
+/// surface without exhausting the type checker's instantiation budget.
 macro_rules! emit_overload_helpers_text {
     () => {
         concat!(
             "type __VizeOverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;\n",
-            "type __VizeOverloadUnionRecursive<TOverload, TPartialOverload = unknown> = TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : __VizeOverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & __VizeOverloadProps<TOverload>> | ((...args: TArgs) => TReturn) : never;\n",
+            "type __VizeOverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = []> = TDepth['length'] extends 32 ? never : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : __VizeOverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & __VizeOverloadProps<TOverload>, [...TDepth, unknown]> | ((...args: TArgs) => TReturn) : never;\n",
             "type __VizeOverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<__VizeOverloadUnionRecursive<(() => never) & TOverload>, TOverload extends () => never ? never : () => never>;\n",
             "type __VizeOverloadParameters<T extends (...args: any[]) => any> = Parameters<__VizeOverloadUnion<T>>;\n",
             "type __VizeIsStringLiteral<T> = T extends string ? string extends T ? false : true : false;\n",
