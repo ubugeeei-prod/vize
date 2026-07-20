@@ -1,3 +1,4 @@
+export * from "./async-resource.ts";
 export * from "./event-listener.ts";
 export * from "./locale.ts";
 export * from "./media-query.ts";
