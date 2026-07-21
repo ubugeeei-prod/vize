@@ -68,3 +68,92 @@ const benchmarkMirror = 1
         "synthetic check identifier should map to the bound expression: {sub_span:?}"
     );
 }
+
+#[test]
+fn static_attribute_values_are_type_checked_like_dynamic_bindings() {
+    let script = r#"import HelloWorld from "./HelloWorld.vue"
+"#;
+    let template = r#"<HelloWorld msg="You did it!" />"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    assert!(
+        output.code.contains(
+            "type __HelloWorld_0_prop_msg = __VizePropValue<__HelloWorld_Props_0, 'msg'>;"
+        ),
+        "static prop must declare its child prop type alias:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .contains(": __HelloWorld_0_prop_msg = \"You did it!\";"),
+        "static prop value must be asserted against the child prop type:\n{}",
+        output.code
+    );
+
+    // The synthetic check identifier maps back to the authored attribute value.
+    let value_start = template.find("You did it!").expect("static value present");
+    let value_range = value_start..value_start + "You did it!".len();
+    let sub_span = output
+        .mappings
+        .iter()
+        .flat_map(|mapping| &mapping.sub_spans)
+        .find(|span| span.src_range == value_range)
+        .expect("static prop check should map to the authored attribute value");
+    assert!(
+        output.code[sub_span.gen_range.clone()].starts_with("__vize_prop_check_"),
+        "synthetic check identifier should map to the static value: {sub_span:?}"
+    );
+}
+
+#[test]
+fn static_attribute_values_escape_into_exact_string_literals() {
+    let script = r#"import Child from "./Child.vue"
+"#;
+    let template = "<Child label='say \"hi\" \\ done' />";
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    assert!(
+        output
+            .code
+            .contains(": __Child_0_prop_label = \"say \\\"hi\\\" \\\\ done\";"),
+        "static value must escape quotes and backslashes:\n{}",
+        output.code
+    );
+}
+
+#[test]
+fn valueless_static_attributes_stay_out_of_per_prop_checks() {
+    let script = r#"import Child from "./Child.vue"
+"#;
+    let template = r#"<Child disabled />"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    assert!(
+        !output.code.contains("__Child_0_prop_disabled ="),
+        "valueless attributes keep their boolean-shorthand semantics:\n{}",
+        output.code
+    );
+}

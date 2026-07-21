@@ -1,9 +1,9 @@
 //! Component prop value type-check generation.
 //!
-//! For each dynamic prop bound on a child component usage, emits a typed
-//! assertion plus a single call into the child's generic functional
-//! prop-checker so TypeScript can validate the bindings and infer generics
-//! across the component boundary.
+//! For each prop passed to a child component usage — dynamic bindings and
+//! static attribute values alike — emits a typed assertion plus a single call
+//! into the child's generic functional prop-checker so TypeScript can
+//! validate the values and infer generics across the component boundary.
 
 use super::super::helpers::{to_camel_case, to_safe_identifier_fragment};
 use super::super::types::{VizeMapping, VizeSubSpan};
@@ -74,7 +74,7 @@ impl<'a> ComponentPropSource<'a> {
     }
 }
 
-fn dynamic_prop_value_source_range(
+fn prop_value_source_range(
     source_context: ComponentPropSource<'_>,
     prop: &PassedProp,
 ) -> Option<std::ops::Range<usize>> {
@@ -136,10 +136,13 @@ pub(crate) fn generate_component_prop_checks(
         if !is_checkable_prop(prop) {
             continue;
         }
-        if prop.value.is_some() && prop.is_dynamic {
+        // Static attribute values are checked exactly like dynamic bindings:
+        // a static `msg="text"` must still satisfy the child's prop type
+        // (vue-tsc reports TS2322 here; skipping them was a false negative).
+        if prop.value.is_some() {
             let prop_src_start = (source_context.offset + prop.start) as usize;
             let prop_src_end = (source_context.offset + prop.end) as usize;
-            let value_src_range = dynamic_prop_value_source_range(source_context, prop);
+            let value_src_range = prop_value_source_range(source_context, prop);
             let generated_value = profile!(
                 "canon.virtual_ts.prop_check.value",
                 generated_prop_value(prop, template_prop_names).unwrap_or_default()

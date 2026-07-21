@@ -15,7 +15,7 @@ use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier, to_safe_iden
 use crate::virtual_ts::types::VizeMapping;
 
 use super::component_prop_checker::{
-    append_prop_checker_alias, has_dynamic_props, has_inference_props,
+    append_prop_checker_alias, has_inference_props, has_value_props,
 };
 use super::component_prop_navigation;
 use super::context::{ComponentPropsContext, VForPropsContext};
@@ -90,9 +90,9 @@ pub(super) fn generate_component_props(
         let component_ref = to_safe_identifier(usage.name.as_str());
         let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
 
-        let has_dynamic_props = has_dynamic_props(usage);
+        let has_value_props = has_value_props(usage);
         let has_navigable_props = component_prop_navigation::has_navigable_props(ctx, usage);
-        if !has_dynamic_props && !has_navigable_props {
+        if !has_value_props && !has_navigable_props {
             continue;
         }
 
@@ -108,7 +108,7 @@ pub(super) fn generate_component_props(
             if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
                 continue;
             }
-            if prop.value.is_some() && prop.is_dynamic {
+            if prop.value.is_some() {
                 let camel_prop_name = to_camel_case(prop.name.as_str());
                 let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
                 append!(
