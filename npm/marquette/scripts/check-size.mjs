@@ -11,6 +11,17 @@ const budgets = [
     file: "dist/validate.mjs",
     maximumGzipBytes: 3072,
   },
+  { entry: "@vizejs/marquette/test-run", file: "dist/test-run.mjs", maximumGzipBytes: 1024 },
+  {
+    entry: "@vizejs/marquette/test-run/validate",
+    file: "dist/test-run-validate.mjs",
+    maximumGzipBytes: 4096,
+  },
+  {
+    entry: "@vizejs/marquette/test-run/canonical",
+    file: "dist/test-run-canonical.mjs",
+    maximumGzipBytes: 2048,
+  },
 ];
 
 for (const { entry, file, maximumGzipBytes } of budgets) {

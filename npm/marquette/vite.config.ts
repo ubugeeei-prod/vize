@@ -11,7 +11,13 @@ export default defineConfig({
     ignorePatterns: ["dist/**"],
   },
   pack: {
-    entry: ["src/index.ts", "src/validate.ts"],
+    entry: [
+      "src/index.ts",
+      "src/validate.ts",
+      "src/test-run.ts",
+      "src/test-run-validate.ts",
+      "src/test-run-canonical.ts",
+    ],
     format: "esm",
     dts: true,
     clean: true,

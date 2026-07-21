@@ -3,10 +3,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const schemaSource = path.resolve(
-  packageRoot,
-  "../../crates/vize_marquette/schema/application-contract.schema.json",
-);
-const schemaOutput = path.join(packageRoot, "dist/application-contract.schema.json");
+const schemas = ["application-contract.schema.json", "test-run-evidence.schema.json"];
 
-fs.copyFileSync(schemaSource, schemaOutput);
+for (const schema of schemas) {
+  fs.copyFileSync(
+    path.resolve(packageRoot, "../../crates/vize_marquette/schema", schema),
+    path.join(packageRoot, "dist", schema),
+  );
+}

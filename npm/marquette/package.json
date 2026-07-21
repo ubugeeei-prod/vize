@@ -36,7 +36,23 @@
       "import": "./dist/validate.mjs",
       "default": "./dist/validate.mjs"
     },
-    "./schema": "./dist/application-contract.schema.json"
+    "./test-run": {
+      "types": "./dist/test-run.d.mts",
+      "import": "./dist/test-run.mjs",
+      "default": "./dist/test-run.mjs"
+    },
+    "./test-run/validate": {
+      "types": "./dist/test-run-validate.d.mts",
+      "import": "./dist/test-run-validate.mjs",
+      "default": "./dist/test-run-validate.mjs"
+    },
+    "./test-run/canonical": {
+      "types": "./dist/test-run-canonical.d.mts",
+      "import": "./dist/test-run-canonical.mjs",
+      "default": "./dist/test-run-canonical.mjs"
+    },
+    "./schema": "./dist/application-contract.schema.json",
+    "./test-run/schema": "./dist/test-run-evidence.schema.json"
   },
   "publishConfig": {
     "access": "public"

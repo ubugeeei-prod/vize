@@ -90,6 +90,26 @@ stable codes shared with the native contract implementation. Keeping it in a
 separate entry means authoring-only applications do not include validation
 code.
 
+## Test-run evidence
+
+Release-bound test-run evidence records live in their own lazy entries so
+deployment tooling can bind a `tests` check to retained, immutable facts:
+
+```ts
+import { defineTestRunEvidence } from "@vizejs/marquette/test-run";
+import { validateTestRunEvidence } from "@vizejs/marquette/test-run/validate";
+import { testRunAdmissionId } from "@vizejs/marquette/test-run/canonical";
+
+const diagnostics = validateTestRunEvidence(evidence);
+const admissionId = await testRunAdmissionId(evidence); // test-run:<sha256>
+```
+
+Validation shares its `VIZE_MARQUETTE_1xx` codes, paths, and ordering with the
+native implementation, and the canonical entry produces byte-identical
+serialization and SHA-256 fingerprints, proven by the shared fixtures in
+`tests/fixtures/test-run-evidence/`. The published record schema is available
+from `@vizejs/marquette/test-run/schema`.
+
 ## Guarantees
 
 - Exact identifiers remain available as `EnvironmentId`, `BackendId`,
@@ -99,8 +119,8 @@ code.
 - The published application-contract schema is available from
   `@vizejs/marquette/schema`.
 - Every optional contract field documents its default in JSDoc.
-- Package builds enforce a 1 KiB gzip budget for authoring and a 3 KiB budget
-  for runtime validation.
+- Package builds enforce a 1 KiB gzip budget for authoring entries and 3 KiB
+  or 4 KiB budgets for the validation entries.
 
 Marquette describes components and environments; it does not author UI
 components. Public Vize UI components use real `.vue` SFC files as their
