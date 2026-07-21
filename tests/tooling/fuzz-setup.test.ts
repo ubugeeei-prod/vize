@@ -120,6 +120,8 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
     fuzzStep?.run ?? "",
     /cargo \+nightly fuzz run --fuzz-dir tests\/fuzz "\$FUZZ_TARGET"/,
   );
+  assert.match(fuzzStep?.run ?? "", /-rss_limit_mb=4096/);
+  assert.match(fuzzStep?.run ?? "", /-malloc_limit_mb=2048/);
   assert.deepEqual(fuzzStep?.env, {
     FUZZ_MAX_TOTAL_TIME: "${{ steps.budget.outputs.seconds }}",
     FUZZ_TARGET: "${{ matrix.target }}",

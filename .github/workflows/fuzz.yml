@@ -124,11 +124,17 @@ jobs:
         env:
           FUZZ_MAX_TOTAL_TIME: ${{ steps.budget.outputs.seconds }}
           FUZZ_TARGET: ${{ matrix.target }}
+        # Long corpus runs retain sanitizer allocator high-water memory even
+        # when no individual input allocates excessively. Keep the per-call
+        # allocation guard strict while giving the instrumented process room
+        # to finish the 30-minute scheduled evidence run.
         run: >-
           cargo +nightly fuzz run --fuzz-dir tests/fuzz "$FUZZ_TARGET" --
           "-max_total_time=$FUZZ_MAX_TOTAL_TIME"
           -max_len=65536
           -timeout=25
+          -rss_limit_mb=4096
+          -malloc_limit_mb=2048
 
       - name: Upload reproducers when libFuzzer crashed
         id: upload-reproducers
