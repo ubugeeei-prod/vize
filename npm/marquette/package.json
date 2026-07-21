@@ -51,6 +51,11 @@
       "import": "./dist/test-run-canonical.mjs",
       "default": "./dist/test-run-canonical.mjs"
     },
+    "./test-run/admission": {
+      "types": "./dist/test-run-admission.d.mts",
+      "import": "./dist/test-run-admission.mjs",
+      "default": "./dist/test-run-admission.mjs"
+    },
     "./schema": "./dist/application-contract.schema.json",
     "./test-run/schema": "./dist/test-run-evidence.schema.json"
   },

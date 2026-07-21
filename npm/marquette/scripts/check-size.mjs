@@ -22,6 +22,11 @@ const budgets = [
     file: "dist/test-run-canonical.mjs",
     maximumGzipBytes: 2048,
   },
+  {
+    entry: "@vizejs/marquette/test-run/admission",
+    file: "dist/test-run-admission.mjs",
+    maximumGzipBytes: 2048,
+  },
 ];
 
 for (const { entry, file, maximumGzipBytes } of budgets) {

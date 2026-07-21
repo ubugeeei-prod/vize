@@ -17,6 +17,7 @@ export default defineConfig({
       "src/test-run.ts",
       "src/test-run-validate.ts",
       "src/test-run-canonical.ts",
+      "src/test-run-admission.ts",
     ],
     format: "esm",
     dts: true,

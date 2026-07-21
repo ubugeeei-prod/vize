@@ -99,9 +99,11 @@ deployment tooling can bind a `tests` check to retained, immutable facts:
 import { defineTestRunEvidence } from "@vizejs/marquette/test-run";
 import { validateTestRunEvidence } from "@vizejs/marquette/test-run/validate";
 import { testRunAdmissionId } from "@vizejs/marquette/test-run/canonical";
+import { admitTestRun } from "@vizejs/marquette/test-run/admission";
 
 const diagnostics = validateTestRunEvidence(evidence);
 const admissionId = await testRunAdmissionId(evidence); // test-run:<sha256>
+const rejections = await admitTestRun(evidence, candidate, admissionId, now);
 ```
 
 Validation shares its `VIZE_MARQUETTE_1xx` codes, paths, and ordering with the
