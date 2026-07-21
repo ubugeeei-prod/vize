@@ -313,24 +313,7 @@ fn generate_closure_component_props_recursive(
             }
 
             // Recursively handle child closure scopes (v-for and v-slot)
-            if let Some(child_ids) = ctx.children_map.get(&scope_id) {
-                for &child_id in child_ids {
-                    if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id)
-                        && matches!(child_scope.kind, ScopeKind::VFor | ScopeKind::VSlot)
-                    {
-                        profile!(
-                            "canon.virtual_ts.closure_component_props",
-                            generate_closure_component_props_recursive(
-                                ts,
-                                mappings,
-                                ctx,
-                                child_scope,
-                                &vfor_inner_indent,
-                            )
-                        );
-                    }
-                }
-            }
+            recurse_child_closure_scopes(ts, mappings, ctx, scope_id, &vfor_inner_indent);
 
             ts.push_str(&loop_indent);
             ts.push_str("});\n");
@@ -387,28 +370,35 @@ fn generate_closure_component_props_recursive(
             }
 
             // Recursively handle child closure scopes (v-for and v-slot)
-            if let Some(child_ids) = ctx.children_map.get(&scope_id) {
-                for &child_id in child_ids {
-                    if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id)
-                        && matches!(child_scope.kind, ScopeKind::VFor | ScopeKind::VSlot)
-                    {
-                        profile!(
-                            "canon.virtual_ts.closure_component_props",
-                            generate_closure_component_props_recursive(
-                                ts,
-                                mappings,
-                                ctx,
-                                child_scope,
-                                &inner_indent,
-                            )
-                        );
-                    }
-                }
-            }
+            recurse_child_closure_scopes(ts, mappings, ctx, scope_id, &inner_indent);
 
             ts.push_str(indent);
             ts.push_str("};\n");
         }
         _ => {}
+    }
+}
+
+/// Recurse into a scope's direct v-for/v-slot child scopes, emitting their
+/// component prop checks at the given indent.
+fn recurse_child_closure_scopes(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    ctx: &VForPropsContext<'_>,
+    scope_id: u32,
+    indent: &str,
+) {
+    let Some(child_ids) = ctx.children_map.get(&scope_id) else {
+        return;
+    };
+    for &child_id in child_ids {
+        if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id)
+            && matches!(child_scope.kind, ScopeKind::VFor | ScopeKind::VSlot)
+        {
+            profile!(
+                "canon.virtual_ts.closure_component_props",
+                generate_closure_component_props_recursive(ts, mappings, ctx, child_scope, indent)
+            );
+        }
     }
 }
