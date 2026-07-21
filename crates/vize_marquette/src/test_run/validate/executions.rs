@@ -69,9 +69,9 @@ pub(super) fn validate_suites(
     }
 
     let mut shards = std::collections::BTreeMap::new();
+    let mut checked_ids = std::collections::BTreeSet::new();
     for suite in &evidence.suites {
         let path = contract_path("suites", &suite.id);
-        check_identifier(&suite.id, &path, diagnostics);
         if !seen_shard(&mut shards, suite) {
             diagnostics.push(ContractDiagnostic::error(
                 "VIZE_MARQUETTE_120",
@@ -79,23 +79,29 @@ pub(super) fn validate_suites(
                 "suite shard is recorded more than once",
             ));
         }
-        if !evidence.selection.suite_ids.contains(&suite.id) {
-            diagnostics.push(ContractDiagnostic::error(
-                "VIZE_MARQUETTE_121",
-                path.clone(),
-                "suite execution was not selected for this candidate",
-            ));
-        }
-        if !evidence
-            .targets
-            .iter()
-            .any(|target| target.id == suite.target_id)
-        {
-            diagnostics.push(ContractDiagnostic::error(
-                "VIZE_MARQUETTE_123",
-                contract_path(&path, "targetId"),
-                "suite target has no recorded target execution",
-            ));
+        // Suite-id-scoped invariants are shard-independent, so evaluate them
+        // once per unique suite id. Running them per shard would emit the same
+        // code/path/message diagnostic once for every shard of the suite.
+        if checked_ids.insert(suite.id.as_str()) {
+            check_identifier(&suite.id, &path, diagnostics);
+            if !evidence.selection.suite_ids.contains(&suite.id) {
+                diagnostics.push(ContractDiagnostic::error(
+                    "VIZE_MARQUETTE_121",
+                    path.clone(),
+                    "suite execution was not selected for this candidate",
+                ));
+            }
+            if !evidence
+                .targets
+                .iter()
+                .any(|target| target.id == suite.target_id)
+            {
+                diagnostics.push(ContractDiagnostic::error(
+                    "VIZE_MARQUETTE_123",
+                    contract_path(&path, "targetId"),
+                    "suite target has no recorded target execution",
+                ));
+            }
         }
         if suite.shard_count == 0
             || suite.shard_count > TEST_RUN_MAX_SHARDS

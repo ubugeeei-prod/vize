@@ -184,6 +184,32 @@ fn acceptance_requires_a_fully_passing_run() {
 }
 
 #[test]
+fn impossible_calendar_dates_are_rejected() {
+    let mut evidence = example_evidence();
+    evidence.started_at = "2026-02-30T00:00:00.000Z".into();
+    assert_eq!(codes(&evidence), ["VIZE_MARQUETTE_107"]);
+}
+
+#[test]
+fn suite_id_scoped_diagnostics_appear_once_across_shards() {
+    let mut evidence = example_evidence();
+    let mut shard = evidence.suites[0].clone();
+    shard.shard_index = 2;
+    shard.shard_count = 2;
+    let added_passed = shard.passed;
+    evidence.suites[0].shard_count = 2;
+    evidence.suites.push(shard);
+    evidence.verification.suite_count += 1;
+    evidence.verification.passed += added_passed;
+
+    let suite_id = evidence.suites[0].id.clone();
+    evidence.selection.suite_ids.remove(suite_id.as_str());
+
+    // The membership error surfaces once for the suite, not once per shard.
+    assert_eq!(codes(&evidence), ["VIZE_MARQUETTE_121"]);
+}
+
+#[test]
 fn diagnostics_are_sorted_and_stable() {
     let mut evidence = example_evidence();
     evidence.format = "zzz".into();

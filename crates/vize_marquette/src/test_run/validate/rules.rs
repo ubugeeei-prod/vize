@@ -132,10 +132,19 @@ fn is_strict_timestamp(bytes: &[u8]) -> bool {
             .iter()
             .fold(0, |value, byte| value * 10 + u32::from(byte - b'0'))
     };
+    let year = digits(0, 4);
     let month = digits(5, 7);
     let day = digits(8, 10);
-    (1..=12).contains(&month)
-        && (1..=31).contains(&day)
+    if !(1..=12).contains(&month) {
+        return false;
+    }
+    let max_day = match month {
+        4 | 6 | 9 | 11 => 30,
+        2 if year % 4 == 0 && (year % 100 != 0 || year % 400 == 0) => 29,
+        2 => 28,
+        _ => 31,
+    };
+    (1..=max_day).contains(&day)
         && digits(11, 13) <= 23
         && digits(14, 16) <= 59
         && digits(17, 19) <= 59
