@@ -234,3 +234,29 @@ fn expression_guard_ends_line_comments_at_every_line_terminator() {
     assert!(expression_exceeds_max_depth(&regex_hidden));
     assert!(!expression_is_safe_to_parse(&regex_hidden));
 }
+
+#[test]
+fn expression_guard_ends_regex_at_line_terminator_after_backslash() {
+    // A regex literal cannot span a line terminator, and `\` immediately before
+    // one is not a valid escape: the lexer ends the regex there. The guard's
+    // 2-byte escape skip used to swallow the terminator (LF/CR) or its 0xE2 lead
+    // byte (LS/PS), hiding the trailing brackets from the depth budget.
+    for terminator in ["\n", "\r", "\u{2028}", "\u{2029}"] {
+        let hidden = [
+            "a = /x\\",
+            terminator,
+            &"[".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1),
+        ]
+        .concat();
+        assert!(
+            expression_exceeds_max_depth(&hidden),
+            "terminator {:?}",
+            terminator.escape_unicode()
+        );
+        assert!(
+            !expression_is_safe_to_parse(&hidden),
+            "terminator {:?}",
+            terminator.escape_unicode()
+        );
+    }
+}

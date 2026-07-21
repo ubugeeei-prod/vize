@@ -241,7 +241,21 @@ fn skip_regex(bytes: &[u8], mut i: usize) -> usize {
     let mut in_character_class = false;
     while i < bytes.len() {
         match bytes[i] {
-            b'\\' => i = i.saturating_add(2),
+            // A regex literal cannot span a line terminator, and `\` before one
+            // is not a valid escape: the lexer ends the regex at the terminator.
+            // Blindly skipping two bytes would swallow the terminator (LF/CR) or
+            // its 0xE2 lead byte (LS/PS), hiding the following source from the
+            // guard, so bail before consuming it.
+            b'\\' => match bytes.get(i + 1) {
+                Some(b'\n' | b'\r') => return i,
+                Some(&0xe2)
+                    if bytes.get(i + 2) == Some(&0x80)
+                        && matches!(bytes.get(i + 3), Some(&0xa8) | Some(&0xa9)) =>
+                {
+                    return i;
+                }
+                _ => i = i.saturating_add(2),
+            },
             b'[' => {
                 in_character_class = true;
                 i += 1;
