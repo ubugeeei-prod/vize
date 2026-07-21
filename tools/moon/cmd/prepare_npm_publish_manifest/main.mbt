@@ -86,7 +86,7 @@ fn collect_workspace_packages(directory : String, versions : Map[String, String]
 
 /// Flattens catalog pins into a lookup keyed by `<catalog>\0<package>`.
 fn parse_catalog_versions(content : String) -> Map[String, String] {
-  let versions : Map[String, String] = {}
+  let versions : Map[String, String] = Map([])
   let mut in_catalogs = false
   let mut current_catalog = ""
   let lines : Array[String] = content.split("\n").map(view => view.to_owned()).collect()
@@ -264,7 +264,7 @@ async fn run_app() -> Int {
     }
   }
 
-  let workspace_versions : Map[String, String] = {}
+  let workspace_versions : Map[String, String] = Map([])
   collect_workspace_packages(@tool.join_path(repo_root, "npm"), workspace_versions)
   let workspace_yaml_path = @tool.join_path(repo_root, "pnpm-workspace.yaml")
   let workspace_yaml = match @tool.read_file_to_string(workspace_yaml_path) {

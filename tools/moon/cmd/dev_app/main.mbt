@@ -5,7 +5,7 @@ async fn run_app() -> Int {
     println("Usage: moon run --target native tools/moon/cmd/dev_app -- [target]")
     return 1
   }
-  let extra_env : Map[String, String] = {}
+  let extra_env : Map[String, String] = Map([])
   if args.length() == 1 {
     extra_env["usage_target"] = args[0]
   }

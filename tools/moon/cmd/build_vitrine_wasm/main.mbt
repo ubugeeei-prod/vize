@@ -94,7 +94,7 @@ fn args_include_wasm_target(args : Array[String]) -> Bool {
 }
 
 async fn run_cargo(root : String, args : Array[String]) -> Int {
-  let extra_env : Map[String, String] = {}
+  let extra_env : Map[String, String] = Map([])
   if args_include_wasm_target(args) {
     extra_env["RUSTFLAGS"] = wasm_rustflags()
   }

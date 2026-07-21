@@ -129,7 +129,7 @@ async fn git_ref_exists(ref_name : String) -> Bool {
 }
 
 async fn base_rename_paths(base_ref : String) -> Map[String, String] {
-  let renames : Map[String, String] = {}
+  let renames : Map[String, String] = Map([])
   let (exit_code, output) = @process.collect_stdout(
     "git",
     ["diff", "--name-status", "--find-renames", base_ref, "--"],
