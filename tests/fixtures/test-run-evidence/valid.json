@@ -30,14 +30,8 @@
     "environmentFingerprint": "6666666666666666666666666666666666666666666666666666666666666666"
   },
   "selection": {
-    "targetIds": [
-      "server",
-      "web"
-    ],
-    "suiteIds": [
-      "contract",
-      "unit"
-    ]
+    "targetIds": ["server", "web"],
+    "suiteIds": ["contract", "unit"]
   },
   "targets": [
     {
