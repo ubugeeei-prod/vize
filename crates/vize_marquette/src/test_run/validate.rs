@@ -18,6 +18,11 @@ use super::model::{
     TestRunVerificationOutcome,
 };
 
+/// Returns whether `value` is a millisecond-precision UTC instant.
+pub(crate) fn is_strict_timestamp_value(value: &str) -> bool {
+    rules::is_strict_timestamp(value.as_bytes())
+}
+
 /// Maximum recorded target executions and selected target identifiers.
 pub const TEST_RUN_MAX_TARGETS: usize = 32;
 

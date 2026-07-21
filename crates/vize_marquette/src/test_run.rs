@@ -11,6 +11,7 @@
 //! must collect these facts from protected runner and report stores and
 //! retain them immutably.
 
+mod admission;
 mod canonical;
 mod model;
 mod validate;
@@ -18,6 +19,10 @@ mod validate;
 #[cfg(test)]
 pub(crate) mod model_tests;
 
+pub use admission::{
+    TEST_RUN_ADMISSION_PREFIX, TestRunCandidate, admit_test_run, parse_test_run_admission_id,
+    test_run_admission_id,
+};
 pub use canonical::{CanonicalTestRunError, canonical_test_run_json, test_run_fingerprint};
 pub use model::{
     TEST_RUN_EVIDENCE_FORMAT, TEST_RUN_EVIDENCE_FORMAT_VERSION, TestRunArtifact, TestRunEvidence,

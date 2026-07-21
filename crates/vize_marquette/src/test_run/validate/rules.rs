@@ -110,7 +110,7 @@ fn is_lower_hex(value: &str, minimum: usize, maximum: usize) -> bool {
             .all(|byte| byte.is_ascii_digit() || matches!(byte, b'a'..=b'f'))
 }
 
-fn is_strict_timestamp(bytes: &[u8]) -> bool {
+pub(super) fn is_strict_timestamp(bytes: &[u8]) -> bool {
     if bytes.len() != 24 {
         return false;
     }

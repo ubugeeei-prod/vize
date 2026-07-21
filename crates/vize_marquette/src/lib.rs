@@ -61,12 +61,13 @@ pub use model::{
     RuntimeFamily, Target,
 };
 pub use test_run::{
-    CanonicalTestRunError, TEST_RUN_EVIDENCE_FORMAT, TEST_RUN_EVIDENCE_FORMAT_VERSION,
-    TEST_RUN_MAX_SHARDS, TEST_RUN_MAX_SUITES, TEST_RUN_MAX_TARGETS, TestRunArtifact,
-    TestRunEvidence, TestRunIsolation, TestRunRetainedEvidence, TestRunRunner, TestRunSelection,
-    TestRunSuiteExecution, TestRunSuiteKind, TestRunSuiteOutcome, TestRunTargetExecution,
-    TestRunTargetKind, TestRunVerification, TestRunVerificationOutcome, canonical_test_run_json,
-    test_run_fingerprint, validate_test_run,
+    CanonicalTestRunError, TEST_RUN_ADMISSION_PREFIX, TEST_RUN_EVIDENCE_FORMAT,
+    TEST_RUN_EVIDENCE_FORMAT_VERSION, TEST_RUN_MAX_SHARDS, TEST_RUN_MAX_SUITES,
+    TEST_RUN_MAX_TARGETS, TestRunArtifact, TestRunCandidate, TestRunEvidence, TestRunIsolation,
+    TestRunRetainedEvidence, TestRunRunner, TestRunSelection, TestRunSuiteExecution,
+    TestRunSuiteKind, TestRunSuiteOutcome, TestRunTargetExecution, TestRunTargetKind,
+    TestRunVerification, TestRunVerificationOutcome, admit_test_run, canonical_test_run_json,
+    parse_test_run_admission_id, test_run_admission_id, test_run_fingerprint, validate_test_run,
 };
 pub use validate::{ContractDiagnostic, DiagnosticSeverity, validate_contract};
 
