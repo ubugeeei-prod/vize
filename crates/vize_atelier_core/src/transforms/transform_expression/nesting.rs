@@ -210,8 +210,19 @@ fn is_structural_type_angle_open(bytes: &[u8], i: usize) -> bool {
 }
 
 fn skip_line_comment(bytes: &[u8], mut i: usize) -> usize {
-    while i < bytes.len() && bytes[i] != b'\n' {
-        i += 1;
+    while i < bytes.len() {
+        // Line comments end at any ECMAScript line terminator: LF, CR, LS
+        // (U+2028), or PS (U+2029). Stopping only at LF let a bare CR hide
+        // parsed code from the guard (#3185).
+        match bytes[i] {
+            b'\n' | b'\r' => break,
+            0xe2 if bytes.get(i + 1) == Some(&0x80)
+                && matches!(bytes.get(i + 2), Some(&0xa8) | Some(&0xa9)) =>
+            {
+                break;
+            }
+            _ => i += 1,
+        }
     }
     i
 }
@@ -241,6 +252,12 @@ fn skip_regex(bytes: &[u8], mut i: usize) -> usize {
             }
             b'/' if !in_character_class => return skip_identifier(bytes, i + 1),
             b'\n' | b'\r' => return i,
+            // LS/PS terminate an (unterminated) regex literal like LF/CR.
+            0xe2 if bytes.get(i + 1) == Some(&0x80)
+                && matches!(bytes.get(i + 2), Some(&0xa8) | Some(&0xa9)) =>
+            {
+                return i;
+            }
             _ => i += 1,
         }
     }

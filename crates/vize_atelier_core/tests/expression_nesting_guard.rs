@@ -194,3 +194,43 @@ fn expression_guard_does_not_treat_relational_operators_as_type_angles() {
     let rewritten = prefix_identifiers_in_expression(&expression);
     assert!(rewritten.contains("_ctx.value < _ctx.limit"), "{rewritten}");
 }
+
+#[test]
+fn expression_guard_ends_line_comments_at_every_line_terminator() {
+    // The js_ts_expression OOM reproducer (#3185) hid parser-visible source
+    // behind a bare CR inside a line comment: the scanner only ended comments
+    // at LF while the lexer ends them at any ECMAScript line terminator, so
+    // everything between the CR and the next LF escaped the depth guard.
+    for terminator in ["\r", "\u{2028}", "\u{2029}"] {
+        let hidden = [
+            "//x",
+            terminator,
+            &"(".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1),
+        ]
+        .concat();
+        assert_eq!(
+            expression_nesting_depth(&hidden),
+            MAX_EXPRESSION_NESTING_DEPTH + 1,
+            "terminator {:?}",
+            terminator.escape_unicode()
+        );
+        assert!(expression_exceeds_max_depth(&hidden));
+        assert!(!expression_has_balanced_delimiters(&hidden));
+        assert!(!expression_is_safe_to_parse(&hidden));
+    }
+
+    // Without a line terminator the brackets stay inside the comment.
+    let commented = ["//x ", &"(".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1)].concat();
+    assert_eq!(expression_nesting_depth(&commented), 0);
+    assert!(expression_is_safe_to_parse(&commented));
+
+    // A regex literal is likewise terminated by LS/PS, not only LF/CR.
+    let regex_hidden = [
+        "a = /x",
+        "\u{2028}",
+        &"[".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1),
+    ]
+    .concat();
+    assert!(expression_exceeds_max_depth(&regex_hidden));
+    assert!(!expression_is_safe_to_parse(&regex_hidden));
+}
