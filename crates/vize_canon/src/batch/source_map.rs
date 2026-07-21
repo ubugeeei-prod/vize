@@ -44,15 +44,21 @@ impl SfcSourceMap {
     }
 
     /// Get the original SFC position from a virtual TS offset.
+    ///
+    /// Shares the language server's arithmetic: the narrowest mapping wins,
+    /// an exact-expression sub-span beats the enclosing statement mapping,
+    /// and synthetic generated text can never push a position past the
+    /// authored bytes. A diagnostic on a synthetic prop-check identifier
+    /// therefore lands on the authored expression instead of a
+    /// content-independent generated column.
     pub fn get_original_position(&self, virtual_offset: u32) -> Option<(u32, u32, SfcBlockType)> {
         let virtual_offset = virtual_offset as usize;
-        let mapping = self
-            .mappings
-            .iter()
-            .find(|mapping| mapping.gen_range.contains(&virtual_offset))?;
-        let delta = virtual_offset.saturating_sub(mapping.gen_range.start);
-        let src_offset = mapping.src_range.start.saturating_add(delta);
-        let src_offset = src_offset.min(mapping.src_range.end.saturating_sub(1));
+        let mapping = crate::virtual_ts::mapping::mapping_for_generated_offset(
+            &self.mappings,
+            virtual_offset,
+        )?;
+        let src_offset =
+            crate::virtual_ts::mapping::map_generated_offset_to_source(mapping, virtual_offset);
         let src_offset = u32::try_from(src_offset).ok()?;
         let block = self
             .blocks
@@ -251,6 +257,79 @@ mod tests {
         let (offset, _, block) = result.unwrap();
         assert_eq!(offset, 100);
         assert_eq!(block, SfcBlockType::ScriptSetup);
+    }
+
+    #[test]
+    fn sub_spans_map_synthetic_identifiers_to_authored_expressions() {
+        use crate::virtual_ts::VizeSubSpan;
+        let map = SfcSourceMap::new(
+            vec![VizeMapping {
+                // const __vize_prop_check_0_msg: __T = 42;
+                gen_range: Range {
+                    start: 100,
+                    end: 145,
+                },
+                // :msg="42"
+                src_range: Range { start: 16, end: 25 },
+                sub_spans: vec![VizeSubSpan {
+                    // the synthetic check identifier
+                    gen_range: Range {
+                        start: 106,
+                        end: 129,
+                    },
+                    // the authored bound expression
+                    src_range: Range { start: 22, end: 24 },
+                }],
+            }],
+            vec![SfcBlockRange {
+                start: 0,
+                end: 200,
+                block_type: SfcBlockType::Template,
+            }],
+        );
+
+        // A diagnostic on the identifier resolves to the authored expression.
+        assert_eq!(
+            map.get_original_position(106),
+            Some((22, 0, SfcBlockType::Template))
+        );
+        // Offsets outside the sub-span clamp to the authored prop range
+        // instead of drifting to a content-independent generated column.
+        assert_eq!(
+            map.get_original_position(144),
+            Some((25, 0, SfcBlockType::Template))
+        );
+    }
+
+    #[test]
+    fn the_narrowest_mapping_wins_for_nested_generated_ranges() {
+        let map = SfcSourceMap::new(
+            vec![
+                VizeMapping {
+                    gen_range: Range { start: 0, end: 300 },
+                    src_range: Range { start: 0, end: 100 },
+                    sub_spans: Vec::new(),
+                },
+                VizeMapping {
+                    gen_range: Range {
+                        start: 120,
+                        end: 140,
+                    },
+                    src_range: Range { start: 40, end: 60 },
+                    sub_spans: Vec::new(),
+                },
+            ],
+            vec![SfcBlockRange {
+                start: 0,
+                end: 100,
+                block_type: SfcBlockType::Template,
+            }],
+        );
+
+        assert_eq!(
+            map.get_original_position(125),
+            Some((45, 0, SfcBlockType::Template))
+        );
     }
 
     #[test]

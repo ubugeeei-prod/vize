@@ -17,6 +17,7 @@ pub mod incremental;
 mod interface_extends_tests;
 #[cfg(test)]
 mod legacy_vue2_vuetify_tests;
+pub mod mapping;
 mod props;
 mod scope;
 #[cfg(test)]

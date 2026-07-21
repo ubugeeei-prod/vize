@@ -23,74 +23,15 @@ pub(super) fn map_diagnostic_with_source_mappings(
         .unwrap_or(start_offset_post.saturating_add(1));
     let start_offset = import_source_map.get_original_offset(start_offset_post as u32) as usize;
     let end_offset = import_source_map.get_original_offset(end_offset_post as u32) as usize;
-    let start_mapping = mapping_for_generated_offset(mappings, start_offset)?;
-    let src_start = map_generated_offset_to_source(start_mapping, start_offset);
-    let src_end = mapping_for_diagnostic_end_offset(mappings, start_mapping, end_offset)
-        .map(|mapping| map_generated_offset_to_source(mapping, end_offset))
-        .unwrap_or_else(|| {
-            let generated_len = end_offset.saturating_sub(start_offset);
-            src_start
-                .saturating_add(generated_len)
-                .min(start_mapping.src_range.end)
-        })
-        .max(src_start.saturating_add(1));
+    let (src_start, src_end) = vize_canon::virtual_ts::mapping::map_generated_range_to_source(
+        mappings,
+        start_offset,
+        end_offset,
+    )?;
 
     let (start_line, start_char) = source_offset_to_position(source, src_start);
     let (end_line, end_char) = source_offset_to_position(source, src_end.min(source.len()));
     Some((start_line, end_line, start_char, end_char))
-}
-
-fn mapping_for_generated_offset(
-    mappings: &[vize_canon::virtual_ts::VizeMapping],
-    offset: usize,
-) -> Option<&vize_canon::virtual_ts::VizeMapping> {
-    mappings
-        .iter()
-        .filter(|mapping| mapping.gen_range.contains(&offset))
-        .min_by_key(|mapping| {
-            mapping
-                .gen_range
-                .end
-                .saturating_sub(mapping.gen_range.start)
-        })
-}
-
-fn mapping_for_diagnostic_end_offset<'a>(
-    mappings: &'a [vize_canon::virtual_ts::VizeMapping],
-    start_mapping: &'a vize_canon::virtual_ts::VizeMapping,
-    end_offset: usize,
-) -> Option<&'a vize_canon::virtual_ts::VizeMapping> {
-    if end_offset > start_mapping.gen_range.start && end_offset <= start_mapping.gen_range.end {
-        Some(start_mapping)
-    } else {
-        mapping_for_generated_offset(mappings, end_offset)
-    }
-}
-
-fn map_generated_offset_to_source(
-    mapping: &vize_canon::virtual_ts::VizeMapping,
-    generated_offset: usize,
-) -> usize {
-    if let Some(span) = mapping.sub_spans.iter().find(|span| {
-        generated_offset >= span.gen_range.start && generated_offset <= span.gen_range.end
-    }) {
-        let generated_relative = generated_offset.saturating_sub(span.gen_range.start);
-        let source_len = span.src_range.end.saturating_sub(span.src_range.start);
-        return span
-            .src_range
-            .start
-            .saturating_add(generated_relative.min(source_len));
-    }
-
-    let generated_relative = generated_offset.saturating_sub(mapping.gen_range.start);
-    let source_len = mapping
-        .src_range
-        .end
-        .saturating_sub(mapping.src_range.start);
-    mapping
-        .src_range
-        .start
-        .saturating_add(generated_relative.min(source_len))
 }
 
 pub(super) fn line_character_to_byte_offset(
@@ -157,9 +98,8 @@ pub(super) fn source_offset_to_position(source: &str, offset: usize) -> (u32, u3
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        map_generated_offset_to_source, mapping_for_diagnostic_end_offset,
-        mapping_for_generated_offset,
+    use vize_canon::virtual_ts::mapping::{
+        map_generated_offset_to_source, mapping_for_end_offset, mapping_for_generated_offset,
     };
     use vize_canon::virtual_ts::{VizeMapping, VizeSubSpan};
 
@@ -207,7 +147,7 @@ mod tests {
             0..100
         );
         assert_eq!(
-            mapping_for_diagnostic_end_offset(&mappings, &mappings[1], 40)
+            mapping_for_end_offset(&mappings, &mappings[1], 40)
                 .expect("end mapping present")
                 .src_range,
             200..220

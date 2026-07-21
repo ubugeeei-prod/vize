@@ -385,6 +385,12 @@ fn add_script_parse_diagnostics(
 }
 
 /// Map position from virtual TypeScript to original SFC.
+///
+/// Shares the language server's sub-span-aware arithmetic so a diagnostic on
+/// a synthetic identifier (for example a component prop check) lands on the
+/// exact authored expression instead of a content-independent generated
+/// column, and generated punctuation can never push a position past the
+/// authored bytes.
 fn map_position_to_sfc(
     virtual_ts: &VirtualTsOutput,
     start_line: u32,
@@ -398,20 +404,12 @@ fn map_position_to_sfc(
     let gen_start_offset = line_col_to_offset(&virtual_ts.code, start_line, start_char) as usize;
     let gen_end_offset = line_col_to_offset(&virtual_ts.code, end_line, end_char) as usize;
 
-    // Try to find source mapping
-    if let Some(mapping) = virtual_ts
-        .mappings
-        .iter()
-        .find(|mapping| mapping.gen_range.contains(&gen_start_offset))
-    {
-        let src_start =
-            mapping.src_range.start as u32 + (gen_start_offset - mapping.gen_range.start) as u32;
-        let src_end = if mapping.gen_range.contains(&gen_end_offset) {
-            mapping.src_range.start as u32 + (gen_end_offset - mapping.gen_range.start) as u32
-        } else {
-            mapping.src_range.end as u32
-        };
-        return (src_start, src_end);
+    if let Some((src_start, src_end)) = crate::virtual_ts::mapping::map_generated_range_to_source(
+        &virtual_ts.mappings,
+        gen_start_offset,
+        gen_end_offset,
+    ) {
+        return (src_start as u32, src_end as u32);
     }
 
     // Fallback: estimate based on line numbers
