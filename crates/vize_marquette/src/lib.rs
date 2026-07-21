@@ -62,10 +62,11 @@ pub use model::{
 };
 pub use test_run::{
     CanonicalTestRunError, TEST_RUN_EVIDENCE_FORMAT, TEST_RUN_EVIDENCE_FORMAT_VERSION,
-    TestRunArtifact, TestRunEvidence, TestRunIsolation, TestRunRetainedEvidence, TestRunRunner,
-    TestRunSelection, TestRunSuiteExecution, TestRunSuiteKind, TestRunSuiteOutcome,
-    TestRunTargetExecution, TestRunTargetKind, TestRunVerification, TestRunVerificationOutcome,
-    canonical_test_run_json, test_run_fingerprint,
+    TEST_RUN_MAX_SHARDS, TEST_RUN_MAX_SUITES, TEST_RUN_MAX_TARGETS, TestRunArtifact,
+    TestRunEvidence, TestRunIsolation, TestRunRetainedEvidence, TestRunRunner, TestRunSelection,
+    TestRunSuiteExecution, TestRunSuiteKind, TestRunSuiteOutcome, TestRunTargetExecution,
+    TestRunTargetKind, TestRunVerification, TestRunVerificationOutcome, canonical_test_run_json,
+    test_run_fingerprint, validate_test_run,
 };
 pub use validate::{ContractDiagnostic, DiagnosticSeverity, validate_contract};
 

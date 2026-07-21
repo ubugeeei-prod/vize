@@ -5,7 +5,7 @@ use vize_carton::{String, cstr};
 
 use crate::{ApplicationContract, CONTRACT_FORMAT_VERSION, EnvironmentConsumer, RuntimeFamily};
 
-mod rules;
+pub(crate) mod rules;
 #[cfg(test)]
 mod tests;
 
@@ -40,7 +40,11 @@ pub struct ContractDiagnostic {
 
 impl ContractDiagnostic {
     /// Creates an error diagnostic that prevents adapter execution.
-    fn error(code: &'static str, path: impl Into<String>, message: impl Into<String>) -> Self {
+    pub(crate) fn error(
+        code: &'static str,
+        path: impl Into<String>,
+        message: impl Into<String>,
+    ) -> Self {
         Self {
             code,
             severity: DiagnosticSeverity::Error,
@@ -50,7 +54,11 @@ impl ContractDiagnostic {
     }
 
     /// Creates a warning diagnostic for a valid but suspicious contract.
-    fn warning(code: &'static str, path: impl Into<String>, message: impl Into<String>) -> Self {
+    pub(crate) fn warning(
+        code: &'static str,
+        path: impl Into<String>,
+        message: impl Into<String>,
+    ) -> Self {
         Self {
             code,
             severity: DiagnosticSeverity::Warning,

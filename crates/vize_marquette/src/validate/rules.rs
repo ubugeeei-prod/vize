@@ -32,7 +32,7 @@ pub(super) fn collect_unique_ids<'a>(
 }
 
 /// Validates the portable lowercase identifier grammar used by every adapter.
-pub(super) fn validate_identifier(
+pub(crate) fn validate_identifier(
     id: &str,
     path: &str,
     code: &'static str,
@@ -156,7 +156,7 @@ pub(super) fn validate_rendering_target(
 }
 
 /// Builds the stable diagnostic path for a named collection member.
-pub(super) fn contract_path(collection: &str, id: &str) -> String {
+pub(crate) fn contract_path(collection: &str, id: &str) -> String {
     let mut path = collection.to_compact_string();
     path.push('.');
     path.push_str(id);

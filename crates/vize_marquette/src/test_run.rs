@@ -13,6 +13,7 @@
 
 mod canonical;
 mod model;
+mod validate;
 
 #[cfg(test)]
 pub(crate) mod model_tests;
@@ -23,4 +24,7 @@ pub use model::{
     TestRunIsolation, TestRunRetainedEvidence, TestRunRunner, TestRunSelection,
     TestRunSuiteExecution, TestRunSuiteKind, TestRunSuiteOutcome, TestRunTargetExecution,
     TestRunTargetKind, TestRunVerification, TestRunVerificationOutcome,
+};
+pub use validate::{
+    TEST_RUN_MAX_SHARDS, TEST_RUN_MAX_SUITES, TEST_RUN_MAX_TARGETS, validate_test_run,
 };
