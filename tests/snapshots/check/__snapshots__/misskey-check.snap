@@ -38,15 +38,7 @@
     },
     {
       "file": "src/components/MkAsUi.vue",
-      "diagnostics": [
-        "error:14:285 [TS2345] Argument of type '((evId: string) => Promise<void>) | undefined' is not assignable to parameter of type '($event: any) => unknown'.\nType 'undefined' is not assignable to type '($event: any) => unknown'.\nProperty 'primary' does not exist on type 'AsUiButtons'.\nProperty 'rounded' does not exist on type 'AsUiButtons'.\nProperty 'disabled' does not exist on type 'AsUiButtons'.",
-        "error:15:150 [TS2345] Argument of type '(() => Promise<void>) | undefined' is not assignable to parameter of type '(payload: PointerEvent) => unknown'.\nType 'undefined' is not assignable to type '(payload: PointerEvent) => unknown'.",
-        "error:17:162 [TS2345] Argument of type '(() => Promise<void>) | undefined' is not assignable to parameter of type '(payload: PointerEvent) => unknown'.\nType 'undefined' is not assignable to type '(payload: PointerEvent) => unknown'.\nProperty 'default' does not exist on type 'AsUiButton'.",
-        "error:23:100 [TS2345] Argument of type '((v: string) => Promise<void>) | undefined' is not assignable to parameter of type '(value: string) => unknown'.\nType 'undefined' is not assignable to type '(value: string) => unknown'.\nProperty 'default' does not exist on type 'AsUiButton'.",
-        "error:27:124 [TS2345] Argument of type '((v: string) => Promise<void>) | undefined' is not assignable to parameter of type '(value: string) => unknown'.\nType 'undefined' is not assignable to type '(value: string) => unknown'.\nProperty 'default' does not exist on type 'AsUiButton'.",
-        "error:31:140 [TS2345] Argument of type '((v: number) => Promise<void>) | undefined' is not assignable to parameter of type '(value: number) => unknown'.\nType 'undefined' is not assignable to type '(value: number) => unknown'.\nProperty 'primary' does not exist on type 'AsUiButtons'.\nProperty 'rounded' does not exist on type 'AsUiButtons'.",
-        "error:58:112 [TS2339] Property 'align' does not exist on type 'AsUiComponent'.\nProperty 'align' does not exist on type 'AsUiButton'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkAuthConfirm.vue",
@@ -66,9 +58,7 @@
     },
     {
       "file": "src/components/MkCaptcha.vue",
-      "diagnostics": [
-        "error:57:1 [TS1234] An ambient module declaration is only allowed at the top level in a file."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkChannelFollowButton.vue",
@@ -129,10 +119,10 @@
     {
       "file": "src/components/MkContainer.vue",
       "diagnostics": [
-        "error:26:11 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:27:16 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:28:11 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:29:16 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more."
+        "error:26:11 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:27:16 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:28:11 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:29:16 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more."
       ]
     },
     {
@@ -252,19 +242,19 @@
     {
       "file": "src/components/MkFoldableSection.vue",
       "diagnostics": [
-        "error:21:11 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:22:16 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:23:11 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:24:16 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more."
+        "error:21:11 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:22:16 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:23:11 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:24:16 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more."
       ]
     },
     {
       "file": "src/components/MkFolder.vue",
       "diagnostics": [
-        "error:63:13 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:64:18 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:65:13 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:66:18 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.\nProperty 'step' does not exist on type 'ArrayFormItem'.\nProperty 'manualSave' does not exist on type 'ArrayFormItem'.\nProperty 'treatAsMfm' does not exist on type 'ArrayFormItem'.\nProperty 'manualSave' does not exist on type 'ArrayFormItem'.\nProperty 'treatAsMfm' does not exist on type 'ArrayFormItem'.\nProperty 'treatAsMfm' does not exist on type 'ArrayFormItem'.\nProperty 'manualSave' does not exist on type 'ArrayFormItem'.\nProperty 'defaultFileId' does not exist on type 'ArrayFormItem'.\nProperty 'validate' does not exist on type 'ArrayFormItem'.\nProperty 'validate' does not exist on type 'ArrayFormItem'."
+        "error:63:13 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:64:18 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:65:13 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:66:18 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.\nProperty 'step' does not exist on type 'ArrayFormItem'.\nProperty 'manualSave' does not exist on type 'ArrayFormItem'.\nProperty 'treatAsMfm' does not exist on type 'ArrayFormItem'.\nProperty 'manualSave' does not exist on type 'ArrayFormItem'.\nProperty 'treatAsMfm' does not exist on type 'ArrayFormItem'.\nProperty 'treatAsMfm' does not exist on type 'ArrayFormItem'.\nProperty 'manualSave' does not exist on type 'ArrayFormItem'.\nProperty 'defaultFileId' does not exist on type 'ArrayFormItem'.\nProperty 'validate' does not exist on type 'ArrayFormItem'.\nProperty 'validate' does not exist on type 'ArrayFormItem'."
       ]
     },
     {
@@ -746,10 +736,10 @@
       "file": "src/components/MkTabs.vue",
       "diagnostics": [
         "error:11:11 [TS7006] Parameter 'el' implicitly has an 'any' type.",
-        "error:33:14 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:34:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:35:14 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:36:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'."
+        "error:33:14 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:34:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:35:14 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:36:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'."
       ]
     },
     {
@@ -984,10 +974,10 @@
       "file": "src/components/global/MkPageHeader.tabs.vue",
       "diagnostics": [
         "error:11:11 [TS7006] Parameter 'el' implicitly has an 'any' type.",
-        "error:31:35 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:31:55 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:31:75 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:32:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'el' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more."
+        "error:31:35 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:31:55 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:31:75 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
+        "error:32:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more."
       ]
     },
     {
@@ -1169,15 +1159,13 @@
     {
       "file": "src/pages/admin-user.vue",
       "diagnostics": [
-        "error:190:39 [TS2322] Type 'string' is not assignable to type '\"active-users\" | \"ap-request\" | \"drive\" | \"drive-files\" | \"federation\" | \"instance-drive-files\" | \"instance-drive-files-total\" | \"instance-drive-usage\" | \"instance-drive-usage-total\" | ... 17 more ... | \"users-total\"'.",
-        "error:192:39 [TS2322] Type 'string' is not assignable to type '\"active-users\" | \"ap-request\" | \"drive\" | \"drive-files\" | \"federation\" | \"instance-drive-files\" | \"instance-drive-files-total\" | \"instance-drive-usage\" | \"instance-drive-usage-total\" | ... 17 more ... | \"users-total\"'."
+        "error:190:35 [TS2322] Type 'string' is not assignable to type '\"active-users\" | \"ap-request\" | \"drive\" | \"drive-files\" | \"federation\" | \"instance-drive-files\" | \"instance-drive-files-total\" | \"instance-drive-usage\" | \"instance-drive-usage-total\" | ... 17 more ... | \"users-total\"'.",
+        "error:192:35 [TS2322] Type 'string' is not assignable to type '\"active-users\" | \"ap-request\" | \"drive\" | \"drive-files\" | \"federation\" | \"instance-drive-files\" | \"instance-drive-files-total\" | \"instance-drive-usage\" | \"instance-drive-usage-total\" | ... 17 more ... | \"users-total\"'."
       ]
     },
     {
       "file": "src/pages/admin/RolesEditorFormula.vue",
-      "diagnostics": [
-        "error:11:106 [TS2345] Argument of type '((ev: DragEvent) => void) | undefined' is not assignable to parameter of type '($event: DragEvent) => unknown'.\nType 'undefined' is not assignable to type '($event: DragEvent) => unknown'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/admin/abuse-report/notification-recipient.editor.vue",
@@ -1598,7 +1586,7 @@
       "diagnostics": [
         "error:9:29 [TS2454] Variable 'paginator' is used before being assigned.",
         "error:9:30 [TS2454] Variable 'paginator' is used before being assigned.",
-        "error:9:38 [TS2454] Variable 'paginator' is used before being assigned."
+        "error:9:39 [TS2454] Variable 'paginator' is used before being assigned."
       ]
     },
     {
@@ -1704,7 +1692,7 @@
     {
       "file": "src/pages/page-editor/page-editor.blocks.vue",
       "diagnostics": [
-        "error:18:91 [TS2345] Argument of type '(v: { id: string; type: \"text\"; text: string; } | { id: string; type: \"section\"; title: string; children: ({ id: string; type: \"text\"; text: string; } | ... | { id: string; type: \"image\"; fileId: string | null; } | { ...; })[]; } | { ...; } | { ...; }) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'v' and '$event' are incompatible.\nType 'Event' is not assignable to type '{ id: string; type: \"text\"; text: string; } | { id: string; type: \"section\"; title: string; children: ({ id: string; type: \"text\"; text: string; } | ... | { id: string; type: \"image\"; fileId: string | null; } | { ...; })[]; } | { ...; } | { ...; }'.\nType 'Event' is missing the following properties from type '{ id: string; type: \"note\"; detailed: boolean; note: string | null; }': id, detailed, note"
+        "error:18:91 [TS2345] Argument of type '(v: { id: string; type: \"text\"; text: string; } | { id: string; type: \"section\"; title: string; children: ({ id: string; type: \"text\"; text: string; } | ... | { id: string; type: \"image\"; fileId: string | null; } | { ...; })[]; } | { ...; } | { ...; }) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'v' and '_e' are incompatible.\nType 'Event' is not assignable to type '{ id: string; type: \"text\"; text: string; } | { id: string; type: \"section\"; title: string; children: ({ id: string; type: \"text\"; text: string; } | ... | { id: string; type: \"image\"; fileId: string | null; } | { ...; })[]; } | { ...; } | { ...; }'.\nType 'Event' is missing the following properties from type '{ id: string; type: \"note\"; detailed: boolean; note: string | null; }': id, detailed, note"
       ]
     },
     {
@@ -1778,7 +1766,7 @@
     {
       "file": "src/pages/role.vue",
       "diagnostics": [
-        "error:14:90 [TS7006] Parameter 'item' implicitly has an 'any' type."
+        "error:14:91 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {
@@ -1899,7 +1887,9 @@
     },
     {
       "file": "src/pages/settings/notifications.notification-config.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:32:13 [TS2300] Duplicate identifier 'NotificationConfig'."
+      ]
     },
     {
       "file": "src/pages/settings/notifications.vue",
@@ -2180,7 +2170,7 @@
     {
       "file": "src/ui/deck.vue",
       "diagnostics": [
-        "error:38:22 [TS2345] Argument of type '(ev: WheelEvent) => void' is not assignable to parameter of type '($event: Event) => unknown'.\nTypes of parameters 'ev' and '$event' are incompatible.\nType 'Event' is missing the following properties from type 'WheelEvent': deltaMode, deltaX, deltaY, deltaZ, and 30 more."
+        "error:38:22 [TS2345] Argument of type '(ev: WheelEvent) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'ev' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'WheelEvent': deltaMode, deltaX, deltaY, deltaZ, and 30 more."
       ]
     },
     {
@@ -2402,7 +2392,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 48,
+  "errorCount": 40,
   "warningCount": 0,
   "fileCount": 583
 }

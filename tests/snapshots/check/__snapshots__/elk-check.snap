@@ -224,7 +224,7 @@
         "error:56:29 [TS2554] Expected 2 arguments, but got 1.",
         "error:69:39 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:75:36 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:90:21 [TS2322] Type 'string | number | symbol' is not assignable to type 'KeyFieldValue<any> | undefined'.\nType 'number' is not assignable to type 'KeyFieldValue<any> | undefined'."
+        "error:90:23 [TS2322] Type 'string | number | symbol' is not assignable to type 'KeyFieldValue<any> | undefined'.\nType 'number' is not assignable to type 'KeyFieldValue<any> | undefined'."
       ]
     },
     {
@@ -1056,6 +1056,7 @@
     {
       "file": "app/components/timeline/TimelineScheduledPostsPaginator.vue",
       "diagnostics": [
+        "error:2:15 [TS2440] Import declaration conflicts with local declaration of 'CommonPaginator'.",
         "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
         "error:4:39 [TS2307] Cannot find module 'vue-component-type-helpers' or its corresponding type declarations.",
         "error:5:1 [TS2578] Unused '@ts-expect-error' directive."
@@ -1426,7 +1427,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 279,
+  "errorCount": 280,
   "warningCount": 0,
   "fileCount": 253
 }

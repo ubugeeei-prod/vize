@@ -25,8 +25,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/auth-form' or its corresponding type declarations.",
-        "error:107:38 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:248:18 [TS2345] Argument of type '((event: FormSubmitEvent<InferOutput<T>>) => void | Promise<void>) | (() => void | Promise<void>) | undefined' is not assignable to parameter of type '(event: FormSubmitEvent<InferOutput<T>>) => unknown'.\nType 'undefined' is not assignable to type '(event: FormSubmitEvent<InferOutput<T>>) => unknown'."
+        "error:107:38 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -70,8 +69,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/blog-post' or its corresponding type declarations.",
         "error:62:7 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:62:45 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations.",
-        "error:122:137 [TS2345] Argument of type '((event: MouseEvent) => void | Promise<void>) | undefined' is not assignable to parameter of type '($event: any) => unknown'.\nType 'undefined' is not assignable to type '($event: any) => unknown'."
+        "error:62:45 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
       ]
     },
     {
@@ -145,8 +143,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/changelog-version' or its corresponding type declarations.",
         "error:62:7 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:62:45 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations.",
-        "error:147:105 [TS2345] Argument of type '((event: MouseEvent) => void | Promise<void>) | undefined' is not assignable to parameter of type '($event: any) => unknown'.\nType 'undefined' is not assignable to type '($event: any) => unknown'."
+        "error:62:45 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
       ]
     },
     {
@@ -213,7 +210,7 @@
         "error:66:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:116:54 [TS2304] Cannot find name 'as'.",
         "error:116:55 [TS2304] Cannot find name 'as'.",
-        "error:116:64 [TS2304] Cannot find name 'as'."
+        "error:116:65 [TS2304] Cannot find name 'as'."
       ]
     },
     {
@@ -265,7 +262,7 @@
         "error:338:33 [TS7006] Parameter 'result' implicitly has an 'any' type.",
         "error:378:48 [TS2345] Argument of type 'unknown' is not assignable to parameter of type '(T & { matches?: any; })[]'.",
         "error:585:38 [TS2345] Argument of type 'AcceptableValue' is not assignable to parameter of type 'Record<string, any> | undefined'.\nType 'null' is not assignable to type 'Record<string, any> | undefined'.",
-        "error:585:69 [TS2345] Argument of type 'AcceptableValue' is not assignable to parameter of type 'Record<string, any> | undefined'.\nType 'null' is not assignable to type 'Record<string, any> | undefined'."
+        "error:585:70 [TS2345] Argument of type 'AcceptableValue' is not assignable to parameter of type 'Record<string, any> | undefined'.\nType 'null' is not assignable to type 'Record<string, any> | undefined'."
       ]
     },
     {
@@ -289,10 +286,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:24 [TS2307] Cannot find module '#build/ui/context-menu' or its corresponding type declarations.",
-        "error:41:13 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:167:36 [TS2345] Argument of type '((checked: boolean) => void) | undefined' is not assignable to parameter of type '(payload: boolean) => unknown'.\nType 'undefined' is not assignable to type '(payload: boolean) => unknown'.",
-        "error:168:24 [TS2345] Argument of type '((e: Event) => void) | undefined' is not assignable to parameter of type '(event: Event) => unknown'.\nType 'undefined' is not assignable to type '(event: Event) => unknown'.",
-        "error:177:26 [TS2345] Argument of type '((e: Event) => void) | undefined' is not assignable to parameter of type '(event: Event) => unknown'.\nType 'undefined' is not assignable to type '(event: Event) => unknown'."
+        "error:41:13 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -343,8 +337,7 @@
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/dashboard-search-button' or its corresponding type declarations.",
         "error:54:30 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:56:64 [TS2307] Cannot find module '#imports' or its corresponding type declarations.\nProperty 'active' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'activeClass' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'ariaCurrentValue' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'exact' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'exactHash' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'exactQuery' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'external' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'href' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'inactiveClass' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'noPrefetch' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'noRel' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'prefetch' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'prefetchOn' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'prefetchedClass' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'rel' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'replace' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'target' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'to' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'trailingSlash' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.",
-        "error:110:15 [TS2345] Argument of type '(() => void) | undefined' is not assignable to parameter of type '($event: any) => unknown'.\nType 'undefined' is not assignable to type '($event: any) => unknown'."
+        "error:56:64 [TS2307] Cannot find module '#imports' or its corresponding type declarations.\nProperty 'active' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'activeClass' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'ariaCurrentValue' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'exact' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'exactHash' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'exactQuery' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'external' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'href' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'inactiveClass' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'noPrefetch' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'noRel' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'prefetch' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'prefetchOn' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'prefetchedClass' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'rel' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'replace' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'target' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'to' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'.\nProperty 'trailingSlash' does not exist on type 'Omit<__LooseRequired<DashboardSearchButtonProps>, \"collapsed\" | \"color\" | \"kbds\" | \"tooltip\"> & { collapsed: boolean; color: string | ... 1 more ... | symbol; kbds: KbdProps[] | (string | undefined)[]; tooltip: boolean | TooltipProps; }'."
       ]
     },
     {
@@ -369,8 +362,7 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/dashboard-sidebar-toggle' or its corresponding type declarations.",
-        "error:30:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.\nProperty 'active' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'activeClass' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'ariaCurrentValue' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'exact' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'exactHash' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'exactQuery' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'external' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'href' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'inactiveClass' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'noPrefetch' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'noRel' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'prefetch' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'prefetchOn' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'prefetchedClass' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'rel' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'replace' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'target' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'to' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'trailingSlash' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.",
-        "error:66:13 [TS2345] Argument of type '(() => void) | undefined' is not assignable to parameter of type '($event: any) => unknown'.\nType 'undefined' is not assignable to type '($event: any) => unknown'."
+        "error:30:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.\nProperty 'active' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'activeClass' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'ariaCurrentValue' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'exact' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'exactHash' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'exactQuery' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'external' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'href' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'inactiveClass' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'noPrefetch' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'noRel' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'prefetch' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'prefetchOn' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'prefetchedClass' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'rel' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'replace' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'target' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'to' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'.\nProperty 'trailingSlash' does not exist on type 'Omit<__LooseRequired<DashboardSidebarToggleProps>, \"color\" | \"side\" | \"variant\"> & { color: string | number | symbol; side: \"left\" | \"right\"; variant: string | ... 1 more ... | symbol; }'."
       ]
     },
     {
@@ -406,10 +398,7 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:24 [TS2307] Cannot find module '#build/ui/dropdown-menu' or its corresponding type declarations.",
-        "error:53:12 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:181:36 [TS2345] Argument of type '((checked: boolean) => void) | undefined' is not assignable to parameter of type '(payload: boolean) => unknown'.\nType 'undefined' is not assignable to type '(payload: boolean) => unknown'.",
-        "error:182:24 [TS2345] Argument of type '((e: Event) => void) | undefined' is not assignable to parameter of type '(event: Event) => unknown'.\nType 'undefined' is not assignable to type '(event: Event) => unknown'.",
-        "error:191:26 [TS2345] Argument of type '((e: Event) => void) | undefined' is not assignable to parameter of type '(event: Event) => unknown'.\nType 'undefined' is not assignable to type '(event: Event) => unknown'."
+        "error:53:12 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -670,8 +659,7 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/navigation-menu' or its corresponding type declarations.",
         "error:229:130 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:229:234 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:408:20 [TS2345] Argument of type '((e: Event) => void) | undefined' is not assignable to parameter of type '($event: Event) => unknown'.\nType 'undefined' is not assignable to type '($event: Event) => unknown'."
+        "error:229:234 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -723,8 +711,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-card' or its corresponding type declarations.",
-        "error:74:61 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:134:13 [TS2345] Argument of type '((event: MouseEvent) => void | Promise<void>) | undefined' is not assignable to parameter of type '($event: any) => unknown'.\nType 'undefined' is not assignable to type '($event: any) => unknown'."
+        "error:74:61 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -740,8 +727,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-feature' or its corresponding type declarations.",
-        "error:45:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:76:137 [TS2345] Argument of type '((event: MouseEvent) => void | Promise<void>) | undefined' is not assignable to parameter of type '($event: any) => unknown'.\nType 'undefined' is not assignable to type '($event: any) => unknown'."
+        "error:45:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -814,8 +800,8 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/pin-input' or its corresponding type declarations.",
         "error:56:7 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:130:13 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | null | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | null | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.",
-        "error:131:13 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'."
+        "error:130:19 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | null | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | null | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.",
+        "error:131:21 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'."
       ]
     },
     {
@@ -833,7 +819,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/pricing-plan' or its corresponding type declarations.",
         "error:115:50 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:231:155 [TS2345] Argument of type '((event: MouseEvent) => void | Promise<void>)[] | ((event: MouseEvent) => void | Promise<void>) | undefined' is not assignable to parameter of type '($event: any) => unknown'.\nType 'undefined' is not assignable to type '($event: any) => unknown'."
+        "error:231:155 [TS2345] Argument of type '((event: MouseEvent) => void | Promise<void>)[] | ((event: MouseEvent) => void | Promise<void>) | undefined' is not assignable to parameter of type '((...args: any[]) => unknown) | null | undefined'.\nType '((event: MouseEvent) => void | Promise<void>)[]' is not assignable to type '(...args: any[]) => unknown'.\nType '((event: MouseEvent) => void | Promise<void>)[]' provides no match for the signature '(...args: any[]): unknown'."
       ]
     },
     {
@@ -849,7 +835,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/pricing-table' or its corresponding type declarations.",
-        "error:106:13 [TS2307] Cannot find module '#imports' or its corresponding type declarations.\nType 'unknown' is not assignable to type 'Pick<PricingPlanProps, \"badge\" | \"billingCycle\" | \"billingPeriod\" | \"button\" | \"description\" | \"discount\" | \"highlight\" | \"price\" | \"title\">'."
+        "error:106:13 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -866,7 +852,7 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/radio-group' or its corresponding type declarations.",
         "error:93:92 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:181:13 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:181:19 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -937,7 +923,7 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/stepper' or its corresponding type declarations.",
         "error:83:8 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:147:70 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:147:76 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -971,7 +957,7 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/tabs' or its corresponding type declarations.",
         "error:96:11 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:145:13 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:145:19 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -992,7 +978,7 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/timeline' or its corresponding type declarations.",
         "error:74:10 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:156:23 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:156:25 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -1042,8 +1028,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/user' or its corresponding type declarations.",
-        "error:46:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:72:137 [TS2345] Argument of type '((event: MouseEvent) => void | Promise<void>) | undefined' is not assignable to parameter of type '($event: any) => unknown'.\nType 'undefined' is not assignable to type '($event: any) => unknown'."
+        "error:46:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1086,8 +1071,8 @@
         "error:175:24 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:175:92 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:176:46 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:176:67 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:176:76 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:176:68 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:176:77 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:177:19 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:177:20 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:180:61 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
@@ -1124,7 +1109,7 @@
         "error:57:10 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:86:34 [TS2339] Property 'path' does not exist on type 'ContentSurroundLink'.",
         "error:86:35 [TS2339] Property 'path' does not exist on type 'ContentSurroundLink'.",
-        "error:86:38 [TS2339] Property 'path' does not exist on type 'ContentSurroundLink'.",
+        "error:86:39 [TS2339] Property 'path' does not exist on type 'ContentSurroundLink'.",
         "error:96:21 [TS2339] Property 'title' does not exist on type 'ContentSurroundLink'."
       ]
     },
@@ -1560,7 +1545,7 @@
       ]
     }
   ],
-  "errorCount": 666,
+  "errorCount": 651,
   "warningCount": 0,
   "fileCount": 180
 }
