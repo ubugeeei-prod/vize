@@ -24,8 +24,8 @@ const shimMoon = os.type() === "Windows_NT" ? shimMoonCmd : shimMoonShell;
 const moonInstallerScript = path.join(runnerTemp, "moonbit-install.ps1");
 const moonInstallerUnixScript = path.join(runnerTemp, "moonbit-install.sh");
 const moonInstallerSha256 = {
-  unix: "802ea2310c13e2a6b447050a2c82e60b4d5f222ec7c6a8e55b77df09d4b4da7d",
-  windows: "e1b22bd41363ca8cdb1480b523a8c61ce57ffcb4a581375369ff16c5afd5c5b7",
+  unix: "46495f8cdc0050f79b6cb195d66478d101cb3601d68506568fbe377fcdf2a9fe",
+  windows: "a5101e91ffa9905fb25cd009b9a4aa942971a294bd055c89836e3af89b710c64",
 };
 
 function run(command, args, env) {
