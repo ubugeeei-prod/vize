@@ -45,6 +45,7 @@
 mod canonical;
 mod compatibility;
 mod model;
+mod test_run;
 mod validate;
 
 #[cfg(test)]
@@ -59,6 +60,13 @@ pub use model::{
     Environment, EnvironmentConsumer, Protocol, ProtocolFamily, RenderingMode, Route,
     RuntimeFamily, Target,
 };
+pub use test_run::{
+    CanonicalTestRunError, TEST_RUN_EVIDENCE_FORMAT, TEST_RUN_EVIDENCE_FORMAT_VERSION,
+    TestRunArtifact, TestRunEvidence, TestRunIsolation, TestRunRetainedEvidence, TestRunRunner,
+    TestRunSelection, TestRunSuiteExecution, TestRunSuiteKind, TestRunSuiteOutcome,
+    TestRunTargetExecution, TestRunTargetKind, TestRunVerification, TestRunVerificationOutcome,
+    canonical_test_run_json, test_run_fingerprint,
+};
 pub use validate::{ContractDiagnostic, DiagnosticSeverity, validate_contract};
 
 /// Canonical JSON Schema for serialized application contracts.
@@ -67,6 +75,13 @@ pub use validate::{ContractDiagnostic, DiagnosticSeverity, validate_contract};
 /// consumers can expose the exact contract without resolving a filesystem path.
 pub const APPLICATION_CONTRACT_JSON_SCHEMA: &str =
     include_str!("../schema/application-contract.schema.json");
+
+/// Canonical JSON Schema for serialized test-run evidence records.
+///
+/// The schema is embedded so CLI, promotion, and AI tooling consumers can
+/// expose the exact record contract without resolving a filesystem path.
+pub const TEST_RUN_EVIDENCE_JSON_SCHEMA: &str =
+    include_str!("../schema/test-run-evidence.schema.json");
 
 #[cfg(test)]
 mod schema_tests {
@@ -77,6 +92,18 @@ mod schema_tests {
         assert_eq!(
             schema["$defs"]["contract"]["properties"]["formatVersion"]["const"],
             1
+        );
+    }
+
+    #[test]
+    fn embedded_test_run_schema_tracks_the_current_format() {
+        let schema: serde_json::Value =
+            serde_json::from_str(super::TEST_RUN_EVIDENCE_JSON_SCHEMA).unwrap();
+        let evidence = &schema["$defs"]["evidence"]["properties"];
+        assert_eq!(evidence["format"]["const"], super::TEST_RUN_EVIDENCE_FORMAT);
+        assert_eq!(
+            evidence["formatVersion"]["const"],
+            super::TEST_RUN_EVIDENCE_FORMAT_VERSION
         );
     }
 }
