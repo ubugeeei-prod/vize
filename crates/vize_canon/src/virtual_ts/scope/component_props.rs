@@ -104,6 +104,10 @@ pub(super) fn generate_component_props(
             "  type __{component_type_name}_Props_{idx} = typeof {component_ref} extends {{ __vizeCheck: any }} ? Record<string, unknown> : (typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }} ? __P : (typeof {component_ref} extends (props: infer __P) => any ? __P : {{}}));\n",
         );
 
+        // One alias per distinct prop name: a repeated attribute (for example
+        // a static class next to a bound :class) reuses the same child prop
+        // type, and a duplicate alias would be a TS2300 in the virtual TS.
+        let mut declared_aliases = FxHashSet::default();
         for prop in &usage.props {
             if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
                 continue;
@@ -111,6 +115,9 @@ pub(super) fn generate_component_props(
             if prop.value.is_some() {
                 let camel_prop_name = to_camel_case(prop.name.as_str());
                 let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
+                if !declared_aliases.insert(safe_prop_name.clone()) {
+                    continue;
+                }
                 append!(
                     *ts,
                     "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = __VizePropValue<__{component_type_name}_Props_{idx}, '{camel_prop_name}'>;\n",

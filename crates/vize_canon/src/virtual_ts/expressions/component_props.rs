@@ -8,6 +8,7 @@
 use super::super::helpers::{to_camel_case, to_safe_identifier_fragment};
 use super::super::types::{VizeMapping, VizeSubSpan};
 use super::reserved_props::rewrite_reserved_template_prop;
+use vize_carton::FxHashMap;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
@@ -132,6 +133,7 @@ pub(crate) fn generate_component_prop_checks(
     indent: &str,
 ) {
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
+    let mut name_occurrences: FxHashMap<String, u32> = FxHashMap::default();
     for prop in &usage.props {
         if !is_checkable_prop(prop) {
             continue;
@@ -163,7 +165,18 @@ pub(crate) fn generate_component_prop_checks(
                 append!(*ts, "{indent}if ({guard}) {{\n");
             }
 
-            let check_name = cstr!("__vize_prop_check_{idx}_{safe_prop_name}");
+            // A repeated attribute name (static class next to :class) still
+            // checks every authored value, but each check constant needs a
+            // unique name or the virtual TS redeclares it (TS2451).
+            let occurrence = name_occurrences
+                .entry(String::from(safe_prop_name.as_str()))
+                .and_modify(|count| *count += 1)
+                .or_insert(1);
+            let check_name = if *occurrence == 1 {
+                cstr!("__vize_prop_check_{idx}_{safe_prop_name}")
+            } else {
+                cstr!("__vize_prop_check_{idx}_{safe_prop_name}_{occurrence}")
+            };
             let gen_stmt_start = ts.len();
             append!(*ts, "{expr_indent}const ");
             let check_name_start = ts.len();

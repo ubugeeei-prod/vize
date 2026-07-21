@@ -157,3 +157,53 @@ fn valueless_static_attributes_stay_out_of_per_prop_checks() {
         output.code
     );
 }
+
+#[test]
+fn repeated_prop_names_keep_unique_checks_and_one_type_alias() {
+    let script = r#"import Child from "./Child.vue"
+const isLoading = false
+"#;
+    let template = r#"<Child class="static-card" :class="{ loading: isLoading }" />"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    assert_eq!(
+        output
+            .code
+            .matches("type __Child_0_prop_class = __VizePropValue<__Child_Props_0, 'class'>;")
+            .count(),
+        1,
+        "the child prop type alias must be declared exactly once:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .contains("const __vize_prop_check_0_class: __Child_0_prop_class = \"static-card\";"),
+        "the static class value keeps the base check name:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains(
+            "const __vize_prop_check_0_class_2: __Child_0_prop_class = { loading: isLoading };"
+        ),
+        "the bound class value gets a unique check name:\n{}",
+        output.code
+    );
+    assert_eq!(
+        output
+            .code
+            .matches("const __vize_prop_check_0_class")
+            .count(),
+        2,
+        "both authored values stay checked:\n{}",
+        output.code
+    );
+}
