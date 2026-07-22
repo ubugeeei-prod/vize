@@ -337,20 +337,36 @@ mod tests {
 
     #[test]
     fn test_attribute_priority_order() {
+        // Group order mirrors patina's vue/attribute-order (#3251).
         assert!(attribute_priority("is") < attribute_priority("v-for"));
         assert!(attribute_priority("v-for") < attribute_priority("v-if"));
-        assert!(attribute_priority("v-if") < attribute_priority("v-show"));
-        assert!(attribute_priority("v-show") < attribute_priority("id"));
+        // Conditionals are one group: v-if, v-else-if, v-else, v-show, v-cloak.
+        assert_eq!(attribute_priority("v-if"), attribute_priority("v-show"));
+        assert_eq!(attribute_priority("v-if"), attribute_priority("v-cloak"));
+        // Render modifiers sit between conditionals and id.
+        assert!(attribute_priority("v-show") < attribute_priority("v-pre"));
+        assert_eq!(attribute_priority("v-pre"), attribute_priority("v-once"));
+        assert!(attribute_priority("v-once") < attribute_priority("id"));
         assert!(attribute_priority("id") < attribute_priority("ref"));
-        assert!(attribute_priority("ref") < attribute_priority(":key"));
+        assert_eq!(attribute_priority("ref"), attribute_priority(":key"));
         assert!(attribute_priority(":key") < attribute_priority("v-model"));
-        assert!(attribute_priority("v-model") < attribute_priority(":class"));
-        // :class and class share the same priority so they stay adjacent
+        // Slots and custom directives precede plain attributes and bindings.
+        assert!(attribute_priority("v-model") < attribute_priority("#default"));
+        assert_eq!(
+            attribute_priority("#default"),
+            attribute_priority("v-tooltip")
+        );
+        assert!(attribute_priority("v-tooltip") < attribute_priority(":class"));
+        // :class and class share the same priority so they stay adjacent;
+        // patina treats :ref and :id as plain bindings.
         assert_eq!(attribute_priority(":class"), attribute_priority("class"));
         assert_eq!(attribute_priority(":style"), attribute_priority("style"));
+        assert_eq!(attribute_priority(":ref"), attribute_priority(":class"));
+        assert_eq!(attribute_priority(":id"), attribute_priority(":class"));
+        // Events come after attributes, content comes last.
         assert!(attribute_priority("class") < attribute_priority("@click"));
-        assert!(attribute_priority("@click") < attribute_priority("#default"));
-        assert!(attribute_priority("#default") < attribute_priority("v-html"));
+        assert!(attribute_priority("@click") < attribute_priority("v-html"));
+        assert_eq!(attribute_priority("v-html"), attribute_priority("v-text"));
     }
 
     // ---------------------------------------------------------------

@@ -145,13 +145,6 @@
   },
   {
     "property": "lint-agreement",
-    "project": "*",
-    "path": "*",
-    "rule": "vue/attribute-order",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3251"
-  },
-  {
-    "property": "lint-agreement",
     "project": "misskey",
     "path": "packages/frontend/src/components/MkAutocomplete.vue",
     "rule": "vue/no-v-html",

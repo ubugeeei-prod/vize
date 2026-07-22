@@ -97,59 +97,73 @@ fn attr_sort_key(name: &str, merge_bind: bool) -> (u8, String) {
     }
 }
 
-/// Attribute sort priority based on the Vue.js style guide:
+/// Attribute sort priority mirroring patina's `vue/attribute-order` groups
+/// (the eslint-plugin-vue `vue/attributes-order` default), so default fmt
+/// output can never introduce that lint finding (#3251):
 ///
-/// 0. `is`
-/// 1. `v-for`
-/// 2. `v-if` / `v-else-if` / `v-else`
-/// 3. `v-show`
-/// 4. `id`
-/// 5. `ref`
-/// 6. `key` / `:key`
-/// 7. `v-model`
-/// 8. props & attributes -- both bound (`:class`) and static (`class`) share the
-///    same priority so that related pairs like `class`/`:class` stay adjacent.
-/// 9. events (`@xxx`)
-/// 10. `v-slot` / `#xxx`
-/// 11. `v-html` / `v-text`
+/// 0. Definition: `is` / `:is`
+/// 1. List rendering: `v-for`
+/// 2. Conditionals: `v-if` / `v-else-if` / `v-else` / `v-show` / `v-cloak`
+/// 3. Render modifiers: `v-pre` / `v-once`
+/// 4. Global awareness: `id`
+/// 5. Unique attributes: `ref` / `key` / `:key`
+/// 6. Two-way binding: `v-model`
+/// 7. Other directives: `v-slot` / `#xxx` and custom (or unmatched built-in)
+///    directives such as `v-is` and `v-memo` -- exactly the names patina
+///    buckets as OtherDirectives.
+/// 8. Other attributes: everything bound or static that is not matched above.
+///    Bound (`:class`) and static (`class`) share the priority so related
+///    pairs stay adjacent; patina's quirks are mirrored on purpose (`:ref`
+///    and `:id` are plain bindings, only `:key`/`:is` are special).
+/// 9. Events: `@xxx` / `v-on`
+/// 10. Content: `v-html` / `v-text`
 pub(crate) fn attribute_priority(name: &str) -> u8 {
-    if name == "is" || name == ":is" || name == "v-is" {
+    if name == "is" || name == ":is" || name == "v-bind:is" {
         return 0;
     }
     if name == "v-for" {
         return 1;
     }
-    if name == "v-if" || name == "v-else-if" || name == "v-else" {
+    if name == "v-if"
+        || name == "v-else-if"
+        || name == "v-else"
+        || name == "v-show"
+        || name == "v-cloak"
+    {
         return 2;
     }
-    if name == "v-show" {
+    if name == "v-pre" || name == "v-once" {
         return 3;
     }
     if name == "id" {
         return 4;
     }
-    if name == "ref" {
+    if name == "ref" || name == "key" || name == ":key" || name == "v-bind:key" {
         return 5;
     }
-    if name == "key" || name == ":key" {
+    if name.starts_with("v-model") {
         return 6;
     }
-    if name.starts_with("v-model") {
-        return 7;
+    if name == "v-html" || name == "v-text" {
+        return 10;
     }
-    // Events
+    // Events (checked before the generic directive fallback; `v-once` was
+    // matched above so the `v-on` prefix cannot swallow it).
     if name.starts_with('@') || name.starts_with("v-on") {
         return 9;
     }
-    // Slots
+    // Slots and every other directive form patina calls OtherDirectives.
     if name.starts_with('#') || name.starts_with("v-slot") {
-        return 10;
+        return 7;
     }
-    if name == "v-html" || name == "v-text" {
-        return 11;
+    // Bindings stay with plain attributes (patina: OtherAttrs).
+    if name.starts_with(':') || name.starts_with("v-bind") || name.starts_with('.') {
+        return 8;
     }
-    // Both bound props (:class, :style, :xxx) and regular attributes (class, style, xxx)
-    // share the same priority so that related pairs stay adjacent.
+    if name.starts_with("v-") {
+        return 7;
+    }
+    // Plain attributes (class, style, data-*, ...).
     8
 }
 

@@ -19,6 +19,37 @@ fn object_v_bind_stays_between_independently_sorted_attribute_groups() {
 }
 
 #[test]
+fn default_order_matches_patina_vue_attribute_order_groups() {
+    // #3251: default fmt output must satisfy patina's vue/attribute-order.
+    // Custom directives and slots precede plain attributes and bindings,
+    // v-show sits in the conditionals group, and v-once forms the
+    // render-modifier group before id.
+    let options = FormatOptions {
+        print_width: 200,
+        ..FormatOptions::default()
+    };
+
+    let source =
+        r#"<div class="_button" v-tooltip:dialog="tip" v-once v-show="open" id="help"></div>"#;
+    let first = format_template(source, &options).unwrap();
+    let second = format_template(&first, &options).unwrap();
+    assert_eq!(
+        first.as_str(),
+        r#"<div v-show="open" v-once id="help" v-tooltip:dialog="tip" class="_button"></div>"#
+    );
+    assert_eq!(first, second);
+
+    let slotted = r#"<Comp :data="d" #default="{ x }"></Comp>"#;
+    let first = format_template(slotted, &options).unwrap();
+    let second = format_template(&first, &options).unwrap();
+    assert_eq!(
+        first.as_str(),
+        r#"<Comp #default="{ x }" :data="d"></Comp>"#
+    );
+    assert_eq!(first, second);
+}
+
+#[test]
 fn object_v_on_stays_between_independently_sorted_event_groups() {
     let source = r#"<button @keyup="up" @click="click" v-on="listeners" @mouseup="up" @mousedown="down"></button>"#;
     let options = FormatOptions {
