@@ -63,6 +63,12 @@ catalogs:
     '@oxlint/plugins':
       specifier: 1.64.0
       version: 1.64.0
+    oxfmt:
+      specifier: 0.49.0
+      version: 0.49.0
+    oxlint:
+      specifier: 1.64.0
+      version: 1.64.0
   native-binaries:
     '@vizejs/native-darwin-arm64':
       specifier: 0.299.1
@@ -88,12 +94,6 @@ catalogs:
     '@vizejs/native-win32-x64-msvc':
       specifier: 0.299.1
       version: 0.108.0
-    oxfmt:
-      specifier: 0.49.0
-      version: 0.49.0
-    oxlint:
-      specifier: 1.64.0
-      version: 1.64.0
   nuxt-module:
     '@nuxt/kit':
       specifier: 3.11.2
