@@ -12,12 +12,23 @@ export type ExpressionNode = { content: string; isStatic?: boolean; ast?: unknow
  * Expression equivalence: prefer the Babel AST the Vue parser attaches.
  * Static args compare as text; unparsed expressions fall back to text
  * stripped of whitespace, which cannot distinguish whitespace inside string
- * literals but never rejects a legitimate reprint.
+ * literals but never rejects a legitimate reprint. Vue skips Babel entirely
+ * for simple identifiers, and formatting can turn a multiline identifier
+ * expression into that fast path, so a bare-identifier AST must produce the
+ * same signature as the no-AST text fallback.
  */
 export function expressionSignature(expression: ExpressionNode): unknown {
   if (expression.isStatic === true) return expression.content;
   if (expression.ast != null && typeof expression.ast === "object") {
-    return babelSignature(unwrapSingleExpressionProgram(expression.ast));
+    const unwrapped = unwrapSingleExpressionProgram(expression.ast) as {
+      type?: string;
+      name?: string;
+      typeAnnotation?: unknown;
+    };
+    if (unwrapped.type === "Identifier" && unwrapped.typeAnnotation == null) {
+      return unwrapped.name;
+    }
+    return babelSignature(unwrapped);
   }
   return expression.content.replace(/\s+/g, "");
 }
