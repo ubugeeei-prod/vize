@@ -23,7 +23,9 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
     // #2944) and the JSDoc non-nullable shape (`<!`, #3213), where OXC's type
     // speculation recurses once per `!` and per nested `<` until the Rust
     // stack overflows. Both are discovered while scanning so strings and
-    // comments cannot activate the mode.
+    // comments cannot activate the mode. Logical/nullish operators (`&&`, `||`,
+    // `??`) cannot appear inside a type-argument list, so they reset this
+    // speculation: a flat boolean chain of `<` comparisons is not a type run.
     let mut speculative_type_angle_opens = 0usize;
     let mut track_type_angles = false;
     let mut i = 0;
@@ -114,7 +116,7 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
             }
             b'<' => {
                 angle_depth += 1;
-                if is_speculative_type_angle_open(bytes, i) {
+                if is_speculative_type_angle_open(content, i) {
                     speculative_type_angle_opens += 1;
                     track_type_angles = speculative_type_angle_opens >= 2;
                 }
@@ -132,6 +134,27 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
             b'+' | b'-' if bytes.get(i + 1) == Some(&b) => {
                 i += 1;
                 can_start_regex = false;
+            }
+            // Logical AND/OR and nullish coalescing cannot appear inside a
+            // type-argument list, so they end the current candidate type chain.
+            // Without this reset a later `<` comparison in the same flat boolean
+            // expression keeps accumulating `angle_depth`, tripping the depth
+            // guard on a valid chain past the limit (#3213 follow-up). A single
+            // `&`/`|`/`?` (bitwise, union/intersection type, optional/ternary)
+            // stays inside the speculation and is handled below.
+            b'&' | b'|' if bytes.get(i + 1) == Some(&b) => {
+                speculative_type_angle_opens = 0;
+                track_type_angles = false;
+                angle_depth = 0;
+                i += 1;
+                can_start_regex = true;
+            }
+            b'?' if bytes.get(i + 1) == Some(&b'?') => {
+                speculative_type_angle_opens = 0;
+                track_type_angles = false;
+                angle_depth = 0;
+                i += 1;
+                can_start_regex = true;
             }
             b',' | b';' | b':' | b'?' | b'!' | b'=' | b'+' | b'-' | b'*' | b'/' | b'%' | b'&'
             | b'|' | b'^' | b'~' => can_start_regex = true,
@@ -218,15 +241,55 @@ fn skip_template_text(bytes: &[u8], mut i: usize) -> (usize, bool) {
     (i, false)
 }
 
-fn is_speculative_type_angle_open(bytes: &[u8], i: usize) -> bool {
-    let mut next = i + 1;
-    while matches!(bytes.get(next), Some(b' ' | b'\t' | b'\r' | b'\n')) {
-        next += 1;
-    }
+fn is_speculative_type_angle_open(content: &str, open: usize) -> bool {
+    // The `<` is ASCII, so `open + 1` is a valid char boundary.
+    let after = &content[open + 1..];
+    let marker = skip_type_angle_trivia(after);
     // `{`/`[` start structural types (#2944); `!` starts a JSDoc non-nullable
     // type (#3213). Each keeps OXC inside type-argument speculation, so
     // repeated occurrences make unclosed angles count toward the depth budget.
-    matches!(bytes.get(next), Some(b'{' | b'[' | b'!'))
+    matches!(after.as_bytes().get(marker), Some(b'{' | b'[' | b'!'))
+}
+
+/// Skip the lexer trivia OXC drops between `<` and the next token: ASCII and
+/// ECMAScript Unicode whitespace, line terminators, and line/block comments.
+/// The byte scanner must skip exactly what the lexer skips, or a marker hidden
+/// behind trivia (`a</* */!`, `a<\u{a0}!`) slips past the speculative-angle
+/// guard while OXC still recurses into the overflow path (#3213).
+fn skip_type_angle_trivia(s: &str) -> usize {
+    let bytes = s.as_bytes();
+    let mut i = 0;
+    loop {
+        match bytes.get(i) {
+            Some(b'/') if bytes.get(i + 1) == Some(&b'/') => i = skip_line_comment(bytes, i + 2),
+            Some(b'/') if bytes.get(i + 1) == Some(&b'*') => i = skip_block_comment(bytes, i + 2),
+            Some(&b) if b < 0x80 => {
+                if matches!(b, b' ' | b'\t' | 0x0b | 0x0c | b'\n' | b'\r') {
+                    i += 1;
+                } else {
+                    return i;
+                }
+            }
+            // A multi-byte lead is a char boundary; decode it to test for
+            // ECMAScript Unicode whitespace (NBSP, LS/PS, the Zs category, ...).
+            Some(_) => {
+                let c = s[i..].chars().next().unwrap();
+                if is_ecmascript_whitespace(c) {
+                    i += c.len_utf8();
+                } else {
+                    return i;
+                }
+            }
+            None => return i,
+        }
+    }
+}
+
+/// ECMAScript WhiteSpace plus LineTerminator: the Unicode White_Space set minus
+/// NEL (U+0085, which ECMAScript does not treat as whitespace) plus ZWNBSP
+/// (U+FEFF, which is ECMAScript whitespace but lacks the White_Space property).
+fn is_ecmascript_whitespace(c: char) -> bool {
+    c == '\u{feff}' || (c.is_whitespace() && c != '\u{0085}')
 }
 
 fn skip_line_comment(bytes: &[u8], mut i: usize) -> usize {

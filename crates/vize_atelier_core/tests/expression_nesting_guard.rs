@@ -251,13 +251,83 @@ fn expression_guard_rejects_jsdoc_non_nullable_type_angle_chains() {
     let overflow = "a<!!".repeat(500);
     assert!(!expression_is_safe_to_parse(&overflow));
 
-    // Real comparisons against negated operands stay below the activation
-    // threshold and inside the depth budget.
+    // Real comparisons against negated operands stay inside the depth budget:
+    // each `&&` ends the candidate type chain, so the speculative tracking
+    // never latches and no angle depth accumulates.
     let legitimate = "x < !a && y < !b && z < !!c";
-    assert_eq!(expression_nesting_depth(legitimate), 3);
+    assert_eq!(expression_nesting_depth(legitimate), 0);
     assert!(expression_is_safe_to_parse(legitimate));
     let rewritten = prefix_identifiers_in_expression(legitimate);
     assert!(rewritten.contains("_ctx.x < !_ctx.a"), "{rewritten}");
+}
+
+#[test]
+fn expression_guard_resets_type_angle_speculation_after_logical_operators() {
+    // A flat boolean chain of `< !` comparisons past the limit must stay
+    // accepted: `&&`/`||`/`??` cannot appear inside a type-argument list, so
+    // each ends the candidate type chain and the guard must not keep
+    // accumulating `angle_depth` across the whole expression (#3213 follow-up).
+    for separator in [" && ", " || ", " ?? "] {
+        let chain = std::iter::repeat_n("a < !b", MAX_EXPRESSION_NESTING_DEPTH + 5)
+            .collect::<Vec<_>>()
+            .join(separator);
+        assert_eq!(
+            expression_nesting_depth(&chain),
+            0,
+            "separator {separator:?}"
+        );
+        assert!(
+            !expression_exceeds_max_depth(&chain),
+            "separator {separator:?}"
+        );
+        assert!(
+            expression_is_safe_to_parse(&chain),
+            "separator {separator:?}"
+        );
+    }
+
+    // Even two speculative opens per segment reset at the operator, so a long
+    // chain of `a < !b < !c` comparisons never latches the guard.
+    let paired = std::iter::repeat_n("a < !b < !c", MAX_EXPRESSION_NESTING_DEPTH + 5)
+        .collect::<Vec<_>>()
+        .join(" && ");
+    assert!(!expression_exceeds_max_depth(&paired));
+    assert!(expression_is_safe_to_parse(&paired));
+
+    // The reset is scoped to logical/nullish operators: an unbroken speculative
+    // run (no `&&`/`||`/`??`) still latches and is rejected.
+    let unbroken = "a<!!".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1);
+    assert!(!expression_is_safe_to_parse(&unbroken));
+}
+
+#[test]
+fn expression_guard_sees_type_angle_markers_behind_trivia() {
+    // OXC skips comments and ECMAScript whitespace between `<` and the marker,
+    // so the guard must too: otherwise a marker hidden behind trivia evades the
+    // speculative-angle classification while OXC still recurses per token into
+    // the stack-overflow path (#3213).
+    let block_comment = "a</* t */!!".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1);
+    assert!(expression_exceeds_max_depth(&block_comment));
+    assert!(!expression_is_safe_to_parse(&block_comment));
+
+    let line_comment = "a<//t\n!!".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1);
+    assert!(expression_exceeds_max_depth(&line_comment));
+    assert!(!expression_is_safe_to_parse(&line_comment));
+
+    // NBSP (U+00A0), LS (U+2028), and PS (U+2029) are ECMAScript whitespace.
+    for whitespace in ["\u{00a0}", "\u{2028}", "\u{2029}"] {
+        let hidden = format!("a<{whitespace}!!").repeat(MAX_EXPRESSION_NESTING_DEPTH + 1);
+        assert!(
+            expression_exceeds_max_depth(&hidden),
+            "whitespace {:?}",
+            whitespace.escape_unicode()
+        );
+        assert!(
+            !expression_is_safe_to_parse(&hidden),
+            "whitespace {:?}",
+            whitespace.escape_unicode()
+        );
+    }
 }
 
 #[test]
