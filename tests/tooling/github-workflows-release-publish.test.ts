@@ -179,11 +179,7 @@ test("release workflow publishes npm packages from package-specific artifacts", 
     ["release-npm-cli", "release-package-vize", "npm/cli"],
     ["release-npm-marquette", "release-package-marquette", "npm/marquette"],
     ["release-npm-compose-core", "release-package-compose-core", "npm/compose/core"],
-    [
-      "release-npm-compose-temporal",
-      "release-package-compose-temporal",
-      "npm/compose/temporal",
-    ],
+    ["release-npm-compose-temporal", "release-package-compose-temporal", "npm/compose/temporal"],
     ["release-npm-ui-core", "release-package-ui-core", "npm/ui/core"],
     ["release-npm-ui-media", "release-package-ui-media", "npm/ui/media"],
   ] as const;
