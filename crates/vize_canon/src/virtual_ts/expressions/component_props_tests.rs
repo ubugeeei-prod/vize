@@ -335,9 +335,7 @@ const total = 1
     let value_start = template.find("total").expect("bound value present");
     let value_range = value_start..value_start + "total".len();
     assert!(
-        sub_spans
-            .iter()
-            .any(|span| span.src_range == value_range),
+        sub_spans.iter().any(|span| span.src_range == value_range),
         "initializer sub-span should keep the authored value bytes after multibyte text"
     );
 }
