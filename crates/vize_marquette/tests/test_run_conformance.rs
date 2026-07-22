@@ -6,8 +6,8 @@
 use std::{fs, path::PathBuf};
 
 use vize_marquette::{
-    TestRunEvidence, canonical_test_run_json, parse_test_run_admission_id, test_run_admission_id,
-    test_run_fingerprint,
+    TestRunCandidate, TestRunEvidence, canonical_test_run_json, decide_test_run_admission,
+    parse_test_run_admission_id, test_run_admission_id, test_run_fingerprint,
 };
 
 fn fixture(name: &str) -> PathBuf {
@@ -51,4 +51,33 @@ fn returns_the_shared_invalid_diagnostic_codes() {
     let expected: Vec<vize_carton::String> =
         serde_json::from_slice(&fs::read(fixture("invalid.expected.json")).unwrap()).unwrap();
     assert_eq!(actual, expected);
+}
+
+#[test]
+fn reproduces_every_shared_admission_decision() {
+    let document: serde_json::Value =
+        serde_json::from_slice(&fs::read(fixture("admission-decisions.json")).unwrap()).unwrap();
+    let cases = document["cases"].as_array().unwrap();
+    assert!(!cases.is_empty());
+
+    for case in cases {
+        let name = case["name"].as_str().unwrap();
+        let evidence: TestRunEvidence =
+            serde_json::from_slice(&fs::read(fixture(case["evidence"].as_str().unwrap())).unwrap())
+                .unwrap();
+        let candidate: TestRunCandidate =
+            serde_json::from_value(case["candidate"].clone()).unwrap();
+        let decision = decide_test_run_admission(
+            &evidence,
+            &candidate,
+            case["admissionId"].as_str().unwrap(),
+            case["now"].as_str().unwrap(),
+        );
+        assert!(case["decision"].is_object(), "{name} must pin a decision");
+        assert_eq!(
+            serde_json::to_value(&decision).unwrap(),
+            case["decision"],
+            "decision mismatch for case {name}",
+        );
+    }
 }

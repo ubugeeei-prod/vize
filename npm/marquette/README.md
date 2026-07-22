@@ -99,18 +99,26 @@ deployment tooling can bind a `tests` check to retained, immutable facts:
 import { defineTestRunEvidence } from "@vizejs/marquette/test-run";
 import { validateTestRunEvidence } from "@vizejs/marquette/test-run/validate";
 import { testRunAdmissionId } from "@vizejs/marquette/test-run/canonical";
-import { admitTestRun } from "@vizejs/marquette/test-run/admission";
+import { admitTestRun, decideTestRunAdmission } from "@vizejs/marquette/test-run/admission";
 
 const diagnostics = validateTestRunEvidence(evidence);
 const admissionId = await testRunAdmissionId(evidence); // test-run:<sha256>
 const rejections = await admitTestRun(evidence, candidate, admissionId, now);
+const decision = await decideTestRunAdmission(evidence, candidate, admissionId, now);
+if (!decision.allowed) {
+  console.error(decision.denialCodes); // e.g. ["record-expired"]
+}
 ```
 
 Validation shares its `VIZE_MARQUETTE_1xx` codes, paths, and ordering with the
 native implementation, and the canonical entry produces byte-identical
 serialization and SHA-256 fingerprints, proven by the shared fixtures in
-`tests/fixtures/test-run-evidence/`. The published record schema is available
-from `@vizejs/marquette/test-run/schema`.
+`tests/fixtures/test-run-evidence/`. Admission decisions carry the stable,
+append-only denial-code vocabulary shared by every backend family; the same
+fixtures pin every decision so a JavaScript, Rust, Go, or JVM gate denies for
+identical machine-readable causes. The published record schema is available
+from `@vizejs/marquette/test-run/schema`, and the decision contract from
+`@vizejs/marquette/test-run/admission/schema`.
 
 ## Guarantees
 

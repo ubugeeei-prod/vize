@@ -61,13 +61,15 @@ pub use model::{
     RuntimeFamily, Target,
 };
 pub use test_run::{
-    CanonicalTestRunError, TEST_RUN_ADMISSION_PREFIX, TEST_RUN_EVIDENCE_FORMAT,
-    TEST_RUN_EVIDENCE_FORMAT_VERSION, TEST_RUN_MAX_SHARDS, TEST_RUN_MAX_SUITES,
-    TEST_RUN_MAX_TARGETS, TestRunArtifact, TestRunCandidate, TestRunEvidence, TestRunIsolation,
+    CanonicalTestRunError, TEST_RUN_ADMISSION_PREFIX, TEST_RUN_DENIAL_CODES,
+    TEST_RUN_EVIDENCE_FORMAT, TEST_RUN_EVIDENCE_FORMAT_VERSION, TEST_RUN_MAX_SHARDS,
+    TEST_RUN_MAX_SUITES, TEST_RUN_MAX_TARGETS, TestRunAdmissionDecision, TestRunArtifact,
+    TestRunCandidate, TestRunDenialCode, TestRunEvidence, TestRunIsolation,
     TestRunRetainedEvidence, TestRunRunner, TestRunSelection, TestRunSuiteExecution,
     TestRunSuiteKind, TestRunSuiteOutcome, TestRunTargetExecution, TestRunTargetKind,
     TestRunVerification, TestRunVerificationOutcome, admit_test_run, canonical_test_run_json,
-    parse_test_run_admission_id, test_run_admission_id, test_run_fingerprint, validate_test_run,
+    decide_test_run_admission, parse_test_run_admission_id, test_run_admission_id,
+    test_run_denial_code, test_run_fingerprint, validate_test_run,
 };
 pub use validate::{ContractDiagnostic, DiagnosticSeverity, validate_contract};
 
@@ -84,6 +86,15 @@ pub const APPLICATION_CONTRACT_JSON_SCHEMA: &str =
 /// expose the exact record contract without resolving a filesystem path.
 pub const TEST_RUN_EVIDENCE_JSON_SCHEMA: &str =
     include_str!("../schema/test-run-evidence.schema.json");
+
+/// Canonical JSON Schema for test-run admission decisions.
+///
+/// The schema declares the append-only denial-code vocabulary and the
+/// structured decision shape every backend family must produce identically.
+/// It is embedded so deployment gates and tooling can expose the exact
+/// contract without resolving a filesystem path.
+pub const TEST_RUN_ADMISSION_JSON_SCHEMA: &str =
+    include_str!("../schema/test-run-admission.schema.json");
 
 #[cfg(test)]
 mod schema_tests {
@@ -107,5 +118,16 @@ mod schema_tests {
             evidence["formatVersion"]["const"],
             super::TEST_RUN_EVIDENCE_FORMAT_VERSION
         );
+    }
+
+    #[test]
+    fn embedded_admission_schema_declares_the_exact_denial_vocabulary() {
+        let schema: serde_json::Value =
+            serde_json::from_str(super::TEST_RUN_ADMISSION_JSON_SCHEMA).unwrap();
+        let declared = schema["$defs"]["denialCode"]["enum"].as_array().unwrap();
+        let implemented = super::TEST_RUN_DENIAL_CODES
+            .map(|code| serde_json::to_value(code).unwrap())
+            .to_vec();
+        assert_eq!(declared, &implemented);
     }
 }

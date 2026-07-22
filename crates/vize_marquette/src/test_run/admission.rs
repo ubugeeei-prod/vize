@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use vize_carton::{String, cstr};
 
 use crate::ContractDiagnostic;
@@ -13,7 +14,8 @@ pub const TEST_RUN_ADMISSION_PREFIX: &str = "test-run:";
 ///
 /// Every field must match the record exactly; admission never falls back to
 /// a newer, older, or partially matching record.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TestRunCandidate {
     /// Application the gate is deploying.
     pub application: String,

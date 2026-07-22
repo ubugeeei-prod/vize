@@ -13,6 +13,7 @@
 
 mod admission;
 mod canonical;
+mod decision;
 mod model;
 mod validate;
 
@@ -24,6 +25,10 @@ pub use admission::{
     test_run_admission_id,
 };
 pub use canonical::{CanonicalTestRunError, canonical_test_run_json, test_run_fingerprint};
+pub use decision::{
+    TEST_RUN_DENIAL_CODES, TestRunAdmissionDecision, TestRunDenialCode, decide_test_run_admission,
+    test_run_denial_code,
+};
 pub use model::{
     TEST_RUN_EVIDENCE_FORMAT, TEST_RUN_EVIDENCE_FORMAT_VERSION, TestRunArtifact, TestRunEvidence,
     TestRunIsolation, TestRunRetainedEvidence, TestRunRunner, TestRunSelection,

@@ -7,7 +7,11 @@ import { defineConfig } from "vite-plus";
  * `vp pack` self-contained: a post-pack copy step's outputs would escape the
  * task cache, so a cache hit could restore `dist/` without the schemas.
  */
-const contractSchemas = ["application-contract.schema.json", "test-run-evidence.schema.json"];
+const contractSchemas = [
+  "application-contract.schema.json",
+  "test-run-evidence.schema.json",
+  "test-run-admission.schema.json",
+];
 
 export default defineConfig({
   lint: {

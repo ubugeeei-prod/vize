@@ -1,0 +1,521 @@
+{
+  "cases": [
+    {
+      "admissionId": "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": true,
+        "denialCodes": [],
+        "diagnostics": []
+      },
+      "evidence": "valid.json",
+      "family": "admitted",
+      "name": "admitted-exact-candidate",
+      "now": "2026-07-22T00:00:00.000Z"
+    },
+    {
+      "admissionId": "test-run:junk",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["admission-id-malformed"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_141",
+            "message": "admission id must be test-run: followed by 64 lowercase hexadecimal characters",
+            "path": "admission.id",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "valid.json",
+      "family": "admission-id",
+      "name": "admission-id-malformed",
+      "now": "2026-07-22T00:00:00.000Z"
+    },
+    {
+      "admissionId": "test-run:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["admission-id-mismatch"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_142",
+            "message": "admission id does not name this record's canonical fingerprint",
+            "path": "admission.id",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "valid.json",
+      "family": "admission-id",
+      "name": "admission-id-mismatch",
+      "now": "2026-07-22T00:00:00.000Z"
+    },
+    {
+      "admissionId": "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+      "candidate": {
+        "application": "intruder",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["candidate-application-mismatch"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_144",
+            "message": "record does not bind the candidate application",
+            "path": "application",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "valid.json",
+      "family": "cross-scope",
+      "name": "cross-scope-application",
+      "now": "2026-07-22T00:00:00.000Z"
+    },
+    {
+      "admissionId": "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "staging",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["candidate-environment-mismatch"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_144",
+            "message": "record does not bind the candidate environment",
+            "path": "environment",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "valid.json",
+      "family": "cross-scope",
+      "name": "cross-scope-environment",
+      "now": "2026-07-22T00:00:00.000Z"
+    },
+    {
+      "admissionId": "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "9999999999999999999999999999999999999999999999999999999999999999",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["candidate-contract-fingerprint-mismatch"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_144",
+            "message": "record does not bind the candidate contractFingerprint",
+            "path": "contractFingerprint",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "valid.json",
+      "family": "cross-scope",
+      "name": "cross-scope-contract-fingerprint",
+      "now": "2026-07-22T00:00:00.000Z"
+    },
+    {
+      "admissionId": "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["candidate-source-revision-mismatch"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_144",
+            "message": "record does not bind the candidate sourceRevision",
+            "path": "sourceRevision",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "valid.json",
+      "family": "cross-scope",
+      "name": "cross-scope-source-revision",
+      "now": "2026-07-22T00:00:00.000Z"
+    },
+    {
+      "admissionId": "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.299.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["candidate-release-mismatch"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_144",
+            "message": "record does not bind the candidate release",
+            "path": "release",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "valid.json",
+      "family": "cross-scope",
+      "name": "cross-scope-release",
+      "now": "2026-07-22T00:00:00.000Z"
+    },
+    {
+      "admissionId": "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "8888888888888888888888888888888888888888888888888888888888888888",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["candidate-artifact-fingerprint-mismatch"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_144",
+            "message": "record does not bind the candidate artifact.fingerprint",
+            "path": "artifact.fingerprint",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "valid.json",
+      "family": "cross-scope",
+      "name": "cross-scope-artifact-fingerprint",
+      "now": "2026-07-22T00:00:00.000Z"
+    },
+    {
+      "admissionId": "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["record-expired"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_145",
+            "message": "record is expired at the admission time",
+            "path": "validUntil",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "valid.json",
+      "family": "late",
+      "name": "late-expired-record",
+      "now": "2026-07-28T00:10:00.000Z"
+    },
+    {
+      "admissionId": "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["admission-time-malformed"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_148",
+            "message": "admission time must be a millisecond-precision UTC instant",
+            "path": "admission.now",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "valid.json",
+      "family": "late",
+      "name": "late-malformed-admission-time",
+      "now": "yesterday"
+    },
+    {
+      "admissionId": "test-run:151c16edbe166ccb54cd0a424ff6f725c82d2c67e9945ec7133a48e87bdbba52",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["verification-not-accepted"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_146",
+            "message": "only an accepted verification can admit a deployment",
+            "path": "verification.outcome",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "admission-rejected.json",
+      "family": "denied",
+      "name": "denied-verification",
+      "now": "2026-07-22T00:00:00.000Z"
+    },
+    {
+      "admissionId": "test-run:d47ac1c117d5e81af4207211bd8d245b5f592eea1e388b43b1464442b535d68e",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["verification-not-accepted"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_146",
+            "message": "only an accepted verification can admit a deployment",
+            "path": "verification.outcome",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "admission-failed.json",
+      "family": "failed",
+      "name": "failed-suite-execution",
+      "now": "2026-07-22T00:00:00.000Z"
+    },
+    {
+      "admissionId": "test-run:3aed54f89e1870148007327bda26ed05fe0d29d2fc0e075bf3afa48a246efcf6",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["skipped-tests-recorded"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_147",
+            "message": "skipped tests are not approved for deployment admission",
+            "path": "verification.skipped",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "admission-skipped.json",
+      "family": "skipped",
+      "name": "skipped-tests-recorded",
+      "now": "2026-07-22T00:00:00.000Z"
+    },
+    {
+      "admissionId": "test-run:e7a95206a2fa60e570bbe27be7c84d831b6bc3ffaebbeb06384b273252a042e1",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["record-invalid"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_108",
+            "message": "evidence reference must be sha256: followed by 64 lowercase hexadecimal characters",
+            "path": "runner.authenticationEvidence.reference",
+            "severity": "error"
+          },
+          {
+            "code": "VIZE_MARQUETTE_103",
+            "message": "identifier must use lowercase ASCII letters, digits, dash, underscore, or dot",
+            "path": "runner.identity",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "admission-anonymous.json",
+      "family": "anonymous",
+      "name": "anonymous-runner",
+      "now": "2026-07-22T00:00:00.000Z"
+    },
+    {
+      "admissionId": "test-run:30c6e60d92ec245d874a0e39b25edaa8588168a8869f9df8291a79b58ee8c222",
+      "candidate": {
+        "application": "Example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["record-expired", "record-invalid"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_103",
+            "message": "identifier must use lowercase ASCII letters, digits, dash, underscore, or dot",
+            "path": "application",
+            "severity": "error"
+          },
+          {
+            "code": "VIZE_MARQUETTE_108",
+            "message": "evidence reference must be sha256: followed by 64 lowercase hexadecimal characters",
+            "path": "suites.contract.report.reference",
+            "severity": "error"
+          },
+          {
+            "code": "VIZE_MARQUETTE_125",
+            "message": "suite must record every shard from 1 to 2",
+            "path": "suites.unit",
+            "severity": "error"
+          },
+          {
+            "code": "VIZE_MARQUETTE_113",
+            "message": "record expiry must come after run completion",
+            "path": "validUntil",
+            "severity": "error"
+          },
+          {
+            "code": "VIZE_MARQUETTE_145",
+            "message": "record is expired at the admission time",
+            "path": "validUntil",
+            "severity": "error"
+          },
+          {
+            "code": "VIZE_MARQUETTE_128",
+            "message": "verified passed total must equal the sum over suite executions",
+            "path": "verification.passed",
+            "severity": "error"
+          },
+          {
+            "code": "VIZE_MARQUETTE_128",
+            "message": "verified retried total must equal the sum over suite executions",
+            "path": "verification.retries",
+            "severity": "error"
+          },
+          {
+            "code": "VIZE_MARQUETTE_127",
+            "message": "verified suite count must equal the recorded suite executions",
+            "path": "verification.suiteCount",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "invalid.json",
+      "family": "malformed",
+      "name": "malformed-expired-record",
+      "now": "2026-07-22T00:00:00.000Z"
+    },
+    {
+      "admissionId": "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "staging",
+        "release": "0.299.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "allowed": false,
+        "denialCodes": [
+          "candidate-environment-mismatch",
+          "candidate-release-mismatch",
+          "record-expired"
+        ],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_144",
+            "message": "record does not bind the candidate environment",
+            "path": "environment",
+            "severity": "error"
+          },
+          {
+            "code": "VIZE_MARQUETTE_144",
+            "message": "record does not bind the candidate release",
+            "path": "release",
+            "severity": "error"
+          },
+          {
+            "code": "VIZE_MARQUETTE_145",
+            "message": "record is expired at the admission time",
+            "path": "validUntil",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "valid.json",
+      "family": "multi-cause",
+      "name": "multi-cause-cross-scope-late",
+      "now": "2026-07-28T00:10:00.000Z"
+    }
+  ],
+  "description": "Shared host-side admission-decision conformance cases. Each case feeds one evidence record, one candidate, one admission id, and one instant to the admission gate; every backend family must produce exactly the pinned decision. See crates/vize_marquette/schema/test-run-admission.schema.json for the decision contract and the append-only denial-code policy."
+}

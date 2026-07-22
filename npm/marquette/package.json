@@ -57,7 +57,8 @@
       "default": "./dist/test-run-admission.mjs"
     },
     "./schema": "./dist/application-contract.schema.json",
-    "./test-run/schema": "./dist/test-run-evidence.schema.json"
+    "./test-run/schema": "./dist/test-run-evidence.schema.json",
+    "./test-run/admission/schema": "./dist/test-run-admission.schema.json"
   },
   "publishConfig": {
     "access": "public"

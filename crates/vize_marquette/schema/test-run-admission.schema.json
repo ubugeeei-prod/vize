@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vizejs.dev/schemas/marquette/test-run-admission.schema.json",
+  "title": "Vize Test Run Admission Decision",
+  "description": "Language-neutral allow-or-deny decision that one test-run evidence record produces for one exact release candidate at one instant. Every backend family (JavaScript, Rust, Go, JVM) must produce byte-equivalent decisions for the same evidence, candidate, admission id, and admission time; the shared tests/fixtures/test-run-evidence admission-decision fixtures are the conformance source of truth for new host implementations.",
+  "$ref": "#/$defs/decision",
+  "$defs": {
+    "denialCode": {
+      "description": "Stable machine-readable cause class of one admission denial. The vocabulary is append-only: codes are never renamed, renumbered, reused, or removed, and every new distinguishable rejection cause ships with a new code appended to this enum. Hosts must map every diagnostic to exactly one code: VIZE_MARQUETTE_141 to admission-id-malformed; VIZE_MARQUETTE_142 to admission-id-mismatch; VIZE_MARQUETTE_144 to the candidate-*-mismatch code named by its diagnostic path (application, artifact.fingerprint, contractFingerprint, environment, release, sourceRevision); VIZE_MARQUETTE_145 to record-expired; VIZE_MARQUETTE_146 to verification-not-accepted; VIZE_MARQUETTE_147 to skipped-tests-recorded; VIZE_MARQUETTE_148 to admission-time-malformed; and every other diagnostic, including every record-validation code, to record-invalid.",
+      "enum": [
+        "admission-id-malformed",
+        "admission-id-mismatch",
+        "admission-time-malformed",
+        "candidate-application-mismatch",
+        "candidate-artifact-fingerprint-mismatch",
+        "candidate-contract-fingerprint-mismatch",
+        "candidate-environment-mismatch",
+        "candidate-release-mismatch",
+        "candidate-source-revision-mismatch",
+        "record-expired",
+        "record-invalid",
+        "skipped-tests-recorded",
+        "verification-not-accepted"
+      ]
+    },
+    "diagnostic": {
+      "description": "One stable, source-addressable diagnostic explaining a denial cause. Codes, severities, paths, messages, and ordering are identical across host families.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "severity", "path", "message"],
+      "properties": {
+        "code": {
+          "description": "Stable machine-readable diagnostic code.",
+          "type": "string",
+          "pattern": "^VIZE_MARQUETTE_[0-9]{3}$"
+        },
+        "severity": {
+          "description": "Diagnostic severity; any diagnostic denies admission.",
+          "enum": ["error", "warning"]
+        },
+        "path": {
+          "description": "JSON-style path into the record or the admission input.",
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "description": "Human-readable explanation and next action.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "decision": {
+      "description": "Structured admission decision. allowed is true only when denialCodes and diagnostics are both empty. denialCodes maps every diagnostic to its denial code, deduplicated and sorted lexicographically by Unicode code point. diagnostics keeps the stable path, code, message order shared by every implementation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed", "denialCodes", "diagnostics"],
+      "properties": {
+        "allowed": {
+          "description": "Whether the record admits the candidate.",
+          "type": "boolean"
+        },
+        "denialCodes": {
+          "description": "Deduplicated denial causes in lexicographic order; empty when allowed.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/denialCode" }
+        },
+        "diagnostics": {
+          "description": "Complete denial diagnostics; empty when allowed.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/diagnostic" }
+        }
+      }
+    }
+  }
+}

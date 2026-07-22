@@ -141,3 +141,110 @@ export async function admitTestRun(
   );
   return diagnostics;
 }
+
+/**
+ * Every denial code, in the stable lexicographic decision order.
+ *
+ * The vocabulary is shared by every backend family: a JavaScript, Rust, Go,
+ * or JVM host must derive the same codes from the same diagnostics, as
+ * pinned by the shared `tests/fixtures/test-run-evidence` decision fixtures.
+ * Codes are append-only: they are never renamed, renumbered, reused, or
+ * removed, and a new rejection cause always ships with a new code.
+ */
+export const TEST_RUN_DENIAL_CODES = [
+  "admission-id-malformed",
+  "admission-id-mismatch",
+  "admission-time-malformed",
+  "candidate-application-mismatch",
+  "candidate-artifact-fingerprint-mismatch",
+  "candidate-contract-fingerprint-mismatch",
+  "candidate-environment-mismatch",
+  "candidate-release-mismatch",
+  "candidate-source-revision-mismatch",
+  "record-expired",
+  "record-invalid",
+  "skipped-tests-recorded",
+  "verification-not-accepted",
+] as const;
+
+/** Stable machine-readable cause class of one admission denial. */
+export type TestRunDenialCode = (typeof TEST_RUN_DENIAL_CODES)[number];
+
+/**
+ * Structured allow-or-deny admission decision for one exact candidate.
+ *
+ * The decision carries the machine-readable cause classes next to the exact
+ * diagnostics, so a deployment gate in any language can act on one bounded
+ * vocabulary while operators keep the full explanation. Serialization
+ * follows the shared `test-run-admission` schema; decisions are outputs, so
+ * a gate must never trust a decision it did not compute itself.
+ */
+export interface TestRunAdmissionDecision {
+  /** Whether the record admits the candidate; true only with no diagnostics. */
+  readonly allowed: boolean;
+  /** Deduplicated denial causes sorted lexicographically; empty when allowed. */
+  readonly denialCodes: readonly TestRunDenialCode[];
+  /** Complete diagnostics in the stable path, code, message order. */
+  readonly diagnostics: readonly MarquetteDiagnostic[];
+}
+
+const CANDIDATE_MISMATCH_CODES: ReadonlyMap<string, TestRunDenialCode> = new Map([
+  ["application", "candidate-application-mismatch"],
+  ["artifact.fingerprint", "candidate-artifact-fingerprint-mismatch"],
+  ["contractFingerprint", "candidate-contract-fingerprint-mismatch"],
+  ["environment", "candidate-environment-mismatch"],
+  ["release", "candidate-release-mismatch"],
+  ["sourceRevision", "candidate-source-revision-mismatch"],
+]);
+
+/**
+ * Returns the stable denial code one admission diagnostic maps to.
+ *
+ * The mapping is total and identical in every host family: admission codes
+ * `VIZE_MARQUETTE_141` through `VIZE_MARQUETTE_148` map to their exact
+ * cause, `VIZE_MARQUETTE_144` distinguishes the mismatched candidate binding
+ * by its diagnostic path, and every other diagnostic is a `record-invalid`
+ * record-validation failure.
+ */
+export function testRunDenialCode(diagnostic: MarquetteDiagnostic): TestRunDenialCode {
+  switch (diagnostic.code) {
+    case "VIZE_MARQUETTE_141":
+      return "admission-id-malformed";
+    case "VIZE_MARQUETTE_142":
+      return "admission-id-mismatch";
+    case "VIZE_MARQUETTE_144":
+      return CANDIDATE_MISMATCH_CODES.get(diagnostic.path) ?? "record-invalid";
+    case "VIZE_MARQUETTE_145":
+      return "record-expired";
+    case "VIZE_MARQUETTE_146":
+      return "verification-not-accepted";
+    case "VIZE_MARQUETTE_147":
+      return "skipped-tests-recorded";
+    case "VIZE_MARQUETTE_148":
+      return "admission-time-malformed";
+    default:
+      return "record-invalid";
+  }
+}
+
+/**
+ * Decides one candidate and returns the structured admission decision.
+ *
+ * The decision wraps {@link admitTestRun}: `diagnostics` is exactly its
+ * result, `denialCodes` maps every diagnostic through
+ * {@link testRunDenialCode} and then deduplicates and sorts the codes
+ * lexicographically, and `allowed` is true only when both are empty. Codes,
+ * ordering, and diagnostics are identical to the native implementation, as
+ * pinned by the shared decision fixtures. Inputs carry the same obligations
+ * as {@link admitTestRun}.
+ */
+export async function decideTestRunAdmission(
+  evidence: TestRunEvidence,
+  candidate: TestRunCandidate,
+  admissionId: string,
+  now: string,
+): Promise<TestRunAdmissionDecision> {
+  const diagnostics = await admitTestRun(evidence, candidate, admissionId, now);
+  const denialCodes = [...new Set(diagnostics.map(testRunDenialCode))].sort();
+  return { allowed: diagnostics.length === 0, denialCodes, diagnostics };
+}

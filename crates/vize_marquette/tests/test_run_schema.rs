@@ -57,3 +57,38 @@ fn test_run_schema_is_strict_and_versioned() {
         "every object schema must reject unknown properties"
     );
 }
+
+#[test]
+fn admission_schema_is_strict_and_documents_the_append_only_policy() {
+    let schema: Value = serde_json::from_slice(
+        &fs::read(repository_file(
+            "crates/vize_marquette/schema/test-run-admission.schema.json",
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+
+    assert_eq!(
+        schema["$schema"],
+        "https://json-schema.org/draft/2020-12/schema"
+    );
+    let description = schema["$defs"]["denialCode"]["description"]
+        .as_str()
+        .unwrap();
+    assert!(description.contains("append-only"));
+    assert!(description.contains("never renamed, renumbered, reused, or removed"));
+
+    let codes = schema["$defs"]["denialCode"]["enum"].as_array().unwrap();
+    let mut sorted = codes.clone();
+    sorted.sort_by_key(|value| value.as_str().unwrap().to_owned());
+    assert_eq!(
+        codes, &sorted,
+        "denial codes must stay in lexicographic order"
+    );
+
+    assert_eq!(
+        count_open_object_schemas(&schema),
+        0,
+        "every object schema must reject unknown properties"
+    );
+}

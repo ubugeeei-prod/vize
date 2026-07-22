@@ -25,7 +25,7 @@ const budgets = [
   {
     entry: "@vizejs/marquette/test-run/admission",
     file: "dist/test-run-admission.mjs",
-    maximumGzipBytes: 2048,
+    maximumGzipBytes: 3072,
   },
 ];
 
