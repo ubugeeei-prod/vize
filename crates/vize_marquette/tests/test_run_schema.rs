@@ -94,6 +94,35 @@ fn admission_schema_is_strict_and_documents_the_append_only_policy() {
 }
 
 #[test]
+fn transition_schema_is_strict_and_carries_the_durability_contract() {
+    let schema: Value = serde_json::from_slice(
+        &fs::read(repository_file(
+            "crates/vize_marquette/schema/test-run-transition.schema.json",
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+
+    assert_eq!(
+        schema["$schema"],
+        "https://json-schema.org/draft/2020-12/schema"
+    );
+    assert_eq!(
+        schema["$defs"]["transition"]["properties"]["format"]["const"],
+        "vize.test-run.transition"
+    );
+    let description = schema["description"].as_str().unwrap();
+    assert!(description.contains("atomically rename or commit"));
+    assert!(description.contains("discard - never repair"));
+
+    assert_eq!(
+        count_open_object_schemas(&schema),
+        0,
+        "every object schema must reject unknown properties"
+    );
+}
+
+#[test]
 fn check_schema_is_strict_and_rejects_generic_references() {
     let schema: Value = serde_json::from_slice(
         &fs::read(repository_file(

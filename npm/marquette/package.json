@@ -61,10 +61,16 @@
       "import": "./dist/test-run-check.mjs",
       "default": "./dist/test-run-check.mjs"
     },
+    "./test-run/transition": {
+      "types": "./dist/test-run-transition.d.mts",
+      "import": "./dist/test-run-transition.mjs",
+      "default": "./dist/test-run-transition.mjs"
+    },
     "./schema": "./dist/application-contract.schema.json",
     "./test-run/schema": "./dist/test-run-evidence.schema.json",
     "./test-run/admission/schema": "./dist/test-run-admission.schema.json",
-    "./test-run/check/schema": "./dist/test-run-check.schema.json"
+    "./test-run/check/schema": "./dist/test-run-check.schema.json",
+    "./test-run/transition/schema": "./dist/test-run-transition.schema.json"
   },
   "publishConfig": {
     "access": "public"

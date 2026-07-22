@@ -167,6 +167,10 @@ export const TEST_RUN_DENIAL_CODES = [
   "record-expired",
   "record-invalid",
   "skipped-tests-recorded",
+  "transition-chain-broken",
+  "transition-invalid",
+  "transition-replayed",
+  "transition-state-mismatch",
   "verification-not-accepted",
 ] as const;
 
@@ -207,8 +211,11 @@ const CANDIDATE_MISMATCH_CODES: ReadonlyMap<string, TestRunDenialCode> = new Map
  * `VIZE_MARQUETTE_141` through `VIZE_MARQUETTE_148` map to their exact
  * cause, `VIZE_MARQUETTE_144` distinguishes the mismatched candidate binding
  * by its diagnostic path, `VIZE_MARQUETTE_149` through `VIZE_MARQUETTE_151`
- * map to their tests-check cause, every other diagnostic at a `check.` path
- * is a `check-invalid` tests-check validation failure, and every remaining
+ * map to their tests-check cause, `VIZE_MARQUETTE_156` through
+ * `VIZE_MARQUETTE_159` map to their transition cause, every other
+ * diagnostic at a `check.` path is a `check-invalid` tests-check validation
+ * failure, every other diagnostic at a `transition.` path is a
+ * `transition-invalid` transition validation failure, and every remaining
  * diagnostic is a `record-invalid` record-validation failure.
  */
 export function testRunDenialCode(diagnostic: MarquetteDiagnostic): TestRunDenialCode {
@@ -238,10 +245,21 @@ export function testRunDenialCode(diagnostic: MarquetteDiagnostic): TestRunDenia
       return "check-invalid";
     case "VIZE_MARQUETTE_151":
       return "check-observer-not-independent";
+    case "VIZE_MARQUETTE_156":
+      return "transition-state-mismatch";
+    case "VIZE_MARQUETTE_157":
+      return "transition-chain-broken";
+    case "VIZE_MARQUETTE_158":
+      return "transition-replayed";
+    case "VIZE_MARQUETTE_159":
+      return "transition-state-mismatch";
     default:
       break;
   }
-  return diagnostic.path.startsWith("check.") ? "check-invalid" : "record-invalid";
+  if (diagnostic.path.startsWith("check.")) {
+    return "check-invalid";
+  }
+  return diagnostic.path.startsWith("transition.") ? "transition-invalid" : "record-invalid";
 }
 
 /**

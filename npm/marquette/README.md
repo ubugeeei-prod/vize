@@ -101,6 +101,7 @@ import { validateTestRunEvidence } from "@vizejs/marquette/test-run/validate";
 import { testRunAdmissionId } from "@vizejs/marquette/test-run/canonical";
 import { admitTestRun, decideTestRunAdmission } from "@vizejs/marquette/test-run/admission";
 import { verifyTestRunCheck } from "@vizejs/marquette/test-run/check";
+import { verifyTestRunTransition } from "@vizejs/marquette/test-run/transition";
 
 const diagnostics = validateTestRunEvidence(evidence);
 const admissionId = await testRunAdmissionId(evidence); // test-run:<sha256>
@@ -110,6 +111,7 @@ if (!decision.allowed) {
   console.error(decision.denialCodes); // e.g. ["record-expired"]
 }
 const release = await verifyTestRunCheck(retainedCheck, candidate, evidence, now);
+const journal = await verifyTestRunTransition(nextTransition, chainTip);
 ```
 
 Validation shares its `VIZE_MARQUETTE_1xx` codes, paths, and ordering with the
@@ -122,9 +124,14 @@ identical machine-readable causes. The check entry replaces every generic
 test-result reference in release evidence: a retained `vize.test-run.check`
 record may only name the exact `test-run:<sha256>` admission id, bind the six
 candidate facts, and record an observer independent from the runner. The
-published record schema is available from `@vizejs/marquette/test-run/schema`,
-the decision contract from `@vizejs/marquette/test-run/admission/schema`, and
-the tests-check contract from `@vizejs/marquette/test-run/check/schema`.
+transition entry makes each release decision and the complete accepted
+anti-replay state one durable atomic record, chained by canonical SHA-256
+fingerprints; hosts persist it with a write-then-atomic-rename and verify the
+recovered tip before deciding anything new. The published record schema is
+available from `@vizejs/marquette/test-run/schema`, the decision contract from
+`@vizejs/marquette/test-run/admission/schema`, the tests-check contract from
+`@vizejs/marquette/test-run/check/schema`, and the transition contract from
+`@vizejs/marquette/test-run/transition/schema`.
 
 ## Guarantees
 

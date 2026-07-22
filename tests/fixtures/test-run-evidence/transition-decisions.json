@@ -1,0 +1,453 @@
+{
+  "cases": [
+    {
+      "current": "genesis",
+      "decision": {
+        "allowed": true,
+        "denialCodes": [],
+        "diagnostics": []
+      },
+      "family": "atomic-accept",
+      "name": "atomic-genesis-accept",
+      "previous": null
+    },
+    {
+      "current": "second",
+      "decision": {
+        "allowed": true,
+        "denialCodes": [],
+        "diagnostics": []
+      },
+      "family": "atomic-accept",
+      "name": "atomic-extension-accept",
+      "previous": "genesis"
+    },
+    {
+      "current": "second-retry",
+      "decision": {
+        "allowed": true,
+        "denialCodes": [],
+        "diagnostics": []
+      },
+      "family": "crash-recovery",
+      "name": "recovery-retry-after-torn-write",
+      "previous": "genesis"
+    },
+    {
+      "current": "denied-third",
+      "decision": {
+        "allowed": true,
+        "denialCodes": [],
+        "diagnostics": []
+      },
+      "family": "denied",
+      "name": "denied-decision-preserves-state",
+      "previous": "second"
+    },
+    {
+      "current": "replay-third",
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["transition-replayed"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_158",
+            "message": "accepted evidence must not be accepted again",
+            "path": "transition.evidence",
+            "severity": "error"
+          }
+        ]
+      },
+      "family": "replayed",
+      "name": "replayed-evidence-rejected",
+      "previous": "second"
+    },
+    {
+      "current": "partial-third",
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["transition-state-mismatch"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_156",
+            "message": "an allowed transition must accept its own evidence",
+            "path": "transition.accepted",
+            "severity": "error"
+          },
+          {
+            "code": "VIZE_MARQUETTE_159",
+            "message": "accepted state must equal its predecessor's state plus exactly the newly accepted evidence",
+            "path": "transition.accepted",
+            "severity": "error"
+          }
+        ]
+      },
+      "family": "partial-write",
+      "name": "partial-state-rejected",
+      "previous": "second"
+    },
+    {
+      "current": "split-third",
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["transition-chain-broken"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_157",
+            "message": "transition must name its predecessor's canonical fingerprint",
+            "path": "transition.previous",
+            "severity": "error"
+          }
+        ]
+      },
+      "family": "split-write",
+      "name": "split-stale-tip-rejected",
+      "previous": "second"
+    },
+    {
+      "current": "second",
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["transition-chain-broken", "transition-state-mismatch"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_159",
+            "message": "accepted state must equal its predecessor's state plus exactly the newly accepted evidence",
+            "path": "transition.accepted",
+            "severity": "error"
+          },
+          {
+            "code": "VIZE_MARQUETTE_157",
+            "message": "transition requires its predecessor to verify",
+            "path": "transition.sequence",
+            "severity": "error"
+          }
+        ]
+      },
+      "family": "split-write",
+      "name": "missing-predecessor-rejected",
+      "previous": null
+    },
+    {
+      "current": "cross-scope",
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["transition-chain-broken"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_157",
+            "message": "transition must stay within its predecessor's scope",
+            "path": "transition.candidate.application",
+            "severity": "error"
+          }
+        ]
+      },
+      "family": "cross-scope",
+      "name": "cross-scope-rejected",
+      "previous": "genesis"
+    },
+    {
+      "current": "malformed",
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["transition-invalid"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_107",
+            "message": "timestamp must be a millisecond-precision UTC instant like 2026-01-01T00:00:00.000Z",
+            "path": "transition.decidedAt",
+            "severity": "error"
+          },
+          {
+            "code": "VIZE_MARQUETTE_101",
+            "message": "unsupported release-transition format marker",
+            "path": "transition.format",
+            "severity": "error"
+          }
+        ]
+      },
+      "family": "malformed",
+      "name": "malformed-transition",
+      "previous": null
+    },
+    {
+      "current": "stale-replay",
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["transition-chain-broken", "transition-replayed"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_158",
+            "message": "accepted evidence must not be accepted again",
+            "path": "transition.evidence",
+            "severity": "error"
+          },
+          {
+            "code": "VIZE_MARQUETTE_157",
+            "message": "transition must name its predecessor's canonical fingerprint",
+            "path": "transition.previous",
+            "severity": "error"
+          }
+        ]
+      },
+      "family": "multi-cause",
+      "name": "multi-cause-stale-replay",
+      "previous": "second"
+    }
+  ],
+  "description": "Shared host-side release-transition verification cases. The transitions map forms one fingerprint-linked chain plus hostile variants; each case verifies one current transition against one retained predecessor (or none) and every backend family must produce exactly the pinned decision. The sequence genesis -> second -> denied-third narrates a crash-consistent journal: an accepted decision, a retried write after a simulated torn rename (second-retry), a denial preserving the accepted anti-replay state, and rejected replayed, partial, stale, and cross-scope tips. See crates/vize_marquette/schema/test-run-transition.schema.json for the record contract and the host durability obligations.",
+  "transitions": {
+    "cross-scope": {
+      "accepted": [
+        "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+        "test-run:151c16edbe166ccb54cd0a424ff6f725c82d2c67e9945ec7133a48e87bdbba52"
+      ],
+      "candidate": {
+        "application": "intruder",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decidedAt": "2026-07-22T00:00:00.000Z",
+      "decision": {
+        "allowed": true,
+        "denialCodes": [],
+        "diagnostics": []
+      },
+      "evidence": "test-run:151c16edbe166ccb54cd0a424ff6f725c82d2c67e9945ec7133a48e87bdbba52",
+      "format": "vize.test-run.transition",
+      "formatVersion": 1,
+      "previous": "22d86880f957c51dc603aea071b896d55fb8ee38f58d06028902a8df7dfa7c5f",
+      "sequence": 2
+    },
+    "denied-third": {
+      "accepted": [
+        "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+        "test-run:151c16edbe166ccb54cd0a424ff6f725c82d2c67e9945ec7133a48e87bdbba52"
+      ],
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decidedAt": "2026-07-22T03:00:00.000Z",
+      "decision": {
+        "allowed": false,
+        "denialCodes": ["record-expired"],
+        "diagnostics": [
+          {
+            "code": "VIZE_MARQUETTE_145",
+            "message": "record is expired at the admission time",
+            "path": "validUntil",
+            "severity": "error"
+          }
+        ]
+      },
+      "evidence": "test-run:d47ac1c117d5e81af4207211bd8d245b5f592eea1e388b43b1464442b535d68e",
+      "format": "vize.test-run.transition",
+      "formatVersion": 1,
+      "previous": "4092757a88f1afa656ee264b46167a8917dc1c3610e8f83129bc3aba2223ae4c",
+      "sequence": 3
+    },
+    "genesis": {
+      "accepted": ["test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b"],
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decidedAt": "2026-07-21T00:12:00.000Z",
+      "decision": {
+        "allowed": true,
+        "denialCodes": [],
+        "diagnostics": []
+      },
+      "evidence": "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+      "format": "vize.test-run.transition",
+      "formatVersion": 1,
+      "previous": null,
+      "sequence": 1
+    },
+    "malformed": {
+      "accepted": ["test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b"],
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decidedAt": "whenever",
+      "decision": {
+        "allowed": true,
+        "denialCodes": [],
+        "diagnostics": []
+      },
+      "evidence": "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+      "format": "vize.release.log",
+      "formatVersion": 1,
+      "previous": null,
+      "sequence": 1
+    },
+    "partial-third": {
+      "accepted": [
+        "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+        "test-run:151c16edbe166ccb54cd0a424ff6f725c82d2c67e9945ec7133a48e87bdbba52"
+      ],
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decidedAt": "2026-07-22T03:00:00.000Z",
+      "decision": {
+        "allowed": true,
+        "denialCodes": [],
+        "diagnostics": []
+      },
+      "evidence": "test-run:d47ac1c117d5e81af4207211bd8d245b5f592eea1e388b43b1464442b535d68e",
+      "format": "vize.test-run.transition",
+      "formatVersion": 1,
+      "previous": "4092757a88f1afa656ee264b46167a8917dc1c3610e8f83129bc3aba2223ae4c",
+      "sequence": 3
+    },
+    "replay-third": {
+      "accepted": [
+        "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+        "test-run:151c16edbe166ccb54cd0a424ff6f725c82d2c67e9945ec7133a48e87bdbba52"
+      ],
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decidedAt": "2026-07-22T03:00:00.000Z",
+      "decision": {
+        "allowed": true,
+        "denialCodes": [],
+        "diagnostics": []
+      },
+      "evidence": "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+      "format": "vize.test-run.transition",
+      "formatVersion": 1,
+      "previous": "4092757a88f1afa656ee264b46167a8917dc1c3610e8f83129bc3aba2223ae4c",
+      "sequence": 3
+    },
+    "second": {
+      "accepted": [
+        "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+        "test-run:151c16edbe166ccb54cd0a424ff6f725c82d2c67e9945ec7133a48e87bdbba52"
+      ],
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decidedAt": "2026-07-22T00:00:00.000Z",
+      "decision": {
+        "allowed": true,
+        "denialCodes": [],
+        "diagnostics": []
+      },
+      "evidence": "test-run:151c16edbe166ccb54cd0a424ff6f725c82d2c67e9945ec7133a48e87bdbba52",
+      "format": "vize.test-run.transition",
+      "formatVersion": 1,
+      "previous": "22d86880f957c51dc603aea071b896d55fb8ee38f58d06028902a8df7dfa7c5f",
+      "sequence": 2
+    },
+    "second-retry": {
+      "accepted": [
+        "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+        "test-run:151c16edbe166ccb54cd0a424ff6f725c82d2c67e9945ec7133a48e87bdbba52"
+      ],
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decidedAt": "2026-07-22T02:00:00.000Z",
+      "decision": {
+        "allowed": true,
+        "denialCodes": [],
+        "diagnostics": []
+      },
+      "evidence": "test-run:151c16edbe166ccb54cd0a424ff6f725c82d2c67e9945ec7133a48e87bdbba52",
+      "format": "vize.test-run.transition",
+      "formatVersion": 1,
+      "previous": "22d86880f957c51dc603aea071b896d55fb8ee38f58d06028902a8df7dfa7c5f",
+      "sequence": 2
+    },
+    "split-third": {
+      "accepted": [
+        "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+        "test-run:151c16edbe166ccb54cd0a424ff6f725c82d2c67e9945ec7133a48e87bdbba52",
+        "test-run:d47ac1c117d5e81af4207211bd8d245b5f592eea1e388b43b1464442b535d68e"
+      ],
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decidedAt": "2026-07-22T03:00:00.000Z",
+      "decision": {
+        "allowed": true,
+        "denialCodes": [],
+        "diagnostics": []
+      },
+      "evidence": "test-run:d47ac1c117d5e81af4207211bd8d245b5f592eea1e388b43b1464442b535d68e",
+      "format": "vize.test-run.transition",
+      "formatVersion": 1,
+      "previous": "22d86880f957c51dc603aea071b896d55fb8ee38f58d06028902a8df7dfa7c5f",
+      "sequence": 3
+    },
+    "stale-replay": {
+      "accepted": [
+        "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+        "test-run:151c16edbe166ccb54cd0a424ff6f725c82d2c67e9945ec7133a48e87bdbba52"
+      ],
+      "candidate": {
+        "application": "example",
+        "artifactFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "contractFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment": "production",
+        "release": "0.298.0",
+        "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decidedAt": "2026-07-22T03:00:00.000Z",
+      "decision": {
+        "allowed": true,
+        "denialCodes": [],
+        "diagnostics": []
+      },
+      "evidence": "test-run:05d50948dac24df4c92e3ab6c67d96461fced0f28373d06e9a06755b2a40a85b",
+      "format": "vize.test-run.transition",
+      "formatVersion": 1,
+      "previous": "22d86880f957c51dc603aea071b896d55fb8ee38f58d06028902a8df7dfa7c5f",
+      "sequence": 3
+    }
+  }
+}

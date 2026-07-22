@@ -61,16 +61,20 @@ pub use model::{
     RuntimeFamily, Target,
 };
 pub use test_run::{
-    CanonicalTestRunError, TEST_RUN_ADMISSION_PREFIX, TEST_RUN_CHECK_FORMAT,
-    TEST_RUN_CHECK_FORMAT_VERSION, TEST_RUN_DENIAL_CODES, TEST_RUN_EVIDENCE_FORMAT,
-    TEST_RUN_EVIDENCE_FORMAT_VERSION, TEST_RUN_MAX_SHARDS, TEST_RUN_MAX_SUITES,
-    TEST_RUN_MAX_TARGETS, TestRunAdmissionDecision, TestRunArtifact, TestRunCandidate,
-    TestRunCheck, TestRunDenialCode, TestRunEvidence, TestRunIsolation, TestRunRetainedEvidence,
+    CanonicalTestRunError, CanonicalTransitionError, TEST_RUN_ADMISSION_PREFIX,
+    TEST_RUN_CHECK_FORMAT, TEST_RUN_CHECK_FORMAT_VERSION, TEST_RUN_DENIAL_CODES,
+    TEST_RUN_EVIDENCE_FORMAT, TEST_RUN_EVIDENCE_FORMAT_VERSION, TEST_RUN_MAX_SHARDS,
+    TEST_RUN_MAX_SUITES, TEST_RUN_MAX_TARGETS, TEST_RUN_TRANSITION_FORMAT,
+    TEST_RUN_TRANSITION_FORMAT_VERSION, TEST_RUN_TRANSITION_MAX_ACCEPTED, TestRunAdmissionDecision,
+    TestRunArtifact, TestRunCandidate, TestRunCheck, TestRunDenialCode, TestRunEvidence,
+    TestRunIsolation, TestRunRetainedDecision, TestRunRetainedDiagnostic, TestRunRetainedEvidence,
     TestRunRunner, TestRunSelection, TestRunSuiteExecution, TestRunSuiteKind, TestRunSuiteOutcome,
-    TestRunTargetExecution, TestRunTargetKind, TestRunVerification, TestRunVerificationOutcome,
-    admit_test_run, canonical_test_run_json, decide_test_run_admission,
-    parse_test_run_admission_id, test_run_admission_id, test_run_denial_code, test_run_fingerprint,
-    validate_test_run, validate_test_run_check, verify_test_run_check,
+    TestRunTargetExecution, TestRunTargetKind, TestRunTransition, TestRunVerification,
+    TestRunVerificationOutcome, admit_test_run, canonical_test_run_json,
+    canonical_test_run_transition_json, decide_test_run_admission, parse_test_run_admission_id,
+    test_run_admission_id, test_run_denial_code, test_run_fingerprint,
+    test_run_transition_fingerprint, validate_test_run, validate_test_run_check,
+    validate_test_run_transition, verify_test_run_check, verify_test_run_transition,
 };
 pub use validate::{ContractDiagnostic, DiagnosticSeverity, validate_contract};
 
@@ -105,6 +109,17 @@ pub const TEST_RUN_ADMISSION_JSON_SCHEMA: &str =
 /// test-result reference and is embedded so deployment gates and tooling
 /// can expose the exact contract without resolving a filesystem path.
 pub const TEST_RUN_CHECK_JSON_SCHEMA: &str = include_str!("../schema/test-run-check.schema.json");
+
+/// Canonical JSON Schema for durable release transitions.
+///
+/// The schema declares the single atomic record binding one release
+/// decision to the complete accepted anti-replay state, chained by
+/// canonical SHA-256 fingerprints, together with the durability contract a
+/// conforming host must guarantee. It is embedded so deployment gates and
+/// tooling can expose the exact contract without resolving a filesystem
+/// path.
+pub const TEST_RUN_TRANSITION_JSON_SCHEMA: &str =
+    include_str!("../schema/test-run-transition.schema.json");
 
 #[cfg(test)]
 mod schema_tests {
@@ -150,6 +165,25 @@ mod schema_tests {
         assert_eq!(
             check["formatVersion"]["const"],
             super::TEST_RUN_CHECK_FORMAT_VERSION
+        );
+    }
+
+    #[test]
+    fn embedded_transition_schema_tracks_the_current_format() {
+        let schema: serde_json::Value =
+            serde_json::from_str(super::TEST_RUN_TRANSITION_JSON_SCHEMA).unwrap();
+        let transition = &schema["$defs"]["transition"]["properties"];
+        assert_eq!(
+            transition["format"]["const"],
+            super::TEST_RUN_TRANSITION_FORMAT
+        );
+        assert_eq!(
+            transition["formatVersion"]["const"],
+            super::TEST_RUN_TRANSITION_FORMAT_VERSION
+        );
+        assert_eq!(
+            transition["accepted"]["maxItems"],
+            super::TEST_RUN_TRANSITION_MAX_ACCEPTED
         );
     }
 }

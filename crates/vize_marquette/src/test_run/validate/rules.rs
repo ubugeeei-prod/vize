@@ -59,7 +59,7 @@ pub(crate) fn check_timestamp(value: &str, path: &str, diagnostics: &mut Vec<Con
 }
 
 /// Rejects integers that lose precision in a consuming language.
-pub(super) fn check_safe_integer(
+pub(crate) fn check_safe_integer(
     value: u64,
     path: &str,
     diagnostics: &mut Vec<ContractDiagnostic>,

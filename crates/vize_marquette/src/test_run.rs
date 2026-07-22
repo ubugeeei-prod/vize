@@ -16,6 +16,7 @@ mod canonical;
 mod check;
 mod decision;
 mod model;
+mod transition;
 mod validate;
 
 #[cfg(test)]
@@ -39,6 +40,12 @@ pub use model::{
     TestRunIsolation, TestRunRetainedEvidence, TestRunRunner, TestRunSelection,
     TestRunSuiteExecution, TestRunSuiteKind, TestRunSuiteOutcome, TestRunTargetExecution,
     TestRunTargetKind, TestRunVerification, TestRunVerificationOutcome,
+};
+pub use transition::{
+    CanonicalTransitionError, TEST_RUN_TRANSITION_FORMAT, TEST_RUN_TRANSITION_FORMAT_VERSION,
+    TEST_RUN_TRANSITION_MAX_ACCEPTED, TestRunRetainedDecision, TestRunRetainedDiagnostic,
+    TestRunTransition, canonical_test_run_transition_json, test_run_transition_fingerprint,
+    validate_test_run_transition, verify_test_run_transition,
 };
 pub use validate::{
     TEST_RUN_MAX_SHARDS, TEST_RUN_MAX_SUITES, TEST_RUN_MAX_TARGETS, validate_test_run,

@@ -6,9 +6,9 @@
 use std::{fs, path::PathBuf};
 
 use vize_marquette::{
-    TestRunCandidate, TestRunCheck, TestRunEvidence, canonical_test_run_json,
+    TestRunCandidate, TestRunCheck, TestRunEvidence, TestRunTransition, canonical_test_run_json,
     decide_test_run_admission, parse_test_run_admission_id, test_run_admission_id,
-    test_run_fingerprint, verify_test_run_check,
+    test_run_fingerprint, verify_test_run_check, verify_test_run_transition,
 };
 
 fn fixture(name: &str) -> PathBuf {
@@ -74,6 +74,31 @@ fn reproduces_every_shared_admission_decision() {
             case["admissionId"].as_str().unwrap(),
             case["now"].as_str().unwrap(),
         );
+        assert!(case["decision"].is_object(), "{name} must pin a decision");
+        assert_eq!(
+            serde_json::to_value(&decision).unwrap(),
+            case["decision"],
+            "decision mismatch for case {name}",
+        );
+    }
+}
+
+#[test]
+fn reproduces_every_shared_transition_decision() {
+    let document: serde_json::Value =
+        serde_json::from_slice(&fs::read(fixture("transition-decisions.json")).unwrap()).unwrap();
+    let transitions = &document["transitions"];
+    let load = |name: &str| -> TestRunTransition {
+        serde_json::from_value(transitions[name].clone()).unwrap()
+    };
+    let cases = document["cases"].as_array().unwrap();
+    assert!(!cases.is_empty());
+
+    for case in cases {
+        let name = case["name"].as_str().unwrap();
+        let current = load(case["current"].as_str().unwrap());
+        let previous = case["previous"].as_str().map(load);
+        let decision = verify_test_run_transition(&current, previous.as_ref());
         assert!(case["decision"].is_object(), "{name} must pin a decision");
         assert_eq!(
             serde_json::to_value(&decision).unwrap(),

@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vizejs.dev/schemas/marquette/test-run-transition.schema.json",
+  "title": "Vize Release Transition",
+  "description": "One durable atomic release transition: a single canonical record binding one release decision to the complete accepted anti-replay state, chained to its predecessor by canonical SHA-256 fingerprint. Host durability contract: a conforming host must write the complete canonical bytes to a temporary location, flush them to durable storage, then atomically rename or commit so exactly one complete chain tip exists at every instant; on recovery it must verify the tip against its retained predecessor before deciding anything new, and discard - never repair - a torn or partial record. Verification is fail-closed and identical across JavaScript, Rust, Go, and JVM hosts; the shared tests/fixtures/test-run-evidence transition-decision fixtures are the conformance source of truth for new host implementations.",
+  "$ref": "#/$defs/transition",
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "admissionId": {
+      "description": "Exact test-run:<sha256> admission id; the only admissible form of accepted test evidence.",
+      "type": "string",
+      "pattern": "^test-run:[a-f0-9]{64}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}Z$"
+    },
+    "candidate": {
+      "description": "Exact release candidate the decision was made for. Application and environment must stay constant along one chain.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "application",
+        "environment",
+        "contractFingerprint",
+        "sourceRevision",
+        "release",
+        "artifactFingerprint"
+      ],
+      "properties": {
+        "application": { "$ref": "#/$defs/identifier" },
+        "environment": { "$ref": "#/$defs/identifier" },
+        "contractFingerprint": { "$ref": "#/$defs/digest" },
+        "sourceRevision": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40,128}$"
+        },
+        "release": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "artifactFingerprint": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "diagnostic": {
+      "description": "One retained diagnostic, shaped and serialized exactly like a live diagnostic.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "severity", "path", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^VIZE_MARQUETTE_[0-9]{3}$"
+        },
+        "severity": { "enum": ["error", "warning"] },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "decision": {
+      "description": "Retained allow-or-deny decision exactly as it was produced. allowed must agree with the diagnostics, and denialCodes must equal the published mapping of the diagnostics; verification rejects a record claiming an outcome its own diagnostics contradict.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed", "denialCodes", "diagnostics"],
+      "properties": {
+        "allowed": { "type": "boolean" },
+        "denialCodes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/diagnostic" }
+        }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "formatVersion",
+        "sequence",
+        "previous",
+        "decidedAt",
+        "candidate",
+        "evidence",
+        "decision",
+        "accepted"
+      ],
+      "properties": {
+        "format": {
+          "description": "Serialized format marker; readers must reject any other value.",
+          "const": "vize.test-run.transition"
+        },
+        "formatVersion": {
+          "description": "Serialized format version; readers must reject a higher value until they explicitly support it.",
+          "const": 1
+        },
+        "sequence": {
+          "description": "One-based chain position; each transition extends its predecessor by exactly one.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "previous": {
+          "description": "Canonical SHA-256 fingerprint of the predecessor transition; null only at genesis (sequence 1).",
+          "anyOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }]
+        },
+        "decidedAt": {
+          "description": "Millisecond-precision UTC instant of the decision; never earlier than the predecessor's.",
+          "$ref": "#/$defs/timestamp"
+        },
+        "candidate": { "$ref": "#/$defs/candidate" },
+        "evidence": { "$ref": "#/$defs/admissionId" },
+        "decision": { "$ref": "#/$defs/decision" },
+        "accepted": {
+          "description": "Complete anti-replay state after this transition: every admission id ever accepted in this chain, sorted and unique. An allowed transition adds exactly its own evidence to its predecessor's state; a denied transition leaves the state unchanged; an already accepted id can never be accepted again.",
+          "type": "array",
+          "maxItems": 4096,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/admissionId" }
+        }
+      }
+    }
+  }
+}
