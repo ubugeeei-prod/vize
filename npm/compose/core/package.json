@@ -1,6 +1,6 @@
 {
   "name": "@vizecompose/core",
-  "version": "0.298.0",
+  "version": "0.299.0",
   "description": "Lifecycle-safe composable foundations for Vize applications",
   "keywords": [
     "composables",

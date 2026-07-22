@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -164,25 +165,46 @@ test("release script rewrites only the native-binaries catalog block in pnpm-loc
   assert.ok(out.includes("resolution: {integrity: sha512-AAA==}"), "integrity hash preserved");
 });
 
-test("release script includes nested release packages in extra synced manifests", () => {
+test("release version sweep covers every manifest the preflight verifies", () => {
   const result = runMoonScript("release", ["--print-extra-package-json-paths"]);
 
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
-  const paths = result.stdout.split("\n");
+  const extraPaths = new Set(result.stdout.split("\n").filter(Boolean));
 
-  for (const manifestPath of [
-    "editors/vscode/package.json",
-    "editors/vscode-art/package.json",
-    "npm/builder/rspack/package.json",
-    "npm/builder/unplugin/package.json",
-    "npm/builder/vite/package.json",
-    "npm/builder/vite-musea/package.json",
-    "npm/framework/musea-nuxt/package.json",
-    "npm/framework/nuxt/package.json",
-  ]) {
+  // The release preflight fails the release when any tracked, non-private
+  // manifest under these roots disagrees with the release version, so the
+  // bump tool must reach exactly that set: flat npm/<package> manifests via
+  // its directory scan, everything else via the extra list. A package added
+  // to a nested group (npm/compose, npm/ui, ...) that misses this sweep
+  // aborts the release at the preflight — this pins the alignment.
+  const tracked = execSync("git ls-files -z -- editors npm", { cwd: repoRoot })
+    .toString()
+    .split("\0")
+    .filter((relativePath) => relativePath.endsWith("/package.json"));
+  for (const manifestPath of tracked) {
+    const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, manifestPath), "utf8")) as {
+      private?: boolean;
+    };
+    if (manifest.private === true) {
+      assert.ok(
+        !extraPaths.has(manifestPath),
+        `${manifestPath} is private and must stay out of the release version sweep`,
+      );
+      continue;
+    }
+    const coveredByFlatScan = /^npm\/[^/]+\/package\.json$/.test(manifestPath);
+    if (!coveredByFlatScan) {
+      assert.ok(
+        extraPaths.has(manifestPath),
+        `${manifestPath} must be bumped with release commits (preflight verifies it)`,
+      );
+    }
+  }
+
+  for (const manifestPath of extraPaths) {
     assert.ok(
-      paths.includes(manifestPath),
-      `${manifestPath} version must be bumped with release commits`,
+      tracked.includes(manifestPath),
+      `${manifestPath} is in the release sweep but not tracked under editors/ or npm/`,
     );
   }
 });
