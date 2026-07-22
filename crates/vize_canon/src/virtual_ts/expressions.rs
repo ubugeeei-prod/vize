@@ -6,6 +6,7 @@
 mod component_props;
 #[cfg(test)]
 mod component_props_tests;
+mod prop_sources;
 mod reserved_props;
 mod statements;
 mod vif_chain;
