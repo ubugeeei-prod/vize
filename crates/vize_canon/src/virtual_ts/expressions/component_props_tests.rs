@@ -39,7 +39,7 @@ const isLoading = false
 }
 
 #[test]
-fn component_prop_check_maps_synthetic_name_to_bound_expression() {
+fn component_prop_check_anchors_name_and_preserves_bound_expression() {
     let script = r#"import Child from "./Child.vue"
 const benchmarkMirror = 1
 "#;
@@ -53,19 +53,37 @@ const benchmarkMirror = 1
     let summary = analyzer.finish();
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    // The synthetic identifier — where the child prop-type error lands —
+    // anchors at the attribute name, matching vue-tsc.
+    let name_start = template.find(":code").expect("attribute present") + 1;
+    let name_range = name_start..name_start + "code".len();
+    let name_span = output
+        .mappings
+        .iter()
+        .flat_map(|mapping| &mapping.sub_spans)
+        .find(|span| span.src_range == name_range)
+        .expect("component prop check should anchor at the attribute name");
+    assert!(
+        output.code[name_span.gen_range.clone()].starts_with("__vize_prop_check_"),
+        "synthetic check identifier should map to the attribute name: {name_span:?}"
+    );
+
+    // The initializer keeps the exact authored expression range so errors
+    // inside the value land on the authored bytes.
     let expression = "String(benchmarkMirror)";
     let source_start = template.find(expression).expect("bound expression present");
     let source_range = source_start..source_start + expression.len();
-    let sub_span = output
+    let value_span = output
         .mappings
         .iter()
         .flat_map(|mapping| &mapping.sub_spans)
         .find(|span| span.src_range == source_range)
         .expect("component prop check should preserve the exact bound expression range");
-
-    assert!(
-        output.code[sub_span.gen_range.clone()].starts_with("__vize_prop_check_"),
-        "synthetic check identifier should map to the bound expression: {sub_span:?}"
+    assert_eq!(
+        &output.code[value_span.gen_range.clone()],
+        expression,
+        "initializer sub-span should cover the generated expression"
     );
 }
 
@@ -99,18 +117,30 @@ fn static_attribute_values_are_type_checked_like_dynamic_bindings() {
         output.code
     );
 
-    // The synthetic check identifier maps back to the authored attribute value.
-    let value_start = template.find("You did it!").expect("static value present");
-    let value_range = value_start..value_start + "You did it!".len();
-    let sub_span = output
+    // The synthetic check identifier anchors at the attribute name, and the
+    // initializer keeps the authored value range.
+    let name_start = template.find("msg=").expect("attribute present");
+    let name_range = name_start..name_start + "msg".len();
+    let name_span = output
         .mappings
         .iter()
         .flat_map(|mapping| &mapping.sub_spans)
-        .find(|span| span.src_range == value_range)
-        .expect("static prop check should map to the authored attribute value");
+        .find(|span| span.src_range == name_range)
+        .expect("static prop check should anchor at the attribute name");
     assert!(
-        output.code[sub_span.gen_range.clone()].starts_with("__vize_prop_check_"),
-        "synthetic check identifier should map to the static value: {sub_span:?}"
+        output.code[name_span.gen_range.clone()].starts_with("__vize_prop_check_"),
+        "synthetic check identifier should map to the attribute name: {name_span:?}"
+    );
+
+    let value_start = template.find("You did it!").expect("static value present");
+    let value_range = value_start..value_start + "You did it!".len();
+    assert!(
+        output
+            .mappings
+            .iter()
+            .flat_map(|mapping| &mapping.sub_spans)
+            .any(|span| span.src_range == value_range),
+        "static prop check should keep the authored value range"
     );
 }
 
@@ -205,5 +235,46 @@ const isLoading = false
         2,
         "both authored values stay checked:\n{}",
         output.code
+    );
+}
+
+#[test]
+fn attribute_name_anchor_survives_prefixes_and_modifiers() {
+    let script = r#"import Child from "./Child.vue"
+const bind = 1
+const sync = 2
+"#;
+    let template = r#"<Child v-bind:bind="bind" :sync.camel="sync" />"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    let sub_spans: Vec<_> = output
+        .mappings
+        .iter()
+        .flat_map(|mapping| &mapping.sub_spans)
+        .collect();
+
+    let bind_name = template.find("v-bind:bind").expect("v-bind attr") + "v-bind:".len();
+    assert!(
+        sub_spans.iter().any(
+            |span| span.src_range == (bind_name..bind_name + "bind".len())
+                && output.code[span.gen_range.clone()].starts_with("__vize_prop_check_")
+        ),
+        "v-bind: prefixed name should anchor after the prefix"
+    );
+
+    let sync_name = template.find(":sync.camel").expect("modifier attr") + 1;
+    assert!(
+        sub_spans.iter().any(
+            |span| span.src_range == (sync_name..sync_name + "sync".len())
+                && output.code[span.gen_range.clone()].starts_with("__vize_prop_check_")
+        ),
+        "modifier attributes should anchor at the name, not the modifier"
     );
 }

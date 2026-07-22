@@ -89,6 +89,36 @@ fn prop_value_source_range(
     Some(source_start..source_start + value.len())
 }
 
+/// Returns the authored range of the attribute name itself — `msg` inside
+/// `:msg="expr"`, `v-bind:msg="expr"`, or `msg="text"`.
+///
+/// vue-tsc anchors prop-type diagnostics at the attribute name, so the
+/// synthetic check identifier maps here for byte-identical positions.
+fn prop_name_source_range(
+    source_context: ComponentPropSource<'_>,
+    prop: &PassedProp,
+) -> Option<std::ops::Range<usize>> {
+    let source = source_context.template?;
+    let prop_start = prop.start as usize;
+    let raw_prop = source.get(prop_start..prop.end as usize)?;
+    let name_region = raw_prop.split('=').next().unwrap_or(raw_prop);
+    let name = prop.name.as_str();
+    // The authored name sits right after the binding prefix; matching there
+    // (instead of searching) keeps names like `bind` from anchoring inside
+    // `v-bind:` and modifiers like `.sync` from stealing the match.
+    let prefix_len = if let Some(rest) = name_region.strip_prefix("v-bind:") {
+        rest.starts_with(name).then_some("v-bind:".len())?
+    } else if let Some(rest) = name_region.strip_prefix(':') {
+        rest.starts_with(name).then_some(1)?
+    } else if name_region.starts_with(name) {
+        0
+    } else {
+        name_region.find(name)?
+    };
+    let source_start = source_context.offset as usize + prop_start + prefix_len;
+    Some(source_start..source_start + name.len())
+}
+
 fn collect_generated_class_bindings<'a>(
     usage: &'a ComponentUsage,
     template_prop_names: &FxHashSet<String>,
@@ -184,21 +214,37 @@ pub(crate) fn generate_component_prop_checks(
             let check_name_end = ts.len();
             append!(
                 *ts,
-                ": __{component_type_name}_{idx}_prop_{safe_prop_name} = {};\n",
-                generated_value.as_str(),
+                ": __{component_type_name}_{idx}_prop_{safe_prop_name} = ",
             );
+            let value_gen_start = ts.len();
+            ts.push_str(generated_value.as_str());
+            let value_gen_end = ts.len();
+            ts.push_str(";\n");
             let gen_stmt_end = ts.len();
             append!(*ts, "{expr_indent}void {check_name};\n");
+
+            // The synthetic identifier receives the child prop-type error
+            // (TS2322-class), which vue-tsc anchors at the attribute name;
+            // the initializer keeps the exact authored expression so errors
+            // inside the value land on the authored bytes.
+            let name_src_range = prop_name_source_range(source_context, prop);
+            let mut sub_spans = Vec::new();
+            if let Some(src_range) = name_src_range.or_else(|| value_src_range.clone()) {
+                sub_spans.push(VizeSubSpan {
+                    gen_range: check_name_start..check_name_end,
+                    src_range,
+                });
+            }
+            if let Some(src_range) = value_src_range {
+                sub_spans.push(VizeSubSpan {
+                    gen_range: value_gen_start..value_gen_end,
+                    src_range,
+                });
+            }
             mappings.push(VizeMapping {
                 gen_range: gen_stmt_start..gen_stmt_end,
                 src_range: prop_src_start..prop_src_end,
-                sub_spans: value_src_range
-                    .map(|src_range| VizeSubSpan {
-                        gen_range: check_name_start..check_name_end,
-                        src_range,
-                    })
-                    .into_iter()
-                    .collect(),
+                sub_spans,
             });
 
             if usage.vif_guard.is_some() {

@@ -209,8 +209,7 @@
         "error:5:19 [TS2307] Cannot find module '#build/ui/checkbox' or its corresponding type declarations.",
         "error:66:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:116:54 [TS2304] Cannot find name 'as'.",
-        "error:116:55 [TS2304] Cannot find name 'as'.",
-        "error:116:65 [TS2304] Cannot find name 'as'."
+        "error:116:55 [TS2304] Cannot find name 'as'."
       ]
     },
     {
@@ -261,8 +260,7 @@
         "error:338:28 [TS7006] Parameter 'acc' implicitly has an 'any' type.",
         "error:338:33 [TS7006] Parameter 'result' implicitly has an 'any' type.",
         "error:378:48 [TS2345] Argument of type 'unknown' is not assignable to parameter of type '(T & { matches?: any; })[]'.",
-        "error:585:38 [TS2345] Argument of type 'AcceptableValue' is not assignable to parameter of type 'Record<string, any> | undefined'.\nType 'null' is not assignable to type 'Record<string, any> | undefined'.",
-        "error:585:70 [TS2345] Argument of type 'AcceptableValue' is not assignable to parameter of type 'Record<string, any> | undefined'.\nType 'null' is not assignable to type 'Record<string, any> | undefined'."
+        "error:585:38 [TS2345] Argument of type 'AcceptableValue' is not assignable to parameter of type 'Record<string, any> | undefined'.\nType 'null' is not assignable to type 'Record<string, any> | undefined'."
       ]
     },
     {
@@ -800,8 +798,8 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/pin-input' or its corresponding type declarations.",
         "error:56:7 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:130:19 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | null | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | null | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.",
-        "error:131:21 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'."
+        "error:130:6 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | null | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | null | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.",
+        "error:131:6 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'."
       ]
     },
     {
@@ -852,7 +850,7 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/radio-group' or its corresponding type declarations.",
         "error:93:92 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:181:19 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:181:6 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -923,7 +921,7 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/stepper' or its corresponding type declarations.",
         "error:83:8 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:147:76 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:147:63 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -957,7 +955,7 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/tabs' or its corresponding type declarations.",
         "error:96:11 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:145:19 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:145:6 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -978,7 +976,7 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/timeline' or its corresponding type declarations.",
         "error:74:10 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:156:25 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:156:12 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -997,10 +995,8 @@
         "error:52:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:156:43 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'.",
         "error:156:44 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'.",
-        "error:157:23 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'.",
         "error:157:30 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'.",
-        "error:157:31 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'.",
-        "error:158:21 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'."
+        "error:157:31 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'."
       ]
     },
     {
@@ -1109,7 +1105,6 @@
         "error:57:10 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:86:34 [TS2339] Property 'path' does not exist on type 'ContentSurroundLink'.",
         "error:86:35 [TS2339] Property 'path' does not exist on type 'ContentSurroundLink'.",
-        "error:86:39 [TS2339] Property 'path' does not exist on type 'ContentSurroundLink'.",
         "error:96:21 [TS2339] Property 'title' does not exist on type 'ContentSurroundLink'."
       ]
     },
@@ -1545,7 +1540,7 @@
       ]
     }
   ],
-  "errorCount": 651,
+  "errorCount": 646,
   "warningCount": 0,
   "fileCount": 180
 }

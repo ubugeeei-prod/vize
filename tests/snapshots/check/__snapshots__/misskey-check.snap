@@ -1159,8 +1159,8 @@
     {
       "file": "src/pages/admin-user.vue",
       "diagnostics": [
-        "error:190:35 [TS2322] Type 'string' is not assignable to type '\"active-users\" | \"ap-request\" | \"drive\" | \"drive-files\" | \"federation\" | \"instance-drive-files\" | \"instance-drive-files-total\" | \"instance-drive-usage\" | \"instance-drive-usage-total\" | ... 17 more ... | \"users-total\"'.",
-        "error:192:35 [TS2322] Type 'string' is not assignable to type '\"active-users\" | \"ap-request\" | \"drive\" | \"drive-files\" | \"federation\" | \"instance-drive-files\" | \"instance-drive-files-total\" | \"instance-drive-usage\" | \"instance-drive-usage-total\" | ... 17 more ... | \"users-total\"'."
+        "error:190:30 [TS2322] Type 'string' is not assignable to type '\"active-users\" | \"ap-request\" | \"drive\" | \"drive-files\" | \"federation\" | \"instance-drive-files\" | \"instance-drive-files-total\" | \"instance-drive-usage\" | \"instance-drive-usage-total\" | ... 17 more ... | \"users-total\"'.",
+        "error:192:30 [TS2322] Type 'string' is not assignable to type '\"active-users\" | \"ap-request\" | \"drive\" | \"drive-files\" | \"federation\" | \"instance-drive-files\" | \"instance-drive-files-total\" | \"instance-drive-usage\" | \"instance-drive-usage-total\" | ... 17 more ... | \"users-total\"'."
       ]
     },
     {
@@ -1585,8 +1585,7 @@
       "file": "src/pages/follow-requests.vue",
       "diagnostics": [
         "error:9:29 [TS2454] Variable 'paginator' is used before being assigned.",
-        "error:9:30 [TS2454] Variable 'paginator' is used before being assigned.",
-        "error:9:39 [TS2454] Variable 'paginator' is used before being assigned."
+        "error:9:30 [TS2454] Variable 'paginator' is used before being assigned."
       ]
     },
     {
@@ -1766,7 +1765,7 @@
     {
       "file": "src/pages/role.vue",
       "diagnostics": [
-        "error:14:91 [TS7006] Parameter 'item' implicitly has an 'any' type."
+        "error:14:72 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {
@@ -2392,7 +2391,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 40,
+  "errorCount": 39,
   "warningCount": 0,
   "fileCount": 583
 }

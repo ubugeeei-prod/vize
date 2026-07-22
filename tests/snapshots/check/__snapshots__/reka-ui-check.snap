@@ -468,8 +468,7 @@
       "file": "packages/core/src/Combobox/ComboboxAnchor.vue",
       "diagnostics": [
         "error:24:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type '__DefineProps<ComboboxAnchorProps, never>'.\nProperty 'as' does not exist on type '__DefineProps<ComboboxAnchorProps, never>'.",
-        "error:24:13 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type '__DefineProps<ComboboxAnchorProps, never>'.\nProperty 'as' does not exist on type '__DefineProps<ComboboxAnchorProps, never>'.\nType '\"as\"' is not assignable to type 'never'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ComboboxArrowProps>, \"as\" | \"height\" | \"width\"> & {}'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'asChild' does not exist on type 'Omit<__LooseRequired<ComboboxArrowProps>, \"as\" | \"height\" | \"width\"> & {}'.\nProperty 'height' does not exist on type 'Omit<__LooseRequired<ComboboxArrowProps>, \"as\" | \"height\" | \"width\"> & {}'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'rounded' does not exist on type 'Omit<__LooseRequired<ComboboxArrowProps>, \"as\" | \"height\" | \"width\"> & {}'.\nProperty 'width' does not exist on type 'Omit<__LooseRequired<ComboboxArrowProps>, \"as\" | \"height\" | \"width\"> & {}'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'align' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'alignFlip' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'alignOffset' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'arrowPadding' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'avoidCollisions' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'collisionBoundary' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'collisionPadding' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'disableUpdateOnLayoutShift' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'hideShiftedArrow' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'hideWhenDetached' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'positionStrategy' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'prioritizePosition' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'reference' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'side' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'sideFlip' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'sideOffset' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'sticky' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'updatePositionStrategy' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'align' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'alignFlip' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'alignOffset' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'arrowPadding' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'avoidCollisions' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'collisionBoundary' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'collisionPadding' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'disableUpdateOnLayoutShift' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'hideShiftedArrow' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'hideWhenDetached' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'positionStrategy' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'prioritizePosition' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'reference' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'side' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'sideFlip' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'sideOffset' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'sticky' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'updatePositionStrategy' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'defer' does not exist on type '__DefineProps<ComboboxPortalProps, never>'.\nProperty 'disabled' does not exist on type '__DefineProps<ComboboxPortalProps, never>'.\nProperty 'forceMount' does not exist on type '__DefineProps<ComboboxPortalProps, never>'.\nProperty 'to' does not exist on type '__DefineProps<ComboboxPortalProps, never>'.",
-        "error:24:15 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type '__DefineProps<ComboboxAnchorProps, never>'.\nProperty 'as' does not exist on type '__DefineProps<ComboboxAnchorProps, never>'."
+        "error:24:13 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type '__DefineProps<ComboboxAnchorProps, never>'.\nProperty 'as' does not exist on type '__DefineProps<ComboboxAnchorProps, never>'.\nType '\"as\"' is not assignable to type 'never'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<ComboboxArrowProps>, \"as\" | \"height\" | \"width\"> & {}'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'asChild' does not exist on type 'Omit<__LooseRequired<ComboboxArrowProps>, \"as\" | \"height\" | \"width\"> & {}'.\nProperty 'height' does not exist on type 'Omit<__LooseRequired<ComboboxArrowProps>, \"as\" | \"height\" | \"width\"> & {}'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'rounded' does not exist on type 'Omit<__LooseRequired<ComboboxArrowProps>, \"as\" | \"height\" | \"width\"> & {}'.\nProperty 'width' does not exist on type 'Omit<__LooseRequired<ComboboxArrowProps>, \"as\" | \"height\" | \"width\"> & {}'.\nType '\"as\"' is not assignable to type 'never'.\nProperty 'align' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'alignFlip' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'alignOffset' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'arrowPadding' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'avoidCollisions' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'collisionBoundary' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'collisionPadding' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'disableUpdateOnLayoutShift' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'hideShiftedArrow' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'hideWhenDetached' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'positionStrategy' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'prioritizePosition' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'reference' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'side' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'sideFlip' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'sideOffset' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'sticky' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'updatePositionStrategy' does not exist on type '__DefineProps<ComboboxContentProps, \"asChild\" | \"bodyLock\" | \"disableOutsidePointerEvents\" | \"forceMount\" | \"hideWhenEmpty\">'.\nProperty 'align' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'alignFlip' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'alignOffset' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'arrowPadding' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'avoidCollisions' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'collisionBoundary' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'collisionPadding' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'disableUpdateOnLayoutShift' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'hideShiftedArrow' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'hideWhenDetached' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'positionStrategy' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'prioritizePosition' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'reference' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'side' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'sideFlip' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'sideOffset' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'sticky' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'updatePositionStrategy' does not exist on type 'Omit<__LooseRequired<ComboboxContentImplProps>, \"position\"> & { position: \"inline\" | \"popper\"; }'.\nProperty 'defer' does not exist on type '__DefineProps<ComboboxPortalProps, never>'.\nProperty 'disabled' does not exist on type '__DefineProps<ComboboxPortalProps, never>'.\nProperty 'forceMount' does not exist on type '__DefineProps<ComboboxPortalProps, never>'.\nProperty 'to' does not exist on type '__DefineProps<ComboboxPortalProps, never>'."
       ]
     },
     {
@@ -608,7 +607,7 @@
       "file": "packages/core/src/Combobox/story/ComboboxVirtual.story.vue",
       "diagnostics": [
         "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
-        "error:50:51 [TS7006] Parameter 'opt' implicitly has an 'any' type.",
+        "error:50:33 [TS7006] Parameter 'opt' implicitly has an 'any' type.",
         "error:62:24 [TS18047] 'option' is possibly 'null'.",
         "error:62:31 [TS2339] Property 'label' does not exist on type 'string | number | bigint | Record<string, any>'.\nProperty 'label' does not exist on type 'string'."
       ]
@@ -1344,8 +1343,7 @@
       "file": "packages/core/src/HoverCard/HoverCardTrigger.vue",
       "diagnostics": [
         "error:38:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<HoverCardTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<HoverCardTriggerProps>, \"as\"> & {}'.",
-        "error:38:13 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<HoverCardTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<HoverCardTriggerProps>, \"as\"> & {}'.",
-        "error:38:15 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<HoverCardTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<HoverCardTriggerProps>, \"as\"> & {}'."
+        "error:38:13 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<HoverCardTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<HoverCardTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -1427,22 +1425,22 @@
     {
       "file": "packages/core/src/Listbox/story/ListboxVirtual.story.vue",
       "diagnostics": [
-        "error:24:47 [TS7006] Parameter 'opt' implicitly has an 'any' type.",
+        "error:24:29 [TS7006] Parameter 'opt' implicitly has an 'any' type.",
         "error:30:18 [TS18047] 'option' is possibly 'null'.",
         "error:30:25 [TS2339] Property 'label' does not exist on type 'string | number | bigint | Record<string, any>'.\nProperty 'label' does not exist on type 'string'.",
-        "error:48:55 [TS7006] Parameter 'option' implicitly has an 'any' type.",
+        "error:48:31 [TS7006] Parameter 'option' implicitly has an 'any' type.",
         "error:55:20 [TS18047] 'option' is possibly 'null'.",
         "error:55:27 [TS2339] Property 'label' does not exist on type 'string | number | bigint | Record<string, any>'.\nProperty 'label' does not exist on type 'string'.",
-        "error:69:55 [TS7006] Parameter 'option' implicitly has an 'any' type.",
+        "error:69:31 [TS7006] Parameter 'option' implicitly has an 'any' type.",
         "error:76:20 [TS18047] 'option' is possibly 'null'.",
         "error:76:27 [TS2339] Property 'label' does not exist on type 'string | number | bigint | Record<string, any>'.\nProperty 'label' does not exist on type 'string'.",
-        "error:90:55 [TS7006] Parameter 'option' implicitly has an 'any' type.",
+        "error:90:31 [TS7006] Parameter 'option' implicitly has an 'any' type.",
         "error:97:20 [TS18047] 'option' is possibly 'null'.",
         "error:97:27 [TS2339] Property 'label' does not exist on type 'string | number | bigint | Record<string, any>'.\nProperty 'label' does not exist on type 'string'.",
-        "error:111:55 [TS7006] Parameter 'option' implicitly has an 'any' type.",
+        "error:111:31 [TS7006] Parameter 'option' implicitly has an 'any' type.",
         "error:118:20 [TS18047] 'option' is possibly 'null'.",
         "error:118:27 [TS2339] Property 'label' does not exist on type 'string | number | bigint | Record<string, any>'.\nProperty 'label' does not exist on type 'string'.",
-        "error:135:55 [TS7006] Parameter 'option' implicitly has an 'any' type.",
+        "error:135:31 [TS7006] Parameter 'option' implicitly has an 'any' type.",
         "error:142:20 [TS18047] 'option' is possibly 'null'.",
         "error:142:27 [TS2339] Property 'label' does not exist on type 'string | number | bigint | Record<string, any>'.\nProperty 'label' does not exist on type 'string'."
       ]
@@ -2513,10 +2511,8 @@
         "error:20:33 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<SelectTriggerProps>'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.\nProperty 'asChild' does not exist on type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.\nProperty 'reference' does not exist on type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.",
         "error:60:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.",
         "error:60:15 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.",
-        "error:60:53 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.",
         "error:71:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.",
-        "error:71:13 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.",
-        "error:71:15 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'."
+        "error:71:13 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3104,9 +3100,7 @@
       "diagnostics": [
         "error:114:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<TooltipTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<TooltipTriggerProps>, \"as\"> & {}'.",
         "error:114:13 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<TooltipTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<TooltipTriggerProps>, \"as\"> & {}'.",
-        "error:114:15 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<TooltipTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<TooltipTriggerProps>, \"as\"> & {}'.",
-        "error:115:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<TooltipTriggerProps>, \"as\"> & {}'.",
-        "error:115:32 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<TooltipTriggerProps>, \"as\"> & {}'."
+        "error:115:24 [TS2339] Property 'asChild' does not exist on type 'Omit<__LooseRequired<TooltipTriggerProps>, \"as\"> & {}'."
       ]
     },
     {
@@ -3154,41 +3148,41 @@
       "file": "packages/core/src/Tree/story/TreeAsync.story.vue",
       "diagnostics": [
         "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
-        "error:77:42 [TS7006] Parameter 'item' implicitly has an 'any' type."
+        "error:77:20 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {
       "file": "packages/core/src/Tree/story/TreeBasic.story.vue",
       "diagnostics": [
         "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
-        "error:17:40 [TS7006] Parameter 'item' implicitly has an 'any' type."
+        "error:17:20 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {
       "file": "packages/core/src/Tree/story/TreeCheckbox.story.vue",
       "diagnostics": [
         "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
-        "error:21:40 [TS7006] Parameter 'item' implicitly has an 'any' type."
+        "error:21:20 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {
       "file": "packages/core/src/Tree/story/TreeNested.story.vue",
       "diagnostics": [
-        "error:16:40 [TS7006] Parameter 'item' implicitly has an 'any' type."
+        "error:16:20 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {
       "file": "packages/core/src/Tree/story/TreeVirtual.story.vue",
       "diagnostics": [
         "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
-        "error:30:40 [TS7006] Parameter 'item' implicitly has an 'any' type."
+        "error:30:20 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {
       "file": "packages/core/src/Tree/story/_Tree.vue",
       "diagnostics": [
         "error:3:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
-        "error:75:36 [TS7006] Parameter 'item' implicitly has an 'any' type."
+        "error:75:16 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {
@@ -3344,7 +3338,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 335,
+  "errorCount": 329,
   "warningCount": 0,
   "fileCount": 700
 }

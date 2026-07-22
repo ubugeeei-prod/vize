@@ -224,7 +224,7 @@
         "error:56:29 [TS2554] Expected 2 arguments, but got 1.",
         "error:69:39 [TS7006] Parameter 'i' implicitly has an 'any' type.",
         "error:75:36 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:90:23 [TS2322] Type 'string | number | symbol' is not assignable to type 'KeyFieldValue<any> | undefined'.\nType 'number' is not assignable to type 'KeyFieldValue<any> | undefined'."
+        "error:90:12 [TS2322] Type 'string | number | symbol' is not assignable to type 'KeyFieldValue<any> | undefined'.\nType 'number' is not assignable to type 'KeyFieldValue<any> | undefined'."
       ]
     },
     {

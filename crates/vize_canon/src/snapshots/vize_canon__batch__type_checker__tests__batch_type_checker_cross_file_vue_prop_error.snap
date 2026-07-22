@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/batch/type_checker/tests.rs
+assertion_line: 1217
 expression: snapshot
 ---
 [
@@ -8,6 +9,6 @@ expression: snapshot
         Some(
             2322,
         ),
-        "6:18:error Type 'string' is not assignable to type 'number'.",
+        "6:11:error Type 'string' is not assignable to type 'number'.",
     ),
 ]
