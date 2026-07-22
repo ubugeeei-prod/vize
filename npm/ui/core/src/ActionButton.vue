@@ -7,7 +7,7 @@ import type { PrimitiveAs, PrimitiveElement } from "./primitive.ts";
 
 const {
   as = "button",
-  native,
+  native = undefined,
   type = "button",
   disabled = false,
   loading = false,

@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
 import { readFile, stat } from "node:fs/promises";
-import test from "node:test";
+// Paths are resolved from the package cwd: the runner virtualizes import.meta.url.
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+import { test } from "vite-plus/test";
 import { createPDFSource } from "./pdf-source.ts";
 import { normalizeMediaSource } from "./media-source.ts";
 import type { MediaSourceKind } from "./media-source.ts";
 
-void test("accepts relative, encrypted, and object media sources", () => {
+test("accepts relative, encrypted, and object media sources", () => {
   for (const [source, kind] of [
     ["/audio/intro.mp3", "audio"],
     ["../video/intro.mp4", "video"],
@@ -17,7 +20,7 @@ void test("accepts relative, encrypted, and object media sources", () => {
   }
 });
 
-void test("requires an explicit opt-in for unencrypted remote sources", () => {
+test("requires an explicit opt-in for unencrypted remote sources", () => {
   const source = "http://localhost:4173/video.mp4";
   assert.throws(
     () => normalizeMediaSource(source, { kind: "video" }),
@@ -26,7 +29,7 @@ void test("requires an explicit opt-in for unencrypted remote sources", () => {
   assert.equal(normalizeMediaSource(source, { kind: "video", allowInsecure: true }), source);
 });
 
-void test("accepts only category-matched inline data", () => {
+test("accepts only category-matched inline data", () => {
   const sources = [
     ["data:audio/ogg;base64,T2dnUw==", "audio"],
     ["data:image/png;base64,iVBORw0KGgo=", "image"],
@@ -50,7 +53,7 @@ void test("accepts only category-matched inline data", () => {
   );
 });
 
-void test("rejects malformed and script-capable sources", () => {
+test("rejects malformed and script-capable sources", () => {
   for (const source of [
     "",
     "javascript:alert(1)",
@@ -78,7 +81,7 @@ void test("rejects malformed and script-capable sources", () => {
   );
 });
 
-void test("sets and replaces PDF page fragments", () => {
+test("sets and replaces PDF page fragments", () => {
   assert.equal(createPDFSource("/report.pdf", { page: 3 }), "/report.pdf#page=3");
   assert.equal(
     createPDFSource("/report.pdf#zoom=page-width&page=2&view=Fit", { page: 7 }),
@@ -94,21 +97,19 @@ void test("sets and replaces PDF page fragments", () => {
   }
 });
 
-void test("publishes independent ESM entries and declarations", async () => {
-  const packageJson = JSON.parse(
-    await readFile(new URL("../package.json", import.meta.url), "utf8"),
-  ) as {
+test("publishes independent ESM entries and declarations", async () => {
+  const packageJson = JSON.parse(await readFile(path.resolve("package.json"), "utf8")) as {
     readonly exports: Readonly<Record<string, { readonly import: string; readonly types: string }>>;
   };
 
   for (const exportName of ["./media", "./media/pdf", "./media/source"]) {
     const entry = packageJson.exports[exportName];
     if (entry === undefined) assert.fail(`Missing package export: ${exportName}`);
-    await stat(new URL(`..${entry.import.slice(1)}`, import.meta.url));
-    await stat(new URL(`..${entry.types.slice(1)}`, import.meta.url));
+    await stat(path.resolve(entry.import));
+    await stat(path.resolve(entry.types));
   }
 
-  const distributionUrl = new URL("../dist/media-source.mjs", import.meta.url);
+  const distributionUrl = pathToFileURL(path.resolve("dist/media-source.mjs"));
   const sourceEntry = (await import(distributionUrl.href)) as {
     readonly normalizeMediaSource: unknown;
   };

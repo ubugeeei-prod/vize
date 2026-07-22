@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+// Paths are resolved from the package cwd: the runner virtualizes import.meta.url.
+import path from "node:path";
+
+import { test } from "vite-plus/test";
 
 import { formatSfcLintResults, lintSfcFiles } from "@vizejs/ui-tooling/lint-sfc";
 import type { SfcLintFunction } from "@vizejs/ui-tooling/lint-sfc";
 
-void test("discovers every SFC with the opinionated Vize contract", async () => {
+test("discovers every SFC with the opinionated Vize contract", async () => {
   const requests: Parameters<SfcLintFunction>[1][] = [];
   const lint: SfcLintFunction = (_source, options) => {
     requests.push(options);
@@ -21,31 +24,16 @@ void test("discovers every SFC with the opinionated Vize contract", async () => 
       "src/VisuallyHidden.vue",
     ],
   );
-  assert.deepEqual(requests, [
-    {
-      filename: new URL("./ActionButton.vue", import.meta.url).pathname,
-      preset: "opinionated",
-      typeAware: true,
-      helpLevel: "short",
-    },
-    {
-      filename: new URL("./CheckboxControl.vue", import.meta.url).pathname,
-      preset: "opinionated",
-      typeAware: true,
-      helpLevel: "short",
-    },
-    {
-      filename: new URL("./PrimitiveElement.vue", import.meta.url).pathname,
-      preset: "opinionated",
-      typeAware: true,
-      helpLevel: "short",
-    },
-    {
-      filename: new URL("./VisuallyHidden.vue", import.meta.url).pathname,
-      preset: "opinionated",
-      typeAware: true,
-      helpLevel: "short",
-    },
-  ]);
+  assert.deepEqual(
+    requests,
+    ["ActionButton.vue", "CheckboxControl.vue", "PrimitiveElement.vue", "VisuallyHidden.vue"].map(
+      (basename) => ({
+        filename: path.resolve("src", basename),
+        preset: "opinionated" as const,
+        typeAware: true as const,
+        helpLevel: "short" as const,
+      }),
+    ),
+  );
   assert.equal(formatSfcLintResults(results), "");
 });
