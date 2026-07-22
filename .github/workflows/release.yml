@@ -9,8 +9,7 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
-permissions:
-  contents: read
+permissions: { contents: read }
 
 env:
   CARGO_INCREMENTAL: 0
@@ -705,7 +704,14 @@ jobs:
   release-npm-vite-plugin:
     name: Release @vizejs/vite-plugin to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, release-npm-cli, smoke-release-packages, release-preflight]
+    needs:
+      [
+        build-release-packages,
+        release-npm-native,
+        release-npm-cli,
+        smoke-release-packages,
+        release-preflight,
+      ]
     timeout-minutes: 15
     environment: npm
     permissions: { contents: read, id-token: write }
@@ -728,7 +734,14 @@ jobs:
   release-npm-oxlint-plugin:
     name: Release oxlint-plugin-vize to npm
     runs-on: ubuntu-24.04
-    needs: [plan-release-platforms, build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
+    needs:
+      [
+        plan-release-platforms,
+        build-release-packages,
+        release-npm-native,
+        smoke-release-packages,
+        release-preflight,
+      ]
     timeout-minutes: 15
     environment: npm
     permissions: { contents: read, id-token: write }
@@ -975,7 +988,16 @@ jobs:
   release-npm-nuxt:
     name: Release @vizejs/nuxt to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-vite-plugin, release-npm-vite-plugin-musea, release-npm-musea-nuxt, release-npm-cli, smoke-release-packages, release-preflight]
+    needs:
+      [
+        build-release-packages,
+        release-npm-vite-plugin,
+        release-npm-vite-plugin-musea,
+        release-npm-musea-nuxt,
+        release-npm-cli,
+        smoke-release-packages,
+        release-preflight,
+      ]
     timeout-minutes: 15
     environment: npm
     permissions: { contents: read, id-token: write }
