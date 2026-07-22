@@ -99,60 +99,45 @@ fn attr_sort_key(name: &str, merge_bind: bool) -> (u8, String) {
 
 /// Attribute sort priority mirroring patina's `vue/attribute-order` groups
 /// (the eslint-plugin-vue `vue/attributes-order` default), so default fmt
-/// output can never introduce that lint finding (#3251):
+/// output can never introduce that lint finding (#3251). Patina quirks are
+/// mirrored on purpose: `:ref`/`:id` are plain bindings, only `:key`/`:is`
+/// are special, and unmatched directives (`v-is`, `v-memo`) join the slots.
 ///
-/// 0. Definition: `is` / `:is`
-/// 1. List rendering: `v-for`
-/// 2. Conditionals: `v-if` / `v-else-if` / `v-else` / `v-show` / `v-cloak`
-/// 3. Render modifiers: `v-pre` / `v-once`
-/// 4. Global awareness: `id`
-/// 5. Unique attributes: `ref` / `key` / `:key`
-/// 6. Two-way binding: `v-model`
-/// 7. Other directives: `v-slot` / `#xxx` and custom (or unmatched built-in)
-///    directives such as `v-is` and `v-memo` -- exactly the names patina
-///    buckets as OtherDirectives.
-/// 8. Other attributes: everything bound or static that is not matched above.
-///    Bound (`:class`) and static (`class`) share the priority so related
-///    pairs stay adjacent; patina's quirks are mirrored on purpose (`:ref`
-///    and `:id` are plain bindings, only `:key`/`:is` are special).
-/// 9. Events: `@xxx` / `v-on`
-/// 10. Content: `v-html` / `v-text`
+/// 0 `is`/`:is`; 1 `v-for`; 2 conditionals `v-if`/`v-else-if`/`v-else`/
+/// `v-show`/`v-cloak`; 3 render modifiers `v-pre`/`v-once`; 4 `id`; 5 unique
+/// `ref`/`key`/`:key`; 6 `v-model`; 7 other directives `v-slot`/`#xxx`; 8 other
+/// attributes (bound `:class` and static `class` share a priority); 9 events
+/// `@xxx`/`v-on`; 10 content `v-html`/`v-text`.
 pub(crate) fn attribute_priority(name: &str) -> u8 {
-    if name == "is" || name == ":is" || name == "v-bind:is" {
+    if matches!(name, "is" | ":is" | "v-bind:is") {
         return 0;
     }
     if name == "v-for" {
         return 1;
     }
-    if name == "v-if"
-        || name == "v-else-if"
-        || name == "v-else"
-        || name == "v-show"
-        || name == "v-cloak"
-    {
+    if matches!(name, "v-if" | "v-else-if" | "v-else" | "v-show" | "v-cloak") {
         return 2;
     }
-    if name == "v-pre" || name == "v-once" {
+    if matches!(name, "v-pre" | "v-once") {
         return 3;
     }
     if name == "id" {
         return 4;
     }
-    if name == "ref" || name == "key" || name == ":key" || name == "v-bind:key" {
+    if matches!(name, "ref" | "key" | ":key" | "v-bind:key") {
         return 5;
     }
     if name.starts_with("v-model") {
         return 6;
     }
-    if name == "v-html" || name == "v-text" {
+    if matches!(name, "v-html" | "v-text") {
         return 10;
     }
-    // Events (checked before the generic directive fallback; `v-once` was
-    // matched above so the `v-on` prefix cannot swallow it).
+    // Events precede the directive fallback so `v-on` cannot swallow `v-once`.
     if name.starts_with('@') || name.starts_with("v-on") {
         return 9;
     }
-    // Slots and every other directive form patina calls OtherDirectives.
+    // Slots and every other directive form are patina's OtherDirectives.
     if name.starts_with('#') || name.starts_with("v-slot") {
         return 7;
     }
