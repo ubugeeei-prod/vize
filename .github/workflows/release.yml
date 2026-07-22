@@ -176,8 +176,7 @@ jobs:
     needs: [build-editor-extensions, release-preflight]
     timeout-minutes: 15
     environment: vscode-marketplace
-    permissions:
-      contents: read
+    permissions: { contents: read }
     env:
       VSCE_PAT: ${{ secrets.VSCE_PAT }}
     steps:
@@ -192,8 +191,7 @@ jobs:
         with:
           path: ~/.local/share/pnpm/store
           key: ${{ runner.os }}-pnpm-vscode-release-${{ hashFiles('.node-version') }}-v1
-          restore-keys: |
-            ${{ runner.os }}-pnpm-vscode-release-
+          restore-keys: ${{ runner.os }}-pnpm-vscode-release-
       - name: Download editor extension artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: editor-extensions, path: editor-extension-artifacts }
@@ -548,15 +546,11 @@ jobs:
 
       - name: Download vize native artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: bindings-*
-          path: npm/native/artifacts
+        with: { pattern: bindings-*, path: npm/native/artifacts }
 
       - name: Download fresco native artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: fresco-bindings-*
-          path: npm/fresco-native/artifacts
+        with: { pattern: fresco-bindings-*, path: npm/fresco-native/artifacts }
 
       - name: Apply slow platform release cadence
         run: node tools/github/release-platforms.mjs apply-cadence "${{ github.ref_name }}" npm/native/package.json npm/oxint/package.json
@@ -593,10 +587,7 @@ jobs:
             npm/ui/core
 
   release-preflight:
-    permissions:
-      actions: write
-      contents: read
-      issues: read
+    permissions: { actions: write, contents: read, issues: read }
     uses: ./.github/workflows/release-preflight.yml
   # npm Trusted Publishing/provenance currently rejects self-hosted runners.
   # Keep the publish edge on GitHub-hosted runners; build and smoke jobs stay on Blacksmith.
@@ -729,8 +720,7 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+        with: { persist-credentials: false }
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
@@ -759,8 +749,7 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+        with: { persist-credentials: false }
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
@@ -789,8 +778,7 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+        with: { persist-credentials: false }
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
@@ -813,8 +801,7 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+        with: { persist-credentials: false }
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
@@ -837,8 +824,7 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+        with: { persist-credentials: false }
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
@@ -861,8 +847,7 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+        with: { persist-credentials: false }
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
@@ -886,8 +871,7 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+        with: { persist-credentials: false }
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
@@ -910,8 +894,7 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+        with: { persist-credentials: false }
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
@@ -934,8 +917,7 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+        with: { persist-credentials: false }
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
@@ -958,8 +940,7 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+        with: { persist-credentials: false }
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
@@ -982,8 +963,7 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+        with: { persist-credentials: false }
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
@@ -1015,8 +995,7 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+        with: { persist-credentials: false }
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
@@ -1210,8 +1189,7 @@ jobs:
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+        with: { persist-credentials: false }
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
