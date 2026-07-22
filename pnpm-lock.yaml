@@ -69,6 +69,31 @@ catalogs:
     oxlint:
       specifier: 1.64.0
       version: 1.64.0
+  native-binaries:
+    '@vizejs/native-darwin-arm64':
+      specifier: 0.299.0
+      version: 0.108.0
+    '@vizejs/native-darwin-x64':
+      specifier: 0.299.0
+      version: 0.108.0
+    '@vizejs/native-linux-arm64-gnu':
+      specifier: 0.299.0
+      version: 0.108.0
+    '@vizejs/native-linux-arm64-musl':
+      specifier: 0.299.0
+      version: 0.108.0
+    '@vizejs/native-linux-x64-gnu':
+      specifier: 0.299.0
+      version: 0.108.0
+    '@vizejs/native-linux-x64-musl':
+      specifier: 0.299.0
+      version: 0.108.0
+    '@vizejs/native-win32-arm64-msvc':
+      specifier: 0.299.0
+      version: 0.108.0
+    '@vizejs/native-win32-x64-msvc':
+      specifier: 0.299.0
+      version: 0.108.0
   nuxt-module:
     '@nuxt/kit':
       specifier: 3.11.2
