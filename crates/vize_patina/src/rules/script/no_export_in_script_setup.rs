@@ -14,6 +14,11 @@
 //! `defineSlots`, `defineModel`, `withDefaults`) or a top-level `await`, both of
 //! which are only valid inside `<script setup>`.
 //!
+//! Type-only exports (`export type`, `export interface`, ambient `export
+//! declare`, all-type specifier lists, and `export type * from`) are erased at
+//! compile time and never reach the compiled `setup()`, so they stay allowed —
+//! matching what `@vue/compiler-sfc` accepts.
+//!
 //! ## Invalid
 //! ```vue
 //! <script setup>
@@ -25,8 +30,9 @@
 //!
 //! ## Valid
 //! ```vue
-//! <script setup>
-//! const props = defineProps<{ count: number }>()
+//! <script setup lang="ts">
+//! export type Props = { count: number } // type-only, erased at compile time
+//! const props = defineProps<Props>()
 //! const helper = () => props.count * 2
 //! defineExpose({ helper })
 //! </script>
@@ -39,7 +45,7 @@
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
-use oxc_ast::ast::{Program, Statement};
+use oxc_ast::ast::{Declaration, ExportNamedDeclaration, Program, Statement};
 use oxc_span::Span;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -95,13 +101,58 @@ impl ScriptRule for NoExportInScriptSetup {
     }
 }
 
-/// What kind of top-level export a statement is, if any.
+/// What kind of runtime top-level export a statement is, if any. Type-only
+/// exports return `None`: they are erased at compile time and legal in
+/// `<script setup>`.
 fn export_statement(statement: &Statement<'_>) -> Option<(Span, &'static str)> {
     match statement {
-        Statement::ExportNamedDeclaration(export) => Some((export.span, "named export")),
+        Statement::ExportNamedDeclaration(export) => {
+            if is_type_only_named_export(export) {
+                None
+            } else {
+                Some((export.span, "named export"))
+            }
+        }
         Statement::ExportDefaultDeclaration(export) => Some((export.span, "default export")),
-        Statement::ExportAllDeclaration(export) => Some((export.span, "re-export")),
+        Statement::ExportAllDeclaration(export) => {
+            if export.export_kind.is_type() {
+                None
+            } else {
+                Some((export.span, "re-export"))
+            }
+        }
         _ => None,
+    }
+}
+
+/// Whether a named export lives entirely in type space.
+///
+/// `@vue/compiler-sfc` only rejects exports that would have to survive into
+/// the compiled `setup()` function. `export type ...`, `export interface`,
+/// ambient `export declare ...`, and specifier lists where every specifier is
+/// `type` are all erased by the TypeScript compiler, so they never produce a
+/// runtime export. Enums are excluded: they emit a runtime object.
+fn is_type_only_named_export(export: &ExportNamedDeclaration<'_>) -> bool {
+    if export.export_kind.is_type() {
+        return true;
+    }
+    match &export.declaration {
+        Some(Declaration::TSTypeAliasDeclaration(_) | Declaration::TSInterfaceDeclaration(_)) => {
+            true
+        }
+        Some(Declaration::VariableDeclaration(declaration)) => declaration.declare,
+        Some(Declaration::FunctionDeclaration(declaration)) => declaration.declare,
+        Some(Declaration::ClassDeclaration(declaration)) => declaration.declare,
+        Some(Declaration::TSEnumDeclaration(declaration)) => declaration.declare,
+        Some(Declaration::TSModuleDeclaration(declaration)) => declaration.declare,
+        Some(_) => false,
+        None => {
+            !export.specifiers.is_empty()
+                && export
+                    .specifiers
+                    .iter()
+                    .all(|specifier| specifier.export_kind.is_type())
+        }
     }
 }
 
@@ -175,176 +226,5 @@ fn statement_has_top_level_await(statement: &Statement<'_>) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::NoExportInScriptSetup;
-    use crate::rules::script::ScriptLinter;
-
-    fn create_linter() -> ScriptLinter {
-        let mut linter = ScriptLinter::new();
-        linter.add_rule(Box::new(NoExportInScriptSetup));
-        linter
-    }
-
-    // --- Invalid: exports inside a recognizable <script setup> ---
-
-    #[test]
-    fn test_invalid_named_export_with_macro() {
-        let source = r#"
-const props = defineProps<{ count: number }>()
-export const helper = () => props.count
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
-    }
-
-    #[test]
-    fn test_invalid_default_export_with_macro() {
-        let source = r#"
-defineProps<{ count: number }>()
-export default {}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_invalid_export_all_with_macro() {
-        let source = r#"
-defineEmits(['change'])
-export * from './helpers'
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_invalid_export_named_specifier_with_macro() {
-        let source = r#"
-defineExpose({})
-const a = 1
-export { a }
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_invalid_multiple_exports_all_reported() {
-        let source = r#"
-const props = defineProps<{ count: number }>()
-export const a = 1
-export function b() {}
-export default {}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 3);
-    }
-
-    #[test]
-    fn test_invalid_export_detected_via_top_level_await() {
-        // No compiler macro, but a top-level await proves this is <script setup>.
-        let source = r#"
-const data = await fetch('/api')
-export const cached = data
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_invalid_export_type_with_macro() {
-        // `export type` is still a top-level ExportNamedDeclaration.
-        let source = r#"
-defineProps<{ count: number }>()
-export type Foo = { a: number }
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    // --- Valid: normal <script> (no setup markers) is never flagged ---
-
-    #[test]
-    fn test_valid_export_default_in_normal_script() {
-        // A normal <script> exports its component options; not a <script setup>.
-        let source = r#"
-export default {
-  name: 'MyComponent',
-  data() {
-    return { count: 0 }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_named_export_in_normal_script() {
-        let source = r#"
-export const API_URL = 'https://example.com'
-export function helper() {
-  return 1
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_export_all_in_normal_script() {
-        let source = "export * from './helpers'\n";
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    // --- Valid: <script setup> without any export ---
-
-    #[test]
-    fn test_valid_script_setup_no_export() {
-        let source = r#"
-import { ref } from 'vue'
-const props = defineProps<{ count: number }>()
-const doubled = ref(props.count * 2)
-defineExpose({ doubled })
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_import_is_not_export() {
-        // Imports are allowed in <script setup>; only exports are flagged.
-        let source = r#"
-import Foo from './Foo.vue'
-import { bar } from './bar'
-const props = defineProps<{ count: number }>()
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_macro_substring_in_string_no_export() {
-        // The macro byte-prefilter may trip on a string literal, but with no
-        // actual export there is nothing to report.
-        let source = r#"
-const label = 'defineProps demo'
-const x = 1
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_nested_export_keyword_not_top_level() {
-        // `export` only inside a string is not a real export statement.
-        let source = r#"
-defineProps<{ count: number }>()
-const code = 'export default {}'
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-}
+#[path = "no_export_in_script_setup_tests.rs"]
+mod tests;
