@@ -1,22 +1,21 @@
 use super::{LintResult, Linter, severity::append_with_rule_overrides};
 use crate::rules::script::{ScriptLintResult, SfcScriptContext, script_source_type};
-use memchr::memmem;
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
 use vize_carton::profile;
 
 mod html_scripts;
+mod prefilter;
 mod registry;
 
 use html_scripts::extract_inline_scripts;
-pub use registry::BuiltinScriptRuleMeta;
-use registry::{
-    ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry,
-    RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS, RULE_PINIA_PREFER_STORE_TO_REFS,
-    RULE_PREFER_COMPUTED, RULE_PREFER_IMPORT_FROM_VUE, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
-    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+use prefilter::{
+    descriptor_scripts_may_match_ecosystem_rule, has_only_active_ecosystem_script_rules,
+    script_rule_may_match,
 };
+pub use registry::BuiltinScriptRuleMeta;
+use registry::{ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry};
 
 #[cfg(test)]
 use registry::OPT_IN_SCRIPT_RULE_NAMES;
@@ -312,66 +311,4 @@ pub(crate) fn append_builtin_script_rules_for_source(
             result,
         );
     }
-}
-
-fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
-    let bytes = source.as_bytes();
-    match rule_name {
-        RULE_PINIA_PREFER_STORE_TO_REFS => memmem::find(bytes, b"Store").is_some(),
-        RULE_VUE_ROUTER_PREFER_NAMED_PUSH => {
-            (memmem::find(bytes, b".push").is_some() || memmem::find(bytes, b".replace").is_some())
-                && (memmem::find(bytes, b"'/").is_some() || memmem::find(bytes, b"\"/").is_some())
-                && (memmem::find(bytes, b"router").is_some()
-                    || memmem::find(bytes, b"Router").is_some())
-        }
-        RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT => {
-            memmem::find(bytes, b"toMatchSnapshot").is_some()
-                && memmem::find(bytes, b".html").is_some()
-        }
-        RULE_PREFER_COMPUTED => memmem::find(bytes, b"watch").is_some(),
-        RULE_PREFER_IMPORT_FROM_VUE => memmem::find(bytes, b"@vue/").is_some(),
-        RULE_NO_RESTRICTED_GLOBALS => {
-            memmem::find(bytes, b"process").is_some()
-                || memmem::find(bytes, b"localStorage").is_some()
-                || memmem::find(bytes, b"sessionStorage").is_some()
-        }
-        RULE_NO_RESTRICTED_MEMBERS => false,
-        _ => true,
-    }
-}
-
-fn descriptor_scripts_may_match_ecosystem_rule(descriptor: &SfcDescriptor<'_>) -> bool {
-    descriptor
-        .script
-        .as_ref()
-        .is_some_and(|script| source_may_match_ecosystem_rule(script.content.as_ref()))
-        || descriptor
-            .script_setup
-            .as_ref()
-            .is_some_and(|script| source_may_match_ecosystem_rule(script.content.as_ref()))
-}
-
-fn is_ecosystem_script_rule(rule_name: &str) -> bool {
-    matches!(
-        rule_name,
-        RULE_PINIA_PREFER_STORE_TO_REFS
-            | RULE_VUE_ROUTER_PREFER_NAMED_PUSH
-            | RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT
-    )
-}
-
-fn has_only_active_ecosystem_script_rules(linter: &Linter) -> bool {
-    active_builtin_script_rule_entries(linter)
-        .all(|entry| is_ecosystem_script_rule(entry.rule_name))
-}
-
-fn source_may_match_ecosystem_rule(source: &str) -> bool {
-    let bytes = source.as_bytes();
-    memmem::find(bytes, b"Store").is_some()
-        || ((memmem::find(bytes, b".push").is_some() || memmem::find(bytes, b".replace").is_some())
-            && (memmem::find(bytes, b"'/").is_some() || memmem::find(bytes, b"\"/").is_some())
-            && (memmem::find(bytes, b"router").is_some()
-                || memmem::find(bytes, b"Router").is_some()))
-        || (memmem::find(bytes, b"toMatchSnapshot").is_some()
-            && memmem::find(bytes, b".html").is_some())
 }

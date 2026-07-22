@@ -122,19 +122,15 @@ pub(crate) fn script_source_type() -> SourceType {
 /// Cross-block context available to a script rule when the linted block is
 /// part of an SFC.
 ///
-/// Script rules run against a single `<script>` / `<script setup>` block and
-/// normally cannot observe the rest of the file. Rules that must correlate a
-/// script declaration with `<template>` usage (e.g.
-/// `script/no-unused-emit-declarations`, whose declared events may only be
-/// emitted from template handlers) receive the raw template source here. The
-/// template is provided as source text rather than an AST: patina's template
-/// and script passes are separate, and directive expressions are opaque
-/// strings even in the template AST — the same cross-block trade-off
-/// `vue/no-unused-refs` makes in the other direction.
-///
-/// The `Default` value (no template) is what standalone entry points (inline
-/// HTML scripts, [`ScriptLinter::lint`]) pass, so rules must treat a missing
-/// template as "no template usage observable", never as an error.
+/// Script rules see a single `<script>` / `<script setup>` block and normally
+/// cannot observe the rest of the file. Rules that correlate a script
+/// declaration with `<template>` usage (e.g. `script/no-unused-emit-declarations`,
+/// whose declared events may only be emitted from template handlers) read the
+/// raw template source here, provided as text rather than an AST since patina's
+/// template and script passes are separate. The `Default` value (no template)
+/// is what standalone entry points (inline HTML scripts, [`ScriptLinter::lint`])
+/// pass, so rules must treat a missing template as "no template usage
+/// observable", never as an error.
 #[derive(Clone, Copy, Default)]
 pub struct SfcScriptContext<'a> {
     /// Raw `<template>` block content, when the SFC declares a template.
@@ -178,14 +174,13 @@ pub trait ScriptRule: Send + Sync {
     /// Check an already-parsed script program together with cross-block SFC
     /// context (see [`SfcScriptContext`]).
     ///
-    /// Every AST-rule dispatch goes through this variant — the SFC engine
-    /// passes real context, standalone entry points pass the empty default —
-    /// so a rule that correlates script declarations with `<template>` usage
-    /// overrides it instead of [`ScriptRule::check_program`]. The default
-    /// ignores the context and delegates to `check_program`, keeping
-    /// single-block rules unchanged. A rule overriding this variant must also
-    /// override `check_program` to delegate here with an empty context, so the
-    /// parse-owning [`ScriptRule::check`] path stays functional.
+    /// Every AST-rule dispatch goes through this variant (the SFC engine passes
+    /// real context, standalone entry points the empty default), so a rule that
+    /// correlates script declarations with `<template>` usage overrides it
+    /// instead of [`ScriptRule::check_program`]. The default delegates to
+    /// `check_program`, keeping single-block rules unchanged; a rule overriding
+    /// it must also override `check_program` to delegate here with an empty
+    /// context so the parse-owning [`ScriptRule::check`] path stays functional.
     fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
