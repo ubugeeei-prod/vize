@@ -67,12 +67,11 @@ pub(super) fn has_only_active_ecosystem_script_rules(linter: &Linter) -> bool {
 }
 
 fn source_may_match_ecosystem_rule(source: &str) -> bool {
-    let bytes = source.as_bytes();
-    memmem::find(bytes, b"Store").is_some()
-        || ((memmem::find(bytes, b".push").is_some() || memmem::find(bytes, b".replace").is_some())
-            && (memmem::find(bytes, b"'/").is_some() || memmem::find(bytes, b"\"/").is_some())
-            && (memmem::find(bytes, b"router").is_some()
-                || memmem::find(bytes, b"Router").is_some()))
-        || (memmem::find(bytes, b"toMatchSnapshot").is_some()
-            && memmem::find(bytes, b".html").is_some())
+    [
+        RULE_PINIA_PREFER_STORE_TO_REFS,
+        RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
+        RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+    ]
+    .into_iter()
+    .any(|rule_name| script_rule_may_match(rule_name, source))
 }
