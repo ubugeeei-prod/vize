@@ -135,10 +135,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          cache: true
-          run-install: false
+        with: { node-version-file: ".node-version", cache: true, run-install: false }
 
       - name: Install JS dependencies
         run: vp install --workspace-root --frozen-lockfile --prefer-offline
@@ -189,9 +186,7 @@ jobs:
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
       - name: Cache pnpm store for VS Code extension tooling
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
@@ -202,9 +197,7 @@ jobs:
             ${{ runner.os }}-pnpm-vscode-release-
       - name: Download editor extension artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: editor-extensions
-          path: editor-extension-artifacts
+        with: { name: editor-extensions, path: editor-extension-artifacts }
       - name: Require VS Code Marketplace credentials
         run: |
           if [ -z "${VSCE_PAT:-}" ]; then
@@ -223,10 +216,7 @@ jobs:
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          cache: true
-          run-install: false
+        with: { node-version-file: ".node-version", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Install package build dependencies
@@ -376,9 +366,7 @@ jobs:
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
 
       - name: Smoke @vizejs/wasm package
         run: node tools/npm/smoke-wasm-package.mjs npm/wasm
@@ -409,10 +397,7 @@ jobs:
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          cache: true
-          run-install: false
+        with: { node-version-file: ".node-version", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Install dependencies
@@ -504,10 +489,7 @@ jobs:
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          cache: true
-          run-install: false
+        with: { node-version-file: ".node-version", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Install native package tooling dependencies
@@ -515,63 +497,43 @@ jobs:
 
       - name: Download vize CLI package artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-vize
-          path: npm/cli
+        with: { name: release-package-vize, path: npm/cli }
 
       - name: Download Vite plugin artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-vite-plugin-vize
-          path: npm/builder/vite
+        with: { name: release-package-vite-plugin-vize, path: npm/builder/vite }
 
       - name: Download Oxlint plugin artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-oxlint-plugin-vize
-          path: npm/oxint
+        with: { name: release-package-oxlint-plugin-vize, path: npm/oxint }
 
       - name: Download unplugin artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-unplugin-vize
-          path: npm/builder/unplugin
+        with: { name: release-package-unplugin-vize, path: npm/builder/unplugin }
 
       - name: Download Fresco artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-fresco
-          path: npm/fresco
+        with: { name: release-package-fresco, path: npm/fresco }
 
       - name: Download Musea MCP server artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-musea-mcp-server
-          path: npm/mcp-musea
+        with: { name: release-package-musea-mcp-server, path: npm/mcp-musea }
 
       - name: Download Musea Vite plugin artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-vite-plugin-musea
-          path: npm/builder/vite-musea
+        with: { name: release-package-vite-plugin-musea, path: npm/builder/vite-musea }
 
       - name: Download Rspack plugin artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-rspack-vize-plugin
-          path: npm/builder/rspack
+        with: { name: release-package-rspack-vize-plugin, path: npm/builder/rspack }
 
       - name: Download Musea Nuxt artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-musea-nuxt
-          path: npm/framework/musea-nuxt
+        with: { name: release-package-musea-nuxt, path: npm/framework/musea-nuxt }
 
       - name: Download Nuxt artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-nuxt
-          path: npm/framework/nuxt
+        with: { name: release-package-nuxt, path: npm/framework/nuxt }
 
       - name: Download vize native artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -633,17 +595,12 @@ jobs:
     needs: [plan-release-platforms, build-native-all, release-preflight]
     timeout-minutes: 30
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          cache: true
-          run-install: false
+        with: { node-version-file: ".node-version", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Install dependencies
@@ -688,17 +645,12 @@ jobs:
     needs: [build-native-all, release-preflight]
     timeout-minutes: 20
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          cache: true
-          run-install: false
+        with: { node-version-file: ".node-version", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Install dependencies
@@ -729,23 +681,17 @@ jobs:
     needs: [build-wasm-package, release-preflight]
     timeout-minutes: 30
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/setup-moonbit
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
 
       - name: Download prebuilt WASM package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-vize-wasm
-          path: npm/wasm
+        with: { name: release-package-vize-wasm, path: npm/wasm }
 
       - name: Smoke @vizejs/wasm package
         run: node tools/npm/smoke-wasm-package.mjs npm/wasm
@@ -759,35 +705,22 @@ jobs:
   release-npm-vite-plugin:
     name: Release @vizejs/vite-plugin to npm
     runs-on: ubuntu-24.04
-    needs:
-      [
-        build-release-packages,
-        release-npm-native,
-        release-npm-cli,
-        smoke-release-packages,
-        release-preflight,
-      ]
+    needs: [build-release-packages, release-npm-native, release-npm-cli, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-vite-plugin-vize
-          path: npm/builder/vite
+        with: { name: release-package-vite-plugin-vize, path: npm/builder/vite }
 
       - name: Publish @vizejs/vite-plugin
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/vite --provenance
@@ -795,35 +728,22 @@ jobs:
   release-npm-oxlint-plugin:
     name: Release oxlint-plugin-vize to npm
     runs-on: ubuntu-24.04
-    needs:
-      [
-        plan-release-platforms,
-        build-release-packages,
-        release-npm-native,
-        smoke-release-packages,
-        release-preflight,
-      ]
+    needs: [plan-release-platforms, build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-oxlint-plugin-vize
-          path: npm/oxint
+        with: { name: release-package-oxlint-plugin-vize, path: npm/oxint }
 
       - name: Inject native binding package versions
         run: moon run --target native tools/moon/cmd/inject_native_optional_deps -- npm/oxint/package.json npm/native/package.json --print
@@ -841,25 +761,19 @@ jobs:
     needs: [build-release-packages, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Download prebuilt package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-marquette
-          path: npm/marquette
+        with: { name: release-package-marquette, path: npm/marquette }
 
       - name: Publish @vizejs/marquette
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/marquette --provenance
@@ -871,25 +785,19 @@ jobs:
     needs: [build-release-packages, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Download prebuilt package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-composable
-          path: npm/compose/core
+        with: { name: release-package-composable, path: npm/compose/core }
 
       - name: Publish @vizejs/composable
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/compose/core --provenance
@@ -901,25 +809,19 @@ jobs:
     needs: [build-release-packages, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Download prebuilt package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-ui
-          path: npm/ui/core
+        with: { name: release-package-ui, path: npm/ui/core }
 
       - name: Publish @vizejs/ui
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/ui/core --provenance
@@ -931,25 +833,19 @@ jobs:
     needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-unplugin-vize
-          path: npm/builder/unplugin
+        with: { name: release-package-unplugin-vize, path: npm/builder/unplugin }
 
       - name: Publish @vizejs/unplugin
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/unplugin --provenance
@@ -962,25 +858,19 @@ jobs:
       [build-release-packages, release-npm-fresco-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-fresco
-          path: npm/fresco
+        with: { name: release-package-fresco, path: npm/fresco }
 
       - name: Publish @vizejs/fresco
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/fresco --provenance
@@ -992,25 +882,19 @@ jobs:
     needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-musea-mcp-server
-          path: npm/mcp-musea
+        with: { name: release-package-musea-mcp-server, path: npm/mcp-musea }
 
       - name: Publish @vizejs/musea-mcp-server
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/mcp-musea --provenance
@@ -1022,25 +906,19 @@ jobs:
     needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-vite-plugin-musea
-          path: npm/builder/vite-musea
+        with: { name: release-package-vite-plugin-musea, path: npm/builder/vite-musea }
 
       - name: Publish @vizejs/vite-plugin-musea
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/vite-musea --provenance
@@ -1052,25 +930,19 @@ jobs:
     needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-rspack-vize-plugin
-          path: npm/builder/rspack
+        with: { name: release-package-rspack-vize-plugin, path: npm/builder/rspack }
 
       - name: Publish @vizejs/rspack-plugin
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/rspack --provenance
@@ -1082,25 +954,19 @@ jobs:
     needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-musea-nuxt
-          path: npm/framework/musea-nuxt
+        with: { name: release-package-musea-nuxt, path: npm/framework/musea-nuxt }
 
       - name: Publish @vizejs/musea-nuxt
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/framework/musea-nuxt --provenance
@@ -1109,37 +975,22 @@ jobs:
   release-npm-nuxt:
     name: Release @vizejs/nuxt to npm
     runs-on: ubuntu-24.04
-    needs:
-      [
-        build-release-packages,
-        release-npm-vite-plugin,
-        release-npm-vite-plugin-musea,
-        release-npm-musea-nuxt,
-        release-npm-cli,
-        smoke-release-packages,
-        release-preflight,
-      ]
+    needs: [build-release-packages, release-npm-vite-plugin, release-npm-vite-plugin-musea, release-npm-musea-nuxt, release-npm-cli, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-nuxt
-          path: npm/framework/nuxt
+        with: { name: release-package-nuxt, path: npm/framework/nuxt }
 
       - name: Publish @vizejs/nuxt
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/framework/nuxt --provenance
@@ -1151,9 +1002,7 @@ jobs:
     needs: release-preflight
     timeout-minutes: 30
     environment: crates-io
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/setup-moonbit
@@ -1212,9 +1061,7 @@ jobs:
 
       - name: Download editor extension artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: editor-extensions
-          path: editor-extension-artifacts
+        with: { name: editor-extensions, path: editor-extension-artifacts }
 
       - name: List CLI artifacts
         run: ls -la cli-artifacts/
@@ -1326,25 +1173,19 @@ jobs:
     needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
-    permissions:
-      contents: read
-      id-token: write
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          run-install: false
+        with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: release-package-vize
-          path: npm/cli
+        with: { name: release-package-vize, path: npm/cli }
 
       - name: Inject native binding package versions
         run: moon run --target native tools/moon/cmd/inject_native_optional_deps -- npm/cli/package.json --print
