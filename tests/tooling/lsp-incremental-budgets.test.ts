@@ -152,10 +152,12 @@ test("incremental LSP suites carry complete enforced budget blocks", () => {
   const owners = readBudgetOwners();
 
   assert.deepEqual(
-    owners.map(({ id, budget }) => ({ id, suite: budget.suite })),
+    owners
+      .map(({ id, budget }) => ({ id, suite: budget.suite }))
+      .sort((a, b) => a.id.localeCompare(b.id)),
     [
-      { id: "vue-vben-admin", suite: "vben-lsp-incremental" },
       { id: "misskey", suite: "misskey-lsp-incremental" },
+      { id: "vue-vben-admin", suite: "vben-lsp-incremental" },
     ],
   );
 
