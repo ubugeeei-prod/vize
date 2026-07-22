@@ -92,16 +92,28 @@ export class LspSession {
     return this.process.pid;
   }
 
+  /**
+   * Initialize the session with one workspace folder (existing callers) or
+   * several (true multi-root sessions, #3240).
+   *
+   * The LSP spec prefers `workspaceFolders` over the deprecated `rootUri`, so
+   * multi-root sessions send `rootUri: null` to prove the server consumes the
+   * folder list itself; single-folder sessions keep the historical `rootUri`
+   * for parity with editors that still populate both fields.
+   */
   async initialize(
-    workspaceDir: string,
+    workspaceDir: string | readonly string[],
     initializationOptions: LspInitializationOptions = {
       editor: true,
       typecheck: true,
     },
   ): Promise<unknown> {
+    const workspaceDirs = typeof workspaceDir === "string" ? [workspaceDir] : [...workspaceDir];
+    assert.ok(workspaceDirs.length > 0, "initialize requires at least one workspace folder");
+
     const result = await this.request("initialize", {
       processId: process.pid,
-      rootUri: pathToFileURL(workspaceDir).href,
+      rootUri: workspaceDirs.length === 1 ? pathToFileURL(workspaceDirs[0]).href : null,
       capabilities: {
         textDocument: {
           completion: {
@@ -112,12 +124,10 @@ export class LspSession {
         },
       },
       initializationOptions,
-      workspaceFolders: [
-        {
-          uri: pathToFileURL(workspaceDir).href,
-          name: path.basename(workspaceDir),
-        },
-      ],
+      workspaceFolders: workspaceDirs.map((dir) => ({
+        uri: pathToFileURL(dir).href,
+        name: path.basename(dir),
+      })),
     });
 
     this.notify("initialized", {});

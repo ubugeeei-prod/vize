@@ -32,8 +32,8 @@ impl ServerState {
         }
 
         // If already initialized successfully, return it
-        if let Some(bridge) = self.corsa_bridge.get() {
-            return Some(bridge.clone());
+        if let Some(bridge) = self.corsa_bridge.read().clone() {
+            return Some(bridge);
         }
 
         // If initialization already failed, don't retry
@@ -44,8 +44,8 @@ impl ServerState {
         let _guard = self.corsa_init_lock.lock().await;
 
         // Another request may have completed initialization while we were waiting.
-        if let Some(bridge) = self.corsa_bridge.get() {
-            return Some(bridge.clone());
+        if let Some(bridge) = self.corsa_bridge.read().clone() {
+            return Some(bridge);
         }
 
         if self.corsa_init_failed.load(Ordering::SeqCst) {
@@ -70,7 +70,7 @@ impl ServerState {
             Ok(Ok(())) => {
                 tracing::info!("corsa bridge initialized successfully");
                 let bridge = Arc::new(bridge);
-                let _ = self.corsa_bridge.set(bridge.clone());
+                *self.corsa_bridge.write() = Some(bridge.clone());
                 Some(bridge)
             }
             Ok(Err(e)) => {
@@ -108,6 +108,29 @@ impl ServerState {
 
     /// Check if the Corsa bridge is available (without initializing).
     pub fn has_corsa_bridge(&self) -> bool {
-        self.is_lsp_typecheck_enabled() && self.corsa_bridge.get().is_some()
+        self.is_lsp_typecheck_enabled() && self.corsa_bridge.read().is_some()
+    }
+
+    /// Drop a Corsa bridge whose backend process died mid-session so the next
+    /// [`Self::get_corsa_bridge`] call spawns a fresh session (#3240).
+    ///
+    /// Passing the failed bridge (rather than clearing unconditionally) makes
+    /// concurrent retirement idempotent: only callers still holding the live
+    /// handle clear the slot, so a bridge respawned by another task is never
+    /// discarded because of a stale failure report. The one-shot
+    /// `corsa_init_failed` latch is left untouched — it marks *spawn*
+    /// failures, and a session that ran long enough to die proves spawning
+    /// works.
+    pub fn retire_corsa_bridge(&self, failed: &Arc<CorsaBridge>) {
+        let mut slot = self.corsa_bridge.write();
+        if slot
+            .as_ref()
+            .is_some_and(|current| Arc::ptr_eq(current, failed))
+        {
+            *slot = None;
+            tracing::warn!(
+                "corsa bridge retired after a backend failure; a fresh session will be spawned on demand"
+            );
+        }
     }
 }

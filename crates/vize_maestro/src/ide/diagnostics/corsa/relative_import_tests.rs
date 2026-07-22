@@ -169,7 +169,8 @@ defineSlots<{
                 virtual_uri,
                 virtual_result,
             )
-            .await;
+            .await
+            .ok()?;
             Some(diagnostics)
         }
         .await;

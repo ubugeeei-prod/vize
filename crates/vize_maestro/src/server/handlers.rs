@@ -11,15 +11,15 @@ use tower_lsp::{
         CodeActionParams, CodeActionResponse, CodeLens, CodeLensParams, CompletionItem,
         CompletionParams, CompletionResponse, CreateFilesParams, DeleteFilesParams,
         DidChangeConfigurationParams, DidChangeTextDocumentParams, DidChangeWatchedFilesParams,
-        DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
-        DocumentFormattingParams, DocumentHighlight, DocumentHighlightParams, DocumentLink,
-        DocumentLinkParams, DocumentRangeFormattingParams, DocumentSymbol, DocumentSymbolParams,
-        DocumentSymbolResponse, FoldingRange, FoldingRangeKind, FoldingRangeParams,
-        GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams, InitializeParams,
-        InitializeResult, InitializedParams, InlayHint, InlayHintParams, Location, Position,
-        PrepareRenameResponse, Range, ReferenceParams, RenameFilesParams, RenameParams,
-        SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
-        SemanticTokensResult, ServerInfo, SymbolInformation, SymbolKind,
+        DidChangeWorkspaceFoldersParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams,
+        DidSaveTextDocumentParams, DocumentFormattingParams, DocumentHighlight,
+        DocumentHighlightParams, DocumentLink, DocumentLinkParams, DocumentRangeFormattingParams,
+        DocumentSymbol, DocumentSymbolParams, DocumentSymbolResponse, FoldingRange,
+        FoldingRangeKind, FoldingRangeParams, GotoDefinitionParams, GotoDefinitionResponse, Hover,
+        HoverParams, InitializeParams, InitializeResult, InitializedParams, InlayHint,
+        InlayHintParams, Location, Position, PrepareRenameResponse, Range, ReferenceParams,
+        RenameFilesParams, RenameParams, SemanticTokensParams, SemanticTokensRangeParams,
+        SemanticTokensRangeResult, SemanticTokensResult, ServerInfo, SymbolInformation, SymbolKind,
         TextDocumentPositionParams, TextEdit, WorkspaceEdit, WorkspaceSymbolParams,
     },
 };
@@ -54,6 +54,18 @@ impl LanguageServer for MaestroServer {
             self.state.load_workspace_config(path);
         }
 
+        // Record every workspace folder so per-document features resolve the
+        // configuration context of their own folder in multi-root sessions
+        // (#3240). The primary root above keeps driving process-wide config.
+        let folder_roots: Vec<std::path::PathBuf> = params
+            .workspace_folders
+            .as_deref()
+            .unwrap_or_default()
+            .iter()
+            .filter_map(|folder| folder.uri.to_file_path().ok())
+            .collect();
+        self.state.set_workspace_folders(folder_roots);
+
         self.state
             .apply_lsp_initialization_options(params.initialization_options.as_ref());
 
@@ -81,6 +93,25 @@ impl LanguageServer for MaestroServer {
         tracing::debug!(
             "Received workspace/didChangeConfiguration; VS Code restarts the server for Vize configuration changes"
         );
+    }
+
+    // The server advertises `workspaceFolders.changeNotifications`, so keep
+    // the per-folder configuration contexts in sync when the editor adds or
+    // removes roots mid-session (#3240).
+    async fn did_change_workspace_folders(&self, params: DidChangeWorkspaceFoldersParams) {
+        let added: Vec<std::path::PathBuf> = params
+            .event
+            .added
+            .iter()
+            .filter_map(|folder| folder.uri.to_file_path().ok())
+            .collect();
+        let removed: Vec<std::path::PathBuf> = params
+            .event
+            .removed
+            .iter()
+            .filter_map(|folder| folder.uri.to_file_path().ok())
+            .collect();
+        self.state.update_workspace_folders(added, &removed);
     }
 
     async fn shutdown(&self) -> Result<()> {

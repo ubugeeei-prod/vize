@@ -4,6 +4,7 @@
 mod config;
 mod features;
 mod virtual_docs;
+mod workspace_folders;
 
 #[cfg(feature = "native")]
 mod batch_cache;
@@ -84,12 +85,18 @@ pub struct ServerState {
     /// Explicit Vue dialect from config (`dialect` key). `None` means the
     /// dialect is detected structurally per document.
     dialect_config: RwLock<Option<VueDialect>>,
+    /// Per-workspace-folder linter contexts for true multi-root sessions
+    /// (#3240). Empty for clients that only send `rootUri`.
+    workspace_folder_configs: RwLock<Vec<workspace_folders::WorkspaceFolderConfig>>,
     /// Formatting options (loaded from vize.config.json)
     #[cfg(feature = "glyph")]
     format_options: RwLock<vize_glyph::FormatOptions>,
-    /// Corsa bridge for native TypeScript language features (lazy initialized)
+    /// Corsa bridge for native TypeScript language features. Lazily
+    /// initialized; cleared again by [`Self::retire_corsa_bridge`] when the
+    /// backend process dies mid-session so the next request can respawn it
+    /// (#3240).
     #[cfg(feature = "native")]
-    corsa_bridge: OnceLock<Arc<CorsaBridge>>,
+    corsa_bridge: RwLock<Option<Arc<CorsaBridge>>>,
     /// Serializes Corsa bridge initialization without tying us to a runtime.
     #[cfg(feature = "native")]
     corsa_init_lock: AsyncMutex<()>,
@@ -150,10 +157,11 @@ impl ServerState {
             linter_config: RwLock::new(LinterConfig::default()),
             linter_rule_options: RwLock::new(vize_carton::config::LintRuleOptions::default()),
             dialect_config: RwLock::new(None),
+            workspace_folder_configs: RwLock::new(Vec::new()),
             #[cfg(feature = "glyph")]
             format_options: RwLock::new(vize_glyph::FormatOptions::default()),
             #[cfg(feature = "native")]
-            corsa_bridge: OnceLock::new(),
+            corsa_bridge: RwLock::new(None),
             #[cfg(feature = "native")]
             corsa_init_lock: AsyncMutex::new(()),
             #[cfg(feature = "native")]

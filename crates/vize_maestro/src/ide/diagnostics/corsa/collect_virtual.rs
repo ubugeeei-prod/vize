@@ -7,23 +7,20 @@ use super::super::{VirtualTsResult, sources};
 use super::mapping::{map_diagnostic_with_source_mappings, source_offset_to_position};
 use super::message::rewrite_corsa_message;
 
+// Both collectors surface bridge failures to the caller instead of mapping
+// them to an empty diagnostic list: `collect_corsa_diagnostics` uses the
+// error to distinguish a dead backend process (retire + respawn + retry,
+// #3240) from an ordinary per-request failure.
 pub(super) async fn collect_virtual_result_diagnostics(
     bridge: &std::sync::Arc<vize_canon::CorsaBridge>,
     host_uri: &Url,
     content: &str,
     virtual_name: String,
     virtual_result: VirtualTsResult,
-) -> Vec<Diagnostic> {
-    let virtual_uri = match bridge
+) -> Result<Vec<Diagnostic>, vize_canon::CorsaBridgeError> {
+    let virtual_uri = bridge
         .open_or_update_virtual_document(&virtual_name, &virtual_result.code)
-        .await
-    {
-        Ok(uri) => uri,
-        Err(e) => {
-            tracing::warn!("failed to open/update virtual document: {}", e);
-            return vec![];
-        }
-    };
+        .await?;
 
     collect_synced_virtual_result_diagnostics(
         bridge,
@@ -41,7 +38,7 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
     content: &str,
     virtual_uri: String,
     virtual_result: VirtualTsResult,
-) -> Vec<Diagnostic> {
+) -> Result<Vec<Diagnostic>, vize_canon::CorsaBridgeError> {
     let virtual_ts = &virtual_result.code;
     let user_code_start_line = virtual_result.user_code_start_line;
     let sfc_script_start_line = virtual_result.sfc_script_start_line;
@@ -61,10 +58,7 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
         "waiting for diagnostics from corsa bridge for {}",
         virtual_uri
     );
-    let Ok(corsa_diags) = bridge.get_diagnostics(&virtual_uri).await else {
-        tracing::warn!("failed to get diagnostics from corsa");
-        return vec![];
-    };
+    let corsa_diags = bridge.get_diagnostics(&virtual_uri).await?;
 
     tracing::info!(
         "corsa returned {} raw diagnostics for {}",
@@ -195,7 +189,7 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
         })
         .collect::<Vec<_>>();
 
-    deduplicate_diagnostics(mapped_diagnostics)
+    Ok(deduplicate_diagnostics(mapped_diagnostics))
 }
 
 fn deduplicate_diagnostics(mut diagnostics: Vec<Diagnostic>) -> Vec<Diagnostic> {
