@@ -1,0 +1,160 @@
+[
+  {
+    "property": "idempotence",
+    "project": "shadcn-vue",
+    "path": "apps/v4/registry/bases/reka/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "idempotence",
+    "project": "shadcn-vue",
+    "path": "apps/v4/registry/new-york-v4/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "idempotence",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-luma/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "idempotence",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-lyra/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "idempotence",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-maia/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "idempotence",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-mira/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "idempotence",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-nova/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "idempotence",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-rhea/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "idempotence",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-sera/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "idempotence",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-vega/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "idempotence",
+    "project": "vux",
+    "path": "src/components/divider/index.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3248"
+  },
+  {
+    "property": "parse-preservation",
+    "project": "shadcn-vue",
+    "path": "apps/v4/registry/bases/reka/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "parse-preservation",
+    "project": "shadcn-vue",
+    "path": "apps/v4/registry/new-york-v4/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "parse-preservation",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-luma/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "parse-preservation",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-lyra/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "parse-preservation",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-maia/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "parse-preservation",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-mira/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "parse-preservation",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-nova/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "parse-preservation",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-rhea/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "parse-preservation",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-sera/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "parse-preservation",
+    "project": "shadcn-vue",
+    "path": "apps/v4/styles/reka-vega/ui/chart/ChartStyle.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
+  },
+  {
+    "property": "parse-preservation",
+    "project": "vue-router",
+    "path": "packages/playground-file-based/src/pages/test-params/query.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3249"
+  },
+  {
+    "property": "parse-preservation",
+    "project": "vux",
+    "path": "src/demos/Issue624.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3250"
+  },
+  {
+    "property": "parse-preservation",
+    "project": "mint-ui",
+    "path": "packages/field/src/field.vue",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3250"
+  },
+  {
+    "property": "lint-agreement",
+    "project": "*",
+    "path": "*",
+    "rule": "vue/attribute-order",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3251"
+  },
+  {
+    "property": "lint-agreement",
+    "project": "misskey",
+    "path": "packages/frontend/src/components/MkAutocomplete.vue",
+    "rule": "vue/no-v-html",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3252"
+  }
+]

@@ -44,6 +44,18 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   assert.deepEqual(parity?.env, { VIZE_TEST_BIN: "target/ci/vize" });
   assert.equal(parity?.run, "vp run --filter './tests' test:check:fixtures");
 
+  const glyphProperties = steps.find(
+    (step) => step.name === "Check glyph formatter corpus properties",
+  );
+  assert.deepEqual(glyphProperties?.env, { VIZE_TEST_BIN: "target/ci/vize" });
+  assert.match(glyphProperties?.run ?? "", /--test-concurrency=1/);
+  for (const property of ["idempotence", "parse-preservation", "lint-agreement"]) {
+    assert.match(
+      glyphProperties?.run ?? "",
+      new RegExp(`tests/tooling/glyph-corpus-${property}\\.test\\.ts`),
+    );
+  }
+
   const incremental = steps.find((step) => step.name === "Check incremental LSP against Misskey");
   assert.deepEqual(incremental?.env, { VIZE_LSP_BIN: "target/ci/vize" });
   assert.equal(incremental?.run, "vp run --filter './tests' test:performance:lsp-incremental");

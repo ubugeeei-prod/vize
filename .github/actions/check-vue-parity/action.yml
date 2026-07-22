@@ -28,6 +28,16 @@ runs:
         VIZE_TEST_BIN: target/ci/vize
       run: vp run --filter './tests' test:check:fixtures
 
+    - name: Check glyph formatter corpus properties
+      shell: bash
+      env:
+        VIZE_TEST_BIN: target/ci/vize
+      run: |
+        node --test --test-concurrency=1 \
+          tests/tooling/glyph-corpus-idempotence.test.ts \
+          tests/tooling/glyph-corpus-parse-preservation.test.ts \
+          tests/tooling/glyph-corpus-lint-agreement.test.ts
+
     - name: Check incremental LSP against Misskey
       shell: bash
       env:

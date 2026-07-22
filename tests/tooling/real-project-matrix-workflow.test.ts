@@ -5,6 +5,7 @@ import { parse } from "yaml";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 type WorkflowStep = {
+  env?: Record<string, string>;
   if?: string;
   name?: string;
   run?: string;
@@ -68,6 +69,10 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   const dependencyIndex = steps.indexOf(dependency);
   const run = steps.find((step) => step.name === "Exercise real projects with every core tool");
   const runIndex = steps.indexOf(run!);
+  const glyphProperties = steps.find(
+    (step) => step.name === "Check glyph formatter corpus properties",
+  );
+  const glyphPropertiesIndex = steps.indexOf(glyphProperties!);
   const divergence = steps.find((step) => step.name === "Record typechecker baseline divergence");
   const divergenceIndex = steps.indexOf(divergence!);
   const summary = steps.find((step) => step.name === "Publish shard summary");
@@ -104,6 +109,15 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(run?.run ?? "", /--vize-bin target\/ci\/vize/);
   assert.match(run?.run ?? "", /--timeout-ms 600000/);
   assert.match(run?.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
+  assert.ok(runIndex < glyphPropertiesIndex && glyphPropertiesIndex < divergenceIndex);
+  assert.equal(glyphProperties?.env?.VIZE_TEST_BIN, "target/ci/vize");
+  assert.match(glyphProperties?.run ?? "", /--test-concurrency=1/);
+  for (const property of ["idempotence", "parse-preservation", "lint-agreement"]) {
+    assert.match(
+      glyphProperties?.run ?? "",
+      new RegExp(`tests/tooling/glyph-corpus-${property}\\.test\\.ts`),
+    );
+  }
   assert.ok(runIndex < divergenceIndex && divergenceIndex < summaryIndex);
   assert.match(divergence?.run ?? "", /tools\/fixtures\/typecheck-divergence-report\.mjs/);
   assert.match(divergence?.run ?? "", /--report-dir "\$FIXTURE_REPORT_DIR"/);

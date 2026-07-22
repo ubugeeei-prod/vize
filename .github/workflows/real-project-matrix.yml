@@ -101,6 +101,15 @@ jobs:
             --timeout-ms 600000 \
             --output-dir "$FIXTURE_REPORT_DIR"
 
+      - name: Check glyph formatter corpus properties
+        env:
+          VIZE_TEST_BIN: target/ci/vize
+        run: |
+          node --test --test-concurrency=1 \
+            tests/tooling/glyph-corpus-idempotence.test.ts \
+            tests/tooling/glyph-corpus-parse-preservation.test.ts \
+            tests/tooling/glyph-corpus-lint-agreement.test.ts
+
       - name: Record typechecker baseline divergence
         run: |
           node tools/fixtures/typecheck-divergence-report.mjs \

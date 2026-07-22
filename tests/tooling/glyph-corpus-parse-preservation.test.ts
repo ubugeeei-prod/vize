@@ -1,0 +1,204 @@
+// Corpus-wide glyph formatter parse-preservation: parsing x and fmt(x) with
+// @vue/compiler-sfc (the reference Vue parser, independent of vize's own
+// parser) must yield equivalent SFC structure — parse error codes, block
+// multiset with attrs, and template AST shape modulo whitespace-only
+// differences (exact inside <pre>-like elements). See
+// tests/tooling/support/sfc-equivalence.ts for the strength/normalization
+// decisions. Absent fixtures are skipped; the weekly Real Project Matrix
+// hydrates the full registry shard by shard.
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { test } from "node:test";
+
+import {
+  collectProjectVueFiles,
+  isKnownViolation,
+  loadGlyphCorpusProjects,
+  loadKnownViolations,
+  renderViolations,
+  resolveGlyphLaunch,
+  withFormattedWorkspace,
+} from "../../tools/fixtures/glyph-corpus.mjs";
+import { compareSfcEquivalence } from "./support/sfc-equivalence.ts";
+
+type CorpusProject = {
+  id: string;
+  fixtureDir: string;
+  hydrated: boolean;
+  vueGlobs: string[];
+};
+
+type Violation = { project: string; file: string; detail: string };
+
+const property = "parse-preservation";
+const projects = loadGlyphCorpusProjects() as CorpusProject[];
+const knownViolations = loadKnownViolations(property);
+
+function compareFile(original: string, formatted: string, filename: string): string[] {
+  try {
+    return compareSfcEquivalence(original, formatted, filename);
+  } catch (error) {
+    return [`comparison failed: ${error instanceof Error ? error.message : String(error)}`];
+  }
+}
+
+function sweepProject(
+  project: CorpusProject,
+  launch: { command: string; prefix: string[] },
+  violations: Violation[],
+  counters: { files: number; skipped: number },
+): void {
+  const files = collectProjectVueFiles(project) as string[];
+  if (files.length === 0) return;
+  withFormattedWorkspace(project, files, launch, (workspace: { workspaceDir: string }) => {
+    for (const file of files) {
+      const original = fs.readFileSync(path.join(project.fixtureDir, file), "utf8");
+      const formatted = fs.readFileSync(path.join(workspace.workspaceDir, file), "utf8");
+      const differences = compareFile(original, formatted, path.basename(file));
+      if (differences.length === 0) {
+        counters.files += 1;
+        continue;
+      }
+      if (isKnownViolation(knownViolations, project.id, file)) {
+        counters.skipped += 1;
+        continue;
+      }
+      violations.push({
+        project: project.id,
+        file,
+        detail: differences.map((difference) => `  ${difference}`).join("\n"),
+      });
+    }
+  });
+}
+
+test("glyph corpus parse-preservation holds for every hydrated fixture", () => {
+  const hydrated = projects.filter((project) => project.hydrated);
+  if (hydrated.length === 0) {
+    // Per-PR lanes run without hydrated fixtures; the machinery subtests below
+    // still exercise the property end-to-end on synthetic projects.
+    return;
+  }
+  const launch = resolveGlyphLaunch();
+  const violations: Violation[] = [];
+  const counters = { files: 0, skipped: 0 };
+  for (const project of hydrated) {
+    sweepProject(project, launch, violations, counters);
+  }
+  process.stderr.write(
+    `glyph ${property}: ${counters.files} file(s) across ${hydrated.length} project(s), ` +
+      `${projects.length - hydrated.length} project(s) not hydrated, ` +
+      `${counters.skipped} known violation(s) skipped, ${violations.length} violation(s)\n`,
+  );
+  assert.equal(violations.length, 0, renderViolations(property, violations));
+});
+
+test("glyph corpus parse-preservation machinery accepts the real formatter", () => {
+  const source = [
+    '<script setup lang="ts">',
+    "const label = 'hi'",
+    "</script>",
+    "<template>",
+    '  <button v-bind="$attrs"   :class="label"  data-x>',
+    "    {{ label }} <pre>  keep   me </pre>",
+    "  </button>",
+    "</template>",
+    "<style scoped>.a{color:#ffffff}</style>",
+    "",
+  ].join("\n");
+  const project = makeSyntheticProject([["src/App.vue", source]]);
+  try {
+    const violations: Violation[] = [];
+    const counters = { files: 0, skipped: 0 };
+    sweepProject(project, resolveGlyphLaunch(), violations, counters);
+    assert.deepEqual(violations, []);
+    assert.equal(counters.files, 1);
+  } finally {
+    fs.rmSync(project.fixtureDir, { recursive: true, force: true });
+  }
+});
+
+test("glyph corpus parse-preservation comparator flags structural corruption", () => {
+  const original =
+    '<template>\n  <div title="x" :class="foo" v-bind="rest">a {{n+1}}</div>\n</template>\n';
+  // Reindentation, in-segment attribute sorting, shorthand normalization, and
+  // expression reprinting are legitimate formatter output.
+  assert.deepEqual(
+    compareFile(
+      original,
+      '<template>\n  <div\n    :class="foo"\n    title="x"\n    v-bind="rest"\n  >\n    a {{ n + 1 }}\n  </div>\n</template>\n',
+      "App.vue",
+    ),
+    [],
+  );
+  // Dropping an attribute is corruption.
+  assert.match(
+    compareFile(
+      original,
+      '<template>\n  <div :class="foo" v-bind="rest">a {{ n + 1 }}</div>\n</template>\n',
+      "App.vue",
+    ).join("\n"),
+    /<div>\[0\]/,
+  );
+  // Moving a prop across a v-bind spread changes merge semantics.
+  assert.match(
+    compareFile(
+      original,
+      '<template>\n  <div v-bind="rest" title="x" :class="foo">a {{ n + 1 }}</div>\n</template>\n',
+      "App.vue",
+    ).join("\n"),
+    /<div>\[0\]/,
+  );
+  // Rewriting interpolation content is corruption.
+  assert.match(
+    compareFile(
+      original,
+      '<template>\n  <div title="x" :class="foo" v-bind="rest">a {{ n + 2 }}</div>\n</template>\n',
+      "App.vue",
+    ).join("\n"),
+    /#interpolation/,
+  );
+  // Text inside <pre> is compared byte-for-byte.
+  assert.match(
+    compareFile(
+      "<template><pre>  a  b</pre></template>\n",
+      "<template><pre>  a b</pre></template>\n",
+      "App.vue",
+    ).join("\n"),
+    /<pre>/,
+  );
+  // Introducing a parse error is corruption.
+  assert.match(
+    compareFile(
+      original,
+      '<template>\n  <div :class="foo">a</span>\n</template>\n',
+      "App.vue",
+    ).join("\n"),
+    /parse errors changed/,
+  );
+  // Block attrs must survive (losing scoped would change style semantics).
+  assert.match(
+    compareFile(
+      "<template><p/></template>\n<style scoped>.a{}</style>\n",
+      "<template><p/></template>\n<style>.a{}</style>\n",
+      "App.vue",
+    ).join("\n"),
+    /styles changed/,
+  );
+});
+
+function makeSyntheticProject(files: Array<[string, string]>): CorpusProject {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-corpus-"));
+  for (const [file, content] of files) {
+    fs.mkdirSync(path.dirname(path.join(fixtureDir, file)), { recursive: true });
+    fs.writeFileSync(path.join(fixtureDir, file), content);
+  }
+  return {
+    id: "synthetic-parse-preservation",
+    fixtureDir,
+    hydrated: true,
+    vueGlobs: ["src/**/*.vue"],
+  };
+}
