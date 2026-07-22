@@ -1,5 +1,5 @@
 use super::{LintResult, Linter, severity::append_with_rule_overrides};
-use crate::rules::script::{ScriptLintResult, script_source_type};
+use crate::rules::script::{ScriptLintResult, SfcScriptContext, script_source_type};
 use memchr::memmem;
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -140,6 +140,16 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
             parsed
         });
 
+    // Cross-block context shared by every rule invocation for this SFC: rules
+    // that correlate script declarations with template usage (e.g.
+    // `script/no-unused-emit-declarations`) read the raw `<template>` source.
+    let sfc_context = SfcScriptContext {
+        template_source: descriptor
+            .template
+            .as_ref()
+            .map(|block| block.content.as_ref()),
+    };
+
     for entry in active_builtin_script_rule_entries(linter) {
         let rule = resolved_rule(linter, entry);
         if let Some((source, offset)) = script {
@@ -150,6 +160,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                 source,
                 offset,
                 script_parsed.as_ref(),
+                sfc_context,
                 result,
             );
         }
@@ -161,6 +172,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                 source,
                 offset,
                 script_setup_parsed.as_ref(),
+                sfc_context,
                 result,
             );
         }
@@ -206,8 +218,9 @@ fn block_has_active_ast_rule(linter: &Linter, source: &str) -> bool {
 
 /// Run a single built-in script rule against a script block.
 ///
-/// AST rules consume the shared parse when available. Byte rules run their
-/// source-level `check`, preserving the same rule-major ordering.
+/// AST rules consume the shared parse when available and receive the
+/// cross-block `sfc` context (empty outside SFC linting). Byte rules run
+/// their source-level `check`, preserving the same rule-major ordering.
 #[allow(clippy::too_many_arguments)]
 fn run_builtin_script_rule(
     linter: &Linter,
@@ -216,6 +229,7 @@ fn run_builtin_script_rule(
     source: &str,
     offset: usize,
     parsed: Option<&oxc_parser::ParserReturn<'_>>,
+    sfc: SfcScriptContext<'_>,
     result: &mut LintResult,
 ) {
     if !entry_may_match(linter, entry, source) {
@@ -231,7 +245,7 @@ fn run_builtin_script_rule(
         }
         profile!(
             entry.profile_name,
-            rule.check_program(&parsed.program, source, offset, &mut lint)
+            rule.check_program_with_sfc(&parsed.program, source, offset, sfc, &mut lint)
         );
     } else {
         profile!(entry.profile_name, rule.check(source, offset, &mut lint));
@@ -286,7 +300,17 @@ pub(crate) fn append_builtin_script_rules_for_source(
 
     for entry in active_builtin_script_rule_entries(linter) {
         let rule = resolved_rule(linter, entry);
-        run_builtin_script_rule(linter, entry, rule, source, offset, parsed.as_ref(), result);
+        // Inline HTML scripts have no SFC template, so the context is empty.
+        run_builtin_script_rule(
+            linter,
+            entry,
+            rule,
+            source,
+            offset,
+            parsed.as_ref(),
+            SfcScriptContext::default(),
+            result,
+        );
     }
 }
 

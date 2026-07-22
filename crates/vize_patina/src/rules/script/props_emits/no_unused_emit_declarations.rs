@@ -18,6 +18,14 @@
 //! assigned to a binding (e.g. a bare `defineEmits([...])`), emits cannot be
 //! tracked, so nothing is reported.
 //!
+//! Top-level `<script setup>` bindings are template-visible, so when the block
+//! is linted as part of an SFC the same call forms are also resolved from the
+//! raw `<template>` source (see [`super::template_emits`]): the captured
+//! binding invoked from an event handler (`@click='emit("save")'`, including
+//! handlers nested in `v-for` / `v-if`) and the built-in `$emit` helper
+//! (`@click="$emit('save')"`) both count as usage (#3209). Dynamic event names
+//! stay untracked in the template exactly as in the script.
+//!
 //! Port of [`vue/no-unused-emit-declarations`](https://eslint.vuejs.org/rules/no-unused-emit-declarations.html).
 //!
 //! ## Examples
@@ -34,6 +42,15 @@
 //! const emit = defineEmits(['change'])
 //! emit('change')
 //! ```
+//!
+//! ```vue
+//! <script setup lang="ts">
+//! const emit = defineEmits<{ save: [] }>();
+//! </script>
+//! <template>
+//!   <button @click='emit("save")'>Save</button>
+//! </template>
+//! ```
 
 use oxc_ast::ast::{
     Argument, ArrayExpressionElement, BindingPattern, CallExpression, Expression,
@@ -44,7 +61,8 @@ use oxc_span::{GetSpan, Span};
 
 use vize_carton::{CompactString, FxHashSet};
 
-use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
+use super::template_emits::collect_template_emitted_events;
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -69,8 +87,21 @@ impl ScriptRule for NoUnusedEmitDeclarations {
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        // Keep the parse-owning `check` path functional: without SFC context
+        // only script-side emit calls are observable.
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
         _source: &str,
         offset: usize,
+        sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
         // Resolve the captured emit function and its declared events. Without an
@@ -89,6 +120,12 @@ impl ScriptRule for NoUnusedEmitDeclarations {
             used: &mut used,
         };
         collector.visit_program(program);
+
+        // Top-level `<script setup>` bindings are template-visible, so emit
+        // calls in template expressions count as usage too (#3209).
+        if let Some(template) = sfc.template_source {
+            collect_template_emitted_events(template, declaration.binding, &mut used);
+        }
 
         for event in &declaration.events {
             if !used.contains(event.name.as_str()) {

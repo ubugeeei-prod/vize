@@ -15,6 +15,7 @@ mod require_prop_types;
 mod require_typed_object_prop;
 mod require_valid_default_prop;
 mod return_in_emits_validator;
+mod template_emits;
 
 pub use no_required_prop_with_default::NoRequiredPropWithDefault;
 pub use no_reserved_props::NoReservedProps;
