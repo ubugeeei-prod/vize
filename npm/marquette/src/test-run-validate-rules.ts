@@ -56,12 +56,16 @@ export function checkDigest(value: string, path: string, diagnostics: MarquetteD
 }
 
 /** Validates an exact source revision digest. */
-export function checkSourceRevision(value: string, diagnostics: MarquetteDiagnostic[]): void {
+export function checkSourceRevision(
+  value: string,
+  path: string,
+  diagnostics: MarquetteDiagnostic[],
+): void {
   if (!SOURCE_REVISION.test(value)) {
     diagnostics.push(
       error(
         "VIZE_MARQUETTE_105",
-        "sourceRevision",
+        path,
         "source revision must be 40 to 128 lowercase hexadecimal characters",
       ),
     );

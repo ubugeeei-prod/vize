@@ -100,6 +100,7 @@ import { defineTestRunEvidence } from "@vizejs/marquette/test-run";
 import { validateTestRunEvidence } from "@vizejs/marquette/test-run/validate";
 import { testRunAdmissionId } from "@vizejs/marquette/test-run/canonical";
 import { admitTestRun, decideTestRunAdmission } from "@vizejs/marquette/test-run/admission";
+import { verifyTestRunCheck } from "@vizejs/marquette/test-run/check";
 
 const diagnostics = validateTestRunEvidence(evidence);
 const admissionId = await testRunAdmissionId(evidence); // test-run:<sha256>
@@ -108,6 +109,7 @@ const decision = await decideTestRunAdmission(evidence, candidate, admissionId, 
 if (!decision.allowed) {
   console.error(decision.denialCodes); // e.g. ["record-expired"]
 }
+const release = await verifyTestRunCheck(retainedCheck, candidate, evidence, now);
 ```
 
 Validation shares its `VIZE_MARQUETTE_1xx` codes, paths, and ordering with the
@@ -116,9 +118,13 @@ serialization and SHA-256 fingerprints, proven by the shared fixtures in
 `tests/fixtures/test-run-evidence/`. Admission decisions carry the stable,
 append-only denial-code vocabulary shared by every backend family; the same
 fixtures pin every decision so a JavaScript, Rust, Go, or JVM gate denies for
-identical machine-readable causes. The published record schema is available
-from `@vizejs/marquette/test-run/schema`, and the decision contract from
-`@vizejs/marquette/test-run/admission/schema`.
+identical machine-readable causes. The check entry replaces every generic
+test-result reference in release evidence: a retained `vize.test-run.check`
+record may only name the exact `test-run:<sha256>` admission id, bind the six
+candidate facts, and record an observer independent from the runner. The
+published record schema is available from `@vizejs/marquette/test-run/schema`,
+the decision contract from `@vizejs/marquette/test-run/admission/schema`, and
+the tests-check contract from `@vizejs/marquette/test-run/check/schema`.
 
 ## Guarantees
 

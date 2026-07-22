@@ -13,7 +13,7 @@ import {
   type Ref,
   type VNode,
 } from "@vue/runtime-core";
-import type { InputEventNapi } from "@vizejs/fresco-native";
+import type { InputEventNapi, ModifiersNapi } from "@vizejs/fresco-native";
 import {
   SCREEN_READER_KEY,
   isScreenReaderEnabledByDefault,
@@ -824,7 +824,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     }
 
     if (event.eventType === "key") {
-      const modifiers = event.modifiers ?? {};
+      const modifiers: Partial<ModifiersNapi> = event.modifiers ?? {};
       lastKeyEvent.value = {
         type: "key",
         key: event.key ?? undefined,

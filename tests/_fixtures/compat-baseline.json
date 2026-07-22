@@ -1,0 +1,106 @@
+{
+  "schema": "vize.compatBaseline",
+  "version": 1,
+  "vueTsc": "3.3.4",
+  "projects": {
+    "create-vue": {
+      "revision": "3ee62adffdcdfa4a37b2ed4e9c30636655d5fcd1",
+      "accepted": true,
+      "vizeDiagnosticCount": 0,
+      "baselineDiagnosticCount": 0,
+      "sharedCount": 0,
+      "falsePositiveCount": 0,
+      "falseNegativeCount": 0,
+      "falsePositiveRatio": 0,
+      "falseNegativeRatio": 0
+    },
+    "element-plus": {
+      "revision": "20298a21ae54a5417955373b80130ae7c548a6bb",
+      "accepted": true,
+      "vizeDiagnosticCount": 3,
+      "baselineDiagnosticCount": 3,
+      "sharedCount": 3,
+      "falsePositiveCount": 0,
+      "falseNegativeCount": 0,
+      "falsePositiveRatio": 0,
+      "falseNegativeRatio": 0
+    },
+    "misskey": {
+      "revision": "810faa8e5db4bbf9d6d408a61df148559340ee99",
+      "accepted": true,
+      "vizeDiagnosticCount": 8,
+      "baselineDiagnosticCount": 8,
+      "sharedCount": 8,
+      "falsePositiveCount": 0,
+      "falseNegativeCount": 0,
+      "falsePositiveRatio": 0,
+      "falseNegativeRatio": 0
+    },
+    "nuxt-ui": {
+      "revision": "390060cabc40c886f9d743c91c477ca6ad4d0c32",
+      "accepted": true,
+      "vizeDiagnosticCount": 12,
+      "baselineDiagnosticCount": 12,
+      "sharedCount": 11,
+      "falsePositiveCount": 1,
+      "falseNegativeCount": 1,
+      "falsePositiveRatio": 0.08333333333333333,
+      "falseNegativeRatio": 0.08333333333333333
+    },
+    "pinia": {
+      "revision": "59ec7da3f0130caa66fae6541557cf3c5b10f78b",
+      "accepted": true,
+      "vizeDiagnosticCount": 0,
+      "baselineDiagnosticCount": 7,
+      "sharedCount": 0,
+      "falsePositiveCount": 0,
+      "falseNegativeCount": 7,
+      "falsePositiveRatio": 0,
+      "falseNegativeRatio": 1
+    },
+    "vitepress": {
+      "revision": "9ee401d7adefc39fd960990cc032be5464e4eb27",
+      "accepted": true,
+      "vizeDiagnosticCount": 2,
+      "baselineDiagnosticCount": 2,
+      "sharedCount": 2,
+      "falsePositiveCount": 0,
+      "falseNegativeCount": 0,
+      "falsePositiveRatio": 0,
+      "falseNegativeRatio": 0
+    },
+    "vue-element-admin": {
+      "revision": "6858a9ad67483025f6a9432a926beb9327037be3",
+      "accepted": true,
+      "vizeDiagnosticCount": 1,
+      "baselineDiagnosticCount": 0,
+      "sharedCount": 0,
+      "falsePositiveCount": 1,
+      "falseNegativeCount": 0,
+      "falsePositiveRatio": 1,
+      "falseNegativeRatio": 0
+    },
+    "vue-router": {
+      "revision": "feed382f2fbfe38b3892ea780f5aea3d5459986a",
+      "accepted": true,
+      "vizeDiagnosticCount": 0,
+      "baselineDiagnosticCount": 0,
+      "sharedCount": 0,
+      "falsePositiveCount": 0,
+      "falseNegativeCount": 0,
+      "falsePositiveRatio": 0,
+      "falseNegativeRatio": 0
+    },
+    "vue-vben-admin": {
+      "revision": "748b182e440863711dc9624924e92440f5ddc4d3",
+      "accepted": true,
+      "vizeDiagnosticCount": 16,
+      "baselineDiagnosticCount": 16,
+      "sharedCount": 16,
+      "falsePositiveCount": 0,
+      "falseNegativeCount": 0,
+      "falsePositiveRatio": 0,
+      "falseNegativeRatio": 0
+    }
+  }
+}

@@ -93,6 +93,7 @@ catalogs:
   # Test runners and browser automation.
   testing:
     "@playwright/test": "1.60.0"
+    happy-dom: "20.11.0"
     playwright: "1.60.0"
 
   # Lint and formatting toolchain.

@@ -27,7 +27,8 @@ export interface UseEventListenerOptions {
   readonly passive?: boolean;
 
   /**
-   * Stop listening when this signal is aborted.
+   * Stop listening when this signal is aborted. An already-aborted signal
+   * prevents listening from ever starting.
    *
    * @default undefined
    */
@@ -56,7 +57,9 @@ export interface EventListenerControls {
   /**
    * Begin listening.
    *
-   * @returns Whether a new reactive listener was started.
+   * @returns Whether a new reactive watcher was started. `false` while the
+   * watcher is already active (including a null-target watcher with no
+   * listener attached) and after the abort signal has fired.
    */
   readonly start: () => boolean;
 
@@ -66,13 +69,23 @@ export interface EventListenerControls {
 
 /**
  * Attach an event listener to a reactive target and clean it up with the
- * current reactive scope. Missing targets are valid during server rendering.
+ * current reactive scope. Missing targets are valid during server rendering:
+ * a `null`/`undefined` target keeps the listener detached until a concrete
+ * target appears, so no browser globals are required.
+ *
+ * The listener is re-attached whenever the reactive target changes and is
+ * removed when the owning reactive scope stops, when
+ * {@link EventListenerControls.stop} is called, or when the abort signal
+ * fires. Outside an active scope, teardown ownership stays with the caller,
+ * who must call `stop` explicitly. Errors thrown by a custom target's
+ * add/remove methods propagate to the active watcher run.
  *
  * @param target Reactive event target.
  * @param event Event name.
  * @param listener Typed event listener.
  * @param options Listener lifecycle and scheduling options.
  * @default options {}
+ * @returns Controls to observe and change the listening state.
  */
 export function useEventListener<Key extends keyof WindowEventMap>(
   target: MaybeRefOrGetter<Window | null | undefined>,

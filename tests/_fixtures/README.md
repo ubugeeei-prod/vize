@@ -11,3 +11,9 @@ license that applies to the tested source tree.
 If an upstream revision publishes no license, record `NONE` with no license files instead of
 guessing a license. The entry remains an external, read-only gitlink and does not grant permission
 to copy or redistribute its source as part of Vize.
+
+`compat-baseline.json` is the per-PR drop-in compatibility ratchet baseline: the accepted
+vize/vue-tsc typecheck divergence over pinned probe workspaces cut from the hydrated vue-parity
+fixtures. `tests/tooling/compat-ratchet.test.ts` recomputes the divergence on every PR and only
+allows it to hold or improve; regenerate with `UPDATE_COMPAT_BASELINE=1` after intentional
+compatibility improvements or pinned toolchain moves.

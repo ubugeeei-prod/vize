@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+
+import { test } from "vite-plus/test";
 import { createApp } from "vue";
 
 import { createContext } from "./context.ts";
 
-void test("creates an immutable context with an integration key", () => {
+test("creates an immutable context with an integration key", () => {
   const context = createContext<{ value: number }>(" Selection ");
 
   assert.equal(context.name, "Selection");
@@ -12,7 +13,7 @@ void test("creates an immutable context with an integration key", () => {
   assert.equal(Object.isFrozen(context), true);
 });
 
-void test("resolves application-provided values", () => {
+test("resolves application-provided values", () => {
   const context = createContext<{ value: number }>("Selection");
   const value = { value: 42 };
   const app = createApp({});
@@ -22,7 +23,7 @@ void test("resolves application-provided values", () => {
   assert.equal(app.runWithContext(context.useOptional), value);
 });
 
-void test("distinguishes an explicit undefined value from a missing provider", () => {
+test("distinguishes an explicit undefined value from a missing provider", () => {
   const context = createContext<string | undefined>("NullableSelection");
   const provided = createApp({});
   provided.provide(context.key, undefined);
@@ -37,6 +38,6 @@ void test("distinguishes an explicit undefined value from a missing provider", (
   );
 });
 
-void test("rejects names that cannot produce actionable diagnostics", () => {
+test("rejects names that cannot produce actionable diagnostics", () => {
   assert.throws(() => createContext("   "), /VIZE_UI_CONTEXT_NAME/);
 });

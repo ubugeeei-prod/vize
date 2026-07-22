@@ -11,6 +11,7 @@ const contractSchemas = [
   "application-contract.schema.json",
   "test-run-evidence.schema.json",
   "test-run-admission.schema.json",
+  "test-run-check.schema.json",
 ];
 
 export default defineConfig({
@@ -31,6 +32,7 @@ export default defineConfig({
       "src/test-run-validate.ts",
       "src/test-run-canonical.ts",
       "src/test-run-admission.ts",
+      "src/test-run-check.ts",
     ],
     format: "esm",
     dts: true,

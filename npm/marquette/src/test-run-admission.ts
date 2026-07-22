@@ -161,6 +161,9 @@ export const TEST_RUN_DENIAL_CODES = [
   "candidate-environment-mismatch",
   "candidate-release-mismatch",
   "candidate-source-revision-mismatch",
+  "check-candidate-mismatch",
+  "check-invalid",
+  "check-observer-not-independent",
   "record-expired",
   "record-invalid",
   "skipped-tests-recorded",
@@ -203,8 +206,10 @@ const CANDIDATE_MISMATCH_CODES: ReadonlyMap<string, TestRunDenialCode> = new Map
  * The mapping is total and identical in every host family: admission codes
  * `VIZE_MARQUETTE_141` through `VIZE_MARQUETTE_148` map to their exact
  * cause, `VIZE_MARQUETTE_144` distinguishes the mismatched candidate binding
- * by its diagnostic path, and every other diagnostic is a `record-invalid`
- * record-validation failure.
+ * by its diagnostic path, `VIZE_MARQUETTE_149` through `VIZE_MARQUETTE_151`
+ * map to their tests-check cause, every other diagnostic at a `check.` path
+ * is a `check-invalid` tests-check validation failure, and every remaining
+ * diagnostic is a `record-invalid` record-validation failure.
  */
 export function testRunDenialCode(diagnostic: MarquetteDiagnostic): TestRunDenialCode {
   switch (diagnostic.code) {
@@ -212,8 +217,13 @@ export function testRunDenialCode(diagnostic: MarquetteDiagnostic): TestRunDenia
       return "admission-id-malformed";
     case "VIZE_MARQUETTE_142":
       return "admission-id-mismatch";
-    case "VIZE_MARQUETTE_144":
-      return CANDIDATE_MISMATCH_CODES.get(diagnostic.path) ?? "record-invalid";
+    case "VIZE_MARQUETTE_144": {
+      const mismatch = CANDIDATE_MISMATCH_CODES.get(diagnostic.path);
+      if (mismatch !== undefined) {
+        return mismatch;
+      }
+      break;
+    }
     case "VIZE_MARQUETTE_145":
       return "record-expired";
     case "VIZE_MARQUETTE_146":
@@ -222,9 +232,16 @@ export function testRunDenialCode(diagnostic: MarquetteDiagnostic): TestRunDenia
       return "skipped-tests-recorded";
     case "VIZE_MARQUETTE_148":
       return "admission-time-malformed";
+    case "VIZE_MARQUETTE_149":
+      return "check-candidate-mismatch";
+    case "VIZE_MARQUETTE_150":
+      return "check-invalid";
+    case "VIZE_MARQUETTE_151":
+      return "check-observer-not-independent";
     default:
-      return "record-invalid";
+      break;
   }
+  return diagnostic.path.startsWith("check.") ? "check-invalid" : "record-invalid";
 }
 
 /**

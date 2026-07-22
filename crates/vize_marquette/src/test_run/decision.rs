@@ -35,6 +35,12 @@ pub enum TestRunDenialCode {
     CandidateReleaseMismatch,
     /// The record does not bind the candidate source revision.
     CandidateSourceRevisionMismatch,
+    /// The retained tests check does not bind the caller's candidate.
+    CheckCandidateMismatch,
+    /// The retained tests check record itself failed validation.
+    CheckInvalid,
+    /// The tests check observer is not independent from the run's runner.
+    CheckObserverNotIndependent,
     /// The record is expired at the admission time.
     RecordExpired,
     /// The record failed structural or consistency validation.
@@ -46,7 +52,7 @@ pub enum TestRunDenialCode {
 }
 
 /// Every denial code, in the stable lexicographic decision order.
-pub const TEST_RUN_DENIAL_CODES: [TestRunDenialCode; 13] = [
+pub const TEST_RUN_DENIAL_CODES: [TestRunDenialCode; 16] = [
     TestRunDenialCode::AdmissionIdMalformed,
     TestRunDenialCode::AdmissionIdMismatch,
     TestRunDenialCode::AdmissionTimeMalformed,
@@ -56,6 +62,9 @@ pub const TEST_RUN_DENIAL_CODES: [TestRunDenialCode; 13] = [
     TestRunDenialCode::CandidateEnvironmentMismatch,
     TestRunDenialCode::CandidateReleaseMismatch,
     TestRunDenialCode::CandidateSourceRevisionMismatch,
+    TestRunDenialCode::CheckCandidateMismatch,
+    TestRunDenialCode::CheckInvalid,
+    TestRunDenialCode::CheckObserverNotIndependent,
     TestRunDenialCode::RecordExpired,
     TestRunDenialCode::RecordInvalid,
     TestRunDenialCode::SkippedTestsRecorded,
@@ -86,7 +95,10 @@ pub struct TestRunAdmissionDecision {
 /// The mapping is total and identical in every host family: admission codes
 /// `VIZE_MARQUETTE_141` through `VIZE_MARQUETTE_148` map to their exact
 /// cause, `VIZE_MARQUETTE_144` distinguishes the mismatched candidate
-/// binding by its diagnostic path, and every other diagnostic is a
+/// binding by its diagnostic path, `VIZE_MARQUETTE_149` through
+/// `VIZE_MARQUETTE_151` map to their tests-check cause, every other
+/// diagnostic at a `check.` path is a [`TestRunDenialCode::CheckInvalid`]
+/// tests-check validation failure, and every remaining diagnostic is a
 /// [`TestRunDenialCode::RecordInvalid`] record-validation failure.
 pub fn test_run_denial_code(diagnostic: &ContractDiagnostic) -> TestRunDenialCode {
     match (diagnostic.code, diagnostic.path.as_str()) {
@@ -108,7 +120,26 @@ pub fn test_run_denial_code(diagnostic: &ContractDiagnostic) -> TestRunDenialCod
         ("VIZE_MARQUETTE_146", _) => TestRunDenialCode::VerificationNotAccepted,
         ("VIZE_MARQUETTE_147", _) => TestRunDenialCode::SkippedTestsRecorded,
         ("VIZE_MARQUETTE_148", _) => TestRunDenialCode::AdmissionTimeMalformed,
+        ("VIZE_MARQUETTE_149", _) => TestRunDenialCode::CheckCandidateMismatch,
+        ("VIZE_MARQUETTE_150", _) => TestRunDenialCode::CheckInvalid,
+        ("VIZE_MARQUETTE_151", _) => TestRunDenialCode::CheckObserverNotIndependent,
+        (_, path) if path.starts_with("check.") => TestRunDenialCode::CheckInvalid,
         _ => TestRunDenialCode::RecordInvalid,
+    }
+}
+
+/// Builds the structured decision for one complete diagnostic set.
+pub(crate) fn decision_from_diagnostics(
+    diagnostics: Vec<ContractDiagnostic>,
+) -> TestRunAdmissionDecision {
+    let mut denial_codes: Vec<TestRunDenialCode> =
+        diagnostics.iter().map(test_run_denial_code).collect();
+    denial_codes.sort_unstable();
+    denial_codes.dedup();
+    TestRunAdmissionDecision {
+        allowed: diagnostics.is_empty(),
+        denial_codes,
+        diagnostics,
     }
 }
 
@@ -125,16 +156,7 @@ pub fn decide_test_run_admission(
     admission_id: &str,
     now: &str,
 ) -> TestRunAdmissionDecision {
-    let diagnostics = admit_test_run(evidence, candidate, admission_id, now);
-    let mut denial_codes: Vec<TestRunDenialCode> =
-        diagnostics.iter().map(test_run_denial_code).collect();
-    denial_codes.sort_unstable();
-    denial_codes.dedup();
-    TestRunAdmissionDecision {
-        allowed: diagnostics.is_empty(),
-        denial_codes,
-        diagnostics,
-    }
+    decision_from_diagnostics(admit_test_run(evidence, candidate, admission_id, now))
 }
 
 #[cfg(test)]
@@ -160,13 +182,14 @@ mod tests {
 
     #[test]
     fn the_vocabulary_is_sorted_and_serializes_kebab_case() {
-        let serialized: [vize_carton::String; 13] = TEST_RUN_DENIAL_CODES
+        let serialized: [vize_carton::String; 16] = TEST_RUN_DENIAL_CODES
             .map(|code| serde_json::to_value(code).unwrap().as_str().unwrap().into());
         let mut sorted = serialized.clone();
         sorted.sort();
         assert_eq!(serialized, sorted);
         assert_eq!(serialized[0], "admission-id-malformed");
-        assert_eq!(serialized[10], "record-invalid");
+        assert_eq!(serialized[10], "check-invalid");
+        assert_eq!(serialized[13], "record-invalid");
 
         let mut ordered = TEST_RUN_DENIAL_CODES;
         ordered.sort_unstable();

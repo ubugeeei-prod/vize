@@ -6,8 +6,9 @@
 use std::{fs, path::PathBuf};
 
 use vize_marquette::{
-    TestRunCandidate, TestRunEvidence, canonical_test_run_json, decide_test_run_admission,
-    parse_test_run_admission_id, test_run_admission_id, test_run_fingerprint,
+    TestRunCandidate, TestRunCheck, TestRunEvidence, canonical_test_run_json,
+    decide_test_run_admission, parse_test_run_admission_id, test_run_admission_id,
+    test_run_fingerprint, verify_test_run_check,
 };
 
 fn fixture(name: &str) -> PathBuf {
@@ -73,6 +74,32 @@ fn reproduces_every_shared_admission_decision() {
             case["admissionId"].as_str().unwrap(),
             case["now"].as_str().unwrap(),
         );
+        assert!(case["decision"].is_object(), "{name} must pin a decision");
+        assert_eq!(
+            serde_json::to_value(&decision).unwrap(),
+            case["decision"],
+            "decision mismatch for case {name}",
+        );
+    }
+}
+
+#[test]
+fn reproduces_every_shared_check_decision() {
+    let document: serde_json::Value =
+        serde_json::from_slice(&fs::read(fixture("check-decisions.json")).unwrap()).unwrap();
+    let cases = document["cases"].as_array().unwrap();
+    assert!(!cases.is_empty());
+
+    for case in cases {
+        let name = case["name"].as_str().unwrap();
+        let evidence: TestRunEvidence =
+            serde_json::from_slice(&fs::read(fixture(case["evidence"].as_str().unwrap())).unwrap())
+                .unwrap();
+        let check: TestRunCheck = serde_json::from_value(case["check"].clone()).unwrap();
+        let candidate: TestRunCandidate =
+            serde_json::from_value(case["candidate"].clone()).unwrap();
+        let decision =
+            verify_test_run_check(&check, &candidate, &evidence, case["now"].as_str().unwrap());
         assert!(case["decision"].is_object(), "{name} must pin a decision");
         assert_eq!(
             serde_json::to_value(&decision).unwrap(),

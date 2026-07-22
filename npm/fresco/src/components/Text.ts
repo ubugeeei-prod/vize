@@ -66,18 +66,20 @@ export const Text = defineComponent({
     underline: Boolean,
     strikethrough: Boolean,
     inverse: Boolean,
-    "aria-label": String,
-    "aria-hidden": Boolean,
+    // Declared camelCase so the runtime props object (which Vue camelizes)
+    // matches these keys; templates and h() may still pass "aria-label" etc.
+    ariaLabel: String,
+    ariaHidden: Boolean,
   },
   setup(props, { slots }) {
     const isScreenReaderEnabled = useIsScreenReaderEnabled();
 
     return () => {
-      if (isScreenReaderEnabled && props["aria-hidden"]) return null;
+      if (isScreenReaderEnabled && props.ariaHidden) return null;
 
       const text =
-        isScreenReaderEnabled && props["aria-label"]
-          ? props["aria-label"]
+        isScreenReaderEnabled && props.ariaLabel
+          ? props.ariaLabel
           : (props.content ?? stringifyChildren(slots.default?.()));
 
       return h("text", {
@@ -91,8 +93,8 @@ export const Text = defineComponent({
         underline: props.underline,
         strikethrough: props.strikethrough,
         inverse: props.inverse,
-        "aria-label": props["aria-label"],
-        "aria-hidden": props["aria-hidden"],
+        "aria-label": props.ariaLabel,
+        "aria-hidden": props.ariaHidden,
       });
     };
   },

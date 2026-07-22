@@ -1,20 +1,46 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-import { test } from "node:test";
 
-const source = await readFile(new URL("./PrimitiveElement.vue", import.meta.url), "utf8");
+import { test } from "vite-plus/test";
+import { defineComponent, h } from "vue";
 
-void test("ships a polymorphic SFC without render-function escape hatches", () => {
-  assert.match(source, /<component :is="as"/);
-  assert.match(source, /readonly as\?: PrimitiveAs/);
-  assert.match(source, /@default "div"/);
-  assert.doesNotMatch(source, /\bh\s*\(/);
-  assert.doesNotMatch(source, /defineOptions|withDefaults|interface (?:Props|Emits)/);
+import PrimitiveElement from "./PrimitiveElement.vue";
+import { mountInteraction } from "./testing/mount.ts";
+
+test("renders the requested element with slotted content", () => {
+  const handle = mountInteraction(PrimitiveElement, {
+    props: { as: "section" },
+    slots: { default: "Content" },
+  });
+  const root = handle.root();
+
+  assert.equal(root.tagName, "SECTION");
+  assert.equal(root.getAttribute("data-vize-ui"), "primitive");
+  assert.equal(root.textContent, "Content");
+  handle.unmount();
 });
 
-void test("forwards every slot and exposes the rendered value deliberately", () => {
-  assert.match(source, /v-for="name in getSlotNames\(\)"/);
-  assert.match(source, /<slot :name="name" \/>/);
-  assert.match(source, /defineExpose\(\{ element \}\)/);
-  assert.match(source, /data-vize-ui="primitive"/);
+test("defaults to a div and exposes the rendered element", () => {
+  const handle = mountInteraction(PrimitiveElement, { slots: { default: "Content" } });
+
+  assert.equal(handle.root().tagName, "DIV");
+  const exposed = handle.exposes<{ element: HTMLElement | null }>();
+  assert.ok(exposed.element === handle.root(), "the exposed element must be the rendered node");
+  handle.unmount();
+});
+
+test("forwards every named slot to a component target", () => {
+  const Card = defineComponent({
+    setup:
+      (_, { slots }) =>
+      () =>
+        h("article", [h("header", slots.title?.()), h("main", slots.default?.())]),
+  });
+  const handle = mountInteraction(PrimitiveElement, {
+    props: { as: Card },
+    slots: { title: "Heading", default: "Body" },
+  });
+
+  assert.equal(handle.root().querySelector("header")?.textContent, "Heading");
+  assert.equal(handle.root().querySelector("main")?.textContent, "Body");
+  handle.unmount();
 });

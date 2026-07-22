@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vite-plus/test";
 import { effectScope, ref } from "vue";
 
 import { useControllableState } from "./controllable-state.ts";
 
-void test("updates and resets uncontrolled state", () => {
+test("updates and resets uncontrolled state", () => {
   const changes: [number, number][] = [];
   const state = useControllableState({
     defaultValue: 1,
@@ -24,7 +24,7 @@ void test("updates and resets uncontrolled state", () => {
   ]);
 });
 
-void test("requests controlled updates without mutating the source", () => {
+test("requests controlled updates without mutating the source", () => {
   const source = ref<boolean | undefined>(false);
   let requested: boolean | undefined;
   const state = useControllableState({
@@ -42,7 +42,7 @@ void test("requests controlled updates without mutating the source", () => {
   assert.equal(state.value.value, true);
 });
 
-void test("retains the last value when control is released", () => {
+test("retains the last value when control is released", () => {
   const scope = effectScope();
   const source = ref<string | undefined>("controlled");
   const state = scope.run(() => useControllableState({ value: source, defaultValue: "initial" }));
@@ -55,7 +55,7 @@ void test("retains the last value when control is released", () => {
   scope.stop();
 });
 
-void test("supports domain-specific equality and reports redundant updates", () => {
+test("supports domain-specific equality and reports redundant updates", () => {
   const state = useControllableState({
     defaultValue: { id: 1, label: "first" },
     equals: (left, right) => left.id === right.id,

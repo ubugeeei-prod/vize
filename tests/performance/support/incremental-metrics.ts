@@ -7,10 +7,16 @@ import { performance } from "node:perf_hooks";
 
 import { repoRoot } from "../../_helpers/realworld-patch.ts";
 
-export const incrementalMetricsDir = path.join(
-  repoRoot,
-  "target/vize-tests/metrics/misskey-lsp-incremental",
-);
+export type IncrementalSuite = {
+  /** Metrics directory name under `target/vize-tests/metrics/`. */
+  id: string;
+  /** Markdown summary heading, e.g. `Misskey LSP Incremental Oracle`. */
+  title: string;
+};
+
+export function incrementalMetricsDir(suiteId: string): string {
+  return path.join(repoRoot, "target/vize-tests/metrics", suiteId);
+}
 
 type MetricContext = {
   fixture: string;
@@ -24,9 +30,11 @@ export class IncrementalMetrics {
   private readonly timingsMs: Record<string, number> = {};
   private readonly rssSamplesKiB: Record<string, number> = {};
   private readonly processId: number;
+  private readonly suite: IncrementalSuite;
 
-  constructor(processId: number) {
+  constructor(processId: number, suite: IncrementalSuite) {
     this.processId = processId;
+    this.suite = suite;
   }
 
   async measure<T>(name: string, operation: () => Promise<T>): Promise<T> {
@@ -45,7 +53,8 @@ export class IncrementalMetrics {
   }
 
   write(context: MetricContext, failure?: unknown): void {
-    fs.mkdirSync(incrementalMetricsDir, { recursive: true });
+    const outputDir = incrementalMetricsDir(this.suite.id);
+    fs.mkdirSync(outputDir, { recursive: true });
     const sampledPeakRssKiB = Math.max(0, ...Object.values(this.rssSamplesKiB));
     const data = {
       schemaVersion: 1,
@@ -72,20 +81,22 @@ export class IncrementalMetrics {
       sampledPeakRssKiB,
       note: "Latency and RSS are report-only; diagnostic, completion, hover, and repair oracles are gated.",
     };
-    fs.writeFileSync(
-      path.join(incrementalMetricsDir, "metrics.json"),
-      `${JSON.stringify(data, null, 2)}\n`,
-    );
-    fs.writeFileSync(path.join(incrementalMetricsDir, "summary.md"), renderMarkdown(data));
+    fs.writeFileSync(path.join(outputDir, "metrics.json"), `${JSON.stringify(data, null, 2)}\n`);
+    fs.writeFileSync(path.join(outputDir, "summary.md"), renderMarkdown(this.suite.title, data));
   }
 }
 
-export function countFiles(root: string, extensions: ReadonlySet<string>): number {
+export function countFiles(
+  root: string,
+  extensions: ReadonlySet<string>,
+  ignoreDirectories?: ReadonlySet<string>,
+): number {
   let count = 0;
   for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
     const filePath = path.join(root, entry.name);
     if (entry.isDirectory()) {
-      count += countFiles(filePath, extensions);
+      if (ignoreDirectories?.has(entry.name)) continue;
+      count += countFiles(filePath, extensions, ignoreDirectories);
     } else if (extensions.has(path.extname(entry.name))) {
       count += 1;
     }
@@ -106,16 +117,19 @@ function gitHead(): string {
   return result.status === 0 ? result.stdout.trim() : "unknown";
 }
 
-function renderMarkdown(data: {
-  status: string;
-  fixture: string;
-  fixtureRevision: string;
-  corpus: { vueFiles: number; vueAndTypeScriptFiles: number; baselineDiagnostics: number };
-  timingsMs: Record<string, number>;
-  sampledPeakRssKiB: number;
-}): string {
+function renderMarkdown(
+  title: string,
+  data: {
+    status: string;
+    fixture: string;
+    fixtureRevision: string;
+    corpus: { vueFiles: number; vueAndTypeScriptFiles: number; baselineDiagnostics: number };
+    timingsMs: Record<string, number>;
+    sampledPeakRssKiB: number;
+  },
+): string {
   const lines = [
-    "## Misskey LSP Incremental Oracle",
+    `## ${title}`,
     "",
     `Status: **${data.status}**. Fixture: \`${data.fixture}@${data.fixtureRevision}\`.`,
     "",

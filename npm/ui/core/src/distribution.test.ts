@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { test } from "node:test";
+// Paths are resolved from the package cwd: the runner virtualizes import.meta.url.
+import path from "node:path";
 
-const packageDirectory = new URL("../", import.meta.url);
+import { test } from "vite-plus/test";
 
 const publicEntries = [
   ".",
@@ -13,10 +14,8 @@ const publicEntries = [
   "./visually-hidden",
 ] as const;
 
-void test("every public entry exposes generated JavaScript and declarations", async () => {
-  const manifest = JSON.parse(
-    await readFile(new URL("package.json", packageDirectory), "utf8"),
-  ) as {
+test("every public entry exposes generated JavaScript and declarations", async () => {
+  const manifest = JSON.parse(await readFile(path.resolve("package.json"), "utf8")) as {
     exports: Record<string, string | { default: string; import: string; types: string }>;
     sideEffects: string[];
   };
@@ -30,26 +29,19 @@ void test("every public entry exposes generated JavaScript and declarations", as
     if (typeof target !== "object") continue;
 
     assert.equal(target.import, target.default);
-    await assert.doesNotReject(
-      readFile(new URL(target.import.replace(/^\.\//, ""), packageDirectory)),
-    );
-    await assert.doesNotReject(
-      readFile(new URL(target.types.replace(/^\.\//, ""), packageDirectory)),
-    );
+    await assert.doesNotReject(readFile(path.resolve(target.import)));
+    await assert.doesNotReject(readFile(path.resolve(target.types)));
   }
 });
 
-void test("required accessibility CSS follows its component entry", async () => {
-  const entry = await readFile(new URL("dist/visually-hidden.mjs", packageDirectory), "utf8");
+test("required accessibility CSS follows its component entry", async () => {
+  const entry = await readFile(path.resolve("dist/visually-hidden.mjs"), "utf8");
   const componentPath = entry.match(/from ["'](\.\/visually-hidden-[^"']+)["']/)?.[1];
   assert.ok(componentPath, "component chunk must be reachable from its public entry");
 
-  const component = await readFile(
-    new URL(`dist/${componentPath.replace(/^\.\//, "")}`, packageDirectory),
-    "utf8",
-  );
+  const component = await readFile(path.resolve("dist", componentPath), "utf8");
   assert.match(component, /import\s*["']\.\/style\.css["'];?/);
 
-  const style = await readFile(new URL("dist/style.css", packageDirectory), "utf8");
+  const style = await readFile(path.resolve("dist/style.css"), "utf8");
   assert.match(style, /data-vize-ui=["']?visually-hidden["']?/);
 });

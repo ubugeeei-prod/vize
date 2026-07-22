@@ -56,9 +56,15 @@
       "import": "./dist/test-run-admission.mjs",
       "default": "./dist/test-run-admission.mjs"
     },
+    "./test-run/check": {
+      "types": "./dist/test-run-check.d.mts",
+      "import": "./dist/test-run-check.mjs",
+      "default": "./dist/test-run-check.mjs"
+    },
     "./schema": "./dist/application-contract.schema.json",
     "./test-run/schema": "./dist/test-run-evidence.schema.json",
-    "./test-run/admission/schema": "./dist/test-run-admission.schema.json"
+    "./test-run/admission/schema": "./dist/test-run-admission.schema.json",
+    "./test-run/check/schema": "./dist/test-run-check.schema.json"
   },
   "publishConfig": {
     "access": "public"

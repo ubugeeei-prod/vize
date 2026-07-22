@@ -107,8 +107,17 @@ function shouldSchedule(options: UseTemporalNowOptions): boolean {
  * effect scope.
  *
  * The timer is replaced when reactive options change and is always cancelled
- * when the owning scope stops. During server rendering, no timer starts unless
+ * when the owning scope stops. Call inside an active effect scope; without
+ * one, there is no automatic timer cleanup. During
+ * server rendering, no timer starts unless
  * {@link UseTemporalNowOptions.runOnServer} is explicitly enabled.
+ *
+ * @param options Clock scheduling, pause, and runtime overrides.
+ * @default options {}
+ * @throws `RangeError` tagged `VIZE_COMPOSE_TEMPORAL_INVALID_INTERVAL` when
+ * the resolved interval is not finite or not greater than zero, both
+ * synchronously at creation and on invalid reactive updates.
+ * @returns Reactive clock controls.
  */
 export function useTemporalNow(options: UseTemporalNowOptions = {}): TemporalClock {
   const readNow = options.now ?? Temporal.Now.instant;
@@ -144,7 +153,14 @@ export function useTemporalNow(options: UseTemporalNowOptions = {}): TemporalClo
  * Creates a reactive zoned date-time derived from a scoped Temporal clock.
  *
  * Changes to {@link UseTemporalZonedDateTimeOptions.timeZone} are reflected
- * without replacing the underlying timer.
+ * without replacing the underlying timer. Scheduling, server rendering, and
+ * scope-cleanup rules are shared with {@link useTemporalNow}.
+ *
+ * @param options Clock scheduling plus the reactive time zone.
+ * @default options {}
+ * @throws `RangeError` for invalid intervals (see {@link useTemporalNow}),
+ * and on read when the reactive time zone cannot be resolved by Temporal.
+ * @returns Computed zoned date-time in the reactive time zone.
  */
 export function useTemporalZonedDateTime(
   options: UseTemporalZonedDateTimeOptions = {},
@@ -159,4 +175,8 @@ export function useTemporalZonedDateTime(
   });
 }
 
+/**
+ * Temporal API namespaces re-exported from the underlying polyfill so hosts
+ * can construct instants and time zones without a direct dependency.
+ */
 export { Temporal, TemporalIntl };

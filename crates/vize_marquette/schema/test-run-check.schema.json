@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vizejs.dev/schemas/marquette/test-run-check.schema.json",
+  "title": "Vize Test Run Check",
+  "description": "Retained, release-bound tests check for one deployment decision. This record replaces every generic test-result reference: a release decision may only satisfy its tests evidence with the exact test-run:<sha256> admission id of an independently verified run, bound to the six exact candidate facts and to the independent observer that recorded the admission. Verification is fail-closed and identical across JavaScript, Rust, Go, and JVM hosts; the shared tests/fixtures/test-run-evidence check-decision fixtures are the conformance source of truth for new host implementations.",
+  "$ref": "#/$defs/check",
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "admissionId": {
+      "description": "Exact test-run:<sha256> admission id. Summary blobs, report paths, run URLs, and green workflow labels are not admissible test evidence.",
+      "type": "string",
+      "pattern": "^test-run:[a-f0-9]{64}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}Z$"
+    },
+    "candidate": {
+      "description": "Exact release candidate the run was admitted for. Every field must equal the deciding gate's own facts; verification rejects any difference.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "application",
+        "environment",
+        "contractFingerprint",
+        "sourceRevision",
+        "release",
+        "artifactFingerprint"
+      ],
+      "properties": {
+        "application": { "$ref": "#/$defs/identifier" },
+        "environment": { "$ref": "#/$defs/identifier" },
+        "contractFingerprint": { "$ref": "#/$defs/digest" },
+        "sourceRevision": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40,128}$"
+        },
+        "release": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "artifactFingerprint": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "formatVersion", "evidence", "candidate", "observer", "observedAt"],
+      "properties": {
+        "format": {
+          "description": "Serialized format marker; readers must reject any other value.",
+          "const": "vize.test-run.check"
+        },
+        "formatVersion": {
+          "description": "Serialized format version; readers must reject a higher value until they explicitly support it.",
+          "const": 1
+        },
+        "evidence": { "$ref": "#/$defs/admissionId" },
+        "candidate": { "$ref": "#/$defs/candidate" },
+        "observer": {
+          "description": "Identity of the independent observer that recorded the admission — the trusted promotion boundary, never the runner that executed the tests. Verification rejects a check whose observer equals the run's runner identity.",
+          "$ref": "#/$defs/identifier"
+        },
+        "observedAt": {
+          "description": "Millisecond-precision UTC instant the admission was observed. Verification rejects an observation earlier than the run's completed verification.",
+          "$ref": "#/$defs/timestamp"
+        }
+      }
+    }
+  }
+}

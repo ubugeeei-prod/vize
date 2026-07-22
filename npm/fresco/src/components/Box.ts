@@ -228,16 +228,18 @@ export const Box = defineComponent({
     color: String,
     bg: String,
     backgroundColor: String,
-    "aria-label": String,
-    "aria-hidden": Boolean,
-    "aria-role": String as PropType<BoxProps["aria-role"]>,
-    "aria-state": Object as PropType<BoxProps["aria-state"]>,
+    // Declared camelCase so the runtime props object (which Vue camelizes)
+    // matches these keys; templates and h() may still pass "aria-label" etc.
+    ariaLabel: String,
+    ariaHidden: Boolean,
+    ariaRole: String as PropType<BoxProps["aria-role"]>,
+    ariaState: Object as PropType<BoxProps["aria-state"]>,
   },
   setup(props, { slots }) {
     const isScreenReaderEnabled = useIsScreenReaderEnabled();
 
     return () => {
-      if (isScreenReaderEnabled && props["aria-hidden"]) return null;
+      if (isScreenReaderEnabled && props.ariaHidden) return null;
 
       const style: Record<string, unknown> = {};
 
@@ -302,8 +304,8 @@ export const Box = defineComponent({
       if (props.overflowY) style.overflowY = props.overflowY;
 
       const children =
-        isScreenReaderEnabled && props["aria-label"]
-          ? [h("text", { text: props["aria-label"] })]
+        isScreenReaderEnabled && props.ariaLabel
+          ? [h("text", { text: props.ariaLabel })]
           : slots.default?.();
 
       return h(
@@ -320,10 +322,10 @@ export const Box = defineComponent({
           borderBackgroundColor: props.borderBackgroundColor,
           fg: props.fg ?? props.color,
           bg: props.bg ?? props.backgroundColor,
-          "aria-label": props["aria-label"],
-          "aria-hidden": props["aria-hidden"],
-          "aria-role": props["aria-role"],
-          "aria-state": props["aria-state"],
+          "aria-label": props.ariaLabel,
+          "aria-hidden": props.ariaHidden,
+          "aria-role": props.ariaRole,
+          "aria-state": props.ariaState,
         },
         children,
       );

@@ -27,9 +27,18 @@ export interface UseMediaQueryOptions {
 /**
  * Evaluate a reactive media query without requiring browser globals.
  *
+ * During server rendering (or whenever no capability host resolves) the ref
+ * holds the configured server value and no subscription is created. The
+ * change subscription follows the reactive query and host: each
+ * re-evaluation removes the previous listener, and the final listener is
+ * removed when the owning reactive scope stops. Call inside an active scope
+ * so the subscription is released. A host whose matcher throws propagates
+ * the error to the active effect run; the browser default never throws.
+ *
  * @param query Reactive media-query source.
  * @param options Runtime capability and server-rendered fallback.
  * @default options {}
+ * @returns Readonly ref that is `true` while the query matches.
  */
 export function useMediaQuery(
   query: MaybeRefOrGetter<string>,
@@ -62,8 +71,13 @@ export type MotionPreference = "reduce" | "no-preference";
 /**
  * Return the reactive user motion preference.
  *
+ * Shares {@link useMediaQuery} semantics: during server rendering the
+ * preference is `"no-preference"` unless `ssrValue` is `true`, and the
+ * underlying subscription is removed when the owning reactive scope stops.
+ *
  * @param options Runtime capability and server-rendered fallback.
  * @default options {}
+ * @returns Computed preference for `(prefers-reduced-motion: reduce)`.
  */
 export function useReducedMotion(
   options: UseMediaQueryOptions = {},

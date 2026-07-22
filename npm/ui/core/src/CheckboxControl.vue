@@ -5,7 +5,7 @@ import { getCheckboxState } from "./checkbox-state.ts";
 import { useControllableState } from "./controllable-state.ts";
 
 const {
-  modelValue,
+  modelValue = undefined,
   defaultChecked = false,
   indeterminate = false,
   disabled = false,
