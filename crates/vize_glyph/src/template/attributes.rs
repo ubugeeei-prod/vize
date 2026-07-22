@@ -102,13 +102,17 @@ fn attr_sort_key(name: &str, merge_bind: bool) -> (u8, String) {
 /// output can never introduce that lint finding (#3251). Patina quirks are
 /// mirrored on purpose: `:ref`/`:id` are plain bindings, only `:key`/`:is`
 /// are special, and unmatched directives (`v-is`, `v-memo`) join the slots.
-///
 /// 0 `is`/`:is`; 1 `v-for`; 2 conditionals `v-if`/`v-else-if`/`v-else`/
 /// `v-show`/`v-cloak`; 3 render modifiers `v-pre`/`v-once`; 4 `id`; 5 unique
 /// `ref`/`key`/`:key`; 6 `v-model`; 7 other directives `v-slot`/`#xxx`; 8 other
 /// attributes (bound `:class` and static `class` share a priority); 9 events
 /// `@xxx`/`v-on`; 10 content `v-html`/`v-text`.
 pub(crate) fn attribute_priority(name: &str) -> u8 {
+    // Exact directive name or an `:arg`/`.mod` boundary (so `v-models` etc. fall through to 7).
+    fn matches_directive(name: &str, directive: &str) -> bool {
+        name.strip_prefix(directive)
+            .is_some_and(|rest| rest.is_empty() || rest.starts_with([':', '.']))
+    }
     if matches!(name, "is" | ":is" | "v-bind:is") {
         return 0;
     }
@@ -127,14 +131,14 @@ pub(crate) fn attribute_priority(name: &str) -> u8 {
     if matches!(name, "ref" | "key" | ":key" | "v-bind:key") {
         return 5;
     }
-    if name.starts_with("v-model") {
+    if matches_directive(name, "v-model") {
         return 6;
     }
     if matches!(name, "v-html" | "v-text") {
         return 10;
     }
     // Events precede the directive fallback so `v-on` cannot swallow `v-once`.
-    if name.starts_with('@') || name.starts_with("v-on") {
+    if name.starts_with('@') || matches_directive(name, "v-on") {
         return 9;
     }
     // Slots and every other directive form are patina's OtherDirectives.
@@ -142,7 +146,7 @@ pub(crate) fn attribute_priority(name: &str) -> u8 {
         return 7;
     }
     // Bindings stay with plain attributes (patina: OtherAttrs).
-    if name.starts_with(':') || name.starts_with("v-bind") || name.starts_with('.') {
+    if name.starts_with(':') || matches_directive(name, "v-bind") || name.starts_with('.') {
         return 8;
     }
     if name.starts_with("v-") {

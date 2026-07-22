@@ -37,3 +37,27 @@ fn test_attribute_priority_order() {
     assert!(attribute_priority("@click") < attribute_priority("v-html"));
     assert_eq!(attribute_priority("v-html"), attribute_priority("v-text"));
 }
+
+#[test]
+fn custom_directives_are_not_matched_by_builtin_prefixes() {
+    // `v-models`/`v-onboarding`/`v-binding` are custom directives, not the
+    // built-ins `v-model`/`v-on`/`v-bind`, so they must land in OtherDirectives
+    // (7), the same group as any other unmatched `v-` directive.
+    let other_directives = attribute_priority("v-tooltip");
+    assert_eq!(attribute_priority("v-models"), other_directives);
+    assert_eq!(attribute_priority("v-onboarding"), other_directives);
+    assert_eq!(attribute_priority("v-binding"), other_directives);
+    // Valid argument/modifier forms of the built-ins still match.
+    assert_eq!(
+        attribute_priority("v-model"),
+        attribute_priority("v-model.trim")
+    );
+    assert_eq!(
+        attribute_priority("v-on:click"),
+        attribute_priority("@click")
+    );
+    assert_eq!(
+        attribute_priority(":class"),
+        attribute_priority("v-bind:class")
+    );
+}
