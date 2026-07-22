@@ -126,7 +126,7 @@ fn check_server_maps_dependency_patch_diagnostics_to_the_parent_sfc() {
             "message": "Type 'number' is not assignable to type 'string'.",
             "severity": "error",
             "line": 7,
-            "column": 34,
+            "column": 27,
             "code": "TS2322"
         }])
     );
