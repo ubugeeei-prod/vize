@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { formatSfcLintResults, lintSfcFiles } from "@vizeui/tooling/lint-sfc";
-import type { SfcLintFunction } from "@vizeui/tooling/lint-sfc";
+import { formatSfcLintResults, lintSfcFiles } from "@vizejs/ui-tooling/lint-sfc";
+import type { SfcLintFunction } from "@vizejs/ui-tooling/lint-sfc";
 
 void test("discovers every SFC with the opinionated Vize contract", async () => {
   const requests: Parameters<SfcLintFunction>[1][] = [];

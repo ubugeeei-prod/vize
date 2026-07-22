@@ -6,7 +6,7 @@ import {
   formatSfcLintResults,
   lintSfcFiles as lintFiles,
   runSfcLintCli,
-} from "@vizeui/tooling/lint-sfc";
+} from "@vizejs/ui-tooling/lint-sfc";
 
 export { formatSfcLintResults };
 

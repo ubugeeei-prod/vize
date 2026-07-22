@@ -7,7 +7,7 @@ export default defineConfig({
   },
   fmt: { ignorePatterns: ["dist/**"] },
   pack: {
-    entry: ["src/index.ts"],
+    entry: { index: "src/index.ts", temporal: "src/temporal.ts" },
     format: "esm",
     dts: true,
     clean: true,

@@ -1,5 +1,5 @@
 {
-  "name": "@vizeui/tooling",
+  "name": "@vizejs/ui-tooling",
   "version": "0.298.0",
   "private": true,
   "description": "Internal source-quality tooling for Vize UI packages",

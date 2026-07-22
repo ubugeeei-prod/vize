@@ -12,6 +12,9 @@ const budgets = new Map([
   ["controllable-state.mjs", 600],
   ["primitive.mjs", 800],
   ["visually-hidden.mjs", 800],
+  ["media.mjs", 2_400],
+  ["media-pdf.mjs", 2_048],
+  ["media-source.mjs", 1_800],
 ]);
 
 async function collectStaticDependencies(file, collected = new Map()) {
@@ -42,7 +45,7 @@ for (const [entry, maximumGzipBytes] of budgets) {
 
   console.log(
     JSON.stringify({
-      entry: `@vizeui/core/${entry.replace(/\.mjs$/, "")}`,
+      entry: `@vizejs/ui/${entry.replace(/\.mjs$/, "")}`,
       files: files.size,
       gzipBytes,
       maximumGzipBytes,

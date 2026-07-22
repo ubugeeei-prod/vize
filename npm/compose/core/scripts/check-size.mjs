@@ -1,10 +1,22 @@
 import { readFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 
-const maximumGzipBytes = 4 * 1024;
-const gzipBytes = gzipSync(
-  await readFile(new URL("../dist/index.mjs", import.meta.url)),
-).byteLength;
+const budgets = new Map([
+  ["index.mjs", 4 * 1024],
+  ["temporal.mjs", 2 * 1024],
+]);
 
-console.log(JSON.stringify({ entry: "@vizecompose/core", gzipBytes, maximumGzipBytes }));
-if (gzipBytes > maximumGzipBytes) process.exitCode = 1;
+for (const [file, maximumGzipBytes] of budgets) {
+  const gzipBytes = gzipSync(
+    await readFile(new URL(`../dist/${file}`, import.meta.url)),
+  ).byteLength;
+
+  console.log(
+    JSON.stringify({
+      entry: `@vizejs/composable/${file.replace(/\.mjs$/, "")}`,
+      gzipBytes,
+      maximumGzipBytes,
+    }),
+  );
+  if (gzipBytes > maximumGzipBytes) process.exitCode = 1;
+}

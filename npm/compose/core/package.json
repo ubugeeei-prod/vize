@@ -1,5 +1,5 @@
 {
-  "name": "@vizecompose/core",
+  "name": "@vizejs/composable",
   "version": "0.299.1",
   "description": "Lifecycle-safe composable foundations for Vize applications",
   "keywords": [
@@ -31,6 +31,11 @@
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
+    },
+    "./temporal": {
+      "types": "./dist/temporal.d.mts",
+      "import": "./dist/temporal.mjs",
+      "default": "./dist/temporal.mjs"
     }
   },
   "publishConfig": {
@@ -44,6 +49,9 @@
     "check:fix": "vp check --fix src scripts vite.config.ts",
     "check:size": "node scripts/check-size.mjs",
     "fmt": "vp fmt --write src scripts vite.config.ts"
+  },
+  "dependencies": {
+    "temporal-polyfill-lite": "0.4.2"
   },
   "devDependencies": {
     "@types/node": "catalog:typescript",

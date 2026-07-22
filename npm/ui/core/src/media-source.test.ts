@@ -101,14 +101,14 @@ void test("publishes independent ESM entries and declarations", async () => {
     readonly exports: Readonly<Record<string, { readonly import: string; readonly types: string }>>;
   };
 
-  for (const exportName of [".", "./pdf", "./source"]) {
+  for (const exportName of ["./media", "./media/pdf", "./media/source"]) {
     const entry = packageJson.exports[exportName];
     if (entry === undefined) assert.fail(`Missing package export: ${exportName}`);
     await stat(new URL(`..${entry.import.slice(1)}`, import.meta.url));
     await stat(new URL(`..${entry.types.slice(1)}`, import.meta.url));
   }
 
-  const distributionUrl = new URL("../dist/source.mjs", import.meta.url);
+  const distributionUrl = new URL("../dist/media-source.mjs", import.meta.url);
   const sourceEntry = (await import(distributionUrl.href)) as {
     readonly normalizeMediaSource: unknown;
   };

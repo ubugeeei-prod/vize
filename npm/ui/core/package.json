@@ -1,5 +1,5 @@
 {
-  "name": "@vizeui/core",
+  "name": "@vizejs/ui",
   "version": "0.299.1",
   "description": "Accessible, headless, Native CSS-first UI primitives",
   "keywords": [
@@ -64,7 +64,22 @@
       "import": "./dist/visually-hidden.mjs",
       "default": "./dist/visually-hidden.mjs"
     },
-    "./style.css": "./dist/style.css"
+    "./style.css": "./dist/style.css",
+    "./media": {
+      "types": "./dist/media.d.mts",
+      "import": "./dist/media.mjs",
+      "default": "./dist/media.mjs"
+    },
+    "./media/pdf": {
+      "types": "./dist/media-pdf.d.mts",
+      "import": "./dist/media-pdf.mjs",
+      "default": "./dist/media-pdf.mjs"
+    },
+    "./media/source": {
+      "types": "./dist/media-source.d.mts",
+      "import": "./dist/media-source.mjs",
+      "default": "./dist/media-source.mjs"
+    }
   },
   "publishConfig": {
     "access": "public"
@@ -85,7 +100,7 @@
     "@types/node": "catalog:typescript",
     "@vitejs/plugin-vue": "catalog:vite-stack",
     "@vizejs/native": "workspace:*",
-    "@vizeui/tooling": "workspace:*",
+    "@vizejs/ui-tooling": "workspace:*",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",
