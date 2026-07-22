@@ -76,6 +76,7 @@ const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
     "vue/sfc-element-order",
     "vue/require-scoped-style",
     "vue/single-style-block",
+    "vue/warn-custom-block",
     "ecosystem/void-link-require-href",
     "ecosystem/void-link-valid-method",
 ];
@@ -121,10 +122,9 @@ impl Linter {
         ctx.set_config_rule_severities(self.severity_overrides.clone());
         ctx.set_help_level(self.help_level);
 
-        // SFC-level rules are uncommon but expensive when each one reparses the
-        // file. Reuse the descriptor produced by the main lint pipeline whenever
-        // available, and only parse lazily when a caller enters this path without
-        // a shared descriptor.
+        // SFC-level rules are uncommon but expensive when each one reparses the file.
+        // Reuse the descriptor produced by the main lint pipeline whenever available,
+        // and only parse lazily when a caller enters this path without one.
         let owned_descriptor;
         let shared_descriptor = if !self.has_active_shared_sfc_descriptor_rules() {
             None
