@@ -20,6 +20,7 @@ packages:
 
 overrides:
   "@azure/msal-node>uuid": "11.1.1"
+  "@hono/node-server": "2.0.11"
   "@unhead/vue": "2.1.15"
   "brace-expansion@2": "2.1.2"
   "brace-expansion@5": "5.0.7"
@@ -27,8 +28,9 @@ overrides:
   devalue: "5.8.1"
   dompurify: "3.4.11"
   esbuild: "0.28.1"
+  fast-uri: "3.1.4"
   h3: "1.15.11"
-  hono: "4.12.25"
+  hono: "4.12.31"
   launch-editor: "2.14.1"
   nanotar: "0.3.0"
   nitropack: "2.13.4"
@@ -38,7 +40,7 @@ overrides:
   shell-quote: "1.9.0"
   simple-git: "3.36.0"
   srvx: "0.11.15"
-  svgo: "4.0.1"
+  svgo: "4.0.2"
   tar: "7.5.19"
   "vite@>=7.0.0 <7.3.5": "7.3.5"
   yaml: "2.9.0"
