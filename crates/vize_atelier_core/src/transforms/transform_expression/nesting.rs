@@ -2,8 +2,8 @@
 mod scan;
 
 use scan::{
-    is_speculative_type_angle_open, keyword_allows_regex_after, skip_block_comment, skip_identifier,
-    skip_line_comment, skip_number, skip_quoted, skip_regex, skip_template_text,
+    is_speculative_type_angle_open, keyword_allows_regex_after, skip_block_comment,
+    skip_identifier, skip_line_comment, skip_number, skip_quoted, skip_regex, skip_template_text,
 };
 
 /// Maximum expression nesting depth accepted before parsing.
