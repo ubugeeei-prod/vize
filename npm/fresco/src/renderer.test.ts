@@ -73,7 +73,14 @@ void test("inserts, reorders, and removes list children through anchors", async 
   );
 
   const texts = () => firstChild(mounted).children.map((child) => child.props.text);
+  const [a, b] = firstChild(mounted).children;
   assert.deepEqual(texts(), ["a", "b"]);
+
+  items.value = ["b", "a"];
+  await nextTick();
+  assert.deepEqual(texts(), ["b", "a"], "keyed children swap order");
+  assert.equal(firstChild(mounted).children[0], b, "retained node moves with its key");
+  assert.equal(firstChild(mounted).children[1], a, "retained node moves with its key");
 
   items.value = ["c", "a", "b"];
   await nextTick();

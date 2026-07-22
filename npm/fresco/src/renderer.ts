@@ -52,6 +52,16 @@ const rendererOptions: RendererOptions<FrescoNode, FrescoElement> = {
   },
 
   insert(child, parent, anchor) {
+    // Vue reuses host nodes for keyed moves and re-inserts them without a
+    // preceding remove, relying on DOM insertBefore move semantics. Detach the
+    // child from its current position first so a reorder repositions the
+    // existing node instead of duplicating it.
+    if (child.parent) {
+      const existing = child.parent.children.indexOf(child);
+      if (existing !== -1) {
+        child.parent.children.splice(existing, 1);
+      }
+    }
     child.parent = parent;
     if (anchor) {
       const index = parent.children.indexOf(anchor);
