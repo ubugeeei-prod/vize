@@ -6,7 +6,7 @@ use crate::validate::rules::{contract_path, validate_identifier};
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 
 /// Validates the shared identifier grammar and the schema length bound.
-pub(super) fn check_identifier(id: &str, path: &str, diagnostics: &mut Vec<ContractDiagnostic>) {
+pub(crate) fn check_identifier(id: &str, path: &str, diagnostics: &mut Vec<ContractDiagnostic>) {
     validate_identifier(id, path, "VIZE_MARQUETTE_103", diagnostics);
     if id.is_empty() || id.len() > 128 {
         diagnostics.push(ContractDiagnostic::error(
@@ -18,7 +18,7 @@ pub(super) fn check_identifier(id: &str, path: &str, diagnostics: &mut Vec<Contr
 }
 
 /// Validates a lowercase 64-character SHA-256 fingerprint.
-pub(super) fn check_digest(value: &str, path: &str, diagnostics: &mut Vec<ContractDiagnostic>) {
+pub(crate) fn check_digest(value: &str, path: &str, diagnostics: &mut Vec<ContractDiagnostic>) {
     if !is_lower_hex(value, 64, 64) {
         diagnostics.push(ContractDiagnostic::error(
             "VIZE_MARQUETTE_104",
@@ -29,11 +29,15 @@ pub(super) fn check_digest(value: &str, path: &str, diagnostics: &mut Vec<Contra
 }
 
 /// Validates an exact source revision digest.
-pub(super) fn check_source_revision(value: &str, diagnostics: &mut Vec<ContractDiagnostic>) {
+pub(crate) fn check_source_revision(
+    value: &str,
+    path: &str,
+    diagnostics: &mut Vec<ContractDiagnostic>,
+) {
     if !is_lower_hex(value, 40, 128) {
         diagnostics.push(ContractDiagnostic::error(
             "VIZE_MARQUETTE_105",
-            "sourceRevision",
+            path,
             "source revision must be 40 to 128 lowercase hexadecimal characters",
         ));
     }
@@ -44,7 +48,7 @@ pub(super) fn check_source_revision(value: &str, diagnostics: &mut Vec<ContractD
 ///
 /// The fixed-width format keeps lexicographic and chronological order
 /// identical, which the ordering rules rely on.
-pub(super) fn check_timestamp(value: &str, path: &str, diagnostics: &mut Vec<ContractDiagnostic>) {
+pub(crate) fn check_timestamp(value: &str, path: &str, diagnostics: &mut Vec<ContractDiagnostic>) {
     if !is_strict_timestamp(value.as_bytes()) {
         diagnostics.push(ContractDiagnostic::error(
             "VIZE_MARQUETTE_107",

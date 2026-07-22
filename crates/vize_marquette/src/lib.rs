@@ -61,15 +61,16 @@ pub use model::{
     RuntimeFamily, Target,
 };
 pub use test_run::{
-    CanonicalTestRunError, TEST_RUN_ADMISSION_PREFIX, TEST_RUN_DENIAL_CODES,
-    TEST_RUN_EVIDENCE_FORMAT, TEST_RUN_EVIDENCE_FORMAT_VERSION, TEST_RUN_MAX_SHARDS,
-    TEST_RUN_MAX_SUITES, TEST_RUN_MAX_TARGETS, TestRunAdmissionDecision, TestRunArtifact,
-    TestRunCandidate, TestRunDenialCode, TestRunEvidence, TestRunIsolation,
-    TestRunRetainedEvidence, TestRunRunner, TestRunSelection, TestRunSuiteExecution,
-    TestRunSuiteKind, TestRunSuiteOutcome, TestRunTargetExecution, TestRunTargetKind,
-    TestRunVerification, TestRunVerificationOutcome, admit_test_run, canonical_test_run_json,
-    decide_test_run_admission, parse_test_run_admission_id, test_run_admission_id,
-    test_run_denial_code, test_run_fingerprint, validate_test_run,
+    CanonicalTestRunError, TEST_RUN_ADMISSION_PREFIX, TEST_RUN_CHECK_FORMAT,
+    TEST_RUN_CHECK_FORMAT_VERSION, TEST_RUN_DENIAL_CODES, TEST_RUN_EVIDENCE_FORMAT,
+    TEST_RUN_EVIDENCE_FORMAT_VERSION, TEST_RUN_MAX_SHARDS, TEST_RUN_MAX_SUITES,
+    TEST_RUN_MAX_TARGETS, TestRunAdmissionDecision, TestRunArtifact, TestRunCandidate,
+    TestRunCheck, TestRunDenialCode, TestRunEvidence, TestRunIsolation, TestRunRetainedEvidence,
+    TestRunRunner, TestRunSelection, TestRunSuiteExecution, TestRunSuiteKind, TestRunSuiteOutcome,
+    TestRunTargetExecution, TestRunTargetKind, TestRunVerification, TestRunVerificationOutcome,
+    admit_test_run, canonical_test_run_json, decide_test_run_admission,
+    parse_test_run_admission_id, test_run_admission_id, test_run_denial_code, test_run_fingerprint,
+    validate_test_run, validate_test_run_check, verify_test_run_check,
 };
 pub use validate::{ContractDiagnostic, DiagnosticSeverity, validate_contract};
 
@@ -95,6 +96,15 @@ pub const TEST_RUN_EVIDENCE_JSON_SCHEMA: &str =
 /// contract without resolving a filesystem path.
 pub const TEST_RUN_ADMISSION_JSON_SCHEMA: &str =
     include_str!("../schema/test-run-admission.schema.json");
+
+/// Canonical JSON Schema for retained release-bound tests checks.
+///
+/// The schema declares the record a release decision must retain as its
+/// `tests` evidence: the exact `test-run:<sha256>` admission id, the six
+/// candidate facts, and the independent observer. It replaces every generic
+/// test-result reference and is embedded so deployment gates and tooling
+/// can expose the exact contract without resolving a filesystem path.
+pub const TEST_RUN_CHECK_JSON_SCHEMA: &str = include_str!("../schema/test-run-check.schema.json");
 
 #[cfg(test)]
 mod schema_tests {
@@ -129,5 +139,17 @@ mod schema_tests {
             .map(|code| serde_json::to_value(code).unwrap())
             .to_vec();
         assert_eq!(declared, &implemented);
+    }
+
+    #[test]
+    fn embedded_check_schema_tracks_the_current_format() {
+        let schema: serde_json::Value =
+            serde_json::from_str(super::TEST_RUN_CHECK_JSON_SCHEMA).unwrap();
+        let check = &schema["$defs"]["check"]["properties"];
+        assert_eq!(check["format"]["const"], super::TEST_RUN_CHECK_FORMAT);
+        assert_eq!(
+            check["formatVersion"]["const"],
+            super::TEST_RUN_CHECK_FORMAT_VERSION
+        );
     }
 }

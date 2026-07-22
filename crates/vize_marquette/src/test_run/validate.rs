@@ -4,7 +4,7 @@ use crate::validate::rules::contract_path;
 use crate::{ContractDiagnostic, TestRunEvidence};
 
 mod executions;
-mod rules;
+pub(crate) mod rules;
 #[cfg(test)]
 mod tests;
 
@@ -63,7 +63,11 @@ pub fn validate_test_run(evidence: &TestRunEvidence) -> Vec<ContractDiagnostic> 
         "contractFingerprint",
         &mut diagnostics,
     );
-    rules::check_source_revision(&evidence.source_revision, &mut diagnostics);
+    rules::check_source_revision(
+        &evidence.source_revision,
+        "sourceRevision",
+        &mut diagnostics,
+    );
     if evidence.release.is_empty() || evidence.release.len() > 256 {
         diagnostics.push(ContractDiagnostic::error(
             "VIZE_MARQUETTE_106",

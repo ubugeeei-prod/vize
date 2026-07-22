@@ -52,7 +52,7 @@ export function validateTestRunEvidence(evidence: TestRunEvidence): MarquetteDia
   checkIdentifier(evidence.application, "application", diagnostics);
   checkIdentifier(evidence.environment, "environment", diagnostics);
   checkDigest(evidence.contractFingerprint, "contractFingerprint", diagnostics);
-  checkSourceRevision(evidence.sourceRevision, diagnostics);
+  checkSourceRevision(evidence.sourceRevision, "sourceRevision", diagnostics);
   if (evidence.release.length === 0 || evidence.release.length > 256) {
     diagnostics.push(
       error("VIZE_MARQUETTE_106", "release", "release must be between 1 and 256 characters"),

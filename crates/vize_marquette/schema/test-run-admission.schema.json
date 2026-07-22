@@ -6,7 +6,7 @@
   "$ref": "#/$defs/decision",
   "$defs": {
     "denialCode": {
-      "description": "Stable machine-readable cause class of one admission denial. The vocabulary is append-only: codes are never renamed, renumbered, reused, or removed, and every new distinguishable rejection cause ships with a new code appended to this enum. Hosts must map every diagnostic to exactly one code: VIZE_MARQUETTE_141 to admission-id-malformed; VIZE_MARQUETTE_142 to admission-id-mismatch; VIZE_MARQUETTE_144 to the candidate-*-mismatch code named by its diagnostic path (application, artifact.fingerprint, contractFingerprint, environment, release, sourceRevision); VIZE_MARQUETTE_145 to record-expired; VIZE_MARQUETTE_146 to verification-not-accepted; VIZE_MARQUETTE_147 to skipped-tests-recorded; VIZE_MARQUETTE_148 to admission-time-malformed; and every other diagnostic, including every record-validation code, to record-invalid.",
+      "description": "Stable machine-readable cause class of one admission denial. The vocabulary is append-only: codes are never renamed, renumbered, reused, or removed, and every new distinguishable rejection cause ships with a new code added to this enum in lexicographic position. Hosts must map every diagnostic to exactly one code: VIZE_MARQUETTE_141 to admission-id-malformed; VIZE_MARQUETTE_142 to admission-id-mismatch; VIZE_MARQUETTE_144 to the candidate-*-mismatch code named by its diagnostic path (application, artifact.fingerprint, contractFingerprint, environment, release, sourceRevision); VIZE_MARQUETTE_145 to record-expired; VIZE_MARQUETTE_146 to verification-not-accepted; VIZE_MARQUETTE_147 to skipped-tests-recorded; VIZE_MARQUETTE_148 to admission-time-malformed; VIZE_MARQUETTE_149 to check-candidate-mismatch; VIZE_MARQUETTE_150 to check-invalid; VIZE_MARQUETTE_151 to check-observer-not-independent; every other diagnostic whose path starts with check. to check-invalid; and every remaining diagnostic, including every record-validation code, to record-invalid.",
       "enum": [
         "admission-id-malformed",
         "admission-id-mismatch",
@@ -17,6 +17,9 @@
         "candidate-environment-mismatch",
         "candidate-release-mismatch",
         "candidate-source-revision-mismatch",
+        "check-candidate-mismatch",
+        "check-invalid",
+        "check-observer-not-independent",
         "record-expired",
         "record-invalid",
         "skipped-tests-recorded",

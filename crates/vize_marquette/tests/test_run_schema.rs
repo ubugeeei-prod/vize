@@ -92,3 +92,37 @@ fn admission_schema_is_strict_and_documents_the_append_only_policy() {
         "every object schema must reject unknown properties"
     );
 }
+
+#[test]
+fn check_schema_is_strict_and_rejects_generic_references() {
+    let schema: Value = serde_json::from_slice(
+        &fs::read(repository_file(
+            "crates/vize_marquette/schema/test-run-check.schema.json",
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+
+    assert_eq!(
+        schema["$schema"],
+        "https://json-schema.org/draft/2020-12/schema"
+    );
+    assert_eq!(
+        schema["$defs"]["check"]["properties"]["format"]["const"],
+        "vize.test-run.check"
+    );
+    assert_eq!(
+        schema["$defs"]["check"]["properties"]["formatVersion"]["const"],
+        1
+    );
+    assert_eq!(
+        schema["$defs"]["admissionId"]["pattern"], "^test-run:[a-f0-9]{64}$",
+        "tests evidence must be an exact admission id, never a generic reference"
+    );
+
+    assert_eq!(
+        count_open_object_schemas(&schema),
+        0,
+        "every object schema must reject unknown properties"
+    );
+}
