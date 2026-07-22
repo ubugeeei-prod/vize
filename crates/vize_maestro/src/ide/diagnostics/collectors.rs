@@ -476,9 +476,7 @@ impl DiagnosticService {
         ecosystem_enabled: bool,
         line_index: &LineIndex<'_>,
     ) -> Vec<Diagnostic> {
-        // Resolve the linter context from the document's own workspace folder
-        // so multi-root sessions do not leak one folder's lint policy into
-        // another folder's files (#3240).
+        // Resolve the linter context from the document's own folder so multi-root sessions keep lint policy isolated (#3240).
         let (linter_config, rule_options) = state.linter_settings_for_uri(uri);
         if !linter_config.enabled {
             return vec![];

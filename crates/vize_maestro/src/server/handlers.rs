@@ -37,34 +37,16 @@ impl LanguageServer for MaestroServer {
     async fn initialize(&self, params: InitializeParams) -> Result<InitializeResult> {
         super::workspace_files::record_watcher_support(&self.state, &params.capabilities);
         // Resolve workspace root
-        let workspace_path = params
-            .root_uri
-            .as_ref()
-            .and_then(|u| u.to_file_path().ok())
-            .or_else(|| {
-                params
-                    .workspace_folders
-                    .as_ref()
-                    .and_then(|f| f.first())
-                    .and_then(|f| f.uri.to_file_path().ok())
-            });
+        let workspace_path = self.state.primary_workspace_path(&params);
 
         // Load format config from workspace root (always, regardless of feature)
         if let Some(ref path) = workspace_path {
             self.state.load_workspace_config(path);
         }
 
-        // Record every workspace folder so per-document features resolve the
-        // configuration context of their own folder in multi-root sessions
-        // (#3240). The primary root above keeps driving process-wide config.
-        let folder_roots: Vec<std::path::PathBuf> = params
-            .workspace_folders
-            .as_deref()
-            .unwrap_or_default()
-            .iter()
-            .filter_map(|folder| folder.uri.to_file_path().ok())
-            .collect();
-        self.state.set_workspace_folders(folder_roots);
+        // Record every workspace folder so per-document features resolve their own folder's config in multi-root sessions (#3240).
+        self.state
+            .apply_initialize_workspace_folders(params.workspace_folders.as_deref());
 
         self.state
             .apply_lsp_initialization_options(params.initialization_options.as_ref());
@@ -95,23 +77,9 @@ impl LanguageServer for MaestroServer {
         );
     }
 
-    // The server advertises `workspaceFolders.changeNotifications`, so keep
-    // the per-folder configuration contexts in sync when the editor adds or
-    // removes roots mid-session (#3240).
+    // Keep the per-folder configuration contexts in sync when the editor adds or removes roots mid-session (#3240).
     async fn did_change_workspace_folders(&self, params: DidChangeWorkspaceFoldersParams) {
-        let added: Vec<std::path::PathBuf> = params
-            .event
-            .added
-            .iter()
-            .filter_map(|folder| folder.uri.to_file_path().ok())
-            .collect();
-        let removed: Vec<std::path::PathBuf> = params
-            .event
-            .removed
-            .iter()
-            .filter_map(|folder| folder.uri.to_file_path().ok())
-            .collect();
-        self.state.update_workspace_folders(added, &removed);
+        self.state.apply_workspace_folders_change(&params.event);
     }
 
     async fn shutdown(&self) -> Result<()> {

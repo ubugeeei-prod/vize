@@ -13,7 +13,7 @@
 
 use std::path::{Path, PathBuf};
 
-use tower_lsp::lsp_types::Url;
+use tower_lsp::lsp_types::{InitializeParams, Url, WorkspaceFolder, WorkspaceFoldersChangeEvent};
 use vize_carton::config::{LintRuleOptions, LinterConfig};
 
 use super::ServerState;
@@ -48,11 +48,34 @@ impl WorkspaceFolderConfig {
 }
 
 impl ServerState {
+    /// Resolve the primary workspace root from `initialize`: `rootUri` when
+    /// present, otherwise the first workspace folder. This root keeps driving
+    /// process-wide config, the type-checker/Corsa session, and formatting.
+    pub(crate) fn primary_workspace_path(&self, params: &InitializeParams) -> Option<PathBuf> {
+        params
+            .root_uri
+            .as_ref()
+            .and_then(|u| u.to_file_path().ok())
+            .or_else(|| {
+                params
+                    .workspace_folders
+                    .as_ref()
+                    .and_then(|f| f.first())
+                    .and_then(|f| f.uri.to_file_path().ok())
+            })
+    }
+
     /// Replace the workspace-folder contexts with the folders sent by
     /// `initialize`.
     pub(crate) fn set_workspace_folders(&self, roots: Vec<PathBuf>) {
         let contexts = roots.into_iter().map(WorkspaceFolderConfig::load).collect();
         *self.workspace_folder_configs.write() = contexts;
+    }
+
+    /// Load a context for every folder carried by `initialize` (#3240),
+    /// keeping the wire types out of the request handler.
+    pub(crate) fn apply_initialize_workspace_folders(&self, folders: Option<&[WorkspaceFolder]>) {
+        self.set_workspace_folders(folder_roots(folders.unwrap_or_default()));
     }
 
     /// Apply a `workspace/didChangeWorkspaceFolders` event: removed roots
@@ -61,6 +84,11 @@ impl ServerState {
         let mut contexts = self.workspace_folder_configs.write();
         contexts.retain(|context| !removed.contains(&context.root));
         contexts.extend(added.into_iter().map(WorkspaceFolderConfig::load));
+    }
+
+    /// Sync the contexts from a `didChangeWorkspaceFolders` event (#3240).
+    pub(crate) fn apply_workspace_folders_change(&self, event: &WorkspaceFoldersChangeEvent) {
+        self.update_workspace_folders(folder_roots(&event.added), &folder_roots(&event.removed));
     }
 
     /// Linter settings for a document: its deepest enclosing workspace folder
@@ -74,6 +102,14 @@ impl ServerState {
         }
         (self.get_linter_config(), self.get_linter_rule_options())
     }
+}
+
+/// Filesystem roots of the given workspace folders, dropping non-`file:` URIs.
+fn folder_roots(folders: &[WorkspaceFolder]) -> Vec<PathBuf> {
+    folders
+        .iter()
+        .filter_map(|folder| folder.uri.to_file_path().ok())
+        .collect()
 }
 
 fn deepest_enclosing_folder<'a>(
