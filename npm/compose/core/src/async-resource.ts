@@ -52,12 +52,35 @@ export interface UseAsyncResourceOptions<Data> {
 
 /** Reactive state and controls for an asynchronous loader. */
 export interface AsyncResource<Data, Arguments extends readonly unknown[], Failure> {
+  /** Data of the newest successful execution, retained according to `keepData`. */
   readonly data: Readonly<ShallowRef<Data | undefined>>;
+
+  /** Failure of the newest settled execution, cleared when a new one starts. */
   readonly error: Readonly<ShallowRef<Failure | undefined>>;
+
+  /** Current lifecycle status, driven only by the newest execution. */
   readonly status: Readonly<Ref<AsyncResourceStatus>>;
+
+  /** Whether an execution is currently pending. */
   readonly pending: ComputedRef<boolean>;
+
+  /**
+   * Run the loader. The returned promise never rejects: loader failures,
+   * cancellation, and supersession are reported as the discriminated result,
+   * and stale executions leave the reactive state untouched.
+   */
   readonly execute: (...arguments_: Arguments) => Promise<AsyncResourceExecution<Data, Failure>>;
+
+  /**
+   * Abort the active execution and mark the resource cancelled.
+   *
+   * @param reason Abort reason forwarded to the loader's signal.
+   * @default reason DOMException("AbortError")
+   * @returns Whether an active execution was cancelled.
+   */
   readonly cancel: (reason?: unknown) => boolean;
+
+  /** Cancel any active execution and restore the initial idle state. */
   readonly reset: () => void;
 }
 
@@ -71,6 +94,18 @@ interface ActiveExecution {
  * Create a scoped, abortable asynchronous resource with latest-result-wins
  * state. Every execution returns a discriminated result, so cancellation,
  * supersession, loader failure, and successful `undefined` data stay distinct.
+ *
+ * When created inside an active reactive scope (and `scope` is enabled), the
+ * active execution is aborted when that scope stops; outside a scope,
+ * cancellation ownership stays with the caller. The execute promise never
+ * rejects — synchronous and asynchronous loader failures both settle into
+ * the `"error"` result. Safe during server rendering: no browser globals are
+ * read and abort reasons use the runtime-native `DOMException`.
+ *
+ * @param loader Asynchronous loader receiving the abort context first.
+ * @param options Data retention, supersession, and scope behavior.
+ * @default options {}
+ * @returns Reactive state and controls for the loader.
  */
 export function useAsyncResource<Data, Arguments extends readonly unknown[], Failure = unknown>(
   loader: (context: AsyncResourceContext, ...arguments_: Arguments) => Promise<Data>,

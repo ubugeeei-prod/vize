@@ -21,7 +21,12 @@ export interface UseLocaleOptions {
   readonly fallback?: Intl.Locale | string;
 }
 
-/** Reactive locale metadata and cached formatter factories. */
+/**
+ * Reactive locale metadata and cached formatter factories.
+ *
+ * Formatter factories propagate `TypeError` and `RangeError` from the
+ * platform `Intl` constructors when the supplied options are invalid.
+ */
 export interface LocaleControls {
   /** Canonical Unicode locale identifier. */
   readonly locale: ComputedRef<string>;
@@ -53,6 +58,19 @@ const FORMATTER_CACHE_LIMIT = 32;
  * Equivalent formatter options reuse instances. The bounded cache follows the
  * active locale automatically and prevents repeated constructor overhead in
  * reactive render paths.
+ *
+ * Detection is lazy and guarded: the default detector reads
+ * `navigator.language` behind a `typeof` check at call time, so importing and
+ * calling this during server rendering is safe, and runtimes without a
+ * `navigator` resolve to the fallback locale. The composable owns no timers
+ * or listeners, so no scope cleanup is required.
+ *
+ * @param source Reactive locale source. Empty values defer to the detector.
+ * @param options Detection and fallback behavior.
+ * @default options {}
+ * @throws `RangeError` on first read of the reactive values when the winning
+ * candidate is not a structurally valid locale identifier.
+ * @returns Reactive locale metadata and cached formatter factories.
  */
 export function useLocale(
   source?: MaybeRefOrGetter<Intl.Locale | string | null | undefined>,
