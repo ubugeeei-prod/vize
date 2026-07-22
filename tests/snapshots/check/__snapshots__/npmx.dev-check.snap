@@ -355,7 +355,7 @@
     {
       "file": "app/components/Package/SkillsModal.vue",
       "diagnostics": [
-        "error:202:2 [TS2367] This comparison appears to be unintentional because the types '\"skills-cli\"' and '\"skills-npm\"' have no overlap."
+        "error:206:75 [TS2367] This comparison appears to be unintentional because the types '\"skills-cli\"' and '\"skills-npm\"' have no overlap."
       ]
     },
     {
@@ -364,9 +364,7 @@
     },
     {
       "file": "app/components/Package/TableRow.vue",
-      "diagnostics": [
-        "error:117:39 [TS18048] 'pkg.maintainers' is possibly 'undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/Package/TrendsChart.vue",
@@ -473,9 +471,7 @@
     },
     {
       "file": "app/components/Select/Field.vue",
-      "diagnostics": [
-        "error:22:1 [TS1184] Modifiers cannot appear here."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/Settings/AccentColorPicker.vue",
@@ -675,8 +671,7 @@
     {
       "file": "app/pages/package-code/[[org]]/[packageName]/v/[version]/[...filePath].vue",
       "diagnostics": [
-        "error:143:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
-        "error:518:26 [TS2345] Argument of type '(lineNum: number, event: MouseEvent) => void' is not assignable to parameter of type '($event: any) => unknown'.\nTarget signature provides too few arguments. Expected 2 or more, but got 1."
+        "error:143:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?"
       ]
     },
     {
@@ -754,7 +749,7 @@
       ]
     }
   ],
-  "errorCount": 164,
+  "errorCount": 161,
   "warningCount": 0,
   "fileCount": 134
 }
