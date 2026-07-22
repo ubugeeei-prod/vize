@@ -34,6 +34,7 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/pinia/);
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/vue-router/);
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/vue-element-admin/);
+  assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/vue-vben-admin/);
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/vitepress/);
   assert.match(hydration?.run ?? "", /vp install --frozen-lockfile --prefer-offline/);
   assert.equal(
@@ -44,26 +45,34 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   assert.deepEqual(parity?.env, { VIZE_TEST_BIN: "target/ci/vize" });
   assert.equal(parity?.run, "vp run --filter './tests' test:check:fixtures");
 
-  const incremental = steps.find((step) => step.name === "Check incremental LSP against Misskey");
+  const incremental = steps.find(
+    (step) => step.name === "Check incremental LSP against Misskey and Vue Vben Admin",
+  );
   assert.deepEqual(incremental?.env, { VIZE_LSP_BIN: "target/ci/vize" });
   assert.equal(incremental?.run, "vp run --filter './tests' test:performance:lsp-incremental");
 
-  const summary = steps.find((step) => step.name === "Publish incremental LSP summary");
+  const summary = steps.find((step) => step.name === "Publish incremental LSP summaries");
   assert.equal(summary?.if, "${{ always() }}");
-  assert.match(summary?.run ?? "", /misskey-lsp-incremental\/summary\.md/);
+  assert.match(summary?.run ?? "", /misskey-lsp-incremental vben-lsp-incremental/);
+  assert.match(summary?.run ?? "", /summary\.md/);
   assert.match(summary?.run ?? "", /GITHUB_STEP_SUMMARY/);
 
-  const upload = steps.find((step) => step.name === "Upload incremental LSP metrics");
-  assert.equal(upload?.if, "${{ always() }}");
-  assert.match(upload?.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
-  assert.deepEqual(upload?.with, {
-    name: "misskey-lsp-incremental-metrics",
-    path: "target/vize-tests/metrics/misskey-lsp-incremental/",
-    "if-no-files-found": "warn",
-    "retention-days": 14,
-  });
+  for (const suite of ["misskey", "vben"]) {
+    const displayName = suite === "misskey" ? "Misskey" : "Vue Vben Admin";
+    const upload = steps.find(
+      (step) => step.name === `Upload ${displayName} incremental LSP metrics`,
+    );
+    assert.equal(upload?.if, "${{ always() }}");
+    assert.match(upload?.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
+    assert.deepEqual(upload?.with, {
+      name: `${suite}-lsp-incremental-metrics`,
+      path: `target/vize-tests/metrics/${suite}-lsp-incremental/`,
+      "if-no-files-found": "warn",
+      "retention-days": 14,
+    });
+  }
   assert.equal(
     testsPackage.scripts["test:performance:lsp-incremental"],
-    "node --test --test-concurrency=1 performance/misskey-lsp-incremental.test.ts",
+    "node --test --test-concurrency=1 performance/misskey-lsp-incremental.test.ts performance/vben-lsp-incremental.test.ts",
   );
 });

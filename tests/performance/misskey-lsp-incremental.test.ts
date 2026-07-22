@@ -4,20 +4,22 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
 import { withPinnedFixtureWorkspace } from "../_helpers/realworld-patch.ts";
-import {
-  completionLabels,
-  hoverToText,
-  isDiagnosticsForUri,
-  offsetToPosition,
-} from "../tooling/support/lsp/assertions.ts";
-import type { LspDiagnostic, PublishDiagnosticsParams } from "../tooling/support/lsp/protocol.ts";
+import { completionLabels, hoverToText } from "../tooling/support/lsp/assertions.ts";
 import { LspSession } from "../tooling/support/lsp/session.ts";
 import { countFiles, IncrementalMetrics } from "./support/incremental-metrics.ts";
+import {
+  assertSingleInjectedMismatch,
+  changeVue,
+  diagnosticsTimeoutMs,
+  normalizeDiagnostics,
+  positionInsideTemplateSymbol,
+  replaceExactly,
+  waitForDiagnostics,
+} from "./support/lsp-oracle.ts";
 
 const componentPath = "packages/frontend/src/components/MkDivider.vue";
 const dependencyPath = "packages/frontend/src/components/MkCodeInline.vue";
 const symbol = "benchmarkMirror";
-const waitTimeoutMs = 120_000;
 
 test(
   "Misskey LSP clean, leaf, and shared edits stay exact in one production session",
@@ -49,7 +51,10 @@ test(
         assert.ok(vueFiles >= 500, `expected a monorepo-scale fixture, got ${vueFiles} Vue files`);
 
         const session = new LspSession();
-        const metrics = new IncrementalMetrics(session.processId);
+        const metrics = new IncrementalMetrics(session.processId, {
+          id: "misskey-lsp-incremental",
+          title: "Misskey LSP Incremental Oracle",
+        });
         let baseline: string[] = [];
         let failure: unknown;
 
@@ -95,9 +100,9 @@ test(
               "textDocument/completion",
               {
                 textDocument: { uri: componentUri },
-                position: positionInsideTemplateSymbol(cleanSource, "benchmarkM"),
+                position: positionInsideTemplateSymbol(cleanSource, symbol, "benchmarkM"),
               },
-              waitTimeoutMs,
+              diagnosticsTimeoutMs,
             ),
           );
           assert.ok(
@@ -110,9 +115,9 @@ test(
               "textDocument/hover",
               {
                 textDocument: { uri: componentUri },
-                position: positionInsideTemplateSymbol(cleanSource, symbol),
+                position: positionInsideTemplateSymbol(cleanSource, symbol, symbol),
               },
-              waitTimeoutMs,
+              diagnosticsTimeoutMs,
             ),
           )) as { contents?: unknown } | null;
           const hoverText = hoverToText(hover);
@@ -134,7 +139,7 @@ test(
             source: leafBrokenSource,
             expectError: true,
           });
-          assertSingleInjectedMismatch(leafBroken.diagnostics, baseline, leafBrokenSource);
+          assertSingleInjectedMismatch(leafBroken.diagnostics, baseline, leafBrokenSource, symbol);
 
           const leafRepaired = await changeVue(session, metrics, {
             name: "leafRepaired",
@@ -151,12 +156,9 @@ test(
             });
             return waitForDiagnostics(session, componentUri, 4, true);
           });
-          assertSingleInjectedMismatch(
-            sharedBroken.diagnostics,
-            baseline,
-            cleanSource,
-            "attribute-name",
-          );
+          assertSingleInjectedMismatch(sharedBroken.diagnostics, baseline, cleanSource, symbol, {
+            attributeName: "code",
+          });
 
           const sharedRepaired = await metrics.measure("sharedRepaired", async () => {
             session.notify("textDocument/didChange", {
@@ -204,114 +206,4 @@ function prepareComponent(source: string): string {
     "</div>\n</template>",
     `\t<MkCodeInline :code="String(${symbol})" /><span>{{ ${symbol} }}</span>\n</div>\n</template>`,
   );
-}
-
-function replaceExactly(source: string, expected: string, replacement: string): string {
-  const first = source.indexOf(expected);
-  assert.notEqual(first, -1, `missing patch anchor: ${expected}`);
-  assert.equal(
-    source.indexOf(expected, first + expected.length),
-    -1,
-    "patch anchor must be unique",
-  );
-  return `${source.slice(0, first)}${replacement}${source.slice(first + expected.length)}`;
-}
-
-async function changeVue(
-  session: LspSession,
-  metrics: IncrementalMetrics,
-  change: { name: string; uri: string; version: number; source: string; expectError?: boolean },
-): Promise<PublishDiagnosticsParams> {
-  return metrics.measure(change.name, async () => {
-    session.notify("textDocument/didChange", {
-      textDocument: { uri: change.uri, version: change.version },
-      contentChanges: [{ text: change.source }],
-    });
-    return waitForDiagnostics(session, change.uri, change.version, change.expectError);
-  });
-}
-
-async function waitForDiagnostics(
-  session: LspSession,
-  uri: string,
-  version: number,
-  expectError?: boolean,
-): Promise<PublishDiagnosticsParams> {
-  return (await session.waitForNotification(
-    "textDocument/publishDiagnostics",
-    (params) => {
-      if (!isDiagnosticsForUri(params, uri) || params.version !== version) return false;
-      return expectError == null || hasInjectedMismatch(params.diagnostics) === expectError;
-    },
-    waitTimeoutMs,
-  )) as PublishDiagnosticsParams;
-}
-
-function hasInjectedMismatch(diagnostics: LspDiagnostic[]): boolean {
-  return diagnostics.some(
-    (diagnostic) =>
-      String(diagnostic.code).replace(/^TS/, "") === "2322" &&
-      /string.*not assignable.*number/i.test(diagnostic.message ?? ""),
-  );
-}
-
-function assertSingleInjectedMismatch(
-  diagnostics: LspDiagnostic[],
-  baseline: string[],
-  source: string,
-  expectedRange: "declaration" | "attribute-name" = "declaration",
-): void {
-  const injected = diagnostics.filter(
-    (diagnostic) =>
-      String(diagnostic.code).replace(/^TS/, "") === "2322" &&
-      /string.*not assignable.*number/i.test(diagnostic.message ?? ""),
-  );
-  assert.equal(injected.length, 1, JSON.stringify(diagnostics));
-  const [diagnostic] = injected;
-  assert.equal(diagnostic.source, "vize/types");
-  assert.equal(diagnostic.severity, 1);
-  if (expectedRange === "declaration") {
-    const declarationOffset = source.indexOf(`const ${symbol}`);
-    assert.notEqual(declarationOffset, -1);
-    const start = offsetToPosition(source, declarationOffset + "const ".length);
-    const end = { line: start.line, character: start.character + symbol.length };
-    assert.deepEqual(diagnostic.range?.start, start);
-    assert.deepEqual(diagnostic.range?.end, end);
-  } else {
-    // The child prop-type mismatch anchors at the attribute name, exactly
-    // where vue-tsc reports it.
-    const attributeOffset = source.indexOf(`:code="String(${symbol})"`);
-    assert.notEqual(attributeOffset, -1);
-    const start = offsetToPosition(source, attributeOffset + ":".length);
-    const end = { line: start.line, character: start.character + "code".length };
-    assert.deepEqual(diagnostic.range?.start, start);
-    assert.deepEqual(diagnostic.range?.end, end);
-  }
-  assert.deepEqual(
-    normalizeDiagnostics(diagnostics.filter((item) => item !== diagnostic)),
-    baseline,
-  );
-}
-
-function normalizeDiagnostics(diagnostics: LspDiagnostic[]): string[] {
-  return diagnostics
-    .map((diagnostic) =>
-      JSON.stringify({
-        code: diagnostic.code,
-        message: diagnostic.message,
-        range: diagnostic.range,
-        severity: diagnostic.severity,
-        source: diagnostic.source,
-      }),
-    )
-    .sort();
-}
-
-function positionInsideTemplateSymbol(
-  source: string,
-  prefix: string,
-): { line: number; character: number } {
-  const templateOffset = source.indexOf(`{{ ${symbol} }}`);
-  assert.notEqual(templateOffset, -1);
-  return offsetToPosition(source, templateOffset + "{{ ".length + prefix.length);
 }

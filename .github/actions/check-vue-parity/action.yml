@@ -15,6 +15,7 @@ runs:
           tests/_fixtures/_git/pinia \
           tests/_fixtures/_git/vue-router \
           tests/_fixtures/_git/vue-element-admin \
+          tests/_fixtures/_git/vue-vben-admin \
           tests/_fixtures/_git/vitepress
         vp install --frozen-lockfile --prefer-offline
 
@@ -28,25 +29,36 @@ runs:
         VIZE_TEST_BIN: target/ci/vize
       run: vp run --filter './tests' test:check:fixtures
 
-    - name: Check incremental LSP against Misskey
+    - name: Check incremental LSP against Misskey and Vue Vben Admin
       shell: bash
       env:
         VIZE_LSP_BIN: target/ci/vize
       run: vp run --filter './tests' test:performance:lsp-incremental
 
-    - name: Publish incremental LSP summary
+    - name: Publish incremental LSP summaries
       if: ${{ always() }}
       shell: bash
       run: |
-        if [ -s target/vize-tests/metrics/misskey-lsp-incremental/summary.md ]; then
-          cat target/vize-tests/metrics/misskey-lsp-incremental/summary.md >> "$GITHUB_STEP_SUMMARY"
-        fi
+        for suite in misskey-lsp-incremental vben-lsp-incremental; do
+          if [ -s "target/vize-tests/metrics/$suite/summary.md" ]; then
+            cat "target/vize-tests/metrics/$suite/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+        done
 
-    - name: Upload incremental LSP metrics
+    - name: Upload Misskey incremental LSP metrics
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: misskey-lsp-incremental-metrics
         path: target/vize-tests/metrics/misskey-lsp-incremental/
+        if-no-files-found: warn
+        retention-days: 14
+
+    - name: Upload Vue Vben Admin incremental LSP metrics
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: vben-lsp-incremental-metrics
+        path: target/vize-tests/metrics/vben-lsp-incremental/
         if-no-files-found: warn
         retention-days: 14
