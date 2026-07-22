@@ -86,7 +86,7 @@ export class LspSession {
     });
   }
 
-  /** Operating-system process id for report-only latency/RSS measurements. */
+  /** Operating-system process id for budget-enforced latency/RSS measurements. */
   get processId(): number {
     assert.ok(this.process.pid, "vize lsp process id is unavailable");
     return this.process.pid;

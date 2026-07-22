@@ -14,8 +14,73 @@ export type IncrementalSuite = {
   title: string;
 };
 
+/** Enforced ceilings for one incremental LSP suite, checked into the registry. */
+export type LspIncrementalBudget = {
+  suite: string;
+  laneHardTimeoutMs: number;
+  maxPeakRssMiB: number;
+  laneBudgetsMs: Record<string, number>;
+};
+
+export const budgetRegistryPath = "tests/_fixtures/vue-ecosystem-fixtures.json";
+export const budgetScaleVariable = "VIZE_PERF_BUDGET_SCALE";
+
 export function incrementalMetricsDir(suiteId: string): string {
   return path.join(repoRoot, "target/vize-tests/metrics", suiteId);
+}
+
+/**
+ * Reads the enforced latency, hang, and RSS ceilings for one incremental LSP
+ * suite from the fixture registry. Exactly one project must own the suite, so
+ * a new suite cannot run report-only by accident.
+ */
+export function loadLspIncrementalBudget(suiteId: string): {
+  fixtureId: string;
+  budget: LspIncrementalBudget;
+} {
+  const registry = JSON.parse(fs.readFileSync(path.join(repoRoot, budgetRegistryPath), "utf8")) as {
+    projects: Array<{ id: string; lspIncrementalBudget?: LspIncrementalBudget }>;
+  };
+  const owners = registry.projects.filter(
+    (project) => project.lspIncrementalBudget?.suite === suiteId,
+  );
+  if (owners.length !== 1) {
+    throw new Error(
+      `Expected exactly one lspIncrementalBudget block with suite "${suiteId}" in ` +
+        `${budgetRegistryPath}, found ${owners.length}`,
+    );
+  }
+  const budget = owners[0].lspIncrementalBudget!;
+  assertBudgetMs(budget.laneHardTimeoutMs, suiteId, "laneHardTimeoutMs");
+  assertBudgetMs(budget.maxPeakRssMiB, suiteId, "maxPeakRssMiB");
+  const lanes = Object.entries(budget.laneBudgetsMs ?? {});
+  if (lanes.length === 0) {
+    throw new Error(`${suiteId} laneBudgetsMs must contain every measured lane`);
+  }
+  for (const [lane, value] of lanes) {
+    assertBudgetMs(value, suiteId, `laneBudgetsMs.${lane}`);
+    if (value > budget.laneHardTimeoutMs) {
+      throw new Error(`${suiteId} laneBudgetsMs.${lane} must not exceed laneHardTimeoutMs`);
+    }
+  }
+  return { fixtureId: owners[0].id, budget };
+}
+
+/**
+ * Uniform multiplier for every ceiling. CI runs at scale 1 (the vue-parity
+ * step sets no override); slow local machines may loosen the ceilings with
+ * e.g. `VIZE_PERF_BUDGET_SCALE=2` without editing the registry.
+ */
+export function resolveBudgetScale(env: NodeJS.ProcessEnv = process.env): number {
+  const raw = env[budgetScaleVariable];
+  if (raw == null || raw === "") return 1;
+  const scale = Number(raw);
+  if (!Number.isFinite(scale) || scale <= 0) {
+    throw new Error(
+      `${budgetScaleVariable} must be a finite number greater than 0, got ${JSON.stringify(raw)}`,
+    );
+  }
+  return scale;
 }
 
 type MetricContext = {
@@ -31,20 +96,44 @@ export class IncrementalMetrics {
   private readonly rssSamplesKiB: Record<string, number> = {};
   private readonly processId: number;
   private readonly suite: IncrementalSuite;
+  private readonly fixtureId: string;
+  private readonly budget: LspIncrementalBudget;
+  private readonly scale: number;
 
   constructor(processId: number, suite: IncrementalSuite) {
     this.processId = processId;
     this.suite = suite;
+    const { fixtureId, budget } = loadLspIncrementalBudget(suite.id);
+    this.fixtureId = fixtureId;
+    this.budget = budget;
+    this.scale = resolveBudgetScale();
   }
 
   async measure<T>(name: string, operation: () => Promise<T>): Promise<T> {
+    const budgetMs = this.budget.laneBudgetsMs[name];
+    if (budgetMs == null) {
+      throw new Error(
+        `Lane "${name}" has no laneBudgetsMs entry for suite ${this.suite.id}; add its ceiling ` +
+          `to the "${this.fixtureId}" lspIncrementalBudget block in ${budgetRegistryPath}`,
+      );
+    }
     const startedAt = performance.now();
+    let result: T;
     try {
-      return await operation();
+      result = await this.raceLaneHardTimeout(name, operation());
     } finally {
       this.timingsMs[name] = performance.now() - startedAt;
       this.sampleRss(name);
     }
+    const elapsedMs = this.timingsMs[name];
+    if (elapsedMs > budgetMs * this.scale) {
+      throw this.budgetViolation(
+        `lane "${name}" took ${elapsedMs.toFixed(1)} ms, over its ${budgetMs * this.scale} ms ` +
+          `budget${this.scaleSuffix()}.`,
+        `laneBudgetsMs.${name}`,
+      );
+    }
+    return result;
   }
 
   sampleRss(name: string): void {
@@ -52,12 +141,47 @@ export class IncrementalMetrics {
     if (rss != null) this.rssSamplesKiB[name] = rss;
   }
 
+  /**
+   * End-of-run gates: the sampled peak RSS must stay under its ceiling and
+   * every budgeted lane must actually have run, so a renamed or deleted lane
+   * cannot leave a stale ceiling behind. Called by `write` on success; public
+   * so tooling tests can exercise it without touching metric artifacts.
+   */
+  assertBudgetsSettled(): void {
+    const peakKiB = this.sampledPeakRssKiB();
+    const ceilingKiB = this.budget.maxPeakRssMiB * 1024 * this.scale;
+    if (peakKiB > ceilingKiB) {
+      throw this.budgetViolation(
+        `sampled peak RSS ${(peakKiB / 1024).toFixed(1)} MiB is over its ` +
+          `${this.budget.maxPeakRssMiB * this.scale} MiB budget${this.scaleSuffix()}.`,
+        "maxPeakRssMiB",
+      );
+    }
+    for (const lane of Object.keys(this.budget.laneBudgetsMs)) {
+      if (this.timingsMs[lane] == null) {
+        throw new Error(
+          `${this.suite.title}: budgeted lane "${lane}" was never measured; fix the suite or ` +
+            `remove the lane from the "${this.fixtureId}" lspIncrementalBudget block in ` +
+            `${budgetRegistryPath}`,
+        );
+      }
+    }
+  }
+
   write(context: MetricContext, failure?: unknown): void {
+    let budgetFailure: Error | null = null;
+    if (failure == null) {
+      try {
+        this.assertBudgetsSettled();
+      } catch (error) {
+        budgetFailure = error as Error;
+        failure = error;
+      }
+    }
     const outputDir = incrementalMetricsDir(this.suite.id);
     fs.mkdirSync(outputDir, { recursive: true });
-    const sampledPeakRssKiB = Math.max(0, ...Object.values(this.rssSamplesKiB));
     const data = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       status: failure == null ? "passed" : "failed",
       failure:
         failure instanceof Error ? failure.message : failure == null ? null : inspect(failure),
@@ -76,13 +200,70 @@ export class IncrementalMetrics {
         cpuCount: os.cpus().length,
         cpuModel: os.cpus()[0]?.model ?? "unknown",
       },
+      budget: {
+        scale: this.scale,
+        laneHardTimeoutMs: this.budget.laneHardTimeoutMs,
+        maxPeakRssMiB: this.budget.maxPeakRssMiB,
+        laneBudgetsMs: this.budget.laneBudgetsMs,
+      },
       timingsMs: this.timingsMs,
       rssSamplesKiB: this.rssSamplesKiB,
-      sampledPeakRssKiB,
-      note: "Latency and RSS are report-only; diagnostic, completion, hover, and repair oracles are gated.",
+      sampledPeakRssKiB: this.sampledPeakRssKiB(),
+      note:
+        "Latency, RSS, and hang ceilings are enforced from the registry lspIncrementalBudget " +
+        "block; diagnostic, completion, hover, and repair oracles are gated.",
     };
     fs.writeFileSync(path.join(outputDir, "metrics.json"), `${JSON.stringify(data, null, 2)}\n`);
     fs.writeFileSync(path.join(outputDir, "summary.md"), renderMarkdown(this.suite.title, data));
+    if (budgetFailure != null) throw budgetFailure;
+  }
+
+  private sampledPeakRssKiB(): number {
+    // RSS sampling is unavailable on Windows, where the peak stays 0 and the
+    // ceiling is effectively latency-only; CI enforcement runs on Linux.
+    return Math.max(0, ...Object.values(this.rssSamplesKiB));
+  }
+
+  /**
+   * Fails a hung lane after its hard timeout instead of waiting for the
+   * 120s diagnostics timeout or the 300s suite timeout.
+   */
+  private async raceLaneHardTimeout<T>(name: string, operation: Promise<T>): Promise<T> {
+    const hardTimeoutMs = this.budget.laneHardTimeoutMs * this.scale;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const hardTimeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        reject(
+          this.budgetViolation(
+            `lane "${name}" is still not settled after its ${hardTimeoutMs} ms hard ` +
+              `timeout${this.scaleSuffix()}; the server is likely hung.`,
+            "laneHardTimeoutMs",
+          ),
+        );
+      }, hardTimeoutMs);
+    });
+    try {
+      return await Promise.race([operation, hardTimeout]);
+    } finally {
+      clearTimeout(timer);
+      // The losing operation can still reject later (for example through the
+      // session transport timeout once the server is shut down); swallow that
+      // so a budget failure is not followed by an unhandled rejection.
+      void operation.catch(() => {});
+    }
+  }
+
+  private budgetViolation(detail: string, registryField: string): Error {
+    return new Error(
+      `${this.suite.title}: ${detail} Fixture: ${this.fixtureId}. If this is intentional, ` +
+        `rebaseline by raising ${registryField} in the "${this.fixtureId}" lspIncrementalBudget ` +
+        `block of ${budgetRegistryPath}. On a slow local machine, rerun with ` +
+        `${budgetScaleVariable}=2 (or higher) to scale every ceiling; CI runs at scale 1.`,
+    );
+  }
+
+  private scaleSuffix(): string {
+    return this.scale === 1 ? "" : ` (${budgetScaleVariable}=${this.scale})`;
   }
 }
 
@@ -102,6 +283,12 @@ export function countFiles(
     }
   }
   return count;
+}
+
+function assertBudgetMs(value: number, suiteId: string, field: string): void {
+  if (!Number.isSafeInteger(value) || value <= 0) {
+    throw new Error(`${suiteId} ${field} must be a positive safe integer, got ${inspect(value)}`);
+  }
 }
 
 function processRssKiB(processId: number): number | null {
@@ -124,10 +311,12 @@ function renderMarkdown(
     fixture: string;
     fixtureRevision: string;
     corpus: { vueFiles: number; vueAndTypeScriptFiles: number; baselineDiagnostics: number };
+    budget: { scale: number; maxPeakRssMiB: number; laneBudgetsMs: Record<string, number> };
     timingsMs: Record<string, number>;
     sampledPeakRssKiB: number;
   },
 ): string {
+  const scale = data.budget.scale;
   const lines = [
     `## ${title}`,
     "",
@@ -135,17 +324,25 @@ function renderMarkdown(
     "",
     `Corpus: ${data.corpus.vueFiles} Vue files; ${data.corpus.vueAndTypeScriptFiles} Vue/TS files; ${data.corpus.baselineDiagnostics} baseline diagnostics.`,
     "",
-    "| Stage | Time |",
-    "| --- | ---: |",
+    "| Stage | Time | Budget |",
+    "| --- | ---: | ---: |",
   ];
   for (const [stage, milliseconds] of Object.entries(data.timingsMs)) {
-    lines.push(`| ${stage} | ${milliseconds.toFixed(1)} ms |`);
+    const budgetMs = data.budget.laneBudgetsMs[stage];
+    const budgetCell = budgetMs == null ? "—" : `${budgetMs * scale} ms`;
+    lines.push(`| ${stage} | ${milliseconds.toFixed(1)} ms | ${budgetCell} |`);
   }
   lines.push(
     "",
-    `Sampled peak LSP RSS: ${data.sampledPeakRssKiB > 0 ? `${(data.sampledPeakRssKiB / 1024).toFixed(1)} MiB` : "unavailable"}.`,
+    `Sampled peak LSP RSS: ${
+      data.sampledPeakRssKiB > 0
+        ? `${(data.sampledPeakRssKiB / 1024).toFixed(1)} MiB`
+        : "unavailable"
+    } (budget ${data.budget.maxPeakRssMiB * scale} MiB).`,
     "",
-    "Timing and RSS are report-only. The clean/broken/repaired diagnostics, completion, hover, and dependency propagation are hard assertions.",
+    `Latency, RSS, and hang ceilings are enforced at scale ${scale} from the registry ` +
+      "lspIncrementalBudget block. The clean/broken/repaired diagnostics, completion, hover, " +
+      "and dependency propagation are hard assertions.",
     "",
   );
   return lines.join("\n");

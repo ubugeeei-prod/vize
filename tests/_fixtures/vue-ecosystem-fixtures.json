@@ -33,6 +33,26 @@
         "hangTimeoutMs": 300000,
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
+      },
+      "lspIncrementalBudget": {
+        "suite": "vben-lsp-incremental",
+        "laneHardTimeoutMs": 60000,
+        "maxPeakRssMiB": 256,
+        "laneBudgetsMs": {
+          "initialize": 1000,
+          "coldOpen": 8000,
+          "coldOpenSecondApp": 1500,
+          "completion": 1000,
+          "hover": 1000,
+          "warmNoop": 1500,
+          "leafBroken": 1500,
+          "leafRepaired": 1500,
+          "sharedBroken": 3000,
+          "sharedBrokenSecondApp": 3000,
+          "sharedRepaired": 3000,
+          "sharedRepairedSecondApp": 3000,
+          "warmNoopSecondApp": 1500
+        }
       }
     },
     {
@@ -352,6 +372,22 @@
         "maxFalsePositiveRatio": 0.02,
         "maxFalseNegativeRatio": 0.02,
         "largeProjectRegressionTarget": true
+      },
+      "lspIncrementalBudget": {
+        "suite": "misskey-lsp-incremental",
+        "laneHardTimeoutMs": 60000,
+        "maxPeakRssMiB": 256,
+        "laneBudgetsMs": {
+          "initialize": 1000,
+          "coldOpen": 8000,
+          "completion": 1000,
+          "hover": 1000,
+          "warmNoop": 1500,
+          "leafBroken": 1500,
+          "leafRepaired": 1500,
+          "sharedBroken": 3000,
+          "sharedRepaired": 3000
+        }
       }
     },
     {

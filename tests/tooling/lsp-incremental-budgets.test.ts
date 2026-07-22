@@ -1,0 +1,134 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import {
+  budgetRegistryPath,
+  budgetScaleVariable,
+  IncrementalMetrics,
+  loadLspIncrementalBudget,
+  resolveBudgetScale,
+} from "../performance/support/incremental-metrics.ts";
+
+const misskeySuite = { id: "misskey-lsp-incremental", title: "Misskey LSP Incremental Oracle" };
+
+function withBudgetScale<T>(scale: string, run: () => T): T {
+  const previous = process.env[budgetScaleVariable];
+  process.env[budgetScaleVariable] = scale;
+  try {
+    return run();
+  } finally {
+    if (previous == null) delete process.env[budgetScaleVariable];
+    else process.env[budgetScaleVariable] = previous;
+  }
+}
+
+test("suite budgets resolve from the registry and unknown suites are rejected", () => {
+  const misskey = loadLspIncrementalBudget("misskey-lsp-incremental");
+  assert.equal(misskey.fixtureId, "misskey");
+  assert.ok(misskey.budget.laneBudgetsMs.coldOpen > 0);
+
+  const vben = loadLspIncrementalBudget("vben-lsp-incremental");
+  assert.equal(vben.fixtureId, "vue-vben-admin");
+  assert.ok(vben.budget.laneBudgetsMs.sharedBrokenSecondApp > 0);
+
+  assert.throws(
+    () => loadLspIncrementalBudget("unbudgeted-suite"),
+    /exactly one lspIncrementalBudget block/,
+  );
+});
+
+test("the budget scale escape hatch parses strictly and defaults to 1", () => {
+  assert.equal(resolveBudgetScale({}), 1);
+  assert.equal(resolveBudgetScale({ [budgetScaleVariable]: "" }), 1);
+  assert.equal(resolveBudgetScale({ [budgetScaleVariable]: "2.5" }), 2.5);
+  for (const invalid of ["0", "-1", "banana", "Infinity"]) {
+    assert.throws(
+      () => resolveBudgetScale({ [budgetScaleVariable]: invalid }),
+      new RegExp(budgetScaleVariable),
+      `${invalid} should be rejected`,
+    );
+  }
+});
+
+test("a lane over its latency budget fails with rebaseline instructions", async () => {
+  // Scale 0.01 shrinks the checked-in coldOpen ceiling to tens of
+  // milliseconds while the hard timeout stays hundreds of milliseconds
+  // away, so a slightly slower operation completes and trips the latency
+  // gate rather than the hang gate.
+  const scale = 0.01;
+  const { budget } = loadLspIncrementalBudget(misskeySuite.id);
+  const scaledBudgetMs = budget.laneBudgetsMs.coldOpen * scale;
+  const sleepMs = scaledBudgetMs + 70;
+  assert.ok(
+    sleepMs < budget.laneHardTimeoutMs * scale - 200,
+    "the lane must finish safely before the scaled hard timeout",
+  );
+  const metrics = withBudgetScale(
+    String(scale),
+    () => new IncrementalMetrics(process.pid, misskeySuite),
+  );
+  await assert.rejects(
+    metrics.measure("coldOpen", () => new Promise((resolve) => setTimeout(resolve, sleepMs))),
+    (error: Error) => {
+      assert.match(error.message, /lane "coldOpen" took/);
+      assert.ok(error.message.includes(`over its ${scaledBudgetMs} ms budget`));
+      assert.match(error.message, /Fixture: misskey\./);
+      assert.match(error.message, /raising laneBudgetsMs\.coldOpen/);
+      assert.ok(error.message.includes(budgetRegistryPath));
+      assert.ok(error.message.includes(`${budgetScaleVariable}=2`));
+      return true;
+    },
+  );
+});
+
+test("a lane without a registry budget entry cannot be measured", async () => {
+  const metrics = new IncrementalMetrics(process.pid, misskeySuite);
+  await assert.rejects(
+    metrics.measure("unbudgetedLane", async () => {}),
+    /Lane "unbudgetedLane" has no laneBudgetsMs entry/,
+  );
+});
+
+test("a hung lane trips the scaled hard timeout instead of the suite timeout", async () => {
+  // Scale 0.001 turns the 60s hard timeout into 60ms; the lane operation
+  // stays pending for far longer than that.
+  const metrics = withBudgetScale("0.001", () => new IncrementalMetrics(process.pid, misskeySuite));
+  const startedAt = Date.now();
+  await assert.rejects(
+    metrics.measure("coldOpen", () => new Promise((resolve) => setTimeout(resolve, 5_000).unref())),
+    (error: Error) => {
+      assert.match(error.message, /lane "coldOpen" is still not settled after its 60 ms hard/);
+      assert.match(error.message, /likely hung/);
+      assert.match(error.message, /raising laneHardTimeoutMs/);
+      return true;
+    },
+  );
+  assert.ok(Date.now() - startedAt < 4_000, "hard timeout must fire well before the operation");
+});
+
+test("peak RSS over its ceiling fails settlement with rebaseline instructions", () => {
+  // Scale 0.001 shrinks the 256 MiB ceiling to ~262 KiB, which any live
+  // Node.js process exceeds.
+  const metrics = withBudgetScale("0.001", () => new IncrementalMetrics(process.pid, misskeySuite));
+  metrics.sampleRss("probe");
+  assert.throws(
+    () => metrics.assertBudgetsSettled(),
+    (error: Error) => {
+      assert.match(error.message, /sampled peak RSS .* MiB is over its 0\.256 MiB budget/);
+      assert.match(error.message, /raising maxPeakRssMiB/);
+      assert.ok(error.message.includes(budgetRegistryPath));
+      return true;
+    },
+  );
+});
+
+test("a budgeted lane that never ran fails settlement", () => {
+  // A huge scale keeps the RSS ceiling out of the way so the completeness
+  // check is what trips.
+  const metrics = withBudgetScale("1000", () => new IncrementalMetrics(process.pid, misskeySuite));
+  metrics.sampleRss("probe");
+  assert.throws(
+    () => metrics.assertBudgetsSettled(),
+    /budgeted lane "initialize" was never measured/,
+  );
+});
