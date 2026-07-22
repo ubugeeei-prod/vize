@@ -273,10 +273,13 @@ function assertSingleInjectedMismatch(
     assert.deepEqual(diagnostic.range?.start, start);
     assert.deepEqual(diagnostic.range?.end, end);
   } else {
-    const bindingOffset = source.indexOf(`String(${symbol})`);
+    // The prop-type mismatch (TS2322) anchors at the component attribute name
+    // (`code`), matching vue-tsc, rather than the authored value expression.
+    const bindingOffset = source.indexOf(`:code="String(${symbol})"`);
     assert.notEqual(bindingOffset, -1);
-    const start = offsetToPosition(source, bindingOffset);
-    const end = { line: start.line, character: start.character + `String(${symbol})`.length };
+    const nameOffset = bindingOffset + ":".length;
+    const start = offsetToPosition(source, nameOffset);
+    const end = { line: start.line, character: start.character + "code".length };
     assert.deepEqual(diagnostic.range?.start, start);
     assert.deepEqual(diagnostic.range?.end, end);
   }
