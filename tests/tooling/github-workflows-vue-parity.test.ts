@@ -44,6 +44,13 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   const parity = steps.find((step) => step.name === "Check Vue compiler and typecheck parity");
   assert.deepEqual(parity?.env, { VIZE_TEST_BIN: "target/ci/vize" });
   assert.equal(parity?.run, "vp run --filter './tests' test:check:fixtures");
+  // The per-PR drop-in compatibility ratchet must ride the same lane: it is
+  // the only pre-merge gate holding the vize/vue-tsc divergence ledger.
+  assert.match(
+    testsPackage.scripts["test:check:fixtures"],
+    /tooling\/compat-ratchet\.test\.ts/,
+    "test:check:fixtures must run the per-PR compat ratchet",
+  );
 
   const incremental = steps.find(
     (step) => step.name === "Check incremental LSP against Misskey and Vue Vben Admin",
