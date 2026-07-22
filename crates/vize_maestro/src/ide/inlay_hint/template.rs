@@ -7,6 +7,7 @@
 use tower_lsp::lsp_types::{InlayHint, InlayHintKind, InlayHintLabel, Position, Range};
 
 use super::InlayHintService;
+use super::expr_regions::code_regions;
 use crate::ide::offset_to_position;
 
 impl InlayHintService {
@@ -217,7 +218,16 @@ impl InlayHintService {
             return;
         }
 
-        let mut search_pos = 0;
+        // Only executable code can reference a prop: matching text inside
+        // string literals, template-literal text, or comments must not hint
+        // (a static `tag--size-` chunk is not a use of `size`).
+        let regions = code_regions(expr);
+        let mut region_iter = regions.iter();
+        let mut region = match region_iter.next() {
+            Some(&region) => region,
+            None => return,
+        };
+        let mut search_pos = region.0;
 
         while let Some(found) = expr[search_pos..].find(prop_name) {
             let abs_pos = search_pos + found;
@@ -225,6 +235,23 @@ impl InlayHintService {
             // Bounds check
             if abs_pos + prop_name.len() > expr.len() {
                 break;
+            }
+
+            // Advance to the code region containing this match; skip the
+            // match when it starts outside code or crosses a region edge.
+            while abs_pos >= region.1 {
+                region = match region_iter.next() {
+                    Some(&next) => next,
+                    None => return,
+                };
+            }
+            if abs_pos < region.0 {
+                search_pos = region.0;
+                continue;
+            }
+            if abs_pos + prop_name.len() > region.1 {
+                search_pos = abs_pos + 1;
+                continue;
             }
 
             // Check word boundaries

@@ -6,6 +6,7 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 //! Uses vize_croquis for proper scope analysis to accurately identify destructured props.
 
+mod expr_regions;
 mod script;
 mod template;
 
@@ -274,6 +275,64 @@ console.log(title)
             if let InlayHintLabel::String(label) = &hint.label {
                 assert_eq!(label, "#props.");
             }
+        }
+    }
+
+    #[test]
+    fn template_literal_text_never_hints_prop_names() {
+        let content = r#"<script setup lang="ts">
+const { size, state, tone, variant } = defineProps<{
+  size: string
+  state: string
+  tone: string
+  variant: string
+}>()
+</script>
+
+<template>
+  <span
+    :aria-disabled="state === 'disabled'"
+    :class="[
+      'tag',
+      `tag--size-${size}`,
+      `tag--state-${state}`,
+      `tag--tone-${tone}`,
+      `tag--variant-${variant}`,
+    ]"
+  >
+    <slot />
+  </span>
+</template>"#;
+
+        let uri = Url::parse("file:///test.vue").unwrap();
+        let range = Range {
+            start: Position {
+                line: 0,
+                character: 0,
+            },
+            end: Position {
+                line: 100,
+                character: 0,
+            },
+        };
+
+        let hints = InlayHintService::get_hints(content, &uri, range);
+
+        // Exactly one hint per real reference: the aria-disabled comparison
+        // plus the four `${...}` interpolations. The static `tag--size-`
+        // template text must not hint.
+        assert_eq!(hints.len(), 5, "{hints:#?}");
+
+        let lines: Vec<&str> = content.lines().collect();
+        for hint in &hints {
+            let line = lines[hint.position.line as usize];
+            let before = &line[..hint.position.character as usize];
+            assert!(
+                before.ends_with("${") || before.ends_with("=\"") || before.ends_with("\""),
+                "hint must sit on a code reference, not literal text: line {:?} col {} ({before:?})",
+                hint.position.line,
+                hint.position.character
+            );
         }
     }
 
