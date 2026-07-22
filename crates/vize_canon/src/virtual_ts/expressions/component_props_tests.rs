@@ -243,8 +243,9 @@ fn attribute_name_anchor_survives_prefixes_and_modifiers() {
     let script = r#"import Child from "./Child.vue"
 const bind = 1
 const sync = 2
+const fooBar = 3
 "#;
-    let template = r#"<Child v-bind:bind="bind" :sync.camel="sync" />"#;
+    let template = r#"<Child v-bind:bind="bind" :sync.camel="sync" :foo-bar="fooBar" />"#;
 
     let allocator = vize_carton::Bump::new();
     let (root, _) = vize_armature::parse(&allocator, template);
@@ -276,5 +277,14 @@ const sync = 2
                 && output.code[span.gen_range.clone()].starts_with("__vize_prop_check_")
         ),
         "modifier attributes should anchor at the name, not the modifier"
+    );
+
+    let kebab_name = template.find(":foo-bar").expect("kebab attr") + 1;
+    assert!(
+        sub_spans.iter().any(
+            |span| span.src_range == (kebab_name..kebab_name + "foo-bar".len())
+                && output.code[span.gen_range.clone()].starts_with("__vize_prop_check_")
+        ),
+        "kebab-case names should anchor across the whole hyphenated name, not a leading segment"
     );
 }
