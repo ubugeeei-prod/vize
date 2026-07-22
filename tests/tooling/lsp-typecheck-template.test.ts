@@ -221,7 +221,9 @@ import Child from './Child.vue'
         isDiagnosticsForUri(params, parentUri) &&
         params.diagnostics.some((diagnostic) => diagnostic.message?.includes("not assignable")),
     )) as PublishDiagnosticsParams;
-    const bindingStart = offsetToPosition(parent, parent.indexOf(":count") + ":".length);
+    const bindingOffset = parent.indexOf(":count");
+    assert.notEqual(bindingOffset, -1);
+    const bindingStart = offsetToPosition(parent, bindingOffset + ":".length);
     assert.equal(changedParent.version, 1);
     assert.deepEqual(changedParent.diagnostics, [
       {
