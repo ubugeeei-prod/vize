@@ -1,0 +1,208 @@
+//! Low-level byte scanners for the expression nesting guard.
+//!
+//! Each helper advances past a lexical construct OXC's lexer skips or consumes
+//! as a unit (string and template literals, comments, regex literals,
+//! identifiers, numbers), so the depth scanner in the parent module never
+//! counts brackets or type angles hidden inside them. The byte scanner must
+//! stop exactly where the lexer stops, or hidden brackets slip past the guard
+//! while OXC still recurses into the overflow path.
+
+pub(super) fn skip_quoted(bytes: &[u8], mut i: usize, quote: u8) -> usize {
+    while i < bytes.len() {
+        match bytes[i] {
+            b'\\' => {
+                // `\` + CRLF is a single LineContinuation sequence; every other
+                // escape is two bytes. (`\` + LS/PS also continues the line: the
+                // two-byte skip consumes the E2 lead byte and the remaining
+                // bytes are ordinary string content.)
+                if bytes.get(i + 1) == Some(&b'\r') && bytes.get(i + 2) == Some(&b'\n') {
+                    i = i.saturating_add(3);
+                } else {
+                    i = i.saturating_add(2);
+                }
+            }
+            // An unescaped LF or CR ends a (mal)formed string literal for the
+            // lexer. Scanning past it to a later quote swallowed real source,
+            // hiding brackets and type angles from the depth guard (#3213).
+            // Unescaped LS/PS stay legal inside string literals (ES2019), so
+            // only LF and CR terminate.
+            b'\n' | b'\r' => return i,
+            b if b == quote => return i + 1,
+            _ => i += 1,
+        }
+    }
+    i
+}
+
+/// Skip literal template text, returning the byte after either the closing
+/// backtick or an opening `${`. The caller scans interpolation bodies so deeply
+/// nested input is guarded without recursive Rust calls.
+pub(super) fn skip_template_text(bytes: &[u8], mut i: usize) -> (usize, bool) {
+    while i < bytes.len() {
+        match bytes[i] {
+            b'\\' => i = i.saturating_add(2),
+            b'`' => return (i + 1, false),
+            b'$' if bytes.get(i + 1) == Some(&b'{') => return (i + 2, true),
+            _ => i += 1,
+        }
+    }
+    (i, false)
+}
+
+pub(super) fn is_speculative_type_angle_open(content: &str, open: usize) -> bool {
+    // The `<` is ASCII, so `open + 1` is a valid char boundary.
+    let after = &content[open + 1..];
+    let marker = skip_type_angle_trivia(after);
+    // `{`/`[` start structural types (#2944); `!` starts a JSDoc non-nullable
+    // type (#3213). Each keeps OXC inside type-argument speculation, so
+    // repeated occurrences make unclosed angles count toward the depth budget.
+    matches!(after.as_bytes().get(marker), Some(b'{' | b'[' | b'!'))
+}
+
+/// Skip the lexer trivia OXC drops between `<` and the next token: ASCII and
+/// ECMAScript Unicode whitespace, line terminators, and line/block comments.
+/// The byte scanner must skip exactly what the lexer skips, or a marker hidden
+/// behind trivia (`a</* */!`, `a<\u{a0}!`) slips past the speculative-angle
+/// guard while OXC still recurses into the overflow path (#3213).
+fn skip_type_angle_trivia(s: &str) -> usize {
+    let bytes = s.as_bytes();
+    let mut i = 0;
+    loop {
+        match bytes.get(i) {
+            Some(b'/') if bytes.get(i + 1) == Some(&b'/') => i = skip_line_comment(bytes, i + 2),
+            Some(b'/') if bytes.get(i + 1) == Some(&b'*') => i = skip_block_comment(bytes, i + 2),
+            Some(&b) if b < 0x80 => {
+                if matches!(b, b' ' | b'\t' | 0x0b | 0x0c | b'\n' | b'\r') {
+                    i += 1;
+                } else {
+                    return i;
+                }
+            }
+            // A multi-byte lead is a char boundary; decode it to test for
+            // ECMAScript Unicode whitespace (NBSP, LS/PS, the Zs category, ...).
+            Some(_) => {
+                let c = s[i..].chars().next().unwrap();
+                if is_ecmascript_whitespace(c) {
+                    i += c.len_utf8();
+                } else {
+                    return i;
+                }
+            }
+            None => return i,
+        }
+    }
+}
+
+/// ECMAScript WhiteSpace plus LineTerminator: the Unicode White_Space set minus
+/// NEL (U+0085, which ECMAScript does not treat as whitespace) plus ZWNBSP
+/// (U+FEFF, which is ECMAScript whitespace but lacks the White_Space property).
+fn is_ecmascript_whitespace(c: char) -> bool {
+    c == '\u{feff}' || (c.is_whitespace() && c != '\u{0085}')
+}
+
+pub(super) fn skip_line_comment(bytes: &[u8], mut i: usize) -> usize {
+    while i < bytes.len() {
+        // Line comments end at any ECMAScript line terminator: LF, CR, LS
+        // (U+2028), or PS (U+2029). Stopping only at LF let a bare CR hide
+        // parsed code from the guard (#3185).
+        match bytes[i] {
+            b'\n' | b'\r' => break,
+            0xe2 if bytes.get(i + 1) == Some(&0x80)
+                && matches!(bytes.get(i + 2), Some(&0xa8) | Some(&0xa9)) =>
+            {
+                break;
+            }
+            _ => i += 1,
+        }
+    }
+    i
+}
+
+pub(super) fn skip_block_comment(bytes: &[u8], mut i: usize) -> usize {
+    while i + 1 < bytes.len() {
+        if bytes[i] == b'*' && bytes[i + 1] == b'/' {
+            return i + 2;
+        }
+        i += 1;
+    }
+    bytes.len()
+}
+
+pub(super) fn skip_regex(bytes: &[u8], mut i: usize) -> usize {
+    let mut in_character_class = false;
+    while i < bytes.len() {
+        match bytes[i] {
+            // A regex literal cannot span a line terminator, and `\` before one
+            // is not a valid escape: the lexer ends the regex at the terminator.
+            // Blindly skipping two bytes would swallow the terminator (LF/CR) or
+            // its 0xE2 lead byte (LS/PS), hiding the following source from the
+            // guard, so bail before consuming it.
+            b'\\' => match bytes.get(i + 1) {
+                Some(&b'\n' | &b'\r') => return i,
+                Some(&0xe2)
+                    if bytes.get(i + 2) == Some(&0x80)
+                        && matches!(bytes.get(i + 3), Some(&0xa8) | Some(&0xa9)) =>
+                {
+                    return i;
+                }
+                _ => i = i.saturating_add(2),
+            },
+            b'[' => {
+                in_character_class = true;
+                i += 1;
+            }
+            b']' => {
+                in_character_class = false;
+                i += 1;
+            }
+            b'/' if !in_character_class => return skip_identifier(bytes, i + 1),
+            b'\n' | b'\r' => return i,
+            // LS/PS terminate an (unterminated) regex literal like LF/CR.
+            0xe2 if bytes.get(i + 1) == Some(&0x80)
+                && matches!(bytes.get(i + 2), Some(&0xa8) | Some(&0xa9)) =>
+            {
+                return i;
+            }
+            _ => i += 1,
+        }
+    }
+    i
+}
+
+pub(super) fn skip_identifier(bytes: &[u8], mut i: usize) -> usize {
+    while i < bytes.len()
+        && matches!(bytes[i], b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' | b'$')
+    {
+        i += 1;
+    }
+    i
+}
+
+pub(super) fn skip_number(bytes: &[u8], mut i: usize) -> usize {
+    while i < bytes.len()
+        && matches!(bytes[i], b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' | b'.')
+    {
+        i += 1;
+    }
+    i
+}
+
+pub(super) fn keyword_allows_regex_after(identifier: &[u8]) -> bool {
+    matches!(
+        identifier,
+        b"await"
+            | b"case"
+            | b"delete"
+            | b"do"
+            | b"else"
+            | b"in"
+            | b"instanceof"
+            | b"new"
+            | b"of"
+            | b"return"
+            | b"throw"
+            | b"typeof"
+            | b"void"
+            | b"yield"
+    )
+}
