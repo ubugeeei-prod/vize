@@ -221,7 +221,7 @@ import Child from './Child.vue'
         isDiagnosticsForUri(params, parentUri) &&
         params.diagnostics.some((diagnostic) => diagnostic.message?.includes("not assignable")),
     )) as PublishDiagnosticsParams;
-    const bindingStart = offsetToPosition(parent, parent.indexOf("'one'"));
+    const bindingStart = offsetToPosition(parent, parent.indexOf(":count") + ":".length);
     assert.equal(changedParent.version, 1);
     assert.deepEqual(changedParent.diagnostics, [
       {
@@ -229,7 +229,7 @@ import Child from './Child.vue'
         message: "Type 'string' is not assignable to type 'number'.",
         range: {
           start: bindingStart,
-          end: { line: bindingStart.line, character: bindingStart.character + "'one'".length },
+          end: { line: bindingStart.line, character: bindingStart.character + "count".length },
         },
         severity: 1,
         source: "vize/types",
