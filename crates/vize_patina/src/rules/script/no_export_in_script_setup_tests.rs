@@ -109,6 +109,17 @@ export {}
     assert_eq!(result.error_count, 1);
 }
 
+#[test]
+fn test_invalid_export_namespace_with_macro() {
+    // A non-ambient namespace emits a runtime object, so it must be flagged.
+    let source = r#"
+defineProps<{ count: number }>()
+export namespace Config { export const value = 1 }
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1);
+}
+
 // --- Valid: type-only exports are erased and stay legal in <script setup> ---
 
 #[test]
@@ -172,6 +183,18 @@ fn test_valid_export_ambient_declare() {
     let source = r#"
 defineProps<{ count: number }>()
 export declare const version: string
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0);
+}
+
+#[test]
+fn test_valid_export_declare_namespace() {
+    // An ambient namespace is erased at compile time; only non-ambient
+    // `export namespace` emits a runtime object.
+    let source = r#"
+defineProps<{ count: number }>()
+export declare namespace Config { const value: number }
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 0);
