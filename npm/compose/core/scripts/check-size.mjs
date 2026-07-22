@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 
 const budgets = new Map([
-  ["index.mjs", 4 * 1024],
+  ["index.mjs", 9 * 1024],
   ["temporal.mjs", 2 * 1024],
 ]);
 

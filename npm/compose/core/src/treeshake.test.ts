@@ -27,6 +27,12 @@ const sentinels = {
   locale: ["useLocale", "getTextInfo"],
   "async-resource": ["useAsyncResource", "A newer execution started."],
   temporal: ["useTemporalNow", "VIZE_COMPOSE_TEMPORAL_INVALID_INTERVAL"],
+  "use-previous": ["usePrevious"],
+  "use-history": ["useHistory", "VIZE_COMPOSE_HISTORY_INVALID_CAPACITY"],
+  "use-debounced": ["useDebounced", "VIZE_COMPOSE_DEBOUNCE_INVALID_WAIT"],
+  "use-throttled": ["useThrottled", "VIZE_COMPOSE_THROTTLE_INVALID_WAIT"],
+  "use-toggle": ["useToggle"],
+  "use-counter": ["useCounter", "VIZE_COMPOSE_COUNTER_INVALID_RANGE"],
 } as const;
 
 type ModuleName = keyof typeof sentinels;
@@ -48,6 +54,12 @@ const utilities: readonly UtilityCase[] = [
   { binding: "useAsyncResource", entry: "index", module: "async-resource", shared: ["scope"] },
   { binding: "useTemporalNow", entry: "temporal", module: "temporal", shared: [] },
   { binding: "useTemporalZonedDateTime", entry: "temporal", module: "temporal", shared: [] },
+  { binding: "usePrevious", entry: "index", module: "use-previous", shared: [] },
+  { binding: "useHistory", entry: "index", module: "use-history", shared: ["scope"] },
+  { binding: "useDebounced", entry: "index", module: "use-debounced", shared: ["scope"] },
+  { binding: "useThrottled", entry: "index", module: "use-throttled", shared: ["scope"] },
+  { binding: "useToggle", entry: "index", module: "use-toggle", shared: [] },
+  { binding: "useCounter", entry: "index", module: "use-counter", shared: [] },
 ];
 
 const VIRTUAL_ID = "virtual:compose-treeshake-entry";
