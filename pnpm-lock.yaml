@@ -708,9 +708,15 @@ importers:
       '@types/node':
         specifier: catalog:typescript
         version: 25.9.2
+      '@typescript/native-preview':
+        specifier: catalog:typescript
+        version: 7.0.0-dev.20260602.1
       '@vue/runtime-core':
         specifier: catalog:vue-stable
         version: 3.5.35
+      tsx:
+        specifier: catalog:typescript
+        version: 4.22.4
       typescript:
         specifier: catalog:typescript
         version: 6.0.3

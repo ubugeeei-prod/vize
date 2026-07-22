@@ -47,16 +47,20 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
-    "check": "vp check src vite.config.ts",
+    "check": "vp check src vite.config.ts && tsgo --noEmit -p tsconfig.json",
     "check:fix": "vp check --fix src vite.config.ts",
-    "fmt": "vp fmt --write src vite.config.ts"
+    "check:types": "tsgo --noEmit -p tsconfig.json",
+    "fmt": "vp fmt --write src vite.config.ts",
+    "test": "vp exec tsx --test 'src/**/*.test.ts'"
   },
   "dependencies": {
     "@vizejs/fresco-native": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:typescript",
+    "@typescript/native-preview": "catalog:typescript",
     "@vue/runtime-core": "catalog:vue-stable",
+    "tsx": "catalog:typescript",
     "typescript": "catalog:typescript",
     "vite-plus": "catalog:vite-stack"
   },
