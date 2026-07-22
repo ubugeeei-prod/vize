@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import {
   budgetRegistryPath,
@@ -8,6 +11,18 @@ import {
   loadLspIncrementalBudget,
   resolveBudgetScale,
 } from "../performance/support/incremental-metrics.ts";
+import type { LspIncrementalBudget } from "../performance/support/incremental-metrics.ts";
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+function readBudgetOwners(): Array<{ id: string; budget: LspIncrementalBudget }> {
+  const registry = JSON.parse(fs.readFileSync(path.join(repoRoot, budgetRegistryPath), "utf8")) as {
+    projects: Array<{ id: string; lspIncrementalBudget?: LspIncrementalBudget }>;
+  };
+  return registry.projects
+    .filter((project) => project.lspIncrementalBudget != null)
+    .map((project) => ({ id: project.id, budget: project.lspIncrementalBudget! }));
+}
 
 const misskeySuite = { id: "misskey-lsp-incremental", title: "Misskey LSP Incremental Oracle" };
 
@@ -131,4 +146,68 @@ test("a budgeted lane that never ran fails settlement", () => {
     () => metrics.assertBudgetsSettled(),
     /budgeted lane "initialize" was never measured/,
   );
+});
+
+test("incremental LSP suites carry complete enforced budget blocks", () => {
+  const owners = readBudgetOwners();
+
+  assert.deepEqual(
+    owners.map(({ id, budget }) => ({ id, suite: budget.suite })),
+    [
+      { id: "vue-vben-admin", suite: "vben-lsp-incremental" },
+      { id: "misskey", suite: "misskey-lsp-incremental" },
+    ],
+  );
+
+  const sharedLanes = [
+    "initialize",
+    "coldOpen",
+    "completion",
+    "hover",
+    "warmNoop",
+    "leafBroken",
+    "leafRepaired",
+    "sharedBroken",
+    "sharedRepaired",
+  ];
+  const expectedLanes: Record<string, string[]> = {
+    "misskey-lsp-incremental": sharedLanes,
+    "vben-lsp-incremental": [
+      ...sharedLanes,
+      "coldOpenSecondApp",
+      "sharedBrokenSecondApp",
+      "sharedRepairedSecondApp",
+      "warmNoopSecondApp",
+    ],
+  };
+
+  for (const { id, budget } of owners) {
+    assert.deepEqual(
+      Object.keys(budget.laneBudgetsMs).sort(),
+      [...expectedLanes[budget.suite]].sort(),
+      `${id} should budget exactly the lanes its suite measures`,
+    );
+    assert.ok(
+      Number.isSafeInteger(budget.laneHardTimeoutMs) && budget.laneHardTimeoutMs > 0,
+      `${id} laneHardTimeoutMs must be a positive integer`,
+    );
+    assert.ok(
+      budget.laneHardTimeoutMs < 300_000,
+      `${id} hard timeout must fire before the 300s suite timeout`,
+    );
+    assert.ok(
+      Number.isSafeInteger(budget.maxPeakRssMiB) && budget.maxPeakRssMiB > 0,
+      `${id} maxPeakRssMiB must be a positive integer`,
+    );
+    for (const [lane, budgetMs] of Object.entries(budget.laneBudgetsMs)) {
+      assert.ok(
+        Number.isSafeInteger(budgetMs) && budgetMs > 0,
+        `${id} ${lane} budget must be a positive integer`,
+      );
+      assert.ok(
+        budgetMs <= budget.laneHardTimeoutMs,
+        `${id} ${lane} budget must fit under the hard timeout`,
+      );
+    }
+  }
 });

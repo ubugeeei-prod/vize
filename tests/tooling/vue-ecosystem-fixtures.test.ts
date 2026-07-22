@@ -38,12 +38,6 @@ interface FixtureProject {
     maxFalseNegativeRatio: number;
     largeProjectRegressionTarget?: boolean;
   };
-  lspIncrementalBudget?: {
-    suite: string;
-    laneHardTimeoutMs: number;
-    maxPeakRssMiB: number;
-    laneBudgetsMs: Record<string, number>;
-  };
 }
 
 interface FixtureRegistry {
@@ -336,73 +330,6 @@ test("typecheck baselines have complete budgets and one target per matrix shard"
     assert.ok(performance.hangTimeoutMs > 0 && performance.hangTimeoutMs <= 300_000);
     assert.ok(performance.maxFalsePositiveRatio >= 0 && performance.maxFalsePositiveRatio <= 1);
     assert.equal(performance.maxFalseNegativeRatio, performance.maxFalsePositiveRatio);
-  }
-});
-
-test("incremental LSP suites carry complete enforced budget blocks", () => {
-  const registry = readRegistry();
-  const owners = registry.projects
-    .filter((project) => project.lspIncrementalBudget != null)
-    .map((project) => ({ id: project.id, budget: project.lspIncrementalBudget! }));
-
-  assert.deepEqual(
-    owners.map(({ id, budget }) => ({ id, suite: budget.suite })),
-    [
-      { id: "vue-vben-admin", suite: "vben-lsp-incremental" },
-      { id: "misskey", suite: "misskey-lsp-incremental" },
-    ],
-  );
-
-  const sharedLanes = [
-    "initialize",
-    "coldOpen",
-    "completion",
-    "hover",
-    "warmNoop",
-    "leafBroken",
-    "leafRepaired",
-    "sharedBroken",
-    "sharedRepaired",
-  ];
-  const expectedLanes: Record<string, string[]> = {
-    "misskey-lsp-incremental": sharedLanes,
-    "vben-lsp-incremental": [
-      ...sharedLanes,
-      "coldOpenSecondApp",
-      "sharedBrokenSecondApp",
-      "sharedRepairedSecondApp",
-      "warmNoopSecondApp",
-    ],
-  };
-
-  for (const { id, budget } of owners) {
-    assert.deepEqual(
-      Object.keys(budget.laneBudgetsMs).sort(),
-      [...expectedLanes[budget.suite]].sort(),
-      `${id} should budget exactly the lanes its suite measures`,
-    );
-    assert.ok(
-      Number.isSafeInteger(budget.laneHardTimeoutMs) && budget.laneHardTimeoutMs > 0,
-      `${id} laneHardTimeoutMs must be a positive integer`,
-    );
-    assert.ok(
-      budget.laneHardTimeoutMs < 300_000,
-      `${id} hard timeout must fire before the 300s suite timeout`,
-    );
-    assert.ok(
-      Number.isSafeInteger(budget.maxPeakRssMiB) && budget.maxPeakRssMiB > 0,
-      `${id} maxPeakRssMiB must be a positive integer`,
-    );
-    for (const [lane, budgetMs] of Object.entries(budget.laneBudgetsMs)) {
-      assert.ok(
-        Number.isSafeInteger(budgetMs) && budgetMs > 0,
-        `${id} ${lane} budget must be a positive integer`,
-      );
-      assert.ok(
-        budgetMs <= budget.laneHardTimeoutMs,
-        `${id} ${lane} budget must fit under the hard timeout`,
-      );
-    }
   }
 });
 
