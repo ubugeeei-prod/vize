@@ -57,8 +57,9 @@ export interface EventListenerControls {
   /**
    * Begin listening.
    *
-   * @returns Whether a new reactive listener was started. `false` while
-   * already listening and after the abort signal has fired.
+   * @returns Whether a new reactive watcher was started. `false` while the
+   * watcher is already active (including a null-target watcher with no
+   * listener attached) and after the abort signal has fired.
    */
   readonly start: () => boolean;
 

@@ -108,7 +108,7 @@ function shouldSchedule(options: UseTemporalNowOptions): boolean {
  *
  * The timer is replaced when reactive options change and is always cancelled
  * when the owning scope stops. Call inside an active effect scope; without
- * one, the interval keeps running until the clock is unreachable. During
+ * one, there is no automatic timer cleanup. During
  * server rendering, no timer starts unless
  * {@link UseTemporalNowOptions.runOnServer} is explicitly enabled.
  *
