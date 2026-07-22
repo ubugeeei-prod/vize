@@ -133,6 +133,18 @@ test("glyph corpus parse-preservation comparator flags structural corruption", (
     ),
     [],
   );
+  // Collapsing whitespace wrapped around a bare-identifier binding is a
+  // legitimate reprint. Vue fast-paths the clean identifier to `ast: null` but
+  // attaches a Babel Identifier to the wrapped form, so the signature must
+  // treat both as the same expression rather than flag a false violation.
+  assert.deepEqual(
+    compareFile(
+      '<template>\n  <Widget\n    v-model:pos="\n      buttonPosition\n    "\n  />\n</template>\n',
+      '<template>\n  <Widget v-model:pos="buttonPosition" />\n</template>\n',
+      "App.vue",
+    ),
+    [],
+  );
   // Dropping an attribute is corruption.
   assert.match(
     compareFile(
