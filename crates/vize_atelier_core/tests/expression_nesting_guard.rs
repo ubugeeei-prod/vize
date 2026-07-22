@@ -184,6 +184,83 @@ fn expression_guard_treats_slash_after_private_names_as_division() {
 }
 
 #[test]
+fn expression_guard_ends_unterminated_strings_at_line_terminators() {
+    // The 4 KiB js_ts_expression reproducer (#3213) hid its pathological
+    // bracket and type-angle runs behind an unterminated `'` literal: the
+    // scanner ran through newlines to a quote hundreds of bytes later while
+    // the lexer ends a (mal)formed string literal at the first unescaped LF or
+    // CR and resumes lexing the junk the guard never saw.
+    for terminator in ["\n", "\r"] {
+        let hidden = [
+            "'x",
+            terminator,
+            &"(".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1),
+        ]
+        .concat();
+        assert_eq!(
+            expression_nesting_depth(&hidden),
+            MAX_EXPRESSION_NESTING_DEPTH + 1,
+            "terminator {:?}",
+            terminator.escape_unicode()
+        );
+        assert!(expression_exceeds_max_depth(&hidden));
+        assert!(!expression_is_safe_to_parse(&hidden));
+    }
+
+    // Unescaped LS/PS are legal string content (ES2019), and `\` + LF as well
+    // as `\` + CRLF are LineContinuation sequences: none of them end the
+    // literal, so none of them expose the quoted brackets to the guard.
+    for continued in [
+        "'a\u{2028}b(' + c",
+        "'a\u{2029}b(' + c",
+        "'a\\\nb(' + c",
+        "'a\\\r\nb(' + c",
+    ] {
+        assert_eq!(expression_nesting_depth(continued), 0, "{continued:?}");
+        assert!(expression_has_balanced_delimiters(continued));
+        assert!(expression_is_safe_to_parse(continued));
+    }
+}
+
+#[test]
+fn expression_guard_rejects_jsdoc_non_nullable_type_angle_chains() {
+    // Minimized from the js_ts_expression stack-overflow reproducer (#3213):
+    // in `a<!!a<!!a<...`, OXC's type-argument speculation parses every `!` as
+    // a JSDoc non-nullable type and every following `<` as nested type
+    // arguments, recursing once per token until the parser overflows the Rust
+    // stack. `<` followed by `!` therefore joins the speculative type-angle
+    // class, making the unclosed angle run count toward the depth budget.
+    let rejected = "a<!!".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1);
+    assert!(expression_nesting_depth(&rejected) > MAX_EXPRESSION_NESTING_DEPTH);
+    assert!(expression_exceeds_max_depth(&rejected));
+    assert!(!expression_is_safe_to_parse(&rejected));
+    assert_eq!(
+        prefix_identifiers_in_expression(&rejected).as_str(),
+        rejected
+    );
+    assert_eq!(
+        strip_typescript_from_expression(&rejected).as_str(),
+        rejected
+    );
+
+    // Whitespace between `<` and `!` reaches the same speculation path.
+    let spaced = "a< !!".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1);
+    assert!(!expression_is_safe_to_parse(&spaced));
+
+    // The fuzzer's stack-overflow shape: hundreds of interleaved `<!!` units.
+    let overflow = "a<!!".repeat(500);
+    assert!(!expression_is_safe_to_parse(&overflow));
+
+    // Real comparisons against negated operands stay below the activation
+    // threshold and inside the depth budget.
+    let legitimate = "x < !a && y < !b && z < !!c";
+    assert_eq!(expression_nesting_depth(legitimate), 3);
+    assert!(expression_is_safe_to_parse(legitimate));
+    let rewritten = prefix_identifiers_in_expression(legitimate);
+    assert!(rewritten.contains("_ctx.x < !_ctx.a"), "{rewritten}");
+}
+
+#[test]
 fn expression_guard_does_not_treat_relational_operators_as_type_angles() {
     let expression = std::iter::repeat_n("value < limit", MAX_EXPRESSION_NESTING_DEPTH + 1)
         .collect::<Vec<_>>()

@@ -18,10 +18,13 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
     let mut can_start_regex = true;
     let mut template_interpolation_depths = Vec::new();
     // Plain `foo < bar` is indistinguishable from a type argument to a byte
-    // scanner. Enter angle-tracking mode only for the repeated structural type
-    // prefixes present in the parser-timeout class (`<{`, `<[`), discovered
-    // while scanning so strings and comments cannot activate the mode.
-    let mut structural_type_angle_opens = 0usize;
+    // scanner. Enter angle-tracking mode only for repeated speculative type
+    // prefixes: the structural shapes of the parser-timeout class (`<{`, `<[`,
+    // #2944) and the JSDoc non-nullable shape (`<!`, #3213), where OXC's type
+    // speculation recurses once per `!` and per nested `<` until the Rust
+    // stack overflows. Both are discovered while scanning so strings and
+    // comments cannot activate the mode.
+    let mut speculative_type_angle_opens = 0usize;
     let mut track_type_angles = false;
     let mut i = 0;
 
@@ -111,9 +114,9 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
             }
             b'<' => {
                 angle_depth += 1;
-                if is_structural_type_angle_open(bytes, i) {
-                    structural_type_angle_opens += 1;
-                    track_type_angles = structural_type_angle_opens >= 2;
+                if is_speculative_type_angle_open(bytes, i) {
+                    speculative_type_angle_opens += 1;
+                    track_type_angles = speculative_type_angle_opens >= 2;
                 }
                 can_start_regex = true;
             }
@@ -175,12 +178,26 @@ pub fn expression_exceeds_max_depth(content: &str) -> bool {
 
 fn skip_quoted(bytes: &[u8], mut i: usize, quote: u8) -> usize {
     while i < bytes.len() {
-        if bytes[i] == b'\\' {
-            i = i.saturating_add(2);
-        } else if bytes[i] == quote {
-            return i + 1;
-        } else {
-            i += 1;
+        match bytes[i] {
+            b'\\' => {
+                // `\` + CRLF is a single LineContinuation sequence; every other
+                // escape is two bytes. (`\` + LS/PS also continues the line: the
+                // two-byte skip consumes the E2 lead byte and the remaining
+                // bytes are ordinary string content.)
+                if bytes.get(i + 1) == Some(&b'\r') && bytes.get(i + 2) == Some(&b'\n') {
+                    i = i.saturating_add(3);
+                } else {
+                    i = i.saturating_add(2);
+                }
+            }
+            // An unescaped LF or CR ends a (mal)formed string literal for the
+            // lexer. Scanning past it to a later quote swallowed real source,
+            // hiding brackets and type angles from the depth guard (#3213).
+            // Unescaped LS/PS stay legal inside string literals (ES2019), so
+            // only LF and CR terminate.
+            b'\n' | b'\r' => return i,
+            b if b == quote => return i + 1,
+            _ => i += 1,
         }
     }
     i
@@ -201,12 +218,15 @@ fn skip_template_text(bytes: &[u8], mut i: usize) -> (usize, bool) {
     (i, false)
 }
 
-fn is_structural_type_angle_open(bytes: &[u8], i: usize) -> bool {
+fn is_speculative_type_angle_open(bytes: &[u8], i: usize) -> bool {
     let mut next = i + 1;
     while matches!(bytes.get(next), Some(b' ' | b'\t' | b'\r' | b'\n')) {
         next += 1;
     }
-    matches!(bytes.get(next), Some(b'{' | b'['))
+    // `{`/`[` start structural types (#2944); `!` starts a JSDoc non-nullable
+    // type (#3213). Each keeps OXC inside type-argument speculation, so
+    // repeated occurrences make unclosed angles count toward the depth budget.
+    matches!(bytes.get(next), Some(b'{' | b'[' | b'!'))
 }
 
 fn skip_line_comment(bytes: &[u8], mut i: usize) -> usize {
