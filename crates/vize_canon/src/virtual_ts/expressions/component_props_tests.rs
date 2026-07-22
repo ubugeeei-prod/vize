@@ -288,3 +288,56 @@ const fooBar = 3
         "kebab-case names should anchor across the whole hyphenated name, not a leading segment"
     );
 }
+
+#[test]
+fn attribute_name_anchor_uses_utf8_byte_offsets_after_multibyte_text() {
+    let script = r#"import Child from "./Child.vue"
+const total = 1
+"#;
+    // The static label holds multibyte characters (😀 is 4 UTF-8 bytes / 2 UTF-16
+    // units, ハ is 3 UTF-8 bytes) so a byte/char confusion in the source mapping
+    // would shift every following range.
+    let template = r#"<Child label="😀ハ" :count="total" />"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    let sub_spans: Vec<_> = output
+        .mappings
+        .iter()
+        .flat_map(|mapping| &mapping.sub_spans)
+        .collect();
+
+    // `str::find` returns UTF-8 byte offsets; the multibyte prefix makes the byte
+    // offset strictly larger than the char count, so these ranges only match when
+    // the source mapping is byte-indexed.
+    let name_start = template.find(":count").expect("attribute present") + 1;
+    assert!(
+        name_start > template[..name_start].chars().count(),
+        "fixture must place the prop after multibyte text so byte and char offsets diverge"
+    );
+    let name_range = name_start..name_start + "count".len();
+    let name_span = sub_spans
+        .iter()
+        .find(|span| span.src_range == name_range)
+        .expect("prop check should anchor at the attribute name after multibyte text");
+    assert!(
+        output.code[name_span.gen_range.clone()].starts_with("__vize_prop_check_"),
+        "synthetic check identifier should map to the attribute name: {name_span:?}"
+    );
+
+    // The initializer keeps the exact authored expression bytes.
+    let value_start = template.find("total").expect("bound value present");
+    let value_range = value_start..value_start + "total".len();
+    assert!(
+        sub_spans
+            .iter()
+            .any(|span| span.src_range == value_range),
+        "initializer sub-span should keep the authored value bytes after multibyte text"
+    );
+}
