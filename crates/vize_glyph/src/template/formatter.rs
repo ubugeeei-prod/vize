@@ -180,6 +180,7 @@ impl<'a> TemplateFormatter<'a> {
                             output.extend_from_slice(b" />");
                         }
                     } else if !is_void
+                        && !is_whitespace_significant_element(&tag_name, &sorted_attrs)
                         && let Some(closing_end_pos) =
                             self.parse_immediate_empty_closing_tag(source, end_pos, &tag_name)
                     {

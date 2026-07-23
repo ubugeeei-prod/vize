@@ -113,6 +113,53 @@ mod tests {
     }
 
     #[test]
+    fn test_textarea_whitespace_only_content_preserved() {
+        // Whitespace-only `<textarea>` content is the element's initial value
+        // and must survive formatting; the immediate-empty-close collapse used
+        // to drop it, changing the rendered DOM. (#3250)
+        let options = FormatOptions::default();
+
+        let result = format_template_content("<textarea>\n    </textarea>", &options).unwrap();
+        assert_eq!(result.as_str(), "<textarea>\n    </textarea>");
+        assert_eq!(
+            format_template_content(&result, &options).unwrap(),
+            result,
+            "textarea preservation must be idempotent"
+        );
+
+        // Content around the whitespace is preserved verbatim too.
+        let with_value = "<textarea>\n  hello\n</textarea>";
+        assert_eq!(
+            format_template_content(with_value, &options).unwrap().as_str(),
+            with_value
+        );
+
+        // A `<pre>` whose only content is whitespace is preserved for the same
+        // reason (whitespace is significant inside `pre`).
+        let pre = "<pre>\n    </pre>";
+        assert_eq!(format_template_content(pre, &options).unwrap().as_str(), pre);
+    }
+
+    #[test]
+    fn test_non_significant_empty_element_still_collapses() {
+        // Regression guard: the whitespace-significant carve-out must not stop
+        // ordinary empty elements from collapsing to a single line. (#3250)
+        let options = FormatOptions::default();
+        assert_eq!(
+            format_template_content("<div>\n    </div>", &options)
+                .unwrap()
+                .as_str(),
+            "<div></div>"
+        );
+        assert_eq!(
+            format_template_content("<span>\n</span>", &options)
+                .unwrap()
+                .as_str(),
+            "<span></span>"
+        );
+    }
+
+    #[test]
     fn test_empty_element_with_multiline_attributes_closes_inline() {
         let source = r#"<div class="container" id="main"></div>"#;
         let mut options = FormatOptions::default();
