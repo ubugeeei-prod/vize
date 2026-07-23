@@ -143,6 +143,28 @@ mod tests {
             format_template_content(pre, &options).unwrap().as_str(),
             pre
         );
+
+        // Tag-name matching is case-insensitive: mixed-case forms are just as
+        // whitespace-significant and must not be collapsed. (#3250)
+        let mixed_case = "<TeXtArEa>\n    </TeXtArEa>";
+        assert_eq!(
+            format_template_content(mixed_case, &options)
+                .unwrap()
+                .as_str(),
+            mixed_case
+        );
+
+        // Any element carrying `v-pre` is whitespace-significant too, so a
+        // whitespace-only body must survive verbatim and stay idempotent even
+        // as attributes are normalized/sorted. (#3250)
+        let v_pre = "<div v-pre>\n    </div>";
+        let v_pre_result = format_template_content(v_pre, &options).unwrap();
+        assert_eq!(v_pre_result.as_str(), v_pre);
+        assert_eq!(
+            format_template_content(&v_pre_result, &options).unwrap(),
+            v_pre_result,
+            "v-pre preservation must be idempotent"
+        );
     }
 
     #[test]

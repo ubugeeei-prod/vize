@@ -765,10 +765,7 @@ fn parse_interpolation_range(source: &[u8], start: usize) -> Option<(usize, usiz
 /// Whitespace and interpolations inside these regions are rendered as-is
 /// at runtime, so the formatter must not touch them. (#963)
 fn is_whitespace_significant_element(tag_name: &str, attrs: &[ParsedAttribute]) -> bool {
-    if matches!(
-        tag_name,
-        "pre" | "Pre" | "PRE" | "textarea" | "Textarea" | "TEXTAREA"
-    ) {
+    if tag_name.eq_ignore_ascii_case("pre") || tag_name.eq_ignore_ascii_case("textarea") {
         return true;
     }
     attrs
