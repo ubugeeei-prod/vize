@@ -202,6 +202,16 @@ impl<'a> TemplateFormatter<'a> {
                             find_matching_close_tag(source, end_pos, &tag_name)
                         {
                             output.extend_from_slice(&source[end_pos..close_start]);
+                            // If the closing tag is incomplete (no `>`, e.g. an
+                            // unterminated LSP buffer like `<pre>body</pre\n`),
+                            // preserve the remaining source verbatim instead of
+                            // fabricating a `>` and dropping the tail.
+                            let Some(close_offset) = memchr::memchr(b'>', &source[close_start..])
+                            else {
+                                output.extend_from_slice(&source[close_start..]);
+                                pos = len;
+                                continue;
+                            };
                             output.extend_from_slice(b"</");
                             output.extend_from_slice(tag_name.as_bytes());
                             output.push(b'>');
@@ -213,8 +223,7 @@ impl<'a> TemplateFormatter<'a> {
                             // `</tag_name>`. Skipping only the bare length would
                             // leave `  >` behind as a stray text node and change
                             // the rendered output. (#3249)
-                            pos = memchr::memchr(b'>', &source[close_start..])
-                                .map_or(len, |off| close_start + off + 1);
+                            pos = close_start + close_offset + 1;
                             continue;
                         } else {
                             // Unclosed — copy the rest and stop.
