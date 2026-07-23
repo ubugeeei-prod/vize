@@ -60,10 +60,21 @@ impl Rule for NoVHtml {
     fn check_directive<'a>(
         &self,
         ctx: &mut LintContext<'a>,
-        _element: &ElementNode<'a>,
+        element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
         if directive.name == "html" {
+            // An `eslint-disable-next-line vue/no-v-html` is written above the
+            // element, but the formatter may wrap a long opening tag so the
+            // `v-html` attribute no longer lands on the line the suppression
+            // covers. Anchor the suppression to the element's opening-tag
+            // start (which formatting keeps on the line right after the
+            // comment) so the suppression survives and `vize fmt` does not
+            // introduce a finding (lint-agreement, #3252). The diagnostic is
+            // still reported at the precise directive span.
+            if ctx.is_rule_disabled_at_offset(META.name, element.loc.start.offset) {
+                return;
+            }
             ctx.warn_with_help(
                 ctx.t("vue/no-v-html.message"),
                 &directive.loc,
@@ -98,5 +109,37 @@ mod tests {
         let result = linter.lint_template(r#"<div v-html="content"></div>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
         insta::assert_debug_snapshot!(result.diagnostics);
+    }
+
+    #[test]
+    fn test_disable_next_line_suppresses_single_line_element() {
+        // Baseline: the suppression works when the element (and its `v-html`)
+        // sit on the single line right after the comment.
+        let linter = create_linter();
+        let src = "<!-- eslint-disable-next-line vue/no-v-html -->\n<div v-html=\"content\"></div>";
+        let result = linter.lint_template(src, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_disable_next_line_survives_wrapped_opening_tag() {
+        // The formatter wraps a long opening tag, so `v-html` lands several
+        // lines below the element's start. The `eslint-disable-next-line`
+        // above the element must still suppress the finding, otherwise
+        // formatting would introduce a warning (lint-agreement, #3252).
+        let linter = create_linter();
+        let src = "<!-- eslint-disable-next-line vue/no-v-html -->\n<div\n  class=\"a-really-long-class-name\"\n  v-html=\"content\"\n></div>";
+        let result = linter.lint_template(src, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_multiline_v_html_without_suppression_still_warns() {
+        // Regression guard: without a disable comment, a wrapped element with
+        // `v-html` still reports exactly one warning.
+        let linter = create_linter();
+        let src = "<div\n  class=\"a-really-long-class-name\"\n  v-html=\"content\"\n></div>";
+        let result = linter.lint_template(src, "test.vue");
+        assert_eq!(result.warning_count, 1);
     }
 }

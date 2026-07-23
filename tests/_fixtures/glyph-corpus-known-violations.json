@@ -136,12 +136,5 @@
     "project": "mint-ui",
     "path": "packages/field/src/field.vue",
     "issue": "https://github.com/ubugeeei-prod/vize/issues/3250"
-  },
-  {
-    "property": "lint-agreement",
-    "project": "misskey",
-    "path": "packages/frontend/src/components/MkAutocomplete.vue",
-    "rule": "vue/no-v-html",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3252"
   }
 ]

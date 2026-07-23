@@ -40,6 +40,18 @@ impl LintContext<'_> {
         false
     }
 
+    /// Returns true if `rule_name` is disabled at the line containing
+    /// `offset`.
+    ///
+    /// A rule can anchor a suppression check to a stable offset (for example,
+    /// an element's opening-tag start) so that an `eslint-disable-next-line`
+    /// keeps applying even when the formatter moves the exact diagnostic span
+    /// onto a different line. (#3252)
+    #[inline]
+    pub fn is_rule_disabled_at_offset(&self, rule_name: &str, offset: u32) -> bool {
+        self.is_disabled_at(rule_name, self.offset_to_line(offset))
+    }
+
     /// Disable all rules starting from a line.
     pub fn disable_all(&mut self, start_line: u32, end_line: Option<u32>) {
         self.disabled_all.push(DisabledRange {
