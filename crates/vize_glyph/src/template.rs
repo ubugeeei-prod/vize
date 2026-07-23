@@ -130,14 +130,19 @@ mod tests {
         // Content around the whitespace is preserved verbatim too.
         let with_value = "<textarea>\n  hello\n</textarea>";
         assert_eq!(
-            format_template_content(with_value, &options).unwrap().as_str(),
+            format_template_content(with_value, &options)
+                .unwrap()
+                .as_str(),
             with_value
         );
 
         // A `<pre>` whose only content is whitespace is preserved for the same
         // reason (whitespace is significant inside `pre`).
         let pre = "<pre>\n    </pre>";
-        assert_eq!(format_template_content(pre, &options).unwrap().as_str(), pre);
+        assert_eq!(
+            format_template_content(pre, &options).unwrap().as_str(),
+            pre
+        );
     }
 
     #[test]
