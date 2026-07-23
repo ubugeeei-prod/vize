@@ -8,6 +8,11 @@ use crate::options::FormatOptions;
 use lightningcss::stylesheet::{ParserOptions, PrinterOptions, StyleSheet};
 use vize_carton::{String, ToCompactString};
 
+/// Upper bound on lightningcss re-format passes when reaching a fixed point.
+/// A single extra pass fixes the known shorthand-normalization cases; the
+/// bound guards against a pathological non-converging value. (#3248)
+const MAX_STYLE_STABILIZATION_PASSES: usize = 4;
+
 /// Format CSS content using lightningcss.
 ///
 /// Top-level (depth 0) comments are extracted before parsing and re-inserted
@@ -67,6 +72,23 @@ fn format_with_preserved_top_level_comments(
 }
 
 fn format_chunk(trimmed: &str, options: &FormatOptions) -> Result<String, FormatError> {
+    let mut current = format_chunk_once(trimmed, options)?;
+    // lightningcss normalization is not always a fixed point: parsing its own
+    // output can normalize a value further (e.g. collapsing the CSS shorthand
+    // `background-position: 1em 50%` to `1em`, since a missing y-position
+    // defaults to center). Re-run to a fixed point so one `vize fmt` pass
+    // already emits the normal form and the formatter stays idempotent. (#3248)
+    for _ in 1..MAX_STYLE_STABILIZATION_PASSES {
+        let next = format_chunk_once(current.as_str(), options)?;
+        if next.as_str() == current.as_str() {
+            return Ok(next);
+        }
+        current = next;
+    }
+    Ok(current)
+}
+
+fn format_chunk_once(trimmed: &str, options: &FormatOptions) -> Result<String, FormatError> {
     let stylesheet = StyleSheet::parse(trimmed, ParserOptions::default())
         .map_err(|e| FormatError::StyleFormatError(e.to_compact_string()))?;
 
@@ -224,6 +246,22 @@ fn find_comment_end(bytes: &[u8], from: usize) -> usize {
 #[cfg(test)]
 mod tests {
     use super::{FormatOptions, format_style_content};
+
+    #[test]
+    fn test_background_position_shorthand_reaches_fixed_point_in_one_pass() {
+        // `background-position: left 1em top 50%` is a non-idempotent case for
+        // lightningcss: it first prints `1em 50%`, then a re-parse collapses
+        // the redundant center `50%` to `1em`. The formatter must reach that
+        // normal form in a single `vize fmt` pass. (#3248)
+        let source = ".a { background-position: left 1em top 50%; }";
+        let options = FormatOptions::default();
+        let result = format_style_content(source, &options).unwrap();
+        assert_eq!(result.as_str(), ".a {\n  background-position: 1em;\n}\n");
+
+        // And formatting the result again is a no-op.
+        let again = format_style_content(&result, &options).unwrap();
+        assert_eq!(again, result);
+    }
 
     #[test]
     fn test_format_simple_css() {

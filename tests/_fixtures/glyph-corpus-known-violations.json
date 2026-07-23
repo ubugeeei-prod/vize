@@ -60,12 +60,6 @@
     "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
   },
   {
-    "property": "idempotence",
-    "project": "vux",
-    "path": "src/components/divider/index.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3248"
-  },
-  {
     "property": "parse-preservation",
     "project": "shadcn-vue",
     "path": "apps/v4/registry/bases/reka/ui/chart/ChartStyle.vue",
