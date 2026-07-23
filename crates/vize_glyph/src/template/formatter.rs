@@ -19,6 +19,8 @@ use super::{
     },
 };
 
+mod whitespace_significant;
+
 /// High-performance template formatter.
 pub(crate) struct TemplateFormatter<'a> {
     options: &'a FormatOptions,
@@ -192,45 +194,17 @@ impl<'a> TemplateFormatter<'a> {
                         pos = closing_end_pos;
                         continue;
                     } else if is_whitespace_significant_element(&tag_name, &sorted_attrs) {
-                        // `<pre>`, `<textarea>`, and any element with `v-pre`
-                        // are whitespace-significant. Their content must be
-                        // emitted byte-for-byte: a formatter must never
-                        // change rendered output. Find the matching close
-                        // tag and copy the inner source verbatim. (#963)
-                        output.push(b'>');
-                        if let Some(close_start) =
-                            find_matching_close_tag(source, end_pos, &tag_name)
-                        {
-                            output.extend_from_slice(&source[end_pos..close_start]);
-                            // If the closing tag is incomplete (no `>`, e.g. an
-                            // unterminated LSP buffer like `<pre>body</pre\n`),
-                            // preserve the remaining source verbatim instead of
-                            // fabricating a `>` and dropping the tail.
-                            let Some(close_offset) = memchr::memchr(b'>', &source[close_start..])
-                            else {
-                                output.extend_from_slice(&source[close_start..]);
-                                pos = len;
-                                continue;
-                            };
-                            output.extend_from_slice(b"</");
-                            output.extend_from_slice(tag_name.as_bytes());
-                            output.push(b'>');
-                            output.extend_from_slice(self.newline);
-                            // The closing tag may carry whitespace before `>`
-                            // (the Prettier `</pre\n  >` trick that keeps the
-                            // trailing newline out of `<pre>` content), so scan
-                            // to the actual `>` rather than assuming a bare
-                            // `</tag_name>`. Skipping only the bare length would
-                            // leave `  >` behind as a stray text node and change
-                            // the rendered output. (#3249)
-                            pos = close_start + close_offset + 1;
-                            continue;
-                        } else {
-                            // Unclosed — copy the rest and stop.
-                            output.extend_from_slice(&source[end_pos..]);
-                            pos = len;
-                            continue;
-                        }
+                        // Copy `<pre>`/`<textarea>`/`v-pre` content verbatim so
+                        // the formatter never changes rendered output.
+                        // (#963, #3249)
+                        pos = self.copy_whitespace_significant_element(
+                            source,
+                            end_pos,
+                            &tag_name,
+                            len,
+                            &mut output,
+                        );
+                        continue;
                     } else {
                         output.push(b'>');
                         if !is_void {
