@@ -131,7 +131,9 @@ mod tests {
         // content still round-trips cleanly.
         let empty_pre = "<pre></pre\n>";
         assert_eq!(
-            format_template_content(empty_pre, &options).unwrap().as_str(),
+            format_template_content(empty_pre, &options)
+                .unwrap()
+                .as_str(),
             "<pre></pre>"
         );
     }
