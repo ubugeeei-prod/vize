@@ -118,11 +118,5 @@
     "project": "shadcn-vue",
     "path": "apps/v4/styles/reka-vega/ui/chart/ChartStyle.vue",
     "issue": "https://github.com/ubugeeei-prod/vize/issues/3247"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "vue-router",
-    "path": "packages/playground-file-based/src/pages/test-params/query.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3249"
   }
 ]

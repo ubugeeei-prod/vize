@@ -104,6 +104,51 @@ mod tests {
     }
 
     #[test]
+    fn test_pre_split_closing_tag_leaves_no_stray_gt() {
+        // A closing tag split across lines (`</pre\n  >`, the Prettier trick
+        // that keeps a trailing newline out of `<pre>` content) must be
+        // consumed whole. Leaving the trailing `>` behind reprinted it as a
+        // stray text node and changed the rendered output. (#3249)
+        let options = FormatOptions::default();
+
+        let source = "<pre>\npage: {{ x }}</pre\n  >";
+        let result = format_template_content(source, &options).unwrap();
+        assert_eq!(result.as_str(), "<pre>\npage: {{ x }}</pre>");
+        assert_eq!(
+            format_template_content(&result, &options).unwrap(),
+            result,
+            "collapsed close tag must be idempotent"
+        );
+
+        // Same trick on `<textarea>`.
+        let ta = "<textarea>value</textarea\n>";
+        assert_eq!(
+            format_template_content(ta, &options).unwrap().as_str(),
+            "<textarea>value</textarea>"
+        );
+
+        // A whitespace-significant element whose split close tag has no inner
+        // content still round-trips cleanly.
+        let empty_pre = "<pre></pre\n>";
+        assert_eq!(
+            format_template_content(empty_pre, &options).unwrap().as_str(),
+            "<pre></pre>"
+        );
+    }
+
+    #[test]
+    fn test_pre_ordinary_closing_tag_unaffected() {
+        // Regression guard: a normal `</pre>` (no split) is unchanged and the
+        // inner content stays byte-for-byte. (#3249)
+        let options = FormatOptions::default();
+        let source = "<pre>\n  a\n    b</pre>";
+        assert_eq!(
+            format_template_content(source, &options).unwrap().as_str(),
+            source
+        );
+    }
+
+    #[test]
     fn test_empty_element_stays_inline() {
         let source = "<div>\n</div>";
         let options = FormatOptions::default();

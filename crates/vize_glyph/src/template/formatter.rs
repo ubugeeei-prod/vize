@@ -206,8 +206,15 @@ impl<'a> TemplateFormatter<'a> {
                             output.extend_from_slice(tag_name.as_bytes());
                             output.push(b'>');
                             output.extend_from_slice(self.newline);
-                            // Move past `</tag_name>`
-                            pos = close_start + 2 + tag_name.len() + 1;
+                            // The closing tag may carry whitespace before `>`
+                            // (the Prettier `</pre\n  >` trick that keeps the
+                            // trailing newline out of `<pre>` content), so scan
+                            // to the actual `>` rather than assuming a bare
+                            // `</tag_name>`. Skipping only the bare length would
+                            // leave `  >` behind as a stray text node and change
+                            // the rendered output. (#3249)
+                            pos = memchr::memchr(b'>', &source[close_start..])
+                                .map_or(len, |off| close_start + off + 1);
                             continue;
                         } else {
                             // Unclosed — copy the rest and stop.
