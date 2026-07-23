@@ -287,3 +287,85 @@ fn expression_guard_ends_regex_at_line_terminator_after_backslash() {
         );
     }
 }
+
+#[test]
+fn expression_guard_rejects_the_backslash_quote_hidden_reproducer() {
+    // The js_ts_expression timeout reproducer (#3271) hid its pathological
+    // bracket and type-angle runs behind code-position `\'` sequences: OXC
+    // treats a `\` before a quote as a stray identifier escape, not a string
+    // opener, so the brackets stay live and drive exponential type-argument
+    // speculation. The scanner used to open a string at that quote and let
+    // `skip_quoted` run to the next unescaped quote (or EOF), swallowing the
+    // whole run so the depth budget saw nothing. This is the input's repeating
+    // unit: `<X<` angle speculation followed by a `\u{[([[[[[[[[{[` bracket run,
+    // each hidden behind a `\'`.
+    let reproducer = "<X<\\'\\u{[([[[[[[[[{[".repeat(6);
+    assert!(expression_nesting_depth(&reproducer) > MAX_EXPRESSION_NESTING_DEPTH);
+    assert!(expression_exceeds_max_depth(&reproducer));
+    assert!(!expression_has_balanced_delimiters(&reproducer));
+    assert!(!expression_is_safe_to_parse(&reproducer));
+    assert!(!is_event_handler_reference_expression(&reproducer));
+    assert!(!is_function_expression(&reproducer));
+    assert_eq!(
+        prefix_identifiers_in_expression(&reproducer).as_str(),
+        reproducer
+    );
+    assert_eq!(
+        strip_typescript_from_expression(&reproducer).as_str(),
+        reproducer
+    );
+}
+
+#[test]
+fn expression_guard_counts_brackets_after_a_backslash_quote() {
+    // A `\` immediately before a quote must not open a string literal: OXC
+    // reads `\'`/`\"` as a broken escape, not a string, so the brackets that
+    // follow stay live code. Both quote kinds must expose the trailing run to
+    // the depth budget instead of hiding it inside a phantom string literal.
+    for quote in ["\\'", "\\\""] {
+        let reproducer = [quote, &"(".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1)].concat();
+        assert_eq!(
+            expression_nesting_depth(&reproducer),
+            MAX_EXPRESSION_NESTING_DEPTH + 1,
+            "quote {quote:?}"
+        );
+        assert!(expression_exceeds_max_depth(&reproducer), "quote {quote:?}");
+        assert!(
+            !expression_has_balanced_delimiters(&reproducer),
+            "quote {quote:?}"
+        );
+        assert!(!expression_is_safe_to_parse(&reproducer), "quote {quote:?}");
+    }
+
+    // A `\` before any other byte still leaves the following bracket to the
+    // normal arms, so `\(` / `\[` / `\{` keep counting exactly as OXC keeps
+    // those brackets live. The escaped byte itself is the first open bracket.
+    for lead in ["\\(", "\\[", "\\{"] {
+        let reproducer = [lead, &"(".repeat(MAX_EXPRESSION_NESTING_DEPTH)].concat();
+        assert_eq!(
+            expression_nesting_depth(&reproducer),
+            MAX_EXPRESSION_NESTING_DEPTH + 1,
+            "lead {lead:?}"
+        );
+        assert!(expression_exceeds_max_depth(&reproducer), "lead {lead:?}");
+        assert!(!expression_is_safe_to_parse(&reproducer), "lead {lead:?}");
+    }
+}
+
+#[test]
+fn expression_guard_keeps_ordinary_backslash_uses_safe() {
+    // Neutralizing a post-backslash quote must not touch valid expressions. A
+    // `\` only legally appears in code position as a unicode identifier escape,
+    // and a quote that is *not* preceded by a code-position `\` still opens a
+    // real string whose bracketed contents stay hidden from the depth budget.
+    for safe in [
+        "\\u0061 + b",                // unicode identifier escape
+        "'a(' + '[' + \"{\"",         // brackets inside string literals
+        "'a\\'b' + c",                // escaped quote *inside* a string
+        "/[({]/u.test(value)",        // brackets inside a regex literal
+        "`text ${ inner + '(' }!`",   // template with an interpolation
+    ] {
+        assert!(expression_has_balanced_delimiters(safe), "{safe:?}");
+        assert!(expression_is_safe_to_parse(safe), "{safe:?}");
+    }
+}
