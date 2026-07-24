@@ -63,7 +63,7 @@ run_testbox_checks() {
     return "$warmup_status"
   fi
   if [ -z "$BLACKSMITH_TESTBOX_ID" ]; then
-    printf '%s\n' "Testbox warmup returned no box id." >&2
+    printf '%s\n' "Testbox warmup returned no box ID." >&2
     unset BLACKSMITH_TESTBOX_ID testbox_output
     return 1
   fi
