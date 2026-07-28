@@ -54,9 +54,15 @@ pub(super) fn is_speculative_type_angle_open(content: &str, open: usize) -> bool
     let after = &content[open + 1..];
     let marker = skip_type_angle_trivia(after);
     // `{`/`[` start structural types (#2944); `!` starts a JSDoc non-nullable
-    // type (#3213). Each keeps OXC inside type-argument speculation, so
-    // repeated occurrences make unclosed angles count toward the depth budget.
-    matches!(after.as_bytes().get(marker), Some(b'{' | b'[' | b'!'))
+    // type (#3213); `(` starts a parenthesized type (#3277, #3279, #3281 — a
+    // 2.8KB `<`-dense reproducer stayed 3ms with the `<(` adjacency broken and
+    // took ~10s with it intact). Each keeps OXC inside type-argument
+    // speculation, so repeated occurrences make unclosed angles count toward
+    // the depth budget.
+    matches!(
+        after.as_bytes().get(marker),
+        Some(b'{' | b'[' | b'!' | b'(')
+    )
 }
 
 /// Skip the lexer trivia OXC drops between `<` and the next token: ASCII and

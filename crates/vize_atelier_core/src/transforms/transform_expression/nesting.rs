@@ -28,9 +28,11 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
     // Plain `foo < bar` is indistinguishable from a type argument to a byte
     // scanner. Enter angle-tracking mode only for repeated speculative type
     // prefixes: the structural shapes of the parser-timeout class (`<{`, `<[`,
-    // #2944) and the JSDoc non-nullable shape (`<!`, #3213), where OXC's type
-    // speculation recurses once per `!` and per nested `<` until the Rust
-    // stack overflows. Both are discovered while scanning so strings and
+    // #2944), the JSDoc non-nullable shape (`<!`, #3213), and the
+    // parenthesized-type shape (`<(`, #3277/#3279/#3281), where OXC's type
+    // speculation recurses once per marker and per nested `<` until the Rust
+    // stack overflows or the rewind cascade goes super-linear. All are
+    // discovered while scanning so strings and
     // comments cannot activate the mode. Logical/nullish operators (`&&`, `||`,
     // `??`) cannot appear inside a type-argument list, so they reset this
     // speculation: a flat boolean chain of `<` comparisons is not a type run.

@@ -133,6 +133,60 @@ fn expression_guard_sees_type_angle_markers_behind_trivia() {
 }
 
 #[test]
+fn expression_guard_rejects_parenthesized_type_angle_runs() {
+    // Minimized from the js_ts_expression slow-unit/timeout reproducers
+    // (#3277, #3279, #3281): a 2.8KB `<`-dense input parsed for ~10 seconds,
+    // and neutralizing only its two `<(` adjacencies dropped it to 3ms. OXC's
+    // type-argument speculation enters a parenthesized type at `<(` and keeps
+    // re-running the whole `<` cascade when a late token fails the outer
+    // parse, so `<(` joins the speculative type-angle class: two occurrences
+    // latch the tracking and the unclosed `<` run counts toward the budget.
+    let reproducer = ["id<(xx) ".repeat(2), "sT<s<\\jjjjjjjjjj".repeat(16)].concat();
+    assert!(expression_nesting_depth(&reproducer) > MAX_EXPRESSION_NESTING_DEPTH);
+    assert!(expression_exceeds_max_depth(&reproducer));
+    assert!(!expression_is_safe_to_parse(&reproducer));
+    assert_eq!(
+        prefix_identifiers_in_expression(&reproducer).as_str(),
+        reproducer
+    );
+    assert_eq!(
+        strip_typescript_from_expression(&reproducer).as_str(),
+        reproducer
+    );
+
+    // Whitespace between `<` and `(` reaches the same speculation path.
+    let spaced = ["id< (xx) ".repeat(2), "sT<s<\\jjjjjjjjjj".repeat(16)].concat();
+    assert!(!expression_is_safe_to_parse(&spaced));
+}
+
+#[test]
+fn expression_guard_keeps_ordinary_parenthesized_shapes_safe() {
+    // A single generic call with a function-type argument opens one
+    // speculative angle: tracking needs two, so real code stays accepted.
+    let generic_call = "useHandler<(payload: MouseEvent) => void>(handler)";
+    assert!(expression_is_safe_to_parse(generic_call));
+
+    // Two latched `<(` opens whose angles close again stay within budget:
+    // latching alone rejects nothing, only unclosed accumulation does.
+    let closed = "f<(A)>(x) + g<(B)>(y)";
+    assert!(expression_is_safe_to_parse(closed));
+
+    // Comparisons against parenthesized operands reset at `&&`, so a flat
+    // boolean chain past the limit never latches.
+    let chain = std::iter::repeat_n("a < (b + 1)", MAX_EXPRESSION_NESTING_DEPTH + 5)
+        .collect::<Vec<_>>()
+        .join(" && ");
+    assert_eq!(expression_nesting_depth(&chain), 1);
+    assert!(expression_is_safe_to_parse(&chain));
+    let rewritten = prefix_identifiers_in_expression(&chain);
+    assert!(rewritten.contains("_ctx.a < (_ctx.b + 1)"), "{rewritten}");
+
+    // A latched ternary chain accumulates only as deep as its real nesting.
+    let ternary = "count < (limit) ? a : total < (max) ? b : c";
+    assert!(expression_is_safe_to_parse(ternary));
+}
+
+#[test]
 fn expression_guard_does_not_treat_relational_operators_as_type_angles() {
     let expression = std::iter::repeat_n("value < limit", MAX_EXPRESSION_NESTING_DEPTH + 1)
         .collect::<Vec<_>>()
