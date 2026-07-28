@@ -1,0 +1,32 @@
+name: Package editor extensions
+description: Check and package the VS Code, Zed, Neovim, Vim, Helix, and Emacs extensions
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Vite+ and Node.js
+      uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      with:
+        node-version-file: ".node-version"
+        cache: true
+        run-install: false
+
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+    - uses: ./.github/actions/setup-rust-sticky-cache
+      with:
+        key: editor-extensions
+        cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+
+    - name: Install JS dependencies
+      shell: bash
+      env:
+        NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      run: vp install --frozen-lockfile --prefer-offline
+
+    - name: Check and package editor extensions
+      shell: bash
+      env:
+        NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      run: vp run --workspace-root package:editor-extensions

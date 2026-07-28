@@ -459,14 +459,11 @@ test("zed-vize registers art-vue as a first-party language", () => {
 });
 
 test("CI packages editor extension artifacts", () => {
-  const workflow = readText(".github/workflows/check.yml");
+  const packageAction = readText(".github/actions/package-editor-extensions/action.yml");
   const buildTasks = readText("tools/vite-plus/tasks/build.ts");
   const taskCommands = readText("tools/vite-plus/task-commands.ts");
   const testTasks = readText("tools/vite-plus/tasks/test-benchmark.ts");
-  assert.match(
-    workflow,
-    /name: Check and package editor extensions[\s\S]*package:editor-extensions/,
-  );
+  assert.match(packageAction, /package:editor-extensions/);
   assert.match(buildTasks, /package:vscode-extension[\s\S]*assert-vsix-package\.mjs/);
   assert.match(buildTasks, /package:editor-extensions[\s\S]*assert-vsix-package\.mjs/);
   assert.match(
@@ -475,11 +472,7 @@ test("CI packages editor extension artifacts", () => {
   );
   assert.match(testTasks, /test:vscode-extension:vsix[\s\S]*assert-vsix-package\.mjs/);
   assert.match(testTasks, /test:vscode-extension:host[\s\S]*pnpm run test:host/);
-  assert.match(testTasks, /test:vscode-extension:host-real[\s\S]*pnpm run test:host-real/);
-  assert.match(
-    workflow,
-    /VIZE_SERVER_PATH:[\s\S]*xvfb-run -a vp run --workspace-root test:vscode-extension:host-real/,
-  );
+  assert.match(testTasks, /test:vscode-extension:host-real[\s\S]*run-extension-host-real\.mjs/);
   assert.match(buildTasks, /package:zed-extension[\s\S]*assert-zed-package\.mjs/);
   assert.match(testTasks, /test:zed-extension:package[\s\S]*package:zed-extension/);
   assert.match(testTasks, /test:zed-extension:unit[\s\S]*cargo test/);

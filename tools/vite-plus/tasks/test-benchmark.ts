@@ -114,7 +114,7 @@ export const testAndBenchmarkTasks = defineTasks({
     runInVscodeExtension(
       stageVscodeTypeScriptPlugin,
       "pnpm exec vp pack",
-      "pnpm run test:host-real",
+      "node test/run-extension-host-real.mjs",
     ),
   ),
   "test:zed-extension:package": noCacheTask("vp run --workspace-root package:zed-extension"),

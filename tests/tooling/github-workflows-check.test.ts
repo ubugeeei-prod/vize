@@ -159,6 +159,23 @@ test("check workflow comments a detailed PR test report for each head push", () 
   );
 });
 
+test("check workflow runs the editor extension host smoke against a real vize server", () => {
+  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const smokeAction = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+
+  assert.match(
+    workflowJobBody(workflow, "editor-extensions"),
+    /uses:\s*\.\/\.github\/actions\/package-editor-extensions/,
+  );
+  assert.match(
+    workflowJobBody(workflow, "editor-host-smoke"),
+    /uses:\s*\.\/\.github\/actions\/vscode-host-smoke/,
+  );
+  assert.match(smokeAction, /cargo build --profile ci -p vize/);
+  assert.match(smokeAction, /VIZE_SERVER_PATH:[^\n]*target\/ci\/vize/);
+  assert.match(smokeAction, /xvfb-run -a vp run [^\n]*test:vscode-extension:host-real/);
+});
+
 test("test inventory script counts JS, Rust, e2e, VRT, and fixture cases", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-test-inventory-"));
   const inventoryPath = path.join(tempDir, "inventory.json");
