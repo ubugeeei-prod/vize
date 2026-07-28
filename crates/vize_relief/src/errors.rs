@@ -1,9 +1,9 @@
 //! Compiler error types and codes.
 mod compatibility;
+mod recovery;
 use crate::SourceLocation;
 use thiserror::Error;
 use vize_carton::{CompactString, ToCompactString};
-
 /// Compiler error
 #[derive(Debug, Clone, Error)]
 #[error("{message}")]

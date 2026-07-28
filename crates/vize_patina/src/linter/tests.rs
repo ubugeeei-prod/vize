@@ -10,6 +10,7 @@ mod jsx_fallback;
 mod no_mutating_props;
 mod no_top_level_ref;
 mod nuxt;
+mod recovered_parse_analysis;
 mod script;
 mod severity_overrides;
 mod sfc;

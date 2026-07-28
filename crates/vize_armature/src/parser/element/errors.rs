@@ -99,3 +99,64 @@ impl<'a> Parser<'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use vize_carton::Bump;
+    use vize_relief::errors::{CompilerError, ErrorCode};
+
+    use crate::parser::Parser;
+
+    /// `CompilerError::is_recovered_parse` (vize_relief) mirrors the recovery
+    /// messages constructed above; this pin keeps the two crates' lists from
+    /// drifting apart (#3294). When a new recovery message is added above,
+    /// add its code here and to `is_recovered_parse`. `DuplicateAttribute`
+    /// is recovered without a custom message, so it is the one allowed
+    /// asymmetry.
+    #[test]
+    fn recovery_messages_and_recovered_parse_classification_agree() {
+        let bump = Bump::new();
+        let parser = Parser::new(&bump, "");
+        for code in [
+            ErrorCode::EofBeforeTagName,
+            ErrorCode::EofInTag,
+            ErrorCode::EofInComment,
+            ErrorCode::InvalidFirstCharacterOfTagName,
+            ErrorCode::MissingAttributeValue,
+            ErrorCode::MissingDynamicDirectiveArgumentEnd,
+            ErrorCode::MissingInterpolationEnd,
+            ErrorCode::UnexpectedCharacterInAttributeName,
+            ErrorCode::UnexpectedCharacterInUnquotedAttributeValue,
+            ErrorCode::UnexpectedEqualsSignBeforeAttributeName,
+            ErrorCode::MissingWhitespaceBetweenAttributes,
+            ErrorCode::IncorrectlyClosedComment,
+            ErrorCode::IncorrectlyOpenedComment,
+        ] {
+            assert!(
+                parser.recovery_error_message(code).is_some(),
+                "expected a recovery message for {code:?}"
+            );
+            assert!(
+                CompilerError::new(code, None).is_recovered_parse(),
+                "expected is_recovered_parse for {code:?}"
+            );
+        }
+        for code in [
+            ErrorCode::MissingEndTagName,
+            ErrorCode::UnexpectedNullCharacter,
+            ErrorCode::CdataInHtmlContent,
+        ] {
+            assert!(parser.recovery_error_message(code).is_none(), "{code:?}");
+            assert!(
+                !CompilerError::new(code, None).is_recovered_parse(),
+                "{code:?}"
+            );
+        }
+        assert!(CompilerError::new(ErrorCode::DuplicateAttribute, None).is_recovered_parse());
+        assert!(
+            parser
+                .recovery_error_message(ErrorCode::DuplicateAttribute)
+                .is_none()
+        );
+    }
+}

@@ -1,9 +1,1 @@
-[
-  {
-    "property": "lint-agreement",
-    "project": "vue2-elm",
-    "path": "src/page/shop/shop.vue",
-    "rule": "vue/no-unused-vars",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3294"
-  }
-]
+[]
