@@ -15,6 +15,7 @@ runs:
           tests/_fixtures/_git/pinia \
           tests/_fixtures/_git/vue-router \
           tests/_fixtures/_git/vue-element-admin \
+          tests/_fixtures/_git/vue2-elm \
           tests/_fixtures/_git/vue-vben-admin \
           tests/_fixtures/_git/vitepress
         vp install --frozen-lockfile --prefer-offline
