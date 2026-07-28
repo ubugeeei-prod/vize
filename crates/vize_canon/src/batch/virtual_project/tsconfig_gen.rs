@@ -1,4 +1,5 @@
 mod native_options;
+mod vue_alias;
 
 use std::path::{Path, PathBuf};
 
@@ -14,6 +15,7 @@ use super::tsconfig_paths::{
 };
 use super::{SHARED_HELPERS_FILE, VirtualProject};
 use native_options::normalize_native_removed_options;
+use vue_alias::remap_path_targets;
 
 const PATH_SENSITIVE_COMPILER_OPTIONS: &[&str] = &[
     "baseUrl",
@@ -376,8 +378,9 @@ impl VirtualProject {
     /// Re-anchor tsconfig `paths` targets into the virtual mirror. Each relative
     /// target yields two candidates: the mirror copy (resolved relative to the
     /// virtual tsconfig, which lives in the mirror root) followed by the real
-    /// source-tree path as a fallback. Absolute and non-string targets pass
-    /// through unchanged.
+    /// source-tree path as a fallback, plus a trailing `.vue.ts` mirror
+    /// candidate so extensionless SFC aliases resolve (see [`remap_path_targets`]).
+    /// Absolute and non-string targets pass through unchanged.
     #[allow(clippy::disallowed_types)]
     fn remap_paths(
         &self,
@@ -390,21 +393,10 @@ impl VirtualProject {
                 remapped.insert(alias.clone(), targets.clone());
                 continue;
             };
-            let mut candidates = Vec::with_capacity(targets.len() * 2);
-            for target in targets {
-                let Some(target) = target.as_str() else {
-                    candidates.push(target.clone());
-                    continue;
-                };
-                if Path::new(target).is_absolute() {
-                    candidates.push(Value::String(target.to_owned()));
-                    continue;
-                }
-                let core = target.strip_prefix("./").unwrap_or(target);
-                candidates.push(Value::String(cstr!("./{core}").into()));
-                candidates.push(Value::String(cstr!("{up}{core}").into()));
-            }
-            remapped.insert(alias.clone(), Value::Array(candidates));
+            remapped.insert(
+                alias.clone(),
+                Value::Array(remap_path_targets(targets, &up)),
+            );
         }
         remapped
     }

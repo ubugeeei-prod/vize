@@ -19,7 +19,6 @@
       "file": "src/components/common/computeTime.vue",
       "diagnostics": [
         "error:6:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:11:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations.",
         "error:53:39 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
         "error:54:39 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
         "error:56:21 [TS2322] Type 'string' is not assignable to type 'number'.",
@@ -65,18 +64,13 @@
     {
       "file": "src/page/balance/balance.vue",
       "diagnostics": [
-        "error:25:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:33:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:34:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations."
+        "error:25:48 [TS2588] Cannot assign to 'showAlert' because it is a constant."
       ]
     },
     {
       "file": "src/page/balance/children/detail.vue",
       "diagnostics": [
-        "error:17:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:18:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:20:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations.",
-        "error:21:25 [TS2307] Cannot find module 'src/components/common/loading' or its corresponding type declarations."
+        "error:18:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
     {
@@ -85,10 +79,7 @@
         "error:6:70 [TS2588] Cannot assign to 'categoryType' because it is a constant.",
         "error:7:70 [TS2588] Cannot assign to 'categoryType' because it is a constant.",
         "error:77:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:86:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:87:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:89:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations.",
-        "error:90:25 [TS2307] Cannot find module 'src/components/common/loading' or its corresponding type declarations.",
         "error:214:18 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
         "error:215:36 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
         "error:216:15 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
@@ -98,53 +89,39 @@
       "file": "src/page/benefit/children/commend.vue",
       "diagnostics": [
         "error:36:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:41:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:42:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:44:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations."
+        "error:42:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/page/benefit/children/coupon.vue",
       "diagnostics": [
-        "error:23:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:24:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:26:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations.",
-        "error:27:25 [TS2307] Cannot find module 'src/components/common/loading' or its corresponding type declarations."
+        "error:24:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/page/benefit/children/exchange.vue",
       "diagnostics": [
         "error:18:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:23:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:24:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:26:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations."
+        "error:24:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/page/benefit/children/hbDescription.vue",
       "diagnostics": [
-        "error:50:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:51:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:53:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations.",
-        "error:54:25 [TS2307] Cannot find module 'src/components/common/loading' or its corresponding type declarations.",
         "error:55:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/page/benefit/children/hbHistory.vue",
       "diagnostics": [
-        "error:35:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:36:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:38:25 [TS2307] Cannot find module 'src/components/common/loading' or its corresponding type declarations.",
         "error:39:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/page/city/city.vue",
-      "diagnostics": [
-        "error:27:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/page/confirmOrder/children/children/addAddress.vue",
@@ -153,15 +130,12 @@
         "error:38:127 [TS2304] Cannot find name 'searchAddress'.",
         "error:38:142 [TS2304] Cannot find name 'searchAddress'.",
         "error:51:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:59:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:60:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:62:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations."
+        "error:60:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/page/confirmOrder/children/children/children/searchAddress.vue",
       "diagnostics": [
-        "error:25:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:27:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
@@ -169,16 +143,13 @@
       "file": "src/page/confirmOrder/children/chooseAddress.vue",
       "diagnostics": [
         "error:51:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:59:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:60:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:62:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations.",
         "error:63:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/page/confirmOrder/children/invoice.vue",
       "diagnostics": [
-        "error:15:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:16:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
@@ -189,9 +160,7 @@
         "error:10:42 [TS2304] Cannot find name 'cartPrice'.",
         "error:23:50 [TS2588] Cannot assign to 'payWay' because it is a constant.",
         "error:34:50 [TS2588] Cannot assign to 'payWay' because it is a constant.",
-        "error:45:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:46:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:48:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations.",
         "error:85:39 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
         "error:87:21 [TS2322] Type 'string' is not assignable to type 'number'.",
         "error:89:39 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
@@ -201,8 +170,6 @@
     {
       "file": "src/page/confirmOrder/children/remark.vue",
       "diagnostics": [
-        "error:24:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:26:25 [TS2307] Cannot find module 'src/components/common/loading' or its corresponding type declarations.",
         "error:27:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
@@ -210,9 +177,7 @@
       "file": "src/page/confirmOrder/children/userValidation.vue",
       "diagnostics": [
         "error:20:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:25:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:26:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:28:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations."
+        "error:26:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
     {
@@ -234,9 +199,6 @@
         "error:88:62 [TS2304] Cannot find name 'inputText'.",
         "error:126:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:134:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:135:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:136:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations.",
-        "error:137:25 [TS2307] Cannot find module 'src/components/common/loading' or its corresponding type declarations.",
         "error:214:42 [TS2339] Property 'id' does not exist on type 'unknown'.",
         "error:215:44 [TS2339] Property 'name' does not exist on type 'unknown'.",
         "error:216:51 [TS2339] Property 'packing_fee' does not exist on type 'unknown'.",
@@ -282,17 +244,12 @@
     {
       "file": "src/page/download/download.vue",
       "diagnostics": [
-        "error:9:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:14:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:15:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations."
+        "error:9:48 [TS2588] Cannot assign to 'showAlert' because it is a constant."
       ]
     },
     {
       "file": "src/page/find/find.vue",
-      "diagnostics": [
-        "error:10:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:12:27 [TS2307] Cannot find module 'src/components/footer/footGuide' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/page/food/food.vue",
@@ -308,8 +265,6 @@
         "error:172:233 [TS2304] Cannot find name 'latitude'.",
         "error:172:251 [TS2304] Cannot find name 'latitude'.",
         "error:178:40 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:179:21 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:180:22 [TS2307] Cannot find module 'src/components/common/shoplist' or its corresponding type declarations.",
         "error:350:7 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
         "error:352:3 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
         "error:357:16 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
@@ -330,8 +285,6 @@
     {
       "file": "src/page/forget/forget.vue",
       "diagnostics": [
-        "error:36:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:37:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations.",
         "error:54:17 [TS1117] An object literal cannot have multiple properties with the same name."
       ]
     },
@@ -356,9 +309,6 @@
       "file": "src/page/msite/msite.vue",
       "diagnostics": [
         "error:44:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:46:21 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:47:23 [TS2307] Cannot find module 'src/components/footer/footGuide' or its corresponding type declarations.",
-        "error:48:22 [TS2307] Cannot find module 'src/components/common/shoplist' or its corresponding type declarations.",
         "error:92:14 [TS2304] Cannot find name 'Swiper'."
       ]
     },
@@ -381,8 +331,6 @@
         "error:65:34 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
         "error:77:34 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
         "error:90:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:91:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:94:25 [TS2307] Cannot find module 'src/components/common/loading' or its corresponding type declarations.",
         "error:95:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
         "error:258:42 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
         "error:260:3 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
@@ -397,34 +345,24 @@
       "diagnostics": [
         "error:30:67 [TS18004] No value exists in scope for the shorthand property 'geohash'. Either declare one or provide an initializer.",
         "error:30:67 [TS2304] Cannot find name 'geohash'.",
-        "error:47:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:48:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:49:29 [TS2307] Cannot find module 'src/components/common/computeTime' or its corresponding type declarations.",
-        "error:50:25 [TS2307] Cannot find module 'src/components/common/loading' or its corresponding type declarations.",
-        "error:52:27 [TS2307] Cannot find module 'src/components/footer/footGuide' or its corresponding type declarations."
+        "error:47:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/page/points/children/detail.vue",
       "diagnostics": [
-        "error:24:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:25:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:27:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations.",
-        "error:28:25 [TS2307] Cannot find module 'src/components/common/loading' or its corresponding type declarations."
+        "error:25:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/page/points/points.vue",
       "diagnostics": [
-        "error:26:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:34:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:35:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations."
+        "error:26:48 [TS2588] Cannot assign to 'showAlert' because it is a constant."
       ]
     },
     {
       "file": "src/page/profile/children/children/address.vue",
       "diagnostics": [
-        "error:36:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:38:40 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:49:9 [TS2300] Duplicate identifier 'mounted'.",
         "error:53:9 [TS2300] Duplicate identifier 'mounted'."
@@ -435,22 +373,18 @@
       "diagnostics": [
         "error:13:87 [TS2304] Cannot find name 'addAddress'.",
         "error:37:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:42:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:44:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:46:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations."
+        "error:44:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/page/profile/children/children/children/children/addDetail.vue",
       "diagnostics": [
-        "error:28:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:31:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/page/profile/children/children/setusername.vue",
       "diagnostics": [
-        "error:20:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:22:41 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
@@ -462,8 +396,6 @@
         "error:9:62 [TS2304] Cannot find name 'userInfo'.",
         "error:98:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:106:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:107:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:109:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations.",
         "error:179:47 [TS2339] Property 'files' does not exist on type 'Element'.",
         "error:315:10 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
         "error:318:19 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
@@ -489,8 +421,6 @@
         "error:7:45 [TS2304] Cannot find name 'userInfo'.",
         "error:7:89 [TS2304] Cannot find name 'userInfo'.",
         "error:7:99 [TS2304] Cannot find name 'userInfo'.",
-        "error:140:21 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:141:23 [TS2307] Cannot find module 'src/components/footer/footGuide' or its corresponding type declarations.",
         "error:142:38 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:238:33 [TS2551] Property 'getImgPath' does not exist on type '__VizeThis'. Did you mean 'imgpath'?",
         "error:240:13 [TS2339] Property 'SAVE_AVANDER' does not exist on type '__VizeThis'.",
@@ -512,7 +442,6 @@
       "file": "src/page/service/children/questionDetail.vue",
       "diagnostics": [
         "error:3:32 [TS2304] Cannot find name 'question'.",
-        "error:11:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:12:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:13:26 [TS2307] Cannot find module 'showdown' or its corresponding type declarations.",
         "error:14:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations."
@@ -521,7 +450,6 @@
     {
       "file": "src/page/service/service.vue",
       "diagnostics": [
-        "error:36:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:38:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
@@ -551,7 +479,6 @@
         "error:95:122 [TS2349] This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
         "error:95:133 [TS2304] Cannot find name 'shopDetail'.",
         "error:104:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:105:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:107:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
         "error:108:14 [TS2305] Module '\"src/config/env\"' has no exported member 'localapi'.",
         "error:108:24 [TS2305] Module '\"src/config/env\"' has no exported member 'proapi'."
@@ -559,11 +486,7 @@
     },
     {
       "file": "src/page/shop/children/foodDetail.vue",
-      "diagnostics": [
-        "error:33:22 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:35:28 [TS2307] Cannot find module 'src/components/common/ratingStar' or its corresponding type declarations.",
-        "error:36:25 [TS2307] Cannot find module 'src/components/common/buyCart' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/page/shop/children/shopDetail.vue",
@@ -578,7 +501,6 @@
         "error:56:39 [TS2304] Cannot find name 'shopDetail'.",
         "error:61:39 [TS2304] Cannot find name 'shopDetail'.",
         "error:69:78 [TS2588] Cannot assign to 'showlicenseImg' because it is a constant.",
-        "error:80:22 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:81:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
@@ -591,7 +513,6 @@
     {
       "file": "src/page/vipcard/children/invoiceRecord.vue",
       "diagnostics": [
-        "error:13:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:14:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
@@ -600,15 +521,12 @@
       "diagnostics": [
         "error:4:51 [TS2304] Cannot find name 'userInfo'.",
         "error:18:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:23:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
-        "error:24:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:26:26 [TS2307] Cannot find module 'src/components/common/alertTip' or its corresponding type declarations."
+        "error:24:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/page/vipcard/children/vipDescription.vue",
       "diagnostics": [
-        "error:40:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:41:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     },
@@ -618,12 +536,11 @@
         "error:4:24 [TS2304] Cannot find name 'userInfo'.",
         "error:5:44 [TS2304] Cannot find name 'userInfo'.",
         "error:5:45 [TS2304] Cannot find name 'userInfo'.",
-        "error:75:25 [TS2307] Cannot find module 'src/components/header/head' or its corresponding type declarations.",
         "error:76:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     }
   ],
-  "errorCount": 353,
+  "errorCount": 273,
   "warningCount": 0,
   "fileCount": 55
 }

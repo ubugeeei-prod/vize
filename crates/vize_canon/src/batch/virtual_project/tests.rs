@@ -929,11 +929,11 @@ fn materialized_tsconfig_reanchors_paths_into_virtual_mirror() {
         serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
     let paths = value["compilerOptions"]["paths"].as_object().unwrap();
 
-    // Each target gets a mirror candidate (relative to the virtual tsconfig
-    // in `node_modules/.vize/canon`) first, then the real-tree fallback.
+    // Mirror candidate first, then the real-tree fallback, then a trailing
+    // `.vue.ts` mirror candidate for extensionless SFC aliases (#3300).
     assert_eq!(
         paths["@/*"],
-        serde_json::json!(["./src/*", "../../../src/*"])
+        serde_json::json!(["./src/*", "../../../src/*", "./src/*.vue.ts"])
     );
     assert_eq!(
         paths["#shared"],
@@ -984,14 +984,14 @@ fn materialized_tsconfig_reanchors_extended_paths_from_declaring_config_dir() {
         serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
     let paths = value["compilerOptions"]["paths"].as_object().unwrap();
 
-    assert_eq!(
-        paths["~/*"],
-        serde_json::json!(["./app/*", "../../../app/*"])
-    );
-    assert_eq!(
-        paths["#imports"],
-        serde_json::json!(["./.nuxt/imports", "../../../.nuxt/imports"])
-    );
+    let app = ["./app/*", "../../../app/*", "./app/*.vue.ts"];
+    let imports = [
+        "./.nuxt/imports",
+        "../../../.nuxt/imports",
+        "./.nuxt/imports.vue.ts",
+    ];
+    assert_eq!(paths["~/*"], serde_json::json!(app));
+    assert_eq!(paths["#imports"], serde_json::json!(imports));
 
     let _ = fs::remove_dir_all(&case_dir);
 }
