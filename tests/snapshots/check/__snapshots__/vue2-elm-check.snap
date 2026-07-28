@@ -507,7 +507,47 @@
     {
       "file": "src/page/shop/shop.vue",
       "diagnostics": [
-        "error:272:101 Template parse error: Missing whitespace between attributes; inferred a new attribute boundary."
+        "error:68:85 [TS2588] Cannot assign to 'changeShowType' because it is a constant.",
+        "error:71:87 [TS2588] Cannot assign to 'changeShowType' because it is a constant.",
+        "error:80:48 [TS2349] This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
+        "error:109:67 [TS2304] Cannot find name 'attribute'.",
+        "error:234:48 [TS2349] This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
+        "error:248:60 [TS2349] This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
+        "error:272:101 Template parse error: Missing whitespace between attributes; inferred a new attribute boundary.",
+        "error:321:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:328:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
+        "error:456:54 [TS2339] Property 'offsetTop' does not exist on type 'unknown'.",
+        "error:458:23 [TS2339] Property 'cartList' does not exist on type '__VizeThis'.",
+        "error:466:15 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
+        "error:468:26 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:472:22 [TS2339] Property 'RECORD_ADDRESS' does not exist on type '__VizeThis'.",
+        "error:476:6 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:476:42 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
+        "error:477:1 [TS2339] Property 'longitude' does not exist on type '__VizeThis'.",
+        "error:479:6 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:481:14 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:483:1 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:484:4 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:485:4 [TS2339] Property 'RECORD_SHOPDETAIL' does not exist on type '__VizeThis'.",
+        "error:491:7 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
+        "error:496:35 [TS2339] Property 'offsetTop' does not exist on type 'unknown'.",
+        "error:511:14 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
+        "error:511:60 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
+        "error:515:55 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
+        "error:533:22 [TS2551] Property 'ADD_CART' does not exist on type '__VizeThis'. Did you mean 'addToCart'?",
+        "error:536:60 [TS2339] Property 'REDUCE_CART' does not exist on type '__VizeThis'.",
+        "error:589:7 [TS2551] Property 'CLEAR_CART' does not exist on type '__VizeThis'. Did you mean 'clearCart'?",
+        "error:595:39 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
+        "error:598:68 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
+        "error:609:5 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:612:32 [TS2339] Property '$nextTick' does not exist on type '__VizeThis'.",
+        "error:623:1 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:643:45 [TS2551] Property 'ADD_CART' does not exist on type '__VizeThis'. Did you mean 'addToCart'?",
+        "error:649:32 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:649:61 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:650:33 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:687:78 [TS2339] Property '$router' does not exist on type '__VizeThis'.",
+        "error:1353:17 [TS2304] Cannot find name 'attribute'."
       ]
     },
     {
@@ -540,7 +580,7 @@
       ]
     }
   ],
-  "errorCount": 273,
+  "errorCount": 313,
   "warningCount": 0,
   "fileCount": 55
 }

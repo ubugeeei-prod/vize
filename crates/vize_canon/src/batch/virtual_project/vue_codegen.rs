@@ -110,12 +110,22 @@ pub(super) fn generate_vue_virtual_ts(
         .as_ref()
         .map(|template| template.loc.start as u32)
         .unwrap_or(0);
+    // Script parse errors leave no AST, so they always abort to the fallback
+    // stub. Template diagnostics do not: they are counted separately below and
+    // only *hard* ones abort.
+    let script_hard_error = !diagnostics.is_empty();
     // Track whether the template produced any *hard* parse error. Only hard
-    // errors abort codegen and collapse the file to the fallback stub;
-    // recovery-level diagnostics (`ErrorCode::ExtendPoint`, pushed by the HTML
-    // tree-construction recovery path for self-closing rewrites, fostered
-    // elements, auto-closed `<p>`, etc.) describe repairs the parser already
-    // applied and must keep the real virtual TS (#1065/#1090 regression).
+    // errors abort codegen and collapse the file to the fallback stub.
+    // Recovery-level diagnostics keep the real virtual TS:
+    //   - `ErrorCode::ExtendPoint`, pushed by the HTML tree-construction
+    //     recovery path for self-closing rewrites, fostered elements,
+    //     auto-closed `<p>`, etc. (#1065/#1090 regression);
+    //   - every code in `RECOVERED_PARSE_CODES`, for which the parser
+    //     documents a concrete recovery and still yields a complete tree.
+    //     Treating those as hard meant a single missing space between
+    //     attributes collapsed the file to the stub and silenced every script
+    //     type diagnostic in it (#3323) — the same false-negative shape #3294
+    //     fixed in the linter, keyed off the same shared classification.
     let mut template_hard_error = false;
     let template_ast = descriptor.template.as_ref().and_then(|template| {
         profile!("canon.template.parse", {
@@ -132,7 +142,11 @@ pub(super) fn generate_vue_virtual_ts(
                 if error.code.is_recovery() {
                     continue;
                 }
-                template_hard_error = true;
+                // A documented recovery still yields a complete tree, so the
+                // defect is reported without suppressing the rest of the file.
+                if !error.code.has_documented_parse_recovery() {
+                    template_hard_error = true;
+                }
                 let start = error
                     .loc
                     .as_ref()
@@ -153,8 +167,10 @@ pub(super) fn generate_vue_virtual_ts(
     });
 
     // Abort to the fallback stub only on hard errors — from any block. Pure
-    // recovery-level template diagnostics must not suppress real codegen.
-    if !diagnostics.is_empty() {
+    // recovery-level template diagnostics must not suppress real codegen: the
+    // parse diagnostic is still reported, alongside the script's own type
+    // diagnostics, which is what `vize check` and the linter now agree on.
+    if script_hard_error || template_hard_error {
         return Ok(GeneratedVueFile {
             code: invalid_sfc_fallback_virtual_ts(),
             mappings: Vec::new(),
