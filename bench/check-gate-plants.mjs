@@ -95,7 +95,7 @@ defineProps<{
     expected: {
       file: "App.vue",
       diagnostic:
-        "error:6:10 [TS2322] Type '\"danger\"' is not assignable to type '\"primary\" | \"secondary\"'.",
+        'error:6:10 [TS2322] Type \'"danger"\' is not assignable to type \'"primary" | "secondary"\'.',
     },
   },
 ];
