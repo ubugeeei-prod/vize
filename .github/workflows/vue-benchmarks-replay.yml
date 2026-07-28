@@ -1,0 +1,120 @@
+name: Vue Benchmarks Replay
+
+# Periodic replay of the upstream pikax/vue-benchmarks typecheck confirmation
+# corpus (#3283) against current main and the latest released vize. Outcomes
+# are pinned in bench/vue-benchmarks-replay-expect-{main,release}.json; any
+# drift fails the lane. A release that fixes a known upstream failure turns
+# that entry into a stale suppression, so the release table must be refreshed
+# with the fix recorded as a required pass — external reports cannot stay
+# stale silently.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "43 6 * * 1"
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - bench/vue-benchmarks-replay.mjs
+      - bench/vue-benchmarks-replay-expect-main.json
+      - bench/vue-benchmarks-replay-expect-release.json
+      - .github/workflows/vue-benchmarks-replay.yml
+
+concurrency:
+  group: vue-benchmarks-replay-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  replay-main:
+    name: replay-main
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: vue-benchmarks-replay
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+
+      - name: Build Vize CLI
+        run: cargo build --profile ci -p vize
+
+      - name: Replay the upstream corpus against current main
+        run: |
+          node bench/vue-benchmarks-replay.mjs \
+            --vize-bin target/ci/vize \
+            --expect bench/vue-benchmarks-replay-expect-main.json \
+            --json replay-main-results.json
+
+      - name: Upload replay results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: vue-benchmarks-replay-main
+          path: replay-main-results.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  replay-release:
+    name: replay-release
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+
+      - name: Install the latest released vize
+        run: npm install --prefix "$RUNNER_TEMP/vize-release" vize@latest --no-fund --no-audit
+
+      - name: Replay the upstream corpus against the latest release
+        run: |
+          node bench/vue-benchmarks-replay.mjs \
+            --vize-bin "$RUNNER_TEMP/vize-release/node_modules/.bin/vize" \
+            --expect bench/vue-benchmarks-replay-expect-release.json \
+            --json replay-release-results.json
+
+      - name: Upload replay results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: vue-benchmarks-replay-release
+          path: replay-release-results.json
+          if-no-files-found: warn
+          retention-days: 30

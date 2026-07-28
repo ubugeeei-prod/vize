@@ -39,6 +39,8 @@ const assertionOnlyCheckTests = {
     "solution tsconfig oracle asserts referenced-project CLI and LSP diagnostic parity",
   "vue-benchmarks-correctness-plants":
     "upstream benchmark plants assert exact clean, broken, repaired, and vue-tsc parity",
+  "vue-benchmarks-lsp-ref-unwrap-oracle":
+    "LSP probe asserts exact backend-liveness diagnostics and rejects heuristic hover answers",
   "vue-benchmarks-scaled-corpus-plants":
     "scaled corpus plants assert every planted diagnostic survives full-corpus re-validation",
   "vue-router-patch-oracle":
