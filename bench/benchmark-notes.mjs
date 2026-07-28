@@ -9,5 +9,6 @@ export function buildFairnessNotes(fileCount) {
     "Vite build timings exclude fixture copy/setup; the Vize max lane sets `precompileBatchSize` to the benchmark file count so Blacksmith max runs one native precompile batch instead of the memory-safe default chunks.",
     "Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed.",
     "Single-thread lanes are shown where useful, and the primary speedup compares the incumbent default/single-thread lane with Vize's max runner lane.",
+    "Type-check rows compare across TypeScript engines: vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa), so the cross-row speedup includes TypeScript's Go rewrite and must not be read as a Vue-layer comparison alone; bench/check-gate.mjs publishes the per-engine-class report.",
   ];
 }
