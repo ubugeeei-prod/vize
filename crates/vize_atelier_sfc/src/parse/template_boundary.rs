@@ -15,11 +15,19 @@ use memchr::{memchr, memchr2, memchr3, memmem};
 use std::borrow::Cow;
 
 /// Failed JS-aware interpolation scans tolerated per template block before the
-/// boundary scanner falls back to structural scanning for the remaining `{{`.
-/// A failed scan means the interpolation never closes anywhere in the rest of
-/// the file, so real documents see at most a few; the cap bounds adversarial
-/// inputs at `MAX_FAILED_INTERPOLATION_SCANS` tail walks (#3275).
+/// boundary scanner bounds every later scan to
+/// `BOUNDED_INTERPOLATION_SCAN_WINDOW`. A failed scan means the interpolation
+/// never closes anywhere in the rest of the file, so real documents see at most
+/// a few; the cap bounds adversarial inputs at `MAX_FAILED_INTERPOLATION_SCANS`
+/// tail walks (#3275).
 const MAX_FAILED_INTERPOLATION_SCANS: usize = 8;
+
+/// Bytes a JS-aware interpolation scan may walk once the failed-scan budget is
+/// spent. Interpolations that close inside the window keep full opacity, so
+/// strings, comments, and regexes still hide markup from the structural
+/// scanner; only bodies that fail to close within the window degrade to the
+/// structural handling an unclosed interpolation already gets (#3275).
+const BOUNDED_INTERPOLATION_SCAN_WINDOW: usize = 4096;
 
 #[inline]
 fn is_opening_tag_named(bytes: &[u8], pos: usize, len: usize, expected_name: &[u8]) -> bool {
@@ -113,12 +121,12 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
     let mut line = start_line;
     let mut last_newline = initial_last_newline;
     let mut depth = 1usize;
-    // Set once re-entering the JS-aware interpolation skipper is pointless:
-    // either no literal `}}` remains ahead (both interpolation exits need one,
-    // and later `{{` scan strict subranges of the proven-empty range), or the
-    // failed-scan budget below is spent. This keeps inputs dense in unclosed
-    // `{{` linear (#3275: a 45KB fuzz input with 1162 `{{` against 44 `}}`
-    // re-walked the tail through the string/regex machinery per occurrence).
+    // Set once no literal `}}` remains ahead. Both interpolation exits need
+    // one, and later `{{` scan strict subranges of the proven-empty range, so
+    // no interpolation in the rest of the block can close. This keeps inputs
+    // dense in unclosed `{{` linear (#3275: a 45KB fuzz input with 1162 `{{`
+    // against 44 `}}` re-walked the tail through the string/regex machinery
+    // per occurrence).
     let mut interpolation_close_exhausted = false;
     let mut failed_interpolation_scans = 0usize;
 
@@ -159,33 +167,52 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
 
         if bytes[pos] == b'{' {
             if pos + 1 < len && bytes[pos + 1] == b'{' {
-                if !interpolation_close_exhausted
-                    && memmem::find(&bytes[pos + 2..], b"}}").is_none()
-                {
-                    interpolation_close_exhausted = true;
-                }
-                if interpolation_close_exhausted {
+                let close_ahead = if interpolation_close_exhausted {
+                    None
+                } else {
+                    let close_ahead = memmem::find(&bytes[pos + 2..], b"}}");
+                    interpolation_close_exhausted = close_ahead.is_none();
+                    close_ahead
+                };
+
+                // A failed scan already walked to the end of the source, so
+                // every one costs the rest of the input. Real documents hold at
+                // most a handful — each is an interpolation that never closes
+                // again anywhere in the file — while the #3275 fuzz shape packs
+                // hundreds whose scans stay expensive because a brace-consumed
+                // or string-hidden `}}` survives near the tail. Once the budget
+                // is spent, keep scanning JS-aware but only within a window, so
+                // a later well-formed interpolation stays opaque instead of
+                // exposing a quoted `</template>` to the structural scanner.
+                let scan_limit = if failed_interpolation_scans < MAX_FAILED_INTERPOLATION_SCANS {
+                    len
+                } else {
+                    (pos + 2)
+                        .saturating_add(BOUNDED_INTERPOLATION_SCAN_WINDOW)
+                        .min(len)
+                };
+
+                // Both interpolation exits need a literal `}}` within reach, so
+                // a nearest delimiter beyond the limit rules the scan out before
+                // it walks a single byte.
+                let close_within_limit =
+                    close_ahead.is_some_and(|offset| pos + 2 + offset + 2 <= scan_limit);
+
+                if !close_within_limit {
                     // An unclosed interpolation is a template-parser error, not
                     // an SFC block-boundary error. Resume structural scanning so
                     // the root closing tag remains visible to that later stage.
                     pos += 2;
-                } else if let Some(interpolation_end) =
-                    skip_template_interpolation(bytes, pos, len, &mut line, &mut last_newline)
-                {
+                } else if let Some(interpolation_end) = skip_template_interpolation(
+                    &bytes[..scan_limit],
+                    pos,
+                    scan_limit,
+                    &mut line,
+                    &mut last_newline,
+                ) {
                     pos = interpolation_end;
                 } else {
-                    // A failed scan already walked to the end of the source, so
-                    // every one costs the rest of the input. Real documents hold
-                    // at most a handful — each is an interpolation that never
-                    // closes again anywhere in the file — while the #3275 fuzz
-                    // shape packs hundreds whose scans stay expensive because a
-                    // brace-consumed or string-hidden `}}` survives near the
-                    // tail. Once the budget is spent, stop re-entering the JS
-                    // scanner and keep structural scanning only.
                     failed_interpolation_scans += 1;
-                    if failed_interpolation_scans >= MAX_FAILED_INTERPOLATION_SCANS {
-                        interpolation_close_exhausted = true;
-                    }
                     pos += 2;
                 }
                 continue;

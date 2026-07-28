@@ -7,6 +7,11 @@ use memchr::{memchr, memchr2, memchr3, memmem};
 
 /// Skip a Vue interpolation while ignoring delimiter-like text inside JavaScript
 /// strings, template literals, comments, and regular expressions.
+///
+/// `bytes` may be a prefix of the source that ends at `len`, which the caller
+/// uses to bound the scan; positions stay absolute and everything past `len` is
+/// treated as unreachable, so a body that does not close within the prefix
+/// reports failure instead of walking the rest of the file (#3275).
 pub(super) fn skip_template_interpolation(
     bytes: &[u8],
     mut pos: usize,

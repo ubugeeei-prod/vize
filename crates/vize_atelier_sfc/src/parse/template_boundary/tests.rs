@@ -181,6 +181,37 @@ fn later_interpolations_survive_an_unclosed_scan_that_consumed_delimiters() {
 }
 
 #[test]
+fn valid_interpolations_survive_a_spent_failed_scan_budget() {
+    // Every `{{ { }}` group leaves a brace-consumed `}}` behind, so its scan
+    // walks to EOF and fails while raw delimiters still exist ahead. Enough
+    // groups spend the failed-scan budget (#3275), which must bound later scans
+    // rather than drop JS awareness for the rest of the block: the trailing
+    // `{{ '</template>' }}` is well-formed, so its quoted closing tag has to
+    // stay opaque instead of ending the root template early.
+    let mut source = String::from("<template><p>");
+    for _ in 0..8 {
+        source.push_str("{{ { }} ");
+    }
+    source.push_str("{{ '</template>' }}</p><i>after</i></template><style>.ok {}</style>");
+
+    let result = parse_sfc(&source, Default::default())
+        .expect("unclosed interpolations must not become a boundary error");
+
+    let template = result.template.expect("root template must be preserved");
+    assert!(
+        template.content.contains("'</template>'"),
+        "content: {}",
+        template.content
+    );
+    assert!(
+        template.content.contains("<i>after</i>"),
+        "content: {}",
+        template.content
+    );
+    assert_eq!(result.styles.len(), 1);
+}
+
+#[test]
 fn unclosed_interpolation_runs_scan_linearly() {
     // Fuzz slow units #3275 (runs 30073026409): 45KB with 1162 `{{` against
     // 44 `}}` made every unclosed `{{` re-walk the rest of the source through
