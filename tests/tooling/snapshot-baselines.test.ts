@@ -25,6 +25,8 @@ const assertionOnlyCheckTests = {
   "class-component": "class-component vue-tsc parity has known upstream-noisy diagnostics",
   "class-component-lsp-oracle":
     "class-component LSP oracle asserts exact TS2551 member diagnostics across document versions",
+  "create-vue-editor-range-oracle":
+    "editor-range oracle asserts exact authored Vue ranges for live LSP editor features",
   "create-vue-generated-template-oracle":
     "generated-template patch oracle asserts exact batch typechecker and vue-tsc parity",
   "create-vue-patch-oracle":
