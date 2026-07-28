@@ -1,0 +1,124 @@
+name: Check Benchmark Gate
+
+# Fail-closed budget/report job for `vize check` (#3283): bench/check-gate.mjs
+# refuses to emit any timing unless the measured binary reports every planted
+# diagnostic in minimal plant projects and in a planted copy of the timed
+# corpus, and it records the exact vize/tsgo/vue-tsc/vue versions, entry
+# point, file count, byte count, per-row diagnostic counts, and backend
+# readiness with the artifact. Correctness gates stay where they are
+# (check.yml vue-parity runs the plants suite on every PR); this job can only
+# add a failure, never publish a timing without them.
+
+on:
+  workflow_dispatch:
+    inputs:
+      check_file_count:
+        description: Generated SFC files for the measured corpus
+        required: true
+        default: "500"
+      runs:
+        description: Measured runs per row
+        required: true
+        default: "5"
+      warmups:
+        description: Warmup runs per row
+        required: true
+        default: "2"
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - bench/check-gate.mjs
+      - bench/check-gate-plants.mjs
+      - bench/check-gate-report.mjs
+      - .github/workflows/check-bench.yml
+  schedule:
+    # Weekly report cadence; the plants correctness gate itself runs on every
+    # PR through check.yml vue-parity, so this schedule only refreshes the
+    # published throughput/readiness artifact.
+    - cron: "17 6 * * 1"
+
+concurrency:
+  group: check-bench-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  VIZE_CHECK_BENCH_FILE_COUNT: ${{ github.event_name == 'workflow_dispatch' && inputs.check_file_count || '500' }}
+  VIZE_CHECK_BENCH_RUNS: ${{ github.event_name == 'workflow_dispatch' && inputs.runs || '5' }}
+  VIZE_CHECK_BENCH_WARMUPS: ${{ github.event_name == 'workflow_dispatch' && inputs.warmups || '2' }}
+
+jobs:
+  check-bench:
+    name: check-bench
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout benchmark commit
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: check-bench
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+
+      # Same ci-opt settings the PR benchmark measures under, injected via
+      # --config so the profile does not need to exist in Cargo.toml.
+      - name: Build Vize CLI
+        run: >-
+          cargo build --profile ci-opt -p vize
+          --config 'profile.ci-opt.inherits="release"'
+          --config 'profile.ci-opt.lto="thin"'
+          --config 'profile.ci-opt.codegen-units=16'
+
+      - name: Generate benchmark corpus
+        run: node bench/generate.mjs "$VIZE_CHECK_BENCH_FILE_COUNT"
+
+      - name: Run the fail-closed check benchmark gate
+        run: |
+          node bench/check-gate.mjs \
+            --input bench/__in__ \
+            --vize-bin target/ci-opt/vize \
+            --check-file-count "$VIZE_CHECK_BENCH_FILE_COUNT" \
+            --runs "$VIZE_CHECK_BENCH_RUNS" \
+            --warmups "$VIZE_CHECK_BENCH_WARMUPS" \
+            --require-vue-tsc \
+            --runner-label "blacksmith-32vcpu-ubuntu-2404" \
+            --commit "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" \
+            --ref "${{ github.ref_name }}" \
+            --repository "${{ github.repository }}" \
+            --out check-gate-summary.md \
+            --json check-gate-results.json
+
+      - name: Write job summary
+        run: cat check-gate-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload check benchmark gate results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: check-bench-gate
+          path: |
+            check-gate-summary.md
+            check-gate-results.json
+          if-no-files-found: error
+          retention-days: 30
