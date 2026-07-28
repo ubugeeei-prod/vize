@@ -111,6 +111,7 @@ pub(crate) const fn builtin_css_rule_names(preset: LintPreset) -> &'static [&'st
 mod tests {
     use super::LintPreset;
     use crate::rule::RuleRegistry;
+    use std::collections::BTreeSet;
 
     #[test]
     fn parses_common_aliases() {
@@ -250,6 +251,58 @@ mod tests {
 
         assert!(!incremental.has_rule("vue/require-v-for-key"));
         assert!(super::builtin_script_rule_names(LintPreset::Incremental).is_empty());
+    }
+
+    #[test]
+    fn eslint_vue_rule_map_matches_registered_patina_rules() {
+        let rule_map: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../tests/_fixtures/patina-eslint-vue-rule-map.json"
+        ))
+        .unwrap();
+        let mappings = rule_map["entries"].as_object().unwrap();
+
+        let mut available: BTreeSet<_> = RuleRegistry::with_all()
+            .rule_names()
+            .iter()
+            .copied()
+            .collect();
+        available.extend(
+            RuleRegistry::with_opt_in_rules()
+                .rule_names()
+                .iter()
+                .copied(),
+        );
+        available.extend(
+            crate::linter::script_rules::all_builtin_script_rule_names()
+                .iter()
+                .copied(),
+        );
+
+        for (eslint_rule, entry) in mappings {
+            if entry["status"] == "mapped" {
+                let target = entry["patinaRule"].as_str().unwrap();
+                assert!(
+                    available.contains(target),
+                    "{eslint_rule} maps to unavailable Patina rule {target}"
+                );
+                continue;
+            }
+
+            let script_rule = eslint_rule.replacen("vue/", "script/", 1);
+            let alias = match eslint_rule.as_str() {
+                "vue/attributes-order" => Some("vue/attribute-order"),
+                "vue/block-order" => Some("vue/sfc-element-order"),
+                "vue/no-async-in-computed-properties" => Some("script/no-async-in-computed"),
+                _ => None,
+            };
+            let hidden_rule = available.contains(eslint_rule.as_str())
+                || available.contains(script_rule.as_str())
+                || alias.is_some_and(|rule| available.contains(rule));
+            assert!(
+                !hidden_rule,
+                "{eslint_rule} is marked unimplemented despite a registered Patina counterpart"
+            );
+        }
     }
 
     fn rule_names(preset: LintPreset) -> Vec<&'static str> {
