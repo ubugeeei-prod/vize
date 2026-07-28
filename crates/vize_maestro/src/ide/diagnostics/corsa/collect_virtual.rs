@@ -6,6 +6,7 @@ use vize_carton::FxHashSet;
 use super::super::{VirtualTsResult, sources};
 use super::mapping::{map_diagnostic_with_source_mappings, source_offset_to_position};
 use super::message::rewrite_corsa_message;
+use super::script_fallback::ScriptFallback;
 
 // Both collectors surface bridge failures to the caller instead of mapping
 // them to an empty diagnostic list: `collect_corsa_diagnostics` uses the
@@ -45,6 +46,15 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
     let template_scope_start_line = virtual_result.template_scope_start_line;
     let line_mappings = &virtual_result.line_mappings;
     let source_mappings = &virtual_result.source_mappings;
+    // Positions the source map cannot place are guessed by line arithmetic and
+    // must stay inside the authored document (#3299). A trailing newline does
+    // not open a line an editor can render a range on, so it is not counted.
+    let script_fallback = ScriptFallback {
+        user_code_start_line,
+        sfc_script_start_line,
+        skipped_import_lines: virtual_result.skipped_import_lines,
+        authored_line_count: content.lines().count() as u32,
+    };
     tracing::info!(
         "generated virtual ts ({} bytes), user_code_start={}, sfc_script_start={}, template_scope_start={}, mappings_count={}",
         virtual_ts.len(),
@@ -114,55 +124,45 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
 
             let is_template_error = diag.range.start.line >= template_scope_start_line;
 
-            let (start_line, end_line, start_char, end_char) = if let Some(mapped_range) =
-                mapped_range
-            {
-                mapped_range
-            } else if is_template_error {
-                let virtual_line = diag.range.start.line as usize;
-                let mapping =
-                    (0..=10).find_map(|offset| line_mappings.get(virtual_line + offset)?.as_ref());
+            let (start_line, end_line, start_char, end_char) =
+                if let Some(mapped_range) = mapped_range {
+                    mapped_range
+                } else if is_template_error {
+                    let virtual_line = diag.range.start.line as usize;
+                    let mapping = (0..=10)
+                        .find_map(|offset| line_mappings.get(virtual_line + offset)?.as_ref());
 
-                if let Some(src_mapping) = mapping {
-                    let (start_line, start_col) =
-                        source_offset_to_position(content, src_mapping.start as usize);
-                    let (end_line, end_col) =
-                        source_offset_to_position(content, src_mapping.end as usize);
-                    (start_line, end_line, start_col, end_col)
+                    if let Some(src_mapping) = mapping {
+                        let (start_line, start_col) =
+                            source_offset_to_position(content, src_mapping.start as usize);
+                        let (end_line, end_col) =
+                            source_offset_to_position(content, src_mapping.end as usize);
+                        (start_line, end_line, start_col, end_col)
+                    } else {
+                        tracing::debug!(
+                            "skipping unmapped template error at line {}: {}",
+                            diag.range.start.line,
+                            &diag.message[..diag.message.len().min(50)]
+                        );
+                        return None;
+                    }
+                } else if let Some((start, end)) =
+                    script_fallback.guess_range(diag.range.start.line, diag.range.end.line)
+                {
+                    (
+                        start,
+                        end,
+                        diag.range.start.character.saturating_sub(2),
+                        diag.range.end.character.saturating_sub(2),
+                    )
                 } else {
                     tracing::debug!(
-                        "skipping unmapped template error at line {}: {}",
+                        "skipping unplaceable script diagnostic at virtual line {}: {}",
                         diag.range.start.line,
                         &diag.message[..diag.message.len().min(50)]
                     );
                     return None;
-                }
-            } else {
-                if diag.range.start.line < user_code_start_line {
-                    tracing::debug!(
-                        "skipping preamble diagnostic at line {} (user code starts at {}): {}",
-                        diag.range.start.line,
-                        user_code_start_line,
-                        &diag.message[..diag.message.len().min(50)]
-                    );
-                    return None;
-                }
-
-                let user_code_offset = diag.range.start.line.saturating_sub(user_code_start_line);
-                let user_code_offset_end = diag.range.end.line.saturating_sub(user_code_start_line);
-                let skipped_lines = virtual_result.skipped_import_lines;
-                let start =
-                    (sfc_script_start_line.saturating_sub(1)) + user_code_offset + skipped_lines;
-                let end = (sfc_script_start_line.saturating_sub(1))
-                    + user_code_offset_end
-                    + skipped_lines;
-                (
-                    start,
-                    end,
-                    diag.range.start.character.saturating_sub(2),
-                    diag.range.end.character.saturating_sub(2),
-                )
-            };
+                };
 
             Some(Diagnostic {
                 range: Range {
