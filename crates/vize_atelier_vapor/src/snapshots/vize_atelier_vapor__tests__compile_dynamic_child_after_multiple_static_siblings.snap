@@ -1,12 +1,12 @@
 ---
-source: crates/vize_atelier_vapor/src/lib.rs
+source: crates/vize_atelier_vapor/src/tests.rs
 expression: code.as_str()
 ---
-import { child as _child, next as _next, setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';
+import { child as _child, setClass as _setClass, nthChild as _nthChild, renderEffect as _renderEffect, template as _template } from 'vue';
 const t0 = _template("<div><header>one</header><p>two</p><button>x</button></div>", true)
 export function render(_ctx) {
 const n1 = t0()
-const n0 = _next(_child(n1), 2)
+const n0 = _nthChild(n1, 2)
 _renderEffect(() => _setClass(n0, _ctx.cls))
 return n1
 }

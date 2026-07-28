@@ -87,10 +87,19 @@ pub(super) fn generate_child_ref(ctx: &mut GenerateContext, child_ref: &ChildRef
             "const n{} = _child(n{})",
             child_ref.child_id, child_ref.parent_id
         ));
-    } else {
+    } else if child_ref.offset == 1 {
         ctx.use_helper("next");
-        let expr = build_next_chain(cstr!("_child(n{})", child_ref.parent_id), child_ref.offset);
+        let expr = build_next_chain(cstr!("_child(n{})", child_ref.parent_id), 1);
         ctx.push_line_fmt(format_args!("const n{} = {}", child_ref.child_id, expr));
+    } else {
+        // Outside hydration the runtime `next()` advances a single sibling, so
+        // absolute child positions beyond one step must go through `nthChild`
+        // (mirrors vue's compiler-vapor).
+        ctx.use_helper("nthChild");
+        ctx.push_line_fmt(format_args!(
+            "const n{} = _nthChild(n{}, {})",
+            child_ref.child_id, child_ref.parent_id, child_ref.offset
+        ));
     }
 }
 
@@ -104,7 +113,16 @@ pub(super) fn generate_next_ref(ctx: &mut GenerateContext, next_ref: &NextRefIRN
 fn build_next_chain(base: String, offset: usize) -> String {
     if offset == 0 {
         base
+    } else if offset == 1 {
+        cstr!("_next({}, 1)", base)
     } else {
-        cstr!("_next({}, {})", base, offset)
+        // Outside hydration the runtime `next()` only honors single-step
+        // advancement, so multi-step navigation must be a chain of calls
+        // instead of one call carrying the offset.
+        let mut expr = base;
+        for _ in 0..offset {
+            expr = cstr!("_next({})", expr);
+        }
+        expr
     }
 }
