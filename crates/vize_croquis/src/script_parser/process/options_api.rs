@@ -3,6 +3,7 @@
 mod emits;
 mod inheritance;
 
+use super::class_component::{class_from_export, collect_class_component_metadata};
 use emits::collect_options_api_emits_from_options as collect_emits;
 use inheritance::{collect_extends_bindings, collect_mixins_bindings};
 
@@ -48,14 +49,8 @@ pub(in crate::script_parser) fn collect_options_api_component_metadata(
         // Class components (vue-class-component / vue-property-decorator):
         // in an SFC the default export *is* the component, so a class default
         // export is unambiguous. Auto-detected by AST shape, no flag needed.
-        if let Some(class) = super::class_component::class_from_export(&export.declaration) {
-            super::class_component::collect_class_component_metadata(
-                result,
-                class,
-                &object_bindings,
-                legacy_vue2,
-                source,
-            );
+        if let Some(class) = class_from_export(&export.declaration) {
+            collect_class_component_metadata(result, class, &object_bindings, legacy_vue2, source);
             continue;
         }
 

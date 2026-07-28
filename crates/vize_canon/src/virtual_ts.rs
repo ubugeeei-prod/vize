@@ -8,6 +8,8 @@
 //! `declare const` to properly model Vue's template scoping.
 
 #[cfg(test)]
+mod class_component_props_tests;
+#[cfg(test)]
 mod dynamic_component_names_tests;
 mod expressions;
 mod generator;
