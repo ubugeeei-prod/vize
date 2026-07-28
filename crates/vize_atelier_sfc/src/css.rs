@@ -150,7 +150,7 @@ pub struct CssCompileResult {
 /// Parse CSS into a serialized LightningCSS AST.
 #[cfg(feature = "native")]
 pub fn parse_css_ast(css: &str, options: &CssCompileOptions) -> CssAstResult {
-    let result = parser::parse_css_ast_internal(
+    let result = parser::engine_boundary::parse_css_ast_guarded(
         css,
         options.filename.as_deref().unwrap_or("style.css"),
         options.custom_media,
@@ -173,7 +173,7 @@ pub fn print_css_ast(ast: serde_json::Value, options: &CssCompileOptions) -> Css
         .map(|t| t.to_lightningcss_targets())
         .unwrap_or_default();
 
-    let result = parser::print_css_ast_internal(ast, options.minify, targets);
+    let result = parser::engine_boundary::print_css_ast_guarded(ast, options.minify, targets);
 
     CssCompileResult {
         code: result.code,
@@ -241,7 +241,7 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
         .unwrap_or_default();
 
     // Parse and process CSS
-    let result = parser::compile_css_internal(
+    let result = parser::engine_boundary::compile_css_guarded(
         scoped_css,
         filename,
         options.minify,
@@ -303,7 +303,7 @@ pub fn bundle_css(entry_path: &str, options: &CssCompileOptions) -> CssCompileRe
         .map(|t| t.to_lightningcss_targets())
         .unwrap_or_default();
 
-    let result = parser::bundle_css_internal(
+    let result = parser::engine_boundary::bundle_css_guarded(
         entry_path,
         options.minify,
         targets,

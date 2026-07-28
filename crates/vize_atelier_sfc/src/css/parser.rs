@@ -12,7 +12,7 @@ use serde::de::IntoDeserializer;
 use serde_json::Value;
 use std::path::Path;
 use vize_carton::{FxHashMap, String, ToCompactString};
-
+pub(super) mod engine_boundary;
 mod nesting;
 mod normalize;
 
