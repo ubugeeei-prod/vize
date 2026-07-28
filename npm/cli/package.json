@@ -91,5 +91,12 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "tsContentMapper": {
+    "exec": [
+      "node",
+      "./bin/vize",
+      "content-mapper"
+    ]
   }
 }

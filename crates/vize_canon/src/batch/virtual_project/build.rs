@@ -138,6 +138,7 @@ pub(super) fn build_vue_registered_file(
                 template_syntax: context.template_syntax,
                 experimental_in_tag_comments: context.experimental_in_tag_comments,
                 hoist_shared_preamble: true,
+                omit_vite_client_reference: false,
             },
         )
     )?;

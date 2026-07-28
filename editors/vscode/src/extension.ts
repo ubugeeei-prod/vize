@@ -13,6 +13,7 @@ import {
   Uri,
   commands,
   env,
+  extensions,
   window,
   workspace,
   type QuickPickItem,
@@ -95,6 +96,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
   outputChannel = window.createOutputChannel("Vize");
   outputChannel.appendLine("Vize extension activating...");
   context.subscriptions.push(outputChannel);
+  registerTypeScriptContentMapperDiscovery(context);
 
   statusBarItem = window.createStatusBarItem(StatusBarAlignment.Right, 95);
   statusBarItem.command = "vize.showStatus";
@@ -158,6 +160,53 @@ export async function activate(context: ExtensionContext): Promise<void> {
   );
 
   await syncClientToConfiguration(context, "initial activation");
+}
+
+function registerTypeScriptContentMapperDiscovery(context: ExtensionContext): void {
+  const discover = (uris: readonly Uri[]) => {
+    if (!workspace.isTrusted || uris.length === 0) {
+      return;
+    }
+    const nativePreview = extensions.getExtension("TypeScriptTeam.native-preview");
+    if (!nativePreview) {
+      return;
+    }
+    void (async () => {
+      try {
+        await nativePreview.activate();
+        const discovered = await commands.executeCommand(
+          "typescript.native-preview.discoverContentMappers",
+          {
+            uris,
+            extensions: [".vue"],
+          },
+        );
+        if (Array.isArray(discovered) && discovered.includes(".vue")) {
+          outputChannel.appendLine("TypeScript native preview discovered the Vize .vue mapper.");
+        }
+      } catch (error: unknown) {
+        outputChannel.appendLine(
+          `TypeScript content mapper discovery is unavailable: ${String(error)}`,
+        );
+      }
+    })();
+  };
+  const vueUri = (document: { languageId: string; uri: Uri }): Uri | undefined =>
+    document.uri.scheme === "file" &&
+    (document.languageId === "vue" || document.languageId === "art-vue") &&
+    document.uri.path.endsWith(".vue")
+      ? document.uri
+      : undefined;
+
+  discover(workspace.textDocuments.map(vueUri).filter((uri): uri is Uri => uri !== undefined));
+  context.subscriptions.push(
+    workspace.onDidOpenTextDocument((document) => {
+      const uri = vueUri(document);
+      if (uri) {
+        discover([uri]);
+      }
+    }),
+  );
 }
 
 function scheduleClientSync(context: ExtensionContext, reason: string): void {

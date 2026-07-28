@@ -99,6 +99,7 @@ pub fn generate_vue_document_virtual_ts_with_options(
             template_syntax: TemplateSyntaxMode::default(),
             experimental_in_tag_comments: false,
             hoist_shared_preamble,
+            omit_vite_client_reference: false,
         },
     )?;
     if use_tsx_virtual {

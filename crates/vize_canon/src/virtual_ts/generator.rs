@@ -41,7 +41,7 @@ use self::spans::{
 };
 use super::{
     helpers::{
-        IMPORT_META_AUGMENTATION, SETUP_SCOPE_HELPER_NAMES, generate_template_context,
+        SETUP_SCOPE_HELPER_NAMES, emit_import_meta_augmentation, generate_template_context,
         to_safe_identifier,
     },
     props::{
@@ -188,7 +188,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         ts.push_str("// Shared preamble hoisted to the program-wide __vize_helpers.d.ts\n");
     } else {
         // ImportMeta augmentation (must be at top level, before any code)
-        ts.push_str(IMPORT_META_AUGMENTATION);
+        emit_import_meta_augmentation(&mut ts, !generation_options.omit_vite_client_reference);
         ts.push('\n');
     }
 

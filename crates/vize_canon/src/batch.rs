@@ -34,8 +34,9 @@ pub use type_checker::{
     DeclarationOutput, TypeCheckResult, TypeChecker,
 };
 pub use virtual_project::{
-    OriginalPosition, VirtualFile, VirtualProject, VueDocumentVirtualTs,
-    VueDocumentVirtualTsOptions, generate_vue_document_virtual_ts,
+    ContentMapperDiagnostic, ContentMapperSpan, ContentMapperTransform, OriginalPosition,
+    VirtualFile, VirtualProject, VueDocumentVirtualTs, VueDocumentVirtualTsOptions,
+    generate_vue_content_mapper_transform, generate_vue_document_virtual_ts,
     generate_vue_document_virtual_ts_with_options,
 };
 pub use virtual_ts::VirtualTsGenerator;

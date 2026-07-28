@@ -159,6 +159,8 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     pub(crate) hoist_shared_preamble: bool,
     /// Override standard library triple-slash references for this generation.
     pub(crate) lib_references: Option<&'a [&'a str]>,
+    /// Avoid introducing a `vite/client` type dependency in arbitrary projects.
+    pub(crate) omit_vite_client_reference: bool,
 }
 
 /// Default plugin globals.
