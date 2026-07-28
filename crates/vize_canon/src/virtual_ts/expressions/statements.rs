@@ -6,10 +6,9 @@
 
 use super::super::helpers::generated_text_range;
 use super::super::types::VizeMapping;
+use super::native_props::{NativePropBindings, generate_native_prop_statement};
 use super::reserved_props::rewrite_reserved_template_prop;
-use super::vif_chain::{
-    VifControlFlowChain, VifControlFlowEmitContext, emit_vif_control_flow_chain,
-};
+use super::vif_chain::{VifControlFlowChain, emit_vif_control_flow_chain};
 use crate::virtual_ts::scope::remove_enclosing_vif_guard_prefix;
 use vize_carton::CompactString;
 use vize_carton::FxHashSet;
@@ -27,23 +26,19 @@ pub(crate) fn generate_expressions(
     mappings: &mut Vec<VizeMapping>,
     exprs: &[&TemplateExpression],
     template_prop_names: &FxHashSet<String>,
-    skipped_expression_ranges: &FxHashSet<(u32, u32)>,
-    template_offset: u32,
-    indent: &str,
+    context: &ExpressionListEmitContext<'_>,
 ) {
     let mut index = 0;
     while index < exprs.len() {
-        if skipped_expression_ranges.contains(&(exprs[index].start, exprs[index].end)) {
+        if context
+            .skipped_expression_ranges
+            .contains(&(exprs[index].start, exprs[index].end))
+        {
             index += 1;
             continue;
         }
         if let Some(chain) = VifControlFlowChain::collect(exprs, index) {
-            let context = VifControlFlowEmitContext {
-                skipped_expression_ranges,
-                template_offset,
-                indent,
-            };
-            emit_vif_control_flow_chain(ts, mappings, exprs, &chain, template_prop_names, &context);
+            emit_vif_control_flow_chain(ts, mappings, exprs, &chain, template_prop_names, context);
             index = chain.end;
             continue;
         }
@@ -55,8 +50,9 @@ pub(crate) fn generate_expressions(
                 mappings,
                 exprs[index],
                 template_prop_names,
-                template_offset,
-                indent,
+                context.template_offset,
+                context.indent,
+                context.native_props,
             )
         );
         index += 1;
@@ -70,21 +66,11 @@ pub(crate) fn generate_expressions_in_enclosing_guard(
     mappings: &mut Vec<VizeMapping>,
     exprs: &[&TemplateExpression],
     template_prop_names: &FxHashSet<String>,
-    skipped_expression_ranges: &FxHashSet<(u32, u32)>,
-    template_offset: u32,
-    generation_scope: (&str, Option<&str>),
+    context: &ExpressionListEmitContext<'_>,
+    enclosing_guard: Option<&str>,
 ) {
-    let (indent, enclosing_guard) = generation_scope;
     let Some(enclosing_guard) = enclosing_guard else {
-        generate_expressions(
-            ts,
-            mappings,
-            exprs,
-            template_prop_names,
-            skipped_expression_ranges,
-            template_offset,
-            indent,
-        );
+        generate_expressions(ts, mappings, exprs, template_prop_names, context);
         return;
     };
 
@@ -105,10 +91,31 @@ pub(crate) fn generate_expressions_in_enclosing_guard(
         mappings,
         &adjusted_expression_refs,
         template_prop_names,
-        skipped_expression_ranges,
-        template_offset,
-        indent,
+        context,
     );
+}
+
+pub(crate) struct ExpressionListEmitContext<'a> {
+    pub(crate) skipped_expression_ranges: &'a FxHashSet<(u32, u32)>,
+    pub(crate) template_offset: u32,
+    pub(crate) indent: &'a str,
+    pub(crate) native_props: &'a NativePropBindings,
+}
+
+impl<'a> ExpressionListEmitContext<'a> {
+    pub(crate) fn new(
+        skipped_expression_ranges: &'a FxHashSet<(u32, u32)>,
+        template_offset: u32,
+        indent: &'a str,
+        native_props: &'a NativePropBindings,
+    ) -> Self {
+        Self {
+            skipped_expression_ranges,
+            template_offset,
+            indent,
+            native_props,
+        }
+    }
 }
 
 /// Generate a template expression with optional v-if narrowing.
@@ -127,6 +134,7 @@ pub(crate) fn generate_expression(
     template_prop_names: &FxHashSet<String>,
     template_offset: u32,
     indent: &str,
+    native_props: &NativePropBindings,
 ) {
     if let Some(ref guard) = expr.vif_guard {
         if expr.kind == TemplateExpressionKind::VIf {
@@ -168,6 +176,7 @@ pub(crate) fn generate_expression(
             template_prop_names,
             template_offset,
             &cstr!("{indent}  "),
+            native_props,
         );
         append!(*ts, "{indent}}}\n");
     } else {
@@ -178,6 +187,7 @@ pub(crate) fn generate_expression(
             template_prop_names,
             template_offset,
             indent,
+            native_props,
         );
     }
 }
@@ -240,6 +250,7 @@ pub(super) fn generate_expression_statement(
     template_prop_names: &FxHashSet<String>,
     template_offset: u32,
     indent: &str,
+    native_props: &NativePropBindings,
 ) {
     let src_start = (template_offset + expr.start) as usize;
     let src_end = (template_offset + expr.end) as usize;
@@ -271,6 +282,19 @@ pub(super) fn generate_expression_statement(
     } else {
         statement_expression
     };
+
+    if let Some(native_prop) = native_props.get(&(expr.start, expr.end)) {
+        generate_native_prop_statement(
+            ts,
+            mappings,
+            expr,
+            native_prop,
+            generated_expression,
+            template_offset,
+            indent,
+        );
+        return;
+    }
 
     let gen_stmt_start = ts.len();
     append!(

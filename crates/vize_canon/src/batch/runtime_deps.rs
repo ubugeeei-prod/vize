@@ -12,9 +12,10 @@ mod tests;
 use resolver::{
     VueRuntimePackages, resolve_package, resolve_vue_package, resolve_vue_runtime_packages,
 };
+pub(crate) use stubs::VUE_RUNTIME_DOM_STUB_TYPES;
 use stubs::{
     VITE_CLIENT_STUB, VITE_STUB_PACKAGE_JSON, VUE_FACADE_PACKAGE_JSON, VUE_FACADE_TYPES,
-    VUE_RUNTIME_DOM_STUB_PACKAGE_JSON, VUE_RUNTIME_DOM_STUB_TYPES,
+    VUE_RUNTIME_DOM_STUB_PACKAGE_JSON,
 };
 
 pub(super) fn materialize_runtime_dependencies(

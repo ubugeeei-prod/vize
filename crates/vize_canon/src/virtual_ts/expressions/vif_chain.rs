@@ -1,7 +1,7 @@
 //! Recognition and emission of v-if / v-else-if / v-else control-flow chains.
 
 use super::super::types::VizeMapping;
-use super::statements::generate_expression_statement;
+use super::statements::{ExpressionListEmitContext, generate_expression_statement};
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
@@ -248,7 +248,7 @@ pub(super) fn emit_vif_control_flow_chain(
     exprs: &[&TemplateExpression],
     chain: &VifControlFlowChain<'_>,
     template_prop_names: &FxHashSet<String>,
-    context: &VifControlFlowEmitContext<'_>,
+    context: &ExpressionListEmitContext<'_>,
 ) {
     for (branch_index, branch) in chain.branches.iter().enumerate() {
         emit_vif_branch_open(
@@ -279,6 +279,7 @@ pub(super) fn emit_vif_control_flow_chain(
                 template_prop_names,
                 context.template_offset,
                 &body_indent,
+                context.native_props,
             );
         }
     }
@@ -292,7 +293,7 @@ fn emit_vif_branch_open(
     chain: &VifControlFlowChain<'_>,
     branch: &VifBranch<'_>,
     first: bool,
-    context: &VifControlFlowEmitContext<'_>,
+    context: &ExpressionListEmitContext<'_>,
 ) {
     let prefix_is_empty = chain.prefix.is_empty();
     match (first, branch.condition) {
@@ -343,12 +344,6 @@ fn emit_vif_branch_open(
             context.indent,
         );
     }
-}
-
-pub(super) struct VifControlFlowEmitContext<'a> {
-    pub(super) skipped_expression_ranges: &'a FxHashSet<(u32, u32)>,
-    pub(super) template_offset: u32,
-    pub(super) indent: &'a str,
 }
 
 fn append_guard_condition(

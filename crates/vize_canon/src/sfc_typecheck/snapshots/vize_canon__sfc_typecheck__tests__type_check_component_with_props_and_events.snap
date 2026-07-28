@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/sfc_typecheck/tests.rs
+assertion_line: 1310
 expression: vts.as_str()
 ---
 /// <reference lib="es2022" />
@@ -108,10 +109,12 @@ function __setup() {
   const disabled = props["disabled"];
   void disabled;
 
+  type __VizeNativeElement<Elements, Tag extends PropertyKey> = Tag extends keyof Elements ? Elements[Tag] : unknown;
+  type __VizeNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;
   void (props.title); // Interpolation
   // @vize-map: expr -> 276:287
-  void (props.disabled); // VBind
-  // @vize-map: expr -> 319:333
+  const __vize_native_prop_check_63: __VizeNativeElementProp<__VizeNativeElement<import('vue').NativeElements, "button">, "disabled"> = (props.disabled);
+  void __vize_native_prop_check_63; // VBind
   void (emit('submit')); // VOn
   // @vize-map: expr -> 343:357
 

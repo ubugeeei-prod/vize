@@ -789,7 +789,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         ScopeGenerationOptions {
                             check_options,
                             virtual_ts_options: options,
-                            template_source: template_ast.map(|root| root.source.as_str()),
+                            template_ast,
                             check_unresolved_global_components: has_script_reference_types,
                             legacy_vue2,
                         },

@@ -4,6 +4,7 @@
 //! including v-for, v-slot, and event handler scopes. Uses recursive
 //! tree-based generation so nested scopes are properly contained.
 
+mod children;
 mod closures;
 mod component_events;
 mod component_prop_checker;
