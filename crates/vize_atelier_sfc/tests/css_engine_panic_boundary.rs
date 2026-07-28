@@ -181,3 +181,37 @@ fn parse_css_ast_keeps_accepting_resolvable_math_functions() {
         );
     }
 }
+
+/// The css_parse fuzz artifact from #3303 (run 30335797526, found on
+/// 4d619ee70 before the engine boundary landed): 1045 bytes of mangled
+/// stylesheet that drives a non-finite hue into the upstream
+/// `hsl_to_rgb` `debug_assert` — a plain finite negative hue like
+/// `hsla(-842 ...)` normalizes fine, so the trigger hides in the mangled
+/// body. With the boundary in place the parse must survive in every profile;
+/// the exact result stays profile-dependent because the panic is an upstream
+/// `debug_assert`.
+#[test]
+fn parse_css_ast_survives_the_hue_assert_artifact() {
+    const ARTIFACT: &str = "\n.t {\n  \n.comglsdhriight {\n  --code;\n  box-shadow: inset 0 \u{11}U\u{7}\u{0}\u{0}\u{0}.primeighlio\n\u{4}UUUUurlh255p\u{1}\u{0}\u{0}\u{0}\u{0}52:, .(255p\u{1}\u{0}\u{0}\u{0}\u{0}\u{0}2rad, 2primeighlig\n\u{4}UUUUUU hsla(-842 5 2\n\u{4}UUUUhsl, 2\n\u{4}UUUUUUU.primeighlig\n\u{4}UUUUUU hsla(-842 5 1\n\u{4}UUUUhsla(-555 52:, 2\n\u{4}UUUUUUUa(-555 52:.l {\n m:\u{4},\nU U2px(-3ody[da\u{0}\u{0}\u{0}B\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}a-them=\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}] .codsohighlight :deUUUUep(.codel\\\\\\fff 2\n\u{4}UUUUhsl, 2\n\u{4}UUUUUUU.primeighlig\n\u{4}UUUUUU hsla(-8555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555542 5 1\n\u{4}UUUUhsla(-555 52:, 2\n\u{4}UUUUprimeighlig\n\u{4}UUUUUU hsla(-842 5 2\n\u{4}UUUUhsl, 2\n\u{4}UUUUUUU.primeighlig\n\u{4}UUUUUU hsla(-842 5 1\n\u{4}UUUUhsla(-555 52:, 2\n\u{4}UUUUUUUa(-555 52:.l {\n m:\u{4},\nU U2px(-3ody[da\u{0}\u{0}\u{0}B\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}a-them=\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}] .codsohighlight :deUUUUep(.codel\\\\\\fff 2\n\u{4}UUUUhsl, 2\n\u{4}UUUUUUU.primeighlig\n\u{4}UUUUUU hsla(-842 5 1\n\u{4}UUUUhsla(-555 52:, 2\n\u{4}UUUUUUUa(-555 52:.l {\n m:\u{4},\nU U2px(-3ody[daUUUa(-555 52:.l {\n m:\u{4},\nU U2px(-3ody[da\u{0}\u{0}\u{0}B\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}a-them=\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}] .codsohighlight :deUUUUep(.codel\\\\\\fff\\ffyininset \u{11}p x0UU cd);\n  or: \u{0}\u{0}0ar(et--\n";
+    let result = parse_css_ast(ARTIFACT, &CssCompileOptions::default());
+    if cfg!(debug_assertions) {
+        assert!(result.ast.is_none());
+        assert_eq!(result.errors, [PARSE_BOUNDARY_ERROR]);
+    } else {
+        assert!(
+            !result
+                .errors
+                .contains(&vize_carton::String::from(PARSE_BOUNDARY_ERROR))
+        );
+    }
+
+    // A plain finite negative hue is not the crasher: hue normalization
+    // handles it, so this must keep parsing cleanly in every profile.
+    let negative_hue = "a{color:hsla(-842 5 2 / 1)}";
+    let negative_hue_result = parse_css_ast(negative_hue, &CssCompileOptions::default());
+    assert!(negative_hue_result.ast.is_some());
+    assert_eq!(
+        negative_hue_result.errors,
+        Vec::<vize_carton::String>::new()
+    );
+}
