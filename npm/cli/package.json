@@ -22,7 +22,8 @@
     "directory": "npm/cli"
   },
   "bin": {
-    "vize": "bin/vize"
+    "vize": "bin/vize",
+    "vz": "bin/vize"
   },
   "files": [
     "bin",
@@ -53,10 +54,11 @@
   },
   "scripts": {
     "build": "vp run --workspace-root generate:rule-types && vp pack",
-    "check": "vp check src vite.config.ts",
-    "check:fix": "vp check --fix src vite.config.ts",
-    "fmt": "vp fmt --write src vite.config.ts",
-    "generate:rule-types": "vp run --workspace-root generate:rule-types"
+    "check": "vp check src tests vite.config.ts",
+    "check:fix": "vp check --fix src tests vite.config.ts",
+    "fmt": "vp fmt --write src tests vite.config.ts",
+    "generate:rule-types": "vp run --workspace-root generate:rule-types",
+    "test": "vp pack && vp test run tests/setup.test.ts"
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",

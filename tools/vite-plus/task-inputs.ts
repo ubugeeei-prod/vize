@@ -72,6 +72,7 @@ export const packedPackages = [
 ] satisfies PackagePath[];
 
 export const testedPackages = [
+  "./npm/cli",
   "./npm/builder/vite",
   "./npm/oxint",
   "./npm/builder/vite-musea",

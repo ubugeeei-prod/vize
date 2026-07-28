@@ -17,6 +17,42 @@ Need `vp` first? Install Vite+ once from the [Vite+ install guide](https://vitep
 
 ## Installation
 
+For an existing Vite or Vite+ project, run the setup command from the project root:
+
+```bash
+vp dlx vize setup
+```
+
+The command:
+
+- installs `vize`, the Vite and Musea plugins, Oxlint, and `oxlint-plugin-vize`;
+- creates `vize.config.ts` and, for plain Vite projects, `oxlint.config.ts` when no supported config
+  already exists;
+- enables the Vize Oxlint preset in the `lint` block of a standard Vite+ config, so `vp lint`
+  checks Vue files;
+- adds non-conflicting `vize:*` package scripts for build, format, lint, check, Musea, and `ready`;
+- replaces a canonical zero-option `@vitejs/plugin-vue` import with `@vizejs/vite-plugin`, then
+  removes the old dependency.
+
+Setup is idempotent. It preserves existing config files and package scripts, and it leaves custom
+Vite plugin calls such as `vue({ ... })` unchanged because those options need a deliberate
+migration. Use `vize setup --no-install` to generate the files and scripts without changing
+dependencies.
+
+After installation, `vz` is a short alias for the same CLI:
+
+```bash
+vz ready src
+```
+
+The remaining work for the full
+[Vize Plus proposal](https://github.com/ubugeeei-prod/vize/issues/3278) is safe merging into existing
+Vize and Vite+ lint/Oxlint configs, option-aware migration of custom or multiple Vite configs, and
+project-specific Musea plugin injection. Those cases are intentionally reported and preserved by
+this first setup slice instead of being rewritten heuristically.
+
+For manual installation:
+
 ```bash
 vp install -D vize
 ```
