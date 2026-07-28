@@ -26,6 +26,14 @@ impl<'a> Parser<'a> {
     }
 
     fn recovery_error_message(&self, code: ErrorCode) -> Option<String> {
+        // `RECOVERED_PARSE_CODES` (vize_relief) is the single source of truth
+        // for which defects the parser recovers from, and patina keys its
+        // analysis gating off the same classification (#3294). Consulting it
+        // here means the message table below cannot claim a recovery the
+        // classification does not know about.
+        if !code.has_documented_parse_recovery() {
+            return None;
+        }
         match code {
             ErrorCode::EofBeforeTagName => Some(
                 "Unexpected end of input after `<`; treating it as text so parsing can continue."
@@ -95,6 +103,9 @@ impl<'a> Parser<'a> {
             ErrorCode::IncorrectlyOpenedComment => Some(
                 "Declaration or comment syntax is malformed; skipping it until the next `>`.".into(),
             ),
+            // Unreachable in practice: the guard above admits only
+            // `RECOVERED_PARSE_CODES`, and every entry there has an arm above
+            // (pinned by `recovery_messages_and_recovered_parse_classification_agree`).
             _ => None,
         }
     }
@@ -103,35 +114,23 @@ impl<'a> Parser<'a> {
 #[cfg(test)]
 mod tests {
     use vize_carton::Bump;
-    use vize_relief::errors::{CompilerError, ErrorCode};
+    use vize_relief::errors::{CompilerError, ErrorCode, RECOVERED_PARSE_CODES};
 
     use crate::parser::Parser;
 
-    /// `CompilerError::is_recovered_parse` (vize_relief) mirrors the recovery
-    /// messages constructed above; this pin keeps the two crates' lists from
-    /// drifting apart (#3294). When a new recovery message is added above,
-    /// add its code here and to `is_recovered_parse`. `DuplicateAttribute`
-    /// is recovered without a custom message, so it is the one allowed
-    /// asymmetry.
+    /// `CompilerError::is_recovered_parse` (vize_relief) and the recovery
+    /// messages constructed above must describe the same set of defects
+    /// (#3294). Both sides now read the shared `RECOVERED_PARSE_CODES`
+    /// classification rather than keeping their own copies, so this pins every
+    /// classified code to a real message: adding a recovery message means
+    /// adding the code to that list, and adding it to the list without a
+    /// message fails here. `DuplicateAttribute` is recovered without a custom
+    /// message, so it is the one allowed asymmetry.
     #[test]
     fn recovery_messages_and_recovered_parse_classification_agree() {
         let bump = Bump::new();
         let parser = Parser::new(&bump, "");
-        for code in [
-            ErrorCode::EofBeforeTagName,
-            ErrorCode::EofInTag,
-            ErrorCode::EofInComment,
-            ErrorCode::InvalidFirstCharacterOfTagName,
-            ErrorCode::MissingAttributeValue,
-            ErrorCode::MissingDynamicDirectiveArgumentEnd,
-            ErrorCode::MissingInterpolationEnd,
-            ErrorCode::UnexpectedCharacterInAttributeName,
-            ErrorCode::UnexpectedCharacterInUnquotedAttributeValue,
-            ErrorCode::UnexpectedEqualsSignBeforeAttributeName,
-            ErrorCode::MissingWhitespaceBetweenAttributes,
-            ErrorCode::IncorrectlyClosedComment,
-            ErrorCode::IncorrectlyOpenedComment,
-        ] {
+        for &code in RECOVERED_PARSE_CODES {
             assert!(
                 parser.recovery_error_message(code).is_some(),
                 "expected a recovery message for {code:?}"
