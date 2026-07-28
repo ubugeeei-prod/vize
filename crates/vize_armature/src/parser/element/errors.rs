@@ -114,7 +114,7 @@ impl<'a> Parser<'a> {
 #[cfg(test)]
 mod tests {
     use vize_carton::Bump;
-    use vize_relief::errors::{CompilerError, ErrorCode, RECOVERED_PARSE_CODES};
+    use vize_relief::errors::{CompilerError, ErrorCode, recovery::RECOVERED_PARSE_CODES};
 
     use crate::parser::Parser;
 
