@@ -117,7 +117,7 @@ function assertRangesWithinDocument(
 ): void {
   const lines = source.split("\n");
   for (const diagnostic of diagnostics) {
-    const label = `[${diagnostic.code}] ${diagnostic.message}`;
+    const label = `[${String(diagnostic.code)}] ${diagnostic.message}`;
     assert.ok(
       diagnostic.range.start.line < lines.length,
       `start line ${diagnostic.range.start.line} is past EOF (${lines.length} lines): ${label}`,
