@@ -29,7 +29,10 @@
 //! Member-level decorators are interpreted as follows:
 //!
 //! - `@Prop`-style decorators (`@Prop`/`@PropSync`/`@Model`/`@VModel`) map a
-//!   field/accessor to a prop binding (see #1431).
+//!   field/accessor to a prop binding (see #1431). A plain `@Prop` additionally
+//!   records a declared prop contract (name / type / required / default) so
+//!   parent templates get the same usage-site checks a `defineProps` component
+//!   gets — see `class_component_props` (#3298).
 //! - `@Emit('name')` on a method declares an emitted event, mirroring an
 //!   Options API `emits` entry / a `defineEmits` declaration: the event name
 //!   defaults to the method name kebab-cased when no string argument is given.
@@ -56,6 +59,7 @@ use vize_carton::{CompactString, FxHashMap, hyphenate};
 use vize_relief::BindingType;
 
 use super::super::ScriptParseResult;
+use super::class_component_props::collect_prop_decorator;
 use super::options_api::{
     add_template_binding, collect_component_registrations_from_options,
     collect_options_api_template_bindings_from_options, normalize_template_binding_name,
@@ -111,6 +115,7 @@ pub(super) fn collect_class_component_metadata<'a>(
     class: &'a Class<'a>,
     object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
     legacy_vue2: bool,
+    source: &str,
 ) {
     result.component_shape = ComponentShape::ClassApi;
 
@@ -150,6 +155,14 @@ pub(super) fn collect_class_component_metadata<'a>(
                 if property.r#static || property.computed || property.declare {
                     continue;
                 }
+                collect_prop_decorator(
+                    result,
+                    &property.key,
+                    &property.decorators,
+                    property.type_annotation.as_deref(),
+                    property.optional,
+                    source,
+                );
                 add_class_member_binding(
                     result,
                     &property.key,
@@ -160,6 +173,14 @@ pub(super) fn collect_class_component_metadata<'a>(
                 if accessor.r#static || accessor.computed {
                     continue;
                 }
+                collect_prop_decorator(
+                    result,
+                    &accessor.key,
+                    &accessor.decorators,
+                    accessor.type_annotation.as_deref(),
+                    false,
+                    source,
+                );
                 add_class_member_binding(
                     result,
                     &accessor.key,

@@ -54,6 +54,7 @@ pub(in crate::script_parser) fn collect_options_api_component_metadata(
                 class,
                 &object_bindings,
                 legacy_vue2,
+                source,
             );
             continue;
         }

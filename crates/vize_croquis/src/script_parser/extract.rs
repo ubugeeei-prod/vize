@@ -26,6 +26,9 @@ pub use plain_values::{
     check_ref_value_extraction, detect_call_argument_reactivity_loss,
     record_getter_context_from_call,
 };
+pub(in crate::script_parser) use props::{
+    detect_required_prop, extract_runtime_prop_default, extract_runtime_prop_type,
+};
 pub(in crate::script_parser) use provide::extract_inject_expected_type_from_init;
 pub use provide::{detect_provide_inject_call, extract_argument_source, extract_provide_key};
 pub use race::detect_race_condition_call;

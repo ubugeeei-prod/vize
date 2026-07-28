@@ -91,17 +91,93 @@ test("class-component @Prop usage typo breaks and repairs over didChange", async
   }
 });
 
-// Known gap (found while adding this oracle): usage-site prop contracts of
-// class components are not enforced. Renaming the attribute in App.vue
-// (`<HelloDecorator nme="World" />`, dropping the required `@Prop` `name`) and
-// binding a mismatched type (`<HelloDecorator :name="123" />`) both pass
-// `vize check` and publish no LSP diagnostics, while the member typo above is
-// caught. Assert the missing-required-prop and prop-type-mismatch diagnostics
-// here once class-component props feed the usage-site checker.
-test("class-component usage sites enforce @Prop contracts", {
-  skip:
-    "vize accepts a missing required @Prop and a mismatched @Prop binding on " +
-    "<HelloDecorator> without diagnostics in both vize check and vize lsp",
+// Usage-site `@Prop` contracts (#3298; the gap this oracle originally
+// documented as skipped). A `@Prop`-decorated member is a declared prop, so a
+// parent gets the same two diagnostics a `defineProps` child produces:
+//
+//   - dropping the required prop (`<HelloDecorator nme="World" />`) is a
+//     `component-required-props` error on the tag name, and
+//   - binding a mismatched type (`<HelloDecorator :name="123" />`) is a TS2322
+//     on the attribute name.
+//
+// Both are asserted through the same didOpen-clean -> didChange-broken ->
+// didChange-repaired cycle as the member typo above, so a stale contract cached
+// across edits would fail here too.
+const cleanUsage = '<HelloDecorator name="World" />';
+const brokenUsage =
+  '<HelloDecorator nme="World" />\n    <HelloDecorator :name="123" />';
+
+const missingRequiredPropDiagnostic = {
+  range: {
+    start: { line: 19, character: 5 },
+    end: { line: 19, character: 19 },
+  },
+  severity: 1,
+  code: "component-required-props",
+  codeDescription: {
+    href: "https://vuejs.org/guide/components/props.html#prop-validation",
+  },
+  source: "vize/components",
+  message:
+    "<HelloDecorator> is missing required prop: `name`\n\nPass the prop in this " +
+    "template usage, or make it optional/provide a default in the child component.",
+};
+
+const propTypeMismatchDiagnostic = {
+  range: {
+    start: { line: 20, character: 21 },
+    end: { line: 20, character: 25 },
+  },
+  severity: 1,
+  code: 2322,
+  source: "vize/types",
+  message: "Type 'number' is not assignable to type 'string'.",
+};
+
+test("class-component usage sites enforce @Prop contracts", async () => {
+  const corsaPath = resolveTsgoBinary();
+  const workspaceDir = createWorkspace(corsaPath);
+  const appPath = path.join(workspaceDir, "src/App.vue");
+  const appUri = pathToFileURL(appPath).href;
+  const cleanSource = fs.readFileSync(appPath, "utf8");
+  const brokenSource = applyExactEdit(cleanSource, cleanUsage, brokenUsage);
+
+  const session = new LspSession();
+  try {
+    await session.initialize(workspaceDir, { editor: true, lint: false, typecheck: true });
+
+    session.notify("textDocument/didOpen", {
+      textDocument: { uri: appUri, languageId: "vue", version: 1, text: cleanSource },
+    });
+    assert.deepEqual(await waitForDiagnostics(session, appUri, 1), {
+      diagnostics: [],
+      uri: appUri,
+      version: 1,
+    });
+
+    session.notify("textDocument/didChange", {
+      textDocument: { uri: appUri, version: 2 },
+      contentChanges: [{ text: brokenSource }],
+    });
+    assert.deepEqual(await waitForDiagnostics(session, appUri, 2), {
+      diagnostics: [missingRequiredPropDiagnostic, propTypeMismatchDiagnostic],
+      uri: appUri,
+      version: 2,
+    });
+
+    session.notify("textDocument/didChange", {
+      textDocument: { uri: appUri, version: 3 },
+      contentChanges: [{ text: cleanSource }],
+    });
+    assert.deepEqual(await waitForDiagnostics(session, appUri, 3), {
+      diagnostics: [],
+      uri: appUri,
+      version: 3,
+    });
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+  }
 });
 
 async function waitForDiagnostics(

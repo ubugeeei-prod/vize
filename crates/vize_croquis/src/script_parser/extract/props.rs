@@ -161,7 +161,7 @@ pub(super) fn runtime_object_property_name<'a>(key: &'a PropertyKey<'a>) -> Opti
     }
 }
 
-pub(super) fn extract_runtime_prop_type(
+pub(in crate::script_parser) fn extract_runtime_prop_type(
     value: &Expression<'_>,
     source: &str,
 ) -> Option<CompactString> {
@@ -259,7 +259,7 @@ fn extract_runtime_prop_type_from_array_element(
     }
 }
 
-pub(super) fn extract_runtime_prop_default(
+pub(in crate::script_parser) fn extract_runtime_prop_default(
     value: &Expression<'_>,
     source: &str,
 ) -> Option<CompactString> {
@@ -298,7 +298,7 @@ fn runtime_ctor_type(name: &str) -> Option<&'static str> {
 }
 
 /// Detect if a prop has required: true
-pub(super) fn detect_required_prop(value: &Expression<'_>) -> bool {
+pub(in crate::script_parser) fn detect_required_prop(value: &Expression<'_>) -> bool {
     if let Expression::ObjectExpression(obj) = value {
         for prop in obj.properties.iter() {
             if let ObjectPropertyKind::ObjectProperty(p) = prop
