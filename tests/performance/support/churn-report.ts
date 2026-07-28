@@ -26,11 +26,7 @@ export type ChurnReportData = {
  * Writes the churn `metrics.json` and `summary.md` artifacts that CI uploads
  * and appends to the step summary, mirroring the incremental-suite artifacts.
  */
-export function writeChurnArtifacts(
-  outputDir: string,
-  title: string,
-  data: ChurnReportData,
-): void {
+export function writeChurnArtifacts(outputDir: string, title: string, data: ChurnReportData): void {
   fs.mkdirSync(outputDir, { recursive: true });
   fs.writeFileSync(path.join(outputDir, "metrics.json"), `${JSON.stringify(data, null, 2)}\n`);
   fs.writeFileSync(path.join(outputDir, "summary.md"), renderMarkdown(title, data));
