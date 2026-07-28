@@ -53,6 +53,8 @@ const assertionOnlyCheckTests = {
     "legacy project patch oracle asserts Vue 2 slot-scope and filter typecheck behavior",
   "vue-element-admin-legacy-lsp-oracle":
     "legacy LSP oracle asserts exact Vue 2 template diagnostics and CLI agreement per version",
+  "vue-element-admin-unmapped-diagnostic-oracle":
+    "unmapped-diagnostic oracle asserts every published range stays addressable in the document",
   directus: "real-world smoke lane is too large for a deterministic complete baseline",
   "element-plus": "real-world smoke lane is too large for a deterministic complete baseline",
   "frontend-phpcon": "real-world smoke lane is too large for a deterministic complete baseline",
