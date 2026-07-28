@@ -16,8 +16,8 @@ import {
   REQUIRED_DEV_DEPENDENCIES,
   VIZE_CONFIG_FILES,
   type PlannedFile,
-} from "./setup/config.ts";
-import { planViteMigration } from "./setup/vite.ts";
+} from "./setup/config.js";
+import { planViteMigration } from "./setup/vite.js";
 
 export interface SetupCommand {
   readonly command: string;
@@ -41,6 +41,7 @@ export interface SetupOptions {
   readonly root: string;
   readonly install?: boolean;
   readonly runCommand?: (command: SetupCommand) => void;
+  readonly writeFile?: (filename: string, source: string) => void;
 }
 
 export function setupProject(options: SetupOptions): SetupResult {
@@ -79,14 +80,14 @@ export function setupProject(options: SetupOptions): SetupResult {
   }
   if (
     viteMigration.usesVitePlus &&
-    !viteMigration.enablesVitePlusLint &&
+    !viteMigration.hasVitePlusLint &&
     existingOxlintConfig === undefined
   ) {
     preservedFiles.push("Vite+ lint configuration");
   }
   if (existingOxlintConfig) {
     preservedFiles.push(existingOxlintConfig);
-  } else if (!viteMigration.enablesVitePlusLint && !viteMigration.usesVitePlus) {
+  } else if (!viteMigration.hasVitePlusLint && !viteMigration.usesVitePlus) {
     planGeneratedConfig(
       root,
       OXLINT_CONFIG_FILES,
@@ -105,9 +106,7 @@ export function setupProject(options: SetupOptions): SetupResult {
       source: `${JSON.stringify(packageJson, null, packageIndent)}\n`,
     });
   }
-  for (const file of plannedFiles) {
-    atomicWriteFile(file.filename, file.source);
-  }
+  writePlannedFiles(root, plannedFiles, options.writeFile ?? atomicWriteFile);
 
   const runCommand = options.runCommand ?? runSetupCommand;
   let installCommand: SetupCommand | null = null;
@@ -240,4 +239,27 @@ function runSetupCommand(command: SetupCommand): void {
     cwd: command.cwd,
     stdio: "inherit",
   });
+}
+
+function writePlannedFiles(
+  root: string,
+  plannedFiles: readonly PlannedFile[],
+  writeFile: (filename: string, source: string) => void,
+): void {
+  const writtenFiles: string[] = [];
+  for (const file of plannedFiles) {
+    try {
+      writeFile(file.filename, file.source);
+    } catch (error) {
+      if (writtenFiles.length === 0) {
+        throw error;
+      }
+      const failedFile = path.relative(root, file.filename);
+      throw new Error(
+        `Setup partially completed: wrote ${writtenFiles.join(", ")} before ${failedFile} failed. Run setup again to finish.`,
+        { cause: error },
+      );
+    }
+    writtenFiles.push(path.relative(root, file.filename));
+  }
 }

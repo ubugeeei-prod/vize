@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 
-import { runSetupCli } from "./setup.ts";
+import { runSetupCli } from "./setup.js";
 
 const require = createRequire(import.meta.url);
 

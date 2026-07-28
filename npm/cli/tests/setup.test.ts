@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -133,6 +133,7 @@ export default defineConfig({
 
     assert.deepEqual(second.createdFiles, []);
     assert.equal(second.migratedViteConfig, null);
+    assert.equal(second.enabledVitePlusLint, false);
     for (const [filename, source] of firstSources) {
       assert.equal(read(root, filename), source, `${filename} changed on the second setup`);
     }
@@ -202,6 +203,35 @@ test("does not write any setup file when package.json is invalid", () => {
   }
 });
 
+test("reports files written before a later atomic write fails", () => {
+  const root = temporaryProject("partial-write");
+  try {
+    write(root, "package.json", `{"name":"partial-write-fixture","private":true}\n`);
+    let writes = 0;
+
+    assert.throws(
+      () =>
+        setupProject({
+          root,
+          install: false,
+          writeFile(filename, source) {
+            writes += 1;
+            if (writes === 2) {
+              throw new Error("simulated disk failure");
+            }
+            fs.writeFileSync(filename, source);
+          },
+        }),
+      /Setup partially completed: wrote vize\.config\.ts before oxlint\.config\.ts failed/u,
+    );
+    assert.ok(fs.existsSync(path.join(root, "vize.config.ts")));
+    assert.equal(fs.existsSync(path.join(root, "oxlint.config.ts")), false);
+    assert.deepEqual(packageJson(root), { name: "partial-write-fixture", private: true });
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("preserves an existing Vite+ lint block without creating a second config", () => {
   const root = temporaryProject("vite-plus-lint");
   try {
@@ -224,6 +254,49 @@ export default defineConfig({
 
     assert.equal(read(root, "vite.config.ts"), viteConfig);
     assert.equal(fs.existsSync(path.join(root, "oxlint.config.ts")), false);
+    assert.equal(result.enabledVitePlusLint, false);
+    assert.ok(result.preservedFiles.includes("Vite+ lint configuration"));
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("does not mistake an oxlint plugin comment in plain Vite for a working config", () => {
+  const root = temporaryProject("plain-vite-comment");
+  try {
+    write(root, "package.json", `{"name":"plain-vite-fixture","private":true}\n`);
+    const viteConfig = `import { defineConfig } from "vite";
+
+// oxlint-plugin-vize should be configured separately in a plain Vite project.
+export default defineConfig({});
+`;
+    write(root, "vite.config.ts", viteConfig);
+
+    const result = setupProject({ root, install: false });
+
+    assert.equal(read(root, "vite.config.ts"), viteConfig);
+    assert.equal(result.enabledVitePlusLint, false);
+    assert.match(read(root, "oxlint.config.ts"), /from "oxlint-plugin-vize"/u);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("preserves multiline Vite+ imports when lint injection has no safe anchor", () => {
+  const root = temporaryProject("multiline-import");
+  try {
+    write(root, "package.json", `{"name":"multiline-import-fixture","private":true}\n`);
+    const viteConfig = `import {
+  defineConfig,
+} from "vite-plus";
+
+export default defineConfig({});
+`;
+    write(root, "vite.config.ts", viteConfig);
+
+    const result = setupProject({ root, install: false });
+
+    assert.equal(read(root, "vite.config.ts"), viteConfig);
     assert.equal(result.enabledVitePlusLint, false);
     assert.ok(result.preservedFiles.includes("Vite+ lint configuration"));
   } finally {
@@ -256,6 +329,12 @@ export default { plugins: [vuePlugin()] }
     assert.ok(fs.existsSync(path.join(root, "oxlint.config.ts")));
     const scripts = packageJson(root).scripts as Record<string, string>;
     assert.equal(scripts["vize:ready"], "vize ready src");
+
+    const invalid = spawnSync(process.execPath, [cli, "setup", root, "--bogus"], {
+      encoding: "utf8",
+    });
+    assert.notEqual(invalid.status, 0);
+    assert.match(invalid.stderr, /\[vize\] Unknown setup option: --bogus/u);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });
   }
