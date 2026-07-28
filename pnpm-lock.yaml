@@ -209,13 +209,14 @@ overrides:
   '@azure/msal-node>uuid': 11.1.1
   '@hono/node-server': 2.0.11
   '@unhead/vue': 2.1.15
-  brace-expansion@2: 5.0.8
+  brace-expansion@2: 2.1.2
   brace-expansion@>=5.0.0 <5.0.8: 5.0.8
   defu: 6.1.7
   devalue: 5.8.1
   dompurify: 3.4.11
   esbuild: 0.28.1
   fast-uri: 3.1.4
+  glob>minimatch: 10.2.5
   h3: 1.15.11
   hono: 4.12.31
   launch-editor: 2.14.1
@@ -225,11 +226,12 @@ overrides:
   postcss@>=8.0.0 <8.5.18: 8.5.18
   nuxt: 4.4.8
   qs: 6.15.2
+  readdir-glob>minimatch: 10.2.5
   shell-quote: 1.9.0
   simple-git: 3.36.0
   srvx: 0.11.15
   svgo: 4.0.2
-  tar@>=7.0.0 <7.5.21: 7.5.21
+  tar: 7.5.21
   vite@>=7.0.0 <7.3.5: 7.3.5
   yaml: 2.9.0
 
@@ -5673,24 +5675,28 @@ packages:
     engines: {node: '>=22'}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@vizejs/native-linux-arm64-musl@0.108.0':
     resolution: {integrity: sha512-JOVDlCOeldXoO/APhKeeRcl1E/e/gLhgdVRgCbr9SR5mP5swMkwwzxKDwhvYNW9I0atTexY6bHSfe6ReubaueQ==}
     engines: {node: '>=22'}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@vizejs/native-linux-x64-gnu@0.108.0':
     resolution: {integrity: sha512-GFYZBnZDNYtyj2cumqmTbmwxuglfd8LriyJZIdSy2q4TUxXq8Zhx/BFvCNYTrJckllS2O6cT40FDJVZDSLwnYg==}
     engines: {node: '>=22'}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@vizejs/native-linux-x64-musl@0.108.0':
     resolution: {integrity: sha512-tvcK0tN44mofFbK9LRpmcDRxC7dZCSJ4FwOgv1g6Fw4o4wLujob3zChRyBgoxVPcdBhZZcu3kxAgTUX9W8aGCQ==}
     engines: {node: '>=22'}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@vizejs/native-win32-arm64-msvc@0.108.0':
     resolution: {integrity: sha512-bfnO4X6FngO3O6EPPk3lVi6+oqE/jaizSaFj6LaoiUc83U/47lxVdgYWF1RSVhfGXt9wzJN4dfCFCvzUOG7T7Q==}
@@ -6360,6 +6366,9 @@ packages:
   bail@2.0.2:
     resolution: {integrity: sha512-0xO6mYd7JB2YesxDKplafRpsiOzPt9V02ddPCLbY1xYGPOX24NTyN50qnUxgCPcSoYMhKpAuBTjQoRZCAkUDRw==}
 
+  balanced-match@1.0.2:
+    resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
+
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
@@ -6435,6 +6444,9 @@ packages:
 
   boolbase@1.0.0:
     resolution: {integrity: sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==}
+
+  brace-expansion@2.1.2:
+    resolution: {integrity: sha512-w5JZcKgdhDOgOwm8H+KgbosopHMuGcl6qbulwjtz3SM7I7P3yW1eAjzMPLrIE+NQ9vjgANKHWeMHnrT0OXW1oA==}
 
   brace-expansion@5.0.8:
     resolution: {integrity: sha512-JZyDyq3D4AUifKTPOB7DELf6XsB3WdPuNxCtob1vFXPsSXhdAiHBWJ/tJ8HAc9aH84BK+5JFZLNkJKx3G9kzQg==}
@@ -8366,10 +8378,6 @@ packages:
   minimatch@10.2.5:
     resolution: {integrity: sha512-MULkVLfKGYDFYejP07QOurDLLQpcjk7Fw+7jXS2R2czRQzR56yHRveU5NDJEOviH+hETZKSkIk5c+T23GjFUMg==}
     engines: {node: 18 || 20 || >=22}
-
-  minimatch@5.1.9:
-    resolution: {integrity: sha512-7o1wEA2RyMP7Iu7GNba9vc0RWWGACJOCZBJX2GJWip0ikV+wcOsgVuY9uE8CPiyQhkGFSlhuSkZPavN7u1c2Fw==}
-    engines: {node: '>=10'}
 
   minimatch@9.0.9:
     resolution: {integrity: sha512-OBwBN9AL4dqmETlpS2zasx+vTeWclWzkblfZk7KTA5j3jeOONz/tRCnZomUyvNg83wL5Zv9Ss6HMJXAgL8R2Yg==}
@@ -15627,6 +15635,8 @@ snapshots:
 
   bail@2.0.2: {}
 
+  balanced-match@1.0.2: {}
+
   balanced-match@4.0.4: {}
 
   bare-events@2.8.3: {}
@@ -15692,6 +15702,10 @@ snapshots:
       - supports-color
 
   boolbase@1.0.0: {}
+
+  brace-expansion@2.1.2:
+    dependencies:
+      balanced-match: 1.0.2
 
   brace-expansion@5.0.8:
     dependencies:
@@ -16959,7 +16973,7 @@ snapshots:
     dependencies:
       foreground-child: 3.3.1
       jackspeak: 3.4.3
-      minimatch: 9.0.9
+      minimatch: 10.2.5
       minipass: 7.1.3
       package-json-from-dist: 1.0.1
       path-scurry: 1.11.1
@@ -17687,13 +17701,9 @@ snapshots:
     dependencies:
       brace-expansion: 5.0.8
 
-  minimatch@5.1.9:
-    dependencies:
-      brace-expansion: 5.0.8
-
   minimatch@9.0.9:
     dependencies:
-      brace-expansion: 5.0.8
+      brace-expansion: 2.1.2
 
   minimist@1.2.8: {}
 
@@ -18937,7 +18947,7 @@ snapshots:
 
   readdir-glob@1.1.3:
     dependencies:
-      minimatch: 5.1.9
+      minimatch: 10.2.5
 
   readdirp@3.6.0:
     dependencies:
