@@ -6,6 +6,15 @@
 
 use std::path::{Path, PathBuf};
 
+/// Config file names in precedence order for directory auto-discovery.
+pub(super) const CONFIG_FILE_NAMES: [&str; 5] = [
+    "vize.config.pkl",
+    "vize.config.ts",
+    "vize.config.js",
+    "vize.config.mjs",
+    "vize.config.json",
+];
+
 /// Return a direct config file path when the user supplied a file.
 pub(super) fn resolve_file_path(base: &Path) -> Option<PathBuf> {
     if base.is_file() {

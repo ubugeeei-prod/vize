@@ -20,7 +20,7 @@ mod vapor;
 
 use std::path::{Path, PathBuf};
 
-use discovery::{resolve_dir_path, resolve_file_path};
+use discovery::{CONFIG_FILE_NAMES, resolve_dir_path, resolve_file_path};
 use parse::{parse_raw_config_file, try_parse_raw_candidate};
 
 use super::model::{
@@ -30,14 +30,6 @@ use super::model::{
 
 pub use lint_features::load_config_and_linter_with_lint_features_and_source;
 pub use vapor::load_compiler_vapor;
-
-const CONFIG_FILE_NAMES: [&str; 5] = [
-    "vize.config.pkl",
-    "vize.config.ts",
-    "vize.config.js",
-    "vize.config.mjs",
-    "vize.config.json",
-];
 
 #[derive(Debug, Clone)]
 pub struct LoadedConfig {
