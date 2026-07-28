@@ -19,10 +19,20 @@ pub(super) fn skip_template_interpolation(
     let original_last_newline = *last_newline;
     let body_start = pos + 2;
 
+    // Every way out of this scan needs a literal `}}` ahead — the delimiter
+    // arm requires adjacent `}` bytes at depth zero and the malformed-string
+    // recovery searches for one — so its absence proves the interpolation
+    // cannot close. Returning before the JS recovery loop keeps a run of
+    // unclosed `{{` linear instead of re-walking the rest of the source per
+    // occurrence through the string/regex machinery (#3275).
+    let Some(close_offset) = memmem::find(&bytes[body_start..], b"}}") else {
+        return None;
+    };
+
     // Most interpolations are identifiers or simple expressions. Accept the
     // first delimiter immediately when no token before it can hide `}}`; this
     // keeps the common path on SIMD searches instead of the JS recovery loop.
-    if let Some(close_offset) = memmem::find(&bytes[body_start..], b"}}") {
+    {
         let close_start = body_start + close_offset;
         let body = &bytes[body_start..close_start];
         if memchr3(b'\'', b'"', b'`', body).is_none() && memchr2(b'/', b'{', body).is_none() {

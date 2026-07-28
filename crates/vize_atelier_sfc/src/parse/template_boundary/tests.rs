@@ -155,3 +155,82 @@ fn unclosed_interpolation_keeps_the_root_boundary_visible() {
     assert!(template.content.contains("{{ unclosed"));
     assert_eq!(result.styles.len(), 1);
 }
+
+#[test]
+fn later_interpolations_survive_an_unclosed_scan_that_consumed_delimiters() {
+    // The first `{{` never closes, but its JS scan walks over a `}}` that
+    // brace depth consumes, so raw delimiters do exist ahead. The linear-scan
+    // shortcut for exhausted delimiters (#3275) must not latch here: the later
+    // `{{ '</template>' }}` still has to be recognized as an interpolation, or
+    // the quoted closing tag would end the root template early.
+    let source = concat!(
+        "<template><p>{{ { }} {{ '</template>' }}</p><i>after</i></template>",
+        "<style>.ok {}</style>"
+    );
+    let result = parse_sfc(source, Default::default())
+        .expect("unclosed interpolation must not become a boundary error");
+
+    let template = result.template.expect("root template must be preserved");
+    assert!(
+        template.content.contains("'</template>'"),
+        "content: {}",
+        template.content
+    );
+    assert!(template.content.contains("after"));
+    assert_eq!(result.styles.len(), 1);
+}
+
+#[test]
+fn unclosed_interpolation_runs_scan_linearly() {
+    // Fuzz slow units #3275 (runs 30073026409): 45KB with 1162 `{{` against
+    // 44 `}}` made every unclosed `{{` re-walk the rest of the source through
+    // the JS string/regex machinery, one full pass per occurrence. Once no
+    // literal `}}` remains ahead the scan is provably unable to close, so the
+    // boundary scanner skips the JS loop for every later `{{`. This canary is
+    // quadratic-in-the-loop without that shortcut (tens of seconds in a debug
+    // build) and linear with it; the generous bound only guards the class.
+    let mut source = String::from("<template><div>");
+    for _ in 0..6000 {
+        source.push_str("{{a ");
+    }
+    source.push_str("</div></template>\n<style>.ok {}</style>");
+
+    let started = std::time::Instant::now();
+    let result = parse_sfc(&source, Default::default())
+        .expect("an interpolation-dense template must still parse");
+    let template = result.template.expect("root template must be preserved");
+    assert!(template.content.contains("{{a"));
+    assert_eq!(result.styles.len(), 1);
+    assert!(
+        started.elapsed() < std::time::Duration::from_secs(5),
+        "boundary scan took {:?}; the unclosed-interpolation shortcut regressed",
+        started.elapsed()
+    );
+}
+
+#[test]
+fn unclosed_interpolation_run_with_a_hidden_delimiter_stays_bounded() {
+    // Variant of the #3275 shape where a late raw `}}` survives (here inside
+    // the style block), so the no-delimiter-ahead shortcut never fires. Every
+    // unclosed `{{` would re-enter the JS scanner and walk the tail; the
+    // failed-scan budget caps the walks while the root boundary and the style
+    // block still parse exactly as before.
+    let mut source = String::from("<template><div>");
+    for _ in 0..6000 {
+        source.push_str("{{a ");
+    }
+    source.push_str("</div></template>\n<style>.ok {}}</style>");
+
+    let started = std::time::Instant::now();
+    let result = parse_sfc(&source, Default::default())
+        .expect("an interpolation-dense template must still parse");
+    let template = result.template.expect("root template must be preserved");
+    assert!(template.content.contains("{{a"));
+    assert_eq!(result.styles.len(), 1);
+    assert!(result.styles[0].content.contains(".ok"));
+    assert!(
+        started.elapsed() < std::time::Duration::from_secs(5),
+        "boundary scan took {:?}; the failed-interpolation-scan budget regressed",
+        started.elapsed()
+    );
+}
