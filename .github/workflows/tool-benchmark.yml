@@ -101,6 +101,7 @@ jobs:
               - '!.github/workflows/release*.yml'
               - '!.github/workflows/title-policy.yml'
               - '!bench/check-gate.mjs'
+              - '!bench/check-gate-env.mjs'
               - '!bench/check-gate-plants.mjs'
               - '!bench/check-gate-report.mjs'
               - '!editors/**'

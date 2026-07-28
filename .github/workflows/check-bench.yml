@@ -29,6 +29,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - bench/check-gate.mjs
+      - bench/check-gate-env.mjs
       - bench/check-gate-plants.mjs
       - bench/check-gate-report.mjs
       - .github/workflows/check-bench.yml
