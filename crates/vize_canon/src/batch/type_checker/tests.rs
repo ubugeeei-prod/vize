@@ -1,5 +1,6 @@
 use super::{BatchTypeChecker, DeclarationEmitOptions};
 use crate::batch::TypeChecker;
+use crate::batch::runtime_deps::VUE_RUNTIME_DOM_STUB_TYPES;
 use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
 use corsa::{
     api::{ApiMode, ApiSpawnConfig, ProjectSession},
@@ -2325,132 +2326,7 @@ fn write_test_vue_runtime_dom_stub(target: &Path) -> std::io::Result<()> {
     )?;
     std::fs::write(
         runtime_dom_dir.join("index.d.ts"),
-        r#"export interface ComponentPublicInstance<Props = {}> {
-  $props: Props;
-  $attrs: { [key: string]: unknown };
-  $slots: { [key: string]: unknown };
-  $refs: { [key: string]: unknown };
-  $emit: (...args: any[]) => void;
-}
-
-export type DefineComponent<
-  Props = {},
-  RawBindings = {},
-  D = {},
-  C = {},
-  M = {},
-  Mixin = {},
-  Extends = {},
-  E = {},
-  EE = string,
-  PP = Props,
-  PropsDefaults = {},
-  MakeDefaultsOptional = true,
-  Options = {},
-  S = {}
-> = {
-  new (): ComponentPublicInstance<Props>;
-} & ComponentOptions<Props, RawBindings, D, C, M>;
-
-export type ComponentOptions<
-  Props = {},
-  RawBindings = any,
-  D = any,
-  C = any,
-  M = any
-> = {
-  name?: string;
-  __name?: string;
-  __file?: string;
-  __vccOpts?: any;
-  props?: any;
-  emits?: any;
-  slots?: any;
-  setup?: any;
-  render?: Function;
-  components?: any;
-  directives?: any;
-  inheritAttrs?: boolean;
-  compatConfig?: any;
-  call?: (this: unknown, ...args: unknown[]) => never;
-  __isFragment?: never;
-  __isTeleport?: never;
-  __isSuspense?: never;
-  __defaults?: any;
-  __vapor?: boolean;
-  __multiRoot?: boolean;
-  __isKeepAlive?: boolean;
-  __isBuiltIn?: boolean;
-};
-
-export interface FunctionalComponent<
-  P = {},
-  E = {},
-  S = any
-> {
-  (props: P, ctx: any): any;
-  props?: any;
-  emits?: any;
-  slots?: any;
-  inheritAttrs?: boolean;
-  displayName?: string;
-  compatConfig?: any;
-}
-
-export type ConcreteComponent<
-  Props = {},
-  RawBindings = any,
-  D = any,
-  C = any,
-  M = any,
-  E = {},
-  S = any
-> = ComponentOptions<Props, RawBindings, D, C, M> | FunctionalComponent<Props, E, S>;
-
-export interface Ref<T = unknown, _Raw = T> {
-  value: T;
-}
-
-export interface ComputedRef<T = unknown> extends Ref<T> {
-  readonly value: T;
-}
-
-export interface WritableComputedRef<T = unknown> extends Ref<T> {
-  value: T;
-}
-
-export interface ShallowRef<T = unknown, _Raw = T> extends Ref<T, _Raw> {
-  readonly __v_isShallow?: true;
-}
-
-export type InjectionKey<T> = symbol & { readonly __v_vlsInjection?: T };
-export type PropType<T> = { new (...args: any[]): T & {} } | { (): T } | null;
-
-export declare const Transition: DefineComponent;
-export declare function defineComponent(options: any): DefineComponent;
-export declare function defineAsyncComponent(source: any): DefineComponent;
-export declare function defineProps<T = {}>(): T;
-export declare function computed<T>(getter: () => T): ComputedRef<T>;
-export declare function computed<T>(options: { get: () => T; set: (value: T) => void }): WritableComputedRef<T>;
-export declare function ref<T>(value: T): Ref<T>;
-export declare function reactive<T extends object>(target: T): T;
-export declare function shallowRef<T>(value: T): ShallowRef<T>;
-export declare function toRef<T extends object, K extends keyof T>(object: T, key: K): Ref<T[K]>;
-export declare function useTemplateRef<T = unknown>(key: string): ShallowRef<T | null>;
-export declare function useId(): string;
-export declare function watch<T>(source: T, callback: (...args: any[]) => void, options?: any): void;
-export declare function watchEffect(effect: (onCleanup: (cleanupFn: () => void) => void) => void): void;
-export declare function onMounted(callback: () => void): void;
-export declare function customRef<T>(factory: any): Ref<T>;
-export declare function provide<T>(key: InjectionKey<T> | string | symbol, value: T): void;
-export declare function inject<T>(key: InjectionKey<T> | string | symbol): T | undefined;
-export declare function inject<T>(key: InjectionKey<T> | string | symbol, defaultValue: T): T;
-export declare function markRaw<T extends object>(value: T): T;
-export declare function createApp(root: any): {
-  config: { globalProperties: { [key: string]: any }; };
-  mount(container: string | Element): ComponentPublicInstance; unmount(): void; use(plugin: any, ...options: any[]): any;
-};
-"#,
+        VUE_RUNTIME_DOM_STUB_TYPES,
     )?;
     Ok(())
 }

@@ -12,6 +12,7 @@ mod dynamic_component_names_tests;
 mod expressions;
 mod generator;
 mod helpers;
+mod import_meta;
 pub mod incremental;
 #[cfg(test)]
 mod interface_extends_tests;

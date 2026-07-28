@@ -34,6 +34,8 @@ const assertionOnlyCheckTests = {
     "library patch oracle asserts generic store inference and dependency refresh behavior",
   "typescript-project-references-oracle":
     "solution tsconfig oracle asserts referenced-project CLI and LSP diagnostic parity",
+  "vue-benchmarks-correctness-plants":
+    "upstream benchmark plants assert exact clean, broken, repaired, and vue-tsc parity",
   "vue-router-patch-oracle":
     "library patch oracle asserts exact package-resolution behavior across document versions",
   "vue-router-dmts-oracle":

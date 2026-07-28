@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import type { PlannedFile } from "./config.ts";
+import type { PlannedFile } from "./config.js";
 
 const VITE_CONFIG_FILES = [
   "vite.config.ts",
@@ -31,6 +31,7 @@ export interface ViteMigrationPlan {
   readonly preserved: string | null;
   readonly removesOfficialPlugin: boolean;
   readonly enablesVitePlusLint: boolean;
+  readonly hasVitePlusLint: boolean;
   readonly usesVitePlus: boolean;
 }
 
@@ -47,6 +48,7 @@ export function planViteMigration(
       preserved: null,
       removesOfficialPlugin: false,
       enablesVitePlusLint: false,
+      hasVitePlusLint: false,
       usesVitePlus: false,
     };
   }
@@ -56,6 +58,7 @@ export function planViteMigration(
       preserved: `Vite configs (${existing.join(", ")})`,
       removesOfficialPlugin: false,
       enablesVitePlusLint: false,
+      hasVitePlusLint: false,
       usesVitePlus: false,
     };
   }
@@ -98,10 +101,14 @@ export function planViteMigration(
     }
   }
 
-  let enablesVitePlusLint = source.includes("oxlint-plugin-vize");
-  if (mayConfigureVitePlusLint && !enablesVitePlusLint && canInjectVitePlusLint(migratedSource)) {
-    migratedSource = injectVitePlusLint(migratedSource);
-    enablesVitePlusLint = true;
+  const hadVitePlusLint = usesVitePlus && source.includes("oxlint-plugin-vize");
+  let enablesVitePlusLint = false;
+  if (mayConfigureVitePlusLint && !hadVitePlusLint && canInjectVitePlusLint(migratedSource)) {
+    const injectedSource = injectVitePlusLint(migratedSource);
+    if (injectedSource !== null) {
+      migratedSource = injectedSource;
+      enablesVitePlusLint = true;
+    }
   }
 
   return {
@@ -113,6 +120,7 @@ export function planViteMigration(
         : null),
     removesOfficialPlugin,
     enablesVitePlusLint,
+    hasVitePlusLint: hadVitePlusLint || enablesVitePlusLint,
     usesVitePlus,
   };
 }
@@ -128,11 +136,15 @@ function canInjectVitePlusLint(source: string): boolean {
   return [...source.matchAll(/\bdefineConfig\s*\(\s*\{/gu)].length === 1;
 }
 
-function injectVitePlusLint(source: string): string {
-  const importLines = [...source.matchAll(/^import[^\r\n]*(?:\r?\n|$)/gmu)];
+function injectVitePlusLint(source: string): string | null {
+  const importLines = [
+    ...source.matchAll(
+      /^import[^\r\n]*(?:from\s+["'][^"']+["']|["'][^"']+["'])\s*;?[^\S\r\n]*(?:\r?\n|$)/gmu,
+    ),
+  ];
   const lastImport = importLines.at(-1);
   if (!lastImport || lastImport.index === undefined) {
-    return source;
+    return null;
   }
   const importEnd = lastImport.index + lastImport[0].length;
   const withImport = source.slice(0, importEnd) + VITE_PLUS_LINT_IMPORT + source.slice(importEnd);

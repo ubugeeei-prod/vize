@@ -1,0 +1,254 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { test } from "node:test";
+
+import { repoRoot } from "../../_helpers/realworld-patch.ts";
+import {
+  type CommandResult,
+  resolveTsgoBinary,
+  resolveVueTscBinary,
+  runVizeCheck,
+  runVueTsc,
+  symlinkVueTypes,
+  type VizeCheckResult,
+} from "../../_helpers/realworld-typecheck.ts";
+
+const upstream = {
+  commit: "02c0dac76075924bfb8e9b6985e51a9795ff6909",
+  repository: "pikax/vue-benchmarks",
+};
+
+const tsconfig = {
+  compilerOptions: {
+    esModuleInterop: true,
+    isolatedModules: true,
+    lib: ["ESNext", "DOM"],
+    module: "ESNext",
+    moduleResolution: "bundler",
+    noEmit: true,
+    skipLibCheck: true,
+    strict: true,
+    target: "ESNext",
+    types: [],
+  },
+  vueCompilerOptions: { strictTemplates: true },
+  include: ["**/*.vue", "**/*.ts"],
+};
+
+type Plant = {
+  broken: string;
+  clean: string;
+  diagnostics: Record<string, string[]>;
+  files: Record<string, string>;
+  id: string;
+  sourceFile: string;
+  vueTscOutput: string;
+};
+
+const plants: Plant[] = [
+  {
+    id: "script assignment",
+    sourceFile: "App.vue",
+    clean: "const n: number = 1;",
+    broken: 'const n: number = "not-a-number";',
+    files: {
+      "App.vue": `<script setup lang="ts">
+const n: number = 1;
+</script>
+
+<template>
+  <div>{{ n }}</div>
+</template>
+`,
+    },
+    diagnostics: {
+      "App.vue": ["error:2:7 [TS2322] Type 'string' is not assignable to type 'number'."],
+    },
+    vueTscOutput: "App.vue(2,7): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+  },
+  {
+    id: "native boolean prop",
+    sourceFile: "App.vue",
+    clean: "const disabledFlag: boolean = true;",
+    broken: 'const disabledFlag: string = "yes";',
+    files: {
+      "App.vue": `<script setup lang="ts">
+const disabledFlag: boolean = true;
+</script>
+
+<template>
+  <button type="button" :disabled="disabledFlag">go</button>
+</template>
+`,
+    },
+    diagnostics: {
+      "App.vue": [
+        "error:6:26 [TS2322] Type 'string' is not assignable to type 'Booleanish | undefined'.",
+      ],
+    },
+    vueTscOutput:
+      "App.vue(6,26): error TS2322: Type 'string' is not assignable to type 'Booleanish | undefined'.\n",
+  },
+  {
+    id: "native event handler",
+    sourceFile: "App.vue",
+    clean: "const clickHandler = () => {};",
+    broken: "const clickHandler = 123;",
+    files: {
+      "App.vue": `<script setup lang="ts">
+const clickHandler = () => {};
+</script>
+
+<template>
+  <button type="button" @click="clickHandler">go</button>
+</template>
+`,
+    },
+    diagnostics: {
+      "App.vue": [
+        "error:6:33 [TS2345] Argument of type 'number' is not assignable to parameter of type '(_e: PointerEvent) => unknown'.",
+      ],
+    },
+    vueTscOutput:
+      "App.vue(6,4): error TS2345: Argument of type '{ type: \"button\"; onClick: 123; }' is not assignable to parameter of type 'ButtonHTMLAttributes & ReservedProps'.\n  Type '{ type: \"button\"; onClick: 123; }' is not assignable to type 'ButtonHTMLAttributes'.\n    Types of property 'onClick' are incompatible.\n      Type 'number' is not assignable to type '(payload: PointerEvent) => void'.\n",
+  },
+  {
+    id: "static literal-union component prop",
+    sourceFile: "App.vue",
+    clean: '  <Child variant="primary" />',
+    broken: '  <Child variant="danger" />',
+    files: {
+      "App.vue": `<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+
+<template>
+  <Child variant="primary" />
+</template>
+`,
+      "Child.vue": `<script setup lang="ts">
+defineProps<{
+  variant: "primary" | "secondary";
+}>();
+</script>
+
+<template>
+  <span>{{ variant }}</span>
+</template>
+`,
+    },
+    diagnostics: {
+      "App.vue": [
+        'error:6:10 [TS2322] Type \'"danger"\' is not assignable to type \'"primary" | "secondary"\'.',
+      ],
+      "Child.vue": [],
+    },
+    vueTscOutput:
+      'App.vue(6,10): error TS2322: Type \'"danger"\' is not assignable to type \'"primary" | "secondary"\'.\n',
+  },
+];
+
+test("vue-benchmarks correctness plants fail closed on current main", async (t) => {
+  assert.equal(
+    process.env.VIZE_TEST_REQUIRE_TSGO,
+    "1",
+    "the vue-benchmarks gate must run with VIZE_TEST_REQUIRE_TSGO=1",
+  );
+  const corsaPath = resolveTsgoBinary();
+  const vueTscPath = resolveVueTscBinary();
+  const outputRoot = path.join(repoRoot, "target/vize-tests/vue-benchmarks-plants");
+  fs.mkdirSync(outputRoot, { recursive: true });
+
+  for (const plant of plants) {
+    await t.test(plant.id, () => {
+      const workspaceDir = fs.mkdtempSync(path.join(outputRoot, "plant-"));
+      try {
+        writeProject(workspaceDir, plant.files);
+        symlinkVueTypes(workspaceDir);
+
+        const clean = runVizeCheck(workspaceDir, corsaPath, []);
+        assertClean(clean, runVueTsc(workspaceDir, vueTscPath), plant.files);
+
+        const sourcePath = path.join(workspaceDir, plant.sourceFile);
+        const cleanSource = fs.readFileSync(sourcePath, "utf8");
+        const brokenSource = replaceExact(cleanSource, plant.clean, plant.broken);
+        fs.writeFileSync(sourcePath, brokenSource, "utf8");
+
+        const brokenFirst = runVizeCheck(workspaceDir, corsaPath, []);
+        const brokenSecond = runVizeCheck(workspaceDir, corsaPath, []);
+        const vueTsc = runVueTsc(workspaceDir, vueTscPath);
+        assert.equal(brokenFirst.status, 1, brokenFirst.stderr || brokenFirst.stdout);
+        assert.deepEqual(
+          brokenFirst.report,
+          expectedReport(plant.files, plant.diagnostics),
+          JSON.stringify(brokenFirst.report),
+        );
+        assert.equal(brokenSecond.stdout, brokenFirst.stdout, "diagnostics must be byte-stable");
+        assert.equal(vueTsc.status, 2, vueTsc.stderr || vueTsc.stdout);
+        assert.equal(vueTsc.stdout, plant.vueTscOutput);
+
+        fs.writeFileSync(sourcePath, replaceExact(brokenSource, plant.broken, plant.clean), "utf8");
+        const repaired = runVizeCheck(workspaceDir, corsaPath, []);
+        assertClean(repaired, runVueTsc(workspaceDir, vueTscPath), plant.files);
+        assert.equal(repaired.stdout, clean.stdout, "repair must restore byte-stable clean output");
+        assert.equal(fs.readFileSync(sourcePath, "utf8"), cleanSource);
+      } finally {
+        fs.rmSync(workspaceDir, { recursive: true, force: true });
+      }
+    });
+  }
+
+  await t.test("upstream provenance stays pinned", () => {
+    assert.equal(upstream.repository, "pikax/vue-benchmarks");
+    assert.match(upstream.commit, /^[0-9a-f]{40}$/);
+  });
+});
+
+function writeProject(workspaceDir: string, files: Record<string, string>): void {
+  for (const [relativePath, source] of Object.entries(files)) {
+    fs.writeFileSync(path.join(workspaceDir, relativePath), source, "utf8");
+  }
+  fs.writeFileSync(path.join(workspaceDir, "tsconfig.json"), JSON.stringify(tsconfig, null, 2));
+  fs.writeFileSync(
+    path.join(workspaceDir, "package.json"),
+    JSON.stringify({ name: "vize-vue-benchmarks-plants", private: true, type: "module" }),
+  );
+}
+
+function replaceExact(source: string, expected: string, replacement: string): string {
+  const first = source.indexOf(expected);
+  assert.notEqual(first, -1, `missing patch anchor: ${expected}`);
+  assert.equal(
+    source.indexOf(expected, first + expected.length),
+    -1,
+    "patch anchor must be unique",
+  );
+  return `${source.slice(0, first)}${replacement}${source.slice(first + expected.length)}`;
+}
+
+function expectedReport(
+  files: Record<string, string>,
+  diagnostics: Record<string, string[]>,
+): unknown {
+  const entries = Object.keys(files)
+    .sort()
+    .map((file) => ({ file, diagnostics: diagnostics[file] ?? [] }));
+  return {
+    files: entries,
+    errorCount: entries.reduce((count, entry) => count + entry.diagnostics.length, 0),
+    warningCount: 0,
+    fileCount: entries.length,
+  };
+}
+
+function assertClean(
+  vize: VizeCheckResult,
+  vueTsc: CommandResult,
+  files: Record<string, string>,
+): void {
+  assert.equal(vize.status, 0, vize.stderr || vize.stdout);
+  assert.deepEqual(vize.report, expectedReport(files, {}), JSON.stringify(vize.report));
+  assert.equal(vueTsc.status, 0, vueTsc.stderr || vueTsc.stdout);
+  assert.equal(vueTsc.stdout, "");
+}

@@ -30,5 +30,8 @@ Options:
       --exit-zero
           Return success even when the report contains blocking findings. Defaults to false
 
+      --public-sfc
+          Enforce the canonical public component SFC contract. Defaults to false
+
   -h, --help
           Print help (see a summary with '-h')

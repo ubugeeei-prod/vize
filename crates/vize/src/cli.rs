@@ -49,6 +49,9 @@ enum Commands {
     #[cfg(unix)]
     CheckServer(crate::commands::check_server::CheckServerArgs),
 
+    /// Start the experimental TypeScript content-mapper protocol server
+    ContentMapper(crate::commands::content_mapper::ContentMapperArgs),
+
     /// Start component gallery server
     Musea(crate::commands::musea::MuseaArgs),
 
@@ -93,6 +96,7 @@ fn run(cli: Cli) {
         Some(Commands::Clean(args)) => crate::commands::clean::run(args),
         #[cfg(unix)]
         Some(Commands::CheckServer(args)) => crate::commands::check_server::run(args),
+        Some(Commands::ContentMapper(args)) => crate::commands::content_mapper::run(args),
         Some(Commands::Musea(args)) => crate::commands::musea::run(args),
         #[cfg(feature = "maestro")]
         Some(Commands::Lsp(args)) => crate::commands::lsp::run(args),

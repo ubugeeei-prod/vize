@@ -125,23 +125,6 @@ pub(crate) const VUE_SETUP_HELPERS: &str = r#"  // Compiler macros (only valid i
   // Mark compiler macros as used
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;"#;
 
-/// ImportMeta augmentation for Vite/Nuxt projects.
-/// Uses `/// <reference types="..." />` to pull in existing type definitions
-/// from frameworks like Vite, Nuxt, etc. when available.
-pub(crate) const IMPORT_META_AUGMENTATION: &str = r#"// ImportMeta augmentation (reference existing framework types)
-/// <reference types="vite/client" />
-declare global {
-  // Extend ImportMeta with Nuxt-specific properties not covered by vite/client
-  interface ImportMeta {
-    client: boolean;
-    server: boolean;
-    dev: boolean;
-    prod: boolean;
-    ssr: boolean;
-  }
-}
-"#;
-
 /// Per-file setup-scope helper block emitted when the shared preamble is
 /// hoisted: the macro signatures live once in the ambient helpers file as
 /// `__vize_*` globals and are aliased into setup scope here, so compiler

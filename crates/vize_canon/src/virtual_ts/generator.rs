@@ -40,10 +40,8 @@ use self::spans::{
     template_usage,
 };
 use super::{
-    helpers::{
-        IMPORT_META_AUGMENTATION, SETUP_SCOPE_HELPER_NAMES, generate_template_context,
-        to_safe_identifier,
-    },
+    helpers::{SETUP_SCOPE_HELPER_NAMES, generate_template_context, to_safe_identifier},
+    import_meta::emit_import_meta_augmentation,
     props::{
         OptionsApiPropsSource, add_generic_defaults, collect_template_prop_names,
         extract_generic_names, strip_const_modifiers,
@@ -188,7 +186,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         ts.push_str("// Shared preamble hoisted to the program-wide __vize_helpers.d.ts\n");
     } else {
         // ImportMeta augmentation (must be at top level, before any code)
-        ts.push_str(IMPORT_META_AUGMENTATION);
+        emit_import_meta_augmentation(&mut ts, !generation_options.omit_vite_client_reference);
         ts.push('\n');
     }
 
@@ -789,7 +787,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         ScopeGenerationOptions {
                             check_options,
                             virtual_ts_options: options,
-                            template_source: template_ast.map(|root| root.source.as_str()),
+                            template_ast,
                             check_unresolved_global_components: has_script_reference_types,
                             legacy_vue2,
                         },

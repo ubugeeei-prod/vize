@@ -11,11 +11,13 @@ use vize_carton::profile;
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeId, ScopeKind};
 
 use crate::virtual_ts::expressions::{
-    generate_expressions, generate_expressions_in_enclosing_guard,
+    ExpressionListEmitContext, collect_native_prop_bindings, generate_expressions,
+    generate_expressions_in_enclosing_guard, generate_native_prop_helpers,
 };
 use crate::virtual_ts::helpers::{get_dom_event_type, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;
 
+use super::children::generate_child_scopes;
 use super::component_events::generate_component_event_types;
 use super::component_prop_expressions::collect_component_prop_expression_ranges;
 use super::component_props::generate_component_props;
@@ -38,10 +40,14 @@ pub(crate) fn generate_scope_closures(
     summary: &Croquis,
     template_prop_names: &FxHashSet<String>,
     template_offset: u32,
-    options: ScopeGenerationOptions<'_>,
+    options: ScopeGenerationOptions<'_, '_>,
 ) {
     let check_options = options.check_options;
     let virtual_ts_options = options.virtual_ts_options;
+    let native_props = collect_native_prop_bindings(
+        options.template_ast,
+        check_options.check_props && !options.legacy_vue2,
+    );
 
     // Group expressions by scope_id
     let expressions_by_scope: FxHashMap<u32, Vec<_>> =
@@ -127,6 +133,7 @@ pub(crate) fn generate_scope_closures(
             )
         );
     }
+    generate_native_prop_helpers(ts, &native_props);
 
     // Process non-nested scopes at template level
     for scope in summary.scopes.iter() {
@@ -153,9 +160,12 @@ pub(crate) fn generate_scope_closures(
                     mappings,
                     exprs,
                     template_prop_names,
-                    &skipped_expression_ranges,
-                    template_offset,
-                    "  ",
+                    &ExpressionListEmitContext::new(
+                        &skipped_expression_ranges,
+                        template_offset,
+                        "  ",
+                        &native_props,
+                    ),
                 );
             }
             continue;
@@ -167,6 +177,7 @@ pub(crate) fn generate_scope_closures(
             skipped_expression_ranges: &skipped_expression_ranges,
             children_map: &children_map,
             template_prop_names,
+            native_props: &native_props,
             template_offset,
             check_options,
             legacy_vue2: options.legacy_vue2,
@@ -192,7 +203,7 @@ pub(crate) fn generate_scope_closures(
                 mappings,
                 &ComponentPropsContext {
                     summary,
-                    template_source: options.template_source,
+                    template_source: options.template_ast.map(|root| root.source.as_str()),
                     children_map: &children_map,
                     vfor_enclosing_guards: &vfor_enclosing_guards,
                     template_prop_names,
@@ -207,7 +218,7 @@ pub(crate) fn generate_scope_closures(
 }
 
 /// Recursively generate a scope node (VFor/VSlot/EventHandler) and its nested children.
-fn generate_scope_node(
+pub(super) fn generate_scope_node(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     ctx: &ScopeGenContext<'_>,
@@ -285,9 +296,13 @@ fn generate_scope_node(
                     mappings,
                     exprs,
                     ctx.template_prop_names,
-                    ctx.skipped_expression_ranges,
-                    ctx.template_offset,
-                    (&callback_indent, enclosing_guard),
+                    &ExpressionListEmitContext::new(
+                        ctx.skipped_expression_ranges,
+                        ctx.template_offset,
+                        &callback_indent,
+                        ctx.native_props,
+                    ),
+                    enclosing_guard,
                 );
             }
 
@@ -344,9 +359,12 @@ fn generate_scope_node(
                     mappings,
                     exprs,
                     ctx.template_prop_names,
-                    ctx.skipped_expression_ranges,
-                    ctx.template_offset,
-                    &inner_indent,
+                    &ExpressionListEmitContext::new(
+                        ctx.skipped_expression_ranges,
+                        ctx.template_offset,
+                        &inner_indent,
+                        ctx.native_props,
+                    ),
                 );
             }
 
@@ -449,34 +467,12 @@ fn generate_scope_node(
                     mappings,
                     exprs,
                     ctx.template_prop_names,
-                    ctx.skipped_expression_ranges,
-                    ctx.template_offset,
-                    indent,
-                );
-            }
-        }
-    }
-}
-
-/// Recursively generate child scopes that are VFor/VSlot/EventHandler.
-fn generate_child_scopes(
-    ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
-    ctx: &ScopeGenContext<'_>,
-    parent_scope_id: u32,
-    indent: &str,
-) {
-    if let Some(child_ids) = ctx.children_map.get(&parent_scope_id) {
-        for &child_id in child_ids {
-            if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id)
-                && matches!(
-                    child_scope.kind,
-                    ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::EventHandler
-                )
-            {
-                profile!(
-                    "canon.virtual_ts.scope_node",
-                    generate_scope_node(ts, mappings, ctx, child_scope, indent)
+                    &ExpressionListEmitContext::new(
+                        ctx.skipped_expression_ranges,
+                        ctx.template_offset,
+                        indent,
+                        ctx.native_props,
+                    ),
                 );
             }
         }

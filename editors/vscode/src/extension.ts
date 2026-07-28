@@ -36,6 +36,7 @@ import {
   shouldStartFromConfiguration,
   type LspInitializationOptions,
 } from "./extension-core";
+import { registerTypeScriptContentMapperDiscovery } from "./content-mapper-discovery";
 
 const execFileAsync = promisify(execFile);
 let client: LanguageClient | undefined;
@@ -95,6 +96,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
   outputChannel = window.createOutputChannel("Vize");
   outputChannel.appendLine("Vize extension activating...");
   context.subscriptions.push(outputChannel);
+  registerTypeScriptContentMapperDiscovery(context, outputChannel);
 
   statusBarItem = window.createStatusBarItem(StatusBarAlignment.Right, 95);
   statusBarItem.command = "vize.showStatus";
@@ -870,12 +872,9 @@ function getWorkspaceDevPaths(exeName: string): string[] {
   return paths;
 }
 
-/// Resolve the user-/machine-scoped value of `vize.serverPath` only.
-/// Workspace-scoped values (e.g. a `.vscode/settings.json` shipped in a
-/// cloned repo) are intentionally ignored — that file is repo-controlled
-/// and could otherwise point the extension at any executable. The
-/// untrusted-workspace branch declared in `package.json::capabilities`
-/// covers the first defense in depth; this is the second. (#969)
+/// Resolve only user-/machine-scoped `vize.serverPath` values. Workspace settings are
+/// repo-controlled and could point at arbitrary executables; package capabilities and this
+/// check provide two layers of protection. (#969)
 function resolveTrustedServerPath(
   config: ReturnType<typeof workspace.getConfiguration>,
 ): string | undefined {

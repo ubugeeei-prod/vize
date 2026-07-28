@@ -53,6 +53,8 @@ pub(super) struct VueCodegenOptions {
     /// Hoist shared helpers to the batch ambient `.d.ts`; socket sessions keep
     /// them inline because they do not materialize that file.
     pub(super) hoist_shared_preamble: bool,
+    /// Content-mapper transforms can run outside Vite projects.
+    pub(super) omit_vite_client_reference: bool,
 }
 
 pub(super) fn generate_vue_virtual_ts(
@@ -222,6 +224,7 @@ pub(super) fn generate_vue_virtual_ts(
                 ),
                 hoist_shared_preamble,
                 lib_references: None,
+                omit_vite_client_reference: codegen_options.omit_vite_client_reference,
             },
         )
     );

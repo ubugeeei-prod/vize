@@ -10,9 +10,11 @@ use vize_atelier_sfc::{
 use vize_carton::{Allocator, FxHashMap};
 use vize_croquis::{EffectGraphScript, build_effect_graph_from_sfc_scripts};
 use vize_croquis_cf::{CrossFileAnalyzer, CrossFileDiagnosticKind, CrossFileOptions, FileId};
-use vize_doctor::{DoctorReport, application_analysis::report_from_application_graph};
+use vize_doctor::{
+    DoctorFinding, DoctorReport, application_analysis::report_from_application_graph,
+};
 
-use super::{DoctorError, DoctorSource};
+use super::{DoctorError, DoctorSource, canonical_sfc};
 
 #[derive(Clone, Copy, Debug, Default)]
 struct SourceBlock {
@@ -31,9 +33,11 @@ struct SfcSourceMap {
 pub(super) fn analyze_application(
     root: &Path,
     sources: &[DoctorSource],
+    public_sfc: bool,
 ) -> Result<DoctorReport, DoctorError> {
     let mut analyzer = CrossFileAnalyzer::with_project_root(doctor_options(), root);
     let mut source_maps = FxHashMap::default();
+    let mut public_sfc_findings = Vec::new();
     let mut ordered_sources = sources.iter().collect::<Vec<_>>();
     ordered_sources.sort_unstable_by(|left, right| left.path.cmp(&right.path));
 
@@ -43,7 +47,13 @@ pub(super) fn analyze_application(
             .extension()
             .is_some_and(|extension| extension == "vue")
         {
-            add_sfc(&mut analyzer, &mut source_maps, source)?;
+            add_sfc(
+                &mut analyzer,
+                &mut source_maps,
+                &mut public_sfc_findings,
+                source,
+                public_sfc,
+            )?;
         } else {
             analyzer.add_file(&source.path, source.source.as_str());
         }
@@ -53,15 +63,27 @@ pub(super) fn analyze_application(
     analyzer.rebuild_component_edges();
     let mut result = analyzer.analyze();
     normalize_sfc_diagnostics(&mut result.diagnostics, &source_maps);
-    report_from_application_graph(".", &analyzer, &result).map_err(DoctorError::from)
+    let graph_report =
+        report_from_application_graph(".", &analyzer, &result).map_err(DoctorError::from)?;
+    Ok(DoctorReport::new(
+        graph_report.workspace(),
+        graph_report
+            .findings()
+            .iter()
+            .cloned()
+            .chain(public_sfc_findings),
+    ))
 }
 
 fn add_sfc(
     analyzer: &mut CrossFileAnalyzer,
     source_maps: &mut FxHashMap<FileId, SfcSourceMap>,
+    public_sfc_findings: &mut Vec<DoctorFinding>,
     source: &DoctorSource,
+    public_sfc: bool,
 ) -> Result<(), DoctorError> {
     let filename = source.path.to_string_lossy();
+    let doctor_path = filename.replace('\\', "/");
     let descriptor = parse_sfc(
         source.source.as_str(),
         SfcParseOptions {
@@ -73,6 +95,9 @@ fn add_sfc(
         path: source.path.clone(),
         message: error.message,
     })?;
+    if public_sfc && let Some(finding) = canonical_sfc::finding(&doctor_path, &descriptor) {
+        public_sfc_findings.push(finding);
+    }
     let analysis = if let Some(template) = descriptor.template.as_ref() {
         let allocator = Allocator::with_capacity((template.content.len() * 4).max(64 * 1024));
         let parser = Parser::new(allocator.as_bump(), template.content.as_ref());

@@ -76,21 +76,22 @@ vize [COMMAND]
 
 When invoked without a command, `vize` defaults to `build`.
 
-| Command        | Description                                     |
-| -------------- | ----------------------------------------------- |
-| `build`        | Compile Vue SFC files                           |
-| `fmt`          | Format Vue SFC files                            |
-| `lint`         | Lint Vue SFC files                              |
-| `check`        | Type check Vue SFC, TS, TSX, and `.d.ts` inputs |
-| `doctor`       | Analyze whole-application health                |
-| `inspector`    | Create playground compiler inspector payloads   |
-| `clean`        | Remove Vize-generated cache artifacts           |
-| `ready`        | Run `fmt`, `lint`, `check`, and `build`         |
-| `upgrade`      | Update the installed CLI                        |
-| `check-server` | Start the Unix JSON-RPC typecheck server        |
-| `musea`        | Musea subcommands and scaffolding               |
-| `lsp`          | Start the language server                       |
-| `ide`          | Install or manage editor integrations           |
+| Command          | Description                                     |
+| ---------------- | ----------------------------------------------- |
+| `build`          | Compile Vue SFC files                           |
+| `fmt`            | Format Vue SFC files                            |
+| `lint`           | Lint Vue SFC files                              |
+| `check`          | Type check Vue SFC, TS, TSX, and `.d.ts` inputs |
+| `doctor`         | Analyze whole-application health                |
+| `inspector`      | Create playground compiler inspector payloads   |
+| `clean`          | Remove Vize-generated cache artifacts           |
+| `ready`          | Run `fmt`, `lint`, `check`, and `build`         |
+| `upgrade`        | Update the installed CLI                        |
+| `check-server`   | Start the Unix JSON-RPC typecheck server        |
+| `content-mapper` | Start the experimental TypeScript mapper server |
+| `musea`          | Musea subcommands and scaffolding               |
+| `lsp`            | Start the language server                       |
+| `ide`            | Install or manage editor integrations           |
 
 ## Build
 
@@ -212,9 +213,8 @@ Key options:
 | `--declaration`     | Emit `.d.ts` output                                |
 | `--declaration-dir` | Output directory for emitted declarations          |
 
-Use `--corsa-path` to pin a custom Corsa executable while developing Vize or a local `corsa-bind`
-checkout. The shared config key is `typeChecker.corsaPath`; `typeChecker.tsgoPath` remains only as a
-compatibility alias.
+Use `--corsa-path` to pin a local Corsa build. The shared config key is `typeChecker.corsaPath`;
+`typeChecker.tsgoPath` remains only as a compatibility alias.
 
 Project-wide template values and Vue ambient types should be visible through TypeScript project
 configuration. Include generated files such as `auto-imports.d.ts`, `components.d.ts`, or your own

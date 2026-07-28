@@ -26,6 +26,11 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
 mod art_usage;
 mod build;
+mod content_mapper;
+pub use content_mapper::{
+    ContentMapperDiagnostic, ContentMapperSpan, ContentMapperTransform,
+    generate_vue_content_mapper_transform,
+};
 mod declaration_emit;
 mod document;
 pub use document::{

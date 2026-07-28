@@ -9,7 +9,7 @@ use crate::virtual_ts::types::VirtualTsOptions;
 pub(super) fn collect_component_prop_expression_ranges(
     summary: &Croquis,
     virtual_ts_options: &VirtualTsOptions,
-    options: &ScopeGenerationOptions<'_>,
+    options: &ScopeGenerationOptions<'_, '_>,
 ) -> FxHashSet<(u32, u32)> {
     if !options.check_options.check_props {
         return FxHashSet::default();

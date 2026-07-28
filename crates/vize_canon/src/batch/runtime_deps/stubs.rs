@@ -13,13 +13,15 @@ pub(super) const VUE_RUNTIME_DOM_STUB_PACKAGE_JSON: &str = r#"{
 }
 "#;
 
-pub(super) const VUE_RUNTIME_DOM_STUB_TYPES: &str = r#"export interface ComponentPublicInstance<Props = {}> {
+pub(crate) const VUE_RUNTIME_DOM_STUB_TYPES: &str = r#"export interface ComponentPublicInstance<Props = {}> {
   $props: Props;
   $attrs: { [key: string]: unknown };
   $slots: { [key: string]: unknown };
   $refs: { [key: string]: unknown };
   $emit: (...args: any[]) => void;
 }
+
+export type NativeElements = Record<string, Record<string, unknown>>;
 
 export type DefineComponent<
   Props = {},

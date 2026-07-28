@@ -4,6 +4,7 @@ pub mod check;
 #[cfg(unix)]
 pub mod check_server;
 pub mod clean;
+pub mod content_mapper;
 pub mod curator;
 pub mod doctor;
 pub mod env_info;

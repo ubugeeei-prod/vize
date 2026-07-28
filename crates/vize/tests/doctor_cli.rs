@@ -87,6 +87,71 @@ fn malformed_components_cannot_produce_a_healthy_report() {
     assert!(output.stdout.is_empty());
 }
 
+#[test]
+fn public_sfc_contract_is_explicit_and_source_accurate() {
+    let directory = tempfile::tempdir().unwrap();
+    let source = "<script setup>const label = 'Save'</script>\n\
+                  <template><button>{{ label }}</button></template>\n\
+                  <style>button { font: inherit }</style>\n";
+    write(directory.path(), "src/ActionButton.vue", source);
+
+    let ordinary = doctor(directory.path(), &["src", "--format", "json"]);
+    let audited = doctor(
+        directory.path(),
+        &["src", "--format", "json", "--public-sfc"],
+    );
+    let ordinary_report: DoctorReport = serde_json::from_slice(&ordinary.stdout).unwrap();
+    let audited_report: DoctorReport = serde_json::from_slice(&audited.stdout).unwrap();
+    let finding = audited_report
+        .findings()
+        .iter()
+        .find(|finding| finding.code == "VIZE_DOCTOR_SFC_EXPLICIT_SECTIONS")
+        .unwrap();
+
+    assert!(ordinary.status.success());
+    assert!(
+        ordinary_report
+            .findings()
+            .iter()
+            .all(|finding| finding.code != "VIZE_DOCTOR_SFC_EXPLICIT_SECTIONS")
+    );
+    assert_eq!(audited.status.code(), Some(1));
+    assert_eq!(finding.primary.path, "src/ActionButton.vue");
+    assert_eq!(
+        &source[finding.primary.start as usize..finding.primary.end as usize],
+        "<script setup>"
+    );
+    assert_eq!(finding.evidence.len(), 2);
+}
+
+#[test]
+fn public_sfc_json_is_deterministic_for_input_order() {
+    let directory = tempfile::tempdir().unwrap();
+    write(
+        directory.path(),
+        "src/A.vue",
+        "<template><p>A</p></template>",
+    );
+    write(
+        directory.path(),
+        "src/B.vue",
+        "<template><p>B</p></template>",
+    );
+
+    let first = doctor(
+        directory.path(),
+        &["src/A.vue", "src/B.vue", "--format", "json", "--public-sfc"],
+    );
+    let second = doctor(
+        directory.path(),
+        &["src/B.vue", "src/A.vue", "--format", "json", "--public-sfc"],
+    );
+
+    assert_eq!(first.status.code(), Some(1));
+    assert_eq!(second.status.code(), Some(1));
+    assert_eq!(first.stdout, second.stdout);
+}
+
 fn doctor(root: &Path, arguments: &[&str]) -> std::process::Output {
     Command::new(env!("CARGO_BIN_EXE_vize"))
         .arg("doctor")

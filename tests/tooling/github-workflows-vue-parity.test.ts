@@ -51,6 +51,16 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
     /tooling\/compat-ratchet\.test\.ts/,
     "test:check:fixtures must run the per-PR compat ratchet",
   );
+  assert.match(
+    testsPackage.scripts["test:check:fixtures"],
+    /^VIZE_TEST_REQUIRE_TSGO=1 /,
+    "typecheck parity must fail closed when tsgo is unavailable",
+  );
+  assert.match(
+    testsPackage.scripts["test:check:fixtures"],
+    /snapshots\/check\/vue-benchmarks-correctness-plants\.ts/,
+    "typecheck parity must run the upstream correctness plants",
+  );
 
   const glyphProperties = steps.find(
     (step) => step.name === "Check glyph formatter corpus properties",
