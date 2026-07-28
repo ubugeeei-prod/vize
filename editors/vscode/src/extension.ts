@@ -13,7 +13,6 @@ import {
   Uri,
   commands,
   env,
-  extensions,
   window,
   workspace,
   type QuickPickItem,
@@ -37,6 +36,7 @@ import {
   shouldStartFromConfiguration,
   type LspInitializationOptions,
 } from "./extension-core";
+import { registerTypeScriptContentMapperDiscovery } from "./content-mapper-discovery";
 
 const execFileAsync = promisify(execFile);
 let client: LanguageClient | undefined;
@@ -96,7 +96,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
   outputChannel = window.createOutputChannel("Vize");
   outputChannel.appendLine("Vize extension activating...");
   context.subscriptions.push(outputChannel);
-  registerTypeScriptContentMapperDiscovery(context);
+  registerTypeScriptContentMapperDiscovery(context, outputChannel);
 
   statusBarItem = window.createStatusBarItem(StatusBarAlignment.Right, 95);
   statusBarItem.command = "vize.showStatus";
@@ -160,53 +160,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
   );
 
   await syncClientToConfiguration(context, "initial activation");
-}
-
-function registerTypeScriptContentMapperDiscovery(context: ExtensionContext): void {
-  const discover = (uris: readonly Uri[]) => {
-    if (!workspace.isTrusted || uris.length === 0) {
-      return;
-    }
-    const nativePreview = extensions.getExtension("TypeScriptTeam.native-preview");
-    if (!nativePreview) {
-      return;
-    }
-    void (async () => {
-      try {
-        await nativePreview.activate();
-        const discovered = await commands.executeCommand(
-          "typescript.native-preview.discoverContentMappers",
-          {
-            uris,
-            extensions: [".vue"],
-          },
-        );
-        if (Array.isArray(discovered) && discovered.includes(".vue")) {
-          outputChannel.appendLine("TypeScript native preview discovered the Vize .vue mapper.");
-        }
-      } catch (error: unknown) {
-        outputChannel.appendLine(
-          `TypeScript content mapper discovery is unavailable: ${String(error)}`,
-        );
-      }
-    })();
-  };
-  const vueUri = (document: { languageId: string; uri: Uri }): Uri | undefined =>
-    document.uri.scheme === "file" &&
-    (document.languageId === "vue" || document.languageId === "art-vue") &&
-    document.uri.path.endsWith(".vue")
-      ? document.uri
-      : undefined;
-
-  discover(workspace.textDocuments.map(vueUri).filter((uri): uri is Uri => uri !== undefined));
-  context.subscriptions.push(
-    workspace.onDidOpenTextDocument((document) => {
-      const uri = vueUri(document);
-      if (uri) {
-        discover([uri]);
-      }
-    }),
-  );
 }
 
 function scheduleClientSync(context: ExtensionContext, reason: string): void {
@@ -919,12 +872,9 @@ function getWorkspaceDevPaths(exeName: string): string[] {
   return paths;
 }
 
-/// Resolve the user-/machine-scoped value of `vize.serverPath` only.
-/// Workspace-scoped values (e.g. a `.vscode/settings.json` shipped in a
-/// cloned repo) are intentionally ignored — that file is repo-controlled
-/// and could otherwise point the extension at any executable. The
-/// untrusted-workspace branch declared in `package.json::capabilities`
-/// covers the first defense in depth; this is the second. (#969)
+/// Resolve only user-/machine-scoped `vize.serverPath` values. Workspace settings are
+/// repo-controlled and could point at arbitrary executables; package capabilities and this
+/// check provide two layers of protection. (#969)
 function resolveTrustedServerPath(
   config: ReturnType<typeof workspace.getConfiguration>,
 ): string | undefined {

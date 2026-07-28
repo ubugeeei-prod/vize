@@ -40,10 +40,8 @@ use self::spans::{
     template_usage,
 };
 use super::{
-    helpers::{
-        SETUP_SCOPE_HELPER_NAMES, emit_import_meta_augmentation, generate_template_context,
-        to_safe_identifier,
-    },
+    helpers::{SETUP_SCOPE_HELPER_NAMES, generate_template_context, to_safe_identifier},
+    import_meta::emit_import_meta_augmentation,
     props::{
         OptionsApiPropsSource, add_generic_defaults, collect_template_prop_names,
         extract_generic_names, strip_const_modifiers,

@@ -213,37 +213,8 @@ Key options:
 | `--declaration`     | Emit `.d.ts` output                                |
 | `--declaration-dir` | Output directory for emitted declarations          |
 
-Use `--corsa-path` to pin a custom Corsa executable while developing Vize or a local `corsa-bind`
-checkout. The shared config key is `typeChecker.corsaPath`; `typeChecker.tsgoPath` remains only as a
-compatibility alias.
-
-### Experimental TypeScript content mapper
-
-The `vize` npm package declares the content-mapper metadata proposed by
-[microsoft/typescript-go#4712](https://github.com/microsoft/typescript-go/pull/4712). A compatible
-`tsgo` build can therefore typecheck `.vue` files through Vize directly:
-
-```json
-{
-  "compilerOptions": {
-    "module": "preserve",
-    "strict": true
-  },
-  "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
-  "include": ["src"]
-}
-```
-
-```bash
-tsgo --loadExternalPlugins --noEmit -p tsconfig.json
-```
-
-This is an upstream-dependent preview. The protocol is not present in a released TypeScript native
-preview yet, so use the exact PR build for evaluation and retain `vize check` in supported CI.
-Vize's bridge already covers protocol v1 initialization, UTF-8 source mappings, mapper-authored
-diagnostics, TS/TSX script kinds, and the package entrypoint. Remaining work is gated on upstream
-stabilizing the protocol, extension-provided mappers, declaration maps, and the final release
-channel.
+Use `--corsa-path` to pin a local Corsa build. The shared config key is `typeChecker.corsaPath`;
+`typeChecker.tsgoPath` remains only as a compatibility alias.
 
 Project-wide template values and Vue ambient types should be visible through TypeScript project
 configuration. Include generated files such as `auto-imports.d.ts`, `components.d.ts`, or your own

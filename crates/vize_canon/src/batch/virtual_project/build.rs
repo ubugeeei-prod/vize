@@ -1,6 +1,5 @@
-//! Building a [`RegisteredFile`] from a source path. This owns the expensive,
-//! `&mut`-free work (SFC/template parse and virtual-TS generation) so it can run
-//! across rayon workers and return a self-contained result for the project.
+//! Builds an owned [`RegisteredFile`] so SFC/template parsing and virtual-TS generation can run
+//! across rayon workers without shared `&mut` state.
 
 use std::path::{Path, PathBuf};
 

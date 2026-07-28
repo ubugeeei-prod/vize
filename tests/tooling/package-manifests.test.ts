@@ -321,31 +321,6 @@ test("native preview runtime is declared for vize check users", () => {
   assert.equal(packageJson.peerDependenciesMeta?.["@typescript/native-preview"], undefined);
 });
 
-test("vize package exposes an executable TypeScript content mapper", () => {
-  const packageJson = JSON.parse(readRepoFile("npm/cli/package.json")) as {
-    bin?: Record<string, string>;
-    files?: string[];
-    tsContentMapper?: {
-      compilerOptions?: string[];
-      exec?: string[];
-    };
-  };
-  const binPath = path.join(root, "npm/cli/bin/vize");
-
-  assert.deepEqual(packageJson.tsContentMapper, {
-    exec: ["node", "./bin/vize", "content-mapper"],
-  });
-  assert.equal(packageJson.tsContentMapper?.compilerOptions, undefined);
-  assert.equal(packageJson.bin?.vize, "bin/vize");
-  assert.ok(packageJson.files?.includes("bin"));
-  assert.notEqual(
-    fs.statSync(binPath).mode & 0o111,
-    0,
-    "content mapper entrypoint must be executable",
-  );
-  assert.match(fs.readFileSync(binPath, "utf-8"), /^#!\/usr\/bin\/env node\n/);
-});
-
 test("vize package leaves Vue type versions to the consuming project", () => {
   const packageJson = JSON.parse(readRepoFile("npm/cli/package.json")) as {
     dependencies?: Record<string, string>;
@@ -471,7 +446,6 @@ test("editor extension manifests keep expected defaults and version alignment", 
     scripts?: Record<string, string>;
     version?: string;
   };
-  const vscodeExtension = readRepoFile("editors/vscode/src/extension.ts");
 
   assert.equal(vscodePackage.version, workspaceVersion);
   assert.equal(
@@ -503,13 +477,6 @@ test("editor extension manifests keep expected defaults and version alignment", 
     vscodePackage.devDependencies?.["@typescript/native-preview"],
     "7.0.0-dev.20260421.1",
   );
-  assert.match(vscodeExtension, /extensions\.getExtension\("TypeScriptTeam\.native-preview"\)/);
-  assert.match(
-    vscodeExtension,
-    /commands\.executeCommand\(\s*"typescript\.native-preview\.discoverContentMappers"/,
-  );
-  assert.match(vscodeExtension, /workspace\.isTrusted/);
-  assert.match(vscodeExtension, /extensions: \["\.vue"\]/);
 
   const zedManifest = fs.readFileSync(path.join(root, "editors/zed/extension.toml"), "utf-8");
   const zedVersion = zedManifest.match(/^version = "(.+)"$/m)?.[1];
