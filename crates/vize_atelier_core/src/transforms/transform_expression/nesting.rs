@@ -169,18 +169,22 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
             // A `\` in code position begins an identifier escape for OXC's
             // lexer (`\uXXXX` / `\u{...}`); a `\` that does not form a valid
             // escape is a lexer error OXC recovers from without opening a new
-            // literal. Either way OXC never starts a string at a `'`/`"` that
-            // immediately follows a `\`. The scanner used to advance past the
-            // lone `\` and then treat that quote as a string opener, so
-            // `skip_quoted` ran to the next unescaped quote (or EOF), swallowing
-            // the bracket and type-angle runs that drive OXC's exponential
-            // type-argument speculation and hiding them from the depth guard
-            // (#3271). Consuming the neutralized quote with the backslash keeps
-            // that following source visible to the depth budget. A `\` before
-            // any other byte falls through to the normal arms, so `\(` / `\[` /
-            // `\{` still count their brackets exactly as OXC keeps them live.
+            // literal. Either way OXC never starts a string at a `'`/`"` — or a
+            // template at a `` ` `` — that immediately follows a `\`. The
+            // scanner used to advance past the lone `\` and then treat that
+            // quote as a string opener, so `skip_quoted` ran to the next
+            // unescaped quote (or EOF), swallowing the bracket and type-angle
+            // runs that drive OXC's exponential type-argument speculation and
+            // hiding them from the depth guard (#3271). The same held for a
+            // backtick: `skip_template_text` swallowed the bracket run behind a
+            // phantom template literal while OXC kept every bracket live and
+            // recursed to a stack overflow (#3274). Consuming the neutralized
+            // quote or backtick with the backslash keeps that following source
+            // visible to the depth budget. A `\` before any other byte falls
+            // through to the normal arms, so `\(` / `\[` / `\{` still count
+            // their brackets exactly as OXC keeps them live.
             b'\\' => {
-                if matches!(bytes.get(i + 1), Some(b'\'' | b'"')) {
+                if matches!(bytes.get(i + 1), Some(b'\'' | b'"' | b'`')) {
                     i += 1;
                 }
                 can_start_regex = false;

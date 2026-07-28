@@ -333,6 +333,36 @@ fn expression_guard_counts_brackets_after_a_backslash_quote() {
 }
 
 #[test]
+fn expression_guard_rejects_the_backslash_backtick_hidden_reproducer() {
+    // The js_ts_expression stack-overflow reproducer (#3274) hid its bracket
+    // runs behind a code-position `` \` ``: OXC reads a `\` before a backtick
+    // as a stray identifier escape, not a template opener, so every following
+    // bracket stays live and recurses in `parse_primary_expression` until the
+    // stack overflows. The scanner used to open a phantom template literal at
+    // that backtick and let `skip_template_text` swallow the whole run, so the
+    // depth budget saw nothing. This is the input's repeating unit.
+    let reproducer = "definePro\\`\\u{[([[[[[[,[[[[[[[[[[[[[[[[[[[[[[[[[[".repeat(2);
+    assert!(expression_nesting_depth(&reproducer) > MAX_EXPRESSION_NESTING_DEPTH);
+    assert!(expression_exceeds_max_depth(&reproducer));
+    assert!(!expression_has_balanced_delimiters(&reproducer));
+    assert!(!expression_is_safe_to_parse(&reproducer));
+}
+
+#[test]
+fn expression_guard_counts_brackets_after_a_backslash_backtick() {
+    // A `\` immediately before a backtick must not open a template literal:
+    // OXC reads `` \` `` as a broken escape, so the brackets that follow stay
+    // live code and must reach the depth budget, not phantom template text.
+    let reproducer = ["\\`", &"(".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1)].concat();
+    assert_eq!(
+        expression_nesting_depth(&reproducer),
+        MAX_EXPRESSION_NESTING_DEPTH + 1
+    );
+    assert!(expression_exceeds_max_depth(&reproducer));
+    assert!(!expression_is_safe_to_parse(&reproducer));
+}
+
+#[test]
 fn expression_guard_keeps_ordinary_backslash_uses_safe() {
     // Neutralizing a post-backslash quote must not touch valid expressions: a
     // `\` legally appears in code only as a unicode identifier escape, and a
@@ -341,6 +371,7 @@ fn expression_guard_keeps_ordinary_backslash_uses_safe() {
         "\\u0061 + b",              // unicode identifier escape
         "'a(' + '[' + \"{\"",       // brackets inside string literals
         "'a\\'b' + c",              // escaped quote *inside* a string
+        "`a\\`(b` + c",             // escaped backtick *inside* a template
         "/[({]/u.test(value)",      // brackets inside a regex literal
         "`text ${ inner + '(' }!`", // template with an interpolation
     ] {
