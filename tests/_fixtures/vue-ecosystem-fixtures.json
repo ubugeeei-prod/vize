@@ -388,6 +388,23 @@
           "sharedBroken": 3000,
           "sharedRepaired": 3000
         }
+      },
+      "lspChurnBudget": {
+        "suite": "misskey-lsp-churn",
+        "cyclesPerPhase": 20,
+        "hardTimeoutMs": 60000,
+        "budgetsMs": {
+          "initialize": 1000,
+          "coldOpen": 8000,
+          "cycle": 9000,
+          "phaseFence": 1500,
+          "cancellationConverge": 6000,
+          "closeClear": 3000
+        },
+        "maxPeakRssMiB": 128,
+        "maxPeakProcessTreeRssMiB": 384,
+        "maxProcessTreeSize": 3,
+        "maxTailToHeadLatencyRatio": 3
       }
     },
     {

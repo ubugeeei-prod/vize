@@ -47,6 +47,13 @@ export class LspSession {
     reject: (error: Error) => void;
     timeout: NodeJS.Timeout;
   }> = [];
+  /**
+   * Passive observers invoked for every server notification before waiter
+   * matching and backlog storage. Stream audits (for example the churn-stress
+   * suite's publish ordering oracle) record from here without consuming the
+   * notifications that `waitForNotification` callers race for.
+   */
+  readonly notificationObservers: Array<(method: string, params: unknown) => void> = [];
   private buffer = Buffer.alloc(0);
   private nextId = 0;
   private stderr = "";
@@ -90,6 +97,15 @@ export class LspSession {
   get processId(): number {
     assert.ok(this.process.pid, "vize lsp process id is unavailable");
     return this.process.pid;
+  }
+
+  /**
+   * Server stderr captured so far. Timeout errors raised by this session
+   * already embed it; suites with their own deadlines (for example the churn
+   * hard timeout) read it here so a hang failure still carries server logs.
+   */
+  get stderrText(): string {
+    return this.stderr;
   }
 
   /**
@@ -283,6 +299,10 @@ export class LspSession {
 
     if (message.method == null) {
       return;
+    }
+
+    for (const observer of this.notificationObservers) {
+      observer(message.method, message.params);
     }
 
     const index = this.notifications.findIndex(

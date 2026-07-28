@@ -46,11 +46,17 @@ runs:
         VIZE_LSP_BIN: target/ci/vize
       run: vp run --filter './tests' test:performance:lsp-incremental
 
+    - name: Stress LSP edit churn against Misskey
+      shell: bash
+      env:
+        VIZE_LSP_BIN: target/ci/vize
+      run: vp run --filter './tests' test:performance:lsp-churn
+
     - name: Publish incremental LSP summaries
       if: ${{ always() }}
       shell: bash
       run: |
-        for suite in misskey-lsp-incremental vben-lsp-incremental; do
+        for suite in misskey-lsp-incremental vben-lsp-incremental misskey-lsp-churn; do
           if [ -s "target/vize-tests/metrics/$suite/summary.md" ]; then
             cat "target/vize-tests/metrics/$suite/summary.md" >> "$GITHUB_STEP_SUMMARY"
           fi
@@ -71,5 +77,14 @@ runs:
       with:
         name: vben-lsp-incremental-metrics
         path: target/vize-tests/metrics/vben-lsp-incremental/
+        if-no-files-found: warn
+        retention-days: 14
+
+    - name: Upload Misskey churn LSP metrics
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: misskey-lsp-churn-metrics
+        path: target/vize-tests/metrics/misskey-lsp-churn/
         if-no-files-found: warn
         retention-days: 14

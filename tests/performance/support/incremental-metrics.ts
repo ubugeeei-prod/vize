@@ -291,7 +291,7 @@ function assertBudgetMs(value: number, suiteId: string, field: string): void {
   }
 }
 
-function processRssKiB(processId: number): number | null {
+export function processRssKiB(processId: number): number | null {
   if (process.platform === "win32") return null;
   const result = spawnSync("ps", ["-o", "rss=", "-p", String(processId)], { encoding: "utf8" });
   if (result.status !== 0) return null;

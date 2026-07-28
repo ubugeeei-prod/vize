@@ -5,6 +5,11 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
+  ChurnMetrics,
+  loadLspChurnBudget,
+  processTreeRss,
+} from "../performance/support/churn-metrics.ts";
+import {
   budgetRegistryPath,
   budgetScaleVariable,
   IncrementalMetrics,
@@ -146,6 +151,106 @@ test("a budgeted lane that never ran fails settlement", () => {
     () => metrics.assertBudgetsSettled(),
     /budgeted lane "initialize" was never measured/,
   );
+});
+
+const churnSuite = { id: "misskey-lsp-churn", title: "Misskey LSP Churn Stress Oracle" };
+
+test("the churn budget resolves from the registry and unknown suites are rejected", () => {
+  const churn = loadLspChurnBudget(churnSuite.id);
+  assert.equal(churn.fixtureId, "misskey");
+  assert.ok(churn.budget.cyclesPerPhase > 0);
+  assert.deepEqual(Object.keys(churn.budget.budgetsMs).sort(), [
+    "cancellationConverge",
+    "closeClear",
+    "coldOpen",
+    "cycle",
+    "initialize",
+    "phaseFence",
+  ]);
+  assert.ok(churn.budget.hardTimeoutMs < 300_000, "hard timeout must beat the suite timeout");
+  assert.ok(churn.budget.maxPeakRssMiB <= churn.budget.maxPeakProcessTreeRssMiB);
+  assert.throws(() => loadLspChurnBudget("unbudgeted-suite"), /exactly one lspChurnBudget block/);
+});
+
+test("a churn lane over its budget or without a budget fails with instructions", async () => {
+  // Scale 0.001 shrinks the 9000 ms cycle ceiling to 9 ms while the hard
+  // timeout stays at 60 ms, so a 30 ms lane completes, misses its latency
+  // budget, and cannot trip the hang gate instead.
+  const scale = 0.001;
+  const { budget } = loadLspChurnBudget(churnSuite.id);
+  const metrics = withBudgetScale(String(scale), () => new ChurnMetrics(process.pid, churnSuite));
+  await assert.rejects(
+    metrics.measure("cycle", () => new Promise((resolve) => setTimeout(resolve, 30))),
+    (error: Error) => {
+      assert.match(error.message, /lane "cycle" \(occurrence 1\) took/);
+      assert.ok(error.message.includes(`over its ${budget.budgetsMs.cycle * scale} ms budget`));
+      assert.match(error.message, /raising budgetsMs\.cycle/);
+      assert.ok(error.message.includes(budgetRegistryPath));
+      return true;
+    },
+  );
+  await assert.rejects(
+    metrics.measure("unbudgetedLane", async () => {}),
+    /Lane "unbudgetedLane" has no budgetsMs entry/,
+  );
+});
+
+test("a hung churn lane trips the scaled hard timeout quickly", async () => {
+  const metrics = withBudgetScale("0.001", () => new ChurnMetrics(process.pid, churnSuite));
+  const startedAt = Date.now();
+  await assert.rejects(
+    metrics.measure("cycle", () => new Promise((resolve) => setTimeout(resolve, 5_000).unref())),
+    /lane "cycle" is still not settled after its 60 ms hard/,
+  );
+  assert.ok(Date.now() - startedAt < 4_000, "hard timeout must fire well before the operation");
+});
+
+test("churn settlement gates cycle count, RSS ceilings, and latency decay", async () => {
+  const { budget } = loadLspChurnBudget(churnSuite.id);
+  const short = new ChurnMetrics(process.pid, churnSuite);
+  await short.measure("cycle", async () => {});
+  assert.throws(
+    () => short.assertSettled(),
+    new RegExp(`measured 1 cycles, expected ${budget.cyclesPerPhase * 2}`),
+  );
+
+  const leaky = withBudgetScale("0.0001", () => new ChurnMetrics(process.pid, churnSuite));
+  leaky.sampleRss("probe");
+  assert.throws(
+    () => leaky.assertSettled(),
+    (error: Error) => {
+      assert.match(error.message, /sampled peak server RSS .* MiB is over its/);
+      assert.match(error.message, /raising maxPeakRssMiB/);
+      return true;
+    },
+  );
+
+  const degraded = new ChurnMetrics(process.pid, churnSuite);
+  for (let cycle = 0; cycle < budget.cyclesPerPhase * 2; cycle += 1) {
+    const slow = cycle >= budget.cyclesPerPhase * 2 - 4;
+    await degraded.measure("cycle", () =>
+      slow ? new Promise((resolve) => setTimeout(resolve, 40)) : Promise.resolve(),
+    );
+  }
+  assert.throws(
+    () => degraded.assertSettled(),
+    (error: Error) => {
+      assert.match(error.message, /median cycle latency degraded from/);
+      assert.match(error.message, /raising maxTailToHeadLatencyRatio/);
+      return true;
+    },
+  );
+});
+
+test("process-tree RSS accounting sees the probing process itself", () => {
+  const tree = processTreeRss(process.pid);
+  if (process.platform === "win32") {
+    assert.equal(tree, null);
+    return;
+  }
+  assert.ok(tree != null, "ps-based tree sampling must work on POSIX hosts");
+  assert.ok(tree.processes >= 1, "the root process must be part of its own tree");
+  assert.ok(tree.totalKiB > 0, "a live process tree has resident memory");
 });
 
 test("incremental LSP suites carry complete enforced budget blocks", () => {

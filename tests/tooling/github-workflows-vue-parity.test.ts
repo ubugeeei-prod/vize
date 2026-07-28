@@ -80,22 +80,31 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   assert.deepEqual(incremental?.env, { VIZE_LSP_BIN: "target/ci/vize" });
   assert.equal(incremental?.run, "vp run --filter './tests' test:performance:lsp-incremental");
 
+  const churn = steps.find((step) => step.name === "Stress LSP edit churn against Misskey");
+  assert.deepEqual(churn?.env, { VIZE_LSP_BIN: "target/ci/vize" });
+  assert.equal(churn?.run, "vp run --filter './tests' test:performance:lsp-churn");
+
   const summary = steps.find((step) => step.name === "Publish incremental LSP summaries");
   assert.equal(summary?.if, "${{ always() }}");
-  assert.match(summary?.run ?? "", /misskey-lsp-incremental vben-lsp-incremental/);
+  assert.match(
+    summary?.run ?? "",
+    /misskey-lsp-incremental vben-lsp-incremental misskey-lsp-churn/,
+  );
   assert.match(summary?.run ?? "", /summary\.md/);
   assert.match(summary?.run ?? "", /GITHUB_STEP_SUMMARY/);
 
-  for (const suite of ["misskey", "vben"]) {
-    const displayName = suite === "misskey" ? "Misskey" : "Vue Vben Admin";
-    const upload = steps.find(
-      (step) => step.name === `Upload ${displayName} incremental LSP metrics`,
-    );
+  const uploads: Array<[stepName: string, suiteDir: string]> = [
+    ["Upload Misskey incremental LSP metrics", "misskey-lsp-incremental"],
+    ["Upload Vue Vben Admin incremental LSP metrics", "vben-lsp-incremental"],
+    ["Upload Misskey churn LSP metrics", "misskey-lsp-churn"],
+  ];
+  for (const [stepName, suiteDir] of uploads) {
+    const upload = steps.find((step) => step.name === stepName);
     assert.equal(upload?.if, "${{ always() }}");
     assert.match(upload?.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
     assert.deepEqual(upload?.with, {
-      name: `${suite}-lsp-incremental-metrics`,
-      path: `target/vize-tests/metrics/${suite}-lsp-incremental/`,
+      name: `${suiteDir}-metrics`,
+      path: `target/vize-tests/metrics/${suiteDir}/`,
       "if-no-files-found": "warn",
       "retention-days": 14,
     });
@@ -103,5 +112,9 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   assert.equal(
     testsPackage.scripts["test:performance:lsp-incremental"],
     "node --test --test-concurrency=1 performance/misskey-lsp-incremental.test.ts performance/vben-lsp-incremental.test.ts",
+  );
+  assert.equal(
+    testsPackage.scripts["test:performance:lsp-churn"],
+    "node --test --test-concurrency=1 performance/lsp-churn-stress.test.ts",
   );
 });
