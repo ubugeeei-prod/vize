@@ -110,6 +110,13 @@ export const testAndBenchmarkTasks = defineTasks({
   "test:vscode-extension:host": noCacheTask(
     runInVscodeExtension(stageVscodeTypeScriptPlugin, "pnpm exec vp pack", "pnpm run test:host"),
   ),
+  "test:vscode-extension:host-real": noCacheTask(
+    runInVscodeExtension(
+      stageVscodeTypeScriptPlugin,
+      "pnpm exec vp pack",
+      "pnpm run test:host-real",
+    ),
+  ),
   "test:zed-extension:package": noCacheTask("vp run --workspace-root package:zed-extension"),
   "test:zed-extension:unit": task("cargo test --manifest-path editors/zed/Cargo.toml", {
     input: ["editors/zed/**"],
