@@ -25,9 +25,7 @@ pub(super) fn skip_template_interpolation(
     // cannot close. Returning before the JS recovery loop keeps a run of
     // unclosed `{{` linear instead of re-walking the rest of the source per
     // occurrence through the string/regex machinery (#3275).
-    let Some(close_offset) = memmem::find(&bytes[body_start..], b"}}") else {
-        return None;
-    };
+    let close_offset = memmem::find(&bytes[body_start..], b"}}")?;
 
     // Most interpolations are identifiers or simple expressions. Accept the
     // first delimiter immediately when no token before it can hide `}}`; this
