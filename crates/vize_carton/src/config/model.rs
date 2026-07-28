@@ -263,7 +263,17 @@ impl RawVizeConfig {
 
         // Default-on (matches vue-tsc); explicit `false` opts out.
         let type_checker_options_api = raw_type_checker.options_api.unwrap_or(true);
-        let type_checker_legacy_vue2 = raw_type_checker.legacy_vue2;
+        let vue_version = vue.version.or(compiler.compatibility.vue_version);
+        // A Vue 2 / 2.7 dialect implies legacy template lowering. Every consumer
+        // downstream of the virtual-TS generator already collapses the two into
+        // `legacy_vue2 || dialect ∈ {V2, V2_7}`, but the flag itself gates
+        // slot-scope and filter lowering, so without this fold `vize check` and
+        // `vize lsp` both reported "Cannot find name" on pristine Vue 2.7 files
+        // unless `typeChecker.legacyVue2` was *also* set (#3297). This is the
+        // mirror of `LinterFeatureFlags::from_config_features`, which derives
+        // the dialect from the legacy flags.
+        let type_checker_legacy_vue2 = raw_type_checker.legacy_vue2
+            || matches!(vue_version, Some(VueVersion::V2 | VueVersion::V2_7));
         let experimental_jsx_vapor = experimentals.jsx_vapor_enabled();
         let type_checker_jsx_typecheck = raw_type_checker.jsx_typecheck || experimental_jsx_vapor;
         let mut type_checker = raw_type_checker.config;
@@ -293,7 +303,7 @@ impl RawVizeConfig {
             type_checker_legacy_vue2,
             type_checker_jsx_typecheck,
             language_server_legacy_vue2: language_server_raw.legacy_vue2,
-            vue_version: vue.version.or(compiler.compatibility.vue_version),
+            vue_version,
             jsx_mode: compiler
                 .jsx_mode
                 .or_else(|| experimental_jsx_vapor.then_some(JsxMode::Vapor)),

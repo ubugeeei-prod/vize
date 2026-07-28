@@ -69,6 +69,18 @@ const dialectVariants: DialectVariant[] = [
     }),
     initializationOptions: { editor: true, legacyVue2: true, lint: false, typecheck: true },
   },
+  // `vue.version: "2.7"` with no `legacyVue2` anywhere must drive the same
+  // lowering: the LSP used to publish TS2304/TS2552 on the pristine file that
+  // `vize check` accepted under this exact config (#3297).
+  {
+    name: 'Vue 2.7 dialect alone (vue.version: "2.7", no legacyVue2)',
+    config: (corsaPath) => ({
+      vue: { version: "2.7" },
+      globalTypes: { toThousandFilter: "any" },
+      typeChecker: { corsaPath },
+    }),
+    initializationOptions: { editor: true, lint: false, typecheck: true },
+  },
 ];
 
 for (const variant of dialectVariants) {
@@ -128,19 +140,6 @@ for (const variant of dialectVariants) {
     );
   });
 }
-
-// Known gap (found while adding this oracle): with only `vue.version: "2.7"`
-// in vize.config.json (no `typeChecker.legacyVue2`, no `legacyVue2`
-// initialization option), `vize check` accepts the pristine TransactionTable
-// (`slot-scope` scopes and filters resolve), but `vize lsp` publishes TS2304 /
-// TS2552 for `scope`, `row`, and the filter names on the same clean document.
-// The LSP must derive legacy template lowering from `vue.version` exactly like
-// the CLI before this can be asserted.
-test("vue-element-admin vue.version 2.7 alone drives legacy lowering in the LSP", {
-  skip:
-    "vize lsp ignores the vue.version 2.7 dialect for slot-scope/filter lowering " +
-    "unless legacyVue2 is also set, diverging from vize check on the clean file",
-});
 
 async function waitForDiagnostics(
   session: LspSession,

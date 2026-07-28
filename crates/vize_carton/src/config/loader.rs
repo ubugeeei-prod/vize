@@ -9,6 +9,8 @@ mod discovery;
 #[cfg(test)]
 mod experimental_tests;
 mod js;
+#[cfg(test)]
+mod legacy_dialect_tests;
 mod lint_features;
 mod parse;
 mod pkl;

@@ -107,9 +107,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     #[cfg(not(feature = "legacy"))]
     if loaded_config.features.type_checker_legacy_vue2 {
         eprintln!(
-            "\x1b[33mwarning:\x1b[0m `type_checker_legacy_vue2` is set but this `vize` build \
-             has no legacy Vue support; rebuild with `--features legacy` to enable Vue 2 \
-             Options API type checking."
+            "\x1b[33mwarning:\x1b[0m a Vue 2 dialect is configured (`typeChecker.legacyVue2` \
+             or `vue.version` 2/2.7) but this `vize` build has no legacy Vue support; rebuild \
+             with `--features legacy` to enable Vue 2 Options API type checking."
         );
     }
     let config = loaded_config.config;

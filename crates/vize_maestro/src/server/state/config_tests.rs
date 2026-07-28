@@ -123,3 +123,56 @@ fn both_config_loaders_preserve_exact_template_globals() {
         );
     }
 }
+
+#[test]
+fn vue_version_2_7_alone_enables_legacy_lowering() {
+    // `vize check` honors `vue.version: "2.7"` without `typeChecker.legacyVue2`;
+    // the LSP must derive legacy template lowering from the same key or it
+    // publishes TS2304/TS2552 on pristine slot-scope/filter files that the CLI
+    // accepts under the identical config (#3297).
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("vize.config.json"),
+        r#"{ "vue": { "version": "2.7" } }"#,
+    )
+    .unwrap();
+
+    let state = ServerState::new();
+    state.load_workspace_config(dir.path());
+
+    assert!(state.legacy_vue2_enabled());
+    assert!(
+        state.options_api_enabled(),
+        "legacy mode implies Options API"
+    );
+}
+
+#[test]
+fn compiler_compatibility_vue_version_2_alone_enables_legacy_lowering() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("vize.config.json"),
+        r#"{ "compiler": { "compatibility": { "vueVersion": "2" } } }"#,
+    )
+    .unwrap();
+
+    let state = ServerState::new();
+    state.load_workspace_config(dir.path());
+
+    assert!(state.legacy_vue2_enabled());
+}
+
+#[test]
+fn vue_version_3_keeps_legacy_lowering_disabled() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("vize.config.json"),
+        r#"{ "vue": { "version": "3" } }"#,
+    )
+    .unwrap();
+
+    let state = ServerState::new();
+    state.load_workspace_config(dir.path());
+
+    assert!(!state.legacy_vue2_enabled());
+}

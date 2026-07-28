@@ -89,6 +89,9 @@ impl ServerState {
 
     fn apply_config_features(&self, features: vize_carton::config::ConfigFeatureFlags) {
         *self.type_checker_options_api.write() = features.type_checker_options_api;
+        // `type_checker_legacy_vue2` already folds in a Vue 2 / 2.7 dialect
+        // (`ConfigFeatureFlags::from`), so the LSP and `vize check` agree on
+        // slot-scope and filter lowering for `vue.version: "2.7"` alone (#3297).
         *self.type_checker_legacy_vue2.write() = features.type_checker_legacy_vue2;
         *self.type_checker_jsx_typecheck.write() = features.type_checker_jsx_typecheck;
 
