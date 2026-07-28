@@ -17,11 +17,14 @@ const completeCheckSnapshotTests = [
   "reka-ui",
   "style-preprocessors",
   "typecheck-errors",
+  "vue2-elm",
   "vuefes",
 ].sort();
 
 const assertionOnlyCheckTests = {
   "class-component": "class-component vue-tsc parity has known upstream-noisy diagnostics",
+  "class-component-lsp-oracle":
+    "class-component LSP oracle asserts exact TS2551 member diagnostics across document versions",
   "create-vue-generated-template-oracle":
     "generated-template patch oracle asserts exact batch typechecker and vue-tsc parity",
   "create-vue-patch-oracle":
@@ -46,6 +49,8 @@ const assertionOnlyCheckTests = {
     "framework patch oracle asserts package exports and theme declaration refresh behavior",
   "vue-element-admin-legacy-oracle":
     "legacy project patch oracle asserts Vue 2 slot-scope and filter typecheck behavior",
+  "vue-element-admin-legacy-lsp-oracle":
+    "legacy LSP oracle asserts exact Vue 2 template diagnostics and CLI agreement per version",
   directus: "real-world smoke lane is too large for a deterministic complete baseline",
   "element-plus": "real-world smoke lane is too large for a deterministic complete baseline",
   "frontend-phpcon": "real-world smoke lane is too large for a deterministic complete baseline",
