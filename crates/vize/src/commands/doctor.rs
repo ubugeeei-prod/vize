@@ -1,6 +1,7 @@
 //! Whole-application health analysis command.
 
 mod analysis;
+mod canonical_sfc;
 mod discovery;
 mod output;
 
@@ -46,6 +47,10 @@ pub struct DoctorArgs {
     /// Return success even when the report contains blocking findings. Defaults to false.
     #[arg(long)]
     pub exit_zero: bool,
+
+    /// Enforce the canonical public component SFC contract. Defaults to false.
+    #[arg(long)]
+    pub public_sfc: bool,
 }
 
 #[derive(Debug)]
@@ -165,7 +170,7 @@ fn execute(args: DoctorArgs) -> Result<DoctorOutcome, DoctorError> {
             source,
         })?;
     let sources = discover_sources(&root, &args.paths)?;
-    let report = analyze_application(&root, &sources)?;
+    let report = analyze_application(&root, &sources, args.public_sfc)?;
     Ok(DoctorOutcome {
         report,
         format: args.format,

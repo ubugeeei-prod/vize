@@ -47,7 +47,7 @@ const label = 'Email'
         doctor_source("src/Second.vue", second),
     ];
 
-    let report = analyze_application(directory.path(), &sources).unwrap();
+    let report = analyze_application(directory.path(), &sources, false).unwrap();
     let finding = report
         .findings()
         .iter()
@@ -90,7 +90,7 @@ const { item } = props
         doctor_source("src/Parent.vue", parent),
     ];
 
-    let report = analyze_application(directory.path(), &sources).unwrap();
+    let report = analyze_application(directory.path(), &sources, false).unwrap();
     let finding = report
         .findings()
         .iter()
@@ -108,13 +108,14 @@ fn serialized_report_is_deterministic_for_input_order() {
     let directory = tempfile::tempdir().unwrap();
     let a = doctor_source("src/A.vue", "<template><div id=\"shared\" /></template>");
     let b = doctor_source("src/B.vue", "<template><div id=\"shared\" /></template>");
-    let first = analyze_application(directory.path(), &[a, b]).unwrap();
+    let first = analyze_application(directory.path(), &[a, b], false).unwrap();
     let second = analyze_application(
         directory.path(),
         &[
             doctor_source("src/B.vue", "<template><div id=\"shared\" /></template>"),
             doctor_source("src/A.vue", "<template><div id=\"shared\" /></template>"),
         ],
+        false,
     )
     .unwrap();
 
