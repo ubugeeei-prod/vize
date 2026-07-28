@@ -104,8 +104,7 @@ test("class-component @Prop usage typo breaks and repairs over didChange", async
 // didChange-repaired cycle as the member typo above, so a stale contract cached
 // across edits would fail here too.
 const cleanUsage = '<HelloDecorator name="World" />';
-const brokenUsage =
-  '<HelloDecorator nme="World" />\n    <HelloDecorator :name="123" />';
+const brokenUsage = '<HelloDecorator nme="World" />\n    <HelloDecorator :name="123" />';
 
 const missingRequiredPropDiagnostic = {
   range: {
