@@ -58,7 +58,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: release-crates-dry-run
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - name: Validate crates.io publish plan without credentials
         run: moon run --target native tools/moon/cmd/publish_crates -- --dry-run

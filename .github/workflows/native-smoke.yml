@@ -75,7 +75,7 @@ jobs:
         if: runner.os == 'Linux'
         with:
           key: native-smoke-${{ matrix.target }}
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         if: runner.os != 'Linux'
         with:
@@ -168,7 +168,7 @@ jobs:
         if: runner.os == 'Linux'
         with:
           key: fresh-install-smoke-${{ matrix.platform.target }}-node-${{ matrix.node-version }}
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         if: runner.os != 'Linux'
         with:

@@ -93,7 +93,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: fuzz-${{ matrix.target }}
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock', 'tests/fuzz/Cargo.toml') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
           target-path: tests/fuzz/target
 
       - name: Install cargo-fuzz

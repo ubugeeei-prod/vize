@@ -138,7 +138,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: tool-benchmark
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:

@@ -6,7 +6,7 @@ inputs:
     description: Stable cache namespace for this job
     required: true
   cache-key-suffix:
-    description: Runner and dependency suffix to separate incompatible disks
+    description: Stable runner suffix (os/arch) to separate incompatible disks
     required: true
   target-path:
     description: Rust target directory to mount
@@ -21,7 +21,7 @@ inputs:
     required: false
     default: ""
   secondary-cache-key-suffix:
-    description: Runner and dependency suffix for the optional second target directory
+    description: Stable runner suffix (os/arch) for the optional second target directory
     required: false
     default: ""
 
@@ -31,13 +31,13 @@ runs:
     - name: Mount Cargo registry sticky disk
       uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
       with:
-        key: ${{ github.repository }}-${{ inputs.key }}-cargo-registry-${{ inputs.cache-key-suffix }}
+        key: ${{ github.repository }}-cargo-registry-${{ inputs.cache-key-suffix }}
         path: ~/.cargo/registry
 
     - name: Mount Cargo git sticky disk
       uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
       with:
-        key: ${{ github.repository }}-${{ inputs.key }}-cargo-git-${{ inputs.cache-key-suffix }}
+        key: ${{ github.repository }}-cargo-git-${{ inputs.cache-key-suffix }}
         path: ~/.cargo/git
 
     - name: Mount Rust target sticky disk

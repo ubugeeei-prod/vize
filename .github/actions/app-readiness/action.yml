@@ -23,7 +23,7 @@ runs:
     - uses: ./.github/actions/setup-rust-sticky-cache
       with:
         key: app-readiness
-        cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ steps.rust-toolchain.outputs.cachekey }}-${{ hashFiles('Cargo.lock') }}
+        cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ steps.rust-toolchain.outputs.cachekey }}
 
     - name: Setup Vite+ and Node.js
       uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1

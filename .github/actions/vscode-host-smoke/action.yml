@@ -22,7 +22,7 @@ runs:
     - uses: ./.github/actions/setup-rust-sticky-cache
       with:
         key: editor-host-smoke
-        cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+        cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
     - name: Install JS dependencies
       shell: bash

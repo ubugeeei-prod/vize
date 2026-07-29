@@ -111,7 +111,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: semver-checks
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install cargo-semver-checks
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
@@ -204,7 +204,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: check-vize-apps
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build vize CLI
@@ -233,7 +233,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: vue-parity
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/check-vue-parity
 
   test-scripts:
@@ -263,7 +263,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: test-scripts
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build vize CLI
@@ -307,7 +307,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: build-js-packages
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build native package and lint UI SFC packages
@@ -351,7 +351,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: test-js-packages
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Test JS packages
@@ -375,7 +375,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: clippy-test
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports
@@ -398,7 +398,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: coverage
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -444,7 +444,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: coverage-source
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
@@ -503,7 +503,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: coverage-branch
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
@@ -552,7 +552,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: playground-test
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - name: Cache WASM build
         id: cache-wasm

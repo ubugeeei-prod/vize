@@ -85,7 +85,7 @@ jobs:
         uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: release-cli-${{ matrix.settings.target }}
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - name: Cache Rust (non-Linux)
         if: runner.os != 'Linux'
@@ -145,7 +145,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: release-tools
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - name: Package VS Code extension
         run: vp run --workspace-root package:vscode-extension
@@ -342,7 +342,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: release-wasm
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - name: Cache WASM package build
         id: cache-wasm
@@ -419,7 +419,7 @@ jobs:
         uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: release-native-${{ matrix.settings.target }}
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - name: Cache Rust (non-Linux)
         if: runner.os != 'Linux'
@@ -1024,7 +1024,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: release-crates
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Get crates.io token via Trusted Publishing
         id: crates-io-auth
         uses: rust-lang/crates-io-auth-action@b7e9a28eded4986ec6b1fa40eeee8f8f165559ec # v1

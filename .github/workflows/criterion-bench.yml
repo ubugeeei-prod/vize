@@ -100,7 +100,7 @@ jobs:
         if: steps.impact.outputs.has_suites == 'true'
         with:
           key: criterion-bench
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('head/Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
           target-path: head/target
 
       - name: Cache critcmp
@@ -156,7 +156,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: dialect-guard
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       # The corpus generator and guard driver are plain Node (no npm deps).
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1

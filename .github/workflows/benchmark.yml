@@ -124,11 +124,11 @@ jobs:
       - uses: ./head/.github/actions/setup-rust-sticky-cache
         with:
           key: benchmark-head
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('head/Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
           target-path: head/target
           secondary-key: benchmark-base
           secondary-target-path: base/target
-          secondary-cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('base/Cargo.lock') }}
+          secondary-cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:

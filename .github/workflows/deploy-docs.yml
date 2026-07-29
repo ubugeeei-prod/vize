@@ -33,7 +33,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: docs-napi
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -78,7 +78,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: docs-wasm
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - name: Cache WASM build
         id: cache-wasm

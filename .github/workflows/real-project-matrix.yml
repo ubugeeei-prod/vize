@@ -84,7 +84,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: real-project-matrix-${{ matrix.shard }}
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - name: Install JavaScript dependencies
         run: vp install --frozen-lockfile --prefer-offline

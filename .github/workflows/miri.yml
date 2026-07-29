@@ -32,7 +32,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: miri
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
           target-path: target/miri
 
       - name: Setup Miri
