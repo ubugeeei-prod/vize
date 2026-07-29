@@ -66,23 +66,28 @@ pub(super) fn descriptor_is_unchecked_javascript(descriptor: &SfcDescriptor) -> 
 }
 
 /// TypeScript's per-file opt-in for an otherwise unchecked JavaScript file: a
-/// `// @ts-check` (or `/* @ts-check */`) pragma in the leading comments. Only
-/// comments and blank lines may precede it, matching `tsc`'s own scan.
+/// `// @ts-check` pragma in the leading comments. `ts-check` is registered as a
+/// single-line pragma in `tsc`'s own scan, so `/* @ts-check */` never opts a
+/// file in; a leading block comment is plain trivia. Only comments and blank
+/// lines may precede the pragma.
 fn opts_into_type_checking(content: &str) -> bool {
     for line in content.lines() {
         let line = line.trim();
         if line.is_empty() {
             continue;
         }
-        let Some(rest) = line.strip_prefix("//").or_else(|| {
-            line.strip_prefix("/*")
-                .map(|rest| rest.trim_end_matches("*/"))
-        }) else {
-            return false;
-        };
-        if rest.trim() == "@ts-check" {
-            return true;
+        if let Some(rest) = line.strip_prefix("//") {
+            if rest.trim() == "@ts-check" {
+                return true;
+            }
+            continue;
         }
+        // A closed leading block comment is trivia: it cannot opt in, but it
+        // also must not stop the scan for a `// @ts-check` on a later line.
+        if line.starts_with("/*") && line.ends_with("*/") {
+            continue;
+        }
+        return false;
     }
     false
 }
@@ -147,7 +152,8 @@ mod tests {
     #[test]
     fn ts_check_pragma_is_only_honored_in_leading_comments() {
         assert!(opts_into_type_checking("\n// @ts-check\nconst a = 1\n"));
-        assert!(opts_into_type_checking("/* @ts-check */\nconst a = 1\n"));
+        assert!(opts_into_type_checking("/* header */\n// @ts-check\nconst a = 1\n"));
+        assert!(!opts_into_type_checking("/* @ts-check */\nconst a = 1\n"));
         assert!(!opts_into_type_checking("const a = 1\n// @ts-check\n"));
         assert!(!opts_into_type_checking("// not a pragma\nconst a = 1\n"));
     }

@@ -321,6 +321,11 @@ impl VirtualProject {
             registered.file.virtual_path.clone(),
             registered.original_content,
         );
+        // Re-registration must refresh the classification, not accumulate it: a
+        // script block converted to TypeScript (or opted in with `// @ts-check`)
+        // would otherwise stay gated behind a stale entry.
+        self.unchecked_javascript_files
+            .remove(&registered.file.virtual_path);
         if registered.unchecked_javascript {
             self.unchecked_javascript_files
                 .insert(registered.file.virtual_path.clone());
