@@ -2,6 +2,7 @@
 //!
 //! Uses arena allocation and zero-copy techniques for maximum performance.
 
+mod block_indent;
 mod custom_block;
 mod raw_mask;
 
@@ -210,17 +211,12 @@ impl<'a> GlyphFormatter<'a> {
 
         // Add content with indentation if configured
         if self.options.vue_indent_script_and_style {
-            let indent = self.options.indent_bytes();
-            let trimmed = formatted_content
-                .trim_end_matches('\n')
-                .trim_end_matches('\r');
-            for line in trimmed.as_bytes().split(|&b| b == b'\n') {
-                if !line.is_empty() && line != b"\r" {
-                    output.extend_from_slice(indent);
-                }
-                output.extend_from_slice(line);
-                output.extend_from_slice(self.options.newline_bytes());
-            }
+            block_indent::write_indented_block(
+                output,
+                &formatted_content,
+                self.options.indent_bytes(),
+                self.options.newline_bytes(),
+            );
         } else {
             output.extend_from_slice(formatted_content.as_bytes());
             if !formatted_content.ends_with('\n') {
@@ -307,17 +303,12 @@ impl<'a> GlyphFormatter<'a> {
 
         // Add content with indentation if configured
         if self.options.vue_indent_script_and_style {
-            let indent = self.options.indent_bytes();
-            let trimmed = formatted_content
-                .trim_end_matches('\n')
-                .trim_end_matches('\r');
-            for line in trimmed.as_bytes().split(|&b| b == b'\n') {
-                if !line.is_empty() && line != b"\r" {
-                    output.extend_from_slice(indent);
-                }
-                output.extend_from_slice(line);
-                output.extend_from_slice(self.options.newline_bytes());
-            }
+            block_indent::write_indented_block(
+                output,
+                &formatted_content,
+                self.options.indent_bytes(),
+                self.options.newline_bytes(),
+            );
         } else {
             output.extend_from_slice(formatted_content.as_bytes());
             if !formatted_content.ends_with('\n') {
