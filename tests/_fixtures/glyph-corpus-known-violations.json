@@ -1,5 +1,12 @@
 [
   {
+    "property": "lint-agreement",
+    "project": "gogocode",
+    "path": "packages/gogocode-vue-playground/packages/vue2/src/components/keycode-modifiers/Comp.vue",
+    "rule": "a11y/form-control-has-label",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/3343"
+  },
+  {
     "property": "parse-preservation",
     "project": "crater",
     "path": "resources/scripts/components/base/BaseModal.vue",
