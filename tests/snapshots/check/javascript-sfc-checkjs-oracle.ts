@@ -195,7 +195,7 @@ function writeProject(workspaceDir: string, testCase: Case): void {
     path.join(workspaceDir, "tsconfig.json"),
     JSON.stringify(
       {
-        compilerOptions: { ...baseCompilerOptions, ...(testCase.compilerOptions ?? {}) },
+        compilerOptions: { ...baseCompilerOptions, ...testCase.compilerOptions },
         vueCompilerOptions: { strictTemplates: true },
         include: ["**/*.vue", "**/*.ts"],
       },
