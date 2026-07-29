@@ -116,7 +116,7 @@ pub(super) fn build_vue_registered_file(
     let effective_options =
         virtual_ts_options_for_descriptor(context.virtual_ts_options, &descriptor);
     let use_tsx_virtual = descriptor_uses_jsx_script(&descriptor);
-    let virtual_source_type = if use_tsx_virtual {
+    let source_type = if use_tsx_virtual {
         SourceType::tsx()
     } else {
         SourceType::ts()
@@ -151,7 +151,7 @@ pub(super) fn build_vue_registered_file(
     }
     let rewritten = profile!(
         "canon.import.rewrite.vue",
-        context.rewriter.rewrite(&code, virtual_source_type)
+        context.rewriter.rewrite(&code, source_type, path.parent())
     );
     let source_map = CompositeSourceMap::new_vue(
         SfcSourceMap::new(mappings, collect_sfc_block_ranges(&descriptor)),

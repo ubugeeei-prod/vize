@@ -24,7 +24,7 @@ struct VirtualTsMetadata {
 /// coordinate system the byte-range source mappings operate in).
 pub(super) fn rewrite_vue_imports(code: &str) -> (std::string::String, ImportSourceMap) {
     use oxc_span::SourceType;
-    let result = ImportRewriter::new().rewrite(code, SourceType::ts());
+    let result = ImportRewriter::new().rewrite(code, SourceType::ts(), None);
     #[allow(clippy::disallowed_methods)]
     (result.code.to_string(), result.source_map)
 }

@@ -29,7 +29,7 @@ fn write(dir: &Path, rel: &str, contents: &str) -> PathBuf {
 fn test_rewrite_default_import() {
     let rewriter = ImportRewriter::new();
     let source = r#"import App from './App.vue';"#;
-    let result = rewriter.rewrite(source, SourceType::ts());
+    let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     assert_eq!(result.code, r#"import App from './App.vue.ts';"#);
 }
@@ -38,7 +38,7 @@ fn test_rewrite_default_import() {
 fn test_rewrite_named_import() {
     let rewriter = ImportRewriter::new();
     let source = r#"import { helper, type Props } from './helper.vue';"#;
-    let result = rewriter.rewrite(source, SourceType::ts());
+    let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     assert_eq!(
         result.code,
@@ -50,7 +50,7 @@ fn test_rewrite_named_import() {
 fn test_rewrite_side_effect_import() {
     let rewriter = ImportRewriter::new();
     let source = r#"import './global.vue';"#;
-    let result = rewriter.rewrite(source, SourceType::ts());
+    let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     assert_eq!(result.code, r#"import './global.vue.ts';"#);
 }
@@ -59,7 +59,7 @@ fn test_rewrite_side_effect_import() {
 fn test_no_rewrite_npm_import() {
     let rewriter = ImportRewriter::new();
     let source = r#"import { ref } from 'vue';"#;
-    let result = rewriter.rewrite(source, SourceType::ts());
+    let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     assert_eq!(result.code, r#"import { ref } from 'vue';"#);
 }
@@ -68,7 +68,7 @@ fn test_no_rewrite_npm_import() {
 fn test_no_rewrite_bare_vue_package_import() {
     let rewriter = ImportRewriter::new();
     let source = r#"import Emoji from 'emoji-mart-vue-fast/src/components/Emoji.vue';"#;
-    let result = rewriter.rewrite(source, SourceType::ts());
+    let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     assert_eq!(result.code, source);
 }
@@ -77,7 +77,7 @@ fn test_no_rewrite_bare_vue_package_import() {
 fn test_rewrite_alias_import() {
     let rewriter = ImportRewriter::new();
     let source = r#"import App, { type Props } from '@/App.vue';"#;
-    let result = rewriter.rewrite(source, SourceType::ts());
+    let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     assert_eq!(
         result.code,
@@ -278,7 +278,7 @@ fn test_keeps_absolute_node_modules_for_virtual_project() {
 fn test_rewrite_dynamic_import() {
     let rewriter = ImportRewriter::new();
     let source = r#"const App = () => import('./App.vue');"#;
-    let result = rewriter.rewrite(source, SourceType::ts());
+    let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     assert_eq!(result.code, r#"const App = () => import('./App.vue.ts');"#);
 }
@@ -287,7 +287,7 @@ fn test_rewrite_dynamic_import() {
 fn test_rewrite_parent_path() {
     let rewriter = ImportRewriter::new();
     let source = r#"import Parent from '../Parent.vue';"#;
-    let result = rewriter.rewrite(source, SourceType::ts());
+    let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     assert_eq!(result.code, r#"import Parent from '../Parent.vue.ts';"#);
 }
@@ -298,7 +298,7 @@ fn test_source_map_offset() {
     let source = r#"import App from './App.vue';
 import { ref } from 'vue';
 const x = 1;"#;
-    let result = rewriter.rewrite(source, SourceType::ts());
+    let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     let virtual_offset = 30;
     let original_offset = result.source_map.get_original_offset(virtual_offset);
@@ -318,7 +318,7 @@ const Lazy2 = () => import('./Lazy.vue');
 type AppModule = typeof import('./Typed.vue');
 export { default as Re } from './Re.vue';
 "#;
-    let mut found = rewriter.collect_relative_vue_specifiers(source, SourceType::ts());
+    let mut found = rewriter.collect_relative_vue_specifiers(source, SourceType::ts(), None);
     found.sort();
     assert_eq!(
         found.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
@@ -338,7 +338,7 @@ fn test_multiple_rewrites() {
     let source = r#"import App from './App.vue';
 import Child from './Child.vue';
 import { ref } from 'vue';"#;
-    let result = rewriter.rewrite(source, SourceType::ts());
+    let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     assert_eq!(
         result.code,

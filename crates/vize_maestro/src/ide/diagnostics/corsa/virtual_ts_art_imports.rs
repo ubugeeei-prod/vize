@@ -15,7 +15,7 @@ pub(super) fn collect_art_vue_dependency_paths(uri: &Url, code: &str) -> Vec<Pat
     let rewriter = ImportRewriter::new();
     let mut dependencies = Vec::new();
     let mut seen = std::collections::HashSet::<PathBuf>::new();
-    for specifier in rewriter.collect_relative_vue_specifiers(code, SourceType::ts()) {
+    for specifier in rewriter.collect_relative_vue_specifiers(code, SourceType::ts(), None) {
         let path = source_dir.join(specifier.as_str());
         let key = std::fs::canonicalize(&path).unwrap_or_else(|_| path.clone());
         if seen.insert(key) {
