@@ -152,7 +152,9 @@ mod tests {
     #[test]
     fn ts_check_pragma_is_only_honored_in_leading_comments() {
         assert!(opts_into_type_checking("\n// @ts-check\nconst a = 1\n"));
-        assert!(opts_into_type_checking("/* header */\n// @ts-check\nconst a = 1\n"));
+        assert!(opts_into_type_checking(
+            "/* header */\n// @ts-check\nconst a = 1\n"
+        ));
         assert!(!opts_into_type_checking("/* @ts-check */\nconst a = 1\n"));
         assert!(!opts_into_type_checking("const a = 1\n// @ts-check\n"));
         assert!(!opts_into_type_checking("// not a pragma\nconst a = 1\n"));
