@@ -7,7 +7,9 @@
 
 use vize_atelier_sfc::{
     SfcCompileOptions, SfcParseOptions,
-    compile_script::typescript::{ensure_javascript_output, is_plain_javascript},
+    compile_script::typescript::{
+        ensure_javascript_output, is_plain_javascript, transform_typescript_to_js,
+    },
     compile_sfc, parse_sfc,
 };
 
@@ -168,6 +170,30 @@ fn ensure_javascript_output_passes_javascript_through_untouched() {
     assert_eq!(
         out, js,
         "code that already parses as JavaScript must not be re-printed"
+    );
+}
+
+/// A semantic diagnostic must not abort the emitter's strip.
+///
+/// `transform_typescript_to_js` bails on any `SemanticBuilder` error and hands
+/// back the untouched TypeScript — correct while compiling a script, but fatal
+/// for an output guarantee, since the JavaScript-side pass this replaces never
+/// ran a semantic check at all.
+#[test]
+fn semantic_diagnostics_do_not_abort_the_emitter_strip() {
+    let redeclared: vize_carton::String =
+        "let a: number = 1;\nlet a: number = 2;\nexport { a };".into();
+
+    assert!(
+        !is_plain_javascript(&transform_typescript_to_js(&redeclared)),
+        "precondition: the script-pipeline strip is expected to bail on a semantic diagnostic"
+    );
+
+    let guaranteed = ensure_javascript_output(redeclared);
+    assert!(
+        is_plain_javascript(&guaranteed),
+        "the emitter strip must ignore semantic diagnostics and still emit JavaScript:\n\
+         {guaranteed}"
     );
 }
 
