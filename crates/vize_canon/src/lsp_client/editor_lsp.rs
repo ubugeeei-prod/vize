@@ -133,17 +133,29 @@ fn spawn_responder(client: LspClient, stop: Arc<AtomicBool>) -> std::thread::Joi
     let events = client.subscribe();
     std::thread::spawn(move || {
         while !stop.load(Ordering::Relaxed) {
-            if let Ok(InboundEvent::Request { id, method, .. }) =
+            if let Ok(InboundEvent::Request { id, method, params }) =
                 events.recv_timeout(Duration::from_millis(50))
             {
                 let response = match method.as_ref() {
-                    "workspace/configuration" => serde_json::json!([]),
+                    "workspace/configuration" => configuration_response(&params),
                     _ => Value::Null,
                 };
                 let _ = client.respond(id, response);
             }
         }
     })
+}
+
+/// `workspace/configuration` results are positional: the array must hold one
+/// entry per requested item, in request order, with `null` for settings the
+/// client cannot supply. We supply none, so every slot is `null`. A bare `[]`
+/// would misalign servers that read `result[i]` for `items[i]`.
+fn configuration_response(params: &Value) -> Value {
+    let requested = params
+        .get("items")
+        .and_then(Value::as_array)
+        .map_or(0, Vec::len);
+    Value::Array(vec![Value::Null; requested])
 }
 
 impl CorsaProjectClient {

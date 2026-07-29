@@ -137,11 +137,7 @@ const secondaryLabel = ref('secondary')
 
       const hoverText = hoverToText(hover);
       assert.match(hoverText, /secondaryLabel/);
-      // This session asks for typechecking, so type text belongs to the
-      // backend (#3321). No Corsa runtime is configured in this workspace, so
-      // the hover reports the template scope instead of guessing a type.
-      assert.match(hoverText, /template scope/);
-      assert.doesNotMatch(hoverText, /Ref</);
+      assert.ok(/template scope/.test(hoverText) && !/Ref</.test(hoverText), hoverText);
 
       const definition = (await session.request("textDocument/definition", {
         textDocument: { uri: artUri },
