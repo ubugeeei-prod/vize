@@ -1,5 +1,6 @@
 use napi::{Result, Status};
 use napi_derive::napi;
+use vize_atelier_sfc::compile_script::typescript::ensure_javascript_output;
 use vize_carton::cstr;
 
 use super::{
@@ -114,7 +115,10 @@ pub fn compile_sfc(
 
     match compile_result {
         Ok(result) => Ok(SfcCompileResultNapi {
-            code: result.code.into(),
+            // The emitter is the last stop before the bundler, so the code
+            // crossing this boundary must already be plain JavaScript — the JS
+            // plugin no longer re-strips it.
+            code: ensure_javascript_output(result.code).into(),
             css: result.css.map(Into::into),
             errors: result
                 .errors

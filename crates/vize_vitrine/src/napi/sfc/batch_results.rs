@@ -5,6 +5,7 @@ use std::{
     sync::atomic::{AtomicUsize, Ordering},
     time::Instant,
 };
+use vize_atelier_sfc::compile_script::typescript::ensure_javascript_output;
 use vize_carton::cstr;
 
 use super::{
@@ -185,7 +186,10 @@ fn compile_sfc_batch_with_results_inner(
                     };
                     BatchFileResultNapi {
                         path: file.path,
-                        code: result.code.into(),
+                        // The emitter is the last stop before the bundler, so
+                        // the code crossing this boundary must already be plain
+                        // JavaScript — the JS plugin no longer re-strips it.
+                        code: ensure_javascript_output(result.code).into(),
                         css: result.css.map(Into::into),
                         scope_id: scope_id.into(),
                         has_scoped,
