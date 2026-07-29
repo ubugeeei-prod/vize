@@ -247,11 +247,7 @@ test("template hover presents the backend-unwrapped string type", async () => {
       120_000,
     );
 
-    const message = await hover(
-      session,
-      uri,
-      cleanSource.indexOf("{{ message") + "{{ mes".length,
-    );
+    const message = await hover(session, uri, cleanSource.indexOf("{{ message") + "{{ mes".length);
     assert.match(hoverToText(message), /var message: string/);
     assert.deepEqual(message?.range, {
       start: { line: 7, character: 8 },
