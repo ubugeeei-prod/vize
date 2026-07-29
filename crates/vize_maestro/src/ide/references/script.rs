@@ -60,6 +60,12 @@ impl ReferencesService {
     }
 
     /// Find references to a symbol in the script block.
+    ///
+    /// Occurrences are collected as byte offsets inside the block content and
+    /// rebased onto the authored SFC through `loc.start`, the mapping `rename`
+    /// already uses. Deriving a position from block-relative *line numbers*
+    /// instead placed every script hit one line below the authored one and
+    /// could overrun the end of the line it landed on (#3325).
     pub(super) fn find_references_in_script(ctx: &IdeContext, word: &str) -> Vec<Location> {
         let mut locations = Vec::new();
 
@@ -68,49 +74,14 @@ impl ReferencesService {
             return locations;
         };
 
-        // Check script setup
-        if let Some(ref script_setup) = descriptor.script_setup {
-            let script_content = script_setup.content.as_ref();
-            let script_start_line = script_setup.loc.start_line as u32;
-
-            let refs = Self::find_identifier_references_in_script(script_content, word);
-            for (line, character) in refs {
-                locations.push(Location {
-                    uri: ctx.uri.clone(),
-                    range: Range {
-                        start: Position {
-                            line: script_start_line + line - 1,
-                            character,
-                        },
-                        end: Position {
-                            line: script_start_line + line - 1,
-                            character: character + word.len() as u32,
-                        },
-                    },
-                });
-            }
-        }
-
-        // Check regular script
-        if let Some(ref script) = descriptor.script {
-            let script_content = script.content.as_ref();
-            let script_start_line = script.loc.start_line as u32;
-
-            let refs = Self::find_identifier_references_in_script(script_content, word);
-            for (line, character) in refs {
-                locations.push(Location {
-                    uri: ctx.uri.clone(),
-                    range: Range {
-                        start: Position {
-                            line: script_start_line + line - 1,
-                            character,
-                        },
-                        end: Position {
-                            line: script_start_line + line - 1,
-                            character: character + word.len() as u32,
-                        },
-                    },
-                });
+        let blocks = [descriptor.script_setup.as_ref(), descriptor.script.as_ref()];
+        for block in blocks.into_iter().flatten() {
+            for offset in Self::find_identifier_references_in_script(&block.content, word) {
+                locations.push(Self::location_from_sfc_offset(
+                    ctx,
+                    block.loc.start + offset,
+                    word,
+                ));
             }
         }
 
@@ -127,76 +98,46 @@ impl ReferencesService {
         };
 
         for style in &descriptor.styles {
-            let style_content = style.content.as_ref();
-            let style_start_line = style.loc.start_line as u32;
-
-            // Find v-bind() references
-            let refs = Self::find_vbind_references_in_style(style_content, word);
-            for (line, character) in refs {
-                locations.push(Location {
-                    uri: ctx.uri.clone(),
-                    range: Range {
-                        start: Position {
-                            line: style_start_line + line - 1,
-                            character,
-                        },
-                        end: Position {
-                            line: style_start_line + line - 1,
-                            character: character + word.len() as u32,
-                        },
-                    },
-                });
+            for offset in Self::find_vbind_references_in_style(&style.content, word) {
+                locations.push(Self::location_from_sfc_offset(
+                    ctx,
+                    style.loc.start + offset,
+                    word,
+                ));
             }
         }
 
         locations
     }
 
-    /// Find identifier references in script content.
-    pub(super) fn find_identifier_references_in_script(
-        content: &str,
-        word: &str,
-    ) -> Vec<(u32, u32)> {
-        let mut refs = Vec::new();
-
-        for (line_idx, line) in content.lines().enumerate() {
-            let positions = Self::find_word_occurrences(line, word);
-
-            for pos in positions {
-                refs.push((
-                    line_idx as u32 + 1,
-                    crate::ide::offset_to_position(line, pos).1,
-                ));
-            }
-        }
-
-        refs
+    /// Byte offsets, relative to the block content, of every standalone
+    /// occurrence of `word` in script code.
+    pub(super) fn find_identifier_references_in_script(content: &str, word: &str) -> Vec<usize> {
+        Self::find_word_occurrences(content, word)
     }
 
-    /// Find v-bind references in style content.
-    pub(super) fn find_vbind_references_in_style(content: &str, word: &str) -> Vec<(u32, u32)> {
+    /// Byte offsets, relative to the block content, of every `v-bind()`
+    /// argument that names `word`.
+    pub(super) fn find_vbind_references_in_style(content: &str, word: &str) -> Vec<usize> {
         let mut refs = Vec::new();
+        let mut line_start = 0usize;
 
-        for (line_idx, line) in content.lines().enumerate() {
+        for line in content.split_inclusive('\n') {
             let mut search_start = 0;
             while let Some(relative_vbind_pos) = line[search_start..].find("v-bind(") {
                 let vbind_pos = search_start + relative_vbind_pos;
-                let after_vbind = &line[vbind_pos + 7..];
-                if let Some(close_paren) = after_vbind.find(')') {
-                    let binding_name = after_vbind[..close_paren].trim();
-                    if binding_name == word {
-                        let binding_offset =
-                            vbind_pos + 7 + (binding_name.len() - binding_name.trim_start().len());
-                        refs.push((
-                            line_idx as u32 + 1,
-                            crate::ide::offset_to_position(line, binding_offset).1,
-                        ));
-                    }
-                    search_start = vbind_pos + 7 + close_paren + 1;
-                } else {
+                let argument = &line[vbind_pos + 7..];
+                let Some(close_paren) = argument.find(')') else {
                     break;
+                };
+                let raw = &argument[..close_paren];
+                if raw.trim() == word {
+                    let leading = raw.len() - raw.trim_start().len();
+                    refs.push(line_start + vbind_pos + 7 + leading);
                 }
+                search_start = vbind_pos + 7 + close_paren + 1;
             }
+            line_start += line.len();
         }
 
         refs
@@ -255,5 +196,87 @@ impl ReferencesService {
             }
         }
         offset
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use tower_lsp::lsp_types::Url;
+
+    use crate::ide::{IdeContext, ReferencesService};
+    use crate::server::ServerState;
+
+    /// Authored 0-based lines: 0 `<script setup>`, 3 `const visitCount`,
+    /// 4 `const doubled`, 5 `</script>`, 8 the `@click` handler.
+    const SOURCE: &str = r#"<script setup lang="ts">
+import { computed, ref } from 'vue'
+
+const visitCount = ref(0)
+const doubled = computed(() => visitCount.value * 2)
+</script>
+
+<template>
+  <button @click="visitCount++">bump</button>
+</template>
+"#;
+
+    fn reference_spans(source: &str, cursor_text: &str) -> Vec<(u32, u32, u32)> {
+        spans(source, cursor_text, true)
+    }
+
+    fn spans(source: &str, cursor_text: &str, include_declaration: bool) -> Vec<(u32, u32, u32)> {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///App.vue").unwrap();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+        let offset = source.find(cursor_text).unwrap();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+
+        ReferencesService::references(&ctx, include_declaration)
+            .unwrap()
+            .into_iter()
+            .map(|location| {
+                assert_eq!(location.uri, uri);
+                (
+                    location.range.start.line,
+                    location.range.start.character,
+                    location.range.end.character,
+                )
+            })
+            .collect()
+    }
+
+    /// #3325: script hits were rebased from block-relative line numbers, so
+    /// they answered one line below the authored occurrence — `5:31-41` even
+    /// overran the 9-character `</script>` line while the real use at `4:31-41`
+    /// went missing.
+    #[test]
+    fn script_references_land_on_authored_ranges() {
+        assert_eq!(
+            reference_spans(SOURCE, "visitCount = ref"),
+            [(3, 6, 16), (4, 31, 41), (8, 18, 28)],
+        );
+    }
+
+    /// The block scan reports the declaration site too, so once it maps to the
+    /// authored span `includeDeclaration: false` has to drop it by range.
+    #[test]
+    fn excluding_the_declaration_drops_only_the_declaration_span() {
+        assert_eq!(
+            spans(SOURCE, "visitCount = ref", false),
+            [(4, 31, 41), (8, 18, 28)],
+        );
+    }
+
+    /// A style `v-bind()` argument maps through the same block offset rebase.
+    #[test]
+    fn style_vbind_references_land_on_authored_ranges() {
+        let source = "<script setup>\nconst textColor = 'red'\n</script>\n\n<style>\n.a {\n  color: v-bind(textColor);\n}\n</style>\n";
+
+        assert_eq!(
+            reference_spans(source, "textColor = "),
+            [(1, 6, 15), (6, 16, 25)],
+        );
     }
 }

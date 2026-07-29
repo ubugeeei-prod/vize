@@ -173,7 +173,17 @@ const doubled = price * 2
         })) as Location[];
 
         assert.ok(Array.isArray(withDeclaration), JSON.stringify(withDeclaration));
-        assert.equal(withDeclaration.length, 4);
+        // Every authored `price`: the declaration, the script-side use, and the
+        // interpolation. Before #3325 the script hits were rebased one line
+        // down, so the declaration appeared twice — once authored, once shifted.
+        assert.deepEqual(
+          withDeclaration.map((reference) => reference.range),
+          [
+            { start: { line: 1, character: 6 }, end: { line: 1, character: 11 } },
+            { start: { line: 2, character: 16 }, end: { line: 2, character: 21 } },
+            { start: { line: 6, character: 5 }, end: { line: 6, character: 10 } },
+          ],
+        );
         assert.ok(
           withDeclaration.every((reference) => reference.uri === uri),
           JSON.stringify(withDeclaration),
@@ -193,7 +203,13 @@ const doubled = price * 2
         })) as Location[];
 
         assert.ok(Array.isArray(withoutDeclaration), JSON.stringify(withoutDeclaration));
-        assert.equal(withoutDeclaration.length, 3);
+        assert.deepEqual(
+          withoutDeclaration.map((reference) => reference.range),
+          [
+            { start: { line: 2, character: 16 }, end: { line: 2, character: 21 } },
+            { start: { line: 6, character: 5 }, end: { line: 6, character: 10 } },
+          ],
+        );
         assert.ok(
           withoutDeclaration.every((reference) => reference.uri === uri),
           JSON.stringify(withoutDeclaration),

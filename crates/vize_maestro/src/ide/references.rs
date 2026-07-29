@@ -35,10 +35,11 @@ impl ReferencesService {
         }
 
         let mut locations = Vec::new();
+        let declaration = Self::find_definition_location(ctx, &word);
 
         // Find definition location if requested
-        if include_declaration && let Some(def_loc) = Self::find_definition_location(ctx, &word) {
-            locations.push(def_loc);
+        if include_declaration && let Some(ref def_loc) = declaration {
+            locations.push(def_loc.clone());
         }
 
         // Find references in template
@@ -49,6 +50,12 @@ impl ReferencesService {
 
         // Find references in style
         locations.extend(Self::find_references_in_style(ctx, &word));
+
+        // The block scans report every occurrence of the word, the declaration
+        // included, so `includeDeclaration: false` has to drop it explicitly.
+        if !include_declaration && let Some(ref def_loc) = declaration {
+            locations.retain(|location| location.range != def_loc.range);
+        }
 
         if locations.is_empty() {
             None

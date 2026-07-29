@@ -166,31 +166,24 @@ test("create-vue editor features answer in authored Vue ranges", async (t) => {
           }
         });
 
-        // GAP: references leaks raw virtual-TS coordinates for script-side
-        // hits. Probed here it answers [3:6-16, 4:6-16, 5:31-41, 9:18-28]: the
-        // two script occurrences appear one line below authored, and 5:31-41
-        // cannot exist (line 5 is the 9-character `</script>`), so the authored
-        // use at 4:31-41 is absent. `rename` and `documentHighlight` map the
-        // identical occurrence set correctly, so this is references-only.
-        await t.test(
-          "references map script-side hits to authored ranges",
-          {
-            skip: "textDocument/references returns unmapped virtual-TS ranges for script hits (#2971 audit item 8)",
-          },
-          async () => {
-            const references = (await ask("textDocument/references", {
-              position: scriptVisitCount,
-              context: { includeDeclaration: true },
-            })) as LspLocation[];
-            const hit = references.map((reference) => reference.range);
-            assert.deepEqual(hit, [
-              VISIT_COUNT_DECL,
-              VISIT_COUNT_SCRIPT_USE,
-              VISIT_COUNT_TEMPLATE_USE,
-            ]);
-            assertAuthoredRanges(source, hit);
-          },
-        );
+        // Regression for #3325: script-side hits used to leak block-relative
+        // coordinates, answering [3:6-16, 4:6-16, 5:31-41, 9:18-28] — the two
+        // script occurrences one line below authored, with 5:31-41 landing past
+        // the end of the 9-character `</script>` line and the authored use at
+        // 4:31-41 missing entirely.
+        await t.test("references map script-side hits to authored ranges", async () => {
+          const references = (await ask("textDocument/references", {
+            position: scriptVisitCount,
+            context: { includeDeclaration: true },
+          })) as LspLocation[];
+          const hit = references.map((reference) => reference.range);
+          assert.deepEqual(hit, [
+            VISIT_COUNT_DECL,
+            VISIT_COUNT_SCRIPT_USE,
+            VISIT_COUNT_TEMPLATE_USE,
+          ]);
+          assertAuthoredRanges(source, hit);
+        });
 
         await t.test("prepareRename and rename touch only authored spans", async () => {
           const prepared = (await ask("textDocument/prepareRename", {
