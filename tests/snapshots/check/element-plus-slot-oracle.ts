@@ -108,9 +108,13 @@ test("Element Plus badge slot contracts stay exact across editor revisions", asy
           ),
         })) as { contents?: unknown } | null;
         const hoverText = hoverToText(hover);
+        // Answered by the backend since #3321. The slot scope parameter still
+        // widens to `any` in the generated virtual TS — a separate gap, but the
+        // provenance is now the type backend rather than a generic fallback.
         assert.equal(
           hoverText,
-          "**value**\n\n_Template expression_\n\nExpression evaluated against the component template scope.",
+          "**TypeScript quick info**\n\n_Resolved through Vize virtual TypeScript_\n\n" +
+            "```typescript\n(parameter) value: any\n```",
         );
 
         const brokenSource = fixture.applyExactPatch(appPath, cleanExpression, brokenExpression);

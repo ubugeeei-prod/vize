@@ -13,6 +13,7 @@
     clippy::disallowed_macros
 )]
 
+mod backend;
 mod builder;
 mod component_prop;
 mod component_tag;
@@ -536,7 +537,9 @@ const message = ref('hello')
         let value = hover_markdown(hover);
 
         assert!(value.contains("message"));
-        assert!(value.contains("Ref<string>"));
+        // The binding still resolves at the identifier boundary; its *type* is
+        // the backend's to answer now, so the heuristic reports provenance only.
+        assert!(value.contains("_Template binding_"));
     }
 
     #[test]
@@ -556,26 +559,18 @@ const message = ref('hello')
         let value = hover_markdown(hover);
 
         assert!(value.contains("message"));
-        assert!(value.contains("Ref<string>"));
+        assert!(value.contains("_Template binding_"));
     }
 
     #[test]
     fn test_hover_infers_computed_getter_return_type() {
-        let source = r#"<script setup lang="ts">
-const count = ref(0)
-const double = computed(() => count.value * 2)
-</script>
-"#;
-        let (state, uri) = state_with_document("ComputedHover.vue", source);
+        // Exercises the inference directly: on a typecheck session the hover
+        // surface hands type text to the backend (see `hover::backend`).
+        let script = "const count = ref(0)\nconst double = computed(() => count.value * 2)\n";
+        let inferred =
+            HoverService::infer_type_from_script(script, "double", BindingType::SetupRef);
 
-        let offset = source.rfind("double").unwrap() + "double".len();
-        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-        let hover = HoverService::hover(&ctx).unwrap();
-        let value = hover_markdown(hover);
-
-        assert!(value.contains("double"));
-        assert!(value.contains("ComputedRef<number>"));
-        assert!(!value.contains("ComputedRef<unknown>"));
+        assert_eq!(inferred.as_deref(), Some("ComputedRef<number>"));
     }
 
     #[test]
@@ -733,7 +728,7 @@ const secondaryLabel = ref('secondary')
         let value = hover_markdown(hover);
 
         assert!(value.contains("secondaryLabel"));
-        assert!(value.contains("Ref<string>"));
+        assert!(value.contains("_Template expression_"));
     }
 
     #[cfg(feature = "native")]
@@ -765,7 +760,7 @@ const count = ref(0)
             let value = hover_markdown(hover);
 
             assert!(value.contains("count"));
-            assert!(value.contains("Ref<number>"));
+            assert!(value.contains("_Template binding_"));
         });
     }
 

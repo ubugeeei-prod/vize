@@ -61,11 +61,11 @@ impl HoverService {
             return Some(hover);
         }
 
-        if let Some(hover) = Self::hover_ts_binding(ctx, &word) {
+        if let Some(hover) = super::backend::binding_type_hover(ctx, &word) {
             return Some(hover);
         }
 
-        if let Some(type_info) = crate::ide::TypeService::get_type_at(ctx) {
+        if let Some(type_info) = super::backend::heuristic_type_at(ctx) {
             #[allow(clippy::disallowed_macros)]
             let signature = format!("{word}: {}", type_info.display);
             let mut builder = HoverBuilder::new()

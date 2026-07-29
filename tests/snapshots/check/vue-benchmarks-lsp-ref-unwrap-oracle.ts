@@ -26,13 +26,13 @@ import { LspSession } from "../../tooling/support/lsp/session.ts";
 //    `Ref<string>` shown at template positions, and `MaybeRef<unknown>` for a
 //    plain `string` const;
 // 3. a backend-missing session is identifiable: the exact
-//    `typecheck-unavailable` hint diagnostic while hovers keep answering
-//    heuristically.
+//    `typecheck-unavailable` hint diagnostic, and hovers that DECLINE the type
+//    rather than guessing one.
 //
 // The probe REJECTS (refuses to rank) any hover carrying a heuristic or
-// backend-missing signature; on current main every template hover is
-// heuristic, so the rejection paths are the required behavior and the
-// backend-unwrapped `string` hover is recorded as a known gap below.
+// backend-missing signature. Since #3321 a live session answers template
+// hovers from the backend, so the ranked classification is the required
+// behavior and the heuristic signatures must no longer appear at all.
 const cleanSource = `<script setup lang="ts">
 import { ref } from 'vue'
 const message = ref('hello')
@@ -135,38 +135,38 @@ test("ref-unwrap probe proves backend liveness and rejects heuristic hovers", as
     )) as PublishDiagnosticsParams;
     assert.deepEqual(repaired, { diagnostics: [], uri, version: 2 });
 
-    // Script-side hover: `Ref<string>` is the correct script type. Provenance
-    // says it comes from the script-binding analysis, not from Corsa.
+    // Script-side hover: `Ref<string>` is the correct script type, and it now
+    // arrives from the backend rather than the script-binding analysis.
     const scriptHover = await hoverText(
       session,
       uri,
       cleanSource.indexOf("const message") + "const mes".length,
     );
-    assert.match(scriptHover, /message: Ref<string>/);
-    assert.match(scriptHover, /_Script binding_/);
+    assert.match(scriptHover, /const message: Ref<string, string>/);
+    assert.match(scriptHover, /_Resolved through Vize virtual TypeScript_/);
+    assert.doesNotMatch(scriptHover, /_Script binding_/);
 
-    // Template-side hovers: a backend answer would present the unwrapped
-    // `string`; current main presents the script `Ref<string>` (and
-    // `MaybeRef<unknown>` for a plain `string` const) under the template
-    // provenance marker, so the probe must classify both as heuristic and
-    // reject them.
+    // Template-side hovers: the backend presents the unwrapped `string` at the
+    // interpolation position and the real `string` for the plain const, so both
+    // rank as backend evidence and neither may carry a heuristic signature.
     const templateMessageHover = await hoverText(
       session,
       uri,
       cleanSource.indexOf("{{ message") + "{{ mes".length,
     );
-    assert.match(templateMessageHover, /message: Ref<string>/);
-    assert.match(templateMessageHover, /_Template binding from script_/);
-    assert.doesNotMatch(templateMessageHover, /message: string/);
-    assert.equal(classifyTemplateHover(templateMessageHover, "message"), "heuristic");
+    assert.match(templateMessageHover, /var message: string/);
+    assert.doesNotMatch(templateMessageHover, /_Template binding from script_/);
+    assert.doesNotMatch(templateMessageHover, /Ref</);
+    assert.equal(classifyTemplateHover(templateMessageHover, "message"), "backend-template-type");
 
     const templateUpperHover = await hoverText(
       session,
       uri,
       cleanSource.lastIndexOf("upper }}") + 2,
     );
-    assert.match(templateUpperHover, /upper: MaybeRef<unknown>/);
-    assert.equal(classifyTemplateHover(templateUpperHover, "upper"), "heuristic");
+    assert.match(templateUpperHover, /var upper: string/);
+    assert.doesNotMatch(templateUpperHover, /MaybeRef<unknown>/);
+    assert.equal(classifyTemplateHover(templateUpperHover, "upper"), "backend-template-type");
 
     // The classifier itself must accept only the unwrapped backend shape.
     assert.equal(
@@ -204,15 +204,18 @@ test("ref-unwrap probe rejects backend-missing sessions by their exact hint", as
     )) as PublishDiagnosticsParams;
     assert.deepEqual(publish, { diagnostics: [typecheckUnavailableHint], uri, version: 1 });
 
-    // The session still answers hovers — through the heuristic layer. That is
-    // exactly the answer the probe exists to reject: without the liveness
-    // diagnostic above, this latency is not a measurement of type checking.
+    // The session still answers hovers, but it DECLINES the type: a typecheck
+    // session whose backend never came up hands back documentation only. The
+    // heuristic type signature that used to appear here is what made a hover
+    // latency look like a measurement of type checking.
     const templateHover = await hoverText(
       session,
       uri,
       cleanSource.indexOf("{{ message") + "{{ mes".length,
     );
-    assert.match(templateHover, /_Template binding from script_/);
+    assert.match(templateHover, /_Template binding_/);
+    assert.doesNotMatch(templateHover, /_Template binding from script_/);
+    assert.doesNotMatch(templateHover, /```typescript/);
     assert.equal(classifyTemplateHover(templateHover, "message"), "heuristic");
   } finally {
     await session.shutdown();
@@ -220,25 +223,64 @@ test("ref-unwrap probe rejects backend-missing sessions by their exact hint", as
   }
 });
 
-// Known gap (#3283): with a live Corsa backend the template hover still
-// presents the script-side `Ref<string>` under the `_Template binding from
-// script_` provenance and types a plain `string` const as
-// `MaybeRef<unknown>`. Once hover consults the Corsa-backed template types,
-// assert `message: string` (no `Ref<`) at the interpolation position and
-// `upper: string` for the plain const, and flip the rejection assertions
-// above into required backend classifications.
-test("template hover presents the backend-unwrapped string type", {
-  skip:
-    "vize lsp template hovers answer from the script-binding heuristic (Ref<string> / " +
-    "MaybeRef<unknown>) even when Corsa is live, so the unwrapped `string` cannot be asserted yet",
+// Closed gap (#3283 / #3321): the template hover now reports the template-scope
+// type the backend computes — `string`, the unwrapped ref — together with the
+// authored-coordinate range of the identifier under the cursor. The range is
+// the second half of the claim: a hover carrying virtual-TS coordinates would
+// highlight the wrong span even with the right text.
+test("template hover presents the backend-unwrapped string type", async () => {
+  const corsaPath = resolveTsgoBinary();
+  const workspaceDir = createWorkspace("unwrapped", corsaPath);
+  const filePath = path.join(workspaceDir, "App.vue");
+  const uri = pathToFileURL(filePath).href;
+  fs.writeFileSync(filePath, cleanSource, "utf8");
+
+  const session = new LspSession();
+  try {
+    await session.initialize(workspaceDir, { editor: true, lint: false, typecheck: true });
+    session.notify("textDocument/didOpen", {
+      textDocument: { uri, languageId: "vue", version: 1, text: cleanSource },
+    });
+    await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => isDiagnosticsForUri(params, uri),
+      120_000,
+    );
+
+    const message = await hover(
+      session,
+      uri,
+      cleanSource.indexOf("{{ message") + "{{ mes".length,
+    );
+    assert.match(hoverToText(message), /var message: string/);
+    assert.deepEqual(message?.range, {
+      start: { line: 7, character: 8 },
+      end: { line: 7, character: 15 },
+    });
+
+    const upper = await hover(session, uri, cleanSource.lastIndexOf("upper }}") + 2);
+    assert.match(hoverToText(upper), /var upper: string/);
+    assert.deepEqual(upper?.range, {
+      start: { line: 7, character: 35 },
+      end: { line: 7, character: 40 },
+    });
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+  }
 });
 
-async function hoverText(session: LspSession, uri: string, offset: number): Promise<string> {
-  const hover = (await session.request("textDocument/hover", {
+type HoverResponse = { contents?: unknown; range?: unknown } | null;
+
+async function hover(session: LspSession, uri: string, offset: number): Promise<HoverResponse> {
+  return (await session.request("textDocument/hover", {
     textDocument: { uri },
     position: offsetToPosition(cleanSource, offset),
-  })) as { contents?: unknown } | null;
-  return hoverToText(hover);
+  })) as HoverResponse;
+}
+
+async function hoverText(session: LspSession, uri: string, offset: number): Promise<string> {
+  return hoverToText(await hover(session, uri, offset));
 }
 
 function createWorkspace(label: string, corsaPath: string): string {

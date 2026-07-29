@@ -55,6 +55,7 @@ impl CorsaProjectClient {
             session_document_uris: Default::default(),
             external_document_uris: Default::default(),
             temp_dir,
+            editor_lsp: None,
             closed: false,
         })
     }
@@ -104,6 +105,9 @@ impl CorsaProjectClient {
             self.remember_session_document_uri(uri.as_str(), document_uri);
         }
         self.materialized_project_session = true;
+        // The overlay root moved, so the editor session must be respawned
+        // against the materialized tree on the next request.
+        self.retire_editor_lsp();
         Ok(())
     }
 }

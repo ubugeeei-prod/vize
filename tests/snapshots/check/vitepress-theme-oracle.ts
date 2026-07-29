@@ -120,9 +120,13 @@ test("VitePress theme exports refresh exact template diagnostics", async () => {
           position: offsetToPosition(source, codeUsage + "co".length),
         })) as { contents?: unknown } | null;
         const hoverText = hoverToText(hover);
+        // Since #3321 the backend resolves the optional theme property through
+        // the refreshed declaration instead of falling back to a generic
+        // template-expression hover.
         assert.equal(
           hoverText,
-          "**code**\n\n_Template expression_\n\nExpression evaluated against the component template scope.",
+          "**TypeScript quick info**\n\n_Resolved through Vize virtual TypeScript_\n\n" +
+            "```typescript\n(property) DefaultTheme.NotFoundOptions.code?: string | undefined\n```",
         );
 
         const themeUsage = source.indexOf("theme.notFound");

@@ -16,6 +16,7 @@ mod bootstrap;
 mod diagnostics;
 mod diagnostics_api;
 mod diagnostics_lsp;
+mod editor_lsp;
 mod lifecycle;
 mod lifecycle_setup;
 mod materialized_refresh;
@@ -50,6 +51,9 @@ pub struct CorsaProjectClient {
     external_document_uris: FxHashMap<String, String>,
     /// Temporary directory for tsconfig.json (cleaned up on drop).
     temp_dir: Option<PathBuf>,
+    /// Lazily spawned `--lsp --stdio` session answering editor requests the
+    /// project-session API rejects as unsupported (corsa-bind#409).
+    editor_lsp: Option<editor_lsp::EditorLspSession>,
     closed: bool,
 }
 

@@ -96,29 +96,29 @@ test("create-vue editor features answer in authored Vue ranges", async (t) => {
             contents: { kind: string; value: string };
           };
           assert.equal(hover.contents.kind, "markdown");
-          assert.equal(fencedBlock(hover.contents.value), "doubled: ComputedRef<number>");
-          assert.match(hover.contents.value, /_Template binding from script_/);
+          // Template scope, so the backend reports the *unwrapped* computed
+          // value rather than the script-side `ComputedRef` wrapper (#3321).
+          assert.equal(fencedBlock(hover.contents.value), "var doubled: number");
+          assert.match(hover.contents.value, /_Resolved through Vize virtual TypeScript_/);
 
           const scriptHover = (await ask("textDocument/hover", {
             position: scriptVisitCount,
           })) as { contents: { value: string } };
-          assert.equal(fencedBlock(scriptHover.contents.value), "visitCount: Ref<number>");
-          assert.match(scriptHover.contents.value, /_Script binding_/);
+          assert.equal(
+            fencedBlock(scriptHover.contents.value),
+            "const visitCount: Ref<number, number>",
+          );
+          assert.match(scriptHover.contents.value, /_Resolved through Vize virtual TypeScript_/);
         });
 
-        // GAP: `vize lsp` never populates the optional `Hover.range`, so an
-        // editor cannot underline the hovered authored span. The body below is
-        // the acceptance criterion — unskip it once the server returns a range.
-        await t.test(
-          "hover reports the authored range of the hovered binding",
-          { skip: "vize lsp omits the optional Hover.range field (#2971 audit item 8)" },
-          async () => {
-            const hover = (await ask("textDocument/hover", { position: templateDoubled })) as {
-              range?: LspRange;
-            };
-            assert.deepEqual(hover.range, DOUBLED_TEMPLATE_USE);
-          },
-        );
+        // Closed with #3321: backend-answered hovers carry the range tsgo
+        // reports, mapped back into authored `.vue` coordinates.
+        await t.test("hover reports the authored range of the hovered binding", async () => {
+          const hover = (await ask("textDocument/hover", { position: templateDoubled })) as {
+            range?: LspRange;
+          };
+          assert.deepEqual(hover.range, DOUBLED_TEMPLATE_USE);
+        });
 
         await t.test("definition lands on the authored declaration span", async () => {
           const fromTemplate = (await ask("textDocument/definition", {

@@ -83,6 +83,7 @@ impl CorsaProjectClient {
         }
 
         let _ = corsa::runtime::block_on(self.session.close());
+        self.retire_editor_lsp();
         self.document_texts.clear();
         self.diagnostics.clear();
         self.overlay_versions.clear();

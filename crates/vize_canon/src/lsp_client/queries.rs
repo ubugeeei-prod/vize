@@ -1,5 +1,5 @@
 use super::{CorsaProjectClient, session::uri_document_identifier, utils::value_to_json};
-use corsa::runtime::block_on;
+use corsa::{CorsaError, runtime::block_on};
 use lsp_types::CompletionContext;
 use serde_json::Value;
 use vize_carton::{String, cstr};
@@ -28,18 +28,24 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
+        // The project-session API rejects hover as unsupported on every pinned
+        // runtime (corsa-bind#409), either up front through
+        // `describeCapabilities` or at request time. Both roads lead to the
+        // editor LSP transport, which the same runtime does serve.
         let Some(position) = self.api_position(uri, line, character, self.supports_hover_api())?
         else {
-            return Ok(None);
+            return self.hover_via_editor_lsp(uri, line, character);
         };
 
         let document_uri = self.session_document_uri(uri);
-        let response = block_on(
+        match block_on(
             self.session
                 .get_hover_at_position(uri_document_identifier(document_uri.as_str()), position),
-        )
-        .map_err(|error| cstr!("Failed to request hover: {error}"))?;
-        response.map(value_to_json).transpose()
+        ) {
+            Ok(response) => response.map(value_to_json).transpose(),
+            Err(CorsaError::Unsupported(_)) => self.hover_via_editor_lsp(uri, line, character),
+            Err(error) => Err(cstr!("Failed to request hover: {error}")),
+        }
     }
 
     pub(crate) fn definition_raw(

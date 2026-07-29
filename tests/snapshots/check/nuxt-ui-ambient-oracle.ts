@@ -95,7 +95,11 @@ test("Nuxt UI generated ambient types stay exact across editor revisions", async
         })) as { contents?: unknown } | null;
         const hoverText = hoverToText(hover);
         assert.match(hoverText, /active/);
-        assert.match(hoverText, /Template binding from script|WritableComputedRef|string/);
+        // Backend-answered since #3321. The `v-model` binding still widens to
+        // `any` against the generated ambient component types; the point pinned
+        // here is the provenance, not the precision.
+        assert.match(hoverText, /_Resolved through Vize virtual TypeScript_/);
+        assert.doesNotMatch(hoverText, /Template binding from script/);
 
         const definition = (await session.request("textDocument/definition", {
           textDocument: { uri: appUri },

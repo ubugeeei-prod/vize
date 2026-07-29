@@ -40,7 +40,7 @@ impl HoverService {
         }
 
         // Try to get TypeScript type information from croquis analysis
-        if let Some(hover) = Self::hover_ts_binding_in_script(ctx, &word) {
+        if let Some(hover) = super::backend::script_binding_type_hover(ctx, &word) {
             return Some(hover);
         }
 
@@ -98,7 +98,7 @@ impl HoverService {
     }
 
     /// Get hover for TypeScript binding in script using croquis analysis.
-    fn hover_ts_binding_in_script(ctx: &IdeContext, word: &str) -> Option<Hover> {
+    pub(super) fn hover_ts_binding_in_script(ctx: &IdeContext, word: &str) -> Option<Hover> {
         // Parse SFC to get script content
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: ctx.uri.path().to_string().into(),
