@@ -66,3 +66,32 @@ pub fn transform_typescript_to_js(code: &str) -> String {
         .replace('\t', "  ")
         .into()
 }
+
+/// Report whether `code` already parses as plain ECMAScript.
+///
+/// This is a parse-only check (no semantic pass, no codegen): the emitter uses
+/// it to skip a re-print of output that is already JavaScript. `SourceType::mjs`
+/// is the shape the emitter produces — ESM, no JSX, no TypeScript — so any
+/// leftover TypeScript syntax surfaces as a parse error and the caller falls
+/// back to the full strip.
+pub fn is_plain_javascript(code: &str) -> bool {
+    let allocator = Allocator::default();
+    let parser = Parser::new(&allocator, code, SourceType::mjs());
+    profile!("atelier.script.js.probe", parser.parse())
+        .errors
+        .is_empty()
+}
+
+/// Guarantee that emitted module code contains no TypeScript syntax.
+///
+/// The overwhelming majority of emitter output is already plain JavaScript
+/// (the script pipeline strips TypeScript while compiling), so the owned
+/// `code` is handed straight back without a copy. Only the residue — most
+/// notably `<script lang="uts">`, a lang the script pipeline does not treat as
+/// TypeScript — pays for the transform.
+pub fn ensure_javascript_output(code: String) -> String {
+    if is_plain_javascript(&code) {
+        return code;
+    }
+    transform_typescript_to_js(&code)
+}
