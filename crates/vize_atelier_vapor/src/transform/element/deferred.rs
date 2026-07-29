@@ -210,22 +210,26 @@ fn transform_dynamic_children_with_ids<'a>(
 
         if is_template_backed_element(child_el) {
             let index = count_rendered_child_nodes(&el.children, 0, child_index).saturating_sub(1);
-            if let Some((prev_child_id, prev_index)) = prev_template_backed_child {
-                block.operation.push(OperationNode::NextRef(NextRefIRNode {
-                    child_id,
-                    prev_id: prev_child_id,
-                    parent_id,
-                    offset: index.saturating_sub(prev_index),
-                    index,
-                }));
-            } else {
-                block
-                    .operation
-                    .push(OperationNode::ChildRef(ChildRefIRNode {
+            // `_next` advances exactly one sibling, so only an adjacent hop may
+            // chain off the previous child; anything further needs the absolute
+            // lookup a `ChildRef` emits as `_nthChild(parent, index)` (#3330).
+            match prev_template_backed_child {
+                Some((prev_child_id, prev_index)) if index == prev_index + 1 => {
+                    block.operation.push(OperationNode::NextRef(NextRefIRNode {
                         child_id,
-                        parent_id,
+                        prev_id: prev_child_id,
                         offset: index,
                     }));
+                }
+                _ => {
+                    block
+                        .operation
+                        .push(OperationNode::ChildRef(ChildRefIRNode {
+                            child_id,
+                            parent_id,
+                            offset: index,
+                        }));
+                }
             }
 
             prev_template_backed_child = Some((child_id, index));

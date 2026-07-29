@@ -100,19 +100,14 @@ pub(super) fn generate_child_ref(ctx: &mut GenerateContext, child_ref: &ChildRef
     ctx.push_line_fmt(format_args!("const n{} = {}", child_ref.child_id, expr));
 }
 
-/// Generate NextRef (`_next` / `_nthChild` helper).
+/// Generate NextRef (`_next` helper).
+///
+/// The node is always the sibling immediately after `prev_id` — jumps of two
+/// or more siblings arrive as a [`ChildRefIRNode`] absolute lookup instead
+/// (#3330) — so this is a single `_next` step carrying the absolute index as
+/// the hydration hint.
 pub(super) fn generate_next_ref(ctx: &mut GenerateContext, next_ref: &NextRefIRNode) {
-    let expr = if next_ref.offset > 1 {
-        ctx.use_helper("nthChild");
-        cstr!("_nthChild(n{}, {})", next_ref.parent_id, next_ref.index)
-    } else {
-        build_navigation(
-            cstr!("n{}", next_ref.prev_id),
-            next_ref.offset,
-            next_ref.index,
-            ctx,
-        )
-    };
+    let expr = build_navigation(cstr!("n{}", next_ref.prev_id), 1, next_ref.offset, ctx);
     ctx.push_line_fmt(format_args!("const n{} = {}", next_ref.child_id, expr));
 }
 
