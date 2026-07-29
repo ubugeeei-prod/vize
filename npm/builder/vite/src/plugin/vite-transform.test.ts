@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 
+import * as vite from "vite";
+
 import {
   createVirtualTypeScriptTransformer,
-  needsVirtualTypeScriptTransform,
+  transformVizeVirtualModule,
 } from "./vite-transform.ts";
+import type { VizePluginState } from "./state.ts";
 
 {
   let used = "";
@@ -65,16 +68,48 @@ import {
   );
 }
 
-assert.equal(
-  needsVirtualTypeScriptTransform(
-    'import { ref as _ref } from "vue";\nconst count = _ref(0);\nexport default {};',
-  ),
-  false,
-  "plain generated JavaScript with import aliases should skip the virtual TS strip pass",
-);
+// Vize's Rust emitter guarantees plain JavaScript for every module it produces,
+// so the virtual-module transform must not re-print emitter output through
+// Vite's TypeScript strip. Anything the emitter did not produce still must.
+{
+  let stripCalls = 0;
+  const emitted = 'import { ref as _ref } from "vue";\nconst count = _ref(0);\nexport default {};';
+  const state = {
+    cache: new Map([["/src/Emitted.vue", {}]]),
+    ssrCache: new Map(),
+    clientViteDefine: {},
+    serverViteDefine: {},
+    isProduction: false,
+    root: "/src",
+    logger: { error() {} },
+  } as unknown as VizePluginState;
 
-assert.equal(
-  needsVirtualTypeScriptTransform("const value: number = 1"),
-  true,
-  "virtual modules with TypeScript annotations should still use Vite's TS strip pass",
-);
+  const viteApi = vite as { transformWithOxc?: unknown };
+  const originalOxc = viteApi.transformWithOxc;
+  viteApi.transformWithOxc = () => {
+    stripCalls += 1;
+    return { code: emitted };
+  };
+
+  try {
+    const result = await transformVizeVirtualModule(state, emitted, "/src/Emitted.vue", false);
+    assert.equal(result, null, "unchanged emitter output should not produce a transform result");
+    assert.equal(stripCalls, 0, "emitter output must skip Vite's TypeScript strip entirely");
+
+    await transformVizeVirtualModule(state, emitted, "/src/NotEmitted.vue", false);
+    assert.equal(
+      stripCalls,
+      1,
+      "modules Vize did not emit must still go through Vite's TypeScript strip",
+    );
+
+    await transformVizeVirtualModule(state, emitted, "/src/Emitted.vue", false, true);
+    assert.equal(
+      stripCalls,
+      2,
+      "?macro=true raw artifacts must still go through Vite's TypeScript strip",
+    );
+  } finally {
+    viteApi.transformWithOxc = originalOxc;
+  }
+}

@@ -47,96 +47,24 @@ export function createVirtualTypeScriptTransformer(viteApi: ViteTransformApi) {
   };
 }
 
-const TYPE_DECLARATION_RE = /\b(?:interface|type|enum|namespace|declare)\s+[A-Za-z_$]/;
-const TYPE_ASSERTION_RE =
-  /\bas\s+(?:const|unknown|never|any|string|number|boolean|readonly\b|[A-Z][A-Za-z0-9_$]*(?:\s*[<[{&|),;=]|$))/;
-const TYPED_BINDING_RE = /\b(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*:/;
-const GENERIC_FUNCTION_RE = /\bfunction\s+[A-Za-z_$][\w$]*\s*<[^>{}]*>\s*\(/;
-const TYPED_PARAMETER_RE = /[(,]\s*(?:\.\.\.)?[A-Za-z_$][\w$]*\??\s*:\s*[^,)=]+/;
-const RETURN_TYPE_RE = /\)\s*:\s*[^=<{;]+[{=>]/;
-const ACCESS_MODIFIER_RE = /\b(?:public|private|protected|readonly|abstract|implements)\b/;
-const SATISFIES_RE = /\bsatisfies\s+[A-Za-z_$]/;
-
-function hasUnbalancedDelimiters(code: string): boolean {
-  const stack: string[] = [];
-  let quote: "'" | '"' | "`" | null = null;
-  let escaped = false;
-  let lineComment = false;
-  let blockComment = false;
-
-  for (let index = 0; index < code.length; index += 1) {
-    const char = code[index]!;
-    const next = code[index + 1];
-
-    if (lineComment) {
-      if (char === "\n" || char === "\r") {
-        lineComment = false;
-      }
-      continue;
-    }
-    if (blockComment) {
-      if (char === "*" && next === "/") {
-        blockComment = false;
-        index += 1;
-      }
-      continue;
-    }
-    if (quote) {
-      if (escaped) {
-        escaped = false;
-      } else if (char === "\\") {
-        escaped = true;
-      } else if (char === quote) {
-        quote = null;
-      }
-      continue;
-    }
-
-    if (char === "/" && next === "/") {
-      lineComment = true;
-      index += 1;
-      continue;
-    }
-    if (char === "/" && next === "*") {
-      blockComment = true;
-      index += 1;
-      continue;
-    }
-    if (char === "'" || char === '"' || char === "`") {
-      quote = char;
-      continue;
-    }
-    if (char === "{" || char === "(" || char === "[") {
-      stack.push(char);
-      continue;
-    }
-    if (char === "}" || char === ")" || char === "]") {
-      const open = stack.pop();
-      if (
-        (char === "}" && open !== "{") ||
-        (char === ")" && open !== "(") ||
-        (char === "]" && open !== "[")
-      ) {
-        return true;
-      }
-    }
-  }
-
-  return quote !== null || blockComment || stack.length > 0;
-}
-
-export function needsVirtualTypeScriptTransform(code: string): boolean {
-  return (
-    TYPE_DECLARATION_RE.test(code) ||
-    TYPE_ASSERTION_RE.test(code) ||
-    TYPED_BINDING_RE.test(code) ||
-    GENERIC_FUNCTION_RE.test(code) ||
-    TYPED_PARAMETER_RE.test(code) ||
-    RETURN_TYPE_RE.test(code) ||
-    ACCESS_MODIFIER_RE.test(code) ||
-    SATISFIES_RE.test(code) ||
-    hasUnbalancedDelimiters(code)
-  );
+/**
+ * Report whether `realPath` names a module Vize's own compiler emitted.
+ *
+ * Vize's Rust emitter guarantees plain JavaScript for every module it produces
+ * (`ensure_javascript_output` at the napi boundary), so re-running Vite's
+ * TypeScript strip over emitter output is a pure re-print. Every emitted module
+ * is recorded in one of the two environment caches, so cache membership is the
+ * cheap, allocation-free proof that the code came from the emitter.
+ *
+ * The probe fails safe: a module the caches do not know about still gets the
+ * strip, which keeps hand-written and malformed virtual modules behaving
+ * exactly as they did before.
+ */
+function isVizeEmitterOutput(
+  state: Pick<VizePluginState, "cache" | "ssrCache">,
+  realPath: string,
+): boolean {
+  return state.cache.has(realPath) || state.ssrCache.has(realPath);
 }
 
 export const transformVirtualTypeScript = createVirtualTypeScriptTransformer(vite);
@@ -172,7 +100,9 @@ export async function transformVizeVirtualModule(
   ssr: boolean,
   forceTypeScriptTransform = false,
 ): Promise<TransformResult | null> {
-  const needsTsTransform = forceTypeScriptTransform || needsVirtualTypeScriptTransform(code);
+  // `?macro=true` artifacts are raw macro module code that never passed
+  // through the emitter's JavaScript guarantee, so they always need the strip.
+  const needsTsTransform = forceTypeScriptTransform || !isVizeEmitterOutput(state, realPath);
   try {
     const result = needsTsTransform ? await transformVirtualTypeScript(code, realPath) : { code };
     let transformed = result.code;
