@@ -11,8 +11,7 @@
 mod attributes;
 mod directives;
 mod formatter;
-mod helpers;
-pub(crate) use helpers::template_literal_state_after_line_from as template_literal_state_after_line;
+pub(crate) mod helpers;
 
 #[cfg(test)]
 mod attribute_priority_tests;

@@ -8,7 +8,7 @@
 //! changed `TemplateElement` (#3334). #3269 established the same guarantee for
 //! template-position interpolations; this is the script-block half.
 
-use crate::template::template_literal_state_after_line;
+use crate::template::helpers::template_literal_state_after_line_from;
 
 /// Write `content` into `output`, indenting each line with `indent` except
 /// lines that continue a multi-line template literal, which are emitted
@@ -35,7 +35,8 @@ pub(super) fn write_indented_block(
         }
         output.extend_from_slice(line.as_bytes());
         output.extend_from_slice(newline);
-        inside_template_literal = template_literal_state_after_line(inside_template_literal, line);
+        inside_template_literal =
+            template_literal_state_after_line_from(inside_template_literal, line);
     }
 }
 
