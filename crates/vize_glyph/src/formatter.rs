@@ -305,7 +305,7 @@ impl<'a> GlyphFormatter<'a> {
         if self.options.vue_indent_script_and_style {
             block_indent::write_indented_block(
                 output,
-                &formatted_content,
+                formatted_content,
                 self.options.indent_bytes(),
                 self.options.newline_bytes(),
             );
