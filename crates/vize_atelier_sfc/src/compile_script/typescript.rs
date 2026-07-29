@@ -82,16 +82,69 @@ pub fn is_plain_javascript(code: &str) -> bool {
         .is_empty()
 }
 
+/// Strip TypeScript for the emitter's output guarantee, tolerating semantic
+/// diagnostics.
+///
+/// [`transform_typescript_to_js`] bails whenever `SemanticBuilder` reports
+/// anything, which is the right call while compiling a script (a redeclaration
+/// there means the pipeline misread the source). It is the wrong call here:
+/// this runs on already-generated module code, and the JavaScript-side pass it
+/// replaces — Vite's `transformWithOxc` — never ran a semantic check at all.
+/// Bailing would hand TypeScript to the bundler over a diagnostic that a
+/// syntax-only strip does not care about.
+///
+/// Returns `None` when the code does not parse as TypeScript, in which case
+/// there is nothing this can do and the caller keeps the original.
+fn strip_typescript_for_emitter(code: &str) -> Option<String> {
+    let allocator = Allocator::default();
+    let parse_result = Parser::new(&allocator, code, SourceType::ts()).parse();
+    if !parse_result.errors.is_empty() {
+        return None;
+    }
+
+    let mut program = parse_result.program;
+    let scoping = SemanticBuilder::new()
+        .with_excess_capacity(2.0)
+        .build(&program)
+        .semantic
+        .into_scoping();
+
+    let transform_options = TransformOptions {
+        typescript: TypeScriptOptions {
+            only_remove_type_imports: false,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let ret = Transformer::new(&allocator, std::path::Path::new(""), &transform_options)
+        .build_with_scoping(scoping, &mut program);
+    if !ret.errors.is_empty() {
+        return None;
+    }
+
+    Some(
+        Codegen::new()
+            .build(&program)
+            .code
+            .replace('\t', "  ")
+            .into(),
+    )
+}
+
 /// Guarantee that emitted module code contains no TypeScript syntax.
 ///
 /// The overwhelming majority of emitter output is already plain JavaScript
 /// (the script pipeline strips TypeScript while compiling), so the owned
 /// `code` is handed straight back without a copy. Only the residue — most
-/// notably `<script lang="uts">`, a lang the script pipeline does not treat as
-/// TypeScript — pays for the transform.
+/// notably `<script lang="uts">`, a lang `is_ts_lang` does not recognise — pays
+/// for the strip.
+///
+/// Output that parses as neither JavaScript nor TypeScript (`lang="jsx"`,
+/// `lang="tsx"`, `lang="coffee"`) is returned unchanged for the bundler to deal
+/// with, exactly as the emitter produced it.
 pub fn ensure_javascript_output(code: String) -> String {
     if is_plain_javascript(&code) {
         return code;
     }
-    transform_typescript_to_js(&code)
+    strip_typescript_for_emitter(&code).unwrap_or(code)
 }
