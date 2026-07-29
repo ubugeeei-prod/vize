@@ -95,6 +95,8 @@ const vueTscAppDiagnostics = (file: string, line: number): string =>
   ].join("\n");
 
 const helperDiagnostic = "error:5:7 [TS2322] Type 'string' is not assignable to type 'number'.";
+// vue-tsc reports in program order, and `writeProject` pins `include` to
+// `["**/*.vue", "**/*.ts"]`, so every SFC precedes `helper.ts` in its output.
 const vueTscHelperDiagnostic =
   "helper.ts(5,7): error TS2322: Type 'string' is not assignable to type 'number'.\n";
 
@@ -115,7 +117,7 @@ const cases: Case[] = [
       "TsApp.vue": appDiagnostics(6),
       "helper.ts": [helperDiagnostic],
     },
-    vueTscOutput: vueTscHelperDiagnostic + vueTscAppDiagnostics("TsApp.vue", 6),
+    vueTscOutput: vueTscAppDiagnostics("TsApp.vue", 6) + vueTscHelperDiagnostic,
   },
   {
     id: "checkJs opts the same JavaScript SFC back in",
@@ -127,15 +129,15 @@ const cases: Case[] = [
       "helper.ts": [helperDiagnostic],
     },
     vueTscOutput:
-      vueTscHelperDiagnostic +
       vueTscAppDiagnostics("JsApp.vue", 6) +
-      vueTscAppDiagnostics("TsApp.vue", 6),
+      vueTscAppDiagnostics("TsApp.vue", 6) +
+      vueTscHelperDiagnostic,
   },
   {
     id: "a leading @ts-check pragma opts a single block back in",
     files: { "JsApp.vue": pragmaApp, "helper.ts": helperModule },
     diagnostics: { "JsApp.vue": appDiagnostics(7), "helper.ts": [helperDiagnostic] },
-    vueTscOutput: vueTscHelperDiagnostic + vueTscAppDiagnostics("JsApp.vue", 7),
+    vueTscOutput: vueTscAppDiagnostics("JsApp.vue", 7) + vueTscHelperDiagnostic,
   },
   {
     id: "a script-less SFC stays checked",

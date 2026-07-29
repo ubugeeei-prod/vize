@@ -119,8 +119,10 @@ export const compatProbes: CompatProbe[] = [
     include: ["src"],
     compilerOptions: {
       allowJs: true,
-      // Plain-JavaScript SFCs are only type-checked under `checkJs` (#3322).
-      checkJs: true,
+      // Deliberately no `checkJs`: the probe mirrors the project's own tsconfig, so it
+      // measures the drop-in behavior this gate ships (JavaScript SFCs stay unchecked,
+      // exactly like vue-tsc). Turning `checkJs` on moves the vue-tsc side of the ledger
+      // and would require regenerating tests/_fixtures/compat-baseline.json.
       paths: { "@/*": ["./src/*"] },
       strict: false,
     },
