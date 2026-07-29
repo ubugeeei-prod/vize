@@ -336,6 +336,10 @@ pub struct ChildRefIRNode {
 /// (#3330). The generator derives the parent and the absolute index by
 /// walking back to the `ChildRef` that anchors the sibling chain, so they do
 /// not have to be restated here.
+///
+/// The short-lived `parent_id` and `index` fields from #3337 are gone again:
+/// this struct is externally constructible, so generation-only state belongs in
+/// the crate-private `GenerateContext` rather than on the public shape.
 #[derive(Debug)]
 pub struct NextRefIRNode {
     pub child_id: usize,
