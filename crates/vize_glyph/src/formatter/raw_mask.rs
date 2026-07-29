@@ -1,9 +1,15 @@
 /// Per-line "this line is inside a whitespace-significant block" mask.
 ///
-/// Lines inside `<pre>`, `<textarea>`, `v-pre`, multi-line comments, and
-/// literal multi-line attribute values are raw. Directive expression
-/// continuation lines are formatter output, so they still get SFC indentation
-/// unless the value starts on the following line and was preserved verbatim.
+/// Lines inside `<pre>`, `<textarea>`, `v-pre`, multi-line comments,
+/// literal multi-line attribute values, and multi-line template literals
+/// inside `{{ }}` interpolations are raw. Directive expression continuation
+/// lines are formatter output, so they still get SFC indentation unless the
+/// value starts on the following line and was preserved verbatim.
+///
+/// The interpolation case matters because every byte between the backticks is
+/// part of the string's runtime value. Indenting those lines rewrote the
+/// emitted string, and since each pass re-indented the spaces the previous one
+/// added, `vize fmt` drifted the content further on every run (#3334).
 pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
     let mut mask = vec![false; lines.len()];
     let mut depth_stack: Vec<&'static str> = Vec::new();
@@ -11,6 +17,11 @@ pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
     let mut open_quote: Option<OpenQuote> = None;
     let mut pending_raw_tag: Option<&'static str> = None;
     let mut in_comment = false;
+    // Inside a `{{ … }}` interpolation, and inside a template literal within
+    // it. The template formatter already emits those quasi lines verbatim; the
+    // SFC layer must not indent them on top.
+    let mut interpolation_depth = 0usize;
+    let mut in_interpolation_literal = false;
     const TAGS: [(&str, &str, &str); 2] = [
         ("pre", "<pre", "</pre>"),
         ("textarea", "<textarea", "</textarea>"),
@@ -20,6 +31,7 @@ pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
         if !depth_stack.is_empty()
             || open_quote.is_some_and(OpenQuote::marks_line_raw)
             || in_comment
+            || in_interpolation_literal
         {
             mask[i] = true;
         }
@@ -67,6 +79,24 @@ pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
                     _ => {}
                 }
                 cursor += 1;
+                continue;
+            }
+            if interpolation_depth > 0 && bytes[cursor] == b'`' && !is_escaped(bytes, cursor) {
+                in_interpolation_literal = !in_interpolation_literal;
+                cursor += 1;
+                continue;
+            }
+            if !in_interpolation_literal && bytes[cursor..].starts_with(b"{{") {
+                interpolation_depth += 1;
+                cursor += 2;
+                continue;
+            }
+            if !in_interpolation_literal
+                && interpolation_depth > 0
+                && bytes[cursor..].starts_with(b"}}")
+            {
+                interpolation_depth -= 1;
+                cursor += 2;
                 continue;
             }
             if bytes[cursor] != b'<' {
@@ -210,4 +240,38 @@ fn starts_with_ascii_ci(haystack: &[u8], needle: &[u8]) -> bool {
             .iter()
             .zip(needle.iter())
             .all(|(a, b)| a.eq_ignore_ascii_case(b))
+}
+
+#[cfg(test)]
+mod interpolation_literal_tests {
+    use super::compute_raw_line_mask;
+
+    fn mask(source: &str) -> Vec<bool> {
+        let lines: Vec<&[u8]> = source.lines().map(|l| l.as_bytes()).collect();
+        compute_raw_line_mask(&lines)
+    }
+
+    #[test]
+    fn lines_inside_an_interpolation_template_literal_are_raw() {
+        // Every byte between the backticks is part of the string's runtime
+        // value, so the SFC layer must not indent these lines (#3334).
+        let source =
+            "<div>\n  {{ items.map((p) => `\n${p} {\n  --a: b;\n}\n`).join(\"\") }}\n</div>";
+        // Lines 2..=5 all *begin* inside the literal — including the line
+        // that closes it, whose leading bytes would otherwise be indented
+        // into the string's value.
+        assert_eq!(mask(source), [false, false, true, true, true, true, false]);
+    }
+
+    #[test]
+    fn ordinary_interpolation_lines_stay_indentable() {
+        let source = "<div>\n  {{ a\n    + b }}\n</div>";
+        assert_eq!(mask(source), [false, false, false, false]);
+    }
+
+    #[test]
+    fn a_closed_literal_does_not_leak_into_later_lines() {
+        let source = "<div>\n  {{ `x` }}\n  <span>y</span>\n</div>";
+        assert_eq!(mask(source), [false, false, false, false]);
+    }
 }
