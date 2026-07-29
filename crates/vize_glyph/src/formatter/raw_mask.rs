@@ -21,12 +21,21 @@ pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
     // formatter already emits template-literal quasi lines verbatim; the SFC
     // layer must not indent them on top.
     let mut interpolation = InterpolationScan::default();
+    // A `{{` with no `}}` after it is text, not an interpolation (Vue treats
+    // an unterminated marker as plain text). Entering expression mode there
+    // would disable tag, comment and `<pre>`/`<textarea>` tracking for the
+    // rest of the document, so activation is gated on a closing pair
+    // actually following.
+    let last_close_line = lines.iter().rposition(|line| contains(line, b"}}"));
     const TAGS: [(&str, &str, &str); 2] = [
         ("pre", "<pre", "</pre>"),
         ("textarea", "<textarea", "</textarea>"),
     ];
 
     for (i, line) in lines.iter().enumerate() {
+        // `'…'` / `"…"` cannot span a newline in JS, so an unbalanced quote
+        // must not swallow the following lines as string content.
+        interpolation.string = None;
         if !depth_stack.is_empty()
             || open_quote.is_some_and(OpenQuote::marks_line_raw)
             || in_comment
@@ -88,7 +97,8 @@ pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
                 continue;
             }
             if bytes[cursor..].starts_with(b"{{") {
-                interpolation.active = true;
+                interpolation.active = contains(&bytes[cursor + 2..], b"}}")
+                    || last_close_line.is_some_and(|last| last > i);
                 cursor += 2;
                 continue;
             }
@@ -159,7 +169,8 @@ struct InterpolationScan {
     active: bool,
     /// Nested template-literal / `${ … }` frames within the expression.
     frames: Vec<ExprFrame>,
-    /// Open `'…'` / `"…"` string, if any.
+    /// Open `'…'` / `"…"` string, if any. Reset at every line boundary,
+    /// since such strings cannot span a newline.
     string: Option<u8>,
     /// Inside a `/* … */` comment.
     in_block_comment: bool,
@@ -340,6 +351,10 @@ fn directive_expr_attr(name: &[u8]) -> bool {
         || name == b"v-text"
 }
 
+fn contains(haystack: &[u8], needle: &[u8]) -> bool {
+    haystack.len() >= needle.len() && haystack.windows(needle.len()).any(|w| w == needle)
+}
+
 fn starts_with_ascii_ci(haystack: &[u8], needle: &[u8]) -> bool {
     haystack.len() >= needle.len()
         && haystack[..needle.len()]
@@ -393,6 +408,26 @@ mod interpolation_literal_tests {
     fn a_backtick_inside_a_comment_is_not_structural() {
         let source = "<div>\n  {{ /* ` */ a }}\n  <span>y</span>\n</div>";
         assert_eq!(mask(source), [false, false, false, false]);
+    }
+
+    #[test]
+    fn an_unterminated_marker_stays_text_and_keeps_markup_tracking() {
+        // Vue treats a `{{` with no `}}` as text, so the scanner must not
+        // enter expression mode and lose the `<pre>` region behind it.
+        let source = "<div>\n  {{ mustache syntax, unclosed\n  <pre>\nx\n  </pre>\n</div>";
+        assert_eq!(
+            mask(source),
+            [false, false, false, true, true, false],
+            "an unmatched `{{{{` must not disable markup scanning"
+        );
+    }
+
+    #[test]
+    fn an_unbalanced_quote_does_not_swallow_later_lines() {
+        // `'a) }}` leaves a quote open at the line end; strings cannot span a
+        // newline, so the literal on the following lines is still tracked.
+        let source = "<div>\n  {{ t('a) }}\n  {{ `\nx\n` }}\n</div>";
+        assert_eq!(mask(source), [false, false, false, true, true, false]);
     }
 
     #[test]
