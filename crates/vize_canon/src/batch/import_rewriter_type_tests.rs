@@ -7,7 +7,7 @@ fn rewrites_ts_import_type_specifiers() {
     let rewriter = ImportRewriter::new();
     let source = r#"type AppModule = typeof import('./App.vue');
 type AppProps = import("./App.vue").PublicProps;"#;
-    let result = rewriter.rewrite(source, SourceType::ts());
+    let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     assert_eq!(
         result.code,
@@ -49,7 +49,7 @@ fn rewrites_ts_import_equals_external_module_references() {
     let rewriter = ImportRewriter::new();
     let source = r#"import App = require("./App.vue");
 export type AppModule = typeof App;"#;
-    let result = rewriter.rewrite(source, SourceType::ts());
+    let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     assert_eq!(
         result.code,
@@ -63,7 +63,7 @@ fn rewrites_common_js_require_specifiers() {
     let rewriter = ImportRewriter::new();
     let source = r#"const App = require("./App.vue");
 const util = require("./util");"#;
-    let result = rewriter.rewrite(source, SourceType::ts());
+    let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     assert_eq!(
         result.code,
@@ -93,7 +93,7 @@ fn collects_relative_vue_specifiers_from_require_forms() {
 const Other = require("../Other.vue");"#;
 
     assert_eq!(
-        rewriter.collect_relative_vue_specifiers(source, SourceType::ts()),
+        rewriter.collect_relative_vue_specifiers(source, SourceType::ts(), None),
         vec!["./App.vue", "../Other.vue"]
     );
 }
@@ -108,7 +108,7 @@ declare module "*.vue" {
   const component: unknown;
   export default component;
 }"#;
-    let result = rewriter.rewrite(source, SourceType::ts());
+    let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     assert_eq!(
         result.code,
@@ -145,7 +145,7 @@ fn collects_relative_vue_specifiers_from_module_declarations() {
 declare module "*.vue" {}"#;
 
     assert_eq!(
-        rewriter.collect_relative_vue_specifiers(source, SourceType::ts()),
+        rewriter.collect_relative_vue_specifiers(source, SourceType::ts(), None),
         vec!["./App.vue"]
     );
 }

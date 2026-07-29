@@ -117,6 +117,54 @@ pub(super) fn is_rewritable_project_specifier(path: &Path) -> bool {
         })
 }
 
+/// Redirect a relative extensionless specifier whose target is a `.vue` file on
+/// disk onto that file's mirror module (`./components/svg` -> `./components/svg.vue.ts`).
+///
+/// Webpack-era apps spell SFC imports without the extension. TypeScript appends
+/// extensions to the specifier and never tries `.vue`, so neither the mirror
+/// (which holds `svg.vue.ts`) nor the real tree (which holds `svg.vue`) resolves
+/// it: the import silently types as `any` and every prop/event contract at the
+/// usage site disappears (#3329). The alias-mapped spelling is served by a
+/// trailing `paths` candidate instead (#3300), which `paths` cannot do for
+/// relative specifiers.
+///
+/// Like that alias candidate, this only ever turns a failing resolution into a
+/// successful one: a specifier TypeScript already resolves through an ordinary
+/// source sibling or directory module keeps its original spelling.
+pub(super) fn rewrite_relative_vue_specifier(specifier: &str, source_dir: &Path) -> Option<String> {
+    // `.`/`..` name a directory module, not a stem an extension can be appended
+    // to, so only the `./`-prefixed spellings are candidates here.
+    if !(specifier.starts_with("./") || specifier.starts_with("../")) {
+        return None;
+    }
+    if specifier_has_extension(specifier) {
+        return None;
+    }
+    let target = source_dir.join(specifier);
+    if !append_extension(&target, ".vue").is_file() || resolves_without_vue(&target) {
+        return None;
+    }
+    Some(cstr!("{specifier}.vue.ts"))
+}
+
+fn specifier_has_extension(specifier: &str) -> bool {
+    Path::new(specifier)
+        .extension()
+        .is_some_and(|extension| !extension.is_empty())
+}
+
+/// Whether TypeScript already resolves `target` without consulting `.vue`,
+/// through an ordinary source extension or an `index` directory module.
+fn resolves_without_vue(target: &Path) -> bool {
+    SOURCE_EXTENSIONS
+        .iter()
+        .filter(|extension| **extension != ".vue")
+        .any(|extension| {
+            append_extension(target, extension).is_file()
+                || target.join(cstr!("index{extension}").as_str()).is_file()
+        })
+}
+
 pub(super) fn is_rewritable_vue_specifier(path: &str) -> bool {
     path.ends_with(".vue")
         && (path.starts_with("./")
@@ -155,7 +203,10 @@ mod tests {
 
     use vize_carton::cstr;
 
-    use super::{absolute_import_needs_virtual_rewrite, collect_import_specifiers};
+    use super::{
+        absolute_import_needs_virtual_rewrite, collect_import_specifiers,
+        rewrite_relative_vue_specifier,
+    };
 
     fn unique_case_dir(name: &str) -> PathBuf {
         static NEXT_CASE_ID: std::sync::atomic::AtomicUsize =
@@ -197,6 +248,53 @@ mod tests {
         assert!(absolute_import_needs_virtual_rewrite(
             &root.join("src/feature")
         ));
+
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn extensionless_relative_sfc_specifiers_target_the_mirror_module() {
+        let root = unique_case_dir("relative-vue");
+        let _ = fs::remove_dir_all(&root);
+        write(&root, "src/components/common/svg.vue", "<template />");
+        write(&root, "src/components/header/head.vue", "<template />");
+        write(&root, "src/page/home/home.vue", "<template />");
+        let src = root.join("src");
+        let home = root.join("src/page/home");
+
+        assert_eq!(
+            rewrite_relative_vue_specifier("./components/common/svg", &src).as_deref(),
+            Some("./components/common/svg.vue.ts")
+        );
+        assert_eq!(
+            rewrite_relative_vue_specifier("../../components/header/head", &home).as_deref(),
+            Some("../../components/header/head.vue.ts")
+        );
+
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn specifiers_typescript_already_resolves_keep_their_spelling() {
+        let root = unique_case_dir("relative-vue-precedence");
+        let _ = fs::remove_dir_all(&root);
+        write(&root, "src/Shadowed.vue", "<template />");
+        write(&root, "src/Shadowed.ts", "export default 1;\n");
+        write(&root, "src/Sibling.vue", "<template />");
+        write(&root, "src/Sibling/index.ts", "export default 1;\n");
+        write(&root, "src/Plain.vue", "<template />");
+        let src = root.join("src");
+
+        // Only a failing resolution may be redirected: an ordinary sibling
+        // module and a directory `index` module both keep winning.
+        assert_eq!(rewrite_relative_vue_specifier("./Shadowed", &src), None);
+        assert_eq!(rewrite_relative_vue_specifier("./Sibling", &src), None);
+        // Already-extensioned, bare, and absent specifiers are left alone.
+        assert_eq!(rewrite_relative_vue_specifier("./Plain.vue", &src), None);
+        assert_eq!(rewrite_relative_vue_specifier("./Plain.ts", &src), None);
+        assert_eq!(rewrite_relative_vue_specifier("Plain", &src), None);
+        assert_eq!(rewrite_relative_vue_specifier(".", &src), None);
+        assert_eq!(rewrite_relative_vue_specifier("./Absent", &src), None);
 
         let _ = fs::remove_dir_all(&root);
     }

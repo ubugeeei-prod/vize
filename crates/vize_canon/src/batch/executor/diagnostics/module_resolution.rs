@@ -42,8 +42,20 @@ pub(crate) fn relative_module_resolves_on_disk(message: &str, importer: &Path) -
     relative_specifier_resolves(dir, specifier)
 }
 
-/// Source extensions a relative specifier may resolve to.
-const SOURCE_EXTENSIONS: &[&str] = &["ts", "tsx", "d.ts", "d.mts", "d.cts", "mts", "cts", "vue"];
+/// Source extensions a relative specifier may resolve to when appended to the
+/// stem. `vue` is deliberately absent (#3329): the import rewriter redirects an
+/// extensionless specifier whose target is a `.vue` file onto that file's mirror
+/// module, so a surviving `Cannot find module "./svg"` means the redirect did
+/// not fire and the module is genuinely unresolved — excusing it would convert a
+/// loud module error into a silent `any` at every usage site. The subset run
+/// this suppression exists for still reports the redirected `"./svg.vue.ts"`
+/// spelling, which [`relative_specifier_resolves`] keeps suppressing below.
+const SOURCE_EXTENSIONS: &[&str] = &["ts", "tsx", "d.ts", "d.mts", "d.cts", "mts", "cts"];
+
+/// Extensions an `index` directory module may use. `vue` stays listed: the
+/// rewriter only redirects the direct `<stem>.vue` spelling, so a directory
+/// whose entry point is `index.vue` still needs the subset-run suppression.
+const INDEX_EXTENSIONS: &[&str] = &["ts", "tsx", "d.ts", "d.mts", "d.cts", "mts", "cts", "vue"];
 
 /// Resolve `specifier` against `dir` the way TypeScript would for a Vue/TS
 /// project: an explicit supported extension, an extension appended to the
@@ -75,7 +87,7 @@ fn relative_specifier_resolves(dir: &Path, specifier: &str) -> bool {
         }
     }
     let base = dir.join(specifier);
-    for extension in SOURCE_EXTENSIONS {
+    for extension in INDEX_EXTENSIONS {
         if base.join(cstr!("index.{extension}").as_str()).is_file() {
             return true;
         }
@@ -157,5 +169,34 @@ mod tests {
             &importer
         ));
         assert!(!relative_module_resolves_on_disk(bare_package, &importer));
+    }
+
+    #[test]
+    fn ts2307_for_an_extensionless_sfc_specifier_is_no_longer_suppressed() {
+        let dir = TempDir::new().unwrap();
+        let importer = dir.path().join("App.vue");
+        std::fs::write(&importer, "").unwrap();
+        std::fs::write(dir.path().join("Panel.vue"), "<template />").unwrap();
+        std::fs::create_dir_all(dir.path().join("widget")).unwrap();
+        std::fs::write(dir.path().join("widget").join("index.vue"), "").unwrap();
+
+        // The import rewriter redirects `./Panel` onto `./Panel.vue.ts`, so the
+        // extensionless spelling reaching tsgo means the module is genuinely
+        // unresolved and must stay loud (#3329)...
+        let extensionless = "Cannot find module './Panel' or its corresponding type declarations.";
+        assert!(!relative_module_resolves_on_disk(extensionless, &importer));
+
+        // ...while the redirected spelling a partial-subset run reports for a
+        // sibling outside the checked set stays suppressed, as does the
+        // `index.vue` directory module the rewriter does not redirect.
+        let redirected =
+            "Cannot find module './Panel.vue.ts' or its corresponding type declarations.";
+        let directory_module =
+            "Cannot find module './widget' or its corresponding type declarations.";
+        assert!(relative_module_resolves_on_disk(redirected, &importer));
+        assert!(relative_module_resolves_on_disk(
+            directory_module,
+            &importer
+        ));
     }
 }
