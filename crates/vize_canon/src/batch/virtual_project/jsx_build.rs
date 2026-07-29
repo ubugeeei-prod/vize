@@ -59,6 +59,10 @@ pub(super) fn build_jsx_registered_file(
             context.virtual_root,
         ),
         diagnostics,
+        // `.jsx`/`.tsx` routing through this path is the explicit
+        // `typeChecker.jsxTypecheck` opt-in (#1497), so it is never gated on
+        // `checkJs` the way a JavaScript `.vue` script block is (#3322).
+        unchecked_javascript: false,
     })
 }
 

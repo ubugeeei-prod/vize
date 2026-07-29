@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use oxc_span::SourceType;
 use rayon::prelude::*;
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_carton::{FxHashMap, profile};
+use vize_carton::{FxHashMap, FxHashSet, profile};
 
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::import_rewriter::ImportRewriter;
@@ -43,6 +43,7 @@ impl VirtualProject {
             virtual_root,
             tsconfig_path: None,
             preserve_unused_diagnostics: false,
+            check_js: false,
             virtual_ts_options: VirtualTsOptions::default(),
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
             options_api: false,
@@ -55,11 +56,13 @@ impl VirtualProject {
             passthrough_files: FxHashMap::default(),
             original_index: FxHashMap::default(),
             original_contents: FxHashMap::default(),
+            unchecked_javascript_files: FxHashSet::default(),
             diagnostics: Vec::new(),
             rewriter: ImportRewriter::new(),
         };
         project.preserve_unused_diagnostics =
             project.resolve_tsconfig_preserves_unused_diagnostics();
+        project.check_js = project.resolve_tsconfig_checks_javascript();
         Ok(project)
     }
 
@@ -86,6 +89,14 @@ impl VirtualProject {
     pub fn set_tsconfig_path(&mut self, tsconfig_path: Option<PathBuf>) {
         self.tsconfig_path = tsconfig_path.map(vize_carton::path::normalize_windows_verbatim_path);
         self.preserve_unused_diagnostics = self.resolve_tsconfig_preserves_unused_diagnostics();
+        self.check_js = self.resolve_tsconfig_checks_javascript();
+    }
+
+    /// Whether TypeScript diagnostics landing in `virtual_path` must be dropped
+    /// because the file is a JavaScript SFC and the project does not enable
+    /// `checkJs` (#3322).
+    pub(crate) fn skips_typescript_diagnostics(&self, virtual_path: &Path) -> bool {
+        !self.check_js && self.unchecked_javascript_files.contains(virtual_path)
     }
 
     /// Set the shared virtual TS options.
@@ -310,6 +321,10 @@ impl VirtualProject {
             registered.file.virtual_path.clone(),
             registered.original_content,
         );
+        if registered.unchecked_javascript {
+            self.unchecked_javascript_files
+                .insert(registered.file.virtual_path.clone());
+        }
         for (virtual_path, original_path) in registered.passthrough_files {
             self.passthrough_files.insert(virtual_path, original_path);
         }

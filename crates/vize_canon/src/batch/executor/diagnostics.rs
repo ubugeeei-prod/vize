@@ -10,9 +10,11 @@ use vize_carton::{FxHashMap, FxHashSet, String};
 mod keyof_indexed_assignment;
 mod line_index;
 mod module_resolution;
+mod skip_rules;
 
 use line_index::LineIndex;
 pub(super) use module_resolution::relative_module_resolves_on_disk;
+pub(super) use skip_rules::{should_skip_diagnostic, should_skip_original_diagnostic};
 
 pub(super) fn map_batch_diagnostics(
     results: Vec<(String, Vec<LspDiagnostic>)>,
@@ -156,12 +158,21 @@ impl<'a> DiagnosticMapper<'a> {
         None
     }
 
+    /// Map a virtual position back to the authored source, or `None` when the
+    /// diagnostic has no reportable origin. Both diagnostic paths (LSP and the
+    /// Corsa CLI text output) funnel through here, so this is also where the
+    /// `checkJs` gate lives: a diagnostic landing in a JavaScript SFC has no
+    /// reportable origin unless the project asked for JavaScript to be checked,
+    /// exactly as `tsc`/`vue-tsc` leave a `lang="js"` block alone (#3322).
     pub(super) fn map_to_original(
         &mut self,
         virtual_path: &Path,
         line: u32,
         column: u32,
     ) -> Option<OriginalPosition> {
+        if self.project.skips_typescript_diagnostics(virtual_path) {
+            return None;
+        }
         let file = self.project.find_by_virtual(virtual_path)?;
         let virtual_offset = self.virtual_offset(file, line, column)?;
         let (original_offset, _, block_type) =
@@ -246,41 +257,6 @@ fn parse_severity(severity: Option<i32>) -> u8 {
         Some(value) if (1..=4).contains(&value) => value as u8,
         _ => 1,
     }
-}
-
-pub(super) fn should_skip_diagnostic(code: Option<u32>, message: &str) -> bool {
-    match code {
-        // TS2666: virtual-TS generation injects helper bindings that can trip
-        // this code outside the user's source — suppress to match vue-tsc.
-        Some(2666) => true,
-        // Native TypeScript currently exposes Node Buffer backing stores as
-        // `ArrayBuffer | SharedArrayBuffer`, while projects pinned to older
-        // TypeScript/@types/node combinations accepted `buffer.slice(...)` as
-        // `ArrayBuffer`. Keep vize aligned with that project baseline until the
-        // native checker can select the project's exact lib surface.
-        Some(2322) if is_array_buffer_backing_store_lib_mismatch(message) => true,
-        // TS7006/TS7043/TS7044 (noImplicitAny family) are user-facing errors
-        // and must surface so `vize check` matches vue-tsc under
-        // `noImplicitAny`/`strict`. They were previously suppressed (#966).
-        _ => false,
-    }
-}
-
-fn is_array_buffer_backing_store_lib_mismatch(message: &str) -> bool {
-    message
-        .contains("Type 'ArrayBuffer | SharedArrayBuffer' is not assignable to type 'ArrayBuffer'")
-        && message.contains("SharedArrayBuffer")
-}
-
-pub(super) fn should_skip_original_diagnostic(
-    code: Option<u32>,
-    original: &OriginalPosition,
-) -> bool {
-    code == Some(6133) && original.block_type.is_none() && is_vue_source(&original.path)
-}
-
-fn is_vue_source(path: &Path) -> bool {
-    path.extension().is_some_and(|extension| extension == "vue")
 }
 
 #[cfg(test)]

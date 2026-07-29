@@ -17,7 +17,7 @@
 use std::path::PathBuf;
 
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_carton::{FxHashMap, String as CompactString};
+use vize_carton::{FxHashMap, FxHashSet, String as CompactString};
 
 use super::import_rewriter::ImportRewriter;
 use super::source_map::CompositeSourceMap;
@@ -38,6 +38,7 @@ pub use document::{
     generate_vue_document_virtual_ts_with_options,
 };
 mod diagnostics;
+mod javascript_sfc;
 mod jsx_build;
 mod jsx_codegen;
 mod mapping;
@@ -102,6 +103,10 @@ pub struct VirtualProject {
     /// Whether the effective tsconfig asks TypeScript to report unused symbols.
     preserve_unused_diagnostics: bool,
 
+    /// Whether the effective tsconfig enables `checkJs`. When it does not,
+    /// TypeScript diagnostics on JavaScript SFCs are not reportable (#3322).
+    check_js: bool,
+
     /// Global virtual TS options applied to every Vue file.
     virtual_ts_options: VirtualTsOptions,
 
@@ -150,6 +155,11 @@ pub struct VirtualProject {
     /// original offsets refer to (e.g. an editor's unsaved buffer), so it is
     /// more correct than re-reading live disk state.
     original_contents: FxHashMap<PathBuf, CompactString>,
+
+    /// Materialized paths of `.vue` files whose script block is JavaScript.
+    /// TypeScript diagnostics mapped back into these files are dropped unless
+    /// the project enables `checkJs` (see [`javascript_sfc`], #3322).
+    unchecked_javascript_files: FxHashSet<PathBuf>,
 
     /// Parser diagnostics collected before Corsa runs.
     diagnostics: Vec<Diagnostic>,

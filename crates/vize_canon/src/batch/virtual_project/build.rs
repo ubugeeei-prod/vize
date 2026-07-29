@@ -18,6 +18,8 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
 
 use super::VirtualFile;
 use super::diagnostics::collect_sfc_block_ranges;
+pub(super) use super::javascript_sfc::descriptor_uses_jsx_script;
+use super::javascript_sfc::descriptor_is_unchecked_javascript;
 use super::jsx_build::build_jsx_registered_file;
 use super::passthrough::collect_passthrough_modules;
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
@@ -35,6 +37,9 @@ pub(super) struct RegisteredFile {
     pub(super) original_content: CompactString,
     pub(super) passthrough_files: Vec<(PathBuf, PathBuf)>,
     pub(super) diagnostics: Vec<Diagnostic>,
+    /// SFC whose script block is JavaScript: TypeScript diagnostics on it are
+    /// reportable only under `checkJs` (see `javascript_sfc`, #3322).
+    pub(super) unchecked_javascript: bool,
 }
 
 #[derive(Clone, Copy)]
@@ -190,6 +195,7 @@ pub(super) fn build_vue_registered_file(
             context.virtual_root,
         ),
         diagnostics,
+        unchecked_javascript: descriptor_is_unchecked_javascript(&descriptor),
     })
 }
 
@@ -217,6 +223,7 @@ pub(super) fn build_script_registered_file(
         original_content: content.to_compact_string(),
         passthrough_files: collect_passthrough_modules(path, content, roots.0, roots.1),
         diagnostics: Vec::new(),
+        unchecked_javascript: false,
     })
 }
 
@@ -330,23 +337,6 @@ fn virtual_vue_path(
         })?;
     virtual_path.set_file_name(file_name.as_str());
     Ok(virtual_path)
-}
-
-pub(super) fn descriptor_uses_jsx_script(descriptor: &SfcDescriptor) -> bool {
-    descriptor
-        .script
-        .as_ref()
-        .and_then(|script| script.lang.as_deref())
-        .is_some_and(is_jsx_like_lang)
-        || descriptor
-            .script_setup
-            .as_ref()
-            .and_then(|script| script.lang.as_deref())
-            .is_some_and(is_jsx_like_lang)
-}
-
-fn is_jsx_like_lang(lang: &str) -> bool {
-    matches!(lang, "jsx" | "tsx")
 }
 
 pub(super) fn source_type_for_path(path: &Path) -> Option<SourceType> {

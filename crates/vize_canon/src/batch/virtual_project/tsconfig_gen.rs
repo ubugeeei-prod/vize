@@ -441,6 +441,6 @@ impl VirtualProject {
 }
 
 #[allow(clippy::disallowed_types)]
-fn compiler_option_enabled(options: &Map<std::string::String, Value>, name: &str) -> bool {
+pub(super) fn compiler_option_enabled(options: &Map<std::string::String, Value>, name: &str) -> bool {
     options.get(name).and_then(Value::as_bool).unwrap_or(false)
 }
