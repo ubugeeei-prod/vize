@@ -117,7 +117,7 @@ fn queue_vue_imports(
     code: &str,
     source_type: SourceType,
 ) {
-    for specifier in rewriter.collect_relative_vue_specifiers(code, source_type) {
+    for specifier in rewriter.collect_relative_vue_specifiers(code, source_type, Some(dir)) {
         let path = normalize_path(&dir.join(specifier.as_str()));
         let key = std::fs::canonicalize(&path).unwrap_or_else(|_| path.clone());
         if !imports.visited_vue.insert(key) {
@@ -200,7 +200,9 @@ fn queue_ts_imports(
             continue;
         };
         let dependency_source_type = source_type_for_path(&path);
-        let rewritten = rewriter.rewrite(&content, dependency_source_type).code;
+        let rewritten = rewriter
+            .rewrite(&content, dependency_source_type, path.parent())
+            .code;
         let uri = normalize_document_uri(path_to_file_uri(&path).as_str());
         imports.documents.push((uri, rewritten));
         imports.queue.push_back(DependencyScan::Script {

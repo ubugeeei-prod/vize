@@ -106,7 +106,7 @@ pub fn generate_vue_document_virtual_ts_with_options(
         prepend_vue_jsx_reference(&mut code, &mut mappings);
     }
 
-    let rewritten = rewriter.rewrite(&code, source_type);
+    let rewritten = rewriter.rewrite(&code, source_type, path.parent());
     Ok(VueDocumentVirtualTs {
         code: rewritten.code,
         pre_rewrite_code: code,

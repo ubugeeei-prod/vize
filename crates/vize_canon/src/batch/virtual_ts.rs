@@ -167,7 +167,7 @@ impl VirtualTsGenerator {
 
     /// Emit imports with `.vue -> .vue.ts` rewrite.
     fn emit_imports(&self, code: &mut String, script: &str) {
-        let rewritten = ImportRewriter::new().rewrite(script, oxc_span::SourceType::ts());
+        let rewritten = ImportRewriter::new().rewrite(script, oxc_span::SourceType::ts(), None);
         for line in rewritten.code.lines() {
             if line.trim().starts_with("import ") {
                 code.push_str("  ");

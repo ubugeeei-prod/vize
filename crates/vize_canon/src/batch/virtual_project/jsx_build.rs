@@ -29,7 +29,9 @@ pub(super) fn build_jsx_registered_file(
 
     let rewritten = profile!(
         "canon.import.rewrite.jsx",
-        context.rewriter.rewrite(&code, SourceType::ts())
+        context
+            .rewriter
+            .rewrite(&code, SourceType::ts(), path.parent())
     );
 
     let blocks = vec![crate::batch::source_map::SfcBlockRange {

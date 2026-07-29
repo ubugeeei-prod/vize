@@ -1,21 +1,22 @@
 //! Import rewriter for transforming .vue imports to .vue.ts.
 
+use std::path::Path;
+
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{
-    CallExpression, ExportAllDeclaration, ExportNamedDeclaration, Expression, ImportDeclaration,
-    ImportExpression, StringLiteral, TSExternalModuleReference, TSImportType,
-    TSModuleDeclarationName,
-};
-use oxc_ast_visit::{Visit, walk};
+use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString, cstr};
+
+#[path = "import_rewriter_collect.rs"]
+mod collect;
+use collect::ModuleSpecifierCollector;
 
 #[path = "import_rewriter_virtual.rs"]
 mod virtual_rewrite;
 use virtual_rewrite::{
     absolute_import_needs_virtual_rewrite, is_rewritable_project_specifier,
-    is_rewritable_vue_specifier,
+    is_rewritable_vue_specifier, rewrite_relative_vue_specifier,
 };
 
 #[path = "import_rewriter_dts.rs"]
@@ -79,8 +80,19 @@ impl ImportRewriter {
         Self
     }
 
-    pub fn rewrite(&self, source: &str, source_type: SourceType) -> RewriteResult {
-        if !source.contains(".vue") {
+    /// Rewrite a generated module's `.vue` specifiers onto their mirror
+    /// modules. `source_dir` (the authored file's directory, when known) also
+    /// redirects a relative extensionless specifier whose target is a `.vue`
+    /// file on disk (`./components/svg` for `svg.vue`, #3329).
+    pub fn rewrite(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        source_dir: Option<&Path>,
+    ) -> RewriteResult {
+        let relative_candidate =
+            source_dir.is_some() && source_may_contain_relative_specifier(source);
+        if !source.contains(".vue") && !relative_candidate {
             return RewriteResult {
                 code: source.to_compact_string(),
                 source_map: ImportSourceMap::empty(),
@@ -89,6 +101,7 @@ impl ImportRewriter {
 
         self.rewrite_with(source, source_type, |path| {
             self.rewrite_module_specifier(path)
+                .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
         })
     }
 
@@ -180,12 +193,17 @@ impl ImportRewriter {
         }
     }
 
+    /// Relative SFC dependencies of `source`, always spelled with the `.vue`
+    /// extension. With `source_dir`, extensionless specifiers whose target is a
+    /// `.vue` file are reported too, so the caller opens the dependency the
+    /// rewriter redirects them to (#3329).
     pub fn collect_relative_vue_specifiers(
         &self,
         source: &str,
         source_type: SourceType,
+        source_dir: Option<&Path>,
     ) -> Vec<String> {
-        if !source.contains(".vue") {
+        if !source.contains(".vue") && source_dir.is_none() {
             return Vec::new();
         }
 
@@ -197,11 +215,18 @@ impl ImportRewriter {
         let mut collector = ModuleSpecifierCollector::new();
         collector.visit_program(&result.program);
         for (_, _, path) in collector.specifiers {
-            if path.ends_with(".vue") && (path.starts_with("./") || path.starts_with("../")) {
-                let candidate = path.to_compact_string();
-                if !specifiers.iter().any(|s| s.as_str() == candidate.as_str()) {
-                    specifiers.push(candidate);
-                }
+            let candidate =
+                if path.ends_with(".vue") && (path.starts_with("./") || path.starts_with("../")) {
+                    path.to_compact_string()
+                } else if source_dir
+                    .is_some_and(|dir| rewrite_relative_vue_specifier(&path, dir).is_some())
+                {
+                    cstr!("{path}.vue")
+                } else {
+                    continue;
+                };
+            if !specifiers.iter().any(|s| s.as_str() == candidate.as_str()) {
+                specifiers.push(candidate);
             }
         }
 
@@ -224,6 +249,7 @@ impl ImportRewriter {
     ) -> Option<String> {
         if let Some(source_dir) = source_dir
             && let Some(rewritten) = rewrite_relative_dts_specifier(path, source_dir, roots.0)
+                .or_else(|| rewrite_relative_vue_specifier(path, source_dir))
         {
             return Some(rewritten);
         }
@@ -276,75 +302,5 @@ fn source_may_contain_relative_specifier(source: &str) -> bool {
 impl Default for ImportRewriter {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-struct ModuleSpecifierCollector {
-    specifiers: Vec<(u32, u32, String)>,
-}
-
-impl ModuleSpecifierCollector {
-    fn new() -> Self {
-        Self {
-            specifiers: Vec::new(),
-        }
-    }
-
-    fn push(&mut self, start: u32, end: u32, specifier: &str) {
-        self.specifiers.push((start + 1, end - 1, specifier.into()));
-    }
-
-    fn push_literal(&mut self, lit: &StringLiteral<'_>) {
-        self.push(lit.span.start, lit.span.end, lit.value.as_str());
-    }
-}
-
-impl<'a> Visit<'a> for ModuleSpecifierCollector {
-    fn visit_import_declaration(&mut self, decl: &ImportDeclaration<'a>) {
-        self.push_literal(&decl.source);
-        walk::walk_import_declaration(self, decl);
-    }
-
-    fn visit_export_named_declaration(&mut self, decl: &ExportNamedDeclaration<'a>) {
-        if let Some(source) = &decl.source {
-            self.push_literal(source);
-        }
-        walk::walk_export_named_declaration(self, decl);
-    }
-
-    fn visit_export_all_declaration(&mut self, decl: &ExportAllDeclaration<'a>) {
-        self.push_literal(&decl.source);
-        walk::walk_export_all_declaration(self, decl);
-    }
-
-    fn visit_import_expression(&mut self, expr: &ImportExpression<'a>) {
-        if let Expression::StringLiteral(lit) = &expr.source {
-            self.push_literal(lit);
-        }
-        walk::walk_import_expression(self, expr);
-    }
-
-    fn visit_call_expression(&mut self, expr: &CallExpression<'a>) {
-        if let Some(lit) = expr.common_js_require() {
-            self.push(lit.span.start, lit.span.end, lit.value.as_str());
-        }
-        walk::walk_call_expression(self, expr);
-    }
-
-    fn visit_ts_import_type(&mut self, import_type: &TSImportType<'a>) {
-        self.push_literal(&import_type.source);
-        walk::walk_ts_import_type(self, import_type);
-    }
-
-    fn visit_ts_external_module_reference(&mut self, reference: &TSExternalModuleReference<'a>) {
-        self.push_literal(&reference.expression);
-        walk::walk_ts_external_module_reference(self, reference);
-    }
-
-    fn visit_ts_module_declaration_name(&mut self, name: &TSModuleDeclarationName<'a>) {
-        if let TSModuleDeclarationName::StringLiteral(lit) = name {
-            self.push_literal(lit);
-        }
-        walk::walk_ts_module_declaration_name(self, name);
     }
 }
