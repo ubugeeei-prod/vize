@@ -37,6 +37,7 @@ pub(crate) fn generate_imports(ctx: &GenerateContext) -> String {
             "insert" => 9,
             "child" => 10,
             "next" => 11,
+            "nthChild" => 12,
             "txt" => 20,
             "toDisplayString" => 21,
             "setText" => 22,

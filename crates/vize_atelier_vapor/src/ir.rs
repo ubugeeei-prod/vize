@@ -326,10 +326,19 @@ pub struct ChildRefIRNode {
     pub offset: usize,
 }
 
-/// Next sibling reference operation (_next helper)
+/// Next sibling reference operation (`_next` / `_nthChild` helper).
+///
+/// `offset` is how many rendered siblings separate this node from `prev_id`.
+/// The runtime's `next(node, i)` only advances **one** sibling outside
+/// hydration (`i` is an absolute hydration hint, not a step count), so a jump
+/// of two or more must be emitted as `_nthChild(parent, index)` instead
+/// (#3330). `parent_id` and `index` carry what that call needs.
 #[derive(Debug)]
 pub struct NextRefIRNode {
     pub child_id: usize,
     pub prev_id: usize,
+    pub parent_id: usize,
     pub offset: usize,
+    /// Absolute rendered index of this node within its parent.
+    pub index: usize,
 }

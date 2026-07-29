@@ -79,32 +79,56 @@ pub(super) fn generate_get_text_child(ctx: &mut GenerateContext, get_text: &GetT
     ctx.push_line_fmt(format_args!("const {} = {}.firstChild", child, parent));
 }
 
-/// Generate ChildRef (_child helper)
+/// Generate ChildRef (`_child` / `_next` / `_nthChild` helper).
+///
+/// Mirrors the Vue Vapor runtime's navigation contract (see
+/// [`build_navigation`]): index 0 is `_child`, index 1 is one `_next` step,
+/// and anything further is an absolute `_nthChild` lookup from the parent.
 pub(super) fn generate_child_ref(ctx: &mut GenerateContext, child_ref: &ChildRefIRNode) {
-    ctx.use_helper("child");
-    if child_ref.offset == 0 {
-        ctx.push_line_fmt(format_args!(
-            "const n{} = _child(n{})",
-            child_ref.child_id, child_ref.parent_id
-        ));
+    let expr = if child_ref.offset > 1 {
+        ctx.use_helper("nthChild");
+        cstr!("_nthChild(n{}, {})", child_ref.parent_id, child_ref.offset)
     } else {
-        ctx.use_helper("next");
-        let expr = build_next_chain(cstr!("_child(n{})", child_ref.parent_id), child_ref.offset);
-        ctx.push_line_fmt(format_args!("const n{} = {}", child_ref.child_id, expr));
-    }
+        ctx.use_helper("child");
+        build_navigation(
+            cstr!("_child(n{})", child_ref.parent_id),
+            child_ref.offset,
+            child_ref.offset,
+            ctx,
+        )
+    };
+    ctx.push_line_fmt(format_args!("const n{} = {}", child_ref.child_id, expr));
 }
 
-/// Generate NextRef (_next helper)
+/// Generate NextRef (`_next` / `_nthChild` helper).
 pub(super) fn generate_next_ref(ctx: &mut GenerateContext, next_ref: &NextRefIRNode) {
-    ctx.use_helper("next");
-    let expr = build_next_chain(cstr!("n{}", next_ref.prev_id), next_ref.offset);
+    let expr = if next_ref.offset > 1 {
+        ctx.use_helper("nthChild");
+        cstr!("_nthChild(n{}, {})", next_ref.parent_id, next_ref.index)
+    } else {
+        build_navigation(
+            cstr!("n{}", next_ref.prev_id),
+            next_ref.offset,
+            next_ref.index,
+            ctx,
+        )
+    };
     ctx.push_line_fmt(format_args!("const n{} = {}", next_ref.child_id, expr));
 }
 
-fn build_next_chain(base: String, offset: usize) -> String {
-    if offset == 0 {
+/// Build a navigation expression for a jump of at most one sibling.
+///
+/// The runtime's `next(node, i)` advances **exactly one** sibling outside
+/// hydration — `i` is an absolute logical index used only while hydrating, not
+/// a step count. Emitting `_next(node, 3)` for a three-sibling jump therefore
+/// landed one sibling over and a chained `_child()` dereferenced `null`
+/// (#3330). Multi-step jumps go through `_nthChild` instead; this helper only
+/// covers `steps <= 1`, and passes `index` so hydration resolves the same node.
+fn build_navigation(base: String, steps: usize, index: usize, ctx: &mut GenerateContext) -> String {
+    if steps == 0 {
         base
     } else {
-        cstr!("_next({}, {})", base, offset)
+        ctx.use_helper("next");
+        cstr!("_next({}, {})", base, index)
     }
 }
