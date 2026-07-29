@@ -143,14 +143,21 @@ async function runRealHoverSmoke(mismatchDocument) {
     .flatMap((hover) => hover.contents)
     .map((content) => (typeof content === "string" ? content : content.value))
     .join("\n");
-  assert.match(markdown, /\*\*label\*\*/);
+  // This profile enables typechecking, so the hover type text comes from the
+  // live backend (#3321): the real literal type of the const, not the
+  // script-binding heuristic that used to answer here.
+  assert.match(markdown, /\*\*TypeScript quick info\*\*/);
   assert.ok(
-    markdown.includes("label: literal const"),
-    `hover must report the binding type fragment: ${JSON.stringify(markdown)}`,
+    markdown.includes('const label: "hello from vize"'),
+    `hover must report the backend type of the binding: ${JSON.stringify(markdown)}`,
   );
   assert.ok(
-    markdown.includes("Template binding from script"),
-    `hover must identify the script binding source: ${JSON.stringify(markdown)}`,
+    markdown.includes("Resolved through Vize virtual TypeScript"),
+    `hover must identify the type backend as its source: ${JSON.stringify(markdown)}`,
+  );
+  assert.ok(
+    !markdown.includes("Template binding from script"),
+    `hover must not fall back to the script-binding heuristic: ${JSON.stringify(markdown)}`,
   );
 }
 
