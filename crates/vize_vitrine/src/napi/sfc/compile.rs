@@ -117,8 +117,13 @@ pub fn compile_sfc(
         Ok(result) => Ok(SfcCompileResultNapi {
             // The emitter is the last stop before the bundler, so the code
             // crossing this boundary must already be plain JavaScript — the JS
-            // plugin no longer re-strips it.
-            code: ensure_javascript_output(result.code).into(),
+            // plugin no longer re-strips it. `is_ts` callers opted out: they
+            // asked for TypeScript in the output and strip it themselves.
+            code: if is_ts {
+                result.code.into()
+            } else {
+                ensure_javascript_output(result.code).into()
+            },
             css: result.css.map(Into::into),
             errors: result
                 .errors

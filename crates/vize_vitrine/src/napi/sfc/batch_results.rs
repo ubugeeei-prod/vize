@@ -189,7 +189,13 @@ fn compile_sfc_batch_with_results_inner(
                         // The emitter is the last stop before the bundler, so
                         // the code crossing this boundary must already be plain
                         // JavaScript — the JS plugin no longer re-strips it.
-                        code: ensure_javascript_output(result.code).into(),
+                        // `is_ts` callers opted out: they asked for TypeScript
+                        // in the output and strip it themselves.
+                        code: if is_ts {
+                            result.code.into()
+                        } else {
+                            ensure_javascript_output(result.code).into()
+                        },
                         css: result.css.map(Into::into),
                         scope_id: scope_id.into(),
                         has_scoped,
