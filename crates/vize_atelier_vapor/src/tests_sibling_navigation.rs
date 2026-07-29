@@ -18,7 +18,7 @@
 //! index in both modes — the same rule `@vue/compiler-vapor` follows.
 
 use super::compile_vapor;
-use vize_carton::{Bump, String, cstr};
+use vize_carton::{Bump, String};
 
 fn compile(template: &str) -> String {
     let allocator = Bump::new();
@@ -29,6 +29,35 @@ fn compile(template: &str) -> String {
         result.error_messages
     );
     result.code.clone()
+}
+
+/// Split every `_next(base, index)` call in `code` into its two arguments,
+/// balancing parentheses so a call base like `_child(n2)` stays intact. Calls
+/// without a top-level comma yield `None` as the index.
+fn next_calls(code: &str) -> Vec<(&str, Option<&str>)> {
+    let bytes = code.as_bytes();
+    let mut calls = Vec::new();
+    let mut from = 0;
+    while let Some(at) = code[from..].find("_next(") {
+        let open = from + at + "_next(".len();
+        let (mut depth, mut i, mut comma) = (1usize, open, None);
+        while i < bytes.len() && depth > 0 {
+            match bytes[i] {
+                b'(' => depth += 1,
+                b')' => depth -= 1,
+                b',' if depth == 1 && comma.is_none() => comma = Some(i),
+                _ => {}
+            }
+            i += 1;
+        }
+        let end = if depth == 0 { i - 1 } else { bytes.len() };
+        match comma {
+            Some(comma) => calls.push((&code[open..comma], Some(code[comma + 1..end].trim()))),
+            None => calls.push((&code[open..end], None)),
+        }
+        from = open;
+    }
+    calls
 }
 
 /// The reporter's minimal template (#3330): the compiler must navigate three
@@ -80,7 +109,12 @@ fn no_emitted_next_call_advances_more_than_one_sibling() {
         r#"<div><p/><p/><p/><span :id="x"><i/></span></div>"#,
         r#"<div><span :id="x"><i/></span><p/><p/><span :id="y"><i/></span></div>"#,
         r#"<div><p/><span :id="x"><i/></span><p/><p/><span :id="y"><i/></span><p/><span :id="z"><i/></span></div>"#,
+        // A nested parent: navigation inside `<section>` hangs off a `_child`
+        // of something other than the root, so the guard below must hold for
+        // every parent, not just `n1`.
+        r#"<div><section><p/><span :id="x"><i/></span><span :id="y"><i/></span></section><span :id="z"><i/></span></div>"#,
     ] {
+        let mut checked_child_bases = 0usize;
         let code = compile(template);
         assert!(
             code.contains("_next(") || code.contains("_nthChild("),
@@ -89,15 +123,24 @@ fn no_emitted_next_call_advances_more_than_one_sibling() {
         // Every `_next(base, i)` advances exactly one sibling at runtime, so
         // its second argument must never be read as a step count. The only
         // shapes the generator may emit are `_next(_child(nP), 1)` and
-        // `_next(nX, i)` for an adjacent hop; a `_next` starting from
-        // `_child` with an index above 1 is a counted jump — the #3330 defect.
-        for index in 2..=8 {
-            let counted = cstr!("_next(_child(n1), {})", index);
-            assert!(
-                !code.contains(counted.as_str()),
+        // `_next(nX, i)` for an adjacent hop; a `_next` starting from a
+        // `_child` of *any* parent with an index above 1 is a counted jump —
+        // the #3330 defect.
+        for (base, index) in next_calls(&code) {
+            if !base.starts_with("_child(") {
+                continue;
+            }
+            assert_eq!(
+                index,
+                Some("1"),
                 "a counted _next advances only one sibling at runtime:\n{template}\n{code}"
             );
+            checked_child_bases += 1;
         }
+        assert!(
+            checked_child_bases > 0 || code.contains("_nthChild("),
+            "expected a _child-anchored hop or an absolute lookup:\n{template}\n{code}"
+        );
     }
 }
 
