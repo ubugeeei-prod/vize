@@ -159,6 +159,11 @@ const tsconfig = {
     target: "esnext",
     module: "esnext",
     moduleResolution: "bundler",
+    // TransactionTable.vue is a plain-JavaScript SFC: type-checking it at all
+    // is the `checkJs` opt-in TypeScript requires for a `lang="js"` block, and
+    // this oracle exists to pin the checked surface (#3322).
+    allowJs: true,
+    checkJs: true,
     strict: false,
     skipLibCheck: true,
     noEmit: true,

@@ -18,8 +18,8 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
 
 use super::VirtualFile;
 use super::diagnostics::collect_sfc_block_ranges;
-pub(super) use super::javascript_sfc::descriptor_uses_jsx_script;
 use super::javascript_sfc::descriptor_is_unchecked_javascript;
+pub(super) use super::javascript_sfc::descriptor_uses_jsx_script;
 use super::jsx_build::build_jsx_registered_file;
 use super::passthrough::collect_passthrough_modules;
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};

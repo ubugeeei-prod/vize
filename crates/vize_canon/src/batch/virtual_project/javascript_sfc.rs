@@ -74,10 +74,10 @@ fn opts_into_type_checking(content: &str) -> bool {
         if line.is_empty() {
             continue;
         }
-        let Some(rest) = line
-            .strip_prefix("//")
-            .or_else(|| line.strip_prefix("/*").map(|rest| rest.trim_end_matches("*/")))
-        else {
+        let Some(rest) = line.strip_prefix("//").or_else(|| {
+            line.strip_prefix("/*")
+                .map(|rest| rest.trim_end_matches("*/"))
+        }) else {
             return false;
         };
         if rest.trim() == "@ts-check" {
@@ -96,7 +96,10 @@ impl VirtualProject {
         let Ok(compiler_options) = self.load_compiler_options(Some(tsconfig_path.as_path())) else {
             return false;
         };
-        super::tsconfig_gen::compiler_option_enabled(&compiler_options, "checkJs")
+        compiler_options
+            .get("checkJs")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false)
     }
 }
 
