@@ -94,18 +94,73 @@ test("release commit must remain the exact current main tip", () => {
   );
 });
 
+const blockerIssues = [
+  { number: 1, title: "release break", labels: [{ name: "priority:p0" }] },
+  { number: 2, title: "correctness break", labels: ["PRIORITY:P1"] },
+  { number: 3, title: "fix(fuzz): parser crash", labels: [] },
+  { number: 4, title: "regular work", labels: [{ name: "area:ci" }] },
+  { number: 5, title: "fix(fuzz): open pull request", labels: [], pull_request: {} },
+];
+
 test("P0, P1, and fuzz reproducer issues block without treating PRs as issues", () => {
-  const issues = [
-    { number: 1, title: "release break", labels: [{ name: "priority:p0" }] },
-    { number: 2, title: "correctness break", labels: ["PRIORITY:P1"] },
-    { number: 3, title: "fix(fuzz): parser crash", labels: [] },
-    { number: 4, title: "regular work", labels: [{ name: "area:ci" }] },
-    { number: 5, title: "fix(fuzz): open pull request", labels: [], pull_request: {} },
-  ];
   assert.deepEqual(
-    findReleaseBlockers(issues).map((issue) => issue.number),
+    findReleaseBlockers(blockerIssues).map((issue) => issue.number),
     [1, 2, 3],
   );
+});
+
+test("readiness labels block v1 releases", () => {
+  for (const tag of ["v1.0.0", "v1.4.2", "v2.0.0", "v1.0.0-alpha.1"]) {
+    assert.deepEqual(
+      findReleaseBlockers(blockerIssues, tag).map((issue) => issue.number),
+      [1, 2, 3],
+      tag,
+    );
+  }
+});
+
+test("readiness labels do not block pre-1.0 releases, but fuzz reproducers still do", () => {
+  // `priority:p0`/`priority:p1` are defined as "v1 alpha production
+  // readiness" markers, so they must not gate `0.x`; a `fix(fuzz):`
+  // reproducer is a live defect and blocks every release.
+  for (const tag of ["v0.302.0", "v0.1.0", "v0.302.0-rc.1"]) {
+    assert.deepEqual(
+      findReleaseBlockers(blockerIssues, tag).map((issue) => issue.number),
+      [3],
+      tag,
+    );
+  }
+});
+
+test("the current open-issue shape blocks v1 but not the pre-1.0 line", () => {
+  // Shape mirrors the repository as of this change: campaign umbrellas and
+  // readiness-labelled defects, no open `fix(fuzz):` reproducer.
+  const openIssues = [
+    { number: 2971, title: "test(editor): production gates", labels: [{ name: "priority:p0" }] },
+    { number: 3222, title: "roadmap(canon): vue-tsc parity", labels: [{ name: "priority:p0" }] },
+    { number: 3131, title: "roadmap: universal atelier", labels: [{ name: "priority:p1" }] },
+    { number: 3334, title: "fix(glyph): formatter re-indents", labels: [{ name: "area:glyph" }] },
+  ];
+  assert.deepEqual(findReleaseBlockers(openIssues, "v0.302.0"), []);
+  assert.deepEqual(
+    findReleaseBlockers(openIssues, "v1.0.0").map((issue) => issue.number),
+    [2971, 3222, 3131],
+  );
+  // An open fuzz reproducer would still stop the same pre-1.0 release.
+  assert.deepEqual(
+    findReleaseBlockers(
+      [
+        ...openIssues,
+        { number: 9999, title: "fix(fuzz): css_parse found a reproducer", labels: [] },
+      ],
+      "v0.302.0",
+    ).map((issue) => issue.number),
+    [9999],
+  );
+});
+
+test("a malformed release tag is rejected rather than silently unblocking", () => {
+  assert.throws(() => findReleaseBlockers(blockerIssues, "not-a-version"), /Release tag must look/);
 });
 
 test("annotated remote tags resolve to their peeled commit", () => {

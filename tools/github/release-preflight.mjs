@@ -203,7 +203,7 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
         assertRequiredWorkflowJobs(workflowName, jobs);
       }),
   ]);
-  const blockers = findReleaseBlockers(issues);
+  const blockers = findReleaseBlockers(issues, tag);
   if (blockers.length > 0) {
     throw new Error(
       `Release-blocking issues remain open:\n${blockers

@@ -62,16 +62,30 @@ export function assertReleaseCommitIsCurrentMain(sha, mainSha) {
   }
 }
 
-export function findReleaseBlockers(issues) {
+/**
+ * Issues that must be closed before `tag` may ship.
+ *
+ * A `fix(fuzz):` reproducer blocks every release: it is a live defect, not a
+ * planning marker.
+ *
+ * The readiness labels block v1 and later only, because that is what they say
+ * they are — `priority:p0` is described as "Release blocker for **v1 alpha**
+ * production readiness" and `priority:p1` as "High priority before **v1
+ * alpha** production readiness". Applying them to `0.x` made every pre-1.0
+ * release wait on multi-release campaign umbrellas that are not meant to close
+ * before v1, which left the project unable to ship at all. Omitting `tag`
+ * keeps the strict behaviour.
+ */
+export function findReleaseBlockers(issues, tag) {
+  const readinessLabelsBlock = tag == null || parseReleaseVersion(tag).major >= 1;
   return issues.filter((issue) => {
     if (issue.pull_request != null) return false;
+    if (/^fix\(fuzz\):/i.test(issue.title ?? "")) return true;
+    if (!readinessLabelsBlock) return false;
     const labels = (issue.labels ?? []).map((label) =>
       (typeof label === "string" ? label : (label.name ?? "")).toLowerCase(),
     );
-    return (
-      labels.some((label) => releaseBlockingLabels.has(label)) ||
-      /^fix\(fuzz\):/i.test(issue.title ?? "")
-    );
+    return labels.some((label) => releaseBlockingLabels.has(label));
   });
 }
 
