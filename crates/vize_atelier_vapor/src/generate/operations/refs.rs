@@ -88,8 +88,7 @@ pub(super) fn generate_child_ref(ctx: &mut GenerateContext, child_ref: &ChildRef
             child_ref.child_id, child_ref.parent_id
         ));
     } else if child_ref.offset == 1 {
-        ctx.use_helper("next");
-        let expr = build_next_chain(cstr!("_child(n{})", child_ref.parent_id), 1);
+        let expr = build_next_chain(cstr!("_child(n{})", child_ref.parent_id), 1, 1, ctx);
         ctx.push_line_fmt(format_args!("const n{} = {}", child_ref.child_id, expr));
     } else {
         // Outside hydration the runtime `next()` advances a single sibling, so
@@ -103,26 +102,43 @@ pub(super) fn generate_child_ref(ctx: &mut GenerateContext, child_ref: &ChildRef
     }
 }
 
-/// Generate NextRef (_next helper)
+/// Generate NextRef (`_next` / `_nthChild` helper).
+///
+/// A jump of two or more siblings becomes an absolute `_nthChild` lookup for
+/// the same reason `generate_child_ref` uses one: chaining bare `_next(node)`
+/// calls works outside hydration but returns `null` while hydrating, because
+/// each call reaches `locateChildByLogicalIndex(parent, undefined)` and no
+/// index ever equals `undefined`. A single-step jump stays a `_next`, carrying
+/// this node's **absolute** index so hydration resolves the same node — a
+/// literal `1` is only correct when the target happens to be the parent's
+/// second child (#3330).
 pub(super) fn generate_next_ref(ctx: &mut GenerateContext, next_ref: &NextRefIRNode) {
-    ctx.use_helper("next");
-    let expr = build_next_chain(cstr!("n{}", next_ref.prev_id), next_ref.offset);
+    let expr = if next_ref.offset > 1 {
+        ctx.use_helper("nthChild");
+        cstr!("_nthChild(n{}, {})", next_ref.parent_id, next_ref.index)
+    } else {
+        build_next_chain(
+            cstr!("n{}", next_ref.prev_id),
+            next_ref.offset,
+            next_ref.index,
+            ctx,
+        )
+    };
     ctx.push_line_fmt(format_args!("const n{} = {}", next_ref.child_id, expr));
 }
 
-fn build_next_chain(base: String, offset: usize) -> String {
+/// Build a navigation expression for a jump of at most one sibling, passing
+/// `index` as the hydration hint. Multi-step jumps never reach here.
+fn build_next_chain(
+    base: String,
+    offset: usize,
+    index: usize,
+    ctx: &mut GenerateContext,
+) -> String {
     if offset == 0 {
         base
-    } else if offset == 1 {
-        cstr!("_next({}, 1)", base)
     } else {
-        // Outside hydration the runtime `next()` only honors single-step
-        // advancement, so multi-step navigation must be a chain of calls
-        // instead of one call carrying the offset.
-        let mut expr = base;
-        for _ in 0..offset {
-            expr = cstr!("_next({})", expr);
-        }
-        expr
+        ctx.use_helper("next");
+        cstr!("_next({}, {})", base, index)
     }
 }

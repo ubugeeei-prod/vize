@@ -199,6 +199,7 @@ fn transform_dynamic_children_with_ids<'a>(
     dynamic_child_indices: &[usize],
     child_ids: &[usize],
 ) {
+    // (child id, absolute rendered index within the parent)
     let mut prev_template_backed_child: Option<(usize, usize)> = None;
 
     for (idx, &child_index) in dynamic_child_indices.iter().enumerate() {
@@ -208,27 +209,26 @@ fn transform_dynamic_children_with_ids<'a>(
         };
 
         if is_template_backed_element(child_el) {
-            if let Some((prev_child_id, prev_child_index)) = prev_template_backed_child {
-                let offset =
-                    count_rendered_child_nodes(&el.children, prev_child_index + 1, child_index);
+            let index = count_rendered_child_nodes(&el.children, 0, child_index).saturating_sub(1);
+            if let Some((prev_child_id, prev_index)) = prev_template_backed_child {
                 block.operation.push(OperationNode::NextRef(NextRefIRNode {
                     child_id,
                     prev_id: prev_child_id,
-                    offset,
+                    parent_id,
+                    offset: index.saturating_sub(prev_index),
+                    index,
                 }));
             } else {
-                let offset =
-                    count_rendered_child_nodes(&el.children, 0, child_index).saturating_sub(1);
                 block
                     .operation
                     .push(OperationNode::ChildRef(ChildRefIRNode {
                         child_id,
                         parent_id,
-                        offset,
+                        offset: index,
                     }));
             }
 
-            prev_template_backed_child = Some((child_id, child_index));
+            prev_template_backed_child = Some((child_id, index));
             transform_existing_element(ctx, child_el, child_id, block);
         } else if child_el.tag_type == ElementType::Slot {
             transform_slot_outlet_child(ctx, child_el, child_id, parent_id, block);
