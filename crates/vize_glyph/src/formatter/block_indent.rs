@@ -25,9 +25,12 @@ pub(super) fn write_indented_block(
     let trimmed = content.trim_end_matches('\n').trim_end_matches('\r');
     let mut inside_template_literal = false;
 
-    for line in trimmed.split('\n') {
-        let is_blank = line.is_empty() || line == "\r";
-        if !is_blank && !inside_template_literal {
+    for raw_line in trimmed.split('\n') {
+        // Split on '\n' leaves the '\r' of a CRLF pair attached to the line.
+        // Strip it so the configured newline is the only terminator emitted:
+        // otherwise CRLF content plus a CRLF `newline` yields "\r\r\n".
+        let line = raw_line.strip_suffix('\r').unwrap_or(raw_line);
+        if !line.is_empty() && !inside_template_literal {
             output.extend_from_slice(indent);
         }
         output.extend_from_slice(line.as_bytes());
@@ -41,8 +44,12 @@ mod tests {
     use super::write_indented_block;
 
     fn indent(content: &str) -> vize_carton::String {
+        indent_with(content, b"\n")
+    }
+
+    fn indent_with(content: &str, newline: &[u8]) -> vize_carton::String {
         let mut output = Vec::new();
-        write_indented_block(&mut output, content, b"  ", b"\n");
+        write_indented_block(&mut output, content, b"  ", newline);
         core::str::from_utf8(&output).unwrap().into()
     }
 
@@ -88,5 +95,19 @@ mod tests {
     #[test]
     fn blank_lines_are_never_indented() {
         assert_eq!(indent("a\n\nb\n"), "  a\n\n  b\n");
+    }
+
+    #[test]
+    fn crlf_content_emits_the_configured_newline_once() {
+        // The '\r' left behind by splitting on '\n' must not survive, or a
+        // CRLF newline would double it into "\r\r\n".
+        assert_eq!(
+            indent_with("const a = 1\r\nconst b = 2\r\n", b"\r\n"),
+            "  const a = 1\r\n  const b = 2\r\n"
+        );
+        assert_eq!(
+            indent_with("const a = 1\r\nconst b = 2\r\n", b"\n"),
+            "  const a = 1\n  const b = 2\n"
+        );
     }
 }
