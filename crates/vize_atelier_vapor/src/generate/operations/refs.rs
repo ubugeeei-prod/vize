@@ -81,6 +81,9 @@ pub(super) fn generate_get_text_child(ctx: &mut GenerateContext, get_text: &GetT
 
 /// Generate ChildRef (_child helper)
 pub(super) fn generate_child_ref(ctx: &mut GenerateContext, child_ref: &ChildRefIRNode) {
+    // `offset` is the absolute rendered index within the parent. Record it so a
+    // `NextRef` hopping off this node can compute its own index (#3330).
+    ctx.record_node_position(child_ref.child_id, child_ref.parent_id, child_ref.offset);
     ctx.use_helper("child");
     if child_ref.offset == 0 {
         ctx.push_line_fmt(format_args!(
@@ -112,18 +115,38 @@ pub(super) fn generate_child_ref(ctx: &mut GenerateContext, child_ref: &ChildRef
 /// this node's **absolute** index so hydration resolves the same node — a
 /// literal `1` is only correct when the target happens to be the parent's
 /// second child (#3330).
+///
+/// The node only names its predecessor, so the parent and this node's absolute
+/// index come from the position the predecessor recorded: every sibling chain
+/// is anchored by a `ChildRef`, which knows both.
 pub(super) fn generate_next_ref(ctx: &mut GenerateContext, next_ref: &NextRefIRNode) {
-    let expr = if next_ref.offset > 1 {
-        ctx.use_helper("nthChild");
-        cstr!("_nthChild(n{}, {})", next_ref.parent_id, next_ref.index)
-    } else {
-        build_next_chain(
+    let position = ctx
+        .node_position(next_ref.prev_id)
+        .map(|(parent_id, prev_index)| (parent_id, prev_index + next_ref.offset));
+
+    let expr = match position {
+        Some((parent_id, index)) if next_ref.offset > 1 => {
+            ctx.use_helper("nthChild");
+            cstr!("_nthChild(n{}, {})", parent_id, index)
+        }
+        Some((_, index)) => {
+            build_next_chain(cstr!("n{}", next_ref.prev_id), next_ref.offset, index, ctx)
+        }
+        // Without an anchored predecessor there is no parent handle to look the
+        // node up on, so the hop stays relative and the index falls back to the
+        // offset. Sibling chains always start at a `ChildRef`, so this is only a
+        // safety net.
+        None => build_next_chain(
             cstr!("n{}", next_ref.prev_id),
             next_ref.offset,
-            next_ref.index,
+            next_ref.offset,
             ctx,
-        )
+        ),
     };
+
+    if let Some((parent_id, index)) = position {
+        ctx.record_node_position(next_ref.child_id, parent_id, index);
+    }
     ctx.push_line_fmt(format_args!("const n{} = {}", next_ref.child_id, expr));
 }
 

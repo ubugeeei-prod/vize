@@ -4,6 +4,8 @@ use super::{
     destructure::{parse_destructure_bindings, parse_destructure_names, resolve_props_binding},
     expression,
 };
+
+mod complex_expression;
 use vize_atelier_core::options::BindingMetadata;
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, camelize, capitalize, cstr};
 use vize_croquis::builtins::is_global_allowed;
@@ -44,6 +46,12 @@ pub(crate) struct GenerateContext<'a> {
     pub(crate) delegate_events: FxHashSet<String>,
     /// Text node references (element_id -> text_node_var)
     pub(crate) text_nodes: FxHashMap<usize, String>,
+    /// Position of every node reached by a `ChildRef`/`NextRef` operation
+    /// (element_id -> (parent_id, absolute rendered index within the parent)).
+    /// Sibling navigation needs both to emit a hydration index (#3330), and a
+    /// `NextRef` only names its predecessor, so each operation records where it
+    /// landed for the next one to read.
+    node_positions: FxHashMap<usize, (usize, usize)>,
     /// Whether currently inside a non-root block (v-if, v-for)
     pub(crate) is_fragment: bool,
     /// For-loop scope stack
@@ -82,6 +90,7 @@ impl<'a> GenerateContext<'a> {
             used_helpers: FxHashSet::default(),
             delegate_events: FxHashSet::default(),
             text_nodes: FxHashMap::default(),
+            node_positions: FxHashMap::default(),
             is_fragment: false,
             for_scopes: std::vec::Vec::new(),
             slot_scopes: std::vec::Vec::new(),
@@ -94,6 +103,16 @@ impl<'a> GenerateContext<'a> {
         }
     }
 
+    /// Record where a node reference landed, for later sibling navigation.
+    pub(crate) fn record_node_position(&mut self, id: usize, parent_id: usize, index: usize) {
+        self.node_positions.insert(id, (parent_id, index));
+    }
+
+    /// Parent and absolute rendered index of a previously referenced node.
+    pub(crate) fn node_position(&self, id: usize) -> Option<(usize, usize)> {
+        self.node_positions.get(&id).copied()
+    }
+
     /// Resolve an expression, replacing for-loop aliases with _for_item/key references
     pub(crate) fn resolve_expression(&self, expr: &str) -> String {
         expression::resolve_expression(self, expr)
@@ -101,110 +120,7 @@ impl<'a> GenerateContext<'a> {
 
     /// Resolve complex expressions (object/array literals) by prefixing identifiers inside
     pub(super) fn resolve_complex_expression_fallback(&self, expr: &str) -> String {
-        let mut result = String::default();
-        let mut chars = expr.chars().peekable();
-        let mut in_string = false;
-        let mut string_char = ' ';
-        // Track whether we're in key position (after { or ,) vs value position (after :)
-        let mut in_object = false;
-        let mut is_key_position = false;
-
-        while let Some(&ch) = chars.peek() {
-            if in_string {
-                result.push(ch);
-                chars.next();
-                if ch == string_char {
-                    in_string = false;
-                }
-                continue;
-            }
-
-            match ch {
-                '"' | '\'' | '`' => {
-                    in_string = true;
-                    string_char = ch;
-                    result.push(ch);
-                    chars.next();
-                }
-                '{' => {
-                    in_object = true;
-                    is_key_position = true;
-                    result.push(ch);
-                    chars.next();
-                }
-                '}' => {
-                    in_object = false;
-                    result.push(ch);
-                    chars.next();
-                }
-                ':' => {
-                    is_key_position = false;
-                    result.push(ch);
-                    chars.next();
-                }
-                ',' => {
-                    if in_object {
-                        is_key_position = true;
-                    }
-                    result.push(ch);
-                    chars.next();
-                }
-                '[' => {
-                    // Computed property key: [expr] - contents should be prefixed
-                    if in_object && is_key_position {
-                        // Save state, temporarily treat as value position
-                        is_key_position = false;
-                    }
-                    result.push(ch);
-                    chars.next();
-                }
-                ']' => {
-                    // After computed key, we're back to key position until ':'
-                    if in_object {
-                        is_key_position = true;
-                    }
-                    result.push(ch);
-                    chars.next();
-                }
-                ' ' | '\n' | '\t' => {
-                    result.push(ch);
-                    chars.next();
-                }
-                _ => {
-                    // Collect identifier/value
-                    let mut ident = String::default();
-                    while let Some(&c) = chars.peek() {
-                        if c == ','
-                            || c == '}'
-                            || c == ']'
-                            || c == ':'
-                            || c == ' '
-                            || c == '\n'
-                            || c == '\t'
-                        {
-                            break;
-                        }
-                        ident.push(c);
-                        chars.next();
-                    }
-                    let trimmed_ident = ident.trim();
-                    if trimmed_ident.is_empty()
-                        || trimmed_ident == "true"
-                        || trimmed_ident == "false"
-                        || trimmed_ident == "null"
-                        || trimmed_ident == "undefined"
-                        || trimmed_ident.parse::<f64>().is_ok()
-                        || (in_object && is_key_position)
-                    {
-                        // Don't prefix: literals, empty, or object keys
-                        result.push_str(&ident);
-                    } else {
-                        result.push_str(&self.resolve_expression(trimmed_ident));
-                    }
-                }
-            }
-        }
-        result
+        complex_expression::resolve_complex_expression_fallback(self, expr)
     }
 
     pub(super) fn resolve_scope_binding(&self, name: &str) -> Option<String> {

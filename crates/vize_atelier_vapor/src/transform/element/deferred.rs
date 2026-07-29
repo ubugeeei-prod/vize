@@ -214,9 +214,7 @@ fn transform_dynamic_children_with_ids<'a>(
                 block.operation.push(OperationNode::NextRef(NextRefIRNode {
                     child_id,
                     prev_id: prev_child_id,
-                    parent_id,
                     offset: index.saturating_sub(prev_index),
-                    index,
                 }));
             } else {
                 block

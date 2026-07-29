@@ -333,13 +333,12 @@ pub struct ChildRefIRNode {
 /// and treats `i` as an absolute index into the parent while hydrating, so a
 /// jump of two or more must become `_nthChild(parent, index)` and a
 /// single-step jump must carry this node's real index — not a literal `1`
-/// (#3330). `parent_id` and `index` supply both.
+/// (#3330). The generator derives the parent and the absolute index by
+/// walking back to the `ChildRef` that anchors the sibling chain, so they do
+/// not have to be restated here.
 #[derive(Debug)]
 pub struct NextRefIRNode {
     pub child_id: usize,
     pub prev_id: usize,
-    pub parent_id: usize,
     pub offset: usize,
-    /// Absolute rendered index of this node within its parent.
-    pub index: usize,
 }
