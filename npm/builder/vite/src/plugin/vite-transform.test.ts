@@ -1,7 +1,5 @@
 import assert from "node:assert/strict";
 
-import * as vite from "vite";
-
 import {
   createVirtualTypeScriptTransformer,
   transformVizeVirtualModule,
@@ -68,15 +66,18 @@ import type { VizePluginState } from "./state.ts";
   );
 }
 
-// Vize's Rust emitter guarantees plain JavaScript for every module it produces,
-// so the virtual-module transform must not re-print emitter output through
-// Vite's TypeScript strip. Anything the emitter did not produce still must.
+// Vize's Rust emitter guarantees plain JavaScript for every module it produces
+// (`ensure_javascript_output` at the napi boundary), so the virtual-module
+// transform must not re-print emitter output through Vite's TypeScript strip.
+// Anything the emitter did not produce still must go through it.
+//
+// The probe is behavioural rather than a call spy: the input carries a type
+// annotation that only survives when the strip is skipped.
 {
-  let stripCalls = 0;
-  const emitted = 'import { ref as _ref } from "vue";\nconst count = _ref(0);\nexport default {};';
+  const annotated = "const count: number = 1;\nexport default { count };";
   const state = {
     cache: new Map([["/src/Emitted.vue", {}]]),
-    ssrCache: new Map(),
+    ssrCache: new Map([["/src/SsrEmitted.vue", {}]]),
     clientViteDefine: {},
     serverViteDefine: {},
     isProduction: false,
@@ -84,32 +85,41 @@ import type { VizePluginState } from "./state.ts";
     logger: { error() {} },
   } as unknown as VizePluginState;
 
-  const viteApi = vite as { transformWithOxc?: unknown };
-  const originalOxc = viteApi.transformWithOxc;
-  viteApi.transformWithOxc = () => {
-    stripCalls += 1;
-    return { code: emitted };
-  };
+  assert.equal(
+    await transformVizeVirtualModule(state, annotated, "/src/Emitted.vue", false),
+    null,
+    "emitter output must be handed back untouched instead of re-printed through oxc",
+  );
+  assert.equal(
+    await transformVizeVirtualModule(state, annotated, "/src/SsrEmitted.vue", true),
+    null,
+    "SSR emitter output must be handed back untouched too",
+  );
 
-  try {
-    const result = await transformVizeVirtualModule(state, emitted, "/src/Emitted.vue", false);
-    assert.equal(result, null, "unchanged emitter output should not produce a transform result");
-    assert.equal(stripCalls, 0, "emitter output must skip Vite's TypeScript strip entirely");
+  const notEmitted = await transformVizeVirtualModule(
+    state,
+    annotated,
+    "/src/NotEmitted.vue",
+    false,
+  );
+  assert.ok(notEmitted && typeof notEmitted === "object", "non-emitter modules must transform");
+  assert.doesNotMatch(
+    notEmitted.code,
+    /:\s*number/,
+    "modules Vize did not emit must still go through Vite's TypeScript strip",
+  );
 
-    await transformVizeVirtualModule(state, emitted, "/src/NotEmitted.vue", false);
-    assert.equal(
-      stripCalls,
-      1,
-      "modules Vize did not emit must still go through Vite's TypeScript strip",
-    );
-
-    await transformVizeVirtualModule(state, emitted, "/src/Emitted.vue", false, true);
-    assert.equal(
-      stripCalls,
-      2,
-      "?macro=true raw artifacts must still go through Vite's TypeScript strip",
-    );
-  } finally {
-    viteApi.transformWithOxc = originalOxc;
-  }
+  const macroArtifact = await transformVizeVirtualModule(
+    state,
+    annotated,
+    "/src/Emitted.vue",
+    false,
+    true,
+  );
+  assert.ok(macroArtifact && typeof macroArtifact === "object", "macro artifacts must transform");
+  assert.doesNotMatch(
+    macroArtifact.code,
+    /:\s*number/,
+    "?macro=true raw artifacts never passed through the emitter, so they still need the strip",
+  );
 }
