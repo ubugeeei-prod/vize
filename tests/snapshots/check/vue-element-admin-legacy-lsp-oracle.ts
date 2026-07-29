@@ -206,6 +206,9 @@ function json(value: unknown): string {
 const tsconfig = {
   compilerOptions: {
     allowJs: true,
+    // Legacy vue-element-admin is plain JavaScript; checking it at all is the
+    // `checkJs` opt-in TypeScript requires for a `lang="js"` block (#3322).
+    checkJs: true,
     baseUrl: ".",
     lib: ["ES2022", "DOM"],
     paths: { "@/*": ["src/*"] },

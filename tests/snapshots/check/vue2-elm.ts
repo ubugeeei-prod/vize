@@ -33,6 +33,10 @@ test("vue2-elm vize check surface over the pinned Vue 2 app stays exact", async 
         json({
           compilerOptions: {
             allowJs: true,
+            // vue2-elm is a plain-JavaScript Vue 2 app: type-checking it at
+            // all is the `checkJs` opt-in, exactly as `tsc`/`vue-tsc` require
+            // for a `lang="js"` script block (#3322).
+            checkJs: true,
             baseUrl: ".",
             lib: ["ES2022", "DOM"],
             paths: { "src/*": ["src/*"] },

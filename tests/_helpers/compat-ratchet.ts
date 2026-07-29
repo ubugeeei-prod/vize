@@ -119,6 +119,8 @@ export const compatProbes: CompatProbe[] = [
     include: ["src"],
     compilerOptions: {
       allowJs: true,
+      // Plain-JavaScript SFCs are only type-checked under `checkJs` (#3322).
+      checkJs: true,
       paths: { "@/*": ["./src/*"] },
       strict: false,
     },
