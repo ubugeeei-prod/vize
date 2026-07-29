@@ -1,5 +1,6 @@
 import "./hmr.test.ts";
 import "./compiler.test.ts";
+import "./compiler-src-imports.test.ts";
 import "./compile-options.test.ts";
 import "./config.test.ts";
 import "./internal/config-bridge.test.ts";

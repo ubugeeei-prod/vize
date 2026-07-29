@@ -124,7 +124,24 @@ function inlineStyleSrcBlocks(source: string, filePath: string, dependencies: st
   );
 }
 
+/**
+ * Cheap necessary condition for an SFC block carrying a `src` attribute.
+ *
+ * `extractSfcSrcInfo` parses a full SFC descriptor, so calling it for every file
+ * costs a second whole-source parse per compile on top of the one the compiler
+ * itself performs -- and block `src` attributes are rare (roughly 4% of files in
+ * a real app). Any `<script src>`/`<template src>`/`<style src>` necessarily
+ * contains `src` followed by `=`, so a source without this substring provably
+ * has nothing to inline and can skip the descriptor parse entirely. False
+ * positives (e.g. `<img src=...>` in a template) simply take the original path.
+ */
+const SFC_SRC_ATTRIBUTE_HINT = /\bsrc\s*=/i;
+
 export function resolveSfcSrcImports(filePath: string, source: string): ResolvedSfcSrcImports {
+  if (!SFC_SRC_ATTRIBUTE_HINT.test(source)) {
+    return { source, dependencies: [] };
+  }
+
   const dependencies: string[] = [];
   const srcInfo = native.extractSfcSrcInfo(source, filePath);
   let resolvedSource = source;
