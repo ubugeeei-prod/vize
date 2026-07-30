@@ -1,24 +1,18 @@
 /**
- * Plugin state type and batch compilation logic.
+ * Plugin state type and the caches derived from it.
+ *
+ * The pre-compilation pass itself lives in `./precompile-run.ts`.
  */
 
 import type { ViteDevServer } from "vite";
-import fs from "node:fs";
-import { glob } from "tinyglobby";
 
 import type { VizeOptions, CompiledModule } from "../types.ts";
-import { compileBatch, formatCompileErrorMessage } from "../compiler.ts";
 import { resolveCssImports, type CssAliasRule } from "../utils/css.ts";
 import { hasDelegatedStyles } from "../utils/index.ts";
 import { type DynamicImportAliasRule } from "../virtual.ts";
 import { createLogger } from "../transform.ts";
 import type { HmrUpdateType } from "../hmr.ts";
-import {
-  chunkPrecompileFiles,
-  diffPrecompileFiles,
-  type PrecompileFileMetadata,
-  isPrecompileSfcPath,
-} from "./precompile.ts";
+import type { PrecompileFileMetadata } from "./precompile.ts";
 
 export {
   DEFAULT_PRECOMPILE_BATCH_MAX_BYTES,
@@ -171,154 +165,4 @@ export function clearBuildCaches(
   state.precompileMetadata.clear();
   state.pendingHmrUpdateTypes.clear();
   state.viteResolveCache?.clear();
-}
-
-/**
- * Pre-compile all Vue files matching scan patterns.
- */
-export async function compileAll(state: VizePluginState): Promise<void> {
-  const startTime = performance.now();
-  const files = await glob(state.scanPatterns!, {
-    cwd: state.root,
-    ignore: state.ignorePatterns,
-    absolute: true,
-  });
-  const sfcFiles = files.filter(isPrecompileSfcPath);
-
-  const currentMetadata = new Map<string, PrecompileFileMetadata>();
-  for (const file of sfcFiles) {
-    try {
-      const stat = fs.statSync(file);
-      currentMetadata.set(file, {
-        mtimeMs: stat.mtimeMs,
-        size: stat.size,
-      });
-    } catch (e) {
-      state.logger.error(`Failed to stat ${file}:`, e);
-    }
-  }
-
-  const { changedFiles, deletedFiles } = diffPrecompileFiles(
-    sfcFiles,
-    currentMetadata,
-    state.precompileMetadata,
-  );
-  const cachedFileCount = sfcFiles.length - changedFiles.length;
-
-  for (const file of deletedFiles) {
-    state.cache.delete(file);
-    state.ssrCache.delete(file);
-    if (state.extractCss) {
-      state.collectedCss.delete(file);
-    }
-    state.precompileMetadata.delete(file);
-    state.pendingHmrUpdateTypes.delete(file);
-  }
-
-  state.logger.info(
-    `Pre-compiling ${sfcFiles.length} Vue files... (${changedFiles.length} changed, ${cachedFileCount} cached, ${deletedFiles.length} removed)`,
-  );
-
-  if (changedFiles.length === 0) {
-    const elapsed = (performance.now() - startTime).toFixed(2);
-    state.logger.info(`Pre-compilation complete: cache reused (${elapsed}ms)`);
-    return;
-  }
-
-  for (const file of changedFiles) {
-    if (state.extractCss) {
-      state.collectedCss.delete(file);
-    }
-    state.pendingHmrUpdateTypes.delete(file);
-  }
-
-  let successCount = 0;
-  let failedCount = 0;
-  let nativeTimeMs = 0;
-  const precompileFailures: string[] = [];
-  const chunks = chunkPrecompileFiles(changedFiles, state.precompileBatchSize, {
-    metadata: currentMetadata,
-  });
-
-  for (const chunk of chunks) {
-    const fileContents: { path: string; source: string }[] = [];
-    for (const file of chunk) {
-      try {
-        const source = fs.readFileSync(file, "utf-8");
-        fileContents.push({ path: file, source });
-      } catch (e) {
-        failedCount++;
-        state.cache.delete(file);
-        if (state.extractCss) {
-          state.collectedCss.delete(file);
-        }
-        state.precompileMetadata.delete(file);
-        precompileFailures.push(`[vize] Failed to read ${file}: ${formatUnknownError(e)}`);
-        state.logger.error(`Failed to read ${file}:`, e);
-      }
-    }
-
-    if (fileContents.length === 0) {
-      continue;
-    }
-
-    const result = compileBatch(fileContents, state.cache, {
-      ssr: false,
-      vapor: state.mergedOptions.vapor ?? false,
-      mode: state.mergedOptions.mode,
-      customRenderer: state.mergedOptions.customRenderer ?? false,
-      templateSyntax: state.mergedOptions.templateSyntax ?? "standard",
-      experimentalInTagComments: state.mergedOptions.experimentalInTagComments ?? false,
-      experimentalPatternedTemplate: state.mergedOptions.experimentalPatternedTemplate ?? false,
-      experimentalServerScript: state.mergedOptions.experimentalServerScript ?? false,
-      runtimeModuleName: state.mergedOptions.runtimeModuleName,
-      runtimeGlobalName: state.mergedOptions.runtimeGlobalName,
-      vueVersion: state.mergedOptions.vueVersion,
-    });
-
-    const chunkFailedCount = result.results.filter(
-      (fileResult) => fileResult.errors.length > 0,
-    ).length;
-    failedCount += chunkFailedCount;
-    successCount += result.results.length - chunkFailedCount;
-    nativeTimeMs += result.timeMs;
-
-    // Collect CSS for production extraction.
-    // Skip files with delegated styles (preprocessor/CSS Modules) -- those go through
-    // Vite's CSS pipeline and are extracted by Vite itself.
-    for (const fileResult of result.results) {
-      const metadata = currentMetadata.get(fileResult.path);
-
-      if (fileResult.errors.length > 0) {
-        state.cache.delete(fileResult.path);
-        if (state.extractCss) {
-          state.collectedCss.delete(fileResult.path);
-        }
-        state.precompileMetadata.delete(fileResult.path);
-        precompileFailures.push(formatCompileErrorMessage(fileResult.path, fileResult.errors));
-        continue;
-      }
-
-      if (metadata) {
-        state.precompileMetadata.set(fileResult.path, metadata);
-      }
-
-      syncCollectedCssForFile(state, fileResult.path, state.cache.get(fileResult.path));
-    }
-  }
-
-  const elapsed = (performance.now() - startTime).toFixed(2);
-  const batchLabel = chunks.length === 1 ? "batch" : "batches";
-  state.logger.info(
-    `Pre-compilation complete: ${successCount} recompiled, ${cachedFileCount} reused, ${failedCount} failed (${elapsed}ms, native ${batchLabel}: ${nativeTimeMs.toFixed(2)}ms)`,
-  );
-
-  if (failedCount > 0) {
-    const details = precompileFailures.length > 0 ? `\n\n${precompileFailures.join("\n\n")}` : "";
-    throw new Error(`[vize] Pre-compilation failed for ${failedCount} file(s).${details}`);
-  }
-}
-
-function formatUnknownError(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }
