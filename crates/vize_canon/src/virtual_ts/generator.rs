@@ -1,4 +1,5 @@
 mod anchors;
+mod component_constructors;
 mod component_export;
 mod emits;
 mod generics;
@@ -16,20 +17,16 @@ mod setup_type_exports;
 mod spans;
 mod template_refs;
 use self::anchors::emit_setup_binding_anchors;
+use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
 use self::component_export::emit_default_export_declaration;
 use self::emits::{emit_emit_props_helper, emit_emits_type, emit_exposed_type, emit_slots_type};
-use self::generics::{
-    HoistedGenericAliases, generic_alias_ref, generic_injection_point, references_any_identifier,
-};
+use self::generics::{HoistedGenericAliases, generic_injection_point, references_any_identifier};
 use self::global_components::GlobalComponentPlan;
 use self::imports::{
     collect_imported_names, emit_reference_path_directives, emit_reference_type_directives,
     extract_declared_name,
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
-use self::legacy_vue2::{
-    exposed_unwrap_helper, generic_instance_suffix, instance_helper, instance_suffix,
-};
 use self::options_api::{
     find_default_export_targets, find_options_api_props, generate_options_api_bridge,
     generate_options_api_variables,
@@ -935,51 +932,21 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble);
 
     // Default export
-    ts.push_str("// ========== Default Export ==========\n");
-    ts.push_str(instance_helper(legacy_vue2, dialect));
-    if has_exposed_type {
-        ts.push_str(exposed_unwrap_helper(legacy_vue2, dialect));
-    }
     let generic_component_params = setup_props_plan.generic_component_params(generic_param);
-    ts.push_str("type __VizeComponentInstance = {\n");
-    setup_props_plan.emit_component_props_field(
+    emit_component_constructors(
         &mut ts,
-        emits_info.has_emits_for_props,
-        generic_component_params
-            .as_ref()
-            .map(|(decl, _)| decl.as_str()),
-    );
-    ts.push_str("  $emit: __EmitFn<Emits>;\n");
-    ts.push_str("  $slots: Slots;\n");
-    ts.push_str(instance_suffix(legacy_vue2, dialect, has_exposed_type));
-    ts.push_str(
-        "type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;\n",
-    );
-    if let Some((generic_decl, generic_names)) = &generic_component_params {
-        // The SFC's type parameters are in scope here, so a module alias that
-        // re-declared them must be instantiated. Leaving `Slots`, `Emits`, or
-        // `Exposed` bare silently resolves them against their declared
-        // defaults, so a `Slots<T>` keyed on the component's own parameter
-        // collapsed to `Slots<'fallback'>` (#3354). `Props` was already
-        // instantiated; these three were not.
-        let slots_ref = generic_alias_ref("Slots", slots_is_generic, generic_names);
-        let emits_ref = generic_alias_ref("Emits", emits_info.has_generic_emits(), generic_names);
-        let emit_props_field = if emits_info.has_emits_for_props {
-            cstr!(" & __EmitProps<{emits_ref}>")
-        } else {
-            String::default()
-        };
-        append!(
-            ts,
-            "type __VizeGenericComponentConstructor = new <{generic_decl}>(...args: any[]) => {{\n  $props: __VizeComponentProps<Props<{generic_names}>>{emit_props_field};\n  $emit: __EmitFn<{emits_ref}>;\n  $slots: {slots_ref};\n"
-        );
-        ts.push_str(&generic_instance_suffix(
-            legacy_vue2,
-            dialect,
+        &setup_props_plan,
+        &ComponentInstanceAliases {
+            generic_params: generic_component_params.as_ref(),
+            slots_is_generic,
+            emits_is_generic: emits_info.has_generic_emits(),
+            exposed_is_generic,
+            has_emits_for_props: emits_info.has_emits_for_props,
             has_exposed_type,
-            exposed_is_generic.then_some(generic_names.as_str()),
-        ));
-    }
+        },
+        legacy_vue2,
+        dialect,
+    );
     ts.push_str("type __VizeVueComponentOptions = {\n");
     ts.push_str("  name?: string;\n");
     ts.push_str("  __name?: string;\n");
