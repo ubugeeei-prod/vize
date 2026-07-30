@@ -127,6 +127,13 @@ function usesStyleImports(compiled: CompiledModule, options: GenerateOutputOptio
  * output. Callers that would otherwise resolve `compiled.css` eagerly consult
  * this first, which keeps the condition in one place instead of duplicating
  * `generateOutput`'s branch structure at the call site.
+ *
+ * That guard matters because resolving `@import`s reads and inlines files and
+ * crosses the native boundary with the whole stylesheet. A production client
+ * build hands plain `<style>` blocks to Vite as virtual imports and an SSR build
+ * emits no CSS at all, so in both cases the resolved text was previously built
+ * and discarded, once per styled SFC on every build (270 discarded calls on the
+ * 300-file bench corpus).
  */
 export function embedsInlineCss(compiled: CompiledModule, options: GenerateOutputOptions): boolean {
   return (

@@ -122,24 +122,14 @@ function loadCompiledSfcModule(
   }
 
   const hasDelegated = hasDelegatedStyles(compiled);
-  const pendingHmrUpdateType = loadOptions?.ssr
-    ? undefined
-    : state.pendingHmrUpdateTypes.get(realPath);
   const outputOptions = {
     isProduction: state.isProduction,
     isDev: state.server !== null && !isSsr,
     ssr: isSsr,
-    hmrUpdateType: pendingHmrUpdateType,
+    hmrUpdateType: loadOptions?.ssr ? undefined : state.pendingHmrUpdateTypes.get(realPath),
     extractCss,
     filePath: realPath,
   };
-  // Resolving `@import`s reads and inlines files and crosses the native
-  // boundary with the whole stylesheet, so it is only worth doing when
-  // `generateOutput` will actually embed the result. A production client build
-  // hands plain `<style>` blocks to Vite as virtual imports and an SSR build
-  // emits no CSS at all, so in both cases the resolved text was discarded --
-  // once per styled SFC, every build (270 discarded calls on the 300-file bench
-  // corpus).
   if (compiled.css && !hasDelegated && embedsInlineCss(compiled, outputOptions)) {
     compiled = {
       ...compiled,
