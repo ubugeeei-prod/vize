@@ -95,6 +95,50 @@ fn dependencies_stay_resolvable_when_node_modules_is_a_symlinked_store() {
     let _ = fs::remove_dir_all(&case_dir);
 }
 
+#[cfg(unix)]
+#[test]
+fn path_alias_fallbacks_stay_relative_when_node_modules_is_a_symlinked_store() {
+    // Alias fallbacks are composed from the prefix that walks the virtual root
+    // back to the project root. A symlinked store puts the virtual root outside
+    // the project, so a containment assumption collapses that prefix to nothing
+    // and emits a bare `src/*` target, which TypeScript rejects with TS5090
+    // ("Non-relative paths are not allowed") and fails the whole check.
+    let case_dir = unique_case_dir("symlinked-node-modules-alias");
+    let _ = fs::remove_dir_all(&case_dir);
+    let project_root = case_dir.join("project");
+    let store = case_dir.join("store");
+    fs::create_dir_all(project_root.join("src")).unwrap();
+    fs::create_dir_all(&store).unwrap();
+    std::os::unix::fs::symlink(&store, project_root.join("node_modules")).unwrap();
+    fs::write(
+        project_root.join("tsconfig.json"),
+        "{\"compilerOptions\":{\"baseUrl\":\".\",\"paths\":{\"@/*\":[\"src/*\"]}}}",
+    )
+    .unwrap();
+    let vue_path = project_root.join("src").join("App.vue");
+    fs::write(
+        &vue_path,
+        "<script setup lang=\"ts\">const count = 1</script>",
+    )
+    .unwrap();
+
+    let mut project = VirtualProject::new(&project_root).unwrap();
+    project.register_path(&vue_path).unwrap();
+    project.materialize().unwrap();
+
+    let tsconfig = project.virtual_root().join("tsconfig.json");
+    let value: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(tsconfig).unwrap()).unwrap();
+    assert_eq!(
+        value["compilerOptions"]["paths"]["@/*"],
+        serde_json::json!(["./src/*", "../../../project/src/*", "./src/*.vue.ts"]),
+        "the real-tree fallback must be a relative route from the store back \
+         into the project, never a bare non-relative target"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
 #[test]
 fn virtual_root_stays_inside_the_project_for_a_real_node_modules_directory() {
     let case_dir = unique_case_dir("real-node-modules");

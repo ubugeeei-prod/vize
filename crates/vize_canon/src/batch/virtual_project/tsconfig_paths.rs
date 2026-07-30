@@ -5,7 +5,7 @@
 use std::path::{Path, PathBuf};
 
 use serde_json::Value;
-use vize_carton::String as CompactString;
+use vize_carton::{String as CompactString, cstr};
 
 use crate::batch::error::CorsaResult;
 
@@ -77,6 +77,43 @@ pub(super) fn normalize_tsconfig_path_target(
         return path_to_tsconfig_target(relative);
     }
     path_to_tsconfig_target(&normalized)
+}
+
+/// Directory prefix (e.g. `../../../`) that walks from `from` to `to`, ready to
+/// be concatenated with a relative tsconfig target.
+///
+/// `from` is normally a descendant of `to`, but a symlinked `node_modules`
+/// (pnpm-style stores, hoisting shims, bind mounts) resolves the virtual root to
+/// a real path outside the project tree. Assuming containment there collapses
+/// the prefix to nothing and turns every alias fallback into a bare,
+/// non-relative target (`src/*`), which TypeScript rejects with TS5090, so walk
+/// up to the shared ancestor and back down instead.
+pub(super) fn relative_dir_prefix(from: &Path, to: &Path) -> CompactString {
+    let from = normalize_path_lexically(from);
+    let to = normalize_path_lexically(to);
+    let from_components: Vec<_> = from.components().collect();
+    let to_components: Vec<_> = to.components().collect();
+    let shared = from_components
+        .iter()
+        .zip(&to_components)
+        .take_while(|(left, right)| left == right)
+        .count();
+
+    // Nothing in common (distinct Windows prefixes) leaves no relative route;
+    // an absolute prefix still resolves.
+    if shared == 0 {
+        return cstr!("{}/", to.to_string_lossy().replace('\\', "/"));
+    }
+
+    let mut prefix = CompactString::with_capacity((from_components.len() - shared) * 3);
+    for _ in shared..from_components.len() {
+        prefix.push_str("../");
+    }
+    for component in &to_components[shared..] {
+        prefix.push_str(&component.as_os_str().to_string_lossy());
+        prefix.push('/');
+    }
+    prefix
 }
 
 fn path_to_tsconfig_target(path: &Path) -> CompactString {

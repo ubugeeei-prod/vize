@@ -11,7 +11,7 @@ use crate::batch::materialize_fs::write_if_changed;
 
 use super::tsconfig_paths::{
     normalize_path_lexically, normalize_tsconfig_path_target, parse_jsonc_value,
-    resolve_extended_tsconfig_path,
+    relative_dir_prefix, resolve_extended_tsconfig_path,
 };
 use super::{SHARED_HELPERS_FILE, VirtualProject};
 use native_options::normalize_native_removed_options;
@@ -427,16 +427,7 @@ impl VirtualProject {
     /// Relative prefix (e.g. `../../../`) from the virtual root back to the
     /// project root, used to aim alias fallbacks at the real source tree.
     fn virtual_root_to_project_prefix(&self) -> CompactString {
-        let depth = self
-            .virtual_root
-            .strip_prefix(&self.project_root)
-            .map(|relative| relative.components().count())
-            .unwrap_or(0);
-        let mut prefix = CompactString::with_capacity(depth * 3);
-        for _ in 0..depth {
-            prefix.push_str("../");
-        }
-        prefix
+        relative_dir_prefix(&self.virtual_root, &self.project_root)
     }
 }
 
