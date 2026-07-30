@@ -875,10 +875,5 @@ assert.equal(
   "<template>",
   "Diagnostics should map back to their containing SFC block",
 );
-await Promise.all([
-  import("./cli/files.test.ts"),
-  import("./cli/output.test.ts"),
-  import("./vite-plus-lint.test.ts"),
-  import("./nuxt-preset.test.ts"),
-]);
+await import("./test-support/suites.ts");
 console.log("✅ oxlint-plugin-vize integration tests passed!");
