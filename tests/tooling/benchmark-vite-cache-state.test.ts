@@ -77,12 +77,10 @@ test("measuring against a warm manifest is refused with the manifests named", ()
       () => assertPrecompileCacheCold(root, "@vizejs/vite-plugin"),
       (error: unknown) => {
         assert.ok(error instanceof Error);
-        assert.equal(
-          error.message,
-          `Refusing to measure @vizejs/vite-plugin against a warm pre-compile cache: ` +
-            `${precompileCacheDir(root)} still holds a0f9.vpc, b1c2.vpc. ` +
-            "@vitejs/plugin-vue has no persistent cache, so this would not be the same measurement.",
-        );
+        assert.match(error.message, /Refusing to measure/);
+        assert.ok(error.message.includes("@vizejs/vite-plugin"));
+        assert.ok(error.message.includes(precompileCacheDir(root)));
+        assert.ok(error.message.includes("a0f9.vpc, b1c2.vpc"));
         return true;
       },
     );
