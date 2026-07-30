@@ -112,8 +112,13 @@ export function manifestFiles(root: string): string[] {
   return fs.existsSync(dir) ? fs.readdirSync(dir).filter((name) => name.endsWith(ext)) : [];
 }
 
+/** The one container under `root`. Throws rather than picking by `readdirSync` order. */
 export function manifestPath(root: string): string {
-  return path.join(root, PRECOMPILE_CACHE_DIR, manifestFiles(root)[0]!);
+  const files = manifestFiles(root);
+  if (files.length !== 1) {
+    throw new Error(`expected exactly one container under ${root}, found ${files.length}`);
+  }
+  return path.join(root, PRECOMPILE_CACHE_DIR, files[0]!);
 }
 
 /** The cache key a container is filed under, taken from its file name. */
