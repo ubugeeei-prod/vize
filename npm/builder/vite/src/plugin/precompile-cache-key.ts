@@ -26,11 +26,16 @@ import { createRequire } from "node:module";
 import path from "node:path";
 
 /** Bump when the persisted entry shape changes; abandons every old manifest. */
-export const PRECOMPILE_CACHE_FORMAT = 1;
+export const PRECOMPILE_CACHE_FORMAT = 2;
 
-/** SHA-256 of the exact source text handed to the compiler. */
+/**
+ * SHA-256 of the exact source text handed to the compiler.
+ *
+ * `base64url` rather than hex: the same 256 bits in 43 characters instead of 64,
+ * and the index carries one of these per entry.
+ */
 export function hashPrecompileSource(source: string): string {
-  return crypto.createHash("sha256").update(source, "utf8").digest("hex");
+  return crypto.createHash("sha256").update(source, "utf8").digest("base64url");
 }
 
 /** Key-independent JSON: object key order must not change the hash. */

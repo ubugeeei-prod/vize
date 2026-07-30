@@ -10,10 +10,11 @@
  *
  * The two invalidation gates -- manifest identity and per-entry source hash --
  * live in `./precompile-cache-key.ts`, which documents why each one is safe.
- * Two more gates live here:
+ * Two more gates live in `./precompile-cache-store.ts`, which owns the on-disk
+ * container:
  *
  * - **Shape.** Entries are validated before use and dropped individually if
- *   they do not describe a complete `CompiledModule`. The manifest's own
+ *   they do not describe a complete `CompiledModule`. The container's own
  *   `format`/`key` are re-checked after parsing, so a manifest reached by any
  *   route other than its key still gets rejected.
  * - **`src` imports.** SFCs that pull blocks in through `<script src>` /
@@ -33,9 +34,22 @@ import fs from "node:fs";
 import path from "node:path";
 
 import type { CompiledModule } from "../types.ts";
-import { PRECOMPILE_CACHE_FORMAT, computePrecompileCacheKey } from "./precompile-cache-key.ts";
+import { computePrecompileCacheKey } from "./precompile-cache-key.ts";
+import {
+  PRECOMPILE_CACHE_EXTENSION,
+  decodePrecompileManifest,
+  encodePrecompileManifest,
+  isPersistablePrecompileModule,
+  type PrecompileCacheEntry,
+} from "./precompile-cache-store.ts";
 
 export { hashPrecompileSource, PRECOMPILE_CACHE_FORMAT } from "./precompile-cache-key.ts";
+export {
+  PRECOMPILE_CACHE_EXTENSION,
+  decodePrecompileManifest,
+  encodePrecompileManifest,
+  isPersistablePrecompileModule,
+} from "./precompile-cache-store.ts";
 
 /** Manifest location, relative to the Vite root. */
 export const PRECOMPILE_CACHE_DIR = path.join("node_modules", ".vize", "vite-precompile");
@@ -44,17 +58,6 @@ export const PRECOMPILE_CACHE_DIR = path.join("node_modules", ".vize", "vite-pre
 export const PRECOMPILE_CACHE_ENV = "VIZE_PRECOMPILE_CACHE";
 
 type Diagnostic = (message: string, error?: unknown) => void;
-
-interface PrecompileCacheEntry {
-  hash: string;
-  module: CompiledModule;
-}
-
-interface PrecompileCacheManifest {
-  format: number;
-  key: string;
-  entries: Record<string, PrecompileCacheEntry>;
-}
 
 export interface PrecompileCache {
   /** Absolute manifest path, or `null` when the cache is disabled. */
@@ -69,48 +72,6 @@ export interface PrecompileCache {
   retain(files: Iterable<string>): void;
   /** Write the manifest atomically when something changed. Never throws. */
   flush(): boolean;
-}
-
-/**
- * Whether `module` may be persisted.
- *
- * Modules assembled from `src` imports depend on sibling files that this cache
- * does not hash, so they are recompiled on every cold start instead.
- */
-export function isPersistablePrecompileModule(module: CompiledModule): boolean {
-  return !module.dependencies || module.dependencies.length === 0;
-}
-
-function isCompiledModule(value: unknown): value is CompiledModule {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
-  const module = value as Partial<CompiledModule>;
-  if (typeof module.code !== "string" || typeof module.scopeId !== "string") {
-    return false;
-  }
-  if (typeof module.hasScoped !== "boolean") {
-    return false;
-  }
-  if (module.css !== undefined && typeof module.css !== "string") {
-    return false;
-  }
-  if (module.styles !== undefined && !Array.isArray(module.styles)) {
-    return false;
-  }
-  if (module.macroArtifacts !== undefined && !Array.isArray(module.macroArtifacts)) {
-    return false;
-  }
-  // `src`-import modules are never written; reject them if one shows up anyway.
-  return isPersistablePrecompileModule(module as CompiledModule);
-}
-
-function isCacheEntry(value: unknown): value is PrecompileCacheEntry {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
-  const entry = value as Partial<PrecompileCacheEntry>;
-  return typeof entry.hash === "string" && entry.hash.length > 0 && isCompiledModule(entry.module);
 }
 
 /** Whether the environment forces the cache off. */
@@ -150,8 +111,8 @@ export function openPrecompileCache(options: OpenPrecompileCacheOptions): Precom
   }
 
   const key = computePrecompileCacheKey(compileOptions);
-  const file = path.join(root, PRECOMPILE_CACHE_DIR, `${key}.json`);
-  const entries = readManifestEntries(file, key, onDiagnostic);
+  const file = path.join(root, PRECOMPILE_CACHE_DIR, `${key}${PRECOMPILE_CACHE_EXTENSION}`);
+  const entries = readManifestEntries(file, key, root, onDiagnostic);
   let dirty = false;
 
   return {
@@ -193,14 +154,17 @@ export function openPrecompileCache(options: OpenPrecompileCacheOptions): Precom
       if (!dirty) {
         return false;
       }
-      const manifest: PrecompileCacheManifest = {
-        format: PRECOMPILE_CACHE_FORMAT,
-        key,
-        entries: Object.fromEntries(entries),
-      };
-      if (!writeManifest(file, manifest, onDiagnostic)) {
+      let container: Buffer;
+      try {
+        container = encodePrecompileManifest({ key, root, entries });
+      } catch (error) {
+        onDiagnostic?.(`Failed to encode pre-compile cache ${file}:`, error);
         return false;
       }
+      if (!writeManifest(file, container, onDiagnostic)) {
+        return false;
+      }
+      removeFormat1Manifests(path.dirname(file));
       dirty = false;
       return true;
     },
@@ -208,7 +172,29 @@ export function openPrecompileCache(options: OpenPrecompileCacheOptions): Precom
 }
 
 /**
- * Parse the manifest, or return an empty map.
+ * Drop the `.json` manifests format 1 left behind.
+ *
+ * Nothing can read them any more, and they are the reason this change exists:
+ * ~9 KB per SFC, so ~27 MB for a 3000-SFC project sitting in `node_modules`
+ * forever after an upgrade. Only `.json` is removed, which is exactly the set
+ * format 1 wrote; every live manifest is a `.vpc`, and a project legitimately
+ * keeps one per compile-option set. Best effort -- a failure here is not worth
+ * a diagnostic, let alone a failed build.
+ */
+function removeFormat1Manifests(dir: string): void {
+  try {
+    for (const name of fs.readdirSync(dir)) {
+      if (name.endsWith(".json")) {
+        fs.rmSync(path.join(dir, name), { force: true });
+      }
+    }
+  } catch {
+    // best effort
+  }
+}
+
+/**
+ * Read the container, or return an empty map.
  *
  * A missing, truncated, corrupt, or foreign manifest is indistinguishable from
  * no cache at all, which is exactly the safe outcome: recompile everything.
@@ -216,55 +202,30 @@ export function openPrecompileCache(options: OpenPrecompileCacheOptions): Precom
 function readManifestEntries(
   file: string,
   key: string,
+  root: string,
   onDiagnostic?: Diagnostic,
 ): Map<string, PrecompileCacheEntry> {
-  const entries = new Map<string, PrecompileCacheEntry>();
-  let raw: string;
+  let bytes: Buffer;
   try {
-    raw = fs.readFileSync(file, "utf-8");
+    bytes = fs.readFileSync(file);
   } catch {
-    return entries;
+    return new Map();
   }
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch (error) {
-    onDiagnostic?.(`Discarding corrupt pre-compile cache ${file}:`, error);
-    return entries;
-  }
-
-  const manifest = parsed as Partial<PrecompileCacheManifest> | null;
-  if (
-    typeof manifest !== "object" ||
-    manifest === null ||
-    manifest.format !== PRECOMPILE_CACHE_FORMAT ||
-    manifest.key !== key ||
-    typeof manifest.entries !== "object" ||
-    manifest.entries === null
-  ) {
-    onDiagnostic?.(`Ignoring pre-compile cache ${file}: unrecognized manifest`);
-    return entries;
-  }
-
-  for (const [filePath, entry] of Object.entries(manifest.entries)) {
-    if (isCacheEntry(entry)) {
-      entries.set(filePath, entry);
-    }
-  }
-  return entries;
+  return (
+    decodePrecompileManifest(bytes, {
+      key,
+      root,
+      onReject: (reason) => onDiagnostic?.(`Ignoring pre-compile cache ${file}: ${reason}`),
+    }) ?? new Map()
+  );
 }
 
 /** Write through a sibling temp file so a crash cannot leave a partial manifest. */
-function writeManifest(
-  file: string,
-  manifest: PrecompileCacheManifest,
-  onDiagnostic?: Diagnostic,
-): boolean {
+function writeManifest(file: string, container: Buffer, onDiagnostic?: Diagnostic): boolean {
   const temp = `${file}.${process.pid}.${crypto.randomBytes(4).toString("hex")}.tmp`;
   try {
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(temp, JSON.stringify(manifest));
+    fs.writeFileSync(temp, container);
     fs.renameSync(temp, file);
     return true;
   } catch (error) {

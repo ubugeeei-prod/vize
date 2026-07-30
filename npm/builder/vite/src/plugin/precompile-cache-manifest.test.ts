@@ -13,6 +13,7 @@ import { fileURLToPath } from "node:url";
 import {
   PRECOMPILE_CACHE_DIR,
   PRECOMPILE_CACHE_ENV,
+  PRECOMPILE_CACHE_EXTENSION,
   createDisabledPrecompileCache,
   isPersistablePrecompileModule,
   isPrecompileCacheDisabledByEnv,
@@ -61,9 +62,37 @@ fs.mkdirSync(root, { recursive: true });
 const options = { ssr: false, vapor: false };
 const cache = openPrecompileCache({ root, compileOptions: options });
 assert.equal(cache.flush(), false, "an untouched cache must not write");
+assert.ok(cache.file?.endsWith(PRECOMPILE_CACHE_EXTENSION), "the manifest is a container file");
 cache.set("/a.vue", "hash-a", module);
 assert.equal(cache.flush(), true);
 assert.equal(cache.flush(), false, "a clean cache must not rewrite");
+
+// The point of the container: compiled output must not reach disk as escaped
+// JSON. A realistically sized module has to land well under its JSON size.
+const bulky: CompiledModule = {
+  ...module,
+  code: `const t = "line";\n${'render(_ctx, _cache) { return "text" }\n'.repeat(200)}`,
+  css: ".a { color: red }\n".repeat(50),
+};
+const bulkyRoot = path.join(testRoot, "bulky");
+fs.mkdirSync(bulkyRoot, { recursive: true });
+const bulkyCache = openPrecompileCache({ root: bulkyRoot, compileOptions: options });
+bulkyCache.set(path.join(bulkyRoot, "a.vue"), "hash-a", bulky);
+assert.equal(bulkyCache.flush(), true);
+const containerBytes = fs.statSync(bulkyCache.file!).size;
+const jsonBytes = Buffer.byteLength(JSON.stringify({ hash: "hash-a", module: bulky }));
+assert.ok(
+  containerBytes * 4 < jsonBytes,
+  `the container (${containerBytes}B) must be far smaller than the JSON entry (${jsonBytes}B)`,
+);
+assert.deepEqual(
+  openPrecompileCache({ root: bulkyRoot, compileOptions: options }).get(
+    path.join(bulkyRoot, "a.vue"),
+    "hash-a",
+  ),
+  bulky,
+  "and it must still round-trip exactly",
+);
 
 const reopened = openPrecompileCache({ root, compileOptions: options });
 assert.deepEqual(reopened.get("/a.vue", "hash-a"), module);
@@ -93,6 +122,21 @@ assert.equal(
 assert.deepEqual(
   fs.readdirSync(path.join(root, PRECOMPILE_CACHE_DIR)).filter((name) => name.endsWith(".tmp")),
   [],
+);
+
+// A format-1 `.json` manifest is unreadable now and is ~9 KB per SFC, so the
+// next write clears it out rather than leaving it in `node_modules` forever.
+const cacheDir = path.join(root, PRECOMPILE_CACHE_DIR);
+const orphan = path.join(cacheDir, "0".repeat(32) + ".json");
+fs.writeFileSync(orphan, '{"format":1,"key":"x","entries":{}}');
+const sweeping = openPrecompileCache({ root, compileOptions: options });
+sweeping.set("/b.vue", "hash-b", module);
+assert.equal(sweeping.flush(), true);
+assert.equal(fs.existsSync(orphan), false, "a format-1 manifest must be swept away");
+assert.deepEqual(
+  fs.readdirSync(cacheDir).filter((name) => name.endsWith(PRECOMPILE_CACHE_EXTENSION)).length > 0,
+  true,
+  "and the live container must survive the sweep",
 );
 
 // An unwritable cache directory must not fail the build.
