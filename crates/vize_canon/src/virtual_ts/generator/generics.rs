@@ -88,6 +88,18 @@ pub(super) fn module_alias_generic_suffix(
         .unwrap_or_default()
 }
 
+/// Reference to a module-scope alias inside the generic component constructor:
+/// instantiated with the SFC's parameters when the alias re-declared them,
+/// bare otherwise. A generic alias left bare resolves against its declared
+/// defaults instead of the caller's arguments (#3354).
+pub(super) fn generic_alias_ref(name: &str, is_generic: bool, generic_names: &str) -> String {
+    if is_generic {
+        cstr!("{name}<{generic_names}>")
+    } else {
+        String::from(name)
+    }
+}
+
 /// Fallback type arguments instantiating a generic SFC's exported `Props` for
 /// the non-generic component constructor: each parameter's constraint when it
 /// is self-contained, `any` when the constraint names a sibling parameter (the

@@ -147,8 +147,8 @@ type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstanc
 type __VizeGenericComponentConstructor = new <Mode extends 'row' | 'cell' = any, TEvent extends Mode = any>(...args: any[]) => {
   $props: __VizeComponentProps<Props<Mode, TEvent>>;
   $emit: __EmitFn<Emits>;
-  $slots: Slots;
-} & import('vue').ComponentPublicInstance & __VizeShallowUnwrapRef<Exposed>;
+  $slots: Slots<Mode, TEvent>;
+} & import('vue').ComponentPublicInstance & __VizeShallowUnwrapRef<Exposed<Mode, TEvent>>;
 type __VizeVueComponentOptions = {
   name?: string;
   __name?: string;

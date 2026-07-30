@@ -162,9 +162,9 @@ type __VizeComponentInstance = {
 };
 type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;
 type __VizeGenericComponentConstructor = new <T extends string = 'a'>(...args: any[]) => {
-  $props: __VizeComponentProps<Props<T>> & __EmitProps<Emits>;
-  $emit: __EmitFn<Emits>;
-  $slots: Slots;
+  $props: __VizeComponentProps<Props<T>> & __EmitProps<Emits<T>>;
+  $emit: __EmitFn<Emits<T>>;
+  $slots: Slots<T>;
 };
 type __VizeVueComponentOptions = {
   name?: string;
