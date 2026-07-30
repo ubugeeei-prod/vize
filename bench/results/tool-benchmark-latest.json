@@ -94,7 +94,9 @@
       "baselineId": "vue-compiler-sfc-1t",
       "vizeSingleId": "vize-native-1t",
       "vizeMaxId": "vize-native-max",
-      "primarySpeedup": 60.327940665756614
+      "primarySpeedup": 60.327940665756614,
+      "speedupStatus": "ranked",
+      "engineClassRanking": null
     },
     {
       "id": "large-compile",
@@ -141,7 +143,9 @@
       "baselineId": "vue-compiler-sfc-1t",
       "vizeSingleId": "vize-native-1t",
       "vizeMaxId": "vize-native-max",
-      "primarySpeedup": 3.4178927005874313
+      "primarySpeedup": 3.4178927005874313,
+      "speedupStatus": "ranked",
+      "engineClassRanking": null
     },
     {
       "id": "large-check",
@@ -174,7 +178,45 @@
       "baselineId": "vue-tsc",
       "vizeSingleId": "vize-check-1t",
       "vizeMaxId": "vize-check-max",
-      "primarySpeedup": 9.471346060926141
+      "engineClasses": {
+        "vue-tsc": "typescript-js",
+        "vize-check-1t": "tsgo-native",
+        "vize-check-max": "tsgo-native"
+      },
+      "primarySpeedup": null,
+      "speedupStatus": "cross-engine",
+      "engineClassRanking": [
+        {
+          "engineClass": "typescript-js",
+          "label": "JS TypeScript engine (tsc)",
+          "rows": [
+            {
+              "id": "vue-tsc",
+              "label": "vue-tsc",
+              "medianMs": 1685.767,
+              "relativeToFastest": 1
+            }
+          ]
+        },
+        {
+          "engineClass": "tsgo-native",
+          "label": "native TypeScript engine (tsgo)",
+          "rows": [
+            {
+              "id": "vize-check-max",
+              "label": "Vize check (max)",
+              "medianMs": 177.986,
+              "relativeToFastest": 1
+            },
+            {
+              "id": "vize-check-1t",
+              "label": "Vize check (1T)",
+              "medianMs": 178.667,
+              "relativeToFastest": 1.004
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "lint",
@@ -214,7 +256,9 @@
       "baselineId": "eslint-plugin-vue-1t",
       "vizeSingleId": "vize-lint-1t",
       "vizeMaxId": "vize-lint-max",
-      "primarySpeedup": 194.52058012533573
+      "primarySpeedup": 194.52058012533573,
+      "speedupStatus": "ranked",
+      "engineClassRanking": null
     },
     {
       "id": "fmt",
@@ -247,7 +291,9 @@
       "baselineId": "prettier-cli",
       "vizeSingleId": "vize-fmt-1t",
       "vizeMaxId": "vize-fmt-max",
-      "primarySpeedup": 80.27508102373305
+      "primarySpeedup": 80.27508102373305,
+      "speedupStatus": "ranked",
+      "engineClassRanking": null
     },
     {
       "id": "check",
@@ -280,7 +326,45 @@
       "baselineId": "vue-tsc",
       "vizeSingleId": "vize-check-1t",
       "vizeMaxId": "vize-check-max",
-      "primarySpeedup": 12.470857230536033
+      "engineClasses": {
+        "vue-tsc": "typescript-js",
+        "vize-check-1t": "tsgo-native",
+        "vize-check-max": "tsgo-native"
+      },
+      "primarySpeedup": null,
+      "speedupStatus": "cross-engine",
+      "engineClassRanking": [
+        {
+          "engineClass": "typescript-js",
+          "label": "JS TypeScript engine (tsc)",
+          "rows": [
+            {
+              "id": "vue-tsc",
+              "label": "vue-tsc",
+              "medianMs": 5364.227,
+              "relativeToFastest": 1
+            }
+          ]
+        },
+        {
+          "engineClass": "tsgo-native",
+          "label": "native TypeScript engine (tsgo)",
+          "rows": [
+            {
+              "id": "vize-check-max",
+              "label": "Vize check (max)",
+              "medianMs": 430.141,
+              "relativeToFastest": 1
+            },
+            {
+              "id": "vize-check-1t",
+              "label": "Vize check (1T)",
+              "medianMs": 500.458,
+              "relativeToFastest": 1.163
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "vite",
@@ -306,7 +390,9 @@
       "baselineId": "vite-plugin-vue",
       "vizeSingleId": null,
       "vizeMaxId": "vize-vite-plugin",
-      "primarySpeedup": 2.272382013299314
+      "primarySpeedup": 2.272382013299314,
+      "speedupStatus": "ranked",
+      "engineClassRanking": null
     },
     {
       "id": "nuxt",
@@ -332,7 +418,9 @@
       "baselineId": "nuxt-default",
       "vizeSingleId": null,
       "vizeMaxId": "vize-nuxt",
-      "primarySpeedup": 1.0578135460117886
+      "primarySpeedup": 1.0578135460117886,
+      "speedupStatus": "ranked",
+      "engineClassRanking": null
     }
   ]
 }

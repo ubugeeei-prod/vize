@@ -27,6 +27,7 @@ import { renderProvenanceLines, resolveBackend } from "./benchmark-provenance.mj
 import { buildMetadata } from "./compare-tools-metadata.mjs";
 import {
   createSurface,
+  ENGINE_CLASSES_BY_SURFACE,
   renderEngineClassSections,
   renderSurfaceTable,
 } from "./compare-tools-report.mjs";
@@ -1053,11 +1054,7 @@ async function measureCheck(inputDir, files, options) {
     vizeMaxId: "vize-check-max",
     // vue-tsc drives the JavaScript TypeScript compiler; vize check drives
     // native tsgo. Declaring the classes suppresses the cross-engine ratio.
-    engineClasses: {
-      "vue-tsc": "typescript-js",
-      "vize-check-1t": "tsgo-native",
-      "vize-check-max": "tsgo-native",
-    },
+    engineClasses: ENGINE_CLASSES_BY_SURFACE.check,
   });
 }
 

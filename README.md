@@ -60,14 +60,14 @@ Measured on Blacksmith `blacksmith-32vcpu-ubuntu-2404`, median of 5 runs. The co
 same size for every row — it is given per row below, and only SFC compile, Lint, and Format run at
 15,000 SFCs.
 
-| Surface     |  Files | Existing tool      | Existing |    Vize |    Speedup |
-| ----------- | -----: | ------------------ | -------: | ------: | ---------: |
-| SFC compile | 15,000 | @vue/compiler-sfc  |   18.38s | 333.8ms |  **55.1×** |
-| Lint        | 15,000 | eslint-plugin-vue  |   56.66s | 270.9ms | **209.2×** |
-| Format      | 15,000 | Prettier           |  150.34s |   2.22s |  **67.8×** |
-| Type check  |    500 | vue-tsc            |    5.42s | 438.3ms |  **12.4×** |
-| Vite build  |  1,000 | @vitejs/plugin-vue |    1.66s | 732.5ms |   **2.3×** |
-| Nuxt build  |    500 | Nuxt compiler      |    6.79s |   6.42s |  **1.1×**† |
+| Surface     |  Files | Existing tool      | Existing |    Vize |            Speedup |
+| ----------- | -----: | ------------------ | -------: | ------: | -----------------: |
+| SFC compile | 15,000 | @vue/compiler-sfc  |   18.38s | 333.8ms |          **55.1×** |
+| Lint        | 15,000 | eslint-plugin-vue  |   56.66s | 270.9ms |         **209.2×** |
+| Format      | 15,000 | Prettier           |  150.34s |   2.22s |          **67.8×** |
+| Type check  |    500 | vue-tsc            |    5.42s | 438.3ms | n/a (cross-engine) |
+| Vite build  |  1,000 | @vitejs/plugin-vue |    1.66s | 732.5ms |           **2.3×** |
+| Nuxt build  |    500 | Nuxt compiler      |    6.79s |   6.42s |          **1.1×**† |
 
 The Vite build and Nuxt build rows are taken from the committed snapshot
 `bench/results/tool-benchmark-latest.json`
@@ -76,6 +76,11 @@ artifact the published [Blacksmith benchmark snapshot](https://vizejs.dev/archit
 renders — and `tests/tooling/readme-benchmark-rows.test.ts` pins them to it so the two cannot drift
 apart again. The other rows are from
 [run 29004198781](https://github.com/ubugeeei-prod/vize/actions/runs/29004198781).
+
+The type-check row publishes no single speedup on purpose: `vue-tsc` runs the JavaScript TypeScript
+compiler while `vize check` runs native tsgo (Corsa), so one ratio would credit TypeScript's Go
+rewrite to the Vue layer. Both timings above are real and were measured in the same run; they are
+ranked within each engine class in the snapshot instead.
 
 † **Pending regeneration.** The Nuxt row was measured before the benchmark stopped letting the
 `@vizejs/nuxt` variant inherit a warm pre-compile cache the Nuxt default compiler has no counterpart

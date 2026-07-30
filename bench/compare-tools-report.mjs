@@ -14,6 +14,26 @@ import { ENGINE_CLASSES } from "./check-gate-report.mjs";
 
 export const CROSS_ENGINE_CELL = "n/a (cross-engine)";
 
+/**
+ * Which surfaces span engine classes, and which class each of their variants
+ * belongs to. Declared here rather than at the measurement site so a recorded
+ * artifact can be re-rendered (bench/render-results.mjs) with the same
+ * classification that produced it. `large-check` is `check` re-run over one
+ * large SFC, so it carries the same variant ids.
+ */
+export const ENGINE_CLASSES_BY_SURFACE = {
+  check: {
+    "vue-tsc": "typescript-js",
+    "vize-check-1t": "tsgo-native",
+    "vize-check-max": "tsgo-native",
+  },
+  "large-check": {
+    "vue-tsc": "typescript-js",
+    "vize-check-1t": "tsgo-native",
+    "vize-check-max": "tsgo-native",
+  },
+};
+
 export function formatSpeedup(value) {
   if (!Number.isFinite(value)) {
     return "n/a";

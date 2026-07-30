@@ -18,16 +18,16 @@ Runner: `blacksmith-32vcpu-ubuntu-2404` (32 CPU lógica, AMD EPYC, 32 vCPU / 128
 Entrada: 15.000 arquivos SFC gerados (58,7 MB). Mediana de 5 corridas medidas após 1(s) corrida(s) de aquecimento.
 Grande SFC: 900 blocos de molde repetidos (674,9 KB). Conjunto de importação Nuxt: 500 arquivos SFC.
 
-| Superfície                        | Arquivos | Ferramenta existente     | Mediana existente | Vize 1T | Vize max | Aceleração |
-| --------------------------------- | -------: | ------------------------ | ----------------: | ------: | -------: | ---------: |
-| Compilação SFC                    |   15,000 | @vue/compilador-sfc (1T) |            17,54s |   3,23s |  290,8ms |      60,3x |
-| Compilação grande de SFC          |        1 | @vue/compilador-sfc (1T) |           192,6ms |  62,6ms |   56,3ms |       3,4x |
-| Verificação grande do tipo SFC    |        1 | Vue-TSC                  |             1,69s | 178,7ms |  178,0ms |       9,5x |
-| Fiapos                            |   15,000 | eslint-plugin-vue (1T)   |            54,32s |   1,91s |  279,3ms |     194,5x |
-| Formato                           |   15,000 | Prettier CLI             |           143,61s |  10,15s |    1,79s |      80,3x |
-| Verificação de tipo               |      500 | Vue-TSC                  |             5,36s | 500,5ms |  430,1ms |      12,5x |
-| Build Vite (de ponta a ponta)     |    1,000 | @vitejs/plugin-vue       |             1,66s |     N/A |  732,5ms |       2,3x |
-| Build Nuxt SPA (de ponta a ponta) |      500 | Compilador padrão Nuxt   |             6,79s |     N/A |    6,42s |       1,1x |
+| Superfície                        | Arquivos | Ferramenta existente     | Mediana existente | Vize 1T | Vize max |         Aceleração |
+| --------------------------------- | -------: | ------------------------ | ----------------: | ------: | -------: | -----------------: |
+| Compilação SFC                    |   15,000 | @vue/compilador-sfc (1T) |            17,54s |   3,23s |  290,8ms |              60,3x |
+| Compilação grande de SFC          |        1 | @vue/compilador-sfc (1T) |           192,6ms |  62,6ms |   56,3ms |               3,4x |
+| Verificação grande do tipo SFC    |        1 | Vue-TSC                  |             1,69s | 178,7ms |  178,0ms | n/a (cross-engine) |
+| Fiapos                            |   15,000 | eslint-plugin-vue (1T)   |            54,32s |   1,91s |  279,3ms |             194,5x |
+| Formato                           |   15,000 | Prettier CLI             |           143,61s |  10,15s |    1,79s |              80,3x |
+| Verificação de tipo               |      500 | Vue-TSC                  |             5,36s | 500,5ms |  430,1ms | n/a (cross-engine) |
+| Build Vite (de ponta a ponta)     |    1,000 | @vitejs/plugin-vue       |             1,66s |     N/A |  732,5ms |               2,3x |
+| Build Nuxt SPA (de ponta a ponta) |      500 | Compilador padrão Nuxt   |             6,79s |     N/A |    6,42s |               1,1x |
 
 Notas de justiça:
 
@@ -39,6 +39,7 @@ Notas de justiça:
 - Tempos de montagem do Vite excluem cópia/configuração de dispositivos; as linhas Vize Max `precompileBatchSize` para a contagem de arquivos de benchmark, então o Blacksmith Max executa um lote nativo de pré-compilação em vez dos chunks padrão seguros em memória.
 - Os tempos de build do Nuxt SPA excluem a geração sintética de aplicativos e comparam `nuxt build` com o compilador padrão do Nuxt contra o mesmo app com `@vizejs/nuxt` instalado.
 - As faixas de thread único são mostradas quando úteis, e a aceleração principal compara a faixa padrão/única linha incumbente com a faixa de corredor máximo do Vize.
+- As linhas de verificação de tipo abrangem dois mecanismos TypeScript: o vue-tsc executa o compilador JavaScript enquanto o Vize check executa o tsgo nativo (Corsa). Por isso nenhuma razão única é publicada (`n/a (cross-engine)`); cada classe de mecanismo é classificada separadamente, já que um número único atribuiria a reescrita em Go do TypeScript à camada Vue.
 
 Comandos:
 

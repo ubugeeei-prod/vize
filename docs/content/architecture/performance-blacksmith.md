@@ -16,16 +16,36 @@ Runner: `blacksmith-32vcpu-ubuntu-2404` (32 logical CPU, AMD EPYC, 32 vCPU / 128
 Input: 15,000 generated SFC files (58.7 MB). Median of 5 measured run(s) after 1 warmup run(s).
 Large SFC: 900 repeated template blocks (674.9 KB). Nuxt import set: 500 SFC files.
 
-| Surface                     |  Files | Existing tool          | Existing median | Vize 1T | Vize max | Speedup |
-| --------------------------- | -----: | ---------------------- | --------------: | ------: | -------: | ------: |
-| SFC compile                 | 15,000 | @vue/compiler-sfc (1T) |          17.54s |   3.23s |  290.8ms |   60.3x |
-| Large SFC compile           |      1 | @vue/compiler-sfc (1T) |         192.6ms |  62.6ms |   56.3ms |    3.4x |
-| Large SFC type check        |      1 | vue-tsc                |           1.69s | 178.7ms |  178.0ms |    9.5x |
-| Lint                        | 15,000 | eslint-plugin-vue (1T) |          54.32s |   1.91s |  279.3ms |  194.5x |
-| Format                      | 15,000 | Prettier CLI           |         143.61s |  10.15s |    1.79s |   80.3x |
-| Type check                  |    500 | vue-tsc                |           5.36s | 500.5ms |  430.1ms |   12.5x |
-| Vite build (end-to-end)     |  1,000 | @vitejs/plugin-vue     |           1.66s |     n/a |  732.5ms |    2.3x |
-| Nuxt SPA build (end-to-end) |    500 | Nuxt default compiler  |           6.79s |     n/a |    6.42s |    1.1x |
+| Surface                     |  Files | Existing tool          | Existing median | Vize 1T | Vize max |            Speedup |
+| --------------------------- | -----: | ---------------------- | --------------: | ------: | -------: | -----------------: |
+| SFC compile                 | 15,000 | @vue/compiler-sfc (1T) |          17.54s |   3.23s |  290.8ms |              60.3x |
+| Large SFC compile           |      1 | @vue/compiler-sfc (1T) |         192.6ms |  62.6ms |   56.3ms |               3.4x |
+| Large SFC type check        |      1 | vue-tsc                |           1.69s | 178.7ms |  178.0ms | n/a (cross-engine) |
+| Lint                        | 15,000 | eslint-plugin-vue (1T) |          54.32s |   1.91s |  279.3ms |             194.5x |
+| Format                      | 15,000 | Prettier CLI           |         143.61s |  10.15s |    1.79s |              80.3x |
+| Type check                  |    500 | vue-tsc                |           5.36s | 500.5ms |  430.1ms | n/a (cross-engine) |
+| Vite build (end-to-end)     |  1,000 | @vitejs/plugin-vue     |           1.66s |     n/a |  732.5ms |               2.3x |
+| Nuxt SPA build (end-to-end) |    500 | Nuxt default compiler  |           6.79s |     n/a |    6.42s |               1.1x |
+
+#### Large SFC type check — engine classes ranked separately
+
+| Engine class                    | Row              |  Median | Relative to fastest in class |
+| ------------------------------- | ---------------- | ------: | ---------------------------: |
+| JS TypeScript engine (tsc)      | vue-tsc          |   1.69s |                        1.00x |
+| native TypeScript engine (tsgo) | Vize check (max) | 178.0ms |                        1.00x |
+| native TypeScript engine (tsgo) | Vize check (1T)  | 178.7ms |                        1.00x |
+
+No cross-class ratio is published for Large SFC type check: the incumbent runs the JavaScript TypeScript compiler while Vize runs native tsgo, so a single number would credit TypeScript's Go rewrite to the Vue layer.
+
+#### Type check — engine classes ranked separately
+
+| Engine class                    | Row              |  Median | Relative to fastest in class |
+| ------------------------------- | ---------------- | ------: | ---------------------------: |
+| JS TypeScript engine (tsc)      | vue-tsc          |   5.36s |                        1.00x |
+| native TypeScript engine (tsgo) | Vize check (max) | 430.1ms |                        1.00x |
+| native TypeScript engine (tsgo) | Vize check (1T)  | 500.5ms |                        1.16x |
+
+No cross-class ratio is published for Type check: the incumbent runs the JavaScript TypeScript compiler while Vize runs native tsgo, so a single number would credit TypeScript's Go rewrite to the Vue layer.
 
 Fairness notes:
 

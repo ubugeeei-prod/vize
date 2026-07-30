@@ -18,16 +18,16 @@ Runner : `blacksmith-32vcpu-ubuntu-2404` (32 CPU logique, AMD EPYC, 32 vCPU / 12
 Entrée : 15 000 fichiers SFC générés (58,7 Mo). Médiane de 5 descentes mesurées après 1 ou plus de course d’échauffement.
 Large SFC : 900 blocs modèles répétés (674,9 Ko). Import Nuxt set : 500 fichiers SFC.
 
-| Surface                                 | Dossiers | Outil existant              | Médiane existante |  Vize 1T | Vize max | Accélération |
-| --------------------------------------- | -------: | --------------------------- | ----------------: | -------: | -------: | -----------: |
-| Compilation SFC                         |   15,000 | @vue/compilateur-sfc (1T)   |            17,54s |   3,23 s | 290,8 ms |        60,3x |
-| Grande compilation SFC                  |        1 | @vue/compilateur-sfc (1T)   |          192,6 ms |  62,6 ms |  56,3 ms |         3,4x |
-| Contrôle de type grand SFC              |        1 | Vue-TSC                     |             1,69s | 178,7 ms | 178,0 ms |         9,5x |
-| Peluches                                |   15,000 | eslint-plugin-vue (1T)      |             54,32 |     1,91 | 279,3 ms |       194,5x |
-| Format                                  |   15,000 | Prettier CLI                |           143,61s |  10,15 s |    1,79s |        80,3x |
-| Contrôle de type                        |      500 | Vue-TSC                     |            5,36 s | 500,5 ms | 430,1 ms |        12,5x |
-| Build Vite (de bout en bout)            |    1,000 | @vitejs/plugin-vue          |            1,66 s |      N/D | 732,5 ms |         2,3x |
-| Construction Nuxt SPA (de bout en bout) |      500 | Compilateur par défaut Nuxt |             6,79s |      N/D |    6,42s |         1.1x |
+| Surface                                 | Dossiers | Outil existant              | Médiane existante |  Vize 1T | Vize max |       Accélération |
+| --------------------------------------- | -------: | --------------------------- | ----------------: | -------: | -------: | -----------------: |
+| Compilation SFC                         |   15,000 | @vue/compilateur-sfc (1T)   |            17,54s |   3,23 s | 290,8 ms |              60,3x |
+| Grande compilation SFC                  |        1 | @vue/compilateur-sfc (1T)   |          192,6 ms |  62,6 ms |  56,3 ms |               3,4x |
+| Contrôle de type grand SFC              |        1 | Vue-TSC                     |             1,69s | 178,7 ms | 178,0 ms | n/a (cross-engine) |
+| Peluches                                |   15,000 | eslint-plugin-vue (1T)      |             54,32 |     1,91 | 279,3 ms |             194,5x |
+| Format                                  |   15,000 | Prettier CLI                |           143,61s |  10,15 s |    1,79s |              80,3x |
+| Contrôle de type                        |      500 | Vue-TSC                     |            5,36 s | 500,5 ms | 430,1 ms | n/a (cross-engine) |
+| Build Vite (de bout en bout)            |    1,000 | @vitejs/plugin-vue          |            1,66 s |      N/D | 732,5 ms |               2,3x |
+| Construction Nuxt SPA (de bout en bout) |      500 | Compilateur par défaut Nuxt |             6,79s |      N/D |    6,42s |               1.1x |
 
 Notes d’équité :
 
@@ -39,6 +39,7 @@ Notes d’équité :
 - Les timings de construction Vite excluent la copie/configuration des équipements ; les ensembles de lignes maximales Vize `precompileBatchSize` au nombre de fichiers de benchmark afin que Blacksmith Max exécute un lot précompilation natif au lieu des chunks par défaut sûrs en mémoire.
 - Les timings de compilation de Nuxt SPA excluent la génération d’applications synthétiques et `nuxt build` comparent avec le compilateur par défaut de Nuxt avec la même application avec `@vizejs/nuxt` installée.
 - Les voies à un seul thread sont indiquées là où elles sont utiles, et l’accélération principale compare la voie par défaut/un seul thread existante avec la voie max runner de Vize.
+- Les lignes de contrôle de type couvrent deux moteurs TypeScript : vue-tsc exécute le compilateur JavaScript tandis que Vize check exécute tsgo natif (Corsa). Aucun rapport unique n’est donc publié (`n/a (cross-engine)`) ; chaque classe de moteur est classée séparément, car un chiffre unique attribuerait la réécriture en Go de TypeScript à la couche Vue.
 
 Commandes :
 
