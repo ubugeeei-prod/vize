@@ -86,9 +86,26 @@ test("benchmark generator writes a diversified unique SFC corpus", () => {
     assert.deepEqual(tsconfig.include, ["./*.vue"]);
     assert.deepEqual(tsconfig.compilerOptions.paths.vue, ["../node_modules/vue"]);
 
+    // Asserted in full rather than probed: the reference ESLint run is only
+    // meaningful if it can read the corpus, and it silently cannot unless
+    // `parserOptions.parser` is wired for the `lang="ts"` blocks that make up
+    // most of it (vue-eslint-parser defaults to espree, which reports the whole
+    // file as one `ruleId: null` parse error). See #3410.
     const eslintConfig = fs.readFileSync(path.join(dir, "eslint.config.mjs"), "utf8");
-    assert.match(eslintConfig, /eslint-plugin-vue/);
-    assert.match(eslintConfig, /vue\/multi-word-component-names/);
+    assert.equal(
+      eslintConfig,
+      `import tsParser from "@typescript-eslint/parser";
+import pluginVue from "eslint-plugin-vue";
+export default [
+  ...pluginVue.configs["flat/recommended"],
+  {
+    files: ["*.vue"],
+    languageOptions: { parserOptions: { parser: tsParser } },
+    rules: { "vue/multi-word-component-names": "off" },
+  },
+];
+`,
+    );
 
     const vizeConfig = JSON.parse(fs.readFileSync(path.join(dir, "vize.config.json"), "utf8"));
     assert.equal(vizeConfig.typeChecker.checkTemplateBindings, true);
@@ -102,6 +119,32 @@ test("benchmark generator writes a diversified unique SFC corpus", () => {
     const indexHtml = fs.readFileSync(path.join(dir, "index.html"), "utf8");
     assert.match(indexHtml, /src="\.\/main\.ts"/);
   });
+});
+
+test("bench pins the whole eslint-plugin-vue reference toolchain at exact versions", () => {
+  // The generated `eslint.config.mjs` imports `@typescript-eslint/parser`, so
+  // the pin and the config have to move together: without the dependency the
+  // config fails to load, and without the config the parser is never used and
+  // every `lang="ts"` block in the corpus is unreadable (#3410). All four are
+  // exact versions so a reference run is reproducible.
+  const benchPackage = JSON.parse(
+    fs.readFileSync(new URL("../../bench/package.json", import.meta.url), "utf8"),
+  );
+  const referencePins = [
+    "@typescript-eslint/parser",
+    "eslint",
+    "eslint-plugin-vue",
+    "vue-eslint-parser",
+  ];
+  assert.deepEqual(
+    Object.fromEntries(referencePins.map((name) => [name, benchPackage.devDependencies[name]])),
+    {
+      "@typescript-eslint/parser": "8.65.0",
+      eslint: "10.4.1",
+      "eslint-plugin-vue": "10.9.2",
+      "vue-eslint-parser": "10.4.1",
+    },
+  );
 });
 
 test("benchmark generator output is deterministic for the same count", () => {

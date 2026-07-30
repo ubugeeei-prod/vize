@@ -13,6 +13,7 @@
     "compare-tools": "node compare-tools.mjs"
   },
   "devDependencies": {
+    "@typescript-eslint/parser": "8.65.0",
     "@vitejs/plugin-vue": "catalog:vite-stack",
     "@vue/compiler-sfc": "catalog:vue-beta",
     "@vue/compiler-vapor": "catalog:vue-beta",

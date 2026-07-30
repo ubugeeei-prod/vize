@@ -759,16 +759,16 @@ export function generateCorpus({
   writeFileSync(join(benchDir, "tsconfig.json"), JSON.stringify(tsconfig, null, 2));
   writeLog("Generated tsconfig.json");
 
-  // Generate eslint.config.mjs for eslint-plugin-vue
-  const eslintConfig = `import pluginVue from "eslint-plugin-vue";
-
+  // Generate eslint.config.mjs; `parserOptions.parser` reads the `lang="ts"`
+  // blocks espree turns into one rule-suppressing parse error each (#3410).
+  const eslintConfig = `import tsParser from "@typescript-eslint/parser";
+import pluginVue from "eslint-plugin-vue";
 export default [
   ...pluginVue.configs["flat/recommended"],
   {
     files: ["*.vue"],
-    rules: {
-      "vue/multi-word-component-names": "off",
-    },
+    languageOptions: { parserOptions: { parser: tsParser } },
+    rules: { "vue/multi-word-component-names": "off" },
   },
 ];
 `;
