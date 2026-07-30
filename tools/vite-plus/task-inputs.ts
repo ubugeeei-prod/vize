@@ -47,14 +47,6 @@ export const checkedPackagesViaVpRun = checkedPackages.filter(
   (pkg) => !directCheckPackageSet.has(pkg),
 );
 
-/**
- * CI excludes the oxlint example from the aggregate check because that example
- * intentionally demonstrates a failing lint script.
- */
-export const ciCheckedPackages = checkedPackagesViaVpRun.filter(
-  (pkg) => pkg !== "./examples/oxlint-vize",
-);
-
 export const packedPackages = [
   "./npm/cli",
   "./npm/builder/vite",

@@ -2,7 +2,6 @@ import {
   cacheInputs,
   checkedPackages,
   checkedPackagesViaVpRun,
-  ciCheckedPackages,
   directCheckPackages,
 } from "../task-inputs.ts";
 import {
@@ -21,7 +20,7 @@ import {
 } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
-const ciPackageCheckCommand = runInPackages("check", ciCheckedPackages, {
+const ciPackageCheckCommand = runInPackages("check", checkedPackagesViaVpRun, {
   concurrencyLimit: 1,
 });
 const localLintCommand = runTask("check");
@@ -72,8 +71,9 @@ export const checkTasks = defineTasks({
   // v1 alpha release branches keep a zero-warning budget for repo-wide JS/TS checks.
   "check:repo": noCacheTask(strictRepoCheckCommand),
   "source:lengths": noCacheTask(moonScript("source_file_lengths")),
-  // The oxlint example intentionally exits non-zero for its default lint script,
-  // so CI checks every package except that runnable failure-case fixture.
+  // Every package that exposes a `check` task takes part, including the oxlint
+  // example. Its `lint` script is the one that intentionally exits non-zero, and
+  // the aggregate never runs `lint`, so there is nothing here to exempt.
   "check:ci": noCacheTask(`${runTask("check:repo")} && ${ciPackageCheckCommand}`),
   "check:fix": noCacheTask(runInPackages("check:fix", checkedPackages)),
   "check:rust": noCacheTask("cargo check --workspace"),
