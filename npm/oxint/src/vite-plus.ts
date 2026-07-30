@@ -28,6 +28,15 @@ export interface VizeLintConfigOptions {
    */
   includeTypeAware?: boolean;
   /**
+   * Built-in Oxlint plugins to keep enabled alongside `vue`.
+   *
+   * The emitted block always lists `vue`, and narrowing a project's plugin list
+   * would silently drop the diagnostics those plugins produce, so anything passed
+   * here is merged rather than replaced. A `create-vue` project, for example,
+   * needs `["eslint", "typescript", "unicorn", "oxc"]` carried over.
+   */
+  plugins?: readonly string[];
+  /**
    * Rule bundle to enable. Defaults to `"general-recommended"`, the bridge's own
    * default. `"incremental"` emits no preset rules, so only `rules` run.
    */
@@ -94,7 +103,7 @@ export function createVizeLintConfig(options: VizeLintConfigOptions = {}): VizeL
 
   return {
     jsPlugins: [VIZE_JS_PLUGIN_SPECIFIER],
-    plugins: ["vue"],
+    plugins: [...new Set(["vue", ...(options.plugins ?? [])])],
     rules: {
       ...createPresetRules(preset, options.includeTypeAware),
       ...extraRules,

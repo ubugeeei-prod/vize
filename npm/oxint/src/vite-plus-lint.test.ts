@@ -62,6 +62,18 @@ void test("createVizeLintConfig emits the whole Vite+ lint block, including jsPl
   );
 });
 
+void test("createVizeLintConfig merges built-in Oxlint plugins instead of narrowing them", () => {
+  // Replacing a project's plugin list would silently drop every diagnostic those
+  // plugins produce, which is the same false negative this helper exists to stop.
+  assert.deepEqual(
+    createVizeLintConfig({
+      plugins: ["eslint", "typescript", "unicorn", "oxc", "vue"],
+      preset: "incremental",
+    }).plugins,
+    ["vue", "eslint", "typescript", "unicorn", "oxc"],
+  );
+});
+
 void test('createVizeLintConfig keeps the rule map and settings.vize.preset in lockstep for "all"', () => {
   const config = createVizeLintConfig({ preset: "all" });
 

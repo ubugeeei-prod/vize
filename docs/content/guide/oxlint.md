@@ -70,6 +70,9 @@ stays silent.
 
 - `preset: "incremental"` runs only the rules you list.
 - `preset: "all"` runs every bundle at once.
+- `plugins` keeps the rest of your built-in Oxlint plugins. They are merged with `vue`, never
+  replaced, because narrowing the list would silently drop everything those plugins report. A
+  `create-vue` project passes `["eslint", "typescript", "unicorn", "oxc"]`.
 - Spread the result (`{ ...createVizeLintConfig(), ignorePatterns: ["dist/**"] }`) to merge it into
   an existing `lint` block.
 

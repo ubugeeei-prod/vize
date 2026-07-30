@@ -90,12 +90,17 @@ nothing at all. `createVizeLintConfig` throws for that case, and for unknown `vi
 leaving you with a config that looks enabled and reports nothing. Use `preset: "incremental"` when
 you want only the rules you list, and `preset: "all"` for every bundle at once.
 
-Merge the block into an existing `lint` configuration by spreading it:
+The emitted block always enables Oxlint's built-in `vue` plugin. Pass `plugins` to keep the rest of
+your project's plugin list; they are merged with `vue`, never replaced, because narrowing the list
+would silently drop everything those plugins report. A `create-vue` project keeps its generated set
+like this:
 
 ```ts
 export default defineConfig({
   lint: {
-    ...createVizeLintConfig(),
+    ...createVizeLintConfig({
+      plugins: ["eslint", "typescript", "unicorn", "oxc"],
+    }),
     ignorePatterns: ["dist/**"],
   },
 });
