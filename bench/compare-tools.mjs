@@ -15,7 +15,6 @@ import {
   readFileSync,
   rmSync,
   statSync,
-  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { basename, delimiter, dirname, join, parse, relative, resolve, sep } from "node:path";
@@ -31,6 +30,7 @@ import {
   renderSurfaceTable,
 } from "./compare-tools-report.mjs";
 import { createNativeBatchSequenceVariants, measureNativeBatchCompile } from "./native-batch.mjs";
+import { linkColdNodeModules } from "./nuxt-build-cache.mjs";
 
 export { createSurface } from "./compare-tools-report.mjs";
 
@@ -467,11 +467,10 @@ function prepareNuxtDir(inputDir, files, label, invocation, useVize) {
   for (const file of files) {
     copyFileSync(join(inputDir, file), join(outputDir, "components", file));
   }
-  const nuxtNodeModules = join(rootDir, "npm", "framework/nuxt", "node_modules");
-  symlinkSync(
-    existsSync(nuxtNodeModules) ? nuxtNodeModules : join(benchDir, "node_modules"),
-    join(outputDir, "node_modules"),
-    "dir",
+  linkColdNodeModules(
+    outputDir,
+    [join(rootDir, "npm", "framework/nuxt", "node_modules"), join(benchDir, "node_modules")],
+    label,
   );
 
   const imports = [];
