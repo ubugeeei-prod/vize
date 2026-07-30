@@ -112,8 +112,16 @@ test("release notes lead with the drop-in scope", () => {
   const createRelease = workflow.slice(workflow.indexOf("name: Create Release"));
   assert.notEqual(createRelease, "", "the release workflow must create a GitHub release");
 
-  const body = createRelease.slice(0, createRelease.indexOf("generate_release_notes:"));
-  assert.match(body, /body: \|/u, "the release body must be authored, not only generated");
+  const inputs = createRelease.slice(0, createRelease.indexOf("files:"));
+  const bodyPath = /body_path: (\S+)/u.exec(inputs);
+  assert.ok(bodyPath, "the release body must be authored, not only generated");
+  assert.match(
+    inputs,
+    /generate_release_notes: true/u,
+    "the authored body prepends the generated notes",
+  );
+
+  const body = readRepoFile(...bodyPath[1].split("/"));
   assert.match(body, /drop-in replacement for `@vitejs\/plugin-vue` on \*\*Vue 3 SFCs\*\*/u);
   assert.match(body, /incubating and opt-in/u);
   assert.match(body, /outside the drop-in claim/u);
