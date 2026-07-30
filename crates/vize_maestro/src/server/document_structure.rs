@@ -7,6 +7,10 @@
 //! makes that shared contract explicit.
 #![allow(clippy::disallowed_methods)]
 
+mod symbols;
+
+pub(super) use symbols::document_symbols;
+
 use tower_lsp::lsp_types::{
     FoldingRange, FoldingRangeKind, FoldingRangeParams, SelectionRange, SelectionRangeParams,
 };

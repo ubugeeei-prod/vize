@@ -5,13 +5,13 @@ use tower_lsp::lsp_types::{
     CodeActionKind, CodeActionOptions, CodeActionProviderCapability, CodeLensOptions,
     CompletionOptions, DocumentLinkOptions, FileOperationFilter, FileOperationPattern,
     FileOperationPatternKind, FileOperationRegistrationOptions, FoldingRangeProviderCapability,
-    HoverProviderCapability, OneOf, RenameOptions, SaveOptions, SelectionRangeProviderCapability,
-    SemanticTokenModifier, SemanticTokenType, SemanticTokensFullOptions, SemanticTokensLegend,
-    SemanticTokensOptions, SemanticTokensServerCapabilities, ServerCapabilities,
-    TextDocumentSyncCapability, TextDocumentSyncKind, TextDocumentSyncOptions,
-    TextDocumentSyncSaveOptions, WorkDoneProgressOptions,
-    WorkspaceFileOperationsServerCapabilities, WorkspaceFoldersServerCapabilities,
-    WorkspaceServerCapabilities,
+    HoverProviderCapability, LinkedEditingRangeServerCapabilities, OneOf, RenameOptions,
+    SaveOptions, SelectionRangeProviderCapability, SemanticTokenModifier, SemanticTokenType,
+    SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
+    SemanticTokensServerCapabilities, ServerCapabilities, TextDocumentSyncCapability,
+    TextDocumentSyncKind, TextDocumentSyncOptions, TextDocumentSyncSaveOptions,
+    WorkDoneProgressOptions, WorkspaceFileOperationsServerCapabilities,
+    WorkspaceFoldersServerCapabilities, WorkspaceServerCapabilities,
 };
 
 use super::state::LspFeatureConfig;
@@ -79,6 +79,13 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
             prepare_provider: Some(true),
             work_done_progress_options: WorkDoneProgressOptions::default(),
         })),
+
+        // Linked editing keeps an open/close tag-name pair in sync as the user
+        // types. It is rename-as-you-type, so it rides the `rename` flag rather
+        // than introducing a second user-facing setting for the same intent.
+        linked_editing_range_provider: features
+            .rename
+            .then_some(LinkedEditingRangeServerCapabilities::Simple(true)),
 
         // Document formatting
         document_formatting_provider: features.formatting.then_some(OneOf::Left(true)),
@@ -183,7 +190,6 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
         color_provider: None,
         document_on_type_formatting_provider: None,
         execute_command_provider: None,
-        linked_editing_range_provider: None,
         call_hierarchy_provider: None,
         moniker_provider: None,
         experimental: None,

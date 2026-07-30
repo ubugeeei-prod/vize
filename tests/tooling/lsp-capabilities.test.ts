@@ -55,8 +55,10 @@ test("vize lsp advertises the full editor-feature provider set with exact shapes
     assert.equal(capabilities.codeLensProvider?.resolveProvider, false);
     assert.equal(capabilities.documentLinkProvider?.resolveProvider, false);
 
-    // Rename advertises prepareRename support.
+    // Rename advertises prepareRename support, and carries linked editing
+    // (rename-as-you-type over tag names) with it.
     assert.equal(capabilities.renameProvider?.prepareProvider, true);
+    assert.equal(capabilities.linkedEditingRangeProvider, true);
 
     // Code actions: kinds plus no resolve step.
     assert.deepEqual(capabilities.codeActionProvider?.codeActionKinds, [

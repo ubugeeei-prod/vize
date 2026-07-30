@@ -80,6 +80,7 @@ export type ServerCapabilities = {
   foldingRangeProvider?: unknown;
   hoverProvider?: unknown;
   inlayHintProvider?: unknown;
+  linkedEditingRangeProvider?: unknown;
   referencesProvider?: unknown;
   renameProvider?: { prepareProvider?: boolean };
   selectionRangeProvider?: unknown;

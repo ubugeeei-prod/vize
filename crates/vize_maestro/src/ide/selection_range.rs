@@ -56,7 +56,6 @@ use tower_lsp::lsp_types::{Position, Range, SelectionRange};
 
 use self::markup::markup_spans;
 use super::{offset_to_position, token_span_at_offset};
-use crate::utils::is_standalone_html_path;
 
 pub struct SelectionRangeService;
 
@@ -87,62 +86,15 @@ impl SelectionRangeService {
 }
 
 /// Push SFC block levels and return the region that should be scanned as markup.
-///
-/// Returns `None` when the cursor sits in a raw-text block (`<script>`,
-/// `<style>`): scanning those as markup would treat `a < b` as a tag.
 fn collect_block_spans(
     content: &str,
     filename: &str,
     offset: usize,
     spans: &mut Vec<(usize, usize)>,
 ) -> Option<(usize, usize)> {
-    if is_standalone_html_path(filename) || filename.ends_with(".art.vue") {
-        return Some((0, content.len()));
-    }
-
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: filename.into(),
-        ..Default::default()
-    };
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-        return Some((0, content.len()));
-    };
-
-    let mut markup_region = None;
-    let template_loc = descriptor.template.as_ref().map(|block| &block.loc);
-    let raw_text_locs = descriptor
-        .script
-        .as_ref()
-        .map(|block| &block.loc)
-        .into_iter()
-        .chain(descriptor.script_setup.as_ref().map(|block| &block.loc))
-        .chain(descriptor.styles.iter().map(|block| &block.loc));
-
-    let mut in_raw_text = false;
-    for loc in template_loc.into_iter().chain(raw_text_locs.clone()) {
-        if loc.tag_start <= offset && offset <= loc.tag_end {
-            spans.push((loc.tag_start, loc.tag_end));
-            spans.push((loc.start, loc.end));
-        }
-    }
-    for loc in raw_text_locs {
-        if loc.start <= offset && offset <= loc.end {
-            in_raw_text = true;
-        }
-    }
-    if let Some(loc) = template_loc
-        && loc.start <= offset
-        && offset <= loc.end
-    {
-        markup_region = Some((loc.start, loc.end));
-    }
-
-    if in_raw_text {
-        return None;
-    }
-    // Outside every block (for example on a custom block's tag) the whole file
-    // is safe to scan: raw-text interiors were already excluded above.
-    Some(markup_region.unwrap_or((0, content.len())))
+    let region = super::sfc_region::resolve(content, filename, offset);
+    spans.extend(region.block_spans);
+    region.markup
 }
 
 #[inline]

@@ -14,16 +14,21 @@ use tower_lsp::{
         DidChangeWorkspaceFoldersParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams,
         DidSaveTextDocumentParams, DocumentFormattingParams, DocumentHighlight,
         DocumentHighlightParams, DocumentLink, DocumentLinkParams, DocumentRangeFormattingParams,
-        DocumentSymbol, DocumentSymbolParams, DocumentSymbolResponse, FoldingRange,
-        FoldingRangeParams, GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams,
-        InitializeParams, InitializeResult, InitializedParams, InlayHint, InlayHintParams,
-        Location, Position, PrepareRenameResponse, Range, ReferenceParams, RenameFilesParams,
-        RenameParams, SelectionRange, SelectionRangeParams, SemanticTokensParams,
-        SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult, ServerInfo,
-        SymbolInformation, SymbolKind, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
-        WorkspaceSymbolParams,
+        DocumentSymbolParams, DocumentSymbolResponse, FoldingRange, FoldingRangeParams,
+        GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams, InitializeParams,
+        InitializeResult, InitializedParams, InlayHint, InlayHintParams, LinkedEditingRangeParams,
+        LinkedEditingRanges, Location, Position, PrepareRenameResponse, ReferenceParams,
+        RenameFilesParams, RenameParams, SelectionRange, SelectionRangeParams,
+        SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
+        SemanticTokensResult, ServerInfo, SymbolInformation, TextDocumentPositionParams, TextEdit,
+        WorkspaceEdit, WorkspaceSymbolParams,
     },
 };
+
+// Only the test modules below construct ranges now that `document_symbol` moved
+// into `server::document_structure`; they reach it through `use super::*`.
+#[cfg(test)]
+use tower_lsp::lsp_types::Range;
 
 use super::{MaestroServer, server_capabilities};
 use crate::ide::{
@@ -379,7 +384,6 @@ impl LanguageServer for MaestroServer {
         Ok(DocumentHighlightService::highlights(&ctx))
     }
 
-    #[allow(deprecated)]
     async fn document_symbol(
         &self,
         params: DocumentSymbolParams,
@@ -387,168 +391,10 @@ impl LanguageServer for MaestroServer {
         if !self.state.lsp_features().document_symbols {
             return Ok(None);
         }
-
-        let uri = &params.text_document.uri;
-
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-
-        // `.jsx`/`.tsx` documents have no SFC blocks; list their component
-        // functions instead. Structural (parse-based), so it is not gated on
-        // `typeChecker.jsxTypecheck`.
-        if crate::utils::is_jsx_path(uri.path()) {
-            return Ok(
-                crate::ide::JsxDocumentSymbolsService::symbols(&content, uri)
-                    .map(DocumentSymbolResponse::Nested),
-            );
-        }
-
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) else {
-            return Ok(None);
-        };
-
-        let mut symbols = Vec::new();
-
-        if let Some(ref template) = descriptor.template {
-            symbols.push(DocumentSymbol {
-                name: "template".to_string(),
-                kind: SymbolKind::MODULE,
-                tags: None,
-                deprecated: None,
-                range: Range {
-                    start: Position {
-                        line: template.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: template.loc.end_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                },
-                selection_range: Range {
-                    start: Position {
-                        line: template.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: template.loc.start_line.saturating_sub(1) as u32,
-                        character: 10,
-                    },
-                },
-                detail: template.lang.as_ref().map(|l| l.to_string()),
-                children: None,
-            });
-        }
-
-        if let Some(ref script) = descriptor.script {
-            symbols.push(DocumentSymbol {
-                name: "script".to_string(),
-                kind: SymbolKind::MODULE,
-                tags: None,
-                deprecated: None,
-                range: Range {
-                    start: Position {
-                        line: script.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: script.loc.end_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                },
-                selection_range: Range {
-                    start: Position {
-                        line: script.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: script.loc.start_line.saturating_sub(1) as u32,
-                        character: 8,
-                    },
-                },
-                detail: script.lang.as_ref().map(|l| l.to_string()),
-                children: None,
-            });
-        }
-
-        if let Some(ref script_setup) = descriptor.script_setup {
-            symbols.push(DocumentSymbol {
-                name: "script setup".to_string(),
-                kind: SymbolKind::MODULE,
-                tags: None,
-                deprecated: None,
-                range: Range {
-                    start: Position {
-                        line: script_setup.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: script_setup.loc.end_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                },
-                selection_range: Range {
-                    start: Position {
-                        line: script_setup.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: script_setup.loc.start_line.saturating_sub(1) as u32,
-                        character: 14,
-                    },
-                },
-                detail: script_setup.lang.as_ref().map(|l| l.to_string()),
-                children: None,
-            });
-        }
-
-        for (i, style) in descriptor.styles.iter().enumerate() {
-            #[allow(clippy::disallowed_macros)]
-            let name = if let Some(ref module) = style.module {
-                format!("style module={}", module)
-            } else if style.scoped {
-                "style scoped".to_string()
-            } else {
-                format!("style[{}]", i)
-            };
-
-            symbols.push(DocumentSymbol {
-                name,
-                kind: SymbolKind::MODULE,
-                tags: None,
-                deprecated: None,
-                range: Range {
-                    start: Position {
-                        line: style.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: style.loc.end_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                },
-                selection_range: Range {
-                    start: Position {
-                        line: style.loc.start_line.saturating_sub(1) as u32,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: style.loc.start_line.saturating_sub(1) as u32,
-                        character: 7,
-                    },
-                },
-                detail: style.lang.as_ref().map(|l| l.to_string()),
-                children: None,
-            });
-        }
-
-        Ok(Some(DocumentSymbolResponse::Nested(symbols)))
+        Ok(super::document_structure::document_symbols(
+            &self.state,
+            &params,
+        ))
     }
 
     async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
@@ -848,6 +694,34 @@ impl LanguageServer for MaestroServer {
         Ok(super::document_structure::selection_ranges(
             &self.state,
             &params,
+        ))
+    }
+
+    /// Keep an open/close tag-name pair in sync while the user types.
+    ///
+    /// Shares the `rename` flag with `rename`/`prepare_rename`: linked editing
+    /// is rename-as-you-type over the same authored tag names.
+    async fn linked_editing_range(
+        &self,
+        params: LinkedEditingRangeParams,
+    ) -> Result<Option<LinkedEditingRanges>> {
+        if !self.state.lsp_features().rename {
+            return Ok(None);
+        }
+
+        let uri = &params.text_document_position_params.text_document.uri;
+        let position = params.text_document_position_params.position;
+        let Some(content) = self.state.documents.text(uri) else {
+            return Ok(None);
+        };
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
+
+        Ok(crate::ide::linked_editing::LinkedEditingService::ranges(
+            &content,
+            uri.path(),
+            offset,
         ))
     }
 

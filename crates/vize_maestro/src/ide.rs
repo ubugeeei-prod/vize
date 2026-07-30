@@ -1,12 +1,10 @@
 //! IDE features for the LSP server.
 //!
-//! This module provides core IDE functionality. The module list below is the
-//! authoritative inventory; grouped by what the editor sees:
-//! - Correctness: diagnostics aggregation, type checking and type information
-//! - Authoring: hover, completion, definition, references, code actions, rename
-//! - Presentation: semantic tokens, inlay hints, code lens, document links
-//! - Structure: document symbols, workspace symbols, selection ranges
-//! - Ecosystem: router/i18n awareness, file rename, auto-import
+//! Core IDE functionality; the module list below is the authoritative inventory:
+//! - Correctness: diagnostics, type checking and type information
+//! - Authoring: hover, completion, definition, references, code actions, rename, linked editing
+//! - Structure: document/workspace symbols, selection ranges, semantic tokens, inlay hints
+//! - Ecosystem: router/i18n awareness, file rename, auto-import, code lens, document links
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 pub mod auto_import;
@@ -24,12 +22,14 @@ pub mod file_rename;
 pub mod hover;
 pub mod inlay_hint;
 pub mod jsx;
+pub mod linked_editing;
 pub(crate) mod markup;
 pub(crate) mod musea;
 pub mod references;
 pub mod rename;
 pub mod selection_range;
 pub mod semantic_tokens;
+pub(crate) mod sfc_region;
 mod template_expression;
 pub mod type_service;
 pub mod workspace_symbols;

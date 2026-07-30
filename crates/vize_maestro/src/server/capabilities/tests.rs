@@ -201,6 +201,24 @@ fn declaration_events_remain_registered_when_file_rename_is_disabled() {
 }
 
 #[test]
+fn linked_editing_shares_the_rename_flag() {
+    let capabilities = server_capabilities(all_features());
+    assert!(matches!(
+        capabilities.linked_editing_range_provider,
+        Some(LinkedEditingRangeServerCapabilities::Simple(true))
+    ));
+
+    let mut features = all_features();
+    features.rename = false;
+    let capabilities = server_capabilities(features);
+    assert!(capabilities.rename_provider.is_none());
+    assert!(capabilities.linked_editing_range_provider.is_none());
+    // Only the rename group is affected.
+    assert!(capabilities.references_provider.is_some());
+    assert!(capabilities.document_symbol_provider.is_some());
+}
+
+#[test]
 fn selection_ranges_share_the_document_structure_flag_with_folding_ranges() {
     let mut features = all_features();
     features.folding_ranges = false;
