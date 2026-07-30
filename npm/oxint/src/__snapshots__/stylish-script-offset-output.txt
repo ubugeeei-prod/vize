@@ -1,4 +1,4 @@
-<workspaceRoot>/target/vize-tests/oxlint-plugin-vize-test/ScriptOffset.vue
+<workspaceRoot>/target/vize-tests/oxlint-plugin-vize-script-location-test/ScriptOffset.vue
   6:10  error  getCurrentInstance import is not supported in Vapor-oriented components  vize(script/no-get-current-instance)
   8:18  error  getCurrentInstance() is not supported in Vapor-oriented components  vize(script/no-get-current-instance)
 
