@@ -62,22 +62,36 @@ export const setupParseMdFileDialogCtx = () => ({ ready: true });
 }
 
 #[test]
-fn normal_script_exported_enum_keeps_its_type_side() {
-    let case_dir = unique_case_dir("plain-script-exported-enum");
+fn normal_script_value_and_type_declarations_are_exported_in_both_spaces() {
+    let case_dir = unique_case_dir("plain-script-value-and-type-exports");
     let _ = fs::remove_dir_all(&case_dir);
     let src_dir = case_dir.join("src");
     fs::create_dir_all(&src_dir).unwrap();
-    let vue_path = src_dir.join("ParseMdFileDialog.vue");
+    let vue_path = src_dir.join("DiffViewer.vue");
     let vue_content = r#"<script lang="ts">
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "ParseMdFileDialog",
+  name: "DiffViewer",
 });
 
 export enum DiffDisplayMode {
   Unified = 'unified',
   Split = 'split',
+}
+
+export const enum DiffMarker {
+  Added = 'added',
+}
+
+export class DiffCursor {
+  line = 0;
+}
+
+export const pageSize = 20;
+
+export function toPageCount(total: number) {
+  return total;
 }
 </script>
 "#;
@@ -91,14 +105,53 @@ export enum DiffDisplayMode {
         .content
         .as_str();
 
-    assert!(
-        content.contains("export enum DiffDisplayMode {"),
-        "an exported enum must reach module scope as a declaration, so consumers can use it as a type:\n{content}"
-    );
-    assert!(
-        !content.contains("export const DiffDisplayMode ="),
-        "the value-only setup bridge would erase the enum's type side (TS2749 at the consumer):\n{content}"
-    );
+    // An `enum`/`class` declares a value *and* a type. Bridging only the value
+    // out of `__setup()` is what made consumers hit TS2749.
+    for (value, type_side) in [
+        (
+            "export const DiffDisplayMode = __vize_plain_script_exports.DiffDisplayMode;",
+            "export type DiffDisplayMode = (typeof DiffDisplayMode)[keyof typeof DiffDisplayMode];",
+        ),
+        (
+            "export const DiffMarker = __vize_plain_script_exports.DiffMarker;",
+            "export type DiffMarker = (typeof DiffMarker)[keyof typeof DiffMarker];",
+        ),
+        (
+            "export const DiffCursor = __vize_plain_script_exports.DiffCursor;",
+            "export type DiffCursor = InstanceType<typeof DiffCursor>;",
+        ),
+    ] {
+        assert!(
+            content.contains(value),
+            "value side must stay available: {value}\n{content}"
+        );
+        assert!(
+            content.contains(type_side),
+            "type side must stay available: {type_side}\n{content}"
+        );
+    }
+
+    // A value-only declaration must not be handed a type meaning it never had.
+    for (value, absent_type_side) in [
+        (
+            "export const pageSize = __vize_plain_script_exports.pageSize;",
+            "export type pageSize ",
+        ),
+        (
+            "export const toPageCount = __vize_plain_script_exports.toPageCount;",
+            "export type toPageCount ",
+        ),
+    ] {
+        assert!(
+            content.contains(value),
+            "value-only export must stay available: {value}\n{content}"
+        );
+        assert!(
+            !content.contains(absent_type_side),
+            "value-only export must not gain a type export: {absent_type_side}\n{content}"
+        );
+    }
+
     assert_ts_parses(content);
 
     let _ = fs::remove_dir_all(&case_dir);
