@@ -198,10 +198,10 @@ Build do Vite com **1.000 importações do SFC Vue** (todas importadas em uma ú
 
 |                         | @vitejs/plugin-vue | @vizejs/vite-plugin | Aceleração |
 | ----------------------- | ------------------ | ------------------- | ---------- |
-| **Tempo de Construção** | 1.66s              | 732.5ms             | **2.3x**   |
+| **Tempo de Construção** | 1.71s              | 631.7ms             | **2.7x**   |
 
 > Nota: `@vizejs/vite-plugin` substitui apenas a etapa de compilação do Vue SFC — a diferença de desempenho vem inteiramente dessa parte. A resolução de dependências, construção de grafos de módulos, agrupamento (Rolldown) e todos os outros internos do Vite são idênticos aos `@vitejs/plugin-vue`. Para performance pura em compilações, veja o [Compiler benchmark](#benchmark-15000-sfc-files) acima. `@vizejs/vite-plugin` pré-compila `.vue` arquivos com entusiasmo usando compilação multithreaded nativa, que também permite um HMR mais rápido.
 
-Esta linha é a superfície `vite` do snapshot commitado `bench/results/tool-benchmark-latest.json` ([run 29010164013](https://github.com/ubugeeei-prod/vize/actions/runs/29010164013)) — o mesmo artefato que `README.md` e o [snapshot de benchmark Blacksmith](/architecture/performance-blacksmith) publicam. `tests/tooling/docs-vite-benchmark-row.test.ts` a fixa nesse artefato, em todos os idiomas.
+Esta linha é a superfície `vite` do snapshot commitado `bench/results/tool-benchmark-latest.json` ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) — o mesmo artefato que `README.md` e o [snapshot de benchmark Blacksmith](/architecture/performance-blacksmith) publicam. `tests/tooling/docs-vite-benchmark-row.test.ts` a fixa nesse artefato, em todos os idiomas.
 
 O número publicado aqui até agora — `957ms` / `479ms` / `2.0x` — veio de `bench/vite.ts` antes de #3392, que media o Vize com um cache de pré-compilação persistente deixado quente pelo próprio warmup enquanto o `@vitejs/plugin-vue` compilava do zero. Esse harness agora reporta linhas separadas de cold e warm na máquina em que roda, então produz um diagnóstico local, não um speedup publicável. Use `vp run --workspace-root bench:vite` para comparar uma mudança consigo mesma.

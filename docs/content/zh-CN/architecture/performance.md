@@ -198,10 +198,10 @@ Vite 构建，包含**1,000个Vue SFC导入**（全部导入于单一条目）�
 
 |              | @vitejs/plugin-vue | @vizejs/vite-plugin | 加速     |
 | ------------ | ------------------ | ------------------- | -------- |
-| **建造时间** | 1.66s              | 732.5ms             | **2.3x** |
+| **建造时间** | 1.71s              | 631.7ms             | **2.7x** |
 
 > 注：`@vizejs/vite-plugin`仅替代了Vue的SFC编译步骤——性能差异完全来自该步骤。依赖关系解析、模图构建、捆绑（Rolldown）及其他所有 Vite 内部结构与 `@vitejs/plugin-vue` 完全相同。关于纯编译性能，请参见上文的[编译器基准测试](#benchmark-15000-sfc-files)。`@vizejs/vite-plugin` 热切地利用原生多线程编译预编译`.vue`文件，这也使 HMR 更快。
 
-此行取自已提交的快照 `bench/results/tool-benchmark-latest.json` 的 `vite` 面 ([run 29010164013](https://github.com/ubugeeei-prod/vize/actions/runs/29010164013)) —— 与 `README.md` 和 [Blacksmith 基准快照](/architecture/performance-blacksmith) 发布的是同一份产物。`tests/tooling/docs-vite-benchmark-row.test.ts` 在所有语言版本中将其固定到该产物。
+此行取自已提交的快照 `bench/results/tool-benchmark-latest.json` 的 `vite` 面 ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) —— 与 `README.md` 和 [Blacksmith 基准快照](/architecture/performance-blacksmith) 发布的是同一份产物。`tests/tooling/docs-vite-benchmark-row.test.ts` 在所有语言版本中将其固定到该产物。
 
 在此之前发布的数字 —— `957ms` / `479ms` / `2.0x` —— 来自 #3392 之前的 `bench/vite.ts`：它让 Vize 带着自身预热留下的持久预编译缓存运行，而 `@vitejs/plugin-vue` 从零开始编译。该测试工具现在会在其运行的机器上分别报告冷启动和热启动两行，因此它的输出是本地诊断值，而不是可发布的加速比。请使用 `vp run --workspace-root bench:vite` 来比较改动前后的自身表现。

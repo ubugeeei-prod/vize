@@ -198,10 +198,10 @@ Rust 側の `virtual project` フェーズ — ファイルごとの SFC 解析�
 
 |                | @vitejs/plugin-vue | @vizejs/vite-plugin | スピードアップ |
 | -------------- | ------------------ | ------------------- | -------------- |
-| **ビルド時間** | 1.66s              | 732.5ms             | **2.3x**       |
+| **ビルド時間** | 1.71s              | 631.7ms             | **2.7x**       |
 
 > 注: `@vizejs/vite-plugin` は Vue SFC コンパイル手順のみを置き換えます。パフォーマンスの違いは完全にその部分から生じます。依存関係の解決、モジュール グラフの構築、バンドル (ロールダウン)、およびその他すべての Vite 内部は `@vitejs/plugin-vue` と同一です。純粋なコンパイルのパフォーマンスについては、上記の [コンパイラ ベンチマーク](#benchmark-15000-sfc-files) を参照してください。 `@vizejs/vite-plugin` は、ネイティブ マルチスレッド コンパイルを使用して `.vue` ファイルを積極的にプリコンパイルします。これにより、より高速な HMR も可能になります。
 
-この行はコミット済みスナップショット `bench/results/tool-benchmark-latest.json` の `vite` サーフェス ([run 29010164013](https://github.com/ubugeeei-prod/vize/actions/runs/29010164013)) です。`README.md` と [Blacksmith ベンチマーク スナップショット](/architecture/performance-blacksmith) が公開しているものと同じ成果物であり、`tests/tooling/docs-vite-benchmark-row.test.ts` が全ロケールでこの成果物に固定しています。
+この行はコミット済みスナップショット `bench/results/tool-benchmark-latest.json` の `vite` サーフェス ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) です。`README.md` と [Blacksmith ベンチマーク スナップショット](/architecture/performance-blacksmith) が公開しているものと同じ成果物であり、`tests/tooling/docs-vite-benchmark-row.test.ts` が全ロケールでこの成果物に固定しています。
 
 それまでここに掲載していた `957ms` / `479ms` / `2.0x` は、#3392 以前の `bench/vite.ts` によるものでした。このハーネスは、ウォームアップが残した永続プリコンパイル キャッシュ付きの Vize と、ゼロからコンパイルする `@vitejs/plugin-vue` を比較していました。現在このハーネスは実行マシン上でコールドとウォームを別々に報告するため、その出力はローカルな診断値であり、公開できる速度比ではありません。`vp run --workspace-root bench:vite` は変更前後の自己比較に使ってください。

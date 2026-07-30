@@ -198,10 +198,10 @@ Version Vite avec **1 000 importations SFC Vue** (toutes importées en une seule
 
 |                           | @vitejs/plugin-vue | @vizejs/vite-plugin | Accélération |
 | ------------------------- | ------------------ | ------------------- | ------------ |
-| **Temps de construction** | 1.66s              | 732.5ms             | **2.3x**     |
+| **Temps de construction** | 1.71s              | 631.7ms             | **2.7x**     |
 
 > Note : `@vizejs/vite-plugin` remplace uniquement l’étape de compilation Vue SFC — la différence de performance vient entièrement de cette partie. La résolution des dépendances, la construction de graphes de modules, le regroupement (Rolldown) et tous les autres internes Vite sont identiques à `@vitejs/plugin-vue`. Pour la performance purement en compilation, voir la [Compiler benchmark](#benchmark-15000-sfc-files) ci-dessus. `@vizejs/vite-plugin` pré-compile avec enthousiasme `.vue` fichiers en utilisant une compilation multithread native, ce qui permet également un HMR plus rapide.
 
-Cette ligne est la surface `vite` de l'instantané commité `bench/results/tool-benchmark-latest.json` ([run 29010164013](https://github.com/ubugeeei-prod/vize/actions/runs/29010164013)) — le même artefact que celui publié par `README.md` et par l'[instantané de benchmark Blacksmith](/architecture/performance-blacksmith). `tests/tooling/docs-vite-benchmark-row.test.ts` la verrouille sur cet artefact, dans toutes les locales.
+Cette ligne est la surface `vite` de l'instantané commité `bench/results/tool-benchmark-latest.json` ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) — le même artefact que celui publié par `README.md` et par l'[instantané de benchmark Blacksmith](/architecture/performance-blacksmith). `tests/tooling/docs-vite-benchmark-row.test.ts` la verrouille sur cet artefact, dans toutes les locales.
 
 Le chiffre publié ici jusqu'à présent — `957ms` / `479ms` / `2.0x` — provenait de `bench/vite.ts` avant #3392, qui mesurait Vize avec un cache de pré-compilation persistant laissé chaud par son propre échauffement, tandis que `@vitejs/plugin-vue` compilait à froid. Ce harnais rapporte désormais des lignes à froid et à chaud séparées sur la machine où il s'exécute : c'est un diagnostic local, pas une accélération publiable. Utilisez `vp run --workspace-root bench:vite` pour comparer un changement à lui-même.

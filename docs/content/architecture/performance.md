@@ -196,10 +196,10 @@ Vite build with **1,000 Vue SFC imports** (all imported in a single entry), meas
 
 |                | @vitejs/plugin-vue | @vizejs/vite-plugin | Speedup  |
 | -------------- | ------------------ | ------------------- | -------- |
-| **Build Time** | 1.66s              | 732.5ms             | **2.3x** |
+| **Build Time** | 1.71s              | 631.7ms             | **2.7x** |
 
 > Note: `@vizejs/vite-plugin` replaces only the Vue SFC compilation step — the performance difference comes entirely from that part. Dependency resolution, module graph construction, bundling (Rolldown), and all other Vite internals are identical to `@vitejs/plugin-vue`. For pure compilation performance, see the [Compiler benchmark](#benchmark-15000-sfc-files) above. `@vizejs/vite-plugin` eagerly pre-compiles `.vue` files using native multi-threaded compilation, which also enables faster HMR.
 
-This row is the `vite` surface of the committed snapshot `bench/results/tool-benchmark-latest.json` ([run 29010164013](https://github.com/ubugeeei-prod/vize/actions/runs/29010164013)) — the same artifact `README.md` and the [Blacksmith benchmark snapshot](/architecture/performance-blacksmith) publish. `tests/tooling/docs-vite-benchmark-row.test.ts` pins it to that artifact, in every locale, so the three surfaces cannot drift apart.
+This row is the `vite` surface of the committed snapshot `bench/results/tool-benchmark-latest.json` ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) — the same artifact `README.md` and the [Blacksmith benchmark snapshot](/architecture/performance-blacksmith) publish. `tests/tooling/docs-vite-benchmark-row.test.ts` pins it to that artifact, in every locale, so the three surfaces cannot drift apart.
 
 The figure published here until then — `957ms` / `479ms` / `2.0x` — came from `bench/vite.ts` before #3392, which timed Vize with a warm persistent pre-compile cache left behind by its own warmup while `@vitejs/plugin-vue` compiled from scratch. That harness now reports separate cold and warm rows on the machine it runs on, so it produces a local diagnostic, not a publishable speedup; use `vp run --workspace-root bench:vite` to compare a change against itself, not to source a number for this page.

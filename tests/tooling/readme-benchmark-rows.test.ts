@@ -108,7 +108,6 @@ test("the README Vite and Nuxt rows match the committed benchmark snapshot", () 
         "Nuxt compiler",
         "nuxt-default",
         "vize-nuxt",
-        "†",
       ),
     ],
   );
