@@ -90,7 +90,8 @@ test("benchmark generator writes a diversified unique SFC corpus", () => {
     // meaningful if it can read the corpus, and it silently cannot unless
     // `parserOptions.parser` is wired for the `lang="ts"` blocks that make up
     // most of it (vue-eslint-parser defaults to espree, which reports the whole
-    // file as one `ruleId: null` parse error). See #3410.
+    // file as one `ruleId: null` parse error). See #3410. `ecmaFeatures.jsx`
+    // covers the `lang="tsx"` spelling the TypeScript parser rejects on its own.
     const eslintConfig = fs.readFileSync(path.join(dir, "eslint.config.mjs"), "utf8");
     assert.equal(
       eslintConfig,
@@ -100,7 +101,9 @@ export default [
   ...pluginVue.configs["flat/recommended"],
   {
     files: ["*.vue"],
-    languageOptions: { parserOptions: { parser: tsParser } },
+    languageOptions: {
+      parserOptions: { parser: tsParser, ecmaFeatures: { jsx: true } },
+    },
     rules: { "vue/multi-word-component-names": "off" },
   },
 ];
