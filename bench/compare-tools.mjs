@@ -23,7 +23,8 @@ import { performance } from "node:perf_hooks";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
 
-import { buildFairnessNotes } from "./benchmark-notes.mjs";
+import { renderProvenanceLines, resolveBackend } from "./benchmark-provenance.mjs";
+import { buildMetadata } from "./compare-tools-metadata.mjs";
 import {
   createSurface,
   renderEngineClassSections,
@@ -47,8 +48,6 @@ const DEFAULT_VITE_FILE_COUNT = 1000;
 const DEFAULT_NUXT_FILE_COUNT = 500;
 const DEFAULT_LARGE_BLOCKS = 900;
 const DEFAULT_TASKS = ["compile", "large", "lint", "fmt", "check", "vite", "nuxt"];
-const BLACKSMITH_MAX_LABEL = "blacksmith-32vcpu-ubuntu-2404";
-const BLACKSMITH_MAX_SPEC = "32 vCPU / 128 GB RAM / 1.5 TB storage";
 
 function parseArgs(argv) {
   const args = {};
@@ -212,6 +211,16 @@ function resolveWorkspaceBin(name) {
     }
   }
   throw new Error(`Could not resolve ${name} from workspace node_modules/.bin`);
+}
+
+/** Same lookup as resolveWorkspaceBin, but null instead of throwing: a tool
+ * that is not installed records a null version rather than failing the run. */
+function optionalWorkspaceBin(name) {
+  try {
+    return resolveWorkspaceBin(name);
+  } catch {
+    return null;
+  }
 }
 
 function collectVueFiles(inputDir, limit = Infinity) {
@@ -984,6 +993,15 @@ async function measureCheck(inputDir, files, options) {
   if (!existsSync(vizeBin)) {
     throw new Error(`Vize CLI not found: ${vizeBin}`);
   }
+  // Fail closed: without a resolvable native TypeScript engine `vize check`
+  // is not measuring type checking, and a timing published from it would be
+  // the heuristic-fallback result the upstream vue-benchmarks report hit.
+  if (!options.backend.ready) {
+    throw new Error(`Type-check surface requires a ready tsgo backend: ${options.backend.reason}`);
+  }
+  // Measure the backend that the artifact records, not whatever the ambient
+  // resolution happens to find.
+  const corsaArgs = ["--corsa-path", options.backend.corsaPath];
   const tsconfigPath = join(checkDir, "tsconfig.json");
 
   const variants = [
@@ -1004,7 +1022,7 @@ async function measureCheck(inputDir, files, options) {
       measure: () =>
         runCommand(
           vizeBin,
-          ["check", ".", "--quiet", "--servers", "1", "--tsconfig", tsconfigPath],
+          ["check", ".", "--quiet", "--servers", "1", "--tsconfig", tsconfigPath, ...corsaArgs],
           {
             cwd: checkDir,
             allowNonZeroExit: true,
@@ -1017,7 +1035,7 @@ async function measureCheck(inputDir, files, options) {
       label: "Vize check (max)",
       files: files.length,
       measure: () =>
-        runCommand(vizeBin, ["check", ".", "--quiet", "--tsconfig", tsconfigPath], {
+        runCommand(vizeBin, ["check", ".", "--quiet", "--tsconfig", tsconfigPath, ...corsaArgs], {
           cwd: checkDir,
           allowNonZeroExit: true,
         }),
@@ -1159,92 +1177,6 @@ async function measureNuxt(inputDir, files, options) {
   });
 }
 
-function githubRunUrl() {
-  const server = process.env.GITHUB_SERVER_URL;
-  const repo = process.env.GITHUB_REPOSITORY;
-  const runId = process.env.GITHUB_RUN_ID;
-  if (!server || !repo || !runId) {
-    return "";
-  }
-  return `${server}/${repo}/actions/runs/${runId}`;
-}
-
-function buildCommands(inputFileCount, options) {
-  const workflowFlags = [
-    `-f file_count=${inputFileCount}`,
-    `-f check_file_count=${options.checkFileCount}`,
-    `-f vite_file_count=${options.viteFileCount}`,
-    `-f nuxt_file_count=${options.nuxtFileCount}`,
-    `-f large_blocks=${options.largeBlocks}`,
-    `-f runs=${options.runs}`,
-    `-f warmups=${options.warmups}`,
-    "-f commit_results=true",
-  ];
-  const compareFlags = [
-    "--input bench/__in__",
-    "--vize-bin target/release/vize",
-    `--runs ${options.runs}`,
-    `--warmups ${options.warmups}`,
-    `--check-file-count ${options.checkFileCount}`,
-    `--vite-file-count ${options.viteFileCount}`,
-    `--nuxt-file-count ${options.nuxtFileCount}`,
-    `--large-blocks ${options.largeBlocks}`,
-    `--runner-label "${BLACKSMITH_MAX_LABEL}"`,
-    "--out tool-benchmark-summary.md",
-    "--json tool-benchmark-results.json",
-    "--doc performance-blacksmith.md",
-  ];
-
-  return {
-    workflowDispatch: `gh workflow run tool-benchmark.yml --ref <branch> ${workflowFlags.join(" ")}`,
-    generate: `node bench/generate.mjs ${inputFileCount}`,
-    benchmark: `node bench/compare-tools.mjs ${compareFlags.join(" ")}`,
-  };
-}
-
-function buildMetadata(args, inputDir, files, taskList, options) {
-  const runnerLabel = args["runner-label"] ?? process.env.VIZE_BENCH_RUNNER ?? "local";
-  const cpuModel = os.cpus()[0]?.model ?? "unknown";
-  return {
-    schemaVersion: 1,
-    kind: "tool-comparison",
-    generatedAt: new Date().toISOString(),
-    commit: {
-      sha: args.commit ?? process.env.GITHUB_SHA ?? "",
-      ref: args.ref ?? process.env.GITHUB_REF_NAME ?? "",
-      repository: args.repository ?? process.env.GITHUB_REPOSITORY ?? "",
-      runUrl: args["run-url"] ?? githubRunUrl(),
-    },
-    runner: {
-      label: runnerLabel,
-      blacksmithMaxSpec: runnerLabel === BLACKSMITH_MAX_LABEL ? BLACKSMITH_MAX_SPEC : "",
-      cpuCount,
-      cpuModel,
-      platform: process.platform,
-      arch: process.arch,
-      osRelease: os.release(),
-      node: process.version,
-    },
-    input: {
-      dir: inputDir,
-      fileCount: files.length,
-      totalBytes: totalFileBytes(inputDir, files),
-      checkFileCount: options.checkFileCount,
-      viteFileCount: options.viteFileCount,
-      nuxtFileCount: options.nuxtFileCount,
-      largeBlocks: options.largeBlocks,
-      largeSfcBytes: 0,
-    },
-    settings: {
-      runs: options.runs,
-      warmups: options.warmups,
-      tasks: taskList,
-    },
-    commands: buildCommands(files.length, options),
-    fairness: buildFairnessNotes(files.length),
-  };
-}
-
 export function renderMarkdown(data) {
   const lines = [];
   lines.push("## Tool Benchmark");
@@ -1261,6 +1193,7 @@ export function renderMarkdown(data) {
   lines.push(
     `Input: ${data.input.fileCount.toLocaleString()} generated SFC files (${formatBytes(data.input.totalBytes)}). Median of ${data.settings.runs} measured run(s) after ${data.settings.warmups} warmup run(s).`,
   );
+  lines.push(...renderProvenanceLines(data));
   if (data.input.largeSfcBytes > 0) {
     lines.push(
       `Large SFC: ${data.input.largeBlocks.toLocaleString()} repeated template blocks (${formatBytes(data.input.largeSfcBytes)}). Nuxt import set: ${data.input.nuxtFileCount.toLocaleString()} SFC files.`,
@@ -1367,9 +1300,23 @@ async function runBenchmarks(args) {
     viteFileCount: Math.min(viteFileCount, allFiles.length),
     nuxtFileCount: Math.min(nuxtFileCount, allFiles.length),
     largeBlocks,
+    backend: resolveBackend(),
   };
   const data = {
-    ...buildMetadata(args, inputDir, allFiles, taskList, options),
+    ...buildMetadata({
+      args,
+      inputDir,
+      files: allFiles,
+      totalBytes: totalFileBytes(inputDir, allFiles),
+      taskList,
+      options,
+      bins: {
+        vizeBin: resolve(options.vizeBin),
+        vueTscBin: optionalWorkspaceBin("vue-tsc"),
+        eslintBin: optionalWorkspaceBin("eslint"),
+        prettierBin: optionalWorkspaceBin("prettier"),
+      },
+    }),
     surfaces: [],
   };
 

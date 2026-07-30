@@ -58,6 +58,23 @@ const data = {
     osRelease: "6.0.0",
     node: "v24.0.0",
   },
+  versions: {
+    vize: "vize 0.303.0",
+    tsgo: "7.0.0-dev.20260602.1",
+    vueTsc: "3.2.0",
+    typescript: "5.9.0",
+    vue: "3.6.0",
+    eslint: "9.0.0",
+    prettier: "3.4.0",
+    node: "v24.0.0",
+  },
+  backend: {
+    engine: "tsgo-native",
+    corsaPath: "/repo/node_modules/.bin/tsgo",
+    corsaVersion: "7.0.0-dev.20260602.1",
+    ready: true,
+    reason: null,
+  },
   input: {
     dir: "/tmp/bench",
     fileCount: 15000,

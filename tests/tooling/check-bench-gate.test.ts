@@ -41,6 +41,24 @@ function resolveTsgoBinary(): string | undefined {
   return candidates.find((candidate) => fs.existsSync(candidate));
 }
 
+function readVueVersion(): string {
+  const candidates = [
+    path.join(root, "bench/node_modules/vue/package.json"),
+    path.join(root, "node_modules/vue/package.json"),
+    path.join(root, "tests/node_modules/vue/package.json"),
+  ];
+  const found = candidates.find((candidate) => fs.existsSync(candidate));
+  assert.ok(found, "the vue package must be installed for the check gate");
+  return JSON.parse(fs.readFileSync(found, "utf8")).version;
+}
+
+function totalVueBytes(dir: string): number {
+  return fs
+    .readdirSync(dir)
+    .filter((file) => file.endsWith(".vue"))
+    .reduce((sum, file) => sum + fs.statSync(path.join(dir, file)).size, 0);
+}
+
 function resolveVizeBinary(): string | undefined {
   const [command, ...prefix] = resolveVizeCommand();
   return prefix.length === 0 && path.isAbsolute(command) ? command : undefined;
@@ -165,44 +183,122 @@ test("check-gate publishes reproducibility metadata for a gated run", (t) => {
     assert.equal(run.status, 0, run.stderr || run.stdout);
 
     const data = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+
+    // The whole artifact shape, not a sample of it: a reader must be able to
+    // reproduce the number from the artifact alone, so a silently dropped
+    // metadata block has to fail this gate.
+    assert.deepEqual(Object.keys(data).sort(), [
+      "backend",
+      "budget",
+      "commit",
+      "entry",
+      "generatedAt",
+      "kind",
+      "rows",
+      "runner",
+      "schemaVersion",
+      "settings",
+      "skipped",
+      "versions",
+    ]);
+    assert.equal(data.schemaVersion, 1);
     assert.equal(data.kind, "vize-check-gate");
-    const vizeVersion = spawnSync(vizeBin, ["--version"], { encoding: "utf8" }).stdout.trim();
-    assert.equal(data.versions.vize, vizeVersion);
-    assert.match(data.versions.tsgo, /\d/);
-    assert.match(data.versions.vue, /^\d/);
-    assert.deepEqual(data.backend.vize, {
-      script: true,
-      templateProp: true,
-      templateEvent: true,
-      componentProp: true,
-      corpus: true,
+
+    assert.deepEqual(data.versions, {
+      vize: spawnSync(vizeBin, ["--version"], { encoding: "utf8" }).stdout.trim(),
+      tsgo: spawnSync(tsgo, ["--version"], { encoding: "utf8" }).stdout.trim().split("\n")[0],
+      vueTsc: null,
+      typescript: null,
+      vue: readVueVersion(),
     });
-    assert.equal(data.entry.fileCount, 6);
-    assert.ok(data.entry.totalBytes > 0);
-    assert.ok(data.entry.tsconfigPath.endsWith("tsconfig.json"));
+
+    assert.deepEqual(data.backend, {
+      corsaPath: path.resolve(tsgo),
+      vize: {
+        script: true,
+        templateProp: true,
+        templateEvent: true,
+        componentProp: true,
+        corpus: true,
+      },
+      vueTsc: null,
+    });
+
+    const corpusDir = path.join(workDir, "corpus-6");
+    assert.deepEqual(data.entry, {
+      tsconfigPath: path.join(corpusDir, "tsconfig.json"),
+      corpusDir,
+      fileCount: 6,
+      totalBytes: totalVueBytes(inputDir),
+    });
     assert.deepEqual(data.settings, { runs: 1, warmups: 1 });
-    assert.equal(data.skipped["typescript-js"], "vue-tsc missing or skipped");
-    assert.equal(data.budget.status, "no-baseline");
+    assert.deepEqual(data.skipped, { "typescript-js": "vue-tsc missing or skipped" });
+    assert.deepEqual(data.budget, { status: "no-baseline", thresholdPercent: 10 });
 
     assert.deepEqual(
-      data.rows.map((row: { id: string }) => row.id),
-      ["vize-check-1t", "vize-check-max"],
+      data.rows.map((row: Record<string, unknown>) => ({
+        ...row,
+        coldMs: typeof row.coldMs === "number" && row.coldMs > 0,
+        runs: (row.runs as number[]).length,
+        medianMs: row.medianMs === (row.runs as number[])[0],
+        diagnosticCount: typeof row.diagnosticCount,
+      })),
+      [
+        {
+          id: "vize-check-1t",
+          label: "Vize check (1T)",
+          engineClass: "tsgo-native",
+          status: "ok",
+          coldMs: true,
+          runs: 1,
+          medianMs: true,
+          diagnosticCount: "number",
+          warmupPasses: 1,
+          notes: "single Corsa server, RAYON_NUM_THREADS=1",
+        },
+        {
+          id: "vize-check-max",
+          label: "Vize check (max)",
+          engineClass: "tsgo-native",
+          status: "ok",
+          coldMs: true,
+          runs: 1,
+          medianMs: true,
+          diagnosticCount: "number",
+          warmupPasses: 1,
+          notes: "auto-tuned Corsa sharding",
+        },
+      ],
     );
-    for (const row of data.rows) {
-      assert.equal(row.engineClass, "tsgo-native");
-      assert.equal(row.status, "ok");
-      assert.ok(row.coldMs > 0, "cold startup must be recorded separately");
-      assert.equal(row.runs.length, 1);
-      assert.equal(row.medianMs, row.runs[0]);
-      assert.equal(typeof row.diagnosticCount, "number");
-      assert.equal(row.warmupPasses, 1);
-    }
 
-    const markdown = fs.readFileSync(markdownPath, "utf8");
-    assert.match(markdown, /Backend readiness .*corpus=pass/);
-    assert.match(markdown, /### native TypeScript engine \(tsgo\)/);
-    assert.match(markdown, /### JS TypeScript engine \(tsc\)/);
-    assert.match(markdown, /ranked separately/);
+    // Every non-timing line of the report, in order.
+    const markdown = fs.readFileSync(markdownPath, "utf8").split("\n");
+    assert.deepEqual(
+      markdown.filter((line) => !line.startsWith("| Vize check")),
+      [
+        "## Vize Check Benchmark Gate",
+        "",
+        `Measured: ${data.generatedAt}`,
+        `Versions: \`${data.versions.vize}\` · tsgo \`${data.versions.tsgo}\` · vue-tsc \`missing\` (typescript \`n/a\`) · vue \`${data.versions.vue}\``,
+        `Entry point: \`${data.entry.tsconfigPath}\` — 6 unique SFC files, ${data.entry.totalBytes.toLocaleString("en-US")} bytes.`,
+        "Backend readiness (planted-diagnostic gates, all required before timing): script=pass templateProp=pass templateEvent=pass componentProp=pass corpus=pass",
+        "Budget: no-baseline",
+        "",
+        "### JS TypeScript engine (tsc)",
+        "",
+        "| Row | Cold start | Warmed median | Diagnostics | Measured runs |",
+        "| --- | ---: | ---: | ---: | --- |",
+        "| (vue-tsc missing or skipped) | n/a | n/a | n/a | n/a |",
+        "",
+        "### native TypeScript engine (tsgo)",
+        "",
+        "| Row | Cold start | Warmed median | Diagnostics | Measured runs |",
+        "| --- | ---: | ---: | ---: | --- |",
+        "",
+        "Engine classes are ranked separately: a cross-class ratio measures TypeScript's native rewrite as much as the Vue layer, so it is reported as context only.",
+        "",
+      ],
+    );
   } finally {
     fs.rmSync(workDir, { recursive: true, force: true });
   }
