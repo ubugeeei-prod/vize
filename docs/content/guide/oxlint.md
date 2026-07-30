@@ -26,7 +26,54 @@ vp install -D oxlint oxlint-plugin-vize
 `oxlint-plugin-vize` resolves the matching Vize native binding through optional dependencies, so
 most users do not need to install `@vizejs/native` separately.
 
-## Basic Usage
+## Which File To Configure
+
+| Command                 | Reads                                |
+| ----------------------- | ------------------------------------ |
+| `vp lint`, `vp check`   | the `lint` block in `vite.config.ts` |
+| `oxlint`, `oxlint-vize` | `.oxlintrc.json` (or `-c <path>`)    |
+
+> [!WARNING]
+> Vite+ never reads `.oxlintrc.json`. A `.oxlintrc.json` carrying `jsPlugins` and `vize/*` rules
+> looks configured, but `vp lint` ignores the file, so Oxlint never sees a `vize/*` rule id and
+> reports **zero** Vize diagnostics while exiting `0`. `vp lint --init` does not migrate an existing
+> `.oxlintrc.json` either: it writes a fresh `lint` block and leaves the old file in place.
+
+## Basic Usage With `vp lint`
+
+`createVizeLintConfig()` returns the whole Vite+ `lint` block, so the `jsPlugins` entry that loads
+the bridge cannot go missing:
+
+```ts
+// vite.config.ts
+import { defineConfig } from "vite-plus";
+import { createVizeLintConfig } from "oxlint-plugin-vize";
+
+export default defineConfig({
+  lint: createVizeLintConfig({
+    preset: "essential",
+    rules: {
+      "no-console": "warn",
+    },
+    settings: {
+      helpLevel: "short",
+    },
+  }),
+});
+```
+
+`preset` drives both the emitted rule map and `settings.vize.preset`. Keeping them in lockstep
+matters because the bridge silently drops any `vize/*` rule outside the active preset, so a rule
+listed under a mismatched preset reports nothing at all. `createVizeLintConfig` throws for that
+case, and for unknown `vize/*` ids, rather than leaving you with a config that looks enabled and
+stays silent.
+
+- `preset: "incremental"` runs only the rules you list.
+- `preset: "all"` runs every bundle at once.
+- Spread the result (`{ ...createVizeLintConfig(), ignorePatterns: ["dist/**"] }`) to merge it into
+  an existing `lint` block.
+
+## Basic Usage With `oxlint` And `oxlint-vize`
 
 ```json
 {

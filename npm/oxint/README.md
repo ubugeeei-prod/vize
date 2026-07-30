@@ -13,6 +13,7 @@ This package lets Oxlint execute Patina through Vize's native binding while stil
 - Runs Vize Patina rules inside Oxlint as `vize/*` diagnostics, so Vue-specific findings can live beside Oxlint core rules in one command.
 - Keeps Oxlint's existing rules and built-in `vue` plugin active. The bridge adds Vize rules; it does not replace `eqeqeq`, `no-console`, or your existing `vue/*` setup.
 - Ships preset rule maps for JS/TS Oxlint configs: `configs.recommended`, `configs.essential`, `configs.ecosystem`, `configs.opinionated`, `configs.nuxt`, `configs.all`, and type-aware opt-in variants.
+- Ships `createVizeLintConfig()` for the Vite+ `lint` block in `vite.config.ts`, which is the only Oxlint configuration `vp lint` and `vp check` read.
 - Supports runtime settings through `settings.vize`, including `locale`, `preset`, and `helpLevel`.
 - Provides the `oxlint-vize` CLI wrapper, which runs Oxlint with a scriptless-SFC workaround and rewrites temporary paths back to the original `.vue` files.
 - Resolves Vize native bindings through platform-specific optional dependencies, so published installs do not need a separate `@vizejs/native` package.
@@ -45,6 +46,62 @@ vp install -D oxlint oxlint-plugin-vize
 `oxlint-plugin-vize` pulls the appropriate Vize native binding for the current platform through optional dependencies, so no separate `@vizejs/native` install is required for published builds.
 
 ## Usage
+
+Which file you configure depends on which command you run.
+
+| Command                 | Reads                                |
+| ----------------------- | ------------------------------------ |
+| `vp lint`, `vp check`   | the `lint` block in `vite.config.ts` |
+| `oxlint`, `oxlint-vize` | `.oxlintrc.json` (or `-c <path>`)    |
+
+> [!IMPORTANT]
+> Vite+ never reads `.oxlintrc.json`. A `.oxlintrc.json` carrying `jsPlugins` and `vize/*` rules
+> looks configured, but `vp lint` ignores the file, so Oxlint never sees a `vize/*` rule id and
+> reports **zero** Vize diagnostics while exiting `0`. `vp lint --init` does not migrate an existing
+> `.oxlintrc.json` either: it writes a fresh `lint` block and leaves the old file in place.
+> If you use `vp lint`, configure the `lint` block.
+
+### With `vp lint` (Vite+)
+
+`createVizeLintConfig()` returns the whole `lint` block, so the `jsPlugins` entry cannot go missing:
+
+```ts
+// vite.config.ts
+import { defineConfig } from "vite-plus";
+import { createVizeLintConfig } from "oxlint-plugin-vize";
+
+export default defineConfig({
+  lint: createVizeLintConfig({
+    preset: "essential",
+    rules: {
+      "no-console": "warn",
+    },
+    settings: {
+      helpLevel: "short",
+    },
+  }),
+});
+```
+
+`preset` drives both the emitted rule map and `settings.vize.preset`, so the two can never disagree.
+That matters because the bridge silently drops any `vize/*` rule outside the active preset: listing
+`vize/ecosystem/router-link-require-to` while the active preset is `general-recommended` reports
+nothing at all. `createVizeLintConfig` throws for that case, and for unknown `vize/*` ids, instead of
+leaving you with a config that looks enabled and reports nothing. Use `preset: "incremental"` when
+you want only the rules you list, and `preset: "all"` for every bundle at once.
+
+Merge the block into an existing `lint` configuration by spreading it:
+
+```ts
+export default defineConfig({
+  lint: {
+    ...createVizeLintConfig(),
+    ignorePatterns: ["dist/**"],
+  },
+});
+```
+
+### With `oxlint` or `oxlint-vize`
 
 Enable Oxlint's built-in `vue` plugin as well as this JS plugin:
 

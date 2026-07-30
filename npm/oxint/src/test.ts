@@ -878,6 +878,7 @@ assert.equal(
 await Promise.all([
   import("./cli/files.test.ts"),
   import("./cli/output.test.ts"),
+  import("./vite-plus-lint.test.ts"),
   import("./nuxt-preset.test.ts"),
 ]);
 console.log("✅ oxlint-plugin-vize integration tests passed!");
