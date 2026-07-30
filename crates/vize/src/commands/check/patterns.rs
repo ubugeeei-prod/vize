@@ -15,7 +15,7 @@ pub(super) fn is_supported_check_file(path: &Path, include_jsx: bool) -> bool {
             })
 }
 
-fn is_declaration_path(path: &Path) -> bool {
+pub(super) fn is_declaration_path(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| {

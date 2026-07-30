@@ -22,6 +22,8 @@ mod type_references;
 #[cfg(test)]
 mod codegen_tests;
 #[cfg(test)]
+mod hidden_include_tests;
+#[cfg(test)]
 mod nuxt_manifest_tests;
 #[cfg(test)]
 mod tests;
@@ -45,8 +47,8 @@ use collect::{
 use glob::{default_exclude_specs, normalize_input_path};
 use loader::collect_tsconfig_project_paths;
 use matching::{
-    SupportedFileOptions, is_generated_codegen_declaration_path, is_nuxt_import_manifest_path,
-    is_supported_check_file_with_options,
+    SupportedFileOptions, is_declaration_path, is_generated_codegen_declaration_path,
+    is_nuxt_import_manifest_path, is_supported_check_file_with_options,
 };
 use spec::{FileCollectionOptions, GlobSpec, TsconfigInputSpec};
 
@@ -181,6 +183,14 @@ fn collect_default_check_files_for_tsconfig(
                     include_jsx,
                 },
             ) {
+                // Declaration files under a hidden root are ambient program
+                // inputs, not check sources: `collect_hidden_ambient_declaration_files`
+                // already loads them, and reporting a generated
+                // `.nuxt/components.d.cts` as a checked file diverges from
+                // vue-tsc, which surfaces no diagnostics for it.
+                if !include_hidden_tsconfig_roots && is_declaration_path(&path) {
+                    continue;
+                }
                 if !is_generated_codegen_declaration_path(&path) && seen.insert(path.clone()) {
                     files.push(path);
                 }

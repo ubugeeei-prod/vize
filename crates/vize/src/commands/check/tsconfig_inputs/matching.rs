@@ -22,6 +22,10 @@ pub(super) fn path_has_component(path: &Path, component_name: &str) -> bool {
     })
 }
 
+pub(super) fn is_declaration_path(path: &Path) -> bool {
+    check_patterns::is_declaration_path(path)
+}
+
 pub(super) fn is_hidden_path_segment(segment: &str) -> bool {
     segment.starts_with('.') && segment != "." && segment != ".."
 }
