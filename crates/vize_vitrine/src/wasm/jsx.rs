@@ -205,7 +205,7 @@ pub fn compile_jsx(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
 
 #[cfg(test)]
 mod tests {
-    use super::{JsxLang, JsxOutputMode, build_jsx_wasm_result};
+    use super::{JsxCompatMode, JsxLang, JsxOutputMode, build_jsx_wasm_result};
 
     #[test]
     fn wasm_jsx_result_surfaces_scoped_style_css() {
@@ -219,7 +219,14 @@ mod tests {
                 </div>
             );
         "#;
-        let result = build_jsx_wasm_result(source, JsxLang::Jsx, JsxOutputMode::Vdom, false, false);
+        let result = build_jsx_wasm_result(
+            source,
+            JsxLang::Jsx,
+            JsxOutputMode::Vdom,
+            JsxCompatMode::Native,
+            false,
+            false,
+        );
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
         assert_eq!(
@@ -246,6 +253,7 @@ mod tests {
             "const App = () => <div class=\"box\">hi</div>;",
             JsxLang::Jsx,
             JsxOutputMode::Vdom,
+            JsxCompatMode::Native,
             false,
             false,
         );
@@ -265,6 +273,7 @@ mod tests {
             "const App = () => <div>{message}</div>;",
             JsxLang::Jsx,
             JsxOutputMode::Vdom,
+            JsxCompatMode::Native,
             false,
             false,
         );
@@ -280,11 +289,24 @@ mod tests {
     fn wasm_jsx_result_surfaces_source_map_when_requested() {
         let source = "const App = () => <div>{message}</div>;";
 
-        let without =
-            build_jsx_wasm_result(source, JsxLang::Jsx, JsxOutputMode::Vdom, false, false);
+        let without = build_jsx_wasm_result(
+            source,
+            JsxLang::Jsx,
+            JsxOutputMode::Vdom,
+            JsxCompatMode::Native,
+            false,
+            false,
+        );
         assert!(without.map.is_none(), "no map unless requested");
 
-        let with = build_jsx_wasm_result(source, JsxLang::Jsx, JsxOutputMode::Vdom, true, false);
+        let with = build_jsx_wasm_result(
+            source,
+            JsxLang::Jsx,
+            JsxOutputMode::Vdom,
+            JsxCompatMode::Native,
+            true,
+            false,
+        );
         assert!(with.errors.is_empty(), "errors: {:?}", with.errors);
         let map = with.map.expect("a map is surfaced when requested");
         assert!(map.contains("\"version\":3"), "v3 source map: {map}");
@@ -296,6 +318,7 @@ mod tests {
             "const App = () => <div>{message}</div>;",
             JsxLang::Jsx,
             JsxOutputMode::Vdom,
+            JsxCompatMode::Native,
             true,
             true,
         );

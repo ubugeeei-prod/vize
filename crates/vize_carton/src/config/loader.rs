@@ -9,6 +9,7 @@ mod discovery;
 #[cfg(test)]
 mod experimental_tests;
 mod js;
+mod jsx;
 #[cfg(test)]
 mod legacy_dialect_tests;
 mod lint_features;
@@ -29,7 +30,7 @@ use super::model::{
 };
 
 pub use lint_features::load_config_and_linter_with_lint_features_and_source;
-pub use vapor::load_compiler_vapor;
+pub use {jsx::load_compiler_jsx_compat, vapor::load_compiler_vapor};
 
 #[derive(Debug, Clone)]
 pub struct LoadedConfig {
@@ -167,17 +168,6 @@ pub fn load_compiler_jsx_mode(path: Option<&Path>) -> Option<crate::config::JsxM
     let loaded = load_raw_config_with_source(path);
     let (_, features) = loaded.config.into_config_and_features();
     features.jsx_mode
-}
-
-/// Load the configured `compiler.jsxCompat` JSX semantics (#3391).
-///
-/// Returns `None` when the key is absent, which the JSX entry points treat as
-/// `native` — Vize's own semantics. `babel` opts into `@vue/babel-plugin-jsx`
-/// semantics for projects migrating off the babel plugin.
-pub fn load_compiler_jsx_compat(path: Option<&Path>) -> Option<crate::config::JsxCompat> {
-    let loaded = load_raw_config_with_source(path);
-    let (_, features) = loaded.config.into_config_and_features();
-    features.jsx_compat
 }
 
 /// Load configuration and linter settings in one pass (one raw parse derives
