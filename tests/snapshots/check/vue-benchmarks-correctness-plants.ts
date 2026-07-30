@@ -14,9 +14,17 @@ import {
   type VizeCheckResult,
 } from "../../_helpers/realworld-typecheck.ts";
 
+// #3283 asks for "minimal MIT-licensed typecheck plants". The plant sources
+// below are written here rather than copied, but the gate classes and the
+// confirmation methodology come from pikax/vue-benchmarks, which is
+// MIT-licensed (https://github.com/pikax/vue-benchmarks/blob/main/LICENSE), so
+// the attribution is recorded as data and asserted rather than left in a
+// comment that can rot.
 const upstream = {
   commit: "02c0dac76075924bfb8e9b6985e51a9795ff6909",
+  license: "MIT",
   repository: "pikax/vue-benchmarks",
+  url: "https://github.com/pikax/vue-benchmarks",
 };
 
 const tsconfig = {
@@ -200,8 +208,12 @@ test("vue-benchmarks correctness plants fail closed on current main", async (t) 
   }
 
   await t.test("upstream provenance stays pinned", () => {
-    assert.equal(upstream.repository, "pikax/vue-benchmarks");
-    assert.match(upstream.commit, /^[0-9a-f]{40}$/);
+    assert.deepEqual(upstream, {
+      commit: "02c0dac76075924bfb8e9b6985e51a9795ff6909",
+      license: "MIT",
+      repository: "pikax/vue-benchmarks",
+      url: "https://github.com/pikax/vue-benchmarks",
+    });
   });
 });
 

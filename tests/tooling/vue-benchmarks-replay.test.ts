@@ -62,8 +62,12 @@ test("replay expectation drift fails closed in both directions", () => {
 });
 
 test("replay expectation tables stay pinned to the upstream corpus", () => {
-  assert.equal(UPSTREAM.repository, "pikax/vue-benchmarks");
-  assert.match(UPSTREAM.commit, /^[0-9a-f]{40}$/);
+  assert.deepEqual(UPSTREAM, {
+    repository: "pikax/vue-benchmarks",
+    url: "https://github.com/pikax/vue-benchmarks",
+    commit: "02c0dac76075924bfb8e9b6985e51a9795ff6909",
+    license: "MIT",
+  });
 
   const tables = ["main", "release"].map((lane) => {
     const tablePath = path.join(root, `bench/vue-benchmarks-replay-expect-${lane}.json`);

@@ -19,9 +19,13 @@ import {
 // proves the same four classes are still caught inside a full unique-content
 // corpus checked under one timed-style tsconfig, so `vize check` cannot
 // degrade, sample, or bail at scale without failing an exact assertion.
+// Gate classes and confirmation methodology from the MIT-licensed
+// pikax/vue-benchmarks; see vue-benchmarks-correctness-plants.ts.
 const upstream = {
   commit: "02c0dac76075924bfb8e9b6985e51a9795ff6909",
+  license: "MIT",
   repository: "pikax/vue-benchmarks",
+  url: "https://github.com/pikax/vue-benchmarks",
 };
 
 // One plant per upstream gate class, spread across the corpus (first file,
@@ -242,8 +246,12 @@ test("vue-benchmarks plants stay caught across the scaled unique corpus", async 
     });
 
     await t.test("upstream provenance stays pinned", () => {
-      assert.equal(upstream.repository, "pikax/vue-benchmarks");
-      assert.match(upstream.commit, /^[0-9a-f]{40}$/);
+      assert.deepEqual(upstream, {
+        commit: "02c0dac76075924bfb8e9b6985e51a9795ff6909",
+        license: "MIT",
+        repository: "pikax/vue-benchmarks",
+        url: "https://github.com/pikax/vue-benchmarks",
+      });
     });
   } finally {
     fs.rmSync(workspaceDir, { recursive: true, force: true });

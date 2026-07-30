@@ -30,6 +30,7 @@ export const UPSTREAM = {
   repository: "pikax/vue-benchmarks",
   url: "https://github.com/pikax/vue-benchmarks",
   commit: "02c0dac76075924bfb8e9b6985e51a9795ff6909",
+  license: "MIT",
 };
 
 /**
