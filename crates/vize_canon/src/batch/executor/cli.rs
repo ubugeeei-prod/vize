@@ -10,13 +10,14 @@ use crate::batch::executor::diagnostics::{
     DiagnosticMapper, dedup_diagnostics, relative_module_resolves_on_disk, should_skip_diagnostic,
     should_skip_original_diagnostic,
 };
-use vize_carton::path::canonicalize_non_verbatim;
 use vize_carton::{FxHashMap, profile};
 use vize_carton::{String, cstr};
 
+mod diagnostic_paths;
 mod import_resolution;
 mod project_diagnostics;
 
+use diagnostic_paths::normalize_cli_path;
 use import_resolution::resolve_virtual_import;
 
 pub(super) fn check_with_cli(
@@ -636,42 +637,6 @@ fn is_cli_diagnostic_line(line: &str) -> bool {
         suffix.split_once(' ').map(|(severity, _)| severity),
         Some("error" | "warning" | "info")
     )
-}
-
-fn normalize_cli_path(path: &str, virtual_root: &Path) -> PathBuf {
-    let path = PathBuf::from(path);
-    let path = if path.is_absolute() {
-        normalize_path_lexically(path.as_path())
-    } else {
-        normalize_path_lexically(virtual_root.join(path).as_path())
-    };
-
-    if path.exists() {
-        let canonical_path = canonicalize_non_verbatim(path.as_path());
-        let canonical_root = canonicalize_non_verbatim(virtual_root);
-        if let Ok(relative) = canonical_path.strip_prefix(canonical_root.as_path()) {
-            return virtual_root.join(relative);
-        }
-        canonical_path
-    } else {
-        path
-    }
-}
-
-fn normalize_path_lexically(path: &Path) -> PathBuf {
-    let mut normalized = PathBuf::new();
-    for component in path.components() {
-        match component {
-            std::path::Component::CurDir => {}
-            std::path::Component::ParentDir => {
-                if !normalized.pop() && !normalized.has_root() {
-                    normalized.push(component.as_os_str());
-                }
-            }
-            _ => normalized.push(component.as_os_str()),
-        }
-    }
-    normalized
 }
 
 fn output_message(output: &Output) -> String {
