@@ -46,6 +46,9 @@ type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K]
 type __VizeFallthroughAttrs = { class?: unknown; style?: unknown };
 type __VizeKebabOptionalKeys<T> = { [K in keyof T & string]: __VizeKebabCase<K> extends K ? never : K }[keyof T & string];
 type __VizeComponentProps<T> = T extends unknown ? Omit<T, __VizeKebabOptionalKeys<T>> & Partial<Pick<T, __VizeKebabOptionalKeys<T>>> & Partial<__VizeKebabProps<T>> & __VizeFallthroughAttrs : never;
+type __VizeNativeElements = import('vue').NativeElements;
+type __VizeNativeElement<Tag extends PropertyKey> = Tag extends keyof __VizeNativeElements ? __VizeNativeElements[Tag] : unknown;
+type __VizeNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;
 type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
 import { ref } from 'vue'
@@ -80,7 +83,7 @@ function __setup() {
   
   const items = ref([1, 2, 3])
   
-  // @vize-map: 6501:6541 -> 0:57
+  // @vize-map: 6809:6849 -> 0:57
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -105,8 +108,8 @@ function __setup() {
   __vForList(items).forEach(([item, index]) => {
     void item;
     void index;
-    void (index); // VBind
-    // @vize-map: expr -> 155:160
+    const __vize_native_prop_check_53: __VizeNativeElementProp<__VizeNativeElement<"li">, "key"> = (index);
+    void __vize_native_prop_check_53; // VBind
     void (index); // Interpolation
     // @vize-map: expr -> 172:177
     void (item); // Interpolation

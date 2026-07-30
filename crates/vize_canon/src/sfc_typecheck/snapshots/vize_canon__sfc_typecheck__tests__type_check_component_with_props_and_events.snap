@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/sfc_typecheck/tests.rs
-assertion_line: 1310
 expression: vts.as_str()
 ---
 /// <reference lib="es2022" />
@@ -47,6 +46,9 @@ type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K]
 type __VizeFallthroughAttrs = { class?: unknown; style?: unknown };
 type __VizeKebabOptionalKeys<T> = { [K in keyof T & string]: __VizeKebabCase<K> extends K ? never : K }[keyof T & string];
 type __VizeComponentProps<T> = T extends unknown ? Omit<T, __VizeKebabOptionalKeys<T>> & Partial<Pick<T, __VizeKebabOptionalKeys<T>>> & Partial<__VizeKebabProps<T>> & __VizeFallthroughAttrs : never;
+type __VizeNativeElements = import('vue').NativeElements;
+type __VizeNativeElement<Tag extends PropertyKey> = Tag extends keyof __VizeNativeElements ? __VizeNativeElements[Tag] : unknown;
+type __VizeNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;
 type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
 interface Props {
@@ -87,7 +89,7 @@ function __setup() {
   const props = defineProps<Props>()
   const emit = defineEmits<Emits>()
   
-  // @vize-map: 6593:6672 -> 0:212
+  // @vize-map: 6901:6980 -> 0:212
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -109,11 +111,9 @@ function __setup() {
   const disabled = props["disabled"];
   void disabled;
 
-  type __VizeNativeElement<Elements, Tag extends PropertyKey> = Tag extends keyof Elements ? Elements[Tag] : unknown;
-  type __VizeNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;
   void (props.title); // Interpolation
   // @vize-map: expr -> 276:287
-  const __vize_native_prop_check_63: __VizeNativeElementProp<__VizeNativeElement<import('vue').NativeElements, "button">, "disabled"> = (props.disabled);
+  const __vize_native_prop_check_63: __VizeNativeElementProp<__VizeNativeElement<"button">, "disabled"> = (props.disabled);
   void __vize_native_prop_check_63; // VBind
   void (emit('submit')); // VOn
   // @vize-map: expr -> 343:357

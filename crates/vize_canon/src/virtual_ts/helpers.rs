@@ -68,7 +68,7 @@ declare function __vForList<T>(source: T | undefined | null): readonly __VForEnt
 
 macro_rules! vue_type_helpers_text {
     () => {
-        concat!(vue_type_aliases_text!(), "\n", v_for_list_decls_text!())
+        concat!(vue_type_aliases_text!(), "\ntype __VizeNativeElements = import('vue').NativeElements;\ntype __VizeNativeElement<Tag extends PropertyKey> = Tag extends keyof __VizeNativeElements ? __VizeNativeElements[Tag] : unknown;\ntype __VizeNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;\n", v_for_list_decls_text!())
     };
 }
 

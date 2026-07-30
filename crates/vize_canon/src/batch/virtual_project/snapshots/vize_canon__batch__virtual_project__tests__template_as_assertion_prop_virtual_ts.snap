@@ -62,12 +62,12 @@ function __setup() {
   const _as = props["as"];
   void _as;
 
-  void ((value as any)); // VBind
-  // @vize-map: expr -> 205:219
-  void ({
+  const __vize_native_prop_check_25: __VizeNativeElementProp<__VizeNativeElement<"div">, "data-value"> = ((value as any));
+  void __vize_native_prop_check_25; // VBind
+  const __vize_native_prop_check_53: __VizeNativeElementProp<__VizeNativeElement<"div">, "style"> = ({
       ['--demo-value' as any]: value,
-    }); // VBind
-  // @vize-map: expr -> 233:278
+    });
+  void __vize_native_prop_check_53; // VBind
   void ({
       focusin: (event: FocusEvent) => {
         onFocus(event.target as HTMLElement)

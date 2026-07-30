@@ -46,6 +46,9 @@ type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K]
 type __VizeFallthroughAttrs = { class?: unknown; style?: unknown };
 type __VizeKebabOptionalKeys<T> = { [K in keyof T & string]: __VizeKebabCase<K> extends K ? never : K }[keyof T & string];
 type __VizeComponentProps<T> = T extends unknown ? Omit<T, __VizeKebabOptionalKeys<T>> & Partial<Pick<T, __VizeKebabOptionalKeys<T>>> & Partial<__VizeKebabProps<T>> & __VizeFallthroughAttrs : never;
+type __VizeNativeElements = import('vue').NativeElements;
+type __VizeNativeElement<Tag extends PropertyKey> = Tag extends keyof __VizeNativeElements ? __VizeNativeElements[Tag] : unknown;
+type __VizeNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;
 type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
 import { ref } from 'vue'
@@ -82,7 +85,7 @@ function __setup() {
   const message = ref('')
   const data = ref<string[]>([])
   
-  // @vize-map: 6501:6634 -> 0:146
+  // @vize-map: 6809:6942 -> 0:146
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -118,8 +121,8 @@ function __setup() {
     // v-for scope: item in data
     __vForList(data).forEach(([item]) => {
       void item;
-      void (item); // VBind
-      // @vize-map: expr -> 386:390
+      const __vize_native_prop_check_195: __VizeNativeElementProp<__VizeNativeElement<"p">, "key"> = (item);
+      void __vize_native_prop_check_195; // VBind
       void (item); // Interpolation
       // @vize-map: expr -> 395:399
     });

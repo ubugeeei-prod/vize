@@ -15,13 +15,20 @@ fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
     assert!(
         output
             .code
-            .contains("__VizeNativeElement<import('vue').NativeElements, \"button\">"),
+            .contains("type __VizeNativeElements = import('vue').NativeElements;"),
         "native check should derive the element from Vue's native element contract:\n{}",
         output.code
     );
+    // The module is named exactly once. A Vue without `NativeElements` then
+    // makes that single alias an error type, which propagates as `any` and
+    // leaves the checks permissive, instead of reporting `TS2694` per binding.
+    assert_eq!(
+        output.code.matches("import('vue').NativeElements").count(),
+        1
+    );
     assert!(
         output.code.contains(
-            "__VizeNativeElementProp<__VizeNativeElement<import('vue').NativeElements, \"button\">, \"disabled\"> = (disabledFlag);"
+            "__VizeNativeElementProp<__VizeNativeElement<\"button\">, \"disabled\"> = (disabledFlag);"
         ),
         "bound disabled should be assigned to the exact Vue prop type:\n{}",
         output.code
@@ -51,17 +58,44 @@ fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
     assert_eq!(&output.code[value_span.gen_range.clone()], "disabledFlag");
 }
 
+/// Every statically named `v-bind` on a native element is checked against that
+/// element's own prop type, which is what `vue-tsc` does: it reports `TS2322`
+/// for `<a :href="1">` just as it does for `<button :disabled="'yes'">`.
+/// Restricting the check to boolean-ish attribute names silently dropped every
+/// other native prop-type error.
 #[test]
-fn native_prop_check_ignores_non_boolean_names_dynamic_names_and_components() {
+fn native_prop_check_covers_every_static_attribute_name() {
+    let script = "const value = 'yes'";
+    let template = r#"<a :href="value" :tabindex="value" />"#;
+    let allocator = vize_carton::Bump::new();
+    let (root, summary) = analyze(&allocator, script, template, false);
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    for name in ["href", "tabindex"] {
+        let expected = vize_carton::cstr!(
+            "__VizeNativeElementProp<__VizeNativeElement<\"a\">, \"{name}\"> = (value);"
+        );
+        assert!(
+            output.code.contains(expected.as_str()),
+            "`:{name}` must be checked against the anchor element's own prop type:\n{}",
+            output.code
+        );
+    }
+}
+
+/// A dynamic attribute name has no statically known prop to check against, and
+/// a child component keeps its own generic prop-checker path.
+#[test]
+fn native_prop_check_ignores_dynamic_names_and_components() {
     let script = "import Child from './Child.vue'\nconst name = 'disabled'\nconst value = 'yes'";
-    let template = r#"<button :title="value" :[name]="value" /><Child :disabled="value" />"#;
+    let template = r#"<button :[name]="value" /><Child :disabled="value" />"#;
     let allocator = vize_carton::Bump::new();
     let (root, summary) = analyze(&allocator, script, template, false);
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
         !output.code.contains("__vize_native_prop_check_"),
-        "non-boolean and dynamic native attrs plus child props must keep their existing paths:\n{}",
+        "dynamic native attrs plus child props must keep their existing paths:\n{}",
         output.code
     );
     assert!(

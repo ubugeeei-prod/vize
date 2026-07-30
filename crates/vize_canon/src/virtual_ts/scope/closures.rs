@@ -12,7 +12,7 @@ use vize_croquis::{Croquis, Scope, ScopeData, ScopeId, ScopeKind};
 
 use crate::virtual_ts::expressions::{
     ExpressionListEmitContext, collect_native_prop_bindings, generate_expressions,
-    generate_expressions_in_enclosing_guard, generate_native_prop_helpers,
+    generate_expressions_in_enclosing_guard,
 };
 use crate::virtual_ts::helpers::{get_dom_event_type, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;
@@ -133,7 +133,6 @@ pub(crate) fn generate_scope_closures(
             )
         );
     }
-    generate_native_prop_helpers(ts, &native_props);
 
     // Process non-nested scopes at template level
     for scope in summary.scopes.iter() {

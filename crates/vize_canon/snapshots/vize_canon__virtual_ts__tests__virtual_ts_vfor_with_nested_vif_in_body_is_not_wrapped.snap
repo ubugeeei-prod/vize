@@ -46,6 +46,9 @@ type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K]
 type __VizeFallthroughAttrs = { class?: unknown; style?: unknown };
 type __VizeKebabOptionalKeys<T> = { [K in keyof T & string]: __VizeKebabCase<K> extends K ? never : K }[keyof T & string];
 type __VizeComponentProps<T> = T extends unknown ? Omit<T, __VizeKebabOptionalKeys<T>> & Partial<Pick<T, __VizeKebabOptionalKeys<T>>> & Partial<__VizeKebabProps<T>> & __VizeFallthroughAttrs : never;
+type __VizeNativeElements = import('vue').NativeElements;
+type __VizeNativeElement<Tag extends PropertyKey> = Tag extends keyof __VizeNativeElements ? __VizeNativeElements[Tag] : unknown;
+type __VizeNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;
 type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
 
@@ -77,7 +80,7 @@ function __setup() {
   // User setup code
   const items = [1, 2, 3];
   const show = true;
-  // @vize-map: 6475:6523 -> 0:43
+  // @vize-map: 6783:6831 -> 0:43
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -94,8 +97,8 @@ function __setup() {
   // v-for scope: item in items
   __vForList(items).forEach(([item]) => {
     void item;
-    void (item); // VBind
-    // @vize-map: expr -> 39:43
+    const __vize_native_prop_check_39: __VizeNativeElementProp<__VizeNativeElement<"li">, "key"> = (item);
+    void __vize_native_prop_check_39; // VBind
     if ((show)) {
       // @vize-map: expr -> 62:66
     }

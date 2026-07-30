@@ -870,7 +870,7 @@ fn test_template_instance_globals_delegate_to_component_public_instance() {
         "{}",
         output.code
     );
-    assert!(output.code.contains("void ($t('hello'));"));
+    assert!(output.code.contains("= ($t('hello'));")); // native prop check initializer
     assert!(output.code.contains("void (missing);"));
     assert!(!output.code.contains("void ($t);"));
 
@@ -1774,11 +1774,11 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
     let expression = "inputRef && inputRef.focus()";
     let source_start = template.find(expression).unwrap();
     let source_end = source_start + expression.len();
-    let mapping = output
-        .mappings
-        .iter()
-        .find(|mapping| mapping.src_range == (source_start..source_end))
-        .expect("should map the template expression");
+    let mappings = output.mappings.iter();
+    let mapping = mappings
+        .flat_map(|mapping| &mapping.sub_spans)
+        .find(|span| span.src_range == (source_start..source_end))
+        .expect("the native prop check should map the authored expression sub-span");
 
     assert_eq!(&output.code[mapping.gen_range.clone()], expression);
 }

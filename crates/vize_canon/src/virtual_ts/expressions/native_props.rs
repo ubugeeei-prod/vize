@@ -1,4 +1,27 @@
 //! Native Vue prop discovery, type assertions, and authored-range mappings.
+//!
+//! The element table these checks resolve through — `__VizeNativeElements`,
+//! `__VizeNativeElement` and `__VizeNativeElementProp` — is declared once per
+//! program in `vue_type_helpers_text!` (`virtual_ts/helpers.rs`), not per file,
+//! for two reasons.
+//!
+//! `import('vue').NativeElements` is named there and nowhere else. A Vue whose
+//! typings do not export it (Vue 2.7, an older Vue 3 minor, a trimmed or
+//! shimmed package, a workspace with no `vue` at all) makes that one alias an
+//! error type, which TypeScript propagates as `any`, so every check below it
+//! accepts any value and the file degrades to unchecked. The helpers text
+//! carries no mapping back to authored source, so the unresolved reference
+//! cannot be attributed to user code — exactly how the neighbouring
+//! `type __Ref<T> = import('vue').Ref<T>;` has always behaved. Naming the module
+//! per file, or per use site, reported `TS2307`/`TS2694` on correct code.
+//!
+//! Declaring the conditional types once per program also lets TypeScript reuse
+//! its instantiation cache across every generated module instead of
+//! re-instantiating `keyof __VizeNativeElements` per file.
+//!
+//! They are deliberately absent from `DECLARATION_HELPERS_DTS`: emitted
+//! declarations never contain a native prop check, so shipping the alias would
+//! push vize's Vue-version floor onto every consumer of the emitted `.d.ts`.
 
 use super::super::types::{VizeMapping, VizeSubSpan};
 use vize_carton::{CompactString, FxHashMap, String, append, is_native_tag};
@@ -28,18 +51,6 @@ pub(crate) fn collect_native_prop_bindings(
         collect_child_bindings(child, &mut bindings);
     }
     bindings
-}
-
-pub(crate) fn generate_native_prop_helpers(ts: &mut String, bindings: &NativePropBindings) {
-    if bindings.is_empty() {
-        return;
-    }
-    ts.push_str(
-        "  type __VizeNativeElement<Elements, Tag extends PropertyKey> = Tag extends keyof Elements ? Elements[Tag] : unknown;\n",
-    );
-    ts.push_str(
-        "  type __VizeNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;\n",
-    );
 }
 
 fn collect_child_bindings(child: &TemplateChildNode<'_>, bindings: &mut NativePropBindings) {
@@ -82,6 +93,17 @@ fn collect_element_bindings(element: &ElementNode<'_>, bindings: &mut NativeProp
     }
 }
 
+/// Every statically named `v-bind` on a native element is a checkable binding.
+///
+/// `vue-tsc` checks each one against the element's own prop type — `<a
+/// :href="1">` is `TS2322` exactly like `<button :disabled="'yes'">` — so the
+/// name is not filtered. An attribute the element type does not declare
+/// (`:data-id`, `:aria-label`, a custom attribute) resolves through
+/// `__VizeNativeElementProp` to `unknown`, which accepts any value, so the
+/// unchecked attributes stay unchecked without a name list to maintain.
+///
+/// A dynamic name (`:[key]="x"`) has no statically known prop to check against
+/// and is skipped, as is `v-bind="object"`, which carries no argument at all.
 fn native_prop_binding(
     element: &ElementNode<'_>,
     directive: &DirectiveNode<'_>,
@@ -92,7 +114,7 @@ fn native_prop_binding(
     let ExpressionNode::Simple(argument) = directive.arg.as_ref()? else {
         return None;
     };
-    if !argument.is_static || !is_booleanish_native_prop(argument.content.as_str()) {
+    if !argument.is_static {
         return None;
     }
     let expression = directive.exp.as_ref()?;
@@ -109,42 +131,6 @@ fn native_prop_binding(
             name_end: argument.loc.end.offset,
         },
     ))
-}
-
-fn is_booleanish_native_prop(name: &str) -> bool {
-    matches!(
-        name,
-        "allowfullscreen"
-            | "async"
-            | "autofocus"
-            | "autoplay"
-            | "capture"
-            | "checked"
-            | "contenteditable"
-            | "controls"
-            | "default"
-            | "defer"
-            | "disabled"
-            | "draggable"
-            | "formnovalidate"
-            | "hidden"
-            | "indeterminate"
-            | "inert"
-            | "ismap"
-            | "itemscope"
-            | "loop"
-            | "multiple"
-            | "muted"
-            | "nomodule"
-            | "novalidate"
-            | "open"
-            | "playsinline"
-            | "readonly"
-            | "required"
-            | "reversed"
-            | "selected"
-            | "spellcheck"
-    )
 }
 
 pub(super) fn generate_native_prop_statement(
@@ -167,7 +153,6 @@ pub(super) fn generate_native_prop_statement(
     append!(*ts, "__vize_native_prop_check_{}", expr.start);
     let check_name_end = ts.len();
     ts.push_str(": __VizeNativeElementProp<__VizeNativeElement<");
-    ts.push_str("import('vue').NativeElements, ");
     push_ts_string_literal(ts, native_prop.tag.as_str());
     ts.push_str(">, ");
     push_ts_string_literal(ts, native_prop.name.as_str());

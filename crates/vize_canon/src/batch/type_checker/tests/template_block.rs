@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use super::{BatchTypeChecker, create_project_case, relative_path, resolve_test_tsgo_binary};
 use crate::batch::{SfcBlockType, TypeChecker};
 
@@ -16,6 +18,95 @@ declare module "vue" {
   }
 }
 "#;
+
+/// A `vue` whose typings do not export `NativeElements` — Vue 2.7, an older
+/// Vue 3 minor, a trimmed or shimmed package — must make native prop checking
+/// degrade to unchecked, never to an error. Naming the module at each use site
+/// reported `TS2694` on every authored attribute of correct code:
+///
+/// ```text
+/// error:6:16 [TS2694] Namespace '".../node_modules/vue/index"' has no exported member 'NativeElements'.
+/// error:7:16 [TS2694] Namespace '".../node_modules/vue/index"' has no exported member 'NativeElements'.
+/// ```
+#[test]
+fn native_prop_checks_stay_silent_when_vue_has_no_native_elements() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "native-props-without-native-elements",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const num = 1
+</script>
+
+<template>
+  <a :href="num">link</a>
+  <li :key="num" />
+</template>
+"#,
+        )],
+    );
+    write_vue_without_native_elements(&project_root);
+
+    let mut checker = match BatchTypeChecker::new(&project_root) {
+        Ok(checker) => checker,
+        Err(_) => {
+            let _ = std::fs::remove_dir_all(&project_root);
+            return;
+        }
+    };
+    checker.scan_project().unwrap();
+    let result = match checker.check_project() {
+        Ok(result) => result,
+        Err(_) => {
+            let _ = std::fs::remove_dir_all(&project_root);
+            return;
+        }
+    };
+    let reported = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| {
+            (
+                relative_path(&project_root, &diagnostic.file),
+                diagnostic.code,
+                diagnostic.line + 1,
+                diagnostic.column + 1,
+            )
+        })
+        .collect::<Vec<_>>();
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    assert_eq!(reported, Vec::new());
+}
+
+/// Replace the harness `vue` package with typings that predate
+/// `NativeElements`, keeping just enough surface for the generated module.
+fn write_vue_without_native_elements(project_root: &Path) {
+    let vue_dir = project_root.join("node_modules/vue");
+    let _ = std::fs::remove_file(&vue_dir);
+    let _ = std::fs::remove_dir_all(&vue_dir);
+    std::fs::create_dir_all(&vue_dir).unwrap();
+    std::fs::write(
+        vue_dir.join("package.json"),
+        "{ \"name\": \"vue\", \"version\": \"3.2.47\", \"types\": \"index.d.ts\" }\n",
+    )
+    .unwrap();
+    std::fs::write(
+        vue_dir.join("index.d.ts"),
+        r#"export interface ComponentPublicInstance {
+  $props: Record<string, unknown>;
+  $attrs: Record<string, unknown>;
+  $slots: Record<string, unknown>;
+  $refs: Record<string, unknown>;
+  $emit: (event: string, ...args: unknown[]) => void;
+}
+"#,
+    )
+    .unwrap();
+}
 
 #[test]
 fn template_expression_diagnostics_are_mapped_to_the_template_block() {

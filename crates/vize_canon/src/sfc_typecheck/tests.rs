@@ -824,7 +824,7 @@ defineProps<{
     let virtual_ts = result.virtual_ts.expect("virtual ts produced");
 
     assert!(
-        virtual_ts.contains("void ({ active: props[\"static\"], class: props[\"class\"] });"),
+        virtual_ts.contains("= ({ active: props[\"static\"], class: props[\"class\"] });"),
         "{virtual_ts}"
     );
     assert!(
@@ -864,10 +864,7 @@ const onFocus = (target: HTMLElement) => {
     let result = type_check_sfc(source, &options);
     let virtual_ts = result.virtual_ts.expect("virtual ts produced");
 
-    assert!(
-        virtual_ts.contains("void ((value as any));"),
-        "{virtual_ts}"
-    );
+    assert!(virtual_ts.contains("= ((value as any));"), "{virtual_ts}");
     assert!(
         virtual_ts.contains("['--demo-value' as any]: value"),
         "{virtual_ts}"

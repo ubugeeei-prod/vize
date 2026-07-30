@@ -18,9 +18,7 @@ mod vif_chain;
 mod tests;
 
 pub(crate) use component_props::{ComponentPropSource, generate_component_prop_checks};
-pub(crate) use native_props::{
-    NativePropBindings, collect_native_prop_bindings, generate_native_prop_helpers,
-};
+pub(crate) use native_props::{NativePropBindings, collect_native_prop_bindings};
 pub(crate) use reserved_props::rewrite_reserved_template_prop;
 pub(crate) use statements::{
     ExpressionListEmitContext, generate_expressions, generate_expressions_in_enclosing_guard,
