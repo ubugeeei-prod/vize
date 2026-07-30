@@ -30,6 +30,7 @@ pub mod rename;
 pub mod selection_range;
 pub mod semantic_tokens;
 pub(crate) mod sfc_region;
+pub(crate) mod tag_pair;
 mod template_expression;
 pub mod type_service;
 pub mod workspace_symbols;

@@ -1,6 +1,13 @@
 //! Document highlight provider.
 //!
-//! Highlights matching tag names and identifier occurrences in Vue and Art documents.
+//! Highlights the tag-name pair of the element under the cursor, or the
+//! occurrences of the identifier under the cursor, in Vue and Art documents.
+//!
+//! Tag highlighting resolves the enclosing element with the shared stack-based
+//! scanner in [`super::tag_pair`]. The previous implementation scanned the whole
+//! document for the name, so a cursor on one of four `<div>`s highlighted all
+//! eight names — which destroys the one signal the feature exists to give:
+//! *which* close tag belongs to the tag under the cursor (#3454).
 
 use tower_lsp::lsp_types::{DocumentHighlight, DocumentHighlightKind, Position, Range};
 
@@ -68,9 +75,15 @@ impl<'a> PositionWalker<'a> {
 
 impl DocumentHighlightService {
     pub fn highlights(ctx: &IdeContext<'_>) -> Option<Vec<DocumentHighlight>> {
-        if let Some((tag_name, _, _)) = tag_name_at_offset(&ctx.content, ctx.offset) {
-            let highlights = tag_highlights(&ctx.content, &tag_name);
-            return (!highlights.is_empty()).then_some(highlights);
+        let offset = ctx.offset.min(ctx.content.len());
+        // A cursor inside a raw-text block (`<script>`, `<style>`) has no markup
+        // region, so it never takes the tag path and falls through to the
+        // identifier scan below.
+        if let Some(region) =
+            super::sfc_region::resolve(&ctx.content, ctx.uri.path(), offset).markup
+            && let Some(names) = super::tag_pair::names_at(&ctx.content, region, offset)
+        {
+            return Some(tag_highlights(&ctx.content, &names));
         }
 
         let (start, end) = token_span_at_offset(&ctx.content, ctx.offset, is_identifier_char)?;
@@ -118,35 +131,12 @@ fn identifier_highlights(content: &str, symbol: &str) -> Vec<DocumentHighlight> 
     highlights
 }
 
-fn tag_highlights(content: &str, tag_name: &str) -> Vec<DocumentHighlight> {
-    let mut spans = Vec::new();
-    let mut search_start = 0usize;
-    let bytes = content.as_bytes();
-    while let Some(relative) = content[search_start..].find('<') {
-        let tag_start = search_start + relative;
-        let mut name_start = tag_start + 1;
-
-        if bytes.get(name_start) == Some(&b'/') {
-            name_start += 1;
-        }
-
-        let name_end = name_start + tag_name.len();
-        if name_end <= content.len()
-            && &content[name_start..name_end] == tag_name
-            && is_tag_name_boundary(bytes, name_start, name_end)
-        {
-            spans.push((name_start, name_end));
-        }
-
-        search_start = tag_start + 1;
-    }
-    if spans.is_empty() {
-        return Vec::new();
-    }
-
+/// One highlight per name of the resolved element: two for a matched pair, one
+/// for a self-closing, void or unmatched tag. Never a document-wide name scan.
+fn tag_highlights(content: &str, names: &super::tag_pair::TagNames) -> Vec<DocumentHighlight> {
     let mut walker = PositionWalker::new(content);
-    let mut highlights = Vec::with_capacity(spans.len());
-    for (start, end) in spans {
+    let mut highlights = Vec::with_capacity(2);
+    for (start, end) in [Some(names.first), names.second].into_iter().flatten() {
         let (start_line, start_character) = walker.position_at(start);
         let (end_line, end_character) = walker.position_at(end);
         highlights.push(span_highlight(
@@ -158,81 +148,6 @@ fn tag_highlights(content: &str, tag_name: &str) -> Vec<DocumentHighlight> {
         ));
     }
     highlights
-}
-
-fn tag_name_at_offset(content: &str, offset: usize) -> Option<(String, usize, usize)> {
-    let bytes = content.as_bytes();
-    if bytes.is_empty() {
-        return None;
-    }
-
-    let mut cursor = offset.min(bytes.len());
-    if cursor == bytes.len() {
-        cursor = cursor.saturating_sub(1);
-    }
-
-    let mut tag_start = None;
-    let mut pos = cursor + 1;
-    while pos > 0 {
-        pos -= 1;
-        match bytes[pos] {
-            b'<' => {
-                tag_start = Some(pos);
-                break;
-            }
-            b'>' | b'\n' | b'\r' => return None,
-            _ => {}
-        }
-    }
-
-    let tag_start = tag_start?;
-    let mut tag_end = tag_start;
-    let mut quote = None;
-
-    while tag_end < bytes.len() {
-        let byte = bytes[tag_end];
-        if let Some(current_quote) = quote {
-            if byte == current_quote {
-                quote = None;
-            }
-        } else if byte == b'"' || byte == b'\'' {
-            quote = Some(byte);
-        } else if byte == b'>' {
-            break;
-        } else if byte == b'\n' || byte == b'\r' {
-            return None;
-        }
-        tag_end += 1;
-    }
-
-    if tag_end >= bytes.len() || bytes[tag_end] != b'>' {
-        return None;
-    }
-
-    let mut name_start = tag_start + 1;
-    if bytes.get(name_start) == Some(&b'/') {
-        name_start += 1;
-    }
-
-    let mut name_end = name_start;
-    while name_end < tag_end {
-        let byte = bytes[name_end];
-        if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_') {
-            name_end += 1;
-        } else {
-            break;
-        }
-    }
-
-    if name_start == name_end || cursor < name_start || cursor > name_end {
-        return None;
-    }
-
-    Some((
-        content[name_start..name_end].to_string(),
-        name_start,
-        name_end,
-    ))
 }
 
 fn span_highlight(
@@ -310,85 +225,5 @@ fn is_identifier_boundary(bytes: &[u8], start: usize, end: usize) -> bool {
         && !after.is_some_and(|byte| is_identifier_char(*byte))
 }
 
-fn is_tag_name_boundary(bytes: &[u8], start: usize, end: usize) -> bool {
-    let before = start.checked_sub(1).and_then(|index| bytes.get(index));
-    let after = bytes.get(end);
-
-    !before.is_some_and(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
-        && !after.is_some_and(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
-}
-
 #[cfg(test)]
-mod tests {
-    use super::{DocumentHighlightService, PositionWalker};
-    use crate::{ide::IdeContext, server::ServerState};
-    use tower_lsp::lsp_types::Url;
-
-    #[test]
-    fn position_walker_matches_offset_to_position_str() {
-        // Multi-line content with a multi-byte (UTF-16 surrogate pair) char so
-        // the walker's line/column tracking is exercised against the canonical
-        // converter at every char boundary, including ascending re-queries.
-        let content = "abc\ndé😀f\n\nghi";
-        let mut walker = PositionWalker::new(content);
-        let mut prev = 0usize;
-        for offset in 0..=content.len() {
-            if !content.is_char_boundary(offset) {
-                continue;
-            }
-            // Walker requires monotonic targets; advance from the previous one.
-            assert!(offset >= prev);
-            prev = offset;
-            let expected = crate::utils::offset_to_position_str(content, offset);
-            let (line, character) = walker.position_at(offset);
-            assert_eq!(
-                (line, character),
-                (expected.line, expected.character),
-                "mismatch at byte offset {offset}",
-            );
-        }
-    }
-
-    fn context_for(source: &str, cursor_text: &str) -> (ServerState, Url, usize) {
-        let state = ServerState::new();
-        let uri = Url::parse("file:///Button.art.vue").unwrap();
-        state
-            .documents
-            .open(uri.clone(), source.to_string(), 1, "art-vue".to_string());
-        state.update_virtual_docs(&uri, source);
-        let offset = source.find(cursor_text).unwrap();
-        (state, uri, offset)
-    }
-
-    #[test]
-    fn highlights_identifier_occurrences_in_art_variant() {
-        let source = r#"<art title="Button">
-  <variant name="Primary">
-    <Button :label="label">{{ label }}</Button>
-  </variant>
-</art>
-
-<script setup lang="ts">
-const label = "Primary"
-</script>"#;
-        let (state, uri, offset) = context_for(source, "label\">{{");
-        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-        let highlights = DocumentHighlightService::highlights(&ctx).unwrap();
-
-        assert!(highlights.len() >= 3, "{highlights:#?}");
-    }
-
-    #[test]
-    fn highlights_matching_component_tags_in_art_variant() {
-        let source = r#"<art title="Button">
-  <variant name="Primary">
-    <Button :label="label"><span>Label</span></Button>
-  </variant>
-</art>"#;
-        let (state, uri, offset) = context_for(source, "Button :label");
-        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-        let highlights = DocumentHighlightService::highlights(&ctx).unwrap();
-
-        assert_eq!(highlights.len(), 2, "{highlights:#?}");
-    }
-}
+mod tests;

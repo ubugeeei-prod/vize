@@ -133,6 +133,74 @@ test("documentHighlight marks the script declaration WRITE and other uses READ",
   });
 });
 
+/**
+ * Fixture from #3454: four `<div>`s, so a document-wide name scan and a
+ * stack-based pair resolution give visibly different answers.
+ */
+const FOUR_DIVS = `<script setup lang="ts">
+const count = 1
+</script>
+
+<template>
+  <div class="a">
+    <div class="b">{{ count }}</div>
+  </div>
+  <div class="c" />
+</template>
+`;
+
+type FlatHighlight = [number, number, number, number, number | undefined];
+
+function flatten(highlights: DocumentHighlight[] | null): FlatHighlight[] {
+  if (highlights == null) return [];
+  return highlights.map((highlight) => [
+    highlight.range.start.line,
+    highlight.range.start.character,
+    highlight.range.end.line,
+    highlight.range.end.character,
+    highlight.kind,
+  ]);
+}
+
+test("documentHighlight on a tag name reports the matching pair, not every same-named tag", async () => {
+  await withSession("lsp-document-highlight-pair", async ({ session, workspaceDir }) => {
+    const { uri, ready } = openVue(session, workspaceDir, "FourDivs.vue", FOUR_DIVS);
+    await ready;
+
+    const ask = (position: { line: number; character: number }) =>
+      session.request("textDocument/documentHighlight", {
+        textDocument: { uri },
+        position,
+      }) as Promise<DocumentHighlight[] | null>;
+
+    // Recorded from `@vue/language-server@3.3.8` for this fixture at line 6,
+    // character 6: [[6,5,6,8], [6,32,6,35]] — the matching pair only. Before
+    // #3454 `vize lsp` answered five ranges here, adding [5,3,5,6], [7,4,7,7]
+    // and [8,3,8,6] (the outer element's pair and the unrelated self-closing
+    // `<div class="c" />`), which is exactly the must-exclude set below.
+    assert.deepEqual(flatten(await ask({ line: 6, character: 6 })), [
+      [6, 5, 6, 8, 1],
+      [6, 32, 6, 35, 1],
+    ]);
+
+    // The close tag name resolves back to the same pair.
+    assert.deepEqual(flatten(await ask({ line: 6, character: 33 })), [
+      [6, 5, 6, 8, 1],
+      [6, 32, 6, 35, 1],
+    ]);
+
+    // The outer element pairs with the `</div>` on line 7, never with the
+    // inner element's close tag on line 6.
+    assert.deepEqual(flatten(await ask({ line: 5, character: 4 })), [
+      [5, 3, 5, 6, 1],
+      [7, 4, 7, 7, 1],
+    ]);
+
+    // A self-closing element has no counterpart: exactly its own name.
+    assert.deepEqual(flatten(await ask({ line: 8, character: 4 })), [[8, 3, 8, 6, 1]]);
+  });
+});
+
 test("documentHighlight on a tag name highlights open and close tags as TEXT", async () => {
   await withSession("lsp-document-highlight-tag", async ({ session, workspaceDir }) => {
     const { uri, ready } = openVue(session, workspaceDir, "Dh.vue", DH_SOURCE);
