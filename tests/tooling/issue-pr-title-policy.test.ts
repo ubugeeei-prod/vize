@@ -1,63 +1,15 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
 import { test } from "node:test";
 
-import { root } from "./support/github-workflows.ts";
-import { runMoonScript } from "./_helpers/moonbit.ts";
+import { assignCall, patchTitleCall, runPolicy } from "./support/title-policy.ts";
 
-function runPolicy(payload: unknown, eventName: string) {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-title-policy-"));
-  const binDir = path.join(tempDir, "bin");
-  const eventPath = path.join(tempDir, "event.json");
-  const ghLogPath = path.join(tempDir, "gh.log");
-  const fakeGhPath = path.join(binDir, "gh");
-
-  fs.mkdirSync(binDir);
-  fs.writeFileSync(eventPath, JSON.stringify(payload));
-  fs.writeFileSync(
-    fakeGhPath,
-    [
-      "#!/usr/bin/env node",
-      'const fs = require("node:fs");',
-      "fs.appendFileSync(process.env.FAKE_GH_LOG, JSON.stringify(process.argv.slice(2)) + '\\n');",
-    ].join("\n"),
-  );
-  fs.chmodSync(fakeGhPath, 0o755);
-
-  const result = runMoonScript("github/issue_pr_title_policy", [], {
-    cwd: root,
-    env: {
-      PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
-      FAKE_GH_LOG: ghLogPath,
-      GITHUB_EVENT_NAME: eventName,
-      GITHUB_EVENT_PATH: eventPath,
-      GITHUB_REPOSITORY: "ubugeeei/vize",
-    },
-  });
-
-  const ghCalls = fs.existsSync(ghLogPath)
-    ? fs
-        .readFileSync(ghLogPath, "utf8")
-        .trim()
-        .split("\n")
-        .filter(Boolean)
-        .map((line) => JSON.parse(line) as string[])
-    : [];
-
-  fs.rmSync(tempDir, { recursive: true, force: true });
-
-  return { result, ghCalls };
-}
-
-test("issue title policy normalizes titles and assigns new issues", () => {
+test("issue title policy normalizes the scope and assigns new issues", () => {
   const { result, ghCalls } = runPolicy(
     {
       action: "opened",
       issue: {
         number: 12,
-        title: "check compiler lint linter story format fmt checklist formatting",
+        title: "fix(check): checklist formatting is inconsistent",
         assignees: [],
       },
     },
@@ -66,29 +18,22 @@ test("issue title policy normalizes titles and assigns new issues", () => {
 
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(ghCalls, [
-    [
-      "api",
-      "--method",
-      "PATCH",
-      "-H",
-      "X-GitHub-Api-Version: 2022-11-28",
-      "--silent",
-      "/repos/ubugeeei/vize/issues/12",
-      "-f",
-      "title=canon atelier patina patina musea glyph glyph checklist formatting",
-    ],
-    [
-      "api",
-      "--method",
-      "POST",
-      "-H",
-      "X-GitHub-Api-Version: 2022-11-28",
-      "--silent",
-      "/repos/ubugeeei/vize/issues/12/assignees",
-      "-F",
-      "assignees[]=ubugeeei",
-    ],
+    patchTitleCall(12, "fix(canon): checklist formatting is inconsistent"),
+    assignCall(12),
   ]);
+});
+
+test("issue title policy assigns new issues without rewriting an already-correct title", () => {
+  const { result, ghCalls } = runPolicy(
+    {
+      action: "opened",
+      issue: { number: 23, title: "docs: check the formatting guide", assignees: [] },
+    },
+    "issues",
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(ghCalls, [assignCall(23)]);
 });
 
 test("PR title policy normalizes conventional titles before validation", () => {
@@ -97,7 +42,7 @@ test("PR title policy normalizes conventional titles before validation", () => {
       action: "opened",
       pull_request: {
         number: 34,
-        title: "check: update lint rules",
+        title: "fix(check): update lint rules",
         assignees: [{ login: "ubugeeei" }],
       },
     },
@@ -105,58 +50,23 @@ test("PR title policy normalizes conventional titles before validation", () => {
   );
 
   assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(ghCalls, [
-    [
-      "api",
-      "--method",
-      "PATCH",
-      "-H",
-      "X-GitHub-Api-Version: 2022-11-28",
-      "--silent",
-      "/repos/ubugeeei/vize/issues/34",
-      "-f",
-      "title=canon: update patina rules",
-    ],
-  ]);
+  assert.deepEqual(ghCalls, [patchTitleCall(34, "fix(canon): update lint rules")]);
 });
 
 test("PR title policy fails non-conventional titles after normalization", () => {
   const { result, ghCalls } = runPolicy(
     {
       action: "opened",
-      pull_request: {
-        number: 56,
-        title: "fix lint issue",
-        assignees: [],
-      },
+      pull_request: { number: 56, title: "fix lint issue", assignees: [] },
     },
     "pull_request_target",
   );
 
   assert.equal(result.status, 1);
-  assert.match(result.stdout, /Invalid PR title/);
-  assert.deepEqual(ghCalls, [
-    [
-      "api",
-      "--method",
-      "PATCH",
-      "-H",
-      "X-GitHub-Api-Version: 2022-11-28",
-      "--silent",
-      "/repos/ubugeeei/vize/issues/56",
-      "-f",
-      "title=fix patina issue",
-    ],
-    [
-      "api",
-      "--method",
-      "POST",
-      "-H",
-      "X-GitHub-Api-Version: 2022-11-28",
-      "--silent",
-      "/repos/ubugeeei/vize/issues/56/assignees",
-      "-F",
-      "assignees[]=ubugeeei",
-    ],
-  ]);
+  assert.equal(
+    result.stdout,
+    "Assigned pull_request #56 to ubugeeei\n" +
+      "::error title=Invalid PR title::Use Conventional Commits format: type(scope): summary\n",
+  );
+  assert.deepEqual(ghCalls, [assignCall(56)]);
 });

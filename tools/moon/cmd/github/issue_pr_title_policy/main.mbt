@@ -1,8 +1,9 @@
 /// Enforces repository issue and pull request title metadata policy.
 /// The workflow runs this from trusted base-branch code. It reads the GitHub
-/// event payload, normalizes repository area names in issue / PR titles,
-/// assigns opened and reopened issues / PRs to the maintainer, and exits
-/// non-zero when a normalized PR title is not Conventional Commits-shaped.
+/// event payload, normalizes repository area names in the Conventional Commits
+/// scope of issue / PR titles, assigns opened and reopened issues / PRs to the
+/// maintainer, and exits non-zero when a normalized PR title is not
+/// Conventional Commits-shaped. Subject prose is never rewritten.
 
 let default_assignee = "ubugeeei"
 
@@ -11,126 +12,6 @@ struct PolicySubject {
   number : String
   title : String
   assignees : Json?
-}
-
-fn is_word_char(code : UInt16) -> Bool {
-  (code >= 65 && code <= 90) || (code >= 97 && code <= 122) ||
-  (code >= 48 && code <= 57) || code == 95
-}
-
-fn is_lower_ascii(code : UInt16) -> Bool {
-  code >= 97 && code <= 122
-}
-
-fn is_digit(code : UInt16) -> Bool {
-  code >= 48 && code <= 57
-}
-
-fn is_type_char(code : UInt16) -> Bool {
-  is_lower_ascii(code) || is_digit(code) || code == 45
-}
-
-fn is_scope_char(code : UInt16) -> Bool {
-  is_lower_ascii(code) || is_digit(code) || code == 45 || code == 46 ||
-  code == 47 || code == 95
-}
-
-fn title_replacement(word : String) -> String? {
-  match word.to_lower() {
-    "check" => Some("canon")
-    "compiler" => Some("atelier")
-    "lint" => Some("patina")
-    "linter" => Some("patina")
-    "story" => Some("musea")
-    "format" => Some("glyph")
-    "fmt" => Some("glyph")
-    _ => None
-  }
-}
-
-fn normalize_title(title : String) -> String {
-  let parts : Array[String] = []
-  let mut i = 0
-  while i < title.length() {
-    let start = i
-    let word = is_word_char(title[i])
-    while i < title.length() && is_word_char(title[i]) == word {
-      i = i + 1
-    }
-    let part = title[start:i].to_owned()
-    if word {
-      match title_replacement(part) {
-        Some(replacement) => parts.push(replacement)
-        None => parts.push(part)
-      }
-    } else {
-      parts.push(part)
-    }
-  }
-  parts.join("")
-}
-
-fn has_newline(value : String) -> Bool {
-  for i in 0..<value.length() {
-    if value[i] == 10 || value[i] == 13 {
-      return true
-    }
-  }
-  false
-}
-
-fn colon_space_index(value : String) -> Int? {
-  let mut i = 0
-  while i + 1 < value.length() {
-    if value[i] == 58 && value[i + 1] == 32 {
-      return Some(i)
-    }
-    i = i + 1
-  }
-  None
-}
-
-fn is_conventional_prefix(prefix : String) -> Bool {
-  if prefix.length() == 0 || !is_lower_ascii(prefix[0]) {
-    return false
-  }
-
-  let mut i = 1
-  while i < prefix.length() && is_type_char(prefix[i]) {
-    i = i + 1
-  }
-
-  if i < prefix.length() && prefix[i] == 40 {
-    i = i + 1
-    let scope_start = i
-    while i < prefix.length() && is_scope_char(prefix[i]) {
-      i = i + 1
-    }
-    if i == scope_start || i >= prefix.length() || prefix[i] != 41 {
-      return false
-    }
-    i = i + 1
-  }
-
-  if i < prefix.length() && prefix[i] == 33 {
-    i = i + 1
-  }
-
-  i == prefix.length()
-}
-
-fn is_conventional_title(title : String) -> Bool {
-  if title == "" || has_newline(title) {
-    return false
-  }
-  let separator = match colon_space_index(title) {
-    Some(index) => index
-    None => return false
-  }
-  if separator + 2 >= title.length() || title[separator + 2] == 32 {
-    return false
-  }
-  is_conventional_prefix(title[0:separator].to_owned())
 }
 
 fn has_assignee(assignees : Json?) -> Bool {
