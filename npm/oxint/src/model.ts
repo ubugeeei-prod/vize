@@ -83,4 +83,10 @@ export interface SfcBlock {
 
 export interface SingleScriptMap {
   block: SfcBlock;
+  /**
+   * SFC position of the extracted program's first character. Oxlint hands JS
+   * plugins the block body without the newline that follows the open tag, so
+   * this is not always `block.contentStart`.
+   */
+  scriptStart: LineColumn;
 }

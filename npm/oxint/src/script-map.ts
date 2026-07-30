@@ -19,7 +19,48 @@ export function createSingleScriptMap(
   }
 
   const [block] = blocks;
-  return block.content === extractedScript ? { block } : null;
+  const skipped = countSkippedPrefix(block.content, extractedScript);
+  if (skipped === null) {
+    return null;
+  }
+
+  return {
+    block,
+    scriptStart: advancePosition(block.contentStart, block.content.slice(0, skipped)),
+  };
+}
+
+/**
+ * Oxlint trims the leading newline (and any indentation on that line) from a
+ * `.vue` script block before handing the program to JS plugins, so the
+ * extracted text starts partway into `block.content`. Returns how many
+ * characters were dropped, or `null` when the extracted text is not this
+ * block's body.
+ */
+function countSkippedPrefix(content: string, extractedScript: string): number | null {
+  const skipped = content.length - extractedScript.length;
+  if (skipped < 0 || !content.endsWith(extractedScript)) {
+    return null;
+  }
+
+  return /^\s*$/u.test(content.slice(0, skipped)) ? skipped : null;
+}
+
+function advancePosition(from: LineColumn, text: string): LineColumn {
+  let { line, column } = from;
+
+  for (const character of text) {
+    if (character === "\n") {
+      line += 1;
+      column = 1;
+      continue;
+    }
+    if (character !== "\r") {
+      column += 1;
+    }
+  }
+
+  return { line, column };
 }
 
 export function mapToScriptLoc(
@@ -30,30 +71,34 @@ export function mapToScriptLoc(
     return null;
   }
 
-  const { block } = scriptMap;
+  const { block, scriptStart } = scriptMap;
   if (
-    compareLineColumn(diagnostic.location.start, block.contentStart) < 0 ||
+    compareLineColumn(diagnostic.location.start, scriptStart) < 0 ||
     compareLineColumn(diagnostic.location.end, block.contentEnd) > 0
   ) {
     return null;
   }
 
   return {
-    start: toScriptPosition(diagnostic.location.start, block.contentStart),
-    end: toScriptPosition(diagnostic.location.end, block.contentStart),
+    start: toScriptPosition(diagnostic.location.start, scriptStart),
+    end: toScriptPosition(diagnostic.location.end, scriptStart),
   };
 }
 
-function toScriptPosition(position: LineColumn, contentStart: LineColumn): LineColumn {
-  if (position.line === contentStart.line) {
+/**
+ * Patina reports 1-based SFC line/column; Oxlint expects 1-based lines and
+ * 0-based columns relative to the extracted program.
+ */
+function toScriptPosition(position: LineColumn, scriptStart: LineColumn): LineColumn {
+  if (position.line === scriptStart.line) {
     return {
       line: 1,
-      column: position.column - contentStart.column + 1,
+      column: position.column - scriptStart.column,
     };
   }
 
   return {
-    line: position.line - contentStart.line + 1,
-    column: position.column,
+    line: position.line - scriptStart.line + 1,
+    column: position.column - 1,
   };
 }

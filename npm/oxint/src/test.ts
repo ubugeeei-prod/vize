@@ -25,6 +25,7 @@ const generalRecommendedScriptConfigPath = path.join(
 );
 const incrementalComboConfigPath = path.join(fixtureDir, ".oxlintrc.incremental-combo.json");
 const opinionatedScriptConfigPath = path.join(fixtureDir, ".oxlintrc.opinionated-script.json");
+const scriptOffsetConfigPath = path.join(fixtureDir, ".oxlintrc.script-offset.json");
 const coreRulesConfigPath = path.join(fixtureDir, ".oxlintrc.core-rules.json");
 const scriptlessConfigPath = path.join(fixtureDir, ".oxlintrc.scriptless.json");
 const largeJsonConfigPath = path.join(fixtureDir, ".oxlintrc.large-json.json");
@@ -32,6 +33,7 @@ const vuePath = path.join(fixtureDir, "App.vue");
 const scopedStyleVuePath = path.join(fixtureDir, "ScopedStyle.vue");
 const incrementalComboVuePath = path.join(fixtureDir, "IncrementalCombo.vue");
 const optionsApiVuePath = path.join(fixtureDir, "OptionsApi.vue");
+const scriptOffsetVuePath = path.join(fixtureDir, "ScriptOffset.vue");
 const dualScriptVuePath = path.join(fixtureDir, "DualScript.vue");
 const coreRulesVuePath = path.join(fixtureDir, "CoreRules.vue");
 const scriptlessVuePath = path.join(fixtureDir, "Scriptless.vue");
@@ -231,6 +233,28 @@ fs.writeFileSync(
 );
 
 fs.writeFileSync(
+  scriptOffsetConfigPath,
+  JSON.stringify(
+    {
+      plugins: ["vue"],
+      jsPlugins: [pluginEntry],
+      settings: {
+        vize: {
+          helpLevel: "none",
+          preset: "opinionated",
+        },
+      },
+      rules: {
+        "no-unused-vars": "off",
+        "vize/script/no-get-current-instance": "error",
+      },
+    },
+    null,
+    2,
+  ),
+);
+
+fs.writeFileSync(
   coreRulesConfigPath,
   JSON.stringify(
     {
@@ -361,6 +385,23 @@ export default {
 <style>
 .foo { color: red; }
   </style>
+`,
+);
+
+// The script block deliberately starts on line 5 and carries two diagnostics on
+// two different lines, so a regression in the extracted-program offset math
+// cannot pass by accident.
+fs.writeFileSync(
+  scriptOffsetVuePath,
+  `<template>
+  <div>{{ instance }}</div>
+</template>
+
+<script setup lang="ts">
+import { getCurrentInstance } from 'vue'
+
+const instance = getCurrentInstance()
+</script>
 `,
 );
 
@@ -778,6 +819,39 @@ assert.equal(
   opinionatedScriptRun.output,
   readSnapshot("stylish-opinionated-no-options-api-output.txt"),
 );
+
+const scriptOffsetRun = runOxlint([
+  "-c",
+  ".oxlintrc.script-offset.json",
+  "-f",
+  "stylish",
+  "ScriptOffset.vue",
+]);
+assert.notEqual(
+  scriptOffsetRun.exitCode,
+  0,
+  "script-offset fixture should report opinionated script diagnostics",
+);
+// Patina reports these at SFC 6:10 and 8:18. Oxlint hands JS plugins the
+// extracted program, so the bridge has to translate both back through the
+// script block's own offset; asserting the positions is the only thing that
+// catches a bridge that silently collapses every diagnostic onto one line.
+assert.match(
+  scriptOffsetRun.output,
+  /^  6:10 {2}error {2}getCurrentInstance import is not supported in Vapor-oriented components {2}vize\(script\/no-get-current-instance\)$/mu,
+  "a diagnostic on the script block's first content line should keep its real SFC position",
+);
+assert.match(
+  scriptOffsetRun.output,
+  /^  8:18 {2}error {2}getCurrentInstance\(\) is not supported in Vapor-oriented components {2}vize\(script\/no-get-current-instance\)$/mu,
+  "a diagnostic further into the script block should keep its real SFC position",
+);
+assert.doesNotMatch(
+  scriptOffsetRun.output,
+  /\(at <script setup>:/u,
+  "mapped script diagnostics should not need the fallback location suffix",
+);
+assert.equal(scriptOffsetRun.output, readSnapshot("stylish-script-offset-output.txt"));
 
 const dualScriptRun = runOxlint([
   "-c",
