@@ -101,14 +101,7 @@ test("the README Vite and Nuxt rows match the committed benchmark snapshot", () 
         "vite-plugin-vue",
         "vize-vite-plugin",
       ),
-      expectedRow(
-        surfaces,
-        "nuxt",
-        "Nuxt build",
-        "Nuxt compiler",
-        "nuxt-default",
-        "vize-nuxt",
-      ),
+      expectedRow(surfaces, "nuxt", "Nuxt build", "Nuxt compiler", "nuxt-default", "vize-nuxt"),
     ],
   );
 });

@@ -48,15 +48,7 @@
   "settings": {
     "runs": 5,
     "warmups": 1,
-    "tasks": [
-      "compile",
-      "large",
-      "lint",
-      "fmt",
-      "check",
-      "vite",
-      "nuxt"
-    ]
+    "tasks": ["compile", "large", "lint", "fmt", "check", "vite", "nuxt"]
   },
   "commands": {
     "workflowDispatch": "gh workflow run tool-benchmark.yml --ref <branch> -f file_count=15000 -f check_file_count=500 -f vite_file_count=1000 -f nuxt_file_count=500 -f large_blocks=900 -f runs=5 -f warmups=1 -f commit_results=true",
@@ -85,91 +77,49 @@
           "id": "vue-compiler-sfc-1t",
           "label": "@vue/compiler-sfc (1T)",
           "medianMs": 17152.877,
-          "runs": [
-            17819.521,
-            17112.058,
-            16916.262,
-            17152.877,
-            17221.425
-          ],
+          "runs": [17819.521, 17112.058, 16916.262, 17152.877, 17221.425],
           "throughput": "874 files/s"
         },
         {
           "id": "vue-compiler-sfc-workers",
           "label": "@vue/compiler-sfc (32 workers)",
           "medianMs": 6075.983,
-          "runs": [
-            6075.983,
-            6160.388,
-            6032.722,
-            6161.073,
-            5804.856
-          ],
+          "runs": [6075.983, 6160.388, 6032.722, 6161.073, 5804.856],
           "throughput": "2.5k files/s"
         },
         {
           "id": "vize-native-1t",
           "label": "Vize native loop (1T)",
           "medianMs": 3951.92,
-          "runs": [
-            3849.487,
-            3893.792,
-            3951.92,
-            4129.36,
-            3969.115
-          ],
+          "runs": [3849.487, 3893.792, 3951.92, 4129.36, 3969.115],
           "throughput": "3.8k files/s"
         },
         {
           "id": "vize-native-max",
           "label": "Vize native batch results (max)",
           "medianMs": 329.205,
-          "runs": [
-            329.205,
-            326.491,
-            345.119,
-            328.883,
-            340.781
-          ],
+          "runs": [329.205, 326.491, 345.119, 328.883, 340.781],
           "throughput": "45.6k files/s"
         },
         {
           "id": "vize-native-core-max",
           "label": "Vize native batch stats-only (core max)",
           "medianMs": 187.809,
-          "runs": [
-            183.109,
-            185.322,
-            187.809,
-            193.979,
-            189.336
-          ],
+          "runs": [183.109, 185.322, 187.809, 193.979, 189.336],
           "throughput": "79.9k files/s"
         },
         {
           "id": "vize-native-sequence-1-max",
           "label": "Vize batch sequence (1→32T, measures 32T)",
           "medianMs": 206.863,
-          "runs": [
-            194.877,
-            206.863,
-            205.945,
-            212.396,
-            212.974
-          ],
+          "runs": [194.877, 206.863, 205.945, 212.396, 212.974],
           "throughput": "72.5k files/s"
         },
         {
           "id": "vize-native-sequence-max-1",
           "label": "Vize batch sequence (32T→1, measures 1T)",
           "medianMs": 3123.118,
-          "runs": [
-            3293.425,
-            3301.079,
-            3087.024,
-            3123.118,
-            3112.967
-          ],
+          "runs": [3293.425, 3301.079, 3087.024, 3123.118, 3112.967],
           "throughput": "4.8k files/s"
         }
       ],
@@ -190,91 +140,49 @@
           "id": "vue-compiler-sfc-1t",
           "label": "@vue/compiler-sfc (1T)",
           "medianMs": 199.36,
-          "runs": [
-            200.972,
-            191.181,
-            193.759,
-            200.31,
-            199.36
-          ],
+          "runs": [200.972, 191.181, 193.759, 200.31, 199.36],
           "throughput": "5 files/s"
         },
         {
           "id": "vue-compiler-sfc-workers",
           "label": "@vue/compiler-sfc (1 workers)",
           "medianMs": 468.019,
-          "runs": [
-            454.414,
-            474.621,
-            475.43,
-            468.019,
-            466.291
-          ],
+          "runs": [454.414, 474.621, 475.43, 468.019, 466.291],
           "throughput": "2 files/s"
         },
         {
           "id": "vize-native-1t",
           "label": "Vize native loop (1T)",
           "medianMs": 66.48,
-          "runs": [
-            74.893,
-            62.548,
-            66.48,
-            62.222,
-            75.208
-          ],
+          "runs": [74.893, 62.548, 66.48, 62.222, 75.208],
           "throughput": "15 files/s"
         },
         {
           "id": "vize-native-max",
           "label": "Vize native batch results (max)",
           "medianMs": 64.849,
-          "runs": [
-            66.738,
-            62.304,
-            63.275,
-            64.849,
-            67.817
-          ],
+          "runs": [66.738, 62.304, 63.275, 64.849, 67.817],
           "throughput": "15 files/s"
         },
         {
           "id": "vize-native-core-max",
           "label": "Vize native batch stats-only (core max)",
           "medianMs": 58.845,
-          "runs": [
-            58.605,
-            58.845,
-            56.971,
-            60.738,
-            59.057
-          ],
+          "runs": [58.605, 58.845, 56.971, 60.738, 59.057],
           "throughput": "17 files/s"
         },
         {
           "id": "vize-native-sequence-1-max",
           "label": "Vize batch sequence (1→32T, measures 32T)",
           "medianMs": 51.978,
-          "runs": [
-            57.538,
-            51.978,
-            51.762,
-            48.436,
-            52.583
-          ],
+          "runs": [57.538, 51.978, 51.762, 48.436, 52.583],
           "throughput": "19 files/s"
         },
         {
           "id": "vize-native-sequence-max-1",
           "label": "Vize batch sequence (32T→1, measures 1T)",
           "medianMs": 52.226,
-          "runs": [
-            52.226,
-            54.816,
-            56.119,
-            50.1,
-            50.081
-          ],
+          "runs": [52.226, 54.816, 56.119, 50.1, 50.081],
           "throughput": "19 files/s"
         }
       ],
@@ -295,39 +203,21 @@
           "id": "vue-tsc",
           "label": "vue-tsc",
           "medianMs": 1753.632,
-          "runs": [
-            1779.714,
-            1776.348,
-            1700.789,
-            1690.186,
-            1753.632
-          ],
+          "runs": [1779.714, 1776.348, 1700.789, 1690.186, 1753.632],
           "throughput": "1 files/s"
         },
         {
           "id": "vize-check-1t",
           "label": "Vize check (1T)",
           "medianMs": 251.013,
-          "runs": [
-            251.013,
-            257.824,
-            255.216,
-            247.958,
-            246.176
-          ],
+          "runs": [251.013, 257.824, 255.216, 247.958, 246.176],
           "throughput": "4 files/s"
         },
         {
           "id": "vize-check-max",
           "label": "Vize check (max)",
           "medianMs": 252.521,
-          "runs": [
-            261.716,
-            252.521,
-            263.205,
-            251.813,
-            245.554
-          ],
+          "runs": [261.716, 252.521, 263.205, 251.813, 245.554],
           "throughput": "4 files/s"
         }
       ],
@@ -384,52 +274,28 @@
           "id": "eslint-plugin-vue-1t",
           "label": "eslint-plugin-vue (1T)",
           "medianMs": 56196.188,
-          "runs": [
-            56779.947,
-            57537.83,
-            55598.756,
-            56196.188,
-            54773.778
-          ],
+          "runs": [56779.947, 57537.83, 55598.756, 56196.188, 54773.778],
           "throughput": "267 files/s"
         },
         {
           "id": "eslint-plugin-vue-workers",
           "label": "eslint-plugin-vue (32 workers)",
           "medianMs": 13500.922,
-          "runs": [
-            13845.791,
-            13554.506,
-            13419.852,
-            13500.922,
-            13483.468
-          ],
+          "runs": [13845.791, 13554.506, 13419.852, 13500.922, 13483.468],
           "throughput": "1.1k files/s"
         },
         {
           "id": "vize-lint-1t",
           "label": "Vize lint (1T)",
           "medianMs": 1956.378,
-          "runs": [
-            1991.639,
-            1956.378,
-            1889.425,
-            1892.85,
-            1991.248
-          ],
+          "runs": [1991.639, 1956.378, 1889.425, 1892.85, 1991.248],
           "throughput": "7.7k files/s"
         },
         {
           "id": "vize-lint-max",
           "label": "Vize lint (max)",
           "medianMs": 324.842,
-          "runs": [
-            320.803,
-            321.233,
-            341.63,
-            330.518,
-            324.842
-          ],
+          "runs": [320.803, 321.233, 341.63, 330.518, 324.842],
           "throughput": "46.2k files/s"
         }
       ],
@@ -450,39 +316,21 @@
           "id": "prettier-cli",
           "label": "Prettier CLI",
           "medianMs": 143128.339,
-          "runs": [
-            140886.925,
-            143128.339,
-            142426.069,
-            144611.806,
-            145967.312
-          ],
+          "runs": [140886.925, 143128.339, 142426.069, 144611.806, 145967.312],
           "throughput": "105 files/s"
         },
         {
           "id": "vize-fmt-1t",
           "label": "Vize fmt (1T)",
           "medianMs": 6626.14,
-          "runs": [
-            5695.226,
-            6626.14,
-            6487.95,
-            6719.387,
-            6799.847
-          ],
+          "runs": [5695.226, 6626.14, 6487.95, 6719.387, 6799.847],
           "throughput": "2.3k files/s"
         },
         {
           "id": "vize-fmt-max",
           "label": "Vize fmt (max)",
           "medianMs": 2826.331,
-          "runs": [
-            7826.395,
-            2826.331,
-            2749.018,
-            2559.819,
-            3042.73
-          ],
+          "runs": [7826.395, 2826.331, 2749.018, 2559.819, 3042.73],
           "throughput": "5.3k files/s"
         }
       ],
@@ -503,39 +351,21 @@
           "id": "vue-tsc",
           "label": "vue-tsc",
           "medianMs": 5570.171,
-          "runs": [
-            5626.503,
-            5476.288,
-            5565.582,
-            5801.934,
-            5570.171
-          ],
+          "runs": [5626.503, 5476.288, 5565.582, 5801.934, 5570.171],
           "throughput": "90 files/s"
         },
         {
           "id": "vize-check-1t",
           "label": "Vize check (1T)",
           "medianMs": 593.577,
-          "runs": [
-            595.196,
-            576.692,
-            593.749,
-            577.619,
-            593.577
-          ],
+          "runs": [595.196, 576.692, 593.749, 577.619, 593.577],
           "throughput": "842 files/s"
         },
         {
           "id": "vize-check-max",
           "label": "Vize check (max)",
           "medianMs": 498.074,
-          "runs": [
-            496.036,
-            498.074,
-            501.954,
-            512.524,
-            479.49
-          ],
+          "runs": [496.036, 498.074, 501.954, 512.524, 479.49],
           "throughput": "1.0k files/s"
         }
       ],
@@ -592,26 +422,14 @@
           "id": "vite-plugin-vue",
           "label": "@vitejs/plugin-vue",
           "medianMs": 1711.721,
-          "runs": [
-            1733.209,
-            1651.916,
-            1630.62,
-            1711.721,
-            2017.761
-          ],
+          "runs": [1733.209, 1651.916, 1630.62, 1711.721, 2017.761],
           "throughput": "584 files/s"
         },
         {
           "id": "vize-vite-plugin",
           "label": "@vizejs/vite-plugin",
           "medianMs": 631.67,
-          "runs": [
-            782.45,
-            631.67,
-            635.394,
-            611.982,
-            616.324
-          ],
+          "runs": [782.45, 631.67, 635.394, 611.982, 616.324],
           "throughput": "1.6k files/s"
         }
       ],
@@ -632,26 +450,14 @@
           "id": "nuxt-default",
           "label": "Nuxt default compiler",
           "medianMs": 6825.073,
-          "runs": [
-            6825.073,
-            6617.655,
-            6780.768,
-            6979.657,
-            7008.791
-          ],
+          "runs": [6825.073, 6617.655, 6780.768, 6979.657, 7008.791],
           "throughput": "73 files/s"
         },
         {
           "id": "vize-nuxt",
           "label": "@vizejs/nuxt",
           "medianMs": 6588.984,
-          "runs": [
-            6588.984,
-            6417.209,
-            6293.842,
-            6603.32,
-            6706.736
-          ],
+          "runs": [6588.984, 6417.209, 6293.842, 6603.32, 6706.736],
           "throughput": "76 files/s"
         }
       ],

@@ -81,7 +81,7 @@ compiler while `vize check` runs native tsgo (Corsa), so one ratio would credit 
 rewrite to the Vue layer. Both timings above are real and were measured in the same run; they are
 ranked within each engine class in the snapshot instead.
 
-The Nuxt row is a genuine but *diluted* comparison: both variants run the same Nitro/Vite/Rollup
+The Nuxt row is a genuine but _diluted_ comparison: both variants run the same Nitro/Vite/Rollup
 pipeline and differ only in the SFC compiler, and SFC compilation is roughly 2% of that build, so
 end-to-end time is dominated by work neither compiler owns. It is published because it is what a
 Nuxt user actually experiences, not because it isolates Vize.
