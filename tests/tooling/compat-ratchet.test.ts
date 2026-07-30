@@ -23,6 +23,8 @@
  */
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { after, test } from "node:test";
 
 import {
@@ -38,6 +40,7 @@ import {
   runCompatProbe,
   writeCompatBaseline,
 } from "../_helpers/compat-ratchet.ts";
+import { resolveVueTscManifestPath } from "../_helpers/vue-tsc-manifest.ts";
 
 const updateBaseline = process.env.UPDATE_COMPAT_BASELINE === "1";
 const baselineExists = fs.existsSync(compatBaselinePath);
@@ -201,6 +204,64 @@ test(
     }
   },
 );
+
+test("vue-tsc version resolution survives every pnpm bin layout", (t) => {
+  // The version pin above is only as trustworthy as this resolution. pnpm picks
+  // between a store symlink and a cmd-shim script depending on platform and
+  // settings; a resolver that only understands one shape makes the whole gate
+  // unrunnable on the other, which is how it can stop being exercised unnoticed.
+  // realpath the sandbox: on macOS the temp dir is itself a symlink, and the
+  // resolver reports realpaths.
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-vue-tsc-bin-")));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+
+  const packageDir = path.join(root, "node_modules/.pnpm/vue-tsc@9.9.9/node_modules/vue-tsc");
+  fs.mkdirSync(path.join(packageDir, "bin"), { recursive: true });
+  const entry = path.join(packageDir, "bin/vue-tsc.js");
+  fs.writeFileSync(entry, "#!/usr/bin/env node\n");
+  const manifestPath = path.join(packageDir, "package.json");
+  fs.writeFileSync(manifestPath, `${JSON.stringify({ name: "vue-tsc", version: "9.9.9" })}\n`);
+  // An enclosing workspace manifest must never be mistaken for the package.
+  fs.writeFileSync(
+    path.join(root, "package.json"),
+    `${JSON.stringify({ name: "workspace-root", version: "0.0.0" })}\n`,
+  );
+
+  const binDir = path.join(root, "node_modules/.bin");
+  fs.mkdirSync(binDir, { recursive: true });
+  const layouts: Array<[layout: string, write: (binPath: string) => void]> = [
+    ["store symlink", (binPath) => fs.symlinkSync(entry, binPath)],
+    [
+      "cmd-shim naming its target",
+      (binPath) =>
+        fs.writeFileSync(binPath, `#!/bin/sh\nexec node "$@"\n# cmd-shim-target=${entry}\n`),
+    ],
+    [
+      // Shaped like a real marker-less shim: the interpreter is named through
+      // `$basedir` too, and it comes first, so the target cannot be taken as
+      // simply the first `$basedir`-relative path in the script.
+      "cmd-shim without the target marker",
+      (binPath) =>
+        fs.writeFileSync(
+          binPath,
+          '#!/bin/sh\nbasedir_win="$basedir"\nexec "$basedir/node"  ' +
+            '"$basedir/../.pnpm/vue-tsc@9.9.9/node_modules/vue-tsc/bin/vue-tsc.js" "$@"\n',
+        ),
+    ],
+  ];
+
+  for (const [layout, write] of layouts) {
+    const binPath = path.join(binDir, "vue-tsc");
+    fs.rmSync(binPath, { force: true });
+    write(binPath);
+    assert.equal(resolveVueTscManifestPath(binPath), manifestPath, `${layout} must resolve`);
+  }
+
+  // A bin entry that leads nowhere must report that, not slice a bogus path.
+  const orphan = path.join(binDir, "vue-tsc-orphan");
+  fs.writeFileSync(orphan, "#!/bin/sh\nexec node /nowhere/vue-tsc.js\n");
+  assert.equal(resolveVueTscManifestPath(orphan), undefined);
+});
 
 after(() => {
   if (!updateBaseline || updatedEntries.size === 0) return;

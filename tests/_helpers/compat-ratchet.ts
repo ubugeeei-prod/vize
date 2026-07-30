@@ -11,6 +11,7 @@ import {
   runVueTsc,
   symlinkVueTypes,
 } from "./realworld-typecheck.ts";
+import { resolveVueTscManifestPath } from "./vue-tsc-manifest.ts";
 
 /**
  * Per-PR drop-in compatibility probes. Each probe copies a pinned set of real
@@ -163,14 +164,14 @@ export function isFixtureHydrated(fixtureId: string): boolean {
 export function resolveCompatVueTscVersion(): string {
   // Derive the version from the same binary the probes execute so the pin can
   // never drift from the tool actually producing the baseline side.
-  const binary = fs.realpathSync(resolveVueTscBinary());
-  const packageRoot = binary.slice(0, binary.lastIndexOf(`${path.sep}vue-tsc${path.sep}`));
-  const vueTscPackage = [
-    path.join(packageRoot, "vue-tsc", "package.json"),
-    path.join(path.dirname(resolveVueTscBinary()), "..", "vue-tsc", "package.json"),
-  ].find((candidate) => fs.existsSync(candidate));
-  assert.ok(vueTscPackage, `vue-tsc package manifest not found next to ${binary}`);
-  const manifest = JSON.parse(fs.readFileSync(vueTscPackage, "utf8")) as { version?: unknown };
+  const binary = resolveVueTscBinary();
+  const manifestPath = resolveVueTscManifestPath(binary);
+  assert.ok(
+    manifestPath,
+    `vue-tsc package manifest not found for ${binary}; neither the bin entry itself nor any ` +
+      "cmd-shim target it names led to a package.json declaring vue-tsc",
+  );
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as { version?: unknown };
   assert.equal(typeof manifest.version, "string", "vue-tsc package version must be a string");
   return manifest.version as string;
 }
