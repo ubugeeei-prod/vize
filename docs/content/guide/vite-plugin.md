@@ -10,7 +10,25 @@ title: Vite Plugin
 > For rollup / webpack / esbuild use `@vizejs/unplugin`, and for Rspack use `@vizejs/rspack-plugin`.
 > Those non-Vite paths are still unstable and should be treated as experimental.
 
-`@vizejs/vite-plugin` provides native-speed Vue SFC compilation for Vite projects. It is designed as a **drop-in replacement** for `@vitejs/plugin-vue` — your existing Vue components work without modification.
+`@vizejs/vite-plugin` provides native-speed Vue SFC compilation for Vite projects. It is designed as a **drop-in replacement** for `@vitejs/plugin-vue` on Vue 3 SFCs — your existing `<script setup>` and Options API components work without modification.
+
+## Drop-in Scope
+
+The drop-in claim is deliberately bounded, so it is worth stating what it does and does not cover:
+
+- **In scope** — Vue 3 single-file components compiled through Vite, in both `<script setup>` and
+  Options API style, including scoped styles, CSS Modules, SSR, and HMR.
+- **Incubating** — Vue 2 and 2.7 (`vue.version: "2"` / `"2.7"`). The legacy dialects are off by
+  default and non-invasive: Vize does not compile `.vue` files in those modes, so your existing Vue
+  compiler, `vue-loader`, or Nuxt 2 setup stays in charge. See
+  [Compiler Options](#compiler-options).
+- **Out of scope** — webpack, rollup, esbuild, and Rspack. `@vizejs/unplugin` and
+  `@vizejs/rspack-plugin` exist but are experimental and carry no drop-in guarantee; see
+  [Experimental Bundler Integrations](./unplugin.md).
+- **Not complete yet** — plugin-option parity with `@vitejs/plugin-vue`. `include`, `exclude`, and
+  `isProduction` are honored today; every other documented option, the reason it diverges, and the
+  remaining gaps are tracked in
+  [#3227](https://github.com/ubugeeei-prod/vize/issues/3227).
 
 ## Installation
 
@@ -255,18 +273,19 @@ The same semantic analysis layer is reused by linting and type checking. See
 
 ## Comparison
 
-| Feature               | @vitejs/plugin-vue | @vizejs/vite-plugin                |
-| --------------------- | ------------------ | ---------------------------------- |
-| Language              | JavaScript         | Rust (NAPI)                        |
-| SFC Compilation       | Yes                | Yes                                |
-| Template Compilation  | Yes                | Yes                                |
-| Script Setup          | Yes                | Yes                                |
-| CSS Scoping           | Yes                | Yes                                |
-| SSR Support           | Yes                | Yes                                |
-| HMR                   | Yes                | Yes (style-only optimization)      |
-| Batch Pre-compilation | No                 | Yes (parallel via Rayon)           |
-| CSS Extraction        | Per-component      | Merged single file                 |
-| Vapor Mode            | Experimental       | First-class (`vize_atelier_vapor`) |
+| Feature               | @vitejs/plugin-vue      | @vizejs/vite-plugin                                                                                    |
+| --------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| Language              | JavaScript              | Rust (NAPI)                                                                                            |
+| SFC Compilation       | Yes                     | Yes                                                                                                    |
+| Template Compilation  | Yes                     | Yes                                                                                                    |
+| Script Setup          | Yes                     | Yes                                                                                                    |
+| CSS Scoping           | Yes                     | Yes                                                                                                    |
+| SSR Support           | Yes                     | Yes                                                                                                    |
+| HMR                   | Yes                     | Yes (style-only optimization)                                                                          |
+| Batch Pre-compilation | No                      | Yes (parallel via Rayon)                                                                               |
+| CSS Extraction        | Per-component           | Merged single file                                                                                     |
+| Vapor Mode            | Experimental            | First-class (`vize_atelier_vapor`)                                                                     |
+| Plugin Options        | Full documented surface | `include` / `exclude` / `isProduction`; see [#3227](https://github.com/ubugeeei-prod/vize/issues/3227) |
 
 ## Advanced Features
 
