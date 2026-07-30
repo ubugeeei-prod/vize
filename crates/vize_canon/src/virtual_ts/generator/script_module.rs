@@ -1,22 +1,18 @@
 //! Module-scope facts collected from normal Vue `<script>` blocks.
 
+mod plain_exports;
+
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{BindingPattern, Declaration, Statement, TSEnumDeclaration};
+use oxc_ast::ast::{Declaration, Statement, TSEnumDeclaration};
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_carton::{CompactString, FxHashSet, String as VizeString, append};
+use vize_carton::{CompactString, FxHashSet, String as VizeString};
 
-pub(super) fn collect_normal_script_named_value_exports(
-    script: Option<&str>,
-    has_script_setup: bool,
-    has_plain_script_scope: bool,
-) -> Vec<CompactString> {
-    if has_script_setup || !has_plain_script_scope {
-        return Vec::new();
-    }
-    script.map(collect_named_value_exports).unwrap_or_default()
-}
+pub(super) use plain_exports::{
+    collect_normal_script_named_value_exports, emit_setup_invocation_and_exports,
+    push_setup_return_fields,
+};
 
 pub(super) fn collect_line_module_spans(script: &str) -> Vec<(u32, u32)> {
     let mut spans = Vec::new();
@@ -96,26 +92,6 @@ pub(super) fn emit_import_meta_polyfill(ts: &mut VizeString, script: &str) -> bo
     uses_import_meta
 }
 
-pub(super) fn push_setup_return_fields(names: &[CompactString], fields: &mut Vec<CompactString>) {
-    fields.extend(names.iter().cloned());
-}
-
-pub(super) fn emit_setup_invocation_and_exports(ts: &mut VizeString, names: &[CompactString]) {
-    if names.is_empty() {
-        ts.push_str("__setup();\n\n");
-        return;
-    }
-
-    ts.push_str("const __vize_plain_script_exports = __setup();\n");
-    for name in names {
-        append!(
-            *ts,
-            "export const {name} = __vize_plain_script_exports.{name};\n"
-        );
-    }
-    ts.push('\n');
-}
-
 pub(super) fn collect_const_enum_names(script: &str) -> FxHashSet<CompactString> {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
@@ -141,71 +117,6 @@ impl<'a> Visit<'a> for ConstEnumNames {
     }
 }
 
-fn collect_named_value_exports(script: &str) -> Vec<CompactString> {
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script, SourceType::ts().with_module(true)).parse();
-    let parsed = if parsed.panicked || !parsed.errors.is_empty() {
-        Parser::new(&allocator, script, SourceType::tsx().with_module(true)).parse()
-    } else {
-        parsed
-    };
-    if parsed.panicked || !parsed.errors.is_empty() {
-        return Vec::new();
-    }
-
-    let mut seen = FxHashSet::default();
-    let mut names = Vec::new();
-    for statement in &parsed.program.body {
-        collect_statement_exports(statement, &mut seen, &mut names);
-    }
-    names
-}
-
-fn collect_statement_exports(
-    statement: &Statement<'_>,
-    seen: &mut FxHashSet<CompactString>,
-    names: &mut Vec<CompactString>,
-) {
-    let Statement::ExportNamedDeclaration(export) = statement else {
-        return;
-    };
-    if export.source.is_some() || export.export_kind.is_type() {
-        return;
-    }
-    let Some(declaration) = export.declaration.as_ref() else {
-        return;
-    };
-    collect_declaration_exports(declaration, seen, names);
-}
-
-fn collect_declaration_exports(
-    declaration: &Declaration<'_>,
-    seen: &mut FxHashSet<CompactString>,
-    names: &mut Vec<CompactString>,
-) {
-    match declaration {
-        Declaration::VariableDeclaration(variable) => {
-            for declarator in &variable.declarations {
-                collect_binding_names(&declarator.id, seen, names);
-            }
-        }
-        Declaration::FunctionDeclaration(function) => {
-            if let Some(id) = &function.id {
-                push_name(id.name.as_str(), seen, names);
-            }
-        }
-        Declaration::ClassDeclaration(class) => {
-            if let Some(id) = &class.id {
-                push_name(id.name.as_str(), seen, names);
-            }
-        }
-        Declaration::TSEnumDeclaration(enumeration) => {
-            push_name(enumeration.id.name.as_str(), seen, names);
-        }
-        _ => {}
-    }
-}
-
 fn declaration_has_runtime_value(declaration: &Declaration<'_>) -> bool {
     matches!(
         declaration,
@@ -214,42 +125,6 @@ fn declaration_has_runtime_value(declaration: &Declaration<'_>) -> bool {
             | Declaration::ClassDeclaration(_)
             | Declaration::TSEnumDeclaration(_)
     )
-}
-
-fn collect_binding_names(
-    pattern: &BindingPattern<'_>,
-    seen: &mut FxHashSet<CompactString>,
-    names: &mut Vec<CompactString>,
-) {
-    match pattern {
-        BindingPattern::BindingIdentifier(id) => push_name(id.name.as_str(), seen, names),
-        BindingPattern::ObjectPattern(object) => {
-            for property in &object.properties {
-                collect_binding_names(&property.value, seen, names);
-            }
-            if let Some(rest) = &object.rest {
-                collect_binding_names(&rest.argument, seen, names);
-            }
-        }
-        BindingPattern::ArrayPattern(array) => {
-            for element in array.elements.iter().flatten() {
-                collect_binding_names(element, seen, names);
-            }
-            if let Some(rest) = &array.rest {
-                collect_binding_names(&rest.argument, seen, names);
-            }
-        }
-        BindingPattern::AssignmentPattern(assignment) => {
-            collect_binding_names(&assignment.left, seen, names);
-        }
-    }
-}
-
-fn push_name(name: &str, seen: &mut FxHashSet<CompactString>, names: &mut Vec<CompactString>) {
-    let name = CompactString::new(name);
-    if seen.insert(name.clone()) {
-        names.push(name);
-    }
 }
 
 fn include_leading_ts_directive_comments(script: &str, spans: Vec<(u32, u32)>) -> Vec<(u32, u32)> {
@@ -299,10 +174,7 @@ fn contains_ts_suppression_directive(comment: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        CompactString, collect_line_module_spans, collect_named_value_export_starts,
-        collect_named_value_exports,
-    };
+    use super::{collect_line_module_spans, collect_named_value_export_starts};
 
     #[test]
     fn collect_import_span_includes_adjacent_ts_ignore_comment_group() {
@@ -326,15 +198,6 @@ mod tests {
             &script[spans[0].0 as usize..spans[0].1 as usize],
             "import Chart from \"chart.js/auto/auto\";"
         );
-    }
-
-    #[test]
-    fn collect_named_value_exports_includes_ts_enums() {
-        let names = collect_named_value_exports(
-            "export enum DiffDisplayMode { Hidden = 'hidden' }\nexport type Props = {}\n",
-        );
-
-        assert_eq!(names, vec![CompactString::new("DiffDisplayMode")]);
     }
 
     #[test]
