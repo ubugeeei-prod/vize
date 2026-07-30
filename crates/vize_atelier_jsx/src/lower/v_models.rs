@@ -42,12 +42,11 @@
 
 use oxc_ast::ast::{ArrayExpression, Expression, JSXAttribute, JSXAttributeName};
 use oxc_span::{GetSpan, Span};
-use vize_carton::{ToCompactString, Vec};
+use vize_carton::Vec;
 use vize_relief::PropNode;
 
 use super::Lowerer;
 use super::v_model::is_assignable_target;
-use crate::diagnostics::JsxDiagnostic;
 
 /// How a `v-models` attribute was spelled.
 enum Form {
@@ -235,18 +234,6 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                 classify(self.mapper().slice(id.span()).strip_prefix("v-")?)
             }
         }
-    }
-
-    fn reject(&mut self, span: Span, message: &'static str) {
-        self.report(JsxDiagnostic::error(message, span.start, span.end));
-    }
-
-    fn reject_at(&mut self, span: Span, message: std::fmt::Arguments<'_>) {
-        self.report(JsxDiagnostic::error(
-            message.to_compact_string(),
-            span.start,
-            span.end,
-        ));
     }
 }
 

@@ -405,6 +405,18 @@
       "source": "const A = () => <B v-slots={slots}/>;"
     },
     {
+      "id": "slots/v_slots_object_literal",
+      "category": "slots",
+      "lang": "jsx",
+      "source": "const A = () => <B v-slots={{default: () => <i/>, bar: () => <b/>}}/>;"
+    },
+    {
+      "id": "slots/v_slots_object_with_children",
+      "category": "slots",
+      "lang": "jsx",
+      "source": "const A = () => <B v-slots={{bar: () => <b/>}}><div>A</div></B>;"
+    },
+    {
       "id": "slots/element_children_default",
       "category": "slots",
       "lang": "jsx",

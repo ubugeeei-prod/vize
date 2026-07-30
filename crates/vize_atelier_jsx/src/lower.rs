@@ -17,11 +17,13 @@ mod style;
 mod text;
 mod v_model;
 mod v_models;
+mod v_slots;
 
 pub(crate) use style::{RawScopedStyle, ScopedStyleExpr};
 
 use oxc_ast::ast::{JSXElement, JSXFragment};
-use vize_carton::{Box, Bump, String};
+use oxc_span::Span;
+use vize_carton::{Box, Bump, String, ToCompactString};
 use vize_relief::{RootNode, TemplateChildNode};
 
 use crate::diagnostics::JsxDiagnostic;
@@ -92,6 +94,25 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Record a diagnostic.
     pub fn report(&mut self, diagnostic: JsxDiagnostic) {
         self.diagnostics.push(diagnostic);
+    }
+
+    /// Report a fixed-text error over `span`.
+    ///
+    /// Shared by the built-in attribute lowerings (`v_models`, `v_slots`), which
+    /// reject far more shapes than they accept and would otherwise each repeat
+    /// the same `JsxDiagnostic::error` plumbing.
+    pub(crate) fn reject(&mut self, span: Span, message: &'static str) {
+        self.report(JsxDiagnostic::error(message, span.start, span.end));
+    }
+
+    /// Report a formatted error over `span`, for messages that quote the
+    /// offending source text.
+    pub(crate) fn reject_at(&mut self, span: Span, message: std::fmt::Arguments<'_>) {
+        self.report(JsxDiagnostic::error(
+            message.to_compact_string(),
+            span.start,
+            span.end,
+        ));
     }
 
     /// Lower a JSX element as the single root of a render output.

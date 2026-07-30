@@ -77,6 +77,13 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             return None;
         }
 
+        // `v-slots` supplies the component's slots, not a prop. It is applied to
+        // the children by `lower_element_node`, which is where the tag kind and
+        // the already-lowered children are both available (#3418).
+        if self.is_v_slots_attribute(attr) {
+            return None;
+        }
+
         // Directive forms: `v-model`, `v-show`, `v-on:click`, custom `v-foo:arg`.
         if let Some(directive) = self.try_directive_attribute(attr, &loc) {
             return Some(directive);

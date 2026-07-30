@@ -80,8 +80,8 @@ fn babel_compat_verdict_totals() {
             Verdict::Deferred(_) => deferred += 1,
         }
     }
-    assert_eq!((equivalent, divergent, deferred), (68, 25, 2));
-    assert_eq!(VERDICTS.len(), 95);
+    assert_eq!((equivalent, divergent, deferred), (70, 25, 2));
+    assert_eq!(VERDICTS.len(), 97);
 }
 
 #[test]

@@ -125,11 +125,18 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
         Diff("non-JSX render-prop body dropped"),
     ),
     ("slots/scoped_param", Same),
+    // #3418 lowers the object-literal form; an opaque slots value is diagnosed
+    // rather than forwarded, which needs the slots spread tracked by #3467.
     (
         "slots/v_slots_with_children",
-        Diff("v-slots not implemented"),
+        Diff("opaque v-slots value diagnosed; needs #3467"),
     ),
-    ("slots/v_slots_only", Diff("v-slots not implemented")),
+    (
+        "slots/v_slots_only",
+        Diff("opaque v-slots value diagnosed; needs #3467"),
+    ),
+    ("slots/v_slots_object_literal", Same),
+    ("slots/v_slots_object_with_children", Same),
     ("slots/element_children_default", Same),
     (
         "slots/dynamic_slot_name",
@@ -166,7 +173,7 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("optimize/scoped_slot_stability", Same),
     (
         "optimize/v_slots_stability",
-        Diff("v-slots not implemented"),
+        Diff("opaque v-slots value diagnosed; needs #3467"),
     ),
     ("optimize/fragment", Same),
     ("optimize/map_list", Same),
@@ -178,5 +185,8 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     // two-dimensional array.
     ("errors/v_models_not_array", Same),
     ("errors/v_models_entry_not_array", Same),
-    ("errors/v_slots_not_object", Diff("v-slots not implemented")),
+    (
+        "errors/v_slots_not_object",
+        Diff("non-object v-slots value rejected; babel forwards it"),
+    ),
 ];

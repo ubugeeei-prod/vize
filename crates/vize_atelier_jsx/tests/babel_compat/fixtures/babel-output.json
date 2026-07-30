@@ -259,6 +259,14 @@
       "status": "ok",
       "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, slots);"
     },
+    "slots/v_slots_object_literal": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode, resolveComponent as _resolveComponent } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, {\n  default: () => _createVNode(\"i\", null, null),\n  bar: () => _createVNode(\"b\", null, null)\n});"
+    },
+    "slots/v_slots_object_with_children": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, {\n  default: () => [_createVNode(\"div\", null, [_createTextVNode(\"A\")])],\n  bar: () => _createVNode(\"b\", null, null)\n});"
+    },
     "slots/element_children_default": {
       "status": "ok",
       "code": "import { createVNode as _createVNode, resolveComponent as _resolveComponent } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, {\n  default: () => [_createVNode(\"i\", null, null)]\n});"

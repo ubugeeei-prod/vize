@@ -15,10 +15,11 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         let mut node = ElementNode::new(self.bump(), tag, loc);
         node.tag_type = element_type(&opening.name);
         node.is_self_closing = element.closing_element.is_none();
-        // `v-models` is component-only. A dashed lowercase tag is classified as
-        // an intrinsic element here, but the DOM backend still resolves it with
-        // `resolveComponent`, so custom elements count as components for that
-        // check just as they do for `@vue/babel-plugin-jsx`.
+        // `v-models` and `v-slots` are component-only. A dashed lowercase tag is
+        // classified as an intrinsic element here, but the DOM backend still
+        // resolves it with `resolveComponent`, so custom elements count as
+        // components for those checks just as they do for
+        // `@vue/babel-plugin-jsx`.
         let on_component = node.tag_type == ElementType::Component || node.tag.contains('-');
         node.props = self.lower_attributes(&opening.attributes, on_component);
         // Components route through slot synthesis (object/render-prop children
@@ -29,6 +30,10 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         } else {
             self.lower_children(&element.children)
         };
+        // `v-slots` contributes slot templates, appended after the element's own
+        // children so those still become the `default` slot when the slots object
+        // does not name one (#3418).
+        self.apply_v_slots(&mut node, &opening.attributes, on_component);
         node
     }
 

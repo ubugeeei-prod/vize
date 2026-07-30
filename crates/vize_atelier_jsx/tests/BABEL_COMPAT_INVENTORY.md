@@ -13,7 +13,7 @@ opt-in compat mode (#3391) is expected to change.
 
 | Artifact                                  | Role                                                                                                       |
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `babel_compat/fixtures/corpus.json`       | the 95 inputs + the babel plugin options each is compiled with                                             |
+| `babel_compat/fixtures/corpus.json`       | the 97 inputs + the babel plugin options each is compiled with                                             |
 | `babel_compat/oracle.mjs`                 | runs the corpus through the real plugin; `--write` records, `--check` verifies                             |
 | `babel_compat/fixtures/babel-output.json` | committed ground truth (generated — do not hand-edit)                                                      |
 | `../babel_compat_oracle.rs`               | snapshots babel's output beside Vize's, per category, with a verdict per row                               |
@@ -55,7 +55,7 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   68 |
+| equivalent |   70 |
 | divergent  |   25 |
 | deferred   |    2 |
 
@@ -191,15 +191,34 @@ it classifies as an intrinsic element but the DOM backend still resolves with
 
 ## Slots
 
-| Case                             | Babel                                 | Vize today                                   | Compat mode                           | Verdict |
-| -------------------------------- | ------------------------------------- | -------------------------------------------- | ------------------------------------- | ------- |
-| `slots/object_children`          | object child becomes the slots object | `withCtx` slots + `_: 1`                     | no change                             | ✅      |
-| `slots/render_prop_child`        | `{default: () => 'foo'}`              | empty default slot — the value is dropped    | keep the non-JSX body                 | ❌      |
-| `slots/scoped_param`             | `default: s => …`                     | `default: withCtx((s) => […])`               | no change                             | ✅      |
-| `slots/v_slots_with_children`    | `{default: () => […], ...slots}`      | falls through to `resolveDirective("slots")` | implement `v-slots`                   | ❌      |
-| `slots/v_slots_only`             | slots object passed as children       | falls through to `resolveDirective("slots")` | implement `v-slots`                   | ❌      |
-| `slots/element_children_default` | `{default: () => […]}`                | `withCtx` default slot + `_: 1`              | no change                             | ✅      |
-| `slots/dynamic_slot_name`        | `{[n]: () => …}`                      | warns and drops the slot                     | deferred: needs dynamic-slot lowering | ⏸       |
+| Case                                 | Babel                                 | Vize today                                  | Compat mode                           | Verdict |
+| ------------------------------------ | ------------------------------------- | ------------------------------------------- | ------------------------------------- | ------- |
+| `slots/object_children`              | object child becomes the slots object | `withCtx` slots + `_: 1`                    | no change                             | ✅      |
+| `slots/render_prop_child`            | `{default: () => 'foo'}`              | empty default slot — the value is dropped   | keep the non-JSX body                 | ❌      |
+| `slots/scoped_param`                 | `default: s => …`                     | `default: withCtx((s) => […])`              | no change                             | ✅      |
+| `slots/v_slots_with_children`        | `{default: () => […], ...slots}`      | diagnosed: opaque slots value (#3418)       | forward the object; needs #3467       | ❌      |
+| `slots/v_slots_only`                 | slots object passed as children       | diagnosed: opaque slots value (#3418)       | forward the object; needs #3467       | ❌      |
+| `slots/v_slots_object_literal`       | object literal becomes the slots      | `withCtx` slots + `_: 1` (#3418)            | no change                             | ✅      |
+| `slots/v_slots_object_with_children` | `{default: () => […], bar: …}`        | same two slots, other literal order (#3418) | no change                             | ✅      |
+| `slots/element_children_default`     | `{default: () => […]}`                | `withCtx` default slot + `_: 1`             | no change                             | ✅      |
+| `slots/dynamic_slot_name`            | `{[n]: () => …}`                      | warns and drops the slot                    | deferred: needs dynamic-slot lowering | ⏸       |
+
+### `v-slots` spellings Vize rejects and babel accepts
+
+Not corpus rows, because a compat mode is not expected to adopt them; recorded
+here so the choice is not implicit (#3418, `src/lower/v_slots.rs`):
+
+- `v-slots` with no value, and `v-slots="str"` — babel forwards `null` / `"str"`
+  as the component's children, which is meaningless for a component.
+- `v-slots:arg={…}` — `v-slots` takes no argument; the slot names are the object's
+  keys.
+- `v-slots` on a plain element — babel drops it silently and emits `[]` children.
+- more than one `v-slots` on the same element — babel keeps the last and drops the
+  rest silently.
+- an object literal that names `default` on an element that also has children.
+  Babel emits the `default` key twice and lets JavaScript keep the later one,
+  silently discarding the children; Vize reports "Extraneous children found when
+  component already has an explicit default slot." from the shared transform.
 
 ## Children
 
@@ -218,34 +237,34 @@ it classifies as an intrinsic element but the DOM backend still resolves with
 
 Compared against Vize's default, which is already fully optimized.
 
-| Case                             | Babel                        | Vize today                                   | Compat mode         | Verdict |
-| -------------------------------- | ---------------------------- | -------------------------------------------- | ------------------- | ------- |
-| `optimize/static`                | no flag                      | no flag                                      | no change           | ✅      |
-| `optimize/class_only`            | `2`                          | `2 /* CLASS */`                              | no change           | ✅      |
-| `optimize/style_only`            | `4`                          | `4 /* STYLE */`                              | no change           | ✅      |
-| `optimize/text_only`             | raw child, no flag           | `toDisplayString(t)` + `1 /* TEXT */`        | emit the raw child  | ❌      |
-| `optimize/class_and_props`       | `10, ["id"]`                 | `11 /* TEXT, CLASS, PROPS */, ["id"]`        | drop the TEXT child | ❌      |
-| `optimize/spread`                | `16`                         | `16 /* FULL_PROPS */`                        | no change           | ✅      |
-| `optimize/ref`                   | `512`                        | `512 /* NEED_PATCH */`                       | no change           | ✅      |
-| `optimize/key`                   | no flag                      | no flag                                      | no change           | ✅      |
-| `optimize/event`                 | `8, ["onClick"]`             | same                                         | no change           | ✅      |
-| `optimize/component_props`       | `8, ["foo"]`                 | same                                         | no change           | ✅      |
-| `optimize/v_model_input`         | `8, ["onUpdate:modelValue"]` | same                                         | no change           | ✅      |
-| `optimize/slots_stability`       | `_: 1`                       | `_: 1 /* STABLE */`                          | no change           | ✅      |
-| `optimize/scoped_slot_stability` | `_: 1`                       | `_: 1 /* STABLE */`                          | no change           | ✅      |
-| `optimize/v_slots_stability`     | slots object as children     | falls through to `resolveDirective("slots")` | implement `v-slots` | ❌      |
-| `optimize/fragment`              | no flag                      | `64 /* STABLE_FRAGMENT */`                   | no change           | ✅      |
-| `optimize/map_list`              | raw array child              | `renderList` + `KEYED_FRAGMENT`              | no change           | ✅      |
+| Case                             | Babel                        | Vize today                            | Compat mode                     | Verdict |
+| -------------------------------- | ---------------------------- | ------------------------------------- | ------------------------------- | ------- |
+| `optimize/static`                | no flag                      | no flag                               | no change                       | ✅      |
+| `optimize/class_only`            | `2`                          | `2 /* CLASS */`                       | no change                       | ✅      |
+| `optimize/style_only`            | `4`                          | `4 /* STYLE */`                       | no change                       | ✅      |
+| `optimize/text_only`             | raw child, no flag           | `toDisplayString(t)` + `1 /* TEXT */` | emit the raw child              | ❌      |
+| `optimize/class_and_props`       | `10, ["id"]`                 | `11 /* TEXT, CLASS, PROPS */, ["id"]` | drop the TEXT child             | ❌      |
+| `optimize/spread`                | `16`                         | `16 /* FULL_PROPS */`                 | no change                       | ✅      |
+| `optimize/ref`                   | `512`                        | `512 /* NEED_PATCH */`                | no change                       | ✅      |
+| `optimize/key`                   | no flag                      | no flag                               | no change                       | ✅      |
+| `optimize/event`                 | `8, ["onClick"]`             | same                                  | no change                       | ✅      |
+| `optimize/component_props`       | `8, ["foo"]`                 | same                                  | no change                       | ✅      |
+| `optimize/v_model_input`         | `8, ["onUpdate:modelValue"]` | same                                  | no change                       | ✅      |
+| `optimize/slots_stability`       | `_: 1`                       | `_: 1 /* STABLE */`                   | no change                       | ✅      |
+| `optimize/scoped_slot_stability` | `_: 1`                       | `_: 1 /* STABLE */`                   | no change                       | ✅      |
+| `optimize/v_slots_stability`     | slots object as children     | diagnosed: opaque slots value (#3418) | forward the object; needs #3467 | ❌      |
+| `optimize/fragment`              | no flag                      | `64 /* STABLE_FRAGMENT */`            | no change                       | ✅      |
+| `optimize/map_list`              | raw array child              | `renderList` + `KEYED_FRAGMENT`       | no change                       | ✅      |
 
 ## Inputs babel rejects
 
 A compat mode must reject what babel rejects, with a diagnostic — never silently
 accept it.
 
-| Case                              | Babel                                                           | Vize today                                                        | Compat mode         | Verdict |
-| --------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------- | ------- |
-| `errors/v_model_non_lval`         | rejects a non-assignable `v-model` target                       | rejects it too, naming the offending expression (closed by #3420) | no change           | ✅      |
-| `errors/v_model_no_value`         | rejects: "You have to use JSX Expression inside your v-model"   | rejects: "v-model is missing expression."                         | no change           | ✅      |
-| `errors/v_models_not_array`       | rejects a non-array `v-models` value                            | rejects it too, naming the expected entry shape (closed by #3418) | no change           | ✅      |
-| `errors/v_models_entry_not_array` | rejects: "You should pass a Two-dimensional Arrays to v-models" | rejects it too, naming the offending entry (closed by #3418)      | no change           | ✅      |
-| `errors/v_slots_not_object`       | forwards the value as children                                  | emits a custom `slots` directive                                  | forward as children | ❌      |
+| Case                              | Babel                                                           | Vize today                                                        | Compat mode    | Verdict |
+| --------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------- | -------------- | ------- |
+| `errors/v_model_non_lval`         | rejects a non-assignable `v-model` target                       | rejects it too, naming the offending expression (closed by #3420) | no change      | ✅      |
+| `errors/v_model_no_value`         | rejects: "You have to use JSX Expression inside your v-model"   | rejects: "v-model is missing expression."                         | no change      | ✅      |
+| `errors/v_models_not_array`       | rejects a non-array `v-models` value                            | rejects it too, naming the expected entry shape (closed by #3418) | no change      | ✅      |
+| `errors/v_models_entry_not_array` | rejects: "You should pass a Two-dimensional Arrays to v-models" | rejects it too, naming the offending entry (closed by #3418)      | no change      | ✅      |
+| `errors/v_slots_not_object`       | forwards the value as children                                  | rejects it, naming the offending value (#3418)                    | keep rejecting | ❌      |

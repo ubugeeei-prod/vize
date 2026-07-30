@@ -72,7 +72,7 @@ export function render(_ctx, _cache) {
 
 ## errors/v_slots_not_object
 ### verdict
-divergent: v-slots not implemented
+divergent: non-object v-slots value rejected; babel forwards it
 ### source (jsx)
 const A = () => <B v-slots={1}/>;
 ### babel options
@@ -81,12 +81,10 @@ const A = () => <B v-slots={1}/>;
 import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
 const A = () => _createVNode(_resolveComponent("B"), null, 1);
 ### vize (vdom, default config)
-import { resolveDirective as _resolveDirective, resolveComponent as _resolveComponent, withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+<Error> v-slots value `1` is not an object literal: Vize builds the slots object at compile time and cannot forward an opaque slots value. Write the slots inline, e.g. v-slots={{ default: () => <div/> }}. Forwarding a slots object is tracked by #3467.
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  const _directive_slots = _resolveDirective("slots")
   
-  return _withDirectives((_openBlock(), _createBlock(_component_B, null, null, 512 /* NEED_PATCH */)), [
-    [_directive_slots, 1]
-  ])
+  return (_openBlock(), _createBlock(_component_B))
 }
