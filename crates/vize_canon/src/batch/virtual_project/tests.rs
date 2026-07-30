@@ -10,10 +10,10 @@ use vize_carton::cstr;
 mod graphql_generated;
 mod macro_scope;
 mod module_augmentations;
-mod node_modules_symlink;
 mod ref_arity;
 mod setup_props;
 mod tsconfig_native_options;
+mod virtual_root;
 mod windows_paths;
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
@@ -78,19 +78,6 @@ fn snapshot_text(source: &str) -> std::string::String {
     }
     output
 }
-#[test]
-fn test_virtual_project_new() {
-    let case_dir = unique_case_dir("new");
-    let _ = fs::remove_dir_all(&case_dir);
-    fs::create_dir_all(&case_dir).unwrap();
-
-    let project = VirtualProject::new(&case_dir).unwrap();
-    assert_eq!(project.project_root(), case_dir.as_path());
-    assert!(project.virtual_root().ends_with("node_modules/.vize/canon"));
-
-    let _ = fs::remove_dir_all(&case_dir);
-}
-
 #[test]
 fn test_materialize_writes_inert_vue_module_stub_file() {
     let case_dir = unique_case_dir("vue-module-stubs");
