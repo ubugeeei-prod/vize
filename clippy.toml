@@ -13,3 +13,19 @@ disallowed-types = [
 disallowed-methods = [
   { path = "std::string::ToString::to_string", reason = "Use cstr!() or .to_compact_string() instead" },
 ]
+
+# A `DashMap` shard guard alive at an `.await` deadlocks the LSP: `vize lsp`
+# polls several queued messages concurrently on one thread, so a suspended
+# reader and a `didOpen`/`didChange` writer share it, and the writer parks in
+# `parking_lot` on a guard only the parked thread could release (#3315, #3373,
+# #3377). Take an owned snapshot instead — `DocumentStore::text`,
+# `ServerState::get_virtual_docs`.
+#
+# Partial gate, not a proof: clippy only matches the coroutine's top-level
+# field types, so a guard wrapped in `Option` or embedded in a struct
+# (`IdeContext`) still slips through and has to be caught by review.
+await-holding-invalid-types = [
+  { path = "dashmap::mapref::one::Ref", reason = "Use an owned snapshot; a live shard guard across an await hangs the LSP" },
+  { path = "dashmap::mapref::one::RefMut", reason = "Use an owned snapshot; a live shard guard across an await hangs the LSP" },
+  { path = "dashmap::mapref::multiple::RefMulti", reason = "Collect the iteration before awaiting; a live shard guard across an await hangs the LSP" },
+]

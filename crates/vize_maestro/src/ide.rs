@@ -313,8 +313,8 @@ pub struct IdeContext<'a> {
     pub offset: usize,
     /// Which block the cursor is in
     pub block_type: Option<BlockType>,
-    /// Virtual documents for this file
-    pub virtual_docs: Option<dashmap::mapref::one::Ref<'a, Url, VirtualDocuments>>,
+    /// Virtual documents for this file. An owned snapshot, never a `DashMap` shard guard: `&IdeContext` crosses the `.await` points of hover, completion, definition, references and rename, where a live guard hangs the server — see [`ServerState::get_virtual_docs`] (#3377).
+    pub virtual_docs: Option<std::sync::Arc<VirtualDocuments>>,
 }
 
 impl<'a> IdeContext<'a> {
@@ -325,7 +325,7 @@ impl<'a> IdeContext<'a> {
     /// [`IdeContext::with_content`] to avoid a redundant document lookup and a
     /// second full Rope→String allocation.
     pub fn new(state: &'a ServerState, uri: &'a Url, offset: usize) -> Option<Self> {
-        let content = state.documents.get(uri)?.text();
+        let content = state.documents.text(uri)?;
         Some(Self::with_content(state, uri, offset, content))
     }
 

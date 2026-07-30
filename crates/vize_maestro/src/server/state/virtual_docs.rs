@@ -1,6 +1,7 @@
 //! Virtual document generation and caching.
 
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use dashmap::DashMap;
 use tower_lsp::lsp_types::Url;
@@ -9,6 +10,9 @@ use crate::utils::is_standalone_html_path;
 use crate::virtual_code::VirtualDocuments;
 
 use super::ServerState;
+
+#[cfg(test)]
+mod tests;
 
 impl ServerState {
     /// Generate and cache virtual documents for a document.
@@ -42,7 +46,8 @@ impl ServerState {
         let base_uri = uri.path();
         let mut virtual_docs = self.virtual_gen.write().generate(&descriptor, base_uri);
         add_inline_art_template_virtual_docs(&mut virtual_docs, &descriptor, base_uri);
-        self.virtual_docs_cache.insert(uri.clone(), virtual_docs);
+        self.virtual_docs_cache
+            .insert(uri.clone(), Arc::new(virtual_docs));
     }
 
     /// Generate and cache virtual documents for standalone HTML files.
@@ -60,7 +65,7 @@ impl ServerState {
 
         let mut docs = VirtualDocuments::new();
         docs.template = Some(template_doc);
-        self.virtual_docs_cache.insert(uri.clone(), docs);
+        self.virtual_docs_cache.insert(uri.clone(), Arc::new(docs));
     }
 
     /// Generate and cache virtual documents for a `.jsx`/`.tsx` document.
@@ -79,7 +84,7 @@ impl ServerState {
         }
         let mut docs = VirtualDocuments::new();
         docs.styles = styles;
-        self.virtual_docs_cache.insert(uri.clone(), docs);
+        self.virtual_docs_cache.insert(uri.clone(), Arc::new(docs));
     }
 
     /// Generate and cache virtual documents for an art file (*.art.vue).
@@ -157,15 +162,28 @@ impl ServerState {
             }
         }
 
-        self.virtual_docs_cache.insert(uri.clone(), docs);
+        self.virtual_docs_cache.insert(uri.clone(), Arc::new(docs));
     }
 
-    /// Get cached virtual documents for a document.
-    pub fn get_virtual_docs(
-        &self,
-        uri: &Url,
-    ) -> Option<dashmap::mapref::one::Ref<'_, Url, VirtualDocuments>> {
-        self.virtual_docs_cache.get(uri)
+    /// Owned snapshot of a document's cached virtual documents: an `Arc` clone,
+    /// never a `DashMap` shard guard, so nothing stays locked after it returns.
+    ///
+    /// Load-bearing, not a style choice (#3377). `vize lsp` drives tower-lsp on
+    /// one `block_on` thread while `Server::serve` polls up to four queued
+    /// messages concurrently, so a handler suspended at an `.await` and a
+    /// `didOpen`/`didChange`/`didClose` write share that thread. A suspended
+    /// handler still holding a shard read guard — as [`crate::ide::IdeContext`]
+    /// used to across the hover, completion, definition, references and rename
+    /// awaits — parks [`Self::update_virtual_docs`] in `parking_lot` on the
+    /// shard write lock, and the only thread that could poll the reader into
+    /// releasing it is the parked one: a permanent, silent server hang. #3373
+    /// removed the same shape from the open-document store, see
+    /// [`crate::document::DocumentStore::text`]. The `Arc` keeps the cost at a
+    /// refcount bump instead of cloning every virtual document per request.
+    pub fn get_virtual_docs(&self, uri: &Url) -> Option<Arc<VirtualDocuments>> {
+        self.virtual_docs_cache
+            .get(uri)
+            .map(|entry| Arc::clone(entry.value()))
     }
 
     /// Remove cached virtual documents when a document is closed.

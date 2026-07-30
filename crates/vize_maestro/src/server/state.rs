@@ -19,6 +19,7 @@ mod config_tests;
 mod tests;
 
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use dashmap::DashMap;
@@ -27,8 +28,6 @@ use tower_lsp::lsp_types::Url;
 use vize_carton::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
 use vize_carton::dialect::VueDialect;
 
-#[cfg(feature = "native")]
-use std::sync::Arc;
 #[cfg(feature = "native")]
 use std::sync::OnceLock;
 
@@ -52,8 +51,14 @@ pub struct ServerState {
     pub documents: DocumentStore,
     /// Virtual code generator (reusable)
     virtual_gen: RwLock<VirtualCodeGenerator>,
-    /// Cached virtual documents per file
-    virtual_docs_cache: DashMap<Url, VirtualDocuments>,
+    /// Cached virtual documents per file.
+    ///
+    /// Stored behind an `Arc` so [`Self::get_virtual_docs`] can hand out an
+    /// owned snapshot instead of a `DashMap` shard guard: readers on the LSP's
+    /// single executor thread stay alive across `.await` points, and a live
+    /// shard guard there deadlocks the whole server against the next
+    /// `didOpen`/`didChange` write (#3377, same class as #3315/#3373).
+    virtual_docs_cache: DashMap<Url, Arc<VirtualDocuments>>,
     pub(super) open_vue_imports: super::importers::OpenVueImportIndex,
     /// Parsed metadata for imported components, keyed by resolved path.
     /// Lets template completion skip re-reading + re-parsing + re-analyzing an
