@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/prefer_use_template_ref/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/prefer-use-template-ref",
+        severity: Warning,
+        message: "Template ref 'input' is declared with ref(); use useTemplateRef() instead (Vue 3.5+).",
+        start: 65,
+        end: 99,
+        help: Some(
+            "Replace with: `const input = useTemplateRef('input')`",
+        ),
+        labels: [
+            Label {
+                message: "declared as a template ref",
+                start: 65,
+                end: 99,
+            },
+        ],
+        fix: None,
+    },
+]
