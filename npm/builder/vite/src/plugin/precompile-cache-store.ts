@@ -60,7 +60,7 @@ export function isPersistablePrecompileModule(module: CompiledModule): boolean {
 }
 
 function isCompiledModule(value: unknown): value is CompiledModule {
-  if (typeof value !== "object" || value === null) {
+  if (value === null || typeof value !== "object") {
     return false;
   }
   const module = value as Partial<CompiledModule>;
