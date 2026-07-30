@@ -165,9 +165,15 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
   } else if (hasExportDefault && hasSfcMainDefined) {
     // _sfc_main already defined, just add scopeId if needed
     if (compiled.hasScoped && compiled.scopeId) {
+      // `output` is still `compiled.code` on this branch -- nothing above it
+      // rewrote the module -- so `moduleInfo`'s offsets describe it exactly and
+      // the insertion can reuse them instead of parsing the module again
+      // (#3425). The later CSS-modules insertion below cannot: by then the
+      // module has been rewritten and the offsets are stale.
       output = insertBeforeSfcMainDefaultExport(
         output,
         `_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`,
+        { moduleInfo },
       );
     }
   } else if (!hasExportDefault && !hasSfcMainDefined && hasNamedRenderExport) {

@@ -18,6 +18,18 @@ export type ModuleOutputInfo = {
   hasNamedSsrRenderExport: boolean;
   defaultExportKeywordEnd: number | null;
   defaultExportStart: number | null;
+  /**
+   * End offset of the whole `export default ...` statement, or `null`.
+   *
+   * Recorded so {@link insertBeforeSfcMainDefaultExport} can reuse the caller's
+   * analysis instead of parsing the module a second time (#3425).
+   */
+  defaultExportEnd: number | null;
+  /**
+   * Whether the default export's declaration is exactly the `_sfc_main`
+   * identifier -- the only shape {@link insertBeforeSfcMainDefaultExport} acts on.
+   */
+  defaultExportIsSfcMain: boolean;
 };
 
 function isNode(value: unknown): value is AstNode {
@@ -28,8 +40,17 @@ function getNodeStart(node: AstNode | null | undefined): number | null {
   return typeof node?.start === "number" ? node.start : null;
 }
 
+function getNodeEnd(node: AstNode | null | undefined): number | null {
+  return typeof node?.end === "number" ? node.end : null;
+}
+
 function getNodeName(node: AstNode | null | undefined): string | null {
   return isNode(node) && typeof node.name === "string" ? node.name : null;
+}
+
+function isSfcMainDefaultExport(defaultExport: AstNode | null | undefined): boolean {
+  const declaration = isNode(defaultExport?.declaration) ? defaultExport.declaration : null;
+  return isIdentifierNamed(declaration, SFC_MAIN_NAME);
 }
 
 function parseProgram(code: string): AstNode | null {
@@ -135,6 +156,11 @@ function analyzeFastDefaultOutput(code: string): ModuleOutputInfo | null {
     hasNamedSsrRenderExport: false,
     defaultExportStart,
     defaultExportKeywordEnd: defaultExportStart + EXPORT_DEFAULT.length,
+    // The fast path is only taken when `_sfc_main` does not occur anywhere in
+    // the module, so the default export cannot be that identifier and no caller
+    // needs the statement's end offset.
+    defaultExportEnd: null,
+    defaultExportIsSfcMain: false,
   };
 }
 
@@ -177,6 +203,8 @@ export function analyzeModuleOutput(code: string): ModuleOutputInfo {
     hasNamedSsrRenderExport: exportedNames.includes("ssrRender"),
     defaultExportKeywordEnd,
     defaultExportStart,
+    defaultExportEnd: getNodeEnd(defaultExport),
+    defaultExportIsSfcMain: isSfcMainDefaultExport(defaultExport),
   };
 }
 
@@ -201,16 +229,53 @@ export function rewriteDefaultExportToSfcMain(
   return `${code.slice(0, exportStart)}const ${SFC_MAIN_NAME} =${code.slice(keywordEnd)}`;
 }
 
+/**
+ * Locate `export default _sfc_main` when the caller has no analysis to hand.
+ *
+ * The string test is a sound pre-filter: the AST check below only succeeds when
+ * the default export's declaration *is* the `_sfc_main` identifier, which cannot
+ * happen unless that name occurs in the module.
+ */
+function findSfcMainDefaultExport(code: string): {
+  defaultExportStart: number | null;
+  defaultExportEnd: number | null;
+  defaultExportIsSfcMain: boolean;
+} {
+  if (!code.includes(SFC_MAIN_NAME)) {
+    return { defaultExportStart: null, defaultExportEnd: null, defaultExportIsSfcMain: false };
+  }
+
+  const defaultExport = findDefaultExport(parseProgram(code));
+  return {
+    defaultExportStart: getNodeStart(defaultExport),
+    defaultExportEnd: getNodeEnd(defaultExport),
+    defaultExportIsSfcMain: isSfcMainDefaultExport(defaultExport),
+  };
+}
+
 export function insertBeforeSfcMainDefaultExport(
   code: string,
   insertion: string,
-  options: { normalizeSemicolon?: boolean } = {},
+  options: {
+    normalizeSemicolon?: boolean;
+    /**
+     * Analysis of *this exact* `code`, when the caller already has one. Passing
+     * it removes a second full oxc parse of the module the caller just parsed
+     * (#3425). It must describe `code` as given: every offset is used verbatim,
+     * so a caller that mutated the module after analyzing it must omit this.
+     */
+    moduleInfo?: Pick<
+      ModuleOutputInfo,
+      "defaultExportStart" | "defaultExportEnd" | "defaultExportIsSfcMain"
+    >;
+  } = {},
 ): string {
-  const defaultExport = findDefaultExport(parseProgram(code));
-  const declaration = isNode(defaultExport?.declaration) ? defaultExport.declaration : null;
-  const exportStart = getNodeStart(defaultExport);
-  const exportEnd = typeof defaultExport?.end === "number" ? defaultExport.end : null;
-  if (!isIdentifierNamed(declaration, SFC_MAIN_NAME) || exportStart == null) {
+  const {
+    defaultExportStart: exportStart,
+    defaultExportEnd: exportEnd,
+    defaultExportIsSfcMain,
+  } = options.moduleInfo ?? findSfcMainDefaultExport(code);
+  if (!defaultExportIsSfcMain || exportStart == null) {
     return code;
   }
 
