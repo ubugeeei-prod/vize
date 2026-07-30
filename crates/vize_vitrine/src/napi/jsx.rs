@@ -20,7 +20,9 @@
 )]
 
 use napi_derive::napi;
-use vize_atelier_jsx::{JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx as jsx_compile};
+use vize_atelier_jsx::{
+    JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx as jsx_compile,
+};
 use vize_carton::Bump;
 
 /// Options for [`compile_jsx`].
@@ -40,6 +42,11 @@ pub struct JsxCompileOptionsNapi {
     /// (default) to VDOM. Kept for back-compat; prefer `jsxMode`. Ignored when
     /// `jsxMode` is set.
     pub vapor: Option<bool>,
+    /// JSX semantics: `"native"` (default) or `"babel"`. Mirrors the
+    /// `compiler.jsxCompat` config key (#3391). `"babel"` opts into
+    /// `@vue/babel-plugin-jsx` semantics; it has no Vapor meaning and is
+    /// diagnosed when combined with Vapor output.
+    pub jsx_compat: Option<String>,
     /// Emit a v3 source map for the generated render code. When `true`, the
     /// result's `map` carries the map JSON; when `false` (default), `map` is
     /// `null` and no mapping work is done (#1533).
@@ -131,8 +138,18 @@ fn compile_jsx_impl(
 
     let default_mode = resolve_default_mode(opts.jsx_mode.as_deref(), opts.vapor);
 
+    // An unrecognized `jsxCompat` string falls back to `native` rather than
+    // erroring, matching how an unrecognized `jsxMode` string is handled: a
+    // stray value must never block compilation.
+    let compat = opts
+        .jsx_compat
+        .as_deref()
+        .and_then(JsxCompatMode::from_config_str)
+        .unwrap_or_default();
+
     let mut config = JsxCompileConfig {
         default_mode,
+        compat,
         ..Default::default()
     };
     config.ssr = opts.ssr.unwrap_or(false);

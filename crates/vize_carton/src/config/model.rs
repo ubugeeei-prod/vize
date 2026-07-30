@@ -16,7 +16,7 @@ use compiler::RawCompilerConfig;
 use experimentals::RawExperimentalsConfig;
 use vue::RawVueConfig;
 
-pub use compiler::JsxMode;
+pub use compiler::{JsxCompat, JsxMode};
 
 use crate::String;
 use crate::dialect::VueDialect;
@@ -100,6 +100,12 @@ pub struct ConfigFeatureFlags {
     /// mode-selection logic so a single module can still mix VDOM and Vapor via
     /// `"use vue:*"` directives.
     pub jsx_mode: Option<JsxMode>,
+    /// JSX/TSX compatibility semantics selected by `compiler.jsxCompat` (#3391);
+    /// `None` when the key is absent (treated as `native`). Opting into `babel`
+    /// asks the JSX compiler for `@vue/babel-plugin-jsx` semantics instead of
+    /// Vize's own; the JS plugins and the native `compileJsx` binding thread it
+    /// through the same way as `jsx_mode`.
+    pub jsx_compat: Option<JsxCompat>,
     pub experimental_vapor: bool,
     pub experimental_jsx_vapor: bool,
     pub experimental_in_tag_comments: bool,
@@ -117,6 +123,7 @@ impl Default for ConfigFeatureFlags {
             language_server_legacy_vue2: None,
             vue_version: None,
             jsx_mode: None,
+            jsx_compat: None,
             experimental_vapor: false,
             experimental_jsx_vapor: false,
             experimental_in_tag_comments: false,
@@ -307,6 +314,7 @@ impl RawVizeConfig {
             jsx_mode: compiler
                 .jsx_mode
                 .or_else(|| experimental_jsx_vapor.then_some(JsxMode::Vapor)),
+            jsx_compat: compiler.jsx_compat,
             experimental_vapor: experimentals.vapor_enabled(),
             experimental_jsx_vapor,
             experimental_in_tag_comments: experimentals.in_tag_comments_enabled(),

@@ -24,6 +24,56 @@ fn falls_back_to_vapor_bool_then_vdom() {
 }
 
 #[test]
+fn jsx_compat_defaults_to_native_and_changes_nothing() {
+    // Omitting `jsxCompat` and passing `"native"` must produce identical output:
+    // adding the option is not allowed to move existing consumers.
+    let source = "const App = () => <div class={c}>{message}</div>;";
+    let baseline = compile_jsx_impl(source.to_string(), None);
+    let explicit = compile_jsx_impl(
+        source.to_string(),
+        Some(JsxCompileOptionsNapi {
+            jsx_compat: Some("native".to_string()),
+            ..Default::default()
+        }),
+    );
+    assert_eq!(explicit.code, baseline.code);
+    assert_eq!(explicit.errors, Vec::<String>::new());
+
+    // An unrecognized value falls back to `native` rather than blocking the build.
+    let stray = compile_jsx_impl(
+        source.to_string(),
+        Some(JsxCompileOptionsNapi {
+            jsx_compat: Some("Babel".to_string()),
+            ..Default::default()
+        }),
+    );
+    assert_eq!(stray.code, baseline.code);
+    assert_eq!(stray.errors, Vec::<String>::new());
+}
+
+#[test]
+fn jsx_compat_babel_with_vapor_reports_the_conflict() {
+    let source = "const App = () => <div>{message}</div>;";
+    let result = compile_jsx_impl(
+        source.to_string(),
+        Some(JsxCompileOptionsNapi {
+            jsx_mode: Some("vapor".to_string()),
+            jsx_compat: Some("babel".to_string()),
+            ..Default::default()
+        }),
+    );
+    assert_eq!(
+        result.errors,
+        vec![
+            "compiler.jsxCompat: \"babel\" is not supported with Vapor output: \
+             @vue/babel-plugin-jsx has no Vapor equivalent. Use jsxMode \"vdom\" for \
+             babel compatibility, or drop jsxCompat to use Vize's own Vapor semantics."
+                .to_string()
+        ]
+    );
+}
+
+#[test]
 fn jsx_compile_result_surfaces_scoped_style_css() {
     let source = r#"
         const App = () => (

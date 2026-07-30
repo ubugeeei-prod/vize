@@ -9,6 +9,7 @@ mod render_exports;
 use vize_carton::{Bump, FxHashSet, String};
 use vize_croquis::Croquis;
 
+use crate::compat::{JsxCompatMode, unsupported_with_vapor};
 use crate::diagnostics::JsxDiagnostic;
 use crate::ssr::compile_lowered_root_to_ssr;
 use crate::vapor::{VaporCompileOptions, compile_root_to_vapor};
@@ -23,6 +24,11 @@ pub struct JsxCompileConfig {
     /// Default output mode applied to components without an explicit
     /// `"use vue:vapor"` / `"use vue:vdom"` directive.
     pub default_mode: JsxOutputMode,
+    /// Which JSX semantics to compile with (#3391). Defaults to
+    /// [`JsxCompatMode::Native`]; `compiler.jsxCompat: "babel"` opts into
+    /// `@vue/babel-plugin-jsx` semantics. Compat mode has no Vapor meaning and
+    /// is diagnosed when combined with Vapor output.
+    pub compat: JsxCompatMode,
     /// Emit server-side render functions instead of client VDOM/Vapor code.
     ///
     /// The resolved VDOM/Vapor mode is still recorded on each component as
@@ -218,6 +224,14 @@ pub fn compile_jsx(
             ))
         } else {
             let mode = resolve_mode(lowered_root.mode, config.default_mode);
+            // Compat mode is a vdom-only contract: `@vue/babel-plugin-jsx` has
+            // no Vapor output shape to be compatible with. Diagnose rather than
+            // silently ignore the request, and keep compiling so the caller
+            // still gets output alongside the error.
+            if config.compat.is_babel() && mode == JsxOutputMode::Vapor {
+                let loc = &lowered_root.root.loc;
+                diagnostics.push(unsupported_with_vapor(loc.start.offset, loc.end.offset));
+            }
             match mode {
                 JsxOutputMode::Vdom => JsxComponent::Vdom(compile_root_to_vdom(
                     bump,

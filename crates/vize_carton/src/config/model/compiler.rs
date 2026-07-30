@@ -49,6 +49,33 @@ impl JsxMode {
     }
 }
 
+/// JSX/TSX compilation semantics from `compiler.jsxCompat` (#3391).
+///
+/// `Babel` opts `.jsx`/`.tsx` compilation into `@vue/babel-plugin-jsx`
+/// semantics for projects migrating off the babel plugin. It is orthogonal to
+/// [`JsxMode`]: the plugin is vdom-era, so `babel` with `jsxMode: "vapor"` is
+/// rejected with a diagnostic rather than silently ignored.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum JsxCompat {
+    /// Vize's own JSX semantics — the default. Must stay the default: flipping
+    /// it would silently change output for every existing project.
+    #[default]
+    Native,
+    /// `@vue/babel-plugin-jsx` semantics.
+    Babel,
+}
+
+impl JsxCompat {
+    /// The canonical `compiler.jsxCompat` config value for this mode.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Native => "native",
+            Self::Babel => "babel",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 pub(crate) struct RawCompilerCompatibilityConfig {
@@ -65,5 +92,8 @@ pub(crate) struct RawCompilerConfig {
     /// Default JSX output mode (`compiler.jsxMode`); `None` when absent, which
     /// the JSX entry points treat as VDOM.
     pub(crate) jsx_mode: Option<JsxMode>,
+    /// JSX compatibility semantics (`compiler.jsxCompat`); `None` when absent,
+    /// which the JSX entry points treat as `native`.
+    pub(crate) jsx_compat: Option<JsxCompat>,
     pub(crate) compatibility: RawCompilerCompatibilityConfig,
 }

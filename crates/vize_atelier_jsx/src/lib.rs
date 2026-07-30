@@ -28,6 +28,7 @@
 //! assert!(out.diagnostics.is_empty());
 //! ```
 
+pub mod compat;
 pub mod compile;
 pub mod diagnostics;
 pub mod lang;
@@ -50,6 +51,7 @@ use vize_croquis::Croquis;
 use vize_croquis::croquis::BindingMetadata;
 use vize_relief::RootNode;
 
+pub use compat::JsxCompatMode;
 pub use compile::{JsxCompileConfig, JsxCompileOutput, JsxComponent, compile_jsx, resolve_mode};
 pub use diagnostics::{JsxDiagnostic, Severity};
 pub use lang::JsxLang;
