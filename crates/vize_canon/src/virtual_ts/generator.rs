@@ -209,11 +209,20 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         .iter()
         .any(|scope| matches!(scope.kind, ScopeKind::NonScriptSetup))
         || (script_content.is_some() && !has_script_setup);
-    let named_value_exports = self::script_module::collect_normal_script_named_value_exports(
+    let mut named_value_exports = self::script_module::collect_normal_script_named_value_exports(
         script_content,
         has_script_setup,
         has_plain_script_scope,
     );
+    // A `namespace` cannot stay inside `__setup()` (TS1235), so it and any
+    // declaration it merges with move to module scope instead of through the
+    // export bridge.
+    let namespace_hoist = self::script_module::NamespaceHoistPlan::collect(
+        script_content,
+        has_script_setup,
+        has_plain_script_scope,
+    );
+    namespace_hoist.reconcile_exports(&mut named_value_exports);
     let setup_type_exports = SetupTypeExportsPlan::new(summary, script_content);
 
     // Classify the main `<script>` default export in one parse. A plain
@@ -253,6 +262,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         if let Some(script) = script_content {
             module_spans.extend(self::script_module::collect_line_module_spans(script));
         }
+        module_spans.extend(namespace_hoist.spans().iter().copied());
         for re in &summary.re_exports {
             module_spans.push((re.start, re.end));
         }
@@ -294,6 +304,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         FxHashMap::default()
     };
 
+    namespace_hoist.emit_ambient_captures(&mut ts, &named_value_exports);
     if let Some(script) = script_content {
         profile!("canon.virtual_ts.emit_module_statements", {
             // Emit each module-level statement with source mapping
@@ -880,6 +891,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
     let mut setup_return_fields: Vec<String> = Vec::new();
     self::script_module::push_setup_return_fields(&named_value_exports, &mut setup_return_fields);
+    namespace_hoist.push_captured_return_fields(&named_value_exports, &mut setup_return_fields);
     setup_type_exports.emit_setup_artifacts(&mut ts, &mut setup_return_fields);
     let mut setup_artifact_return_fields = Vec::new();
     setup_props_plan.push_return_field(&mut setup_artifact_return_fields);
@@ -947,30 +959,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         legacy_vue2,
         dialect,
     );
-    ts.push_str("type __VizeVueComponentOptions = {\n");
-    ts.push_str("  name?: string;\n");
-    ts.push_str("  __name?: string;\n");
-    ts.push_str("  __file?: string;\n");
-    ts.push_str("  __vccOpts?: any;\n");
-    ts.push_str("  props?: any;\n");
-    ts.push_str("  emits?: any;\n");
-    ts.push_str("  slots?: any;\n");
-    ts.push_str("  setup?: any;\n");
-    ts.push_str("  render?: Function;\n");
-    ts.push_str("  components?: any;\n");
-    ts.push_str("  directives?: any;\n");
-    ts.push_str("  inheritAttrs?: boolean;\n");
-    ts.push_str("  compatConfig?: any;\n");
-    ts.push_str("  call?: (this: unknown, ...args: unknown[]) => never;\n");
-    ts.push_str("  __isFragment?: never;\n");
-    ts.push_str("  __isTeleport?: never;\n");
-    ts.push_str("  __isSuspense?: never;\n");
-    ts.push_str("  __defaults?: any;\n");
-    ts.push_str("  __vapor?: boolean;\n");
-    ts.push_str("  __multiRoot?: boolean;\n");
-    ts.push_str("  __isKeepAlive?: boolean;\n");
-    ts.push_str("  __isBuiltIn?: boolean;\n");
-    ts.push_str("};\n");
+    ts.push_str(self::component_export::VUE_COMPONENT_OPTIONS_TYPE);
     emit_default_export_declaration(
         &mut ts,
         &emits_info,

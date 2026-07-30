@@ -1,5 +1,6 @@
 //! Module-scope facts collected from normal Vue `<script>` blocks.
 
+mod namespace_hoist;
 mod plain_exports;
 
 use oxc_allocator::Allocator;
@@ -9,6 +10,7 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, FxHashSet, String as VizeString};
 
+pub(super) use namespace_hoist::NamespaceHoistPlan;
 pub(super) use plain_exports::{
     collect_normal_script_named_value_exports, emit_setup_invocation_and_exports,
     push_setup_return_fields,

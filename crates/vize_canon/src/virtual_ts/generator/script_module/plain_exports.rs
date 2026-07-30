@@ -38,7 +38,7 @@ pub(crate) enum PlainScriptExportKind {
 
 impl PlainScriptExportKind {
     /// The type-side alias body, or `None` when the declaration is value-only.
-    fn type_alias_body(self, name: &str) -> Option<VizeString> {
+    pub(super) fn type_alias_body(self, name: &str) -> Option<VizeString> {
         match self {
             Self::Value => None,
             Self::Enum => Some(vize_carton::cstr!("(typeof {name})[keyof typeof {name}]")),
@@ -52,6 +52,11 @@ impl PlainScriptExportKind {
 pub(crate) struct PlainScriptExport {
     pub(crate) name: CompactString,
     pub(crate) kind: PlainScriptExportKind,
+    /// Whether the bridge declares the value side. Cleared for a name a hoisted
+    /// namespace body captures: that name is declared earlier at module scope as
+    /// an ambient alias instead (see `super::namespace_hoist`), and declaring it
+    /// twice would be a duplicate identifier.
+    pub(crate) bridged_value: bool,
 }
 
 pub(crate) fn collect_normal_script_named_value_exports(
@@ -76,18 +81,21 @@ pub(crate) fn emit_setup_invocation_and_exports(
     ts: &mut VizeString,
     exports: &[PlainScriptExport],
 ) {
-    if exports.is_empty() {
-        ts.push_str("__setup();\n\n");
-        return;
+    if exports.iter().any(|export| export.bridged_value) {
+        ts.push_str("const __vize_plain_script_exports = __setup();\n");
+    } else {
+        // Nothing left to read off the return object; binding it would only add
+        // an unused module-scope const.
+        ts.push_str("__setup();\n");
     }
-
-    ts.push_str("const __vize_plain_script_exports = __setup();\n");
     for export in exports {
         let name = &export.name;
-        append!(
-            *ts,
-            "export const {name} = __vize_plain_script_exports.{name};\n"
-        );
+        if export.bridged_value {
+            append!(
+                *ts,
+                "export const {name} = __vize_plain_script_exports.{name};\n"
+            );
+        }
         // A value+type declaration loses its type meaning when the bridge only
         // re-exports the value. The alias restores it in the type space, which
         // is disjoint from the `const` above, so both names can coexist.
@@ -135,7 +143,7 @@ fn collect_statement_exports(
     collect_declaration_exports(declaration, seen, exports);
 }
 
-fn collect_declaration_exports(
+pub(super) fn collect_declaration_exports(
     declaration: &Declaration<'_>,
     seen: &mut FxHashSet<CompactString>,
     exports: &mut Vec<PlainScriptExport>,
@@ -227,7 +235,11 @@ fn push_export(
     // twice; a second `export const`/`export type` pair would be a duplicate
     // binding, so only the first occurrence is bridged.
     if seen.insert(name.clone()) {
-        exports.push(PlainScriptExport { name, kind });
+        exports.push(PlainScriptExport {
+            name,
+            kind,
+            bridged_value: true,
+        });
     }
 }
 
@@ -242,6 +254,7 @@ mod tests {
         PlainScriptExport {
             name: CompactString::new(name),
             kind,
+            bridged_value: true,
         }
     }
 

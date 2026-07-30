@@ -2,6 +2,35 @@ use vize_carton::{String, append};
 
 use super::emits::EmitsInfo;
 
+/// Structural shape of the Vue component options object the SFC's default
+/// export is intersected with, so template/`InstanceType` consumers see the
+/// runtime option keys alongside the constructor.
+pub(super) const VUE_COMPONENT_OPTIONS_TYPE: &str = "type __VizeVueComponentOptions = {
+  name?: string;
+  __name?: string;
+  __file?: string;
+  __vccOpts?: any;
+  props?: any;
+  emits?: any;
+  slots?: any;
+  setup?: any;
+  render?: Function;
+  components?: any;
+  directives?: any;
+  inheritAttrs?: boolean;
+  compatConfig?: any;
+  call?: (this: unknown, ...args: unknown[]) => never;
+  __isFragment?: never;
+  __isTeleport?: never;
+  __isSuspense?: never;
+  __defaults?: any;
+  __vapor?: boolean;
+  __multiRoot?: boolean;
+  __isKeepAlive?: boolean;
+  __isBuiltIn?: boolean;
+};
+";
+
 pub(super) fn emit_default_export_declaration(
     ts: &mut String,
     emits_info: &EmitsInfo,
