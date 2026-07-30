@@ -33,10 +33,17 @@ impl VirtualProject {
     /// Create a new virtual project.
     pub fn new(project_root: &Path) -> CorsaResult<Self> {
         let project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
-        let virtual_root = project_root
-            .join("node_modules")
-            .join(".vize")
-            .join("canon");
+        // `node_modules` is itself a symlink in pnpm-style stores, monorepo
+        // hoisting shims, worktree lanes, and containers that bind-mount
+        // dependencies. Joining onto the canonical project root would leave a
+        // path that traverses that link, so the virtual files land outside the
+        // root and Corsa reports diagnostics under the link target instead —
+        // mapping them back to the authored SFC then fails silently. Resolve
+        // the link here so the virtual root is already a real path.
+        let virtual_root =
+            vize_carton::path::canonicalize_non_verbatim(&project_root.join("node_modules"))
+                .join(".vize")
+                .join("canon");
 
         let mut project = Self {
             project_root,
