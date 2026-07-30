@@ -18,15 +18,20 @@ use super::{VirtualProject, unique_case_dir};
 
 /// Writes a project whose sources span `lib/` and the project root, so the
 /// common source directory is the root while `rootDir` names `lib`.
-fn write_project(case_dir: &Path, compiler_options: &str) -> std::path::PathBuf {
+fn write_project(
+    case_dir: &Path,
+    tsconfig: &str,
+    extra_files: &[(&str, &str)],
+) -> std::path::PathBuf {
     let _ = fs::remove_dir_all(case_dir);
     let lib_dir = case_dir.join("lib");
     fs::create_dir_all(&lib_dir).unwrap();
-    fs::write(
-        case_dir.join("tsconfig.json"),
-        format!("{{\n  \"compilerOptions\": {{\n{compiler_options}\n  }}\n}}"),
-    )
-    .unwrap();
+    fs::write(case_dir.join("tsconfig.json"), tsconfig).unwrap();
+    for (relative_path, contents) in extra_files {
+        let path = case_dir.join(relative_path);
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(path, contents).unwrap();
+    }
 
     let vue_path = lib_dir.join("RootDir.vue");
     fs::write(
@@ -41,7 +46,19 @@ fn write_project(case_dir: &Path, compiler_options: &str) -> std::path::PathBuf 
 }
 
 fn declaration_root_dir(case_dir: &Path, compiler_options: &str) -> String {
-    let vue_path = write_project(case_dir, compiler_options);
+    declaration_root_dir_from_tsconfig(
+        case_dir,
+        &format!("{{\n  \"compilerOptions\": {{\n{compiler_options}\n  }}\n}}"),
+        &[],
+    )
+}
+
+fn declaration_root_dir_from_tsconfig(
+    case_dir: &Path,
+    tsconfig: &str,
+    extra_files: &[(&str, &str)],
+) -> String {
+    let vue_path = write_project(case_dir, tsconfig, extra_files);
     let mut project = VirtualProject::new(case_dir).unwrap();
     project.set_tsconfig_path(Some(case_dir.join("tsconfig.json")));
     project.register_path(&vue_path).unwrap();
@@ -75,6 +92,32 @@ fn declaration_tsconfig_honors_a_configured_root_dir() {
         "a configured rootDir must reach the declaration tsconfig rebased onto \
          the virtual mirror; inferring the common source directory here would \
          yield the mirror root and prefix every declaration with `lib/`"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn declaration_tsconfig_resolves_an_inherited_root_dir_from_its_declaring_config() {
+    // A relative `rootDir` resolves against the tsconfig that declares it, so a
+    // base config in `configs/` naming `../lib` means `<project>/lib`. Resolving
+    // it against the extending config instead would aim above the project root,
+    // where no mirror counterpart exists, and silently fall back to inference.
+    let case_dir = unique_case_dir("declaration-root-dir-extends");
+    let root_dir = declaration_root_dir_from_tsconfig(
+        &case_dir,
+        "{\n  \"extends\": \"./configs/base.json\"\n}",
+        &[(
+            "configs/base.json",
+            "{\n  \"compilerOptions\": {\n    \"rootDir\": \"../lib\"\n  }\n}",
+        )],
+    );
+
+    let virtual_root = fs::canonicalize(case_dir.join("node_modules/.vize/canon")).unwrap();
+    assert_eq!(
+        Path::new(&root_dir),
+        virtual_root.join("lib"),
+        "an inherited rootDir must resolve against the base config directory"
     );
 
     let _ = fs::remove_dir_all(&case_dir);

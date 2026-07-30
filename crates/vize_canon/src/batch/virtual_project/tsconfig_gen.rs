@@ -346,6 +346,15 @@ impl VirtualProject {
         // Relative path-ish options resolve against the tsconfig that declares
         // them; rebase them onto the project root so the flattened option set
         // keeps the declaring config's meaning.
+        let relative_root_dir = compiler_options
+            .get("rootDir")
+            .and_then(Value::as_str)
+            .filter(|root_dir| !Path::new(root_dir).is_absolute())
+            .map(|root_dir| normalize_tsconfig_path_target(base_dir, &self.project_root, root_dir));
+        if let Some(root_dir) = relative_root_dir {
+            compiler_options.insert("rootDir".into(), Value::String(root_dir.into()));
+        }
+
         if let Some(type_roots) = compiler_options
             .get_mut("typeRoots")
             .and_then(Value::as_array_mut)
@@ -421,22 +430,21 @@ impl VirtualProject {
     /// Rebase a configured `rootDir` onto the virtual mirror.
     ///
     /// The mirror reproduces paths relative to the project root, so a
-    /// `rootDir` of `./lib` becomes `<virtual_root>/lib`. Returns `None` when
-    /// nothing is configured, when the tsconfig directory cannot be resolved,
-    /// or when the configured directory falls outside the project root and
+    /// `rootDir` of `./lib` becomes `<virtual_root>/lib`. Relative values are
+    /// already rebased onto the project root by
+    /// [`Self::normalize_paths_for_project_root`], which resolves them against
+    /// the tsconfig that declares them, so an inherited `rootDir` keeps the
+    /// base config's meaning. Returns `None` when nothing is configured, or
+    /// when the configured directory falls outside the project root and
     /// therefore has no mirror counterpart — in each case the caller keeps
     /// inferring the layout.
     fn configured_virtual_root_dir(&self, configured: Option<&str>) -> Option<PathBuf> {
         let configured = configured?;
-        let tsconfig_dir = self
-            .resolved_tsconfig_path()?
-            .parent()
-            .map(Path::to_path_buf)?;
         let configured_path = Path::new(configured);
         let absolute = if configured_path.is_absolute() {
             configured_path.to_path_buf()
         } else {
-            tsconfig_dir.join(configured_path)
+            self.project_root.join(configured_path)
         };
         let absolute = vize_carton::path::canonicalize_non_verbatim(&absolute);
         let relative = absolute.strip_prefix(&self.project_root).ok()?;
