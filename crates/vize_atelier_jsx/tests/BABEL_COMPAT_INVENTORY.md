@@ -226,9 +226,9 @@ Compared against Vize's default, which is already fully optimized.
 A compat mode must reject what babel rejects, with a diagnostic — never silently
 accept it.
 
-| Case                        | Babel                                                         | Vize today                                                             | Compat mode              | Verdict |
-| --------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------ | ------- |
-| `errors/v_model_non_lval`   | rejects a non-assignable `v-model` target                     | rejects it too, naming the offending expression (closed by #3420) | no change | ✅      |
-| `errors/v_model_no_value`   | rejects: "You have to use JSX Expression inside your v-model" | rejects: "v-model is missing expression."                              | no change                | ✅      |
-| `errors/v_models_not_array` | rejects a non-array `v-models` value                          | emits a custom `models` directive                                      | reject with a diagnostic | ❌      |
-| `errors/v_slots_not_object` | forwards the value as children                                | emits a custom `slots` directive                                       | forward as children      | ❌      |
+| Case                        | Babel                                                         | Vize today                                                        | Compat mode              | Verdict |
+| --------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------ | ------- |
+| `errors/v_model_non_lval`   | rejects a non-assignable `v-model` target                     | rejects it too, naming the offending expression (closed by #3420) | no change                | ✅      |
+| `errors/v_model_no_value`   | rejects: "You have to use JSX Expression inside your v-model" | rejects: "v-model is missing expression."                         | no change                | ✅      |
+| `errors/v_models_not_array` | rejects a non-array `v-models` value                          | emits a custom `models` directive                                 | reject with a diagnostic | ❌      |
+| `errors/v_slots_not_object` | forwards the value as children                                | emits a custom `slots` directive                                  | forward as children      | ❌      |
