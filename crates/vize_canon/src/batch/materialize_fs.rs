@@ -92,6 +92,57 @@ fn file_bytes_match(path: &Path, expected: &[u8]) -> io::Result<bool> {
     }
 }
 
+/// Create (or refresh) a symlink at `target` pointing to `source`, replacing
+/// whatever the target currently is. Shared by the runtime-deps mirror and the
+/// per-package `node_modules` mirror (#3366).
+pub(super) fn symlink_path(source: &Path, target: &Path) -> io::Result<()> {
+    if symlink_matches(source, target)? {
+        return Ok(());
+    }
+
+    if let Some(parent) = target.parent() {
+        ensure_dir(parent)?;
+    }
+
+    remove_path(target)?;
+
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink(source, target)
+    }
+
+    #[cfg(windows)]
+    {
+        if source.is_dir() {
+            // Directory junctions need no special privilege, unlike symlinks:
+            // fall back so directory links still materialize on stock Windows
+            // without Developer Mode or an elevated shell (#3366).
+            std::os::windows::fs::symlink_dir(source, target)
+                .or_else(|_| junction::create(source, target))
+        } else {
+            std::os::windows::fs::symlink_file(source, target)
+        }
+    }
+}
+
+fn symlink_matches(source: &Path, target: &Path) -> io::Result<bool> {
+    match fs::symlink_metadata(target) {
+        Ok(_) => {}
+        Err(error) if error.kind() == ErrorKind::NotFound => return Ok(false),
+        Err(error) => return Err(error),
+    }
+    // `FileType::is_symlink` is false for junctions, so probe with
+    // `read_link`: it resolves both symlinks and junctions and fails for
+    // real files and directories. Junction targets come back in a `\??\`
+    // verbatim spelling, so compare canonicalized forms.
+    let Ok(linked) = fs::read_link(target) else {
+        return Ok(false);
+    };
+    Ok(linked == source
+        || vize_carton::path::canonicalize_non_verbatim(&linked)
+            == vize_carton::path::canonicalize_non_verbatim(source))
+}
+
 pub(super) fn remove_path(path: &Path) -> io::Result<()> {
     let metadata = match fs::symlink_metadata(path) {
         Ok(metadata) => metadata,
