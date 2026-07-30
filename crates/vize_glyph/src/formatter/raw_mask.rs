@@ -1,8 +1,10 @@
 mod interpolation;
+mod tags;
 #[cfg(test)]
 mod tests;
 
 use interpolation::InterpolationScan;
+use tags::{RawRegion, starts_v_pre_attribute, tag_name_at};
 
 /// Per-line "this line is inside a whitespace-significant block" mask.
 ///
@@ -16,12 +18,22 @@ use interpolation::InterpolationScan;
 /// part of the string's runtime value. Indenting those lines rewrote the
 /// emitted string, and since each pass re-indented the spaces the previous one
 /// added, `vize fmt` drifted the content further on every run (#3334).
-pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
+///
+/// `v-pre` needs the same treatment for the same reason. Its content is copied
+/// verbatim by the template formatter, so an SFC indent laid on top of it moved
+/// the content two columns further on every `vize fmt` run — unbounded drift,
+/// not a one-off reformat (#3379).
+pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
     let mut mask = vec![false; lines.len()];
-    let mut depth_stack: Vec<&'static str> = Vec::new();
+    let mut depth_stack: Vec<RawRegion<'a>> = Vec::new();
     let mut in_tag = false;
     let mut open_quote: Option<OpenQuote> = None;
     let mut pending_raw_tag: Option<&'static str> = None;
+    // The element the opening tag currently being lexed declares, and whether
+    // it has shown a `v-pre` attribute yet. Both outlive a single line: an
+    // opening tag may be split across lines with `v-pre` on its own.
+    let mut open_tag_name: Option<&'a [u8]> = None;
+    let mut open_tag_is_pre = false;
     let mut in_comment = false;
     // Lexer state for the inside of a `{{ … }}` interpolation. The template
     // formatter already emits template-literal quasi lines verbatim; the SFC
@@ -86,11 +98,29 @@ pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
                     }
                     b'>' => {
                         in_tag = false;
+                        // `<Foo v-pre />` has no content to keep raw. The
+                        // template formatter takes its self-closing branch
+                        // before the whitespace-significant one, so the mask
+                        // must not open a region the formatter never opened.
+                        let self_closing = cursor > 0 && bytes[cursor - 1] == b'/';
                         if let Some(tag) = pending_raw_tag.take() {
-                            depth_stack.push(tag);
+                            depth_stack.push(RawRegion {
+                                tag: tag.as_bytes(),
+                                v_pre: false,
+                            });
+                        } else if let Some(tag) = open_tag_name.filter(|_| open_tag_is_pre)
+                            && !self_closing
+                        {
+                            depth_stack.push(RawRegion { tag, v_pre: true });
+                        }
+                        open_tag_name = None;
+                        open_tag_is_pre = false;
+                    }
+                    _ => {
+                        if starts_v_pre_attribute(bytes, cursor) {
+                            open_tag_is_pre = true;
                         }
                     }
-                    _ => {}
                 }
                 cursor += 1;
                 continue;
@@ -121,7 +151,10 @@ pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
             let mut matched = false;
             for (tag, open_needle, close_needle) in &TAGS {
                 if starts_with_ascii_ci(&bytes[cursor..], close_needle.as_bytes()) {
-                    if let Some(idx) = depth_stack.iter().rposition(|t| t == tag) {
+                    if let Some(idx) = depth_stack
+                        .iter()
+                        .rposition(|region| !region.v_pre && region.tag == tag.as_bytes())
+                    {
                         depth_stack.remove(idx);
                     }
                     cursor += close_needle.len();
@@ -144,16 +177,54 @@ pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
             if matched {
                 continue;
             }
+            // A `v-pre` region is named by the element that carries the
+            // directive, so it ends at that element's own `</tag>`.
+            if bytes[cursor..].starts_with(b"</")
+                && let Some(name) = tag_name_at(bytes, cursor + 2)
+                && let Some(idx) = depth_stack
+                    .iter()
+                    .rposition(|region| region.v_pre && region.tag.eq_ignore_ascii_case(name))
+            {
+                depth_stack.remove(idx);
+                cursor += 2 + name.len();
+                continue;
+            }
+            // Generic opening tags are not lexed inside a raw region, so a
+            // same-name element nested in a `v-pre` one has to be counted here
+            // or its `</tag>` would end the region early. This mirrors how a
+            // `<pre>` nested in a `<pre>` stacks through the `TAGS` loop above.
+            if let Some(region) = depth_stack.last().copied().filter(|region| region.v_pre)
+                && let Some(name) = tag_name_at(bytes, cursor + 1)
+                && name.eq_ignore_ascii_case(region.tag)
+                && !self_closes_on_this_line(bytes, cursor)
+            {
+                depth_stack.push(region);
+                cursor += 1 + name.len();
+                continue;
+            }
             if depth_stack.is_empty()
                 && let Some(after) = bytes.get(cursor + 1).copied()
                 && (after.is_ascii_alphabetic() || after == b'/')
             {
                 in_tag = true;
+                // `None` for a closing tag, which opens no region.
+                open_tag_name = tag_name_at(bytes, cursor + 1);
+                open_tag_is_pre = false;
             }
             cursor += 1;
         }
     }
     mask
+}
+
+/// Whether the tag starting at `cursor` closes itself before this line ends.
+///
+/// Only the current line is available here, and a tag name cannot be split, so
+/// an opening tag that runs past the line end is treated as not self-closing —
+/// the `/>` form is written on one line in every formatter output.
+fn self_closes_on_this_line(bytes: &[u8], cursor: usize) -> bool {
+    memchr::memchr(b'>', &bytes[cursor..])
+        .is_some_and(|offset| offset > 0 && bytes[cursor + offset - 1] == b'/')
 }
 
 fn literal_attr_quote(line: &[u8], quote_pos: usize) -> bool {

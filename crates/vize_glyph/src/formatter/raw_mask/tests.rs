@@ -67,3 +67,49 @@ fn a_closed_literal_does_not_leak_into_later_lines() {
     let source = "<div>\n  {{ `x` }}\n  <span>y</span>\n</div>";
     assert_eq!(mask(source), [false, false, false, false]);
 }
+
+#[test]
+fn lines_inside_a_v_pre_element_are_raw() {
+    // The template formatter copies a `v-pre` element's content verbatim, so
+    // the SFC layer must not indent it on top — doing so moved the content two
+    // columns further on every run (#3379). The closing tag's line begins
+    // inside the region, so it is raw too, exactly like `</pre>`.
+    let source = "<code v-pre>\n  {{ variable }}\n</code>\n<span>y</span>";
+    assert_eq!(mask(source), [false, true, true, false]);
+}
+
+#[test]
+fn a_v_pre_directive_on_a_later_line_of_the_opening_tag_still_opens_the_region() {
+    let source = "<code\n  v-pre\n  class=\"a\">\n  {{ variable }}\n</code>\n<span>y</span>";
+    assert_eq!(mask(source), [false, false, false, true, true, false]);
+}
+
+#[test]
+fn a_same_name_element_nested_in_a_v_pre_region_does_not_end_it() {
+    let source = "<div v-pre>\n  <div>x</div>\n  y\n</div>\n<span>z</span>";
+    assert_eq!(mask(source), [false, true, true, true, false]);
+}
+
+#[test]
+fn a_self_closing_v_pre_element_opens_no_region() {
+    let source = "<Foo v-pre />\n<span>\n  y\n</span>";
+    assert_eq!(mask(source), [false, false, false, false]);
+}
+
+#[test]
+fn a_v_pre_look_alike_attribute_opens_no_region() {
+    let source = "<div data-v-pre>\n  a\n</div>";
+    assert_eq!(mask(source), [false, false, false]);
+}
+
+#[test]
+fn a_v_pre_string_inside_an_attribute_value_opens_no_region() {
+    let source = "<div title=\"v-pre\">\n  a\n</div>";
+    assert_eq!(mask(source), [false, false, false]);
+}
+
+#[test]
+fn a_v_pre_region_on_a_hyphenated_component_closes_on_its_own_tag() {
+    let source = "<my-code v-pre>\n  a\n</my-code>\n<span>y</span>";
+    assert_eq!(mask(source), [false, true, true, false]);
+}

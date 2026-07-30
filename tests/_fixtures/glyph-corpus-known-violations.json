@@ -1,12 +1,6 @@
 [
   {
     "property": "idempotence",
-    "project": "scalar",
-    "path": "projects/scalar-app/src/features/collection/components/Environment.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3379"
-  },
-  {
-    "property": "idempotence",
     "project": "vue-data-ui",
     "path": "src/components/vue-ui-flow.vue",
     "issue": "https://github.com/ubugeeei-prod/vize/issues/3379"
