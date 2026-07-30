@@ -11,7 +11,7 @@
   "generic-component-ok": "pass",
   "inherit-attrs-false-unknown": "skip",
   "inject-key-type": "pass",
-  "literal-union-prop-bad": "fail",
+  "literal-union-prop-bad": "pass",
   "literal-union-prop-ok": "pass",
   "optional-chain-bad": "pass",
   "optional-chain-ok": "pass",

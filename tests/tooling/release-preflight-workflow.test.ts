@@ -79,10 +79,7 @@ test("reusable release preflight verifies evidence and crate plans without regis
   );
   assert.ok(stickyCache);
   assert.equal(stickyCache.with?.key, "release-crates-dry-run");
-  assert.equal(
-    stickyCache.with?.["cache-key-suffix"],
-    "${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}",
-  );
+  assert.equal(stickyCache.with?.["cache-key-suffix"], "${{ runner.os }}-${{ runner.arch }}");
 
   assert.doesNotMatch(source, /environment:|id-token:\s*write|secrets\.|crates-io-auth-action/);
 });

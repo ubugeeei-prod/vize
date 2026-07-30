@@ -164,10 +164,8 @@ test("local app readiness action keeps setup, diagnostics, and aggregation bound
   assert.match(setupRust, /uses:\s*dtolnay\/rust-toolchain@[0-9a-f]{40}\s*# stable/);
   assert.match(action, /uses:\s*wild-linker\/action@[0-9a-f]{40}\s*# v0\.9\.0/);
   assert.match(action, /uses:\s*\.\/\.github\/actions\/setup-rust-sticky-cache/);
-  assert.match(
-    action,
-    /cache-key-suffix:[^\n]*steps\.rust-toolchain\.outputs\.cachekey[^\n]*hashFiles\('Cargo\.lock'\)/,
-  );
+  assert.match(action, /cache-key-suffix:[^\n]*steps\.rust-toolchain\.outputs\.cachekey/);
+  assert.doesNotMatch(action, /cache-key-suffix:[^\n]*hashFiles/);
   assert.match(action, /uses:\s*\.\/\.github\/actions\/setup-moonbit/);
   assert.match(action, /cargo build --profile ci -p vize/);
 
