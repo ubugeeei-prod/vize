@@ -119,6 +119,28 @@ pub(super) fn explicit_hidden_include_roots(
     roots
 }
 
+/// Include roots whose hidden directory is spelled out by the include pattern
+/// itself, such as `packages/docs/.vitepress/theme/components`.
+///
+/// `tsc` drops dot-directories only while expanding wildcards; a literal path
+/// segment is matched literally, so these files are part of the program and
+/// must be checked. This is narrower than [`explicit_hidden_include_roots`],
+/// which also treats a tsconfig that merely *lives* in a hidden directory
+/// (`.nuxt/tsconfig.json`) as a hidden root — appropriate when collecting
+/// ambient declarations, but not for deciding what to typecheck.
+pub(super) fn explicit_hidden_pattern_roots(includes: &[GlobSpec]) -> Vec<PathBuf> {
+    let mut roots = Vec::new();
+    let mut seen = FxHashSet::default();
+
+    for include in includes {
+        if let Some(root) = hidden_pattern_root(&include.base_dir, &include.normalized) {
+            push_hidden_include_root(&mut roots, &mut seen, &root);
+        }
+    }
+
+    roots
+}
+
 fn push_hidden_include_root(roots: &mut Vec<PathBuf>, seen: &mut FxHashSet<PathBuf>, root: &Path) {
     let root = normalize_input_path(root);
     if root.is_dir() && seen.insert(root.clone()) {

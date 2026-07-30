@@ -50,13 +50,13 @@
     "pinia": {
       "revision": "59ec7da3f0130caa66fae6541557cf3c5b10f78b",
       "accepted": true,
-      "vizeDiagnosticCount": 0,
+      "vizeDiagnosticCount": 7,
       "baselineDiagnosticCount": 7,
-      "sharedCount": 0,
+      "sharedCount": 7,
       "falsePositiveCount": 0,
-      "falseNegativeCount": 7,
+      "falseNegativeCount": 0,
       "falsePositiveRatio": 0,
-      "falseNegativeRatio": 1
+      "falseNegativeRatio": 0
     },
     "vitepress": {
       "revision": "9ee401d7adefc39fd960990cc032be5464e4eb27",

@@ -40,7 +40,7 @@ pub(crate) use type_references::{
 
 use collect::{
     collect_supported_files_for_include_roots, collect_supported_files_with_options,
-    explicit_hidden_include_roots,
+    explicit_hidden_include_roots, explicit_hidden_pattern_roots,
 };
 use glob::{default_exclude_specs, normalize_input_path};
 use loader::collect_tsconfig_project_paths;
@@ -162,20 +162,27 @@ fn collect_default_check_files_for_tsconfig(
                 files.push(path);
             }
         }
-        if include_hidden_tsconfig_roots {
-            for root in explicit_hidden_include_roots(project_root, includes) {
-                for path in collect_supported_files_with_options(
-                    &root,
-                    includes,
-                    excludes,
-                    FileCollectionOptions {
-                        include_hidden: true,
-                        include_jsx,
-                    },
-                ) {
-                    if !is_generated_codegen_declaration_path(&path) && seen.insert(path.clone()) {
-                        files.push(path);
-                    }
+        // A tsconfig that names a dot-directory literally — VitePress
+        // `.vitepress`, Storybook `.storybook` — puts those files in the
+        // program, so they must be checked, not just scanned for ambient
+        // declarations.
+        let hidden_roots = if include_hidden_tsconfig_roots {
+            explicit_hidden_include_roots(project_root, includes)
+        } else {
+            explicit_hidden_pattern_roots(includes)
+        };
+        for root in hidden_roots {
+            for path in collect_supported_files_with_options(
+                &root,
+                includes,
+                excludes,
+                FileCollectionOptions {
+                    include_hidden: true,
+                    include_jsx,
+                },
+            ) {
+                if !is_generated_codegen_declaration_path(&path) && seen.insert(path.clone()) {
+                    files.push(path);
                 }
             }
         }
