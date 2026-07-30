@@ -169,6 +169,15 @@ impl DocumentStore {
         self.documents.get(uri).map(|document| document.text())
     }
 
+    /// Owned snapshot of a document's version, holding no lock on return.
+    ///
+    /// Same lock discipline as [`Self::text`]: this is the version comparison a
+    /// diagnostics pass makes between its `.await` points to notice that a newer
+    /// `didChange` has superseded it, so it must not leave a shard guard behind.
+    pub fn version(&self, uri: &Url) -> Option<i32> {
+        self.documents.get(uri).map(|document| document.version)
+    }
+
     /// Apply changes to a document.
     pub fn apply_changes(
         &self,

@@ -14,20 +14,59 @@ use crate::ide::DiagnosticService;
 use super::MaestroServer;
 use vize_carton::append;
 
+#[cfg(test)]
+mod supersession_tests;
+
 impl MaestroServer {
     /// Publish the changed document first, then refresh open Vue files that
     /// directly import it. Corsa has already received the changed virtual
     /// document by this point, so importer diagnostics observe the new shape.
     pub(crate) async fn publish_changed_diagnostics(&self, uri: &Url, content: &str) {
         self.state.update_virtual_docs(uri, content);
+        let version = self.state.documents.version(uri);
         self.publish_diagnostics(uri).await;
         if !self.state.is_lsp_typecheck_enabled() {
             return;
         }
 
+        let Some(version) = version else {
+            return;
+        };
+        self.publish_importer_diagnostics(uri, version).await;
+    }
+
+    /// Refresh the open Vue documents that import `uri`, abandoning the fan-out
+    /// as soon as a newer version of `uri` lands. Returns the importers actually
+    /// refreshed, in order, so the supersession rule is directly assertable.
+    ///
+    /// Supersession matters because this loop is the only unbounded work a
+    /// single keystroke schedules: each importer costs a full Corsa diagnostics
+    /// pass, and a `.d.ts` edit fans out to *every* open Vue document
+    /// ([`super::importers::open_vue_dependents`]). Without the check, typing at
+    /// editor speed queues one such fan-out per keystroke, each computed from
+    /// text the user has already replaced and each republished over the last —
+    /// the queue-depth growth behind #3315's silent stalls.
+    ///
+    /// The final publish is never lost: the newest version's pass is by
+    /// definition not superseded, so it always runs the fan-out to completion.
+    /// Abandoning an older pass also cannot leave stale diagnostics on screen,
+    /// because it stops *before* publishing rather than after computing.
+    async fn publish_importer_diagnostics(&self, uri: &Url, version: i32) -> Vec<Url> {
+        let mut refreshed = Vec::new();
         for importer in super::importers::open_vue_dependents(&self.state, uri) {
+            if self.state.documents.version(uri) != Some(version) {
+                tracing::debug!(
+                    "abandoning superseded importer refresh for {}: pass version {}, current {:?}",
+                    uri,
+                    version,
+                    self.state.documents.version(uri)
+                );
+                break;
+            }
             self.publish_diagnostics(&importer).await;
+            refreshed.push(importer);
         }
+        refreshed
     }
 
     /// Publish diagnostics for a document.
