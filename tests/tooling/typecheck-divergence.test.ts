@@ -66,17 +66,19 @@ test("typecheck divergence classifies exact diagnostics deterministically", () =
     "project",
     "summary",
     "shared",
+    "messageMismatches",
     "falsePositives",
     "falseNegatives",
     "documentedDifferences",
     "sha256",
   ]);
   assert.equal(result.schema, "vize.fixtureTypecheckDivergence");
-  assert.equal(result.version, 3);
+  assert.equal(result.version, 4);
   assert.deepEqual(result.summary, {
     vizeDiagnosticCount: 2,
     baselineDiagnosticCount: 2,
     sharedCount: 2,
+    messageMismatchCount: 0,
     documentedDifferenceCount: 0,
     falsePositiveCount: 0,
     falseNegativeCount: 0,
@@ -120,6 +122,7 @@ test("typecheck divergence separates false positives and false negatives", () =>
     vizeDiagnosticCount: 3,
     baselineDiagnosticCount: 3,
     sharedCount: 1,
+    messageMismatchCount: 0,
     documentedDifferenceCount: 0,
     falsePositiveCount: 2,
     falseNegativeCount: 2,
@@ -151,10 +154,113 @@ test("typecheck divergence retains duplicate diagnostics as a multiset", () => {
     "src/App.vue(1,1): error TS2307: baseline message\n",
   );
 
-  assert.equal(result.summary.sharedCount, 1);
+  assert.equal(result.summary.sharedCount, 0);
+  assert.equal(result.summary.messageMismatchCount, 1);
   assert.equal(result.summary.falsePositiveCount, 1);
-  assert.equal(result.shared[0].vizeMessage, "a message");
+  assert.equal(result.messageMismatches[0].vizeMessage, "a message");
   assert.equal(result.falsePositives[0].message, "z message");
+});
+
+/**
+ * Regression for #3447. Both of these agree with vue-tsc on file, severity,
+ * line, column and code and differ only in the message, so the identity the
+ * comparator groups on cannot tell them apart from a match. The first is the
+ * `.vue.ts` specifier leak fixed in #3397, which the ledger scored `shared`
+ * while it sat on main; the second is vize naming its own synthetic wrapper
+ * type in user-facing text. Before the fix both landed in `shared` and
+ * `messageMismatches` did not exist.
+ */
+test("typecheck divergence separates a message-only divergence from a match", () => {
+  const result = compare(
+    [
+      {
+        file: "src/App.vue",
+        diagnostics: [
+          "error:2:20 [TS2307] Cannot find module './Absent.vue.ts' or its corresponding type declarations.",
+        ],
+      },
+      {
+        file: "src/Parent.vue",
+        diagnostics: [
+          "error:6:36 [TS2339] Property 'nope' does not exist on type '__VizeComponentInstance'.",
+        ],
+      },
+    ],
+    [
+      "src/App.vue(2,20): error TS2307: Cannot find module './Absent.vue' or its corresponding type declarations.",
+      "src/Parent.vue(6,36): error TS2339: Property 'nope' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, { reload: (times: number) => number; }, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ... 18 more ..., {}>'.",
+    ].join("\n"),
+  );
+
+  assert.equal(result.summary.sharedCount, 0);
+  assert.equal(result.summary.messageMismatchCount, 2);
+  assert.equal(result.summary.falsePositiveCount, 0);
+  assert.equal(result.summary.falseNegativeCount, 0);
+  assert.deepEqual(result.messageMismatches, [
+    {
+      file: "src/App.vue",
+      severity: "error",
+      line: 2,
+      column: 20,
+      code: 2307,
+      vizeMessage: "Cannot find module './Absent.vue.ts' or its corresponding type declarations.",
+      baselineMessage: "Cannot find module './Absent.vue' or its corresponding type declarations.",
+    },
+    {
+      file: "src/Parent.vue",
+      severity: "error",
+      line: 6,
+      column: 36,
+      code: 2339,
+      vizeMessage: "Property 'nope' does not exist on type '__VizeComponentInstance'.",
+      baselineMessage:
+        "Property 'nope' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, { reload: (times: number) => number; }, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ... 18 more ..., {}>'.",
+    },
+  ]);
+});
+
+/**
+ * A message-only divergence is reviewable exactly like a code divergence: one
+ * ledger entry at the same span, carrying both texts and a written reason,
+ * moves it out of the bucket and into `documentedDifferences`.
+ */
+test("typecheck divergence cancels a documented message-only difference", () => {
+  const files = [
+    {
+      file: "src/App.vue",
+      diagnostics: ["error:3:7 [TS2322] Type 'A | B' is not assignable to type 'C'."],
+    },
+  ];
+  const baseline = "src/App.vue(3,7): error TS2322: Type 'B | A' is not assignable to type 'C'.\n";
+  const difference = {
+    project: "fixture",
+    file: "src/App.vue",
+    severity: "error",
+    line: 3,
+    column: 7,
+    vize: { code: 2322, message: "Type 'A | B' is not assignable to type 'C'." },
+    baseline: { code: 2322, message: "Type 'B | A' is not assignable to type 'C'." },
+    issue: 3447,
+    reason: "tsgo and tsc order the members of this union independently when printing it.",
+  };
+
+  const result = compare(files, baseline, [difference]);
+  assert.equal(result.summary.messageMismatchCount, 0);
+  assert.equal(result.summary.documentedDifferenceCount, 1);
+  assert.equal(result.summary.sharedCount, 0);
+  assert.equal(result.summary.falsePositiveCount, 0);
+  assert.equal(result.summary.falseNegativeCount, 0);
+
+  // The entry only cancels the exact pair it describes; a reworded side leaves
+  // the divergence in the bucket.
+  const reworded = compare(files, baseline, [
+    {
+      ...difference,
+      baseline: { code: 2322, message: "Type 'B | D' is not assignable to type 'C'." },
+    },
+  ]);
+  assert.equal(reworded.summary.messageMismatchCount, 1);
+  assert.equal(reworded.summary.documentedDifferenceCount, 0);
 });
 
 test("typecheck divergence accepts a diagnostic-free baseline without NaN ratios", () => {

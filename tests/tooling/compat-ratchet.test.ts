@@ -61,6 +61,12 @@ const ratchetRules: RatchetRule[] = [
   { metric: "falseNegativeCount", direction: "<=" },
   { metric: "falseNegativeRatio", direction: "<=" },
   { metric: "sharedCount", direction: ">=" },
+  // A diagnostic vize reports at vue-tsc's exact span and code but with
+  // different text is a divergence the (file, severity, line, column, code)
+  // identity cannot see, which is how the #3397 `.vue.ts` specifier leak lived
+  // on main undetected (#3447). Every probe is at zero today, so any wording
+  // drift fails here.
+  { metric: "messageMismatchCount", direction: "<=" },
   { metric: "baselineDiagnosticCount", direction: "==" },
   // Neither growth nor decay is silent: a new expected difference has to land
   // with its ledger entry and a fresh baseline, and one that stops reproducing
@@ -76,18 +82,20 @@ for (const probe of compatProbes) {
     async () => {
       const result = await runCompatProbe(probe);
       const { summary } = result;
+      const paired = summary.sharedCount + summary.messageMismatchCount;
       assert.equal(
         summary.vizeDiagnosticCount,
-        summary.sharedCount + summary.documentedDifferenceCount + summary.falsePositiveCount,
+        paired + summary.documentedDifferenceCount + summary.falsePositiveCount,
         `${probe.fixtureId}: divergence summary lost vize diagnostics`,
       );
       assert.equal(
         summary.baselineDiagnosticCount,
-        summary.sharedCount + summary.documentedDifferenceCount + summary.falseNegativeCount,
+        paired + summary.documentedDifferenceCount + summary.falseNegativeCount,
         `${probe.fixtureId}: divergence summary lost vue-tsc diagnostics`,
       );
       console.log(
         `${probe.fixtureId}: shared=${summary.sharedCount}` +
+          ` messageMismatches=${summary.messageMismatchCount}` +
           ` documented=${summary.documentedDifferenceCount}` +
           ` falsePositives=${summary.falsePositiveCount} (${summary.falsePositiveRatio.toFixed(4)})` +
           ` falseNegatives=${summary.falseNegativeCount} (${summary.falseNegativeRatio.toFixed(4)})` +

@@ -221,6 +221,7 @@ function renderMarkdown(artifact) {
     `Vize diagnostics: ${summary.vizeDiagnosticCount}`,
     `vue-tsc diagnostics: ${summary.baselineDiagnosticCount}`,
     `Shared: ${summary.sharedCount}`,
+    `Message mismatches: ${summary.messageMismatchCount}`,
     `Documented differences: ${summary.documentedDifferenceCount}`,
     `False positives: ${summary.falsePositiveCount} (${summary.falsePositiveRatio})`,
     `False negatives: ${summary.falseNegativeCount} (${summary.falseNegativeRatio})`,

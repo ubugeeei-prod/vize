@@ -39,6 +39,12 @@ export type CompatSummary = {
   vizeDiagnosticCount: number;
   baselineDiagnosticCount: number;
   sharedCount: number;
+  /**
+   * Pairs that agree on file, severity, line, column and code but not on the
+   * message text. Split out of `sharedCount` so a divergence that lives only in
+   * the wording is visible to the ratchet (#3447).
+   */
+  messageMismatchCount: number;
   /** Same-span pairs cancelled by tests/_fixtures/compat-documented-differences.json. */
   documentedDifferenceCount: number;
   falsePositiveCount: number;
@@ -226,6 +232,7 @@ export async function runCompatProbe(probe: CompatProbe): Promise<CompatProbeRes
         vizeDiagnosticCount: divergence.summary.vizeDiagnosticCount,
         baselineDiagnosticCount: divergence.summary.baselineDiagnosticCount,
         sharedCount: divergence.summary.sharedCount,
+        messageMismatchCount: divergence.summary.messageMismatchCount,
         documentedDifferenceCount: divergence.summary.documentedDifferenceCount,
         falsePositiveCount: divergence.summary.falsePositiveCount,
         falseNegativeCount: divergence.summary.falseNegativeCount,

@@ -1,15 +1,35 @@
 import { createHash } from "node:crypto";
-import { isAbsolute, relative } from "node:path";
+import { isAbsolute } from "node:path";
+
+import {
+  collectVizeDiagnostics,
+  collectVueTscDiagnostics,
+  invalid,
+  normalizePath,
+} from "./typecheck-divergence-input.mjs";
 
 /**
  * `documentedDifferences` is the reviewed ledger of expected vize-versus-vue-tsc
  * differences (tests/_fixtures/compat-documented-differences.json). An entry can
  * only ever cancel exactly one false positive against exactly one false negative
- * that share a file, severity, line and column: both tools must already report
- * something at that span, and both messages must match the ledger byte for byte
- * after whitespace normalization. A vize-only or vue-tsc-only diagnostic can
- * therefore never be absorbed, and a divergence that shifts position or wording
- * falls straight back into the false-positive/false-negative buckets.
+ * that share a file, severity, line and column, or one message mismatch at that
+ * span: both tools must already report something there, and both messages must
+ * match the ledger byte for byte after whitespace normalization. A vize-only or
+ * vue-tsc-only diagnostic can therefore never be absorbed, and a divergence that
+ * shifts position falls straight back into the false-positive/false-negative
+ * buckets.
+ *
+ * Two diagnostics that agree on (file, severity, line, column, code) are only
+ * `shared` when their messages are also identical after whitespace
+ * normalization; otherwise they land in `messageMismatches`, so a divergence
+ * that lives purely in the text is visible to the ratchet instead of being
+ * scored as a match (#3447). The comparison is deliberately byte-for-byte and
+ * carries no display-normalization rules: every one of the 47 shared pairs the
+ * per-PR probes produce already matches exactly, so there is no observed
+ * checker-rendering artifact to excuse, and inventing a rule for an unobserved
+ * one would loosen the gate on speculation. A rendering difference that does
+ * show up surfaces in the bucket with both texts, and is then either recorded
+ * in the ledger with a written reason or fixed.
  */
 export function compareTypecheckDiagnostics({
   projectId,
@@ -29,6 +49,7 @@ export function compareTypecheckDiagnostics({
   const baselineGroups = groupByIdentity(baseline);
   const identities = [...new Set([...vizeGroups.keys(), ...baselineGroups.keys()])].sort(byteOrder);
   const shared = [];
+  const messageMismatches = [];
   const falsePositives = [];
   const falseNegatives = [];
 
@@ -38,7 +59,7 @@ export function compareTypecheckDiagnostics({
     const commonCount = Math.min(candidates.length, expected.length);
     for (let index = 0; index < commonCount; index += 1) {
       const candidate = candidates[index];
-      shared.push({
+      const pair = {
         file: candidate.file,
         severity: candidate.severity,
         line: candidate.line,
@@ -46,21 +67,36 @@ export function compareTypecheckDiagnostics({
         code: candidate.code,
         vizeMessage: candidate.message,
         baselineMessage: expected[index].message,
-      });
+      };
+      if (pair.vizeMessage === pair.baselineMessage) shared.push(pair);
+      else messageMismatches.push(pair);
     }
     falsePositives.push(...candidates.slice(commonCount));
     falseNegatives.push(...expected.slice(commonCount));
   }
 
   shared.sort(compareShared);
+  messageMismatches.sort(compareShared);
   falsePositives.sort(compareRecords);
   falseNegatives.sort(compareRecords);
-  const documented = pairDocumentedDifferences(expectedDifferences, falsePositives, falseNegatives);
-  const classified = { shared, falsePositives, falseNegatives, documentedDifferences: documented };
+  const documented = pairDocumentedDifferences(
+    expectedDifferences,
+    falsePositives,
+    falseNegatives,
+    messageMismatches,
+  );
+  const classified = {
+    shared,
+    messageMismatches,
+    falsePositives,
+    falseNegatives,
+    documentedDifferences: documented,
+  };
   const summary = {
     vizeDiagnosticCount: vize.length,
     baselineDiagnosticCount: baseline.length,
     sharedCount: shared.length,
+    messageMismatchCount: messageMismatches.length,
     documentedDifferenceCount: documented.length,
     falsePositiveCount: falsePositives.length,
     falseNegativeCount: falseNegatives.length,
@@ -73,7 +109,7 @@ export function compareTypecheckDiagnostics({
   };
   return {
     schema: "vize.fixtureTypecheckDivergence",
-    version: 3,
+    version: 4,
     project: projectId,
     summary,
     ...classified,
@@ -82,53 +118,6 @@ export function compareTypecheckDiagnostics({
       .digest("hex"),
   };
 }
-
-function collectVizeDiagnostics(report, cwd) {
-  if (report == null || typeof report !== "object" || !Array.isArray(report.files)) {
-    invalid("Vize report must contain files");
-  }
-  const diagnostics = [];
-  for (const [fileIndex, file] of report.files.entries()) {
-    if (file == null || typeof file !== "object" || !Array.isArray(file.diagnostics)) {
-      invalid(`Vize files[${fileIndex}] must contain diagnostics`);
-    }
-    const normalizedFile = normalizePath(file.file, cwd, `Vize files[${fileIndex}].file`);
-    for (const [diagnosticIndex, diagnostic] of file.diagnostics.entries()) {
-      if (typeof diagnostic !== "string") {
-        invalid(`Vize diagnostic ${fileIndex}:${diagnosticIndex} must be a string`);
-      }
-      const match = /^(error|warning):(\d+):(\d+) \[TS(\d+)\] ([\s\S]+)$/.exec(diagnostic);
-      if (match == null) invalid(`unparseable Vize diagnostic ${normalizedFile}`);
-      diagnostics.push(record(normalizedFile, match[1], match[2], match[3], match[4], match[5]));
-    }
-  }
-  return partitionVueDiagnostics(diagnostics);
-}
-
-function collectVueTscDiagnostics(output, cwd) {
-  if (typeof output !== "string") invalid("vue-tsc output must be a string");
-  const diagnostics = [];
-  let excludedNonVueCount = 0;
-  let excludedProjectCount = 0;
-  let excludedExternalCount = 0;
-  for (const line of output.replaceAll("\r\n", "\n").split("\n")) {
-    const match = /^(.+)\((\d+),(\d+)\): (error|warning) TS(\d+): (.+)$/.exec(line);
-    const projectMatch = /^(error|warning) TS(\d+): (.+)$/.exec(line);
-    if (match != null) {
-      const file = normalizeBaselinePath(match[1], cwd);
-      if (file == null) excludedExternalCount += 1;
-      else if (!file.endsWith(".vue")) excludedNonVueCount += 1;
-      else diagnostics.push(record(file, match[4], match[2], match[3], match[5], match[6]));
-    } else if (projectMatch != null) {
-      record("<project>", projectMatch[1], "1", "1", projectMatch[2], projectMatch[3]);
-      excludedProjectCount += 1;
-    } else if (/\b(?:error|warning) TS\d+:/.test(line)) {
-      invalid(`unparseable vue-tsc diagnostic: ${line}`);
-    }
-  }
-  return { diagnostics, excludedNonVueCount, excludedProjectCount, excludedExternalCount };
-}
-
 function selectDocumentedDifferences(values, projectId, cwd) {
   if (!Array.isArray(values)) invalid("documented differences must be an array");
   const selected = [];
@@ -168,14 +157,24 @@ function selectDocumentedDifferences(values, projectId, cwd) {
   return selected.sort(compareDocumented);
 }
 
-function pairDocumentedDifferences(expected, falsePositives, falseNegatives) {
+function pairDocumentedDifferences(expected, falsePositives, falseNegatives, messageMismatches) {
   const paired = [];
   for (const difference of expected) {
+    // A reviewed difference either splits across the two one-sided buckets
+    // (the tools disagree on the code, so neither diagnostic has a partner) or
+    // sits in the message-mismatch bucket (they agree on the code and differ
+    // only in wording). Exactly one of the two shapes may cancel it.
     const positiveIndex = findDocumented(falsePositives, difference, difference.vize);
     const negativeIndex = findDocumented(falseNegatives, difference, difference.baseline);
-    if (positiveIndex < 0 || negativeIndex < 0) continue;
-    falsePositives.splice(positiveIndex, 1);
-    falseNegatives.splice(negativeIndex, 1);
+    if (positiveIndex >= 0 && negativeIndex >= 0) {
+      falsePositives.splice(positiveIndex, 1);
+      falseNegatives.splice(negativeIndex, 1);
+      paired.push(difference);
+      continue;
+    }
+    const mismatchIndex = findDocumentedMismatch(messageMismatches, difference);
+    if (mismatchIndex < 0) continue;
+    messageMismatches.splice(mismatchIndex, 1);
     paired.push(difference);
   }
   return paired;
@@ -193,6 +192,20 @@ function findDocumented(records, difference, side) {
   );
 }
 
+function findDocumentedMismatch(records, difference) {
+  return records.findIndex(
+    (candidate) =>
+      candidate.file === difference.file &&
+      candidate.severity === difference.severity &&
+      candidate.line === difference.line &&
+      candidate.column === difference.column &&
+      candidate.code === difference.vize.code &&
+      candidate.code === difference.baseline.code &&
+      candidate.vizeMessage === difference.vize.message &&
+      candidate.baselineMessage === difference.baseline.message,
+  );
+}
+
 function documentedSide(value, label) {
   if (value == null || typeof value !== "object") invalid(`${label} must be an object`);
   const code = positiveInteger(value.code, `${label}.code`);
@@ -207,65 +220,6 @@ function positiveInteger(value, label) {
     invalid(`${label} must be a positive safe integer`);
   return value;
 }
-
-function partitionVueDiagnostics(diagnostics) {
-  const included = diagnostics.filter((diagnostic) => diagnostic.file.endsWith(".vue"));
-  return {
-    diagnostics: included,
-    excludedNonVueCount: diagnostics.length - included.length,
-  };
-}
-
-function normalizePath(value, cwd, label) {
-  if (typeof value !== "string" || value.length === 0) invalid(`${label} must be non-empty`);
-  let normalized = value.replaceAll("\\", "/");
-  if (isAbsolute(normalized)) normalized = relative(cwd, normalized).replaceAll("\\", "/");
-  if (normalized.startsWith("./")) normalized = normalized.slice(2);
-  if (
-    normalized.length === 0 ||
-    isAbsolute(normalized) ||
-    /^[A-Za-z]:\//.test(normalized) ||
-    normalized.split("/").some((segment) => segment === "" || segment === "." || segment === "..")
-  ) {
-    invalid(`${label} must stay inside the fixture workspace`);
-  }
-  return normalized;
-}
-
-function normalizeBaselinePath(value, cwd) {
-  if (typeof value !== "string" || value.length === 0) {
-    invalid("vue-tsc diagnostic file must be non-empty");
-  }
-  let normalized = value.replaceAll("\\", "/");
-  if (isAbsolute(normalized)) normalized = relative(cwd, normalized).replaceAll("\\", "/");
-  if (normalized.startsWith("./")) normalized = normalized.slice(2);
-  const segments = normalized.split("/");
-  if (normalized.length === 0 || segments.some((segment) => segment === "" || segment === ".")) {
-    invalid("vue-tsc diagnostic file must be normalized");
-  }
-  if (isAbsolute(normalized) || /^[A-Za-z]:\//.test(normalized) || segments.includes("..")) {
-    return null;
-  }
-  return normalized;
-}
-
-function record(file, severity, line, column, code, message) {
-  const values = [line, column, code].map(Number);
-  if (values.some((value) => !Number.isSafeInteger(value) || value < 1)) {
-    invalid(`diagnostic range and code must be positive safe integers: ${file}`);
-  }
-  const normalizedMessage = message.replace(/\s+/g, " ").trim();
-  if (normalizedMessage.length === 0) invalid(`diagnostic message must be non-empty: ${file}`);
-  return {
-    file,
-    severity,
-    line: values[0],
-    column: values[1],
-    code: values[2],
-    message: normalizedMessage,
-  };
-}
-
 function groupByIdentity(records) {
   const groups = new Map();
   for (const value of records) {
@@ -327,8 +281,4 @@ function byteOrder(left, right) {
 
 function ratio(count, total) {
   return total === 0 ? 0 : count / total;
-}
-
-function invalid(message) {
-  throw new Error(`Invalid typecheck divergence input: ${message}`);
 }
