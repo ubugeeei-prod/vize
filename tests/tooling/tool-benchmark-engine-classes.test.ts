@@ -185,6 +185,7 @@ test("the type-check summary renders separate engine classes and no cross ratio"
       prettier: "3.4.0",
       node: "v24.0.0",
     },
+    binaries: { vize: "d".repeat(64), tsgo: "e".repeat(64), vueTsc: null },
     backend: {
       engine: "tsgo-native",
       corsaPath: "/repo/node_modules/.bin/tsgo",
@@ -216,6 +217,7 @@ test("the type-check summary renders separate engine classes and no cross ratio"
     "Runner: `local` (8 logical CPU, test cpu)",
     "Input: 500 generated SFC files (976.6 KB). Median of 1 measured run(s) after 1 warmup run(s).",
     "Versions: vize `vize 0.303.0` · tsgo `7.0.0-dev` · vue-tsc `3.2.0` (typescript `5.9.0`) · vue `3.6.0` · eslint `9.0.0` · prettier `3.4.0` · node `v24.0.0`",
+    `Binaries (sha256): vize \`${"d".repeat(64)}\` tsgo \`${"e".repeat(64)}\` vueTsc n/a`,
     "Backend: native TypeScript engine ready at `/repo/node_modules/.bin/tsgo`. Planted-diagnostic gating for the type-check rows lives in bench/check-gate.mjs (.github/workflows/check-bench.yml).",
     "",
     "| Surface | Files | Existing tool | Existing median | Vize 1T | Vize max | Speedup |",

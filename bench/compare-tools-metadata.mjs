@@ -10,7 +10,7 @@
 import os from "node:os";
 
 import { buildFairnessNotes } from "./benchmark-notes.mjs";
-import { collectVersions } from "./benchmark-provenance.mjs";
+import { collectBinaryHashes, collectVersions } from "./benchmark-provenance.mjs";
 
 export const BLACKSMITH_MAX_LABEL = "blacksmith-32vcpu-ubuntu-2404";
 export const BLACKSMITH_MAX_SPEC = "32 vCPU / 128 GB RAM / 1.5 TB storage";
@@ -82,6 +82,7 @@ export function buildMetadata({ args, inputDir, files, totalBytes, taskList, opt
       node: process.version,
     },
     versions: collectVersions({ ...bins, corsaVersion: options.backend.corsaVersion }),
+    binaries: collectBinaryHashes({ ...bins, corsaPath: options.backend.corsaPath }),
     backend: options.backend,
     input: {
       dir: inputDir,

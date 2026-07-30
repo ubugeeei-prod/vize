@@ -97,6 +97,13 @@ export function renderMarkdown(data) {
     `Versions: \`${data.versions.vize}\` · tsgo \`${data.versions.tsgo}\` · vue-tsc \`${data.versions.vueTsc ?? "missing"}\` (typescript \`${data.versions.typescript ?? "n/a"}\`) · vue \`${data.versions.vue}\``,
   );
   lines.push(
+    `Binaries (sha256 of the measured file, re-checked after the run): ${Object.entries(
+      data.binaries,
+    )
+      .map(([label, binary]) => `${label}=\`${binary.sha256 ?? "unknown"}\``)
+      .join(" ")}`,
+  );
+  lines.push(
     `Entry point: \`${data.entry.tsconfigPath}\` — ${data.entry.fileCount} unique SFC files, ${data.entry.totalBytes.toLocaleString("en-US")} bytes.`,
   );
   lines.push(

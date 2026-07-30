@@ -18,6 +18,7 @@ import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { fileSha256 } from "./benchmark-binary.mjs";
 import { packageVersion, resolveVuePackageDir, typescriptVersionNear } from "./check-gate-env.mjs";
 
 const benchDir = dirname(fileURLToPath(import.meta.url));
@@ -76,6 +77,16 @@ export function resolveBackend(candidates = TSGO_CANDIDATES) {
  * incumbent tools record `null` rather than being omitted, so the artifact
  * shape is stable across runs that skip a task.
  */
+export function collectBinaryHashes({ vizeBin, corsaPath, vueTscBin, eslintBin, prettierBin }) {
+  return {
+    vize: fileSha256(vizeBin),
+    tsgo: fileSha256(corsaPath),
+    vueTsc: fileSha256(vueTscBin),
+    eslint: fileSha256(eslintBin),
+    prettier: fileSha256(prettierBin),
+  };
+}
+
 export function collectVersions({ vizeBin, corsaVersion, vueTscBin, eslintBin, prettierBin }) {
   const vuePackageDir = resolveVuePackageDir();
   return {
@@ -103,6 +114,11 @@ export function renderProvenanceLines(data) {
   const lines = [
     `Versions: vize ${show(versions.vize)} · tsgo ${show(versions.tsgo)} · vue-tsc ${show(versions.vueTsc)} (typescript ${show(versions.typescript)}) · vue ${show(versions.vue)} · eslint ${show(versions.eslint)} · prettier ${show(versions.prettier)} · node ${show(versions.node)}`,
   ];
+  lines.push(
+    `Binaries (sha256): ${Object.entries(data.binaries ?? {})
+      .map(([label, sha256]) => `${label} ${show(sha256)}`)
+      .join(" ")}`,
+  );
   lines.push(
     backend.ready
       ? `Backend: native TypeScript engine ready at ${show(backend.corsaPath)}. Planted-diagnostic gating for the type-check rows lives in bench/check-gate.mjs (.github/workflows/check-bench.yml).`

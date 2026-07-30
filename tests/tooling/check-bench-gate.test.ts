@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -39,6 +40,10 @@ function resolveTsgoBinary(): string | undefined {
     path.join(root, "tests/node_modules/.bin/tsgo"),
   ];
   return candidates.find((candidate) => fs.existsSync(candidate));
+}
+
+function sha256Of(filePath: string): string {
+  return createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
 }
 
 function readVueVersion(): string {
@@ -87,15 +92,22 @@ test("check-gate budget rule is pure and strict", () => {
   });
 });
 
-test("check-gate fails closed when the pinned tsgo binary is missing", () => {
+test("check-gate fails closed when the pinned tsgo binary is missing", (t) => {
+  // Resolve the vize binary rather than hardcoding target/ci/vize: a worktree
+  // with a shared CARGO_TARGET_DIR has no such path, and this test is about
+  // the tsgo failure, not about where vize was built.
+  const vizeBin = resolveVizeBinary();
+  if (vizeBin == null) {
+    requireTsgoOrSkip(t);
+    return;
+  }
   fs.mkdirSync(outputRoot, { recursive: true });
   const workDir = fs.mkdtempSync(path.join(outputRoot, "missing-tsgo-"));
   const jsonPath = path.join(workDir, "results.json");
   try {
-    const run = runGate(
-      ["--vize-bin", "target/ci/vize", "--json", jsonPath, "--work-root", workDir],
-      { VIZE_CHECK_GATE_TSGO: path.join(workDir, "does-not-exist") },
-    );
+    const run = runGate(["--vize-bin", vizeBin, "--json", jsonPath, "--work-root", workDir], {
+      VIZE_CHECK_GATE_TSGO: path.join(workDir, "does-not-exist"),
+    });
     assert.equal(run.status, 1, run.stderr || run.stdout);
     assert.match(run.stderr, /check-gate: tsgo binary not found/);
     assert.equal(fs.existsSync(jsonPath), false, "no timing artifact may be written");
@@ -189,6 +201,7 @@ test("check-gate publishes reproducibility metadata for a gated run", (t) => {
     // metadata block has to fail this gate.
     assert.deepEqual(Object.keys(data).sort(), [
       "backend",
+      "binaries",
       "budget",
       "commit",
       "entry",
@@ -223,6 +236,25 @@ test("check-gate publishes reproducibility metadata for a gated run", (t) => {
       },
       vueTsc: null,
     });
+
+    // The measured vize is a private copy pinned by content hash, so a rebuild
+    // of the source path cannot change what produced these timings.
+    const vizeSha = sha256Of(vizeBin);
+    assert.deepEqual(data.binaries, {
+      vize: {
+        source: path.resolve(vizeBin),
+        measuredPath: path.join(workDir, "pinned-binaries", `vize-${vizeSha.slice(0, 16)}`),
+        sha256: vizeSha,
+        pinned: true,
+      },
+      tsgo: {
+        source: path.resolve(tsgo),
+        measuredPath: path.resolve(tsgo),
+        sha256: sha256Of(tsgo),
+        pinned: false,
+      },
+    });
+    assert.equal(fs.existsSync(data.binaries.vize.measuredPath), true);
 
     const corpusDir = path.join(workDir, "corpus-6");
     assert.deepEqual(data.entry, {
@@ -280,6 +312,7 @@ test("check-gate publishes reproducibility metadata for a gated run", (t) => {
         "",
         `Measured: ${data.generatedAt}`,
         `Versions: \`${data.versions.vize}\` · tsgo \`${data.versions.tsgo}\` · vue-tsc \`missing\` (typescript \`n/a\`) · vue \`${data.versions.vue}\``,
+        `Binaries (sha256 of the measured file, re-checked after the run): vize=\`${data.binaries.vize.sha256}\` tsgo=\`${data.binaries.tsgo.sha256}\``,
         `Entry point: \`${data.entry.tsconfigPath}\` — 6 unique SFC files, ${data.entry.totalBytes.toLocaleString("en-US")} bytes.`,
         "Backend readiness (planted-diagnostic gates, all required before timing): script=pass templateProp=pass templateEvent=pass componentProp=pass corpus=pass",
         "Budget: no-baseline",

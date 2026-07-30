@@ -33,6 +33,7 @@ import {
   prepareCorpusPlant,
   prepareMinimalPlants,
 } from "./check-gate-plants.mjs";
+import { assertBinariesUnchanged, hashInPlace, pinExecutable } from "./benchmark-binary.mjs";
 import { evaluateBudget, measureRows, renderMarkdown } from "./check-gate-report.mjs";
 
 const benchDir = dirname(fileURLToPath(import.meta.url));
@@ -100,13 +101,24 @@ export async function main(argv = process.argv.slice(2)) {
   const workRoot = resolve(args["work-root"] ?? join(rootDir, "target", "check-gate"));
   mkdirSync(workRoot, { recursive: true });
 
-  const vize = requireBinary("vize binary", args["vize-bin"], [
+  const vizeSource = requireBinary("vize binary", args["vize-bin"], [
     join(rootDir, "target", "release", "vize"),
   ]);
-  const tsgo = requireBinary("tsgo binary", process.env.VIZE_CHECK_GATE_TSGO, [
+  const tsgoSource = requireBinary("tsgo binary", process.env.VIZE_CHECK_GATE_TSGO, [
     join(rootDir, "node_modules", ".bin", "tsgo"),
     join(rootDir, "tests", "node_modules", ".bin", "tsgo"),
   ]);
+  // Measure a private copy of the vize binary: a shared CARGO_TARGET_DIR can be
+  // rebuilt by another process mid-run, and a timing attributed to a binary
+  // that no longer exists is worse than no timing. tsgo ships as a launcher
+  // shim that resolves its package relative to itself, so it is hashed in
+  // place; both are re-hashed before the artifact is written.
+  const binaries = {
+    vize: pinExecutable(vizeSource.path, workRoot),
+    tsgo: hashInPlace(tsgoSource.path),
+  };
+  const vize = { ...vizeSource, path: binaries.vize.measuredPath };
+  const tsgo = tsgoSource;
   const vuePackageDir = resolveVuePackageDir();
   if (!vuePackageDir) throw new Error("check-gate: vue package not found in any node_modules");
   const vueTsc = args["skip-vue-tsc"] === "true" ? null : resolveOptionalVueTsc();
@@ -189,6 +201,8 @@ export async function main(argv = process.argv.slice(2)) {
   }
 
   const rows = measureRows(variants, { runs, warmups });
+  // Nothing measured is attributable if a binary moved underneath the run.
+  assertBinariesUnchanged(binaries);
   const budget = evaluateBudget(
     rows.find((row) => row.id === "vize-check-max").medianMs,
     args["budget-baseline"]
@@ -221,6 +235,7 @@ export async function main(argv = process.argv.slice(2)) {
       typescript: vueTsc ? typescriptVersionNear(vueTsc.path) : null,
       vue: packageVersion(vuePackageDir),
     },
+    binaries,
     entry: {
       tsconfigPath: corpus.tsconfigPath,
       corpusDir: corpus.dir,
