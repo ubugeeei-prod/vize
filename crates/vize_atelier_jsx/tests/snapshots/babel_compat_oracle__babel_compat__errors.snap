@@ -36,7 +36,7 @@ export function render(_ctx, _cache) {
 
 ## errors/v_models_not_array
 ### verdict
-divergent: v-models not implemented
+equivalent
 ### source (jsx)
 const A = () => <B v-models={foo}/>;
 ### babel options
@@ -44,14 +44,30 @@ const A = () => <B v-models={foo}/>;
 ### babel
 <error> Property key of ObjectProperty expected node to be of a type ["Identifier","StringLiteral","NumericLiteral","BigIntLiteral","DecimalLiteral","PrivateName"] but instead got undefined
 ### vize (vdom, default config)
-import { resolveDirective as _resolveDirective, resolveComponent as _resolveComponent, withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+<Error> v-models expects a two-dimensional array of `[value, arg?, modifiers?]` entries, e.g. v-models={[[foo], [bar, "bar"]]}.
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  const _directive_models = _resolveDirective("models")
   
-  return _withDirectives((_openBlock(), _createBlock(_component_B, null, null, 512 /* NEED_PATCH */)), [
-    [_directive_models, foo]
-  ])
+  return (_openBlock(), _createBlock(_component_B))
+}
+
+## errors/v_models_entry_not_array
+### verdict
+equivalent
+### source (jsx)
+const A = () => <B v-models={[foo]}/>;
+### babel options
+(defaults)
+### babel
+<error> You should pass a Two-dimensional Arrays to v-models
+### vize (vdom, default config)
+<Error> v-models entry `foo` is not an array; each entry must be `[value, arg?, modifiers?]`.
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  
+  return (_openBlock(), _createBlock(_component_B))
 }
 
 ## errors/v_slots_not_object

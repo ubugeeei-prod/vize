@@ -15,7 +15,12 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         let mut node = ElementNode::new(self.bump(), tag, loc);
         node.tag_type = element_type(&opening.name);
         node.is_self_closing = element.closing_element.is_none();
-        node.props = self.lower_attributes(&opening.attributes);
+        // `v-models` is component-only. A dashed lowercase tag is classified as
+        // an intrinsic element here, but the DOM backend still resolves it with
+        // `resolveComponent`, so custom elements count as components for that
+        // check just as they do for `@vue/babel-plugin-jsx`.
+        let on_component = node.tag_type == ElementType::Component || node.tag.contains('-');
+        node.props = self.lower_attributes(&opening.attributes, on_component);
         // Components route through slot synthesis (object/render-prop children
         // become `<template v-slot>`s); intrinsic elements lower children
         // directly.

@@ -185,7 +185,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
 /// Note the deliberate omission of array/object destructuring patterns: they are
 /// valid `LVal`s in general JavaScript, but `v-model` assigns a single event
 /// value, so destructuring one is never meaningful here.
-fn is_assignable_target(expr: &Expression<'_>) -> bool {
+pub(crate) fn is_assignable_target(expr: &Expression<'_>) -> bool {
     match expr {
         Expression::Identifier(_)
         | Expression::StaticMemberExpression(_)

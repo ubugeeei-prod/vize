@@ -101,8 +101,9 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ),
     ("directives/v_model_component", Same),
     ("directives/v_model_component_arg_mods", Same),
-    ("directives/v_models", Diff("v-models not implemented")),
-    ("directives/v_models_mods", Diff("v-models not implemented")),
+    // Closed by #3418: `v-models` expands to one model binding per entry.
+    ("directives/v_models", Same),
+    ("directives/v_models_mods", Same),
     ("directives/v_show_element", Same),
     ("directives/v_show_component", Same),
     ("directives/v_html", Same),
@@ -173,9 +174,9 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     // Closed by #3420: both sides now reject a non-assignable target.
     ("errors/v_model_non_lval", Same),
     ("errors/v_model_no_value", Same),
-    (
-        "errors/v_models_not_array",
-        Diff("v-models not implemented"),
-    ),
+    // Closed by #3418: both sides now reject a `v-models` that is not a
+    // two-dimensional array.
+    ("errors/v_models_not_array", Same),
+    ("errors/v_models_entry_not_array", Same),
     ("errors/v_slots_not_object", Diff("v-slots not implemented")),
 ];

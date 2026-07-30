@@ -375,6 +375,10 @@
       "status": "error",
       "message": "Property key of ObjectProperty expected node to be of a type [\"Identifier\",\"StringLiteral\",\"NumericLiteral\",\"BigIntLiteral\",\"DecimalLiteral\",\"PrivateName\"] but instead got undefined"
     },
+    "errors/v_models_entry_not_array": {
+      "status": "error",
+      "message": "You should pass a Two-dimensional Arrays to v-models"
+    },
     "errors/v_slots_not_object": {
       "status": "ok",
       "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, 1);"

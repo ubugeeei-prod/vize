@@ -25,14 +25,26 @@ use super::v_model::split_underscore_model_modifiers;
 
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Lower a JSX opening element's attribute list into Vize props.
+    ///
+    /// `on_component` is whether the owning tag renders as a component; the
+    /// component-only `v-models` built-in is rejected when it is `false`.
     pub(crate) fn lower_attributes(
         &mut self,
         items: &[JSXAttributeItem<'_>],
+        on_component: bool,
     ) -> Vec<'a, PropNode<'a>> {
         let mut props = Vec::new_in(self.bump());
         for item in items {
             let prop = match item {
-                JSXAttributeItem::Attribute(attr) => self.lower_attribute(attr),
+                JSXAttributeItem::Attribute(attr) => {
+                    // `v-models` expands into one model binding per entry, so it
+                    // yields several props (or none, plus a diagnostic) and
+                    // cannot use the one-prop-per-attribute path below.
+                    if self.try_lower_v_models(attr, on_component, &mut props) {
+                        continue;
+                    }
+                    self.lower_attribute(attr)
+                }
                 JSXAttributeItem::SpreadAttribute(spread) => {
                     Some(self.lower_spread_attribute(spread))
                 }

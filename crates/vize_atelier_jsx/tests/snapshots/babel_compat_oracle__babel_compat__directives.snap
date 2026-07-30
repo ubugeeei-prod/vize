@@ -176,7 +176,7 @@ export function render(_ctx, _cache) {
 
 ## directives/v_models
 ### verdict
-divergent: v-models not implemented
+equivalent
 ### source (jsx)
 const A = () => <B v-models={[[foo], [bar, 'bar']]}/>;
 ### babel options
@@ -190,19 +190,21 @@ const A = () => _createVNode(_resolveComponent("B"), {
   "onUpdate:bar": $event => bar = $event
 }, null);
 ### vize (vdom, default config)
-import { resolveDirective as _resolveDirective, resolveComponent as _resolveComponent, withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  const _directive_models = _resolveDirective("models")
   
-  return _withDirectives((_openBlock(), _createBlock(_component_B, null, null, 512 /* NEED_PATCH */)), [
-    [_directive_models, [[foo], [bar, 'bar']]]
-  ])
+  return (_openBlock(), _createBlock(_component_B, {
+    modelValue: foo,
+    "onUpdate:modelValue": $event => ((foo) = $event),
+    bar: bar,
+    "onUpdate:bar": $event => ((bar) = $event)
+  }, null, 8 /* PROPS */, ["modelValue", "onUpdate:modelValue", "bar", "onUpdate:bar"]))
 }
 
 ## directives/v_models_mods
 ### verdict
-divergent: v-models not implemented
+equivalent
 ### source (jsx)
 const A = () => <B v-models={[[foo, ['m']], [bar, 'bar', ['m']]]}/>;
 ### babel options
@@ -222,14 +224,18 @@ const A = () => _createVNode(_resolveComponent("B"), {
   "onUpdate:bar": $event => bar = $event
 }, null);
 ### vize (vdom, default config)
-import { resolveDirective as _resolveDirective, resolveComponent as _resolveComponent, withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  const _directive_models = _resolveDirective("models")
   
-  return _withDirectives((_openBlock(), _createBlock(_component_B, null, null, 512 /* NEED_PATCH */)), [
-    [_directive_models, [[foo, ['m']], [bar, 'bar', ['m']]]]
-  ])
+  return (_openBlock(), _createBlock(_component_B, {
+    modelValue: foo,
+    "onUpdate:modelValue": $event => ((foo) = $event),
+    modelModifiers: { m: true },
+    bar: bar,
+    "onUpdate:bar": $event => ((bar) = $event),
+    barModifiers: { m: true }
+  }, null, 8 /* PROPS */, ["modelValue", "onUpdate:modelValue", "bar", "onUpdate:bar"]))
 }
 
 ## directives/v_show_element

@@ -13,7 +13,7 @@ opt-in compat mode (#3391) is expected to change.
 
 | Artifact                                  | Role                                                                                                       |
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `babel_compat/fixtures/corpus.json`       | the 94 inputs + the babel plugin options each is compiled with                                             |
+| `babel_compat/fixtures/corpus.json`       | the 95 inputs + the babel plugin options each is compiled with                                             |
 | `babel_compat/oracle.mjs`                 | runs the corpus through the real plugin; `--write` records, `--check` verifies                             |
 | `babel_compat/fixtures/babel-output.json` | committed ground truth (generated — do not hand-edit)                                                      |
 | `../babel_compat_oracle.rs`               | snapshots babel's output beside Vize's, per category, with a verdict per row                               |
@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   64 |
-| divergent  |   28 |
+| equivalent |   68 |
+| divergent  |   25 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -162,8 +162,8 @@ deliberate answer, recorded here so it is not relitigated.
 | `directives/v_model_arg_underscore`     | `[[vModelText, val, "foo", {trim: true}]]`                     | rejected as above                                               | accept and pass the arg | ❌      |
 | `directives/v_model_component`          | `modelValue` + `onUpdate:modelValue` props                     | same                                                            | no change               | ✅      |
 | `directives/v_model_component_arg_mods` | `argument`, `argumentModifiers`, `onUpdate:argument`           | same props, different literal order                             | no change               | ✅      |
-| `directives/v_models`                   | expands to one prop pair per entry                             | falls through to `resolveDirective("models")`                   | implement `v-models`    | ❌      |
-| `directives/v_models_mods`              | adds `<arg>Modifiers` per entry                                | falls through to `resolveDirective("models")`                   | implement `v-models`    | ❌      |
+| `directives/v_models`                   | expands to one prop pair per entry                             | same, via one `model` directive per entry (#3418)               | no change               | ✅      |
+| `directives/v_models_mods`              | adds `<arg>Modifiers` per entry                                | same props, different literal order (#3418)                     | no change               | ✅      |
 | `directives/v_show_element`             | `[[vShow, vis]]`                                               | same                                                            | no change               | ✅      |
 | `directives/v_show_component`           | `[[vShow, vis]]` on the component vnode                        | same                                                            | no change               | ✅      |
 | `directives/v_html`                     | `{innerHTML: h}`                                               | same                                                            | no change               | ✅      |
@@ -172,6 +172,22 @@ deliberate answer, recorded here so it is not relitigated.
 | `directives/v_custom_arg`               | `[[resolveDirective("custom"), val, "arg"]]`                   | same                                                            | no change               | ✅      |
 | `directives/v_custom_array`             | unpacks `[val, 'arg', ['a','b']]` into value / arg / modifiers | passes the whole array as the value                             | unpack the array form   | ❌      |
 | `directives/v_dashed_custom`            | `resolveDirective("unknown-thing")`                            | same                                                            | no change               | ✅      |
+
+### `v-models` spellings Vize rejects and babel accepts
+
+Not corpus rows, because a compat mode is not expected to adopt them; recorded
+here so the choice is not implicit (#3418, `src/lower/v_models.rs`):
+
+- `v-models:x={…}` — babel reads the JSX namespace as a default prop name but
+  then ignores each entry's own argument, so `v-models:x={[[a], [b, "b"]]}` binds
+  `x` and `modelValue` and never `b`. The spelling is undocumented and its babel
+  behavior is inconsistent, so Vize rejects it and points at the entry form.
+- `v-models_lazy={…}` — the `_`-suffixed modifier spelling. Same reasoning: the
+  per-entry modifier array expresses it exactly.
+
+Vize also lets `v-models` through on a dashed lowercase tag (`<my-el/>`), which
+it classifies as an intrinsic element but the DOM backend still resolves with
+`resolveComponent` — matching babel, which treats it as a custom component.
 
 ## Slots
 
@@ -226,9 +242,10 @@ Compared against Vize's default, which is already fully optimized.
 A compat mode must reject what babel rejects, with a diagnostic — never silently
 accept it.
 
-| Case                        | Babel                                                         | Vize today                                                        | Compat mode              | Verdict |
-| --------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------ | ------- |
-| `errors/v_model_non_lval`   | rejects a non-assignable `v-model` target                     | rejects it too, naming the offending expression (closed by #3420) | no change                | ✅      |
-| `errors/v_model_no_value`   | rejects: "You have to use JSX Expression inside your v-model" | rejects: "v-model is missing expression."                         | no change                | ✅      |
-| `errors/v_models_not_array` | rejects a non-array `v-models` value                          | emits a custom `models` directive                                 | reject with a diagnostic | ❌      |
-| `errors/v_slots_not_object` | forwards the value as children                                | emits a custom `slots` directive                                  | forward as children      | ❌      |
+| Case                              | Babel                                                           | Vize today                                                        | Compat mode         | Verdict |
+| --------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------- | ------- |
+| `errors/v_model_non_lval`         | rejects a non-assignable `v-model` target                       | rejects it too, naming the offending expression (closed by #3420) | no change           | ✅      |
+| `errors/v_model_no_value`         | rejects: "You have to use JSX Expression inside your v-model"   | rejects: "v-model is missing expression."                         | no change           | ✅      |
+| `errors/v_models_not_array`       | rejects a non-array `v-models` value                            | rejects it too, naming the expected entry shape (closed by #3418) | no change           | ✅      |
+| `errors/v_models_entry_not_array` | rejects: "You should pass a Two-dimensional Arrays to v-models" | rejects it too, naming the offending entry (closed by #3418)      | no change           | ✅      |
+| `errors/v_slots_not_object`       | forwards the value as children                                  | emits a custom `slots` directive                                  | forward as children | ❌      |

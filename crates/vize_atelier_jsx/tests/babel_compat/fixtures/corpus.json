@@ -598,6 +598,12 @@
       "source": "const A = () => <B v-models={foo}/>;"
     },
     {
+      "id": "errors/v_models_entry_not_array",
+      "category": "errors",
+      "lang": "jsx",
+      "source": "const A = () => <B v-models={[foo]}/>;"
+    },
+    {
       "id": "errors/v_slots_not_object",
       "category": "errors",
       "lang": "jsx",

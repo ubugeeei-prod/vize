@@ -16,6 +16,7 @@ mod slot;
 mod style;
 mod text;
 mod v_model;
+mod v_models;
 
 pub(crate) use style::{RawScopedStyle, ScopedStyleExpr};
 
