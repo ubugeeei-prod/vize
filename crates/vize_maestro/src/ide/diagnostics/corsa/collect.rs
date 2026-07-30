@@ -3,11 +3,11 @@
 use std::path::Path;
 use std::sync::Arc;
 
-use tower_lsp::lsp_types::{Diagnostic, Url};
+use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range, Url};
 
 use crate::server::ServerState;
 
-use super::super::DiagnosticService;
+use super::super::{DiagnosticService, sources};
 use super::collect_virtual::{
     collect_synced_virtual_result_diagnostics, collect_virtual_result_diagnostics,
 };
@@ -62,7 +62,13 @@ impl DiagnosticService {
                 }
                 Err(CollectFailure::Request(error)) => {
                     tracing::warn!("corsa request failed for {uri}: {error}");
-                    return vec![];
+                    // A bound that fires has to be visible. Returning an empty
+                    // list would make a timed-out pass indistinguishable from a
+                    // clean file, which is the silence #3376 is about.
+                    return match error {
+                        CorsaBridgeError::Timeout => vec![typecheck_timed_out_hint()],
+                        _ => vec![],
+                    };
                 }
             }
         }
@@ -205,6 +211,27 @@ impl DiagnosticService {
         }
 
         Ok(diagnostics)
+    }
+}
+
+/// Diagnostic published when a Corsa request outran the bridge's hard bound.
+///
+/// The bound is enforced by the bridge worker thread, because the request is
+/// synchronous IPC and no async `timeout` around it can ever be polled
+/// (#3376). This diagnostic is how the enforcement reaches the client — the
+/// publish arriving promptly, and saying why the types are missing, is the
+/// observable difference from a frozen server.
+fn typecheck_timed_out_hint() -> Diagnostic {
+    Diagnostic {
+        range: Range::default(),
+        severity: Some(DiagnosticSeverity::WARNING),
+        code: Some(NumberOrString::String("typecheck-timed-out".to_string())),
+        source: Some(sources::TYPE_CHECKER.to_string()),
+        message: "Type checking timed out for this file: the Corsa runtime did not \
+            answer within the request timeout, so type errors are missing from \
+            these diagnostics."
+            .to_string(),
+        ..Default::default()
     }
 }
 

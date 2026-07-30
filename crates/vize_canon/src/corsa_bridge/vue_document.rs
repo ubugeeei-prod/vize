@@ -101,12 +101,15 @@ impl CorsaBridge {
         &self,
         documents: &[(String, String)],
     ) -> Result<(), CorsaBridgeError> {
-        let docs: Vec<(&str, &str)> = documents
-            .iter()
-            .map(|(uri, content)| (uri.as_str(), content.as_str()))
-            .collect();
+        // Owned pairs: the closure runs on the bridge worker thread, so it
+        // cannot borrow from this frame (see `super::worker`).
+        let owned: Vec<(String, String)> = documents.to_vec();
         let cache_len = self
             .with_client(move |client| {
+                let docs: Vec<(&str, &str)> = owned
+                    .iter()
+                    .map(|(uri, content)| (uri.as_str(), content.as_str()))
+                    .collect();
                 client
                     .did_open_batch_fast(&docs)
                     .map_err(CorsaBridgeError::CommunicationError)?;

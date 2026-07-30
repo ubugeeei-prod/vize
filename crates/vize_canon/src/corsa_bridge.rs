@@ -5,12 +5,14 @@
 //! behind the bridge surface.
 
 mod bridge;
+mod session;
 mod types;
 mod vue_dependencies;
 mod vue_dependency_specifiers;
 mod vue_document;
 #[cfg(test)]
 mod vue_document_tests;
+mod worker;
 
 pub use bridge::{BatchTypeChecker, CorsaBridge};
 pub use types::{
@@ -25,11 +27,12 @@ pub(crate) use vue_document::{CorsaVueVirtualProject, build_vue_virtual_project}
 #[cfg(test)]
 mod tests {
     use super::{
-        CorsaBridgeConfig, LspDiagnostic, LspPosition, LspRange, TypeCheckResult,
-        VIRTUAL_URI_SCHEME, bridge,
+        CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, LspDiagnostic, LspPosition, LspRange,
+        TypeCheckResult, VIRTUAL_URI_SCHEME, bridge,
     };
     use crate::file_uri::path_to_file_uri;
-    use std::path::Path;
+    use corsa::runtime::block_on;
+    use std::path::{Path, PathBuf};
     use vize_carton::cstr;
 
     #[test]
@@ -75,6 +78,69 @@ mod tests {
         assert!(config.working_dir.is_none());
         assert_eq!(config.timeout_ms, 30000);
         assert!(!config.enable_profiling);
+    }
+
+    /// Writes a backend that accepts stdio and never answers — the shape
+    /// #3376 describes, and the one a `timeout` combinator cannot rescue.
+    ///
+    /// `cat` drains the request stream so the writer never blocks, and the
+    /// shell keeps the stdout pipe open without ever writing to it, so the
+    /// reader sees neither a reply nor an EOF. Redirecting the *shell's*
+    /// stdout (or `exec`ing) would close that pipe and surface a spawn error
+    /// instead of the silence being reproduced here.
+    #[cfg(unix)]
+    fn write_hanging_backend(dir: &Path) -> PathBuf {
+        use std::os::unix::fs::PermissionsExt;
+
+        let script = dir.join("hanging-corsa");
+        std::fs::write(&script, "#!/bin/sh\ncat > /dev/null\n").unwrap();
+        std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
+        script
+    }
+
+    /// `timeout_ms` has to be asserted as behavior, not as a default value
+    /// (#3376). Bridge IPC is synchronous, so no `timeout` combinator wrapped
+    /// around a bridge call can enforce a deadline; before this the configured
+    /// bound was read by nothing at all, and a silent backend blocked the
+    /// caller until `corsa`'s own 30s transport backstop killed the session —
+    /// per request, on the single thread that drives the whole LSP server.
+    ///
+    /// The assertion is on the outcome, not the clock: pre-fix this call
+    /// answers `SpawnFailed` after `corsa` gives up, post-fix it answers
+    /// `Timeout` because vize's own bound fired first.
+    #[test]
+    #[cfg(unix)]
+    fn a_backend_that_never_answers_is_bounded_by_the_configured_timeout() {
+        // Not cleaned up afterwards on purpose: the abandoned handshake still
+        // owns the backend, and pulling the script out from under a process
+        // that has not finished starting only produces exec noise. The pid
+        // keys the directory and it is cleared on entry, so a run leaves at
+        // most one of these behind.
+        let dir = std::env::temp_dir()
+            .join(cstr!("vize-corsa-bridge-bound-{}", std::process::id()).as_str());
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
+            corsa_path: Some(write_hanging_backend(&dir)),
+            working_dir: Some(dir.clone()),
+            timeout_ms: 250,
+            ..Default::default()
+        });
+
+        let first = block_on(bridge.spawn());
+        // The abandoned handshake still owns the worker, so the retry must be
+        // refused outright rather than pay the deadline a second time.
+        let second = block_on(bridge.spawn());
+
+        assert!(
+            matches!(first, Err(CorsaBridgeError::Timeout)),
+            "expected the configured bound to fire, got {first:?}"
+        );
+        assert!(
+            matches!(second, Err(CorsaBridgeError::Timeout)),
+            "expected the outstanding stall to be reported, got {second:?}"
+        );
+        assert!(!bridge.is_initialized());
     }
 
     #[test]

@@ -1,17 +1,20 @@
 //! Core Corsa bridge implementation backed by `corsa-bind`.
 
 use serde_json::Value;
-use std::sync::atomic::{AtomicBool, Ordering};
 #[allow(clippy::disallowed_types)]
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
 use vize_carton::profiler::{CacheStats, Profiler};
 use vize_carton::{String, cstr};
 
+use super::session::build_client;
 use super::types::{
     CorsaBridgeConfig, CorsaBridgeError, LspCompletionItem, LspCompletionResponse,
     LspDefinitionResponse, LspDiagnostic, LspHover, LspLocation, TypeCheckResult,
     VIRTUAL_URI_SCHEME,
 };
+use super::worker::{BoundedWorker, WorkerError};
 use crate::corsa_client::CorsaProjectClient;
 
 /// Bridge to Corsa for type checking and editor queries via project sessions.
@@ -19,8 +22,8 @@ use crate::corsa_client::CorsaProjectClient;
 pub struct CorsaBridge {
     /// Configuration
     config: CorsaBridgeConfig,
-    /// Shared Corsa project-session state.
-    client: Arc<Mutex<Option<CorsaProjectClient>>>,
+    /// Worker thread owning the synchronous Corsa project session.
+    worker: BoundedWorker<Option<CorsaProjectClient>>,
     /// Whether the bridge is initialized
     initialized: AtomicBool,
     /// Profiler for performance tracking
@@ -46,15 +49,17 @@ impl CorsaBridge {
         };
 
         Self {
+            worker: BoundedWorker::new("vize-corsa-bridge", None),
             config,
-            client: Arc::new(Mutex::new(None)),
             initialized: AtomicBool::new(false),
             profiler,
             cache_stats: CacheStats::new(),
         }
     }
 
-    /// Spawn and initialize the Corsa process.
+    /// Spawn and initialize the Corsa process, bounded by `timeout_ms`. The
+    /// handshake is synchronous IPC: a backend that accepts stdio and never
+    /// answers otherwise blocks until `corsa`'s own 30s backstop gives up.
     pub async fn spawn(&self) -> Result<(), CorsaBridgeError> {
         let _timer = self.profiler.timer("corsa_spawn");
 
@@ -62,41 +67,14 @@ impl CorsaBridge {
             return Ok(());
         }
 
-        let mut guard = lock_client(&self.client)?;
-        if guard.is_some() {
-            return Ok(());
-        }
-
-        let corsa_path = self
-            .config
-            .corsa_path
-            .as_ref()
-            .map(|path| path.to_string_lossy().into_owned());
-        let working_dir = self
-            .config
-            .working_dir
-            .as_ref()
-            .map(|path| path.to_string_lossy().into_owned());
-
-        // Root the session at the real workspace when it is a TypeScript
-        // project: its own tsconfig (paths, baseUrl) then drives module
-        // resolution and virtual `.vue.ts` overlays can live at their real
-        // paths, so relative imports in `<script>` resolve exactly like
-        // `vize check`. The isolated scratch session — which synthesizes a
-        // tsconfig and `*.vue` stubs — remains the fallback for rootless or
-        // tsconfig-less usage.
-        let workspace_root = working_dir
-            .as_deref()
-            .map(std::path::Path::new)
-            .filter(|dir| {
-                dir.join("tsconfig.json").is_file() || dir.join("jsconfig.json").is_file()
-            });
-        let client = match workspace_root {
-            Some(dir) => CorsaProjectClient::new_for_workspace(corsa_path.as_deref(), dir),
-            None => CorsaProjectClient::new(corsa_path.as_deref(), working_dir.as_deref()),
-        }
-        .map_err(CorsaBridgeError::SpawnFailed)?;
-        *guard = Some(client);
+        let config = self.config.clone();
+        self.submit(move |slot| {
+            if slot.is_some() {
+                return Ok(());
+            }
+            *slot = Some(build_client(&config)?);
+            Ok(())
+        })?;
 
         self.initialized.store(true, Ordering::SeqCst);
 
@@ -241,16 +219,19 @@ impl CorsaBridge {
             return Ok(());
         }
 
-        let mut guard = lock_client(&self.client)?;
-        if let Some(client) = guard.as_mut() {
-            client
-                .shutdown()
-                .map_err(CorsaBridgeError::CommunicationError)?;
-        }
-        *guard = None;
+        let result = self.submit(|slot| {
+            let outcome = match slot.as_mut() {
+                Some(client) => client
+                    .shutdown()
+                    .map_err(CorsaBridgeError::CommunicationError),
+                None => Ok(()),
+            };
+            *slot = None;
+            outcome
+        });
 
         self.initialized.store(false, Ordering::SeqCst);
-        Ok(())
+        result
     }
 
     /// Check if bridge is initialized.
@@ -270,11 +251,12 @@ impl CorsaBridge {
 
     /// Clear diagnostics cache.
     pub fn clear_cache(&self) {
-        if let Ok(mut guard) = self.client.lock()
-            && let Some(client) = guard.as_mut()
-        {
-            client.clear_diagnostics_cache();
-        }
+        let _ = self.submit(|slot| {
+            if let Some(client) = slot.as_mut() {
+                client.clear_diagnostics_cache();
+            }
+            Ok(())
+        });
         self.cache_stats.set_entries(0);
         self.cache_stats.reset();
     }
@@ -441,15 +423,41 @@ impl CorsaBridge {
 
     pub(super) async fn with_client<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
     where
-        F: FnOnce(&mut CorsaProjectClient) -> Result<R, CorsaBridgeError>,
+        F: FnOnce(&mut CorsaProjectClient) -> Result<R, CorsaBridgeError> + Send + 'static,
+        R: Send + 'static,
     {
         if !self.initialized.load(Ordering::SeqCst) {
             return Err(CorsaBridgeError::NotInitialized);
         }
 
-        let mut guard = lock_client(&self.client)?;
-        let client = guard.as_mut().ok_or(CorsaBridgeError::ProcessTerminated)?;
-        f(client)
+        self.submit(move |slot| match slot.as_mut() {
+            Some(client) => f(client),
+            None => Err(CorsaBridgeError::ProcessTerminated),
+        })
+    }
+
+    /// Run `f` against the session on the worker thread under the configured
+    /// deadline — the one place the bound is real. The wait blocks on purpose:
+    /// the job never yields, so an async `timeout` around it could never be
+    /// polled, and making it yield would activate #3377's shard-guard hazard.
+    /// See [`super::worker`] for the full argument.
+    fn submit<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
+    where
+        F: FnOnce(&mut Option<CorsaProjectClient>) -> Result<R, CorsaBridgeError> + Send + 'static,
+        R: Send + 'static,
+    {
+        // Clamped so a misconfigured `0` stays loud instead of silently
+        // disabling the bridge; no value turns the bound off.
+        let deadline = Duration::from_millis(self.config.timeout_ms.max(1));
+        match self.worker.submit(deadline, f) {
+            Ok(result) => result,
+            Err(WorkerError::TimedOut) => {
+                let bound = self.config.timeout_ms;
+                tracing::warn!("corsa request outran the {bound}ms bridge bound; abandoned it");
+                Err(CorsaBridgeError::Timeout)
+            }
+            Err(WorkerError::Stopped) => Err(CorsaBridgeError::ProcessTerminated),
+        }
     }
 }
 
@@ -461,7 +469,8 @@ impl Default for CorsaBridge {
 
 impl Drop for CorsaBridge {
     fn drop(&mut self) {
-        // Async shutdown is handled by explicit callers.
+        // Async shutdown is handled by explicit callers; dropping the worker
+        // closes its job channel and the session is dropped on that thread.
     }
 }
 
@@ -562,13 +571,4 @@ where
     serde_json::from_value(value).map_err(|e| {
         CorsaBridgeError::CommunicationError(cstr!("Failed to parse Corsa result: {e}"))
     })
-}
-
-#[allow(clippy::disallowed_types)]
-fn lock_client<'a>(
-    client: &'a Arc<Mutex<Option<CorsaProjectClient>>>,
-) -> Result<std::sync::MutexGuard<'a, Option<CorsaProjectClient>>, CorsaBridgeError> {
-    client
-        .lock()
-        .map_err(|_| CorsaBridgeError::CommunicationError("Corsa client lock poisoned".into()))
 }

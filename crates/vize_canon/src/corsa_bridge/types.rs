@@ -298,7 +298,13 @@ pub struct CorsaBridgeConfig {
     pub corsa_path: Option<PathBuf>,
     /// Working directory used for module resolution.
     pub working_dir: Option<PathBuf>,
-    /// Request timeout in milliseconds
+    /// Hard per-request bound, in milliseconds, on every call into the Corsa
+    /// session — the spawn handshake included.
+    ///
+    /// A request that outruns it is abandoned on the bridge worker thread and
+    /// reported as [`CorsaBridgeError::Timeout`], and calls arriving while an
+    /// abandoned request still drains fail fast with the same error. `0` is
+    /// clamped to 1ms: there is no value that disables the bound.
     pub timeout_ms: u64,
     /// Enable profiling
     pub enable_profiling: bool,

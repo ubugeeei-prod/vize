@@ -5,9 +5,19 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 
-use vize_canon::{CorsaBridge, CorsaBridgeConfig};
+use vize_canon::{CorsaBridge, CorsaBridgeConfig, CorsaBridgeError};
 
 use super::ServerState;
+
+/// Hard bound on every Corsa request the editor makes, enforced by the bridge
+/// worker thread (#3376).
+///
+/// It matches the 10s the diagnostics pass already documents. That pass wraps
+/// the collection in `runtime::timeout`, but nothing on the bridge path yields,
+/// so the combinator can never fire and this is the bound that actually
+/// applies. It is per request: a diagnostics pass makes a small fixed number of
+/// them, and the first one to breach the bound short-circuits the rest.
+const CORSA_REQUEST_TIMEOUT_MS: u64 = 10_000;
 
 impl ServerState {
     /// Try to claim the right to fire the "type checking unavailable"
@@ -59,31 +69,34 @@ impl ServerState {
         let config = CorsaBridgeConfig {
             corsa_path: type_checker_config.runtime_path().map(PathBuf::from),
             working_dir: workspace_root,
-            timeout_ms: 30000, // Corsa needs time to build project state on first load.
+            timeout_ms: CORSA_REQUEST_TIMEOUT_MS,
             ..Default::default()
         };
         let working_dir = config.working_dir.clone();
         let corsa_path = config.corsa_path.clone();
         let bridge = CorsaBridge::with_config(config);
 
-        match crate::runtime::timeout(std::time::Duration::from_secs(5), bridge.spawn()).await {
-            Ok(Ok(())) => {
+        // No `runtime::timeout` wrapper here: `spawn()` never yields, so a
+        // combinator around it could not be polled and never fired (#3376).
+        // The bridge bounds the handshake itself and reports `Timeout`.
+        match bridge.spawn().await {
+            Ok(()) => {
                 tracing::info!("corsa bridge initialized successfully");
                 let bridge = Arc::new(bridge);
                 *self.corsa_bridge.write() = Some(bridge.clone());
                 Some(bridge)
             }
-            Ok(Err(e)) => {
+            Err(CorsaBridgeError::Timeout) => {
                 let reason = vize_carton::cstr!(
-                    "spawn failed: {e} (working_dir={working_dir:?}, corsa_path={corsa_path:?})"
+                    "spawn timed out after {CORSA_REQUEST_TIMEOUT_MS}ms (working_dir={working_dir:?}, corsa_path={corsa_path:?})"
                 );
                 tracing::warn!("corsa bridge {}", reason);
                 self.record_corsa_init_failure(reason.as_str());
                 None
             }
-            Err(_) => {
+            Err(e) => {
                 let reason = vize_carton::cstr!(
-                    "spawn timed out after 5s (working_dir={working_dir:?}, corsa_path={corsa_path:?})"
+                    "spawn failed: {e} (working_dir={working_dir:?}, corsa_path={corsa_path:?})"
                 );
                 tracing::warn!("corsa bridge {}", reason);
                 self.record_corsa_init_failure(reason.as_str());
