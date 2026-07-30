@@ -1,0 +1,145 @@
+---
+source: crates/vize_atelier_jsx/tests/babel_compat_oracle.rs
+expression: body
+---
+## children/static_text
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div>x</div>;
+### babel options
+(defaults)
+### babel
+import { createTextVNode as _createTextVNode, createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", null, [_createTextVNode("x")]);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, "x"))
+}
+
+## children/text_interp_mix
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div>hi {name}!</div>;
+### babel options
+(defaults)
+### babel
+import { createTextVNode as _createTextVNode, createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", null, [_createTextVNode("hi "), name, _createTextVNode("!")]);
+### vize (vdom, default config)
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, "hi " + _toDisplayString(name) + "!", 1 /* TEXT */))
+}
+
+## children/comment_only
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div>{/* c */}</div>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", null, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div"))
+}
+
+## children/empty_expr
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div>{}</div>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", null, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div"))
+}
+
+## children/spread_child
+### verdict
+divergent: spread child stringified
+### source (jsx)
+const A = () => <div>{...items}</div>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", null, [...items]);
+### vize (vdom, default config)
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(items), 1 /* TEXT */))
+}
+
+## children/logical_and
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div>{c && <span/>}</div>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", null, [c && _createVNode("span", null, null)]);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (c)
+      ? (_openBlock(), _createElementBlock("span", { key: 0 }))
+      : _createCommentVNode("v-if", true)
+  ]))
+}
+
+## children/ternary
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div>{c ? <a/> : <b/>}</div>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", null, [c ? _createVNode("a", null, null) : _createVNode("b", null, null)]);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (c)
+      ? (_openBlock(), _createElementBlock("a", { key: 0 }))
+      : (_openBlock(), _createElementBlock("b", { key: 1 }))
+  ]))
+}
+
+## children/map_list
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div>{list.map(i => <span key={i}>{i}</span>)}</div>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", null, [list.map(i => _createVNode("span", {
+  "key": i
+}, [i]))]);
+### vize (vdom, default config)
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => {
+      return (_openBlock(), _createElementBlock("span", { key: i }, _toDisplayString(i), 1 /* TEXT */))
+    }), 128 /* KEYED_FRAGMENT */))
+  ]))
+}

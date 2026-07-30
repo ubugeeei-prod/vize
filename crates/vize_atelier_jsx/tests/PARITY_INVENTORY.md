@@ -10,6 +10,12 @@ template strings, slot objects, `v-if`/`v-for`/`v-model` shapes), not byte-for-b
 babel parity — Vize emits through its own `vize_atelier_dom` / `vize_atelier_vapor`
 codegen, so hoisting and block-tree details are intentionally Vize-shaped.
 
+> **Semantic parity against the real plugin** is tracked separately in
+> [`BABEL_COMPAT_INVENTORY.md`](./BABEL_COMPAT_INVENTORY.md) (#3391), which runs a
+> 94-case corpus through the actual `@vue/babel-plugin-jsx` and records, per row,
+> whether Vize's semantics match. Use that file to answer "does Vize behave like
+> babel here?"; use this one to answer "is this case covered by a test at all?".
+
 ## Backend separation
 
 Suites are split so a failure points at the correct backend:

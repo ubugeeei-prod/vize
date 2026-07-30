@@ -1,0 +1,75 @@
+---
+source: crates/vize_atelier_jsx/tests/babel_compat_oracle.rs
+expression: body
+---
+## events/plain
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div onClick={h}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "onClick": h
+}, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { onClick: h }, null, 8 /* PROPS */, ["onClick"]))
+}
+
+## events/capture
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div onClickCapture={h}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "onClickCapture": h
+}, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { onClickCapture: h }, null, 40 /* PROPS, NEED_HYDRATION */, ["onClickCapture"]))
+}
+
+## events/once
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div onClickOnce={h}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "onClickOnce": h
+}, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { onClickOnce: h }, null, 40 /* PROPS, NEED_HYDRATION */, ["onClickOnce"]))
+}
+
+## events/capture_passive
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div onClickCapturePassive={h}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "onClickCapturePassive": h
+}, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { onClickCapturePassive: h }, null, 40 /* PROPS, NEED_HYDRATION */, ["onClickCapturePassive"]))
+}

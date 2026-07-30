@@ -1,0 +1,186 @@
+---
+source: crates/vize_atelier_jsx/tests/babel_compat_oracle.rs
+expression: body
+---
+## elements/intrinsic
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", null, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div"))
+}
+
+## elements/component_pascal
+### verdict
+equivalent
+### source (jsx)
+const A = () => <B/>;
+### babel options
+(defaults)
+### babel
+import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), null, null);
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  
+  return (_openBlock(), _createBlock(_component_B))
+}
+
+## elements/unknown_lowercase
+### verdict
+divergent: unknown tag stays intrinsic
+### source (jsx)
+const A = () => <foo/>;
+### babel options
+(defaults)
+### babel
+import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("foo"), null, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("foo"))
+}
+
+## elements/dashed_lowercase
+### verdict
+equivalent
+### source (jsx)
+const A = () => <my-el/>;
+### babel options
+(defaults)
+### babel
+import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("my-el"), null, null);
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_my_el = _resolveComponent("my-el")
+  
+  return (_openBlock(), _createBlock(_component_my_el))
+}
+
+## elements/svg_tag
+### verdict
+equivalent
+### source (jsx)
+const A = () => <circle cx={1}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("circle", {
+  "cx": 1
+}, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("circle", { cx: 1 }))
+}
+
+## elements/mathml_tag
+### verdict
+divergent: unknown tag stays intrinsic
+### source (jsx)
+const A = () => <mi>x</mi>;
+### babel options
+(defaults)
+### babel
+import { createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("mi"), null, {
+  default: () => [_createTextVNode("x")]
+});
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("mi", null, "x"))
+}
+
+## elements/member_tag
+### verdict
+divergent: member tag resolved as a name string
+### source (jsx)
+const A = () => <a.b.c foo={1}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode(a.b.c, {
+  "foo": 1
+}, null);
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_a46b46c = _resolveComponent("a.b.c")
+  
+  return (_openBlock(), _createBlock(_component_a46b46c, { foo: 1 }))
+}
+
+## elements/namespaced_tag
+### verdict
+divergent: namespaced tag accepted, babel rejects
+### source (jsx)
+const A = () => <a:b foo={1}/>;
+### babel options
+(defaults)
+### babel
+<error> getTag: JSXNamespacedName is not supported
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("a:b", { foo: 1 }))
+}
+
+## elements/fragment
+### verdict
+equivalent
+### source (jsx)
+const A = () => <><span>I</span><span>F</span></>;
+### babel options
+(defaults)
+### babel
+import { Fragment as _Fragment, createTextVNode as _createTextVNode, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_Fragment, null, [_createVNode("span", null, [_createTextVNode("I")]), _createVNode("span", null, [_createTextVNode("F")])]);
+### vize (vdom, default config)
+import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode("span", null, "I"),
+    _createElementVNode("span", null, "F")
+  ], 64 /* STABLE_FRAGMENT */))
+}
+
+## elements/nested_fragment_child
+### verdict
+divergent: nested fragment resolved by name
+### source (jsx)
+const A = () => <div><><i/></></div>;
+### babel options
+(defaults)
+### babel
+import { Fragment as _Fragment, createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", null, [_createVNode(_Fragment, null, [_createVNode("i", null, null)])]);
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, withCtx as _withCtx } from "vue"
+export function render(_ctx, _cache) {
+  const _component_Fragment = _resolveComponent("Fragment")
+  
+  return (_openBlock(), _createElementBlock("div", null, [
+    _createVNode(_component_Fragment, null, {
+      default: _withCtx(() => [
+        _createElementVNode("i")
+      ]),
+      _: 1 /* STABLE */
+    })
+  ]))
+}

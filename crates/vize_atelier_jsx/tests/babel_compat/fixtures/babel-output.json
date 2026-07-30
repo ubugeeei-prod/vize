@@ -1,0 +1,383 @@
+{
+  "schemaVersion": 1,
+  "description": "Recorded @vue/babel-plugin-jsx output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
+  "pluginVersion": "2.0.1",
+  "cases": {
+    "options/transform_on_off": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"button\", {\n  \"on\": {\n    click: h\n  }\n}, null);"
+    },
+    "options/transform_on_on": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nimport _transformOn from \"@vue/babel-helper-vue-transform-on\";\nconst A = () => _createVNode(\"button\", _transformOn({\n  click: h\n}), null);"
+    },
+    "options/pragma": {
+      "status": "ok",
+      "code": "const A = () => h(\"div\", null, null);"
+    },
+    "options/merge_props_default": {
+      "status": "ok",
+      "code": "import { mergeProps as _mergeProps, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", _mergeProps({\n  \"class\": \"a\"\n}, p, {\n  \"class\": c\n}), null);"
+    },
+    "options/merge_props_false": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"class\": \"a\",\n  ...p,\n  \"class\": c\n}, null);"
+    },
+    "options/is_custom_element_default": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"my-el\"), {\n  \"foo\": 1\n}, null);"
+    },
+    "options/is_custom_element_fn": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"MyEl\", {\n  \"foo\": 1\n}, null);"
+    },
+    "options/object_slots_default": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, isVNode as _isVNode, createVNode as _createVNode } from \"vue\";\nfunction _isSlot(s) {\n  return typeof s === 'function' || Object.prototype.toString.call(s) === '[object Object]' && !_isVNode(s);\n}\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, _isSlot(slots) ? slots : {\n  default: () => [slots]\n});"
+    },
+    "options/object_slots_false": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, {\n  default: () => [slots]\n});"
+    },
+    "options/resolve_type_off": {
+      "status": "ok",
+      "code": "import { defineComponent, createVNode as _createVNode } from 'vue';\nconst A = defineComponent((props: {\n  foo: string;\n}) => () => _createVNode(\"div\", null, [props.foo]));"
+    },
+    "options/resolve_type_on": {
+      "status": "ok",
+      "code": "import { defineComponent, createVNode as _createVNode } from 'vue';\nconst A = defineComponent((props: {\n  foo: string;\n}) => () => _createVNode(\"div\", null, [props.foo]), {\n  props: {\n    foo: {\n      type: String,\n      required: true\n    }\n  },\n  name: \"A\"\n});"
+    },
+    "elements/intrinsic": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", null, null);"
+    },
+    "elements/component_pascal": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, null);"
+    },
+    "elements/unknown_lowercase": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"foo\"), null, null);"
+    },
+    "elements/dashed_lowercase": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"my-el\"), null, null);"
+    },
+    "elements/svg_tag": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"circle\", {\n  \"cx\": 1\n}, null);"
+    },
+    "elements/mathml_tag": {
+      "status": "ok",
+      "code": "import { createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"mi\"), null, {\n  default: () => [_createTextVNode(\"x\")]\n});"
+    },
+    "elements/member_tag": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(a.b.c, {\n  \"foo\": 1\n}, null);"
+    },
+    "elements/namespaced_tag": {
+      "status": "error",
+      "message": "getTag: JSXNamespacedName is not supported"
+    },
+    "elements/fragment": {
+      "status": "ok",
+      "code": "import { Fragment as _Fragment, createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_Fragment, null, [_createVNode(\"span\", null, [_createTextVNode(\"I\")]), _createVNode(\"span\", null, [_createTextVNode(\"F\")])]);"
+    },
+    "elements/nested_fragment_child": {
+      "status": "ok",
+      "code": "import { Fragment as _Fragment, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", null, [_createVNode(_Fragment, null, [_createVNode(\"i\", null, null)])]);"
+    },
+    "props/static_attr": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"input\", {\n  \"type\": \"email\"\n}, null);"
+    },
+    "props/boolean_attr": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"input\", {\n  \"disabled\": true\n}, null);"
+    },
+    "props/dynamic_attr": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"input\", {\n  \"placeholder\": p\n}, null);"
+    },
+    "props/dashed_attrs": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"data-foo\": \"1\",\n  \"aria-label\": l\n}, null);"
+    },
+    "props/xlink_camel": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"svg\", null, [_createVNode(\"use\", {\n  \"xlink:href\": \"#a\"\n}, null)]);"
+    },
+    "props/xlink_colon": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"svg\", null, [_createVNode(\"use\", {\n  \"xlink:href\": \"#a\"\n}, null)]);"
+    },
+    "props/class_dynamic": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"class\": c\n}, null);"
+    },
+    "props/class_static_and_dynamic": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"class\": [\"a\", c]\n}, null);"
+    },
+    "props/style_dynamic": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"style\": s\n}, null);"
+    },
+    "props/style_merge_with_spread": {
+      "status": "ok",
+      "code": "import { mergeProps as _mergeProps, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", _mergeProps({\n  \"style\": \"color:red\"\n}, p, {\n  \"style\": s\n}), null);"
+    },
+    "props/spread_only": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", p, null);"
+    },
+    "props/spread_then_static": {
+      "status": "ok",
+      "code": "import { mergeProps as _mergeProps, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", _mergeProps(p, {\n  \"id\": \"x\"\n}), null);"
+    },
+    "props/on_merge_with_spread": {
+      "status": "ok",
+      "code": "import { mergeProps as _mergeProps, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", _mergeProps({\n  \"onClick\": a\n}, p, {\n  \"onClick\": b\n}), null);"
+    },
+    "props/key": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"key\": k\n}, null);"
+    },
+    "props/ref": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"ref\": r\n}, null);"
+    },
+    "props/ref_in_for": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", null, [list.map(i => _createVNode(\"span\", {\n  \"ref\": r\n}, null))]);"
+    },
+    "props/dollar_prefixed": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"$foo\": 1\n}, null);"
+    },
+    "events/plain": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"onClick\": h\n}, null);"
+    },
+    "events/capture": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"onClickCapture\": h\n}, null);"
+    },
+    "events/once": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"onClickOnce\": h\n}, null);"
+    },
+    "events/capture_passive": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"onClickCapturePassive\": h\n}, null);"
+    },
+    "directives/v_model_input": {
+      "status": "ok",
+      "code": "import { vModelText as _vModelText, createVNode as _createVNode, withDirectives as _withDirectives } from \"vue\";\nconst A = () => _withDirectives(_createVNode(\"input\", {\n  \"onUpdate:modelValue\": $event => val = $event\n}, null), [[_vModelText, val]]);"
+    },
+    "directives/v_model_arg": {
+      "status": "ok",
+      "code": "import { vModelText as _vModelText, createVNode as _createVNode, withDirectives as _withDirectives } from \"vue\";\nconst A = () => _withDirectives(_createVNode(\"input\", {\n  \"onUpdate:foo\": $event => val = $event\n}, null), [[_vModelText, val, \"foo\"]]);"
+    },
+    "directives/v_model_modifier_array": {
+      "status": "ok",
+      "code": "import { vModelText as _vModelText, createVNode as _createVNode, withDirectives as _withDirectives } from \"vue\";\nconst A = () => _withDirectives(_createVNode(\"input\", {\n  \"onUpdate:modelValue\": $event => val = $event\n}, null), [[_vModelText, val, void 0, {\n  trim: true\n}]]);"
+    },
+    "directives/v_model_underscore": {
+      "status": "ok",
+      "code": "import { vModelText as _vModelText, createVNode as _createVNode, withDirectives as _withDirectives } from \"vue\";\nconst A = () => _withDirectives(_createVNode(\"input\", {\n  \"onUpdate:modelValue\": $event => val = $event\n}, null), [[_vModelText, val, void 0, {\n  lazy: true\n}]]);"
+    },
+    "directives/v_model_arg_underscore": {
+      "status": "ok",
+      "code": "import { vModelText as _vModelText, createVNode as _createVNode, withDirectives as _withDirectives } from \"vue\";\nconst A = () => _withDirectives(_createVNode(\"input\", {\n  \"onUpdate:foo\": $event => val = $event\n}, null), [[_vModelText, val, \"foo\", {\n  trim: true\n}]]);"
+    },
+    "directives/v_model_component": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), {\n  \"modelValue\": val,\n  \"onUpdate:modelValue\": $event => val = $event\n}, null);"
+    },
+    "directives/v_model_component_arg_mods": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), {\n  'argument': val,\n  \"argumentModifiers\": {\n    \"modifier\": true\n  },\n  \"onUpdate:argument\": $event => val = $event\n}, null);"
+    },
+    "directives/v_models": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), {\n  \"modelValue\": foo,\n  \"onUpdate:modelValue\": $event => foo = $event,\n  'bar': bar,\n  \"onUpdate:bar\": $event => bar = $event\n}, null);"
+    },
+    "directives/v_models_mods": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), {\n  \"modelValue\": foo,\n  \"modelModifiers\": {\n    \"m\": true\n  },\n  \"onUpdate:modelValue\": $event => foo = $event,\n  'bar': bar,\n  \"barModifiers\": {\n    \"m\": true\n  },\n  \"onUpdate:bar\": $event => bar = $event\n}, null);"
+    },
+    "directives/v_show_element": {
+      "status": "ok",
+      "code": "import { vShow as _vShow, createVNode as _createVNode, withDirectives as _withDirectives } from \"vue\";\nconst A = () => _withDirectives(_createVNode(\"div\", null, null), [[_vShow, vis]]);"
+    },
+    "directives/v_show_component": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, vShow as _vShow, createVNode as _createVNode, withDirectives as _withDirectives } from \"vue\";\nconst A = () => _withDirectives(_createVNode(_resolveComponent(\"B\"), null, null), [[_vShow, vis]]);"
+    },
+    "directives/v_html": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"innerHTML\": h\n}, null);"
+    },
+    "directives/v_html_with_children": {
+      "status": "ok",
+      "code": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"innerHTML\": h\n}, [_createTextVNode(\"ignored\")]);"
+    },
+    "directives/v_text": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"textContent\": t\n}, null);"
+    },
+    "directives/v_custom_arg": {
+      "status": "ok",
+      "code": "import { resolveDirective as _resolveDirective, createVNode as _createVNode, withDirectives as _withDirectives } from \"vue\";\nconst A = () => _withDirectives(_createVNode(\"a\", null, null), [[_resolveDirective(\"custom\"), val, \"arg\"]]);"
+    },
+    "directives/v_custom_array": {
+      "status": "ok",
+      "code": "import { resolveDirective as _resolveDirective, createVNode as _createVNode, withDirectives as _withDirectives } from \"vue\";\nconst A = () => _withDirectives(_createVNode(\"a\", null, null), [[_resolveDirective(\"custom\"), val, 'arg', {\n  a: true,\n  b: true\n}]]);"
+    },
+    "directives/v_dashed_custom": {
+      "status": "ok",
+      "code": "import { resolveDirective as _resolveDirective, createVNode as _createVNode, withDirectives as _withDirectives } from \"vue\";\nconst A = () => _withDirectives(_createVNode(\"div\", null, null), [[_resolveDirective(\"unknown-thing\"), x]]);"
+    },
+    "slots/object_children": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode, resolveComponent as _resolveComponent } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, {\n  default: () => _createVNode(\"i\", null, null),\n  bar: () => _createVNode(\"b\", null, null)\n});"
+    },
+    "slots/render_prop_child": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, {\n  default: () => 'foo'\n});"
+    },
+    "slots/scoped_param": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode, resolveComponent as _resolveComponent } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, {\n  default: s => _createVNode(\"i\", null, [s.x])\n});"
+    },
+    "slots/v_slots_with_children": {
+      "status": "ok",
+      "code": "import { createTextVNode as _createTextVNode, createVNode as _createVNode, resolveComponent as _resolveComponent } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, {\n  default: () => [_createVNode(\"div\", null, [_createTextVNode(\"A\")])],\n  ...slots\n});"
+    },
+    "slots/v_slots_only": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, slots);"
+    },
+    "slots/element_children_default": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode, resolveComponent as _resolveComponent } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, {\n  default: () => [_createVNode(\"i\", null, null)]\n});"
+    },
+    "slots/dynamic_slot_name": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode, resolveComponent as _resolveComponent } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, {\n  [n]: () => _createVNode(\"i\", null, null)\n});"
+    },
+    "children/static_text": {
+      "status": "ok",
+      "code": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", null, [_createTextVNode(\"x\")]);"
+    },
+    "children/text_interp_mix": {
+      "status": "ok",
+      "code": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", null, [_createTextVNode(\"hi \"), name, _createTextVNode(\"!\")]);"
+    },
+    "children/comment_only": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", null, null);"
+    },
+    "children/empty_expr": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", null, null);"
+    },
+    "children/spread_child": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", null, [...items]);"
+    },
+    "children/logical_and": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", null, [c && _createVNode(\"span\", null, null)]);"
+    },
+    "children/ternary": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", null, [c ? _createVNode(\"a\", null, null) : _createVNode(\"b\", null, null)]);"
+    },
+    "children/map_list": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", null, [list.map(i => _createVNode(\"span\", {\n  \"key\": i\n}, [i]))]);"
+    },
+    "optimize/static": {
+      "status": "ok",
+      "code": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"class\": \"a\"\n}, [_createTextVNode(\"x\")]);"
+    },
+    "optimize/class_only": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"class\": c\n}, null, 2);"
+    },
+    "optimize/style_only": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"style\": s\n}, null, 4);"
+    },
+    "optimize/text_only": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", null, [t]);"
+    },
+    "optimize/class_and_props": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"class\": c,\n  \"id\": i\n}, [t], 10, [\"id\"]);"
+    },
+    "optimize/spread": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", p, null, 16);"
+    },
+    "optimize/ref": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"ref\": r\n}, null, 512);"
+    },
+    "optimize/key": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"key\": k\n}, null);"
+    },
+    "optimize/event": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", {\n  \"onClick\": h\n}, null, 8, [\"onClick\"]);"
+    },
+    "optimize/component_props": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), {\n  \"foo\": f\n}, null, 8, [\"foo\"]);"
+    },
+    "optimize/v_model_input": {
+      "status": "ok",
+      "code": "import { vModelText as _vModelText, createVNode as _createVNode, withDirectives as _withDirectives } from \"vue\";\nconst A = () => _withDirectives(_createVNode(\"input\", {\n  \"onUpdate:modelValue\": $event => val = $event\n}, null, 8, [\"onUpdate:modelValue\"]), [[_vModelText, val]]);"
+    },
+    "optimize/slots_stability": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode, resolveComponent as _resolveComponent } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, {\n  default: () => _createVNode(\"i\", null, null),\n  bar: () => _createVNode(\"b\", null, null),\n  _: 1\n});"
+    },
+    "optimize/scoped_slot_stability": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode, resolveComponent as _resolveComponent } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, {\n  default: s => _createVNode(\"i\", null, [s.x]),\n  _: 1\n});"
+    },
+    "optimize/v_slots_stability": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, slots);"
+    },
+    "optimize/fragment": {
+      "status": "ok",
+      "code": "import { Fragment as _Fragment, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_Fragment, null, [_createVNode(\"i\", null, null), _createVNode(\"b\", null, null)]);"
+    },
+    "optimize/map_list": {
+      "status": "ok",
+      "code": "import { createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(\"div\", null, [list.map(i => _createVNode(\"span\", {\n  \"key\": i\n}, [i]))]);"
+    },
+    "errors/v_model_non_lval": {
+      "status": "error",
+      "message": "Property left of AssignmentExpression expected node to be of a type [\"LVal\",\"OptionalMemberExpression\"] but instead got \"ObjectExpression\""
+    },
+    "errors/v_model_no_value": {
+      "status": "error",
+      "message": "You have to use JSX Expression inside your v-model"
+    },
+    "errors/v_models_not_array": {
+      "status": "error",
+      "message": "Property key of ObjectProperty expected node to be of a type [\"Identifier\",\"StringLiteral\",\"NumericLiteral\",\"BigIntLiteral\",\"DecimalLiteral\",\"PrivateName\"] but instead got undefined"
+    },
+    "errors/v_slots_not_object": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, 1);"
+    }
+  }
+}

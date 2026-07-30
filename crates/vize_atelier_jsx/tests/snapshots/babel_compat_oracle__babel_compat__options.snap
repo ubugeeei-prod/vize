@@ -1,0 +1,240 @@
+---
+source: crates/vize_atelier_jsx/tests/babel_compat_oracle.rs
+expression: body
+---
+## options/transform_on_off
+### verdict
+equivalent
+### source (jsx)
+const A = () => <button on={{click: h}}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("button", {
+  "on": {
+    click: h
+  }
+}, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("button", { on: {click: h} }, null, 8 /* PROPS */, ["on"]))
+}
+
+## options/transform_on_on
+### verdict
+divergent: no transformOn option
+### source (jsx)
+const A = () => <button on={{click: h}}/>;
+### babel options
+{"transformOn":true}
+### babel
+import { createVNode as _createVNode } from "vue";
+import _transformOn from "@vue/babel-helper-vue-transform-on";
+const A = () => _createVNode("button", _transformOn({
+  click: h
+}), null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("button", { on: {click: h} }, null, 8 /* PROPS */, ["on"]))
+}
+
+## options/pragma
+### verdict
+divergent: no pragma option
+### source (jsx)
+const A = () => <div/>;
+### babel options
+{"pragma":"h"}
+### babel
+const A = () => h("div", null, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div"))
+}
+
+## options/merge_props_default
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div class="a" {...p} class={c}/>;
+### babel options
+(defaults)
+### babel
+import { mergeProps as _mergeProps, createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", _mergeProps({
+  "class": "a"
+}, p, {
+  "class": c
+}), null);
+### vize (vdom, default config)
+import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps({ class: "a" }, p, {
+    class: c
+  }), null, 16 /* FULL_PROPS */))
+}
+
+## options/merge_props_false
+### verdict
+divergent: no mergeProps option
+### source (jsx)
+const A = () => <div class="a" {...p} class={c}/>;
+### babel options
+{"mergeProps":false}
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "class": "a",
+  ...p,
+  "class": c
+}, null);
+### vize (vdom, default config)
+import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps({ class: "a" }, p, {
+    class: c
+  }), null, 16 /* FULL_PROPS */))
+}
+
+## options/is_custom_element_default
+### verdict
+equivalent
+### source (jsx)
+const A = () => <my-el foo={1}/>;
+### babel options
+(defaults)
+### babel
+import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("my-el"), {
+  "foo": 1
+}, null);
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_my_el = _resolveComponent("my-el")
+  
+  return (_openBlock(), _createBlock(_component_my_el, { foo: 1 }))
+}
+
+## options/is_custom_element_fn
+### verdict
+divergent: no isCustomElement option
+### source (jsx)
+const A = () => <MyEl foo={1}/>;
+### babel options
+{"isCustomElement":["MyEl"]}
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("MyEl", {
+  "foo": 1
+}, null);
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_MyEl = _resolveComponent("MyEl")
+  
+  return (_openBlock(), _createBlock(_component_MyEl, { foo: 1 }))
+}
+
+## options/object_slots_default
+### verdict
+divergent: lone expression child stringified
+### source (jsx)
+const A = () => <B>{slots}</B>;
+### babel options
+(defaults)
+### babel
+import { resolveComponent as _resolveComponent, isVNode as _isVNode, createVNode as _createVNode } from "vue";
+function _isSlot(s) {
+  return typeof s === 'function' || Object.prototype.toString.call(s) === '[object Object]' && !_isVNode(s);
+}
+const A = () => _createVNode(_resolveComponent("B"), null, _isSlot(slots) ? slots : {
+  default: () => [slots]
+});
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  
+  return (_openBlock(), _createBlock(_component_B, null, {
+    default: _withCtx(() => [
+      _createTextVNode(_toDisplayString(slots), 1 /* TEXT */)
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+
+## options/object_slots_false
+### verdict
+divergent: lone expression child stringified
+### source (jsx)
+const A = () => <B>{slots}</B>;
+### babel options
+{"enableObjectSlots":false}
+### babel
+import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), null, {
+  default: () => [slots]
+});
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  
+  return (_openBlock(), _createBlock(_component_B, null, {
+    default: _withCtx(() => [
+      _createTextVNode(_toDisplayString(slots), 1 /* TEXT */)
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+
+## options/resolve_type_off
+### verdict
+equivalent
+### source (tsx)
+import { defineComponent } from 'vue';
+const A = defineComponent((props: { foo: string }) => () => <div>{props.foo}</div>);
+### babel options
+(defaults)
+### babel
+import { defineComponent, createVNode as _createVNode } from 'vue';
+const A = defineComponent((props: {
+  foo: string;
+}) => () => _createVNode("div", null, [props.foo]));
+### vize (vdom, default config)
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(props.foo), 1 /* TEXT */))
+}
+
+## options/resolve_type_on
+### verdict
+deferred: type-driven props/emits needs #1497 / #1502
+### source (tsx)
+import { defineComponent } from 'vue';
+const A = defineComponent((props: { foo: string }) => () => <div>{props.foo}</div>);
+### babel options
+{"resolveType":true}
+### babel
+import { defineComponent, createVNode as _createVNode } from 'vue';
+const A = defineComponent((props: {
+  foo: string;
+}) => () => _createVNode("div", null, [props.foo]), {
+  props: {
+    foo: {
+      type: String,
+      required: true
+    }
+  },
+  name: "A"
+});
+### vize (vdom, default config)
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(props.foo), 1 /* TEXT */))
+}

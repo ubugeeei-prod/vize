@@ -1,0 +1,177 @@
+---
+source: crates/vize_atelier_jsx/tests/babel_compat_oracle.rs
+expression: body
+---
+## slots/object_children
+### verdict
+equivalent
+### source (jsx)
+const A = () => <B>{{default: () => <i/>, bar: () => <b/>}}</B>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode, resolveComponent as _resolveComponent } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), null, {
+  default: () => _createVNode("i", null, null),
+  bar: () => _createVNode("b", null, null)
+});
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  
+  return (_openBlock(), _createBlock(_component_B, null, {
+    default: _withCtx(() => [
+      _createElementVNode("i")
+    ]),
+    bar: _withCtx(() => [
+      _createElementVNode("b")
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+
+## slots/render_prop_child
+### verdict
+divergent: non-JSX render-prop body dropped
+### source (jsx)
+const A = () => <B>{() => 'foo'}</B>;
+### babel options
+(defaults)
+### babel
+import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), null, {
+  default: () => 'foo'
+});
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  
+  return (_openBlock(), _createBlock(_component_B, null, {
+    default: _withCtx(() => [
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+
+## slots/scoped_param
+### verdict
+equivalent
+### source (jsx)
+const A = () => <B>{{default: (s) => <i>{s.x}</i>}}</B>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode, resolveComponent as _resolveComponent } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), null, {
+  default: s => _createVNode("i", null, [s.x])
+});
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  
+  return (_openBlock(), _createBlock(_component_B, null, {
+    default: _withCtx((s) => [
+      _createElementVNode("i", null, _toDisplayString(s.x), 1 /* TEXT */)
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+
+## slots/v_slots_with_children
+### verdict
+divergent: v-slots not implemented
+### source (jsx)
+const A = () => <B v-slots={slots}><div>A</div></B>;
+### babel options
+(defaults)
+### babel
+import { createTextVNode as _createTextVNode, createVNode as _createVNode, resolveComponent as _resolveComponent } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), null, {
+  default: () => [_createVNode("div", null, [_createTextVNode("A")])],
+  ...slots
+});
+### vize (vdom, default config)
+import { resolveDirective as _resolveDirective, resolveComponent as _resolveComponent, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  const _directive_slots = _resolveDirective("slots")
+  
+  return _withDirectives((_openBlock(), _createBlock(_component_B, null, {
+    default: _withCtx(() => [
+      _createElementVNode("div", null, "A")
+    ]),
+    _: 1 /* STABLE */
+  })), [
+    [_directive_slots, slots]
+  ])
+}
+
+## slots/v_slots_only
+### verdict
+divergent: v-slots not implemented
+### source (jsx)
+const A = () => <B v-slots={slots}/>;
+### babel options
+(defaults)
+### babel
+import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), null, slots);
+### vize (vdom, default config)
+import { resolveDirective as _resolveDirective, resolveComponent as _resolveComponent, withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  const _directive_slots = _resolveDirective("slots")
+  
+  return _withDirectives((_openBlock(), _createBlock(_component_B, null, null, 512 /* NEED_PATCH */)), [
+    [_directive_slots, slots]
+  ])
+}
+
+## slots/element_children_default
+### verdict
+equivalent
+### source (jsx)
+const A = () => <B><i/></B>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode, resolveComponent as _resolveComponent } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), null, {
+  default: () => [_createVNode("i", null, null)]
+});
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  
+  return (_openBlock(), _createBlock(_component_B, null, {
+    default: _withCtx(() => [
+      _createElementVNode("i")
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+
+## slots/dynamic_slot_name
+### verdict
+deferred: computed slot names warn and drop; needs dynamic-slot lowering
+### source (jsx)
+const A = () => <B>{{[n]: () => <i/>}}</B>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode, resolveComponent as _resolveComponent } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), null, {
+  [n]: () => _createVNode("i", null, null)
+});
+### vize (vdom, default config)
+<Warning> computed JSX slot names are not supported and were ignored
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  
+  return (_openBlock(), _createBlock(_component_B))
+}

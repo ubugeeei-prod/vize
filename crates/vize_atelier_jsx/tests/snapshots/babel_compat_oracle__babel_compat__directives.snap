@@ -1,0 +1,390 @@
+---
+source: crates/vize_atelier_jsx/tests/babel_compat_oracle.rs
+expression: body
+---
+## directives/v_model_input
+### verdict
+equivalent
+### source (jsx)
+const A = () => <input v-model={val}/>;
+### babel options
+(defaults)
+### babel
+import { vModelText as _vModelText, createVNode as _createVNode, withDirectives as _withDirectives } from "vue";
+const A = () => _withDirectives(_createVNode("input", {
+  "onUpdate:modelValue": $event => val = $event
+}, null), [[_vModelText, val]]);
+### vize (vdom, default config)
+import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return _withDirectives((_openBlock(), _createElementBlock("input", {
+    "onUpdate:modelValue": $event => ((val) = $event)
+  }, null, 8 /* PROPS */, ["onUpdate:modelValue"])), [
+    [_vModelText, val]
+  ])
+}
+
+## directives/v_model_arg
+### verdict
+divergent: v-model arg rejected on elements
+### source (jsx)
+const A = () => <input v-model:foo={val}/>;
+### babel options
+(defaults)
+### babel
+import { vModelText as _vModelText, createVNode as _createVNode, withDirectives as _withDirectives } from "vue";
+const A = () => _withDirectives(_createVNode("input", {
+  "onUpdate:foo": $event => val = $event
+}, null), [[_vModelText, val, "foo"]]);
+### vize (vdom, default config)
+<Error> v-model argument is not supported on plain elements.
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("input"))
+}
+
+## directives/v_model_modifier_array
+### verdict
+equivalent
+### source (jsx)
+const A = () => <input v-model={[val, ['trim']]}/>;
+### babel options
+(defaults)
+### babel
+import { vModelText as _vModelText, createVNode as _createVNode, withDirectives as _withDirectives } from "vue";
+const A = () => _withDirectives(_createVNode("input", {
+  "onUpdate:modelValue": $event => val = $event
+}, null), [[_vModelText, val, void 0, {
+  trim: true
+}]]);
+### vize (vdom, default config)
+import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return _withDirectives((_openBlock(), _createElementBlock("input", {
+    "onUpdate:modelValue": $event => ((val) = $event)
+  }, null, 8 /* PROPS */, ["onUpdate:modelValue"])), [
+    [
+      _vModelText,
+      val,
+      void 0,
+      { trim: true }
+    ]
+  ])
+}
+
+## directives/v_model_underscore
+### verdict
+equivalent
+### source (jsx)
+const A = () => <input v-model_lazy={val}/>;
+### babel options
+(defaults)
+### babel
+import { vModelText as _vModelText, createVNode as _createVNode, withDirectives as _withDirectives } from "vue";
+const A = () => _withDirectives(_createVNode("input", {
+  "onUpdate:modelValue": $event => val = $event
+}, null), [[_vModelText, val, void 0, {
+  lazy: true
+}]]);
+### vize (vdom, default config)
+import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return _withDirectives((_openBlock(), _createElementBlock("input", {
+    "onUpdate:modelValue": $event => ((val) = $event)
+  }, null, 8 /* PROPS */, ["onUpdate:modelValue"])), [
+    [
+      _vModelText,
+      val,
+      void 0,
+      { lazy: true }
+    ]
+  ])
+}
+
+## directives/v_model_arg_underscore
+### verdict
+divergent: v-model arg rejected on elements
+### source (jsx)
+const A = () => <input v-model:foo_trim={val}/>;
+### babel options
+(defaults)
+### babel
+import { vModelText as _vModelText, createVNode as _createVNode, withDirectives as _withDirectives } from "vue";
+const A = () => _withDirectives(_createVNode("input", {
+  "onUpdate:foo": $event => val = $event
+}, null), [[_vModelText, val, "foo", {
+  trim: true
+}]]);
+### vize (vdom, default config)
+<Error> v-model argument is not supported on plain elements.
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("input"))
+}
+
+## directives/v_model_component
+### verdict
+equivalent
+### source (jsx)
+const A = () => <B v-model={val}/>;
+### babel options
+(defaults)
+### babel
+import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), {
+  "modelValue": val,
+  "onUpdate:modelValue": $event => val = $event
+}, null);
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  
+  return (_openBlock(), _createBlock(_component_B, {
+    modelValue: val,
+    "onUpdate:modelValue": $event => ((val) = $event)
+  }, null, 8 /* PROPS */, ["modelValue", "onUpdate:modelValue"]))
+}
+
+## directives/v_model_component_arg_mods
+### verdict
+equivalent
+### source (jsx)
+const A = () => <B v-model={[val, 'argument', ['modifier']]}/>;
+### babel options
+(defaults)
+### babel
+import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), {
+  'argument': val,
+  "argumentModifiers": {
+    "modifier": true
+  },
+  "onUpdate:argument": $event => val = $event
+}, null);
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  
+  return (_openBlock(), _createBlock(_component_B, {
+    argument: val,
+    "onUpdate:argument": $event => ((val) = $event),
+    argumentModifiers: { modifier: true }
+  }, null, 8 /* PROPS */, ["argument", "onUpdate:argument"]))
+}
+
+## directives/v_models
+### verdict
+divergent: v-models not implemented
+### source (jsx)
+const A = () => <B v-models={[[foo], [bar, 'bar']]}/>;
+### babel options
+(defaults)
+### babel
+import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), {
+  "modelValue": foo,
+  "onUpdate:modelValue": $event => foo = $event,
+  'bar': bar,
+  "onUpdate:bar": $event => bar = $event
+}, null);
+### vize (vdom, default config)
+import { resolveDirective as _resolveDirective, resolveComponent as _resolveComponent, withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  const _directive_models = _resolveDirective("models")
+  
+  return _withDirectives((_openBlock(), _createBlock(_component_B, null, null, 512 /* NEED_PATCH */)), [
+    [_directive_models, [[foo], [bar, 'bar']]]
+  ])
+}
+
+## directives/v_models_mods
+### verdict
+divergent: v-models not implemented
+### source (jsx)
+const A = () => <B v-models={[[foo, ['m']], [bar, 'bar', ['m']]]}/>;
+### babel options
+(defaults)
+### babel
+import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), {
+  "modelValue": foo,
+  "modelModifiers": {
+    "m": true
+  },
+  "onUpdate:modelValue": $event => foo = $event,
+  'bar': bar,
+  "barModifiers": {
+    "m": true
+  },
+  "onUpdate:bar": $event => bar = $event
+}, null);
+### vize (vdom, default config)
+import { resolveDirective as _resolveDirective, resolveComponent as _resolveComponent, withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  const _directive_models = _resolveDirective("models")
+  
+  return _withDirectives((_openBlock(), _createBlock(_component_B, null, null, 512 /* NEED_PATCH */)), [
+    [_directive_models, [[foo, ['m']], [bar, 'bar', ['m']]]]
+  ])
+}
+
+## directives/v_show_element
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div v-show={vis}/>;
+### babel options
+(defaults)
+### babel
+import { vShow as _vShow, createVNode as _createVNode, withDirectives as _withDirectives } from "vue";
+const A = () => _withDirectives(_createVNode("div", null, null), [[_vShow, vis]]);
+### vize (vdom, default config)
+import { withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, vShow as _vShow } from "vue"
+export function render(_ctx, _cache) {
+  return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512 /* NEED_PATCH */)), [
+    [_vShow, vis]
+  ])
+}
+
+## directives/v_show_component
+### verdict
+equivalent
+### source (jsx)
+const A = () => <B v-show={vis}/>;
+### babel options
+(defaults)
+### babel
+import { resolveComponent as _resolveComponent, vShow as _vShow, createVNode as _createVNode, withDirectives as _withDirectives } from "vue";
+const A = () => _withDirectives(_createVNode(_resolveComponent("B"), null, null), [[_vShow, vis]]);
+### vize (vdom, default config)
+import { resolveComponent as _resolveComponent, withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock, vShow as _vShow } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  
+  return _withDirectives((_openBlock(), _createBlock(_component_B, null, null, 512 /* NEED_PATCH */)), [
+    [_vShow, vis]
+  ])
+}
+
+## directives/v_html
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div v-html={h}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "innerHTML": h
+}, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { innerHTML: h }, null, 8 /* PROPS */, ["innerHTML"]))
+}
+
+## directives/v_html_with_children
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div v-html={h}>ignored</div>;
+### babel options
+(defaults)
+### babel
+import { createTextVNode as _createTextVNode, createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "innerHTML": h
+}, [_createTextVNode("ignored")]);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { innerHTML: h }, "ignored", 8 /* PROPS */, ["innerHTML"]))
+}
+
+## directives/v_text
+### verdict
+divergent: v-text wrapped in toDisplayString
+### source (jsx)
+const A = () => <div v-text={t}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "textContent": t
+}, null);
+### vize (vdom, default config)
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    textContent: _toDisplayString(t)
+  }, null, 8 /* PROPS */, ["textContent"]))
+}
+
+## directives/v_custom_arg
+### verdict
+equivalent
+### source (jsx)
+const A = () => <a v-custom:arg={val}/>;
+### babel options
+(defaults)
+### babel
+import { resolveDirective as _resolveDirective, createVNode as _createVNode, withDirectives as _withDirectives } from "vue";
+const A = () => _withDirectives(_createVNode("a", null, null), [[_resolveDirective("custom"), val, "arg"]]);
+### vize (vdom, default config)
+import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _directive_custom = _resolveDirective("custom")
+  
+  return _withDirectives((_openBlock(), _createElementBlock("a", null, null, 512 /* NEED_PATCH */)), [
+    [_directive_custom, val, "arg"]
+  ])
+}
+
+## directives/v_custom_array
+### verdict
+divergent: custom-directive array form not unpacked
+### source (jsx)
+const A = () => <a v-custom={[val, 'arg', ['a','b']]}/>;
+### babel options
+(defaults)
+### babel
+import { resolveDirective as _resolveDirective, createVNode as _createVNode, withDirectives as _withDirectives } from "vue";
+const A = () => _withDirectives(_createVNode("a", null, null), [[_resolveDirective("custom"), val, 'arg', {
+  a: true,
+  b: true
+}]]);
+### vize (vdom, default config)
+import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _directive_custom = _resolveDirective("custom")
+  
+  return _withDirectives((_openBlock(), _createElementBlock("a", null, null, 512 /* NEED_PATCH */)), [
+    [_directive_custom, [val, 'arg', ['a','b']]]
+  ])
+}
+
+## directives/v_dashed_custom
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div v-unknown-thing={x}/>;
+### babel options
+(defaults)
+### babel
+import { resolveDirective as _resolveDirective, createVNode as _createVNode, withDirectives as _withDirectives } from "vue";
+const A = () => _withDirectives(_createVNode("div", null, null), [[_resolveDirective("unknown-thing"), x]]);
+### vize (vdom, default config)
+import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _directive_unknown_thing = _resolveDirective("unknown-thing")
+  
+  return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512 /* NEED_PATCH */)), [
+    [_directive_unknown_thing, x]
+  ])
+}

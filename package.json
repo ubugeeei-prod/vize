@@ -7,10 +7,13 @@
     "provenance": true
   },
   "devDependencies": {
+    "@babel/core": "catalog:babel-jsx-oracle",
+    "@babel/plugin-syntax-typescript": "catalog:babel-jsx-oracle",
     "@iarna/toml": "catalog:repo-tooling",
     "@tsdown/css": "catalog:content",
     "@types/node": "catalog:typescript",
     "@typescript/native-preview": "catalog:typescript",
+    "@vue/babel-plugin-jsx": "catalog:babel-jsx-oracle",
     "ajv": "catalog:repo-tooling",
     "glob": "catalog:repo-tooling",
     "json-schema-to-typescript": "catalog:repo-tooling",

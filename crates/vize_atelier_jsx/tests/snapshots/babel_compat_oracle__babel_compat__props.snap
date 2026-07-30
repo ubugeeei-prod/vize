@@ -1,0 +1,331 @@
+---
+source: crates/vize_atelier_jsx/tests/babel_compat_oracle.rs
+expression: body
+---
+## props/static_attr
+### verdict
+equivalent
+### source (jsx)
+const A = () => <input type="email"/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("input", {
+  "type": "email"
+}, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("input", { type: "email" }))
+}
+
+## props/boolean_attr
+### verdict
+divergent: valueless attribute lowers to "" not true
+### source (jsx)
+const A = () => <input disabled/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("input", {
+  "disabled": true
+}, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("input", { disabled: "" }))
+}
+
+## props/dynamic_attr
+### verdict
+equivalent
+### source (jsx)
+const A = () => <input placeholder={p}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("input", {
+  "placeholder": p
+}, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("input", { placeholder: p }, null, 8 /* PROPS */, ["placeholder"]))
+}
+
+## props/dashed_attrs
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div data-foo="1" aria-label={l}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "data-foo": "1",
+  "aria-label": l
+}, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    "data-foo": "1",
+    "aria-label": l
+  }, null, 8 /* PROPS */, ["aria-label"]))
+}
+
+## props/xlink_camel
+### verdict
+divergent: xlinkHref not rewritten to xlink:href
+### source (jsx)
+const A = () => <svg><use xlinkHref="#a"/></svg>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("svg", null, [_createVNode("use", {
+  "xlink:href": "#a"
+}, null)]);
+### vize (vdom, default config)
+import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("svg", null, [
+    _createElementVNode("use", { xlinkHref: "#a" })
+  ]))
+}
+
+## props/xlink_colon
+### verdict
+equivalent
+### source (jsx)
+const A = () => <svg><use xlink:href="#a"/></svg>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("svg", null, [_createVNode("use", {
+  "xlink:href": "#a"
+}, null)]);
+### vize (vdom, default config)
+import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("svg", null, [
+    _createElementVNode("use", { "xlink:href": "#a" })
+  ]))
+}
+
+## props/class_dynamic
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div class={c}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "class": c
+}, null);
+### vize (vdom, default config)
+import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    class: _normalizeClass(c)
+  }, null, 2 /* CLASS */))
+}
+
+## props/class_static_and_dynamic
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div class="a" class={c}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "class": ["a", c]
+}, null);
+### vize (vdom, default config)
+import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    class: _normalizeClass(["a", c])
+  }, null, 2 /* CLASS */))
+}
+
+## props/style_dynamic
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div style={s}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "style": s
+}, null);
+### vize (vdom, default config)
+import { normalizeStyle as _normalizeStyle, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    style: _normalizeStyle(s)
+  }, null, 4 /* STYLE */))
+}
+
+## props/style_merge_with_spread
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div style="color:red" {...p} style={s}/>;
+### babel options
+(defaults)
+### babel
+import { mergeProps as _mergeProps, createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", _mergeProps({
+  "style": "color:red"
+}, p, {
+  "style": s
+}), null);
+### vize (vdom, default config)
+import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps({ style: "color:red" }, p, {
+    style: s
+  }), null, 16 /* FULL_PROPS */))
+}
+
+## props/spread_only
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div {...p}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", p, null);
+### vize (vdom, default config)
+import { normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _normalizeProps(_guardReactiveProps(p)), null, 16 /* FULL_PROPS */))
+}
+
+## props/spread_then_static
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div {...p} id="x"/>;
+### babel options
+(defaults)
+### babel
+import { mergeProps as _mergeProps, createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", _mergeProps(p, {
+  "id": "x"
+}), null);
+### vize (vdom, default config)
+import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps(p, { id: "x" }), null, 16 /* FULL_PROPS */))
+}
+
+## props/on_merge_with_spread
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div onClick={a} {...p} onClick={b}/>;
+### babel options
+(defaults)
+### babel
+import { mergeProps as _mergeProps, createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", _mergeProps({
+  "onClick": a
+}, p, {
+  "onClick": b
+}), null);
+### vize (vdom, default config)
+import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps({ onClick: a }, p, { onClick: b }), null, 16 /* FULL_PROPS */, ["onClick"]))
+}
+
+## props/key
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div key={k}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "key": k
+}, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { key: k }))
+}
+
+## props/ref
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div ref={r}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "ref": r
+}, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { ref: r }, null, 512 /* NEED_PATCH */))
+}
+
+## props/ref_in_for
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div>{list.map(i => <span ref={r}/>)}</div>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", null, [list.map(i => _createVNode("span", {
+  "ref": r
+}, null))]);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => {
+      return (_openBlock(), _createElementBlock("span", { ref: r }))
+    }), 256 /* UNKEYED_FRAGMENT */))
+  ]))
+}
+
+## props/dollar_prefixed
+### verdict
+equivalent
+### source (jsx)
+const A = () => <div $foo={1}/>;
+### babel options
+(defaults)
+### babel
+import { createVNode as _createVNode } from "vue";
+const A = () => _createVNode("div", {
+  "$foo": 1
+}, null);
+### vize (vdom, default config)
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { $foo: 1 }))
+}

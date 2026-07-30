@@ -49,6 +49,14 @@ overrides:
   yaml: "2.9.0"
 
 catalogs:
+  # Real @vue/babel-plugin-jsx toolchain, used only as the differential oracle
+  # for JSX/TSX babel-compatibility tests (crates/vize_atelier_jsx/tests/babel_compat).
+  # Bump deliberately: a version change re-records the committed ground truth.
+  babel-jsx-oracle:
+    "@babel/core": "7.29.0"
+    "@babel/plugin-syntax-typescript": "7.28.6"
+    "@vue/babel-plugin-jsx": "2.0.1"
+
   # Shared repo and file-system utilities.
   repo-tooling:
     "@iarna/toml": "2.2.5"

@@ -1,0 +1,79 @@
+---
+source: crates/vize_atelier_jsx/tests/babel_compat_oracle.rs
+expression: body
+---
+## errors/v_model_non_lval
+### verdict
+divergent: non-assignable v-model target accepted
+### source (jsx)
+const A = () => <input v-model={{a:1}}/>;
+### babel options
+(defaults)
+### babel
+<error> Property left of AssignmentExpression expected node to be of a type ["LVal","OptionalMemberExpression"] but instead got "ObjectExpression"
+### vize (vdom, default config)
+import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return _withDirectives((_openBlock(), _createElementBlock("input", {
+    "onUpdate:modelValue": $event => ($event => ($event => (({a:1}) = $event)))
+  }, null, 8 /* PROPS */, ["onUpdate:modelValue"])), [
+    [_vModelText, {a:1}]
+  ])
+}
+
+## errors/v_model_no_value
+### verdict
+equivalent
+### source (jsx)
+const A = () => <input v-model/>;
+### babel options
+(defaults)
+### babel
+<error> You have to use JSX Expression inside your v-model
+### vize (vdom, default config)
+<Error> v-model is missing expression.
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("input"))
+}
+
+## errors/v_models_not_array
+### verdict
+divergent: v-models not implemented
+### source (jsx)
+const A = () => <B v-models={foo}/>;
+### babel options
+(defaults)
+### babel
+<error> Property key of ObjectProperty expected node to be of a type ["Identifier","StringLiteral","NumericLiteral","BigIntLiteral","DecimalLiteral","PrivateName"] but instead got undefined
+### vize (vdom, default config)
+import { resolveDirective as _resolveDirective, resolveComponent as _resolveComponent, withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  const _directive_models = _resolveDirective("models")
+  
+  return _withDirectives((_openBlock(), _createBlock(_component_B, null, null, 512 /* NEED_PATCH */)), [
+    [_directive_models, foo]
+  ])
+}
+
+## errors/v_slots_not_object
+### verdict
+divergent: v-slots not implemented
+### source (jsx)
+const A = () => <B v-slots={1}/>;
+### babel options
+(defaults)
+### babel
+import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), null, 1);
+### vize (vdom, default config)
+import { resolveDirective as _resolveDirective, resolveComponent as _resolveComponent, withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+  const _directive_slots = _resolveDirective("slots")
+  
+  return _withDirectives((_openBlock(), _createBlock(_component_B, null, null, 512 /* NEED_PATCH */)), [
+    [_directive_slots, 1]
+  ])
+}
