@@ -152,10 +152,12 @@ Correr `vp run --workspace-root bench:fmt` para se reproduzir.
 
 Verificação de tipos **de 500 arquivos SFC gerados no Vue** com o caminho de diagnóstico atual respaldado pela Corsa:
 
-|           | vue-tsc (ST)   | Cânone Vize (ST) | Aceleração | vue-tsc (MT)   | Cânone Vize (MT) | Aceleração | **vue-tsc ST vs Vize MT** |
-| --------- | -------------- | ---------------- | ---------- | -------------- | ---------------- | ---------- | ------------------------- |
-| **Tempo** | 4,38s          | 511ms            | **8,6x**   | 4,41s          | 493ms            | **8,9x**   | **8,9x**                  |
-| **Taxa**  | 114 arquivos/s | 979 arquivos/s   |            | 113 arquivos/s | 1.0k arquivos/s  |            |                           |
+|           | vue-tsc (ST)   | Cânone Vize (ST) | Aceleração         | vue-tsc (MT)   | Cânone Vize (MT) | Aceleração         | **vue-tsc ST vs Vize MT** |
+| --------- | -------------- | ---------------- | ------------------ | -------------- | ---------------- | ------------------ | ------------------------- |
+| **Tempo** | 4,38s          | 511ms            | n/a (cross-engine) | 4,41s          | 493ms            | n/a (cross-engine) | n/a (cross-engine)        |
+| **Taxa**  | 114 arquivos/s | 979 arquivos/s   |                    | 113 arquivos/s | 1.0k arquivos/s  |                    |                           |
+
+As linhas de verificação de tipo abrangem dois mecanismos TypeScript: o vue-tsc executa o compilador JavaScript enquanto o Vize check executa o tsgo nativo (Corsa). Por isso nenhuma razão única é publicada (`n/a (cross-engine)`); cada classe de mecanismo é classificada separadamente, já que um número único atribuiria a reescrita em Go do TypeScript à camada Vue. Os dois tempos são reais e foram medidos na mesma execução; veja o [snapshot de benchmark Blacksmith](./performance-blacksmith) para o ranking por classe de mecanismo.
 
 > **Nota:** O canhão Vize ainda está em desenvolvimento inicial e o caminho de diagnóstico apoiado pela Corsa ainda está alcançando a fidelidade vue-tsc. Essas medições refletem a implementação nativa atual com CLI primeiro, com um recurso de reserva por sessão de projeto, e mudarão à medida que a cobertura e a paridade de diagnóstico melhoram.
 
@@ -196,8 +198,10 @@ Build do Vite com **1.000 importações do SFC Vue** (todas importadas em uma ú
 
 |                         | @vitejs/plugin-vue | @vizejs/vite-plugin | Aceleração |
 | ----------------------- | ------------------ | ------------------- | ---------- |
-| **Tempo de Construção** | 957ms              | 479ms               | **2.0x**   |
+| **Tempo de Construção** | 1.66s              | 732.5ms             | **2.3x**   |
 
 > Nota: `@vizejs/vite-plugin` substitui apenas a etapa de compilação do Vue SFC — a diferença de desempenho vem inteiramente dessa parte. A resolução de dependências, construção de grafos de módulos, agrupamento (Rolldown) e todos os outros internos do Vite são idênticos aos `@vitejs/plugin-vue`. Para performance pura em compilações, veja o [Compiler benchmark](#benchmark-15000-sfc-files) acima. `@vizejs/vite-plugin` pré-compila `.vue` arquivos com entusiasmo usando compilação multithreaded nativa, que também permite um HMR mais rápido.
 
-Correr `vp run --workspace-root bench:vite` para se reproduzir.
+Esta linha é a superfície `vite` do snapshot commitado `bench/results/tool-benchmark-latest.json` ([run 29010164013](https://github.com/ubugeeei-prod/vize/actions/runs/29010164013)) — o mesmo artefato que `README.md` e o [snapshot de benchmark Blacksmith](/architecture/performance-blacksmith) publicam. `tests/tooling/docs-vite-benchmark-row.test.ts` a fixa nesse artefato, em todos os idiomas.
+
+O número publicado aqui até agora — `957ms` / `479ms` / `2.0x` — veio de `bench/vite.ts` antes de #3392, que media o Vize com um cache de pré-compilação persistente deixado quente pelo próprio warmup enquanto o `@vitejs/plugin-vue` compilava do zero. Esse harness agora reporta linhas separadas de cold e warm na máquina em que roda, então produz um diagnóstico local, não um speedup publicável. Use `vp run --workspace-root bench:vite` para comparar uma mudança consigo mesma.

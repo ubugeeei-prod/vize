@@ -152,10 +152,12 @@ Courez `vp run --workspace-root bench:fmt` pour vous reproduire.
 
 Vérification de type **500 fichiers SFC Vue générés** avec le chemin de diagnostic actuel soutenu par Corsa :
 
-|           | vue-tsc (ST)   | Canon Vize (ST) | Accélération | vue-tsc (MT)   | Canon Vize (MT) | Accélération | **vue-tsc ST vs Vize MT** |
-| --------- | -------------- | --------------- | ------------ | -------------- | --------------- | ------------ | ------------------------- |
-| **Temps** | 4,38s          | 511ms           | **8,6x**     | 4,41s          | 493 ms          | **8,9x**     | **8,9x**                  |
-| **Taux**  | 114 fichiers/s | 979 fichiers/s  |              | 113 fichiers/s | 1.0k fichiers/s |              |                           |
+|           | vue-tsc (ST)   | Canon Vize (ST) | Accélération       | vue-tsc (MT)   | Canon Vize (MT) | Accélération       | **vue-tsc ST vs Vize MT** |
+| --------- | -------------- | --------------- | ------------------ | -------------- | --------------- | ------------------ | ------------------------- |
+| **Temps** | 4,38s          | 511ms           | n/a (cross-engine) | 4,41s          | 493 ms          | n/a (cross-engine) | n/a (cross-engine)        |
+| **Taux**  | 114 fichiers/s | 979 fichiers/s  |                    | 113 fichiers/s | 1.0k fichiers/s |                    |                           |
+
+Les lignes de contrôle de type couvrent deux moteurs TypeScript : vue-tsc exécute le compilateur JavaScript tandis que Vize check exécute tsgo natif (Corsa). Aucun rapport unique n’est donc publié (`n/a (cross-engine)`) ; chaque classe de moteur est classée séparément, car un chiffre unique attribuerait la réécriture en Go de TypeScript à la couche Vue. Les deux mesures sont réelles et proviennent de la même exécution ; voir l’[instantané de benchmark Blacksmith](./performance-blacksmith) pour le classement par classe de moteur.
 
 > **Note :** Le canon Vize est encore en phase de développement initial et la voie de diagnostic soutenue par Corsa rattrape encore la fidélité vue-tsc. Ces mesures reflètent l’implémentation native actuelle CLI-first avec un plan de secours de session de projet et évolueront à mesure que la couverture et la parité des diagnostics s’amélioreront.
 
@@ -196,8 +198,10 @@ Version Vite avec **1 000 importations SFC Vue** (toutes importées en une seule
 
 |                           | @vitejs/plugin-vue | @vizejs/vite-plugin | Accélération |
 | ------------------------- | ------------------ | ------------------- | ------------ |
-| **Temps de construction** | 957 ms             | 479 ms              | **2,0x**     |
+| **Temps de construction** | 1.66s              | 732.5ms             | **2.3x**     |
 
 > Note : `@vizejs/vite-plugin` remplace uniquement l’étape de compilation Vue SFC — la différence de performance vient entièrement de cette partie. La résolution des dépendances, la construction de graphes de modules, le regroupement (Rolldown) et tous les autres internes Vite sont identiques à `@vitejs/plugin-vue`. Pour la performance purement en compilation, voir la [Compiler benchmark](#benchmark-15000-sfc-files) ci-dessus. `@vizejs/vite-plugin` pré-compile avec enthousiasme `.vue` fichiers en utilisant une compilation multithread native, ce qui permet également un HMR plus rapide.
 
-Courez `vp run --workspace-root bench:vite` pour vous reproduire.
+Cette ligne est la surface `vite` de l'instantané commité `bench/results/tool-benchmark-latest.json` ([run 29010164013](https://github.com/ubugeeei-prod/vize/actions/runs/29010164013)) — le même artefact que celui publié par `README.md` et par l'[instantané de benchmark Blacksmith](/architecture/performance-blacksmith). `tests/tooling/docs-vite-benchmark-row.test.ts` la verrouille sur cet artefact, dans toutes les locales.
+
+Le chiffre publié ici jusqu'à présent — `957ms` / `479ms` / `2.0x` — provenait de `bench/vite.ts` avant #3392, qui mesurait Vize avec un cache de pré-compilation persistant laissé chaud par son propre échauffement, tandis que `@vitejs/plugin-vue` compilait à froid. Ce harnais rapporte désormais des lignes à froid et à chaud séparées sur la machine où il s'exécute : c'est un diagnostic local, pas une accélération publiable. Utilisez `vp run --workspace-root bench:vite` pour comparer un changement à lui-même.

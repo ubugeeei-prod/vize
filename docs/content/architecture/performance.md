@@ -150,10 +150,12 @@ Run `vp run --workspace-root bench:fmt` to reproduce.
 
 Type checking **500 generated Vue SFC files** with the current Corsa-backed diagnostics path:
 
-|          | vue-tsc (ST) | Vize canon (ST) | Speedup  | vue-tsc (MT) | Vize canon (MT) | Speedup  | **vue-tsc ST vs Vize MT** |
-| -------- | ------------ | --------------- | -------- | ------------ | --------------- | -------- | ------------------------- |
-| **Time** | 4.38s        | 511ms           | **8.6x** | 4.41s        | 493ms           | **8.9x** | **8.9x**                  |
-| **Rate** | 114 files/s  | 979 files/s     |          | 113 files/s  | 1.0k files/s    |          |                           |
+|          | vue-tsc (ST) | Vize canon (ST) | Speedup            | vue-tsc (MT) | Vize canon (MT) | Speedup            | **vue-tsc ST vs Vize MT** |
+| -------- | ------------ | --------------- | ------------------ | ------------ | --------------- | ------------------ | ------------------------- |
+| **Time** | 4.38s        | 511ms           | n/a (cross-engine) | 4.41s        | 493ms           | n/a (cross-engine) | n/a (cross-engine)        |
+| **Rate** | 114 files/s  | 979 files/s     |                    | 113 files/s  | 1.0k files/s    |                    |                           |
+
+No cross-class ratio is published for Type check: the incumbent runs the JavaScript TypeScript compiler while Vize runs native tsgo, so a single number would credit TypeScript's Go rewrite to the Vue layer. Both timings are real and were measured in the same run; see the [Blacksmith benchmark snapshot](./performance-blacksmith) for the per-engine-class ranking.
 
 > **Note:** Vize canon is still in early development and the Corsa-backed diagnostics path is still catching up with vue-tsc fidelity. These measurements reflect the current CLI-first native implementation with a project-session fallback and will change as diagnostics coverage and parity improve.
 
@@ -190,12 +192,14 @@ The current profile for this fixture keeps CLI diagnostic parsing at ~7ms. Most 
 
 ## Benchmark: Vite Plugin — @vizejs/vite-plugin vs @vitejs/plugin-vue
 
-Vite build with **1,000 Vue SFC imports** (all imported in a single entry):
+Vite build with **1,000 Vue SFC imports** (all imported in a single entry), measured on Blacksmith `blacksmith-32vcpu-ubuntu-2404`, median of 5 runs:
 
 |                | @vitejs/plugin-vue | @vizejs/vite-plugin | Speedup  |
 | -------------- | ------------------ | ------------------- | -------- |
-| **Build Time** | 957ms              | 479ms               | **2.0x** |
+| **Build Time** | 1.66s              | 732.5ms             | **2.3x** |
 
 > Note: `@vizejs/vite-plugin` replaces only the Vue SFC compilation step — the performance difference comes entirely from that part. Dependency resolution, module graph construction, bundling (Rolldown), and all other Vite internals are identical to `@vitejs/plugin-vue`. For pure compilation performance, see the [Compiler benchmark](#benchmark-15000-sfc-files) above. `@vizejs/vite-plugin` eagerly pre-compiles `.vue` files using native multi-threaded compilation, which also enables faster HMR.
 
-Run `vp run --workspace-root bench:vite` to reproduce.
+This row is the `vite` surface of the committed snapshot `bench/results/tool-benchmark-latest.json` ([run 29010164013](https://github.com/ubugeeei-prod/vize/actions/runs/29010164013)) — the same artifact `README.md` and the [Blacksmith benchmark snapshot](/architecture/performance-blacksmith) publish. `tests/tooling/docs-vite-benchmark-row.test.ts` pins it to that artifact, in every locale, so the three surfaces cannot drift apart.
+
+The figure published here until then — `957ms` / `479ms` / `2.0x` — came from `bench/vite.ts` before #3392, which timed Vize with a warm persistent pre-compile cache left behind by its own warmup while `@vitejs/plugin-vue` compiled from scratch. That harness now reports separate cold and warm rows on the machine it runs on, so it produces a local diagnostic, not a publishable speedup; use `vp run --workspace-root bench:vite` to compare a change against itself, not to source a number for this page.
