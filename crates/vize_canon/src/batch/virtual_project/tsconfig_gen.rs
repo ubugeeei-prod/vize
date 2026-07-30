@@ -1,4 +1,5 @@
 mod native_options;
+mod path_rebase;
 mod vue_alias;
 
 use std::path::{Path, PathBuf};
@@ -10,8 +11,7 @@ use crate::batch::error::CorsaResult;
 use crate::batch::materialize_fs::write_if_changed;
 
 use super::tsconfig_paths::{
-    normalize_path_lexically, normalize_tsconfig_path_target, parse_jsonc_value,
-    resolve_extended_tsconfig_path,
+    normalize_path_lexically, parse_jsonc_value, resolve_extended_tsconfig_path,
 };
 use super::{SHARED_HELPERS_FILE, VirtualProject};
 use native_options::normalize_native_removed_options;
@@ -193,16 +193,14 @@ impl VirtualProject {
             compiler_options.insert("declaration".into(), Value::Bool(true));
             compiler_options.insert("emitDeclarationOnly".into(), Value::Bool(true));
             compiler_options.insert("declarationMap".into(), Value::Bool(declaration_map));
-            // A configured `rootDir` decides the emitted layout, so honor it
-            // rather than inferring one. Inferring the common source directory
-            // agrees with an explicit `rootDir` only while every emitted file
-            // sits under it; as soon as the program also contains a file
-            // outside it, the common directory collapses toward the project
-            // root and every declaration keeps its source directory prefix
-            // (#3355). Fall back to inference when nothing is configured.
-            let root_dir = self
-                .configured_virtual_root_dir(original_root_dir.as_deref())
-                .unwrap_or_else(|| self.common_virtual_source_dir());
+            // Honor a configured `rootDir` (see [`path_rebase`]) and fall back
+            // to inference when nothing is configured.
+            let root_dir = path_rebase::root_dir_into_mirror(
+                &self.project_root,
+                &self.virtual_root,
+                original_root_dir.as_deref(),
+            )
+            .unwrap_or_else(|| self.common_virtual_source_dir());
             compiler_options.insert(
                 "rootDir".into(),
                 Value::String(root_dir.to_string_lossy().into_owned()),
@@ -307,7 +305,7 @@ impl VirtualProject {
             .cloned()
             .unwrap_or_default();
         let base_dir = normalized.parent().unwrap_or(self.project_root.as_path());
-        self.normalize_paths_for_project_root(&mut compiler_options, base_dir);
+        path_rebase::onto_project_root(&mut compiler_options, base_dir, &self.project_root);
 
         // `extends` may be a single specifier or an array; array entries are
         // applied in order, with later entries overriding earlier ones, and
@@ -335,66 +333,6 @@ impl VirtualProject {
 
         inherited.extend(compiler_options);
         Ok(inherited)
-    }
-
-    #[allow(clippy::disallowed_types)]
-    fn normalize_paths_for_project_root(
-        &self,
-        compiler_options: &mut Map<std::string::String, Value>,
-        base_dir: &Path,
-    ) {
-        // Relative path-ish options resolve against the tsconfig that declares
-        // them; rebase them onto the project root so the flattened option set
-        // keeps the declaring config's meaning.
-        let relative_root_dir = compiler_options
-            .get("rootDir")
-            .and_then(Value::as_str)
-            .filter(|root_dir| !Path::new(root_dir).is_absolute())
-            .map(|root_dir| normalize_tsconfig_path_target(base_dir, &self.project_root, root_dir));
-        if let Some(root_dir) = relative_root_dir {
-            compiler_options.insert("rootDir".into(), Value::String(root_dir.into()));
-        }
-
-        if let Some(type_roots) = compiler_options
-            .get_mut("typeRoots")
-            .and_then(Value::as_array_mut)
-        {
-            for entry in type_roots {
-                let Some(raw_entry) = entry.as_str() else {
-                    continue;
-                };
-                if Path::new(raw_entry).is_absolute() {
-                    continue;
-                }
-                *entry = Value::String(
-                    normalize_tsconfig_path_target(base_dir, &self.project_root, raw_entry).into(),
-                );
-            }
-        }
-
-        let Some(paths) = compiler_options
-            .get_mut("paths")
-            .and_then(Value::as_object_mut)
-        else {
-            return;
-        };
-
-        for targets in paths.values_mut() {
-            let Some(targets) = targets.as_array_mut() else {
-                continue;
-            };
-            for target in targets {
-                let Some(raw_target) = target.as_str() else {
-                    continue;
-                };
-                if Path::new(raw_target).is_absolute() {
-                    continue;
-                }
-                *target = Value::String(
-                    normalize_tsconfig_path_target(base_dir, &self.project_root, raw_target).into(),
-                );
-            }
-        }
     }
 
     /// Re-anchor tsconfig `paths` targets into the virtual mirror. Each relative
@@ -427,40 +365,6 @@ impl VirtualProject {
     /// into the virtual mirror: each relative entry yields the mirror copy
     /// followed by the real source-tree directory. Absolute and non-string
     /// entries pass through unchanged.
-    /// Rebase a configured `rootDir` onto the virtual mirror.
-    ///
-    /// The mirror reproduces paths relative to the project root, so a
-    /// `rootDir` of `./lib` becomes `<virtual_root>/lib`. Relative values are
-    /// already rebased onto the project root by
-    /// [`Self::normalize_paths_for_project_root`], which resolves them against
-    /// the tsconfig that declares them, so an inherited `rootDir` keeps the
-    /// base config's meaning. Returns `None` when nothing is configured, or
-    /// when the configured directory falls outside the project root and
-    /// therefore has no mirror counterpart — in each case the caller keeps
-    /// inferring the layout.
-    fn configured_virtual_root_dir(&self, configured: Option<&str>) -> Option<PathBuf> {
-        let configured = configured?;
-        let configured_path = Path::new(configured);
-        let absolute = if configured_path.is_absolute() {
-            configured_path.to_path_buf()
-        } else {
-            self.project_root.join(configured_path)
-        };
-        let absolute = vize_carton::path::canonicalize_non_verbatim(&absolute);
-        let relative = absolute.strip_prefix(&self.project_root).ok()?;
-        // `canonicalize` returns the input untouched for a directory that does
-        // not exist, so `..` can survive and `strip_prefix` still matches
-        // lexically (`<root>/../outside` starts with `<root>`). Such a path has
-        // no mirror counterpart.
-        if relative
-            .components()
-            .any(|component| matches!(component, std::path::Component::ParentDir))
-        {
-            return None;
-        }
-        Some(self.virtual_root.join(relative))
-    }
-
     fn remap_dir_entries(&self, entries: &[Value]) -> Vec<Value> {
         let up = self.virtual_root_to_project_prefix();
         let mut remapped = Vec::with_capacity(entries.len() * 2);
