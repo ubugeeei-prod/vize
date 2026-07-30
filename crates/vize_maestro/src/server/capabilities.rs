@@ -5,12 +5,13 @@ use tower_lsp::lsp_types::{
     CodeActionKind, CodeActionOptions, CodeActionProviderCapability, CodeLensOptions,
     CompletionOptions, DocumentLinkOptions, FileOperationFilter, FileOperationPattern,
     FileOperationPatternKind, FileOperationRegistrationOptions, FoldingRangeProviderCapability,
-    HoverProviderCapability, OneOf, RenameOptions, SaveOptions, SemanticTokenModifier,
-    SemanticTokenType, SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
-    SemanticTokensServerCapabilities, ServerCapabilities, TextDocumentSyncCapability,
-    TextDocumentSyncKind, TextDocumentSyncOptions, TextDocumentSyncSaveOptions,
-    WorkDoneProgressOptions, WorkspaceFileOperationsServerCapabilities,
-    WorkspaceFoldersServerCapabilities, WorkspaceServerCapabilities,
+    HoverProviderCapability, OneOf, RenameOptions, SaveOptions, SelectionRangeProviderCapability,
+    SemanticTokenModifier, SemanticTokenType, SemanticTokensFullOptions, SemanticTokensLegend,
+    SemanticTokensOptions, SemanticTokensServerCapabilities, ServerCapabilities,
+    TextDocumentSyncCapability, TextDocumentSyncKind, TextDocumentSyncOptions,
+    TextDocumentSyncSaveOptions, WorkDoneProgressOptions,
+    WorkspaceFileOperationsServerCapabilities, WorkspaceFoldersServerCapabilities,
+    WorkspaceServerCapabilities,
 };
 
 use super::state::LspFeatureConfig;
@@ -153,8 +154,15 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
             .folding_ranges
             .then_some(FoldingRangeProviderCapability::Simple(true)),
 
-        // Selection ranges are not implemented yet.
-        selection_range_provider: None,
+        // Selection ranges (expand/shrink selection). Gated on the same flag as
+        // folding ranges: both are authored-document *structure* features built
+        // from the SFC block layout and the template markup, so
+        // `vize.foldingRanges.enable` is the single user-facing control for the
+        // structure group — mirroring how `references` gates both
+        // `referencesProvider` and `documentHighlightProvider` above.
+        selection_range_provider: features
+            .folding_ranges
+            .then_some(SelectionRangeProviderCapability::Simple(true)),
 
         // Inlay hints
         inlay_hint_provider: features.inlay_hints.then_some(OneOf::Left(true)),

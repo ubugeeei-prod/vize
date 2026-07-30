@@ -15,12 +15,13 @@ use tower_lsp::{
         DidSaveTextDocumentParams, DocumentFormattingParams, DocumentHighlight,
         DocumentHighlightParams, DocumentLink, DocumentLinkParams, DocumentRangeFormattingParams,
         DocumentSymbol, DocumentSymbolParams, DocumentSymbolResponse, FoldingRange,
-        FoldingRangeKind, FoldingRangeParams, GotoDefinitionParams, GotoDefinitionResponse, Hover,
-        HoverParams, InitializeParams, InitializeResult, InitializedParams, InlayHint,
-        InlayHintParams, Location, Position, PrepareRenameResponse, Range, ReferenceParams,
-        RenameFilesParams, RenameParams, SemanticTokensParams, SemanticTokensRangeParams,
-        SemanticTokensRangeResult, SemanticTokensResult, ServerInfo, SymbolInformation, SymbolKind,
-        TextDocumentPositionParams, TextEdit, WorkspaceEdit, WorkspaceSymbolParams,
+        FoldingRangeParams, GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams,
+        InitializeParams, InitializeResult, InitializedParams, InlayHint, InlayHintParams,
+        Location, Position, PrepareRenameResponse, Range, ReferenceParams, RenameFilesParams,
+        RenameParams, SelectionRange, SelectionRangeParams, SemanticTokensParams,
+        SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult, ServerInfo,
+        SymbolInformation, SymbolKind, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
+        WorkspaceSymbolParams,
     },
 };
 
@@ -827,78 +828,27 @@ impl LanguageServer for MaestroServer {
         if !self.state.lsp_features().folding_ranges {
             return Ok(None);
         }
+        Ok(super::document_structure::folding_ranges(
+            &self.state,
+            &params,
+        ))
+    }
 
-        let uri = &params.text_document.uri;
-
-        let Some(content) = self.state.documents.text(uri) else {
+    /// Expand/shrink selection over the **authored** `.vue` document.
+    ///
+    /// Shares the `folding_ranges` flag with `folding_range`: both are
+    /// document-structure providers built from the same block layout.
+    async fn selection_range(
+        &self,
+        params: SelectionRangeParams,
+    ) -> Result<Option<Vec<SelectionRange>>> {
+        if !self.state.lsp_features().folding_ranges {
             return Ok(None);
-        };
-        let mut ranges = Vec::new();
-
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) {
-            if let Some(ref template) = descriptor.template
-                && template.loc.start_line < template.loc.end_line
-            {
-                ranges.push(FoldingRange {
-                    start_line: template.loc.start_line.saturating_sub(1) as u32,
-                    start_character: None,
-                    end_line: template.loc.end_line.saturating_sub(1) as u32,
-                    end_character: None,
-                    kind: Some(FoldingRangeKind::Region),
-                    collapsed_text: Some("template".to_string()),
-                });
-            }
-
-            if let Some(ref script) = descriptor.script_setup
-                && script.loc.start_line < script.loc.end_line
-            {
-                ranges.push(FoldingRange {
-                    start_line: script.loc.start_line.saturating_sub(1) as u32,
-                    start_character: None,
-                    end_line: script.loc.end_line.saturating_sub(1) as u32,
-                    end_character: None,
-                    kind: Some(FoldingRangeKind::Region),
-                    collapsed_text: Some("script setup".to_string()),
-                });
-            }
-
-            if let Some(ref script) = descriptor.script
-                && script.loc.start_line < script.loc.end_line
-            {
-                ranges.push(FoldingRange {
-                    start_line: script.loc.start_line.saturating_sub(1) as u32,
-                    start_character: None,
-                    end_line: script.loc.end_line.saturating_sub(1) as u32,
-                    end_character: None,
-                    kind: Some(FoldingRangeKind::Region),
-                    collapsed_text: Some("script".to_string()),
-                });
-            }
-
-            for style in &descriptor.styles {
-                if style.loc.start_line < style.loc.end_line {
-                    ranges.push(FoldingRange {
-                        start_line: style.loc.start_line.saturating_sub(1) as u32,
-                        start_character: None,
-                        end_line: style.loc.end_line.saturating_sub(1) as u32,
-                        end_character: None,
-                        kind: Some(FoldingRangeKind::Region),
-                        collapsed_text: Some("style".to_string()),
-                    });
-                }
-            }
         }
-
-        if ranges.is_empty() {
-            Ok(None)
-        } else {
-            Ok(Some(ranges))
-        }
+        Ok(super::document_structure::selection_ranges(
+            &self.state,
+            &params,
+        ))
     }
 
     async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {

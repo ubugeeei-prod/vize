@@ -1,17 +1,12 @@
 //! IDE features for the LSP server.
 //!
-//! This module provides core IDE functionality including:
-//! - Diagnostics aggregation from multiple sources
-//! - Hover information provider
-//! - Code completion provider
-//! - Go to definition
-//! - Find references
-//! - Code actions (quick fixes)
-//! - Type checking and type information
-//! - Rename refactoring
-//! - Semantic tokens
-//! - Code lens
-//! - Workspace symbols
+//! This module provides core IDE functionality. The module list below is the
+//! authoritative inventory; grouped by what the editor sees:
+//! - Correctness: diagnostics aggregation, type checking and type information
+//! - Authoring: hover, completion, definition, references, code actions, rename
+//! - Presentation: semantic tokens, inlay hints, code lens, document links
+//! - Structure: document symbols, workspace symbols, selection ranges
+//! - Ecosystem: router/i18n awareness, file rename, auto-import
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 pub mod auto_import;
@@ -33,6 +28,7 @@ pub(crate) mod markup;
 pub(crate) mod musea;
 pub mod references;
 pub mod rename;
+pub mod selection_range;
 pub mod semantic_tokens;
 mod template_expression;
 pub mod type_service;
@@ -57,6 +53,7 @@ pub use jsx::{
 pub use jsx::{JsxReferencesService, JsxRenameService, JsxService};
 pub use references::ReferencesService;
 pub use rename::RenameService;
+pub use selection_range::SelectionRangeService;
 pub use semantic_tokens::{SemanticTokensService, TokenModifier, TokenType};
 pub(crate) use template_expression::is_in_vue_template_expression;
 pub use type_service::{LspTypeCheckOptions, TypeService};

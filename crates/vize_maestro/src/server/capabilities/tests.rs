@@ -201,11 +201,27 @@ fn declaration_events_remain_registered_when_file_rename_is_disabled() {
 }
 
 #[test]
+fn selection_ranges_share_the_document_structure_flag_with_folding_ranges() {
+    let mut features = all_features();
+    features.folding_ranges = false;
+    let capabilities = server_capabilities(features);
+
+    assert!(capabilities.folding_range_provider.is_none());
+    assert!(capabilities.selection_range_provider.is_none());
+    // Only the structure group is affected.
+    assert!(capabilities.document_symbol_provider.is_some());
+    assert!(capabilities.hover_provider.is_some());
+}
+
+#[test]
 fn default_features_advertise_non_opinionated_providers() {
     let capabilities = server_capabilities(LspFeatureConfig::default());
 
     assert!(capabilities.signature_help_provider.is_none());
-    assert!(capabilities.selection_range_provider.is_none());
+    assert!(matches!(
+        capabilities.selection_range_provider,
+        Some(SelectionRangeProviderCapability::Simple(true))
+    ));
     assert!(capabilities.completion_provider.is_some());
     assert!(capabilities.hover_provider.is_some());
     assert!(capabilities.definition_provider.is_some());
@@ -218,7 +234,10 @@ fn all_features_skip_unimplemented_providers_and_keep_implemented_ones() {
     let capabilities = server_capabilities(all_features());
 
     assert!(capabilities.signature_help_provider.is_none());
-    assert!(capabilities.selection_range_provider.is_none());
+    assert!(matches!(
+        capabilities.selection_range_provider,
+        Some(SelectionRangeProviderCapability::Simple(true))
+    ));
     assert_eq!(
         capabilities
             .document_link_provider

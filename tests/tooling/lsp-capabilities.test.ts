@@ -84,9 +84,11 @@ test("vize lsp advertises the full editor-feature provider set with exact shapes
       " ",
     ]);
 
+    // Selection ranges ship with the document-structure group.
+    assert.equal(capabilities.selectionRangeProvider, true);
+
     // Providers that are intentionally not yet advertised stay absent.
     assert.equal(capabilities.signatureHelpProvider, undefined);
-    assert.equal(capabilities.selectionRangeProvider, undefined);
     assert.equal(capabilities.documentRangeFormattingProvider, undefined);
   });
 });
@@ -100,6 +102,7 @@ test("vize lsp editor:false strips editor providers but keeps lint-driven codeAc
       assert.equal(capabilities.semanticTokensProvider, undefined);
       assert.equal(capabilities.documentSymbolProvider, undefined);
       assert.equal(capabilities.foldingRangeProvider, undefined);
+      assert.equal(capabilities.selectionRangeProvider, undefined);
       assert.equal(capabilities.inlayHintProvider, undefined);
       assert.equal(capabilities.completionProvider, undefined);
       assert.equal(capabilities.codeLensProvider, undefined);
@@ -134,6 +137,8 @@ test("vize lsp per-feature init flags toggle individual providers independently"
     (capabilities) => {
       assert.equal(capabilities.inlayHintProvider, undefined);
       assert.equal(capabilities.foldingRangeProvider, undefined);
+      // Selection ranges share the document-structure flag with folding ranges.
+      assert.equal(capabilities.selectionRangeProvider, undefined);
       assert.equal(capabilities.documentSymbolProvider, undefined);
       assert.equal(capabilities.semanticTokensProvider, undefined);
       // A sibling editor provider is untouched.

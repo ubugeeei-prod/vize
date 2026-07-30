@@ -3,6 +3,7 @@
 //! This module contains the core LSP server using tower-lsp.
 
 mod capabilities;
+mod document_structure;
 mod format;
 mod handlers;
 mod helpers;
