@@ -95,10 +95,7 @@ function createWorkspace(caseName: string, extraSource: string): string {
     `${JSON.stringify({ name: "repro", private: true, type: "module" }, null, 2)}\n`,
   );
   fs.writeFileSync(path.join(workspace, "pnpm-workspace.yaml"), "packages:\n  - apps/*\n");
-  fs.writeFileSync(
-    path.join(workspace, "tsconfig.json"),
-    `${JSON.stringify(TSCONFIG, null, 2)}\n`,
-  );
+  fs.writeFileSync(path.join(workspace, "tsconfig.json"), `${JSON.stringify(TSCONFIG, null, 2)}\n`);
   fs.writeFileSync(
     path.join(app, "package.json"),
     `${JSON.stringify(
@@ -139,7 +136,10 @@ function createWorkspace(caseName: string, extraSource: string): string {
     "export interface AcmeConfig {\n  enabled?: boolean;\n}\n" +
       "export declare function defineConfig(config: AcmeConfig): AcmeConfig;\n",
   );
-  fs.writeFileSync(path.join(store, "index.js"), "export function defineConfig(c) {\n  return c;\n}\n");
+  fs.writeFileSync(
+    path.join(store, "index.js"),
+    "export function defineConfig(c) {\n  return c;\n}\n",
+  );
   fs.symlinkSync(
     ".pnpm/acme-config@1.0.0/node_modules/acme-config",
     path.join(app, "node_modules/acme-config"),
