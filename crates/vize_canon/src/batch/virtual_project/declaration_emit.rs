@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
@@ -9,13 +9,34 @@ use oxc_ast::ast::{
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{String, ToCompactString, cstr};
+use vize_carton::{String, ToCompactString, cstr, profile};
 
 use crate::batch::CorsaResult;
 
 use super::{VirtualFile, VirtualProject};
 
 impl VirtualProject {
+    /// Write a declaration-emitting tsconfig and return its path.
+    pub fn write_declaration_tsconfig(
+        &self,
+        out_dir: &Path,
+        declaration_map: bool,
+    ) -> CorsaResult<PathBuf> {
+        let config_path = self.virtual_root.join("tsconfig.declaration.json");
+        self.rewrite_tsx_vue_declaration_inputs()?;
+        let include_paths = self.declaration_emit_include_paths();
+        profile!(
+            "canon.project.write_dts_tsconfig",
+            self.write_tsconfig_file_with_includes(
+                &config_path,
+                Some(out_dir),
+                declaration_map,
+                Some(&include_paths),
+            )
+        )?;
+        Ok(config_path)
+    }
+
     pub(super) fn rewrite_tsx_vue_declaration_inputs(&self) -> CorsaResult<()> {
         for file in self.virtual_files_sorted() {
             let path = file.virtual_path.as_path();

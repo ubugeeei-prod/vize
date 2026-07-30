@@ -31,22 +31,16 @@ impl VirtualProject {
     /// so TypeScript's own filesystem caches are not invalidated.
     pub fn materialize(&self) -> CorsaResult<()> {
         let expected_files = self.expected_materialized_files();
-        // Mirror symlinks from a previous run survive the GC only while their
-        // mapping still exists, so the preserved set is computed before
-        // pruning and the links are (re)created after it (#3366).
-        let package_node_modules = self.package_node_modules_mirrors();
-        let mut preserved_roots = Vec::with_capacity(package_node_modules.len() + 1);
-        preserved_roots.push(self.virtual_root.join("node_modules"));
-        preserved_roots.extend(
-            package_node_modules
-                .iter()
-                .map(|(target, _)| target.clone()),
-        );
         profile!(
             "canon.project.prepare_dir",
             ensure_materialize_root(&self.virtual_root)
         )?;
 
+        // Mirror links survive the GC only while their mapping exists (#3366).
+        let preserved_roots = profile!(
+            "canon.project.package_node_modules",
+            self.materialize_package_node_modules()
+        )?;
         profile!(
             "canon.project.gc",
             prune_unexpected_entries(&self.virtual_root, &expected_files, &preserved_roots)
@@ -55,11 +49,6 @@ impl VirtualProject {
         profile!(
             "canon.project.runtime_deps",
             materialize_runtime_dependencies(&self.project_root, &self.virtual_root)
-        )?;
-
-        profile!(
-            "canon.project.package_node_modules",
-            self.materialize_package_node_modules(&package_node_modules)
         )?;
 
         profile!(
@@ -144,27 +133,6 @@ impl VirtualProject {
         let content = b"{\n  \"type\": \"module\"\n}\n";
         write_if_changed(&self.virtual_root.join(PACKAGE_BOUNDARY_FILE), content)?;
         Ok(())
-    }
-
-    /// Write a declaration-emitting tsconfig and return its path.
-    pub fn write_declaration_tsconfig(
-        &self,
-        out_dir: &Path,
-        declaration_map: bool,
-    ) -> CorsaResult<PathBuf> {
-        let config_path = self.virtual_root.join("tsconfig.declaration.json");
-        self.rewrite_tsx_vue_declaration_inputs()?;
-        let include_paths = self.declaration_emit_include_paths();
-        profile!(
-            "canon.project.write_dts_tsconfig",
-            self.write_tsconfig_file_with_includes(
-                &config_path,
-                Some(out_dir),
-                declaration_map,
-                Some(&include_paths),
-            )
-        )?;
-        Ok(config_path)
     }
 
     fn write_auto_import_stubs(&self) -> CorsaResult<()> {
