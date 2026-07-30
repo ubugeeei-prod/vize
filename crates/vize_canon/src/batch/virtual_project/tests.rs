@@ -10,6 +10,7 @@ use vize_carton::cstr;
 mod graphql_generated;
 mod macro_scope;
 mod module_augmentations;
+mod node_modules_symlink;
 mod ref_arity;
 mod setup_props;
 mod tsconfig_native_options;
@@ -86,57 +87,6 @@ fn test_virtual_project_new() {
     let project = VirtualProject::new(&case_dir).unwrap();
     assert_eq!(project.project_root(), case_dir.as_path());
     assert!(project.virtual_root().ends_with("node_modules/.vize/canon"));
-
-    let _ = fs::remove_dir_all(&case_dir);
-}
-
-#[cfg(unix)]
-#[test]
-fn virtual_root_resolves_a_symlinked_node_modules_to_its_real_location() {
-    // pnpm-style stores, monorepo hoisting shims, worktree lanes, and
-    // containers that bind-mount dependencies all reach `node_modules` through
-    // a symlink. Composing the virtual root by joining onto the canonical
-    // project root leaves a path that traverses that link, so the virtual files
-    // land outside the root, Corsa reports diagnostics under the link target,
-    // and mapping them back to the authored SFC fails — silently, which is the
-    // dangerous direction.
-    let case_dir = unique_case_dir("symlinked-node-modules");
-    let _ = fs::remove_dir_all(&case_dir);
-    let project_root = case_dir.join("project");
-    let store = case_dir.join("store");
-    fs::create_dir_all(&project_root).unwrap();
-    fs::create_dir_all(&store).unwrap();
-    std::os::unix::fs::symlink(&store, project_root.join("node_modules")).unwrap();
-
-    let project = VirtualProject::new(&project_root).unwrap();
-
-    let real_store = vize_carton::path::canonicalize_non_verbatim(&store);
-    assert_eq!(
-        project.virtual_root(),
-        real_store.join(".vize").join("canon").as_path(),
-        "virtual root must be expressed in real-path terms, not through the link"
-    );
-    assert!(
-        !project.virtual_root().starts_with(project.project_root()),
-        "a symlinked store legitimately sits outside the project root; the \
-         virtual root must say so rather than pretending to be inside it"
-    );
-
-    let _ = fs::remove_dir_all(&case_dir);
-}
-
-#[test]
-fn virtual_root_stays_inside_the_project_for_a_real_node_modules_directory() {
-    let case_dir = unique_case_dir("real-node-modules");
-    let _ = fs::remove_dir_all(&case_dir);
-    fs::create_dir_all(case_dir.join("node_modules")).unwrap();
-
-    let project = VirtualProject::new(&case_dir).unwrap();
-
-    assert_eq!(
-        project.virtual_root(),
-        case_dir.join("node_modules").join(".vize").join("canon"),
-    );
 
     let _ = fs::remove_dir_all(&case_dir);
 }
