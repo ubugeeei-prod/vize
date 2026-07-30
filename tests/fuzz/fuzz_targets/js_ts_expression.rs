@@ -6,48 +6,28 @@
 // transforms and import-usage checks. Invalid expressions are expected and
 // reported as parser errors; panics are not.
 //
-// One upstream crash class is skip-listed below until the pinned OXC revision
-// carries a fix (#3296; retirement tracked in #3307): a speculative tuple type
-// with an optional member recovering over a C0 control byte builds a span
-// with `start > end`, tripping a `debug_assert` in `oxc_span::Span::size`
-// (`<[r?, \x07]` after `cargo fuzz tmin`). The shape is not a depth or
-// balance property, so the expression nesting guard cannot express it; the
-// skip costs fuzz coverage only.
+// One upstream crash class is skip-listed until the pinned OXC revision carries
+// a fix (#3296; retirement tracked in #3307): a TS tuple type with an optional
+// member, whose next element consumes no tokens, builds that element's span as
+// `Span::new(start_span(), prev_token_end)`. `start_span()` has already skipped
+// the trivia after the comma, so the span comes out inverted (`start > end`),
+// and labeling it for `TS1257 required element cannot follow an optional
+// element` trips `debug_assert!(self.start <= self.end)` in
+// `oxc_span::Span::size`.
+//
+// The shape is neither a depth nor a balance property, so the expression
+// nesting guard cannot express it; the skip costs fuzz coverage only. The
+// predicate lives in `upstream_span_assertion_skip.rs` and its boundary matrix
+// is pinned by `crates/vize_atelier_core/tests/upstream_tuple_type_span_assertion.rs`.
 use libfuzzer_sys::fuzz_target;
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use upstream_span_assertion_skip::hits_known_upstream_span_assertion_shape;
 use vize_atelier_core::steps::expression::expression_is_safe_to_parse;
 
-/// Returns true when a `<[` span holds both a `?` and a C0 control byte
-/// (excluding tab/newline/carriage return) before its closing `]` — the
-/// empirical requirements of the upstream tuple-type span assertion (#3307):
-/// dropping either the optional member or the control byte parses cleanly.
-fn hits_known_upstream_span_assertion_shape(bytes: &[u8]) -> bool {
-    let mut i = 0;
-    while i + 1 < bytes.len() {
-        if bytes[i] == b'<' && bytes[i + 1] == b'[' {
-            let (mut has_question, mut has_control) = (false, false);
-            let mut j = i + 2;
-            while j < bytes.len() && bytes[j] != b']' {
-                match bytes[j] {
-                    b'?' => has_question = true,
-                    b'\t' | b'\n' | b'\r' => {}
-                    b if b < 0x20 => has_control = true,
-                    _ => {}
-                }
-                j += 1;
-            }
-            if has_question && has_control {
-                return true;
-            }
-            i = j;
-        } else {
-            i += 1;
-        }
-    }
-    false
-}
+#[path = "upstream_span_assertion_skip.rs"]
+mod upstream_span_assertion_skip;
 
 fuzz_target!(|data: &[u8]| {
     let Ok(source) = std::str::from_utf8(data) else {
