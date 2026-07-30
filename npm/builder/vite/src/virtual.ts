@@ -52,8 +52,22 @@ export function toPluginVisibleVirtualId(realPath: string, ssr = false, querySuf
   return `${realPath}.ts?vue&${ssr ? "vize-ssr" : "vize"}${rest ? `&${rest}` : ""}`;
 }
 
+/**
+ * String pre-gate for {@link fromPluginVisibleVirtualId}, so ordinary module IDs
+ * never cross the native boundary (#3427).
+ *
+ * A non-null result requires `request.path` to end with `.vue.ts` or `.vue.tsx`
+ * and `request.querySuffix` to be non-empty. `request.path` is `id` up to the
+ * first `?` and `querySuffix` is non-empty exactly when that `?` exists, so both
+ * conditions imply these two substring tests. The tests are strictly weaker, so
+ * everything the old code accepted still reaches the classifier.
+ */
+function mayBePluginVisibleVirtualId(id: string): boolean {
+  return !id.startsWith("\0") && id.includes(".vue.ts") && id.includes("?");
+}
+
 export function fromPluginVisibleVirtualId(id: string): string | null {
-  if (id.startsWith("\0")) {
+  if (!mayBePluginVisibleVirtualId(id)) {
     return null;
   }
   const request = classifyVitePluginRequest(id);
@@ -64,8 +78,21 @@ export function fromPluginVisibleVirtualId(id: string): string | null {
   if (!params.has("vue") || (!params.has("vize") && !params.has("vize-ssr"))) {
     return null;
   }
-  const normalizedRequest = classifyVitePluginRequest(request.normalizedFsId ?? id);
-  return stripPluginVisibleVueVirtualSuffix(normalizedRequest.path);
+  return stripPluginVisibleVueVirtualSuffix(stripFsPrefix(request.path));
+}
+
+/**
+ * The `path` a second `classifyVitePluginRequest(request.normalizedFsId ?? id)`
+ * used to recompute (#3427).
+ *
+ * `normalizedFsId` is `Some` exactly when the pre-`?` path starts with `/@fs`,
+ * and its value is that path with the four-byte prefix removed plus the original
+ * query suffix. Re-splitting that at the first `?` therefore yields the path
+ * without the prefix — and when `normalizedFsId` is `undefined` the second call
+ * classified `id` itself and yielded `request.path` unchanged.
+ */
+function stripFsPrefix(path: string): string {
+  return path.startsWith("/@fs") ? path.slice(4) : path;
 }
 
 function isPluginVisibleVueVirtualPath(path: string): boolean {

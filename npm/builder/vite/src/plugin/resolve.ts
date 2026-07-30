@@ -687,10 +687,7 @@ function classifyImporterRequest(
   return importer ? classifyVitePluginRequest(importer) : null;
 }
 
-function isPotentialVizeImporter(
-  importer: string | undefined,
-  importerRequest: ReturnType<typeof classifyVitePluginRequest> | null,
-): boolean {
+export function isPotentialVizeImporter(importer: string | undefined): boolean {
   // Imports from Vize virtual modules still need custom resolution even when the
   // requested id itself is a regular-looking relative or bare specifier.
   if (importer === undefined) {
@@ -700,7 +697,13 @@ function isPotentialVizeImporter(
     return true;
   }
 
-  return importerRequest?.isVueSfcPath ?? false;
+  // This gate exists to keep ordinary dependency edges off the classifier, so it
+  // must not call the classifier itself (#3427). `isVueSfcPath` is
+  // `normalizedVuePath.endsWith(".vue")`, and `normalizedVuePath` only ever
+  // strips a trailing `.ts`/`.tsx` from the pre-`?` path, so it can only end in
+  // `.vue` when the importer string contains `.vue`. The test is strictly
+  // weaker, so every importer the classifier would have accepted still passes.
+  return importer.includes(".vue");
 }
 
 function shouldCompileVueSfcRequest(
@@ -797,16 +800,17 @@ export async function resolveIdHook(
   // added after profiles showed ordinary dependency graph edges dominating the
   // plugin hook cost in dev servers.
   //
-  // Classify the importer at most once: the importer gate (`isPotentialVizeImporter`)
-  // and the later `importerRequest` derivations both need the same classification,
-  // so crossing the NAPI boundary twice for the same importer string is pure
-  // overhead. Classify the defined importer once here and reuse the result for
-  // both the gate below and the rest of the hook; `isPotentialVizeImporter` reads
-  // its `isVueSfcPath` rather than re-classifying.
-  const importerRequest = classifyImporterRequest(importer);
-  if (!isPotentialVizeResolveId(id) && !isPotentialVizeImporter(importer, importerRequest)) {
+  // Both halves of that gate are string tests, so it runs before the classifier
+  // rather than after it (#3427): classifying first meant every ordinary
+  // dependency edge crossed the NAPI boundary to reach a fast return.
+  //
+  // Past the gate, classify the importer at most once: the later `importerRequest`
+  // derivations all need the same classification, so crossing the boundary again
+  // for the same importer string would be pure overhead.
+  if (!isPotentialVizeResolveId(id) && !isPotentialVizeImporter(importer)) {
     return null;
   }
+  const importerRequest = classifyImporterRequest(importer);
 
   const isBuild = state.server === null;
   const isDependencyScan = !!options?.scan;

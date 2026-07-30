@@ -1,4 +1,5 @@
 import "./hmr.test.ts";
+import "./native-request-gates.test.ts";
 import "./compiler.test.ts";
 import "./compiler-src-imports.test.ts";
 import "./compile-options.test.ts";

@@ -53,7 +53,25 @@ export function normalizeVirtualStyleId(id: string): string {
   return withoutPrefix.replace(/\.module\.\w+$/, "").replace(/\.\w+$/, "");
 }
 
+/**
+ * String pre-gate for {@link transformScopedPreprocessorCss} (#3427).
+ *
+ * The post-transform plugin's `transform` hook sees every module in the graph,
+ * and without this every one of them crossed the NAPI boundary to be told it is
+ * not a style query. The native `isVueStyleQuery` is
+ * `query.contains("vue&type=style") || query.contains("vue=&type=style")`, both
+ * of which contain `type=style`; the query is a substring of the id, and
+ * `normalizeVirtualStyleId` only ever deletes characters, so a normalized id
+ * that classifies as a style query implies `type=style` in the raw id.
+ */
+function mayBeVueStyleQuery(id: string): boolean {
+  return id.includes("type=style");
+}
+
 export function transformScopedPreprocessorCss(code: string, id: string): string | null {
+  if (!mayBeVueStyleQuery(id)) {
+    return null;
+  }
   const request = classifyVitePluginRequest(normalizeVirtualStyleId(id));
   if (
     !request.isVueStyleQuery ||
