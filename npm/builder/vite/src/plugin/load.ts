@@ -12,7 +12,7 @@ import {
 } from "./state.ts";
 import { getLoadableVueSfcPath, shouldLoadCompiledVueSfcPath } from "./load-sfc.ts";
 import { compileFile, compileJsxModule } from "../compiler.ts";
-import { generateOutput, hasDelegatedStyles } from "../utils/index.ts";
+import { embedsInlineCss, generateOutput, hasDelegatedStyles } from "../utils/index.ts";
 import {
   resolveCssImports,
   scopeCssForPipeline,
@@ -125,7 +125,22 @@ function loadCompiledSfcModule(
   const pendingHmrUpdateType = loadOptions?.ssr
     ? undefined
     : state.pendingHmrUpdateTypes.get(realPath);
-  if (compiled.css && !hasDelegated) {
+  const outputOptions = {
+    isProduction: state.isProduction,
+    isDev: state.server !== null && !isSsr,
+    ssr: isSsr,
+    hmrUpdateType: pendingHmrUpdateType,
+    extractCss,
+    filePath: realPath,
+  };
+  // Resolving `@import`s reads and inlines files and crosses the native
+  // boundary with the whole stylesheet, so it is only worth doing when
+  // `generateOutput` will actually embed the result. A production client build
+  // hands plain `<style>` blocks to Vite as virtual imports and an SSR build
+  // emits no CSS at all, so in both cases the resolved text was discarded --
+  // once per styled SFC, every build (270 discarded calls on the 300-file bench
+  // corpus).
+  if (compiled.css && !hasDelegated && embedsInlineCss(compiled, outputOptions)) {
     compiled = {
       ...compiled,
       css: resolveCssImports(
@@ -137,14 +152,7 @@ function loadCompiledSfcModule(
       ),
     };
   }
-  const generatedOutput = generateOutput(compiled, {
-    isProduction: state.isProduction,
-    isDev: state.server !== null && !isSsr,
-    ssr: isSsr,
-    hmrUpdateType: pendingHmrUpdateType,
-    extractCss,
-    filePath: realPath,
-  });
+  const generatedOutput = generateOutput(compiled, outputOptions);
   const output = rewriteStaticAssetUrls(
     rewriteDynamicTemplateImports(
       isSsr ? normalizeVueServerRendererImport(generatedOutput) : generatedOutput,

@@ -103,6 +103,40 @@ export interface GenerateOutputOptions {
   filePath?: string;
 }
 
+/**
+ * Whether the SFC's `<style>` blocks are handed to Vite as virtual imports.
+ *
+ * Some blocks require Vite's CSS pipeline (preprocessor or CSS Modules), and a
+ * production client build routes plain CSS through it too so nesting,
+ * minification, and chunk ownership still apply. In both cases the blocks are
+ * emitted as imports and `compiled.css` is not used.
+ */
+function usesStyleImports(compiled: CompiledModule, options: GenerateOutputOptions): boolean {
+  return (
+    !!options.filePath &&
+    !!compiled.styles?.length &&
+    (hasDelegatedStyles(compiled) || (!options.ssr && options.isProduction && !!options.extractCss))
+  );
+}
+
+/**
+ * Whether `generateOutput` will embed `compiled.css` in the module.
+ *
+ * The only consumer of `compiled.css` is the inline `<style>` injection, so this
+ * is also the only case in which resolving the CSS's `@import`s affects the
+ * output. Callers that would otherwise resolve `compiled.css` eagerly consult
+ * this first, which keeps the condition in one place instead of duplicating
+ * `generateOutput`'s branch structure at the call site.
+ */
+export function embedsInlineCss(compiled: CompiledModule, options: GenerateOutputOptions): boolean {
+  return (
+    !usesStyleImports(compiled, options) &&
+    !options.ssr &&
+    !!compiled.css &&
+    !(options.isProduction && !!options.extractCss)
+  );
+}
+
 export function generateOutput(compiled: CompiledModule, options: GenerateOutputOptions): string {
   const { isProduction, isDev, ssr, hmrUpdateType, extractCss, filePath } = options;
 
@@ -148,10 +182,7 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
   // Determine whether to use style imports or inline CSS injection.
   // Production CSS extraction must still import plain CSS through Vite so its
   // CSS pipeline can apply nesting, minification, and chunk graph ownership.
-  const useStyleImports =
-    !!filePath &&
-    !!compiled.styles?.length &&
-    (hasDelegatedStyles(compiled) || (!ssr && isProduction && extractCss));
+  const useStyleImports = usesStyleImports(compiled, options);
 
   if (useStyleImports) {
     // --- Delegated style handling ---

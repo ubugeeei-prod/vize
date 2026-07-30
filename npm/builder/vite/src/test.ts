@@ -7,6 +7,7 @@ import "./internal/config-bridge.test.ts";
 import "./options-api-events.test.ts";
 import "./output-ast.test.ts";
 import "./utils-filter.test.ts";
+import "./utils-inline-css.test.ts";
 import "./utils.test.ts";
 import "./plugin/compat.test.ts";
 import "./plugin/config-bridge.test.ts";
