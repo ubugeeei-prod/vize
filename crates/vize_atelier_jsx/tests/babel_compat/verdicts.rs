@@ -170,10 +170,8 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("optimize/fragment", Same),
     ("optimize/map_list", Same),
     // -- errors ----------------------------------------------------------
-    (
-        "errors/v_model_non_lval",
-        Diff("non-assignable v-model target accepted"),
-    ),
+    // Closed by #3420: both sides now reject a non-assignable target.
+    ("errors/v_model_non_lval", Same),
     ("errors/v_model_no_value", Same),
     (
         "errors/v_models_not_array",

@@ -26,10 +26,19 @@ so babel's side is never guessed. The Rust suite then compares **recorded babel
 output against Vize output as a side-by-side snapshot with a declared verdict**,
 not as an equality assertion — Vize is not trying to be byte-identical (see
 _Global divergences_). The verdict column is where the semantic judgement lives,
-and it is asserted to cover the corpus exactly in both directions. A
-runtime-mount (importmap + Playwright) oracle would strengthen the `equivalent`
-verdicts from review-checked to executed; that upgrade is tracked on #3391 and is
-not claimed here.
+and it is asserted to cover the corpus exactly in both directions.
+
+**The `equivalent` verdicts are review-checked, not executed.** Upgrading them to
+executed means mounting both outputs against a real Vue runtime and comparing
+rendered DOM plus patch behavior on update. The repo has no harness that does
+this today: the closest things are `playground/e2e/vrt/vapor-runtime.spec.ts`
+(a Playwright smoke over the playground app, not over compiled output) and
+`npm/fresco/src/testing/mount.ts` (an in-process `@vue/runtime-core` mount for
+Fresco's own renderer). The cheapest viable path is the latter's shape rather
+than an importmap + browser harness: `happy-dom` and `vue` are already workspace
+catalog entries, so each corpus case's two emitted modules can be evaluated and
+mounted in-process, then diffed on `innerHTML` after mount and after a state
+update. Tracked on #3391; deliberately not claimed here.
 
 Regenerate / verify:
 
@@ -46,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   63 |
-| divergent  |   29 |
+| equivalent |   64 |
+| divergent  |   28 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -219,7 +228,7 @@ accept it.
 
 | Case                        | Babel                                                         | Vize today                                                             | Compat mode              | Verdict |
 | --------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------ | ------- |
-| `errors/v_model_non_lval`   | rejects a non-assignable `v-model` target                     | accepts it and emits nested-arrow code that is not valid render output | reject with a diagnostic | ❌      |
+| `errors/v_model_non_lval`   | rejects a non-assignable `v-model` target                     | rejects it too, naming the offending expression (closed by #3420) | no change | ✅      |
 | `errors/v_model_no_value`   | rejects: "You have to use JSX Expression inside your v-model" | rejects: "v-model is missing expression."                              | no change                | ✅      |
 | `errors/v_models_not_array` | rejects a non-array `v-models` value                          | emits a custom `models` directive                                      | reject with a diagnostic | ❌      |
 | `errors/v_slots_not_object` | forwards the value as children                                | emits a custom `slots` directive                                       | forward as children      | ❌      |

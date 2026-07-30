@@ -10,8 +10,7 @@
 //! - `v-x` / `v-x:arg` -> [`DirectiveNode`] named `x`
 
 use oxc_ast::ast::{
-    ArrayExpressionElement, Expression, JSXAttribute, JSXAttributeItem, JSXAttributeName,
-    JSXAttributeValue, JSXSpreadAttribute,
+    JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXSpreadAttribute,
 };
 use oxc_span::{GetSpan, Span};
 use vize_carton::{Box, String, Vec};
@@ -22,6 +21,7 @@ use vize_relief::SimpleExpressionNode;
 
 use super::Lowerer;
 use super::expr::container_expr_span;
+use super::v_model::split_underscore_model_modifiers;
 
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Lower a JSX opening element's attribute list into Vize props.
@@ -33,9 +33,15 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         for item in items {
             let prop = match item {
                 JSXAttributeItem::Attribute(attr) => self.lower_attribute(attr),
-                JSXAttributeItem::SpreadAttribute(spread) => self.lower_spread_attribute(spread),
+                JSXAttributeItem::SpreadAttribute(spread) => {
+                    Some(self.lower_spread_attribute(spread))
+                }
             };
-            props.push(prop);
+            // `None` means the attribute was rejected with a diagnostic; it
+            // contributes no prop so no code is generated from it.
+            if let Some(prop) = prop {
+                props.push(prop);
+            }
         }
         props
     }
@@ -48,17 +54,25 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         PropNode::Directive(Box::new_in(directive, self.bump()))
     }
 
-    fn lower_attribute(&mut self, attr: &JSXAttribute<'_>) -> PropNode<'a> {
+    /// Lower one attribute, or `None` when it was rejected with a diagnostic.
+    fn lower_attribute(&mut self, attr: &JSXAttribute<'_>) -> Option<PropNode<'a>> {
         let loc = self.mapper().location(attr.span);
+
+        // `v-model` writes back through an assignment, so its target must be
+        // assignable. Reject early: lowering it anyway produces an assignment to
+        // a non-place expression, i.e. emitted code that does not parse (#3420).
+        if self.reject_unassignable_model_target(attr) {
+            return None;
+        }
 
         // Directive forms: `v-model`, `v-show`, `v-on:click`, custom `v-foo:arg`.
         if let Some(directive) = self.try_directive_attribute(attr, &loc) {
-            return directive;
+            return Some(directive);
         }
 
         let name = String::from(self.mapper().slice(attr.name.span()));
         let name_loc = self.mapper().location(attr.name.span());
-        match attr.value.as_ref() {
+        let prop = match attr.value.as_ref() {
             None => self.boolean_attr(name, name_loc, loc),
             Some(JSXAttributeValue::StringLiteral(string)) => {
                 let value =
@@ -83,15 +97,10 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                         // listener key. Plain `onClick={h}` has no recognized
                         // suffix and stays a `v-bind` like before.
                         if let Some((event, mods)) = split_on_event_modifiers(&name) {
-                            return self.von_modifier_prop(
-                                &event,
-                                attr.name.span(),
-                                span,
-                                &mods,
-                                loc,
-                            );
+                            self.von_modifier_prop(&event, attr.name.span(), span, &mods, loc)
+                        } else {
+                            self.bind_prop(&name, attr.name.span(), span, loc)
                         }
-                        self.bind_prop(&name, attr.name.span(), span, loc)
                     }
                 }
             }
@@ -101,7 +110,8 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             Some(JSXAttributeValue::Fragment(fragment)) => {
                 self.bind_prop(&name, attr.name.span(), fragment.span(), loc)
             }
-        }
+        };
+        Some(prop)
     }
 
     fn boolean_attr(
@@ -216,86 +226,6 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         Some(PropNode::Directive(Box::new_in(directive, self.bump())))
     }
 
-    /// The `[value, ...]` array literal backing a `v-model={[...]}` attribute,
-    /// or `None` when the value is not an array-literal expression container.
-    fn model_array_value<'e>(
-        &self,
-        value: Option<&'e JSXAttributeValue<'e>>,
-    ) -> Option<&'e oxc_ast::ast::ArrayExpression<'e>> {
-        let JSXAttributeValue::ExpressionContainer(container) = value? else {
-            return None;
-        };
-        match &container.expression {
-            oxc_ast::ast::JSXExpression::ArrayExpression(array) => Some(array),
-            _ => None,
-        }
-    }
-
-    /// Lower a `v-model={[value, argString?, modifiersArray?]}` array into a
-    /// `model` directive. Layout (per babel-plugin-jsx):
-    ///   - element 0: the model expression (required)  -> `exp`
-    ///   - a trailing array-literal element: modifiers  -> `directive.modifiers`
-    ///   - an intermediate string-literal element: arg  -> `directive.arg`
-    ///
-    /// Returns `None` (fall back to default handling) for shapes we cannot
-    /// confidently destructure (e.g. empty array, spread/hole elements).
-    fn lower_model_array(
-        &self,
-        array: &oxc_ast::ast::ArrayExpression<'_>,
-        loc: &SourceLocation,
-    ) -> Option<PropNode<'a>> {
-        // Collect the plain (non-hole, non-spread) expression elements.
-        let mut elems: std::vec::Vec<&Expression<'_>> = std::vec::Vec::new();
-        for element in &array.elements {
-            match element {
-                ArrayExpressionElement::SpreadElement(_) | ArrayExpressionElement::Elision(_) => {
-                    return None;
-                }
-                _ => match element.as_expression() {
-                    Some(expr) => elems.push(expr),
-                    None => return None,
-                },
-            }
-        }
-
-        let value_expr = *elems.first()?;
-
-        // A trailing array-literal element is the modifiers list. Its index marks
-        // the boundary so a middle string element can be recognized as the arg.
-        let modifiers_idx = match elems.last() {
-            Some(Expression::ArrayExpression(_)) if elems.len() >= 2 => Some(elems.len() - 1),
-            _ => None,
-        };
-
-        let mut directive = DirectiveNode::new(self.bump(), "model", loc.clone());
-        directive.exp = Some(self.dyn_expr(value_expr.span()));
-
-        // An intermediate string-literal element (index 1, before any modifiers
-        // array) is the arg: the bound prop name for component v-model.
-        if let Some(Expression::StringLiteral(s)) = elems.get(1).copied()
-            && modifiers_idx != Some(1)
-        {
-            directive.arg = Some(self.static_expr(s.value.as_str(), s.span));
-        }
-
-        if let Some(idx) = modifiers_idx
-            && let Expression::ArrayExpression(modifiers) = elems[idx]
-        {
-            for element in &modifiers.elements {
-                let Some(Expression::StringLiteral(s)) = element.as_expression() else {
-                    continue;
-                };
-                directive.modifiers.push(SimpleExpressionNode::new(
-                    s.value.as_str(),
-                    false,
-                    loc.clone(),
-                ));
-            }
-        }
-
-        Some(PropNode::Directive(Box::new_in(directive, self.bump())))
-    }
-
     fn directive_value_expr(
         &self,
         value: Option<&JSXAttributeValue<'_>>,
@@ -359,26 +289,4 @@ fn split_on_event_modifiers(name: &str) -> Option<(String, std::vec::Vec<&str>)>
     lowered.push(first.to_ascii_lowercase());
     lowered.push_str(chars.as_str());
     Some((lowered, mods))
-}
-
-/// Split a babel-plugin-jsx `v-model_<mod>(_<mod>)*` attribute name (already
-/// stripped of its `v-` prefix) into `("model", [modifiers...])`.
-///
-/// JSX attribute names cannot contain `.`, so babel-plugin-jsx encodes v-model
-/// modifiers as `_`-joined suffixes: `model_lazy`, `model_number_lazy`. The
-/// recognized standard modifiers are `lazy` / `trim` / `number`; any further
-/// `_`-separated segments are passed through verbatim (custom modifiers).
-///
-/// Returns `None` for names that are not `model` with at least one suffix (so
-/// bare `model` and unrelated directives keep their default behavior).
-fn split_underscore_model_modifiers(name: &str) -> Option<(&'static str, std::vec::Vec<&str>)> {
-    let rest = name.strip_prefix("model_")?;
-    if rest.is_empty() {
-        return None;
-    }
-    let mods: std::vec::Vec<&str> = rest.split('_').filter(|s| !s.is_empty()).collect();
-    if mods.is_empty() {
-        return None;
-    }
-    Some(("model", mods))
 }

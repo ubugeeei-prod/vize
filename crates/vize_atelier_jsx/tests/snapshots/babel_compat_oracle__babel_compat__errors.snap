@@ -4,7 +4,7 @@ expression: body
 ---
 ## errors/v_model_non_lval
 ### verdict
-divergent: non-assignable v-model target accepted
+equivalent
 ### source (jsx)
 const A = () => <input v-model={{a:1}}/>;
 ### babel options
@@ -12,13 +12,10 @@ const A = () => <input v-model={{a:1}}/>;
 ### babel
 <error> Property left of AssignmentExpression expected node to be of a type ["LVal","OptionalMemberExpression"] but instead got "ObjectExpression"
 ### vize (vdom, default config)
-import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+<Error> v-model target `{a:1}` cannot be assigned to; v-model needs a variable or property reference.
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
-  return _withDirectives((_openBlock(), _createElementBlock("input", {
-    "onUpdate:modelValue": $event => ($event => ($event => (({a:1}) = $event)))
-  }, null, 8 /* PROPS */, ["onUpdate:modelValue"])), [
-    [_vModelText, {a:1}]
-  ])
+  return (_openBlock(), _createElementBlock("input"))
 }
 
 ## errors/v_model_no_value
