@@ -24,7 +24,14 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
 
 import { buildFairnessNotes } from "./benchmark-notes.mjs";
+import {
+  createSurface,
+  renderEngineClassSections,
+  renderSurfaceTable,
+} from "./compare-tools-report.mjs";
 import { createNativeBatchSequenceVariants, measureNativeBatchCompile } from "./native-batch.mjs";
+
+export { createSurface } from "./compare-tools-report.mjs";
 
 const require = createRequire(import.meta.url);
 const benchDir = dirname(fileURLToPath(import.meta.url));
@@ -117,13 +124,6 @@ export function formatMs(ms) {
 
 function formatRunList(values) {
   return values.map(formatMs).join(", ");
-}
-
-function formatSpeedup(value) {
-  if (!Number.isFinite(value)) {
-    return "n/a";
-  }
-  return `${value.toFixed(1)}x`;
 }
 
 function formatThroughput(files, ms) {
@@ -1033,6 +1033,13 @@ async function measureCheck(inputDir, files, options) {
     baselineId: "vue-tsc",
     vizeSingleId: "vize-check-1t",
     vizeMaxId: "vize-check-max",
+    // vue-tsc drives the JavaScript TypeScript compiler; vize check drives
+    // native tsgo. Declaring the classes suppresses the cross-engine ratio.
+    engineClasses: {
+      "vue-tsc": "typescript-js",
+      "vize-check-1t": "tsgo-native",
+      "vize-check-max": "tsgo-native",
+    },
   });
 }
 
@@ -1152,25 +1159,6 @@ async function measureNuxt(inputDir, files, options) {
   });
 }
 
-function getVariant(surface, id) {
-  if (!id) {
-    return null;
-  }
-  return surface.variants.find((variant) => variant.id === id) ?? null;
-}
-
-export function createSurface(surface) {
-  const baseline = surface.variants.find((variant) => variant.id === surface.baselineId);
-  const vizeMax = surface.variants.find((variant) => variant.id === surface.vizeMaxId);
-  const speedup =
-    baseline && vizeMax && vizeMax.medianMs > 0 ? baseline.medianMs / vizeMax.medianMs : Number.NaN;
-
-  return {
-    ...surface,
-    primarySpeedup: speedup,
-  };
-}
-
 function githubRunUrl() {
   const server = process.env.GITHUB_SERVER_URL;
   const repo = process.env.GITHUB_REPOSITORY;
@@ -1284,14 +1272,10 @@ export function renderMarkdown(data) {
   );
   lines.push("| --- | ---: | --- | ---: | ---: | ---: | ---: |");
   for (const surface of data.surfaces) {
-    const baseline = getVariant(surface, surface.baselineId);
-    const vizeSingle = getVariant(surface, surface.vizeSingleId);
-    const vizeMax = getVariant(surface, surface.vizeMaxId);
-    lines.push(
-      `| ${surface.label} | ${surface.files.toLocaleString()} | ${baseline?.label ?? "n/a"} | ${formatMs(baseline?.medianMs)} | ${vizeSingle ? formatMs(vizeSingle.medianMs) : "n/a"} | ${formatMs(vizeMax?.medianMs)} | ${formatSpeedup(surface.primarySpeedup)} |`,
-    );
+    lines.push(renderSurfaceTable(surface, formatMs));
   }
   lines.push("");
+  lines.push(...renderEngineClassSections(data.surfaces, formatMs));
   lines.push("Fairness notes:");
   for (const note of data.fairness) {
     lines.push(`- ${note}`);

@@ -1,0 +1,251 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import { buildFairnessNotes } from "../../bench/benchmark-notes.mjs";
+import {
+  CROSS_ENGINE_CELL,
+  createSurface,
+  rankWithinEngineClasses,
+} from "../../bench/compare-tools-report.mjs";
+import { renderMarkdown } from "../../bench/compare-tools.mjs";
+
+const CHECK_VARIANTS = [
+  { id: "vue-tsc", label: "vue-tsc", medianMs: 8000, throughput: "62.5 files/s", runs: [8000] },
+  {
+    id: "vize-check-1t",
+    label: "Vize check (1T)",
+    medianMs: 2000,
+    throughput: "250.0 files/s",
+    runs: [2000],
+  },
+  {
+    id: "vize-check-max",
+    label: "Vize check (max)",
+    medianMs: 500,
+    throughput: "1.0k files/s",
+    runs: [500],
+  },
+];
+
+const CHECK_ENGINE_CLASSES = {
+  "vue-tsc": "typescript-js",
+  "vize-check-1t": "tsgo-native",
+  "vize-check-max": "tsgo-native",
+};
+
+function checkSurfaceInput(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "check",
+    label: "Type check",
+    files: 500,
+    bytes: 1_000_000,
+    baselineId: "vue-tsc",
+    vizeSingleId: "vize-check-1t",
+    vizeMaxId: "vize-check-max",
+    engineClasses: CHECK_ENGINE_CLASSES,
+    variants: CHECK_VARIANTS,
+    ...overrides,
+  };
+}
+
+test("a cross-engine surface publishes no primary speedup", () => {
+  const surface = createSurface(checkSurfaceInput());
+
+  assert.deepEqual(surface, {
+    id: "check",
+    label: "Type check",
+    files: 500,
+    bytes: 1_000_000,
+    baselineId: "vue-tsc",
+    vizeSingleId: "vize-check-1t",
+    vizeMaxId: "vize-check-max",
+    engineClasses: CHECK_ENGINE_CLASSES,
+    variants: CHECK_VARIANTS,
+    primarySpeedup: null,
+    speedupStatus: "cross-engine",
+    engineClassRanking: [
+      {
+        engineClass: "typescript-js",
+        label: "JS TypeScript engine (tsc)",
+        rows: [{ id: "vue-tsc", label: "vue-tsc", medianMs: 8000, relativeToFastest: 1 }],
+      },
+      {
+        engineClass: "tsgo-native",
+        label: "native TypeScript engine (tsgo)",
+        rows: [
+          {
+            id: "vize-check-max",
+            label: "Vize check (max)",
+            medianMs: 500,
+            relativeToFastest: 1,
+          },
+          {
+            id: "vize-check-1t",
+            label: "Vize check (1T)",
+            medianMs: 2000,
+            relativeToFastest: 4,
+          },
+        ],
+      },
+    ],
+  });
+});
+
+test("a same-engine surface keeps its ranked primary speedup", () => {
+  const surface = createSurface({
+    id: "fmt",
+    label: "Format",
+    files: 500,
+    bytes: 1_000_000,
+    baselineId: "prettier-cli",
+    vizeSingleId: "vize-fmt-1t",
+    vizeMaxId: "vize-fmt-max",
+    variants: [
+      { id: "prettier-cli", label: "prettier", medianMs: 4000, throughput: "n/a", runs: [4000] },
+      { id: "vize-fmt-1t", label: "Vize fmt (1T)", medianMs: 800, throughput: "n/a", runs: [800] },
+      {
+        id: "vize-fmt-max",
+        label: "Vize fmt (max)",
+        medianMs: 200,
+        throughput: "n/a",
+        runs: [200],
+      },
+    ],
+  });
+
+  assert.equal(surface.primarySpeedup, 20);
+  assert.equal(surface.speedupStatus, "ranked");
+  assert.equal(surface.engineClassRanking, null);
+});
+
+test("a surface without a measurable Vize lane reports no speedup at all", () => {
+  const surface = createSurface({
+    id: "check",
+    label: "Type check",
+    files: 1,
+    bytes: 1,
+    baselineId: "vue-tsc",
+    vizeSingleId: null,
+    vizeMaxId: "vize-check-max",
+    variants: [
+      { id: "vue-tsc", label: "vue-tsc", medianMs: 10, throughput: "n/a", runs: [10] },
+      {
+        id: "vize-check-max",
+        label: "Vize check (max)",
+        medianMs: 0,
+        throughput: "n/a",
+        runs: [0],
+      },
+    ],
+  });
+
+  assert.equal(surface.primarySpeedup, null);
+  assert.equal(surface.speedupStatus, "unavailable");
+});
+
+test("every variant of a class-declaring surface must carry an engine class", () => {
+  assert.throws(
+    () =>
+      rankWithinEngineClasses({
+        id: "check",
+        engineClasses: { "vue-tsc": "typescript-js" },
+        variants: CHECK_VARIANTS,
+      }),
+    {
+      name: "Error",
+      message: "compare-tools: variant vize-check-1t of surface check has no engine class",
+    },
+  );
+});
+
+test("the type-check summary renders separate engine classes and no cross ratio", () => {
+  const surface = createSurface(checkSurfaceInput());
+  const markdown = renderMarkdown({
+    schemaVersion: 1,
+    kind: "tool-comparison",
+    generatedAt: "2026-06-01T00:00:00.000Z",
+    commit: { sha: "0123456789abcdef", ref: "main", repository: "o/r", runUrl: "" },
+    runner: {
+      label: "local",
+      blacksmithMaxSpec: "",
+      cpuCount: 8,
+      cpuModel: "test cpu",
+      platform: "linux",
+      arch: "x64",
+      osRelease: "6.0.0",
+      node: "v24.0.0",
+    },
+    input: {
+      dir: "/tmp/bench",
+      fileCount: 500,
+      totalBytes: 1_000_000,
+      checkFileCount: 500,
+      viteFileCount: 0,
+      nuxtFileCount: 0,
+      largeBlocks: 0,
+      largeSfcBytes: 0,
+    },
+    settings: { runs: 1, warmups: 1, tasks: ["check"] },
+    commands: { workflowDispatch: "dispatch", generate: "generate", benchmark: "benchmark" },
+    fairness: ["only note"],
+    surfaces: [surface],
+  });
+
+  assert.deepEqual(markdown.split("\n"), [
+    "## Tool Benchmark",
+    "",
+    "Measured: 2026-06-01T00:00:00.000Z",
+    "Commit: `0123456789ab`",
+    "Runner: `local` (8 logical CPU, test cpu)",
+    "Input: 500 generated SFC files (976.6 KB). Median of 1 measured run(s) after 1 warmup run(s).",
+    "",
+    "| Surface | Files | Existing tool | Existing median | Vize 1T | Vize max | Speedup |",
+    "| --- | ---: | --- | ---: | ---: | ---: | ---: |",
+    `| Type check | 500 | vue-tsc | 8.00s | 2.00s | 500.0ms | ${CROSS_ENGINE_CELL} |`,
+    "",
+    "#### Type check — engine classes ranked separately",
+    "",
+    "| Engine class | Row | Median | Relative to fastest in class |",
+    "| --- | --- | ---: | ---: |",
+    "| JS TypeScript engine (tsc) | vue-tsc | 8.00s | 1.00x |",
+    "| native TypeScript engine (tsgo) | Vize check (max) | 500.0ms | 1.00x |",
+    "| native TypeScript engine (tsgo) | Vize check (1T) | 2.00s | 4.00x |",
+    "",
+    "No cross-class ratio is published for Type check: the incumbent runs the JavaScript TypeScript compiler while Vize runs native tsgo, so a single number would credit TypeScript's Go rewrite to the Vue layer.",
+    "",
+    "Fairness notes:",
+    "- only note",
+    "",
+    "Commands:",
+    "",
+    "```sh",
+    "dispatch",
+    "generate",
+    "benchmark",
+    "```",
+    "",
+    "<details>",
+    "<summary>Variant details and raw run times</summary>",
+    "",
+    "### Type check",
+    "",
+    "| Variant | Median | Throughput | Raw measured runs |",
+    "| --- | ---: | ---: | --- |",
+    "| vue-tsc | 8.00s | 62.5 files/s | 8.00s |",
+    "| Vize check (1T) | 2.00s | 250.0 files/s | 2.00s |",
+    "| Vize check (max) | 500.0ms | 1.0k files/s | 500.0ms |",
+    "",
+    "</details>",
+    "",
+    "",
+  ]);
+});
+
+test("the fairness notes state that no cross-engine ratio is published", () => {
+  assert.deepEqual(
+    buildFairnessNotes(500).filter((note) => note.startsWith("Type-check rows")),
+    [
+      "Type-check rows span two TypeScript engines: vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa). No cross-engine ratio is published for that surface — it is ranked within each engine class instead, so TypeScript's Go rewrite is never credited to the Vue layer; bench/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating.",
+    ],
+  );
+});
