@@ -56,17 +56,31 @@ reasonably large Vue projects to use as test beds.
 
 ## Benchmarks
 
-Measured on Blacksmith `blacksmith-32vcpu-ubuntu-2404`, 15,000 generated Vue SFCs, median of 5 runs
-([latest run](https://github.com/ubugeeei-prod/vize/actions/runs/29004198781)):
+Measured on Blacksmith `blacksmith-32vcpu-ubuntu-2404`, median of 5 runs. The corpus is **not** the
+same size for every row — it is given per row below, and only SFC compile, Lint, and Format run at
+15,000 SFCs.
 
-| Surface     | Existing tool      | Existing |    Vize |    Speedup |
-| ----------- | ------------------ | -------: | ------: | ---------: |
-| SFC compile | @vue/compiler-sfc  |   18.38s | 333.8ms |  **55.1×** |
-| Lint        | eslint-plugin-vue  |   56.66s | 270.9ms | **209.2×** |
-| Format      | Prettier           |  150.34s |   2.22s |  **67.8×** |
-| Type check  | vue-tsc            |    5.42s | 438.3ms |  **12.4×** |
-| Vite build  | @vitejs/plugin-vue |    1.70s |   1.52s |   **1.1×** |
-| Nuxt build  | Nuxt compiler      |    6.68s |   7.35s |   **0.9×** |
+| Surface     |  Files | Existing tool      | Existing |    Vize |    Speedup |
+| ----------- | -----: | ------------------ | -------: | ------: | ---------: |
+| SFC compile | 15,000 | @vue/compiler-sfc  |   18.38s | 333.8ms |  **55.1×** |
+| Lint        | 15,000 | eslint-plugin-vue  |   56.66s | 270.9ms | **209.2×** |
+| Format      | 15,000 | Prettier           |  150.34s |   2.22s |  **67.8×** |
+| Type check  |    500 | vue-tsc            |    5.42s | 438.3ms |  **12.4×** |
+| Vite build  |  1,000 | @vitejs/plugin-vue |    1.66s | 732.5ms |   **2.3×** |
+| Nuxt build  |    500 | Nuxt compiler      |    6.79s |   6.42s |  **1.1×**† |
+
+The Vite build and Nuxt build rows are taken from the committed snapshot
+`bench/results/tool-benchmark-latest.json`
+([run 29010164013](https://github.com/ubugeeei-prod/vize/actions/runs/29010164013)) — the same
+artifact the published [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith)
+renders — and `tests/tooling/readme-benchmark-rows.test.ts` pins them to it so the two cannot drift
+apart again. The other rows are from
+[run 29004198781](https://github.com/ubugeeei-prod/vize/actions/runs/29004198781).
+
+† **Pending regeneration.** The Nuxt row was measured before the benchmark stopped letting the
+`@vizejs/nuxt` variant inherit a warm pre-compile cache the Nuxt default compiler has no counterpart
+for. The correction runs against Vize: the honest cold-vs-cold figure is worse than the 1.1× shown
+here. It will be replaced by a fresh Blacksmith run rather than by a hand-written estimate.
 
 See the [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith) for
 methodology and per-variant numbers.
