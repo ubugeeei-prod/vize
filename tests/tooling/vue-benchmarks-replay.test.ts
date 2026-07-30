@@ -83,11 +83,11 @@ test("replay expectation tables stay pinned to the upstream corpus", () => {
   }
 
   // The 2026-07-27 upstream report's literal-union finding is the canonical
-  // fixed-external-failure: released 0.291.0 misses it, current main must
-  // catch it. If a new release fixes it, the release replay lane reports a
-  // stale suppression until this table records the pass.
+  // fixed-external-failure: 0.291.0 missed it, main caught it, and released
+  // 0.302.0 shipped the fix. Both lanes now pin it as a required pass, so a
+  // regression in either one fails the replay instead of being suppressed.
   assert.equal(main.table["literal-union-prop-bad"], "pass");
-  assert.equal(release.table["literal-union-prop-bad"], "fail");
+  assert.equal(release.table["literal-union-prop-bad"], "pass");
   assert.equal(main.table["script-type-error"], "pass");
   assert.equal(release.table["script-type-error"], "pass");
 });
