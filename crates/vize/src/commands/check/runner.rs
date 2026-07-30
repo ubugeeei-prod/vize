@@ -20,7 +20,6 @@ use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print
 use super::{
     CheckArgs,
     path_cache::CanonicalPathCache,
-    patterns::CHECK_INPUTS_DISPLAY,
     reporting::{JsonFileResult, JsonOutput},
     tsconfig_inputs::{TsconfigInputCache, resolve_tsconfig_for_files},
 };
@@ -29,6 +28,7 @@ mod default_imports;
 mod diagnostics;
 mod global_components;
 mod ignores;
+mod input_scope;
 mod nuxt_tsconfig;
 mod resolve;
 #[cfg(unix)]
@@ -49,6 +49,7 @@ use global_components::{
     template_syntax_mode,
 };
 use ignores::load_check_ignore_set;
+use input_scope::{exit_if_default_run_leaves_cwd, report_no_inputs};
 use nuxt_tsconfig::resolve_checker_tsconfig_path;
 #[cfg(test)]
 use nuxt_tsconfig::write_nuxt_fallback_tsconfig;
@@ -161,6 +162,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             &mut canonical_paths,
             check_ignore_set.as_ref(),
         );
+        exit_if_default_run_leaves_cwd(
+            &files,
+            &cwd,
+            &project_root,
+            tsconfig_path.as_deref(),
+            args.quiet,
+        );
         (files, Vec::new(), reported_files)
     } else {
         let files = collect_check_files_with_ignores(
@@ -175,20 +183,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let collect_time = collect_start.elapsed();
 
     if files.is_empty() {
-        if args.format == "json" {
-            emit_json_output(JsonOutput {
-                files: Vec::new(),
-                error_count: 0,
-                warning_count: 0,
-                file_count: 0,
-                declarations: None,
-            });
-            return;
-        }
-        eprintln!(
-            "No {CHECK_INPUTS_DISPLAY} files found matching inputs: {:?}",
-            args.patterns
-        );
+        report_no_inputs(args);
         return;
     }
 
