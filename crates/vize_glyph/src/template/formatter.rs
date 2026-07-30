@@ -20,7 +20,11 @@ use super::{
 };
 
 mod interpolation;
+mod suppression;
 mod whitespace_significant;
+
+use suppression::{LineJoiner, TextRun};
+use whitespace_significant::is_whitespace_significant_element;
 
 /// High-performance template formatter.
 pub(crate) struct TemplateFormatter<'a> {
@@ -44,7 +48,9 @@ impl<'a> TemplateFormatter<'a> {
         let mut output = Vec::with_capacity(len + len / 4);
         let mut pos = 0;
         let mut depth: usize = 0;
-        let mut line_buffer = Vec::with_capacity(256);
+        let mut text = TextRun::new();
+        // Lines a line-scoped lint suppression covers must not be split. (#3343)
+        let mut joiner = LineJoiner::new(source);
 
         while pos < len {
             // Skip whitespace at line start (except newlines)
@@ -69,7 +75,7 @@ impl<'a> TemplateFormatter<'a> {
                     parse_interpolation_range(source, pos)
                 && source[pos..end_pos].contains(&b'\n')
             {
-                self.flush_text_buffer(&mut output, &mut line_buffer, depth);
+                self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 let expr = std::str::from_utf8(&source[expr_start..expr_end]).unwrap_or("");
                 self.write_multiline_interpolation(&mut output, expr, depth);
                 pos = end_pos;
@@ -78,17 +84,18 @@ impl<'a> TemplateFormatter<'a> {
 
             // HTML comment <!-- ... -->
             if pos + 3 < len && &source[pos..pos + 4] == b"<!--" {
-                self.flush_text_buffer(&mut output, &mut line_buffer, depth);
+                self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 let comment_start = pos;
+                let join = joiner.open(comment_start);
                 if let Some(end_offset) = find_bytes(&source[pos..], b"-->") {
                     let comment_end = pos + end_offset + 3;
-                    self.write_indent(&mut output, depth);
+                    self.open_chunk(&mut output, depth, join);
                     output.extend_from_slice(&source[comment_start..comment_end]);
                     output.extend_from_slice(self.newline);
                     pos = comment_end;
                 } else {
                     // Unclosed comment - write remainder
-                    self.write_indent(&mut output, depth);
+                    self.open_chunk(&mut output, depth, join);
                     output.extend_from_slice(&source[comment_start..]);
                     output.extend_from_slice(self.newline);
                     pos = len;
@@ -102,9 +109,10 @@ impl<'a> TemplateFormatter<'a> {
                     && source[pos + 1] == b'/'
                     && let Some((tag_name, end_pos)) = parse_closing_tag(source, pos)
                 {
-                    self.flush_text_buffer(&mut output, &mut line_buffer, depth);
+                    self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
+                    let join = joiner.open(pos);
                     depth = depth.saturating_sub(1);
-                    self.write_indent(&mut output, depth);
+                    self.open_chunk(&mut output, depth, join);
                     output.extend_from_slice(b"</");
                     output.extend_from_slice(tag_name.as_bytes());
                     output.push(b'>');
@@ -115,13 +123,14 @@ impl<'a> TemplateFormatter<'a> {
                 if let Some((tag_name, attrs, is_self_closing, end_pos)) =
                     self.parse_opening_tag(source, pos)
                 {
-                    self.flush_text_buffer(&mut output, &mut line_buffer, depth);
+                    self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
+                    let join = joiner.open(pos);
                     let mut sorted_attrs = attrs;
                     if self.options.sort_attributes {
                         sort_attributes(&mut sorted_attrs, self.options);
                     }
 
-                    self.write_indent(&mut output, depth);
+                    self.open_chunk(&mut output, depth, join);
                     output.push(b'<');
                     output.extend_from_slice(tag_name.as_bytes());
 
@@ -217,7 +226,7 @@ impl<'a> TemplateFormatter<'a> {
                     continue;
                 }
                 // Keep a non-tag `<` as text and advance past it.
-                line_buffer.push(b'<');
+                text.push_byte(pos, b'<');
                 pos += 1;
                 continue;
             }
@@ -252,22 +261,19 @@ impl<'a> TemplateFormatter<'a> {
                 }
 
                 if content_end > content_start {
-                    if !line_buffer.is_empty() {
-                        line_buffer.push(b' ');
-                    }
-                    line_buffer.extend_from_slice(&source[content_start..content_end]);
+                    text.push_source(source, content_start, content_end);
                 }
             }
 
             // Handle newline
             if pos < len && source[pos] == b'\n' {
-                self.flush_text_buffer(&mut output, &mut line_buffer, depth);
+                self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 pos += 1;
             }
         }
 
         // Flush remaining content
-        self.flush_text_buffer(&mut output, &mut line_buffer, depth);
+        self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
 
         // Remove trailing newline for consistency
         while output.last().is_some_and(|&b| b == b'\n' || b == b'\r') {
@@ -285,12 +291,19 @@ impl<'a> TemplateFormatter<'a> {
 
     /// Flush accumulated text content with interpolation formatting.
     #[inline]
-    fn flush_text_buffer(&self, output: &mut Vec<u8>, buffer: &mut Vec<u8>, depth: usize) {
-        if buffer.is_empty() {
+    fn flush_text_buffer(
+        &self,
+        output: &mut Vec<u8>,
+        text: &mut TextRun,
+        depth: usize,
+        joiner: &mut LineJoiner<'_>,
+    ) {
+        if text.is_empty() {
             return;
         }
-        let text = std::str::from_utf8(buffer).unwrap_or("");
-        let formatted = format_interpolations(text, self.options);
+        let formatted = format_interpolations(text.as_str(), self.options);
+        let start = text.start();
+        text.clear();
         // If the formatted expression wraps onto multiple lines, single-line
         // `{{ expr }}` emission would leave the wrapped lines indented
         // relative to column 0 instead of the interpolation's depth — so a
@@ -303,11 +316,13 @@ impl<'a> TemplateFormatter<'a> {
                 self.rewrap_text_with_multiline_interpolation(&formatted, depth)
         {
             output.extend_from_slice(rewrapped.as_bytes());
-            buffer.clear();
+            // This shape spans lines by design, so nothing may join onto it.
+            joiner.reset();
             return;
         }
-        self.write_indented_line(output, formatted.as_bytes(), depth);
-        buffer.clear();
+        self.open_chunk(output, depth, joiner.open(start));
+        output.extend_from_slice(formatted.as_bytes());
+        output.extend_from_slice(self.newline);
     }
 
     /// Rewrap a `format_interpolations` result into multi-line shape if any
@@ -741,81 +756,5 @@ fn parse_interpolation_range(source: &[u8], start: usize) -> Option<(usize, usiz
         }
     }
 
-    None
-}
-
-/// Returns true if the element's content must be preserved byte-for-byte:
-/// `<pre>`, `<textarea>`, or any element with the `v-pre` directive.
-/// Whitespace and interpolations inside these regions are rendered as-is
-/// at runtime, so the formatter must not touch them. (#963)
-fn is_whitespace_significant_element(tag_name: &str, attrs: &[ParsedAttribute]) -> bool {
-    if tag_name.eq_ignore_ascii_case("pre") || tag_name.eq_ignore_ascii_case("textarea") {
-        return true;
-    }
-    attrs
-        .iter()
-        .any(|attr| attr.name.eq_ignore_ascii_case("v-pre"))
-}
-
-/// Find the start of the matching `</tag_name>` for a content region that
-/// begins at `start` in `source`. Returns the byte index of the `<` of the
-/// closing tag, or `None` if no matching close is found.
-///
-/// This is a tag-name aware scan so nested elements with the same tag are
-/// handled correctly (e.g. `<pre>...<pre>x</pre>...</pre>`).
-fn find_matching_close_tag(source: &[u8], start: usize, tag_name: &str) -> Option<usize> {
-    let len = source.len();
-    let tag_bytes = tag_name.as_bytes();
-    let mut pos = start;
-    let mut depth: i32 = 1;
-    while pos < len {
-        let offset = memchr::memchr(b'<', &source[pos..])?;
-        pos += offset;
-        if pos + 1 >= len {
-            return None;
-        }
-        // Skip comments and CDATA to avoid false matches inside them.
-        if pos + 3 < len && &source[pos..pos + 4] == b"<!--" {
-            if let Some(end) = find_bytes(&source[pos..], b"-->") {
-                pos += end + 3;
-                continue;
-            }
-            return None;
-        }
-
-        let is_closing = source[pos + 1] == b'/';
-        let name_start = if is_closing { pos + 2 } else { pos + 1 };
-        if name_start >= len {
-            return None;
-        }
-        let name_bytes = &source[name_start..];
-        if name_bytes.len() >= tag_bytes.len()
-            && name_bytes[..tag_bytes.len()].eq_ignore_ascii_case(tag_bytes)
-        {
-            let after = name_bytes.get(tag_bytes.len()).copied().unwrap_or(0);
-            let after_is_terminator = matches!(after, b'>' | b'/' | b' ' | b'\t' | b'\n' | b'\r');
-            if after_is_terminator {
-                if is_closing {
-                    depth -= 1;
-                    if depth == 0 {
-                        return Some(pos);
-                    }
-                } else if !is_void_element_str(tag_name) {
-                    // Treat self-closing forms (`<tag … />`) as not opening
-                    // a new nesting level. Peek to the next `>` and check
-                    // for a preceding `/`.
-                    if let Some(gt) = memchr::memchr(b'>', &source[pos..]) {
-                        let close_at = pos + gt;
-                        if close_at > 0 && source[close_at - 1] != b'/' {
-                            depth += 1;
-                        }
-                        pos = close_at + 1;
-                        continue;
-                    }
-                }
-            }
-        }
-        pos += 1;
-    }
     None
 }
