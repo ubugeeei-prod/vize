@@ -144,6 +144,19 @@ void test("emitStaticGallery packages browser-facing static output", async () =>
       previewRuntimeSpecifier(assetText(assets, `__musea__/preview/${previewId}.html`)),
       "../../assets/musea-static-runtime.js",
     );
+
+    // The A11y panel runs axe inside the preview iframe and loads it from this
+    // path, so a deployed gallery that does not ship the vendor script has a
+    // dead a11y feature. Nothing else in the suite covered the asset.
+    assert.ok(
+      assets.has("__musea__/vendor/axe-core.min.js"),
+      `the export must ship the axe-core vendor script; emitted: ${[...assets.keys()].sort().join(", ")}`,
+    );
+    assert.match(
+      assetText(assets, "__musea__/vendor/axe-core.min.js"),
+      /axe/,
+      "the vendor asset must be the real axe-core bundle",
+    );
   } finally {
     await fs.promises.rm(tempDir, { recursive: true, force: true });
   }

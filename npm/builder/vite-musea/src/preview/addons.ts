@@ -262,6 +262,19 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
                 script.onerror = reject;
                 document.head.appendChild(script);
               });
+              // A load event is not proof the vendor script exists. axe-core is
+              // an optional peer, so a static export can ship without it, and a
+              // static host is free to answer the missing asset with an SPA
+              // fallback: 200 plus HTML. The script tag then "loads" fine and
+              // window.axe is still undefined, which surfaced downstream as an
+              // opaque "cannot read properties of undefined" instead of the real
+              // cause.
+              if (!window.axe) {
+                throw new Error(
+                  'axe-core did not load from ' + script.src +
+                  ' - install axe-core so the gallery can ship it, and check that the path is served as JavaScript rather than an SPA fallback'
+                );
+              }
             }
             // Run axe-core on the .musea-variant container only (not the full document)
             const context = document.querySelector('.musea-variant') || document;

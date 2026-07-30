@@ -240,7 +240,16 @@ async function emitAxeVendor(
       source,
     });
   } catch {
-    // axe-core is an optional peer; static a11y keeps the same best-effort behavior as dev.
+    // axe-core is an optional peer, so the export stays best-effort like dev.
+    // Dev answers this route with a 404 the preview runner reports as a load
+    // error, but a static host may answer a missing asset with an SPA fallback
+    // (200 plus HTML), so an unresolvable axe-core would otherwise reach users
+    // as a runtime failure in the deployed gallery with no signal at build
+    // time. Say it here, where it is actionable.
+    console.warn(
+      "[musea] axe-core is not installed, so the exported gallery cannot run accessibility checks.\n" +
+        "        Install it to enable the A11y panel in the static build: vp install -D axe-core",
+    );
   }
 }
 
