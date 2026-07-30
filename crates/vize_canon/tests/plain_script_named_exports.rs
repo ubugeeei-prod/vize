@@ -62,6 +62,49 @@ export const setupParseMdFileDialogCtx = () => ({ ready: true });
 }
 
 #[test]
+fn normal_script_exported_enum_keeps_its_type_side() {
+    let case_dir = unique_case_dir("plain-script-exported-enum");
+    let _ = fs::remove_dir_all(&case_dir);
+    let src_dir = case_dir.join("src");
+    fs::create_dir_all(&src_dir).unwrap();
+    let vue_path = src_dir.join("ParseMdFileDialog.vue");
+    let vue_content = r#"<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
+  name: "ParseMdFileDialog",
+});
+
+export enum DiffDisplayMode {
+  Unified = 'unified',
+  Split = 'split',
+}
+</script>
+"#;
+    fs::write(&vue_path, vue_content).unwrap();
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.register_vue_file(&vue_path, vue_content).unwrap();
+    let content = project
+        .find_by_original(&vue_path)
+        .unwrap()
+        .content
+        .as_str();
+
+    assert!(
+        content.contains("export enum DiffDisplayMode {"),
+        "an exported enum must reach module scope as a declaration, so consumers can use it as a type:\n{content}"
+    );
+    assert!(
+        !content.contains("export const DiffDisplayMode ="),
+        "the value-only setup bridge would erase the enum's type side (TS2749 at the consumer):\n{content}"
+    );
+    assert_ts_parses(content);
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
 fn normal_script_exported_type_body_stays_intact_with_exported_const_typeof() {
     let case_dir = unique_case_dir("plain-script-exported-type-body");
     let _ = fs::remove_dir_all(&case_dir);

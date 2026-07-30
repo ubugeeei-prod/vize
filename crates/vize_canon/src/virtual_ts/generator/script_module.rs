@@ -1,5 +1,9 @@
 //! Module-scope facts collected from normal Vue `<script>` blocks.
 
+mod enum_exports;
+#[cfg(test)]
+mod tests;
+
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{BindingPattern, Declaration, Statement, TSEnumDeclaration};
 use oxc_ast_visit::Visit;
@@ -42,6 +46,11 @@ pub(super) fn collect_line_module_spans(script: &str) -> Vec<(u32, u32)> {
             }
             Statement::ExportNamedDeclaration(decl) if decl.source.is_some() => {
                 spans.push((decl.span.start, decl.span.end));
+            }
+            // An exported `enum` declares a type as well as a value, and the
+            // setup-scope value bridge can only carry the value.
+            Statement::ExportNamedDeclaration(decl) => {
+                spans.extend(self::enum_exports::hoistable_export_span(decl));
             }
             _ => {}
         }
@@ -200,7 +209,12 @@ fn collect_declaration_exports(
             }
         }
         Declaration::TSEnumDeclaration(enumeration) => {
-            push_name(enumeration.id.name.as_str(), seen, names);
+            // A hoistable enum is emitted at module scope carrying its own
+            // `export`, so bridging it again would both duplicate the export
+            // and shadow the type side with a value-only alias.
+            if !self::enum_exports::is_hoistable(enumeration) {
+                push_name(enumeration.id.name.as_str(), seen, names);
+            }
         }
         _ => {}
     }
@@ -295,56 +309,4 @@ fn line_start_at(script: &str, offset: usize) -> usize {
 
 fn contains_ts_suppression_directive(comment: &str) -> bool {
     comment.contains("@ts-ignore") || comment.contains("@ts-expect-error")
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{
-        CompactString, collect_line_module_spans, collect_named_value_export_starts,
-        collect_named_value_exports,
-    };
-
-    #[test]
-    fn collect_import_span_includes_adjacent_ts_ignore_comment_group() {
-        let script = "const before = 1;\n// FIXME: types\n// @ts-ignore\nimport Chart from \"chart.js/auto/auto\";\nconst after = 2;\n";
-        let spans = collect_line_module_spans(script);
-
-        assert_eq!(spans.len(), 1);
-        assert_eq!(
-            &script[spans[0].0 as usize..spans[0].1 as usize],
-            "// FIXME: types\n// @ts-ignore\nimport Chart from \"chart.js/auto/auto\";"
-        );
-    }
-
-    #[test]
-    fn collect_import_span_leaves_regular_comments_in_script_body() {
-        let script = "// import note\nimport Chart from \"chart.js/auto/auto\";\n";
-        let spans = collect_line_module_spans(script);
-
-        assert_eq!(spans.len(), 1);
-        assert_eq!(
-            &script[spans[0].0 as usize..spans[0].1 as usize],
-            "import Chart from \"chart.js/auto/auto\";"
-        );
-    }
-
-    #[test]
-    fn collect_named_value_exports_includes_ts_enums() {
-        let names = collect_named_value_exports(
-            "export enum DiffDisplayMode { Hidden = 'hidden' }\nexport type Props = {}\n",
-        );
-
-        assert_eq!(names, vec![CompactString::new("DiffDisplayMode")]);
-    }
-
-    #[test]
-    fn named_value_export_starts_exclude_nested_enum_members() {
-        let script =
-            "enum Modes {\n  export = 'export',\n}\nexport const selected = Modes.export;\n";
-        let starts = collect_named_value_export_starts(script);
-
-        assert_eq!(starts.len(), 1);
-        assert!(starts.contains(&(script.find("export const").unwrap() as u32)));
-        assert!(!starts.contains(&(script.find("export =").unwrap() as u32)));
-    }
 }
