@@ -9,107 +9,599 @@
     "verify": "node crates/vize_atelier_jsx/tests/babel_compat/oracle.mjs --check"
   },
   "cases": [
-    { "id": "options/transform_on_off", "category": "options", "lang": "jsx", "source": "const A = () => <button on={{click: h}}/>;" },
-    { "id": "options/transform_on_on", "category": "options", "lang": "jsx", "source": "const A = () => <button on={{click: h}}/>;", "babelOptions": { "transformOn": true } },
-    { "id": "options/pragma", "category": "options", "lang": "jsx", "source": "const A = () => <div/>;", "babelOptions": { "pragma": "h" } },
-    { "id": "options/merge_props_default", "category": "options", "lang": "jsx", "source": "const A = () => <div class=\"a\" {...p} class={c}/>;" },
-    { "id": "options/merge_props_false", "category": "options", "lang": "jsx", "source": "const A = () => <div class=\"a\" {...p} class={c}/>;", "babelOptions": { "mergeProps": false } },
-    { "id": "options/is_custom_element_default", "category": "options", "lang": "jsx", "source": "const A = () => <my-el foo={1}/>;" },
-    { "id": "options/is_custom_element_fn", "category": "options", "lang": "jsx", "source": "const A = () => <MyEl foo={1}/>;", "babelOptions": { "isCustomElement": ["MyEl"] } },
-    { "id": "options/object_slots_default", "category": "options", "lang": "jsx", "source": "const A = () => <B>{slots}</B>;" },
-    { "id": "options/object_slots_false", "category": "options", "lang": "jsx", "source": "const A = () => <B>{slots}</B>;", "babelOptions": { "enableObjectSlots": false } },
-    { "id": "options/resolve_type_off", "category": "options", "lang": "tsx", "source": "import { defineComponent } from 'vue';\nconst A = defineComponent((props: { foo: string }) => () => <div>{props.foo}</div>);" },
-    { "id": "options/resolve_type_on", "category": "options", "lang": "tsx", "source": "import { defineComponent } from 'vue';\nconst A = defineComponent((props: { foo: string }) => () => <div>{props.foo}</div>);", "babelOptions": { "resolveType": true } },
+    {
+      "id": "options/transform_on_off",
+      "category": "options",
+      "lang": "jsx",
+      "source": "const A = () => <button on={{click: h}}/>;"
+    },
+    {
+      "id": "options/transform_on_on",
+      "category": "options",
+      "lang": "jsx",
+      "source": "const A = () => <button on={{click: h}}/>;",
+      "babelOptions": { "transformOn": true }
+    },
+    {
+      "id": "options/pragma",
+      "category": "options",
+      "lang": "jsx",
+      "source": "const A = () => <div/>;",
+      "babelOptions": { "pragma": "h" }
+    },
+    {
+      "id": "options/merge_props_default",
+      "category": "options",
+      "lang": "jsx",
+      "source": "const A = () => <div class=\"a\" {...p} class={c}/>;"
+    },
+    {
+      "id": "options/merge_props_false",
+      "category": "options",
+      "lang": "jsx",
+      "source": "const A = () => <div class=\"a\" {...p} class={c}/>;",
+      "babelOptions": { "mergeProps": false }
+    },
+    {
+      "id": "options/is_custom_element_default",
+      "category": "options",
+      "lang": "jsx",
+      "source": "const A = () => <my-el foo={1}/>;"
+    },
+    {
+      "id": "options/is_custom_element_fn",
+      "category": "options",
+      "lang": "jsx",
+      "source": "const A = () => <MyEl foo={1}/>;",
+      "babelOptions": { "isCustomElement": ["MyEl"] }
+    },
+    {
+      "id": "options/object_slots_default",
+      "category": "options",
+      "lang": "jsx",
+      "source": "const A = () => <B>{slots}</B>;"
+    },
+    {
+      "id": "options/object_slots_false",
+      "category": "options",
+      "lang": "jsx",
+      "source": "const A = () => <B>{slots}</B>;",
+      "babelOptions": { "enableObjectSlots": false }
+    },
+    {
+      "id": "options/resolve_type_off",
+      "category": "options",
+      "lang": "tsx",
+      "source": "import { defineComponent } from 'vue';\nconst A = defineComponent((props: { foo: string }) => () => <div>{props.foo}</div>);"
+    },
+    {
+      "id": "options/resolve_type_on",
+      "category": "options",
+      "lang": "tsx",
+      "source": "import { defineComponent } from 'vue';\nconst A = defineComponent((props: { foo: string }) => () => <div>{props.foo}</div>);",
+      "babelOptions": { "resolveType": true }
+    },
 
-    { "id": "elements/intrinsic", "category": "elements", "lang": "jsx", "source": "const A = () => <div/>;" },
-    { "id": "elements/component_pascal", "category": "elements", "lang": "jsx", "source": "const A = () => <B/>;" },
-    { "id": "elements/unknown_lowercase", "category": "elements", "lang": "jsx", "source": "const A = () => <foo/>;" },
-    { "id": "elements/dashed_lowercase", "category": "elements", "lang": "jsx", "source": "const A = () => <my-el/>;" },
-    { "id": "elements/svg_tag", "category": "elements", "lang": "jsx", "source": "const A = () => <circle cx={1}/>;" },
-    { "id": "elements/mathml_tag", "category": "elements", "lang": "jsx", "source": "const A = () => <mi>x</mi>;" },
-    { "id": "elements/member_tag", "category": "elements", "lang": "jsx", "source": "const A = () => <a.b.c foo={1}/>;" },
-    { "id": "elements/namespaced_tag", "category": "elements", "lang": "jsx", "source": "const A = () => <a:b foo={1}/>;" },
-    { "id": "elements/fragment", "category": "elements", "lang": "jsx", "source": "const A = () => <><span>I</span><span>F</span></>;" },
-    { "id": "elements/nested_fragment_child", "category": "elements", "lang": "jsx", "source": "const A = () => <div><><i/></></div>;" },
+    {
+      "id": "elements/intrinsic",
+      "category": "elements",
+      "lang": "jsx",
+      "source": "const A = () => <div/>;"
+    },
+    {
+      "id": "elements/component_pascal",
+      "category": "elements",
+      "lang": "jsx",
+      "source": "const A = () => <B/>;"
+    },
+    {
+      "id": "elements/unknown_lowercase",
+      "category": "elements",
+      "lang": "jsx",
+      "source": "const A = () => <foo/>;"
+    },
+    {
+      "id": "elements/dashed_lowercase",
+      "category": "elements",
+      "lang": "jsx",
+      "source": "const A = () => <my-el/>;"
+    },
+    {
+      "id": "elements/svg_tag",
+      "category": "elements",
+      "lang": "jsx",
+      "source": "const A = () => <circle cx={1}/>;"
+    },
+    {
+      "id": "elements/mathml_tag",
+      "category": "elements",
+      "lang": "jsx",
+      "source": "const A = () => <mi>x</mi>;"
+    },
+    {
+      "id": "elements/member_tag",
+      "category": "elements",
+      "lang": "jsx",
+      "source": "const A = () => <a.b.c foo={1}/>;"
+    },
+    {
+      "id": "elements/namespaced_tag",
+      "category": "elements",
+      "lang": "jsx",
+      "source": "const A = () => <a:b foo={1}/>;"
+    },
+    {
+      "id": "elements/fragment",
+      "category": "elements",
+      "lang": "jsx",
+      "source": "const A = () => <><span>I</span><span>F</span></>;"
+    },
+    {
+      "id": "elements/nested_fragment_child",
+      "category": "elements",
+      "lang": "jsx",
+      "source": "const A = () => <div><><i/></></div>;"
+    },
 
-    { "id": "props/static_attr", "category": "props", "lang": "jsx", "source": "const A = () => <input type=\"email\"/>;" },
-    { "id": "props/boolean_attr", "category": "props", "lang": "jsx", "source": "const A = () => <input disabled/>;" },
-    { "id": "props/dynamic_attr", "category": "props", "lang": "jsx", "source": "const A = () => <input placeholder={p}/>;" },
-    { "id": "props/dashed_attrs", "category": "props", "lang": "jsx", "source": "const A = () => <div data-foo=\"1\" aria-label={l}/>;" },
-    { "id": "props/xlink_camel", "category": "props", "lang": "jsx", "source": "const A = () => <svg><use xlinkHref=\"#a\"/></svg>;" },
-    { "id": "props/xlink_colon", "category": "props", "lang": "jsx", "source": "const A = () => <svg><use xlink:href=\"#a\"/></svg>;" },
-    { "id": "props/class_dynamic", "category": "props", "lang": "jsx", "source": "const A = () => <div class={c}/>;" },
-    { "id": "props/class_static_and_dynamic", "category": "props", "lang": "jsx", "source": "const A = () => <div class=\"a\" class={c}/>;" },
-    { "id": "props/style_dynamic", "category": "props", "lang": "jsx", "source": "const A = () => <div style={s}/>;" },
-    { "id": "props/style_merge_with_spread", "category": "props", "lang": "jsx", "source": "const A = () => <div style=\"color:red\" {...p} style={s}/>;" },
-    { "id": "props/spread_only", "category": "props", "lang": "jsx", "source": "const A = () => <div {...p}/>;" },
-    { "id": "props/spread_then_static", "category": "props", "lang": "jsx", "source": "const A = () => <div {...p} id=\"x\"/>;" },
-    { "id": "props/on_merge_with_spread", "category": "props", "lang": "jsx", "source": "const A = () => <div onClick={a} {...p} onClick={b}/>;" },
-    { "id": "props/key", "category": "props", "lang": "jsx", "source": "const A = () => <div key={k}/>;" },
-    { "id": "props/ref", "category": "props", "lang": "jsx", "source": "const A = () => <div ref={r}/>;" },
-    { "id": "props/ref_in_for", "category": "props", "lang": "jsx", "source": "const A = () => <div>{list.map(i => <span ref={r}/>)}</div>;" },
-    { "id": "props/dollar_prefixed", "category": "props", "lang": "jsx", "source": "const A = () => <div $foo={1}/>;" },
+    {
+      "id": "props/static_attr",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <input type=\"email\"/>;"
+    },
+    {
+      "id": "props/boolean_attr",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <input disabled/>;"
+    },
+    {
+      "id": "props/dynamic_attr",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <input placeholder={p}/>;"
+    },
+    {
+      "id": "props/dashed_attrs",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <div data-foo=\"1\" aria-label={l}/>;"
+    },
+    {
+      "id": "props/xlink_camel",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <svg><use xlinkHref=\"#a\"/></svg>;"
+    },
+    {
+      "id": "props/xlink_colon",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <svg><use xlink:href=\"#a\"/></svg>;"
+    },
+    {
+      "id": "props/class_dynamic",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <div class={c}/>;"
+    },
+    {
+      "id": "props/class_static_and_dynamic",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <div class=\"a\" class={c}/>;"
+    },
+    {
+      "id": "props/style_dynamic",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <div style={s}/>;"
+    },
+    {
+      "id": "props/style_merge_with_spread",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <div style=\"color:red\" {...p} style={s}/>;"
+    },
+    {
+      "id": "props/spread_only",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <div {...p}/>;"
+    },
+    {
+      "id": "props/spread_then_static",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <div {...p} id=\"x\"/>;"
+    },
+    {
+      "id": "props/on_merge_with_spread",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <div onClick={a} {...p} onClick={b}/>;"
+    },
+    {
+      "id": "props/key",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <div key={k}/>;"
+    },
+    {
+      "id": "props/ref",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <div ref={r}/>;"
+    },
+    {
+      "id": "props/ref_in_for",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <div>{list.map(i => <span ref={r}/>)}</div>;"
+    },
+    {
+      "id": "props/dollar_prefixed",
+      "category": "props",
+      "lang": "jsx",
+      "source": "const A = () => <div $foo={1}/>;"
+    },
 
-    { "id": "events/plain", "category": "events", "lang": "jsx", "source": "const A = () => <div onClick={h}/>;" },
-    { "id": "events/capture", "category": "events", "lang": "jsx", "source": "const A = () => <div onClickCapture={h}/>;" },
-    { "id": "events/once", "category": "events", "lang": "jsx", "source": "const A = () => <div onClickOnce={h}/>;" },
-    { "id": "events/capture_passive", "category": "events", "lang": "jsx", "source": "const A = () => <div onClickCapturePassive={h}/>;" },
+    {
+      "id": "events/plain",
+      "category": "events",
+      "lang": "jsx",
+      "source": "const A = () => <div onClick={h}/>;"
+    },
+    {
+      "id": "events/capture",
+      "category": "events",
+      "lang": "jsx",
+      "source": "const A = () => <div onClickCapture={h}/>;"
+    },
+    {
+      "id": "events/once",
+      "category": "events",
+      "lang": "jsx",
+      "source": "const A = () => <div onClickOnce={h}/>;"
+    },
+    {
+      "id": "events/capture_passive",
+      "category": "events",
+      "lang": "jsx",
+      "source": "const A = () => <div onClickCapturePassive={h}/>;"
+    },
 
-    { "id": "directives/v_model_input", "category": "directives", "lang": "jsx", "source": "const A = () => <input v-model={val}/>;" },
-    { "id": "directives/v_model_arg", "category": "directives", "lang": "jsx", "source": "const A = () => <input v-model:foo={val}/>;" },
-    { "id": "directives/v_model_modifier_array", "category": "directives", "lang": "jsx", "source": "const A = () => <input v-model={[val, ['trim']]}/>;" },
-    { "id": "directives/v_model_underscore", "category": "directives", "lang": "jsx", "source": "const A = () => <input v-model_lazy={val}/>;" },
-    { "id": "directives/v_model_arg_underscore", "category": "directives", "lang": "jsx", "source": "const A = () => <input v-model:foo_trim={val}/>;" },
-    { "id": "directives/v_model_component", "category": "directives", "lang": "jsx", "source": "const A = () => <B v-model={val}/>;" },
-    { "id": "directives/v_model_component_arg_mods", "category": "directives", "lang": "jsx", "source": "const A = () => <B v-model={[val, 'argument', ['modifier']]}/>;" },
-    { "id": "directives/v_models", "category": "directives", "lang": "jsx", "source": "const A = () => <B v-models={[[foo], [bar, 'bar']]}/>;" },
-    { "id": "directives/v_models_mods", "category": "directives", "lang": "jsx", "source": "const A = () => <B v-models={[[foo, ['m']], [bar, 'bar', ['m']]]}/>;" },
-    { "id": "directives/v_show_element", "category": "directives", "lang": "jsx", "source": "const A = () => <div v-show={vis}/>;" },
-    { "id": "directives/v_show_component", "category": "directives", "lang": "jsx", "source": "const A = () => <B v-show={vis}/>;" },
-    { "id": "directives/v_html", "category": "directives", "lang": "jsx", "source": "const A = () => <div v-html={h}/>;" },
-    { "id": "directives/v_html_with_children", "category": "directives", "lang": "jsx", "source": "const A = () => <div v-html={h}>ignored</div>;" },
-    { "id": "directives/v_text", "category": "directives", "lang": "jsx", "source": "const A = () => <div v-text={t}/>;" },
-    { "id": "directives/v_custom_arg", "category": "directives", "lang": "jsx", "source": "const A = () => <a v-custom:arg={val}/>;" },
-    { "id": "directives/v_custom_array", "category": "directives", "lang": "jsx", "source": "const A = () => <a v-custom={[val, 'arg', ['a','b']]}/>;" },
-    { "id": "directives/v_dashed_custom", "category": "directives", "lang": "jsx", "source": "const A = () => <div v-unknown-thing={x}/>;" },
+    {
+      "id": "directives/v_model_input",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <input v-model={val}/>;"
+    },
+    {
+      "id": "directives/v_model_arg",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <input v-model:foo={val}/>;"
+    },
+    {
+      "id": "directives/v_model_modifier_array",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <input v-model={[val, ['trim']]}/>;"
+    },
+    {
+      "id": "directives/v_model_underscore",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <input v-model_lazy={val}/>;"
+    },
+    {
+      "id": "directives/v_model_arg_underscore",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <input v-model:foo_trim={val}/>;"
+    },
+    {
+      "id": "directives/v_model_component",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <B v-model={val}/>;"
+    },
+    {
+      "id": "directives/v_model_component_arg_mods",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <B v-model={[val, 'argument', ['modifier']]}/>;"
+    },
+    {
+      "id": "directives/v_models",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <B v-models={[[foo], [bar, 'bar']]}/>;"
+    },
+    {
+      "id": "directives/v_models_mods",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <B v-models={[[foo, ['m']], [bar, 'bar', ['m']]]}/>;"
+    },
+    {
+      "id": "directives/v_show_element",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <div v-show={vis}/>;"
+    },
+    {
+      "id": "directives/v_show_component",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <B v-show={vis}/>;"
+    },
+    {
+      "id": "directives/v_html",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <div v-html={h}/>;"
+    },
+    {
+      "id": "directives/v_html_with_children",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <div v-html={h}>ignored</div>;"
+    },
+    {
+      "id": "directives/v_text",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <div v-text={t}/>;"
+    },
+    {
+      "id": "directives/v_custom_arg",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <a v-custom:arg={val}/>;"
+    },
+    {
+      "id": "directives/v_custom_array",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <a v-custom={[val, 'arg', ['a','b']]}/>;"
+    },
+    {
+      "id": "directives/v_dashed_custom",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <div v-unknown-thing={x}/>;"
+    },
 
-    { "id": "slots/object_children", "category": "slots", "lang": "jsx", "source": "const A = () => <B>{{default: () => <i/>, bar: () => <b/>}}</B>;" },
-    { "id": "slots/render_prop_child", "category": "slots", "lang": "jsx", "source": "const A = () => <B>{() => 'foo'}</B>;" },
-    { "id": "slots/scoped_param", "category": "slots", "lang": "jsx", "source": "const A = () => <B>{{default: (s) => <i>{s.x}</i>}}</B>;" },
-    { "id": "slots/v_slots_with_children", "category": "slots", "lang": "jsx", "source": "const A = () => <B v-slots={slots}><div>A</div></B>;" },
-    { "id": "slots/v_slots_only", "category": "slots", "lang": "jsx", "source": "const A = () => <B v-slots={slots}/>;" },
-    { "id": "slots/element_children_default", "category": "slots", "lang": "jsx", "source": "const A = () => <B><i/></B>;" },
-    { "id": "slots/dynamic_slot_name", "category": "slots", "lang": "jsx", "source": "const A = () => <B>{{[n]: () => <i/>}}</B>;" },
+    {
+      "id": "slots/object_children",
+      "category": "slots",
+      "lang": "jsx",
+      "source": "const A = () => <B>{{default: () => <i/>, bar: () => <b/>}}</B>;"
+    },
+    {
+      "id": "slots/render_prop_child",
+      "category": "slots",
+      "lang": "jsx",
+      "source": "const A = () => <B>{() => 'foo'}</B>;"
+    },
+    {
+      "id": "slots/scoped_param",
+      "category": "slots",
+      "lang": "jsx",
+      "source": "const A = () => <B>{{default: (s) => <i>{s.x}</i>}}</B>;"
+    },
+    {
+      "id": "slots/v_slots_with_children",
+      "category": "slots",
+      "lang": "jsx",
+      "source": "const A = () => <B v-slots={slots}><div>A</div></B>;"
+    },
+    {
+      "id": "slots/v_slots_only",
+      "category": "slots",
+      "lang": "jsx",
+      "source": "const A = () => <B v-slots={slots}/>;"
+    },
+    {
+      "id": "slots/element_children_default",
+      "category": "slots",
+      "lang": "jsx",
+      "source": "const A = () => <B><i/></B>;"
+    },
+    {
+      "id": "slots/dynamic_slot_name",
+      "category": "slots",
+      "lang": "jsx",
+      "source": "const A = () => <B>{{[n]: () => <i/>}}</B>;"
+    },
 
-    { "id": "children/static_text", "category": "children", "lang": "jsx", "source": "const A = () => <div>x</div>;" },
-    { "id": "children/text_interp_mix", "category": "children", "lang": "jsx", "source": "const A = () => <div>hi {name}!</div>;" },
-    { "id": "children/comment_only", "category": "children", "lang": "jsx", "source": "const A = () => <div>{/* c */}</div>;" },
-    { "id": "children/empty_expr", "category": "children", "lang": "jsx", "source": "const A = () => <div>{}</div>;" },
-    { "id": "children/spread_child", "category": "children", "lang": "jsx", "source": "const A = () => <div>{...items}</div>;" },
-    { "id": "children/logical_and", "category": "children", "lang": "jsx", "source": "const A = () => <div>{c && <span/>}</div>;" },
-    { "id": "children/ternary", "category": "children", "lang": "jsx", "source": "const A = () => <div>{c ? <a/> : <b/>}</div>;" },
-    { "id": "children/map_list", "category": "children", "lang": "jsx", "source": "const A = () => <div>{list.map(i => <span key={i}>{i}</span>)}</div>;" },
+    {
+      "id": "children/static_text",
+      "category": "children",
+      "lang": "jsx",
+      "source": "const A = () => <div>x</div>;"
+    },
+    {
+      "id": "children/text_interp_mix",
+      "category": "children",
+      "lang": "jsx",
+      "source": "const A = () => <div>hi {name}!</div>;"
+    },
+    {
+      "id": "children/comment_only",
+      "category": "children",
+      "lang": "jsx",
+      "source": "const A = () => <div>{/* c */}</div>;"
+    },
+    {
+      "id": "children/empty_expr",
+      "category": "children",
+      "lang": "jsx",
+      "source": "const A = () => <div>{}</div>;"
+    },
+    {
+      "id": "children/spread_child",
+      "category": "children",
+      "lang": "jsx",
+      "source": "const A = () => <div>{...items}</div>;"
+    },
+    {
+      "id": "children/logical_and",
+      "category": "children",
+      "lang": "jsx",
+      "source": "const A = () => <div>{c && <span/>}</div>;"
+    },
+    {
+      "id": "children/ternary",
+      "category": "children",
+      "lang": "jsx",
+      "source": "const A = () => <div>{c ? <a/> : <b/>}</div>;"
+    },
+    {
+      "id": "children/map_list",
+      "category": "children",
+      "lang": "jsx",
+      "source": "const A = () => <div>{list.map(i => <span key={i}>{i}</span>)}</div>;"
+    },
 
-    { "id": "optimize/static", "category": "optimize", "lang": "jsx", "source": "const A = () => <div class=\"a\">x</div>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/class_only", "category": "optimize", "lang": "jsx", "source": "const A = () => <div class={c}/>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/style_only", "category": "optimize", "lang": "jsx", "source": "const A = () => <div style={s}/>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/text_only", "category": "optimize", "lang": "jsx", "source": "const A = () => <div>{t}</div>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/class_and_props", "category": "optimize", "lang": "jsx", "source": "const A = () => <div class={c} id={i}>{t}</div>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/spread", "category": "optimize", "lang": "jsx", "source": "const A = () => <div {...p}/>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/ref", "category": "optimize", "lang": "jsx", "source": "const A = () => <div ref={r}/>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/key", "category": "optimize", "lang": "jsx", "source": "const A = () => <div key={k}/>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/event", "category": "optimize", "lang": "jsx", "source": "const A = () => <div onClick={h}/>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/component_props", "category": "optimize", "lang": "jsx", "source": "const A = () => <B foo={f}/>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/v_model_input", "category": "optimize", "lang": "jsx", "source": "const A = () => <input v-model={val}/>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/slots_stability", "category": "optimize", "lang": "jsx", "source": "const A = () => <B>{{default: () => <i/>, bar: () => <b/>}}</B>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/scoped_slot_stability", "category": "optimize", "lang": "jsx", "source": "const A = () => <B>{{default: (s) => <i>{s.x}</i>}}</B>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/v_slots_stability", "category": "optimize", "lang": "jsx", "source": "const A = () => <B v-slots={slots}/>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/fragment", "category": "optimize", "lang": "jsx", "source": "const A = () => <><i/><b/></>;", "babelOptions": { "optimize": true } },
-    { "id": "optimize/map_list", "category": "optimize", "lang": "jsx", "source": "const A = () => <div>{list.map(i => <span key={i}>{i}</span>)}</div>;", "babelOptions": { "optimize": true } },
+    {
+      "id": "optimize/static",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <div class=\"a\">x</div>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/class_only",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <div class={c}/>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/style_only",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <div style={s}/>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/text_only",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <div>{t}</div>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/class_and_props",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <div class={c} id={i}>{t}</div>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/spread",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <div {...p}/>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/ref",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <div ref={r}/>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/key",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <div key={k}/>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/event",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <div onClick={h}/>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/component_props",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <B foo={f}/>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/v_model_input",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <input v-model={val}/>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/slots_stability",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <B>{{default: () => <i/>, bar: () => <b/>}}</B>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/scoped_slot_stability",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <B>{{default: (s) => <i>{s.x}</i>}}</B>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/v_slots_stability",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <B v-slots={slots}/>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/fragment",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <><i/><b/></>;",
+      "babelOptions": { "optimize": true }
+    },
+    {
+      "id": "optimize/map_list",
+      "category": "optimize",
+      "lang": "jsx",
+      "source": "const A = () => <div>{list.map(i => <span key={i}>{i}</span>)}</div>;",
+      "babelOptions": { "optimize": true }
+    },
 
-    { "id": "errors/v_model_non_lval", "category": "errors", "lang": "jsx", "source": "const A = () => <input v-model={{a:1}}/>;" },
-    { "id": "errors/v_model_no_value", "category": "errors", "lang": "jsx", "source": "const A = () => <input v-model/>;" },
-    { "id": "errors/v_models_not_array", "category": "errors", "lang": "jsx", "source": "const A = () => <B v-models={foo}/>;" },
-    { "id": "errors/v_slots_not_object", "category": "errors", "lang": "jsx", "source": "const A = () => <B v-slots={1}/>;" }
+    {
+      "id": "errors/v_model_non_lval",
+      "category": "errors",
+      "lang": "jsx",
+      "source": "const A = () => <input v-model={{a:1}}/>;"
+    },
+    {
+      "id": "errors/v_model_no_value",
+      "category": "errors",
+      "lang": "jsx",
+      "source": "const A = () => <input v-model/>;"
+    },
+    {
+      "id": "errors/v_models_not_array",
+      "category": "errors",
+      "lang": "jsx",
+      "source": "const A = () => <B v-models={foo}/>;"
+    },
+    {
+      "id": "errors/v_slots_not_object",
+      "category": "errors",
+      "lang": "jsx",
+      "source": "const A = () => <B v-slots={1}/>;"
+    }
   ]
 }
