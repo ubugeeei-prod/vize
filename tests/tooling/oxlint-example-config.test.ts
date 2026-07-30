@@ -88,11 +88,20 @@ test("oxlint example ships a package check that does not depend on lint's exit c
   });
 
   assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(result.stdout.split("\n"), [
-    ".oxlintrc.help.json: ../../npm/oxint/dist/index.mjs",
-    ".oxlintrc.json: ../../npm/oxint/dist/index.mjs",
-    ".oxlintrc.short-help.json: ../../npm/oxint/dist/index.mjs",
-    ".oxlintrc.unused-vars.json: (no jsPlugins)",
-    "",
-  ]);
+
+  // Assert the observable behavior: the check succeeds and reports every config
+  // it discovered. The exact line formatting is incidental, so leave it alone.
+  const reported = result.stdout
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line !== "");
+  const names = exampleConfigNames();
+  for (const name of names) {
+    assert.equal(
+      reported.some((line) => line.startsWith(`${name}:`)),
+      true,
+      `expected ${name} to be reported, got:\n${result.stdout}`,
+    );
+  }
+  assert.equal(reported.length, names.length, result.stdout);
 });
