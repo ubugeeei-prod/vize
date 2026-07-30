@@ -5,8 +5,7 @@
 use std::path::{Path, PathBuf};
 
 use rayon::prelude::*;
-use serde_json::Value;
-use vize_carton::{FxHashSet, String as CompactString, profile};
+use vize_carton::{FxHashSet, profile};
 
 use crate::batch::error::CorsaResult;
 use crate::batch::materialize_fs::{
@@ -14,9 +13,12 @@ use crate::batch::materialize_fs::{
 };
 use crate::batch::runtime_deps::materialize_runtime_dependencies;
 
+use super::package_node_modules::{
+    PackageNodeModulesLink, materialize_package_node_modules, package_node_modules_links,
+};
 use super::{
-    AUTO_IMPORT_STUBS_FILE, MODULE_AUGMENTATION_STUB_PREFIX, MODULE_AUGMENTATION_STUBS_FILE,
-    PACKAGE_BOUNDARY_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject,
+    AUTO_IMPORT_STUBS_FILE, MODULE_AUGMENTATION_STUBS_FILE, PACKAGE_BOUNDARY_FILE,
+    SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject,
 };
 
 impl VirtualProject {
@@ -31,6 +33,7 @@ impl VirtualProject {
     /// so TypeScript's own filesystem caches are not invalidated.
     pub fn materialize(&self) -> CorsaResult<()> {
         let expected_files = self.expected_materialized_files();
+        let package_links = self.package_node_modules_links(&expected_files);
         profile!(
             "canon.project.prepare_dir",
             ensure_materialize_root(&self.virtual_root)
@@ -41,7 +44,7 @@ impl VirtualProject {
             prune_unexpected_entries(
                 &self.virtual_root,
                 &expected_files,
-                &[self.virtual_root.join("node_modules")]
+                &self.preserved_prune_roots(&package_links)
             )
         )?;
 
@@ -49,6 +52,11 @@ impl VirtualProject {
             "canon.project.runtime_deps",
             materialize_runtime_dependencies(&self.project_root, &self.virtual_root)
         )?;
+
+        profile!(
+            "canon.project.package_deps",
+            materialize_package_node_modules(&package_links)
+        );
 
         profile!(
             "canon.project.write_package_boundary",
@@ -155,110 +163,28 @@ impl VirtualProject {
         Ok(config_path)
     }
 
-    fn write_auto_import_stubs(&self) -> CorsaResult<()> {
-        if !self.has_global_auto_import_stubs() {
-            return Ok(());
-        }
-
-        let capacity = self
-            .virtual_ts_options
-            .auto_import_stubs
-            .iter()
-            .filter(|stub| !is_module_augmentation_stub(stub))
-            .fold(64usize, |acc, stub| acc + stub.len() + 1);
-        let mut content = CompactString::with_capacity(capacity);
-        content.push_str("// @ts-nocheck\n");
-        content.push_str("// Framework-provided globals for the virtual project.\n");
-        for stub in &self.virtual_ts_options.auto_import_stubs {
-            if is_module_augmentation_stub(stub) {
-                continue;
-            }
-            content.push_str(stub);
-            content.push('\n');
-        }
-
-        write_if_changed(
-            &self.virtual_root.join(AUTO_IMPORT_STUBS_FILE),
-            content.as_bytes(),
-        )?;
-        Ok(())
+    /// The real `node_modules` directories mirrored into the virtual project so
+    /// bare specifiers keep resolving from a nested package (#3366).
+    fn package_node_modules_links(
+        &self,
+        expected_files: &FxHashSet<PathBuf>,
+    ) -> Vec<PackageNodeModulesLink> {
+        package_node_modules_links(
+            &self.project_root,
+            &self.virtual_root,
+            expected_files.iter().map(PathBuf::as_path),
+        )
     }
 
-    fn write_module_augmentation_stubs(&self) -> CorsaResult<()> {
-        if !self.has_module_augmentation_stubs() {
-            return Ok(());
-        }
-
-        let capacity = self
-            .virtual_ts_options
-            .auto_import_stubs
-            .iter()
-            .filter(|stub| is_module_augmentation_stub(stub))
-            .fold(96usize, |acc, stub| acc + stub.len() + 1);
-        let mut content = CompactString::with_capacity(capacity);
-        content.push_str("// @ts-nocheck\n");
-        content.push_str("// External module augmentations for resolved framework packages.\n");
-        content.push_str("export {};\n");
-        for stub in &self.virtual_ts_options.auto_import_stubs {
-            if !is_module_augmentation_stub(stub) {
-                continue;
-            }
-            content.push_str(stub.trim_start_matches(MODULE_AUGMENTATION_STUB_PREFIX));
-            content.push('\n');
-        }
-
-        write_if_changed(
-            &self.virtual_root.join(MODULE_AUGMENTATION_STUBS_FILE),
-            content.as_bytes(),
-        )?;
-        Ok(())
-    }
-
-    fn write_vue_module_stubs(&self) -> CorsaResult<()> {
-        let content = "// Vue SFC modules resolve through materialized .vue.ts files.\n";
-        write_if_changed(
-            &self.virtual_root.join(VUE_MODULE_STUBS_FILE),
-            content.as_bytes(),
-        )?;
-        Ok(())
-    }
-
-    /// Write the shared ambient helpers file. The generated `.vue.ts` modules
-    /// hoist their common preamble (ImportMeta augmentation, type helpers,
-    /// compiler-macro signatures) into this single program-wide declaration.
-    fn write_shared_helpers(&self) -> CorsaResult<()> {
-        let mut content = CompactString::default();
-        if self.needs_vue_jsx_reference() {
-            content.push_str("/// <reference types=\"vue/jsx\" />\n");
-        }
-        content.push_str(crate::virtual_ts::SHARED_PREAMBLE_DTS);
-        write_if_changed(
-            &self.virtual_root.join(SHARED_HELPERS_FILE),
-            content.as_bytes(),
-        )?;
-        Ok(())
-    }
-
-    fn needs_vue_jsx_reference(&self) -> bool {
-        if self.needs_vue_jsx_compiler_options() {
-            return true;
-        }
-        let Ok(options) = self.load_compiler_options(self.resolved_tsconfig_path().as_deref())
-        else {
-            return false;
-        };
-        options
-            .get("jsxImportSource")
-            .and_then(Value::as_str)
-            .is_some_and(|source| source == "vue")
-            || options
-                .get("types")
-                .and_then(Value::as_array)
-                .is_some_and(|types| {
-                    types
-                        .iter()
-                        .any(|entry| entry.as_str().is_some_and(|entry| entry == "vue/jsx"))
-                })
+    /// Directories the garbage collector must leave alone: the runtime
+    /// dependency mirror plus every mirrored nested `node_modules`. Descending
+    /// into a mirrored `node_modules` would delete real dependencies, because
+    /// those paths resolve to the user's own install.
+    fn preserved_prune_roots(&self, package_links: &[PackageNodeModulesLink]) -> Vec<PathBuf> {
+        let mut roots = Vec::with_capacity(package_links.len() + 1);
+        roots.push(self.virtual_root.join("node_modules"));
+        roots.extend(package_links.iter().map(|link| link.virtual_dir.clone()));
+        roots
     }
 
     fn expected_materialized_files(&self) -> FxHashSet<PathBuf> {
@@ -279,30 +205,6 @@ impl VirtualProject {
         files.insert(self.virtual_root.join(PACKAGE_BOUNDARY_FILE));
         files.insert(self.virtual_root.join("tsconfig.json"));
         files
-    }
-
-    pub(super) fn has_global_auto_import_stubs(&self) -> bool {
-        self.virtual_ts_options
-            .auto_import_stubs
-            .iter()
-            .any(|stub| !is_module_augmentation_stub(stub))
-    }
-
-    pub(super) fn has_module_augmentation_stubs(&self) -> bool {
-        self.virtual_ts_options
-            .auto_import_stubs
-            .iter()
-            .any(|stub| is_module_augmentation_stub(stub))
-    }
-
-    pub(super) fn push_stub_include_paths(&self, includes: &mut Vec<CompactString>) {
-        if self.has_global_auto_import_stubs() {
-            includes.push(AUTO_IMPORT_STUBS_FILE.into());
-        }
-        if self.has_module_augmentation_stubs() {
-            includes.push(MODULE_AUGMENTATION_STUBS_FILE.into());
-        }
-        includes.push(VUE_MODULE_STUBS_FILE.into());
     }
 
     pub(super) fn common_virtual_source_dir(&self) -> PathBuf {
@@ -340,8 +242,4 @@ impl VirtualProject {
         self.resolved_tsconfig_path()
             .unwrap_or_else(|| self.project_root.clone())
     }
-}
-
-fn is_module_augmentation_stub(stub: &str) -> bool {
-    stub.starts_with(MODULE_AUGMENTATION_STUB_PREFIX)
 }

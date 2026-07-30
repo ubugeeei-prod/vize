@@ -147,6 +147,14 @@ fn ensure_stub_dir(path: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
+/// Link `target` to the canonicalized `source` package directory.
+///
+/// Shared with the nested-package `node_modules` mirror so both mirrors resolve
+/// through the same canonicalization and idempotence rules.
+pub(super) fn symlink_package_dir(source: &Path, target: &Path) -> std::io::Result<()> {
+    symlink_path(&package_link_source(source), target)
+}
+
 fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
     if symlink_matches(source, target)? {
         return Ok(());

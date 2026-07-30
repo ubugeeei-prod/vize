@@ -43,6 +43,8 @@ mod jsx_build;
 mod jsx_codegen;
 mod mapping;
 mod materialize;
+mod materialize_stubs;
+mod package_node_modules;
 mod passthrough;
 mod paths;
 mod project;
