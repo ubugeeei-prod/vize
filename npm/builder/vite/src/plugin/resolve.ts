@@ -697,12 +697,12 @@ export function isPotentialVizeImporter(importer: string | undefined): boolean {
     return true;
   }
 
-  // This gate exists to keep ordinary dependency edges off the classifier, so it
-  // must not call the classifier itself (#3427). `isVueSfcPath` is
-  // `normalizedVuePath.endsWith(".vue")`, and `normalizedVuePath` only ever
-  // strips a trailing `.ts`/`.tsx` from the pre-`?` path, so it can only end in
-  // `.vue` when the importer string contains `.vue`. The test is strictly
-  // weaker, so every importer the classifier would have accepted still passes.
+  // This gate keeps ordinary dependency edges off the classifier, so it must not
+  // call the classifier itself (#3427). `isVueSfcPath` is
+  // `normalizedVuePath.endsWith(".vue")`, and `normalizedVuePath` only ever strips
+  // a trailing `.ts`/`.tsx` from the pre-`?` path, so it can only end in `.vue`
+  // when the importer contains `.vue`: a strictly weaker test, so every importer
+  // the classifier would have accepted still reaches it.
   return importer.includes(".vue");
 }
 
@@ -798,15 +798,11 @@ export async function resolveIdHook(
   // Fast-return before request classification for the common case where neither
   // the id nor importer can involve a Vue SFC or Vize virtual module. This was
   // added after profiles showed ordinary dependency graph edges dominating the
-  // plugin hook cost in dev servers.
-  //
-  // Both halves of that gate are string tests, so it runs before the classifier
-  // rather than after it (#3427): classifying first meant every ordinary
-  // dependency edge crossed the NAPI boundary to reach a fast return.
-  //
-  // Past the gate, classify the importer at most once: the later `importerRequest`
-  // derivations all need the same classification, so crossing the boundary again
-  // for the same importer string would be pure overhead.
+  // plugin hook cost in dev servers. Both halves of that gate are string tests,
+  // so it runs before the classifier rather than after it (#3427): classifying
+  // first meant every ordinary dependency edge crossed the NAPI boundary only to
+  // reach a fast return. Past the gate the importer is classified at most once,
+  // since the later `importerRequest` derivations all need the same result.
   if (!isPotentialVizeResolveId(id) && !isPotentialVizeImporter(importer)) {
     return null;
   }
