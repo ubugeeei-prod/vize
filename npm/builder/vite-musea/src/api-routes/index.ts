@@ -23,13 +23,7 @@ import {
   handleTokensUpdate,
   handleTokensDelete,
 } from "../api-tokens.js";
-import {
-  handleArtSource,
-  handleArtPalette,
-  handleArtAnalysis,
-  handleArtDocs,
-  handleArtA11y,
-} from "./handlers.js";
+import { handleArtSource, handleArtPalette, handleArtAnalysis, handleArtDocs } from "./handlers.js";
 import { handlePreviewWithProps, handleGenerate, handleRunVrt } from "./post-handlers.js";
 import {
   collectRequestBody,
@@ -163,7 +157,6 @@ export function createApiMiddleware(ctx: ApiRoutesContext) {
         const paletteMatch = rest.match(/^(.+)\/palette$/);
         const analysisMatch = rest.match(/^(.+)\/analysis$/);
         const docsMatch = rest.match(/^(.+)\/docs$/);
-        const a11yMatch = rest.match(/^(.+)\/variants\/([^/]+)\/a11y$/);
 
         if (sourceMatch) {
           await handleArtSource(ctx, sourceMatch, sendJson, sendError);
@@ -182,11 +175,6 @@ export function createApiMiddleware(ctx: ApiRoutesContext) {
 
         if (docsMatch) {
           await handleArtDocs(ctx, docsMatch, sendJson, sendError);
-          return;
-        }
-
-        if (a11yMatch) {
-          handleArtA11y(ctx, a11yMatch, sendJson, sendError);
           return;
         }
 

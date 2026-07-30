@@ -5,7 +5,6 @@ import type { ResolvedConfig } from "vite";
 import { handleTokensGet, handleTokensUsage } from "./api-tokens.js";
 import {
   handleArtAnalysis,
-  handleArtA11y,
   handleArtDocs,
   handleArtPalette,
   handleArtSource,
@@ -27,7 +26,6 @@ export interface StaticArtDetails {
   palette: unknown;
   analysis: unknown;
   docs: unknown;
-  a11y: Record<string, unknown>;
 }
 
 export interface StaticGalleryDataContext {
@@ -75,14 +73,10 @@ export async function createStaticGalleryPayload(
 
   for (const art of arts) {
     previews[art.path] = {};
-    const a11y: Record<string, unknown> = {};
 
     for (const variant of art.variants) {
       const id = staticPreviewId(art.path, variant.name);
       previews[art.path][variant.name] = joinUrlPath(ctx.basePath, "preview", `${id}.html`);
-      a11y[variant.name] = await captureJson((sendJson, sendError) => {
-        handleArtA11y(apiCtx, artVariantMatch(art.path, variant.name), sendJson, sendError);
-      }, emptyA11y());
     }
 
     details[art.path] = {
@@ -104,7 +98,6 @@ export async function createStaticGalleryPayload(
       docs: await captureJson((sendJson, sendError) => {
         return handleArtDocs(apiCtx, artMatch(art.path), sendJson, sendError);
       }, emptyDocs(art)),
-      a11y,
     };
   }
 
@@ -154,14 +147,6 @@ function artMatch(artPath: string): RegExpMatchArray {
   return ["", encodeURIComponent(artPath)] as unknown as RegExpMatchArray;
 }
 
-function artVariantMatch(artPath: string, variantName: string): RegExpMatchArray {
-  return [
-    "",
-    encodeURIComponent(artPath),
-    encodeURIComponent(variantName),
-  ] as unknown as RegExpMatchArray;
-}
-
 function emptyPalette(art: ArtFileInfo): unknown {
   return {
     title: art.metadata.title,
@@ -178,10 +163,6 @@ function emptyDocs(art: ArtFileInfo): unknown {
     title: art.metadata.title,
     variant_count: art.variants.length,
   };
-}
-
-function emptyA11y(): unknown {
-  return { violations: [], passes: 0, incomplete: 0 };
 }
 
 function emptyTokens(): unknown {

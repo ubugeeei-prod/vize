@@ -1,6 +1,5 @@
 import type { ArtFileInfo } from "../src/types/index.js";
 import {
-  emptyA11y,
   emptyDocs,
   emptyPalette,
   emptyTokens,
@@ -56,12 +55,6 @@ export interface A11yViolation {
   nodes: number;
 }
 
-export interface A11yApiResponse {
-  violations: A11yViolation[];
-  passes: number;
-  incomplete: number;
-}
-
 const basePath =
   (window as unknown as { __MUSEA_BASE_PATH__: string }).__MUSEA_BASE_PATH__ ?? "/__musea__";
 const sessionToken =
@@ -113,15 +106,6 @@ export async function fetchAnalysis(artPath: string): Promise<AnalysisApiRespons
 export async function fetchDocs(artPath: string): Promise<DocApiResponse> {
   if (isStaticGallery) return (await fetchStaticDetail(artPath)).docs ?? emptyDocs();
   return fetchJson<DocApiResponse>(`/api/arts/${encodeURIComponent(artPath)}/docs`);
-}
-
-export async function fetchA11y(artPath: string, variantName: string): Promise<A11yApiResponse> {
-  if (isStaticGallery) {
-    return (await fetchStaticDetail(artPath)).a11y?.[variantName] ?? emptyA11y();
-  }
-  return fetchJson<A11yApiResponse>(
-    `/api/arts/${encodeURIComponent(artPath)}/variants/${encodeURIComponent(variantName)}/a11y`,
-  );
 }
 
 export function getPreviewUrl(artPath: string, variantName: string): string {

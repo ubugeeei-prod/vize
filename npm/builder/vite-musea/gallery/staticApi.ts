@@ -1,6 +1,5 @@
 import type { ArtFileInfo } from "../src/types/index.js";
 import type {
-  A11yApiResponse,
   AnalysisApiResponse,
   ArtSourceResponse,
   DocApiResponse,
@@ -30,7 +29,6 @@ export interface StaticGalleryPayload {
       palette?: PaletteApiResponse;
       analysis?: AnalysisApiResponse;
       docs?: DocApiResponse;
-      a11y?: Record<string, A11yApiResponse>;
     }
   >;
   tokens?: TokensApiResponse;
@@ -74,10 +72,6 @@ export function emptyPalette(): PaletteApiResponse {
 
 export function emptyDocs(): DocApiResponse {
   return { markdown: "", title: "", variant_count: 0 };
-}
-
-export function emptyA11y(): A11yApiResponse {
-  return { violations: [], passes: 0, incomplete: 0 };
 }
 
 export function emptyTokens(): TokensApiResponse {

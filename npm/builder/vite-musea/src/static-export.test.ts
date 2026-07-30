@@ -94,6 +94,7 @@ void test("emitStaticGallery packages browser-facing static output", async () =>
     const staticPayload = JSON.parse(assetText(assets, "__musea__/api/static.json")) as {
       arts: Array<{ path: string; metadata: { title: string }; variants: Array<{ name: string }> }>;
       previews: Record<string, Record<string, string>>;
+      details?: Record<string, Record<string, unknown>>;
     };
     const artsPayload = JSON.parse(assetText(assets, "__musea__/api/arts")) as Array<{
       path: string;
@@ -143,6 +144,21 @@ void test("emitStaticGallery packages browser-facing static output", async () =>
     assert.equal(
       previewRuntimeSpecifier(assetText(assets, `__musea__/preview/${previewId}.html`)),
       "../../assets/musea-static-runtime.js",
+    );
+
+    // #3362: the payload used to carry `details[art].a11y`, filled in from a
+    // handler that always answered `{violations: [], passes: 0, incomplete: 0}`.
+    // Baked into a static artifact that reads as "audited and clean" for every
+    // component. The panel measures accessibility live in the preview instead,
+    // so the field had no consumer — only the false reading.
+    const detailKeys = Object.keys(staticPayload.details?.[art.path] ?? {});
+    assert.ok(
+      detailKeys.length > 0,
+      "the payload must still carry per-art details; an empty object would make the next assertion vacuous",
+    );
+    assert.ok(
+      !detailKeys.includes("a11y"),
+      `the static payload must not report an accessibility result it never measured; got ${detailKeys.join(", ")}`,
     );
 
     // The A11y panel runs axe inside the preview iframe and loads it from this

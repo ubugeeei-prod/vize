@@ -155,20 +155,3 @@ export async function handleArtDocs(
 }
 
 /** GET /api/arts/:path/variants/:name/a11y */
-export function handleArtA11y(
-  ctx: ApiRoutesContext,
-  match: RegExpMatchArray,
-  sendJson: SendJson,
-  sendError: SendError,
-): void {
-  const artPath = decodeUrlComponent(match[1], "art path");
-  const _variantName = decodeUrlComponent(match[2], "variant name");
-  const art = ctx.artFiles.get(artPath);
-  if (!art) {
-    sendError("Art not found", 404);
-    return;
-  }
-
-  // Return empty a11y results (populated after VRT --a11y run)
-  sendJson({ violations: [], passes: 0, incomplete: 0 });
-}
