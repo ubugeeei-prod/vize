@@ -156,6 +156,19 @@ impl DocumentStore {
         self.documents.get_mut(uri)
     }
 
+    /// Owned snapshot of a document's text, holding no lock on return.
+    ///
+    /// Prefer this over [`Self::get`] whenever the text outlives a statement:
+    /// [`Self::get`] hands back a `DashMap` shard read guard, and the LSP runs
+    /// every handler on one executor thread. A guard that is still alive at an
+    /// `.await` therefore blocks the whole server the moment a concurrently
+    /// polled handler writes the same shard — `apply_changes`/`open`/`close`
+    /// all park forever on the shard's write lock, which the suspended reader
+    /// can only release by being polled on that same parked thread (#3315).
+    pub fn text(&self, uri: &Url) -> Option<String> {
+        self.documents.get(uri).map(|document| document.text())
+    }
+
     /// Apply changes to a document.
     pub fn apply_changes(
         &self,
