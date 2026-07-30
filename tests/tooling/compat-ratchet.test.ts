@@ -11,6 +11,12 @@
  * tests/_fixtures/compat-baseline.json. A PR can never silently loosen the
  * ledger; intentional improvements must tighten the baseline in the same PR.
  *
+ * Differences that are expected — vize is faithful and vue-tsc's answer is an
+ * artifact of its own checker — are recorded entry by entry in
+ * tests/_fixtures/compat-documented-differences.json and counted separately from
+ * false positives and false negatives, so the probe stops reporting a divergence
+ * it has already reviewed while every diagnostic stays accounted for.
+ *
  * Regenerate the baseline (hydrated fixtures + a fresh vize binary required):
  *   UPDATE_COMPAT_BASELINE=1 VIZE_TEST_BIN=target/release/vize \
  *     node --test tests/tooling/compat-ratchet.test.ts
@@ -27,6 +33,7 @@ import {
   compatProbes,
   isFixtureHydrated,
   readCompatBaseline,
+  readCompatDocumentedDifferences,
   resolveCompatVueTscVersion,
   runCompatProbe,
   writeCompatBaseline,
@@ -52,6 +59,10 @@ const ratchetRules: RatchetRule[] = [
   { metric: "falseNegativeRatio", direction: "<=" },
   { metric: "sharedCount", direction: ">=" },
   { metric: "baselineDiagnosticCount", direction: "==" },
+  // Neither growth nor decay is silent: a new expected difference has to land
+  // with its ledger entry and a fresh baseline, and one that stops reproducing
+  // has to be retired from the ledger in the PR that fixes it.
+  { metric: "documentedDifferenceCount", direction: "==" },
 ];
 
 for (const probe of compatProbes) {
@@ -64,16 +75,17 @@ for (const probe of compatProbes) {
       const { summary } = result;
       assert.equal(
         summary.vizeDiagnosticCount,
-        summary.sharedCount + summary.falsePositiveCount,
+        summary.sharedCount + summary.documentedDifferenceCount + summary.falsePositiveCount,
         `${probe.fixtureId}: divergence summary lost vize diagnostics`,
       );
       assert.equal(
         summary.baselineDiagnosticCount,
-        summary.sharedCount + summary.falseNegativeCount,
+        summary.sharedCount + summary.documentedDifferenceCount + summary.falseNegativeCount,
         `${probe.fixtureId}: divergence summary lost vue-tsc diagnostics`,
       );
       console.log(
         `${probe.fixtureId}: shared=${summary.sharedCount}` +
+          ` documented=${summary.documentedDifferenceCount}` +
           ` falsePositives=${summary.falsePositiveCount} (${summary.falsePositiveRatio.toFixed(4)})` +
           ` falseNegatives=${summary.falseNegativeCount} (${summary.falseNegativeRatio.toFixed(4)})` +
           ` vize=${result.vizeDurationMs}ms vue-tsc=${result.vueTscDurationMs}ms`,
@@ -156,6 +168,35 @@ test(
       assert.ok(
         baseline.projects[probe.fixtureId],
         `compat baseline has no entry for ${probe.fixtureId}; ${refreshInstruction}`,
+      );
+    }
+  },
+);
+
+test(
+  "every documented difference the baseline counts is described in the ledger",
+  {
+    skip: updateBaseline || !baselineExists ? "baseline is being regenerated or absent" : false,
+  },
+  () => {
+    const baseline = readCompatBaseline();
+    const differences = readCompatDocumentedDifferences().differences;
+    const probeIds = new Set(compatProbes.map((probe) => probe.fixtureId));
+    for (const difference of differences) {
+      assert.ok(
+        probeIds.has(difference.project),
+        `documented difference names an unknown probe: ${difference.project}`,
+      );
+    }
+    for (const probe of compatProbes) {
+      const entry = baseline.projects[probe.fixtureId];
+      if (entry == null) continue;
+      assert.equal(
+        entry.documentedDifferenceCount,
+        differences.filter((difference) => difference.project === probe.fixtureId).length,
+        `${probe.fixtureId}: the baseline counts documented differences the ledger does not ` +
+          `describe (or the reverse); every expected difference needs an entry in ` +
+          `tests/_fixtures/compat-documented-differences.json`,
       );
     }
   },
