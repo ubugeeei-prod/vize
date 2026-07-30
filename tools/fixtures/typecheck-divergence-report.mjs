@@ -12,6 +12,12 @@ import { compareTypecheckDiagnostics } from "./typecheck-divergence.mjs";
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..");
 const defaultRegistry = join(repoRoot, "tests", "_fixtures", "vue-ecosystem-fixtures.json");
+const documentedDifferencesPath = join(
+  repoRoot,
+  "tests",
+  "_fixtures",
+  "compat-documented-differences.json",
+);
 
 export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   const args = parseArgs(argv);
@@ -53,6 +59,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     cwd: fixtureRoot,
     vizeReport: vizeRun.payload.parsed,
     vueTscOutput: `${baseline.stdout ?? ""}\n${baseline.stderr ?? ""}`,
+    documentedDifferences: readDocumentedDifferences(),
   });
   const budget = evaluateBudget(project.typecheckPerformance, divergence.summary);
   const artifact = {
@@ -81,6 +88,19 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   process.stdout.write(`Wrote ${relative(repoRoot, jsonPath)}\n`);
   process.stdout.write(`Wrote ${relative(repoRoot, markdownPath)}\n`);
   return artifact;
+}
+
+function readDocumentedDifferences() {
+  // The per-PR compat ratchet and this weekly report share one reviewed ledger,
+  // so an expected difference can never be recorded on only one of the two gates.
+  const ledger = readJson(documentedDifferencesPath);
+  if (ledger.schema !== "vize.compatDocumentedDifferences" || ledger.version !== 1) {
+    throw new Error("Documented difference ledger schema is unsupported");
+  }
+  if (!Array.isArray(ledger.differences)) {
+    throw new Error("Documented difference ledger must list differences");
+  }
+  return ledger.differences;
 }
 
 function readAndValidateSummary(reportDir, project) {
@@ -201,6 +221,7 @@ function renderMarkdown(artifact) {
     `Vize diagnostics: ${summary.vizeDiagnosticCount}`,
     `vue-tsc diagnostics: ${summary.baselineDiagnosticCount}`,
     `Shared: ${summary.sharedCount}`,
+    `Documented differences: ${summary.documentedDifferenceCount}`,
     `False positives: ${summary.falsePositiveCount} (${summary.falsePositiveRatio})`,
     `False negatives: ${summary.falseNegativeCount} (${summary.falseNegativeRatio})`,
     `Vize excluded non-Vue: ${summary.vizeExcludedNonVueCount}`,

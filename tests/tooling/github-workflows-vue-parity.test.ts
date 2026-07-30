@@ -13,6 +13,25 @@ type CompositeActionStep = {
   with?: Record<string, number | string>;
 };
 
+test("the typecheck divergence ratchet runs on every pull request", () => {
+  // Dimension 1 of the vue-tsc parity scorecard (#3222) is a *per-PR* ratchet:
+  // tooling/compat-ratchet.test.ts may only hold or improve the divergence
+  // ledger in tests/_fixtures/compat-baseline.json. It reaches the PR lane only
+  // because the vue-parity job carries no event guard — three sibling jobs in
+  // this same workflow (nix-flake, source-coverage, branch-coverage) opt out of
+  // pull requests with exactly such a guard for runtime reasons. Adding one to
+  // vue-parity would silently un-gate the ledger with every other assertion in
+  // this file still passing, so pin the trigger and the absence of the guard.
+  const workflow = readRepoFile(".github", "workflows", "check.yml");
+
+  assert.match(workflow, /\n  pull_request:\n    branches: \[main\]\n/);
+  assert.doesNotMatch(
+    workflowJobBody(workflow, "vue-parity"),
+    /^ {4}if:/m,
+    "vue-parity must stay unconditional: it is the only pre-merge gate on the divergence ledger",
+  );
+});
+
 test("Vue parity structurally gates compiler fixtures and incremental LSP behavior", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const job = workflowJobBody(workflow, "vue-parity");

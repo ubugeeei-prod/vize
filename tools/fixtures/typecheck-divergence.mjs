@@ -1,9 +1,26 @@
 import { createHash } from "node:crypto";
 import { isAbsolute, relative } from "node:path";
 
-export function compareTypecheckDiagnostics({ projectId, cwd, vizeReport, vueTscOutput }) {
+/**
+ * `documentedDifferences` is the reviewed ledger of expected vize-versus-vue-tsc
+ * differences (tests/_fixtures/compat-documented-differences.json). An entry can
+ * only ever cancel exactly one false positive against exactly one false negative
+ * that share a file, severity, line and column: both tools must already report
+ * something at that span, and both messages must match the ledger byte for byte
+ * after whitespace normalization. A vize-only or vue-tsc-only diagnostic can
+ * therefore never be absorbed, and a divergence that shifts position or wording
+ * falls straight back into the false-positive/false-negative buckets.
+ */
+export function compareTypecheckDiagnostics({
+  projectId,
+  cwd,
+  vizeReport,
+  vueTscOutput,
+  documentedDifferences = [],
+}) {
   if (typeof projectId !== "string" || projectId.length === 0) invalid("project id is required");
   if (typeof cwd !== "string" || !isAbsolute(cwd)) invalid("cwd must be absolute");
+  const expectedDifferences = selectDocumentedDifferences(documentedDifferences, projectId, cwd);
   const vizeInput = collectVizeDiagnostics(vizeReport, cwd);
   const baselineInput = collectVueTscDiagnostics(vueTscOutput, cwd);
   const vize = vizeInput.diagnostics;
@@ -38,11 +55,13 @@ export function compareTypecheckDiagnostics({ projectId, cwd, vizeReport, vueTsc
   shared.sort(compareShared);
   falsePositives.sort(compareRecords);
   falseNegatives.sort(compareRecords);
-  const classified = { shared, falsePositives, falseNegatives };
+  const documented = pairDocumentedDifferences(expectedDifferences, falsePositives, falseNegatives);
+  const classified = { shared, falsePositives, falseNegatives, documentedDifferences: documented };
   const summary = {
     vizeDiagnosticCount: vize.length,
     baselineDiagnosticCount: baseline.length,
     sharedCount: shared.length,
+    documentedDifferenceCount: documented.length,
     falsePositiveCount: falsePositives.length,
     falseNegativeCount: falseNegatives.length,
     falsePositiveRatio: ratio(falsePositives.length, vize.length),
@@ -54,7 +73,7 @@ export function compareTypecheckDiagnostics({ projectId, cwd, vizeReport, vueTsc
   };
   return {
     schema: "vize.fixtureTypecheckDivergence",
-    version: 2,
+    version: 3,
     project: projectId,
     summary,
     ...classified,
@@ -108,6 +127,85 @@ function collectVueTscDiagnostics(output, cwd) {
     }
   }
   return { diagnostics, excludedNonVueCount, excludedProjectCount, excludedExternalCount };
+}
+
+function selectDocumentedDifferences(values, projectId, cwd) {
+  if (!Array.isArray(values)) invalid("documented differences must be an array");
+  const selected = [];
+  const identities = new Set();
+  for (const [index, value] of values.entries()) {
+    const label = `documented difference ${index}`;
+    if (value == null || typeof value !== "object") invalid(`${label} must be an object`);
+    if (typeof value.project !== "string" || value.project.length === 0) {
+      invalid(`${label} must name a project`);
+    }
+    const file = normalizePath(value.file, cwd, `${label}.file`);
+    if (!file.endsWith(".vue")) invalid(`${label} must reference a .vue file`);
+    if (value.severity !== "error" && value.severity !== "warning") {
+      invalid(`${label}.severity must be error or warning`);
+    }
+    const severity = value.severity;
+    const line = positiveInteger(value.line, `${label}.line`);
+    const column = positiveInteger(value.column, `${label}.column`);
+    const vize = documentedSide(value.vize, `${label}.vize`);
+    const baseline = documentedSide(value.baseline, `${label}.baseline`);
+    if (vize.code === baseline.code && vize.message === baseline.message) {
+      invalid(`${label} must record a difference between the two tools`);
+    }
+    if (!Number.isSafeInteger(value.issue) || value.issue < 1) {
+      invalid(`${label}.issue must be the tracking issue number`);
+    }
+    // A ledger entry suppresses a real divergence, so it has to carry a written
+    // rationale a reviewer can check rather than a placeholder.
+    const reason = typeof value.reason === "string" ? value.reason.replace(/\s+/g, " ").trim() : "";
+    if (reason.length < 40) invalid(`${label}.reason must explain why the difference is expected`);
+    const identity = [value.project, file, severity, line, column].join("\0");
+    if (identities.has(identity)) invalid(`${label} duplicates an earlier documented difference`);
+    identities.add(identity);
+    if (value.project !== projectId) continue;
+    selected.push({ file, severity, line, column, vize, baseline, issue: value.issue, reason });
+  }
+  return selected.sort(compareDocumented);
+}
+
+function pairDocumentedDifferences(expected, falsePositives, falseNegatives) {
+  const paired = [];
+  for (const difference of expected) {
+    const positiveIndex = findDocumented(falsePositives, difference, difference.vize);
+    const negativeIndex = findDocumented(falseNegatives, difference, difference.baseline);
+    if (positiveIndex < 0 || negativeIndex < 0) continue;
+    falsePositives.splice(positiveIndex, 1);
+    falseNegatives.splice(negativeIndex, 1);
+    paired.push(difference);
+  }
+  return paired;
+}
+
+function findDocumented(records, difference, side) {
+  return records.findIndex(
+    (candidate) =>
+      candidate.file === difference.file &&
+      candidate.severity === difference.severity &&
+      candidate.line === difference.line &&
+      candidate.column === difference.column &&
+      candidate.code === side.code &&
+      candidate.message === side.message,
+  );
+}
+
+function documentedSide(value, label) {
+  if (value == null || typeof value !== "object") invalid(`${label} must be an object`);
+  const code = positiveInteger(value.code, `${label}.code`);
+  if (typeof value.message !== "string") invalid(`${label}.message must be a string`);
+  const message = value.message.replace(/\s+/g, " ").trim();
+  if (message.length === 0) invalid(`${label}.message must be non-empty`);
+  return { code, message };
+}
+
+function positiveInteger(value, label) {
+  if (!Number.isSafeInteger(value) || value < 1)
+    invalid(`${label} must be a positive safe integer`);
+  return value;
 }
 
 function partitionVueDiagnostics(diagnostics) {
@@ -188,6 +286,17 @@ function compareRecords(left, right) {
     left.column - right.column ||
     left.code - right.code ||
     byteOrder(left.message, right.message)
+  );
+}
+
+function compareDocumented(left, right) {
+  return (
+    byteOrder(left.file, right.file) ||
+    byteOrder(left.severity, right.severity) ||
+    left.line - right.line ||
+    left.column - right.column ||
+    left.vize.code - right.vize.code ||
+    left.baseline.code - right.baseline.code
   );
 }
 

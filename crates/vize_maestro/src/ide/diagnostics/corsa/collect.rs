@@ -81,12 +81,15 @@ impl DiagnosticService {
             return Ok(vec![]);
         }
 
-        // Get document content
-        let Some(doc) = state.documents.get(uri) else {
+        // Own the document text up front: every `.await` below (bridge
+        // acquisition, the background declaration scan, the bridge calls) can
+        // hand the single executor thread to another queued handler, and a live
+        // `documents.get` shard guard would deadlock the server against that
+        // handler's `didOpen`/`didChange`/`didClose` write (#3315).
+        let Some(content) = state.documents.text(uri) else {
             tracing::warn!("document not found: {}", uri);
             return Ok(vec![]);
         };
-        let content = doc.text();
 
         // Get the shared Corsa bridge.
         tracing::info!("getting corsa bridge...");

@@ -3,7 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { compileAll, DEFAULT_PRECOMPILE_BATCH_SIZE, type VizePluginState } from "./state.ts";
+import { DEFAULT_PRECOMPILE_BATCH_SIZE, type VizePluginState } from "./state.ts";
+import { compileAll } from "./precompile-run.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

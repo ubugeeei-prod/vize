@@ -11,12 +11,20 @@
  * tests/_fixtures/compat-baseline.json. A PR can never silently loosen the
  * ledger; intentional improvements must tighten the baseline in the same PR.
  *
+ * Differences that are expected — vize is faithful and vue-tsc's answer is an
+ * artifact of its own checker — are recorded entry by entry in
+ * tests/_fixtures/compat-documented-differences.json and counted separately from
+ * false positives and false negatives, so the probe stops reporting a divergence
+ * it has already reviewed while every diagnostic stays accounted for.
+ *
  * Regenerate the baseline (hydrated fixtures + a fresh vize binary required):
  *   UPDATE_COMPAT_BASELINE=1 VIZE_TEST_BIN=target/release/vize \
  *     node --test tests/tooling/compat-ratchet.test.ts
  */
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { after, test } from "node:test";
 
 import {
@@ -27,10 +35,12 @@ import {
   compatProbes,
   isFixtureHydrated,
   readCompatBaseline,
+  readCompatDocumentedDifferences,
   resolveCompatVueTscVersion,
   runCompatProbe,
   writeCompatBaseline,
 } from "../_helpers/compat-ratchet.ts";
+import { resolveVueTscManifestPath } from "../_helpers/vue-tsc-manifest.ts";
 
 const updateBaseline = process.env.UPDATE_COMPAT_BASELINE === "1";
 const baselineExists = fs.existsSync(compatBaselinePath);
@@ -52,6 +62,10 @@ const ratchetRules: RatchetRule[] = [
   { metric: "falseNegativeRatio", direction: "<=" },
   { metric: "sharedCount", direction: ">=" },
   { metric: "baselineDiagnosticCount", direction: "==" },
+  // Neither growth nor decay is silent: a new expected difference has to land
+  // with its ledger entry and a fresh baseline, and one that stops reproducing
+  // has to be retired from the ledger in the PR that fixes it.
+  { metric: "documentedDifferenceCount", direction: "==" },
 ];
 
 for (const probe of compatProbes) {
@@ -64,16 +78,17 @@ for (const probe of compatProbes) {
       const { summary } = result;
       assert.equal(
         summary.vizeDiagnosticCount,
-        summary.sharedCount + summary.falsePositiveCount,
+        summary.sharedCount + summary.documentedDifferenceCount + summary.falsePositiveCount,
         `${probe.fixtureId}: divergence summary lost vize diagnostics`,
       );
       assert.equal(
         summary.baselineDiagnosticCount,
-        summary.sharedCount + summary.falseNegativeCount,
+        summary.sharedCount + summary.documentedDifferenceCount + summary.falseNegativeCount,
         `${probe.fixtureId}: divergence summary lost vue-tsc diagnostics`,
       );
       console.log(
         `${probe.fixtureId}: shared=${summary.sharedCount}` +
+          ` documented=${summary.documentedDifferenceCount}` +
           ` falsePositives=${summary.falsePositiveCount} (${summary.falsePositiveRatio.toFixed(4)})` +
           ` falseNegatives=${summary.falseNegativeCount} (${summary.falseNegativeRatio.toFixed(4)})` +
           ` vize=${result.vizeDurationMs}ms vue-tsc=${result.vueTscDurationMs}ms`,
@@ -160,6 +175,93 @@ test(
     }
   },
 );
+
+test(
+  "every documented difference the baseline counts is described in the ledger",
+  {
+    skip: updateBaseline || !baselineExists ? "baseline is being regenerated or absent" : false,
+  },
+  () => {
+    const baseline = readCompatBaseline();
+    const differences = readCompatDocumentedDifferences().differences;
+    const probeIds = new Set(compatProbes.map((probe) => probe.fixtureId));
+    for (const difference of differences) {
+      assert.ok(
+        probeIds.has(difference.project),
+        `documented difference names an unknown probe: ${difference.project}`,
+      );
+    }
+    for (const probe of compatProbes) {
+      const entry = baseline.projects[probe.fixtureId];
+      if (entry == null) continue;
+      assert.equal(
+        entry.documentedDifferenceCount,
+        differences.filter((difference) => difference.project === probe.fixtureId).length,
+        `${probe.fixtureId}: the baseline counts documented differences the ledger does not ` +
+          `describe (or the reverse); every expected difference needs an entry in ` +
+          `tests/_fixtures/compat-documented-differences.json`,
+      );
+    }
+  },
+);
+
+test("vue-tsc version resolution survives every pnpm bin layout", (t) => {
+  // The version pin above is only as trustworthy as this resolution. pnpm picks
+  // between a store symlink and a cmd-shim script depending on platform and
+  // settings; a resolver that only understands one shape makes the whole gate
+  // unrunnable on the other, which is how it can stop being exercised unnoticed.
+  // realpath the sandbox: on macOS the temp dir is itself a symlink, and the
+  // resolver reports realpaths.
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-vue-tsc-bin-")));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+
+  const packageDir = path.join(root, "node_modules/.pnpm/vue-tsc@9.9.9/node_modules/vue-tsc");
+  fs.mkdirSync(path.join(packageDir, "bin"), { recursive: true });
+  const entry = path.join(packageDir, "bin/vue-tsc.js");
+  fs.writeFileSync(entry, "#!/usr/bin/env node\n");
+  const manifestPath = path.join(packageDir, "package.json");
+  fs.writeFileSync(manifestPath, `${JSON.stringify({ name: "vue-tsc", version: "9.9.9" })}\n`);
+  // An enclosing workspace manifest must never be mistaken for the package.
+  fs.writeFileSync(
+    path.join(root, "package.json"),
+    `${JSON.stringify({ name: "workspace-root", version: "0.0.0" })}\n`,
+  );
+
+  const binDir = path.join(root, "node_modules/.bin");
+  fs.mkdirSync(binDir, { recursive: true });
+  const layouts: Array<[layout: string, write: (binPath: string) => void]> = [
+    ["store symlink", (binPath) => fs.symlinkSync(entry, binPath)],
+    [
+      "cmd-shim naming its target",
+      (binPath) =>
+        fs.writeFileSync(binPath, `#!/bin/sh\nexec node "$@"\n# cmd-shim-target=${entry}\n`),
+    ],
+    [
+      // Shaped like a real marker-less shim: the interpreter is named through
+      // `$basedir` too, and it comes first, so the target cannot be taken as
+      // simply the first `$basedir`-relative path in the script.
+      "cmd-shim without the target marker",
+      (binPath) =>
+        fs.writeFileSync(
+          binPath,
+          '#!/bin/sh\nbasedir_win="$basedir"\nexec "$basedir/node"  ' +
+            '"$basedir/../.pnpm/vue-tsc@9.9.9/node_modules/vue-tsc/bin/vue-tsc.js" "$@"\n',
+        ),
+    ],
+  ];
+
+  for (const [layout, write] of layouts) {
+    const binPath = path.join(binDir, "vue-tsc");
+    fs.rmSync(binPath, { force: true });
+    write(binPath);
+    assert.equal(resolveVueTscManifestPath(binPath), manifestPath, `${layout} must resolve`);
+  }
+
+  // A bin entry that leads nowhere must report that, not slice a bogus path.
+  const orphan = path.join(binDir, "vue-tsc-orphan");
+  fs.writeFileSync(orphan, "#!/bin/sh\nexec node /nowhere/vue-tsc.js\n");
+  assert.equal(resolveVueTscManifestPath(orphan), undefined);
+});
 
 after(() => {
   if (!updateBaseline || updatedEntries.size === 0) return;

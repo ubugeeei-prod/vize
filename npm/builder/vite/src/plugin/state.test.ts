@@ -9,7 +9,6 @@ import {
   DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
   clearBuildCaches,
   chunkPrecompileFiles,
-  compileAll,
   diffPrecompileFiles,
   getCompileOptionsForRequest,
   hasFileMetadataChanged,
@@ -18,6 +17,7 @@ import {
   type PrecompileFileMetadata,
   type VizePluginState,
 } from "./state.ts";
+import { compileAll } from "./precompile-run.ts";
 import type { CompiledModule } from "../types.ts";
 
 const previousMetadata = new Map<string, PrecompileFileMetadata>([

@@ -286,3 +286,22 @@ fn test_document_store_rename_does_not_overwrite_open_target() {
     assert_eq!(target.text(), "target");
     assert_eq!(target.version, 7);
 }
+
+// Regression (#3315): `text` must hand back an owned snapshot with no shard
+// lock still held, so a live snapshot can never block a concurrent write. The
+// LSP polls handlers concurrently on a single thread, where a leaked guard
+// turns the next `didChange` into a permanent server-wide deadlock; here it
+// would hang this test instead.
+#[test]
+fn test_document_store_text_snapshot_holds_no_shard_lock() {
+    let store = DocumentStore::new();
+    let uri = test_uri();
+    store.open(uri.clone(), "before".to_string(), 1, "vue".to_string());
+
+    let snapshot = store.text(&uri).unwrap();
+    store.apply_changes(&uri, vec![full_change("after")], 2);
+
+    assert_eq!(snapshot, "before");
+    assert_eq!(store.text(&uri).as_deref(), Some("after"));
+    assert_eq!(store.text(&Url::parse("file:///absent.vue").unwrap()), None);
+}

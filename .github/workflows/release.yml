@@ -1057,9 +1057,8 @@ jobs:
       - release-crates
       - release-preflight
     timeout-minutes: 20
-    # `id-token: write` is required by sigstore/cosign-installer to mint the
-    # keyless signing certificate, and by anchore/sbom-action when it uploads
-    # the SBOM as a release asset.
+    # `id-token: write` is required by sigstore/cosign-installer to mint the keyless signing
+    # certificate, and by anchore/sbom-action when it uploads the SBOM as a release asset.
     permissions:
       contents: write
       id-token: write
@@ -1155,6 +1154,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
+          body_path: .github/release-notes/drop-in-scope.md
           generate_release_notes: true
           draft: false
           overwrite_files: true

@@ -11,9 +11,9 @@ import {
   DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
   clearBuildCaches,
   type VizePluginState,
-  compileAll,
   normalizePrecompileBatchSize,
 } from "./state.ts";
+import { compileAll } from "./precompile-run.ts";
 import { resolveIdHook } from "./resolve.ts";
 import { loadHook, transformHook } from "./load.ts";
 import {

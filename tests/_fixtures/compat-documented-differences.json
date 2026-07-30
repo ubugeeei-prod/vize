@@ -1,0 +1,23 @@
+{
+  "schema": "vize.compatDocumentedDifferences",
+  "version": 1,
+  "differences": [
+    {
+      "project": "nuxt-ui",
+      "file": "docs/app/components/content/examples/tabs/TabsRouteQueryExample.vue",
+      "severity": "error",
+      "line": 5,
+      "column": 16,
+      "vize": {
+        "code": 2552,
+        "message": "Cannot find name 'useRouter'. Did you mean 'router'?"
+      },
+      "baseline": {
+        "code": 2304,
+        "message": "Cannot find name 'useRouter'."
+      },
+      "issue": 3358,
+      "reason": "vue-tsc loses the spelling hint here because TypeScript's checker stops offering suggestions once a program has produced maximumSuggestionCount = 10 unresolved-name errors (onFailedToResolveSymbol in checker.ts increments the counter on every failed name resolution, including the ones generated virtual code never surfaces). Corsa does not implement that cap, so vize keeps the hint. The symbol tables agree: renaming this SFC so it is checked first makes vue-tsc 3.3.4 emit the identical TS2552 on an otherwise byte-identical program, and vize's virtual TypeScript for this file is byte-identical whether the sibling SFCs are in the program or not. Matching vue-tsc would mean rewriting TS2552 to TS2304 from a program-global, file-order-dependent counter, which is unstable under incremental checking and would silently drop genuine hints after the tenth unresolved name in any project."
+    }
+  ]
+}

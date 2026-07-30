@@ -7,6 +7,7 @@ use crate::{options::FormatOptions, script};
 use vize_carton::{String, ToCompactString};
 
 use super::attributes::attribute_priority;
+use super::helpers::template_literal_state_after_line_from;
 
 /// Normalize directive shorthands and assign sort priority.
 #[allow(clippy::disallowed_macros)]
@@ -92,8 +93,107 @@ fn format_directive_value(name: &str, value: &str, options: &FormatOptions) -> (
             let indent_multiline_value = formatted.contains('\n');
             (formatted, indent_multiline_value)
         }
-        None => (value.to_compact_string(), false),
+        None => reanchor_continuation_lines(value, options),
     }
+}
+
+/// Re-derive the continuation indentation of a multi-line directive value the
+/// expression formatter could not parse — a statement sequence such as
+/// `foo(1); bar(2)`, or otherwise unparsable source.
+///
+/// The value's own bytes are kept, but the leading whitespace of every
+/// continuation line is rebuilt from the value's common indentation, so the
+/// printed line is `attribute indent + one level + relative depth` whatever the
+/// previous pass wrote. `write_rendered_attribute` then anchors those lines to
+/// the attribute's depth, exactly like the lines a formatted expression
+/// produces. Without the rebuild the value carries its absolute indentation and
+/// the SFC indent step adds one more level on top of it, so the line drifts two
+/// columns further on every `vize fmt` run (#3346).
+///
+/// A value whose first line is blank starts on the line *after* the attribute
+/// name. `compute_raw_line_mask` keeps every line of that shape verbatim, so it
+/// never receives SFC indentation and must not be re-anchored here.
+fn reanchor_continuation_lines(value: &str, options: &FormatOptions) -> (String, bool) {
+    let Some(first_break) = value.find('\n') else {
+        return (value.to_compact_string(), false);
+    };
+    let (first_line, rest) = (&value[..first_break], &value[first_break + 1..]);
+    if first_line.trim().is_empty() {
+        return (value.to_compact_string(), false);
+    }
+
+    let common_indent = common_continuation_indent(first_line, rest);
+    let indent = options.indent_string();
+    let mut reanchored = String::with_capacity(value.len() + indent.len());
+    reanchored.push_str(first_line);
+    let mut state = ContinuationScan::new(first_line);
+    for line in rest.split('\n') {
+        let line = line.trim_end_matches('\r');
+        if state.line_holds_code(line) {
+            reanchored.push('\n');
+            reanchored.push_str(&indent);
+            reanchored.push_str(dedent(line, common_indent));
+        } else if state.in_template_literal {
+            // Raw template-literal content: these bytes belong to the rendered
+            // string value, so the printer keeps them as they are.
+            reanchored.push('\n');
+            reanchored.push_str(line);
+        }
+        // Anything else is a blank line outside a template literal: it holds
+        // nothing to anchor and would print as bare indentation, so it is
+        // dropped, exactly as a formatted expression comes back without it.
+        state.advance(line);
+    }
+    (reanchored, true)
+}
+
+/// Tracks whether a continuation line starts inside a multiline template
+/// literal, mirroring how `write_rendered_attribute` renders the same lines.
+struct ContinuationScan {
+    in_template_literal: bool,
+}
+
+impl ContinuationScan {
+    fn new(first_line: &str) -> Self {
+        Self {
+            in_template_literal: template_literal_state_after_line_from(false, first_line),
+        }
+    }
+
+    /// A line whose indentation is the formatter's to choose: outside any
+    /// template literal and not blank (a blank line has nothing to anchor).
+    fn line_holds_code(&self, line: &str) -> bool {
+        !self.in_template_literal && !line.trim().is_empty()
+    }
+
+    fn advance(&mut self, line: &str) {
+        self.in_template_literal =
+            template_literal_state_after_line_from(self.in_template_literal, line);
+    }
+}
+
+/// The narrowest indentation shared by the continuation lines that hold code,
+/// which becomes the value's zero column when they are re-anchored.
+fn common_continuation_indent(first_line: &str, rest: &str) -> usize {
+    let mut state = ContinuationScan::new(first_line);
+    let mut common: Option<usize> = None;
+    for line in rest.split('\n') {
+        let line = line.trim_end_matches('\r');
+        if state.line_holds_code(line) {
+            let width = blank_prefix_len(line);
+            common = Some(common.map_or(width, |narrowest| narrowest.min(width)));
+        }
+        state.advance(line);
+    }
+    common.unwrap_or(0)
+}
+
+fn dedent(line: &str, columns: usize) -> &str {
+    &line[blank_prefix_len(line).min(columns)..]
+}
+
+fn blank_prefix_len(line: &str) -> usize {
+    line.len() - line.trim_start_matches([' ', '\t']).len()
 }
 
 fn decode_expression_attribute_entities(value: &str) -> Option<String> {

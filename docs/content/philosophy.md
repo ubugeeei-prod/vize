@@ -43,7 +43,9 @@ This is achieved through Rust's zero-cost abstractions, arena allocation, and na
 
 ### 3. Drop-in Compatibility
 
-Vize does not ask you to rewrite your code or change your workflow. The Vite plugin is a drop-in replacement for `@vitejs/plugin-vue`. Your existing Vue components, `<script setup>`, scoped styles, and HMR all work without modification.
+Vize does not ask you to rewrite your code or change your workflow. The Vite plugin is a drop-in replacement for `@vitejs/plugin-vue` on Vue 3 SFCs. Your existing Vue 3 components — `<script setup>` and Options API alike — scoped styles, and HMR all work without modification.
+
+The claim stops where the support does. Vue 2 and 2.7 (`vue.version`) are incubating and opt-in, webpack is not part of the drop-in claim, and plugin-option parity with `@vitejs/plugin-vue` is still incomplete. See [Drop-in Scope](./guide/vite-plugin.md#drop-in-scope) for the exact boundary.
 
 This principle extends to the broader ecosystem. Vize's Vite plugin is compatible with Nuxt, and the LSP integrates with VS Code through standard protocols. Adopting Vize should feel like upgrading your engine, not rebuilding your car.
 
@@ -132,7 +134,7 @@ There are still many unsolved challenges in this space — cross-tool AST intero
 
 [Vite+](https://viteplus.dev/) and [OXC](https://oxc.rs) are **framework-agnostic** toolchains — they provide general-purpose JS/TS/CSS bundling, parsing, linting, and formatting capabilities that work across any framework. Vize is **Vue-specific** and is designed to **integrate with** these ecosystem tools rather than compete against them.
 
-Vize directly depends on OXC for JavaScript/TypeScript parsing and LightningCSS for CSS processing within Vue SFCs. The Vize linter (patina) and formatter (glyph) handle Vue-specific concerns (template directives, SFC structure, component conventions) that are outside the scope of framework-agnostic tools. Deeper integration with OXC is planned — for example, delegating `<script>` block linting/formatting to OXC while Vize handles the Vue-specific `<template>` and SFC coordination layers. Vize's Vite plugin (`@vizejs/vite-plugin`) is built on top of Vite and designed to be a drop-in replacement for `@vitejs/plugin-vue`, fully embracing the Vite ecosystem.
+Vize directly depends on OXC for JavaScript/TypeScript parsing and LightningCSS for CSS processing within Vue SFCs. The Vize linter (patina) and formatter (glyph) handle Vue-specific concerns (template directives, SFC structure, component conventions) that are outside the scope of framework-agnostic tools. Deeper integration with OXC is planned — for example, delegating `<script>` block linting/formatting to OXC while Vize handles the Vue-specific `<template>` and SFC coordination layers. Vize's Vite plugin (`@vizejs/vite-plugin`) is built on top of Vite and designed to be a drop-in replacement for `@vitejs/plugin-vue` on Vue 3 SFCs, fully embracing the Vite ecosystem.
 
 As the author of Vize, I ([@ubugeeei](https://github.com/ubugeeei)) want to be clear: **I have no adversarial intent toward any of these projects.** I am fully open to collaboration and believe that the best outcomes come from tools that complement each other. If there are changes needed on either side to enable better integration, I am ready to work together to make that happen.
 

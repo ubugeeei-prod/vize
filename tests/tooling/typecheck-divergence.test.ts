@@ -8,14 +8,39 @@ import { compareTypecheckDiagnostics } from "../../tools/fixtures/typecheck-dive
 
 const cwd = path.join(os.tmpdir(), "vize-divergence-workspace");
 
-function compare(files: Array<{ file: string; diagnostics: string[] }>, vueTscOutput: string) {
+function compare(
+  files: Array<{ file: string; diagnostics: string[] }>,
+  vueTscOutput: string,
+  documentedDifferences?: unknown[],
+) {
   return compareTypecheckDiagnostics({
     projectId: "fixture",
     cwd,
     vizeReport: { files },
     vueTscOutput,
+    documentedDifferences,
   });
 }
+
+const suggestionDifference = {
+  project: "fixture",
+  file: "src/App.vue",
+  severity: "error",
+  line: 5,
+  column: 16,
+  vize: { code: 2552, message: "Cannot find name 'useRouter'. Did you mean 'router'?" },
+  baseline: { code: 2304, message: "Cannot find name 'useRouter'." },
+  issue: 3358,
+  reason: "vue-tsc exhausts its per-program spelling-suggestion budget before this span.",
+};
+
+const suggestionFiles = [
+  {
+    file: "src/App.vue",
+    diagnostics: ["error:5:16 [TS2552] Cannot find name 'useRouter'. Did you mean 'router'?"],
+  },
+];
+const suggestionBaseline = "src/App.vue(5,16): error TS2304: Cannot find name 'useRouter'.\n";
 
 test("typecheck divergence classifies exact diagnostics deterministically", () => {
   const files = [
@@ -43,14 +68,16 @@ test("typecheck divergence classifies exact diagnostics deterministically", () =
     "shared",
     "falsePositives",
     "falseNegatives",
+    "documentedDifferences",
     "sha256",
   ]);
   assert.equal(result.schema, "vize.fixtureTypecheckDivergence");
-  assert.equal(result.version, 2);
+  assert.equal(result.version, 3);
   assert.deepEqual(result.summary, {
     vizeDiagnosticCount: 2,
     baselineDiagnosticCount: 2,
     sharedCount: 2,
+    documentedDifferenceCount: 0,
     falsePositiveCount: 0,
     falseNegativeCount: 0,
     falsePositiveRatio: 0,
@@ -93,6 +120,7 @@ test("typecheck divergence separates false positives and false negatives", () =>
     vizeDiagnosticCount: 3,
     baselineDiagnosticCount: 3,
     sharedCount: 1,
+    documentedDifferenceCount: 0,
     falsePositiveCount: 2,
     falseNegativeCount: 2,
     falsePositiveRatio: 2 / 3,
@@ -210,6 +238,80 @@ test("typecheck divergence rejects ambiguous diagnostics and escaping paths", ()
   ] as const) {
     assert.throws(() => compare(files as never, output), message);
   }
+});
+
+test("typecheck divergence cancels a documented difference against both buckets", () => {
+  const result = compare(suggestionFiles, suggestionBaseline, [suggestionDifference]);
+
+  assert.equal(result.summary.documentedDifferenceCount, 1);
+  assert.equal(result.summary.falsePositiveCount, 0);
+  assert.equal(result.summary.falseNegativeCount, 0);
+  assert.equal(result.summary.falsePositiveRatio, 0);
+  assert.equal(result.summary.falseNegativeRatio, 0);
+  assert.equal(result.summary.vizeDiagnosticCount, 1);
+  assert.equal(result.summary.baselineDiagnosticCount, 1);
+  assert.deepEqual(result.documentedDifferences, [
+    {
+      file: "src/App.vue",
+      severity: "error",
+      line: 5,
+      column: 16,
+      vize: suggestionDifference.vize,
+      baseline: suggestionDifference.baseline,
+      issue: 3358,
+      reason: suggestionDifference.reason,
+    },
+  ]);
+
+  const withoutLedger = compare(suggestionFiles, suggestionBaseline);
+  assert.equal(withoutLedger.summary.documentedDifferenceCount, 0);
+  assert.equal(withoutLedger.summary.falsePositiveCount, 1);
+  assert.equal(withoutLedger.summary.falseNegativeCount, 1);
+});
+
+test("typecheck divergence keeps a documented difference that no longer reproduces", () => {
+  const reworded = { code: 2552, message: "Cannot find name 'useRouter'." };
+  for (const [difference, label] of [
+    [{ ...suggestionDifference, project: "other" }, "another project"],
+    [{ ...suggestionDifference, column: 15 }, "a shifted column"],
+    [{ ...suggestionDifference, vize: reworded }, "a reworded vize message"],
+    [{ ...suggestionDifference, baseline: { code: 2551, message: "x y" } }, "a new vue-tsc code"],
+  ] as const) {
+    const result = compare(suggestionFiles, suggestionBaseline, [difference]);
+    assert.equal(result.summary.documentedDifferenceCount, 0, label);
+    assert.equal(result.summary.falsePositiveCount, 1, label);
+    assert.equal(result.summary.falseNegativeCount, 1, label);
+  }
+  // Only vize reports at 5:16, so there is nothing to cancel the false positive
+  // against and the ledger entry must not hide it.
+  const oneSided = compare(suggestionFiles, "", [suggestionDifference]);
+  assert.equal(oneSided.summary.documentedDifferenceCount, 0);
+  assert.equal(oneSided.summary.falsePositiveCount, 1);
+});
+
+test("typecheck divergence rejects an unreviewable documented difference", () => {
+  for (const [difference, message] of [
+    [{ ...suggestionDifference, reason: "cosmetic" }, /reason must explain/],
+    [{ ...suggestionDifference, issue: 0 }, /issue must be the tracking issue/],
+    [{ ...suggestionDifference, project: "" }, /must name a project/],
+    [{ ...suggestionDifference, severity: "info" }, /severity must be error or warning/],
+    [{ ...suggestionDifference, line: 0 }, /line must be a positive safe integer/],
+    [{ ...suggestionDifference, file: "src/App.ts" }, /must reference a \.vue file/],
+    [{ ...suggestionDifference, file: "../App.vue" }, /stay inside/],
+    [{ ...suggestionDifference, baseline: suggestionDifference.vize }, /must record a difference/],
+    [{ ...suggestionDifference, vize: { code: 2552 } }, /message must be a string/],
+  ] as const) {
+    assert.throws(() => compare(suggestionFiles, suggestionBaseline, [difference]), message);
+  }
+  assert.throws(
+    () =>
+      compare(suggestionFiles, suggestionBaseline, [suggestionDifference, suggestionDifference]),
+    /duplicates an earlier documented difference/,
+  );
+  assert.throws(
+    () => compare(suggestionFiles, suggestionBaseline, "no" as never),
+    /must be an array/,
+  );
 });
 
 test("typecheck divergence rejects invalid envelopes", () => {

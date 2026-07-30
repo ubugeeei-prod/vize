@@ -109,9 +109,7 @@ impl LanguageServer for MaestroServer {
             .documents
             .apply_changes(&uri, params.content_changes, version);
 
-        if let Some(doc) = self.state.documents.get(&uri) {
-            let content = doc.text();
-            drop(doc);
+        if let Some(content) = self.state.documents.text(&uri) {
             self.publish_changed_diagnostics(&uri, &content).await;
         }
     }
@@ -140,11 +138,9 @@ impl LanguageServer for MaestroServer {
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
         let Some(offset) = position_to_offset(&content, position.line, position.character) else {
             return Ok(None);
         };
@@ -188,11 +184,9 @@ impl LanguageServer for MaestroServer {
         let uri = &params.text_document_position.text_document.uri;
         let position = params.text_document_position.position;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
         let Some(offset) = position_to_offset(&content, position.line, position.character) else {
             return Ok(None);
         };
@@ -254,11 +248,9 @@ impl LanguageServer for MaestroServer {
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
         let Some(offset) = position_to_offset(&content, position.line, position.character) else {
             return Ok(None);
         };
@@ -308,11 +300,9 @@ impl LanguageServer for MaestroServer {
         let position = params.text_document_position.position;
         let include_declaration = params.context.include_declaration;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
         let Some(offset) = position_to_offset(&content, position.line, position.character) else {
             return Ok(None);
         };
@@ -376,11 +366,9 @@ impl LanguageServer for MaestroServer {
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
         let Some(offset) = position_to_offset(&content, position.line, position.character) else {
             return Ok(None);
         };
@@ -401,11 +389,9 @@ impl LanguageServer for MaestroServer {
 
         let uri = &params.text_document.uri;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
 
         // `.jsx`/`.tsx` documents have no SFC blocks; list their component
         // functions instead. Structural (parse-based), so it is not gated on
@@ -573,11 +559,9 @@ impl LanguageServer for MaestroServer {
         let uri = &params.text_document.uri;
         let range = params.range;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
 
         // `.jsx`/`.tsx`: surface the fixable Patina/JSX-compiler diagnostics as
         // quickfix code actions. Lint-based (parse-only), so not gated on
@@ -616,11 +600,9 @@ impl LanguageServer for MaestroServer {
         let uri = &params.text_document.uri;
         let position = params.position;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
         let Some(offset) = position_to_offset(&content, position.line, position.character) else {
             return Ok(None);
         };
@@ -658,11 +640,9 @@ impl LanguageServer for MaestroServer {
         let position = params.text_document_position.position;
         let new_name = &params.new_name;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
         let Some(offset) = position_to_offset(&content, position.line, position.character) else {
             return Ok(None);
         };
@@ -703,11 +683,9 @@ impl LanguageServer for MaestroServer {
 
         let uri = &params.text_document.uri;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
 
         // `.jsx`/`.tsx`: highlight the dynamic JSX expressions. Structural, so
         // not gated on `typeChecker.jsxTypecheck`.
@@ -728,11 +706,9 @@ impl LanguageServer for MaestroServer {
 
         let uri = &params.text_document.uri;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
 
         if crate::utils::is_jsx_path(uri.path()) {
             return Ok(crate::ide::JsxSemanticTokensService::tokens_range(
@@ -756,11 +732,9 @@ impl LanguageServer for MaestroServer {
 
         let uri = &params.text_document.uri;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
         let lenses = CodeLensService::get_lenses(&content, uri);
 
         if lenses.is_empty() {
@@ -815,11 +789,9 @@ impl LanguageServer for MaestroServer {
 
         let uri = &params.text_document.uri;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
         let links = DocumentLinkService::get_links(&content, uri);
 
         if links.is_empty() {
@@ -838,11 +810,9 @@ impl LanguageServer for MaestroServer {
         let uri = &params.text_document.uri;
         let range = params.range;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
         let hints =
             InlayHintService::get_hints_with_ecosystem(&content, uri, range, features.ecosystem);
 
@@ -860,11 +830,9 @@ impl LanguageServer for MaestroServer {
 
         let uri = &params.text_document.uri;
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let content = doc.text();
         let mut ranges = Vec::new();
 
         let options = vize_atelier_sfc::SfcParseOptions {
@@ -947,11 +915,9 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         }
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(_content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let _content = doc.text();
         #[cfg(feature = "glyph")]
         {
             let options = self.state.get_format_options();
@@ -976,11 +942,9 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         }
 
-        let Some(doc) = self.state.documents.get(uri) else {
+        let Some(_content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-
-        let _content = doc.text();
         let valid_position =
             |position: Position| position_to_offset(&_content, position.line, position.character);
         if valid_position(params.range.start).is_none()

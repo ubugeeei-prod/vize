@@ -11,6 +11,7 @@ import {
   runVueTsc,
   symlinkVueTypes,
 } from "./realworld-typecheck.ts";
+import { resolveVueTscManifestPath } from "./vue-tsc-manifest.ts";
 
 /**
  * Per-PR drop-in compatibility probes. Each probe copies a pinned set of real
@@ -38,10 +39,18 @@ export type CompatSummary = {
   vizeDiagnosticCount: number;
   baselineDiagnosticCount: number;
   sharedCount: number;
+  /** Same-span pairs cancelled by tests/_fixtures/compat-documented-differences.json. */
+  documentedDifferenceCount: number;
   falsePositiveCount: number;
   falseNegativeCount: number;
   falsePositiveRatio: number;
   falseNegativeRatio: number;
+};
+
+export type CompatDocumentedDifferences = {
+  schema: "vize.compatDocumentedDifferences";
+  version: 1;
+  differences: Array<{ project: string }>;
 };
 
 export type CompatBaseline = {
@@ -65,6 +74,11 @@ export type CompatProbeResult = {
 };
 
 export const compatBaselinePath = path.join(repoRoot, "tests/_fixtures/compat-baseline.json");
+
+export const compatDocumentedDifferencesPath = path.join(
+  repoRoot,
+  "tests/_fixtures/compat-documented-differences.json",
+);
 
 export const compatProbes: CompatProbe[] = [
   {
@@ -150,14 +164,14 @@ export function isFixtureHydrated(fixtureId: string): boolean {
 export function resolveCompatVueTscVersion(): string {
   // Derive the version from the same binary the probes execute so the pin can
   // never drift from the tool actually producing the baseline side.
-  const binary = fs.realpathSync(resolveVueTscBinary());
-  const packageRoot = binary.slice(0, binary.lastIndexOf(`${path.sep}vue-tsc${path.sep}`));
-  const vueTscPackage = [
-    path.join(packageRoot, "vue-tsc", "package.json"),
-    path.join(path.dirname(resolveVueTscBinary()), "..", "vue-tsc", "package.json"),
-  ].find((candidate) => fs.existsSync(candidate));
-  assert.ok(vueTscPackage, `vue-tsc package manifest not found next to ${binary}`);
-  const manifest = JSON.parse(fs.readFileSync(vueTscPackage, "utf8")) as { version?: unknown };
+  const binary = resolveVueTscBinary();
+  const manifestPath = resolveVueTscManifestPath(binary);
+  assert.ok(
+    manifestPath,
+    `vue-tsc package manifest not found for ${binary}; neither the bin entry itself nor any ` +
+      "cmd-shim target it names led to a package.json declaring vue-tsc",
+  );
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as { version?: unknown };
   assert.equal(typeof manifest.version, "string", "vue-tsc package version must be a string");
   return manifest.version as string;
 }
@@ -205,12 +219,14 @@ export async function runCompatProbe(probe: CompatProbe): Promise<CompatProbeRes
         cwd: fixture.workspaceDir,
         vizeReport: vize.report,
         vueTscOutput: `${vueTsc.stdout}\n${vueTsc.stderr}`,
+        documentedDifferences: readCompatDocumentedDifferences().differences,
       }) as { summary: CompatSummary & Record<string, number> };
 
       const summary: CompatSummary = {
         vizeDiagnosticCount: divergence.summary.vizeDiagnosticCount,
         baselineDiagnosticCount: divergence.summary.baselineDiagnosticCount,
         sharedCount: divergence.summary.sharedCount,
+        documentedDifferenceCount: divergence.summary.documentedDifferenceCount,
         falsePositiveCount: divergence.summary.falsePositiveCount,
         falseNegativeCount: divergence.summary.falseNegativeCount,
         falsePositiveRatio: divergence.summary.falsePositiveRatio,
@@ -232,6 +248,23 @@ export function readCompatBaseline(): CompatBaseline {
   assert.equal(baseline.schema, "vize.compatBaseline", "compat baseline schema must match");
   assert.equal(baseline.version, 1, "compat baseline version must match");
   return baseline;
+}
+
+export function readCompatDocumentedDifferences(): CompatDocumentedDifferences {
+  const ledger = JSON.parse(
+    fs.readFileSync(compatDocumentedDifferencesPath, "utf8"),
+  ) as CompatDocumentedDifferences;
+  assert.equal(
+    ledger.schema,
+    "vize.compatDocumentedDifferences",
+    "documented difference ledger schema must match",
+  );
+  assert.equal(ledger.version, 1, "documented difference ledger version must match");
+  assert.ok(
+    Array.isArray(ledger.differences),
+    "documented difference ledger must list differences",
+  );
+  return ledger;
 }
 
 export function writeCompatBaseline(baseline: CompatBaseline): void {

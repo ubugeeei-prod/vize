@@ -27,6 +27,8 @@ import "./plugin/resolve-dependency-style.test.ts";
 import "./plugin/resolve-relative-vue.test.ts";
 import "./plugin/resolve.test.ts";
 import "./plugin/precompile.test.ts";
+import "./plugin/precompile-cache.test.ts";
+import "./plugin/precompile-cache-manifest.test.ts";
 import "./plugin/state.test.ts";
 import "./plugin/unocss.test.ts";
 import "./plugin/vite-transform.test.ts";

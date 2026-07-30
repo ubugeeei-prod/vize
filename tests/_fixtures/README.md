@@ -17,3 +17,10 @@ vize/vue-tsc typecheck divergence over pinned probe workspaces cut from the hydr
 fixtures. `tests/tooling/compat-ratchet.test.ts` recomputes the divergence on every PR and only
 allows it to hold or improve; regenerate with `UPDATE_COMPAT_BASELINE=1` after intentional
 compatibility improvements or pinned toolchain moves.
+
+`vite-plugin-vue-option-parity.json` is the intentional-gap ledger behind the `@vizejs/vite-plugin`
+drop-in claim: one entry per documented `@vitejs/plugin-vue` option, `Api` member, and plugin hook,
+each recorded as `honored` (with the behavioral probe that proves it),
+`intentional-divergence` (with a reason), or `unimplemented` (with issue #3227 and a reason).
+`tests/tooling/vite-plugin-vue-option-parity.test.ts` re-enumerates the pinned upstream surface and
+fails when an entry is missing, so a new or newly honored option cannot pass unrecorded.
