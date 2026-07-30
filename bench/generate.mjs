@@ -759,19 +759,15 @@ export function generateCorpus({
   writeFileSync(join(benchDir, "tsconfig.json"), JSON.stringify(tsconfig, null, 2));
   writeLog("Generated tsconfig.json");
 
-  // Generate eslint.config.mjs; `parserOptions.parser` reads the `lang="ts"`
-  // blocks espree turns into one rule-suppressing parse error each (#3410).
-  // `ecmaFeatures.jsx` covers the `lang="tsx"` spelling, which the TypeScript
-  // parser still rejects without it — the one file #3410 left unreadable.
+  // Generate eslint.config.mjs; `parserOptions.parser` reads `lang="ts"` blocks
+  // and `ecmaFeatures.jsx` the `lang="tsx"` ones, else each is a parse error (#3410).
   const eslintConfig = `import tsParser from "@typescript-eslint/parser";
 import pluginVue from "eslint-plugin-vue";
 export default [
   ...pluginVue.configs["flat/recommended"],
   {
     files: ["*.vue"],
-    languageOptions: {
-      parserOptions: { parser: tsParser, ecmaFeatures: { jsx: true } },
-    },
+    languageOptions: { parserOptions: { parser: tsParser, ecmaFeatures: { jsx: true } } },
     rules: { "vue/multi-word-component-names": "off" },
   },
 ];

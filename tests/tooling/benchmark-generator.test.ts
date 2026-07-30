@@ -101,9 +101,7 @@ export default [
   ...pluginVue.configs["flat/recommended"],
   {
     files: ["*.vue"],
-    languageOptions: {
-      parserOptions: { parser: tsParser, ecmaFeatures: { jsx: true } },
-    },
+    languageOptions: { parserOptions: { parser: tsParser, ecmaFeatures: { jsx: true } } },
     rules: { "vue/multi-word-component-names": "off" },
   },
 ];
