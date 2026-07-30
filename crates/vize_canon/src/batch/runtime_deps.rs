@@ -135,8 +135,11 @@ fn write_vite_stub(node_modules_dir: &Path) -> std::io::Result<()> {
 }
 
 fn ensure_stub_dir(path: &Path) -> std::io::Result<()> {
+    // A link (symlink or junction) must be replaced, never written through:
+    // std reports junctions as plain directories, so probe `read_link`.
+    let is_link = std::fs::read_link(path).is_ok();
     match std::fs::symlink_metadata(path) {
-        Ok(metadata) if metadata.file_type().is_dir() && !metadata.file_type().is_symlink() => {}
+        Ok(metadata) if metadata.file_type().is_dir() && !is_link => {}
         Ok(_) => {
             remove_path(path)?;
             ensure_dir(path)?;
@@ -174,7 +177,11 @@ fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
     #[cfg(windows)]
     {
         if source.is_dir() {
+            // Directory junctions need no special privilege, unlike symlinks:
+            // fall back so directory links still materialize on stock Windows
+            // without Developer Mode or an elevated shell.
             std::os::windows::fs::symlink_dir(source, target)
+                .or_else(|_| junction::create(source, target))
         } else {
             std::os::windows::fs::symlink_file(source, target)
         }
@@ -182,16 +189,19 @@ fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
 }
 
 fn symlink_matches(source: &Path, target: &Path) -> std::io::Result<bool> {
-    let metadata = match std::fs::symlink_metadata(target) {
-        Ok(metadata) => metadata,
+    match std::fs::symlink_metadata(target) {
+        Ok(_) => {}
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
         Err(error) => return Err(error),
-    };
-    if !metadata.file_type().is_symlink() {
-        return Ok(false);
     }
-    let linked = std::fs::read_link(target)?;
-    Ok(linked == source)
+    // `FileType::is_symlink` is false for junctions, so probe with
+    // `read_link`: it resolves both symlinks and junctions and fails for
+    // real files and directories. Junction targets come back in a `\??\`
+    // verbatim spelling, so compare canonicalized forms.
+    let Ok(linked) = std::fs::read_link(target) else {
+        return Ok(false);
+    };
+    Ok(linked == source || package_link_source(&linked) == package_link_source(source))
 }
 
 fn prune_stub_dir(dir: &Path, file_names: &[&str]) -> std::io::Result<()> {

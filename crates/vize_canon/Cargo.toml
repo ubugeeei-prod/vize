@@ -52,6 +52,10 @@ corsa = { workspace = true, optional = true }
 [target.'cfg(unix)'.dependencies]
 libc.workspace = true
 
+[target.'cfg(windows)'.dependencies]
+# Directory junctions as a privilege-free fallback for directory links.
+junction = "2"
+
 [dev-dependencies]
 tempfile.workspace = true
 insta.workspace = true
