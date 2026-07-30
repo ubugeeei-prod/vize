@@ -140,6 +140,53 @@ fn sfc_multiline_directive_attribute_keeps_template_indent() {
 }
 
 #[test]
+fn sfc_multiline_directive_statement_continuation_is_anchored_like_a_ternary() {
+    // #3346: the ternary continuation is re-derived from the formatted
+    // expression on every pass and therefore holds still, but a statement
+    // sequence was reprinted exactly as authored, so the SFC indent step
+    // widened it by one level per pass (unbounded drift). Both shapes must land
+    // on attribute indent + one level: the ternary continuations move 4 -> 6
+    // columns, the statement continuation 8 -> 6, and neither moves again.
+    let source = "<template>\n  <button\n    :class='sort === \"name-asc\" || sort === \"name-desc\"\n    ? \"bg-ink text-paper border-ink\"\n    : \"border-rule text-ink-2 hover:text-ink hover:border-ink\"'\n    @click=\"toggleNameSort(sort);\n        applySort()\"\n  >\n    Name\n  </button>\n</template>\n";
+    let options = FormatOptions::default();
+    let first = format_sfc(source, &options).unwrap();
+    let second = format_sfc(&first.code, &options).unwrap();
+    let third = format_sfc(&second.code, &options).unwrap();
+
+    assert_eq!(
+        first.code.as_str(),
+        "<template>\n  <button\n    :class='sort === \"name-asc\" || sort === \"name-desc\"\n      ? \"bg-ink text-paper border-ink\"\n      : \"border-rule text-ink-2 hover:text-ink hover:border-ink\"'\n    @click=\"toggleNameSort(sort);\n      applySort()\"\n  >\n    Name\n  </button>\n</template>\n"
+    );
+    assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
+    assert_eq!(second.code, third.code, "fmt must stay at its fixed point");
+}
+
+#[test]
+fn sfc_multiline_directive_statement_continuation_keeps_relative_depth() {
+    // Anchoring re-derives the continuation indentation from the value's own
+    // common indent, so the nesting inside the statement sequence survives
+    // instead of collapsing onto a single level.
+    let source = r#"<template>
+  <button
+    @click="dispatch({
+        id: item.id,
+        kind: 'primary',
+      });
+      close()"
+  >
+    Go
+  </button>
+</template>
+"#;
+    let options = FormatOptions::default();
+    let first = format_sfc(source, &options).unwrap();
+    let second = format_sfc(&first.code, &options).unwrap();
+
+    assert_eq!(first.code.as_str(), source);
+    assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
+}
+
+#[test]
 fn sfc_single_multiline_directive_attribute_is_idempotent() {
     let source = r#"<template>
   <label

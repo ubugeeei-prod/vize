@@ -1,23 +1,5 @@
 [
   {
-    "property": "idempotence",
-    "project": "dashy",
-    "path": "src/components/Settings/CustomThemeMaker.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3346"
-  },
-  {
-    "property": "idempotence",
-    "project": "scalar",
-    "path": "projects/scalar-app/src/features/collection/components/Environment.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3346"
-  },
-  {
-    "property": "idempotence",
-    "project": "vue-data-ui",
-    "path": "src/components/vue-ui-flow.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3346"
-  },
-  {
     "property": "lint-agreement",
     "project": "gogocode",
     "path": "packages/gogocode-vue-playground/packages/vue2/src/components/keycode-modifiers/Comp.vue",
