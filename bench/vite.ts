@@ -23,6 +23,12 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import os from "node:os";
 
+import {
+  assertPrecompileCacheCold,
+  clearPrecompileCache,
+  readPrecompileCacheEntries,
+} from "./vite-precompile-cache.mjs";
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const INPUT_DIR = join(__dirname, "__in__");
 const WORK_DIR = join(__dirname, "__vite_work__");
@@ -108,8 +114,15 @@ async function buildWithOfficialPlugin(): Promise<number> {
   return performance.now() - start;
 }
 
-// Build with @vizejs/vite-plugin
-async function buildWithVizePlugin(): Promise<number> {
+/**
+ * Build with @vizejs/vite-plugin at a stated persistent-cache state.
+ *
+ * `cache: "cold"` clears the on-disk pre-compile manifest first and asserts it
+ * is gone, so the build compiles every SFC exactly like `@vitejs/plugin-vue`
+ * does. `cache: "warm"` deliberately keeps whatever the previous build left, and
+ * its time is reported separately because the baseline plugin has no equivalent.
+ */
+async function buildWithVizePlugin(cache: "cold" | "warm"): Promise<number> {
   const { build } = await import("vite");
 
   let vizePlugin: any;
@@ -118,6 +131,11 @@ async function buildWithVizePlugin(): Promise<number> {
       .default;
   } catch {
     return -1;
+  }
+
+  if (cache === "cold") {
+    clearPrecompileCache(WORK_DIR);
+    assertPrecompileCacheCold(WORK_DIR, "@vizejs/vite-plugin");
   }
 
   const outDir = join(TEMP_DIR, "vize");
@@ -164,7 +182,10 @@ mkdirSync(TEMP_DIR, { recursive: true });
 console.log();
 console.log(" Warming up...");
 await buildWithOfficialPlugin();
-await buildWithVizePlugin();
+await buildWithVizePlugin("warm");
+// The warmup left a pre-compile manifest in WORK_DIR. Report what it holds so
+// the reader can see the cache dimension exists rather than inferring it.
+const warmupCacheEntries = readPrecompileCacheEntries(WORK_DIR);
 
 // Benchmark
 console.log();
@@ -173,18 +194,34 @@ console.log();
 
 const officialTime = await buildWithOfficialPlugin();
 console.log(
-  `   @vitejs/plugin-vue  : ${formatTime(officialTime).padStart(8)}  (${formatThroughput(vueFiles.length, officialTime)})`,
+  `   @vitejs/plugin-vue         : ${formatTime(officialTime).padStart(8)}  (${formatThroughput(vueFiles.length, officialTime)})`,
 );
 
-const vizeTime = await buildWithVizePlugin();
+// Measured cold: the persistent pre-compile manifest is cleared first, so this
+// build compiles all FILE_LIMIT files just as @vitejs/plugin-vue does. This is
+// the comparable number and the one the summary uses.
+const vizeTime = await buildWithVizePlugin("cold");
 if (vizeTime >= 0) {
   const speedup = (officialTime / vizeTime).toFixed(1);
   console.log(
-    `   @vizejs/vite-plugin : ${formatTime(vizeTime).padStart(8)}  (${formatThroughput(vueFiles.length, vizeTime)})  ${speedup}x faster`,
+    `   @vizejs/vite-plugin (cold) : ${formatTime(vizeTime).padStart(8)}  (${formatThroughput(vueFiles.length, vizeTime)})  ${speedup}x faster`,
   );
+  // The cold build above wrote the manifest, so this run restores from it.
+  const vizeWarmTime = await buildWithVizePlugin("warm");
+  console.log(
+    `   @vizejs/vite-plugin (warm) : ${formatTime(vizeWarmTime).padStart(8)}  (${formatThroughput(vueFiles.length, vizeWarmTime)})  not comparable`,
+  );
+  console.log();
+  console.log(
+    "   (warm) reuses the on-disk pre-compile cache in node_modules/.vize; @vitejs/plugin-vue",
+  );
+  console.log("   has no equivalent, so only the (cold) row is an apples-to-apples comparison.");
+  if (warmupCacheEntries.length > 0) {
+    console.log(`   Warmup manifest that was cleared: ${warmupCacheEntries.join(", ")}`);
+  }
 } else {
   console.log(
-    "   @vizejs/vite-plugin : SKIPPED (plugin not built, run 'vp run --workspace-root build:vite-plugin')",
+    "   @vizejs/vite-plugin        : SKIPPED (plugin not built, run 'vp run --workspace-root build:vite-plugin')",
   );
 }
 
@@ -204,7 +241,7 @@ if (vizeTime >= 0) {
   console.log(" Summary:");
   console.log();
   const speedup = (officialTime / vizeTime).toFixed(1);
-  console.log(`   @vitejs/plugin-vue vs @vizejs/vite-plugin : ${speedup}x`);
+  console.log(`   @vitejs/plugin-vue vs @vizejs/vite-plugin (cold) : ${speedup}x`);
 }
 
 console.log();
