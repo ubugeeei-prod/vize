@@ -7,6 +7,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::cstr;
+mod declaration_root_dir;
 mod graphql_generated;
 mod macro_scope;
 mod module_augmentations;

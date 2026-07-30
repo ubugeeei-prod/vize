@@ -143,6 +143,10 @@ impl VirtualProject {
             .and_then(Value::as_array)
             .cloned()
             .unwrap_or_default();
+        let original_root_dir = compiler_options
+            .get("rootDir")
+            .and_then(Value::as_str)
+            .map(std::string::ToString::to_string);
 
         for option in PATH_SENSITIVE_COMPILER_OPTIONS {
             compiler_options.remove(*option);
@@ -189,11 +193,20 @@ impl VirtualProject {
             compiler_options.insert("declaration".into(), Value::Bool(true));
             compiler_options.insert("emitDeclarationOnly".into(), Value::Bool(true));
             compiler_options.insert("declarationMap".into(), Value::Bool(declaration_map));
+            // A configured `rootDir` decides the emitted layout, so honor it
+            // rather than inferring one. Inferring the common source directory
+            // agrees with an explicit `rootDir` only while every emitted file
+            // sits under it; as soon as the program also contains a file
+            // outside it, the common directory collapses toward the project
+            // root and every declaration keeps its source directory prefix
+            // (#3355). Fall back to inference when nothing is configured.
             let root_dir = self
-                .common_virtual_source_dir()
-                .to_string_lossy()
-                .into_owned();
-            compiler_options.insert("rootDir".into(), Value::String(root_dir));
+                .configured_virtual_root_dir(original_root_dir.as_deref())
+                .unwrap_or_else(|| self.common_virtual_source_dir());
+            compiler_options.insert(
+                "rootDir".into(),
+                Value::String(root_dir.to_string_lossy().into_owned()),
+            );
             compiler_options.insert(
                 "outDir".into(),
                 Value::String(out_dir.to_string_lossy().into_owned()),
@@ -405,6 +418,41 @@ impl VirtualProject {
     /// into the virtual mirror: each relative entry yields the mirror copy
     /// followed by the real source-tree directory. Absolute and non-string
     /// entries pass through unchanged.
+    /// Rebase a configured `rootDir` onto the virtual mirror.
+    ///
+    /// The mirror reproduces paths relative to the project root, so a
+    /// `rootDir` of `./lib` becomes `<virtual_root>/lib`. Returns `None` when
+    /// nothing is configured, when the tsconfig directory cannot be resolved,
+    /// or when the configured directory falls outside the project root and
+    /// therefore has no mirror counterpart — in each case the caller keeps
+    /// inferring the layout.
+    fn configured_virtual_root_dir(&self, configured: Option<&str>) -> Option<PathBuf> {
+        let configured = configured?;
+        let tsconfig_dir = self
+            .resolved_tsconfig_path()?
+            .parent()
+            .map(Path::to_path_buf)?;
+        let configured_path = Path::new(configured);
+        let absolute = if configured_path.is_absolute() {
+            configured_path.to_path_buf()
+        } else {
+            tsconfig_dir.join(configured_path)
+        };
+        let absolute = vize_carton::path::canonicalize_non_verbatim(&absolute);
+        let relative = absolute.strip_prefix(&self.project_root).ok()?;
+        // `canonicalize` returns the input untouched for a directory that does
+        // not exist, so `..` can survive and `strip_prefix` still matches
+        // lexically (`<root>/../outside` starts with `<root>`). Such a path has
+        // no mirror counterpart.
+        if relative
+            .components()
+            .any(|component| matches!(component, std::path::Component::ParentDir))
+        {
+            return None;
+        }
+        Some(self.virtual_root.join(relative))
+    }
+
     fn remap_dir_entries(&self, entries: &[Value]) -> Vec<Value> {
         let up = self.virtual_root_to_project_prefix();
         let mut remapped = Vec::with_capacity(entries.len() * 2);
