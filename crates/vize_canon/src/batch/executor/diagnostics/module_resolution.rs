@@ -3,11 +3,13 @@
 //! Type-checking a partial file subset can surface a spurious `Cannot find
 //! module` diagnostic for a sibling that exists on disk but was not registered
 //! in the virtual project. These helpers detect that case so the diagnostic can
-//! be suppressed.
+//! be suppressed. The same specifier vocabulary is reused to restore the
+//! authored spelling in a genuinely unresolved import's message.
 
 use std::path::Path;
 
-use vize_carton::cstr;
+use super::{DiagnosticMapper, OriginalPosition};
+use vize_carton::{String, cstr};
 
 /// Extract the specifier from the first `Cannot find module "<spec>"` in
 /// `message`, handling straight and smart quotes.
@@ -40,6 +42,76 @@ pub(crate) fn relative_module_resolves_on_disk(message: &str, importer: &Path) -
         return false;
     };
     relative_specifier_resolves(dir, specifier)
+}
+
+/// The authored `.vue` spelling behind a generated mirror-module specifier, or
+/// `None` when `specifier` is not one. `./Panel.vue.ts` is what the import
+/// rewriter writes for an authored `./Panel.vue`; `./Panel.vue.tsx` is the TSX
+/// SFC form. Anything else — including an authored `./util.ts` — is left alone.
+fn mirror_module_specifier_source(specifier: &str) -> Option<&str> {
+    specifier
+        .strip_suffix(".ts")
+        .or_else(|| specifier.strip_suffix(".tsx"))
+        .filter(|source| source.ends_with(".vue"))
+}
+
+impl DiagnosticMapper<'_> {
+    /// Restore the authored specifier in a `Cannot find module` message.
+    ///
+    /// The import rewriter redirects an SFC import onto that file's generated
+    /// mirror module (`./Panel.vue` -> `./Panel.vue.ts`), so a genuinely
+    /// unresolved SFC import reaches the checker under the mirror spelling and
+    /// the message quotes a path the author never wrote — while `vue-tsc`
+    /// quotes `./Panel.vue`. Rewriting is gated on the authored bytes at the
+    /// diagnostic position really being the `.vue` spelling, so a hand-written
+    /// `import x from "./Panel.vue.ts"` keeps reporting exactly what it says.
+    pub(crate) fn devirtualized_module_message(
+        &mut self,
+        original: &OriginalPosition,
+        message: String,
+    ) -> String {
+        let Some(reported) = module_not_found_specifier(&message) else {
+            return message;
+        };
+        let Some(authored) = mirror_module_specifier_source(reported) else {
+            return message;
+        };
+        if !self.source_specifier_matches(original, authored) {
+            return message;
+        }
+        let Some((before, after)) = message.split_once(reported) else {
+            return message;
+        };
+        cstr!("{before}{authored}{after}")
+    }
+
+    /// Whether the authored bytes at `original` are the string literal
+    /// `specifier`. The diagnostic position of an unresolved import points at
+    /// the specifier's opening quote, so this reads the literal that starts
+    /// there and compares it verbatim.
+    fn source_specifier_matches(&mut self, original: &OriginalPosition, specifier: &str) -> bool {
+        let Some(source) = self.original_source(&original.path) else {
+            return false;
+        };
+        let content = &source.content;
+        let index = &source.line_index;
+        let Some(offset) = index.line_col_to_offset(content, original.line, original.column) else {
+            return false;
+        };
+        let Some(rest) = content.get(offset as usize..) else {
+            return false;
+        };
+        let Some(quote) = rest
+            .chars()
+            .next()
+            .filter(|character| matches!(character, '\'' | '"' | '`'))
+        else {
+            return false;
+        };
+        rest[quote.len_utf8()..]
+            .split_once(quote)
+            .is_some_and(|(literal, _)| literal == specifier)
+    }
 }
 
 /// Source extensions a relative specifier may resolve to when appended to the
@@ -108,9 +180,27 @@ fn specifier_has_source_extension(specifier: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::relative_module_resolves_on_disk;
+    use super::{mirror_module_specifier_source, relative_module_resolves_on_disk};
 
     use tempfile::TempDir;
+
+    #[test]
+    fn only_generated_mirror_specifiers_map_back_to_an_authored_spelling() {
+        assert_eq!(
+            mirror_module_specifier_source("./Panel.vue.ts"),
+            Some("./Panel.vue")
+        );
+        assert_eq!(
+            mirror_module_specifier_source("../widgets/Panel.vue.tsx"),
+            Some("../widgets/Panel.vue")
+        );
+        // An authored TypeScript specifier is not a mirror module, so its
+        // message must keep the spelling the author wrote.
+        assert_eq!(mirror_module_specifier_source("./util.ts"), None);
+        assert_eq!(mirror_module_specifier_source("./Panel.vue"), None);
+        assert_eq!(mirror_module_specifier_source("./types.d.ts"), None);
+        assert_eq!(mirror_module_specifier_source("vue-router"), None);
+    }
 
     #[test]
     fn ts2307_for_resolvable_relative_siblings_is_suppressed() {

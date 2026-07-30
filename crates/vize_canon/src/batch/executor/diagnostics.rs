@@ -145,10 +145,10 @@ impl<'a> DiagnosticMapper<'a> {
 
         if let Some(original) = original {
             return Some(Diagnostic {
-                file: original.path,
+                message: self.devirtualized_module_message(&original, diagnostic.message),
                 line: original.line,
                 column: original.column,
-                message: diagnostic.message,
+                file: original.path,
                 code,
                 severity: parse_severity(diagnostic.severity),
                 block_type: original.block_type,
@@ -515,9 +515,9 @@ import MissingPanel from './MissingPanel.vue'
         assert_eq!(diagnostic.file, app_path);
         assert_eq!(diagnostic.code, Some(2307));
         assert_eq!(diagnostic.line, 1);
-        assert!(
-            diagnostic.message.contains("MissingPanel.vue.ts"),
-            "{diagnostic:?}"
+        assert_eq!(
+            diagnostic.message,
+            "Cannot find module './MissingPanel.vue' or its corresponding type declarations."
         );
     }
 

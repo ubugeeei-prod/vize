@@ -2,8 +2,66 @@ use std::path::Path;
 
 use super::{
     BatchTypeChecker, TypeChecker, create_project_case, relative_path, resolve_test_tsgo_binary,
+    snapshot_project_diagnostics,
 };
 use vize_carton::{String, cstr};
+
+/// An unresolved SFC import must quote the specifier the author wrote.
+///
+/// The import rewriter redirects `./Absent.vue` onto the generated mirror
+/// module `./Absent.vue.ts`, so before the fix `TS2307` named a path that
+/// appears nowhere in the source while `vue-tsc` 3.3.4 reports
+/// `Cannot find module './Absent.vue' ...` at the identical position. The
+/// second import pins the other direction: a hand-written `./Literal.vue.ts`
+/// is not a mirror module and keeps its own spelling.
+#[test]
+fn unresolved_sfc_import_reports_the_authored_specifier() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "unresolved-sfc-import-specifier",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+import Absent from "./Absent.vue";
+import Literal from "./Literal.vue.ts";
+</script>
+
+<template>
+  <Absent />
+  <Literal />
+</template>
+"#,
+        )],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+    let Some(snapshot) = snapshot else {
+        return;
+    };
+
+    assert_eq!(
+        snapshot,
+        vec![
+            (
+                String::from("src/App.vue"),
+                Some(2307),
+                String::from(
+                    "2:20:error Cannot find module './Absent.vue' or its corresponding type declarations."
+                ),
+            ),
+            (
+                String::from("src/App.vue"),
+                Some(2307),
+                String::from(
+                    "3:21:error Cannot find module './Literal.vue.ts' or its corresponding type declarations."
+                ),
+            ),
+        ]
+    );
+}
 
 #[test]
 fn node_module_resolution_uses_package_types_hidden_by_exports() {

@@ -582,10 +582,10 @@ fn parse_cli_diagnostic_line(
     }
 
     Some(Diagnostic {
-        file: original.path,
+        message: mapper.devirtualized_module_message(&original, message.into()),
         line: original.line,
         column: original.column,
-        message: message.into(),
+        file: original.path,
         code,
         severity,
         block_type: original.block_type,
