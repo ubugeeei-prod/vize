@@ -1,11 +1,5 @@
 [
   {
-    "property": "idempotence",
-    "project": "vue-data-ui",
-    "path": "src/components/vue-ui-flow.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3379"
-  },
-  {
     "property": "parse-preservation",
     "project": "crater",
     "path": "resources/scripts/components/base/BaseModal.vue",

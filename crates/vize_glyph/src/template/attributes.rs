@@ -262,15 +262,21 @@ fn write_rendered_attribute(
 
     for line in lines {
         output.extend_from_slice(newline);
-        if indent_continuation {
+        let line = line.trim_end_matches('\r');
+        // Every byte between the backticks is part of the string's runtime
+        // value, so a line that *starts* inside a template literal is emitted
+        // exactly as the expression formatter produced it — no attribute
+        // indent in front of it, no leading whitespace stripped off it.
+        //
+        // Rewriting that whitespace was not only a rendered-output change: it
+        // also moved the column at which every embedded `${…}` starts. The
+        // expression formatter measures its line-break budget from that
+        // column, so the next `vize fmt` pass — reading back the re-indented
+        // literal — made a different wrap decision and produced a different
+        // file. (#3379)
+        if indent_continuation && !in_template_literal {
             write_indent(output, indent, continuation_depth);
         }
-        let line = line.trim_end_matches('\r');
-        let line = if indent_continuation && in_template_literal {
-            line.trim_start()
-        } else {
-            line
-        };
         output.extend_from_slice(line.as_bytes());
         in_template_literal = template_literal_state_after_line_from(in_template_literal, line);
     }
@@ -283,68 +289,4 @@ fn write_indent(output: &mut Vec<u8>, indent: &[u8], depth: usize) {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{ParsedAttribute, render_attribute, write_rendered_attribute};
-
-    #[test]
-    fn render_attribute_uses_single_quotes_when_value_contains_double_quotes() {
-        let attr = ParsedAttribute {
-            name: "title".into(),
-            value: Some(r#"say "hello""#.into()),
-            priority: 0,
-            original_index: 0,
-            indent_multiline_value: false,
-        };
-
-        assert_eq!(render_attribute(&attr).as_str(), r#"title='say "hello"'"#);
-    }
-
-    #[test]
-    fn render_attribute_escapes_double_quotes_when_value_contains_both_quote_styles() {
-        let attr = ParsedAttribute {
-            name: "title".into(),
-            value: Some(r#"say "hello" and 'bye'"#.into()),
-            priority: 0,
-            original_index: 0,
-            indent_multiline_value: false,
-        };
-
-        assert_eq!(
-            render_attribute(&attr).as_str(),
-            r#"title="say &quot;hello&quot; and 'bye'""#
-        );
-    }
-
-    #[test]
-    fn write_rendered_attribute_indents_multiline_value_lines() {
-        let mut output = Vec::new();
-        write_rendered_attribute(
-            &mut output,
-            ":class='[\n  active\n]'",
-            b"\n",
-            b"  ",
-            2,
-            true,
-        );
-
-        assert_eq!(
-            String::from_utf8(output).unwrap(),
-            ":class='[\n      active\n    ]'"
-        );
-    }
-
-    #[test]
-    fn write_rendered_attribute_leaves_literal_multiline_values_verbatim() {
-        let mut output = Vec::new();
-        write_rendered_attribute(
-            &mut output,
-            "class=\"\n  active\n\"",
-            b"\n",
-            b"  ",
-            2,
-            false,
-        );
-
-        assert_eq!(String::from_utf8(output).unwrap(), "class=\"\n  active\n\"");
-    }
-}
+mod tests;
