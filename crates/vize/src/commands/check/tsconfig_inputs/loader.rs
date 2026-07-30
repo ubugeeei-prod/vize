@@ -8,7 +8,7 @@ use std::{
 use serde_json::Value;
 use vize_carton::{FxHashMap, FxHashSet, profile, profiler::global_profiler};
 
-use super::glob::normalize_input_path;
+use super::glob::{compiler_option_dir_exclude, normalize_input_path};
 use super::jsonc::parse_jsonc_value;
 use super::spec::{GlobSpec, RelativePathSpec, TsconfigDeclarationOptions, TsconfigInputSpec};
 
@@ -117,6 +117,13 @@ fn load_tsconfig_inputs_inner(
             .into_iter()
             .filter_map(|value| GlobSpec::new(dir, &value))
             .collect();
+    }
+
+    if let Some(out_dir) = compiler_option_dir_exclude(&value, dir, "outDir") {
+        merged.out_dir_exclude = Some(out_dir);
+    }
+    if let Some(declaration_dir) = compiler_option_dir_exclude(&value, dir, "declarationDir") {
+        merged.declaration_dir_exclude = Some(declaration_dir);
     }
 
     Ok(merged)

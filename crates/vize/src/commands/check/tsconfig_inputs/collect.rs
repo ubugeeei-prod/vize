@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use ignore::WalkBuilder;
 use vize_carton::FxHashSet;
 
-use super::glob::{default_exclude_specs, normalize_input_path, normalize_walked_path};
+use super::glob::{normalize_input_path, normalize_walked_path};
 use super::loader::{TsconfigInputCache, collect_tsconfig_project_paths};
 use super::matching::{
     SupportedFileOptions, is_generated_codegen_declaration_path, is_generated_path,
@@ -274,11 +274,7 @@ impl TsconfigOwnershipMatcher {
         } else {
             spec.includes.clone()
         };
-        let excludes = if !spec.has_excludes {
-            default_exclude_specs(&default_base_dir)
-        } else {
-            spec.excludes.clone()
-        };
+        let excludes = spec.effective_excludes();
 
         Self {
             loaded: true,

@@ -178,11 +178,9 @@ fn a_recursive_wildcard_below_a_literal_package_folder_segment_stays_shallow() {
     // `node_modules/**/*.ts` keeps its literal first segment but the `**` still
     // rejects a package folder at the depths it consumes, so tsgo lists
     // `node_modules/top/index.ts` and nothing from a deeper `node_modules`.
-    // The `exclude` is spelled out because vize's default `exclude` still
-    // shadows the literal first segment, which `tsc`'s does not: #3395.
     let root = workspace(
         "literal-root-segment",
-        r#"{ "include": ["node_modules/**/*.ts"], "exclude": [] }"#,
+        r#"{ "include": ["node_modules/**/*.ts"] }"#,
     );
     write(
         &root,
@@ -191,6 +189,45 @@ fn a_recursive_wildcard_below_a_literal_package_folder_segment_stays_shallow() {
     );
 
     assert_eq!(collected(&root), vec!["node_modules/top/index.ts"]);
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
+fn a_literal_package_folder_at_the_include_root_is_a_program_root() {
+    // The reachability condition of #3395: vendored-dependency and
+    // "typecheck one dependency" setups name the package folder in `include`.
+    // tsgo, same tree:
+    //   node_modules/top/index.ts
+    // Vize's anchored default `exclude` used to shadow that literal segment and
+    // collect nothing at all.
+    let root = workspace("literal-root", r#"{ "include": ["node_modules/*/*.ts"] }"#);
+
+    assert_eq!(collected(&root), vec!["node_modules/top/index.ts"]);
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
+fn the_other_two_package_folder_names_are_program_roots_when_named_literally() {
+    // `bower_components` and `jspm_packages` get the same treatment as
+    // `node_modules`: implicitly excluded from a wildcard segment, honored as a
+    // literal one. tsgo lists both of these files.
+    let root = workspace(
+        "literal-root-others",
+        r#"{ "include": ["bower_components/**/*.ts", "jspm_packages/**/*.ts"] }"#,
+    );
+    write(
+        &root,
+        "bower_components/b/index.ts",
+        "export const b = 1;\n",
+    );
+    write(&root, "jspm_packages/j/index.ts", "export const j = 1;\n");
+
+    assert_eq!(
+        collected(&root),
+        vec!["bower_components/b/index.ts", "jspm_packages/j/index.ts"]
+    );
 
     let _ = std::fs::remove_dir_all(&root);
 }

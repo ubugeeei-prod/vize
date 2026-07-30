@@ -60,19 +60,30 @@ pub(super) fn normalize_tsconfig_glob_base(
     (base_dir, normalized)
 }
 
-/// The documented default `exclude`, anchored at `base_dir`.
+/// One half of `tsc`'s default `exclude`: the directory `key` — `outDir` or
+/// `declarationDir` — names in `value`'s `compilerOptions`, as a glob covering
+/// everything below it.
 ///
-/// This only covers the copies sitting directly below the tsconfig directory.
-/// `tsc` drops these three directory names from every wildcard segment at any
-/// depth instead, which [`super::implicit_exclude`] applies on the `include`
-/// side and which stays in force even when the user spells out their own
-/// `exclude`. What remains here is therefore stricter than `tsc`, whose own
-/// `exclude` default is only `outDir` and `declarationDir`: #3395.
-pub(super) fn default_exclude_specs(base_dir: &Path) -> Vec<GlobSpec> {
-    ["node_modules", "bower_components", "jspm_packages"]
-        .into_iter()
-        .filter_map(|value| GlobSpec::new(base_dir, value))
-        .collect()
+/// The spec is anchored at the *resolved* directory rather than at `dir` with a
+/// relative pattern, so an absolute `outDir` works the same as a relative one.
+/// An empty string is not a directory and `tsc` skips it (its default-exclude
+/// check is a truthiness test on the option), so it yields no spec.
+pub(super) fn compiler_option_dir_exclude(
+    value: &serde_json::Value,
+    dir: &Path,
+    key: &str,
+) -> Option<GlobSpec> {
+    let raw = value.get("compilerOptions")?.get(key)?.as_str()?;
+    if raw.is_empty() {
+        return None;
+    }
+    let resolved = Path::new(raw);
+    let resolved = if resolved.is_absolute() {
+        resolved.to_path_buf()
+    } else {
+        dir.join(resolved)
+    };
+    GlobSpec::new(&resolved, "")
 }
 
 pub(super) fn normalize_path_separators(path: &Path) -> std::string::String {

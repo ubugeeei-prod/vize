@@ -23,6 +23,8 @@ mod type_references;
 #[cfg(test)]
 mod codegen_tests;
 #[cfg(test)]
+mod default_exclude_tests;
+#[cfg(test)]
 mod hidden_include_tests;
 #[cfg(test)]
 mod nuxt_manifest_tests;
@@ -47,7 +49,7 @@ use collect::{
     collect_supported_files_for_include_roots, collect_supported_files_with_options,
     explicit_hidden_include_roots, explicit_hidden_pattern_roots,
 };
-use glob::{default_exclude_specs, normalize_input_path};
+use glob::normalize_input_path;
 use loader::collect_tsconfig_project_paths;
 use matching::{
     SupportedFileOptions, is_declaration_path, is_generated_codegen_declaration_path,
@@ -144,13 +146,8 @@ fn collect_default_check_files_for_tsconfig(
         &spec.includes
     };
 
-    let default_excludes;
-    let excludes: &[GlobSpec] = if !spec.has_excludes {
-        default_excludes = default_exclude_specs(&default_base_dir);
-        &default_excludes
-    } else {
-        &spec.excludes
-    };
+    let excludes = spec.effective_excludes();
+    let excludes: &[GlobSpec] = &excludes;
 
     if !includes.is_empty() {
         let collected = collect_supported_files_for_include_roots(

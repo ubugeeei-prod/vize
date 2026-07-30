@@ -16,6 +16,10 @@ pub(super) struct TsconfigInputSpec {
     pub(super) has_files: bool,
     pub(super) has_includes: bool,
     pub(super) has_excludes: bool,
+    /// `compilerOptions.outDir`, as a glob over the directory it resolves to.
+    pub(super) out_dir_exclude: Option<GlobSpec>,
+    /// `compilerOptions.declarationDir`, likewise.
+    pub(super) declaration_dir_exclude: Option<GlobSpec>,
 }
 
 impl TsconfigInputSpec {
@@ -32,6 +36,34 @@ impl TsconfigInputSpec {
             self.excludes = extended.excludes;
             self.has_excludes = true;
         }
+        // Both are ordinary compiler options, so an extending config that does
+        // not restate them keeps the base's value.
+        if extended.out_dir_exclude.is_some() {
+            self.out_dir_exclude = extended.out_dir_exclude;
+        }
+        if extended.declaration_dir_exclude.is_some() {
+            self.declaration_dir_exclude = extended.declaration_dir_exclude;
+        }
+    }
+
+    /// The `exclude` specs in force for this project.
+    ///
+    /// `tsc` has no `node_modules` / `bower_components` / `jspm_packages`
+    /// default `exclude`: it rejects those three names from *wildcard* `include`
+    /// segments instead (see [`super::implicit_exclude`]), which is why a
+    /// literal include segment naming one of them stays a program root. The real
+    /// default is `[outDir, declarationDir]`, applied only when neither the
+    /// config nor anything it extends declares an `exclude` of its own — an
+    /// explicit `exclude`, including `[]`, replaces it wholesale (#3395).
+    pub(super) fn effective_excludes(&self) -> Vec<GlobSpec> {
+        if self.has_excludes {
+            return self.excludes.clone();
+        }
+        self.out_dir_exclude
+            .iter()
+            .chain(self.declaration_dir_exclude.iter())
+            .cloned()
+            .collect()
     }
 }
 
