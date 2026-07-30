@@ -146,7 +146,7 @@ impl VirtualProject {
         let original_root_dir = compiler_options
             .get("rootDir")
             .and_then(Value::as_str)
-            .map(std::string::ToString::to_string);
+            .map(|root_dir| root_dir.to_compact_string());
 
         for option in PATH_SENSITIVE_COMPILER_OPTIONS {
             compiler_options.remove(*option);
