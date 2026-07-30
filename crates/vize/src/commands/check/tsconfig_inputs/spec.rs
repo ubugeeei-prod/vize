@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use glob::Pattern;
 
 use super::glob::{normalize_path_separators, normalize_tsconfig_glob_base};
+use super::implicit_exclude::wildcard_segment_hits_package_folder;
 use super::matching::glob_match_options;
 
 #[derive(Debug, Clone, Default)]
@@ -95,12 +96,27 @@ impl GlobSpec {
         })
     }
 
+    /// Whether `path` matches this spec as a plain glob. This is the `exclude`
+    /// semantics: TypeScript's exclude matcher has no implicit exclusions.
     pub(super) fn matches(&self, path: &Path) -> bool {
-        let Ok(relative) = path.strip_prefix(&self.base_dir) else {
-            return false;
-        };
+        self.matched_relative(path).is_some()
+    }
+
+    /// Whether `path` matches this spec as an `include` entry, i.e. as a plain
+    /// glob *and* without a package folder in any wildcard-matched segment. See
+    /// [`super::implicit_exclude`] for why `include` and `exclude` differ here.
+    pub(super) fn matches_include(&self, path: &Path) -> bool {
+        self.matched_relative(path).is_some_and(|relative| {
+            !wildcard_segment_hits_package_folder(&self.normalized, relative)
+        })
+    }
+
+    fn matched_relative<'path>(&self, path: &'path Path) -> Option<&'path Path> {
+        let relative = path.strip_prefix(&self.base_dir).ok()?;
         let normalized = normalize_path_separators(relative);
-        self.pattern.matches_with(&normalized, glob_match_options())
+        self.pattern
+            .matches_with(&normalized, glob_match_options())
+            .then_some(relative)
     }
 }
 

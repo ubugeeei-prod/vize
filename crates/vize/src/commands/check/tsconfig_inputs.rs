@@ -13,6 +13,7 @@ use vize_carton::FxHashSet;
 mod ambient;
 mod collect;
 mod glob;
+mod implicit_exclude;
 mod jsonc;
 mod loader;
 mod matching;
@@ -25,6 +26,8 @@ mod codegen_tests;
 mod hidden_include_tests;
 #[cfg(test)]
 mod nuxt_manifest_tests;
+#[cfg(test)]
+mod package_folder_tests;
 #[cfg(test)]
 mod tests;
 

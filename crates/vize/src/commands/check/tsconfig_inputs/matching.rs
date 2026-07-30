@@ -35,7 +35,7 @@ pub(super) fn matches_tsconfig_patterns(
     includes: &[GlobSpec],
     excludes: &[GlobSpec],
 ) -> bool {
-    if !includes.is_empty() && !includes.iter().any(|glob| glob.matches(path)) {
+    if !includes.is_empty() && !includes.iter().any(|glob| glob.matches_include(path)) {
         return false;
     }
 

@@ -60,6 +60,14 @@ pub(super) fn normalize_tsconfig_glob_base(
     (base_dir, normalized)
 }
 
+/// The documented default `exclude`, anchored at `base_dir`.
+///
+/// This only covers the copies sitting directly below the tsconfig directory.
+/// `tsc` drops these three directory names from every wildcard segment at any
+/// depth instead, which [`super::implicit_exclude`] applies on the `include`
+/// side and which stays in force even when the user spells out their own
+/// `exclude`. What remains here is therefore stricter than `tsc`, whose own
+/// `exclude` default is only `outDir` and `declarationDir`: #3395.
 pub(super) fn default_exclude_specs(base_dir: &Path) -> Vec<GlobSpec> {
     ["node_modules", "bower_components", "jspm_packages"]
         .into_iter()
