@@ -86,7 +86,7 @@ impl DocumentHighlightService {
             return Some(tag_highlights(&ctx.content, &names));
         }
 
-        let (start, end) = token_span_at_offset(&ctx.content, ctx.offset, is_identifier_char)?;
+        let (start, end) = token_span_at_offset(&ctx.content, offset, is_identifier_char)?;
         let symbol = &ctx.content[start..end];
         if !is_highlightable_symbol(symbol) {
             return None;

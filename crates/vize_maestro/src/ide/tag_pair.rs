@@ -57,6 +57,14 @@ pub(crate) fn names_at(content: &str, region: (usize, usize), offset: usize) -> 
         if bytes.get(cursor + 1) == Some(&b'/') {
             let name_start = cursor + 2;
             let name_end = tag_name_end(bytes, name_start, region_end);
+            if name_end == name_start {
+                // `</` with no name yet: a zero-width span the cursor would
+                // "sit on", which must not become a zero-width highlight.
+                cursor = content[cursor..region_end]
+                    .find('>')
+                    .map_or(region_end, |relative| cursor + relative + 1);
+                continue;
+            }
             let close_span = (name_start, name_end);
             let name = &content[name_start..name_end];
 
@@ -88,7 +96,6 @@ pub(crate) fn names_at(content: &str, region: (usize, usize), offset: usize) -> 
 
         let name_start = cursor + 1;
         let name_end = tag_name_end(bytes, name_start, region_end);
-        let tag_end = start_tag_end(content, cursor, region_end)?;
         if name_end == name_start {
             cursor += 1;
             continue;
@@ -96,6 +103,18 @@ pub(crate) fn names_at(content: &str, region: (usize, usize), offset: usize) -> 
 
         let name = &content[name_start..name_end];
         let name_span = (name_start, name_end);
+        // A start tag with no `>` is a name being typed (or a stray `<`): no tag
+        // in the rest of the region can close either, so stop instead of
+        // discarding the pair or unclosed name already resolved.
+        let Some(tag_end) = start_tag_end(content, cursor, region_end) else {
+            if contains(name_span, offset) {
+                return Some(TagNames {
+                    first: name_span,
+                    second: None,
+                });
+            }
+            break;
+        };
         let self_closing = content[..tag_end - 1].trim_end().ends_with('/');
         if self_closing || vize_carton::is_void_tag(name) {
             if contains(name_span, offset) {
@@ -157,3 +176,6 @@ fn start_tag_end(content: &str, tag_start: usize, limit: usize) -> Option<usize>
 
     None
 }
+
+#[cfg(test)]
+mod tests;
