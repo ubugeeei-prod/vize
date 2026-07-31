@@ -38,6 +38,9 @@
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
+#[cfg(test)]
+mod normalize_tests;
+
 /// Environment variables honored by the resolver, in precedence order.
 pub const CORSA_ENV_VARS: [&str; 4] = [
     "CORSA_PATH",
@@ -549,8 +552,7 @@ fn push_unique(paths: &mut Vec<PathBuf>, candidate: PathBuf) {
 mod tests {
     use super::{
         CORSA_ENV_VARS, CorsaResolveError, CorsaResolveRequest, discover_in_walk,
-        normalize_corsa_path, normalize_corsa_path_with_discovery, platform_suffix,
-        resolve_with_env,
+        normalize_corsa_path, platform_suffix, resolve_with_env,
     };
     use std::ffi::OsString;
     use std::fs;
@@ -706,24 +708,6 @@ mod tests {
         write_file(&cache);
 
         assert_eq!(normalize_corsa_path(&wrapper), cache);
-    }
-
-    #[test]
-    fn normalize_keeps_wrapper_when_nothing_better_exists() {
-        let temp_dir = TempDir::new().unwrap();
-        let wrapper = temp_dir
-            .path()
-            .join("node_modules")
-            .join(".bin")
-            .join("tsgo");
-        write_file(&wrapper);
-
-        let normalized = normalize_corsa_path_with_discovery(&wrapper, |project_root| {
-            assert_eq!(project_root, temp_dir.path());
-            None
-        });
-
-        assert_eq!(normalized, wrapper);
     }
 
     #[test]
