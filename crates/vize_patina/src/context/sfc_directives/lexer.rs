@@ -118,7 +118,7 @@ impl DirectiveLexer {
                         if let Some(ScriptContext::Interpolation(depth)) = self.stack.last_mut() {
                             *depth += 1;
                         }
-                        self.delimiters.open_brace();
+                        self.delimiters.open_brace(!self.can_start_expression);
                         self.can_start_expression = true;
                         self.after_dot = false;
                     }

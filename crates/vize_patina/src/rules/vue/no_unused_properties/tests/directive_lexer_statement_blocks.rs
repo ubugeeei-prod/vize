@@ -15,7 +15,8 @@ defineProps<{{ msg: string }}>();
     );
     assert_eq!(
         owned(&lint_sfc(&sfc)),
-        vec![unused(&sfc, "msg", "msg: string")]
+        vec![unused(&sfc, "msg", "msg: string")],
+        "{statement}"
     );
 }
 
@@ -26,12 +27,17 @@ fn regex_after_if_statement_block_is_not_a_directive() {
 
 #[test]
 fn regex_after_function_statement_block_is_not_a_directive() {
-    assert_regex_marker_is_not_a_directive(
-        "function check() {}\n/[/*] @vize:expected */.test(input)",
-    );
-    assert_regex_marker_is_not_a_directive(
-        "function check<T>() {}\n/[/*] @vize:expected */.test(input)",
-    );
+    for declaration in [
+        "function check() {}",
+        "function check<T>() {}",
+        "function check(): void {}",
+        "function check<T>(): { value: T } {}",
+        "function check<T extends (...args: never[]) => unknown>(): boolean {}",
+    ] {
+        assert_regex_marker_is_not_a_directive(&format!(
+            "{declaration}\n/[/*] @vize:expected */.test(input)"
+        ));
+    }
 }
 
 #[test]
@@ -50,6 +56,15 @@ fn regex_after_try_statement_blocks_is_not_a_directive() {
     assert_regex_marker_is_not_a_directive(
         "try {} finally {}\n/[/*] @vize:expected */.test(input)",
     );
+}
+
+#[test]
+fn regex_after_standalone_and_class_blocks_is_not_a_directive() {
+    for statement in ["{}", "class Check {}"] {
+        assert_regex_marker_is_not_a_directive(&format!(
+            "{statement}\n/[/*] @vize:expected */.test(input)"
+        ));
+    }
 }
 
 #[test]
@@ -79,8 +94,13 @@ defineProps<{ msg: string }>();
 }
 
 #[test]
-fn division_after_function_expressions_keeps_a_real_directive() {
-    for expression in ["function check() {}", "() => {}"] {
+fn division_after_function_and_class_expressions_keeps_a_real_directive() {
+    for expression in [
+        "function check() {}",
+        "function check(): void {}",
+        "() => {}",
+        "class {}",
+    ] {
         let sfc = format!(
             r#"<script setup lang="ts">
 const check = {expression}
