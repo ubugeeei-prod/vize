@@ -37,7 +37,6 @@ test("vue2-elm vize check surface over the pinned Vue 2 app stays exact", async 
             // all is the `checkJs` opt-in, exactly as `tsc`/`vue-tsc` require
             // for a `lang="js"` script block (#3322).
             checkJs: true,
-            baseUrl: ".",
             lib: ["ES2022", "DOM"],
             paths: { "src/*": ["src/*"] },
             skipLibCheck: true,
