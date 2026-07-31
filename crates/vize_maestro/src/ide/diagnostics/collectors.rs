@@ -680,16 +680,10 @@ fn script_source_type(lang: Option<&str>) -> Option<SourceType> {
 
 fn diagnostic_span(error: &oxc_diagnostics::OxcDiagnostic, source_len: usize) -> (usize, usize) {
     let fallback_end = source_len.max(1);
-    // `OxcDiagnostic::labels` is an `oxc_diagnostics::Labels` since OXC 0.142
-    // (it was `Option<Vec<LabeledSpan>>`); it derefs to a slice, and "no labels"
-    // is now the empty slice rather than `None`. `LabeledSpan::offset` / `len`
-    // also went `usize` -> `u32` in the same bump.
-    let Some(label) = error
-        .labels
-        .iter()
-        .find(|label| label.primary())
-        .or_else(|| error.labels.first())
-    else {
+    // OXC 0.142: `labels` is a deref-to-slice `Labels`, not `Option<Vec<_>>`, so
+    // "no labels" is the empty slice; `offset`/`len` are `u32`, not `usize`.
+    let primary = error.labels.iter().find(|label| label.primary());
+    let Some(label) = primary.or_else(|| error.labels.first()) else {
         return (0, fallback_end);
     };
 

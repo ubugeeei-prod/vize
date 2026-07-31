@@ -232,15 +232,12 @@ pub fn strip_typescript_from_expression(content: &str) -> String {
     let parse_result = parser.parse();
 
     if !parse_result.diagnostics.is_empty() {
-        // If parsing fails, return original content
         return String::new(content);
     }
 
     let mut program = parse_result.program;
 
-    // Run semantic analysis. `with_enum_eval(true)`: OXC 0.142's TypeScript enum
-    // transform panics unless the `Scoping` it is handed carries evaluated enum
-    // member values.
+    // `with_enum_eval`: OXC 0.142's enum transform panics without evaluated members.
     let semantic_ret = SemanticBuilder::new()
         .with_excess_capacity(2.0)
         .with_enum_eval(true)

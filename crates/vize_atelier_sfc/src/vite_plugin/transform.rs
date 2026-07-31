@@ -189,10 +189,9 @@ fn is_import_meta_glob_call(call: &CallExpression<'_>) -> bool {
 }
 
 fn is_import_meta_expression(expression: &Expression<'_>) -> bool {
-    // OXC 0.142 split the single `MetaProperty` variant into `ImportMeta` and
-    // `NewTarget`, so `import.meta` is now its own variant with no `meta` /
-    // `property` identifiers to compare — matching the variant is the whole
-    // check, and `new.target` can no longer reach this branch.
+    // OXC 0.142 split `MetaProperty` into `ImportMeta` and `NewTarget`, so
+    // `import.meta` is its own variant with no `meta`/`property` identifiers left
+    // to compare, and `new.target` can no longer reach this branch.
     matches!(expression, Expression::ImportMeta(_))
 }
 
