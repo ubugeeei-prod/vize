@@ -6,7 +6,7 @@ use super::{AUTHORED_VUE_TS_SENTINEL, import_rewriter::ImportRewriter};
 #[test]
 fn authored_vue_ts_specifiers_cannot_resolve_generated_mirrors() {
     let case = TempDir::new().expect("temp project");
-    let project = case.path();
+    let project = std::fs::canonicalize(case.path()).expect("canonical temp project");
     let source_dir = project.join("src");
     let virtual_root = project.join("node_modules/.vize/canon");
     std::fs::create_dir_all(&source_dir).expect("source directory");
@@ -79,6 +79,14 @@ fn authored_vue_ts_specifiers_cannot_resolve_generated_mirrors() {
          import '{absent_absolute}{AUTHORED_VUE_TS_SENTINEL}';\n\
          import './Generated.vue.ts';\n"
     );
+    let full_declaration = source_dir
+        .join("FullDeclaration.vue.ts")
+        .to_string_lossy()
+        .replace('\\', "/");
+    let virtual_expected = expected.replace(
+        "import './FullDeclaration.vue.ts';",
+        &format!("import '{full_declaration}';"),
+    );
 
     let rewriter = ImportRewriter::new();
     assert_eq!(
@@ -92,11 +100,11 @@ fn authored_vue_ts_specifiers_cannot_resolve_generated_mirrors() {
             .rewrite_for_virtual_project(
                 &source,
                 SourceType::ts(),
-                (project, &virtual_root),
+                (&project, &virtual_root),
                 Some(&source_dir),
             )
             .code,
-        expected
+        virtual_expected
     );
 
     // Callers without an authored directory cannot prove that a relative
