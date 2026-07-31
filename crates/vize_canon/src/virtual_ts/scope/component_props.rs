@@ -10,7 +10,7 @@ use vize_carton::profile;
 
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind, analysis::ComponentUsage};
 
-use crate::virtual_ts::expressions::{ComponentPropSource, generate_component_prop_checks};
+use crate::virtual_ts::expressions::generate_component_prop_checks;
 use crate::virtual_ts::helpers::{to_safe_identifier, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;
 
@@ -178,7 +178,7 @@ pub(super) fn generate_component_props(
                 usage,
                 idx,
                 ctx.template_prop_names,
-                ComponentPropSource::new(ctx.template_source, ctx.template_offset),
+                ctx.source_context(),
                 "  "
             )
         );
@@ -199,7 +199,7 @@ pub(super) fn generate_component_props(
             children_map: ctx.children_map,
             vfor_enclosing_guards: &vfor_enclosing_guards,
             template_prop_names: ctx.template_prop_names,
-            source_context: ComponentPropSource::new(ctx.template_source, ctx.template_offset),
+            source_context: ctx.source_context(),
         };
         profile!(
             "canon.virtual_ts.closure_component_props",

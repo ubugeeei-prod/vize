@@ -73,3 +73,13 @@ pub(super) struct ComponentPropsContext<'a> {
     pub(super) check_unresolved_global_components: bool,
     pub(super) legacy_vue2: bool,
 }
+
+impl<'a> ComponentPropsContext<'a> {
+    pub(super) const fn source_context(&self) -> ComponentPropSource<'a> {
+        ComponentPropSource::new(
+            self.template_source,
+            self.template_offset,
+            &self.summary.scopes,
+        )
+    }
+}

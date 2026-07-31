@@ -32,6 +32,21 @@ pub(super) fn collect_component_prop_expression_ranges(
         if !has_checkable_binding && !options.legacy_vue2 {
             continue;
         }
+        for spread in &usage.spread_props {
+            // The generic props call checks the entire bag and owns its precise
+            // rewrite mapping. A duplicate bare statement would route the same
+            // spread through the older token scanner.
+            for expr in &summary.template_expressions {
+                if expr.kind == TemplateExpressionKind::VBind
+                    && expr.scope_id == usage.scope_id
+                    && expr.start >= spread.start
+                    && expr.end <= spread.end
+                    && expr.content.as_str().trim() == spread.expression.as_str().trim()
+                {
+                    ranges.insert((expr.start, expr.end));
+                }
+            }
+        }
         for prop in &usage.props {
             if prop.name_is_dynamic {
                 continue;

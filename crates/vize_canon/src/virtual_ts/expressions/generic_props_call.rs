@@ -13,12 +13,16 @@ use super::component_props::{
 use super::prop_sources::{
     append_prop_value, generated_prop_value, prop_name_source_range, prop_value_source_range,
 };
+use super::spread_reserved_props::rewrite_reserved_spread_references;
 use crate::virtual_ts::scope::has_checkable_props_or_spread;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
-use vize_croquis::croquis::{ComponentUsage, PassedProp, SpreadProp};
+use vize_croquis::{
+    ScopeId,
+    croquis::{ComponentUsage, PassedProp, SpreadProp},
+};
 
 /// Emit a single call into the child's generic functional prop-checker (#775),
 /// assembling the dynamic props into one object literal so TypeScript can infer
@@ -89,7 +93,15 @@ pub(super) fn generate_generic_props_call(
             continue;
         }
         while let Some(spread) = spreads.next_if(|spread| spread.start < prop.start) {
-            append_spread_entry(ts, mappings, spread, template_offset, expr_indent.as_str());
+            append_spread_entry(
+                ts,
+                mappings,
+                spread,
+                template_prop_names,
+                usage.scope_id,
+                source_context,
+                expr_indent.as_str(),
+            );
         }
 
         let generated_value = if merge_class_bindings && prop.name.as_str() == "class" {
@@ -163,7 +175,15 @@ pub(super) fn generate_generic_props_call(
         });
     }
     for spread in spreads {
-        append_spread_entry(ts, mappings, spread, template_offset, expr_indent.as_str());
+        append_spread_entry(
+            ts,
+            mappings,
+            spread,
+            template_prop_names,
+            usage.scope_id,
+            source_context,
+            expr_indent.as_str(),
+        );
     }
 
     append!(*ts, "{expr_indent}}}");
@@ -192,18 +212,62 @@ fn append_spread_entry(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     spread: &SpreadProp,
-    template_offset: u32,
+    template_prop_names: &FxHashSet<String>,
+    usage_scope_id: ScopeId,
+    source_context: ComponentPropSource<'_>,
     expr_indent: &str,
 ) {
     append!(*ts, "{expr_indent}  ...");
-    let gen_range = append_prop_value(ts, spread.expression.as_str());
+    let expression = spread.expression.as_str();
+    let source_expression = spread_expression_source_range(source_context, spread);
+    let (gen_range, sub_spans) = if let Some(rewritten) = rewrite_reserved_spread_references(
+        expression,
+        template_prop_names,
+        source_context.scopes,
+        usage_scope_id,
+    ) {
+        let gen_range = append_prop_value(ts, rewritten.code.as_str());
+        let sub_spans = source_expression.map_or_else(Vec::new, |source| {
+            rewritten
+                .segments
+                .into_iter()
+                .map(|segment| VizeSubSpan {
+                    gen_range: gen_range.start + segment.generated.start
+                        ..gen_range.start + segment.generated.end,
+                    src_range: source.start + segment.source.start
+                        ..source.start + segment.source.end,
+                })
+                .collect()
+        });
+        (gen_range, sub_spans)
+    } else {
+        let gen_range = append_prop_value(ts, expression);
+        let sub_spans = source_expression.map_or_else(Vec::new, |source| {
+            vec![VizeSubSpan {
+                gen_range: gen_range.clone(),
+                src_range: source,
+            }]
+        });
+        (gen_range, sub_spans)
+    };
     ts.push_str(",\n");
     mappings.push(VizeMapping {
         gen_range,
-        src_range: (template_offset + spread.start) as usize
-            ..(template_offset + spread.end) as usize,
-        sub_spans: Vec::new(),
+        src_range: (source_context.offset + spread.start) as usize
+            ..(source_context.offset + spread.end) as usize,
+        sub_spans,
     });
+}
+
+fn spread_expression_source_range(
+    source_context: ComponentPropSource<'_>,
+    spread: &SpreadProp,
+) -> Option<std::ops::Range<usize>> {
+    let source = source_context.template?;
+    let raw = source.get(spread.start as usize..spread.end as usize)?;
+    let relative_start = raw.rfind(spread.expression.as_str())?;
+    let start = source_context.offset as usize + spread.start as usize + relative_start;
+    Some(start..start + spread.expression.len())
 }
 
 /// Sub-spans for one `"prop": value` entry: the key maps to the authored

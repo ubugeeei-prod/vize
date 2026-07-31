@@ -4,6 +4,7 @@ mod directive_values;
 mod exact_optional_props;
 mod sequence_prop_expressions;
 mod spread_props;
+mod spread_scope_bindings;
 
 #[test]
 fn issue_2645_infers_generic_sfc_props_in_tsx() {

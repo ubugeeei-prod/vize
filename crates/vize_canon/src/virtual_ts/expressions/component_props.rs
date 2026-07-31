@@ -16,7 +16,10 @@ use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
-use vize_croquis::croquis::{ComponentUsage, PassedProp};
+use vize_croquis::{
+    ScopeChain,
+    croquis::{ComponentUsage, PassedProp},
+};
 
 pub(super) fn is_checkable_prop(prop: &PassedProp) -> bool {
     !prop.name_is_dynamic && prop.name.as_str() != "key" && prop.name.as_str() != "ref"
@@ -26,11 +29,20 @@ pub(super) fn is_checkable_prop(prop: &PassedProp) -> bool {
 pub(crate) struct ComponentPropSource<'a> {
     pub(crate) template: Option<&'a str>,
     pub(crate) offset: u32,
+    pub(crate) scopes: &'a ScopeChain,
 }
 
 impl<'a> ComponentPropSource<'a> {
-    pub(crate) const fn new(template: Option<&'a str>, offset: u32) -> Self {
-        Self { template, offset }
+    pub(crate) const fn new(
+        template: Option<&'a str>,
+        offset: u32,
+        scopes: &'a ScopeChain,
+    ) -> Self {
+        Self {
+            template,
+            offset,
+            scopes,
+        }
     }
 }
 

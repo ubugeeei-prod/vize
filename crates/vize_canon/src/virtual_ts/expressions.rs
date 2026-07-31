@@ -17,6 +17,7 @@ mod prop_sources;
 mod reserved_props;
 #[cfg(test)]
 mod sequence_prop_tests;
+mod spread_reserved_props;
 mod statements;
 mod value_checks;
 mod vif_chain;
