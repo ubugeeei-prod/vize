@@ -4,3 +4,5 @@ mod attribute_only_required_props;
 mod attribute_only_required_props_edges;
 #[path = "generic_emit_guard.rs"]
 mod generic_emit_guard;
+#[path = "runtime_mixin_props.rs"]
+mod runtime_mixin_props;

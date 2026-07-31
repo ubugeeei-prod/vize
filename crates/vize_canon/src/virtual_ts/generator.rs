@@ -28,10 +28,10 @@ use self::imports::{
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::options_api::{
-    find_default_export_targets, find_options_api_props, generate_options_api_bridge,
-    generate_options_api_variables,
+    find_default_export_targets, generate_options_api_bridge, generate_options_api_variables,
 };
 use self::options_api_props_identifiers::PropsConstAssertions;
+use self::options_api_support::find_options_api_props;
 use self::props_anchors::emit_setup_scope_prop_anchors;
 use self::setup_helpers::emit_setup_helpers;
 use self::setup_props::generate_setup_props;

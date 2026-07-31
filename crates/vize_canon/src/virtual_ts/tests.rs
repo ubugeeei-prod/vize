@@ -299,7 +299,7 @@ fn test_options_api_emits_real_props_type_from_object_option() {
 
     assert!(
         output.code.contains(
-            "const __vize_options_props = ({\n        initial: Number,\n        label: { type: String, required: true },\n    });"
+            "const __vize_options_props = ({\n        initial: Number,\n        label: { type: String, required: true },\n    } as const);"
         ),
         "expected the runtime props object to remain in value scope:\n{}",
         output.code

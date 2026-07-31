@@ -10,9 +10,7 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_croquis::{BindingType, Croquis};
 
-use super::options_api_support::{
-    extend_options_api_descriptor_names, is_safe_value_identifier, props_source_from_object,
-};
+use super::options_api_support::{extend_options_api_descriptor_names, is_safe_value_identifier};
 use crate::virtual_ts::types::VirtualTsOptions;
 use vize_carton::{CompactString, FxHashSet, String, append};
 
@@ -666,71 +664,6 @@ pub(super) fn find_default_export_targets(script: &str) -> DefaultExportTargets 
     targets
 }
 
-use crate::virtual_ts::props::OptionsApiPropsSource;
-
-/// Parse a plain `<script>` and extract its Options API `props:` declaration.
-///
-/// Returns `None` when there is no resolvable component options object or no
-/// `props:` option (or it is an unrecognized expression form). Object and array
-/// literals are recognized directly. Identifier props are deferred through setup
-/// scope so local/imported runtime prop declarations stay in value position
-/// before `__RuntimePropShape<...>` reads them.
-///
-/// The result feeds canon's real `export type Props` for Options API
-/// components: object form maps through the shared `__RuntimePropShape<...>`
-/// machinery (runtime ctors and `{ type, required }` shapes resolve to TS prop
-/// types with correct optionality), while the array form has no runtime type
-/// info so each prop is emitted as optional `unknown`.
-pub(super) fn find_options_api_props(script: &str) -> Option<OptionsApiPropsSource> {
-    if !script.contains("export default") {
-        return None;
-    }
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
-    if parsed.panicked {
-        return None;
-    }
-    let options = component_options_from_program(&parsed.program)?;
-    let props = option_expression_property(options, "props")?;
-    options_api_props_from_expression(script, props)
-}
-
-fn options_api_props_from_expression(
-    script: &str,
-    expression: &Expression<'_>,
-) -> Option<OptionsApiPropsSource> {
-    match expression {
-        Expression::ObjectExpression(object) => {
-            let source = source_slice(script, object.span())?;
-            Some(props_source_from_object(source))
-        }
-        Expression::ArrayExpression(array) => {
-            let mut names = Vec::new();
-            for element in &array.elements {
-                if let ArrayExpressionElement::StringLiteral(literal) = element {
-                    names.push(String::from(literal.value.as_str()));
-                }
-            }
-            (!names.is_empty()).then_some(OptionsApiPropsSource::Names(names))
-        }
-        Expression::Identifier(identifier) => is_safe_value_identifier(identifier.name.as_str())
-            .then(|| OptionsApiPropsSource::DeferredObject(String::from(identifier.name.as_str()))),
-        Expression::ParenthesizedExpression(parenthesized) => {
-            options_api_props_from_expression(script, &parenthesized.expression)
-        }
-        Expression::TSAsExpression(ts_as) => {
-            options_api_props_from_expression(script, &ts_as.expression)
-        }
-        Expression::TSSatisfiesExpression(ts_satisfies) => {
-            options_api_props_from_expression(script, &ts_satisfies.expression)
-        }
-        Expression::TSNonNullExpression(ts_non_null) => {
-            options_api_props_from_expression(script, &ts_non_null.expression)
-        }
-        _ => None,
-    }
-}
-
 pub(super) fn option_expression_property<'a>(
     object: &'a ObjectExpression<'a>,
     key_name: &str,
@@ -880,7 +813,7 @@ fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
     }
 }
 
-fn source_slice(script: &str, span: oxc_span::Span) -> Option<&str> {
+pub(super) fn source_slice(script: &str, span: oxc_span::Span) -> Option<&str> {
     script.get(span.start as usize..span.end as usize)
 }
 

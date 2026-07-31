@@ -5,8 +5,9 @@ use super::generics::{
     generic_fallback_args, is_ident_byte, references_any_identifier, skip_ascii_ws,
 };
 use crate::virtual_ts::props::{
-    OptionsApiPropsSource, PropsTypeEmission, add_generic_defaults, extract_generic_names,
-    generate_props_type, generate_props_variables, generate_setup_scoped_props_artifact,
+    OptionsApiPropsSource, PropsTypeEmission, add_generic_defaults, append_default_props,
+    extract_generic_names, generate_props_type, generate_props_variables,
+    generate_setup_scoped_props_artifact,
 };
 
 fn is_identifier_start_byte(b: u8) -> bool {
@@ -112,6 +113,7 @@ pub(super) fn generate_setup_props(
 pub(super) struct SetupPropsPlan {
     defer: bool,
     defer_options_api_props: bool,
+    capture_options_api_default: bool,
     module_scope_declares_props: bool,
 }
 
@@ -135,9 +137,10 @@ impl SetupPropsPlan {
         Self {
             defer: define_props_type_requires_setup_scope(summary),
             defer_options_api_props: !module_scope_declares_props
-                && options_api_props.is_some_and(|source| {
-                    matches!(source, OptionsApiPropsSource::DeferredObject(_))
-                }),
+                && options_api_props
+                    .is_some_and(|source| source.deferred_object_source().is_some()),
+            capture_options_api_default: options_api_props
+                .is_some_and(OptionsApiPropsSource::captures_default),
             module_scope_declares_props,
         }
     }
@@ -237,6 +240,9 @@ impl SetupPropsPlan {
     }
 
     pub(super) fn push_return_field(&self, fields: &mut Vec<&'static str>) {
+        if self.capture_options_api_default {
+            fields.push("__default__");
+        }
         if self.defer {
             fields.push("__vize_setup_props");
         }
@@ -250,13 +256,23 @@ impl SetupPropsPlan {
         mut ts: &mut String,
         options_api_props: Option<&OptionsApiPropsSource>,
     ) {
-        let Some(OptionsApiPropsSource::DeferredObject(source)) = options_api_props else {
+        let Some(source) =
+            options_api_props.and_then(OptionsApiPropsSource::deferred_object_source)
+        else {
             return;
         };
         if self.module_scope_declares_props {
             return;
         }
-        append!(ts, "\n  const __vize_options_props = ({source});\n");
+        let const_assertion = if source.trim_start().starts_with('{') {
+            " as const"
+        } else {
+            ""
+        };
+        append!(
+            ts,
+            "\n  const __vize_options_props = ({source}{const_assertion});\n"
+        );
     }
 
     pub(super) fn emit_module_export(
@@ -279,14 +295,17 @@ impl SetupPropsPlan {
                     "export type Props = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];\n\n",
                 );
             }
-        } else if matches!(
-            options_api_props,
-            Some(OptionsApiPropsSource::DeferredObject(_))
-        ) && !self.module_scope_declares_props
-        {
+        } else if !self.module_scope_declares_props {
+            let Some(source) =
+                options_api_props.filter(|source| source.deferred_object_source().is_some())
+            else {
+                return;
+            };
             ts.push_str(
-                "export type Props = __RuntimePropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;\n\n",
+                "export type Props = __VizeOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>",
             );
+            append_default_props(ts, source);
+            ts.push_str(";\n\n");
         }
     }
 

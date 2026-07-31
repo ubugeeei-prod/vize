@@ -1,8 +1,12 @@
+mod options_api;
 mod setup_scoped;
 mod template_bindings;
 mod template_names;
 mod with_defaults;
 use super::helpers::{is_reserved_identifier, to_safe_identifier};
+pub(crate) use options_api::OptionsApiPropsSource;
+pub(crate) use options_api::append_default_props;
+use options_api::emit_options_api_props_type;
 pub(crate) use setup_scoped::{PropsTypeEmission, generate_setup_scoped_props_artifact};
 use setup_scoped::{props_type_ref, unused_generic_comment};
 use template_bindings::{emit_macro_template_prop_bindings, should_skip_template_prop_binding};
@@ -194,14 +198,6 @@ fn append_model_props_type_literal(ts: &mut String, models: &[ModelDefinition]) 
     ts.push('}');
 }
 
-/// Runtime `props:` source for Options API `export type Props` emission.
-/// Objects are routed through setup scope so JavaScript values never leak into
-/// TypeScript type position.
-pub(crate) enum OptionsApiPropsSource {
-    DeferredObject(String),
-    Names(Vec<String>),
-}
-
 /// Generate Props type definition at module level.
 /// When `generic_param` is present (e.g., `"T extends Foo, P extends Bar"`),
 /// the Props type is emitted with generic parameters: `export type Props<T, P> = ...;`
@@ -280,28 +276,6 @@ pub(crate) fn generate_props_type(
     }
 
     ts.push('\n');
-}
-
-/// Emit a real `export type Props` for an Options API component, derived from
-/// its runtime `props:` option. The object form reuses the shared
-/// `__RuntimePropShape<...>` mapped type (the same machinery `defineProps`
-/// runtime forms use), so runtime ctors and `{ type, required }` shapes resolve
-/// to real prop types with correct optionality.
-fn emit_options_api_props_type(
-    ts: &mut String,
-    generic_decl: &str,
-    options_api_props: &OptionsApiPropsSource,
-) {
-    match options_api_props {
-        OptionsApiPropsSource::DeferredObject(_) => {}
-        OptionsApiPropsSource::Names(names) => {
-            append!(*ts, "export type Props{generic_decl} = {{\n");
-            for name in names {
-                append!(*ts, "  \"{name}\"?: unknown;\n");
-            }
-            ts.push_str("};\n");
-        }
-    }
 }
 
 pub(crate) fn generate_props_variables(

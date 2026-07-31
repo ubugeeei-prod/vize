@@ -110,13 +110,13 @@ export default defineComponent({
     assert!(
         output
             .code
-            .contains("const __vize_options_props = ({ ...sharedProps });"),
+            .contains("const __vize_options_props = ({ ...sharedProps } as const);"),
         "spread props must be kept in setup scope where sharedProps resolves:\n{}",
         output.code
     );
     assert!(
         output.code.contains(
-            "export type Props = __RuntimePropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+            "export type Props = __VizeOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
         ),
         "Props should be derived from the setup-scoped runtime props artifact:\n{}",
         output.code
@@ -176,7 +176,7 @@ export default defineComponent({
     );
     assert!(
         output.code.contains(
-            "export type Props = __RuntimePropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+            "export type Props = __VizeOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
         ),
         "Props should be derived from the setup-scoped identifier props artifact:\n{}",
         output.code
@@ -230,7 +230,7 @@ export default defineComponent({
     );
     assert!(
         output.code.contains(
-            "export type Props = __RuntimePropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+            "export type Props = __VizeOptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
         ),
         "Props should be derived from the setup-scoped runtime props artifact:\n{}",
         output.code
