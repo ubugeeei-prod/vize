@@ -159,10 +159,11 @@ test("local app readiness action keeps setup, diagnostics, and aggregation bound
 
   assert.match(action, /runs:\n\s+using:\s*composite/);
   assert.match(action, /git submodule update --init --recursive --depth 1/);
-  for (const fixture of ["elk", "misskey", "npmx.dev", "nuxt-ui", "reka-ui"]) {
-    assert.match(action, new RegExp(`tests/_fixtures/_git/${fixture.replace(".", "\\.")}`));
-  }
-  assert.equal(action.match(/tests\/_fixtures\/_git\//g)?.length, 5);
+  assert.deepEqual(
+    [...action.matchAll(/tests\/_fixtures\/_git\/(\S+)/g)].map((match) => match[1]),
+    ["elk", "misskey", "npmx.dev", "nuxt-ui", "reka-ui"],
+    "readiness must hydrate exactly the pinned readiness fixtures",
+  );
   const setupRust = yamlStepBody(action, { name: "Setup Rust" });
   assert.match(setupRust, /id:\s*rust-toolchain/);
   assert.match(setupRust, /uses:\s*dtolnay\/rust-toolchain@[0-9a-f]{40}\s*# stable/);

@@ -51,14 +51,47 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
     scripts["test:readiness"],
     "pnpm test:readiness:check && pnpm test:readiness:lint && pnpm test:readiness:build && pnpm test:readiness:dev",
   );
-  assert.equal(
-    scripts["test:readiness:check"],
-    "VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} node --test --test-concurrency=1 snapshots/check/compiler-macros.ts snapshots/check/elk.ts snapshots/check/misskey.ts snapshots/check/npmx.ts snapshots/check/nuxt-ui.ts snapshots/check/reka-ui.ts",
-  );
-  assert.equal(
-    scripts["test:readiness:lint"],
-    "VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} node --test --test-concurrency=1 tooling/cli-lint-contract.test.ts snapshots/lint/elk.ts snapshots/lint/misskey.ts snapshots/lint/npmx.ts snapshots/lint/nuxt-ui.ts snapshots/lint/reka-ui.ts",
-  );
+  for (const [name, drivers] of [
+    [
+      "test:readiness:check",
+      [
+        "snapshots/check/compiler-macros.ts",
+        "snapshots/check/elk.ts",
+        "snapshots/check/misskey.ts",
+        "snapshots/check/npmx.ts",
+        "snapshots/check/nuxt-ui.ts",
+        "snapshots/check/reka-ui.ts",
+      ],
+    ],
+    [
+      "test:readiness:lint",
+      [
+        "tooling/cli-lint-contract.test.ts",
+        "snapshots/lint/elk.ts",
+        "snapshots/lint/misskey.ts",
+        "snapshots/lint/npmx.ts",
+        "snapshots/lint/nuxt-ui.ts",
+        "snapshots/lint/reka-ui.ts",
+      ],
+    ],
+  ] as const) {
+    const script = scripts[name] ?? "";
+    assert.match(
+      script,
+      /VIZE_TEST_WORKTREE_ID=\$\{VIZE_TEST_WORKTREE_ID:-ci-readiness\}/,
+      `${name} must default the shared readiness worktree`,
+    );
+    assert.match(
+      script,
+      /node --test --test-concurrency=1\b/,
+      `${name} must run its drivers serially`,
+    );
+    assert.deepEqual(
+      script.split(/\s+/).filter((token) => token.endsWith(".ts")),
+      drivers,
+      `${name} must run exactly the release-blocking drivers`,
+    );
+  }
   assert.equal(
     scripts["test:readiness:build"],
     "node --test --test-concurrency=1 snapshots/build/generic.ts snapshots/build/elk.ts",
