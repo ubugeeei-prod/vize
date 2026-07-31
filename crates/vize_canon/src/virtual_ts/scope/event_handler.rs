@@ -127,13 +127,20 @@ pub(super) fn generate_event_handler_expressions(
             // range entirely, so the mapping has to widen to the whole statement
             // for the identifier to be inside it — the diagnostic path looks the
             // mapping up by `gen_range` before narrowing to a sub-span.
-            let (gen_range, sub_spans) = match (listener_spans, ctx.event_name_src_range.clone()) {
-                (Some((stmt_gen_range, name_gen_range)), Some(name_src_range)) => (
+            // When the event name cannot be located in the source the bound
+            // expression is the next best anchor, so the identifier's error
+            // still maps back instead of being dropped for want of a sub-span
+            // (same fallback as a component prop's name/value ranges).
+            let (gen_range, sub_spans) = match listener_spans {
+                Some((stmt_gen_range, name_gen_range)) => (
                     stmt_gen_range,
                     vec![
                         VizeSubSpan {
                             gen_range: name_gen_range,
-                            src_range: name_src_range,
+                            src_range: ctx
+                                .event_name_src_range
+                                .clone()
+                                .unwrap_or(src_start..src_end),
                         },
                         VizeSubSpan {
                             gen_range,
@@ -141,7 +148,7 @@ pub(super) fn generate_event_handler_expressions(
                         },
                     ],
                 ),
-                _ => (gen_range, Vec::new()),
+                None => (gen_range, Vec::new()),
             };
             mappings.push(VizeMapping {
                 gen_range,

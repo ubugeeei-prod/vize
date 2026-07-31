@@ -26,6 +26,11 @@ pub(super) fn inline_callback_event_argument(content: &str) -> Option<&'static s
     }
 
     let rest = trimmed.strip_prefix("function")?;
+    // `functionalHandler(evt)` only starts with the keyword's letters; the
+    // keyword has to end there for this to be a function expression.
+    if rest.chars().next().is_some_and(is_identifier_continue) {
+        return None;
+    }
     let paren_start = trimmed.len() - rest.len() + rest.find('(')?;
     let paren_end = matching_paren_index(trimmed, paren_start)?;
     let inner = &trimmed[paren_start + 1..paren_end];
@@ -215,7 +220,34 @@ fn parse_bracket_member(input: &str, open_index: usize) -> Option<usize> {
 
 #[cfg(test)]
 mod tests {
-    use super::is_callable_handler_reference;
+    use super::{inline_callback_event_argument, is_callable_handler_reference};
+
+    #[test]
+    fn inline_callbacks_report_the_event_argument_they_accept() {
+        // (handler body, argument the generated call must pass)
+        let cases = [
+            ("() => f()", Some("")),
+            ("(v) => f(v)", Some("$event")),
+            ("v => f(v)", Some("$event")),
+            ("async (v) => f(v)", Some("$event")),
+            ("async v => f(v)", Some("$event")),
+            ("function () {}", Some("")),
+            ("function (v) { f(v) }", Some("$event")),
+            ("function named(v) { f(v) }", Some("$event")),
+            ("handler", None),
+            ("handlers[key]", None),
+            // Starts with the `function` keyword's letters but is a call.
+            ("functionalHandler(evt)", None),
+        ];
+
+        for (content, expected) in cases {
+            assert_eq!(
+                inline_callback_event_argument(content),
+                expected,
+                "unexpected inline-callback classification for {content:?}"
+            );
+        }
+    }
 
     #[test]
     fn undefined_is_not_a_callable_handler_reference() {
