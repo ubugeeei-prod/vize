@@ -7,6 +7,7 @@ use super::{
 use vize_carton::config::VueVersion;
 mod auto_import_shadowing;
 mod component_navigation;
+mod component_spread_prop_order;
 mod define_props_scope;
 mod generic_module_type_exports;
 mod legacy_nuxt2_page_context;

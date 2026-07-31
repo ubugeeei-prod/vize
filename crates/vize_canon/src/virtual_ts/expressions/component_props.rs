@@ -8,23 +8,14 @@
 use super::super::helpers::{to_camel_case, to_safe_identifier_fragment};
 use super::super::types::{VizeMapping, VizeSubSpan};
 use super::prop_sources::{generated_prop_value, prop_name_source_range, prop_value_source_range};
+use crate::virtual_ts::scope::has_checkable_props_or_spread;
 use vize_carton::FxHashMap;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
-use vize_croquis::croquis::{ComponentUsage, PassedProp};
-
-fn has_inference_props(usage: &ComponentUsage) -> bool {
-    usage.props.iter().any(is_checkable_prop)
-}
-
-/// A `v-bind="obj"` spread contributes no [`PassedProp`], so a usage that only
-/// spreads has no inference props and emitted no check at all before #3444.
-fn has_checkable_props_or_spread(usage: &ComponentUsage) -> bool {
-    has_inference_props(usage) || !usage.spread_props.is_empty()
-}
+use vize_croquis::croquis::{ComponentUsage, PassedProp, SpreadProp};
 
 fn is_checkable_prop(prop: &PassedProp) -> bool {
     !prop.name_is_dynamic && prop.name.as_str() != "key" && prop.name.as_str() != "ref"
@@ -236,31 +227,26 @@ fn generate_generic_props_call(
     let literal_gen_start = ts.len();
     ts.push_str("{\n");
 
-    // `v-bind="obj"` becomes a spread in the same literal, so the child's props
-    // type sees the whole bag: `({ ...bag, "label": maybe })`. vue-tsc checks the
-    // spread's contribution the same way, which is what makes a wrongly typed
-    // bag `TS2345` rather than silence (#3444). Each spread maps back to its own
-    // directive so an error *inside* the expression lands on the authored bytes.
-    for spread in &usage.spread_props {
-        append!(*ts, "{expr_indent}  ...");
-        let spread_gen_start = ts.len();
-        ts.push_str(spread.expression.as_str());
-        let spread_gen_end = ts.len();
-        ts.push_str(",\n");
-        mappings.push(VizeMapping {
-            gen_range: spread_gen_start..spread_gen_end,
-            src_range: (template_offset + spread.start) as usize
-                ..(template_offset + spread.end) as usize,
-            sub_spans: Vec::new(),
-        });
-    }
-
     let class_bindings = collect_generated_class_bindings(usage, template_prop_names);
     let merge_class_bindings = class_bindings.len() > 1;
     let mut emitted_merged_class = false;
+    // `v-bind="obj"` becomes a spread in the same literal, so the child's props
+    // type sees the whole bag: `({ ...bag, "label": maybe })`. vue-tsc checks the
+    // spread's contribution the same way, which is what makes a wrongly typed
+    // bag `TS2345` rather than silence (#3444).
+    //
+    // Entries follow template order, because Vue 3 resolves an overlapping key
+    // by source order (last binding wins), exactly as an object literal does.
+    // Spreading first unconditionally would check `1` for the `count` of
+    // `:count="1" v-bind="bag"`, a key the runtime takes from `bag` instead.
+    // Both lists are already sorted, so walking them together is enough.
+    let mut spreads = usage.spread_props.iter().peekable();
     for prop in &usage.props {
         if !is_checkable_prop(prop) {
             continue;
+        }
+        while let Some(spread) = spreads.next_if(|spread| spread.start < prop.start) {
+            append_spread_entry(ts, mappings, spread, template_offset, expr_indent.as_str());
         }
 
         let generated_value = if merge_class_bindings && prop.name.as_str() == "class" {
@@ -315,6 +301,9 @@ fn generate_generic_props_call(
             sub_spans: Vec::new(),
         });
     }
+    for spread in spreads {
+        append_spread_entry(ts, mappings, spread, template_offset, expr_indent.as_str());
+    }
 
     append!(*ts, "{expr_indent}}}");
     let literal_gen_end = ts.len();
@@ -334,4 +323,26 @@ fn generate_generic_props_call(
     if usage.vif_guard.is_some() {
         append!(*ts, "{indent}}}\n");
     }
+}
+
+/// Emit one `...expr` entry of the props literal, mapped back to its own
+/// directive so an error *inside* the expression lands on the authored bytes.
+fn append_spread_entry(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    spread: &SpreadProp,
+    template_offset: u32,
+    expr_indent: &str,
+) {
+    append!(*ts, "{expr_indent}  ...");
+    let gen_start = ts.len();
+    ts.push_str(spread.expression.as_str());
+    let gen_end = ts.len();
+    ts.push_str(",\n");
+    mappings.push(VizeMapping {
+        gen_range: gen_start..gen_end,
+        src_range: (template_offset + spread.start) as usize
+            ..(template_offset + spread.end) as usize,
+        sub_spans: Vec::new(),
+    });
 }

@@ -30,7 +30,11 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 /// A `v-bind="obj"` spread contributes no `PassedProp`, so a usage that only
 /// spreads has no inference props and used to be skipped entirely — which is
 /// why `<Child v-bind="bag" />` was unchecked (#3444).
-pub(super) fn has_checkable_props_or_spread(usage: &ComponentUsage) -> bool {
+///
+/// Shared with `expressions::component_props`, which gates the call this
+/// module's aliases type. Two copies of the rule could disagree and leave the
+/// generated TypeScript calling a type that was never declared.
+pub(crate) fn has_checkable_props_or_spread(usage: &ComponentUsage) -> bool {
     has_inference_props(usage) || !usage.spread_props.is_empty()
 }
 
