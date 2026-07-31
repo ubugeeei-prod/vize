@@ -148,11 +148,22 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
    * workflow warning; tests/tooling/typecheck-divergence-budget.test.ts pins
    * what each mode does.
    */
-  assert.equal(
-    divergence?.env?.BUDGET_MODE,
-    "${{ (github.event_name == 'schedule' || inputs.enforce_divergence_budget)" +
-      " && 'enforce' || 'record-only' }}",
-  );
+  const budgetMode = divergence?.env?.BUDGET_MODE;
+  assert.ok(budgetMode, "Missing BUDGET_MODE on the divergence step");
+  for (const [eventName, enforceInput, expected] of [
+    ["schedule", undefined, "enforce"],
+    ["workflow_dispatch", true, "enforce"],
+    ["workflow_dispatch", false, "record-only"],
+  ] as const) {
+    assert.equal(
+      evaluateExpression(budgetMode, {
+        github: { event_name: eventName },
+        inputs: { enforce_divergence_budget: enforceInput },
+      }),
+      expected,
+      `${eventName} with enforce_divergence_budget=${enforceInput}`,
+    );
+  }
   assert.equal(summary?.if, "${{ always() }}");
   assert.match(summary?.run ?? "", /summary\.md/);
   assert.match(summary?.run ?? "", /\*-typecheck-divergence\.md/);
@@ -166,3 +177,59 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     "retention-days": 30,
   });
 });
+
+/**
+ * Just enough of the GitHub Actions expression grammar (parentheses, `==`, and
+ * the value-returning `&&` / `||`) to resolve a `${{ … }}` template under a
+ * given event context, so the test above can assert the mode each trigger
+ * actually produces instead of how the expression happens to be spelled.
+ */
+function evaluateExpression(template: string, context: Record<string, unknown>): unknown {
+  const body = template.replace(/^\$\{\{\s*/, "").replace(/\s*\}\}$/, "");
+  const tokens = body.match(/\(|\)|&&|\|\||==|'[^']*'|[\w.]+/g) ?? [];
+  let index = 0;
+  const lookup = (path: string) => {
+    let value: unknown = context;
+    for (const key of path.split(".")) {
+      value = (value as Record<string, unknown> | undefined)?.[key];
+    }
+    return value;
+  };
+  const primary = (): unknown => {
+    const token = tokens[index++];
+    if (token === "(") {
+      const value = or();
+      index++;
+      return value;
+    }
+    if (token?.startsWith("'")) return token.slice(1, -1);
+    return lookup(token ?? "");
+  };
+  const equality = (): unknown => {
+    let value = primary();
+    while (tokens[index] === "==") {
+      index++;
+      value = value === primary();
+    }
+    return value;
+  };
+  const and = (): unknown => {
+    let value = equality();
+    while (tokens[index] === "&&") {
+      index++;
+      const right = equality();
+      value = value ? right : value;
+    }
+    return value;
+  };
+  const or = (): unknown => {
+    let value = and();
+    while (tokens[index] === "||") {
+      index++;
+      const right = and();
+      value = value ? value : right;
+    }
+    return value;
+  };
+  return or();
+}
