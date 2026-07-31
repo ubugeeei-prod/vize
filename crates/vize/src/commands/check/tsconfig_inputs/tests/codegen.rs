@@ -2,7 +2,10 @@ use super::{collect_default_check_files, relative_paths, unique_case_dir};
 
 #[test]
 fn default_collection_skips_generated_codegen_declaration_modules() {
-    let case_dir = unique_case_dir("tsconfig-generated-codegen-dts");
+    // Distinct from the same-named case in `codegen_tests`: both modules keep their
+    // own case counter, so a shared name can resolve to the same directory and the
+    // two tests then delete each other's fixture mid-run.
+    let case_dir = unique_case_dir("tsconfig-generated-codegen-dts-default-collection");
     let _ = std::fs::remove_dir_all(&case_dir);
     std::fs::create_dir_all(case_dir.join("src")).unwrap();
     std::fs::create_dir_all(case_dir.join("types/codegen")).unwrap();
