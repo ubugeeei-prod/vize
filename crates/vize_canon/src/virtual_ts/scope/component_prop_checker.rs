@@ -1,6 +1,7 @@
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::croquis::{ComponentUsage, PassedProp};
 
+use super::inline_callback_classifier::is_direct_inline_function_prop_value;
 use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier_fragment};
 
 /// Whether this prop's authored value is an inline function, which is the only
@@ -17,10 +18,13 @@ pub(super) fn is_inline_callback_prop(prop: &PassedProp) -> bool {
         && prop
             .value
             .as_ref()
-            .is_some_and(|value| is_inline_function_prop_value(value.as_str()))
+            .is_some_and(|value| is_direct_inline_function_prop_value(value.as_str()))
 }
 
-pub(super) fn is_inline_function_prop_value(value: &str) -> bool {
+/// Whether the value contains an inline callback whose standalone generation
+/// would lose contextual typing. Legacy Vue 2 globals use this broader shape
+/// to avoid reporting `TS7006` for values such as `[(value) => !!value]`.
+pub(super) fn contains_inline_function_prop_value(value: &str) -> bool {
     let value = value.trim();
     value.contains("=>") || value.starts_with("function") || value.starts_with("async function")
 }

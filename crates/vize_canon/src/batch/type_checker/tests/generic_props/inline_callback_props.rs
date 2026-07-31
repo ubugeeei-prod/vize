@@ -83,3 +83,157 @@ import Child from './Child.vue'
         ]
     );
 }
+
+/// A parameter type may contain an arrow before the callback's outer arrow.
+/// The prop classifier must find the outer arrow so the standalone per-prop
+/// check contextually types the following `value` parameter instead of
+/// reporting `TS7006` on code the generic child's checker types.
+#[test]
+fn inline_callback_prop_with_nested_type_arrow_is_contextually_typed() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "generic-inline-callback-prop-with-nested-type-arrow",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts" generic="T">
+defineProps<{ value: T; apply: (fn: (value: T) => T, value: T) => T }>()
+</script>
+
+<template><span /></template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child :value="1" :apply="(fn: (x: number) => number, value) => fn(value)" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+    let Some(snapshot) = snapshot else {
+        return;
+    };
+
+    assert_eq!(snapshot, Vec::new());
+}
+
+/// Delimiters inside a regex default value are not parameter-list structure.
+/// The direct callback must still receive generic-prop contextual typing for
+/// its following untyped parameter.
+#[test]
+fn inline_callback_prop_with_regex_default_is_contextually_typed() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "generic-inline-callback-prop-with-regex-default",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts" generic="T">
+defineProps<{
+  value: T
+  apply: (pattern: RegExp, value: T) => T
+  calculate: (pattern: number, value: T) => T
+  inspect: (fn: () => void, value: T) => T
+  choose: (value: T) => T
+  sequence: (value: T) => T
+}>()
+</script>
+
+<template><span /></template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import Child from './Child.vue'
+let foo = 1
+const bar = 2
+const ok = true
+const target = ')'
+</script>
+
+<template>
+  <Child
+    :value="1"
+    :apply="(pattern = /* default */ /\)/, value) /* callback */ => value"
+    :calculate="(pattern = foo++ / bar, value) => value"
+    :inspect="(fn = () => { if (ok) /\)/.test(target) }, value) => value"
+    :choose="ok ? (value) => value : (value) => value"
+    :sequence="(void 0, (value) => value)"
+  />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+    let Some(snapshot) = snapshot else {
+        return;
+    };
+
+    assert_eq!(snapshot, Vec::new());
+}
+
+/// A nested arrow does not make the prop value itself callable. This is the
+/// shape used by Misskey's `<MkTl :events="jobs.map((job) => …)" />`: treating
+/// the inner `map` callback as the prop value made the array fail against the
+/// callable fallback added for genuine inline callback props.
+#[test]
+fn array_expression_with_nested_callback_is_not_classified_as_a_callback_prop() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "generic-array-prop-with-nested-callback",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts" generic="T extends { id: number }">
+defineProps<{ events: T[] }>()
+</script>
+
+<template><span /></template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import Child from './Child.vue'
+const jobs = [{ id: 1, timestamp: 2 }]
+</script>
+
+<template>
+  <Child :events="jobs.map((job) => ({ id: job.id }))" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+    let Some(snapshot) = snapshot else {
+        return;
+    };
+
+    assert_eq!(
+        snapshot,
+        Vec::new(),
+        "nested callbacks must keep the array prop type"
+    );
+}

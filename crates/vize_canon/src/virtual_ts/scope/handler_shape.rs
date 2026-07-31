@@ -6,13 +6,29 @@
 //! this scanning decides which; it deliberately stays a scanner rather than a
 //! parser, matching only the spellings a template attribute can hold.
 
+use super::expression_scanner::{matching_paren_index, skip_js_trivia, top_level_arrow_index};
+
 pub(super) fn inline_callback_event_argument(content: &str) -> Option<&'static str> {
-    let trimmed = content.trim_start();
+    let trimmed = strip_outer_parentheses(content.trim());
     if trimmed.is_empty() {
         return None;
     }
 
-    if let Some(arrow_idx) = trimmed.find("=>") {
+    let function = strip_async_prefix(trimmed);
+    if let Some(rest) = function.strip_prefix("function")
+        && !rest.chars().next().is_some_and(is_identifier_continue)
+    {
+        let paren_start = function.len() - rest.len() + rest.find('(')?;
+        let paren_end = matching_paren_index(function, paren_start)?;
+        let inner = &function[paren_start + 1..paren_end];
+        return Some(if inner.trim().is_empty() {
+            ""
+        } else {
+            "$event"
+        });
+    }
+
+    if let Some(arrow_idx) = top_level_arrow_index(trimmed) {
         let before_arrow = strip_async_prefix(trimmed[..arrow_idx].trim_end()).trim();
         if before_arrow.is_empty() {
             return None;
@@ -24,31 +40,31 @@ pub(super) fn inline_callback_event_argument(content: &str) -> Option<&'static s
 
         return is_identifier_segment(before_arrow).then_some("$event");
     }
+    None
+}
 
-    let rest = trimmed.strip_prefix("function")?;
-    // `functionalHandler(evt)` only starts with the keyword's letters; the
-    // keyword has to end there for this to be a function expression.
-    if rest.chars().next().is_some_and(is_identifier_continue) {
-        return None;
+fn strip_outer_parentheses(mut input: &str) -> &str {
+    while input.starts_with('(')
+        && matching_paren_index(input, 0).is_some_and(|close| close == input.len() - 1)
+    {
+        input = input[1..input.len() - 1].trim();
     }
-    let paren_start = trimmed.len() - rest.len() + rest.find('(')?;
-    let paren_end = matching_paren_index(trimmed, paren_start)?;
-    let inner = &trimmed[paren_start + 1..paren_end];
-    Some(if inner.trim().is_empty() {
-        ""
-    } else {
-        "$event"
-    })
+    input
 }
 
 fn strip_async_prefix(input: &str) -> &str {
     let Some(rest) = input.strip_prefix("async") else {
         return input;
     };
-    if rest.chars().next().is_some_and(char::is_whitespace) {
-        rest.trim_start()
-    } else {
+    if rest.chars().next().is_some_and(is_identifier_continue) {
         input
+    } else {
+        let content_start = skip_js_trivia(rest, 0);
+        if content_start == 0 {
+            input
+        } else {
+            &rest[content_start..]
+        }
     }
 }
 
@@ -57,33 +73,11 @@ fn parenthesized_params_are_empty(input: &str) -> Option<bool> {
         return None;
     }
     let close = matching_paren_index(input, 0)?;
-    if !input[close + 1..].trim().is_empty() {
+    let suffix = &input[close + 1..];
+    if skip_js_trivia(suffix, 0) != suffix.len() {
         return None;
     }
     Some(input[1..close].trim().is_empty())
-}
-
-fn matching_paren_index(input: &str, open_index: usize) -> Option<usize> {
-    let bytes = input.as_bytes();
-    if bytes.get(open_index) != Some(&b'(') {
-        return None;
-    }
-
-    let mut depth = 0u32;
-    for (idx, byte) in bytes.iter().enumerate().skip(open_index) {
-        match byte {
-            b'(' => depth += 1,
-            b')' => {
-                depth = depth.checked_sub(1)?;
-                if depth == 0 {
-                    return Some(idx);
-                }
-            }
-            _ => {}
-        }
-    }
-
-    None
 }
 
 pub(super) fn is_callable_handler_reference(content: &str) -> bool {
@@ -231,11 +225,23 @@ mod tests {
             ("v => f(v)", Some("$event")),
             ("async (v) => f(v)", Some("$event")),
             ("async v => f(v)", Some("$event")),
+            ("((v) => f(v))", Some("$event")),
+            (r#"((x = ")") => x)"#, Some("$event")),
+            ("(value) /* callback */ => value", Some("$event")),
+            ("async /* callback */ (value) => value", Some("$event")),
+            ("(fn: (x: string) => string) => fn(\"x\")", Some("$event")),
+            ("(fn = (x) => x) => fn(1)", Some("$event")),
             ("function () {}", Some("")),
             ("function (v) { f(v) }", Some("$event")),
+            ("function (v) { return () => v }", Some("$event")),
             ("function named(v) { f(v) }", Some("$event")),
+            ("async function (v) { f(v) }", Some("$event")),
+            ("(async function (v) { f(v) })", Some("$event")),
             ("handler", None),
             ("handlers[key]", None),
+            ("jobs.map((job) => job.id)", None),
+            ("jobs.map(function (job) { return job.id })", None),
+            ("/=>/.test(value)", None),
             // Starts with the `function` keyword's letters but is a call.
             ("functionalHandler(evt)", None),
         ];

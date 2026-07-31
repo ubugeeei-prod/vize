@@ -1,7 +1,7 @@
 use vize_carton::FxHashSet;
 use vize_croquis::{Croquis, TemplateExpressionKind};
 
-use super::component_prop_checker::is_inline_function_prop_value;
+use super::component_prop_checker::contains_inline_function_prop_value;
 use super::component_props::component_usage_has_checkable_binding;
 use super::context::ScopeGenerationOptions;
 use crate::virtual_ts::types::VirtualTsOptions;
@@ -43,7 +43,7 @@ pub(super) fn collect_component_prop_expression_ranges(
                 continue;
             }
             let value = value.as_str().trim();
-            if !is_inline_function_prop_value(value) {
+            if !contains_inline_function_prop_value(value) {
                 continue;
             }
             // Checkable components validate inline function props through the

@@ -15,8 +15,10 @@ mod context;
 mod emit;
 mod event_handler;
 mod event_scope;
+mod expression_scanner;
 mod globals;
 mod handler_shape;
+mod inline_callback_classifier;
 mod vif_guard;
 
 pub(crate) use closures::generate_scope_closures;
