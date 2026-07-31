@@ -49,6 +49,8 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       maxFalseNegativeRatio: 0.05,
       falsePositivePassed: true,
       falseNegativePassed: true,
+      unusableReason: null,
+      verdict: "passed",
       passed: true,
     });
     assert.equal(artifact.divergence.summary.sharedCount, 1);

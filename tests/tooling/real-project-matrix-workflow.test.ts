@@ -33,7 +33,15 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   assert.ok(job);
   assert.deepEqual(workflow.permissions, { contents: "read" });
   assert.equal(workflow.on?.schedule?.[0]?.cron, "37 5 * * 0");
-  assert.ok("workflow_dispatch" in (workflow.on ?? {}));
+  assert.deepEqual(workflow.on?.workflow_dispatch, {
+    inputs: {
+      enforce_divergence_budget: {
+        description: "Fail the job when the typecheck divergence budget breaches",
+        type: "boolean",
+        default: false,
+      },
+    },
+  });
   assert.deepEqual(workflow.concurrency, {
     group: "real-project-matrix-${{ github.ref }}",
     "cancel-in-progress": true,
@@ -123,7 +131,27 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(divergence?.run ?? "", /--report-dir "\$FIXTURE_REPORT_DIR"/);
   assert.match(divergence?.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
   assert.match(divergence?.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
+  assert.match(divergence?.run ?? "", /--budget-mode "\$BUDGET_MODE"/);
   assert.match(divergence?.run ?? "", /--vue-tsc-bin tests\/node_modules\/\.bin\/vue-tsc/);
+  /**
+   * #3513: this workflow is both the weekly ecosystem sweep and a required
+   * release gate (tools/github/release-preflight-bootstrap.mjs dispatches it
+   * with no inputs). The divergence budget is the weekly alarm, so it may only
+   * fail the job on the paths that asked for it:
+   *
+   *   schedule                                  -> enforce
+   *   workflow_dispatch (release, no inputs)    -> record-only
+   *   workflow_dispatch + enforce_divergence_budget -> enforce
+   *
+   * `record-only` still writes the verdict to both artifacts and raises a
+   * workflow warning; tests/tooling/typecheck-divergence-budget.test.ts pins
+   * what each mode does.
+   */
+  assert.deepEqual(divergence?.env, {
+    BUDGET_MODE:
+      "${{ (github.event_name == 'schedule' || inputs.enforce_divergence_budget)" +
+      " && 'enforce' || 'record-only' }}",
+  });
   assert.equal(summary?.if, "${{ always() }}");
   assert.match(summary?.run ?? "", /summary\.md/);
   assert.match(summary?.run ?? "", /\*-typecheck-divergence\.md/);

@@ -3,6 +3,17 @@ run-name: Real Project Matrix @ ${{ github.sha }}
 
 on:
   workflow_dispatch:
+    inputs:
+      # Off by default because a manual dispatch is how the required release gate runs
+      # (tools/github/release-preflight-bootstrap.mjs dispatches this workflow with no inputs), and
+      # the divergence baseline is currently unusable on most of the corpus (#3513): enforcing it
+      # here would block every release on a broken instrument rather than on a vize regression.
+      # The weekly schedule below always enforces, so the alarm still rings; turn this on to
+      # re-check the budget on demand, for example when verifying a baseline fix.
+      enforce_divergence_budget:
+        description: Fail the job when the typecheck divergence budget breaches
+        type: boolean
+        default: false
   schedule:
     # Weekly full ecosystem sweep. Manual dispatches provide on-demand release evidence.
     - cron: "37 5 * * 0"
@@ -111,11 +122,19 @@ jobs:
             tests/tooling/glyph-corpus-lint-agreement.test.ts
 
       - name: Record typechecker baseline divergence
+        env:
+          # The divergence budget is the weekly alarm (#3486), and this workflow is
+          # also a required release gate. `record-only` still computes the verdict,
+          # writes it to both artifacts and raises a workflow warning; it just does
+          # not fail the job, so a breach cannot block a release while the baseline
+          # itself is unusable (#3513). The scheduled sweep always enforces.
+          BUDGET_MODE: ${{ (github.event_name == 'schedule' || inputs.enforce_divergence_budget) && 'enforce' || 'record-only' }}
         run: |
           node tools/fixtures/typecheck-divergence-report.mjs \
             --report-dir "$FIXTURE_REPORT_DIR" \
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
+            --budget-mode "$BUDGET_MODE" \
             --vue-tsc-bin tests/node_modules/.bin/vue-tsc
 
       - name: Publish shard summary

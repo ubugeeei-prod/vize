@@ -63,12 +63,15 @@ export function setup(options: FixtureOptions = {}) {
     fileCount: 1,
     files: [{ file: "src/App.vue", diagnostics: vizeDiagnostics }],
   };
+  // `vize check` exits 0 only when it found nothing, and the matrix summary
+  // status is derived from that, so a fixture with no diagnostics has to agree.
+  const exitCode = vizeDiagnostics.length === 0 ? 0 : 1;
   writeJson(outputPath, {
     schema: "vize.fixtureToolRun",
     version: 1,
     project: "fixture",
     tool: "typechecker",
-    exitCode: 1,
+    exitCode,
     stdout: JSON.stringify(parsed),
     stderr: "",
     parsed,
@@ -94,8 +97,8 @@ export function setup(options: FixtureOptions = {}) {
         runs: [
           {
             tool: "typechecker",
-            status: "findings",
-            exitCode: 1,
+            status: exitCode === 0 ? "ok" : "findings",
+            exitCode,
             fileCount: 1,
             outputPath: path.relative(root, outputPath),
           },
@@ -125,7 +128,11 @@ export function writeVueTsc(pathname: string, runBody: string, invocationPath?: 
   fs.chmodSync(pathname, 0o755);
 }
 
-export function run(fixture: ReturnType<typeof setup>, env: NodeJS.ProcessEnv = {}) {
+export function run(
+  fixture: ReturnType<typeof setup>,
+  env: NodeJS.ProcessEnv = {},
+  extraArgs: string[] = [],
+) {
   return spawnSync(
     process.execPath,
     [
@@ -136,6 +143,7 @@ export function run(fixture: ReturnType<typeof setup>, env: NodeJS.ProcessEnv = 
       fixture.reportDir,
       "--vue-tsc-bin",
       fixture.vueTsc,
+      ...extraArgs,
     ],
     { cwd: root, encoding: "utf8", env: { ...process.env, GITHUB_SHA: commitSha, ...env } },
   );

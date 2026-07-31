@@ -171,7 +171,13 @@ test("Native Smoke uses its stable workflow title as evidence", () => {
 test("Real Project Matrix dispatch identifies its immutable target", () => {
   const matrix = readWorkflow(findReleasePlan("Real Project Matrix").workflowId);
   assert.equal(matrix.name, "Real Project Matrix");
-  assert.deepEqual(Object.keys(matrix.on?.workflow_dispatch?.inputs ?? {}), []);
+  // The release gate dispatches this workflow with no inputs, so every input has
+  // to carry a default. `enforce_divergence_budget` defaults to off on purpose
+  // (#3513): the weekly sweep enforces the divergence budget, and a release must
+  // not be blocked by it while the ecosystem baseline is unusable.
+  const dispatchInputs = matrix.on?.workflow_dispatch?.inputs ?? {};
+  assert.deepEqual(Object.keys(dispatchInputs), ["enforce_divergence_budget"]);
+  assert.equal(dispatchInputs.enforce_divergence_budget.default, false);
   assert.match(matrix["run-name"] ?? "", /^Real Project Matrix @ /);
   assert.match(matrix["run-name"] ?? "", /github\.sha/);
 });

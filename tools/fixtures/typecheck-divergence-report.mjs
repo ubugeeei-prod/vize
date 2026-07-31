@@ -7,6 +7,11 @@ import { fileURLToPath } from "node:url";
 
 import { validateTypecheckerOutput } from "./tool-matrix-typechecker.mjs";
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
+import {
+  assertBudgetPassed,
+  evaluateBudget,
+  parseBudgetMode,
+} from "./typecheck-divergence-budget.mjs";
 import { compareTypecheckDiagnostics } from "./typecheck-divergence.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -87,37 +92,8 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   writeFileSync(markdownPath, renderMarkdown(artifact));
   process.stdout.write(`Wrote ${relative(repoRoot, jsonPath)}\n`);
   process.stdout.write(`Wrote ${relative(repoRoot, markdownPath)}\n`);
-  assertBudgetPassed(artifact);
+  assertBudgetPassed(artifact, args.budgetMode);
   return artifact;
-}
-
-/**
- * The false-positive/false-negative budget is a gate, not a note (#3460).
- * `budget.passed` used to be computed, embedded in the artifact, and printed in
- * the step summary while nothing read it, so a matrix-wide breach reported
- * `Budget passed: false` and the weekly job still went green.
- *
- * This runs after both artifacts are written, so a breach is still uploaded and
- * reviewable — the run fails with the evidence attached, not instead of it.
- */
-export function assertBudgetPassed(artifact) {
-  const budget = artifact.budget;
-  if (budget.passed) return;
-  const summary = artifact.divergence.summary;
-  const breaches = [];
-  if (!budget.falsePositivePassed) {
-    breaches.push(
-      `${summary.falsePositiveCount} false positives (ratio ${summary.falsePositiveRatio}) exceed maxFalsePositiveRatio ${budget.maxFalsePositiveRatio}`,
-    );
-  }
-  if (!budget.falseNegativePassed) {
-    breaches.push(
-      `${summary.falseNegativeCount} false negatives (ratio ${summary.falseNegativeRatio}) exceed maxFalseNegativeRatio ${budget.maxFalseNegativeRatio}`,
-    );
-  }
-  throw new Error(
-    `Typecheck divergence budget breached for ${artifact.project}: ${breaches.join("; ")}`,
-  );
 }
 
 function readDocumentedDifferences() {
@@ -229,19 +205,6 @@ function validatePerformanceConfig(performance) {
   ratio(performance.maxFalseNegativeRatio, "maxFalseNegativeRatio");
 }
 
-function evaluateBudget(performance, summary) {
-  const falseNegativeLimit = performance.maxFalseNegativeRatio;
-  const falsePositivePassed = summary.falsePositiveRatio <= performance.maxFalsePositiveRatio;
-  const falseNegativePassed = summary.falseNegativeRatio <= falseNegativeLimit;
-  return {
-    maxFalsePositiveRatio: performance.maxFalsePositiveRatio,
-    maxFalseNegativeRatio: falseNegativeLimit,
-    falsePositivePassed,
-    falseNegativePassed,
-    passed: falsePositivePassed && falseNegativePassed,
-  };
-}
-
 function renderMarkdown(artifact) {
   const summary = artifact.divergence.summary;
   return [
@@ -259,10 +222,15 @@ function renderMarkdown(artifact) {
     `vue-tsc excluded non-Vue: ${summary.baselineExcludedNonVueCount}`,
     `vue-tsc excluded project-level: ${summary.baselineExcludedProjectCount}`,
     `vue-tsc excluded external: ${summary.baselineExcludedExternalCount}`,
-    `Budget passed: ${artifact.budget.passed ?? "not configured"}`,
+    `Budget verdict: ${describeVerdict(artifact.budget)}`,
+    `Budget passed: ${artifact.budget.passed}`,
     `Digest: ${artifact.divergence.sha256}`,
     "",
   ].join("\n");
+}
+
+function describeVerdict(budget) {
+  return budget.unusableReason == null ? budget.verdict : `unusable (${budget.unusableReason})`;
 }
 
 function resolveVueTsc(value) {
@@ -276,6 +244,7 @@ function resolveVueTsc(value) {
 
 function parseArgs(argv) {
   const args = {
+    budgetMode: "enforce",
     registry: defaultRegistry,
     reportDir: null,
     shardCount: 1,
@@ -288,7 +257,8 @@ function parseArgs(argv) {
       if (argv[index + 1] == null) throw new Error(`${arg} requires a value`);
       return argv[++index];
     };
-    if (arg === "--registry") args.registry = resolve(repoRoot, value());
+    if (arg === "--budget-mode") args.budgetMode = parseBudgetMode(value());
+    else if (arg === "--registry") args.registry = resolve(repoRoot, value());
     else if (arg === "--report-dir") args.reportDir = resolve(repoRoot, value());
     else if (arg === "--shard-count") args.shardCount = integer(value(), arg, 1);
     else if (arg === "--shard-index") args.shardIndex = integer(value(), arg, 0);
