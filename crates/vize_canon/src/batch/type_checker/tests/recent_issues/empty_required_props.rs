@@ -74,6 +74,7 @@ const propName = 'count' as string
   <External />
   <Transition />
   <UnknownWidget />
+  <p>日本語の見出し</p><Required />
 </template>
 "#,
             ),
@@ -96,12 +97,17 @@ const propName = 'count' as string
         })
         .collect();
 
+    // Line 20 anchors after multibyte text: `  <p>日本語の見出し</p><` is 17
+    // UTF-16 units but 31 UTF-8 bytes, so a byte/char confusion anywhere between
+    // the parser's byte spans and the reported column would move the component
+    // name from column 18 to column 32 instead of failing outright.
     assert_eq!(
         positions,
         [
             ("src/Parent.vue", Some(2345), "12:4".to_string()),
             ("src/Parent.vue", Some(2345), "13:4".to_string()),
             ("src/Parent.vue", Some(2345), "17:4".to_string()),
+            ("src/Parent.vue", Some(2345), "20:18".to_string()),
         ],
         "exact required-prop diagnostics only: {snapshot:#?}"
     );
