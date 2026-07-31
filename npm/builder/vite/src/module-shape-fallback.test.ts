@@ -40,18 +40,9 @@ function compiled(code: string, overrides: Partial<CompiledModule> = {}): Compil
 /** The shapes the SFC compiler actually emits, one per `generateOutput` branch. */
 const MODULES: Array<[string, string]> = [
   ["default export, no _sfc_main", "export default { name: 'App' }\n"],
-  [
-    "_sfc_main already defined",
-    "const _sfc_main = { name: 'App' }\nexport default _sfc_main\n",
-  ],
-  [
-    "named render export only",
-    "export function render(_ctx, _cache) { return null }\n",
-  ],
-  [
-    "named ssrRender export only",
-    "export function ssrRender(_ctx, _push) {}\n",
-  ],
+  ["_sfc_main already defined", "const _sfc_main = { name: 'App' }\nexport default _sfc_main\n"],
+  ["named render export only", "export function render(_ctx, _cache) { return null }\n"],
+  ["named ssrRender export only", "export function ssrRender(_ctx, _push) {}\n"],
   ["neither", "export const useThing = () => 1\n"],
 ];
 
@@ -62,11 +53,7 @@ test("the reported shape and the re-parsed shape produce identical output", () =
       compiled(code, { moduleShape: analyzeModuleOutput(code) }),
       OPTIONS,
     );
-    assert.equal(
-      reported,
-      reparsed,
-      `${label}: using the reported shape must match re-parsing`,
-    );
+    assert.equal(reported, reparsed, `${label}: using the reported shape must match re-parsing`);
   }
 });
 
