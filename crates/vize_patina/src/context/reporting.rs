@@ -81,9 +81,9 @@ impl<'a> LintContext<'a> {
                 self.sfc_directives()
                     .map_or((false, false, None), |directives| {
                         (
-                            directives.is_disabled_at(rule_name, line),
-                            directives.is_expected_at(line),
-                            directives.severity_at(line),
+                            directives.is_disabled_at(rule_name, line, diagnostic.start),
+                            directives.is_expected_at(line, diagnostic.start),
+                            directives.severity_at(line, diagnostic.start),
                         )
                     })
             }

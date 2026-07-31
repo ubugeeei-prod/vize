@@ -15,18 +15,25 @@ use lexer::{DirectiveLexer, StyleDirectiveLexer};
 
 #[derive(Clone, Copy)]
 enum BlockDomain<'a> {
-    Script,
+    Script { jsx: bool },
     Style(Option<&'a str>),
 }
 
 #[derive(Default)]
 pub(super) struct SfcDirectiveState {
+    blocks: Vec<BlockDirectiveState>,
+    line_offsets: Vec<u32>,
+}
+
+#[derive(Default)]
+struct BlockDirectiveState {
+    start: u32,
+    end: u32,
     disabled_all: Vec<DisabledRange>,
     disabled_rules: FxHashMap<CompactString, Vec<DisabledRange>>,
     ignored_regions: Vec<DisabledRange>,
     expected_error_lines: FxHashSet<u32>,
     severity_overrides: FxHashMap<u32, DirectiveSeverity>,
-    line_offsets: Vec<u32>,
 }
 
 impl SfcDirectiveState {
@@ -44,69 +51,60 @@ impl SfcDirectiveState {
 
         let source = descriptor.source.as_ref();
         let mut state = Self {
+            blocks: Vec::new(),
             line_offsets: std::iter::once(0)
                 .chain(memchr_iter(b'\n', source.as_bytes()).map(|offset| (offset + 1) as u32))
                 .collect(),
-            ..Self::default()
         };
         let mut blocks = descriptor
             .script
             .iter()
             .chain(descriptor.script_setup.iter())
-            .map(|block| (block.loc.start, block.content.as_ref(), BlockDomain::Script))
+            .map(|block| {
+                let jsx = matches!(block.lang.as_deref(), Some("jsx" | "tsx"));
+                (
+                    block.loc.start,
+                    block.loc.end,
+                    block.content.as_ref(),
+                    BlockDomain::Script { jsx },
+                )
+            })
             .chain(descriptor.styles.iter().map(|block| {
                 (
                     block.loc.start,
+                    block.loc.end,
                     block.content.as_ref(),
                     BlockDomain::Style(block.lang.as_deref()),
                 )
             }))
             .collect::<Vec<_>>();
-        blocks.sort_unstable_by_key(|(start, _, _)| *start);
+        blocks.sort_unstable_by_key(|(start, _, _, _)| *start);
 
-        for (start, content, domain) in blocks {
+        for (start, end, content, domain) in blocks {
             if !has_directive_marker(content) {
                 continue;
             }
             let first_line = state.offset_to_line(start as u32);
+            let mut block = BlockDirectiveState {
+                start: start as u32,
+                end: end as u32,
+                ..BlockDirectiveState::default()
+            };
             match domain {
-                BlockDomain::Script => {
-                    let mut lexer = DirectiveLexer::default();
-                    state.scan_block(content, first_line, |line| lexer.scan_line(line));
+                BlockDomain::Script { jsx } => {
+                    let mut lexer = DirectiveLexer::new(jsx);
+                    block.scan(content, first_line, |line| lexer.scan_line(line));
                 }
                 BlockDomain::Style(lang) => {
                     let allow_line_comments =
                         matches!(lang, Some("scss" | "sass" | "less" | "stylus"));
                     let mut lexer = StyleDirectiveLexer::new(allow_line_comments);
-                    state.scan_block(content, first_line, |line| lexer.scan_line(line));
+                    block.scan(content, first_line, |line| lexer.scan_line(line));
                 }
             }
+            state.blocks.push(block);
         }
         Some(state)
-    }
-
-    fn scan_block<F>(&mut self, source: &str, first_line: u32, mut scan_line: F)
-    where
-        F: FnMut(&str) -> lexer::CommentMarkers,
-    {
-        let mut last_line = first_line;
-        for (line_number, line) in (first_line..).zip(source.lines()) {
-            last_line = line_number;
-            let markers = scan_line(line);
-            self.scan_eslint_directive(line, line_number, markers.eslint);
-            self.scan_vize_directive(line, line_number, markers.vize);
-        }
-        self.finish_block(last_line);
-    }
-
-    fn finish_block(&mut self, last_line: u32) {
-        close_ranges(&mut self.disabled_all, last_line);
-        for ranges in self.disabled_rules.values_mut() {
-            close_ranges(ranges, last_line);
-        }
-        close_ranges(&mut self.ignored_regions, last_line);
-        self.expected_error_lines.retain(|line| *line <= last_line);
-        self.severity_overrides.retain(|line, _| *line <= last_line);
     }
 
     pub(super) fn offset_to_line(&self, offset: u32) -> u32 {
@@ -116,7 +114,41 @@ impl SfcDirectiveState {
         }
     }
 
-    pub(super) fn is_disabled_at(&self, rule_name: &str, line: u32) -> bool {
+    pub(super) fn is_disabled_at(&self, rule_name: &str, line: u32, offset: u32) -> bool {
+        self.block_at(offset)
+            .is_some_and(|block| block.is_disabled_at(rule_name, line))
+    }
+
+    pub(super) fn is_expected_at(&self, line: u32, offset: u32) -> bool {
+        self.block_at(offset)
+            .is_some_and(|block| block.expected_error_lines.contains(&line))
+    }
+
+    pub(super) fn severity_at(&self, line: u32, offset: u32) -> Option<DirectiveSeverity> {
+        self.block_at(offset)
+            .and_then(|block| block.severity_overrides.get(&line).copied())
+    }
+
+    fn block_at(&self, offset: u32) -> Option<&BlockDirectiveState> {
+        self.blocks
+            .iter()
+            .find(|block| block.start <= offset && offset < block.end)
+    }
+}
+
+impl BlockDirectiveState {
+    fn scan<F>(&mut self, source: &str, first_line: u32, mut scan_line: F)
+    where
+        F: FnMut(&str) -> lexer::CommentMarkers,
+    {
+        for (line_number, line) in (first_line..).zip(source.lines()) {
+            let markers = scan_line(line);
+            self.scan_eslint_directive(line, line_number, markers.eslint);
+            self.scan_vize_directive(line, line_number, markers.vize);
+        }
+    }
+
+    fn is_disabled_at(&self, rule_name: &str, line: u32) -> bool {
         self.disabled_all
             .iter()
             .any(|range| range_contains(range, line))
@@ -128,14 +160,6 @@ impl SfcDirectiveState {
                 .disabled_rules
                 .get(rule_name)
                 .is_some_and(|ranges| ranges.iter().any(|range| range_contains(range, line)))
-    }
-
-    pub(super) fn is_expected_at(&self, line: u32) -> bool {
-        self.expected_error_lines.contains(&line)
-    }
-
-    pub(super) fn severity_at(&self, line: u32) -> Option<DirectiveSeverity> {
-        self.severity_overrides.get(&line).copied()
     }
 
     fn scan_eslint_directive(&mut self, line: &str, line_number: u32, index: Option<usize>) {
@@ -152,9 +176,7 @@ impl SfcDirectiveState {
             EslintDisableKind::DisableLine => {
                 self.disable_rules(directive.rules, line_number, Some(line_number));
             }
-            EslintDisableKind::Disable => {
-                self.disable_rules(directive.rules, line_number, None);
-            }
+            EslintDisableKind::Disable => self.disable_rules(directive.rules, line_number, None),
             EslintDisableKind::Enable => self.enable_rules(directive.rules, line_number),
         }
     }
@@ -164,11 +186,8 @@ impl SfcDirectiveState {
             return;
         };
         let content = line[index..]
-            .split_once("-->")
-            .map_or(&line[index..], |(content, _)| content);
-        let content = content
             .split_once("*/")
-            .map_or(content, |(content, _)| content);
+            .map_or(&line[index..], |(content, _)| content);
         let Some(directive) = parse_vize_directive(content, line_number, 0) else {
             return;
         };
