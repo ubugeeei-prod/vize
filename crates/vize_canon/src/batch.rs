@@ -42,12 +42,10 @@ pub use virtual_project::{
     generate_vue_content_mapper_transform, generate_vue_document_virtual_ts,
     generate_vue_document_virtual_ts_with_options,
 };
-pub use virtual_specifier_message::restore_virtual_vue_specifiers;
+pub use virtual_specifier_message::{AUTHORED_VUE_TS_SENTINEL, restore_virtual_vue_specifiers};
 pub use virtual_ts::VirtualTsGenerator;
 
-pub(crate) use virtual_specifier_message::{
-    AUTHORED_VUE_TS_ALIAS_SENTINEL, AUTHORED_VUE_TS_SENTINEL,
-};
+pub(crate) use virtual_specifier_message::AUTHORED_VUE_TS_ALIAS_SENTINEL;
 
 use vize_carton::String;
 

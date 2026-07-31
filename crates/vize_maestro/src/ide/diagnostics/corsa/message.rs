@@ -143,7 +143,7 @@ mod hint_tests {
 
     #[test]
     fn preserves_authored_vue_ts_and_restores_collision_marker() {
-        let marker = "/__vize_authored_vue_ts__";
+        let marker = vize_canon::batch::AUTHORED_VUE_TS_SENTINEL;
         let original = format!("Cannot find module './Missing.vue.ts{marker}'.");
         assert_eq!(
             rewrite_corsa_message(&original, "import './Missing.vue.ts';"),

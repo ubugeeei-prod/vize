@@ -16,6 +16,7 @@
 
 use super::{DiagnosticMapper, OriginalPosition};
 use crate::batch::restore_virtual_vue_specifiers;
+use crate::batch::virtual_specifier_message::{QUOTE_PAIRS, quoted_specifiers};
 use vize_carton::{String, cstr};
 
 /// The authored `.vue` spelling behind a generated mirror-module specifier, or
@@ -35,27 +36,14 @@ pub(crate) fn mirror_module_specifier_source(specifier: &str) -> Option<&str> {
 /// A checker message quotes a module specifier either directly
 /// (`Cannot find module './Panel.vue.ts'`) or doubly, as a module symbol name
 /// inside a quoted sentence (`Module '"./Panel.vue.ts"' ...`,
-/// `... 'import Panel from "./Panel.vue.ts"' ...`). Single- and double-quoted
-/// runs are therefore scanned in independent passes so a specifier nested
-/// inside another quoted run is still found. A candidate must look like a
-/// specifier — no whitespace and no quote characters — so an unbalanced pairing
-/// can never yield a run of prose that happens to end in `.vue.ts`.
+/// `... 'import Panel from "./Panel.vue.ts"' ...`), both of which the shared
+/// [`quoted_specifiers`] scan covers.
 fn quoted_mirror_specifiers(message: &str) -> Vec<&str> {
     quoted_specifiers(message)
         .into_iter()
         .filter(|candidate| mirror_module_specifier_source(candidate).is_some())
         .collect()
 }
-
-fn is_specifier_shaped(candidate: &str) -> bool {
-    !candidate.is_empty()
-        && !candidate
-            .chars()
-            .any(|character| character.is_whitespace() || matches!(character, '\'' | '"' | '`'))
-}
-
-/// The quote pairs a checker message may wrap a specifier in.
-const QUOTE_PAIRS: [(char, char); 3] = [('\'', '\''), ('"', '"'), ('\u{2018}', '\u{2019}')];
 
 impl DiagnosticMapper<'_> {
     /// Rewrite every generated mirror-module specifier in `message` back to the
@@ -129,25 +117,6 @@ impl DiagnosticMapper<'_> {
             .and_then(string_literal_at);
         literal_at_position == Some(authored) || !content.contains(reported)
     }
-}
-
-fn quoted_specifiers(message: &str) -> Vec<&str> {
-    let mut found = Vec::new();
-    for (open, close) in QUOTE_PAIRS {
-        let mut rest = message;
-        while let Some(start) = rest.find(open) {
-            let after_open = &rest[start + open.len_utf8()..];
-            let Some(end) = after_open.find(close) else {
-                break;
-            };
-            let candidate = &after_open[..end];
-            if is_specifier_shaped(candidate) && !found.contains(&candidate) {
-                found.push(candidate);
-            }
-            rest = &after_open[end + close.len_utf8()..];
-        }
-    }
-    found
 }
 
 /// The contents of the string literal starting at the beginning of `rest`, or
