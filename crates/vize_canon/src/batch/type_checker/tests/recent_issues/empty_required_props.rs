@@ -106,3 +106,60 @@ const propName = 'count' as string
         "exact required-prop diagnostics only: {snapshot:#?}"
     );
 }
+
+/// Keep empty checks out of the template function's control-flow graph. A
+/// large real-world page crossed TypeScript's TS2563 threshold when #3527
+/// initially emitted one call statement per empty usage.
+#[test]
+fn many_empty_usages_do_not_exhaust_typescript_control_flow() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    const USAGE_COUNT: usize = 1_200;
+    let mut parent = std::string::String::from(
+        r#"<script setup lang="ts">
+import Required from './Required.vue'
+</script>
+<template>
+"#,
+    );
+    for _ in 0..USAGE_COUNT {
+        parent.push_str("  <Required />\n");
+    }
+    parent.push_str("</template>\n");
+
+    let project_root = create_project_case(
+        "many-empty-component-required-props",
+        &[
+            (
+                "src/Required.vue",
+                r#"<script setup lang="ts">
+defineProps<{ count: number }>()
+</script>
+<template><span /></template>
+"#,
+            ),
+            ("src/Parent.vue", parent.as_str()),
+        ],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+    let Some(snapshot) = snapshot else {
+        return;
+    };
+
+    assert!(
+        snapshot.iter().all(|(_, code, _)| *code != Some(2563)),
+        "empty usages must not make the template function too large: {snapshot:#?}"
+    );
+    assert_eq!(
+        snapshot
+            .iter()
+            .filter(|(_, code, _)| *code == Some(2345))
+            .count(),
+        USAGE_COUNT,
+        "every empty usage must retain its required-prop diagnostic"
+    );
+}
