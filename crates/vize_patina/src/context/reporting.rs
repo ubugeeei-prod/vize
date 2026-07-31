@@ -73,12 +73,15 @@ impl<'a> LintContext<'a> {
                 self.expected_error_lines.contains(&line),
                 self.severity_overrides.get(&line).copied(),
             ),
+            // Read through the lazy accessor so a caller that reports an
+            // SFC-absolute range without resolving directives first still
+            // honours full-document comments.
             DirectiveDomain::Sfc => {
-                self.sfc_directives
-                    .as_ref()
+                let rule_name = diagnostic.rule_name;
+                self.sfc_directives()
                     .map_or((false, false, None), |directives| {
                         (
-                            directives.is_disabled_at(diagnostic.rule_name, line),
+                            directives.is_disabled_at(rule_name, line),
                             directives.is_expected_at(line),
                             directives.severity_at(line),
                         )

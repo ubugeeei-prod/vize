@@ -46,6 +46,13 @@ fn unused(
     name: &str,
     declaration: &str,
 ) -> (&'static str, Severity, u32, u32, std::string::String) {
+    // A declaration that appears twice would make the expected range ambiguous,
+    // so the first match is only trustworthy when it is the only one.
+    assert_eq!(
+        sfc.matches(declaration).count(),
+        1,
+        "declaration {declaration:?} must occur exactly once"
+    );
     let start = sfc.find(declaration).expect("prop declaration") as u32;
     (
         "vue/no-unused-properties",
