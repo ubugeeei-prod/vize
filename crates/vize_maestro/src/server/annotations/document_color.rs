@@ -19,13 +19,13 @@ mod scan;
 
 use tower_lsp::lsp_types::{Color, ColorInformation, ColorPresentation, Position, Range};
 
-use super::offset_to_position;
+use crate::ide::offset_to_position;
 
-pub struct DocumentColorService;
+pub(super) struct DocumentColorService;
 
 impl DocumentColorService {
     /// Every colour literal in the document's CSS, in document order.
-    pub fn colors(content: &str, filename: &str) -> Vec<ColorInformation> {
+    pub(super) fn colors(content: &str, filename: &str) -> Vec<ColorInformation> {
         let mut colors = Vec::new();
         for region in css_regions(content, filename) {
             for literal in scan::colors_in(content, region) {
@@ -51,7 +51,7 @@ impl DocumentColorService {
     /// The label doubles as the inserted text (the LSP default when no
     /// `textEdit` is supplied), so each one must be valid CSS on its own. Hex
     /// comes first because it is what the picker shows as the primary value.
-    pub fn presentations(color: Color) -> Vec<ColorPresentation> {
+    pub(super) fn presentations(color: Color) -> Vec<ColorPresentation> {
         let red = to_byte(color.red);
         let green = to_byte(color.green);
         let blue = to_byte(color.blue);

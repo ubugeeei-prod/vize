@@ -9,13 +9,17 @@
 //! and selection ranges.
 #![allow(clippy::disallowed_methods)]
 
+mod document_color;
+
 use tower_lsp::lsp_types::{
     CodeLens, CodeLensParams, ColorInformation, ColorPresentation, ColorPresentationParams,
     DocumentColorParams, InlayHint, InlayHintParams,
 };
 
+use document_color::DocumentColorService;
+
 use super::ServerState;
-use crate::ide::{CodeLensService, DocumentColorService, InlayHintService};
+use crate::ide::{CodeLensService, InlayHintService};
 
 pub(super) fn code_lens(state: &ServerState, params: &CodeLensParams) -> Option<Vec<CodeLens>> {
     let uri = &params.text_document.uri;
