@@ -292,9 +292,13 @@ test("create-vue editor features answer in authored Vue ranges", async (t) => {
           ]);
 
           const folding = await ask("textDocument/foldingRange", {});
+          // `endLine` is the last line the client hides, so it stops one line
+          // before each closing tag: `</template>` (14), `</script>` (5), and
+          // the `</p>` (13) closing the multi-line paragraph opened on line 10.
           assert.deepEqual(folding, [
-            { collapsedText: "template", startLine: 7, endLine: 14, kind: "region" },
-            { collapsedText: "script setup", startLine: 0, endLine: 5, kind: "region" },
+            { collapsedText: "template", startLine: 7, endLine: 13, kind: "region" },
+            { collapsedText: "script setup", startLine: 0, endLine: 4, kind: "region" },
+            { startLine: 10, endLine: 12 },
           ]);
         });
       } finally {
