@@ -61,8 +61,9 @@ impl DirectiveLexer {
         }
     }
 
-    pub(super) fn scan_line(&mut self, line: &str) -> CommentMarkers {
+    pub(super) fn scan_line(&mut self, line: &str, remaining: &str) -> CommentMarkers {
         let bytes = line.as_bytes();
+        let remaining_bytes = remaining.as_bytes();
         let mut markers = CommentMarkers::default();
         let mut has_code_token = false;
         let mut index = 0;
@@ -110,7 +111,7 @@ impl DirectiveLexer {
                     (b'<', _)
                         if self.jsx
                             && self.can_start_expression
-                            && is_jsx_start(bytes, index, self.tsx) =>
+                            && is_jsx_start(remaining_bytes, index, self.tsx) =>
                     {
                         self.jsx_depth += 1;
                         self.stack.push(ScriptContext::JsxText);

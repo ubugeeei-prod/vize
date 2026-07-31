@@ -64,10 +64,13 @@ pub(super) fn is_jsx_start(bytes: &[u8], start: usize, tsx: bool) -> bool {
 }
 
 fn is_generic_arrow_start(bytes: &[u8], start: usize) -> bool {
+    const LOOKAHEAD_LIMIT: usize = 4 * 1024;
+
+    let bytes = &bytes[..bytes.len().min(start.saturating_add(LOOKAHEAD_LIMIT))];
     let Some(type_end) = matching_close(bytes, start, b'<', b'>') else {
         return false;
     };
-    let parameters_start = skip_whitespace(bytes, type_end + 1);
+    let parameters_start = skip_trivia(bytes, type_end + 1);
     if bytes.get(parameters_start) != Some(&b'(') {
         return false;
     }
@@ -76,9 +79,70 @@ fn is_generic_arrow_start(bytes: &[u8], start: usize) -> bool {
         // the type-parameter grammar itself disambiguates it from JSX.
         return disambiguates_type_parameters(&bytes[start + 1..type_end]);
     };
-    bytes[parameters_end + 1..]
-        .windows(2)
-        .any(|candidate| candidate == b"=>")
+    let arrow_start = skip_trivia(bytes, parameters_end + 1);
+    has_arrow_after_parameters(bytes, arrow_start)
+}
+
+fn has_arrow_after_parameters(bytes: &[u8], start: usize) -> bool {
+    if bytes
+        .get(start..)
+        .is_some_and(|remaining| remaining.starts_with(b"=>"))
+    {
+        return true;
+    }
+    if bytes.get(start) != Some(&b':') {
+        return false;
+    }
+
+    let mut depths = [0usize; 4];
+    let mut quote = None;
+    let mut line_comment = false;
+    let mut block_comment = false;
+    let mut cursor = start + 1;
+    while cursor < bytes.len() {
+        let byte = bytes[cursor];
+        let next = bytes.get(cursor + 1).copied();
+        if line_comment {
+            line_comment = byte != b'\n';
+        } else if block_comment {
+            if (byte, next) == (b'*', Some(b'/')) {
+                block_comment = false;
+                cursor += 1;
+            }
+        } else if let Some(active_quote) = quote {
+            match byte {
+                b'\\' => cursor += 1,
+                byte if byte == active_quote => quote = None,
+                _ => {}
+            }
+        } else {
+            let at_top_level = depths.iter().all(|depth| *depth == 0);
+            match (byte, next) {
+                (b'=', Some(b'>')) if at_top_level => return true,
+                (b';', _) if at_top_level => return false,
+                (b'/', Some(b'/')) => {
+                    line_comment = true;
+                    cursor += 1;
+                }
+                (b'/', Some(b'*')) => {
+                    block_comment = true;
+                    cursor += 1;
+                }
+                (b'\'' | b'"' | b'`', _) => quote = Some(byte),
+                (b'<', _) => depths[0] += 1,
+                (b'>', _) => depths[0] = depths[0].saturating_sub(1),
+                (b'(', _) => depths[1] += 1,
+                (b')', _) => depths[1] = depths[1].saturating_sub(1),
+                (b'[', _) => depths[2] += 1,
+                (b']', _) => depths[2] = depths[2].saturating_sub(1),
+                (b'{', _) => depths[3] += 1,
+                (b'}', _) => depths[3] = depths[3].saturating_sub(1),
+                _ => {}
+            }
+        }
+        cursor += 1;
+    }
+    false
 }
 
 fn disambiguates_type_parameters(bytes: &[u8]) -> bool {
@@ -128,10 +192,22 @@ fn disambiguates_type_parameters(bytes: &[u8]) -> bool {
 fn matching_close(bytes: &[u8], start: usize, open: u8, close: u8) -> Option<usize> {
     let mut depth = 0usize;
     let mut quote = None;
+    let mut line_comment = false;
+    let mut block_comment = false;
     let mut cursor = start;
     while cursor < bytes.len() {
         let byte = bytes[cursor];
-        if let Some(active_quote) = quote {
+        let next = bytes.get(cursor + 1).copied();
+        if line_comment {
+            if byte == b'\n' {
+                line_comment = false;
+            }
+        } else if block_comment {
+            if (byte, next) == (b'*', Some(b'/')) {
+                block_comment = false;
+                cursor += 1;
+            }
+        } else if let Some(active_quote) = quote {
             match byte {
                 b'\\' => cursor += 1,
                 byte if byte == active_quote => quote = None,
@@ -139,6 +215,14 @@ fn matching_close(bytes: &[u8], start: usize, open: u8, close: u8) -> Option<usi
             }
         } else {
             match byte {
+                b'/' if next == Some(b'/') => {
+                    line_comment = true;
+                    cursor += 1;
+                }
+                b'/' if next == Some(b'*') => {
+                    block_comment = true;
+                    cursor += 1;
+                }
                 b'\'' | b'"' | b'`' => quote = Some(byte),
                 byte if byte == open => depth += 1,
                 byte if byte == close
@@ -163,4 +247,30 @@ fn skip_whitespace(bytes: &[u8], start: usize) -> usize {
             .iter()
             .take_while(|byte| byte.is_ascii_whitespace())
             .count()
+}
+
+fn skip_trivia(bytes: &[u8], start: usize) -> usize {
+    let mut cursor = skip_whitespace(bytes, start);
+    loop {
+        match (bytes.get(cursor), bytes.get(cursor + 1)) {
+            (Some(b'/'), Some(b'/')) => {
+                cursor += 2;
+                cursor += bytes[cursor..]
+                    .iter()
+                    .position(|byte| *byte == b'\n')
+                    .unwrap_or(bytes.len() - cursor);
+            }
+            (Some(b'/'), Some(b'*')) => {
+                let Some(end) = bytes[cursor + 2..]
+                    .windows(2)
+                    .position(|candidate| candidate == b"*/")
+                else {
+                    return bytes.len();
+                };
+                cursor += end + 4;
+            }
+            _ => return cursor,
+        }
+        cursor = skip_whitespace(bytes, cursor);
+    }
 }

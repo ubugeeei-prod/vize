@@ -97,13 +97,15 @@ impl SfcDirectiveState {
             match domain {
                 BlockDomain::Script { jsx, tsx } => {
                     let mut lexer = DirectiveLexer::new(jsx, tsx);
-                    block.scan(content, first_line, |line| lexer.scan_line(line));
+                    block.scan(content, first_line, |line, remaining| {
+                        lexer.scan_line(line, remaining)
+                    });
                 }
                 BlockDomain::Style(lang) => {
                     let allow_line_comments =
                         matches!(lang, Some("scss" | "sass" | "less" | "stylus"));
                     let mut lexer = StyleDirectiveLexer::new(allow_line_comments);
-                    block.scan(content, first_line, |line| lexer.scan_line(line));
+                    block.scan(content, first_line, |line, _| lexer.scan_line(line));
                 }
             }
             state.blocks.push(block);
@@ -143,12 +145,17 @@ impl SfcDirectiveState {
 impl BlockDirectiveState {
     fn scan<F>(&mut self, source: &str, first_line: u32, mut scan_line: F)
     where
-        F: FnMut(&str) -> lexer::CommentMarkers,
+        F: FnMut(&str, &str) -> lexer::CommentMarkers,
     {
-        for (line_number, line) in (first_line..).zip(source.lines()) {
-            let markers = scan_line(line);
+        let mut offset = 0;
+        for (line_number, raw_line) in (first_line..).zip(source.split_inclusive('\n')) {
+            let line = raw_line
+                .strip_suffix('\n')
+                .map_or(raw_line, |line| line.strip_suffix('\r').unwrap_or(line));
+            let markers = scan_line(line, &source[offset..]);
             self.scan_eslint_directive(line, line_number, markers.eslint);
             self.scan_vize_directive(line, line_number, markers.vize);
+            offset += raw_line.len();
         }
     }
 

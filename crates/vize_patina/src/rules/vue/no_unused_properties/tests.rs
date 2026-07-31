@@ -6,6 +6,7 @@ use crate::rule::{Rule, RuleCategory};
 // The positive direction (a prop that must be reported) lives in the `reports`
 // submodule; this file keeps the helpers and the silent-direction cases.
 mod directive_lexer_reports;
+mod directive_lexer_tsx_multiline;
 mod reports;
 
 /// Lint a full SFC with only this rule enabled.
