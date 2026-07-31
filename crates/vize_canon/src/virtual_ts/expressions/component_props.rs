@@ -20,6 +20,12 @@ fn has_inference_props(usage: &ComponentUsage) -> bool {
     usage.props.iter().any(is_checkable_prop)
 }
 
+/// A `v-bind="obj"` spread contributes no [`PassedProp`], so a usage that only
+/// spreads has no inference props and emitted no check at all before #3444.
+fn has_checkable_props_or_spread(usage: &ComponentUsage) -> bool {
+    has_inference_props(usage) || !usage.spread_props.is_empty()
+}
+
 fn is_checkable_prop(prop: &PassedProp) -> bool {
     !prop.name_is_dynamic && prop.name.as_str() != "key" && prop.name.as_str() != "ref"
 }
@@ -198,7 +204,7 @@ fn generate_generic_props_call(
     template_offset: u32,
     indent: &str,
 ) {
-    if !has_inference_props(usage) {
+    if !has_checkable_props_or_spread(usage) {
         return;
     }
 
@@ -229,6 +235,25 @@ fn generate_generic_props_call(
     // reports about the literal as a whole.
     let literal_gen_start = ts.len();
     ts.push_str("{\n");
+
+    // `v-bind="obj"` becomes a spread in the same literal, so the child's props
+    // type sees the whole bag: `({ ...bag, "label": maybe })`. vue-tsc checks the
+    // spread's contribution the same way, which is what makes a wrongly typed
+    // bag `TS2345` rather than silence (#3444). Each spread maps back to its own
+    // directive so an error *inside* the expression lands on the authored bytes.
+    for spread in &usage.spread_props {
+        append!(*ts, "{expr_indent}  ...");
+        let spread_gen_start = ts.len();
+        ts.push_str(spread.expression.as_str());
+        let spread_gen_end = ts.len();
+        ts.push_str(",\n");
+        mappings.push(VizeMapping {
+            gen_range: spread_gen_start..spread_gen_end,
+            src_range: (template_offset + spread.start) as usize
+                ..(template_offset + spread.end) as usize,
+            sub_spans: Vec::new(),
+        });
+    }
 
     let class_bindings = collect_generated_class_bindings(usage, template_prop_names);
     let merge_class_bindings = class_bindings.len() > 1;

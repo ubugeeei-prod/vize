@@ -56,6 +56,7 @@ fn semantic_summary_collects_template_and_export_counts() {
             has_scope: true,
         }],
         has_spread_attrs: true,
+        spread_props: vize_carton::SmallVec::new(),
         scope_id: ScopeId::ROOT,
         vif_guard: Some(CompactString::new("visible")),
     });

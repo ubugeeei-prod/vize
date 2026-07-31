@@ -62,7 +62,7 @@ pub use snapshot::{
 pub use summary::CroquisSemanticSummary;
 pub use template::{
     ComponentRegistration, ComponentUsage, ElementIdInfo, ElementIdKind, EventListener, PassedProp,
-    SlotUsage, TemplateExpression, TemplateExpressionKind, TemplateInfo,
+    SlotUsage, SpreadProp, TemplateExpression, TemplateExpressionKind, TemplateInfo,
 };
 
 use crate::hoist::HoistTracker;

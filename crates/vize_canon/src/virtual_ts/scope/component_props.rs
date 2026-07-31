@@ -15,7 +15,8 @@ use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier, to_safe_iden
 use crate::virtual_ts::types::VizeMapping;
 
 use super::component_prop_checker::{
-    append_prop_check_helpers, append_prop_checker_alias, has_inference_props, has_value_props,
+    append_prop_check_helpers, append_prop_checker_alias, has_checkable_props_or_spread,
+    has_value_props,
 };
 use super::component_prop_navigation;
 use super::context::{ComponentPropsContext, VForPropsContext};
@@ -75,7 +76,7 @@ pub(super) fn generate_component_props(
     // typing is limited to inline function props to avoid duplicate errors.
     let any_inference_props = checkable_usages
         .iter()
-        .any(|(_, usage)| has_inference_props(usage));
+        .any(|(_, usage)| has_checkable_props_or_spread(usage));
     if any_inference_props {
         append_prop_check_helpers(ts);
     }
@@ -86,7 +87,7 @@ pub(super) fn generate_component_props(
 
         let has_value_props = has_value_props(usage);
         let has_navigable_props = component_prop_navigation::has_navigable_props(ctx, usage);
-        if !has_value_props && !has_navigable_props {
+        if !has_value_props && !has_navigable_props && usage.spread_props.is_empty() {
             continue;
         }
 
@@ -119,10 +120,11 @@ pub(super) fn generate_component_props(
             }
         }
 
-        if has_inference_props(usage) {
+        if has_checkable_props_or_spread(usage) {
             // Generic functional prop-checker for this component (#775).
             append_prop_checker_alias(
                 ts,
+                usage,
                 component_type_name.as_str(),
                 component_ref.as_str(),
                 idx,

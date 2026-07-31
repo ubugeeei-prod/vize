@@ -3,7 +3,7 @@
 //! Collects props, events, and slots passed to child components
 //! during template traversal.
 
-use crate::croquis::{ComponentUsage, EventListener, PassedProp, SlotUsage};
+use crate::croquis::{ComponentUsage, EventListener, PassedProp, SlotUsage, SpreadProp};
 use crate::drawer::helpers::extract_slot_props;
 use vize_carton::{CompactString, SmallVec, cstr};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
@@ -51,8 +51,18 @@ impl Drawer {
                                 end: dir.loc.end.offset,
                                 is_dynamic: true,
                             });
-                        } else if dir.exp.is_some() {
+                        } else if let Some(ref exp) = dir.exp {
                             usage.has_spread_attrs = true;
+                            usage.spread_props.push(SpreadProp {
+                                expression: match exp {
+                                    ExpressionNode::Simple(s) => s.content.clone(),
+                                    ExpressionNode::Compound(c) => {
+                                        CompactString::new(c.loc.source.as_str())
+                                    }
+                                },
+                                start: dir.loc.start.offset,
+                                end: dir.loc.end.offset,
+                            });
                         }
                     }
                     "on" => {

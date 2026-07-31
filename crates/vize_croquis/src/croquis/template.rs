@@ -183,10 +183,28 @@ pub struct ComponentUsage {
     pub slots: SmallVec<[SlotUsage; 2]>,
     /// Whether v-bind="$attrs" or similar spread is used
     pub has_spread_attrs: bool,
+    /// The argument-less `v-bind="expr"` spreads on this usage, in source order.
+    ///
+    /// [`Self::has_spread_attrs`] answers "is there one"; this carries *what*
+    /// was spread, which is what a whole-props type check needs. A spread
+    /// contributes no [`PassedProp`], so without this the expression is not
+    /// recoverable from the usage at all (#3444).
+    pub spread_props: SmallVec<[SpreadProp; 1]>,
     /// The scope this component usage is in (for v-for prop checking)
     pub scope_id: crate::scope::ScopeId,
     /// Combined v-if / v-else-if guard active for this component usage.
     pub vif_guard: Option<CompactString>,
+}
+
+/// An argument-less `v-bind="expr"` spread on a component usage.
+#[derive(Debug, Clone)]
+pub struct SpreadProp {
+    /// The spread expression as authored, e.g. `bag` or `$attrs`.
+    pub expression: CompactString,
+    /// Start offset of the whole directive, at the `v` of `v-bind` or the `:`.
+    pub start: u32,
+    /// End offset of the whole directive.
+    pub end: u32,
 }
 
 /// A prop passed to a component in template.

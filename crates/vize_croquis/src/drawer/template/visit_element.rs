@@ -122,6 +122,7 @@ impl Drawer {
             events: SmallVec::new(),
             slots: SmallVec::new(),
             has_spread_attrs: false,
+            spread_props: SmallVec::new(),
             scope_id: crate::scope::ScopeId::ROOT,
             vif_guard: None,
         })

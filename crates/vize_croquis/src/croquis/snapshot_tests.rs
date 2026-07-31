@@ -156,6 +156,7 @@ fn semantic_snapshot_is_deterministic_for_manual_croquis_facts() {
             has_scope: false,
         }],
         has_spread_attrs: false,
+        spread_props: vize_carton::SmallVec::new(),
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     });

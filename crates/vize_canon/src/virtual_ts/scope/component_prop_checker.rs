@@ -1,4 +1,4 @@
-use vize_carton::{String, append};
+use vize_carton::{String, append, cstr};
 use vize_croquis::croquis::ComponentUsage;
 
 pub(super) fn is_inline_function_prop_value(value: &str) -> bool {
@@ -23,6 +23,15 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
     usage.props.iter().any(|prop| {
         !prop.name_is_dynamic && prop.name.as_str() != "key" && prop.name.as_str() != "ref"
     })
+}
+
+/// Whether the usage has anything for the whole-props check to look at.
+///
+/// A `v-bind="obj"` spread contributes no `PassedProp`, so a usage that only
+/// spreads has no inference props and used to be skipped entirely — which is
+/// why `<Child v-bind="bag" />` was unchecked (#3444).
+pub(super) fn has_checkable_props_or_spread(usage: &ComponentUsage) -> bool {
+    has_inference_props(usage) || !usage.spread_props.is_empty()
 }
 
 /// The target the usage's whole props object literal is checked against.
@@ -92,13 +101,28 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 /// compiler-version difference, not something the generated code can steer.
 pub(super) fn append_prop_checker_alias(
     ts: &mut String,
+    usage: &ComponentUsage,
     component_type_name: &str,
     component_ref: &str,
     idx: usize,
 ) {
+    // A usage that spreads and binds nothing by name is checked against the
+    // child's props type *unmodified*. Nothing on that element is covered by the
+    // per-prop path, so nothing can be reported twice, and it is the only shape
+    // that catches a wrongly typed value *inside* the spread — #3444's oracle,
+    // where `<Child v-bind="bag" />` with a string `count` is `TS2345`.
+    //
+    // Any usage that also binds by name keeps the widened target: its named
+    // props belong to the per-prop check, and the full type there would
+    // duplicate every one of them.
+    let target = if has_inference_props(usage) {
+        cstr!("__VizeExactOptionalProps<__{component_type_name}_Props_{idx}>")
+    } else {
+        cstr!("__{component_type_name}_Props_{idx}")
+    };
     append!(
         *ts,
-        "  type __{component_type_name}_CheckProps_{idx} = __VizeExactOptionalProps<__{component_type_name}_Props_{idx}>;\n",
+        "  type __{component_type_name}_CheckProps_{idx} = {target};\n",
     );
     append!(
         *ts,
