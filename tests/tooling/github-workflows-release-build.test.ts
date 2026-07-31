@@ -54,7 +54,7 @@ test("release workflow jobs cap runtime with explicit timeouts", () => {
     ["plan-release-platforms", 5],
     ["build-cli", 90],
     ["build-editor-extensions", 30],
-    ["release-vscode-extension", 15],
+    ["release-vscode-extension", 30],
     ["build-release-packages", 45],
     ["build-wasm-package", 30],
     ["build-native-all", 90],
