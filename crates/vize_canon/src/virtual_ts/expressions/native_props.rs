@@ -5,15 +5,33 @@
 //! program in `vue_type_helpers_text!` (`virtual_ts/helpers.rs`), not per file,
 //! for two reasons.
 //!
-//! `import('vue').NativeElements` is named there and nowhere else. A Vue whose
-//! typings do not export it (Vue 2.7, an older Vue 3 minor, a trimmed or
-//! shimmed package, a workspace with no `vue` at all) makes that one alias an
-//! error type, which TypeScript propagates as `any`, so every check below it
-//! accepts any value and the file degrades to unchecked. The helpers text
-//! carries no mapping back to authored source, so the unresolved reference
-//! cannot be attributed to user code — exactly how the neighbouring
-//! `type __Ref<T> = import('vue').Ref<T>;` has always behaved. Naming the module
-//! per file, or per use site, reported `TS2307`/`TS2694` on correct code.
+//! `import('vue').NativeElements` is named there and nowhere else, behind a
+//! `// @ts-ignore`. A Vue whose typings do not export it (Vue 2.7, an older
+//! Vue 3 minor, a trimmed or shimmed package, a workspace with no `vue` at all)
+//! makes that one alias an error type, which TypeScript propagates as `any`, so
+//! every check below it accepts any value and the file degrades to unchecked.
+//! Naming the module per file, or per use site, reported `TS2307`/`TS2694` on
+//! correct code.
+//!
+//! The `// @ts-ignore` on the alias is load-bearing, not cosmetic. Without it
+//! the alias still degrades to `any`, but it *also* emits a real `TS2694`
+//! against the helpers file. The diagnostics path drops that, because the
+//! helpers text carries no mapping back to authored source, so the degrade
+//! looked complete — but declaration emit (`vize check --declaration`) shells
+//! out to Corsa and treats any non-zero exit as fatal, so the same unmapped
+//! diagnostic aborted the whole emit with `corsa error (exit code 1)`.
+//!
+//! The neighbouring `type __Ref<T> = import('vue').Ref<T>;` needs no guard:
+//! `Ref` predates every Vue version vize supports.
+//!
+//! `declare function __vizeNativeElementProp` exists solely to reference the two
+//! conditional aliases. They are otherwise named only by the checks below, so a
+//! program whose files bind no native prop left them unused and Corsa reported
+//! `TS6196` — `'__VizeNativeElement' is declared but never used.` — which reached
+//! `check-server` clients as an unmapped hint on a clean SFC. `@ts-ignore` does
+//! not help here: it filters errors, not the suggestion channel these arrive on.
+//! An ambient `declare function` is exempt from unused reporting itself, which is
+//! why `__vForList` can keep `__VForEntry` alive the same way. It is never called.
 //!
 //! Declaring the conditional types once per program also lets TypeScript reuse
 //! its instantiation cache across every generated module instead of

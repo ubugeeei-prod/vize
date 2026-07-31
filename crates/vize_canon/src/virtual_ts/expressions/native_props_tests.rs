@@ -105,6 +105,59 @@ fn native_prop_check_ignores_dynamic_names_and_components() {
     );
 }
 
+/// The native element table is declared once, guarded against a `vue` that has
+/// no `NativeElements`, and kept referenced so it cannot be reported as unused —
+/// in the per-file preamble and in the hoisted ambient helpers alike.
+///
+/// Both failure modes were live defects:
+///
+/// - `TS2694`/`TS2307` when the installed `vue` has no `NativeElements`. The
+///   checks already degraded to `any`, but the alias still reported against the
+///   helpers file. `vize check` drops that (the helpers text maps to no authored
+///   source) while `vize check --declaration` treats Corsa's non-zero exit as
+///   fatal, so it aborted the whole emit. `// @ts-ignore` covers this one.
+/// - `TS6196` "declared but never used" on `__VizeNativeElement` and
+///   `__VizeNativeElementProp` for a program that binds no native prop, which
+///   reached `check-server` clients as unmapped hints. `@ts-ignore` does *not*
+///   cover this one — it filters errors, not the suggestion channel — so the
+///   ambient `__vizeNativeElementProp` declaration keeps both aliases referenced.
+#[test]
+fn native_element_table_is_guarded_and_kept_referenced() {
+    const GUARD: &str = "// @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.";
+    const ALIAS: &str = "type __VizeNativeElements = import('vue').NativeElements;";
+    const REFERENCE: &str = "declare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop extends PropertyKey>(value: __VizeNativeElementProp<__VizeNativeElement<__Tag>, __Prop>): void;";
+
+    for (name, text) in [
+        (
+            "SHARED_PREAMBLE_DTS",
+            crate::virtual_ts::SHARED_PREAMBLE_DTS,
+        ),
+        (
+            "VUE_TYPE_HELPERS",
+            crate::virtual_ts::helpers::VUE_TYPE_HELPERS,
+        ),
+    ] {
+        let lines = text.lines().collect::<Vec<_>>();
+        let alias_lines = lines
+            .iter()
+            .enumerate()
+            .filter(|(_, line)| **line == ALIAS)
+            .map(|(index, _)| index)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            alias_lines.len(),
+            1,
+            "{name} must name Vue's native element table exactly once"
+        );
+        assert_eq!(lines[alias_lines[0] - 1], GUARD, "{name} must guard it");
+        assert_eq!(
+            lines.iter().filter(|line| **line == REFERENCE).count(),
+            1,
+            "{name} must keep the conditional aliases referenced exactly once"
+        );
+    }
+}
+
 #[test]
 fn legacy_vue2_does_not_require_vue_native_elements() {
     let script = r#"const disabledFlag: string = "yes""#;

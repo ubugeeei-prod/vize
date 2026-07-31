@@ -1,5 +1,5 @@
 ---
-source: crates/vize_canon/src/batch/virtual_project.rs
+source: crates/vize_canon/src/batch/virtual_project/tests.rs
 expression: stripped.as_str()
 ---
 { "url": "https://example.com" }
