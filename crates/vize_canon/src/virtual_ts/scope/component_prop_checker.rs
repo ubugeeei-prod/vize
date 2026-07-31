@@ -1,5 +1,24 @@
-use vize_carton::{String, append, cstr};
-use vize_croquis::croquis::ComponentUsage;
+use vize_carton::{FxHashSet, String, append, cstr};
+use vize_croquis::croquis::{ComponentUsage, PassedProp};
+
+use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier_fragment};
+
+/// Whether this prop's authored value is an inline function, which is the only
+/// shape that needs the `__VizeCallableProp` fallback.
+///
+/// The name filters mirror [`append_per_prop_aliases`] exactly, because the two
+/// must agree: emitting the helper for a prop the alias loop then skips leaves
+/// it unreferenced, which is `TS6196` on a clean SFC.
+pub(super) fn is_inline_callback_prop(prop: &PassedProp) -> bool {
+    if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
+        return false;
+    }
+    prop.is_dynamic
+        && prop
+            .value
+            .as_ref()
+            .is_some_and(|value| is_inline_function_prop_value(value.as_str()))
+}
 
 pub(super) fn is_inline_function_prop_value(value: &str) -> bool {
     let value = value.trim();
@@ -140,7 +159,7 @@ pub(super) fn append_prop_checker_alias(
 /// They live here rather than at the call site because
 /// [`append_prop_checker_alias`] is what names them, and the reasoning for
 /// `__VizeExactOptionalProps` in particular belongs beside the alias it builds.
-pub(super) fn append_prop_check_helpers(ts: &mut String) {
+pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &ComponentUsage)]) {
     ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
     ts.push_str(
         "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;\n",
@@ -151,4 +170,83 @@ pub(super) fn append_prop_check_helpers(ts: &mut String) {
     ts.push_str(
         "  type __VizeExactOptionalProps<P> = { [K in keyof P]?: Required<Pick<P, K>>[K] | {} | null };\n",
     );
+    // Emitted only when a usage actually binds an inline callback, because
+    // nothing else references it and an unreferenced alias is `TS6196:
+    // '__VizeCallableProp' is declared but never used`. That reaches
+    // check-server clients as an unmapped hint on an otherwise clean SFC, the
+    // same way the native element aliases did before #3443. The ambient
+    // `declare function` trick those use is not available here: these helpers
+    // are emitted inside a template scope's function body, not at module level.
+    //
+    // A generic child's props come from its `__vizeCheck<T>(props)` call, so
+    // `__X_Props_N` is `Record<string, unknown>` and every per-prop alias
+    // resolves to `unknown`. An inline callback prop annotated `unknown` has
+    // no contextual type, so `strict` reports TS7006 on parameters that are
+    // in fact contextually typed by the checker call below — a new error on
+    // correct code (#3446). Falling back to a permissive callable gives
+    // those parameters a contextual `any` and reports nothing itself. `any`
+    // is excluded so a genuinely `any` prop stays assignable from a
+    // non-function value, and a resolved prop type is returned untouched so
+    // a real mismatch on a non-generic child still surfaces.
+    if usages
+        .iter()
+        .any(|(_, usage)| usage.props.iter().any(is_inline_callback_prop))
+    {
+        ts.push_str(
+            "  type __VizeCallableProp<T> = __VizeIsAny<T> extends true ? T : unknown extends T ? (...args: any[]) => any : T;\n",
+        );
+    }
+}
+
+/// The type a per-prop check is annotated with.
+///
+/// An inline callback prop gets the `__VizeCallableProp` fallback so a generic
+/// child — whose per-prop type resolves to `unknown`, its props coming from the
+/// `__vizeCheck<T>(props)` call instead — still contextually types the
+/// callback's parameters (#3446). Every other prop keeps the resolved type.
+pub(super) fn prop_alias_type(
+    prop: &PassedProp,
+    component_type_name: &str,
+    idx: usize,
+    camel_prop_name: &str,
+) -> String {
+    let resolved =
+        cstr!("__VizePropValue<__{component_type_name}_Props_{idx}, '{camel_prop_name}'>");
+    if is_inline_callback_prop(prop) {
+        cstr!("__VizeCallableProp<{resolved}>")
+    } else {
+        resolved
+    }
+}
+
+/// One `__X_N_prop_<name>` alias per distinct prop name the usage binds.
+///
+/// A repeated attribute — a static `class` next to a bound `:class` — reuses the
+/// same child prop type, and emitting the alias twice would be a `TS2300` in the
+/// generated module, so the name set is deduplicated.
+pub(super) fn append_per_prop_aliases(
+    ts: &mut String,
+    usage: &ComponentUsage,
+    component_type_name: &str,
+    idx: usize,
+) {
+    let mut declared_aliases = FxHashSet::default();
+    for prop in &usage.props {
+        if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
+            continue;
+        }
+        if prop.value.is_none() {
+            continue;
+        }
+        let camel_prop_name = to_camel_case(prop.name.as_str());
+        let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
+        if !declared_aliases.insert(safe_prop_name.clone()) {
+            continue;
+        }
+        append!(
+            *ts,
+            "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = {};\n",
+            prop_alias_type(prop, component_type_name, idx, &camel_prop_name),
+        );
+    }
 }

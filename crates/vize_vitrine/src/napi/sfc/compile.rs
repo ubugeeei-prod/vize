@@ -3,6 +3,7 @@ use napi_derive::napi;
 use vize_atelier_sfc::compile_script::typescript::ensure_javascript_output;
 use vize_carton::cstr;
 
+use super::types::ModuleShapeNapi;
 use super::{
     experimentals::ExperimentalTemplateOptions,
     types::{
@@ -47,6 +48,7 @@ pub fn compile_sfc(
                 styles: vec![],
                 custom_blocks: vec![],
                 macro_artifacts: vec![],
+                module_shape: None,
             });
         }
     };
@@ -114,35 +116,42 @@ pub fn compile_sfc(
         sfc_compile_with_template_syntax(&descriptor, compile_opts, template_syntax);
 
     match compile_result {
-        Ok(result) => Ok(SfcCompileResultNapi {
+        Ok(result) => {
             // The emitter is the last stop before the bundler, so the code
             // crossing this boundary must already be plain JavaScript — the JS
             // plugin no longer re-strips it. `is_ts` callers opted out: they
             // asked for TypeScript in the output and strip it themselves.
-            code: if is_ts {
+            let code: String = if is_ts {
                 result.code.into()
             } else {
                 ensure_javascript_output(result.code).into()
-            },
-            css: result.css.map(Into::into),
-            errors: result
-                .errors
-                .into_iter()
-                .map(|e| e.message.into())
-                .collect(),
-            warnings: result
-                .warnings
-                .into_iter()
-                .map(|e| e.message.into())
-                .collect(),
-            template_hash: template_hash.clone(),
-            style_hash: style_hash.clone(),
-            script_hash: script_hash.clone(),
-            has_scoped,
-            styles,
-            custom_blocks,
-            macro_artifacts: macro_artifacts_to_napi(result.macro_artifacts),
-        }),
+            };
+            // Analyzed from the very bytes that cross the boundary, after every
+            // rewriting pass, so the offsets cannot be stale (#3425).
+            let module_shape = ModuleShapeNapi::of(&code);
+            Ok(SfcCompileResultNapi {
+                code,
+                css: result.css.map(Into::into),
+                errors: result
+                    .errors
+                    .into_iter()
+                    .map(|e| e.message.into())
+                    .collect(),
+                warnings: result
+                    .warnings
+                    .into_iter()
+                    .map(|e| e.message.into())
+                    .collect(),
+                template_hash: template_hash.clone(),
+                style_hash: style_hash.clone(),
+                script_hash: script_hash.clone(),
+                has_scoped,
+                styles,
+                custom_blocks,
+                macro_artifacts: macro_artifacts_to_napi(result.macro_artifacts),
+                module_shape,
+            })
+        }
         Err(e) => Ok(SfcCompileResultNapi {
             code: String::new(),
             css: None,
@@ -155,6 +164,7 @@ pub fn compile_sfc(
             styles,
             custom_blocks,
             macro_artifacts: vec![],
+            module_shape: None,
         }),
     }
 }

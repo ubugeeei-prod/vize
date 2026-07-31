@@ -11,12 +11,12 @@ use vize_carton::profile;
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind, analysis::ComponentUsage};
 
 use crate::virtual_ts::expressions::{ComponentPropSource, generate_component_prop_checks};
-use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier, to_safe_identifier_fragment};
+use crate::virtual_ts::helpers::{to_safe_identifier, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;
 
 use super::component_prop_checker::{
-    append_prop_check_helpers, append_prop_checker_alias, has_checkable_props_or_spread,
-    has_value_props,
+    append_per_prop_aliases, append_prop_check_helpers, append_prop_checker_alias,
+    has_checkable_props_or_spread, has_value_props,
 };
 use super::component_prop_navigation;
 use super::context::{ComponentPropsContext, VForPropsContext};
@@ -78,7 +78,7 @@ pub(super) fn generate_component_props(
         .iter()
         .any(|(_, usage)| has_checkable_props_or_spread(usage));
     if any_inference_props {
-        append_prop_check_helpers(ts);
+        append_prop_check_helpers(ts, &checkable_usages);
     }
 
     for &(idx, usage) in &checkable_usages {
@@ -99,26 +99,7 @@ pub(super) fn generate_component_props(
             "  type __{component_type_name}_Props_{idx} = typeof {component_ref} extends {{ __vizeCheck: any }} ? Record<string, unknown> : (typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }} ? __P : (typeof {component_ref} extends (props: infer __P) => any ? __P : {{}}));\n",
         );
 
-        // One alias per distinct prop name: a repeated attribute (for example
-        // a static class next to a bound :class) reuses the same child prop
-        // type, and a duplicate alias would be a TS2300 in the virtual TS.
-        let mut declared_aliases = FxHashSet::default();
-        for prop in &usage.props {
-            if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
-                continue;
-            }
-            if prop.value.is_some() {
-                let camel_prop_name = to_camel_case(prop.name.as_str());
-                let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
-                if !declared_aliases.insert(safe_prop_name.clone()) {
-                    continue;
-                }
-                append!(
-                    *ts,
-                    "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = __VizePropValue<__{component_type_name}_Props_{idx}, '{camel_prop_name}'>;\n",
-                );
-            }
-        }
+        append_per_prop_aliases(ts, usage, component_type_name.as_str(), idx);
 
         if has_checkable_props_or_spread(usage) {
             // Generic functional prop-checker for this component (#775).
