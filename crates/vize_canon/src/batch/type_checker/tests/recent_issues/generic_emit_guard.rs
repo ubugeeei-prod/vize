@@ -90,6 +90,6 @@ const stringHandler = (_value: string) => {}
     assert_eq!(
         actual,
         [("src/Parent.vue", Some(2345), "10:4".to_string())],
-        "generic-first and generic-last overloads must share one result: {snapshot:#?}"
+        "generic-first and generic-last overloads must share one result; the other three usages also omit the required `count`, but they bind `onSave` as a declared prop, so their missing-prop reports stay deferred to #3569: {snapshot:#?}"
     );
 }
