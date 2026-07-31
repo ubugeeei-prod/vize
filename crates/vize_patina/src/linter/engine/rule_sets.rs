@@ -1,0 +1,33 @@
+//! Rule-name sets that gate shared analysis work in the lint engine.
+//!
+//! A rule must appear in a set to receive the work that set unlocks:
+//!
+//! - [`SEMANTIC_TEMPLATE_RULES`]: rules whose `run_on_template` pass needs the
+//!   template semantic analysis (`LintContext::has_analysis`). Omitting a rule
+//!   here means its template pass returns before the rule body runs.
+//! - [`SHARED_SFC_DESCRIPTOR_RULES`]: rules that consume SFC descriptor
+//!   metadata, so the outer SFC path parses the descriptor once up front
+//!   instead of letting each rule re-parse the file.
+
+pub(super) const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
+    "vue/no-unused-vars",
+    "vue/no-unused-components",
+    "vue/require-component-registration",
+    "vue/no-undefined-refs",
+    "vue/no-mutating-props",
+    "vue/no-unused-properties",
+    "a11y/no-refer-to-non-existent-id",
+    "ecosystem/router-link-require-to",
+];
+
+pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
+    "vue/no-reserved-component-names",
+    "vue/no-unused-properties",
+    "vue/no-unused-refs",
+    "vue/sfc-element-order",
+    "vue/require-scoped-style",
+    "vue/single-style-block",
+    "vue/warn-custom-block",
+    "ecosystem/void-link-require-href",
+    "ecosystem/void-link-valid-method",
+];

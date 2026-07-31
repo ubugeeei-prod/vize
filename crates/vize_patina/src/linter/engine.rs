@@ -7,10 +7,12 @@
 //! - [`template_extract`]: ultra-fast `<template>` block extraction
 //! - [`ecosystem_hint`]: source heuristics for ecosystem template rules
 //! - [`tag_scan`]: shared byte-oriented tag scanning primitives
+//! - [`rule_sets`]: rule-name sets gating shared analysis work
 
 mod ecosystem_hint;
 mod offset;
 mod parse_diagnostics;
+mod rule_sets;
 mod script;
 mod tag_scan;
 mod template_extract;
@@ -35,6 +37,8 @@ use super::config::{LintResult, Linter};
 
 use ecosystem_hint::source_may_contain_ecosystem_template_rule;
 pub(crate) use offset::offset_result;
+use rule_sets::{SEMANTIC_TEMPLATE_RULES, SHARED_SFC_DESCRIPTOR_RULES};
+
 pub(crate) enum TemplateAnalysis<'a> {
     Disabled,
     Precomputed(&'a Croquis),
@@ -60,28 +64,6 @@ pub(crate) struct TemplateRuleEnv<'a> {
     pub sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
     pub dialect: VueDialect,
 }
-
-const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
-    "vue/no-unused-vars",
-    "vue/no-unused-components",
-    "vue/require-component-registration",
-    "vue/no-undefined-refs",
-    "vue/no-mutating-props",
-    "vue/no-unused-properties",
-    "a11y/no-refer-to-non-existent-id",
-    "ecosystem/router-link-require-to",
-];
-const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
-    "vue/no-reserved-component-names",
-    "vue/no-unused-properties",
-    "vue/no-unused-refs",
-    "vue/sfc-element-order",
-    "vue/require-scoped-style",
-    "vue/single-style-block",
-    "vue/warn-custom-block",
-    "ecosystem/void-link-require-href",
-    "ecosystem/void-link-valid-method",
-];
 
 pub(crate) fn analyze_descriptor_for_lint(
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
