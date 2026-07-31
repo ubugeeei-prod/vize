@@ -39,6 +39,10 @@ most users do not need to install `@vizejs/native` separately.
 > reports **zero** Vize diagnostics while exiting `0`. `vp lint --init` does not migrate an existing
 > `.oxlintrc.json` either: it writes a fresh `lint` block and leaves the old file in place.
 
+[`vize init`](./init.md) picks the right file for you: it detects whether your lint command is
+`vp lint` or `oxlint` and writes the configuration that command reads, or writes both when both are
+in use. It also refuses to write anything rather than fall back to a file your lint command ignores.
+
 ## Basic Usage With `vp lint`
 
 `createVizeLintConfig()` returns the whole Vite+ `lint` block, so the `jsPlugins` entry that loads

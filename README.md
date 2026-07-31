@@ -48,6 +48,16 @@ It plugs into where you already work: `@vizejs/vite-plugin` (Vite), the `vize` n
 specialized CLI workflows), `@vizejs/vite-plugin-musea` (Musea), and `oxlint-plugin-vize`
 (Oxlint).
 
+To add Vize to an existing Vite or Nuxt project, run:
+
+```bash
+vpx vize init
+```
+
+`vize init` detects your bundler, package manager, and language, then installs and configures the
+features you pick. It is scriptable too — `vize init --yes --lint --vite --fmt --typecheck --editor`.
+See [Project Setup](https://vizejs.dev/guide/init).
+
 **Everything lives in the [documentation](https://vizejs.dev)** — start with
 [Getting Started](https://vizejs.dev/getting-started).
 
