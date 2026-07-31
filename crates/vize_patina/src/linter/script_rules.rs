@@ -8,6 +8,7 @@ use vize_carton::profile;
 mod html_scripts;
 mod prefilter;
 mod registry;
+mod template_ast;
 
 use html_scripts::extract_inline_scripts;
 use prefilter::{
@@ -140,13 +141,22 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         });
 
     // Cross-block context shared by every rule invocation for this SFC: rules
-    // that correlate script declarations with template usage (e.g.
-    // `script/no-unused-emit-declarations`) read the raw `<template>` source.
+    // that correlate script declarations with template usage read the raw
+    // `<template>` source (`script/no-unused-emit-declarations`, where an
+    // over-match only suppresses) or its parsed AST (rules that *create* a
+    // finding from template evidence, where an over-match would be a false
+    // positive). The AST is parsed at most once, and only when some enabled
+    // rule asks for it.
+    let template_allocator = vize_carton::Allocator::default();
+    let template_ast =
+        template_ast::parse_for_script_rules(linter, descriptor, &template_allocator);
     let sfc_context = SfcScriptContext {
         template_source: descriptor
             .template
             .as_ref()
             .map(|block| block.content.as_ref()),
+        template_root: template_ast.as_ref().map(|ast| &ast.root),
+        template_offset: template_ast.as_ref().map(|ast| ast.offset),
     };
 
     for entry in active_builtin_script_rule_entries(linter) {

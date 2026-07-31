@@ -55,6 +55,7 @@ mod require_prop_type_constructor;
 mod require_symbol_provide;
 mod require_typed_ref;
 mod return_in_computed_property;
+mod sfc_context;
 mod valid_define_emits;
 mod valid_define_options;
 mod valid_define_props;
@@ -72,6 +73,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use vize_carton::profile;
 
 pub use exports::*;
+pub use sfc_context::SfcScriptContext;
 
 /// Metadata for a script-level rule
 pub struct ScriptRuleMeta {
@@ -117,24 +119,6 @@ impl ScriptLintResult {
 #[inline]
 pub(crate) fn script_source_type() -> SourceType {
     SourceType::from_path("component.ts").unwrap_or_else(|_| SourceType::ts())
-}
-
-/// Cross-block context available to a script rule when the linted block is
-/// part of an SFC.
-///
-/// Script rules see a single `<script>` / `<script setup>` block and normally
-/// cannot observe the rest of the file. Rules that correlate a script
-/// declaration with `<template>` usage (e.g. `script/no-unused-emit-declarations`,
-/// whose declared events may only be emitted from template handlers) read the
-/// raw template source here, provided as text rather than an AST since patina's
-/// template and script passes are separate. The `Default` value (no template)
-/// is what standalone entry points (inline HTML scripts, [`ScriptLinter::lint`])
-/// pass, so rules must treat a missing template as "no template usage
-/// observable", never as an error.
-#[derive(Clone, Copy, Default)]
-pub struct SfcScriptContext<'a> {
-    /// Raw `<template>` block content, when the SFC declares a template.
-    pub template_source: Option<&'a str>,
 }
 
 /// Trait for script-level lint rules
@@ -198,6 +182,17 @@ pub trait ScriptRule: Send + Sync {
     /// receive a shared parse; byte-only rules `false`.
     #[inline]
     fn uses_ast(&self) -> bool {
+        false
+    }
+
+    /// Whether this rule reads [`SfcScriptContext::template_root`].
+    ///
+    /// The `<template>` block is parsed at most once per SFC and only when some
+    /// enabled rule returns `true` here, so a rule that forgets to override
+    /// this simply sees `template_root: None` rather than paying for a parse no
+    /// one reads.
+    #[inline]
+    fn uses_template_ast(&self) -> bool {
         false
     }
 

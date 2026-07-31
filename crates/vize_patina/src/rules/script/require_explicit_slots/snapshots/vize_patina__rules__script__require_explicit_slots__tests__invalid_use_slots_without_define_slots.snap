@@ -1,5 +1,5 @@
 ---
-source: crates/vize_patina/src/rules/script/require_explicit_slots.rs
+source: crates/vize_patina/src/rules/script/require_explicit_slots/tests.rs
 expression: result.diagnostics
 ---
 [
