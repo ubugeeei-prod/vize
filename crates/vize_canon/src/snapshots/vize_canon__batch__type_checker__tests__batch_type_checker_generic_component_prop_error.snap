@@ -8,6 +8,6 @@ expression: snapshot
         Some(
             2322,
         ),
-        "6:36:error Type 'number' is not assignable to type 'string'.",
+        "6:37:error Type 'number' is not assignable to type 'string'.",
     ),
 ]

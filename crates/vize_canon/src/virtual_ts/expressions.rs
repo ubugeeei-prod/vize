@@ -9,6 +9,7 @@ mod component_props_tests;
 mod directive_values;
 #[cfg(test)]
 mod directive_values_tests;
+mod generic_props_call;
 mod native_props;
 #[cfg(test)]
 mod native_props_tests;
