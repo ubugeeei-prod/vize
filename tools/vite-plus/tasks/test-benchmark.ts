@@ -112,8 +112,8 @@ export const testAndBenchmarkTasks = defineTasks({
   ),
   "test:vscode-extension:host-real": noCacheTask(
     runInVscodeExtension(
-      stageVscodeTypeScriptPlugin,
-      "pnpm exec vp pack",
+      packageVscodeExtension,
+      "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
       "node test/run-extension-host-real.mjs",
     ),
   ),

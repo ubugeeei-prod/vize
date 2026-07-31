@@ -4,24 +4,32 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { runTests } from "@vscode/test-electron";
+import { runVSCodeCommand } from "@vscode/test-electron";
 
-const extensionDevelopmentPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const repositoryRoot = path.resolve(extensionDevelopmentPath, "..", "..");
+import {
+  createPackagedHostInstallArgs,
+  createPackagedHostLaunchArgs,
+  resolveInstalledExtensionPath,
+  runVSCodeCommandWithTimeout,
+} from "./packaged-host-contract.mjs";
+
+const sourceExtensionPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const repositoryRoot = path.resolve(sourceExtensionPath, "..", "..");
 const fixtureWorkspacePath = path.join(
-  extensionDevelopmentPath,
+  sourceExtensionPath,
   "test-fixtures",
   "extension-host",
   "real-vue",
 );
-const testDataPath = path.join(extensionDevelopmentPath, ".vscode-test", "host-smoke-real");
+const testDataPath = path.join(sourceExtensionPath, ".vscode-test", "host-smoke-real");
 const workspacePath = path.join(testDataPath, "workspaces", "real-vue");
 const extensionTestsPath = path.join(
-  extensionDevelopmentPath,
+  sourceExtensionPath,
   "test",
   "suite",
   "extension-host-real.cjs",
 );
+const vsixPath = path.join(sourceExtensionPath, "dist", "vize.vsix");
 
 const serverPath = resolveRealServerPath();
 const corsaPath = resolveCorsaPath();
@@ -40,26 +48,46 @@ fs.writeFileSync(
 // singleton socket inside the user-data directory. Deep checkouts overflow the
 // default `.vscode-test/user-data` location, so keep user data in a short
 // temporary directory instead.
-const userDataPath = fs.mkdtempSync(path.join(os.tmpdir(), "vize-host-real-"));
+const profilePath = fs.mkdtempSync(path.join(os.tmpdir(), "vize-host-real-"));
+const extensionsPath = path.join(profilePath, "extensions");
+const userDataPath = path.join(profilePath, "user-data");
 
 try {
-  await runTests({
-    extensionDevelopmentPath,
-    extensionTestsPath,
-    extensionTestsEnv: {
-      VIZE_TEST_SERVER_PATH: serverPath,
-    },
-    launchArgs: [
-      "--disable-extensions",
-      "--disable-workspace-trust",
-      "--skip-welcome",
-      "--skip-release-notes",
-      `--user-data-dir=${userDataPath}`,
-      workspacePath,
-    ],
+  if (!fs.existsSync(vsixPath)) {
+    throw new Error(`missing packaged VS Code extension: ${vsixPath}`);
+  }
+
+  const installArgs = createPackagedHostInstallArgs({ extensionsPath, userDataPath, vsixPath });
+  const installation = await runVSCodeCommandWithTimeout(runVSCodeCommand, installArgs, {
+    environment: process.env,
+    timeoutMs: 120_000,
   });
+  writeCommandOutput(installation);
+  const installedExtensionPath = resolveInstalledExtensionPath(extensionsPath, "ubugeeei.vize");
+  const launchArgs = createPackagedHostLaunchArgs({
+    extensionsPath,
+    extensionTestsPath,
+    installedExtensionPath,
+    userDataPath,
+    workspacePath,
+  });
+  const host = await runVSCodeCommandWithTimeout(runVSCodeCommand, launchArgs, {
+    environment: {
+      ...process.env,
+      VIZE_TEST_PACKAGED_EXTENSIONS_DIR: extensionsPath,
+      VIZE_TEST_SERVER_PATH: serverPath,
+      VIZE_TEST_SOURCE_EXTENSION_PATH: sourceExtensionPath,
+    },
+    timeoutMs: 300_000,
+  });
+  writeCommandOutput(host);
 } finally {
-  fs.rmSync(userDataPath, { force: true, recursive: true });
+  fs.rmSync(profilePath, { force: true, recursive: true });
+}
+
+function writeCommandOutput({ stderr, stdout }) {
+  if (stdout) process.stdout.write(stdout);
+  if (stderr) process.stderr.write(stderr);
 }
 
 /**
@@ -95,7 +123,7 @@ function resolveRealServerPath() {
  * resolve the platform package from the meta package's real location.
  */
 function resolveCorsaPath() {
-  const extensionRequire = createRequire(path.join(extensionDevelopmentPath, "package.json"));
+  const extensionRequire = createRequire(path.join(sourceExtensionPath, "package.json"));
   const metaManifestPath = fs.realpathSync(
     extensionRequire.resolve("@typescript/native-preview/package.json"),
   );

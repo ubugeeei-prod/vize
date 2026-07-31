@@ -1,0 +1,80 @@
+import fs from "node:fs";
+import path from "node:path";
+
+export function createPackagedHostInstallArgs({ extensionsPath, userDataPath, vsixPath }) {
+  return [
+    "--install-extension",
+    vsixPath,
+    "--force",
+    `--extensions-dir=${extensionsPath}`,
+    `--user-data-dir=${userDataPath}`,
+  ];
+}
+
+// VS Code only executes --extensionTestsPath for an extension development
+// host. Point that protocol requirement at the extracted VSIX itself; using
+// the repository source path here would silently stop testing the artifact.
+export function createPackagedHostLaunchArgs({
+  extensionsPath,
+  extensionTestsPath,
+  installedExtensionPath,
+  userDataPath,
+  workspacePath,
+}) {
+  return [
+    "--no-sandbox",
+    "--disable-gpu-sandbox",
+    "--disable-updates",
+    "--disable-workspace-trust",
+    "--skip-welcome",
+    "--skip-release-notes",
+    `--extensions-dir=${extensionsPath}`,
+    `--user-data-dir=${userDataPath}`,
+    `--extensionDevelopmentPath=${installedExtensionPath}`,
+    `--extensionTestsPath=${extensionTestsPath}`,
+    workspacePath,
+  ];
+}
+
+export function resolveInstalledExtensionPath(extensionsPath, extensionId) {
+  const matches = fs
+    .readdirSync(extensionsPath, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(extensionsPath, entry.name))
+    .filter((candidate) => readExtensionId(candidate) === extensionId);
+
+  if (matches.length !== 1) {
+    throw new Error(
+      `expected exactly one installed ${extensionId} extension, found ${matches.length}: ${matches.join(", ")}`,
+    );
+  }
+
+  return fs.realpathSync(matches[0]);
+}
+
+export async function runVSCodeCommandWithTimeout(runCommand, args, { environment, timeoutMs }) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await runCommand(args, {
+      spawn: { env: environment, signal: controller.signal },
+    });
+  } catch (error) {
+    if (controller.signal.aborted) {
+      throw new Error(`VS Code command timed out after ${timeoutMs}ms`, { cause: error });
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function readExtensionId(extensionPath) {
+  try {
+    const manifest = JSON.parse(fs.readFileSync(path.join(extensionPath, "package.json"), "utf8"));
+    return `${manifest.publisher}.${manifest.name}`;
+  } catch {
+    return undefined;
+  }
+}

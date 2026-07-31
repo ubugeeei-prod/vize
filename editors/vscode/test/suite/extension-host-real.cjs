@@ -61,6 +61,7 @@ exports.run = async function run() {
   const serverPath = getRealServer();
   const extension = vscode.extensions.getExtension(extensionId);
   assert.ok(extension, `missing extension: ${extensionId}`);
+  assertPackagedExtension(extension);
   await extension.activate();
   assert.equal(extension.isActive, true);
 
@@ -80,6 +81,39 @@ exports.run = async function run() {
   await vscode.commands.executeCommand("vize.disable");
   assert.equal(vscode.workspace.getConfiguration("vize").get("enable"), false);
 };
+
+function assertPackagedExtension(extension) {
+  const extensionsPath = getRequiredPath(
+    "VIZE_TEST_PACKAGED_EXTENSIONS_DIR",
+    "packaged extension directory",
+  );
+  const sourceExtensionPath = getRequiredPath(
+    "VIZE_TEST_SOURCE_EXTENSION_PATH",
+    "source extension directory",
+  );
+  const installedPath = fs.realpathSync(extension.extensionPath);
+  const relativeToInstallRoot = path.relative(extensionsPath, installedPath);
+
+  assert.ok(
+    relativeToInstallRoot &&
+      !relativeToInstallRoot.startsWith(`..${path.sep}`) &&
+      !path.isAbsolute(relativeToInstallRoot),
+    `extension must load from the isolated install directory: ${installedPath}`,
+  );
+  assert.notEqual(installedPath, sourceExtensionPath, "extension must not load from repo source");
+  assert.equal(extension.packageJSON.main, "./dist/extension.cjs");
+  assert.ok(
+    fs.existsSync(path.resolve(installedPath, extension.packageJSON.main)),
+    "installed extension must contain its packaged entrypoint",
+  );
+}
+
+function getRequiredPath(environmentName, label) {
+  const value = process.env[environmentName];
+  assert.ok(value, `${environmentName} must be set`);
+  assert.ok(fs.existsSync(value), `missing ${label}: ${value}`);
+  return fs.realpathSync(value);
+}
 
 async function runRealDiagnosticSmoke(mismatchDocument, cleanDocument) {
   const diagnostics = await waitForDiagnostics(
