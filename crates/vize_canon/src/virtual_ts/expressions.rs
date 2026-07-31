@@ -15,6 +15,8 @@ mod native_props;
 mod native_props_tests;
 mod prop_sources;
 mod reserved_props;
+#[cfg(test)]
+mod sequence_prop_tests;
 mod statements;
 mod value_checks;
 mod vif_chain;

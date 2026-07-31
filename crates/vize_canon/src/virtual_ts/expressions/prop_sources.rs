@@ -8,6 +8,11 @@
 
 use super::component_props::ComponentPropSource;
 use super::reserved_props::rewrite_reserved_template_prop;
+use oxc_allocator::Allocator;
+use oxc_ast::ast::Expression;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
+use std::ops::Range;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_croquis::croquis::PassedProp;
@@ -49,6 +54,36 @@ pub(super) fn generated_prop_value(
         || String::from(value.as_ref()),
         |s| String::from(s.as_str()),
     ))
+}
+
+/// Append one generated prop value and return its range without synthetic
+/// grouping bytes.
+///
+/// A top-level sequence needs grouping wherever a prop value sits beside
+/// comma-delimited generated syntax (a declaration, object property, array
+/// element, or spread). OXC distinguishes that shape from commas nested in a
+/// call, array, object, or already-parenthesized sequence. The cheap byte check
+/// only skips parsing expressions that cannot possibly be sequences.
+pub(super) fn append_prop_value(ts: &mut String, value: &str) -> Range<usize> {
+    let needs_grouping = value.as_bytes().contains(&b',') && is_top_level_sequence(value);
+    if needs_grouping {
+        ts.push('(');
+    }
+    let value_start = ts.len();
+    ts.push_str(value);
+    let value_end = ts.len();
+    if needs_grouping {
+        ts.push(')');
+    }
+    value_start..value_end
+}
+
+fn is_top_level_sequence(value: &str) -> bool {
+    let allocator = Allocator::default();
+    matches!(
+        Parser::new(&allocator, value, SourceType::ts()).parse_expression(),
+        Ok(Expression::SequenceExpression(_))
+    )
 }
 
 pub(super) fn prop_value_source_range(
@@ -118,7 +153,25 @@ fn anchor_token(name_region: &str, name: &str) -> Option<(usize, usize)> {
 
 #[cfg(test)]
 mod tests {
-    use super::anchor_token;
+    use super::{anchor_token, append_prop_value};
+
+    #[test]
+    fn groups_only_unparenthesized_top_level_sequences() {
+        let cases = [
+            ("void 0, callback", "(void 0, callback)", 1..17),
+            ("(void 0, callback)", "(void 0, callback)", 0..18),
+            ("invoke(value, other)", "invoke(value, other)", 0..20),
+            ("[value, other]", "[value, other]", 0..14),
+        ];
+
+        for (source, expected, expected_range) in cases {
+            let mut generated = vize_carton::String::default();
+            let range = append_prop_value(&mut generated, source);
+            assert_eq!(generated, expected, "unexpected grouping for `{source}`");
+            assert_eq!(range, expected_range, "unexpected range for `{source}`");
+            assert_eq!(&generated[range], source);
+        }
+    }
 
     #[test]
     fn prop_anchor_tokens_match_the_authored_binding() {

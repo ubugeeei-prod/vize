@@ -7,7 +7,9 @@
 
 use super::super::helpers::to_safe_identifier_fragment;
 use super::super::types::{VizeMapping, VizeSubSpan};
-use super::prop_sources::{generated_prop_value, prop_name_source_range, prop_value_source_range};
+use super::prop_sources::{
+    append_prop_value, generated_prop_value, prop_name_source_range, prop_value_source_range,
+};
 use vize_carton::FxHashMap;
 use vize_carton::FxHashSet;
 use vize_carton::String;
@@ -57,7 +59,7 @@ pub(super) fn merged_class_binding_value(bindings: &[(&PassedProp, String)]) -> 
                 if index > 0 {
                     value.push_str(", ");
                 }
-                value.push_str(binding_value.as_str());
+                append_prop_value(&mut value, binding_value.as_str());
             }
             value.push(']');
             Some(value)
@@ -129,9 +131,7 @@ pub(crate) fn generate_component_prop_checks(
                 *ts,
                 ": __{component_type_name}_{idx}_prop_{safe_prop_name} = ",
             );
-            let value_gen_start = ts.len();
-            ts.push_str(generated_value.as_str());
-            let value_gen_end = ts.len();
+            let value_gen_range = append_prop_value(ts, generated_value.as_str());
             ts.push_str(";\n");
             let gen_stmt_end = ts.len();
             append!(*ts, "{expr_indent}void {check_name};\n");
@@ -150,7 +150,7 @@ pub(crate) fn generate_component_prop_checks(
             }
             if let Some(src_range) = value_src_range {
                 sub_spans.push(VizeSubSpan {
-                    gen_range: value_gen_start..value_gen_end,
+                    gen_range: value_gen_range,
                     src_range,
                 });
             }

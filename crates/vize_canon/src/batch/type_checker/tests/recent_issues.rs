@@ -2,6 +2,7 @@ use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diag
 mod directive_anchors;
 mod directive_values;
 mod exact_optional_props;
+mod sequence_prop_expressions;
 mod spread_props;
 
 #[test]

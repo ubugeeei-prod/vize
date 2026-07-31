@@ -10,7 +10,9 @@ use super::component_props::{
     ComponentPropSource, collect_generated_class_bindings, is_checkable_prop,
     merged_class_binding_value,
 };
-use super::prop_sources::{generated_prop_value, prop_name_source_range, prop_value_source_range};
+use super::prop_sources::{
+    append_prop_value, generated_prop_value, prop_name_source_range, prop_value_source_range,
+};
 use crate::virtual_ts::scope::has_checkable_props_or_spread;
 use vize_carton::FxHashSet;
 use vize_carton::String;
@@ -136,8 +138,7 @@ pub(super) fn generate_generic_props_call(
         append!(*ts, "\"{camel_prop_name}\"");
         let key_gen_end = ts.len();
         ts.push_str(": ");
-        let value_gen_start = ts.len();
-        ts.push_str(generated_value.as_str());
+        let value_gen_range = append_prop_value(ts, generated_value.as_str());
         let entry_gen_end = ts.len();
         ts.push_str(",\n");
         // Without sub-spans the whole entry maps proportionally onto the whole
@@ -152,7 +153,7 @@ pub(super) fn generate_generic_props_call(
                 source_context,
                 prop,
                 entry_gen_start..key_gen_end,
-                value_gen_start..entry_gen_end,
+                value_gen_range,
             ),
         };
         mappings.push(VizeMapping {
@@ -195,12 +196,10 @@ fn append_spread_entry(
     expr_indent: &str,
 ) {
     append!(*ts, "{expr_indent}  ...");
-    let gen_start = ts.len();
-    ts.push_str(spread.expression.as_str());
-    let gen_end = ts.len();
+    let gen_range = append_prop_value(ts, spread.expression.as_str());
     ts.push_str(",\n");
     mappings.push(VizeMapping {
-        gen_range: gen_start..gen_end,
+        gen_range,
         src_range: (template_offset + spread.start) as usize
             ..(template_offset + spread.end) as usize,
         sub_spans: Vec::new(),
