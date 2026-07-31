@@ -147,13 +147,15 @@ test("foldingRange folds elements and stops one line before every closing tag", 
 
 test("foldingRange emits one region per multi-line block with block-named collapsedText", async () => {
   await withSession("lsp-folding-multi-block", async (ask) => {
-    // Styles always collapse to "style"; the single-line `<div>{{ x }}</div>`
-    // hides nothing and contributes no element region.
+    // Styles always collapse to "style" and each rule folds independently;
+    // the single-line `<div>{{ x }}</div>` hides nothing.
     assert.deepEqual(await ask(MULTI_BLOCK, "MultiBlock.vue"), [
       [4, 5, "region", "template"],
       [0, 1, "region", "script setup"],
       [8, 11, "region", "style"],
       [14, 17, "region", "style"],
+      [9, 10, undefined, undefined],
+      [15, 16, undefined, undefined],
     ]);
   });
 });
@@ -173,6 +175,42 @@ test("foldingRange folds a multi-line comment as a comment region", async () => 
       [0, 6, "region", "template"],
       [1, 2, "comment", undefined],
       [4, 5, undefined, undefined],
+    ]);
+  });
+});
+
+test("foldingRange folds script and style bodies alongside SFC and template regions", async () => {
+  await withSession("lsp-folding-script-style", async (ask) => {
+    const source = `<script setup lang="ts">
+const config = {
+  nested: true,
+}
+
+function greet() {
+  return config
+}
+</script>
+
+<template>
+  <section>
+    <div>hello</div>
+  </section>
+</template>
+
+<style scoped>
+.card {
+  color: red;
+}
+</style>
+`;
+    assert.deepEqual(await ask(source, "ScriptStyle.vue"), [
+      [10, 13, "region", "template"],
+      [0, 7, "region", "script setup"],
+      [16, 19, "region", "style"],
+      [11, 12, undefined, undefined],
+      [1, 2, undefined, undefined],
+      [5, 6, undefined, undefined],
+      [17, 18, undefined, undefined],
     ]);
   });
 });

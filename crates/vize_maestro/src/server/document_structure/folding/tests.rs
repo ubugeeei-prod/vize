@@ -135,6 +135,53 @@ fn a_script_body_that_looks_like_markup_is_never_scanned() {
 }
 
 #[test]
+fn script_and_style_bodies_fold_alongside_blocks_and_template_elements() {
+    let source = "<script setup lang=\"ts\">\nconst config = {\n  nested: true,\n}\n\nfunction greet() {\n  return config\n}\n</script>\n\n<template>\n  <section>\n    <div>hello</div>\n  </section>\n</template>\n\n<style scoped>\n.card {\n  color: red;\n}\n</style>\n";
+
+    assert_eq!(
+        ranges(source),
+        vec![
+            (10, 13, Some("region"), Some("template")),
+            (0, 7, Some("region"), Some("script setup")),
+            (16, 19, Some("region"), Some("style")),
+            (11, 12, None, None),
+            (1, 2, None, None),
+            (5, 6, None, None),
+            (17, 18, None, None),
+        ]
+    );
+}
+
+#[test]
+fn script_ast_ignores_braces_in_literals_and_folds_nested_bodies() {
+    let source = "<script lang=\"ts\">\nconst marker = \"}\"\nconst regex = /}/\nconst config = {\n  nested: {\n    enabled: true,\n  },\n  run() {\n    return marker\n  }\n}\n</script>\n";
+
+    assert_eq!(
+        ranges(source),
+        vec![
+            (0, 10, Some("region"), Some("script")),
+            (3, 9, None, None),
+            (4, 5, None, None),
+            (7, 8, None, None),
+        ]
+    );
+}
+
+#[test]
+fn style_scanner_ignores_braces_in_strings_and_comments() {
+    let source = "<style lang=\"scss\">\n.outer {\n  content: \"}\";\n  /*\n    } {\n  */\n  // }\n  .inner {\n    color: red;\n  }\n}\n</style>\n";
+
+    assert_eq!(
+        ranges(source),
+        vec![
+            (0, 10, Some("region"), Some("style")),
+            (1, 9, None, None),
+            (7, 8, None, None),
+        ]
+    );
+}
+
+#[test]
 fn an_unopened_document_yields_no_folding_ranges() {
     let state = ServerState::new();
     let params = FoldingRangeParams {

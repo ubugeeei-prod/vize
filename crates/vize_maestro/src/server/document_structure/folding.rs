@@ -1,7 +1,7 @@
 //! `textDocument/foldingRange` for authored `.vue` documents.
 //!
-//! Two regions are produced: one per multi-line SFC block, and one per
-//! multi-line element or comment inside the template.
+//! Regions are produced for multi-line SFC blocks, template elements and
+//! comments, script object/function bodies, and style rule blocks.
 //!
 //! # `endLine` is the last line the client hides
 //!
@@ -13,18 +13,12 @@
 //! construct's closing line, and a construct with nothing between its opening
 //! and closing lines produces no region at all.
 //!
-//! # Not covered
-//!
-//! Folding *inside* `<script>` (functions, objects) and `<style>` (rule blocks)
-//! needs the TypeScript and CSS services rather than the SFC block layout; it is
-//! tracked in #3477.
-
 use tower_lsp::lsp_types::{FoldingRange, FoldingRangeKind, FoldingRangeParams};
 
 use crate::server::ServerState;
 
-/// One region per multi-line SFC block, then one per multi-line element or
-/// comment in the template, in document order.
+/// One region per multi-line SFC block, then nested regions in template,
+/// script, and style discovery order.
 pub(crate) fn folding_ranges(
     state: &ServerState,
     params: &FoldingRangeParams,
@@ -80,6 +74,17 @@ pub(crate) fn folding_ranges(
             &content,
             (template.loc.start, template.loc.end),
         ));
+    }
+
+    for script in descriptor
+        .script_setup
+        .iter()
+        .chain(descriptor.script.iter())
+    {
+        ranges.extend(script::script_regions(script));
+    }
+    for style in &descriptor.styles {
+        ranges.extend(style::style_regions(style));
     }
 
     (!ranges.is_empty()).then_some(ranges)
@@ -238,5 +243,7 @@ fn start_tag_end(content: &str, tag_start: usize, limit: usize) -> Option<usize>
     None
 }
 
+mod script;
+mod style;
 #[cfg(test)]
 mod tests;
