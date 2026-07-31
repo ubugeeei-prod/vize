@@ -84,14 +84,14 @@
     "vue-element-admin": {
       "revision": "6858a9ad67483025f6a9432a926beb9327037be3",
       "accepted": true,
-      "vizeDiagnosticCount": 1,
+      "vizeDiagnosticCount": 0,
       "baselineDiagnosticCount": 0,
       "sharedCount": 0,
       "messageMismatchCount": 0,
       "documentedDifferenceCount": 0,
-      "falsePositiveCount": 1,
+      "falsePositiveCount": 0,
       "falseNegativeCount": 0,
-      "falsePositiveRatio": 1,
+      "falsePositiveRatio": 0,
       "falseNegativeRatio": 0
     },
     "vue-router": {

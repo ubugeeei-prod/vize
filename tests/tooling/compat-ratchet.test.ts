@@ -33,6 +33,7 @@ import {
   type CompatSummary,
   compatBaselinePath,
   compatProbes,
+  isAcceptedByTypecheckBudget,
   isFixtureHydrated,
   readCompatBaseline,
   readCompatDocumentedDifferences,
@@ -48,6 +49,18 @@ const refreshInstruction =
   "regenerate it in this PR with: UPDATE_COMPAT_BASELINE=1 VIZE_TEST_BIN=target/release/vize " +
   "node --test tests/tooling/compat-ratchet.test.ts (hydrate the vue-parity fixtures first)";
 const updatedEntries = new Map<string, CompatBaselineEntry>();
+
+const exactParity: CompatSummary = {
+  vizeDiagnosticCount: 0,
+  baselineDiagnosticCount: 0,
+  sharedCount: 0,
+  messageMismatchCount: 0,
+  documentedDifferenceCount: 0,
+  falsePositiveCount: 0,
+  falseNegativeCount: 0,
+  falsePositiveRatio: 0,
+  falseNegativeRatio: 0,
+};
 
 type RatchetRule = {
   metric: keyof CompatSummary;
@@ -161,6 +174,32 @@ for (const probe of compatProbes) {
     },
   );
 }
+
+test("compat probes without a configured budget accept only exact parity", () => {
+  assert.equal(isAcceptedByTypecheckBudget(exactParity, undefined), true);
+  assert.equal(isAcceptedByTypecheckBudget(exactParity, { enabled: false }), true);
+  assert.equal(
+    isAcceptedByTypecheckBudget(
+      { ...exactParity, documentedDifferenceCount: 1 },
+      { enabled: false },
+    ),
+    true,
+  );
+  assert.equal(
+    isAcceptedByTypecheckBudget(
+      { ...exactParity, vizeDiagnosticCount: 1, falsePositiveCount: 1, falsePositiveRatio: 1 },
+      undefined,
+    ),
+    false,
+  );
+  assert.equal(
+    isAcceptedByTypecheckBudget(
+      { ...exactParity, baselineDiagnosticCount: 1, falseNegativeCount: 1, falseNegativeRatio: 1 },
+      undefined,
+    ),
+    false,
+  );
+});
 
 test(
   "compat baseline is pinned to the workspace vue-tsc",

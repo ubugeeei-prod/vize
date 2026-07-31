@@ -79,6 +79,12 @@ export type CompatProbeResult = {
   vueTscDurationMs: number;
 };
 
+export type TypecheckPerformanceBudget = {
+  enabled?: boolean;
+  maxFalsePositiveRatio?: number;
+  maxFalseNegativeRatio?: number;
+};
+
 export const compatBaselinePath = path.join(repoRoot, "tests/_fixtures/compat-baseline.json");
 
 export const compatDocumentedDifferencesPath = path.join(
@@ -315,17 +321,22 @@ function isAcceptedByRegistryBudget(fixtureId: string, summary: CompatSummary): 
   ) as {
     projects: Array<{
       id: string;
-      typecheckPerformance?: {
-        enabled?: boolean;
-        maxFalsePositiveRatio?: number;
-        maxFalseNegativeRatio?: number;
-      };
+      typecheckPerformance?: TypecheckPerformanceBudget;
     }>;
   };
   const performance = registry.projects.find(
     (project) => project.id === fixtureId,
   )?.typecheckPerformance;
-  if (performance?.enabled !== true) return true;
+  return isAcceptedByTypecheckBudget(summary, performance);
+}
+
+export function isAcceptedByTypecheckBudget(
+  summary: CompatSummary,
+  performance: TypecheckPerformanceBudget | undefined,
+): boolean {
+  if (performance?.enabled !== true) {
+    return summary.falsePositiveCount === 0 && summary.falseNegativeCount === 0;
+  }
   return (
     summary.falsePositiveRatio <= (performance.maxFalsePositiveRatio ?? 1) &&
     summary.falseNegativeRatio <= (performance.maxFalseNegativeRatio ?? 1)
