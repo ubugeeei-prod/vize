@@ -93,10 +93,14 @@ test("class-component @Prop usage typo breaks and repairs over didChange", async
 
 // Usage-site `@Prop` contracts (#3298; the gap this oracle originally
 // documented as skipped). A `@Prop`-decorated member is a declared prop, so a
-// parent gets the same two diagnostics a `defineProps` child produces:
+// parent gets the same diagnostics a `defineProps` child produces:
 //
 //   - dropping the required prop (`<HelloDecorator nme="World" />`) is a
-//     `component-required-props` error on the tag name, and
+//     `component-required-props` error on the tag name, joined by the type
+//     layer's TS2345 at the same range: `nme` is not a declared prop, so the
+//     usage binds none, and the whole-props check keeps the child's props type
+//     unmodified exactly as it does for an empty `<HelloDecorator />` (#3566).
+//     That TS2345 is the `vue-tsc` parity diagnostic, and
 //   - binding a mismatched type (`<HelloDecorator :name="123" />`) is a TS2322
 //     on the attribute name.
 //
@@ -120,6 +124,22 @@ const missingRequiredPropDiagnostic = {
   message:
     "<HelloDecorator> is missing required prop: `name`\n\nPass the prop in this " +
     "template usage, or make it optional/provide a default in the child component.",
+};
+
+const missingRequiredPropTypeDiagnostic = {
+  range: {
+    start: { line: 19, character: 5 },
+    end: { line: 19, character: 19 },
+  },
+  severity: 1,
+  code: 2345,
+  source: "vize/types",
+  message:
+    "Argument of type '{ nme: string; }' is not assignable to parameter of type " +
+    "'Omit<Props, never> & Partial<Pick<Props, never>> & Partial<__VizeKebabProps<Props>> & " +
+    "__VizeFallthroughAttrs & Record<...>'.\n" +
+    "  Property 'name' is missing in type '{ nme: string; }' but required in type " +
+    "'Omit<Props, never>'.",
 };
 
 const propTypeMismatchDiagnostic = {
@@ -159,7 +179,11 @@ test("class-component usage sites enforce @Prop contracts", async () => {
       contentChanges: [{ text: brokenSource }],
     });
     assert.deepEqual(await waitForDiagnostics(session, appUri, 2), {
-      diagnostics: [missingRequiredPropDiagnostic, propTypeMismatchDiagnostic],
+      diagnostics: [
+        missingRequiredPropDiagnostic,
+        missingRequiredPropTypeDiagnostic,
+        propTypeMismatchDiagnostic,
+      ],
       uri: appUri,
       version: 2,
     });
