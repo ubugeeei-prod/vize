@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
+import { repoRoot, withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
 import {
   resolveTsgoBinary,
   runVizeCheck,
@@ -12,6 +13,8 @@ import {
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
 
 const SNAPSHOT_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "__snapshots__");
+const VUE2_ELM_SRC = path.join(repoRoot, "tests/_fixtures/_git/vue2-elm/src");
+const fixtureSkip = fs.existsSync(VUE2_ELM_SRC) ? false : "vue2-elm fixture checkout unavailable";
 
 // First suite to exercise the pinned vue2-elm fixture (#2971 audit item 7).
 // The snapshot pins the exact `vize check` surface over the untouched Vue 2
@@ -21,7 +24,7 @@ const SNAPSHOT_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "__
 // and for vendor modules that are intentionally not installed. Behavior
 // changes on legacy input must land as reviewed snapshot updates
 // (UPDATE_SNAPSHOTS=1), never as silent drift.
-test("vue2-elm vize check surface over the pinned Vue 2 app stays exact", async () => {
+async function verifyVue2ElmSnapshot(): Promise<void> {
   const corsaPath = resolveTsgoBinary();
 
   await withPinnedFixtureWorkspace(
@@ -67,7 +70,13 @@ test("vue2-elm vize check surface over the pinned Vue 2 app stays exact", async 
       assertSnapshot(SNAPSHOT_DIR, "vue2-elm-check", `${JSON.stringify(first.report, null, 2)}\n`);
     },
   );
-});
+}
+
+test(
+  "vue2-elm vize check surface over the pinned Vue 2 app stays exact",
+  { skip: fixtureSkip },
+  verifyVue2ElmSnapshot,
+);
 
 function json(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`;
