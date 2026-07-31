@@ -115,10 +115,19 @@ pub fn discover_corsa_in_ancestors(start: &Path) -> Option<PathBuf> {
 /// shadows, when one can be discovered from the wrapper's project root.
 /// Non-wrapper paths are returned unchanged.
 pub fn normalize_corsa_path(path: &Path) -> PathBuf {
+    normalize_corsa_path_with_discovery(path, |project_root| {
+        discover_in_walk(&[project_root.to_path_buf()], dev_paths_enabled())
+    })
+}
+
+fn normalize_corsa_path_with_discovery(
+    path: &Path,
+    discover: impl FnOnce(&Path) -> Option<PathBuf>,
+) -> PathBuf {
     let Some(project_root) = wrapper_project_root(path) else {
         return path.to_path_buf();
     };
-    match discover_in_walk(&[project_root.to_path_buf()], dev_paths_enabled()) {
+    match discover(project_root) {
         Some(resolved) if resolved != path => resolved,
         _ => path.to_path_buf(),
     }
@@ -540,7 +549,8 @@ fn push_unique(paths: &mut Vec<PathBuf>, candidate: PathBuf) {
 mod tests {
     use super::{
         CORSA_ENV_VARS, CorsaResolveError, CorsaResolveRequest, discover_in_walk,
-        normalize_corsa_path, platform_suffix, resolve_with_env,
+        normalize_corsa_path, normalize_corsa_path_with_discovery, platform_suffix,
+        resolve_with_env,
     };
     use std::ffi::OsString;
     use std::fs;
@@ -708,7 +718,12 @@ mod tests {
             .join("tsgo");
         write_file(&wrapper);
 
-        assert_eq!(normalize_corsa_path(&wrapper), wrapper);
+        let normalized = normalize_corsa_path_with_discovery(&wrapper, |project_root| {
+            assert_eq!(project_root, temp_dir.path());
+            None
+        });
+
+        assert_eq!(normalized, wrapper);
     }
 
     #[test]
