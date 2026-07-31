@@ -57,7 +57,13 @@ fn is_generic_arrow_start(bytes: &[u8], start: usize) -> bool {
         return false;
     }
     let Some(parameters_end) = matching_close(bytes, parameters_start, b'(', b')') else {
-        return false;
+        // `<T,>(` is the standard TSX spelling that disambiguates a generic
+        // arrow from JSX. The parameter list may continue on later lines, so
+        // the current line cannot always contain its closing `)` and `=>`.
+        return bytes[start + 1..type_end]
+            .iter()
+            .rfind(|byte| !byte.is_ascii_whitespace())
+            == Some(&b',');
     };
     bytes[parameters_end + 1..]
         .windows(2)

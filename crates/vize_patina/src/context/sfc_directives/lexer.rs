@@ -124,6 +124,12 @@ impl DirectiveLexer {
                         self.after_dot = false;
                     }
                     (b'.', _) => self.after_dot = true,
+                    (b'+', Some(b'+')) | (b'-', Some(b'-')) => {
+                        // Preserve the incoming token state: prefix ++/-- still
+                        // expects an operand, while postfix ++/-- finishes one.
+                        self.after_dot = false;
+                        index += 1;
+                    }
                     (
                         b'(' | b'[' | b'/' | b'=' | b':' | b',' | b'!' | b'?' | b';' | b'+' | b'-'
                         | b'*' | b'%' | b'&' | b'|' | b'^' | b'~' | b'<' | b'>',
