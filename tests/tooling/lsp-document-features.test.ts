@@ -9,14 +9,17 @@ import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
 
 /**
- * Characterization tests for the parse-driven document features exposed by
- * `vize lsp`: `textDocument/documentSymbol` and `textDocument/foldingRange`.
+ * Characterization tests for `textDocument/documentSymbol` in `vize lsp`.
  *
- * Both handlers run purely off the SFC parser (no type checking), so the
- * descriptors they emit are deterministic functions of the block layout. Every
+ * The handler runs purely off the SFC parser (no type checking), so the
+ * descriptors it emits are a deterministic function of the block layout. Every
  * assertion below mirrors what the production server actually returns for the
  * given fixture, including discovery order, MODULE symbol kinds, selection-range
- * widths, CRLF line math, and the omission of folding-range character fields.
+ * widths and CRLF line math.
+ *
+ * `textDocument/foldingRange` lives in `lsp-folding-range.test.ts`; the single
+ * folding assertion left here only pins that an empty document produces no
+ * regions, alongside the documentSymbol behaviour for the same document.
  */
 
 type DocumentSymbol = {
@@ -287,62 +290,5 @@ const label = ref('label')
     assert.equal(symbols[0].name, "script setup");
     assert.equal(symbols[0].kind, SYMBOL_KIND_MODULE);
     assert.equal(symbols[0].detail, "ts");
-  });
-});
-
-test("foldingRange emits one region per multi-line block with block-named collapsedText", async () => {
-  await withSession("lsp-docfeat-folding-regions", async ({ session, workspaceDir }) => {
-    const source = `<script setup lang="ts">
-const x = 1
-</script>
-
-<template>
-  <div>{{ x }}</div>
-</template>
-
-<style scoped>
-.a {
-  color: red;
-}
-</style>
-
-<style module="m">
-.b {
-  color: blue;
-}
-</style>
-`;
-    const { uri } = await openDocument(session, workspaceDir, "Folding.vue", source);
-    const ranges = await requestFoldingRange(session, uri);
-
-    assert.ok(Array.isArray(ranges), JSON.stringify(ranges));
-
-    // template, script setup, then the two styles (styles always collapse to "style").
-    assert.deepEqual(
-      ranges.map((range) => range.collapsedText),
-      ["template", "script setup", "style", "style"],
-    );
-
-    for (const range of ranges) {
-      assert.equal(range.kind, "region");
-      // Block folds span lines only; the character fields are not serialized.
-      assert.equal(range.startCharacter, undefined);
-      assert.equal(range.endCharacter, undefined);
-      assert.ok(
-        range.startLine < range.endLine,
-        `expected startLine < endLine for ${range.collapsedText}: ${JSON.stringify(range)}`,
-      );
-    }
-  });
-});
-
-test("foldingRange omits single-line blocks and returns null when nothing is foldable", async () => {
-  await withSession("lsp-docfeat-folding-singleline", async ({ session, workspaceDir }) => {
-    // Entire template lives on line 0, so there is nothing to fold.
-    const source = "<template><div/></template>\n";
-    const { uri } = await openDocument(session, workspaceDir, "OneLine.vue", source);
-
-    const ranges = await requestFoldingRange(session, uri);
-    assert.equal(ranges, null);
   });
 });

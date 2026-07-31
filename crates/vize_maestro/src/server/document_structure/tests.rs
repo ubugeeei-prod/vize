@@ -34,26 +34,6 @@ fn selection_params(uri: Url, positions: Vec<Position>) -> SelectionRangeParams 
 }
 
 #[test]
-fn folding_ranges_cover_every_multi_line_block_in_discovery_order() {
-    let uri = Url::parse("file:///App.vue").unwrap();
-    let state = state_with(&uri, SFC);
-
-    let ranges = folding_ranges(&state, &folding_params(uri)).expect("blocks must fold");
-    let summary: Vec<(u32, u32, Option<String>)> = ranges
-        .into_iter()
-        .map(|range| (range.start_line, range.end_line, range.collapsed_text))
-        .collect();
-
-    assert_eq!(
-        summary,
-        vec![
-            (4, 6, Some("template".to_string())),
-            (0, 2, Some("script setup".to_string())),
-        ]
-    );
-}
-
-#[test]
 fn selection_ranges_return_one_chain_per_position() {
     let uri = Url::parse("file:///App.vue").unwrap();
     let state = state_with(&uri, SFC);
