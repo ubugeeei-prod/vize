@@ -35,13 +35,21 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 /// it — it extracts `label?: string` to `string | undefined` through
 /// `__VizePropValue` and assigns to that, legal whatever the option says.
 ///
-/// Every property is widened to `{} | null`, which accepts any value except
-/// `undefined`. That is the whole trick: an ordinary type mismatch stays the
-/// per-prop check's to report, at its own well-anchored position, and is not
+/// Every property is widened *with* `{} | null`, a union that accepts any value
+/// except `undefined`. That is the whole trick: an ordinary type mismatch stays
+/// the per-prop check's to report, at its own well-anchored position, and is not
 /// reported a second time here. Checking against the child's props type
 /// unmodified — or against `Partial<>` of it — reports every wrongly-typed prop
 /// twice, one byte apart, with an identical code and message that
 /// `dedup_diagnostics` cannot collapse because the positions differ.
+///
+/// The declared type stays in the union rather than being replaced by `{} | null`
+/// because it is the only thing that contextually types an inline callback prop.
+/// Against a bare `{} | null` the parameters of `:textConverter="(value) => …"`
+/// have no contextual signature to draw from and become implicit `any`, a
+/// `TS7006` on correct code, which is what `check_function_props_cli` guards.
+/// Since a function is assignable to `{}`, keeping the declared member adds
+/// contextual typing without adding a single rejection.
 ///
 /// `null` has to be in the widened type, not just `{}`: a child prop declared
 /// `LinkBehavior | null` is legitimately passed `null`, and `{}` alone rejects
@@ -49,9 +57,11 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 ///
 /// `Required<Pick<P, K>>[K]` rather than `P[K]` because indexed access on an
 /// optional property already includes `undefined`, so `P[K]` cannot tell
-/// `label?: string` from `label?: string | undefined`. Stripping the modifier
-/// first leaves only an *explicitly* declared `undefined`, which the child opted
-/// into and which must stay silent.
+/// `label?: string` from `label?: string | undefined` and would make the check
+/// inert. Stripping the modifier first leaves only an *explicitly* declared
+/// `undefined`, which the child opted into and which must stay silent, and it
+/// leaves that `undefined` *in the union*, so no conditional branch is needed to
+/// allow it.
 ///
 /// Consequences, each a case in `component_props_tests.rs`:
 ///
@@ -111,6 +121,6 @@ pub(super) fn append_prop_check_helpers(ts: &mut String) {
         "  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;\n",
     );
     ts.push_str(
-        "  type __VizeExactOptionalProps<P> = { [K in keyof P]?: undefined extends Required<Pick<P, K>>[K] ? unknown : {} | null };\n",
+        "  type __VizeExactOptionalProps<P> = { [K in keyof P]?: Required<Pick<P, K>>[K] | {} | null };\n",
     );
 }

@@ -120,7 +120,7 @@ function __setup() {
   type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
   type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;
   type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
-  type __VizeExactOptionalProps<P> = { [K in keyof P]?: undefined extends Required<Pick<P, K>>[K] ? unknown : {} | null };
+  type __VizeExactOptionalProps<P> = { [K in keyof P]?: Required<Pick<P, K>>[K] | {} | null };
   // @vize-map: component -> 0:40
   type __LinkComp_Props_0 = typeof LinkComp extends { __vizeCheck: any } ? Record<string, unknown> : (typeof LinkComp extends { new (): { $props: infer __P } } ? __P : (typeof LinkComp extends (props: infer __P) => any ? __P : {}));
   type __LinkComp_0_prop_to = __VizePropValue<__LinkComp_Props_0, 'to'>;
