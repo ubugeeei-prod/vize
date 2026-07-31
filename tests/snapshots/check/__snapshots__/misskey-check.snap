@@ -254,7 +254,7 @@
         "error:63:13 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
         "error:64:18 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
         "error:65:13 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:66:18 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.\nProperty 'step' does not exist on type 'ArrayFormItem'.\nProperty 'manualSave' does not exist on type 'ArrayFormItem'.\nProperty 'treatAsMfm' does not exist on type 'ArrayFormItem'.\nProperty 'manualSave' does not exist on type 'ArrayFormItem'.\nProperty 'treatAsMfm' does not exist on type 'ArrayFormItem'.\nProperty 'treatAsMfm' does not exist on type 'ArrayFormItem'.\nProperty 'manualSave' does not exist on type 'ArrayFormItem'.\nProperty 'defaultFileId' does not exist on type 'ArrayFormItem'.\nProperty 'validate' does not exist on type 'ArrayFormItem'.\nProperty 'validate' does not exist on type 'ArrayFormItem'."
+        "error:66:18 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more."
       ]
     },
     {
@@ -308,7 +308,7 @@
     {
       "file": "src/components/MkImageEffectorDialog.vue",
       "diagnostics": [
-        "error:202:25 [TS7006] Parameter 'blob' implicitly has an 'any' type.\nProperty 'min' does not exist on type 'AlignParamDef'.\nProperty 'max' does not exist on type 'AlignParamDef'.\nProperty 'step' does not exist on type 'AlignParamDef'.\nProperty 'toViewValue' does not exist on type 'AlignParamDef'."
+        "error:202:25 [TS7006] Parameter 'blob' implicitly has an 'any' type."
       ]
     },
     {
@@ -415,7 +415,7 @@
     {
       "file": "src/components/MkModal.vue",
       "diagnostics": [
-        "error:298:36 [TS7006] Parameter 'ev' implicitly has an 'any' type.\nThe last overload gave the following error.\nArgument of type 'number | null' is not assignable to parameter of type 'string | number'.\nType 'null' is not assignable to type 'string | number'."
+        "error:298:36 [TS7006] Parameter 'ev' implicitly has an 'any' type."
       ]
     },
     {
@@ -738,7 +738,7 @@
         "error:33:14 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
         "error:34:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
         "error:35:14 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:36:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'.\nProperty 'align' does not exist on type '{ id: string; type: \"stripe\"; angle: number; frequency: number; threshold: number; color: [r: number, g: number, b: number]; opacity: number; }'."
+        "error:36:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more."
       ]
     },
     {
@@ -1582,8 +1582,7 @@
     {
       "file": "src/pages/follow-requests.vue",
       "diagnostics": [
-        "error:9:29 [TS2454] Variable 'paginator' is used before being assigned.",
-        "error:9:30 [TS2454] Variable 'paginator' is used before being assigned."
+        "error:9:29 [TS2454] Variable 'paginator' is used before being assigned."
       ]
     },
     {
@@ -1762,9 +1761,7 @@
     },
     {
       "file": "src/pages/role.vue",
-      "diagnostics": [
-        "error:14:72 [TS7006] Parameter 'item' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/scratchpad.vue",
@@ -2389,7 +2386,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 37,
+  "errorCount": 35,
   "warningCount": 0,
   "fileCount": 583
 }

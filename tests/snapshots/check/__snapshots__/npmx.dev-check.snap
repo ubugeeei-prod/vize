@@ -745,7 +745,7 @@
       "file": "app/pages/~[username]/orgs.vue",
       "diagnostics": [
         "error:44:7 [TS2322] Type '{} | null' is not assignable to type '\"admin\" | \"developer\" | \"owner\" | null'.\nType '{}' is not assignable to type '\"admin\" | \"developer\" | \"owner\" | null'.",
-        "error:65:32 [TS7006] Parameter 'name' implicitly has an 'any' type.\nType '\"deprecated\"' is not assignable to type '\"installScripts\" | keyof PackumentVersion'."
+        "error:65:32 [TS7006] Parameter 'name' implicitly has an 'any' type."
       ]
     }
   ],

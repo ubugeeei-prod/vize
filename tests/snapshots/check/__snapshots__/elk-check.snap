@@ -254,7 +254,7 @@
     {
       "file": "app/components/common/CommonTooltip.vue",
       "diagnostics": [
-        "error:2:45 [TS2307] Cannot find module 'floating-vue' or its corresponding type declarations.\nProperty 'isHydrated' does not exist on type '__DefineProps<Props, never>'."
+        "error:2:45 [TS2307] Cannot find module 'floating-vue' or its corresponding type declarations."
       ]
     },
     {
@@ -371,7 +371,7 @@
       "file": "app/components/modal/ModalContainer.vue",
       "diagnostics": [
         "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:26:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?\nProperty 'closeErrorDialog' does not exist on type '__DefineProps<ErrorDialogData, never>'."
+        "error:26:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?"
       ]
     },
     {
