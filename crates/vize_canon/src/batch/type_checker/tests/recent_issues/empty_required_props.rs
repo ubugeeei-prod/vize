@@ -2,7 +2,8 @@
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 
-/// Supported required-prop shapes report at the component name, while optional
+/// Supported required-prop shapes report at the component name — including
+/// runtime `defineComponent` and mixin-provided props — while optional
 /// runtime/mixin props, framework, and unresolved components stay clean.
 #[test]
 fn empty_usages_cover_supported_component_shapes_without_false_positives() {
@@ -38,10 +39,29 @@ export default defineComponent({ props: { label: String } })
 "#,
             ),
             (
+                "src/RuntimeRequired.vue",
+                r#"<script lang="ts">
+import { defineComponent } from 'vue'
+export default defineComponent({ props: { count: { type: Number, required: true } } })
+</script>
+<template><span /></template>
+"#,
+            ),
+            (
                 "src/Mixin.vue",
                 r#"<script lang="ts">
 import { defineComponent } from 'vue'
 const base = defineComponent({ props: { label: String } })
+export default defineComponent({ mixins: [base] })
+</script>
+<template><span /></template>
+"#,
+            ),
+            (
+                "src/MixinRequired.vue",
+                r#"<script lang="ts">
+import { defineComponent } from 'vue'
+const base = defineComponent({ props: { count: { type: Number, required: true } } })
 export default defineComponent({ mixins: [base] })
 </script>
 <template><span /></template>
@@ -60,7 +80,9 @@ import { Transition } from 'vue'
 import Required from './Required.vue'
 import Optional from './Optional.vue'
 import RuntimeOptional from './RuntimeOptional.vue'
+import RuntimeRequired from './RuntimeRequired.vue'
 import Mixin from './Mixin.vue'
+import MixinRequired from './MixinRequired.vue'
 import { External } from './components'
 const propName = 'count' as string
 </script>
@@ -70,7 +92,9 @@ const propName = 'count' as string
   <Required :[propName]="1" />
   <Optional />
   <RuntimeOptional />
+  <RuntimeRequired />
   <Mixin />
+  <MixinRequired />
   <External />
   <Transition />
   <UnknownWidget />
@@ -99,9 +123,11 @@ const propName = 'count' as string
     assert_eq!(
         positions,
         [
-            ("src/Parent.vue", Some(2345), "12:4".to_string()),
-            ("src/Parent.vue", Some(2345), "13:4".to_string()),
-            ("src/Parent.vue", Some(2345), "17:4".to_string()),
+            ("src/Parent.vue", Some(2345), "14:4".to_string()),
+            ("src/Parent.vue", Some(2345), "15:4".to_string()),
+            ("src/Parent.vue", Some(2345), "18:4".to_string()),
+            ("src/Parent.vue", Some(2345), "20:4".to_string()),
+            ("src/Parent.vue", Some(2345), "21:4".to_string()),
         ],
         "exact required-prop diagnostics only: {snapshot:#?}"
     );
