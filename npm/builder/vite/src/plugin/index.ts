@@ -13,6 +13,7 @@ import {
   type VizePluginState,
   normalizePrecompileBatchSize,
 } from "./state.ts";
+import { CompiledModuleCache } from "./compiled-module-cache.ts";
 import { compileAll } from "./precompile-run.ts";
 import { resolveIdHook } from "./resolve.ts";
 import { loadHook, transformHook } from "./load.ts";
@@ -87,8 +88,11 @@ export function vize(options: VizeOptions = {}): Plugin[] {
   }
 
   const state: VizePluginState = {
-    cache: new Map(),
-    ssrCache: new Map(),
+    // Indexed maps: hot updates need the SFCs owning a changed `src` dependency
+    // in constant time rather than by scanning both caches. See
+    // `compiled-module-cache.ts`.
+    cache: new CompiledModuleCache(),
+    ssrCache: new CompiledModuleCache(),
     collectedCss: new Map(),
     precompileMetadata: new Map(),
     pendingHmrUpdateTypes: new Map(),

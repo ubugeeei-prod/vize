@@ -13,6 +13,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { CompiledModuleCache } from "../plugin/compiled-module-cache.ts";
 import { compileAll } from "../plugin/precompile-run.ts";
 import {
   PRECOMPILE_CACHE_DIR,
@@ -52,8 +53,8 @@ export function makeState(
   info: (line: string) => void = () => {},
 ): VizePluginState {
   return {
-    cache: new Map(),
-    ssrCache: new Map(),
+    cache: new CompiledModuleCache(),
+    ssrCache: new CompiledModuleCache(),
     collectedCss: new Map(),
     precompileMetadata: new Map(),
     pendingHmrUpdateTypes: new Map(),

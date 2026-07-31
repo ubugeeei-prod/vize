@@ -12,6 +12,7 @@ import "./utils-filter.test.ts";
 import "./utils-inline-css.test.ts";
 import "./utils.test.ts";
 import "./plugin/compat.test.ts";
+import "./plugin/compiled-module-cache.test.ts";
 import "./plugin/config-bridge.test.ts";
 import "./plugin/css-modules.test.ts";
 import "./plugin/dev-middleware.test.ts";

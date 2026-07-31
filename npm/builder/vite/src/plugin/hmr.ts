@@ -4,6 +4,7 @@ import path from "node:path";
 
 import type { VizePluginState } from "./state.ts";
 import { getCompileOptionsForRequest } from "./state.ts";
+import { ownersOfDependency } from "./compiled-module-cache.ts";
 import { compileFile } from "../compiler.ts";
 import { detectHmrUpdateType, hasHmrChanges, type HmrUpdateType } from "../hmr.ts";
 import { hasDelegatedStyles } from "../utils/index.ts";
@@ -28,19 +29,23 @@ type GenerateBundleItem =
 
 type GenerateBundle = Record<string, GenerateBundleItem>;
 
+/**
+ * The cached SFCs that pulled `dependencyFile` in through
+ * `<script src>` / `<template src>` / `<style src>`.
+ *
+ * This runs as the first statement of every hot update, before the `.vue` fast
+ * path, so editing an ordinary SFC pays for it too. It used to walk both caches
+ * end to end with a `path.resolve` per dependency, which made HMR latency grow
+ * with the number of components in the project; the caches now carry a reverse
+ * index that answers it in constant time. See `compiled-module-cache.ts`.
+ */
 function getVueFilesDependingOn(state: VizePluginState, dependencyFile: string): string[] {
   const normalizedDependency = path.resolve(dependencyFile);
   const owners = new Set<string>();
 
   for (const cache of [state.cache, state.ssrCache]) {
-    for (const [vueFile, compiled] of cache) {
-      if (
-        compiled.dependencies?.some(
-          (dependency) => path.resolve(dependency) === normalizedDependency,
-        )
-      ) {
-        owners.add(vueFile);
-      }
+    for (const vueFile of ownersOfDependency(cache, normalizedDependency)) {
+      owners.add(vueFile);
     }
   }
 
