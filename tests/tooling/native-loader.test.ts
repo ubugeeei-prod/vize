@@ -67,10 +67,6 @@ function copyPackableNativePackage(destination: string): void {
   ]) {
     fs.copyFileSync(path.join(nativePackageDir, file), path.join(destination, file));
   }
-  fs.cpSync(path.join(nativePackageDir, "types"), path.join(destination, "types"), {
-    recursive: true,
-  });
-
   const manifest = JSON.parse(
     fs.readFileSync(path.join(nativePackageDir, "package.json"), "utf8"),
   ) as Record<string, unknown>;
