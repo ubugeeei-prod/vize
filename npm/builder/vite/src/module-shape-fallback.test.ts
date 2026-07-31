@@ -46,7 +46,7 @@ const MODULES: Array<[string, string]> = [
   ["neither", "export const useThing = () => 1\n"],
 ];
 
-test("the reported shape and the re-parsed shape produce identical output", () => {
+void test("the reported shape and the re-parsed shape produce identical output", () => {
   for (const [label, code] of MODULES) {
     const reparsed = generateOutput(compiled(code), OPTIONS);
     const reported = generateOutput(
@@ -57,7 +57,7 @@ test("the reported shape and the re-parsed shape produce identical output", () =
   }
 });
 
-test("a module shape reported by the compiler is used as-is", () => {
+void test("a module shape reported by the compiler is used as-is", () => {
   const code = "const _sfc_main = { name: 'App' }\nexport default _sfc_main\n";
   // A shape that disagrees with the code proves the field is consulted rather
   // than the module being re-parsed: `hasSfcMainDefined: false` sends
@@ -70,7 +70,7 @@ test("a module shape reported by the compiler is used as-is", () => {
   );
 });
 
-test("an absent module shape falls back to parsing", () => {
+void test("an absent module shape falls back to parsing", () => {
   const code = "export default { name: 'App' }\n";
   const output = generateOutput(compiled(code), OPTIONS);
   assert.ok(

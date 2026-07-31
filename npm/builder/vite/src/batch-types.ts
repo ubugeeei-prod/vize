@@ -27,6 +27,11 @@ export interface BatchFileResult {
   macroArtifacts?: MacroArtifact[];
   /** Per-block style metadata extracted from the source SFC */
   styles?: NativeStyleBlockInfo[];
+  /**
+   * Shape of the emitted module, reported by the native compiler so consumers
+   * need not re-parse it (#3425). Absent when the module did not parse.
+   */
+  moduleShape?: ModuleOutputInfo;
 }
 
 export interface BatchCompileOptionsNapi extends ExperimentalCompileFlags {
