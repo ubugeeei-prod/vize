@@ -2,9 +2,7 @@
 
 use std::fs;
 
-use super::{
-    CompletionService, is_inside_html_comment, items, script, style, template, trigger_characters,
-};
+use super::{CompletionService, is_inside_html_comment, items, script, style, template};
 use crate::{ide::IdeContext, server::ServerState};
 use tower_lsp::lsp_types::{CompletionItemKind, CompletionResponse, InsertTextFormat, Url};
 use vize_relief::BindingType;
@@ -56,14 +54,6 @@ fn test_vue_css_completions() {
 
     let deep = items.iter().find(|i| i.label == ":deep");
     assert!(deep.is_some());
-}
-
-#[test]
-fn test_trigger_characters() {
-    let chars = trigger_characters();
-    assert!(chars.contains(&"<".to_string()));
-    assert!(chars.contains(&":".to_string()));
-    assert!(chars.contains(&"@".to_string()));
 }
 
 #[test]

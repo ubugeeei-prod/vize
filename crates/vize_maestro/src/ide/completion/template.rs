@@ -9,6 +9,8 @@
 )]
 
 mod art;
+#[cfg(test)]
+mod attribute_value_tests;
 mod bindings;
 mod component_cache;
 mod component_docs;
@@ -57,6 +59,21 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
 
     if let Some(tag_ctx) = tag_context::opening_tag_context_at_offset(&ctx.content, ctx.offset) {
         if !tag_ctx.inside_attribute_value {
+            // `:title=|`: the caret is already at a value position even though
+            // no quote has been typed yet, so the attribute-name list is over.
+            // Without this, `=` as a completion trigger could only ever open an
+            // empty list (`open_tag_completion_matches_prefix` rejects every
+            // name once the prefix contains `=`).
+            if let Some(name) = tag_ctx.current_token.strip_suffix('=') {
+                return if is_expression_valued_attribute(name) {
+                    analyzed_template_binding_completions(ctx, true)
+                } else {
+                    // A plain HTML attribute takes a literal, not an
+                    // expression. Its allowed values are not modelled (#3484).
+                    Vec::new()
+                };
+            }
+
             let mut items_vec = contextual_directive_completions(ctx);
             items_vec.extend(native::native_element_attribute_completions(ctx));
             items_vec.extend(component_meta::component_surface_completions(ctx));
@@ -86,6 +103,16 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
     items_vec.extend(bindings::template_snippets());
 
     items_vec
+}
+
+/// Attributes whose value is a Vue expression rather than a literal string:
+/// `v-bind` (`:x`, `v-bind:x`), `v-on` (`@x`), the `.prop` shorthand, and every
+/// other `v-` directive. Everything else is a plain HTML attribute.
+fn is_expression_valued_attribute(name: &str) -> bool {
+    name.starts_with(':')
+        || name.starts_with('@')
+        || name.starts_with('.')
+        || name.starts_with("v-")
 }
 
 fn filter_open_tag_completions(

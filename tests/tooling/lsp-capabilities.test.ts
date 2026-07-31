@@ -73,17 +73,32 @@ test("vize lsp advertises the full editor-feature provider set with exact shapes
     assert.equal(capabilities.textDocumentSync?.openClose, true);
     assert.equal(capabilities.textDocumentSync?.save?.includeText, false);
 
-    // Completion trigger characters, exact ordered set.
+    // Completion trigger characters, exact ordered set: `@vue/language-server`
+    // 3.3.8's list in its order, plus `'` (a single-quoted attribute value is
+    // legal Vue and Maestro answers inside one). Space is deliberately absent —
+    // it opened the list on every space typed in a template (#3458).
     assert.deepEqual(capabilities.completionProvider?.triggerCharacters, [
-      ".",
-      ":",
-      "@",
-      "#",
-      "<",
-      "/",
       '"',
       "'",
-      " ",
+      ":",
+      "@",
+      ".",
+      "<",
+      "=",
+      "/",
+      ">",
+      "+",
+      "^",
+      "*",
+      "(",
+      ")",
+      "#",
+      "[",
+      "]",
+      "$",
+      "-",
+      "{",
+      "}",
     ]);
 
     // Selection ranges ship with the document-structure group.
