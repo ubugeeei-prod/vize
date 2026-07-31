@@ -1,0 +1,95 @@
+//! Statement-block and expression-brace boundaries for script directives.
+
+use super::{lint_sfc, owned, unused};
+
+fn assert_regex_marker_is_not_a_directive(statement: &str) {
+    let sfc = format!(
+        r#"<script setup lang="ts">
+declare const ok: boolean
+declare const input: string
+{statement}
+defineProps<{{ msg: string }}>();
+</script>
+<template><div>hi</div></template>
+"#
+    );
+    assert_eq!(
+        owned(&lint_sfc(&sfc)),
+        vec![unused(&sfc, "msg", "msg: string")]
+    );
+}
+
+#[test]
+fn regex_after_if_statement_block_is_not_a_directive() {
+    assert_regex_marker_is_not_a_directive("if (ok) {}\n/[/*] @vize:expected */.test(input)");
+}
+
+#[test]
+fn regex_after_function_statement_block_is_not_a_directive() {
+    assert_regex_marker_is_not_a_directive(
+        "function check() {}\n/[/*] @vize:expected */.test(input)",
+    );
+    assert_regex_marker_is_not_a_directive(
+        "function check<T>() {}\n/[/*] @vize:expected */.test(input)",
+    );
+}
+
+#[test]
+fn regex_after_loop_statement_blocks_is_not_a_directive() {
+    assert_regex_marker_is_not_a_directive(
+        "while (ok) { break }\n/[/*] @vize:expected */.test(input)",
+    );
+    assert_regex_marker_is_not_a_directive(
+        "for (let index = 0; index < 1; index++) {}\n/[/*] @vize:expected */.test(input)",
+    );
+}
+
+#[test]
+fn regex_after_try_statement_blocks_is_not_a_directive() {
+    assert_regex_marker_is_not_a_directive("try {} catch {}\n/[/*] @vize:expected */.test(input)");
+    assert_regex_marker_is_not_a_directive(
+        "try {} finally {}\n/[/*] @vize:expected */.test(input)",
+    );
+}
+
+#[test]
+fn division_after_object_literal_keeps_a_real_directive() {
+    let sfc = r#"<script setup lang="ts">
+const object = { value: 10 }
+  / 2 // eslint-disable-next-line vue/no-unused-properties
+defineProps<{ msg: string }>();
+</script>
+<template><div>{{ object }}</div></template>
+"#;
+    assert_eq!(owned(&lint_sfc(sfc)), Vec::new());
+}
+
+#[test]
+fn division_inside_destructuring_default_keeps_a_real_directive() {
+    let sfc = r#"<script setup lang="ts">
+declare const source: { value?: unknown }
+const { value = { nested: 10 }
+  / 2 // eslint-disable vue/no-unused-properties
+} = source
+defineProps<{ msg: string }>();
+</script>
+<template><div>{{ value }}</div></template>
+"#;
+    assert_eq!(owned(&lint_sfc(sfc)), Vec::new());
+}
+
+#[test]
+fn division_after_function_expressions_keeps_a_real_directive() {
+    for expression in ["function check() {}", "() => {}"] {
+        let sfc = format!(
+            r#"<script setup lang="ts">
+const check = {expression}
+  / 2 // eslint-disable-next-line vue/no-unused-properties
+defineProps<{{ msg: string }}>();
+</script>
+<template><div>{{{{ check }}}}</div></template>
+"#
+        );
+        assert_eq!(owned(&lint_sfc(&sfc)), Vec::new(), "{expression}");
+    }
+}

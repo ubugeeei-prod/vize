@@ -1,11 +1,5 @@
 //! Token-boundary helpers for the script directive lexer.
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub(super) enum ParenContext {
-    Expression,
-    Control,
-}
-
 pub(super) fn ends_with_unescaped_backslash(bytes: &[u8]) -> bool {
     bytes
         .iter()

@@ -1,13 +1,15 @@
 //! Lightweight comment lexers for SFC script and style block contents.
 
+mod brace;
 mod style;
 mod token;
 
 pub(super) use style::StyleDirectiveLexer;
 
+use brace::DelimiterState;
 use token::{
-    ParenContext, ends_with_unescaped_backslash, identifier_allows_expression, identifier_end,
-    identifier_opens_control_paren, is_identifier_start, is_jsx_start,
+    ends_with_unescaped_backslash, identifier_allows_expression, identifier_end,
+    is_identifier_start, is_jsx_start,
 };
 
 #[derive(Default)]
@@ -37,8 +39,7 @@ pub(super) struct DirectiveLexer {
     jsx_depth: u32,
     can_start_expression: bool,
     after_dot: bool,
-    parens: Vec<ParenContext>,
-    next_paren_is_control: bool,
+    delimiters: DelimiterState,
 }
 
 impl Default for DirectiveLexer {
@@ -56,8 +57,7 @@ impl DirectiveLexer {
             jsx_depth: 0,
             can_start_expression: true,
             after_dot: false,
-            parens: Vec::new(),
-            next_paren_is_control: false,
+            delimiters: DelimiterState::default(),
         }
     }
 
@@ -79,21 +79,14 @@ impl DirectiveLexer {
             let current = bytes[index];
             let next = bytes.get(index + 1).copied();
             let had_code_token = has_code_token;
-            let starts_comment = matches!(
+            let in_code = matches!(
                 context,
                 ScriptContext::Code | ScriptContext::Interpolation(_)
-            ) && matches!((current, next), (b'/', Some(b'/' | b'*')));
-            if self.next_paren_is_control
-                && matches!(
-                    context,
-                    ScriptContext::Code | ScriptContext::Interpolation(_)
-                )
-                && !current.is_ascii_whitespace()
-                && !is_identifier_start(current)
-                && current != b'('
-                && !starts_comment
-            {
-                self.next_paren_is_control = false;
+            );
+            let starts_comment = in_code && matches!((current, next), (b'/', Some(b'/' | b'*')));
+            if in_code && !is_identifier_start(current) {
+                self.delimiters
+                    .before_non_identifier(current, starts_comment);
             }
             match context {
                 ScriptContext::Code | ScriptContext::Interpolation(_) => match (current, next) {
@@ -125,46 +118,44 @@ impl DirectiveLexer {
                         if let Some(ScriptContext::Interpolation(depth)) = self.stack.last_mut() {
                             *depth += 1;
                         }
+                        self.delimiters.open_brace();
                         self.can_start_expression = true;
                         self.after_dot = false;
                     }
                     (b'}', _) => {
+                        let mut closes_interpolation = false;
                         if let Some(ScriptContext::Interpolation(depth)) = self.stack.last_mut() {
                             if *depth == 0 {
+                                closes_interpolation = true;
                                 self.stack.pop();
                             } else {
                                 *depth -= 1;
                             }
                         }
-                        self.can_start_expression = false;
+                        self.can_start_expression = if closes_interpolation {
+                            false
+                        } else {
+                            self.delimiters.close_brace()
+                        };
                         self.after_dot = false;
                     }
                     (byte, _) if is_identifier_start(byte) => {
                         let end = identifier_end(bytes, index);
                         let identifier = &bytes[index..end];
                         let after_dot = self.after_dot;
-                        let keeps_control_paren =
-                            self.next_paren_is_control && identifier == b"await" && !after_dot;
-                        self.next_paren_is_control = keeps_control_paren
-                            || (!after_dot && identifier_opens_control_paren(identifier));
+                        self.delimiters.observe_identifier(identifier, after_dot);
                         self.can_start_expression =
                             !after_dot && identifier_allows_expression(identifier);
                         self.after_dot = false;
                         index = end - 1;
                     }
                     (b'(', _) => {
-                        let context = if std::mem::take(&mut self.next_paren_is_control) {
-                            ParenContext::Control
-                        } else {
-                            ParenContext::Expression
-                        };
-                        self.parens.push(context);
+                        self.delimiters.open_paren();
                         self.can_start_expression = true;
                         self.after_dot = false;
                     }
                     (b')', _) => {
-                        self.can_start_expression =
-                            matches!(self.parens.pop(), Some(ParenContext::Control));
+                        self.can_start_expression = self.delimiters.close_paren();
                         self.after_dot = false;
                     }
                     (b']' | b'0'..=b'9', _) => {
@@ -175,10 +166,18 @@ impl DirectiveLexer {
                     (b'+', Some(b'+')) | (b'-', Some(b'-')) => {
                         // Preserve the incoming token state: prefix ++/-- still
                         // expects an operand, while postfix ++/-- finishes one.
+                        self.delimiters.observe_operator(current);
+                        self.after_dot = false;
+                        index += 1;
+                    }
+                    (b'=', Some(b'>')) => {
+                        self.delimiters.observe_arrow();
+                        self.can_start_expression = true;
                         self.after_dot = false;
                         index += 1;
                     }
                     (b'!', Some(b'=')) => {
+                        self.delimiters.observe_operator(current);
                         self.can_start_expression = true;
                         self.after_dot = false;
                     }
@@ -186,6 +185,7 @@ impl DirectiveLexer {
                         // At an expression boundary `!` is logical-not. After
                         // an operand on this line it is TypeScript's postfix
                         // non-null assertion and must keep the operand complete.
+                        self.delimiters.observe_operator(current);
                         self.can_start_expression = self.can_start_expression || !had_code_token;
                         self.after_dot = false;
                     }
@@ -194,6 +194,7 @@ impl DirectiveLexer {
                         | b'&' | b'|' | b'^' | b'~' | b'<' | b'>',
                         _,
                     ) => {
+                        self.delimiters.observe_operator(current);
                         self.can_start_expression = true;
                         self.after_dot = false;
                     }
@@ -325,6 +326,7 @@ impl DirectiveLexer {
                 self.can_start_expression = false;
             }
         }
+        self.delimiters.finish_line(self.can_start_expression);
         markers
     }
 
