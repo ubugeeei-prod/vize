@@ -57,10 +57,13 @@ defineEmits<{ select: [key: string, path: string[]] }>()
 <template><div /></template>
 "#;
     let project = create_project(&[("src/App.vue", parent), ("src/KnownChild.vue", child)]);
+    // The listener type is an annotation on the synthetic const, so a wrongly
+    // shaped handler is an assignment error (`TS2322`) at the declared name,
+    // which is what vue-tsc reports at the `@event` attribute (#3462).
     assert_has_diagnostic(
         project.path(),
         "App.vue",
-        2345,
+        2322,
         "a resolved component emit must reject a handler with the wrong first argument type",
     );
 }
@@ -85,7 +88,7 @@ defineEmits<{ select: [key: string, path: string[]] }>()
     assert_no_diagnostic(
         project.path(),
         "App.vue",
-        2345,
+        2322,
         "a resolved component emit must accept its exact handler tuple",
     );
 }
@@ -141,7 +144,7 @@ const item = {} as {
         .find(|file| file.original_path.ends_with("App.vue"))
         .expect("App.vue should be registered");
     assert!(
-        app.content.contains("| null | undefined) => __vize_cb"),
+        app.content.contains("| null | undefined = (item.onClick);"),
         "optional event references should remain optional:\n{}",
         app.content
     );
