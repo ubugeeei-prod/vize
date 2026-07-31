@@ -29,12 +29,11 @@ const OPTIONS = {
 function compiled(code: string, overrides: Partial<CompiledModule> = {}): CompiledModule {
   return {
     code,
-    css: null,
     scopeId: "abc123",
     hasScoped: true,
     styles: [],
     ...overrides,
-  } as CompiledModule;
+  };
 }
 
 /** The shapes the SFC compiler actually emits, one per `generateOutput` branch. */
@@ -44,6 +43,16 @@ const MODULES: Array<[string, string]> = [
   ["named render export only", "export function render(_ctx, _cache) { return null }\n"],
   ["named ssrRender export only", "export function ssrRender(_ctx, _push) {}\n"],
   ["neither", "export const useThing = () => 1\n"],
+  // `export const _sfc_main` defines it as much as a bare `const` does, and the
+  // two analyzers used to disagree about that.
+  [
+    "exported _sfc_main beside a named render export",
+    "export const _sfc_main = { name: 'App' }\nexport function render() { return null }\n",
+  ],
+  // Non-ASCII text before the default export: the reported offsets are UTF-16
+  // code units, the unit the consumer slices with, so a multi-byte character
+  // ahead of the splice point must not shift it.
+  ["non-ASCII text before the default export", 'const _hoisted = "ようこそ"\nexport default {}\n'],
 ];
 
 void test("the reported shape and the re-parsed shape produce identical output", () => {
@@ -79,4 +88,18 @@ void test("an absent module shape falls back to parsing", () => {
   );
 });
 
-console.log("✅ vite-plugin-vize module shape fallback tests passed!");
+void test("a reported shape whose offsets do not describe the module is discarded", () => {
+  const code = "const _sfc_main = { name: 'App' }\nexport default _sfc_main\n";
+  // What a stale cache entry or a byte-offset/code-unit mix-up looks like: the
+  // flags still fit the module but the offsets point into the middle of it.
+  const stale = {
+    ...analyzeModuleOutput(code),
+    defaultExportStart: 8,
+    defaultExportKeywordEnd: 20,
+  };
+  assert.equal(
+    generateOutput(compiled(code, { moduleShape: stale }), OPTIONS),
+    generateOutput(compiled(code), OPTIONS),
+    "an offset that does not point at `export default` must fall back to parsing",
+  );
+});

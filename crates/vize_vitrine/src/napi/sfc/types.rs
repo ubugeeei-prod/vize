@@ -87,6 +87,9 @@ pub struct SfcCompileOptionsNapi {
 ///
 /// Absent when the module did not parse, in which case the consumer falls back
 /// to its own analysis — the behaviour before this field existed.
+///
+/// Offsets are in UTF-16 code units, the unit the JS consumer slices the module
+/// with and the unit oxc's own JS bindings report.
 #[napi(object)]
 #[derive(Default)]
 pub struct ModuleShapeNapi {
@@ -102,15 +105,26 @@ pub struct ModuleShapeNapi {
 
 impl ModuleShapeNapi {
     /// Analyze `code`, or `None` when it does not parse.
+    ///
+    /// The analyzer works in UTF-8 byte offsets; this is where they become the
+    /// UTF-16 code-unit offsets the JS consumer splices with.
     pub fn of(code: &str) -> Option<Self> {
+        use vize_atelier_sfc::module_shape::utf16_offset;
+
         vize_atelier_sfc::module_shape::analyze_module_shape(code).map(|shape| Self {
             has_default_export: shape.has_default_export,
             has_sfc_main_defined: shape.has_sfc_main_defined,
             has_named_render_export: shape.has_named_render_export,
             has_named_ssr_render_export: shape.has_named_ssr_render_export,
-            default_export_start: shape.default_export_start,
-            default_export_keyword_end: shape.default_export_keyword_end,
-            default_export_end: shape.default_export_end,
+            default_export_start: shape
+                .default_export_start
+                .and_then(|offset| utf16_offset(code, offset)),
+            default_export_keyword_end: shape
+                .default_export_keyword_end
+                .and_then(|offset| utf16_offset(code, offset)),
+            default_export_end: shape
+                .default_export_end
+                .and_then(|offset| utf16_offset(code, offset)),
             default_export_is_sfc_main: shape.default_export_is_sfc_main,
         })
     }

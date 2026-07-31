@@ -6,6 +6,7 @@ import {
   insertBeforeSfcMainDefaultExport,
   rewriteDefaultExportToSfcMain,
 } from "./module-output.ts";
+import { describesModule } from "./reported-shape.ts";
 
 // Re-export CSS utilities for backward compatibility
 export { resolveCssImports, type CssAliasRule } from "./css.ts";
@@ -150,11 +151,18 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
   let output = compiled.code;
 
   // The native compiler already parsed this module and reports its shape, so
-  // the oxc parse here is redundant (#3425). `??` rather than a required field:
-  // a `.vpc` cache entry written before this existed reads back without it and
-  // simply pays the parse it always paid, so no cache-format bump is needed and
-  // the fallback stays exercised.
-  const moduleInfo = compiled.moduleShape ?? analyzeModuleOutput(output);
+  // the oxc parse here is redundant (#3425). A reported shape is used only once
+  // it is checked against `output`, because the offsets below are spliced at
+  // verbatim and one that belongs to a different module corrupts this one
+  // silently. Falling back is not a special case: an absent shape is the normal
+  // state for a `.vpc` cache entry written before the field existed and for the
+  // rspack and unplugin builders, so no cache-format bump is needed and the
+  // fallback stays exercised.
+  const reportedShape = compiled.moduleShape;
+  const moduleInfo =
+    reportedShape != null && describesModule(output, reportedShape)
+      ? reportedShape
+      : analyzeModuleOutput(output);
   const hasExportDefault = moduleInfo.hasDefaultExport;
   const hasNamedRenderExport = moduleInfo.hasNamedRenderExport;
   const hasNamedSsrRenderExport = moduleInfo.hasNamedSsrRenderExport;

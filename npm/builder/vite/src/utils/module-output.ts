@@ -193,10 +193,19 @@ export function analyzeModuleOutput(code: string): ModuleOutputInfo {
 
   return {
     hasDefaultExport: defaultExport != null,
+    // `export const _sfc_main` declares it just as a bare `const` does. Missing
+    // that sent a module with both an exported `_sfc_main` and a named render
+    // export down the branch that appends a second `const _sfc_main = {}`, and
+    // it disagreed with the shape the native compiler reports for the same
+    // module -- the one divergence the two arms must not have (#3425).
     hasSfcMainDefined: body.some((statement) => {
+      const declaration =
+        statement.type === "ExportNamedDeclaration" && isNode(statement.declaration)
+          ? statement.declaration
+          : statement;
       return (
-        statement.type === "VariableDeclaration" &&
-        getVariableDeclarationNames(statement).includes(SFC_MAIN_NAME)
+        declaration.type === "VariableDeclaration" &&
+        getVariableDeclarationNames(declaration).includes(SFC_MAIN_NAME)
       );
     }),
     hasNamedRenderExport: exportedNames.includes("render"),

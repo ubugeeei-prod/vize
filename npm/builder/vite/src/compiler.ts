@@ -15,6 +15,7 @@ import {
   type CompileFileOptions,
 } from "./compile-options.ts";
 import { generateScopeId, prependInlineStyleInjection } from "./utils/index.ts";
+import { normalizeModuleShape } from "./utils/reported-shape.ts";
 import type { CompileJsxFn } from "./types.ts";
 
 const { compileSfc, compileSfcBatchWithResults } = native;
@@ -202,6 +203,9 @@ export function compileFile(
     macroArtifacts: result.macroArtifacts ?? [],
     styles: normalizeStyleBlocks(result.styles),
     dependencies: resolved.dependencies,
+    // Reported by the compiler that just emitted `code`, so `generateOutput`
+    // need not parse it again (#3425).
+    moduleShape: normalizeModuleShape(result.moduleShape),
   };
 
   cache.set(filePath, compiled);
@@ -313,6 +317,7 @@ export function compileBatch(
         macroArtifacts: fileResult.macroArtifacts ?? [],
         styles: normalizeStyleBlocks(fileResult.styles),
         dependencies: dependenciesByPath.get(fileResult.path) ?? [],
+        moduleShape: normalizeModuleShape(fileResult.moduleShape),
       });
     }
 

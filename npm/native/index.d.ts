@@ -129,6 +129,7 @@ export interface BatchFileResultNapi {
   styles: Array<StyleBlockNapi>;
   customBlocks: Array<CustomBlockNapi>;
   macroArtifacts: Array<MacroArtifactNapi>;
+  moduleShape?: ModuleShapeNapi;
 }
 
 /** Batch type check result for NAPI */
@@ -917,6 +918,26 @@ export interface SfcCompileOptionsNapi {
   scopeId?: string;
 }
 
+/**
+ * The emitted module's shape, so the JS plugins do not re-parse it (#3425).
+ *
+ * Absent when the module did not parse, in which case the consumer falls back
+ * to its own analysis — the behaviour before this field existed.
+ *
+ * Offsets are in UTF-16 code units, the unit the JS consumer slices the module
+ * with and the unit oxc's own JS bindings report.
+ */
+export interface ModuleShapeNapi {
+  hasDefaultExport: boolean;
+  hasSfcMainDefined: boolean;
+  hasNamedRenderExport: boolean;
+  hasNamedSsrRenderExport: boolean;
+  defaultExportStart?: number;
+  defaultExportKeywordEnd?: number;
+  defaultExportEnd?: number;
+  defaultExportIsSfcMain: boolean;
+}
+
 export interface SfcCompileResultNapi {
   code: string;
   css?: string;
@@ -929,6 +950,7 @@ export interface SfcCompileResultNapi {
   styles: Array<StyleBlockNapi>;
   customBlocks: Array<CustomBlockNapi>;
   macroArtifacts: Array<MacroArtifactNapi>;
+  moduleShape?: ModuleShapeNapi;
 }
 
 export interface SfcParseOptionsNapi {

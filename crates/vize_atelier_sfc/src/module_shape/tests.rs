@@ -1,4 +1,4 @@
-use super::{SfcModuleShape, analyze_module_shape};
+use super::{SfcModuleShape, analyze_module_shape, utf16_offset};
 
 fn shape(code: &str) -> SfcModuleShape {
     analyze_module_shape(code).expect("emitted module should parse")
@@ -106,6 +106,48 @@ fn the_keyword_end_measures_the_actual_gap() {
         &code[start..shape.default_export_keyword_end.unwrap() as usize],
         "export   default"
     );
+}
+
+/// A comment between the two keywords cannot be measured, and the offset is
+/// then absent rather than wrong: the consumer re-derives it from its own parse,
+/// where an offset pointing at the statement start would have spliced
+/// `const _sfc_main =` in front of the `export default` it replaces.
+#[test]
+fn an_unmeasurable_keyword_gap_has_no_keyword_end() {
+    let shape = shape("export /* why */ default {}\n");
+    assert!(shape.has_default_export);
+    assert_eq!(shape.default_export_keyword_end, None);
+    assert!(shape.default_export_start.is_some());
+}
+
+/// The offsets are byte offsets, and the JS consumer slices in UTF-16 code
+/// units, so a module with non-ASCII text before its default export -- a
+/// template with a non-Latin string literal -- needs converting at the boundary.
+#[test]
+fn non_ascii_text_moves_the_byte_and_utf16_offsets_apart() {
+    let code = "const _hoisted = \"ようこそ\"\nexport default {}\n";
+    let shape = shape(code);
+    let start = shape.default_export_start.unwrap();
+    assert_eq!(&code[start as usize..start as usize + 14], "export default");
+
+    // Four 3-byte characters stand where the JS side counts four code units.
+    let utf16_start = utf16_offset(code, start).unwrap();
+    assert_eq!(utf16_start, start - 8);
+    assert_eq!(
+        code.encode_utf16()
+            .skip(utf16_start as usize)
+            .take(14)
+            .collect::<Vec<_>>(),
+        "export default".encode_utf16().collect::<Vec<_>>()
+    );
+}
+
+/// An all-ASCII module -- the common case -- needs no conversion at all.
+#[test]
+fn an_ascii_prefix_keeps_the_offset() {
+    let code = "export default {}\n";
+    assert_eq!(utf16_offset(code, 7), Some(7));
+    assert_eq!(utf16_offset(code, 0), Some(0));
 }
 
 /// Unparseable output yields `None` so the consumer falls back to its own

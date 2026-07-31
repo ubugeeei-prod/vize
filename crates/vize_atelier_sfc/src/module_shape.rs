@@ -52,7 +52,10 @@ const SFC_MAIN: &str = "_sfc_main";
 /// `export default` — the keyword pair whose end the consumer splices after.
 /// What the JS side would otherwise learn by parsing the emitted module.
 ///
-/// Byte offsets are into the emitted `code`, not into the authored SFC.
+/// Offsets are UTF-8 byte offsets into the emitted `code`, not into the authored
+/// SFC. A JS consumer indexes the module with `String.prototype.slice`, whose
+/// unit is the UTF-16 code unit, so whatever hands this across the NAPI boundary
+/// must convert each offset with [`utf16_offset`] first.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct SfcModuleShape {
     pub has_default_export: bool,
@@ -96,8 +99,12 @@ pub fn analyze_module_shape(code: &str) -> Option<SfcModuleShape> {
                 shape.has_default_export = true;
                 shape.default_export_start = Some(span.start);
                 shape.default_export_end = Some(span.end);
-                shape.default_export_keyword_end =
-                    keyword_end(code, span.start).or(Some(span.start));
+                // No fallback to `span.start`: a keyword end that is really the
+                // statement start would splice `const _sfc_main =` in front of
+                // the `export default` it was meant to replace. `None` is what
+                // the JS analyzer reports for the same module, and its consumer
+                // re-derives the offset from its own parse.
+                shape.default_export_keyword_end = keyword_end(code, span.start);
                 shape.default_export_is_sfc_main = exports_sfc_main(&export.declaration);
             }
             Statement::VariableDeclaration(declaration) => {
@@ -123,6 +130,27 @@ pub fn analyze_module_shape(code: &str) -> Option<SfcModuleShape> {
         }
     }
     Some(shape)
+}
+
+/// The same position as `byte_offset`, counted in UTF-16 code units.
+///
+/// oxc reports spans as UTF-8 byte offsets, and its JS bindings convert them to
+/// UTF-16 code units before handing an AST to JavaScript. So the JS fallback
+/// analyzer's offsets index the module the way `String.prototype.slice` does,
+/// and a reported shape has to as well or a module with any non-ASCII text
+/// before its `export default` — a template with a non-Latin string literal, say
+/// — splices at the wrong position.
+///
+/// `None` when `byte_offset` is out of bounds or not a character boundary.
+#[must_use]
+pub fn utf16_offset(code: &str, byte_offset: u32) -> Option<u32> {
+    let prefix = code.get(..byte_offset as usize)?;
+    // The overwhelmingly common case: with no multi-byte character before the
+    // offset the two units coincide, so the count is skipped.
+    if prefix.is_ascii() {
+        return Some(byte_offset);
+    }
+    u32::try_from(prefix.encode_utf16().count()).ok()
 }
 
 /// End of the `export default` keyword pair starting at `start`.
