@@ -16,13 +16,13 @@ use crate::virtual_ts::types::VizeMapping;
 
 use super::component_prop_checker::{
     append_per_prop_aliases, append_prop_check_helpers, append_prop_checker_alias,
-    has_inference_props,
 };
 use super::component_prop_navigation;
 use super::context::{ComponentPropsContext, VForPropsContext};
 use super::emit::{
     append_v_for_comment, emit_slot_function_open, emit_v_for_loop_open, slot_props_type,
 };
+use super::empty_component_props::{generate_empty_root_checks, is_empty_props_usage};
 use super::vif_guard::common_vif_guard_prefix_for_guards_outside_v_for;
 
 /// Generate component props type checks (scope-aware).
@@ -153,13 +153,11 @@ pub(super) fn generate_component_props(
         .collect();
 
     ts.push_str("\n  // Component props value checks (template scope)\n");
-    let mut empty_root_usages = Vec::new();
     for &(idx, usage) in &checkable_usages {
         if closure_scope_ids.contains(&usage.scope_id.as_u32()) {
             continue; // Will be emitted inside v-for/v-slot scope
         }
-        if !has_inference_props(usage) && usage.spread_props.is_empty() {
-            empty_root_usages.push((idx, usage));
+        if is_empty_props_usage(usage) {
             continue;
         }
         profile!(
@@ -176,33 +174,7 @@ pub(super) fn generate_component_props(
         );
     }
 
-    // Empty and dynamic-name-only usages still need a whole-props call so
-    // required child props are checked (#3527). Keep those calls out of the
-    // template's already-large control-flow graph: real applications can have
-    // hundreds of empty component usages, and one statement per usage pushed
-    // TypeScript over TS2563's function-size limit. Each uninvoked arrow is
-    // still type-checked, retains the call's TS2345 diagnostic and mapping, and
-    // gives TypeScript a separate control-flow graph for every usage.
-    if !empty_root_usages.is_empty() {
-        ts.push_str("  void [\n");
-        for (idx, usage) in empty_root_usages {
-            ts.push_str("    () => {\n");
-            profile!(
-                "canon.virtual_ts.empty_component_prop_checks",
-                generate_component_prop_checks(
-                    ts,
-                    mappings,
-                    usage,
-                    idx,
-                    ctx.template_prop_names,
-                    ctx.source_context(),
-                    "      "
-                )
-            );
-            ts.push_str("    },\n");
-        }
-        ts.push_str("  ];\n");
-    }
+    generate_empty_root_checks(ts, mappings, ctx, &checkable_usages, &closure_scope_ids);
 
     for scope in summary.scopes.iter() {
         if !matches!(scope.kind, ScopeKind::VFor | ScopeKind::VSlot) {

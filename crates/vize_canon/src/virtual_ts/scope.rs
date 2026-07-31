@@ -13,6 +13,7 @@ mod component_prop_navigation;
 mod component_props;
 mod context;
 mod emit;
+mod empty_component_props;
 mod event_handler;
 mod event_scope;
 mod expression_scanner;
