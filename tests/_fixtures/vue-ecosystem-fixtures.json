@@ -100,7 +100,7 @@
         "files": ["LICENSE"]
       },
       "vueGlobs": ["packages/**/*.vue", "docs/**/*.vue", "ssr-testing/**/*.vue"],
-      "tsconfig": "tsconfig.json",
+      "tsconfig": "tsconfig.web.json",
       "coverage": [
         "compiler",
         "linter",
