@@ -29,9 +29,9 @@ pub(crate) const SETUP_SCOPE_HELPER_NAMES: &[&str] = &[
     USE_TEMPLATE_REF,
 ];
 
-/// Shared type-helper text for the per-file embedded preamble and the hoisted
-/// ambient helpers file; a macro so identical bytes splice into both. Emitted
-/// verbatim, so a line here is a generated line — related aliases share one.
+/// Shared type-helper text used both by the per-file embedded preamble and by
+/// the hoisted ambient helpers file. Declared as a macro so the exact same
+/// bytes can be spliced into both constants at compile time.
 macro_rules! vue_type_aliases_text {
     () => {
         r#"type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
@@ -50,7 +50,7 @@ type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D> = T extends unknown ? Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__LooseRequired<T>[K], undefined> } : never;
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
-type __VizeIsAny<T> = 0 extends (1 & T) ? true : false; type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false; type __VizeWidenTemplateRef<T> = __VizeIsUnion<T> extends true ? T : T extends string ? keyof T extends keyof string ? string : T : T extends number ? keyof T extends keyof number ? number : T : T extends boolean ? keyof T extends keyof boolean ? boolean : T : T;
+type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
 type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
 type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
 type __VizeFallthroughAttrs = { class?: unknown; style?: unknown };
@@ -154,8 +154,8 @@ pub const SHARED_PREAMBLE_FILE_NAME: &str = "__vize_helpers.d.ts";
 ///   so generated modules stop carrying per-file `declare global` blocks
 ///   (which made every module a global-scope augmenter and defeated
 ///   incremental rebuilds);
-/// - the generic type helpers ([`VUE_TYPE_HELPERS`] /
-///   [`EMIT_OVERLOAD_HELPERS`]) are file-independent and hoist verbatim;
+/// - the file-independent type helpers hoist verbatim ([`VUE_TYPE_HELPERS`],
+///   [`EMIT_OVERLOAD_HELPERS`], and the template-ref widening aliases below);
 /// - the compiler-macro signatures are declared as `__vize_*` global
 ///   functions with byte-identical signatures (same overload order, type
 ///   parameter and parameter names) and aliased into each module's
@@ -182,7 +182,7 @@ pub const SHARED_PREAMBLE_DTS: &str = concat!(
     "\n",
     "// Shared type helpers used by generated virtual modules\n",
     vue_type_helpers_text!(),
-    "\n\n",
+    "\n\n// Template-ref widening. Hoisted-only, deliberately absent from the per-file\n// preamble: a module-scope copy is dead code (TS6196) in every component whose\n// template scope emits no __U, and only generated template scopes use it.\ntype __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;\ntype __VizeWidenTemplateRef<T> = __VizeIsUnion<T> extends true ? T : T extends string ? keyof T extends keyof string ? string : T : T extends number ? keyof T extends keyof number ? number : T : T extends boolean ? keyof T extends keyof boolean ? boolean : T : T;\n\n",
     "// Emit-overload helpers (consumed by the per-file __EmitProps alias)\n",
     emit_overload_helpers_text!(),
     "\n",

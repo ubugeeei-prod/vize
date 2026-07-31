@@ -77,12 +77,20 @@ impl TemplateRefUnwraps {
         }
     }
 
+    /// Shadow ref bindings with their unwrapped types. `var` allows
+    /// reassignment, which Vue templates do to refs.
+    ///
+    /// Emits nothing at all when template scope has no setup binding to
+    /// shadow, which is why the conditional types `__U` delegates to are
+    /// declared alongside it rather than at module scope — see
+    /// `legacy_vue2::MODERN_REF_UNWRAP_HELPER`.
     pub(super) fn emit_template_variables(
         &self,
         mut ts: &mut String,
         legacy_vue2: bool,
         dialect: VueVersion,
         has_generic_param: bool,
+        hoist_shared_preamble: bool,
     ) {
         if self.setup_bindings.is_empty() && self.options_api_setup_bindings.is_empty() {
             return;
@@ -93,6 +101,7 @@ impl TemplateRefUnwraps {
             legacy_vue2,
             dialect,
             has_generic_param,
+            hoist_shared_preamble,
         ));
         for name in &self.setup_bindings {
             append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");

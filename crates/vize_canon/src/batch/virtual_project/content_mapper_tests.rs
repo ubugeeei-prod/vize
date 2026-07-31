@@ -72,6 +72,76 @@ fn authored_parse_errors_are_mapper_diagnostics() {
     assert!(result.diagnostics[0].start <= source.len());
 }
 
+/// Opening line of the generated template scope.
+const TEMPLATE_SCOPE: &str = "  ;(function __template() {\n";
+
+/// The first four lines the template scope emits for a Vue 3 component that has
+/// a setup binding to shadow, when the shared preamble is not hoisted.
+const TEMPLATE_REF_UNWRAP_PRELUDE: &str = r#"    // Auto-unwrap Vue refs in template scope
+    type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
+    type __VizeWidenTemplateRef<T> = __VizeIsUnion<T> extends true ? T : T extends string ? keyof T extends keyof string ? string : T : T extends number ? keyof T extends keyof number ? number : T : T extends boolean ? keyof T extends keyof boolean ? boolean : T : T;
+    type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;
+"#;
+
+fn template_scope_of(text: &str) -> &str {
+    text.split_once(TEMPLATE_SCOPE)
+        .expect("generated module must open a template scope")
+        .1
+}
+
+/// This path does not hoist the shared preamble, so every helper it emits is a
+/// module-local declaration. The widening conditional types must therefore stay
+/// with the `__U` that is their only reference, inside `__template()`: a
+/// component with no setup binding in template scope emits no `__U` at all, and
+/// a module-scope copy would then be unused — which TypeScript reports as a
+/// TS6196 hint on the user's own `.vue` file (#3510).
+#[test]
+fn widening_helpers_are_declared_with_the_template_scope_that_uses_them() {
+    let source = r#"<script setup lang="ts">
+import { ref } from 'vue'
+const message = ref('hello')
+</script>
+<template>{{ message }}</template>
+"#;
+    let result =
+        generate_vue_content_mapper_transform(Path::new("Unwrap.vue"), source).expect("transform");
+
+    let prelude = template_scope_of(&result.text)
+        .split_inclusive('\n')
+        .take(4)
+        .collect::<std::string::String>();
+    assert_eq!(prelude, TEMPLATE_REF_UNWRAP_PRELUDE);
+    for declaration in ["type __VizeIsUnion<", "type __VizeWidenTemplateRef<"] {
+        assert_eq!(
+            result.text.matches(declaration).count(),
+            1,
+            "{declaration} must be declared once, in template scope:\n{}",
+            result.text
+        );
+    }
+}
+
+/// The other half of the same invariant: nothing to unwrap, nothing declared.
+#[test]
+fn a_component_without_setup_bindings_declares_no_widening_helpers() {
+    let source = "<template><p>static</p></template>\n";
+    let result =
+        generate_vue_content_mapper_transform(Path::new("Static.vue"), source).expect("transform");
+
+    for declaration in [
+        "type __U<",
+        "type __VizeIsUnion<",
+        "type __VizeWidenTemplateRef<",
+    ] {
+        assert_eq!(
+            result.text.matches(declaration).count(),
+            0,
+            "{declaration} would be an unused module-local declaration:\n{}",
+            result.text
+        );
+    }
+}
+
 #[test]
 fn jsx_scripts_report_tsx_script_kind() {
     let source = "<script lang=\"tsx\">export default () => <div /></script>";

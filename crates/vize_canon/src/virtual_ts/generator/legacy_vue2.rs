@@ -34,18 +34,28 @@ declare function __vForList<T>(source: T | undefined | null): readonly __VForEnt
 const LEGACY_REF_UNWRAP_HELPER: &str =
     "    type __U<T> = T extends { value: infer __V } ? __V : T;\n";
 const LEGACY_EXPOSED_UNWRAP_HELPER: &str = "type __VizeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends { value: infer __V } ? __V : T[K] };\n";
-/// Template-scope ref unwrapping for the modern (Vue 3) dialect.
+/// Template-scope ref unwrapping for the modern (Vue 3) dialect when the shared
+/// preamble is *not* hoisted (check server, content mapper).
 ///
-/// Only `__U` is emitted per file: it is dialect-dependent, so each generated
-/// module needs its own. The `__VizeIsUnion` / `__VizeWidenTemplateRef`
-/// conditional types it delegates to are file-independent and live in
-/// [`VUE_TYPE_HELPERS`] — hoisted once per program into the shared ambient
-/// helpers file, or embedded once at module scope when hoisting is off. Keeping
-/// them per-file cost ~369 bytes in every generated module and gave TypeScript
-/// a fresh declaration to instantiate for each one (see #3443, #3460).
+/// The widening conditional types stay here, inside `__template()`, instead of
+/// joining the module-scope preamble: `__U` is their only reference, and
+/// `TemplateRefUnwraps::emit_template_variables` emits no `__U` at all for a
+/// component with no setup bindings in template scope. Module-scope
+/// declarations are module-local, so an unused one surfaces to the user as a
+/// `TS6196` hint on their own file.
+const MODERN_REF_UNWRAP_HELPER: &str = r#"    type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
+    type __VizeWidenTemplateRef<T> = __VizeIsUnion<T> extends true ? T : T extends string ? keyof T extends keyof string ? string : T : T extends number ? keyof T extends keyof number ? number : T : T extends boolean ? keyof T extends keyof boolean ? boolean : T : T;
+    type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;
+"#;
+/// [`MODERN_REF_UNWRAP_HELPER`] for the hoisted path: the ambient helpers file
+/// (`SHARED_PREAMBLE_DTS`) is a `.d.ts` global script, so it declares the two
+/// widening types once per program and never reports them unused.
 ///
-/// [`VUE_TYPE_HELPERS`]: super::super::helpers::VUE_TYPE_HELPERS
-const MODERN_REF_UNWRAP_HELPER: &str =
+/// `__U` itself stays per file — it is dialect-dependent. Hoisting the two
+/// type-parameterized aliases saves 369 bytes in every generated `.vue.ts` and
+/// stops TypeScript instantiating a distinct declaration per file instead of
+/// caching one (#3443, #3460).
+const MODERN_HOISTED_REF_UNWRAP_HELPER: &str =
     "    type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;\n";
 const MODERN_GENERIC_REF_UNWRAP_HELPER: &str =
     "    type __U<T> = T extends import('vue').Ref ? T['value'] : T;\n";
@@ -115,9 +125,15 @@ pub(super) fn vue_type_helpers(legacy_vue2: bool, dialect: VueVersion) -> &'stat
     }
 }
 
-pub(super) fn ref_unwrap_helper(legacy_vue2: bool, dialect: VueVersion) -> &'static str {
+pub(super) fn ref_unwrap_helper(
+    legacy_vue2: bool,
+    dialect: VueVersion,
+    hoist_shared_preamble: bool,
+) -> &'static str {
     if needs_legacy_vue2_helpers(legacy_vue2, dialect) {
         LEGACY_REF_UNWRAP_HELPER
+    } else if hoist_shared_preamble {
+        MODERN_HOISTED_REF_UNWRAP_HELPER
     } else {
         MODERN_REF_UNWRAP_HELPER
     }
@@ -127,11 +143,12 @@ pub(super) fn ref_unwrap_helper_for_template(
     legacy_vue2: bool,
     dialect: VueVersion,
     has_generic_param: bool,
+    hoist_shared_preamble: bool,
 ) -> &'static str {
     if has_generic_param && !needs_legacy_vue2_helpers(legacy_vue2, dialect) {
         MODERN_GENERIC_REF_UNWRAP_HELPER
     } else {
-        ref_unwrap_helper(legacy_vue2, dialect)
+        ref_unwrap_helper(legacy_vue2, dialect, hoist_shared_preamble)
     }
 }
 
