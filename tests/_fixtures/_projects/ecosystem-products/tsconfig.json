@@ -10,7 +10,6 @@
     "allowSyntheticDefaultImports": true,
     "allowArbitraryExtensions": true,
     "jsx": "preserve",
-    "baseUrl": ".",
     "paths": {
       "@nuxt/ui/components/*.vue": ["src/vendors/nuxt-ui-component.ts"]
     }
