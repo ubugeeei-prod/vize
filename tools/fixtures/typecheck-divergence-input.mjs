@@ -51,6 +51,9 @@ export function collectVueTscDiagnostics(output, cwd) {
       else if (!file.endsWith(".vue")) excludedNonVueCount += 1;
       else diagnostics.push(record(file, match[4], match[2], match[3], match[5], match[6]));
     } else if (projectMatch != null) {
+      // Validated for shape only: a project-level diagnostic has no file or
+      // position to compare, so the normalized record is discarded and the line
+      // is counted as excluded.
       record("<project>", projectMatch[1], "1", "1", projectMatch[2], projectMatch[3]);
       excludedProjectCount += 1;
     } else if (/\b(?:error|warning) TS\d+:/.test(line)) {
