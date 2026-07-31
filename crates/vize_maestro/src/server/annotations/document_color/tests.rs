@@ -2,8 +2,7 @@ use tower_lsp::lsp_types::{Color, ColorInformation, Position, Range};
 
 use super::DocumentColorService;
 
-/// One colour as `(line, start_character, end_character, r, g, b, a)` with the
-/// channels back in 0..=255 / 0..=100 so a test reads like the CSS it pins.
+/// `(line, start, end, r, g, b, a)`, with byte channels and percent alpha.
 type FlatColor = (u32, u32, u32, u32, u32, u32, u32);
 
 fn colors(source: &str) -> Vec<FlatColor> {
@@ -69,23 +68,42 @@ fn every_hex_form_is_recognised_with_its_exact_span() {
 
 #[test]
 fn a_hex_run_that_is_not_a_colour_is_not_one() {
-    // 5 and 7 digits are not CSS colours, and `#abcdef0` must not be read as
-    // `#abcdef` with a stray `0`.
+    // `#abcdef0` must not be read as `#abcdef` with a stray `0`.
     let source = "<style>\n.a { --x: #abcde; --y: #abcdef0; --z: #ffgg }\n</style>\n";
     assert_eq!(colors(source), Vec::new());
 }
 
 #[test]
 fn functional_notation_is_recognised_in_both_syntaxes() {
-    let source = "<style>\n.a { color: rgb(255, 0, 0); background: rgba(255, 0, 0, 0.5); border-color: rgb(100% 0% 0% / 50%) }\n</style>\n";
+    let source = "<style>\n.a { color: rgb(255, 0, 0); background: rgba(255, 0, 0, 0.5); border-color: rgb(100% 0% 0% / 50%); outline-color: r\\67 b(0 0 255) }\n</style>\n";
     assert_eq!(
         colors(source),
         vec![
             (1, 12, 26, 255, 0, 0, 100),
             (1, 40, 60, 255, 0, 0, 50),
             (1, 76, 97, 255, 0, 0, 50),
+            (1, 114, 129, 0, 0, 255, 100),
         ]
     );
+}
+
+#[test]
+fn existing_colour_forms_remain_visible_in_supports_conditions() {
+    let source = "<style>\n@supports (color: #f00) and (background: rgb(0, 255, 0)) { .a { color: blue } }\n</style>\n";
+    assert_eq!(
+        colors(source),
+        vec![
+            (1, 18, 22, 255, 0, 0, 100),
+            (1, 41, 55, 0, 255, 0, 100),
+            (1, 71, 75, 0, 0, 255, 100),
+        ]
+    );
+}
+
+#[test]
+fn invalid_rgb_functions_do_not_expose_named_arguments() {
+    let source = "<style>\n.a { --a: rgb(red 0 0); --b: r\\67 b(red 0 0); --c: RGBA(blue, 0, 0, 1); --d: \\72 gba(blue, 0, 0, 1); color: green }\n</style>\n";
+    assert_eq!(colors(source), vec![(1, 108, 113, 0, 128, 0, 100)]);
 }
 
 #[test]
@@ -155,6 +173,15 @@ fn css_escape_whitespace_follows_css_input_preprocessing() {
                 alpha: 1.0,
             },
         }]
+    );
+}
+
+#[test]
+fn escaped_hash_tokens_consume_crlf_but_not_vertical_tab() {
+    let source = "<style>\r\n.a { --crlf: #x\\20\r\nred; --vt: #x\\20\u{000b}red; color: blue }\r\n</style>\r\n";
+    assert_eq!(
+        colors(source),
+        vec![(2, 17, 20, 255, 0, 0, 100), (2, 29, 33, 0, 0, 255, 100),]
     );
 }
 
@@ -253,6 +280,31 @@ fn named_colour_scanning_has_linear_work_at_1k_through_8k() {
 }
 
 #[test]
+fn declaration_context_scanning_counts_internal_work_linearly() {
+    let mut previous_work = 0;
+    for count in [1_000, 2_000, 4_000, 8_000] {
+        let source = format!(
+            ".a {{ /*{}*/ --chain: {}red; }}",
+            "x".repeat(count),
+            "a:".repeat(count)
+        );
+        let source_len = source.len();
+        let (found, work, rgb_probes) =
+            super::scan::colors_in_with_metrics(&source, (0, source_len), false);
+        assert_eq!(found.len(), 1);
+        assert_eq!(rgb_probes, 0);
+        assert!(work <= source_len * 2, "too much work at {count}: {work}");
+        if previous_work > 0 {
+            assert!(
+                work <= previous_work * 2 + 32,
+                "internal work grew faster than input at {count}: {work}"
+            );
+        }
+        previous_work = work;
+    }
+}
+
+#[test]
 fn a_colour_inside_a_css_comment_is_not_offered() {
     // A swatch there would offer to rewrite text the stylesheet never reads.
     let source = "<style>\n/* #f00 */\n.a { color: #0f0 }\n</style>\n";
@@ -286,8 +338,7 @@ fn presentations_offer_hex_first_then_the_functional_form() {
         labels(1.0, 0.0, 0.0, 1.0),
         vec!["#ff0000".to_string(), "rgb(255, 0, 0)".to_string()]
     );
-    // A translucent colour needs the 8-digit hex and `rgba()`; the alpha is
-    // written the way CSS writes it, not as `0.500000`.
+    // CSS alpha is trimmed rather than written as `0.500000`.
     assert_eq!(
         labels(1.0, 0.0, 0.0, 0.5),
         vec!["#ff000080".to_string(), "rgba(255, 0, 0, 0.5)".to_string()]

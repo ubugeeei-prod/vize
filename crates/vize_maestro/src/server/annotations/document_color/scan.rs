@@ -2,21 +2,17 @@
 //!
 //! # Coverage
 //!
-//! CSS named colours, `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`, and the `rgb()` /
-//! `rgba()` functional notation in both the legacy comma form
-//! (`rgb(255, 0, 0)`) and the modern space form (`rgb(255 0 0 / 50%)`).
+//! CSS named colours, hex forms, and legacy/modern `rgb()` / `rgba()`.
 //!
-//! `hsl()` is **not** recognised yet: see #3502. A missing swatch is invisible;
-//! a wrong one is not, so nothing is guessed.
+//! `hsl()` is not recognised yet: see #3502.
 //!
-//! CSS comments are skipped, because a swatch rendered inside `/* ... */` would
-//! offer to rewrite text the stylesheet never reads.
+//! CSS comments are skipped so the picker never rewrites inactive text.
 
 mod lex;
 
 use self::lex::{
     decode_identifier, identifier_end, is_declaration_name, is_identifier_boundary,
-    is_identifier_byte, pair_at, skip_comment, skip_string, skipped_function_end,
+    is_identifier_byte, pair_at, skip_comment, skip_function, skip_string, skipped_function_end,
 };
 use super::named;
 
@@ -24,6 +20,12 @@ use super::named;
 std::thread_local! {
     static SCAN_STEPS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
     static RGB_PROBES: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+    static DECLARATION_NAME_WORK: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+#[cfg(test)]
+fn record_declaration_name_work(bytes: usize) {
+    DECLARATION_NAME_WORK.set(DECLARATION_NAME_WORK.get() + bytes);
 }
 
 /// A colour literal: `(start, end, red, green, blue, alpha)` with the channels
@@ -120,7 +122,8 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
                 statement_start = cursor;
                 continue;
             }
-            b':' if parenthesis_depth == 0
+            b':' if !in_value
+                && parenthesis_depth == 0
                 && (mode.accepts_root_declarations() || block_depth > 0)
                 && is_declaration_name(
                     bytes,
@@ -148,18 +151,6 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
             _ => {}
         }
 
-        if !in_value {
-            cursor += 1;
-            continue;
-        }
-        if (bytes[cursor].is_ascii_alphabetic() || bytes[cursor] == b'\\')
-            && is_identifier_boundary(bytes, cursor, region_start)
-            && let Some(end) = skipped_function_end(content, cursor, region_end)
-        {
-            cursor = end;
-            continue;
-        }
-
         let mut identifier_token_end = None;
         let literal = if bytes[cursor] == b'#' {
             hex_literal(content, cursor, region_end)
@@ -168,7 +159,24 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
         {
             let end = identifier_end(bytes, cursor, region_end);
             identifier_token_end = Some(end);
-            identifier_color_literal(content, cursor, end, region_end)
+            if let Some(skipped_end) = skipped_function_end(content, cursor, region_end) {
+                cursor = skipped_end;
+                continue;
+            }
+            if bytes.get(end) == Some(&b'(') {
+                if !is_rgb_function_name(content, cursor, end) {
+                    None
+                } else if let Some(literal) = rgb_literal(content, cursor, end, region_end) {
+                    Some(literal)
+                } else {
+                    cursor = skip_function(bytes, end, region_end);
+                    continue;
+                }
+            } else if in_value {
+                named_color_literal(content, cursor, end)
+            } else {
+                None
+            }
         } else {
             None
         };
@@ -185,18 +193,8 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
     found
 }
 
-/// Parse one complete identifier before deciding whether it is a function or a
-/// keyword. In particular, a named `red` never searches the rest of the file
-/// for a later `(` while probing for `rgb()`.
-fn identifier_color_literal(
-    content: &str,
-    start: usize,
-    end: usize,
-    limit: usize,
-) -> Option<ColorLiteral> {
-    if content.as_bytes().get(end) == Some(&b'(') {
-        return rgb_literal(content, start, end, limit);
-    }
+/// Parse one complete identifier before deciding whether it is a colour.
+fn named_color_literal(content: &str, start: usize, end: usize) -> Option<ColorLiteral> {
     let mut decoded = [0u8; 32];
     let decoded_len = decode_identifier(content.as_bytes(), start, end, &mut decoded)?;
     let [red, green, blue, alpha] = named::rgba_bytes(&decoded[..decoded_len])?;
@@ -208,6 +206,14 @@ fn identifier_color_literal(
         blue: blue as f32 / 255.0,
         alpha: alpha as f32 / 255.0,
     })
+}
+
+fn is_rgb_function_name(content: &str, start: usize, end: usize) -> bool {
+    let mut decoded = [0u8; 4];
+    let Some(len) = decode_identifier(content.as_bytes(), start, end, &mut decoded) else {
+        return false;
+    };
+    decoded[..len].eq_ignore_ascii_case(b"rgb") || decoded[..len].eq_ignore_ascii_case(b"rgba")
 }
 
 /// `#` followed by exactly 3, 4, 6 or 8 hex digits and nothing that could
@@ -273,10 +279,6 @@ fn rgb_literal(
 ) -> Option<ColorLiteral> {
     #[cfg(test)]
     RGB_PROBES.set(RGB_PROBES.get() + 1);
-    let name = &content[start..identifier_end];
-    if !name.eq_ignore_ascii_case("rgb") && !name.eq_ignore_ascii_case("rgba") {
-        return None;
-    }
     let arguments_start = identifier_end + 1;
     let close = content[arguments_start..limit].find(')')? + arguments_start;
     let end = close + 1;
@@ -314,13 +316,18 @@ pub(super) fn colors_in_with_metrics(
 ) -> (Vec<ColorLiteral>, usize, usize) {
     SCAN_STEPS.set(0);
     RGB_PROBES.set(0);
+    DECLARATION_NAME_WORK.set(0);
     let mode = if declaration_list {
         CssMode::DeclarationList
     } else {
         CssMode::Stylesheet
     };
     let colors = colors_in(content, region, mode);
-    (colors, SCAN_STEPS.get(), RGB_PROBES.get())
+    (
+        colors,
+        SCAN_STEPS.get() + DECLARATION_NAME_WORK.get(),
+        RGB_PROBES.get(),
+    )
 }
 
 /// One component, normalised to 0.0..=1.0. `full` is the value that maps to 1.0

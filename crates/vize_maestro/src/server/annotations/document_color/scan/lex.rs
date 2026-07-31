@@ -20,12 +20,17 @@ pub(super) fn is_identifier_boundary(bytes: &[u8], start: usize, region_start: u
     {
         return false;
     }
-    let Some(prefix) = bytes.get(region_start..start.wrapping_sub(1)) else {
+    let Some(previous) = start.checked_sub(1) else {
         return true;
     };
-    if !bytes[start - 1].is_ascii_whitespace() {
+    let whitespace_start = match bytes[previous] {
+        b'\n' if previous > region_start && bytes[previous - 1] == b'\r' => previous - 1,
+        b'\t' | b'\n' | b'\x0c' | b'\r' | b' ' => previous,
+        _ => return true,
+    };
+    let Some(prefix) = bytes.get(region_start..whitespace_start) else {
         return true;
-    }
+    };
     let hex_digits = prefix
         .iter()
         .rev()
@@ -46,6 +51,8 @@ pub(super) fn is_declaration_name(
     end: usize,
     allow_variable_prefix: bool,
 ) -> bool {
+    #[cfg(test)]
+    super::record_declaration_name_work(end.saturating_sub(start));
     let mut cursor = skip_trivia(bytes, start, end);
     if allow_variable_prefix
         && bytes
@@ -225,7 +232,7 @@ fn hex_value(byte: u8) -> u8 {
     }
 }
 
-fn skip_function(bytes: &[u8], open: usize, limit: usize) -> usize {
+pub(super) fn skip_function(bytes: &[u8], open: usize, limit: usize) -> usize {
     let mut cursor = open;
     let mut depth = 0usize;
     while cursor < limit {
