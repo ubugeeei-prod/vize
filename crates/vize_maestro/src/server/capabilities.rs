@@ -90,9 +90,11 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
         // Document formatting
         document_formatting_provider: features.formatting.then_some(OneOf::Left(true)),
 
-        // Range formatting is intentionally not advertised until the handler
-        // can produce edits scoped to the requested range.
-        document_range_formatting_provider: None,
+        // Range formatting ("Format Selection"). Rides the `formatting` flag
+        // with `document_formatting_provider`: the handler projects the
+        // whole-document format back onto the SFC blocks the selection
+        // intersects, so the two commands can never disagree.
+        document_range_formatting_provider: features.formatting.then_some(OneOf::Left(true)),
 
         // Signature help is not implemented yet.
         signature_help_provider: None,

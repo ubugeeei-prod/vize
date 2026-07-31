@@ -74,6 +74,7 @@ export type ServerCapabilities = {
   };
   definitionProvider?: unknown;
   documentHighlightProvider?: unknown;
+  documentFormattingProvider?: unknown;
   documentLinkProvider?: { resolveProvider?: boolean };
   documentRangeFormattingProvider?: unknown;
   documentSymbolProvider?: unknown;

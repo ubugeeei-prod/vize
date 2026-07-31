@@ -17,18 +17,19 @@ use tower_lsp::{
         DocumentSymbolParams, DocumentSymbolResponse, FoldingRange, FoldingRangeParams,
         GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams, InitializeParams,
         InitializeResult, InitializedParams, InlayHint, InlayHintParams, LinkedEditingRangeParams,
-        LinkedEditingRanges, Location, Position, PrepareRenameResponse, ReferenceParams,
-        RenameFilesParams, RenameParams, SelectionRange, SelectionRangeParams,
-        SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
-        SemanticTokensResult, ServerInfo, SymbolInformation, TextDocumentPositionParams, TextEdit,
-        WorkspaceEdit, WorkspaceSymbolParams,
+        LinkedEditingRanges, Location, PrepareRenameResponse, ReferenceParams, RenameFilesParams,
+        RenameParams, SelectionRange, SelectionRangeParams, SemanticTokensParams,
+        SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult, ServerInfo,
+        SymbolInformation, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
+        WorkspaceSymbolParams,
     },
 };
 
-// Only the test modules below construct ranges now that `document_symbol` moved
-// into `server::document_structure`; they reach it through `use super::*`.
+// Only the test modules below construct positions and ranges now that
+// `document_symbol` moved into `server::document_structure` and range
+// formatting into `server::format`; they reach these through `use super::*`.
 #[cfg(test)]
-use tower_lsp::lsp_types::Range;
+use tower_lsp::lsp_types::{Position, Range};
 
 use super::{MaestroServer, server_capabilities};
 use crate::ide::{
@@ -751,6 +752,8 @@ impl LanguageServer for MaestroServer {
         Ok(None)
     }
 
+    /// Format only the SFC blocks the selection touches — see
+    /// `server::format::range` for why this is not the whole-document edit.
     async fn range_formatting(
         &self,
         params: DocumentRangeFormattingParams,
@@ -760,6 +763,7 @@ impl LanguageServer for MaestroServer {
         }
 
         let uri = &params.text_document.uri;
+        let _range = params.range;
 
         // See `formatting`: standalone HTML must not go through the SFC formatter.
         if crate::utils::is_standalone_html_path(uri.path()) {
@@ -769,17 +773,13 @@ impl LanguageServer for MaestroServer {
         let Some(_content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-        let valid_position =
-            |position: Position| position_to_offset(&_content, position.line, position.character);
-        if valid_position(params.range.start).is_none()
-            || valid_position(params.range.end).is_none()
-        {
-            return Ok(None);
-        }
         #[cfg(feature = "glyph")]
         {
             let options = self.state.get_format_options();
-            return Ok(super::format::format_document(&_content, &options));
+            let path = uri.path();
+            return Ok(super::format::format_range(
+                &_content, path, _range, &options,
+            ));
         }
         #[cfg(not(feature = "glyph"))]
         Ok(None)

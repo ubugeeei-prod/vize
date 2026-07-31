@@ -89,9 +89,12 @@ test("vize lsp advertises the full editor-feature provider set with exact shapes
     // Selection ranges ship with the document-structure group.
     assert.equal(capabilities.selectionRangeProvider, true);
 
+    // Formatting is opt-in, so neither formatting provider is here.
+    assert.equal(capabilities.documentFormattingProvider, undefined);
+    assert.equal(capabilities.documentRangeFormattingProvider, undefined);
+
     // Providers that are intentionally not yet advertised stay absent.
     assert.equal(capabilities.signatureHelpProvider, undefined);
-    assert.equal(capabilities.documentRangeFormattingProvider, undefined);
   });
 });
 
@@ -189,4 +192,15 @@ test("vize lsp per-feature init flags toggle individual providers independently"
     assert.equal(capabilities.codeLensProvider?.resolveProvider, false);
     assert.ok(capabilities.semanticTokensProvider, "semanticTokensProvider should remain");
   });
+
+  await withCapabilities(
+    "granular-formatting-on",
+    { editor: true, formatting: true },
+    (capabilities) => {
+      // Opting into formatting brings both commands: "Format Selection" is the
+      // same formatter scoped to the SFC blocks a selection touches (#3456).
+      assert.equal(capabilities.documentFormattingProvider, true);
+      assert.equal(capabilities.documentRangeFormattingProvider, true);
+    },
+  );
 });

@@ -109,7 +109,12 @@ fn individual_feature_flags_gate_matching_providers() {
         (
             "formatting",
             |features| features.formatting = false,
-            |capabilities| capabilities.document_formatting_provider.is_some(),
+            // Range formatting rides the same flag: "Format Selection" is the
+            // same formatter scoped to the blocks a selection touches.
+            |capabilities| {
+                capabilities.document_formatting_provider.is_some()
+                    && capabilities.document_range_formatting_provider.is_some()
+            },
         ),
         (
             "code_lens",
@@ -245,6 +250,7 @@ fn default_features_advertise_non_opinionated_providers() {
     assert!(capabilities.definition_provider.is_some());
     assert!(capabilities.document_link_provider.is_some());
     assert!(capabilities.document_formatting_provider.is_none());
+    assert!(capabilities.document_range_formatting_provider.is_none());
 }
 
 #[test]
@@ -273,7 +279,7 @@ fn all_features_skip_unimplemented_providers_and_keep_implemented_ones() {
     assert!(capabilities.code_action_provider.is_some());
     assert!(capabilities.rename_provider.is_some());
     assert!(capabilities.document_formatting_provider.is_some());
-    assert!(capabilities.document_range_formatting_provider.is_none());
+    assert!(capabilities.document_range_formatting_provider.is_some());
     assert!(capabilities.code_lens_provider.is_some());
     assert!(capabilities.semantic_tokens_provider.is_some());
     assert!(capabilities.document_link_provider.is_some());

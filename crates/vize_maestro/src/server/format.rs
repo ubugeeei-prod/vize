@@ -3,6 +3,12 @@
 //! Provides SFC document formatting via the vize_glyph formatter.
 
 #[cfg(feature = "glyph")]
+mod range;
+
+#[cfg(feature = "glyph")]
+pub(crate) use range::format_range;
+
+#[cfg(feature = "glyph")]
 use tower_lsp::lsp_types::{Position, Range, TextEdit};
 
 /// Format a document and return TextEdits for the LSP client.
