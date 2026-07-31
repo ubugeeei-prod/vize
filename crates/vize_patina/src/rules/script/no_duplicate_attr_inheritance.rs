@@ -1,43 +1,55 @@
 //! script/no-duplicate-attr-inheritance
 //!
-//! Flag an explicit `inheritAttrs: true` component option as redundant.
+//! Flag a component that applies its fallthrough attributes twice.
 //!
-//! Ports the redundant-by-default core of
-//! [`vue/no-duplicate-attr-inheritance`](https://eslint.vuejs.org/rules/no-duplicate-attr-inheritance.html),
+//! Ports [`vue/no-duplicate-attr-inheritance`](https://eslint.vuejs.org/rules/no-duplicate-attr-inheritance.html),
 //! which warns about *double attribute application*: a component that keeps the
 //! default attribute inheritance (`inheritAttrs: true`) **and** also forwards
-//! `$attrs` manually (typically `v-bind="$attrs"` in the template) ends up
-//! applying the fallthrough attributes twice.
+//! `$attrs` manually with `v-bind="$attrs"` on its root element ends up applying
+//! the fallthrough attributes twice.
 //!
-//! ## Scope (conservative subset)
+//! Two spellings of the same defect are reported:
 //!
-//! eslint's rule pairs a template signal (`v-bind="$attrs"`) with a script
-//! signal (the effective `inheritAttrs` value). In the patina architecture
-//! markup-rules and script-rules are separate passes: a script rule cannot
-//! observe the `v-bind="$attrs"` in the `<template>`. Rather than approximate
-//! that cross-block relationship unsoundly (and risk false positives on the many
-//! components that *don't* forward `$attrs`), this rule implements the sound,
-//! template-independent subset: an **explicit** `inheritAttrs: true` is always
-//! redundant, because `true` is the framework default, so removing it changes
-//! nothing. That is exactly the location eslint also reports when both signals
-//! are present, and because `true` is unconditionally the default the rule fires
-//! with **zero false positives**. Components that opt out with
-//! `inheritAttrs: false`, or that omit the option, are never touched; the
-//! template-side check (`v-bind="$attrs"` with an *implicit* default) is out of
-//! scope.
+//! * **An explicit `inheritAttrs: true`.** `true` is the framework default, so
+//!   stating it changes nothing; it is the location upstream also reports when
+//!   both signals are present, and because `true` is unconditionally the default
+//!   this half fires with zero false positives even without the template.
+//! * **A root `v-bind="$attrs"` with the default left implicit.** This is the
+//!   template half, and it is the one upstream leads with. It needs the
+//!   `<template>` AST — see [`template`] for the over-match analysis.
 //!
-//! The option is resolved like `script/component-options-name-casing`: the
-//! `<script setup>` `defineOptions({ inheritAttrs: true })` macro, plus the
-//! Options API object reached through `export default {...}`,
-//! `defineComponent({...})`, or an identifier bound to one (unwrapping TS
-//! `as`/`satisfies`/non-null/parenthesized wrappers).
+//! When both are present only the first fires: the explicit `true` is the
+//! smaller, more actionable edit, and two diagnostics for one defect is noise.
+//!
+//! ## What stays silent
+//!
+//! * `inheritAttrs: false` — the intended opt-out, in either spelling.
+//! * An `inheritAttrs` whose value is not a boolean literal: the effective value
+//!   is unknown, so neither direction may be assumed.
+//! * `v-bind="$attrs"` on a **nested** element. That is the documented way to
+//!   forward attributes to an inner node, is idiomatic, and is normally paired
+//!   with `inheritAttrs: false` — reporting it would be a false positive.
+//! * A multi-root (fragment) template: there is no single element for the
+//!   fallthrough attributes to land on.
+//! * An SFC with **both** `<script>` and `<script setup>`. The rule is invoked
+//!   once per block and each sees only half the script surface, so an
+//!   `inheritAttrs: false` in the sibling block would be invisible. See
+//!   [`SfcScriptContext::sole_script_block`].
 //!
 //! ## Examples
 //!
-//! ### Invalid (redundant — `true` is the default)
+//! ### Invalid
 //! ```ts
 //! defineOptions({ inheritAttrs: true })
 //! export default { inheritAttrs: true }
+//! ```
+//!
+//! ```vue
+//! <script setup lang="ts"></script>
+//!
+//! <template>
+//!   <div v-bind="$attrs"></div>
+//! </template>
 //! ```
 //!
 //! ### Valid
@@ -46,17 +58,21 @@
 //! export default {}                      // default inheritance, unstated
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+mod options;
+mod template;
+#[cfg(test)]
+mod tests;
+
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
-use oxc_ast::ast::{
-    Argument, BindingPattern, BooleanLiteral, CallExpression, ExportDefaultDeclarationKind,
-    Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
-};
-use vize_carton::FxHashMap;
+use oxc_ast::ast::{BooleanLiteral, Program};
+
+use self::options::{InheritAttrs, declared_inherit_attrs};
+use self::template::{AttrsSpread, root_attrs_spread};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-duplicate-attr-inheritance",
-    description: "Flag an explicit `inheritAttrs: true` option as redundant (true is the default)",
+    description: "Flag a component that applies its fallthrough attributes twice",
     default_severity: Severity::Warning,
 };
 
@@ -66,7 +82,14 @@ const HELP: &str = "Remove `inheritAttrs: true`: attribute inheritance is alread
      Keep this option only to opt out with `inheritAttrs: false` (for example when forwarding \
      `$attrs` manually with `v-bind=\"$attrs\"`).";
 
-/// Flag an explicit `inheritAttrs: true` component option as redundant.
+const SPREAD_MESSAGE: &str = "`v-bind=\"$attrs\"` on the root element applies the fallthrough \
+     attributes twice, because `inheritAttrs` defaults to true.";
+const SPREAD_LABEL: &str = "attributes applied twice";
+const SPREAD_HELP: &str = "Opt out of the automatic inheritance so only this `v-bind` applies \
+     them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the \
+     component options.";
+
+/// Flag a component that applies its fallthrough attributes twice.
 pub struct NoDuplicateAttrInheritance;
 
 impl ScriptRule for NoDuplicateAttrInheritance {
@@ -80,30 +103,65 @@ impl ScriptRule for NoDuplicateAttrInheritance {
     }
 
     #[inline]
+    fn uses_template_ast(&self) -> bool {
+        true
+    }
+
     fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        // Keep the parse-owning `check` path functional: without SFC context
+        // only the explicit-`true` half is observable.
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
+    }
+
+    fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
         _source: &str,
         offset: usize,
+        sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
-        // Options API: `export default {...}` / `defineComponent({...})` / an
-        // identifier bound to an options object.
-        if let Some(options) = find_component_options(program)
-            && let Some(literal) = inherit_attrs_true_literal(options)
-        {
-            report(literal, offset, result);
+        let mut stated = false;
+        for declared in declared_inherit_attrs(program) {
+            stated = true;
+            if let InheritAttrs::Literal(literal) = declared
+                && literal.value
+            {
+                report_redundant_true(literal, offset, result);
+            }
         }
+        // The template half only speaks about the *implicit* default. An
+        // explicit `true` was just reported at the more actionable location, an
+        // explicit `false` is the intended opt-out, and an opaque value is
+        // unknowable — all three are done here.
+        if stated {
+            return;
+        }
+        check_template(sfc, result);
+    }
+}
 
-        // `<script setup>`: `defineOptions({ inheritAttrs: true })`.
-        if let Some(literal) = define_options_inherit_attrs_true(program) {
-            report(literal, offset, result);
-        }
+/// The template half: a root `v-bind="$attrs"` with `inheritAttrs` left default.
+fn check_template(sfc: SfcScriptContext<'_>, result: &mut ScriptLintResult) {
+    if !sfc.sole_script_block {
+        return;
+    }
+    let Some((root, template_offset)) = sfc.template_ast() else {
+        return;
+    };
+    if let Some(spread) = root_attrs_spread(root) {
+        report_attrs_spread(&spread, template_offset, result);
     }
 }
 
 /// Report the redundant `inheritAttrs: true` boolean literal.
-fn report(literal: &BooleanLiteral, offset: usize, result: &mut ScriptLintResult) {
+fn report_redundant_true(literal: &BooleanLiteral, offset: usize, result: &mut ScriptLintResult) {
     let start = offset as u32 + literal.span.start;
     let end = offset as u32 + literal.span.end;
     result.add_diagnostic(
@@ -113,168 +171,13 @@ fn report(literal: &BooleanLiteral, offset: usize, result: &mut ScriptLintResult
     );
 }
 
-/// The `true` boolean literal of an `inheritAttrs: true` property, if present.
-///
-/// Only a literal `true` is flagged; `inheritAttrs: false`, a computed key, a
-/// shorthand, or any non-boolean-literal value (an identifier, a call, ...) is
-/// left alone so the rule never guesses at a value it cannot see.
-fn inherit_attrs_true_literal<'a>(options: &'a ObjectExpression<'a>) -> Option<&'a BooleanLiteral> {
-    for property in &options.properties {
-        let ObjectPropertyKind::ObjectProperty(property) = property else {
-            continue;
-        };
-        if property.computed {
-            continue;
-        }
-        if !matches!(property_key_name(&property.key), Some("inheritAttrs")) {
-            continue;
-        }
-        if let Expression::BooleanLiteral(literal) = &property.value
-            && literal.value
-        {
-            return Some(literal);
-        }
-    }
-    None
+/// Report the root `v-bind="$attrs"`, at its location in the template.
+fn report_attrs_spread(spread: &AttrsSpread, template_offset: u32, result: &mut ScriptLintResult) {
+    let start = template_offset + spread.start;
+    let end = template_offset + spread.end;
+    result.add_diagnostic(
+        LintDiagnostic::warn(META.name, SPREAD_MESSAGE, start, end)
+            .with_label(SPREAD_LABEL, start, end)
+            .with_help(SPREAD_HELP),
+    );
 }
-
-/// The `inheritAttrs: true` literal from a top-level
-/// `defineOptions({ inheritAttrs: true })` call, when one is cleanly reachable.
-fn define_options_inherit_attrs_true<'a>(program: &'a Program<'a>) -> Option<&'a BooleanLiteral> {
-    for statement in program.body.iter() {
-        let Statement::ExpressionStatement(expression) = statement else {
-            continue;
-        };
-        let Expression::CallExpression(call) = &expression.expression else {
-            continue;
-        };
-        let Expression::Identifier(callee) = &call.callee else {
-            continue;
-        };
-        if !matches!(callee.name.as_str(), "defineOptions") {
-            continue;
-        }
-        if let Some(Argument::ObjectExpression(object)) = call.arguments.first() {
-            return inherit_attrs_true_literal(object);
-        }
-    }
-    None
-}
-
-fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
-    match key {
-        PropertyKey::StaticIdentifier(id) => Some(id.name.as_str()),
-        PropertyKey::StringLiteral(string) => Some(string.value.as_str()),
-        _ => None,
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Component options resolution (export default / defineComponent).
-//
-// Mirrors the resolution in `component_options_name_casing` / `no_dupe_keys`: a
-// plain object, an identifier bound to one, or a `defineComponent(...)` wrapper,
-// optionally through TS expression wrappers.
-// ---------------------------------------------------------------------------
-
-fn find_component_options<'a>(program: &'a Program<'a>) -> Option<&'a ObjectExpression<'a>> {
-    let mut bindings: FxHashMap<&'a str, &'a ObjectExpression<'a>> = FxHashMap::default();
-
-    for statement in program.body.iter() {
-        let Statement::VariableDeclaration(declaration) = statement else {
-            continue;
-        };
-        for declarator in &declaration.declarations {
-            let Some(init) = declarator.init.as_ref() else {
-                continue;
-            };
-            if let BindingPattern::BindingIdentifier(id) = &declarator.id
-                && let Some(object) = options_from_expression(init, &bindings)
-            {
-                bindings.insert(id.name.as_str(), object);
-            }
-        }
-    }
-
-    for statement in program.body.iter() {
-        let Statement::ExportDefaultDeclaration(export) = statement else {
-            continue;
-        };
-        if let Some(object) = options_from_export(&export.declaration, &bindings) {
-            return Some(object);
-        }
-    }
-
-    None
-}
-
-fn options_from_export<'a>(
-    declaration: &'a ExportDefaultDeclarationKind<'a>,
-    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
-) -> Option<&'a ObjectExpression<'a>> {
-    match declaration {
-        ExportDefaultDeclarationKind::ObjectExpression(object) => Some(object),
-        ExportDefaultDeclarationKind::CallExpression(call) => options_from_call(call, bindings),
-        ExportDefaultDeclarationKind::Identifier(identifier) => {
-            bindings.get(identifier.name.as_str()).copied()
-        }
-        ExportDefaultDeclarationKind::ParenthesizedExpression(paren) => {
-            options_from_expression(&paren.expression, bindings)
-        }
-        ExportDefaultDeclarationKind::TSAsExpression(ts_as) => {
-            options_from_expression(&ts_as.expression, bindings)
-        }
-        ExportDefaultDeclarationKind::TSSatisfiesExpression(ts_satisfies) => {
-            options_from_expression(&ts_satisfies.expression, bindings)
-        }
-        ExportDefaultDeclarationKind::TSNonNullExpression(ts_non_null) => {
-            options_from_expression(&ts_non_null.expression, bindings)
-        }
-        _ => None,
-    }
-}
-
-fn options_from_expression<'a>(
-    expression: &'a Expression<'a>,
-    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
-) -> Option<&'a ObjectExpression<'a>> {
-    match expression {
-        Expression::ObjectExpression(object) => Some(object),
-        Expression::CallExpression(call) => options_from_call(call, bindings),
-        Expression::Identifier(identifier) => bindings.get(identifier.name.as_str()).copied(),
-        Expression::ParenthesizedExpression(paren) => {
-            options_from_expression(&paren.expression, bindings)
-        }
-        Expression::TSAsExpression(ts_as) => options_from_expression(&ts_as.expression, bindings),
-        Expression::TSSatisfiesExpression(ts_satisfies) => {
-            options_from_expression(&ts_satisfies.expression, bindings)
-        }
-        Expression::TSNonNullExpression(ts_non_null) => {
-            options_from_expression(&ts_non_null.expression, bindings)
-        }
-        _ => None,
-    }
-}
-
-fn options_from_call<'a>(
-    call: &'a CallExpression<'a>,
-    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
-) -> Option<&'a ObjectExpression<'a>> {
-    let Expression::Identifier(callee) = &call.callee else {
-        return None;
-    };
-    if !matches!(callee.name.as_str(), "defineComponent" | "_defineComponent") {
-        return None;
-    }
-    match call.arguments.first()? {
-        Argument::ObjectExpression(object) => Some(object),
-        Argument::Identifier(identifier) => bindings.get(identifier.name.as_str()).copied(),
-        argument => argument
-            .as_expression()
-            .and_then(|expression| options_from_expression(expression, bindings)),
-    }
-}
-
-#[cfg(test)]
-#[path = "no_duplicate_attr_inheritance_tests.rs"]
-mod tests;

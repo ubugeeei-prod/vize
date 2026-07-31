@@ -1,5 +1,5 @@
 ---
-source: crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs
+source: crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance/tests.rs
 expression: result.diagnostics
 ---
 [

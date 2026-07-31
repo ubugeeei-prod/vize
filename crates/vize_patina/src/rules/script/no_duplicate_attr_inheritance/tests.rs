@@ -1,10 +1,44 @@
 use super::NoDuplicateAttrInheritance;
+use crate::diagnostic::Severity;
+use crate::linter::{LintResult, Linter};
 use crate::rules::script::ScriptLinter;
+
+// Template-half tests (#3414 C) live in the `template` submodule.
+mod template;
 
 fn create_linter() -> ScriptLinter {
     let mut linter = ScriptLinter::new();
     linter.add_rule(Box::new(NoDuplicateAttrInheritance));
     linter
+}
+
+/// Lint a full SFC end-to-end with only this rule enabled, exercising the
+/// engine path that supplies the parsed `<template>` AST to the rule.
+fn lint_sfc(sfc: &str) -> LintResult {
+    Linter::new()
+        .with_enabled_rules(Some(vec!["script/no-duplicate-attr-inheritance".into()]))
+        .lint_sfc(sfc, "Probe.vue")
+}
+
+/// The full identity of every finding: rule, severity, byte range, message.
+fn findings(result: &LintResult) -> Vec<(&'static str, Severity, u32, u32, &str)> {
+    result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| {
+            (
+                diagnostic.rule_name,
+                diagnostic.severity,
+                diagnostic.start,
+                diagnostic.end,
+                diagnostic.message.as_str(),
+            )
+        })
+        .collect()
+}
+
+fn none() -> Vec<(&'static str, Severity, u32, u32, &'static str)> {
+    Vec::new()
 }
 
 #[test]

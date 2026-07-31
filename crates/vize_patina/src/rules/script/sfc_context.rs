@@ -54,6 +54,20 @@ pub struct SfcScriptContext<'a> {
     /// Byte offset of the `<template>` content inside the SFC source, for
     /// reporting at a template location.
     pub template_offset: Option<u32>,
+    /// Whether the block being linted is the SFC's **only** script block.
+    ///
+    /// A rule whose conclusion is a property of the whole file rather than of
+    /// one block has to be careful with an SFC carrying both `<script>` and
+    /// `<script setup>`: it is invoked once per block, each invocation sees
+    /// only half the script surface, so a conclusion drawn there would be both
+    /// wrong (an option declared in the sibling block is invisible — a
+    /// `<script> export default { inheritAttrs: false }` next to a
+    /// `<script setup>`) and doubled (both invocations would report it). Such
+    /// a rule reports only when this is `true`.
+    ///
+    /// `false` in the `Default` value: a standalone script has no template to
+    /// correlate with, so no whole-file conclusion is available there either.
+    pub sole_script_block: bool,
 }
 
 impl<'a> SfcScriptContext<'a> {
