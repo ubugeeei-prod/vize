@@ -7,7 +7,13 @@ use std::path::{Path, PathBuf};
 
 use vize_carton::{FxHashSet, String as CompactString, ToCompactString, cstr};
 
+use crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL;
+
 use super::{VirtualProject, build::mirrored_virtual_path};
+
+#[path = "passthrough_resolution.rs"]
+mod resolution;
+use resolution::resolve_relative_passthrough_module;
 
 impl VirtualProject {
     pub(super) fn javascript_passthrough_files(&self) -> impl Iterator<Item = &Path> {
@@ -34,26 +40,51 @@ pub(super) fn collect_passthrough_modules(
         let Some(original_path) = resolve_relative_passthrough_module(dir, &specifier) else {
             continue;
         };
-        let Ok(virtual_path) = mirrored_virtual_path(project_root, virtual_root, &original_path)
-        else {
-            continue;
-        };
         let declaration_path = adjacent_declaration_path(&original_path);
-        if seen.insert(virtual_path.clone()) {
-            files.push((virtual_path, original_path));
-        }
-        if let Some(declaration_path) = declaration_path {
-            let Ok(virtual_path) =
-                mirrored_virtual_path(project_root, virtual_root, &declaration_path)
-            else {
-                continue;
-            };
-            if seen.insert(virtual_path.clone()) {
-                files.push((virtual_path, declaration_path));
+        for original_path in std::iter::once(original_path).chain(declaration_path) {
+            let virtual_path = authored_collision_alias(
+                dir,
+                &specifier,
+                &original_path,
+                project_root,
+                virtual_root,
+            )
+            .or_else(|| mirrored_virtual_path(project_root, virtual_root, &original_path).ok());
+            if let Some(virtual_path) = virtual_path
+                && seen.insert(virtual_path.clone())
+            {
+                files.push((virtual_path, original_path));
             }
         }
     }
     files
+}
+
+fn authored_collision_alias(
+    dir: &Path,
+    specifier: &str,
+    original: &Path,
+    project_root: &Path,
+    virtual_root: &Path,
+) -> Option<PathBuf> {
+    let suffix = specifier
+        .strip_suffix(".vue.tsx")
+        .or_else(|| specifier.strip_suffix(".vue.ts"))?;
+    let sfc = dir.join(cstr!("{suffix}.vue").as_str());
+    if !sfc.is_file() {
+        return None;
+    }
+    let name = original.file_name()?.to_str()?;
+    let extension = if name.ends_with(".d.ts") {
+        "d.ts"
+    } else {
+        original.extension()?.to_str()?
+    };
+    let base = dir.join(specifier);
+    let parent = normalize_existing_path(base.parent()?);
+    let name = base.file_name()?.to_str()?;
+    let alias = parent.join(cstr!("{name}{AUTHORED_VUE_TS_ALIAS_SENTINEL}.{extension}").as_str());
+    mirrored_virtual_path(project_root, virtual_root, &alias).ok()
 }
 
 fn extract_relative_module_specifiers(source: &str) -> Vec<CompactString> {
@@ -124,45 +155,6 @@ fn is_identifier_byte(byte: u8) -> bool {
 
 fn is_relative_specifier(specifier: &str) -> bool {
     specifier.starts_with("./") || specifier.starts_with("../")
-}
-
-const PASSTHROUGH_EXTENSIONS: &[&str] = &["js", "jsx", "mjs", "cjs", "json"];
-
-fn resolve_relative_passthrough_module(dir: &Path, specifier: &str) -> Option<PathBuf> {
-    let base = dir.join(specifier);
-
-    if specifier_has_passthrough_extension(specifier) && base.is_file() {
-        return Some(normalize_existing_path(&base));
-    }
-
-    for extension in PASSTHROUGH_EXTENSIONS {
-        let candidate = append_extension(&base, extension);
-        if candidate.is_file() {
-            return Some(normalize_existing_path(&candidate));
-        }
-    }
-
-    for extension in PASSTHROUGH_EXTENSIONS {
-        let candidate = base.join(cstr!("index.{extension}").as_str());
-        if candidate.is_file() {
-            return Some(normalize_existing_path(&candidate));
-        }
-    }
-
-    None
-}
-
-fn append_extension(base: &Path, extension: &str) -> PathBuf {
-    match base.file_name().and_then(|name| name.to_str()) {
-        Some(name) => base.with_file_name(cstr!("{name}.{extension}")),
-        None => base.to_path_buf(),
-    }
-}
-
-fn specifier_has_passthrough_extension(specifier: &str) -> bool {
-    PASSTHROUGH_EXTENSIONS
-        .iter()
-        .any(|extension| specifier.ends_with(cstr!(".{extension}").as_str()))
 }
 
 fn normalize_existing_path(path: &Path) -> PathBuf {

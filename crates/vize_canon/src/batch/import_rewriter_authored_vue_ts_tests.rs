@@ -1,7 +1,9 @@
 use oxc_span::SourceType;
 use tempfile::TempDir;
 
-use super::{AUTHORED_VUE_TS_SENTINEL, import_rewriter::ImportRewriter};
+use super::{
+    AUTHORED_VUE_TS_ALIAS_SENTINEL, AUTHORED_VUE_TS_SENTINEL, import_rewriter::ImportRewriter,
+};
 
 #[test]
 fn authored_vue_ts_specifiers_cannot_resolve_generated_mirrors() {
@@ -68,26 +70,17 @@ fn authored_vue_ts_specifiers_cannot_resolve_generated_mirrors() {
     let expected = format!(
         "import './Mirror.vue.ts{AUTHORED_VUE_TS_SENTINEL}';\n\
          import './MirrorJsx.vue.tsx{AUTHORED_VUE_TS_SENTINEL}';\n\
-         import './Real.vue.ts';\n\
-         import './RealJsx.vue.tsx';\n\
-         import './Directory.vue.ts';\n\
-         import './Declaration.vue.ts';\n\
-         import './Runtime.vue.ts';\n\
-         import './FullDeclaration.vue.ts';\n\
-         import './FullSource.vue.ts';\n\
+         import './Real.vue.ts{AUTHORED_VUE_TS_ALIAS_SENTINEL}';\n\
+         import './RealJsx.vue.tsx{AUTHORED_VUE_TS_ALIAS_SENTINEL}';\n\
+         import './Directory.vue.ts{AUTHORED_VUE_TS_ALIAS_SENTINEL}';\n\
+         import './Declaration.vue.ts{AUTHORED_VUE_TS_ALIAS_SENTINEL}';\n\
+         import './Runtime.vue.ts{AUTHORED_VUE_TS_ALIAS_SENTINEL}';\n\
+         import './FullDeclaration.vue.ts{AUTHORED_VUE_TS_ALIAS_SENTINEL}';\n\
+         import './FullSource.vue.ts{AUTHORED_VUE_TS_ALIAS_SENTINEL}';\n\
          import '@/Alias.vue.ts';\n\
          import '{absent_absolute}{AUTHORED_VUE_TS_SENTINEL}';\n\
          import './Generated.vue.ts';\n"
     );
-    let full_declaration = source_dir
-        .join("FullDeclaration.vue.ts")
-        .to_string_lossy()
-        .replace('\\', "/");
-    let virtual_expected = expected.replace(
-        "import './FullDeclaration.vue.ts';",
-        &format!("import '{full_declaration}';"),
-    );
-
     let rewriter = ImportRewriter::new();
     assert_eq!(
         rewriter
@@ -104,7 +97,7 @@ fn authored_vue_ts_specifiers_cannot_resolve_generated_mirrors() {
                 Some(&source_dir),
             )
             .code,
-        virtual_expected
+        expected
     );
 
     // Callers without an authored directory cannot prove that a relative

@@ -5,6 +5,7 @@ use vize_carton::{String, ToCompactString, cstr};
 /// Suffix added to an unresolved authored `.vue.ts`/`.vue.tsx` import so
 /// TypeScript cannot accidentally resolve the generated SFC mirror.
 pub(crate) const AUTHORED_VUE_TS_SENTINEL: &str = "/__vize_authored_vue_ts__";
+pub(crate) const AUTHORED_VUE_TS_ALIAS_SENTINEL: &str = ".__vize_authored_vue_ts_alias__";
 
 const QUOTE_PAIRS: [(char, char); 3] = [('\'', '\''), ('"', '"'), ('\u{2018}', '\u{2019}')];
 
@@ -37,10 +38,12 @@ pub fn restore_virtual_vue_specifiers(message: &str, authored_source: &str) -> S
 }
 
 fn authored_specifier(reported: &str) -> Option<&str> {
-    if let Some(authored) = reported.strip_suffix(AUTHORED_VUE_TS_SENTINEL)
-        && (authored.ends_with(".vue.ts") || authored.ends_with(".vue.tsx"))
-    {
-        return Some(authored);
+    for marker in [AUTHORED_VUE_TS_SENTINEL, AUTHORED_VUE_TS_ALIAS_SENTINEL] {
+        if let Some(authored) = reported.strip_suffix(marker)
+            && (authored.ends_with(".vue.ts") || authored.ends_with(".vue.tsx"))
+        {
+            return Some(authored);
+        }
     }
     reported
         .strip_suffix(".ts")
@@ -76,19 +79,23 @@ fn is_specifier_shaped(candidate: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{AUTHORED_VUE_TS_SENTINEL, restore_virtual_vue_specifiers};
+    use super::{
+        AUTHORED_VUE_TS_ALIAS_SENTINEL, AUTHORED_VUE_TS_SENTINEL, restore_virtual_vue_specifiers,
+    };
 
     #[test]
     fn restores_generated_mirrors_and_authored_collision_markers() {
         let marker = AUTHORED_VUE_TS_SENTINEL;
-        let message =
-            format!("Module '\"./Panel.vue.ts\"' failed; cannot find '../Missing.vue.ts{marker}'.");
+        let alias = AUTHORED_VUE_TS_ALIAS_SENTINEL;
+        let message = format!(
+            "Module '\"./Panel.vue.ts\"' failed; cannot find '../Missing.vue.ts{marker}' or './Typed.vue.ts{alias}'."
+        );
         assert_eq!(
             restore_virtual_vue_specifiers(
                 &message,
                 "import './Panel.vue'; import '../Missing.vue.ts'"
             ),
-            "Module '\"./Panel.vue\"' failed; cannot find '../Missing.vue.ts'."
+            "Module '\"./Panel.vue\"' failed; cannot find '../Missing.vue.ts' or './Typed.vue.ts'."
         );
     }
 

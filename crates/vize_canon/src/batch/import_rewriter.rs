@@ -8,11 +8,11 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString, cstr};
 
-use super::AUTHORED_VUE_TS_SENTINEL;
+use super::{AUTHORED_VUE_TS_ALIAS_SENTINEL, AUTHORED_VUE_TS_SENTINEL};
 
 #[path = "import_rewriter_authored_vue_ts.rs"]
 mod authored_vue_ts;
-use authored_vue_ts::unresolved_authored_vue_ts_collides_with_sfc;
+use authored_vue_ts::{VueTsCollision, authored_vue_ts_collides_with_sfc};
 
 #[path = "import_rewriter_collect.rs"]
 mod collect;
@@ -240,8 +240,12 @@ impl ImportRewriter {
     }
 
     fn rewrite_module_specifier(&self, path: &str, source_dir: Option<&Path>) -> Option<String> {
-        if unresolved_authored_vue_ts_collides_with_sfc(path, source_dir) {
-            return Some(cstr!("{path}{AUTHORED_VUE_TS_SENTINEL}"));
+        if let Some(collision) = authored_vue_ts_collides_with_sfc(path, source_dir) {
+            let marker = match collision {
+                VueTsCollision::Unresolved => AUTHORED_VUE_TS_SENTINEL,
+                VueTsCollision::Authored => AUTHORED_VUE_TS_ALIAS_SENTINEL,
+            };
+            return Some(cstr!("{path}{marker}"));
         }
         if is_rewritable_vue_specifier(path) {
             Some(cstr!("{path}.ts"))
@@ -256,8 +260,12 @@ impl ImportRewriter {
         roots: (&std::path::Path, &std::path::Path),
         source_dir: Option<&std::path::Path>,
     ) -> Option<String> {
-        if unresolved_authored_vue_ts_collides_with_sfc(path, source_dir) {
-            return Some(cstr!("{path}{AUTHORED_VUE_TS_SENTINEL}"));
+        if let Some(collision) = authored_vue_ts_collides_with_sfc(path, source_dir) {
+            let marker = match collision {
+                VueTsCollision::Unresolved => AUTHORED_VUE_TS_SENTINEL,
+                VueTsCollision::Authored => AUTHORED_VUE_TS_ALIAS_SENTINEL,
+            };
+            return Some(cstr!("{path}{marker}"));
         }
         if let Some(source_dir) = source_dir
             && let Some(rewritten) = rewrite_relative_dts_specifier(path, source_dir, roots.0)

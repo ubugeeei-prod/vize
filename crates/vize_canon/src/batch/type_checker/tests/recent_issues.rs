@@ -7,6 +7,7 @@ mod native_prop_anchors;
 mod sequence_prop_expressions;
 mod spread_props;
 mod spread_scope_bindings;
+mod ts_extension_substitution;
 
 #[test]
 fn issue_2645_infers_generic_sfc_props_in_tsx() {

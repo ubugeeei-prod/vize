@@ -45,7 +45,9 @@ pub use virtual_project::{
 pub use virtual_specifier_message::restore_virtual_vue_specifiers;
 pub use virtual_ts::VirtualTsGenerator;
 
-pub(crate) use virtual_specifier_message::AUTHORED_VUE_TS_SENTINEL;
+pub(crate) use virtual_specifier_message::{
+    AUTHORED_VUE_TS_ALIAS_SENTINEL, AUTHORED_VUE_TS_SENTINEL,
+};
 
 use vize_carton::String;
 
