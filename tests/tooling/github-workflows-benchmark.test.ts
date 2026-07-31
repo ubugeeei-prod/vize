@@ -25,11 +25,11 @@ test("benchmark workflow comments from trusted code after a read-only benchmark 
   assert.match(benchmarkJob, /path:\s*base[\s\S]*ref:\s*\$\{\{\s*env\.BENCHMARK_BASE_SHA\s*\}\}/);
   assert.match(
     workflow,
-    /BENCHMARK_HEAD_SHA:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch' && inputs\.head_sha \|\| github\.event\.pull_request\.head\.sha\s*\}\}/,
+    /BENCHMARK_HEAD_SHA:\s*\$\{\{[^\n]*github\.event_name == 'workflow_dispatch' && inputs\.head_sha \|\| github\.event\.pull_request\.head\.sha\s*\}\}/,
   );
   assert.match(
     workflow,
-    /BENCHMARK_BASE_SHA:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch' && inputs\.base_sha \|\| github\.event\.pull_request\.base\.sha\s*\}\}/,
+    /BENCHMARK_BASE_SHA:\s*\$\{\{[^\n]*github\.event_name == 'workflow_dispatch' && inputs\.base_sha \|\| github\.event\.pull_request\.base\.sha\s*\}\}/,
   );
   assert.match(benchmarkJob, /name:\s*pr-benchmark/);
   assert.doesNotMatch(benchmarkJob, /node base\/bench\/comment-pr\.mjs/);
@@ -86,7 +86,7 @@ test("benchmark dispatch validates exact SHA evidence and runs the existing budg
   const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
   const budgetJob = workflowJobBody(workflow, "pr-benchmark-budget");
   const commentJob = workflowJobBody(workflow, "pr-benchmark-comment");
-  const validateDispatchStep = workflowStepBody(benchmarkJob, "Validate dispatch SHAs");
+  const validateDispatchStep = workflowStepBody(benchmarkJob, "Validate benchmark SHAs");
   const checkoutHeadStep = workflowStepBody(benchmarkJob, "Checkout head");
   const checkBaseStep = workflowStepBody(benchmarkJob, "Check base checkout");
 
@@ -105,13 +105,10 @@ test("benchmark dispatch validates exact SHA evidence and runs the existing budg
     /group:[^\n]*dispatch-\{0\}-\{1\}[^\n]*inputs\.base_sha[^\n]*inputs\.head_sha/,
   );
   assert.match(workflow, /group:[^\n]*\|\| github\.event\.pull_request\.number[^\n]*\}\}/);
-  assert.match(workflow, /head_sha from the branch or tag/);
-  assert.match(workflow, /passed via --ref, not from a later checkout/);
+  assert.match(workflow, /head SHA from --ref/);
+  assert.match(workflow, /validation rejects mismatches/);
 
-  assert.match(
-    validateDispatchStep,
-    /if:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch'\s*\}\}/,
-  );
+  assert.match(validateDispatchStep, /if:\s*\$\{\{\s*github\.event_name != 'pull_request'\s*\}\}/);
   assert.match(validateDispatchStep, /full_sha='\^\[0-9a-f\]\{40\}\$'/);
   assert.match(validateDispatchStep, /! "\$BENCHMARK_BASE_SHA" =~ \$full_sha/);
   assert.match(validateDispatchStep, /! "\$BENCHMARK_HEAD_SHA" =~ \$full_sha/);
@@ -119,14 +116,13 @@ test("benchmark dispatch validates exact SHA evidence and runs the existing budg
   assert.match(validateDispatchStep, /base_sha must differ from head_sha/);
   assert.match(validateDispatchStep, /RUN_HEAD_SHA:\s*\$\{\{\s*github\.sha\s*\}\}/);
   assert.match(validateDispatchStep, /"\$RUN_HEAD_SHA" != "\$BENCHMARK_HEAD_SHA"/);
-  assert.match(validateDispatchStep, /run head_sha comes from --ref/);
-  assert.match(validateDispatchStep, /dispatch with a branch or tag/);
+  assert.match(validateDispatchStep, /run head_sha must match/);
   assert.match(
     checkoutHeadStep,
-    /fetch-depth:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch' && '0' \|\| '1'\s*\}\}/,
+    /fetch-depth:\s*\$\{\{\s*github\.event_name != 'pull_request' && '0' \|\| '1'\s*\}\}/,
   );
   assert.match(checkBaseStep, /EVENT_NAME:\s*\$\{\{\s*github\.event_name\s*\}\}/);
-  assert.match(checkBaseStep, /"\$EVENT_NAME" == "workflow_dispatch"/);
+  assert.match(checkBaseStep, /"\$EVENT_NAME" != "pull_request"/);
   assert.match(checkBaseStep, /merge-base --is-ancestor "\$BASE_SHA" "\$HEAD_SHA"/);
   assert.match(checkBaseStep, /base_sha must be an ancestor of head_sha/);
 
@@ -140,6 +136,44 @@ test("benchmark dispatch validates exact SHA evidence and runs the existing budg
   assert.match(budgetJob, /--labels-json "\$PR_LABELS_JSON"/);
   assert.match(budgetJob, /\|\| '\[\]'/);
   assert.doesNotMatch(commentJob, /github\.event_name == 'workflow_dispatch'/);
+});
+
+test("benchmark schedule gates long-term drift against a fixed commit", () => {
+  const workflow = readRepoFile(".github", "workflows", "benchmark.yml");
+  const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
+  const budgetJob = workflowJobBody(workflow, "pr-benchmark-budget");
+  const commentJob = workflowJobBody(workflow, "pr-benchmark-comment");
+  const validateStep = workflowStepBody(benchmarkJob, "Validate benchmark SHAs");
+  const checkoutHeadStep = workflowStepBody(benchmarkJob, "Checkout head");
+  const checkBaseStep = workflowStepBody(benchmarkJob, "Check base checkout");
+
+  assert.match(workflow, /\n  schedule:\n\s+- cron:\s*"29 5 \* \* 2"/);
+  assert.match(
+    workflow,
+    /BENCHMARK_BASE_SHA:\s*\$\{\{\s*github\.event_name == 'schedule' && '[0-9a-f]{40}' \|\| github\.event_name == 'workflow_dispatch'/,
+  );
+  const baseline = workflow.match(/github\.event_name == 'schedule' && '([0-9a-f]{40})'/)?.[1];
+  assert.ok(baseline, "missing exact scheduled benchmark baseline");
+  assert.equal(workflow.split(baseline).length - 1, 1, "baseline must have one refresh point");
+  assert.match(
+    workflow,
+    /BENCHMARK_HEAD_SHA:\s*\$\{\{\s*github\.event_name == 'schedule' && github\.sha \|\| github\.event_name == 'workflow_dispatch'/,
+  );
+  assert.match(validateStep, /github\.event_name != 'pull_request'/);
+  assert.match(checkoutHeadStep, /github\.event_name != 'pull_request' && '0' \|\| '1'/);
+  assert.match(checkBaseStep, /"\$EVENT_NAME" != "pull_request"/);
+  assert.match(checkBaseStep, /merge-base --is-ancestor "\$BASE_SHA" "\$HEAD_SHA"/);
+
+  // Scheduled runs cannot opt out of a missing or unbuildable baseline: the
+  // label reader is PR-only and every other event supplies an empty label set.
+  const budgetHeader = budgetJob.slice(0, budgetJob.indexOf("\n    steps:"));
+  assert.doesNotMatch(budgetHeader, /\n    if:/, "scheduled budget must always run");
+  assert.match(budgetJob, /if:\s*\$\{\{\s*github\.event_name == 'pull_request'\s*\}\}/);
+  assert.match(
+    budgetJob,
+    /github\.event_name == 'pull_request' && steps\.pr-labels\.outputs\.labels \|\| '\[\]'/,
+  );
+  assert.doesNotMatch(commentJob, /github\.event_name == 'schedule'/);
 });
 
 test("tool benchmark workflow produces docs artifacts, PR comments, and conventional commits", () => {

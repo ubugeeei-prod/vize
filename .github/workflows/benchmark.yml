@@ -1,13 +1,14 @@
 name: Benchmark
 
 on:
+  schedule:
+    - cron: "29 5 * * 2"
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
-  # GitHub records a workflow_dispatch run's head_sha from the branch or tag
-  # passed via --ref, not from a later checkout. Dispatch with a ref whose tip
-  # is exactly head_sha; the first step rejects mismatches so release evidence
-  # cannot be attributed to the wrong commit.
+  # The schedule compares main against the exact SHA below until a reviewed PR
+  # deliberately refreshes it. Dispatch runs keep accepting an explicit range;
+  # GitHub records their head SHA from --ref, so validation rejects mismatches.
   workflow_dispatch:
     inputs:
       base_sha:
@@ -19,17 +20,17 @@ on:
         required: true
         type: string
 
-run-name: "Benchmark ${{ github.event_name == 'workflow_dispatch' && format('{0}...{1}', inputs.base_sha, inputs.head_sha) || format('PR #{0}', github.event.pull_request.number) }}"
+run-name: "Benchmark ${{ github.event_name == 'schedule' && format('long baseline...{0}', github.sha) || github.event_name == 'workflow_dispatch' && format('{0}...{1}', inputs.base_sha, inputs.head_sha) || format('PR #{0}', github.event.pull_request.number) }}"
 
 concurrency:
-  group: benchmark-${{ github.event_name == 'workflow_dispatch' && format('dispatch-{0}-{1}', inputs.base_sha, inputs.head_sha) || github.event.pull_request.number }}
+  group: benchmark-${{ github.event_name == 'schedule' && 'long-baseline' || github.event_name == 'workflow_dispatch' && format('dispatch-{0}-{1}', inputs.base_sha, inputs.head_sha) || github.event.pull_request.number }}
   cancel-in-progress: true
 
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  BENCHMARK_BASE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.base_sha || github.event.pull_request.base.sha }}
-  BENCHMARK_HEAD_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.head_sha || github.event.pull_request.head.sha }}
+  BENCHMARK_BASE_SHA: ${{ github.event_name == 'schedule' && 'cea92c7994b4b84c1e42ed74c023b17c0c54090d' || github.event_name == 'workflow_dispatch' && inputs.base_sha || github.event.pull_request.base.sha }}
+  BENCHMARK_HEAD_SHA: ${{ github.event_name == 'schedule' && github.sha || github.event_name == 'workflow_dispatch' && inputs.head_sha || github.event.pull_request.head.sha }}
   # 1000 files keeps the fastest lane (compile, ~200us/file single-threaded)
   # above ~200ms so runner thermal drift between interleaved runs stays well
   # under the 5% threshold; at 300 files the lane ran ~65ms and perf-neutral
@@ -51,8 +52,8 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Validate dispatch SHAs
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+      - name: Validate benchmark SHAs
+        if: ${{ github.event_name != 'pull_request' }}
         env:
           RUN_HEAD_SHA: ${{ github.sha }}
         run: |
@@ -70,7 +71,7 @@ jobs:
             exit 1
           fi
           if [[ "$RUN_HEAD_SHA" != "$BENCHMARK_HEAD_SHA" ]]; then
-            echo "::error title=Dispatch ref mismatch::run head_sha comes from --ref; dispatch with a branch or tag at $BENCHMARK_HEAD_SHA (got $RUN_HEAD_SHA)"
+            echo "::error title=Workflow ref mismatch::run head_sha must match $BENCHMARK_HEAD_SHA (got $RUN_HEAD_SHA)"
             exit 1
           fi
 
@@ -79,7 +80,7 @@ jobs:
         with:
           path: head
           ref: ${{ env.BENCHMARK_HEAD_SHA }}
-          fetch-depth: ${{ github.event_name == 'workflow_dispatch' && '0' || '1' }}
+          fetch-depth: ${{ github.event_name != 'pull_request' && '0' || '1' }}
 
       - name: Checkout base
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -95,7 +96,7 @@ jobs:
           HEAD_SHA: ${{ env.BENCHMARK_HEAD_SHA }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
-          if [[ "$EVENT_NAME" == "workflow_dispatch" ]] && \
+          if [[ "$EVENT_NAME" != "pull_request" ]] && \
              ! git -C "$GITHUB_WORKSPACE/head" merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"; then
             echo "::error title=Invalid benchmark range::base_sha must be an ancestor of head_sha"
             exit 1
