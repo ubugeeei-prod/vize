@@ -180,7 +180,12 @@ test("compat probes without a configured budget accept only exact parity", () =>
   assert.equal(isAcceptedByTypecheckBudget(exactParity, { enabled: false }), true);
   assert.equal(
     isAcceptedByTypecheckBudget(
-      { ...exactParity, documentedDifferenceCount: 1 },
+      {
+        ...exactParity,
+        vizeDiagnosticCount: 1,
+        baselineDiagnosticCount: 1,
+        documentedDifferenceCount: 1,
+      },
       { enabled: false },
     ),
     true,
