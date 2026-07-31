@@ -253,16 +253,19 @@ test("release workflow creates GitHub Releases only after registry publishing su
 test("release workflow requires VS Code Marketplace publication", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const publishJob = workflowJobBody(workflow, "release-vscode-extension");
-  const parsed = parse(workflow) as { jobs?: Record<string, ReleaseJob> };
+  const parsed = parse(workflow) as {
+    env?: Record<string, string | number>;
+    jobs?: Record<string, ReleaseJob>;
+  };
   const publishJobContract = parsed.jobs?.["release-vscode-extension"];
 
   assert.ok(publishJobContract);
   assert.equal(publishJobContract["timeout-minutes"], 30);
   assert.equal(publishJobContract.env?.PUBLISH_RESOLUTION_RETRY_LIMIT, "90");
-  assert.equal(publishJobContract.env?.PUBLISH_RESOLUTION_RETRY_DELAY, "10");
+  assert.equal(parsed.env?.PUBLISH_RESOLUTION_RETRY_DELAY, 10);
 
   assert.match(publishJob, /environment:\s*vscode-marketplace/);
-  assert.match(publishJob, /VSCE_PAT:\s*\$\{\{ secrets\.VSCE_PAT \}\}/);
+  assert.match(publishJob, /VSCE_PAT:\s*"?\$\{\{ secrets\.VSCE_PAT \}\}"?/);
   assert.match(publishJob, /name:\s*Require VS Code Marketplace credentials/);
   assert.match(publishJob, /if \[ -z "\$\{VSCE_PAT:-\}" \]/);
   assert.match(publishJob, /VSCE_PAT is required in the protected vscode-marketplace environment/);
