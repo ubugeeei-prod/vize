@@ -1,6 +1,6 @@
 //! Native HTML attribute completions for template opening tags.
 
-use tower_lsp::lsp_types::CompletionItem;
+use tower_lsp::lsp_types::{CompletionItem, CompletionItemKind};
 
 use crate::ide::completion::items;
 use crate::ide::{IdeContext, is_component_tag};
@@ -21,6 +21,55 @@ pub(super) fn native_element_attribute_completions(ctx: &IdeContext) -> Vec<Comp
     let mut items = common_attribute_completions();
     items.extend(tag_attribute_completions(&tag_ctx.tag_name));
     items
+}
+
+pub(super) fn native_element_attribute_value_completions(
+    tag_name: &str,
+    attribute_name: &str,
+) -> Vec<CompletionItem> {
+    if is_component_tag(tag_name) || attribute_name != "type" {
+        return Vec::new();
+    }
+
+    let values: &[&str] = match tag_name {
+        "button" => &["button", "submit", "reset"],
+        "input" => &[
+            "hidden",
+            "text",
+            "search",
+            "tel",
+            "url",
+            "email",
+            "password",
+            "datetime",
+            "date",
+            "month",
+            "week",
+            "time",
+            "datetime-local",
+            "number",
+            "range",
+            "color",
+            "checkbox",
+            "radio",
+            "file",
+            "submit",
+            "image",
+            "reset",
+            "button",
+        ],
+        _ => return Vec::new(),
+    };
+
+    values
+        .iter()
+        .map(|value| CompletionItem {
+            label: (*value).to_string(),
+            kind: Some(CompletionItemKind::VALUE),
+            insert_text: Some((*value).to_string()),
+            ..Default::default()
+        })
+        .collect()
 }
 
 fn common_attribute_completions() -> Vec<CompletionItem> {

@@ -17,6 +17,7 @@ const label = 'x'
 function pick(n: number) { return n }
 </script>
 <template>
+  <input type= class= />
   <button :title= @click= v-if= type= class= />
 </template>
 "#;
@@ -57,14 +58,57 @@ fn a_bound_attribute_offers_the_template_bindings_right_after_the_equals() {
 }
 
 #[test]
-fn a_plain_html_attribute_offers_nothing_after_the_equals() {
-    // Its value is a literal, not an expression, so the bindings would be
-    // wrong. The set of allowed literals is not modelled (#3484).
-    for marker in ["type=", "class="] {
-        assert_eq!(
-            labels_after(marker),
-            Vec::<String>::new(),
-            "`{marker}` takes a literal, not an expression"
-        );
+fn plain_html_type_values_are_specific_to_the_element() {
+    assert_eq!(
+        labels_after("<button :title= @click= v-if= type="),
+        ["button", "reset", "submit"].map(str::to_string),
+    );
+    assert_eq!(
+        labels_after("<input type="),
+        [
+            "button",
+            "checkbox",
+            "color",
+            "date",
+            "datetime",
+            "datetime-local",
+            "email",
+            "file",
+            "hidden",
+            "image",
+            "month",
+            "number",
+            "password",
+            "radio",
+            "range",
+            "reset",
+            "search",
+            "submit",
+            "tel",
+            "text",
+            "time",
+            "url",
+            "week",
+        ]
+        .map(str::to_string),
+    );
+}
+
+#[test]
+fn literal_valued_attributes_never_offer_template_bindings() {
+    for marker in [
+        "<input type=",
+        "<button :title= @click= v-if= type=",
+        "class=",
+    ] {
+        let labels = labels_after(marker);
+        for binding in ["count", "label", "pick"] {
+            assert!(
+                !labels.iter().any(|label| label == binding),
+                "{marker}: {labels:?}"
+            );
+        }
     }
+
+    assert_eq!(labels_after("class="), Vec::<String>::new());
 }

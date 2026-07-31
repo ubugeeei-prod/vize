@@ -68,9 +68,7 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
                 return if is_expression_valued_attribute(name) {
                     analyzed_template_binding_completions(ctx, true)
                 } else {
-                    // A plain HTML attribute takes a literal, not an
-                    // expression. Its allowed values are not modelled (#3484).
-                    Vec::new()
+                    native::native_element_attribute_value_completions(&tag_ctx.tag_name, name)
                 };
             }
 
