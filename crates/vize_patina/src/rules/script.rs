@@ -56,6 +56,7 @@ mod require_symbol_provide;
 mod require_typed_ref;
 mod return_in_computed_property;
 mod sfc_context;
+mod template_scan;
 mod valid_define_emits;
 mod valid_define_options;
 mod valid_define_props;

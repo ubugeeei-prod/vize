@@ -1,11 +1,47 @@
 use super::NoUseComputedPropertyLikeMethod;
+use crate::diagnostic::Severity;
+use crate::linter::{LintResult, Linter};
 use crate::rules::script::ScriptLinter;
+
+// Template-half tests (#3414 A) live in the `template` submodule.
+mod template;
 
 /// Lint `source` with only this rule enabled and return the error count.
 fn count(source: &str) -> usize {
     let mut linter = ScriptLinter::new();
     linter.add_rule(Box::new(NoUseComputedPropertyLikeMethod));
     linter.lint(source, 0).error_count
+}
+
+/// Lint a full SFC end-to-end with only this rule enabled, exercising the
+/// engine path that supplies the parsed `<template>` AST to the rule.
+fn lint_sfc(sfc: &str) -> LintResult {
+    Linter::new()
+        .with_enabled_rules(Some(vec![
+            "script/no-use-computed-property-like-method".into(),
+        ]))
+        .lint_sfc(sfc, "Probe.vue")
+}
+
+/// The full identity of every finding: rule, severity, byte range, message.
+fn findings(result: &LintResult) -> Vec<(&'static str, Severity, u32, u32, &str)> {
+    result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| {
+            (
+                diagnostic.rule_name,
+                diagnostic.severity,
+                diagnostic.start,
+                diagnostic.end,
+                diagnostic.message.as_str(),
+            )
+        })
+        .collect()
+}
+
+fn none() -> Vec<(&'static str, Severity, u32, u32, &'static str)> {
+    Vec::new()
 }
 
 // Each case is `(source, expected_error_count)`.

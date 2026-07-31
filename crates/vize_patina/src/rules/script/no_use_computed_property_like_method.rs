@@ -7,18 +7,38 @@
 //! parentheses are almost always a mistake for `this.fullName`.
 //!
 //! Port of [`vue/no-use-computed-property-like-method`](https://eslint.vuejs.org/rules/no-use-computed-property-like-method.html),
-//! scoped conservatively to the Options API: only `this.<computedName>(...)`
-//! member calls are flagged, where `<computedName>` is declared in `computed`.
+//! scoped to the Options API: the computed names come from the `computed`
+//! option, and both places they can be called are checked.
+//!
+//! ## Script call sites
+//!
+//! `this.<computedName>(...)` inside a direct member of the options object,
+//! where `this` is the component instance. A non-arrow function nested deeper
+//! rebinds `this`, so calls there are skipped.
+//!
+//! ## Template call sites
+//!
+//! `{{ total() }}`, `:title="total()"`, `@click="total()"` — the template
+//! reaches a computed by bare name, and this is exactly where the mistake is
+//! made, since `{{ total() }}` throws at runtime unless the computed happens to
+//! return a function. Recovering those calls *creates* findings from template
+//! evidence, so they come from the template AST and an oxc parse of each
+//! expression; see [`super::template_scan`] for the over-match analysis and the
+//! shadowing rules.
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+mod computed_names;
+#[cfg(test)]
+mod tests;
+
+use super::template_scan::{TemplateCall, for_each_template_call};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
-use oxc_ast::ast::{
-    Argument, CallExpression, ExportDefaultDeclarationKind, Expression, ObjectExpression,
-    ObjectPropertyKind, Program, PropertyKey, Statement,
-};
+use oxc_ast::ast::{CallExpression, Expression, Program};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::Span;
-use vize_carton::{CompactString, FxHashMap, FxHashSet};
+use vize_carton::{CompactString, FxHashSet};
+
+use self::computed_names::{collect_computed_names, find_component_options};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-use-computed-property-like-method",
@@ -40,11 +60,28 @@ impl ScriptRule for NoUseComputedPropertyLikeMethod {
     }
 
     #[inline]
+    fn uses_template_ast(&self) -> bool {
+        true
+    }
+
     fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        // Keep the parse-owning `check` path functional: without SFC context
+        // only the script call sites are observable.
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
+    }
+
+    fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
         _source: &str,
         offset: usize,
+        sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
         let Some(options) = find_component_options(program) else {
@@ -61,29 +98,32 @@ impl ScriptRule for NoUseComputedPropertyLikeMethod {
             fn_depth: 0,
         };
         visitor.visit_object_expression(options);
+
+        check_template(&computed_names, sfc, result);
     }
 }
 
-/// Collect the names declared in the `computed` option. Only plain
-/// (non-computed-key) properties contribute; spreads like `...mapGetters([..])`
-/// are skipped since their member names are not statically known.
-fn collect_computed_names<'a>(options: &'a ObjectExpression<'a>) -> FxHashSet<CompactString> {
-    let mut names = FxHashSet::default();
-    let Some(computed) = find_computed_object(options) else {
-        return names;
+/// The template half: a bare `computedName(...)` in a template expression.
+fn check_template(
+    computed_names: &FxHashSet<CompactString>,
+    sfc: SfcScriptContext<'_>,
+    result: &mut ScriptLintResult,
+) {
+    let Some((root, template_offset)) = sfc.template_ast() else {
+        return;
     };
-    for property in &computed.properties {
-        let ObjectPropertyKind::ObjectProperty(property) = property else {
-            continue;
-        };
-        if property.computed {
-            continue;
+    for_each_template_call(root, |call: TemplateCall<'_>| {
+        if !computed_names.contains(call.callee) {
+            return;
         }
-        if let Some(name) = property_key_name(&property.key) {
-            names.insert(CompactString::from(name));
-        }
-    }
-    names
+        report(
+            template_offset + call.start,
+            template_offset + call.end,
+            call.callee,
+            TEMPLATE_HELP,
+            result,
+        );
+    });
 }
 
 /// Walks the component and reports `this.<computedName>(...)` member calls.
@@ -128,128 +168,23 @@ impl ComputedCallVisitor<'_> {
     fn report(&mut self, span: Span, name: &str) {
         let start = self.offset as u32 + span.start;
         let end = self.offset as u32 + span.end;
-        let mut message = CompactString::with_capacity(name.len() + 56);
-        message.push_str("'");
-        message.push_str(name);
-        message.push_str("' is a computed property and must not be called like a method.");
-        let diagnostic = LintDiagnostic::error(META.name, message, start, end)
-            .with_label("computed value called as a function", start, end)
-            .with_help(
-                "A computed property exposes a value, not a function. Read it as \
-                 `this.<name>` (drop the call parentheses), or move the logic into a \
-                 `method` if you need to invoke it.",
-            );
-        self.result.add_diagnostic(diagnostic);
+        report(start, end, name, SCRIPT_HELP, self.result);
     }
 }
 
-fn find_computed_object<'a>(options: &'a ObjectExpression<'a>) -> Option<&'a ObjectExpression<'a>> {
-    for property in &options.properties {
-        let ObjectPropertyKind::ObjectProperty(property) = property else {
-            continue;
-        };
-        if property.computed {
-            continue;
-        }
-        if matches!(property_key_name(&property.key), Some("computed"))
-            && let Expression::ObjectExpression(object) = &property.value
-        {
-            return Some(object);
-        }
-    }
-    None
+const SCRIPT_HELP: &str = "A computed property exposes a value, not a function. Read it as \
+     `this.<name>` (drop the call parentheses), or move the logic into a \
+     `method` if you need to invoke it.";
+const TEMPLATE_HELP: &str = "A computed property exposes a value, not a function. Drop the call \
+     parentheses (`{{ name }}`), or move the logic into a `method` if you need to invoke it.";
+
+fn report(start: u32, end: u32, name: &str, help: &'static str, result: &mut ScriptLintResult) {
+    let mut message = CompactString::with_capacity(name.len() + 56);
+    message.push_str("'");
+    message.push_str(name);
+    message.push_str("' is a computed property and must not be called like a method.");
+    let diagnostic = LintDiagnostic::error(META.name, message, start, end)
+        .with_label("computed value called as a function", start, end)
+        .with_help(help);
+    result.add_diagnostic(diagnostic);
 }
-
-fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
-    match key {
-        PropertyKey::StaticIdentifier(id) => Some(id.name.as_str()),
-        PropertyKey::StringLiteral(string) => Some(string.value.as_str()),
-        _ => None,
-    }
-}
-
-// Component options resolution (export default / defineComponent), mirroring
-// `no_side_effects_in_computed`: a plain object, an identifier bound to one, or
-// a `defineComponent(...)` wrapper, optionally through TS expression wrappers.
-fn find_component_options<'a>(program: &'a Program<'a>) -> Option<&'a ObjectExpression<'a>> {
-    let mut bindings: FxHashMap<&'a str, &'a ObjectExpression<'a>> = FxHashMap::default();
-
-    for statement in program.body.iter() {
-        let Statement::VariableDeclaration(declaration) = statement else {
-            continue;
-        };
-        for declarator in &declaration.declarations {
-            let Some(init) = declarator.init.as_ref() else {
-                continue;
-            };
-            if let oxc_ast::ast::BindingPattern::BindingIdentifier(id) = &declarator.id
-                && let Some(object) = options_from_expression(init, &bindings)
-            {
-                bindings.insert(id.name.as_str(), object);
-            }
-        }
-    }
-
-    for statement in program.body.iter() {
-        let Statement::ExportDefaultDeclaration(export) = statement else {
-            continue;
-        };
-        if let Some(object) = options_from_export(&export.declaration, &bindings) {
-            return Some(object);
-        }
-    }
-
-    None
-}
-
-fn options_from_export<'a>(
-    declaration: &'a ExportDefaultDeclarationKind<'a>,
-    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
-) -> Option<&'a ObjectExpression<'a>> {
-    // Every export-default kind we care about is also an `Expression` variant,
-    // so route through the shared expression resolver.
-    options_from_expression(declaration.as_expression()?, bindings)
-}
-
-/// Resolve an expression to the component options object, peeling
-/// parenthesized/TS-cast wrappers, following identifier bindings, and entering
-/// `defineComponent(...)` calls.
-fn options_from_expression<'a>(
-    expression: &'a Expression<'a>,
-    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
-) -> Option<&'a ObjectExpression<'a>> {
-    match expression {
-        Expression::ObjectExpression(object) => Some(object),
-        Expression::CallExpression(call) => options_from_call(call, bindings),
-        Expression::Identifier(identifier) => bindings.get(identifier.name.as_str()).copied(),
-        Expression::ParenthesizedExpression(paren) => {
-            options_from_expression(&paren.expression, bindings)
-        }
-        Expression::TSAsExpression(ts_as) => options_from_expression(&ts_as.expression, bindings),
-        Expression::TSSatisfiesExpression(ts) => options_from_expression(&ts.expression, bindings),
-        Expression::TSNonNullExpression(ts) => options_from_expression(&ts.expression, bindings),
-        _ => None,
-    }
-}
-
-fn options_from_call<'a>(
-    call: &'a CallExpression<'a>,
-    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
-) -> Option<&'a ObjectExpression<'a>> {
-    let Expression::Identifier(callee) = &call.callee else {
-        return None;
-    };
-    if !matches!(callee.name.as_str(), "defineComponent" | "_defineComponent") {
-        return None;
-    }
-    match call.arguments.first()? {
-        Argument::ObjectExpression(object) => Some(object),
-        Argument::Identifier(identifier) => bindings.get(identifier.name.as_str()).copied(),
-        argument => argument
-            .as_expression()
-            .and_then(|expression| options_from_expression(expression, bindings)),
-    }
-}
-
-#[cfg(test)]
-mod tests;
