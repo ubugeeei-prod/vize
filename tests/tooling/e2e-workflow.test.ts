@@ -158,9 +158,10 @@ test("local app readiness action keeps setup, diagnostics, and aggregation bound
   const action = readRepoFile(".github", "actions", "app-readiness", "action.yml");
 
   assert.match(action, /runs:\n\s+using:\s*composite/);
-  assert.match(action, /git submodule update --init --recursive --depth 1/);
+  const hydration = yamlStepBody(action, { name: "Hydrate pinned app fixtures" });
+  assert.match(hydration, /git submodule update --init --recursive --depth 1/);
   assert.deepEqual(
-    [...action.matchAll(/tests\/_fixtures\/_git\/(\S+)/g)].map((match) => match[1]),
+    [...hydration.matchAll(/tests\/_fixtures\/_git\/(\S+)/g)].map((match) => match[1]),
     ["elk", "misskey", "npmx.dev", "nuxt-ui", "reka-ui"],
     "readiness must hydrate exactly the pinned readiness fixtures",
   );
