@@ -68,9 +68,23 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     assert.equal(artifact.divergence.summary.sharedCount, 1);
     assert.equal(artifact.divergence.summary.falsePositiveCount, 0);
     assert.equal(artifact.divergence.summary.falseNegativeCount, 0);
-    assert.deepEqual(readJson(fixture.invocationPath), {
+    const invocation = readJson(fixture.invocationPath);
+    const baselineProject = path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json");
+    assert.deepEqual(invocation, {
       cwd: fixture.fixtureRoot,
-      args: ["--noEmit", "--pretty", "false", "--listFiles", "-p", "tsconfig.json"],
+      args: ["--noEmit", "--pretty", "false", "--listFiles", "-p", baselineProject],
+    });
+    assert.deepEqual(readJson(baselineProject), {
+      extends: path
+        .relative(fixture.reportDir, path.join(fixture.fixtureRoot, "tsconfig.json"))
+        .replaceAll("\\", "/"),
+      files: [
+        path
+          .relative(fixture.reportDir, path.join(fixture.fixtureRoot, "src/App.vue"))
+          .replaceAll("\\", "/"),
+      ],
+      include: [],
+      references: [],
     });
     const markdown = fs.readFileSync(
       path.join(fixture.reportDir, "fixture-typecheck-divergence.md"),

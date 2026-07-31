@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import { validateTypecheckerOutput } from "./tool-matrix-typechecker.mjs";
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
+import { materializeBaselineProject } from "./typecheck-baseline-project.mjs";
 import { evaluateVueProgramCoverage } from "./typecheck-baseline-coverage.mjs";
 import {
   assertBudgetPassed,
@@ -44,7 +45,13 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   const summary = readAndValidateSummary(args.reportDir, project);
   const vizeRun = readAndValidateVizeRun(args.reportDir, project, summary);
   const vueTsc = resolveVueTsc(args.vueTscBin);
-  const baselineArgs = ["--noEmit", "--pretty", "false", "--listFiles", "-p", project.tsconfig];
+  const baselineProject = materializeBaselineProject(
+    fixtureRoot,
+    args.reportDir,
+    project,
+    vizeRun.payload.parsed,
+  );
+  const baselineArgs = ["--noEmit", "--pretty", "false", "--listFiles", "-p", baselineProject.path];
   const startedAt = Date.now();
   const baseline = spawnSync(vueTsc.path, baselineArgs, {
     cwd: fixtureRoot,
@@ -83,6 +90,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     source: vizeRun.source,
     baseline: {
       command: displayCommand(vueTsc.path, baselineArgs),
+      configSha256: sha256(baselineProject.source),
       version: vueTsc.version,
       durationMs,
       exitCode: baseline.status,
