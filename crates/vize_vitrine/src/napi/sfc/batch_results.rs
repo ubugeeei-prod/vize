@@ -8,6 +8,7 @@ use std::{
 use vize_atelier_sfc::compile_script::typescript::ensure_javascript_output;
 use vize_carton::cstr;
 
+use super::types::ModuleShapeNapi;
 use super::{
     experimentals::ExperimentalTemplateOptions,
     thread_pool::BatchThreadPool,
@@ -96,6 +97,7 @@ fn compile_sfc_batch_with_results_inner(
                         styles: vec![],
                         custom_blocks: vec![],
                         macro_artifacts: vec![],
+                        module_shape: None,
                     };
                 }
             };
@@ -184,18 +186,24 @@ fn compile_sfc_batch_with_results_inner(
                     } else {
                         vec![]
                     };
+                    // The emitter is the last stop before the bundler, so the
+                    // code crossing this boundary must already be plain
+                    // JavaScript — the JS plugin no longer re-strips it.
+                    // `is_ts` callers opted out: they asked for TypeScript in
+                    // the output and strip it themselves.
+                    let code: String = if is_ts {
+                        result.code.into()
+                    } else {
+                        ensure_javascript_output(result.code).into()
+                    };
+                    // Analyzed from the very bytes that cross the boundary,
+                    // after every rewriting pass, so the offsets cannot be
+                    // stale (#3425).
+                    let module_shape = ModuleShapeNapi::of(&code);
                     BatchFileResultNapi {
                         path: file.path,
-                        // The emitter is the last stop before the bundler, so
-                        // the code crossing this boundary must already be plain
-                        // JavaScript — the JS plugin no longer re-strips it.
-                        // `is_ts` callers opted out: they asked for TypeScript
-                        // in the output and strip it themselves.
-                        code: if is_ts {
-                            result.code.into()
-                        } else {
-                            ensure_javascript_output(result.code).into()
-                        },
+                        module_shape,
+                        code,
                         css: result.css.map(Into::into),
                         scope_id: scope_id.into(),
                         has_scoped,
@@ -223,6 +231,7 @@ fn compile_sfc_batch_with_results_inner(
                     styles,
                     custom_blocks,
                     macro_artifacts: vec![],
+                    module_shape: None,
                 },
             }
         })

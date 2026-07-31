@@ -149,7 +149,12 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
 
   let output = compiled.code;
 
-  const moduleInfo = analyzeModuleOutput(output);
+  // The native compiler already parsed this module and reports its shape, so
+  // the oxc parse here is redundant (#3425). `??` rather than a required field:
+  // a `.vpc` cache entry written before this existed reads back without it and
+  // simply pays the parse it always paid, so no cache-format bump is needed and
+  // the fallback stays exercised.
+  const moduleInfo = compiled.moduleShape ?? analyzeModuleOutput(output);
   const hasExportDefault = moduleInfo.hasDefaultExport;
   const hasNamedRenderExport = moduleInfo.hasNamedRenderExport;
   const hasNamedSsrRenderExport = moduleInfo.hasNamedSsrRenderExport;

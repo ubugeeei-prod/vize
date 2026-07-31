@@ -11,6 +11,7 @@ export type {
   ConfigEnv,
   UserConfigExport,
 } from "../../../cli/src/types/index.ts";
+import type { ModuleOutputInfo } from "./utils/module-output.js";
 
 export interface SfcCompileOptionsNapi extends ExperimentalCompileFlags {
   filename?: string;
@@ -47,6 +48,7 @@ export interface SfcCompileResultNapi {
   hasScoped: boolean;
   styles: NativeStyleBlockInfo[];
   macroArtifacts?: MacroArtifact[];
+  moduleShape?: ModuleOutputInfo;
 }
 
 export type CompileSfcFn = (
@@ -340,62 +342,19 @@ export interface CompiledModule {
   styles?: StyleBlockInfo[];
   /** Files loaded through SFC `src` imports */
   dependencies?: string[];
-}
-
-export interface BatchFileInput {
-  path: string;
-  source: string;
-}
-
-export interface BatchFileResult {
-  path: string;
-  code: string;
-  css?: string;
-  scopeId: string;
-  hasScoped: boolean;
-  errors: string[];
-  warnings: string[];
-  templateHash?: string;
-  styleHash?: string;
-  scriptHash?: string;
-  /** Compile-time macro artifacts extracted from the source SFC */
-  macroArtifacts?: MacroArtifact[];
-  /** Per-block style metadata extracted from the source SFC */
-  styles?: NativeStyleBlockInfo[];
-}
-
-export interface BatchCompileOptionsNapi extends ExperimentalCompileFlags {
-  mode?: "module" | "function";
-  ssr?: boolean;
-  vapor?: boolean;
-  customRenderer?: boolean;
-  templateSyntax?: "standard" | "strict" | "quirks";
-  runtimeModuleName?: string;
-  runtimeGlobalName?: string;
-  vueVersion?: string;
-  threads?: number;
   /**
-   * Include per-block style metadata (incl. `styles[].content`). Default OFF.
-   * `code`/`css` are always returned; this opts into the extra CSS-modules /
-   * preprocessor metadata the bundler pipeline needs.
+   * Module shape reported by the native compiler, so `generateOutput` need not
+   * re-parse the emitted module (#3425). Absent for a cache entry written before
+   * the field existed, and for the rspack and unplugin builders, which never set
+   * it — both fall back to parsing.
    */
-  includeStyles?: boolean;
-  /** Include parsed custom blocks. Default OFF. */
-  includeCustomBlocks?: boolean;
-  /** Include compile-time macro artifacts. Default OFF. */
-  includeMacroArtifacts?: boolean;
-  /** Include template/style/script content hashes (for HMR). Default OFF. */
-  includeHashes?: boolean;
+  moduleShape?: ModuleOutputInfo;
 }
 
-export interface BatchCompileResultWithFiles {
-  results: BatchFileResult[];
-  successCount: number;
-  failedCount: number;
-  timeMs: number;
-}
-
-export type CompileSfcBatchWithResultsFn = (
-  files: BatchFileInput[],
-  options?: BatchCompileOptionsNapi,
-) => BatchCompileResultWithFiles;
+export type {
+  BatchCompileOptionsNapi,
+  BatchCompileResultWithFiles,
+  BatchFileInput,
+  BatchFileResult,
+  CompileSfcBatchWithResultsFn,
+} from "./batch-types.ts";

@@ -83,6 +83,39 @@ pub struct SfcCompileOptionsNapi {
     pub scope_id: Option<String>,
 }
 
+/// The emitted module's shape, so the JS plugins do not re-parse it (#3425).
+///
+/// Absent when the module did not parse, in which case the consumer falls back
+/// to its own analysis — the behaviour before this field existed.
+#[napi(object)]
+#[derive(Default)]
+pub struct ModuleShapeNapi {
+    pub has_default_export: bool,
+    pub has_sfc_main_defined: bool,
+    pub has_named_render_export: bool,
+    pub has_named_ssr_render_export: bool,
+    pub default_export_start: Option<u32>,
+    pub default_export_keyword_end: Option<u32>,
+    pub default_export_end: Option<u32>,
+    pub default_export_is_sfc_main: bool,
+}
+
+impl ModuleShapeNapi {
+    /// Analyze `code`, or `None` when it does not parse.
+    pub fn of(code: &str) -> Option<Self> {
+        vize_atelier_sfc::module_shape::analyze_module_shape(code).map(|shape| Self {
+            has_default_export: shape.has_default_export,
+            has_sfc_main_defined: shape.has_sfc_main_defined,
+            has_named_render_export: shape.has_named_render_export,
+            has_named_ssr_render_export: shape.has_named_ssr_render_export,
+            default_export_start: shape.default_export_start,
+            default_export_keyword_end: shape.default_export_keyword_end,
+            default_export_end: shape.default_export_end,
+            default_export_is_sfc_main: shape.default_export_is_sfc_main,
+        })
+    }
+}
+
 #[napi(object)]
 pub struct SfcCompileResultNapi {
     pub code: String,
@@ -96,6 +129,7 @@ pub struct SfcCompileResultNapi {
     pub styles: Vec<StyleBlockNapi>,
     pub custom_blocks: Vec<CustomBlockNapi>,
     pub macro_artifacts: Vec<MacroArtifactNapi>,
+    pub module_shape: Option<ModuleShapeNapi>,
 }
 
 #[napi(object)]
@@ -163,6 +197,7 @@ pub struct BatchFileResultNapi {
     pub styles: Vec<StyleBlockNapi>,
     pub custom_blocks: Vec<CustomBlockNapi>,
     pub macro_artifacts: Vec<MacroArtifactNapi>,
+    pub module_shape: Option<ModuleShapeNapi>,
 }
 
 #[napi(object)]
