@@ -283,7 +283,7 @@ const label: string = Bare.label;
     assert_eq!(
         diagnostics(&report),
         vec![
-            "error:2:10 [TS2614] Module '\"../components/Local.vue.ts\"' has no exported member 'Bare'. Did you mean to use 'import Bare from \"../components/Local.vue.ts\"' instead?"
+            "error:2:10 [TS2614] Module '\"../components/Local.vue\"' has no exported member 'Bare'. Did you mean to use 'import Bare from \"../components/Local.vue\"' instead?"
                 .to_string()
         ]
     );

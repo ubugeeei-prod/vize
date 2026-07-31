@@ -155,7 +155,13 @@ fn string_literal_at(rest: &str) -> Option<&str> {
 
 #[cfg(test)]
 mod tests {
+    use super::super::{LineIndex, map_batch_diagnostics};
     use super::{mirror_module_specifier_source, quoted_mirror_specifiers, string_literal_at};
+    use crate::batch::VirtualProject;
+    use crate::corsa_client::{LspDiagnostic, LspPosition, LspRange};
+    use serde_json::json;
+    use tempfile::TempDir;
+    use vize_carton::cstr;
 
     #[test]
     fn only_generated_mirror_specifiers_map_back_to_an_authored_spelling() {
@@ -217,5 +223,72 @@ mod tests {
         assert_eq!(string_literal_at("'./Panel.vue'\n"), Some("./Panel.vue"));
         assert_eq!(string_literal_at("Panel from './x'"), None);
         assert_eq!(string_literal_at("\"unterminated"), None);
+    }
+
+    /// End to end through the collection point: a `TS2307` for an SFC import
+    /// reaches the user quoting the authored `.vue` specifier, not the mirror
+    /// module the rewriter redirected it onto (#3397).
+    #[test]
+    fn maps_missing_vue_ts2307_back_to_source_file() {
+        let temp_dir = TempDir::new().unwrap();
+        let project_root = temp_dir.path().canonicalize().unwrap();
+        let src_dir = project_root.join("src");
+        std::fs::create_dir_all(&src_dir).unwrap();
+        let app_path = src_dir.join("App.vue");
+        std::fs::write(
+            &app_path,
+            r#"<script setup lang="ts">
+import MissingPanel from './MissingPanel.vue'
+</script>
+
+<template>
+  <MissingPanel />
+</template>
+"#,
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&project_root).unwrap();
+        project.register_path(&app_path).unwrap();
+        let virtual_file = project.find_by_original(&app_path).unwrap();
+        let virtual_source = virtual_file.content.as_str();
+        let offset = virtual_source
+            .find("MissingPanel.vue.ts")
+            .expect("the rewriter should redirect the import onto the mirror module");
+        let (line, character) = LineIndex::new(virtual_source)
+            .offset_to_line_col(virtual_source, offset as u32)
+            .expect("virtual offset should map to LSP position");
+
+        let diagnostics = map_batch_diagnostics(
+            vec![(
+                cstr!("file://{}", virtual_file.virtual_path.display()),
+                vec![LspDiagnostic {
+                    range: LspRange {
+                        start: LspPosition { line, character },
+                        end: LspPosition {
+                            line,
+                            character: character + 1,
+                        },
+                    },
+                    severity: Some(1),
+                    code: Some(json!("TS2307")),
+                    source: Some("ts".into()),
+                    message:
+                        "Cannot find module './MissingPanel.vue.ts' or its corresponding type declarations."
+                            .into(),
+                }],
+            )],
+            &project,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        let diagnostic = &diagnostics[0];
+        assert_eq!(diagnostic.file, app_path);
+        assert_eq!(diagnostic.code, Some(2307));
+        assert_eq!(diagnostic.line, 1);
+        assert_eq!(
+            diagnostic.message,
+            "Cannot find module './MissingPanel.vue' or its corresponding type declarations."
+        );
     }
 }
