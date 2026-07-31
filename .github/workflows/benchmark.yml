@@ -6,9 +6,8 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
-  # The schedule compares main against the exact SHA below until a reviewed PR
-  # deliberately refreshes it. Dispatch runs keep accepting an explicit range;
-  # GitHub records their head SHA from --ref, so validation rejects mismatches.
+  # Schedule compares main against the exact SHA below until a reviewed refresh.
+  # Dispatch records its head SHA from --ref, so validation rejects mismatches.
   workflow_dispatch:
     inputs:
       base_sha:
@@ -31,18 +30,12 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   BENCHMARK_BASE_SHA: ${{ github.event_name == 'schedule' && 'cea92c7994b4b84c1e42ed74c023b17c0c54090d' || github.event_name == 'workflow_dispatch' && inputs.base_sha || github.event.pull_request.base.sha }}
   BENCHMARK_HEAD_SHA: ${{ github.event_name == 'schedule' && github.sha || github.event_name == 'workflow_dispatch' && inputs.head_sha || github.event.pull_request.head.sha }}
-  # 1000 files keeps the fastest lane (compile, ~200us/file single-threaded)
-  # above ~200ms so runner thermal drift between interleaved runs stays well
-  # under the 5% threshold; at 300 files the lane ran ~65ms and perf-neutral
-  # PRs tripped the budget on drift alone (#1411: +5.27%).
+  # Keep the fastest lane above the runner's noise floor (#1411).
   VIZE_BENCH_FILE_COUNT: 1000
-  # Optimized (ci-opt) binaries run fast enough that 5 runs / 1 warmup left the
-  # gate's noise floor above the 5% threshold: an identical-source PR (#1395)
-  # tripped the budget at +5.12% on the compile lane. More samples tighten the
-  # median instead of weakening the threshold.
   VIZE_BENCH_RUNS: 10
   VIZE_BENCH_WARMUPS: 2
   VIZE_BENCH_REGRESSION_THRESHOLD_PERCENT: 5
+  VIZE_BENCH_BUILD_PROFILE_KEY: ci-opt-release-thin-lto-cgu16
 
 jobs:
   pr-benchmark:
@@ -116,7 +109,9 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - name: Install Rust toolchain
+        id: rust-toolchain
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
 
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
@@ -170,11 +165,10 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: base/target/ci-opt/vize
-          key: ${{ runner.os }}-benchmark-base-cli-ci-opt-${{ env.BENCHMARK_BASE_SHA }}
+          key: ${{ runner.os }}-${{ runner.arch }}-benchmark-base-${{ env.VIZE_BENCH_BUILD_PROFILE_KEY }}-${{ steps.rust-toolchain.outputs.cachekey }}-${{ env.BENCHMARK_BASE_SHA }}
 
-      # The ci-opt profile is also injected via --config so the base checkout
-      # builds even when it predates the profile's Cargo.toml definition, and
-      # both sides are guaranteed to measure under identical settings.
+      # Inject ci-opt so old bases build and both sides use identical settings.
+      # This exact configuration is represented by the cache/profile key above.
       - name: Build base CLI
         id: build-base
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.cache-base-cli.outputs.cache-hit != 'true'
@@ -185,8 +179,7 @@ jobs:
           --config 'profile.ci-opt.lto="thin"'
           --config 'profile.ci-opt.codegen-units=16'
 
-      # A base that does not compile (e.g. a hotfix PR for a broken main) cannot
-      # be benchmarked; skip the comparison instead of hard-failing the gate.
+      # Skip an unbuildable base instead of hard-failing a hotfix PR.
       - name: Skip benchmark when base CLI cannot be built
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome == 'failure'
         run: |
@@ -210,7 +203,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: head/target/ci-opt/vize
-          key: ${{ runner.os }}-benchmark-head-cli-ci-opt-${{ env.BENCHMARK_HEAD_SHA }}
+          key: ${{ runner.os }}-${{ runner.arch }}-benchmark-head-${{ env.VIZE_BENCH_BUILD_PROFILE_KEY }}-${{ steps.rust-toolchain.outputs.cachekey }}-${{ env.BENCHMARK_HEAD_SHA }}
 
       - name: Build head CLI
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.cache-head-cli.outputs.cache-hit != 'true' && steps.build-base.outcome != 'failure'
@@ -240,6 +233,15 @@ jobs:
             --out "$GITHUB_WORKSPACE/benchmark-summary.md" \
             --json "$GITHUB_WORKSPACE/benchmark-results.json"
 
+      - name: Record benchmark build provenance
+        if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
+        run: |
+          {
+            printf 'profile=%s\n' "$VIZE_BENCH_BUILD_PROFILE_KEY"
+            rustc --version --verbose
+            sha256sum base/target/ci-opt/vize head/target/ci-opt/vize
+          } > benchmark-provenance.txt
+
       - name: Write job summary
         run: cat benchmark-summary.md >> "$GITHUB_STEP_SUMMARY"
 
@@ -250,6 +252,7 @@ jobs:
           path: |
             benchmark-summary.md
             benchmark-results.json
+            benchmark-provenance.txt
           if-no-files-found: warn
           retention-days: 14
 

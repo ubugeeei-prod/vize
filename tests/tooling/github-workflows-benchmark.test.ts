@@ -126,9 +126,12 @@ test("benchmark dispatch validates exact SHA evidence and runs the existing budg
   assert.match(checkBaseStep, /merge-base --is-ancestor "\$BASE_SHA" "\$HEAD_SHA"/);
   assert.match(checkBaseStep, /base_sha must be an ancestor of head_sha/);
 
-  const validateIndex = benchmarkJob.indexOf("- name: Validate dispatch SHAs");
+  const validateIndex = benchmarkJob.indexOf("- name: Validate benchmark SHAs");
   const ancestryIndex = benchmarkJob.indexOf("- name: Check base checkout");
   const benchmarkIndex = benchmarkJob.indexOf("- name: Compare base and head");
+  assert.notEqual(validateIndex, -1, "missing SHA validation step");
+  assert.notEqual(ancestryIndex, -1, "missing ancestry validation step");
+  assert.notEqual(benchmarkIndex, -1, "missing benchmark step");
   assert.ok(validateIndex < ancestryIndex, "SHA equality must be validated before ancestry");
   assert.ok(ancestryIndex < benchmarkIndex, "ancestry must be validated before benchmarking");
 
@@ -146,6 +149,7 @@ test("benchmark schedule gates long-term drift against a fixed commit", () => {
   const validateStep = workflowStepBody(benchmarkJob, "Validate benchmark SHAs");
   const checkoutHeadStep = workflowStepBody(benchmarkJob, "Checkout head");
   const checkBaseStep = workflowStepBody(benchmarkJob, "Check base checkout");
+  const provenanceStep = workflowStepBody(benchmarkJob, "Record benchmark build provenance");
 
   assert.match(workflow, /\n  schedule:\n\s+- cron:\s*"29 5 \* \* 2"/);
   assert.match(
@@ -163,6 +167,18 @@ test("benchmark schedule gates long-term drift against a fixed commit", () => {
   assert.match(checkoutHeadStep, /github\.event_name != 'pull_request' && '0' \|\| '1'/);
   assert.match(checkBaseStep, /"\$EVENT_NAME" != "pull_request"/);
   assert.match(checkBaseStep, /merge-base --is-ancestor "\$BASE_SHA" "\$HEAD_SHA"/);
+  assert.match(
+    benchmarkJob,
+    /benchmark-base-\$\{\{ env\.VIZE_BENCH_BUILD_PROFILE_KEY \}\}-\$\{\{ steps\.rust-toolchain\.outputs\.cachekey \}\}/,
+  );
+  assert.match(
+    benchmarkJob,
+    /benchmark-head-\$\{\{ env\.VIZE_BENCH_BUILD_PROFILE_KEY \}\}-\$\{\{ steps\.rust-toolchain\.outputs\.cachekey \}\}/,
+  );
+  assert.match(provenanceStep, /rustc --version --verbose/);
+  assert.match(provenanceStep, /printf 'profile=%s\\n' "\$VIZE_BENCH_BUILD_PROFILE_KEY"/);
+  assert.match(provenanceStep, /sha256sum base\/target\/ci-opt\/vize head\/target\/ci-opt\/vize/);
+  assert.match(benchmarkJob, /benchmark-provenance\.txt/);
 
   // Scheduled runs cannot opt out of a missing or unbuildable baseline: the
   // label reader is PR-only and every other event supplies an empty label set.
