@@ -136,6 +136,28 @@
     "file": "app/components/SponsorGrid.vue",
     "messages": [
       {
+        "ruleId": "vue/no-unused-properties",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-properties] Prop 'gapSp' is defined but never used",
+        "line": 21,
+        "column": 11,
+        "endLine": 21,
+        "endColumn": 11,
+        "help": "Remove unused prop or use it in your template/script"
+      },
+      {
+        "ruleId": "vue/no-unused-properties",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-properties] Prop 'linkPath' is defined but never used",
+        "line": 21,
+        "column": 11,
+        "endLine": 21,
+        "endColumn": 11,
+        "help": "Remove unused prop or use it in your template/script"
+      },
+      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -148,7 +170,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 3
   },
   {
     "file": "app/components/button/VFButton.vue",

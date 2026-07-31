@@ -286,21 +286,9 @@
   },
   {
     "file": "app/components/BuildEnvironment.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-properties",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-properties] Prop 'buildInfo' is defined but never used",
-        "line": 16,
-        "column": 95,
-        "endLine": 17,
-        "endColumn": 30,
-        "help": "Remove unused prop or use it in your template/script"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/Button/Base.vue",
@@ -1783,6 +1771,28 @@
     "file": "app/components/Package/SkillsCard.vue",
     "messages": [
       {
+        "ruleId": "vue/no-unused-properties",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-properties] Prop 'packageName' is defined but never used",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Remove unused prop or use it in your template/script"
+      },
+      {
+        "ruleId": "vue/no-unused-properties",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-properties] Prop 'version' is defined but never used",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Remove unused prop or use it in your template/script"
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1795,7 +1805,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 3
   },
   {
     "file": "app/components/Package/SkillsModal.vue",

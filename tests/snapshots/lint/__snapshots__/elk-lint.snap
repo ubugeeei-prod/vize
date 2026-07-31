@@ -1052,6 +1052,17 @@
     "file": "app/components/main/MainContent.vue",
     "messages": [
       {
+        "ruleId": "vue/no-unused-properties",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-properties] Prop 'noOverflowHidden' is defined but never used",
+        "line": 41,
+        "column": 11,
+        "endLine": 41,
+        "endColumn": 11,
+        "help": "Remove unused prop or use it in your template/script"
+      },
+      {
         "ruleId": "html/deprecated-attr",
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
@@ -1064,7 +1075,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "app/components/main/MainTitle.vue",
@@ -1873,6 +1884,17 @@
     "file": "app/components/publish/PublishAttachment.vue",
     "messages": [
       {
+        "ruleId": "vue/no-unused-properties",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-properties] Prop 'alt' is defined but never used",
+        "line": 28,
+        "column": 11,
+        "endLine": 28,
+        "endColumn": 11,
+        "help": "Remove unused prop or use it in your template/script"
+      },
+      {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -1907,7 +1929,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 4
   },
   {
     "file": "app/components/publish/PublishCharacterCounter.vue",
@@ -1987,6 +2009,17 @@
         "endLine": 457,
         "endColumn": 42,
         "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
+      },
+      {
+        "ruleId": "vue/no-unused-properties",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-properties] Prop 'inReplyToVisibility' is defined but never used",
+        "line": 394,
+        "column": 11,
+        "endLine": 394,
+        "endColumn": 11,
+        "help": "Remove unused prop or use it in your template/script"
       },
       {
         "ruleId": "html/deprecated-attr",
@@ -2141,7 +2174,7 @@
       }
     ],
     "errorCount": 4,
-    "warningCount": 11
+    "warningCount": 12
   },
   {
     "file": "app/components/publish/PublishWidgetFull.client.vue",
@@ -2746,9 +2779,21 @@
   },
   {
     "file": "app/components/status/StatusContent.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/no-unused-properties",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-properties] Prop 'inNotification' is defined but never used",
+        "line": 37,
+        "column": 11,
+        "endLine": 37,
+        "endColumn": 11,
+        "help": "Remove unused prop or use it in your template/script"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/status/StatusDetails.vue",
