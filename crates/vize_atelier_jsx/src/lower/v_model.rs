@@ -21,6 +21,16 @@ use vize_relief::{DirectiveNode, PropNode, SimpleExpressionNode};
 use super::Lowerer;
 use crate::diagnostics::JsxDiagnostic;
 
+/// Result of parsing babel-plugin-jsx's positional `v-model` array form.
+pub(crate) enum ModelArrayLowering<'a> {
+    /// The array was lowered into a model directive.
+    Lowered(PropNode<'a>),
+    /// The array shape was not recognizable and may use the generic fallback.
+    Unrecognized,
+    /// The array was recognized but rejected with a diagnostic.
+    Rejected,
+}
+
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Reject a `v-model` whose bound target cannot be assigned to.
     ///
@@ -113,28 +123,32 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     ///   - a trailing array-literal element: modifiers  -> `directive.modifiers`
     ///   - an intermediate string-literal element: arg  -> `directive.arg`
     ///
-    /// Returns `None` (fall back to default handling) for shapes we cannot
+    /// Returns [`ModelArrayLowering::Unrecognized`] for shapes we cannot
     /// confidently destructure (e.g. empty array, spread/hole elements).
+    /// Recognized dynamic arguments are rejected instead of being silently
+    /// discarded: representing them requires computed prop codegen (#3466).
     pub(crate) fn lower_model_array(
-        &self,
+        &mut self,
         array: &oxc_ast::ast::ArrayExpression<'_>,
         loc: &SourceLocation,
-    ) -> Option<PropNode<'a>> {
+    ) -> ModelArrayLowering<'a> {
         // Collect the plain (non-hole, non-spread) expression elements.
         let mut elems: std::vec::Vec<&Expression<'_>> = std::vec::Vec::new();
         for element in &array.elements {
             match element {
                 ArrayExpressionElement::SpreadElement(_) | ArrayExpressionElement::Elision(_) => {
-                    return None;
+                    return ModelArrayLowering::Unrecognized;
                 }
                 _ => match element.as_expression() {
                     Some(expr) => elems.push(expr),
-                    None => return None,
+                    None => return ModelArrayLowering::Unrecognized,
                 },
             }
         }
 
-        let value_expr = *elems.first()?;
+        let Some(value_expr) = elems.first().copied() else {
+            return ModelArrayLowering::Unrecognized;
+        };
 
         // A trailing array-literal element is the modifiers list. Its index marks
         // the boundary so a middle string element can be recognized as the arg.
@@ -143,15 +157,33 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             _ => None,
         };
 
-        let mut directive = DirectiveNode::new(self.bump(), "model", loc.clone());
-        directive.exp = Some(self.dyn_expr(value_expr.span()));
-
         // An intermediate string-literal element (index 1, before any modifiers
         // array) is the arg: the bound prop name for component v-model.
-        if let Some(Expression::StringLiteral(s)) = elems.get(1).copied()
-            && modifiers_idx != Some(1)
-        {
-            directive.arg = Some(self.static_expr(s.value.as_str(), s.span));
+        let arg = if modifiers_idx == Some(1) {
+            None
+        } else {
+            match elems.get(1).copied() {
+                Some(Expression::StringLiteral(string)) => Some(string),
+                Some(expression) => {
+                    let span = expression.span();
+                    let source = self.mapper().slice(span);
+                    self.reject_at(
+                        span,
+                        format_args!(
+                            "v-model argument `{source}` must be a string literal; dynamic \
+                             arguments are not supported."
+                        ),
+                    );
+                    return ModelArrayLowering::Rejected;
+                }
+                None => None,
+            }
+        };
+
+        let mut directive = DirectiveNode::new(self.bump(), "model", loc.clone());
+        directive.exp = Some(self.dyn_expr(value_expr.span()));
+        if let Some(string) = arg {
+            directive.arg = Some(self.static_expr(string.value.as_str(), string.span));
         }
 
         if let Some(idx) = modifiers_idx
@@ -169,7 +201,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             }
         }
 
-        Some(PropNode::Directive(Box::new_in(directive, self.bump())))
+        ModelArrayLowering::Lowered(PropNode::Directive(Box::new_in(directive, self.bump())))
     }
 }
 

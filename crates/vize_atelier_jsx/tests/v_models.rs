@@ -241,6 +241,24 @@ fn a_non_assignable_entry_target_is_rejected() {
 }
 
 #[test]
+fn a_dynamic_entry_argument_rejects_the_whole_attribute() {
+    let source = "const A = () => <B v-models={[[ok], [foo, bar]]}/>;";
+    assert_eq!(
+        errors(source),
+        vec![
+            "v-model argument `bar` must be a string literal; dynamic arguments are not supported."
+                .to_string()
+        ]
+    );
+    assert_eq!(
+        render_code(source),
+        "export function render(_ctx, _cache) {\n  \
+         const _component_B = _resolveComponent(\"B\")\n  \n  \
+         return (_openBlock(), _createBlock(_component_B))\n}"
+    );
+}
+
+#[test]
 fn the_argument_spelling_is_rejected() {
     // Babel accepts `v-models:x` but then ignores every entry's own argument:
     // `v-models:x={[[a], [b, "b"]]}` binds `x` and `modelValue`, never `b`.

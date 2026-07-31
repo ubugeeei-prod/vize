@@ -29,6 +29,8 @@
 //!   ("You should pass a Two-dimensional Arrays to v-models").
 //! - an entry whose target cannot be assigned to, for the same reason `v-model`
 //!   rejects one (#3420): the write-back compiles to `target = $event`.
+//! - an entry with a non-string argument. Dynamic argument support needs
+//!   computed prop and update-listener codegen, so it is diagnosed (#3466).
 //! - `v-models` on a plain element. Babel: "v-models can only use in custom
 //!   components".
 //!
@@ -46,7 +48,7 @@ use vize_carton::Vec;
 use vize_relief::PropNode;
 
 use super::Lowerer;
-use super::v_model::is_assignable_target;
+use super::v_model::{ModelArrayLowering, is_assignable_target};
 
 /// How a `v-models` attribute was spelled.
 enum Form {
@@ -194,8 +196,9 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             }
 
             match self.lower_model_array(entry, &loc) {
-                Some(prop) => lowered.push(prop),
-                None => {
+                ModelArrayLowering::Lowered(prop) => lowered.push(prop),
+                ModelArrayLowering::Rejected => rejected = true,
+                ModelArrayLowering::Unrecognized => {
                     let source = self.mapper().slice(element_span);
                     self.reject_at(
                         element_span,

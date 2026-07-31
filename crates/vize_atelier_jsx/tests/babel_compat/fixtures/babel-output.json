@@ -199,6 +199,10 @@
       "status": "ok",
       "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), {\n  'argument': val,\n  \"argumentModifiers\": {\n    \"modifier\": true\n  },\n  \"onUpdate:argument\": $event => val = $event\n}, null);"
     },
+    "directives/v_model_component_dynamic_arg": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), {\n  [bar]: foo,\n  [\"onUpdate:\" + bar]: $event => foo = $event\n}, null);"
+    },
     "directives/v_models": {
       "status": "ok",
       "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), {\n  \"modelValue\": foo,\n  \"onUpdate:modelValue\": $event => foo = $event,\n  'bar': bar,\n  \"onUpdate:bar\": $event => bar = $event\n}, null);"

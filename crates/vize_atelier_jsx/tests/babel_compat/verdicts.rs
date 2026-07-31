@@ -101,6 +101,10 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ),
     ("directives/v_model_component", Same),
     ("directives/v_model_component_arg_mods", Same),
+    (
+        "directives/v_model_component_dynamic_arg",
+        Diff("dynamic v-model argument diagnosed; needs computed prop lowering"),
+    ),
     // Closed by #3418: `v-models` expands to one model binding per entry.
     ("directives/v_models", Same),
     ("directives/v_models_mods", Same),

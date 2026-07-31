@@ -14,14 +14,19 @@ use oxc_ast::ast::{
 };
 use oxc_span::{GetSpan, Span};
 use vize_carton::{Box, String, Vec, is_builtin_directive};
-use vize_relief::SourceLocation;
-use vize_relief::{AttributeNode, DirectiveNode, PropNode, TextNode};
-
-use vize_relief::SimpleExpressionNode;
+use vize_relief::{
+    AttributeNode, DirectiveNode, PropNode, SimpleExpressionNode, SourceLocation, TextNode,
+};
 
 use super::Lowerer;
 use super::expr::container_expr_span;
-use super::v_model::split_underscore_model_modifiers;
+use super::v_model::{ModelArrayLowering, split_underscore_model_modifiers};
+
+enum DirectiveAttributeLowering<'a> {
+    NotDirective,
+    Lowered(PropNode<'a>),
+    Rejected,
+}
 
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Lower a JSX opening element's attribute list into Vize props.
@@ -85,8 +90,10 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         }
 
         // Directive forms: `v-model`, `v-show`, `v-on:click`, custom `v-foo:arg`.
-        if let Some(directive) = self.try_directive_attribute(attr, &loc) {
-            return Some(directive);
+        match self.try_directive_attribute(attr, &loc) {
+            DirectiveAttributeLowering::Lowered(directive) => return Some(directive),
+            DirectiveAttributeLowering::Rejected => return None,
+            DirectiveAttributeLowering::NotDirective => {}
         }
 
         let name = String::from(self.mapper().slice(attr.name.span()));
@@ -187,21 +194,26 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     }
 
     fn try_directive_attribute(
-        &self,
+        &mut self,
         attr: &JSXAttribute<'_>,
         loc: &SourceLocation,
-    ) -> Option<PropNode<'a>> {
+    ) -> DirectiveAttributeLowering<'a> {
         let (raw_name, arg) = match &attr.name {
             JSXAttributeName::NamespacedName(named) => {
-                let raw_name = self
+                let Some(raw_name) = self
                     .mapper()
                     .slice(named.namespace.span())
-                    .strip_prefix("v-")?;
+                    .strip_prefix("v-")
+                else {
+                    return DirectiveAttributeLowering::NotDirective;
+                };
                 let arg_name = self.mapper().slice(named.name.span());
                 (raw_name, Some((arg_name, named.name.span())))
             }
             JSXAttributeName::Identifier(id) => {
-                let raw_name = self.mapper().slice(id.span()).strip_prefix("v-")?;
+                let Some(raw_name) = self.mapper().slice(id.span()).strip_prefix("v-") else {
+                    return DirectiveAttributeLowering::NotDirective;
+                };
                 (raw_name, None)
             }
         };
@@ -221,7 +233,10 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                     .modifiers
                     .push(SimpleExpressionNode::new(modifier, false, loc.clone()));
             }
-            return Some(PropNode::Directive(Box::new_in(directive, self.bump())));
+            return DirectiveAttributeLowering::Lowered(PropNode::Directive(Box::new_in(
+                directive,
+                self.bump(),
+            )));
         }
 
         // `v-model={[value, ['trim']]}` — babel-plugin-jsx encodes the model
@@ -232,9 +247,14 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         if raw_name == "model"
             && arg.is_none()
             && let Some(array) = self.array_literal_value(attr.value.as_ref())
-            && let Some(prop) = self.lower_model_array(array, loc)
         {
-            return Some(prop);
+            match self.lower_model_array(array, loc) {
+                ModelArrayLowering::Lowered(prop) => {
+                    return DirectiveAttributeLowering::Lowered(prop);
+                }
+                ModelArrayLowering::Rejected => return DirectiveAttributeLowering::Rejected,
+                ModelArrayLowering::Unrecognized => {}
+            }
         }
 
         // `v-custom={[value, 'arg', ['a','b']]}` — babel-plugin-jsx's array
@@ -250,7 +270,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             && let Some(array) = self.array_literal_value(attr.value.as_ref())
             && let Some(prop) = self.lower_custom_directive_array(array, raw_name, loc)
         {
-            return Some(prop);
+            return DirectiveAttributeLowering::Lowered(prop);
         }
 
         let mut directive = DirectiveNode::new(self.bump(), raw_name, loc.clone());
@@ -258,7 +278,10 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             directive.arg = Some(self.static_expr(arg_name, arg_span));
         }
         directive.exp = self.directive_value_expr(attr.value.as_ref());
-        Some(PropNode::Directive(Box::new_in(directive, self.bump())))
+        DirectiveAttributeLowering::Lowered(PropNode::Directive(Box::new_in(
+            directive,
+            self.bump(),
+        )))
     }
 
     fn directive_value_expr(

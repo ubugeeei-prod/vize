@@ -314,6 +314,12 @@
       "source": "const A = () => <B v-model={[val, 'argument', ['modifier']]}/>;"
     },
     {
+      "id": "directives/v_model_component_dynamic_arg",
+      "category": "directives",
+      "lang": "jsx",
+      "source": "const A = () => <B v-model={[foo, bar]}/>;"
+    },
+    {
       "id": "directives/v_models",
       "category": "directives",
       "lang": "jsx",

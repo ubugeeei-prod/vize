@@ -13,7 +13,7 @@ opt-in compat mode (#3391) is expected to change.
 
 | Artifact                                  | Role                                                                                                       |
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `babel_compat/fixtures/corpus.json`       | the 97 inputs + the babel plugin options each is compiled with                                             |
+| `babel_compat/fixtures/corpus.json`       | the 98 inputs + the babel plugin options each is compiled with                                             |
 | `babel_compat/oracle.mjs`                 | runs the corpus through the real plugin; `--write` records, `--check` verifies                             |
 | `babel_compat/fixtures/babel-output.json` | committed ground truth (generated — do not hand-edit)                                                      |
 | `../babel_compat_oracle.rs`               | snapshots babel's output beside Vize's, per category, with a verdict per row                               |
@@ -56,7 +56,7 @@ numbers cannot drift from the verdict table.
 | Verdict    | Rows |
 | ---------- | ---: |
 | equivalent |   72 |
-| divergent  |   23 |
+| divergent  |   24 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -162,6 +162,7 @@ deliberate answer, recorded here so it is not relitigated.
 | `directives/v_model_arg_underscore`     | `[[vModelText, val, "foo", {trim: true}]]`                     | rejected as above                                               | accept and pass the arg | ❌      |
 | `directives/v_model_component`          | `modelValue` + `onUpdate:modelValue` props                     | same                                                            | no change               | ✅      |
 | `directives/v_model_component_arg_mods` | `argument`, `argumentModifiers`, `onUpdate:argument`           | same props, different literal order                             | no change               | ✅      |
+| `directives/v_model_component_dynamic_arg` | computed prop + `"onUpdate:" + bar`                         | rejected: dynamic arguments need computed prop lowering (#3466) | add computed prop IR     | ❌      |
 | `directives/v_models`                   | expands to one prop pair per entry                             | same, via one `model` directive per entry (#3418)               | no change               | ✅      |
 | `directives/v_models_mods`              | adds `<arg>Modifiers` per entry                                | same props, different literal order (#3418)                     | no change               | ✅      |
 | `directives/v_show_element`             | `[[vShow, vis]]`                                               | same                                                            | no change               | ✅      |
