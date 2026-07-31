@@ -63,6 +63,9 @@ fn regex_after_standalone_and_class_blocks_is_not_a_directive() {
     for statement in [
         "{}",
         "label: {}",
+        "label\n: {}",
+        "label\n/* comment */\n: {}",
+        "async: {}",
         "class Check {}",
         "class Check extends Foo.Bar {}",
         "class Check extends mixin(foo < bar) {}",

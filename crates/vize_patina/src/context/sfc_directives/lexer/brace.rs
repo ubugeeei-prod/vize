@@ -244,7 +244,6 @@ impl DelimiterState {
         if !can_start_expression {
             self.expression_required = false;
             self.brace_expression_required = false;
-            self.possible_label = false;
         }
     }
 }
@@ -252,8 +251,7 @@ impl DelimiterState {
 fn identifier_can_be_label(identifier: &[u8]) -> bool {
     !matches!(
         identifier,
-        b"async"
-            | b"await"
+        b"await"
             | b"break"
             | b"case"
             | b"catch"
