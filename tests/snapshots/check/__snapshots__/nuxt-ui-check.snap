@@ -887,7 +887,8 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/separator' or its corresponding type declarations.",
-        "error:55:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:55:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:81:4 [TS2345] Argument of type '{ decorative: boolean; as?: any; dataSlot: string; class: any; orientation: string | number | symbol; }' is not assignable to parameter of type '{ readonly asChild?: boolean | undefined; readonly as?: AsTag | Component | undefined; readonly orientation?: DataOrientation | undefined; readonly decorative?: boolean | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps & Record<...>'.\nType '{ decorative: boolean; as?: any; dataSlot: string; class: any; orientation: string | number | symbol; }' is not assignable to type '{ readonly asChild?: boolean | undefined; readonly as?: AsTag | Component | undefined; readonly orientation?: DataOrientation | undefined; readonly decorative?: boolean | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -1534,7 +1535,7 @@
       ]
     }
   ],
-  "errorCount": 641,
+  "errorCount": 642,
   "warningCount": 0,
   "fileCount": 180
 }
