@@ -4,6 +4,15 @@ expression: diagnostics
 ---
 [
     (
+        "vue/no-unused-properties",
+        "Prop 'msg' is defined but never used",
+        336,
+        336,
+        Some(
+            "Remove unused prop or use it in your template/script",
+        ),
+    ),
+    (
         "vue/html-button-has-type",
         "'<button>' is missing a 'type' attribute; add type=\"button\", \"submit\", or \"reset\"",
         372,

@@ -1,13 +1,51 @@
 //! vue/no-unused-properties
 //!
-//! Disallow unused properties (props, data, computed, etc.).
+//! Disallow props that are declared but referenced nowhere.
+//!
+//! ## How usage is decided
+//!
+//! A prop is reported only when its name appears in **none** of the places it
+//! could be referenced from:
+//!
+//! * a compiled template expression — a directive's expression or argument, an
+//!   interpolation, a `v-for` source (an HTML comment, a text node, a plain
+//!   attribute and a `v-pre` region are not expressions and do not count);
+//! * the `<script setup>` block, outside the `defineProps(...)` call itself;
+//! * a sibling Options API `<script>` block, which can reach props via `this`.
+//!
+//! The scan deliberately over-approximates in every direction except the
+//! template AST; see [`usage`] for why that is the *sound* direction for a rule
+//! that reports the absence of a reference.
+//!
+//! ## What stays silent
+//!
+//! * `const props = defineProps(...)`, and `withDefaults(...)`. The script holds
+//!   the props object and can index it in ways no scan can see (`props[key]`),
+//!   so nothing is reported for the component. That is the blanket suppression
+//!   the rule has always applied; what is recovered here is the unassigned
+//!   (`defineProps<{ … }>()`, `defineProps([…])`) and destructured spellings.
+//! * Any name a `const { … } = defineProps(...)` pattern binds: it becomes a
+//!   script binding this does not follow. A prop the pattern does *not* name is
+//!   still checked.
+//! * The Options API `props:` option. Croquis exposes only `defineProps` props
+//!   through `macros.props()`, so that spelling declares nothing here and is out
+//!   of scope.
+//! * Names matched by `ignore_pattern`, and any name starting with `_`.
+//!
+//! ## Report location
+//!
+//! Every diagnostic a `vue/*` rule produces is offset into the `<template>`
+//! block, so a location inside `<script setup>` cannot be expressed from here.
+//! The report is anchored at the start of the template block and names the prop
+//! in its message; upstream anchors at the prop declaration instead. That is a
+//! location divergence for the parity ledger, not a coverage one.
 //!
 //! ## Examples
 //!
 //! ### Invalid
 //! ```vue
 //! <script setup lang="ts">
-//! const props = defineProps<{
+//! defineProps<{
 //!   msg: string
 //!   unused: number  // defined but never used
 //! }>()
@@ -21,7 +59,7 @@
 //! ### Valid
 //! ```vue
 //! <script setup lang="ts">
-//! const props = defineProps<{
+//! defineProps<{
 //!   msg: string
 //!   count: number
 //! }>()
@@ -34,12 +72,21 @@
 
 #![allow(clippy::disallowed_macros)]
 
+#[cfg(test)]
+mod tests;
+mod usage;
+
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::String;
 use vize_carton::ToCompactString;
+use vize_carton::{CompactString, FxHashSet};
 use vize_relief::RootNode;
+
+use self::usage::{
+    PropsAccess, classify_props_access, push_identifier_tokens, template_references,
+};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unused-properties",
@@ -90,74 +137,76 @@ impl Rule for NoUnusedProperties {
         &META
     }
 
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
-        // Skip if no analysis available
-        if !ctx.has_analysis() {
+    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
+        if !self.check_props || !ctx.has_analysis() {
             return;
         }
+        // The script blocks are needed to see references the template cannot
+        // hold, so without a descriptor there is no sound way to decide.
+        let Some(descriptor) = ctx.sfc_descriptor() else {
+            return;
+        };
+        let script_setup = descriptor
+            .script_setup
+            .as_ref()
+            .map(|block| block.content.as_ref());
+        let plain_script = descriptor
+            .script
+            .as_ref()
+            .map(|block| block.content.as_ref());
 
-        // Collect unused props first (to avoid borrow conflicts)
-        let (unused_props, define_props_loc): (Vec<String>, (u32, u32)) = {
+        // Collect unused props first (to avoid borrow conflicts).
+        let unused_props: Vec<String> = {
             let Some(analysis) = ctx.analysis() else {
                 return;
             };
-
-            if !self.check_props {
+            let Some(call) = analysis.macros.define_props() else {
+                return;
+            };
+            let props = analysis.macros.props();
+            if props.is_empty() {
                 return;
             }
 
-            let props = analysis.macros.props();
+            // `defineProps` is a `<script setup>` macro, so its span addresses
+            // that block; fall back to a lone `<script>` for robustness.
+            let declaring_script = script_setup.or(plain_script).unwrap_or_default();
+            if matches!(
+                classify_props_access(declaring_script, (call.start, call.end)),
+                PropsAccess::Captured
+            ) {
+                return;
+            }
 
-            // Get defineProps call location for error reporting
-            let loc = analysis
-                .macros
-                .define_props()
-                .map(|call| (call.start, call.end))
-                .unwrap_or((0, 0));
+            let mut referenced = template_references(root);
+            push_script_tokens(declaring_script, (call.start, call.end), &mut referenced);
+            if let Some(plain) = plain_script.filter(|_| script_setup.is_some()) {
+                push_identifier_tokens(plain, &mut referenced);
+            }
 
-            let unused: Vec<String> = props
+            let destructured = analysis.macros.props_destructure();
+            props
                 .iter()
                 .filter(|prop| {
-                    // Skip ignored properties
-                    if self.should_ignore(prop.name.as_str()) {
+                    let name = prop.name.as_str();
+                    if self.should_ignore(name) || referenced.contains(name) {
                         return false;
                     }
-
-                    let prop_name = prop.name.as_str();
-
-                    // Check if prop is used in template scope chain
-                    let is_used_in_scope = analysis.scopes.is_used(prop_name);
-
-                    // Check if prop is accessed via props object in bindings
-                    let has_props_binding = analysis.bindings.contains("props");
-                    let is_prop_destructured = analysis.bindings.get(prop_name).is_some_and(|bt| {
-                        matches!(
-                            bt,
-                            vize_relief::BindingType::Props
-                                | vize_relief::BindingType::PropsAliased
-                        )
-                    });
-
-                    // If props object exists and is used, we can't easily track individual prop usage
-                    // in script, so we only report if not used in template AND not destructured
-                    let is_used = is_used_in_scope || is_prop_destructured || has_props_binding;
-
-                    !is_used
+                    // A destructured name is a script binding this does not
+                    // follow, so it is left alone.
+                    destructured.is_none_or(|bindings| bindings.get(name).is_none())
                 })
                 .map(|prop| prop.name.to_compact_string())
-                .collect();
-
-            (unused, loc)
+                .collect()
         };
 
-        // Report unused props
         for prop_name in unused_props {
             ctx.report(
                 crate::diagnostic::LintDiagnostic::warn(
                     ctx.current_rule,
                     format!("Prop '{}' is defined but never used", prop_name),
-                    define_props_loc.0,
-                    define_props_loc.1,
+                    0,
+                    0,
                 )
                 .with_help("Remove unused prop or use it in your template/script"),
             );
@@ -165,22 +214,17 @@ impl Rule for NoUnusedProperties {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::NoUnusedProperties;
-    use crate::rule::{Rule, RuleCategory};
-
-    #[test]
-    fn test_meta() {
-        let rule = NoUnusedProperties::default();
-        assert_eq!(rule.meta().name, "vue/no-unused-properties");
-        assert_eq!(rule.meta().category, RuleCategory::StronglyRecommended);
+/// Push the identifier tokens of `script`, minus the `defineProps` call.
+///
+/// The call always spells every prop name, so leaving it in would mark them all
+/// used. Everything around it counts, including a destructuring pattern and a
+/// `withDefaults` defaults object.
+fn push_script_tokens(script: &str, span: (u32, u32), names: &mut FxHashSet<CompactString>) {
+    let (start, end) = (span.0 as usize, span.1 as usize);
+    if let Some(before) = script.get(..start) {
+        push_identifier_tokens(before, names);
     }
-
-    #[test]
-    fn test_should_ignore() {
-        let rule = NoUnusedProperties::default();
-        assert!(rule.should_ignore("_internal"));
-        assert!(!rule.should_ignore("count"));
+    if let Some(after) = script.get(end..) {
+        push_identifier_tokens(after, names);
     }
 }

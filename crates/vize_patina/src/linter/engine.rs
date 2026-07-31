@@ -67,11 +67,13 @@ const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
     "vue/require-component-registration",
     "vue/no-undefined-refs",
     "vue/no-mutating-props",
+    "vue/no-unused-properties",
     "a11y/no-refer-to-non-existent-id",
     "ecosystem/router-link-require-to",
 ];
 const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
     "vue/no-reserved-component-names",
+    "vue/no-unused-properties",
     "vue/no-unused-refs",
     "vue/sfc-element-order",
     "vue/require-scoped-style",
