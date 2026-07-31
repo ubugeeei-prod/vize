@@ -16,7 +16,7 @@ fn generic_emit_guards_are_overload_order_independent() {
                 "src/components.ts",
                 r#"type Props = {
   count: number
-  onSave?: (value: string) => void
+  onSave?: (value: number) => void
 }
 
 export const GenericFirstCallbackChild = null as unknown as {
@@ -89,7 +89,12 @@ const stringHandler = (_value: string) => {}
         .collect();
     assert_eq!(
         actual,
-        [("src/Parent.vue", Some(2345), "10:4".to_string())],
-        "generic-first and generic-last overloads must share one result; the other three usages also omit the required `count`, but they bind `onSave` as a declared prop, so their missing-prop reports stay deferred to #3569: {snapshot:#?}"
+        [
+            ("src/Parent.vue", Some(2322), "7:31".to_string()),
+            ("src/Parent.vue", Some(2322), "8:30".to_string()),
+            ("src/Parent.vue", Some(2322), "9:18".to_string()),
+            ("src/Parent.vue", Some(2345), "10:4".to_string()),
+        ],
+        "generic-first and generic-last overloads must share one result, and unbound required props must remain enforced: {snapshot:#?}"
     );
 }

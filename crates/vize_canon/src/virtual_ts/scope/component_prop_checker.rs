@@ -78,21 +78,21 @@ fn authored_prop_key_union(usage: &ComponentUsage) -> String {
 
 /// The target the usage's whole props object literal is checked against.
 ///
-/// `__VizeExactOptionalProps<__X_Props_N>` reports **only** what the per-prop
-/// check structurally cannot: the `exactOptionalPropertyTypes` distinction
-/// between "the property is absent" and "the property is present and
-/// `undefined`" (#3450). That distinction only exists when a whole object
-/// literal is assigned at once, which is why the per-prop path cannot express
-/// it — it extracts `label?: string` to `string | undefined` through
-/// `__VizePropValue` and assigns to that, legal whatever the option says.
+/// `__VizeWholePropChecker` infers the authored object as `A` and chooses one
+/// of two targets. If every authored declared value is compatible with the
+/// corresponding child prop, the target is the complete `P`; missing required
+/// siblings are then reported (#3569). If any such value is already wrong, the
+/// target is `__VizeRelaxedProps<P>` so that the per-prop check remains the only
+/// diagnostic, anchored at the offending value. A union child is matched
+/// against a distributive union of its authored prop projections, so a valid
+/// discriminant selects the complete union contract while an invalid value
+/// still takes the relaxed path.
 ///
-/// Every property is widened *with* `{} | null`, a union that accepts any value
-/// except `undefined`. That is the whole trick: an ordinary type mismatch stays
-/// the per-prop check's to report, at its own well-anchored position, and is not
-/// reported a second time here. Checking against the child's props type
-/// unmodified — or against `Partial<>` of it — reports every wrongly-typed prop
-/// twice, one byte apart, with an identical code and message that
-/// `dedup_diagnostics` cannot collapse because the positions differ.
+/// The relaxed target makes every property optional and widens it *with*
+/// `{} | null`, a union that accepts any value except `undefined`. An ordinary
+/// mismatch therefore stays the per-prop check's to report. Checking every
+/// authored object against the child type unmodified would report a wrong prop
+/// twice, at different positions that `dedup_diagnostics` cannot collapse.
 ///
 /// The declared type stays in the union rather than being replaced by `{} | null`
 /// because it is the only thing that contextually types an inline callback prop.
@@ -106,20 +106,21 @@ fn authored_prop_key_union(usage: &ComponentUsage) -> String {
 /// `LinkBehavior | null` is legitimately passed `null`, and `{}` alone rejects
 /// it. Only `undefined` is this check's business.
 ///
-/// `Required<Pick<P, K>>[K]` rather than `P[K]` because indexed access on an
-/// optional property already includes `undefined`, so `P[K]` cannot tell
-/// `label?: string` from `label?: string | undefined` and would make the check
-/// inert. Stripping the modifier first leaves only an *explicitly* declared
-/// `undefined`, which the child opted into and which must stay silent, and it
-/// leaves that `undefined` *in the union*, so no conditional branch is needed to
-/// allow it.
+/// `Required<Pick<P, K>>[K]` rather than `P[K]` keeps the
+/// `exactOptionalPropertyTypes` distinction intact in the relaxed constraint.
+/// Indexed access on an optional property includes `undefined`; stripping the
+/// modifier first leaves it only when the child explicitly declared it. The
+/// authored-value compatibility projection intentionally uses `P[K]` instead:
+/// an authored `undefined` must select the complete target, where TypeScript can
+/// reject it under the exact-optional option (#3450), rather than escape through
+/// the relaxed mismatch path.
 ///
 /// Consequences, covered by the component-props and project tests:
 ///
-/// * when the usage binds a declared prop, properties it did not pass are not
-///   reported by this path — every property is optional. If it binds only
-///   fallthrough attributes, `__VizeWholeProps` keeps the full type so required
-///   props are still checked (#3566).
+/// * a correct declared binding keeps unbound required props active; a wrong
+///   declared binding produces its single per-prop diagnostic instead.
+/// * when no authored key is a declared prop, the target is always the complete
+///   `P`, preserving the fallthrough-only behavior from #3566.
 /// * `class`, `style`, `data-*`, `aria-*` and anything else the child does not
 ///   declare are absorbed by the `Record<string, unknown>` intersection
 ///   `__VizePropChecker` applies, which also suppresses object-literal excess
@@ -164,30 +165,18 @@ pub(super) fn append_prop_checker_alias(
     component_ref: &str,
     idx: usize,
 ) {
-    // A usage that binds nothing by name is checked against the child's props
-    // type *unmodified*. Nothing on that element is covered by the per-prop
-    // path, so nothing can be reported twice. This covers both spread-only
-    // usages (#3444) and an empty `<Child />`, whose `{}` must still fail when
-    // the child has required props (#3527).
-    //
-    // Any usage that also binds by name keeps the widened target: its named
-    // props belong to the per-prop check, and the full type there would
-    // duplicate every one of them.
-    let target = if has_inference_props(usage) {
-        let keys = authored_prop_key_union(usage);
-        cstr!(
-            "__VizeWholeProps<typeof {component_ref}, __{component_type_name}_Props_{idx}, {keys}>"
-        )
+    let keys = if has_inference_props(usage) {
+        authored_prop_key_union(usage)
     } else {
-        cstr!("__{component_type_name}_Props_{idx}")
+        cstr!("never")
     };
     append!(
         *ts,
-        "  type __{component_type_name}_CheckProps_{idx} = {target};\n",
+        "  type __{component_type_name}_CheckProps_{idx} = __{component_type_name}_Props_{idx};\n",
     );
     append!(
         *ts,
-        "  type __{component_type_name}_Check_{idx} = __VizePropChecker<typeof {component_ref}, __{component_type_name}_CheckProps_{idx}>;\n",
+        "  type __{component_type_name}_Check_{idx} = __VizePropChecker<typeof {component_ref}, __{component_type_name}_CheckProps_{idx}, {keys}>;\n",
     );
 }
 
@@ -198,17 +187,25 @@ pub(super) fn append_prop_checker_alias(
 /// [`append_prop_checker_alias`] is what names them, and the reasoning for
 /// `__VizeExactOptionalProps` in particular belongs beside the alias it builds.
 pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &ComponentUsage)]) {
+    let has_whole_prop_inference = usages.iter().any(|(_, usage)| has_inference_props(usage));
     ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
-    ts.push_str(
-        "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;\n",
-    );
+    if has_whole_prop_inference {
+        ts.push_str(
+            "  type __VizePropChecker<C, P, K extends PropertyKey> = __VizeIsAny<C> extends true ? __VizeWholePropChecker<C, P, K> : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : __VizeWholePropChecker<C, P, K>) : __VizeWholePropChecker<C, P, K>;\n",
+        );
+    } else {
+        ts.push_str(
+            "  type __VizePropChecker<C, P, _K extends PropertyKey> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;\n",
+        );
+    }
     ts.push_str(
         "  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;\n",
     );
-    if usages.iter().any(|(_, usage)| has_inference_props(usage)) {
+    if has_whole_prop_inference {
         ts.push_str(
             "  type __VizeExactOptionalProps<P> = { [K in keyof P]?: Required<Pick<P, K>>[K] | {} | null };\n",
         );
+        ts.push_str("  type __VizeRelaxedProps<P> = __VizeExactOptionalProps<P>;\n");
         ts.push_str(
             "  // @ts-ignore TS2694/TS2307: Vue 2 has no PublicProps; an unresolved alias degrades to any and therefore contributes no keys.\n",
         );
@@ -230,13 +227,19 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
         );
         ts.push_str("  type __VizeEventSuffixForProp<K> = K extends `on${infer N}` ? N : never;\n");
         ts.push_str(
-            "  type __VizeInstanceEmitPropKeys<C, P> = C extends { new (...args: any[]): { $emit: infer F } } ? [__VizeIsAny<F>] extends [true] ? never : F extends (event: string, ...args: any[]) => any ? never : { [K in keyof P]: K extends `on${string}` ? F extends (event: __VizeEventSuffixForProp<K>, ...args: any[]) => any ? K : F extends (event: __VizeEventNameForProp<K>, ...args: any[]) => any ? K : never : never }[keyof P] : never;\n",
+            "  type __VizeInstanceEmitPropKeys<C, K extends PropertyKey> = C extends { new (...args: any[]): { $emit: infer F } } ? [__VizeIsAny<F>] extends [true] ? never : F extends (event: string, ...args: any[]) => any ? never : K extends `on${string}` ? F extends (event: __VizeEventSuffixForProp<K>, ...args: any[]) => any ? K : F extends (event: __VizeEventNameForProp<K>, ...args: any[]) => any ? K : never : never : never;\n",
         );
         ts.push_str(
-            "  type __VizeDeclaredPropKeys<C, P> = Exclude<keyof P, __VizeVuePublicPropKeys | __VizeComponentEmitPropKeys<C> | __VizeInstanceEmitPropKeys<C, P>>;\n",
+            "  type __VizeDeclaredAuthoredPropKeys<C, P, K extends PropertyKey> = P extends unknown ? Exclude<Extract<keyof P, K>, __VizeVuePublicPropKeys | __VizeComponentEmitPropKeys<C> | __VizeInstanceEmitPropKeys<C, K>> : never;\n",
         );
         ts.push_str(
-            "  type __VizeWholeProps<C, P, K extends PropertyKey> = P extends unknown ? [Extract<__VizeDeclaredPropKeys<C, P>, K>] extends [never] ? P : __VizeExactOptionalProps<P> : never;\n",
+            "  type __VizeAuthoredProps<C, P, K extends PropertyKey> = P extends unknown ? [__VizeDeclaredAuthoredPropKeys<C, P, K>] extends [never] ? never : { [Q in __VizeDeclaredAuthoredPropKeys<C, P, K>]-?: P[Q] } : never;\n",
+        );
+        ts.push_str(
+            "  type __VizeWholeProps<C, P, K extends PropertyKey, A> = [__VizeDeclaredAuthoredPropKeys<C, P, K>] extends [never] ? P : [A] extends [__VizeAuthoredProps<C, P, K>] ? P : __VizeRelaxedProps<P>;\n",
+        );
+        ts.push_str(
+            "  type __VizeWholePropChecker<C, P, K extends PropertyKey> = [K] extends [never] ? (props: P & Record<string, unknown>) => void : <A extends Record<string, unknown>>(props: A & __VizeWholeProps<C, P, K, A>) => void;\n",
         );
     }
     // Emitted only when a usage actually binds an inline callback, because

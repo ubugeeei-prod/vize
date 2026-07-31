@@ -100,7 +100,7 @@ const onSave = (_value: string) => {}
 </script>
 
 <template>
-  <!-- #3569 boundary: its missing-label fix remains separate. -->
+  <!-- Correct named values keep unbound required props active. -->
   <Child :count="1" />
   <Child :count="'bad'" />
   <Child :count="1" label="ok" />
@@ -132,6 +132,9 @@ const onSave = (_value: string) => {}
   <ExternalEventChild :on-XML="onSave" />
 
   <Optional class="clean" />
+  <UnionChild kind="text" />
+  <UnionChild kind="wrong" />
+  <UnionChild kind="text" text="ok" />
 </template>
 "#,
             ),
@@ -163,6 +166,8 @@ const onSave = (_value: string) => {}
         [
             ("src/Parent.vue", Some(2322), "19:11".to_string()),
             ("src/Parent.vue", Some(2322), "45:26".to_string()),
+            ("src/Parent.vue", Some(2322), "50:15".to_string()),
+            ("src/Parent.vue", Some(2345), "18:4".to_string()),
             ("src/Parent.vue", Some(2345), "23:4".to_string()),
             ("src/Parent.vue", Some(2345), "27:4".to_string()),
             ("src/Parent.vue", Some(2345), "28:4".to_string()),
@@ -179,8 +184,9 @@ const onSave = (_value: string) => {}
             ("src/Parent.vue", Some(2345), "43:4".to_string()),
             ("src/Parent.vue", Some(2345), "44:4".to_string()),
             ("src/Parent.vue", Some(2345), "46:4".to_string()),
+            ("src/Parent.vue", Some(2345), "49:4".to_string()),
         ],
-        "exact vue-tsc positions, except the explicitly deferred #3569 row: {snapshot:#?}"
+        "exact vue-tsc positions: {snapshot:#?}"
     );
 
     let diagnostic_at = |line: u32| {
@@ -193,7 +199,7 @@ const onSave = (_value: string) => {}
         diagnostic_at(19)
             .2
             .contains("not assignable to type 'number'"),
-        "the wrong declared prop must remain the sole #3569-boundary diagnostic: {snapshot:#?}"
+        "the wrong declared prop must remain the sole diagnostic for its usage: {snapshot:#?}"
     );
     assert!(
         diagnostic_at(28)
@@ -201,7 +207,7 @@ const onSave = (_value: string) => {}
             .contains("not assignable to type 'number'"),
         "the wrong spread prop must be a value mismatch: {snapshot:#?}"
     );
-    for line in [27, 39] {
+    for line in [18, 27, 39] {
         assert!(
             diagnostic_at(line)
                 .2
@@ -221,5 +227,13 @@ const onSave = (_value: string) => {}
     assert!(
         diagnostic_at(45).2.contains("not assignable"),
         "a declared on* callback must stay on the ordinary prop path: {snapshot:#?}"
+    );
+    assert!(
+        diagnostic_at(49).2.contains("Property 'text' is missing"),
+        "a valid discriminant must select the complete union arm: {snapshot:#?}"
+    );
+    assert!(
+        diagnostic_at(50).2.contains("not assignable") && !diagnostic_at(50).2.contains("missing"),
+        "an invalid discriminant must remain the sole value diagnostic: {snapshot:#?}"
     );
 }

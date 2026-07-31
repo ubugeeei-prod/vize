@@ -71,9 +71,10 @@ function __setup() {
 
   // Component props type declarations
   type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
-  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;
+  type __VizePropChecker<C, P, K extends PropertyKey> = __VizeIsAny<C> extends true ? __VizeWholePropChecker<C, P, K> : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : __VizeWholePropChecker<C, P, K>) : __VizeWholePropChecker<C, P, K>;
   type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
   type __VizeExactOptionalProps<P> = { [K in keyof P]?: Required<Pick<P, K>>[K] | {} | null };
+  type __VizeRelaxedProps<P> = __VizeExactOptionalProps<P>;
   // @ts-ignore TS2694/TS2307: Vue 2 has no PublicProps; an unresolved alias degrades to any and therefore contributes no keys.
   type __VizeVuePublicProps = import('vue').PublicProps;
   type __VizeVuePublicPropKeys = [__VizeIsAny<__VizeVuePublicProps>] extends [true] ? never : keyof __VizeVuePublicProps;
@@ -82,15 +83,17 @@ function __setup() {
   type __VizeComponentEmitPropKeys<C> = '__vizeEmitProps' extends keyof C ? C extends { __vizeEmitProps?: infer P } ? keyof P : never : C extends { emits?: infer E } ? [__VizeIsAny<E>] extends [true] ? never : __VizeUsageEventProp<E extends readonly (infer N extends string)[] ? N : keyof NonNullable<E> & string> : never;
   type __VizeEventNameForProp<K> = K extends `on${infer N}` ? Uncapitalize<N> : never;
   type __VizeEventSuffixForProp<K> = K extends `on${infer N}` ? N : never;
-  type __VizeInstanceEmitPropKeys<C, P> = C extends { new (...args: any[]): { $emit: infer F } } ? [__VizeIsAny<F>] extends [true] ? never : F extends (event: string, ...args: any[]) => any ? never : { [K in keyof P]: K extends `on${string}` ? F extends (event: __VizeEventSuffixForProp<K>, ...args: any[]) => any ? K : F extends (event: __VizeEventNameForProp<K>, ...args: any[]) => any ? K : never : never }[keyof P] : never;
-  type __VizeDeclaredPropKeys<C, P> = Exclude<keyof P, __VizeVuePublicPropKeys | __VizeComponentEmitPropKeys<C> | __VizeInstanceEmitPropKeys<C, P>>;
-  type __VizeWholeProps<C, P, K extends PropertyKey> = P extends unknown ? [Extract<__VizeDeclaredPropKeys<C, P>, K>] extends [never] ? P : __VizeExactOptionalProps<P> : never;
+  type __VizeInstanceEmitPropKeys<C, K extends PropertyKey> = C extends { new (...args: any[]): { $emit: infer F } } ? [__VizeIsAny<F>] extends [true] ? never : F extends (event: string, ...args: any[]) => any ? never : K extends `on${string}` ? F extends (event: __VizeEventSuffixForProp<K>, ...args: any[]) => any ? K : F extends (event: __VizeEventNameForProp<K>, ...args: any[]) => any ? K : never : never : never;
+  type __VizeDeclaredAuthoredPropKeys<C, P, K extends PropertyKey> = P extends unknown ? Exclude<Extract<keyof P, K>, __VizeVuePublicPropKeys | __VizeComponentEmitPropKeys<C> | __VizeInstanceEmitPropKeys<C, K>> : never;
+  type __VizeAuthoredProps<C, P, K extends PropertyKey> = P extends unknown ? [__VizeDeclaredAuthoredPropKeys<C, P, K>] extends [never] ? never : { [Q in __VizeDeclaredAuthoredPropKeys<C, P, K>]-?: P[Q] } : never;
+  type __VizeWholeProps<C, P, K extends PropertyKey, A> = [__VizeDeclaredAuthoredPropKeys<C, P, K>] extends [never] ? P : [A] extends [__VizeAuthoredProps<C, P, K>] ? P : __VizeRelaxedProps<P>;
+  type __VizeWholePropChecker<C, P, K extends PropertyKey> = [K] extends [never] ? (props: P & Record<string, unknown>) => void : <A extends Record<string, unknown>>(props: A & __VizeWholeProps<C, P, K, A>) => void;
   // @vize-map: component -> 258:302
   type __Child_Props_0 = typeof Child extends { __vizeCheck: any } ? Record<string, unknown> : (typeof Child extends { new (): { $props: infer __P } } ? __P : (typeof Child extends (props: infer __P) => any ? __P : {}));
   type __Child_0_prop_as = __VizePropValue<__Child_Props_0, 'as'>;
   type __Child_0_prop_as_child = __VizePropValue<__Child_Props_0, 'asChild'>;
-  type __Child_CheckProps_0 = __VizeWholeProps<typeof Child, __Child_Props_0, "as" | "asChild">;
-  type __Child_Check_0 = __VizePropChecker<typeof Child, __Child_CheckProps_0>;
+  type __Child_CheckProps_0 = __Child_Props_0;
+  type __Child_Check_0 = __VizePropChecker<typeof Child, __Child_CheckProps_0, "as" | "asChild">;
 
   // Component template navigation references
   void Child;
