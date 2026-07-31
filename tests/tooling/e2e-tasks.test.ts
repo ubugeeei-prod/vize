@@ -53,11 +53,11 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
   );
   assert.equal(
     scripts["test:readiness:check"],
-    "node --test --test-concurrency=1 snapshots/check/compiler-macros.ts",
+    "VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} node --test --test-concurrency=1 snapshots/check/compiler-macros.ts snapshots/check/elk.ts snapshots/check/misskey.ts snapshots/check/npmx.ts snapshots/check/nuxt-ui.ts snapshots/check/reka-ui.ts",
   );
   assert.equal(
     scripts["test:readiness:lint"],
-    "node --test --test-concurrency=1 tooling/cli-lint-contract.test.ts",
+    "VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} node --test --test-concurrency=1 tooling/cli-lint-contract.test.ts snapshots/lint/elk.ts snapshots/lint/misskey.ts snapshots/lint/npmx.ts snapshots/lint/nuxt-ui.ts snapshots/lint/reka-ui.ts",
   );
   assert.equal(
     scripts["test:readiness:build"],
@@ -74,7 +74,12 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
   assertExists("tests", "snapshots", "build", "generic.ts");
   assertExists("tests", "app", "dev", "misskey.spec.ts");
 
-  for (const fixture of ["elk", "misskey"]) {
+  for (const fixture of ["elk", "misskey", "npmx.dev", "nuxt-ui", "reka-ui"]) {
+    const snapshotName = fixture === "npmx.dev" ? "npmx" : fixture;
+    assertExists("tests", "snapshots", "check", `${snapshotName}.ts`);
+    assertExists("tests", "snapshots", "check", "__snapshots__", `${fixture}-check.snap`);
+    assertExists("tests", "snapshots", "lint", `${snapshotName}.ts`);
+    assertExists("tests", "snapshots", "lint", "__snapshots__", `${fixture}-lint.snap`);
     const gitlink = execFileSync(
       "git",
       ["ls-files", "--stage", `tests/_fixtures/_git/${fixture}`],

@@ -9,7 +9,10 @@ runs:
       run: |
         git submodule update --init --recursive --depth 1 \
           tests/_fixtures/_git/elk \
-          tests/_fixtures/_git/misskey
+          tests/_fixtures/_git/misskey \
+          tests/_fixtures/_git/npmx.dev \
+          tests/_fixtures/_git/nuxt-ui \
+          tests/_fixtures/_git/reka-ui
 
     - name: Setup Rust
       id: rust-toolchain
@@ -80,7 +83,7 @@ runs:
       shell: bash
       run: |
         set -o pipefail
-        timeout --signal=TERM --kill-after=15s 2m \
+        timeout --signal=TERM --kill-after=15s 3m \
           vp run --filter './tests' test:readiness:check 2>&1 \
           | tee target/app-readiness-logs/check.log
 

@@ -110,12 +110,15 @@ test("pull requests run one path-filtered fast app readiness job", () => {
     "'pnpm-lock.yaml'",
     "'tests/package.json'",
     "'tests/tsconfig.json'",
-    "'tests/_fixtures/_git/elk'",
-    "'tests/_fixtures/_git/misskey'",
+    "'tests/_fixtures/_git/{elk,misskey,npmx.dev,nuxt-ui,reka-ui}'",
     "'tests/_fixtures/_projects/compiler-macros/**'",
     "'tests/_helpers/**'",
     "'tests/app/dev/misskey.spec.ts'",
     "'tests/snapshots/check/compiler-macros.ts'",
+    "'tests/snapshots/check/{elk,misskey,npmx,nuxt-ui,reka-ui}.ts'",
+    "'tests/snapshots/check/__snapshots__/{elk,misskey,npmx.dev,nuxt-ui,reka-ui}-check.snap'",
+    "'tests/snapshots/lint/{elk,misskey,npmx,nuxt-ui,reka-ui}.ts'",
+    "'tests/snapshots/lint/__snapshots__/{elk,misskey,npmx.dev,nuxt-ui,reka-ui}-lint.snap'",
     "'tests/snapshots/build/elk.ts'",
     "'tests/tooling/cli-lint-contract.test.ts'",
     "'tools/moon/**'",
@@ -155,10 +158,11 @@ test("local app readiness action keeps setup, diagnostics, and aggregation bound
   const action = readRepoFile(".github", "actions", "app-readiness", "action.yml");
 
   assert.match(action, /runs:\n\s+using:\s*composite/);
-  assert.match(
-    action,
-    /git submodule update --init --recursive --depth 1[\s\S]*tests\/_fixtures\/_git\/elk[\s\S]*tests\/_fixtures\/_git\/misskey/,
-  );
+  assert.match(action, /git submodule update --init --recursive --depth 1/);
+  for (const fixture of ["elk", "misskey", "npmx.dev", "nuxt-ui", "reka-ui"]) {
+    assert.match(action, new RegExp(`tests/_fixtures/_git/${fixture.replace(".", "\\.")}`));
+  }
+  assert.equal(action.match(/tests\/_fixtures\/_git\//g)?.length, 5);
   const setupRust = yamlStepBody(action, { name: "Setup Rust" });
   assert.match(setupRust, /id:\s*rust-toolchain/);
   assert.match(setupRust, /uses:\s*dtolnay\/rust-toolchain@[0-9a-f]{40}\s*# stable/);
@@ -185,7 +189,7 @@ test("local app readiness action keeps setup, diagnostics, and aggregation bound
   assert.doesNotMatch(action, /playwright install --with-deps chromium/);
 
   for (const [id, script, log, timeout] of [
-    ["check", "test:readiness:check", "check.log", "2m"],
+    ["check", "test:readiness:check", "check.log", "3m"],
     ["lint", "test:readiness:lint", "lint.log", "2m"],
     ["build", "test:readiness:build", "build.log", "3m"],
     ["dev", "test:readiness:dev", "dev.log", "3m"],
