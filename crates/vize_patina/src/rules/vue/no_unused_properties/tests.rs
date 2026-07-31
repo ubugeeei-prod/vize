@@ -5,6 +5,7 @@ use crate::rule::{Rule, RuleCategory};
 
 // The positive direction (a prop that must be reported) lives in the `reports`
 // submodule; this file keeps the helpers and the silent-direction cases.
+mod directive_lexer_reports;
 mod reports;
 
 /// Lint a full SFC with only this rule enabled.
@@ -39,14 +40,18 @@ fn none() -> Vec<(&'static str, Severity, u32, u32, &'static str)> {
     Vec::new()
 }
 
-/// The finding an unused `name` produces, anchored at the template block.
-fn unused(sfc: &str, name: &str) -> (&'static str, Severity, u32, u32, std::string::String) {
-    let anchor = sfc.find("<template>").expect("template block") + "<template>".len();
+/// The finding an unused `name` produces at its exact written declaration.
+fn unused(
+    sfc: &str,
+    name: &str,
+    declaration: &str,
+) -> (&'static str, Severity, u32, u32, std::string::String) {
+    let start = sfc.find(declaration).expect("prop declaration") as u32;
     (
         "vue/no-unused-properties",
         Severity::Warning,
-        anchor as u32,
-        anchor as u32,
+        start,
+        start + declaration.len() as u32,
         format!("Prop '{name}' is defined but never used"),
     )
 }

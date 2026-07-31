@@ -3,6 +3,8 @@
 //! Tracks Vue compiler macros (defineProps, defineEmits, etc.)
 //! and provides a plugin interface for custom macros.
 
+mod tracker;
+
 use vize_carton::{CompactString, FxHashMap};
 
 pub const DEFINE_PROPS: &str = "defineProps";
@@ -360,10 +362,12 @@ pub enum MacroBindingKind {
 }
 
 /// Tracks compiler macros during analysis
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct MacroTracker {
     calls: Vec<MacroCall>,
     props: Vec<PropDefinition>,
+    /// Written prop declarations, relative to the parsed script block.
+    prop_declarations: FxHashMap<CompactString, (u32, u32)>,
     emits: Vec<EmitDefinition>,
     /// Actual emit() calls in the code (not declarations)
     emit_calls: Vec<EmitCall>,
@@ -478,18 +482,6 @@ impl MacroTracker {
     #[inline]
     pub fn define_art(&self) -> Option<&ArtDefinition> {
         self.art.as_ref()
-    }
-
-    /// Add a prop definition
-    #[inline]
-    pub fn add_prop(&mut self, prop: PropDefinition) {
-        self.props.push(prop);
-    }
-
-    /// Get all props
-    #[inline]
-    pub fn props(&self) -> &[PropDefinition] {
-        &self.props
     }
 
     /// Add an emit definition
@@ -619,22 +611,6 @@ impl MacroTracker {
     #[inline]
     pub fn is_async(&self) -> bool {
         self.has_top_level_await()
-    }
-
-    /// Shift all stored source offsets by `delta`.
-    pub fn shift_offsets(&mut self, delta: u32) {
-        for call in &mut self.calls {
-            call.start = call.start.saturating_add(delta);
-            call.end = call.end.saturating_add(delta);
-        }
-        for call in &mut self.emit_calls {
-            call.start = call.start.saturating_add(delta);
-            call.end = call.end.saturating_add(delta);
-        }
-        for await_expr in &mut self.top_level_awaits {
-            await_expr.start = await_expr.start.saturating_add(delta);
-            await_expr.end = await_expr.end.saturating_add(delta);
-        }
     }
 }
 

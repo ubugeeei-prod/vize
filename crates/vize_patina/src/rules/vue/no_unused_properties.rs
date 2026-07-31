@@ -34,11 +34,10 @@
 //!
 //! ## Report location
 //!
-//! Every diagnostic a `vue/*` rule produces is offset into the `<template>`
-//! block, so a location inside `<script setup>` cannot be expressed from here.
-//! The report is anchored at the start of the template block and names the prop
-//! in its message; upstream anchors at the prop declaration instead. That is a
-//! location divergence for the parity ledger, not a coverage one.
+//! A diagnostic starts at the prop's written name and covers its declaration.
+//! Inline type-literal members and runtime declarations carry their exact OXC
+//! source range through Croquis; an indirect type reference falls back to the
+//! `defineProps` call because the member is declared outside the macro.
 //!
 //! ## Examples
 //!
@@ -146,23 +145,31 @@ impl Rule for NoUnusedProperties {
         let Some(descriptor) = ctx.sfc_descriptor() else {
             return;
         };
-        let script_setup = descriptor
-            .script_setup
-            .as_ref()
-            .map(|block| block.content.as_ref());
-        let plain_script = descriptor
-            .script
-            .as_ref()
-            .map(|block| block.content.as_ref());
+        let script_setup = descriptor.script_setup.as_ref();
+        let plain_script = descriptor.script.as_ref();
+        let declaring_block = script_setup.or(plain_script);
+        let declaring_script = declaring_block
+            .map(|block| block.content.as_ref())
+            .unwrap_or_default();
+        let declaring_offset = declaring_block.map_or(0, |block| block.loc.start as u32);
+        // Lint analysis merges a sibling plain script before script setup and
+        // shifts every setup macro range into that combined view. This rule
+        // scans and reports against the original setup block, so normalize all
+        // macro-owned ranges back into its coordinate space together.
+        let setup_shift = match (plain_script, script_setup) {
+            (Some(plain), Some(_)) => plain.content.len() as u32 + 1,
+            _ => 0,
+        };
 
         // Collect unused props first (to avoid borrow conflicts).
-        let unused_props: Vec<String> = {
+        let unused_props: Vec<(String, u32, u32)> = {
             let Some(analysis) = ctx.analysis() else {
                 return;
             };
             let Some(call) = analysis.macros.define_props() else {
                 return;
             };
+            let call_span = unshift_span((call.start, call.end), setup_shift);
             let props = analysis.macros.props();
             if props.is_empty() {
                 return;
@@ -170,18 +177,17 @@ impl Rule for NoUnusedProperties {
 
             // `defineProps` is a `<script setup>` macro, so its span addresses
             // that block; fall back to a lone `<script>` for robustness.
-            let declaring_script = script_setup.or(plain_script).unwrap_or_default();
             if matches!(
-                classify_props_access(declaring_script, (call.start, call.end)),
+                classify_props_access(declaring_script, call_span),
                 PropsAccess::Captured
             ) {
                 return;
             }
 
             let mut referenced = template_references(root);
-            push_script_tokens(declaring_script, (call.start, call.end), &mut referenced);
+            push_script_tokens(declaring_script, call_span, &mut referenced);
             if let Some(plain) = plain_script.filter(|_| script_setup.is_some()) {
-                push_identifier_tokens(plain, &mut referenced);
+                push_identifier_tokens(&plain.content, &mut referenced);
             }
 
             let destructured = analysis.macros.props_destructure();
@@ -196,22 +202,37 @@ impl Rule for NoUnusedProperties {
                     // follow, so it is left alone.
                     destructured.is_none_or(|bindings| bindings.get(name).is_none())
                 })
-                .map(|prop| prop.name.to_compact_string())
+                .map(|prop| {
+                    let (start, end) = analysis
+                        .macros
+                        .prop_declaration(prop.name.as_str())
+                        .unwrap_or((call.start, call.end));
+                    let (start, end) = unshift_span((start, end), setup_shift);
+                    (
+                        prop.name.to_compact_string(),
+                        declaring_offset + start,
+                        declaring_offset + end,
+                    )
+                })
                 .collect()
         };
 
-        for prop_name in unused_props {
-            ctx.report(
+        for (prop_name, start, end) in unused_props {
+            ctx.report_in_sfc(
                 crate::diagnostic::LintDiagnostic::warn(
                     ctx.current_rule,
                     format!("Prop '{}' is defined but never used", prop_name),
-                    0,
-                    0,
+                    start,
+                    end,
                 )
                 .with_help("Remove unused prop or use it in your template/script"),
             );
         }
     }
+}
+
+fn unshift_span((start, end): (u32, u32), delta: u32) -> (u32, u32) {
+    (start.saturating_sub(delta), end.saturating_sub(delta))
 }
 
 /// Push the identifier tokens of `script`, minus the `defineProps` call.

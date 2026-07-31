@@ -1775,10 +1775,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'packageName' is defined but never used",
-        "line": 13,
-        "column": 11,
-        "endLine": 13,
-        "endColumn": 11,
+        "line": 6,
+        "column": 3,
+        "endLine": 6,
+        "endColumn": 22,
         "help": "Remove unused prop or use it in your template/script"
       },
       {
@@ -1786,10 +1786,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'version' is defined but never used",
-        "line": 13,
-        "column": 11,
-        "endLine": 13,
-        "endColumn": 11,
+        "line": 7,
+        "column": 3,
+        "endLine": 7,
+        "endColumn": 19,
         "help": "Remove unused prop or use it in your template/script"
       },
       {

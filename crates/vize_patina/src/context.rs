@@ -7,8 +7,11 @@
 mod directives;
 mod eslint_directive;
 mod helpers;
+mod reporting;
+mod sfc_directives;
 mod state;
 
+pub(crate) use reporting::offset_diagnostic;
 pub use state::{DisabledRange, ElementContext, SsrMode};
 
 use crate::diagnostic::{HelpLevel, LintDiagnostic, Severity};
@@ -24,6 +27,8 @@ use vize_carton::{
 };
 use vize_croquis::Croquis;
 
+use sfc_directives::SfcDirectiveState;
+
 /// Lint context provides utilities for rules during execution.
 ///
 /// Uses arena allocation for efficient memory management during lint traversal.
@@ -32,6 +37,8 @@ pub struct LintContext<'a> {
     allocator: &'a Allocator,
     /// Source code being linted.
     pub source: &'a str,
+    /// Byte offset of `source` within the containing SFC.
+    source_offset: u32,
     /// Filename for diagnostics.
     pub filename: &'a str,
     /// Locale for i18n (default: English).
@@ -76,6 +83,10 @@ pub struct LintContext<'a> {
     expected_error_lines: FxHashSet<u32>,
     /// Severity overrides from `@vize:level(...)` keyed by next-line number.
     severity_overrides: FxHashMap<u32, DirectiveSeverity>,
+    /// Directive state whose line numbers address the complete SFC source.
+    sfc_directives: Option<SfcDirectiveState>,
+    /// Whether SFC directives were inspected for an absolute-range report.
+    sfc_directives_scanned: bool,
 }
 
 impl<'a> LintContext<'a> {
@@ -101,6 +112,7 @@ impl<'a> LintContext<'a> {
         let mut ctx = Self {
             allocator,
             source,
+            source_offset: 0,
             filename,
             locale,
             diagnostics: Vec::with_capacity(Self::INITIAL_DIAGNOSTICS_CAPACITY),
@@ -123,6 +135,8 @@ impl<'a> LintContext<'a> {
             help_level: HelpLevel::default(),
             expected_error_lines: FxHashSet::default(),
             severity_overrides: FxHashMap::default(),
+            sfc_directives: None,
+            sfc_directives_scanned: false,
         };
         ctx.prescan_eslint_disable_comments();
         ctx
@@ -139,6 +153,7 @@ impl<'a> LintContext<'a> {
         let mut ctx = Self {
             allocator,
             source,
+            source_offset: 0,
             filename,
             locale: Locale::default(),
             diagnostics: Vec::with_capacity(Self::INITIAL_DIAGNOSTICS_CAPACITY),
@@ -161,6 +176,8 @@ impl<'a> LintContext<'a> {
             help_level: HelpLevel::default(),
             expected_error_lines: FxHashSet::default(),
             severity_overrides: FxHashMap::default(),
+            sfc_directives: None,
+            sfc_directives_scanned: false,
         };
         ctx.prescan_eslint_disable_comments();
         ctx
@@ -339,48 +356,5 @@ impl<'a> LintContext<'a> {
     #[inline]
     pub fn alloc_str(&self, s: &str) -> &'a str {
         self.allocator.alloc_str(s)
-    }
-
-    /// Report a lint diagnostic.
-    #[inline]
-    pub fn report(&mut self, mut diagnostic: LintDiagnostic) {
-        // Check if this rule is enabled
-        if !self.is_rule_enabled(diagnostic.rule_name) {
-            return;
-        }
-
-        // Check if this diagnostic is disabled via comments
-        let line = self.offset_to_line(diagnostic.start);
-        if self.is_disabled_at(diagnostic.rule_name, line) {
-            return;
-        }
-
-        // Check if this line has an @vize:expected directive. Use
-        // `contains`, not `remove`, so a line that legitimately emits
-        // multiple diagnostics has them all suppressed (#968).
-        if self.expected_error_lines.contains(&line) {
-            return;
-        }
-
-        if let Some(severity) = self.config_rule_severities.get(diagnostic.rule_name) {
-            diagnostic.severity = *severity;
-        }
-
-        // Apply @vize:level severity override. Same reasoning: the directive
-        // applies to every diagnostic on the targeted line, not just the
-        // first one we happen to report. (#968)
-        if let Some(override_severity) = self.severity_overrides.get(&line).copied() {
-            match override_severity {
-                DirectiveSeverity::Off => return,
-                DirectiveSeverity::Warn => diagnostic.severity = Severity::Warning,
-                DirectiveSeverity::Error => diagnostic.severity = Severity::Error,
-            }
-        }
-
-        match diagnostic.severity {
-            Severity::Error => self.error_count += 1,
-            Severity::Warning => self.warning_count += 1,
-        }
-        self.diagnostics.push(diagnostic);
     }
 }

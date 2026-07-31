@@ -1056,10 +1056,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'noOverflowHidden' is defined but never used",
-        "line": 41,
-        "column": 11,
-        "endLine": 41,
-        "endColumn": 11,
+        "line": 11,
+        "column": 3,
+        "endLine": 11,
+        "endColumn": 29,
         "help": "Remove unused prop or use it in your template/script"
       },
       {
@@ -1888,10 +1888,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'alt' is defined but never used",
-        "line": 28,
-        "column": 11,
-        "endLine": 28,
-        "endColumn": 11,
+        "line": 6,
+        "column": 3,
+        "endLine": 6,
+        "endColumn": 15,
         "help": "Remove unused prop or use it in your template/script"
       },
       {
@@ -2015,10 +2015,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'inReplyToVisibility' is defined but never used",
-        "line": 394,
-        "column": 11,
-        "endLine": 394,
-        "endColumn": 11,
+        "line": 22,
+        "column": 3,
+        "endLine": 22,
+        "endColumn": 53,
         "help": "Remove unused prop or use it in your template/script"
       },
       {
@@ -2785,10 +2785,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'inNotification' is defined but never used",
-        "line": 37,
-        "column": 11,
-        "endLine": 37,
-        "endColumn": 11,
+        "line": 9,
+        "column": 3,
+        "endLine": 9,
+        "endColumn": 27,
         "help": "Remove unused prop or use it in your template/script"
       }
     ],

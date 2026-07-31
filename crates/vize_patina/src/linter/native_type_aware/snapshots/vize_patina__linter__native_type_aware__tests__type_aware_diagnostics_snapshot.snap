@@ -6,8 +6,8 @@ expression: diagnostics
     (
         "vue/no-unused-properties",
         "Prop 'msg' is defined but never used",
-        336,
-        336,
+        64,
+        69,
         Some(
             "Remove unused prop or use it in your template/script",
         ),

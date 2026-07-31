@@ -54,41 +54,6 @@ const run = async () => {
 }
 
 #[test]
-fn test_parse_define_props_type() {
-    let result = parse_script_setup(
-        r#"
-            const props = defineProps<{
-                msg: string
-                count?: number
-            }>()
-        "#,
-    );
-
-    assert_eq!(result.macros.all_calls().len(), 1);
-    assert_eq!(result.macros.props().len(), 2);
-
-    let prop_names: Vec<_> = result
-        .macros
-        .props()
-        .iter()
-        .map(|p| p.name.as_str())
-        .collect();
-    assert!(prop_names.contains(&"msg"));
-    assert!(prop_names.contains(&"count"));
-}
-
-#[test]
-fn test_parse_define_props_runtime() {
-    let result = parse_script_setup(
-        r#"
-            const props = defineProps(['foo', 'bar'])
-        "#,
-    );
-
-    assert_eq!(result.macros.props().len(), 2);
-}
-
-#[test]
 fn test_parse_define_props_runtime_object_spread_local_literal() {
     let result = parse_script_setup(
         r#"

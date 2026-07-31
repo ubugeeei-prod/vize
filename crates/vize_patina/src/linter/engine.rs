@@ -231,7 +231,7 @@ impl Linter {
         ctx.set_help_level(self.help_level);
         ctx.set_dialect(env.dialect);
         if let Some(descriptor) = env.sfc_descriptor {
-            ctx.set_sfc_descriptor(descriptor);
+            ctx.set_sfc_template_descriptor(descriptor);
         }
         #[cfg(not(target_arch = "wasm32"))]
         let has_analysis = analysis.is_some();
@@ -738,7 +738,7 @@ impl Linter {
     }
 
     pub(crate) fn lint_sfc_template_root<'a>(&self, input: SfcTemplateLintInput<'a>) -> LintResult {
-        let mut result = self.lint_template_root(
+        self.lint_template_root(
             input.allocator,
             &input.template.content,
             input.filename,
@@ -748,9 +748,7 @@ impl Linter {
                 sfc_descriptor: input.descriptor,
                 dialect: VueDialect::Vue,
             },
-        );
-        offset_result(&mut result, input.template.loc.start as u32);
-        result
+        )
     }
 
     pub(crate) fn lint_sfc_template_with_descriptor<'a>(

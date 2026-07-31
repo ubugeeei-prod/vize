@@ -1,5 +1,6 @@
 use oxc_ast::ast::{
-    Argument, Expression, ObjectExpression, ObjectPropertyKind, PropertyKey, TSType,
+    Argument, ArrayExpression, Expression, ObjectExpression, ObjectPropertyKind, PropertyKey,
+    TSSignature, TSType,
 };
 use oxc_span::GetSpan;
 
@@ -18,12 +19,20 @@ pub fn extract_props_from_type(
     for tp in type_params.iter() {
         let type_source = tp.span().source_text(source);
         for prop in result.types.extract_properties(type_source) {
-            result.macros.add_prop(PropDefinition {
+            let declaration = type_prop_declaration(tp, prop.name.as_str());
+            let definition = PropDefinition {
                 name: prop.name.clone(),
                 required: !prop.optional,
                 prop_type: prop.prop_type,
                 default_value: None,
-            });
+            };
+            if let Some((start, end)) = declaration {
+                result
+                    .macros
+                    .add_prop_with_declaration(definition, start, end);
+            } else {
+                result.macros.add_prop(definition);
+            }
             result.bindings.add(prop.name.as_str(), BindingType::Props);
         }
     }
@@ -35,20 +44,7 @@ pub fn extract_props_from_runtime(
     source: &str,
 ) {
     match arg {
-        Argument::ArrayExpression(arr) => {
-            for elem in arr.elements.iter() {
-                if let oxc_ast::ast::ArrayExpressionElement::StringLiteral(s) = elem {
-                    let name = s.value.as_str();
-                    result.macros.add_prop(PropDefinition {
-                        name: CompactString::new(name),
-                        required: false,
-                        prop_type: None,
-                        default_value: None,
-                    });
-                    result.bindings.add(name, BindingType::Props);
-                }
-            }
-        }
+        Argument::ArrayExpression(arr) => extract_props_from_array(result, arr),
 
         Argument::ObjectExpression(obj) => {
             extract_props_from_object(result, obj, source);
@@ -77,20 +73,7 @@ fn extract_props_from_runtime_expression(
     source: &str,
 ) {
     match expr {
-        Expression::ArrayExpression(arr) => {
-            for elem in arr.elements.iter() {
-                if let oxc_ast::ast::ArrayExpressionElement::StringLiteral(s) = elem {
-                    let name = s.value.as_str();
-                    result.macros.add_prop(PropDefinition {
-                        name: CompactString::new(name),
-                        required: false,
-                        prop_type: None,
-                        default_value: None,
-                    });
-                    result.bindings.add(name, BindingType::Props);
-                }
-            }
-        }
+        Expression::ArrayExpression(arr) => extract_props_from_array(result, arr),
         Expression::ObjectExpression(obj) => extract_props_from_object(result, obj, source),
         Expression::TSAsExpression(ts_as) => {
             extract_props_from_runtime_expression(result, &ts_as.expression, source);
@@ -108,6 +91,25 @@ fn extract_props_from_runtime_expression(
     }
 }
 
+fn extract_props_from_array(result: &mut ScriptParseResult, arr: &ArrayExpression<'_>) {
+    for elem in arr.elements.iter() {
+        if let oxc_ast::ast::ArrayExpressionElement::StringLiteral(s) = elem {
+            let name = s.value.as_str();
+            result.macros.add_prop_with_declaration(
+                PropDefinition {
+                    name: CompactString::new(name),
+                    required: false,
+                    prop_type: None,
+                    default_value: None,
+                },
+                s.span.start,
+                s.span.end,
+            );
+            result.bindings.add(name, BindingType::Props);
+        }
+    }
+}
+
 fn extract_props_from_object(
     result: &mut ScriptParseResult,
     obj: &ObjectExpression<'_>,
@@ -119,7 +121,7 @@ fn extract_props_from_object(
                 let Some(name) = runtime_object_property_name(&p.key) else {
                     continue;
                 };
-                add_runtime_prop(
+                add_runtime_prop_with_declaration(
                     result,
                     PropDefinition {
                         name: CompactString::new(name),
@@ -127,6 +129,8 @@ fn extract_props_from_object(
                         prop_type: extract_runtime_prop_type(&p.value, source),
                         default_value: extract_runtime_prop_default(&p.value, source),
                     },
+                    p.key.span().start,
+                    p.span.end,
                 );
             }
             ObjectPropertyKind::SpreadProperty(spread) => {
@@ -148,9 +152,35 @@ fn extract_props_from_object(
     }
 }
 
+/// Locate an inline type-literal prop at its written name and cover the rest of
+/// its property signature. Referenced types do not declare a name inside the
+/// `defineProps` call, so callers fall back to the macro span for those forms.
+fn type_prop_declaration(type_param: &TSType<'_>, name: &str) -> Option<(u32, u32)> {
+    let TSType::TSTypeLiteral(literal) = type_param else {
+        return None;
+    };
+    literal.members.iter().find_map(|member| {
+        let TSSignature::TSPropertySignature(property) = member else {
+            return None;
+        };
+        (runtime_object_property_name(&property.key) == Some(name))
+            .then(|| (property.key.span().start, property.span.end))
+    })
+}
+
 fn add_runtime_prop(result: &mut ScriptParseResult, prop: PropDefinition) {
     result.bindings.add(prop.name.as_str(), BindingType::Props);
     result.macros.add_prop(prop);
+}
+
+fn add_runtime_prop_with_declaration(
+    result: &mut ScriptParseResult,
+    prop: PropDefinition,
+    start: u32,
+    end: u32,
+) {
+    result.bindings.add(prop.name.as_str(), BindingType::Props);
+    result.macros.add_prop_with_declaration(prop, start, end);
 }
 
 pub(super) fn runtime_object_property_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {

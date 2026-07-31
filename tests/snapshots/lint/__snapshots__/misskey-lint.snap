@@ -10517,28 +10517,6 @@
     "file": "src/components/MkPushNotificationAllowButton.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-properties",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-properties] Prop 'danger' is defined but never used",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Remove unused prop or use it in your template/script"
-      },
-      {
-        "ruleId": "vue/no-unused-properties",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-properties] Prop 'link' is defined but never used",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Remove unused prop or use it in your template/script"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -10548,6 +10526,28 @@
         "endLine": 196,
         "endColumn": 10,
         "help": "Recommended order: <script> -> <template> -> <style>"
+      },
+      {
+        "ruleId": "vue/no-unused-properties",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-properties] Prop 'link' is defined but never used",
+        "line": 59,
+        "column": 2,
+        "endLine": 59,
+        "endColumn": 17,
+        "help": "Remove unused prop or use it in your template/script"
+      },
+      {
+        "ruleId": "vue/no-unused-properties",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-properties] Prop 'danger' is defined but never used",
+        "line": 63,
+        "column": 2,
+        "endLine": 63,
+        "endColumn": 19,
+        "help": "Remove unused prop or use it in your template/script"
       }
     ],
     "errorCount": 0,

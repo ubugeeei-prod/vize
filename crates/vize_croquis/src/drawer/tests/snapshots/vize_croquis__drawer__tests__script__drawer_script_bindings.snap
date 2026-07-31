@@ -1199,6 +1199,7 @@ Croquis {
     macros: MacroTracker {
         calls: [],
         props: [],
+        prop_declarations: {},
         emits: [],
         emit_calls: [],
         models: [],
