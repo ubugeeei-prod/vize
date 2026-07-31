@@ -2,6 +2,7 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 
 use crate::virtual_ts::{
     VirtualTsOptions, generate_virtual_ts, generate_virtual_ts_with_offsets_legacy_vue2,
+    mapping::map_generated_offset_to_source,
 };
 
 #[test]
@@ -36,6 +37,17 @@ fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
 
     let name_start = template.find("disabled").expect("prop name");
     let name_range = name_start..name_start + "disabled".len();
+    let check_mapping = output
+        .mappings
+        .iter()
+        .find(|mapping| {
+            output.code[mapping.gen_range.clone()].contains("__vize_native_prop_check_")
+        })
+        .expect("native prop check mapping");
+    assert_eq!(
+        check_mapping.src_range, name_range,
+        "synthetic positions outside authored expressions must stay on the prop name"
+    );
     let name_span = output
         .mappings
         .iter()
@@ -46,6 +58,12 @@ fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
         output.code[name_span.gen_range.clone()].starts_with("__vize_native_prop_check_"),
         "synthetic check identifier should carry the prop-type diagnostic"
     );
+    let wrapper_span = check_mapping
+        .sub_spans
+        .iter()
+        .find(|span| &output.code[span.gen_range.clone()] == "(")
+        .expect("assignment wrapper should have an authored diagnostic anchor");
+    assert_eq!(wrapper_span.src_range, name_range);
 
     let value_start = template.find("disabledFlag").expect("bound expression");
     let value_range = value_start..value_start + "disabledFlag".len();
@@ -56,6 +74,11 @@ fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
         .find(|span| span.src_range == value_range)
         .expect("native prop initializer should retain its authored expression range");
     assert_eq!(&output.code[value_span.gen_range.clone()], "disabledFlag");
+    assert_eq!(
+        map_generated_offset_to_source(check_mapping, value_span.gen_range.start),
+        value_range.start,
+        "the wrapper's inclusive end must not steal the expression's first byte"
+    );
 }
 
 /// Every statically named `v-bind` on a native element is checked against that

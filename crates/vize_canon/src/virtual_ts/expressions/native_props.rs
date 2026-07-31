@@ -174,7 +174,10 @@ pub(super) fn generate_native_prop_statement(
     push_ts_string_literal(ts, native_prop.tag.as_str());
     ts.push_str(">, ");
     push_ts_string_literal(ts, native_prop.name.as_str());
-    ts.push_str("> = (");
+    ts.push_str("> = ");
+    let check_anchor_start = ts.len();
+    ts.push('(');
+    let check_anchor_end = ts.len();
     let value_gen_start = ts.len();
     ts.push_str(generated_expression);
     let value_gen_end = ts.len();
@@ -188,7 +191,7 @@ pub(super) fn generate_native_prop_statement(
 
     mappings.push(VizeMapping {
         gen_range: gen_stmt_start..gen_stmt_end,
-        src_range: name_src_start..value_src_end,
+        src_range: name_src_start..name_src_end,
         sub_spans: vec![
             VizeSubSpan {
                 gen_range: check_name_start..check_name_end,
@@ -197,6 +200,14 @@ pub(super) fn generate_native_prop_statement(
             VizeSubSpan {
                 gen_range: value_gen_start..value_gen_end,
                 src_range: value_src_start..value_src_end,
+            },
+            VizeSubSpan {
+                // TypeScript anchors an assignment mismatch on this synthetic
+                // wrapper. Keep it after the initializer because batch offset
+                // mapping treats a sub-span end as inclusive; the shared
+                // boundary must continue to prefer the authored expression.
+                gen_range: check_anchor_start..check_anchor_end,
+                src_range: name_src_start..name_src_end,
             },
         ],
     });
