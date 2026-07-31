@@ -215,6 +215,56 @@ function greet() {
   });
 });
 
+test("foldingRange maps script and style bodies after multiline opening tags", async () => {
+  await withSession("lsp-folding-multiline-open-tags", async (ask) => {
+    const source = `<script
+  setup
+  lang="ts"
+>
+const config = {
+  enabled: true,
+}
+</script>
+
+<style
+  lang="scss"
+>
+.card {
+  color: red;
+}
+</style>
+`;
+    assert.deepEqual(await ask(source, "MultilineOpenTags.vue"), [
+      [0, 6, "region", "script setup"],
+      [9, 14, "region", "style"],
+      [4, 5, undefined, undefined],
+      [12, 13, undefined, undefined],
+    ]);
+  });
+});
+
+test("foldingRange distinguishes URL schemes from preprocessor line comments", async () => {
+  await withSession("lsp-folding-style-url", async (ask) => {
+    const source = `<style lang="scss">
+.remote {
+  color: red;
+  background: url(https://example.test/a.png); }
+
+.local {
+  // } is not structural
+  color: blue;
+  padding: 0;
+}
+</style>
+`;
+    assert.deepEqual(await ask(source, "StyleUrl.vue"), [
+      [0, 9, "region", "style"],
+      [1, 2, undefined, undefined],
+      [5, 8, undefined, undefined],
+    ]);
+  });
+});
+
 test("foldingRange returns null when nothing hides a line", async () => {
   await withSession("lsp-folding-nothing", async (ask) => {
     // Everything on one line, so there is nothing to fold.

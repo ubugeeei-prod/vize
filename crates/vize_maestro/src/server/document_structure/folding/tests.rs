@@ -3,7 +3,7 @@ use tower_lsp::lsp_types::{
     WorkDoneProgressParams,
 };
 
-use super::folding_ranges;
+use super::{AuthoredLineMap, folding_ranges};
 use crate::server::ServerState;
 
 /// The fixture from #3455, with the `<template>` closing on line 9.
@@ -179,6 +179,81 @@ fn style_scanner_ignores_braces_in_strings_and_comments() {
             (7, 8, None, None),
         ]
     );
+}
+
+#[test]
+fn multiline_opening_tags_keep_script_and_style_ranges_on_authored_lines() {
+    let source = "<script\n  setup\n  lang=\"ts\"\n>\nconst config = {\n  enabled: true,\n}\n</script>\n\n<style\n  lang=\"scss\"\n>\n.card {\n  color: red;\n}\n</style>\n";
+
+    assert_eq!(
+        ranges(source),
+        vec![
+            (0, 6, Some("region"), Some("script setup")),
+            (9, 14, Some("region"), Some("style")),
+            (4, 5, None, None),
+            (12, 13, None, None),
+        ]
+    );
+}
+
+#[test]
+fn style_line_comments_do_not_start_at_url_schemes() {
+    let source = "<style lang=\"scss\">\n.remote {\n  color: red;\n  background: url(https://example.test/a.png); }\n\n.local {\n  // } is not structural\n  color: blue;\n  padding: 0;\n}\n</style>\n";
+
+    assert_eq!(
+        ranges(source),
+        vec![
+            (0, 9, Some("region"), Some("style")),
+            (1, 2, None, None),
+            (5, 8, None, None),
+        ]
+    );
+}
+
+#[test]
+fn script_and_style_internal_work_stays_linear() {
+    let mut previous_script_work = None;
+    let mut previous_style_work = None;
+
+    for count in [128, 256, 512, 1024] {
+        let mut source = String::from("<script setup lang=\"ts\">\nconst records = [\n");
+        for _ in 0..count {
+            source.push_str("  {\n    enabled: true,\n  },\n");
+        }
+        source.push_str("]\n</script>\n<style lang=\"scss\">\n");
+        for _ in 0..count {
+            source.push_str(".rule {\n  color: red;\n}\n");
+        }
+        source.push_str("</style>\n");
+
+        let descriptor =
+            vize_atelier_sfc::parse_sfc(&source, vize_atelier_sfc::SfcParseOptions::default())
+                .unwrap();
+        let authored_lines = AuthoredLineMap::new(&source);
+        let script = descriptor.script_setup.as_ref().unwrap();
+        let style = descriptor.styles.first().unwrap();
+        let (script_ranges, script_work) = super::script::script_regions_with_metrics(
+            script,
+            authored_lines.line_at(script.loc.start),
+        );
+        let (style_ranges, style_work) = super::style::style_regions_with_metrics(
+            style,
+            authored_lines.line_at(style.loc.start),
+        );
+
+        assert_eq!(script_ranges.len(), count);
+        assert_eq!(style_ranges.len(), count);
+        assert!(script_work <= script.content.len() + count);
+        assert!(style_work <= style.content.len() + count);
+        if let Some(previous) = previous_script_work {
+            assert!(script_work <= previous * 2 + 32);
+        }
+        if let Some(previous) = previous_style_work {
+            assert!(style_work <= previous * 2 + 32);
+        }
+        previous_script_work = Some(script_work);
+        previous_style_work = Some(style_work);
+    }
 }
 
 #[test]
