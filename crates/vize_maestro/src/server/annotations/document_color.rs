@@ -71,8 +71,25 @@ impl DocumentColorService {
         } else {
             format!("rgba({red}, {green}, {blue}, {})", trim_alpha(color.alpha))
         };
+        let [hue, saturation, lightness] = rgb_to_hsl(color.red, color.green, color.blue);
+        let hsl = if opaque {
+            format!(
+                "hsl({} {}% {}%)",
+                trim_decimal(hue),
+                trim_decimal(saturation * 100.0),
+                trim_decimal(lightness * 100.0)
+            )
+        } else {
+            format!(
+                "hsl({} {}% {}% / {})",
+                trim_decimal(hue),
+                trim_decimal(saturation * 100.0),
+                trim_decimal(lightness * 100.0),
+                trim_alpha(color.alpha)
+            )
+        };
 
-        [hex, functional]
+        [hex, functional, hsl]
             .into_iter()
             .map(|label| ColorPresentation {
                 label,
@@ -178,16 +195,46 @@ fn to_byte(channel: f32) -> u32 {
     (channel.clamp(0.0, 1.0) * 255.0).round() as u32
 }
 
+fn rgb_to_hsl(red: f32, green: f32, blue: f32) -> [f32; 3] {
+    let red = f64::from(red.clamp(0.0, 1.0));
+    let green = f64::from(green.clamp(0.0, 1.0));
+    let blue = f64::from(blue.clamp(0.0, 1.0));
+    let maximum = red.max(green).max(blue);
+    let minimum = red.min(green).min(blue);
+    let delta = maximum - minimum;
+    let lightness = (maximum + minimum) / 2.0;
+    if delta == 0.0 {
+        return [0.0, 0.0, lightness as f32];
+    }
+
+    let saturation = delta / (1.0 - (2.0 * lightness - 1.0).abs());
+    let sector = if maximum == red {
+        (green - blue) / delta
+    } else if maximum == green {
+        (blue - red) / delta + 2.0
+    } else {
+        (red - green) / delta + 4.0
+    };
+    [
+        (sector * 60.0).rem_euclid(360.0) as f32,
+        saturation as f32,
+        lightness as f32,
+    ]
+}
+
+fn trim_decimal(value: f32) -> String {
+    let text = format!("{:.2}", value);
+    text.trim_end_matches('0').trim_end_matches('.').to_string()
+}
+
 /// Alpha as CSS writes it: `1`, `0.5`, `0.35` — never `0.500000`.
 fn trim_alpha(alpha: f32) -> String {
-    let text = format!("{:.2}", alpha.clamp(0.0, 1.0));
-    let trimmed = text.trim_end_matches('0').trim_end_matches('.');
-    if trimmed.is_empty() {
-        "0".to_string()
-    } else {
-        trimmed.to_string()
-    }
+    trim_decimal(alpha.clamp(0.0, 1.0))
 }
+
+#[cfg(test)]
+#[path = "document_color/hsl_presentation_tests.rs"]
+mod hsl_presentation_tests;
 
 #[cfg(test)]
 mod tests;

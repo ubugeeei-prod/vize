@@ -4,11 +4,14 @@
 //!
 //! CSS named colours, hex forms, and legacy/modern `rgb()` / `rgba()`.
 //!
-//! `hsl()` is not recognised yet: see #3502.
+//! `hsl()` / `hsla()` accept legacy comma and modern space syntax. Functional
+//! colours are emitted only when every component is valid; nothing is guessed.
 //!
 //! CSS comments are skipped so the picker never rewrites inactive text.
 
+mod hsl;
 mod lex;
+mod rgb;
 
 use self::lex::{
     decode_identifier, identifier_end, is_declaration_name, is_identifier_boundary,
@@ -164,13 +167,21 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
                 continue;
             }
             if bytes.get(end) == Some(&b'(') {
-                if !is_rgb_function_name(content, cursor, end) {
-                    None
-                } else if let Some(literal) = rgb_literal(content, cursor, end, region_end) {
+                let (recognized, literal) = if rgb::is_function_name(content, cursor, end) {
+                    (true, rgb::literal(content, cursor, end, region_end))
+                } else if is_hsl_function_name(content, cursor, end) {
+                    (true, hsl::literal(content, cursor, end, region_end))
+                } else {
+                    (false, None)
+                };
+                if let Some(literal) = literal {
                     Some(literal)
                 } else {
-                    cursor = skip_function(bytes, end, region_end);
-                    continue;
+                    if recognized {
+                        cursor = skip_function(bytes, end, region_end);
+                        continue;
+                    }
+                    None
                 }
             } else if in_value {
                 named_color_literal(content, cursor, end)
@@ -208,12 +219,12 @@ fn named_color_literal(content: &str, start: usize, end: usize) -> Option<ColorL
     })
 }
 
-fn is_rgb_function_name(content: &str, start: usize, end: usize) -> bool {
+fn is_hsl_function_name(content: &str, start: usize, end: usize) -> bool {
     let mut decoded = [0u8; 4];
     let Some(len) = decode_identifier(content.as_bytes(), start, end, &mut decoded) else {
         return false;
     };
-    decoded[..len].eq_ignore_ascii_case(b"rgb") || decoded[..len].eq_ignore_ascii_case(b"rgba")
+    decoded[..len].eq_ignore_ascii_case(b"hsl") || decoded[..len].eq_ignore_ascii_case(b"hsla")
 }
 
 /// `#` followed by exactly 3, 4, 6 or 8 hex digits and nothing that could
@@ -269,45 +280,6 @@ fn hex_value(byte: u8) -> Option<u32> {
     (byte as char).to_digit(16)
 }
 
-/// `rgb(...)` / `rgba(...)`, comma- or space-separated, with an optional alpha
-/// after `,` or `/`. Components may be numbers or percentages.
-fn rgb_literal(
-    content: &str,
-    start: usize,
-    identifier_end: usize,
-    limit: usize,
-) -> Option<ColorLiteral> {
-    #[cfg(test)]
-    RGB_PROBES.set(RGB_PROBES.get() + 1);
-    let arguments_start = identifier_end + 1;
-    let close = content[arguments_start..limit].find(')')? + arguments_start;
-    let end = close + 1;
-
-    let mut components = content[arguments_start..close]
-        .split(|ch: char| ch == ',' || ch == '/' || ch.is_ascii_whitespace())
-        .filter(|part| !part.is_empty());
-
-    let red = channel(components.next()?, 255.0)?;
-    let green = channel(components.next()?, 255.0)?;
-    let blue = channel(components.next()?, 255.0)?;
-    let alpha = match components.next() {
-        Some(part) => channel(part, 1.0)?,
-        None => 1.0,
-    };
-    if components.next().is_some() {
-        return None;
-    }
-
-    Some(ColorLiteral {
-        start,
-        end,
-        red,
-        green,
-        blue,
-        alpha,
-    })
-}
-
 #[cfg(test)]
 pub(super) fn colors_in_with_metrics(
     content: &str,
@@ -328,15 +300,4 @@ pub(super) fn colors_in_with_metrics(
         SCAN_STEPS.get() + DECLARATION_NAME_WORK.get(),
         RGB_PROBES.get(),
     )
-}
-
-/// One component, normalised to 0.0..=1.0. `full` is the value that maps to 1.0
-/// for the plain-number form: 255 for a colour channel, 1 for alpha.
-fn channel(part: &str, full: f32) -> Option<f32> {
-    let part = part.trim();
-    let value = match part.strip_suffix('%') {
-        Some(percent) => percent.trim().parse::<f32>().ok()? / 100.0,
-        None => part.parse::<f32>().ok()? / full,
-    };
-    value.is_finite().then(|| value.clamp(0.0, 1.0))
 }

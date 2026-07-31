@@ -34,24 +34,6 @@ fn percent(alpha: f32) -> u32 {
     (alpha * 100.0).round() as u32
 }
 
-fn labels(red: f32, green: f32, blue: f32, alpha: f32) -> Vec<String> {
-    DocumentColorService::presentations(Color {
-        red,
-        green,
-        blue,
-        alpha,
-    })
-    .into_iter()
-    .map(|presentation| {
-        assert!(
-            presentation.text_edit.is_none(),
-            "the label is the inserted text; a textEdit would override the client's own range"
-        );
-        presentation.label
-    })
-    .collect()
-}
-
 #[test]
 fn every_hex_form_is_recognised_with_its_exact_span() {
     let source = "<style>\n.a { color: #f00; background: #ff0000; border-color: #f00c; outline-color: #ff0000cc }\n</style>\n";
@@ -117,8 +99,42 @@ fn named_colours_report_the_complete_exact_output() {
             (1, 58, 69, 0, 0, 0, 0),
             (1, 80, 84, 128, 128, 128, 100),
             (1, 99, 103, 128, 128, 128, 100),
+            (1, 110, 125, 255, 0, 0, 100),
+            (1, 133, 155, 255, 0, 0, 50),
         ]
     );
+}
+
+#[test]
+fn hsl_supports_modern_legacy_units_wrapping_and_alpha() {
+    let source = "<style>\n.a { --a: hsl(120deg 100% 25%); --b: hsl(240 100% 50% / 25%); --c: hsla(.5turn, 100%, 50%, .5); --d: hsl(200grad 100% 50%); --e: hsl(-120 100% 50%); --f: hsl(30 0% 25%); --g: h\\73l(60 100% 50%); --h: hsl(0 100 50); --i: hsl(none none none / none); --j: hsl(0/**/100%/**/50%); --k: hsl(30 300% 75%) }\n</style>\n";
+    let found = colors(source);
+    assert_eq!(found.len(), 11, "{found:?}");
+    assert_eq!(
+        found
+            .into_iter()
+            .map(|(_, _, _, red, green, blue, alpha)| (red, green, blue, alpha))
+            .collect::<Vec<_>>(),
+        vec![
+            (0, 128, 0, 100),
+            (0, 0, 255, 25),
+            (0, 255, 255, 50),
+            (0, 255, 255, 100),
+            (0, 0, 255, 100),
+            (64, 64, 64, 100),
+            (255, 255, 0, 100),
+            (255, 0, 0, 100),
+            (0, 0, 0, 0),
+            (255, 0, 0, 100),
+            (255, 191, 0, 100),
+        ]
+    );
+}
+
+#[test]
+fn malformed_hsl_is_not_offered_as_a_colour() {
+    let source = "<style>\n.a { --a: hsl(0, 100, 50); --b: hsl(0, 100%, 50% / .5); --c: hsl(0 100%); --d: hsl(NaN 100% 50%); --e: hsl(0 100% 50% extra); --f: hsl(red 100% 50%); --g: hsl(0. 100% 50%); --h: hsl(0 100.% 50%); --i: hsl(0 100% 50% / 1.); --j: hsl(0\u{000b}100%\u{000b}50%); --k: hsl(0,\u{00a0}100%,\u{00a0}50%) }\n</style>\n";
+    assert_eq!(colors(source), Vec::new());
 }
 
 #[test]
@@ -330,21 +346,4 @@ fn script_and_template_text_are_never_scanned_for_colours() {
     // `#f00` in a script body or a text node is not CSS.
     let source = "<script setup lang=\"ts\">\nconst tag = '#f00'\n</script>\n\n<template>\n  <div>#00ff00</div>\n</template>\n";
     assert_eq!(colors(source), Vec::new());
-}
-
-#[test]
-fn presentations_offer_hex_first_then_the_functional_form() {
-    assert_eq!(
-        labels(1.0, 0.0, 0.0, 1.0),
-        vec!["#ff0000".to_string(), "rgb(255, 0, 0)".to_string()]
-    );
-    // CSS alpha is trimmed rather than written as `0.500000`.
-    assert_eq!(
-        labels(1.0, 0.0, 0.0, 0.5),
-        vec!["#ff000080".to_string(), "rgba(255, 0, 0, 0.5)".to_string()]
-    );
-    assert_eq!(
-        labels(0.0, 0.0, 0.0, 0.0),
-        vec!["#00000000".to_string(), "rgba(0, 0, 0, 0)".to_string()]
-    );
 }

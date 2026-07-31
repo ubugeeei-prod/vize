@@ -80,14 +80,18 @@ fn skip_trivia(bytes: &[u8], mut cursor: usize, limit: usize) -> usize {
 }
 
 pub(super) fn skip_comment(bytes: &[u8], start: usize, limit: usize) -> usize {
+    comment_end(bytes, start, limit).unwrap_or(limit)
+}
+
+fn comment_end(bytes: &[u8], start: usize, limit: usize) -> Option<usize> {
     let mut cursor = start + 2;
     while cursor + 1 < limit {
         if pair_at(bytes, cursor, b"*/") {
-            return cursor + 2;
+            return Some(cursor + 2);
         }
         cursor += 1;
     }
-    limit
+    None
 }
 
 pub(super) fn skip_string(bytes: &[u8], start: usize, limit: usize) -> usize {
@@ -233,11 +237,15 @@ fn hex_value(byte: u8) -> u8 {
 }
 
 pub(super) fn skip_function(bytes: &[u8], open: usize, limit: usize) -> usize {
+    function_end(bytes, open, limit).unwrap_or(limit)
+}
+
+pub(super) fn function_end(bytes: &[u8], open: usize, limit: usize) -> Option<usize> {
     let mut cursor = open;
     let mut depth = 0usize;
     while cursor < limit {
         if pair_at(bytes, cursor, b"/*") {
-            cursor = skip_comment(bytes, cursor, limit);
+            cursor = comment_end(bytes, cursor, limit)?;
             continue;
         }
         if matches!(bytes[cursor], b'\'' | b'"') {
@@ -254,11 +262,11 @@ pub(super) fn skip_function(bytes: &[u8], open: usize, limit: usize) -> usize {
                 depth = depth.saturating_sub(1);
                 cursor += 1;
                 if depth == 0 {
-                    return cursor;
+                    return Some(cursor);
                 }
             }
             _ => cursor += 1,
         }
     }
-    limit
+    None
 }

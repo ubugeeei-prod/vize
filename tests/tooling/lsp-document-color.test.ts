@@ -43,7 +43,8 @@ type ColorPresentation = { label: string; textEdit?: unknown };
  * 8
  * 9  <style scoped>
  * 10 .a { background: rgba(0, 0, 255, 0.5) }
- * 11 </style>
+ * 11 .b { color: hsl(120 100% 25%) }
+ * 12 </style>
  * ```
  */
 const SOURCE = `<script setup lang="ts">
@@ -57,6 +58,7 @@ const tag = '#123456'
 
 <style scoped>
 .a { background: rgba(0, 0, 255, 0.5) }
+.b { color: hsl(120 100% 25%) }
 </style>
 `;
 
@@ -103,9 +105,9 @@ async function withDocument(
   }
 }
 
-test("documentColor reports CSS colour literals and nothing else", async () => {
+test("documentColor reports every supported CSS colour and nothing else", async () => {
   await withDocument(async (colors) => {
-    // Exactly two: the static `style` attribute and the `<style>` rule.
+    // Exactly three: the static attribute, rgba(), and hsl() in `<style>`.
     // Deliberately absent, and the reason this is a full-list assertion:
     //   - `'#123456'` on line 1 is a string in the script body,
     //   - `#00ff00` on line 5 is a text node,
@@ -125,15 +127,23 @@ test("documentColor reports CSS colour literals and nothing else", async () => {
         },
         color: { red: 0, green: 0, blue: 1, alpha: 0.5 },
       },
+      {
+        range: {
+          start: { line: 11, character: 12 },
+          end: { line: 11, character: 29 },
+        },
+        color: { red: 0, green: 0.5, blue: 0, alpha: 1 },
+      },
     ]);
   });
 });
 
-test("colorPresentation offers hex first, then the functional notation", async () => {
+test("colorPresentation offers hex, rgb, and hsl notation", async () => {
   await withDocument(async (_colors, presentations) => {
     assert.deepEqual(await presentations({ red: 1, green: 0, blue: 0, alpha: 1 }), [
       { label: "#ff0000" },
       { label: "rgb(255, 0, 0)" },
+      { label: "hsl(0 100% 50%)" },
     ]);
 
     // A translucent colour switches to the 8-digit hex and `rgba()`, with the
@@ -141,6 +151,7 @@ test("colorPresentation offers hex first, then the functional notation", async (
     assert.deepEqual(await presentations({ red: 0, green: 0, blue: 1, alpha: 0.5 }), [
       { label: "#0000ff80" },
       { label: "rgba(0, 0, 255, 0.5)" },
+      { label: "hsl(240 100% 50% / 0.5)" },
     ]);
   });
 });

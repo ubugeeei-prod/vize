@@ -6,7 +6,7 @@ use tower_lsp::lsp_types::{
 use super::{color_presentation, document_color};
 use crate::server::ServerState;
 
-const SFC: &str = "<template>\n  <div style=\"color: #f00\" />\n</template>\n\n<style scoped>\n.a { background: rgba(0, 0, 255, 0.5) }\n</style>\n";
+const SFC: &str = "<template>\n  <div style=\"color: #f00\" />\n</template>\n\n<style scoped>\n.a { background: rgba(0, 0, 255, 0.5) }\n.b { color: hsl(120 100% 25%) }\n</style>\n";
 
 fn state_with(uri: &Url, source: &str) -> ServerState {
     let state = ServerState::new();
@@ -40,8 +40,8 @@ fn document_color_reports_every_css_literal_in_document_order() {
         })
         .collect();
 
-    // The inline `style` attribute on line 1, then the `<style>` rule on line 5.
-    assert_eq!(colors, vec![(1, 21, 25), (5, 17, 37)]);
+    // The inline attribute on line 1, then rgba() and hsl() in the style block.
+    assert_eq!(colors, vec![(1, 21, 25), (5, 17, 37), (6, 12, 29)]);
 }
 
 #[test]
@@ -77,5 +77,8 @@ fn color_presentation_does_not_consult_the_document() {
         .iter()
         .map(|presentation| presentation.label.as_str())
         .collect();
-    assert_eq!(labels, vec!["#00ff00", "rgb(0, 255, 0)"]);
+    assert_eq!(
+        labels,
+        vec!["#00ff00", "rgb(0, 255, 0)", "hsl(120 100% 50%)"]
+    );
 }
