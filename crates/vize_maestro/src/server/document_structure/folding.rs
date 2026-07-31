@@ -16,8 +16,8 @@
 //! # Not covered
 //!
 //! Folding *inside* `<script>` (functions, objects) and `<style>` (rule blocks)
-//! needs the TypeScript and CSS services rather than the SFC block layout, and
-//! is tracked separately.
+//! needs the TypeScript and CSS services rather than the SFC block layout; it is
+//! tracked in #3477.
 
 use tower_lsp::lsp_types::{FoldingRange, FoldingRangeKind, FoldingRangeParams};
 
