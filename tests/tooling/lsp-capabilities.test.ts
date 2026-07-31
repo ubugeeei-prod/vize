@@ -108,6 +108,10 @@ test("vize lsp advertises the full editor-feature provider set with exact shapes
     assert.equal(capabilities.documentFormattingProvider, undefined);
     assert.equal(capabilities.documentRangeFormattingProvider, undefined);
 
+    // Colour swatches ship with document links: both decorate a literal in the
+    // authored text and make it interactive (#3456).
+    assert.equal(capabilities.colorProvider, true);
+
     // Providers that are intentionally not yet advertised stay absent.
     assert.equal(capabilities.signatureHelpProvider, undefined);
   });
@@ -127,6 +131,7 @@ test("vize lsp editor:false strips editor providers but keeps lint-driven codeAc
       assert.equal(capabilities.completionProvider, undefined);
       assert.equal(capabilities.codeLensProvider, undefined);
       assert.equal(capabilities.documentLinkProvider, undefined);
+      assert.equal(capabilities.colorProvider, undefined);
       assert.equal(capabilities.workspaceSymbolProvider, undefined);
       assert.equal(capabilities.hoverProvider, undefined);
       assert.equal(capabilities.definitionProvider, undefined);

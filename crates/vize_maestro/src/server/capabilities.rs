@@ -3,11 +3,11 @@
 
 use tower_lsp::lsp_types::{
     CodeActionKind, CodeActionOptions, CodeActionProviderCapability, CodeLensOptions,
-    CompletionOptions, DocumentLinkOptions, FileOperationFilter, FileOperationPattern,
-    FileOperationPatternKind, FileOperationRegistrationOptions, FoldingRangeProviderCapability,
-    HoverProviderCapability, LinkedEditingRangeServerCapabilities, OneOf, RenameOptions,
-    SaveOptions, SelectionRangeProviderCapability, SemanticTokenModifier, SemanticTokenType,
-    SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
+    ColorProviderCapability, CompletionOptions, DocumentLinkOptions, FileOperationFilter,
+    FileOperationPattern, FileOperationPatternKind, FileOperationRegistrationOptions,
+    FoldingRangeProviderCapability, HoverProviderCapability, LinkedEditingRangeServerCapabilities,
+    OneOf, RenameOptions, SaveOptions, SelectionRangeProviderCapability, SemanticTokenModifier,
+    SemanticTokenType, SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
     SemanticTokensServerCapabilities, ServerCapabilities, TextDocumentSyncCapability,
     TextDocumentSyncKind, TextDocumentSyncOptions, TextDocumentSyncSaveOptions,
     WorkDoneProgressOptions, WorkspaceFileOperationsServerCapabilities,
@@ -185,11 +185,18 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
             file_operations: workspace_file_operations(features),
         }),
 
+        // Colour swatches and the picker they open, for the CSS a `.vue` file
+        // authors. Gated on the same flag as document links: both decorate a
+        // literal in the authored text and make it interactive — a path you can
+        // follow, a colour you can pick — and neither needs the type checker.
+        color_provider: features
+            .document_links
+            .then_some(ColorProviderCapability::Simple(true)),
+
         // Features not yet implemented
         type_definition_provider: None,
         implementation_provider: None,
         declaration_provider: None,
-        color_provider: None,
         document_on_type_formatting_provider: None,
         execute_command_provider: None,
         call_hierarchy_provider: None,
