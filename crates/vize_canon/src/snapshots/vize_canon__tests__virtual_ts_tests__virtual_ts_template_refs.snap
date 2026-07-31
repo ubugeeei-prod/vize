@@ -51,6 +51,9 @@ type __VizeNativeElements = import('vue').NativeElements;
 type __VizeNativeElement<Tag extends PropertyKey> = Tag extends keyof __VizeNativeElements ? __VizeNativeElements[Tag] : unknown;
 type __VizeNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;
 declare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop extends PropertyKey>(value: __VizeNativeElementProp<__VizeNativeElement<__Tag>, __Prop>): void;
+// @ts-ignore TS2694/TS2307: a `vue` without `Directive` must degrade custom directive value checks to unchecked, never error. See virtual_ts/expressions/directive_values.rs.
+type __VizeDirectiveValue<D> = D extends import('vue').Directive<any, infer V> ? V : unknown;
+declare function __vizeDirectiveValue<__D>(value: __VizeDirectiveValue<__D>): void;
 type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
 import { ref, useTemplateRef } from 'vue'
@@ -88,7 +91,7 @@ function __setup() {
   const inputRef = ref<HTMLInputElement | null>(null)
   const buttonEl = useTemplateRef('btn')
   
-  // @vize-map: 7252:7356 -> 0:135
+  // @vize-map: 7605:7709 -> 0:135
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

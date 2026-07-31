@@ -1,5 +1,6 @@
 use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 mod directive_anchors;
+mod directive_values;
 
 #[test]
 fn issue_2645_infers_generic_sfc_props_in_tsx() {

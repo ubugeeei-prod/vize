@@ -6,8 +6,10 @@
 
 use super::super::helpers::generated_text_range;
 use super::super::types::VizeMapping;
-use super::native_props::{NativePropBindings, generate_native_prop_statement};
+use super::directive_values::generate_directive_value_statement;
+use super::native_props::generate_native_prop_statement;
 use super::reserved_props::rewrite_reserved_template_prop;
+use super::value_checks::TemplateValueChecks;
 use super::vif_chain::{VifControlFlowChain, emit_vif_control_flow_chain};
 use crate::virtual_ts::scope::remove_enclosing_vif_guard_prefix;
 use vize_carton::CompactString;
@@ -52,7 +54,7 @@ pub(crate) fn generate_expressions(
                 template_prop_names,
                 context.template_offset,
                 context.indent,
-                context.native_props,
+                context.checks,
             )
         );
         index += 1;
@@ -99,7 +101,7 @@ pub(crate) struct ExpressionListEmitContext<'a> {
     pub(crate) skipped_expression_ranges: &'a FxHashSet<(u32, u32)>,
     pub(crate) template_offset: u32,
     pub(crate) indent: &'a str,
-    pub(crate) native_props: &'a NativePropBindings,
+    pub(crate) checks: TemplateValueChecks<'a>,
 }
 
 impl<'a> ExpressionListEmitContext<'a> {
@@ -107,13 +109,13 @@ impl<'a> ExpressionListEmitContext<'a> {
         skipped_expression_ranges: &'a FxHashSet<(u32, u32)>,
         template_offset: u32,
         indent: &'a str,
-        native_props: &'a NativePropBindings,
+        checks: TemplateValueChecks<'a>,
     ) -> Self {
         Self {
             skipped_expression_ranges,
             template_offset,
             indent,
-            native_props,
+            checks,
         }
     }
 }
@@ -134,7 +136,7 @@ pub(crate) fn generate_expression(
     template_prop_names: &FxHashSet<String>,
     template_offset: u32,
     indent: &str,
-    native_props: &NativePropBindings,
+    checks: TemplateValueChecks<'_>,
 ) {
     if let Some(ref guard) = expr.vif_guard {
         if expr.kind == TemplateExpressionKind::VIf {
@@ -176,7 +178,7 @@ pub(crate) fn generate_expression(
             template_prop_names,
             template_offset,
             &cstr!("{indent}  "),
-            native_props,
+            checks,
         );
         append!(*ts, "{indent}}}\n");
     } else {
@@ -187,7 +189,7 @@ pub(crate) fn generate_expression(
             template_prop_names,
             template_offset,
             indent,
-            native_props,
+            checks,
         );
     }
 }
@@ -250,7 +252,7 @@ pub(super) fn generate_expression_statement(
     template_prop_names: &FxHashSet<String>,
     template_offset: u32,
     indent: &str,
-    native_props: &NativePropBindings,
+    checks: TemplateValueChecks<'_>,
 ) {
     let src_start = (template_offset + expr.start) as usize;
     let src_end = (template_offset + expr.end) as usize;
@@ -283,12 +285,27 @@ pub(super) fn generate_expression_statement(
         statement_expression
     };
 
-    if let Some(native_prop) = native_props.get(&(expr.start, expr.end)) {
+    if let Some(native_prop) = checks.native_props.get(&(expr.start, expr.end)) {
         generate_native_prop_statement(
             ts,
             mappings,
             expr,
             native_prop,
+            generated_expression,
+            template_offset,
+            indent,
+        );
+        return;
+    }
+
+    if expr.kind == TemplateExpressionKind::CustomDirective
+        && let Some(directive_value) = checks.directive_values.get(&(expr.start, expr.end))
+    {
+        generate_directive_value_statement(
+            ts,
+            mappings,
+            expr,
+            directive_value,
             generated_expression,
             template_offset,
             indent,

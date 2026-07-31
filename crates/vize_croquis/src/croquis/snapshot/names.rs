@@ -95,6 +95,7 @@ pub(super) fn template_expression_kind(kind: super::super::TemplateExpressionKin
         super::super::TemplateExpressionKind::DynamicDirectiveArgument => {
             "dynamicDirectiveArgument"
         }
+        super::super::TemplateExpressionKind::CustomDirective => "customDirective",
     }
 }
 

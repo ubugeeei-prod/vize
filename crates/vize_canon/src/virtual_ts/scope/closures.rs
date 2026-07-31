@@ -11,7 +11,7 @@ use vize_carton::profile;
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeId, ScopeKind};
 
 use crate::virtual_ts::expressions::{
-    ExpressionListEmitContext, collect_native_prop_bindings, generate_expressions,
+    ExpressionListEmitContext, TemplateValueCheckTables, generate_expressions,
     generate_expressions_in_enclosing_guard,
 };
 use crate::virtual_ts::helpers::to_safe_identifier_fragment;
@@ -41,10 +41,8 @@ pub(crate) fn generate_scope_closures(
 ) {
     let check_options = options.check_options;
     let virtual_ts_options = options.virtual_ts_options;
-    let native_props = collect_native_prop_bindings(
-        options.template_ast,
-        check_options.check_props && !options.legacy_vue2,
-    );
+    let check_tables = TemplateValueCheckTables::collect(summary, &options);
+    let checks = check_tables.as_checks();
 
     // Group expressions by scope_id
     let expressions_by_scope: FxHashMap<u32, Vec<_>> =
@@ -160,7 +158,7 @@ pub(crate) fn generate_scope_closures(
                         &skipped_expression_ranges,
                         template_offset,
                         "  ",
-                        &native_props,
+                        checks,
                     ),
                 );
             }
@@ -173,7 +171,7 @@ pub(crate) fn generate_scope_closures(
             skipped_expression_ranges: &skipped_expression_ranges,
             children_map: &children_map,
             template_prop_names,
-            native_props: &native_props,
+            checks,
             template_source: options.template_ast.map(|root| root.source.as_str()),
             template_offset,
             check_options,
@@ -297,7 +295,7 @@ pub(super) fn generate_scope_node(
                         ctx.skipped_expression_ranges,
                         ctx.template_offset,
                         &callback_indent,
-                        ctx.native_props,
+                        ctx.checks,
                     ),
                     enclosing_guard,
                 );
@@ -360,7 +358,7 @@ pub(super) fn generate_scope_node(
                         ctx.skipped_expression_ranges,
                         ctx.template_offset,
                         &inner_indent,
-                        ctx.native_props,
+                        ctx.checks,
                     ),
                 );
             }
@@ -390,7 +388,7 @@ pub(super) fn generate_scope_node(
                         ctx.skipped_expression_ranges,
                         ctx.template_offset,
                         indent,
-                        ctx.native_props,
+                        ctx.checks,
                     ),
                 );
             }

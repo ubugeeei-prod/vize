@@ -116,6 +116,29 @@ export interface ShallowRef<T = unknown, _Raw = T> extends Ref<T, _Raw> {
 export type InjectionKey<T> = symbol & { readonly __v_vlsInjection?: T };
 export type PropType<T> = { new (...args: any[]): T & {} } | { (): T } | null;
 
+export interface DirectiveBinding<Value = any, Modifiers extends string = string, Arg = any> {
+  instance: ComponentPublicInstance | Record<string, any> | null;
+  value: Value;
+  oldValue: Value | null;
+  arg?: Arg;
+  modifiers: Partial<Record<Modifiers, boolean>>;
+  dir: ObjectDirective<any, Value, Modifiers, Arg>;
+}
+export type DirectiveHook<HostElement = any, Prev = any, Value = any, Modifiers extends string = string, Arg = any> = (el: HostElement, binding: DirectiveBinding<Value, Modifiers, Arg>, vnode: any, prevVNode: Prev) => void;
+export interface ObjectDirective<HostElement = any, Value = any, Modifiers extends string = string, Arg = any> {
+  created?: DirectiveHook<HostElement, null, Value, Modifiers, Arg>;
+  beforeMount?: DirectiveHook<HostElement, null, Value, Modifiers, Arg>;
+  mounted?: DirectiveHook<HostElement, null, Value, Modifiers, Arg>;
+  beforeUpdate?: DirectiveHook<HostElement, any, Value, Modifiers, Arg>;
+  updated?: DirectiveHook<HostElement, any, Value, Modifiers, Arg>;
+  beforeUnmount?: DirectiveHook<HostElement, null, Value, Modifiers, Arg>;
+  unmounted?: DirectiveHook<HostElement, null, Value, Modifiers, Arg>;
+  deep?: boolean;
+}
+export type FunctionDirective<HostElement = any, V = any, Modifiers extends string = string, Arg = any> = DirectiveHook<HostElement, any, V, Modifiers, Arg>;
+export type Directive<HostElement = any, Value = any, Modifiers extends string = string, Arg = any> = ObjectDirective<HostElement, Value, Modifiers, Arg> | FunctionDirective<HostElement, Value, Modifiers, Arg>;
+export type DirectiveModifiers<K extends string = string> = Partial<Record<K, boolean>>;
+
 export declare const Transition: DefineComponent;
 export declare function defineComponent(options: any): DefineComponent;
 export declare function defineAsyncComponent(source: any): DefineComponent;

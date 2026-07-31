@@ -137,6 +137,13 @@ pub enum TemplateExpressionKind {
     VModel,
     /// Runtime directive argument: `:[name]`, `@[name]`, or `#[name]`.
     DynamicDirectiveArgument,
+    /// Custom (non-builtin) directive value: `v-focus="expr"`.
+    ///
+    /// Collected so the value reaches the type checker at all. Until this
+    /// variant existed a custom directive's expression was seen only by
+    /// undefined-identifier detection, so `v-focus="'nope'"` was silent where
+    /// `vue-tsc` reports `TS2322` against `Directive<El, Value>`.
+    CustomDirective,
 }
 
 impl TemplateExpressionKind {
@@ -151,6 +158,7 @@ impl TemplateExpressionKind {
             Self::VShow => "VShow",
             Self::VModel => "VModel",
             Self::DynamicDirectiveArgument => "DynamicDirectiveArgument",
+            Self::CustomDirective => "CustomDirective",
         }
     }
 }

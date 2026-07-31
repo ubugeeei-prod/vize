@@ -279,7 +279,7 @@ pub(super) fn emit_vif_control_flow_chain(
                 template_prop_names,
                 context.template_offset,
                 &body_indent,
-                context.native_props,
+                context.checks,
             );
         }
     }

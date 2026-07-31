@@ -1,5 +1,6 @@
 use crate::croquis::{TemplateExpression, TemplateExpressionKind};
 use crate::drawer::Drawer;
+use crate::drawer::helpers::is_builtin_directive;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::Expression;
 use oxc_parser::Parser;
@@ -67,6 +68,15 @@ impl Drawer {
                     profile!(
                         "croquis.template.directive.v_on",
                         self.handle_v_on_directive(dir, scope_vars, event_target_component.clone())
+                    );
+                } else if !is_builtin_directive(dir.name.as_str()) {
+                    // A custom directive's value is an ordinary template
+                    // expression; collecting it here is what lets it reach the
+                    // type checker, and gives it the enclosing scope id and
+                    // v-if guard for free, exactly like `v-show`.
+                    self.collect_basic_directive_expression(
+                        dir.exp.as_ref(),
+                        TemplateExpressionKind::CustomDirective,
                     );
                 }
             }
