@@ -44,7 +44,7 @@ mod jsx_codegen;
 mod mapping;
 mod materialize;
 mod materialize_stubs;
-mod option_probe;
+pub(crate) mod option_probe;
 mod package_node_modules;
 mod passthrough;
 mod paths;

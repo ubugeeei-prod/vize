@@ -11,7 +11,7 @@
     "allowArbitraryExtensions": true,
     "jsx": "preserve",
     "paths": {
-      "@nuxt/ui/components/*.vue": ["src/vendors/nuxt-ui-component.ts"]
+      "@nuxt/ui/components/*.vue": ["./src/vendors/nuxt-ui-component.ts"]
     }
   },
   "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.vue"]

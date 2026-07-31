@@ -2,6 +2,18 @@ use std::path::{Path, PathBuf};
 
 use super::collect_option_diagnostics;
 use crate::batch::Diagnostic;
+use crate::batch::virtual_project::option_probe::OptionDiagnosticNarrowing;
+
+/// A narrowing derived from the options named in `declared`, using the same
+/// derivation the probe itself uses.
+#[allow(clippy::disallowed_types)]
+fn narrowing(declared: &[&str]) -> OptionDiagnosticNarrowing {
+    let mut options = serde_json::Map::new();
+    for name in declared {
+        options.insert((*name).into(), serde_json::Value::Bool(true));
+    }
+    OptionDiagnosticNarrowing::from_declared(&options)
+}
 
 /// Verbatim `tsgo --pretty false` output for a probe config declaring
 /// `baseUrl`, `target: ES5`, `moduleResolution: node`, `downlevelIteration` and
@@ -23,6 +35,7 @@ fn collected(output: &str) -> Vec<(Option<u32>, u8, String)> {
         output,
         Path::new("tsconfig.options.json"),
         &PathBuf::from("/project/tsconfig.json"),
+        narrowing(&[]),
         &mut diagnostics,
     );
     assert!(
@@ -127,9 +140,116 @@ fn an_absolute_config_path_is_recognized() {
          removed.\n",
         Path::new("/virtual/root/tsconfig.options.json"),
         &PathBuf::from("/project/tsconfig.json"),
+        narrowing(&[]),
         &mut diagnostics,
     );
 
     assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
     assert_eq!(diagnostics[0].code, Some(5102));
+}
+
+// -- vue-tsc narrowing (#3448) ------------------------------------------------
+//
+// vize's checker is TypeScript 7 and `vue-tsc`'s is TypeScript 6. Where the two
+// merely spell the same verdict differently the probe forwards what it gets;
+// where TypeScript 7 reports an error on a config TypeScript 6 accepts, the
+// diagnostic is dropped, because forwarding it is a false positive against the
+// tool the parity scorecard measures.
+
+fn collected_with(output: &str, declared: &[&str]) -> Vec<(Option<u32>, u8, String)> {
+    let mut diagnostics = Vec::new();
+    collect_option_diagnostics(
+        output,
+        Path::new("tsconfig.options.json"),
+        &PathBuf::from("/project/tsconfig.json"),
+        narrowing(declared),
+        &mut diagnostics,
+    );
+    diagnostics
+        .into_iter()
+        .map(|diagnostic| {
+            (
+                diagnostic.code,
+                diagnostic.severity,
+                diagnostic.message.to_string(),
+            )
+        })
+        .collect()
+}
+
+const NON_RELATIVE_PATHS_OUTPUT: &str = "\
+tsconfig.options.json(9,7): error TS5090: Non-relative paths are not allowed. Did you forget a leading './'?
+";
+
+/// `baseUrl` plus a non-relative `paths` target is the most common `paths`
+/// spelling in Vue projects, and it is legal under TypeScript 6 precisely
+/// because `baseUrl` resolves it. TypeScript 7 removed `baseUrl`, so the same
+/// config becomes `TS5090` — an error on code `vue-tsc` accepts today. The CI
+/// `vue-parity` job flagged exactly this on the pinned `vue-element-admin` and
+/// `vue2-elm` fixtures.
+#[test]
+fn non_relative_paths_are_dropped_when_base_url_is_declared() {
+    assert_eq!(
+        collected_with(NON_RELATIVE_PATHS_OUTPUT, &["baseUrl", "paths"]),
+        Vec::new()
+    );
+}
+
+/// Without `baseUrl` a non-relative target is invalid under both compilers, so
+/// the diagnostic is a real one and must survive.
+#[test]
+fn non_relative_paths_survive_without_base_url() {
+    let collected = collected_with(NON_RELATIVE_PATHS_OUTPUT, &["paths"]);
+    assert_eq!(collected.len(), 1, "{collected:?}");
+    assert_eq!(collected[0].0, Some(5090));
+}
+
+const DEPRECATION_OUTPUT: &str = "\
+tsconfig.options.json(6,5): error TS5102: Option 'baseUrl' has been removed. Please remove it from your configuration.
+tsconfig.options.json(7,5): error TS5108: Option 'target=ES5' has been removed. Please remove it from your configuration.
+";
+
+/// `ignoreDeprecations` is what TypeScript 6 tells a user to set, and it
+/// silences 6's deprecation errors. TypeScript 7 has nothing to silence — the
+/// options are removed rather than deprecated — so a project that did exactly
+/// what TypeScript instructed would be clean under `vue-tsc` and an error under
+/// `vize` (#3505).
+#[test]
+fn the_deprecation_family_is_dropped_when_deprecations_are_ignored() {
+    assert_eq!(
+        collected_with(
+            DEPRECATION_OUTPUT,
+            &["baseUrl", "target", "ignoreDeprecations"]
+        ),
+        Vec::new()
+    );
+}
+
+/// Without `ignoreDeprecations` both compilers agree the config is an error and
+/// differ only in the code, so the diagnostic is forwarded as it comes.
+#[test]
+fn the_deprecation_family_survives_without_ignore_deprecations() {
+    let collected = collected_with(DEPRECATION_OUTPUT, &["baseUrl", "target"]);
+    assert_eq!(
+        collected.iter().map(|entry| entry.0).collect::<Vec<_>>(),
+        vec![Some(5102), Some(5108)],
+        "{collected:?}"
+    );
+}
+
+/// The narrowing is per-code, not a blanket mute: an unknown option is wrong
+/// under every TypeScript version and is still reported next to a suppressed
+/// one.
+#[test]
+fn an_unrelated_option_diagnostic_is_untouched_by_the_narrowing() {
+    let output = "\
+tsconfig.options.json(9,7): error TS5090: Non-relative paths are not allowed. Did you forget a leading './'?
+tsconfig.options.json(4,5): error TS5023: Unknown compiler option 'nosuchoption'.
+";
+    let collected = collected_with(output, &["baseUrl", "paths", "ignoreDeprecations"]);
+    assert_eq!(
+        collected.iter().map(|entry| entry.0).collect::<Vec<_>>(),
+        vec![Some(5023)],
+        "{collected:?}"
+    );
 }

@@ -19,6 +19,7 @@ use std::process::Command;
 
 use vize_carton::profile;
 
+use super::super::virtual_project::option_probe::OptionDiagnosticNarrowing;
 use super::super::{Diagnostic, VirtualProject};
 use super::diagnostics::dedup_diagnostics;
 
@@ -31,7 +32,7 @@ const OPTION_DIAGNOSTIC_CODES: std::ops::Range<u32> = 5000..6000;
 /// diagnostics untouched rather than failing the check, because the probe adds
 /// diagnostics and never gates any.
 pub(super) fn option_diagnostics(corsa_path: &Path, project: &VirtualProject) -> Vec<Diagnostic> {
-    let Ok(Some(config_path)) = project.write_option_probe_tsconfig() else {
+    let Ok(Some((config_path, narrowing))) = project.write_option_probe_tsconfig() else {
         return Vec::new();
     };
 
@@ -52,7 +53,13 @@ pub(super) fn option_diagnostics(corsa_path: &Path, project: &VirtualProject) ->
     #[allow(clippy::disallowed_types)]
     for stream in [&output.stdout, &output.stderr] {
         let text = std::string::String::from_utf8_lossy(stream);
-        collect_option_diagnostics(text.as_ref(), &config_path, &anchor, &mut diagnostics);
+        collect_option_diagnostics(
+            text.as_ref(),
+            &config_path,
+            &anchor,
+            narrowing,
+            &mut diagnostics,
+        );
     }
     dedup_diagnostics(diagnostics)
 }
@@ -67,11 +74,12 @@ fn collect_option_diagnostics(
     output: &str,
     config_path: &Path,
     anchor: &Path,
+    narrowing: OptionDiagnosticNarrowing,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let mut last_was_kept = false;
     for line in output.lines() {
-        match parse_option_diagnostic_line(line, config_path) {
+        match parse_option_diagnostic_line(line, config_path, narrowing) {
             Some(Some((code, message, severity))) => {
                 diagnostics.push(Diagnostic {
                     file: anchor.to_path_buf(),
@@ -107,6 +115,7 @@ fn collect_option_diagnostics(
 fn parse_option_diagnostic_line(
     line: &str,
     config_path: &Path,
+    narrowing: OptionDiagnosticNarrowing,
 ) -> Option<Option<(u32, vize_carton::String, u8)>> {
     let (prefix, suffix) = line.split_once("): ")?;
     let open = prefix.rfind('(')?;
@@ -126,6 +135,7 @@ fn parse_option_diagnostic_line(
         .strip_prefix("TS")
         .and_then(|code| code.parse::<u32>().ok())
         .filter(|code| OPTION_DIAGNOSTIC_CODES.contains(code))
+        .filter(|code| narrowing.keeps(*code))
     else {
         return Some(None);
     };

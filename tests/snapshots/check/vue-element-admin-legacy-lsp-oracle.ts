@@ -210,7 +210,7 @@ const tsconfig = {
     // `checkJs` opt-in TypeScript requires for a `lang="js"` block (#3322).
     checkJs: true,
     lib: ["ES2022", "DOM"],
-    paths: { "@/*": ["src/*"] },
+    paths: { "@/*": ["./src/*"] },
     skipLibCheck: true,
     strict: false,
   },

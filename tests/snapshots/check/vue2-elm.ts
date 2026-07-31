@@ -38,7 +38,7 @@ test("vue2-elm vize check surface over the pinned Vue 2 app stays exact", async 
             // for a `lang="js"` script block (#3322).
             checkJs: true,
             lib: ["ES2022", "DOM"],
-            paths: { "src/*": ["src/*"] },
+            paths: { "src/*": ["./src/*"] },
             skipLibCheck: true,
             strict: false,
           },

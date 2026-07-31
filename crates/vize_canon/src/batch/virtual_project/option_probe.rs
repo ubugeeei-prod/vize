@@ -45,7 +45,12 @@ impl VirtualProject {
     /// Write the option probe config, or `None` when the generated config
     /// already carries every option the user declared and the main run
     /// therefore reports their diagnostics on its own.
-    pub(crate) fn write_option_probe_tsconfig(&self) -> CorsaResult<Option<PathBuf>> {
+    ///
+    /// Returns the narrowing that reading the probe's output must apply, derived
+    /// from the same declared options, so the caller does not re-read the config.
+    pub(crate) fn write_option_probe_tsconfig(
+        &self,
+    ) -> CorsaResult<Option<(PathBuf, OptionDiagnosticNarrowing)>> {
         let Some(tsconfig_path) = self.resolved_tsconfig_path() else {
             return Ok(None);
         };
@@ -54,13 +59,14 @@ impl VirtualProject {
             return Ok(None);
         }
 
+        let narrowing = OptionDiagnosticNarrowing::from_declared(&declared);
         let path = self.virtual_root.join(OPTION_PROBE_CONFIG);
         let content = serde_json::to_string_pretty(&option_probe_value(declared))?;
         profile!(
             "canon.project.write_option_probe",
             write_if_changed(&path, content.as_bytes())
         )?;
-        Ok(Some(path))
+        Ok(Some((path, narrowing)))
     }
 
     /// `compilerOptions` of the config `tsconfig_gen` wrote for this run. Read
@@ -79,6 +85,67 @@ impl VirtualProject {
                     .cloned()
             })
             .unwrap_or_default()
+    }
+}
+
+/// Which of the probe's option diagnostics TypeScript 6 — the compiler
+/// `vue-tsc` runs — would also report.
+///
+/// vize's checker is `@typescript/native-preview`, i.e. TypeScript 7, which
+/// *removed* options that TypeScript 6 merely deprecates. For a bare deprecated
+/// option the two agree that the config is an error and differ only in the code
+/// (`TS5101`/`TS5107` against `TS5102`/`TS5108`), so those are forwarded as they
+/// come. In the two shapes below they disagree about whether there is a
+/// diagnostic at all, and forwarding TypeScript 7's verdict would report an
+/// error on a config `vue-tsc` accepts today — a false positive against the very
+/// tool this measures (#3448).
+///
+/// This is the deliberate answer to "whose verdict does a vize option diagnostic
+/// represent": the user's `vue-tsc` toolchain, not vize's own checker. The cost
+/// is that vize cannot warn about what its checker has removed; the alternative
+/// costs `vize check` the ability to pass configs that work today.
+#[derive(Clone, Copy, Default)]
+pub(crate) struct OptionDiagnosticNarrowing {
+    /// The user declared `baseUrl`. TypeScript 6 resolves a non-relative `paths`
+    /// target against it; TypeScript 7 removed `baseUrl`, so the same target is
+    /// `TS5090: Non-relative paths are not allowed`. `baseUrl` plus non-relative
+    /// `paths` is the single most common `paths` spelling in Vue projects, so
+    /// forwarding that would fire across the ecosystem.
+    declares_base_url: bool,
+    /// The user set `ignoreDeprecations`, which silences TypeScript 6's
+    /// deprecation errors. TypeScript 7 has nothing to silence — the options are
+    /// removed rather than deprecated — so it reports them regardless, and a
+    /// project that did exactly what TypeScript told it to do would be clean
+    /// under `vue-tsc` and an error under `vize` (#3505).
+    ignores_deprecations: bool,
+}
+
+/// `TS5090: Non-relative paths are not allowed. Did you forget a leading './'?`
+const NON_RELATIVE_PATHS: u32 = 5090;
+
+/// The deprecated/removed option family. TypeScript 6 spells them `TS5101`
+/// (option) and `TS5107` (option value); TypeScript 7 spells the same two
+/// `TS5102` and `TS5108` because it removed rather than deprecated them.
+const DEPRECATION_CODES: [u32; 4] = [5101, 5102, 5107, 5108];
+
+impl OptionDiagnosticNarrowing {
+    #[allow(clippy::disallowed_types)]
+    pub(crate) fn from_declared(declared: &Map<std::string::String, Value>) -> Self {
+        Self {
+            declares_base_url: declared.contains_key("baseUrl"),
+            ignores_deprecations: declared.contains_key("ignoreDeprecations"),
+        }
+    }
+
+    /// Whether a probe diagnostic with this code is one `vue-tsc` would report.
+    pub(crate) fn keeps(&self, code: u32) -> bool {
+        if code == NON_RELATIVE_PATHS && self.declares_base_url {
+            return false;
+        }
+        if self.ignores_deprecations && DEPRECATION_CODES.contains(&code) {
+            return false;
+        }
+        true
     }
 }
 

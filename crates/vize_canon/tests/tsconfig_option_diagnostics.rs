@@ -187,3 +187,80 @@ fn an_option_diagnostic_is_reported_once_beside_the_file_diagnostics() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+// -- the narrowing to vue-tsc's verdict (#3448) -------------------------------
+//
+// vize runs `@typescript/native-preview` (TypeScript 7); `vue-tsc` pins
+// TypeScript 6. Where 7 reports an error on a config 6 accepts, forwarding it
+// would be a false positive against the tool the parity scorecard measures, so
+// those diagnostics are dropped. Both shapes below are configs real Vue projects
+// ship today.
+
+/// `baseUrl` with a non-relative `paths` target: legal under TypeScript 6, which
+/// resolves the target against `baseUrl`; `TS5090` under TypeScript 7, which
+/// removed `baseUrl`. This is the most common `paths` spelling in Vue projects —
+/// the pinned `vue-element-admin` and `vue2-elm` fixtures both use it — so
+/// forwarding `TS5090` would fire across the ecosystem.
+///
+/// The `baseUrl` deprecation itself still reports: TypeScript 6 flags it too, so
+/// the two compilers only differ in the code they use.
+#[test]
+fn a_non_relative_paths_target_under_base_url_is_not_reported() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let root = write_case(
+        "base-url-non-relative-paths",
+        ",\n    \"baseUrl\": \".\",\n    \"paths\": { \"@/*\": [\"src/*\"] }",
+    );
+
+    let Some(diagnostics) = project_diagnostics(&root) else {
+        let _ = std::fs::remove_dir_all(&root);
+        return;
+    };
+    let codes: Vec<_> = diagnostics
+        .iter()
+        .filter(|(file, _)| file == "tsconfig.json")
+        .filter_map(|(_, code)| *code)
+        .collect();
+
+    assert!(
+        !codes.contains(&5090),
+        "TS5090 is a consequence of TypeScript 7 removing baseUrl and must not \
+         reach a user whose vue-tsc accepts this config: {diagnostics:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// `ignoreDeprecations` is what TypeScript 6 tells the user to set, and it
+/// silences 6's deprecation errors. TypeScript 7 has nothing to silence, so it
+/// reports the removal regardless — leaving a project that did exactly what
+/// TypeScript instructed clean under `vue-tsc` and an error under `vize`
+/// (#3505). Honoring the option closes that.
+#[test]
+fn ignore_deprecations_silences_the_deprecated_option_family() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let root = write_case(
+        "ignore-deprecations",
+        ",\n    \"baseUrl\": \".\",\n    \"ignoreDeprecations\": \"6.0\"",
+    );
+
+    let Some(diagnostics) = project_diagnostics(&root) else {
+        let _ = std::fs::remove_dir_all(&root);
+        return;
+    };
+    let config_diagnostics: Vec<_> = diagnostics
+        .iter()
+        .filter(|(file, _)| file == "tsconfig.json")
+        .collect();
+
+    assert!(
+        config_diagnostics.is_empty(),
+        "a config that did what TypeScript 6 asked must stay clean: {diagnostics:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}

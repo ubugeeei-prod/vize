@@ -167,7 +167,7 @@ const tsconfig = {
     strict: false,
     skipLibCheck: true,
     noEmit: true,
-    paths: { "@/*": ["src/*"] },
+    paths: { "@/*": ["./src/*"] },
   },
   include: ["src/**/*"],
 };
