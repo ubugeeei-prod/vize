@@ -113,10 +113,7 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
         Diff("v-text wrapped in toDisplayString"),
     ),
     ("directives/v_custom_arg", Same),
-    (
-        "directives/v_custom_array",
-        Diff("custom-directive array form not unpacked"),
-    ),
+    ("directives/v_custom_array", Same),
     ("directives/v_dashed_custom", Same),
     // -- slots -----------------------------------------------------------
     ("slots/object_children", Same),

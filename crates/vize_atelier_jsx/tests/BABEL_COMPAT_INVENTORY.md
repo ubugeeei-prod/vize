@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   71 |
-| divergent  |   24 |
+| equivalent |   72 |
+| divergent  |   23 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -170,7 +170,7 @@ deliberate answer, recorded here so it is not relitigated.
 | `directives/v_html_with_children`       | keeps the children too                                         | same                                                            | no change               | ✅      |
 | `directives/v_text`                     | `{textContent: t}` raw                                         | `textContent: toDisplayString(t)`                               | assign raw              | ❌      |
 | `directives/v_custom_arg`               | `[[resolveDirective("custom"), val, "arg"]]`                   | same                                                            | no change               | ✅      |
-| `directives/v_custom_array`             | unpacks `[val, 'arg', ['a','b']]` into value / arg / modifiers | passes the whole array as the value                             | unpack the array form   | ❌      |
+| `directives/v_custom_array`             | unpacks `[val, 'arg', ['a','b']]` into value / arg / modifiers | same (#3421)                                                    | no change               | ✅      |
 | `directives/v_dashed_custom`            | `resolveDirective("unknown-thing")`                            | same                                                            | no change               | ✅      |
 
 ### `v-models` spellings Vize rejects and babel accepts

@@ -15,6 +15,7 @@ mod name;
 mod slot;
 mod style;
 mod text;
+mod v_custom;
 mod v_model;
 mod v_models;
 mod v_slots;

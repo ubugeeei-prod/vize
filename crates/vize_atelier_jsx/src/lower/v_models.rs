@@ -109,7 +109,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             return true;
         }
 
-        let Some(entries) = self.model_array_value(attr.value.as_ref()) else {
+        let Some(entries) = self.array_literal_value(attr.value.as_ref()) else {
             self.reject(
                 span,
                 "v-models expects a two-dimensional array of `[value, arg?, modifiers?]` \

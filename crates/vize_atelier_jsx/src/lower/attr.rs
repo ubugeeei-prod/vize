@@ -13,7 +13,7 @@ use oxc_ast::ast::{
     JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXSpreadAttribute,
 };
 use oxc_span::{GetSpan, Span};
-use vize_carton::{Box, String, Vec};
+use vize_carton::{Box, String, Vec, is_builtin_directive};
 use vize_relief::SourceLocation;
 use vize_relief::{AttributeNode, DirectiveNode, PropNode, TextNode};
 
@@ -231,8 +231,24 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         // malformed `$event => ($event => (...))` chain).
         if raw_name == "model"
             && arg.is_none()
-            && let Some(array) = self.model_array_value(attr.value.as_ref())
+            && let Some(array) = self.array_literal_value(attr.value.as_ref())
             && let Some(prop) = self.lower_model_array(array, loc)
+        {
+            return Some(prop);
+        }
+
+        // `v-custom={[value, 'arg', ['a','b']]}` — babel-plugin-jsx's array
+        // encoding for a custom directive's value, argument and modifiers.
+        // Restricted to custom directives with no JSX-namespace argument: the
+        // built-ins carry their own array meanings (`v-model` just above,
+        // `v-models` before `lower_attribute` even runs), and when the argument
+        // is already spelled `v-custom:arg` there is no positional slot for the
+        // array to fill.
+        if arg.is_none()
+            && !is_builtin_directive(raw_name)
+            && raw_name != "models"
+            && let Some(array) = self.array_literal_value(attr.value.as_ref())
+            && let Some(prop) = self.lower_custom_directive_array(array, raw_name, loc)
         {
             return Some(prop);
         }

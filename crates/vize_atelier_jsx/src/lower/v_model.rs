@@ -94,7 +94,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
 
     /// The `[value, ...]` array literal backing a `v-model={[...]}` attribute,
     /// or `None` when the value is not an array-literal expression container.
-    pub(crate) fn model_array_value<'e>(
+    pub(crate) fn array_literal_value<'e>(
         &self,
         value: Option<&'e JSXAttributeValue<'e>>,
     ) -> Option<&'e oxc_ast::ast::ArrayExpression<'e>> {
