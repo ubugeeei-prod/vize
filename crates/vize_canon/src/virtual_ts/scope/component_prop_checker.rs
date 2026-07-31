@@ -1,8 +1,6 @@
 use vize_carton::{String, append};
 use vize_croquis::croquis::ComponentUsage;
 
-use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier_fragment};
-
 pub(super) fn is_inline_function_prop_value(value: &str) -> bool {
     let value = value.trim();
     value.contains("=>") || value.starts_with("function") || value.starts_with("async function")
@@ -27,38 +25,92 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
     })
 }
 
+/// The target the usage's whole props object literal is checked against.
+///
+/// `__VizeExactOptionalProps<__X_Props_N>` reports **only** what the per-prop
+/// check structurally cannot: the `exactOptionalPropertyTypes` distinction
+/// between "the property is absent" and "the property is present and
+/// `undefined`" (#3450). That distinction only exists when a whole object
+/// literal is assigned at once, which is why the per-prop path cannot express
+/// it — it extracts `label?: string` to `string | undefined` through
+/// `__VizePropValue` and assigns to that, legal whatever the option says.
+///
+/// Every property is widened to `{} | null`, which accepts any value except
+/// `undefined`. That is the whole trick: an ordinary type mismatch stays the
+/// per-prop check's to report, at its own well-anchored position, and is not
+/// reported a second time here. Checking against the child's props type
+/// unmodified — or against `Partial<>` of it — reports every wrongly-typed prop
+/// twice, one byte apart, with an identical code and message that
+/// `dedup_diagnostics` cannot collapse because the positions differ.
+///
+/// `null` has to be in the widened type, not just `{}`: a child prop declared
+/// `LinkBehavior | null` is legitimately passed `null`, and `{}` alone rejects
+/// it. Only `undefined` is this check's business.
+///
+/// `Required<Pick<P, K>>[K]` rather than `P[K]` because indexed access on an
+/// optional property already includes `undefined`, so `P[K]` cannot tell
+/// `label?: string` from `label?: string | undefined`. Stripping the modifier
+/// first leaves only an *explicitly* declared `undefined`, which the child opted
+/// into and which must stay silent.
+///
+/// Consequences, each a case in `component_props_tests.rs`:
+///
+/// * a prop the template did not pass is not reported — every property is
+///   optional, so the missing-required-prop class stays off. That is also what
+///   keeps this independent of #3444, whose spread needs the full type.
+/// * `class`, `style`, `data-*`, `aria-*` and anything else the child does not
+///   declare are absorbed by the `Record<string, unknown>` intersection
+///   `__VizePropChecker` applies, which also suppresses object-literal excess
+///   property checking.
+/// * the alias does not have to agree with the literal's key set. The literal
+///   skips props whose value does not generate; a `Pick<>` over the authored
+///   names would have had to reproduce that filtering exactly or report phantom
+///   missing properties.
+/// * with `exactOptionalPropertyTypes` off the check is inert, because an
+///   optional property accepts `undefined` implicitly — which is also what
+///   `vue-tsc` does.
+///
+/// Only the **non-generic** branch of `__VizePropChecker` uses this type; a
+/// generic child resolves through its own `__vizeCheck` signature and ignores
+/// it, so the generic inference path is untouched.
+///
+/// Note the code divergence. TypeScript 6, which `vue-tsc` pins, reports this as
+/// `TS2379`; the `@typescript/native-preview` build vize runs reports the
+/// identical code against the identical target as `TS2345` with the same
+/// explanation nested one level down. Confirmed by running both compilers over
+/// the same file across five target shapes, including `vue-tsc`'s own. It is a
+/// compiler-version difference, not something the generated code can steer.
 pub(super) fn append_prop_checker_alias(
     ts: &mut String,
-    usage: &ComponentUsage,
     component_type_name: &str,
     component_ref: &str,
     idx: usize,
 ) {
     append!(
         *ts,
-        "  type __{component_type_name}_CheckProps_{idx} = {{\n",
+        "  type __{component_type_name}_CheckProps_{idx} = __VizeExactOptionalProps<__{component_type_name}_Props_{idx}>;\n",
     );
-    for prop in &usage.props {
-        if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
-            continue;
-        }
-        if let Some(value) = prop.value.as_ref()
-            && prop.is_dynamic
-        {
-            if !is_inline_function_prop_value(value.as_str()) {
-                continue;
-            }
-            let camel_prop_name = to_camel_case(prop.name.as_str());
-            let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
-            append!(
-                *ts,
-                "    \"{camel_prop_name}\": __{component_type_name}_{idx}_prop_{safe_prop_name};\n",
-            );
-        }
-    }
-    ts.push_str("  };\n");
     append!(
         *ts,
         "  type __{component_type_name}_Check_{idx} = __VizePropChecker<typeof {component_ref}, __{component_type_name}_CheckProps_{idx}>;\n",
+    );
+}
+
+/// The shared type helpers every per-usage prop check resolves through, emitted
+/// once per template scope that has at least one checkable component usage.
+///
+/// They live here rather than at the call site because
+/// [`append_prop_checker_alias`] is what names them, and the reasoning for
+/// `__VizeExactOptionalProps` in particular belongs beside the alias it builds.
+pub(super) fn append_prop_check_helpers(ts: &mut String) {
+    ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
+    ts.push_str(
+        "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;\n",
+    );
+    ts.push_str(
+        "  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;\n",
+    );
+    ts.push_str(
+        "  type __VizeExactOptionalProps<P> = { [K in keyof P]?: undefined extends Required<Pick<P, K>>[K] ? unknown : {} | null };\n",
     );
 }

@@ -15,7 +15,7 @@ use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier, to_safe_iden
 use crate::virtual_ts::types::VizeMapping;
 
 use super::component_prop_checker::{
-    append_prop_checker_alias, has_inference_props, has_value_props,
+    append_prop_check_helpers, append_prop_checker_alias, has_inference_props, has_value_props,
 };
 use super::component_prop_navigation;
 use super::context::{ComponentPropsContext, VForPropsContext};
@@ -77,13 +77,7 @@ pub(super) fn generate_component_props(
         .iter()
         .any(|(_, usage)| has_inference_props(usage));
     if any_inference_props {
-        ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
-        ts.push_str(
-            "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;\n",
-        );
-        ts.push_str(
-            "  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;\n",
-        );
+        append_prop_check_helpers(ts);
     }
 
     for &(idx, usage) in &checkable_usages {
@@ -129,7 +123,6 @@ pub(super) fn generate_component_props(
             // Generic functional prop-checker for this component (#775).
             append_prop_checker_alias(
                 ts,
-                usage,
                 component_type_name.as_str(),
                 component_ref.as_str(),
                 idx,

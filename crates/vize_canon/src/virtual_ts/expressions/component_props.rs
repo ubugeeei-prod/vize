@@ -215,8 +215,20 @@ fn generate_generic_props_call(
 
     append!(
         *ts,
-        "{expr_indent}(undefined as unknown as __{component_type_name}_Check_{idx})({{\n",
+        "{expr_indent}(undefined as unknown as __{component_type_name}_Check_{idx})(",
     );
+    // TypeScript anchors an *argument* assignability failure — `TS2345` — at the
+    // argument expression, which here is the whole object literal and not any
+    // one property. Without a mapping over that range the diagnostic has no
+    // authored position and the diagnostics path drops it silently, which is
+    // what made the `exactOptionalPropertyTypes` check (#3450) fire in the
+    // generated program and report nothing to the user.
+    //
+    // The per-entry mappings pushed below stay inside this range and remain the
+    // anchor for a per-property failure; this one only catches what TypeScript
+    // reports about the literal as a whole.
+    let literal_gen_start = ts.len();
+    ts.push_str("{\n");
 
     let class_bindings = collect_generated_class_bindings(usage, template_prop_names);
     let merge_class_bindings = class_bindings.len() > 1;
@@ -279,7 +291,20 @@ fn generate_generic_props_call(
         });
     }
 
-    append!(*ts, "{expr_indent}}});\n");
+    append!(*ts, "{expr_indent}}}");
+    let literal_gen_end = ts.len();
+    ts.push_str(");\n");
+    // Anchored on the tag *name*, not on `usage.start`, which is the `<` one
+    // byte to its left. `vue-tsc` puts a whole-props failure on the name — the
+    // #3450 oracle reads `src/Parent.vue(6,12)` for `<template><Child …`, where
+    // column 12 is the `C`. Same derivation as the navigation references in
+    // `scope::component_prop_navigation`.
+    let tag_src_start = (template_offset + usage.start + 1) as usize;
+    mappings.push(VizeMapping {
+        gen_range: literal_gen_start..literal_gen_end,
+        src_range: tag_src_start..tag_src_start + usage.name.len(),
+        sub_spans: Vec::new(),
+    });
 
     if usage.vif_guard.is_some() {
         append!(*ts, "{indent}}}\n");
