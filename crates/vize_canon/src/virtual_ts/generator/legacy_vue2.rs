@@ -34,10 +34,19 @@ declare function __vForList<T>(source: T | undefined | null): readonly __VForEnt
 const LEGACY_REF_UNWRAP_HELPER: &str =
     "    type __U<T> = T extends { value: infer __V } ? __V : T;\n";
 const LEGACY_EXPOSED_UNWRAP_HELPER: &str = "type __VizeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends { value: infer __V } ? __V : T[K] };\n";
-const MODERN_REF_UNWRAP_HELPER: &str = r#"    type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
-    type __VizeWidenTemplateRef<T> = __VizeIsUnion<T> extends true ? T : T extends string ? keyof T extends keyof string ? string : T : T extends number ? keyof T extends keyof number ? number : T : T extends boolean ? keyof T extends keyof boolean ? boolean : T : T;
-    type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;
-"#;
+/// Template-scope ref unwrapping for the modern (Vue 3) dialect.
+///
+/// Only `__U` is emitted per file: it is dialect-dependent, so each generated
+/// module needs its own. The `__VizeIsUnion` / `__VizeWidenTemplateRef`
+/// conditional types it delegates to are file-independent and live in
+/// [`VUE_TYPE_HELPERS`] — hoisted once per program into the shared ambient
+/// helpers file, or embedded once at module scope when hoisting is off. Keeping
+/// them per-file cost ~369 bytes in every generated module and gave TypeScript
+/// a fresh declaration to instantiate for each one (see #3443, #3460).
+///
+/// [`VUE_TYPE_HELPERS`]: super::super::helpers::VUE_TYPE_HELPERS
+const MODERN_REF_UNWRAP_HELPER: &str =
+    "    type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;\n";
 const MODERN_GENERIC_REF_UNWRAP_HELPER: &str =
     "    type __U<T> = T extends import('vue').Ref ? T['value'] : T;\n";
 const MODERN_EXPOSED_UNWRAP_HELPER: &str = "type __VizeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };\n";

@@ -186,3 +186,75 @@ export default {
 
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+/// Type declarations that take every input as a type parameter and are therefore
+/// byte-identical in every generated module.
+///
+/// They belong in the hoisted ambient helpers file, exactly once per program.
+/// Declaring them once per generated module costs bytes in every `.vue.ts` *and*
+/// hands TypeScript a distinct declaration to instantiate for each one, which
+/// defeats its instantiation cache — the effect measured in #3443 and bisected in
+/// #3460.
+const PROGRAM_WIDE_TEMPLATE_HELPERS: &[&str] =
+    &["type __VizeIsUnion<", "type __VizeWidenTemplateRef<"];
+
+fn ref_sfc(binding: &str) -> vize_carton::String {
+    vize_carton::cstr!(
+        "<script setup lang=\"ts\">
+import {{ ref }} from 'vue'
+const {binding} = ref('')
+</script>
+
+<template>
+  <p>{{{{ {binding} }}}}</p>
+</template>
+"
+    )
+}
+
+#[test]
+fn template_ref_widening_helpers_are_hoisted_once_per_program() {
+    let case_dir = unique_case_dir("shared-helper-hoisting");
+    let _ = fs::remove_dir_all(&case_dir);
+    let src_dir = case_dir.join("src");
+    fs::create_dir_all(&src_dir).unwrap();
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    let mut paths = Vec::new();
+    for binding in ["alpha", "beta", "gamma"] {
+        let path = src_dir.join(vize_carton::cstr!("{binding}.vue").as_str());
+        fs::write(&path, ref_sfc(binding).as_str()).unwrap();
+        paths.push(path);
+    }
+    project.register_paths(&paths).unwrap();
+
+    for path in &paths {
+        let content = project.find_by_original(path).unwrap().content.clone();
+        for declaration in PROGRAM_WIDE_TEMPLATE_HELPERS {
+            assert_eq!(
+                content.matches(declaration).count(),
+                0,
+                "{} must not declare {declaration} — it is hoisted",
+                path.display()
+            );
+        }
+        assert_eq!(
+            content.matches(MODERN_REF_UNWRAP_HELPER).count(),
+            1,
+            "{} must still declare its own dialect-specific __U",
+            path.display()
+        );
+    }
+
+    for declaration in PROGRAM_WIDE_TEMPLATE_HELPERS {
+        assert_eq!(
+            crate::virtual_ts::SHARED_PREAMBLE_DTS
+                .matches(declaration)
+                .count(),
+            1,
+            "the hoisted helpers file must declare {declaration} exactly once"
+        );
+    }
+
+    let _ = fs::remove_dir_all(&case_dir);
+}

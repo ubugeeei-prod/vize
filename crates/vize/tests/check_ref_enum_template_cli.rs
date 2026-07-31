@@ -128,8 +128,18 @@ fn check_template_ref_enum_comparisons_keep_declared_ref_value_type() {
         .collect::<Vec<_>>()
         .join("\n");
     assert!(
-        virtual_ts.contains("type __VizeWidenTemplateRef<T>"),
-        "template refs should use the widening helper:\n{virtual_ts}"
+        virtual_ts.contains(
+            "type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;"
+        ),
+        "template refs should unwrap through the widening helper:\n{virtual_ts}"
+    );
+    // The widening helper itself is file-independent and lives once per program
+    // in `__vize_helpers.d.ts`; re-declaring it per module is the regression
+    // this guards (see #3460).
+    assert_eq!(
+        virtual_ts.matches("type __VizeWidenTemplateRef<T>").count(),
+        0,
+        "the widening helper must be hoisted, not re-declared per module:\n{virtual_ts}"
     );
     for name in ["modalWindowState", "shallowModalWindowState"] {
         assert!(

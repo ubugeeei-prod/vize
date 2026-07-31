@@ -29,9 +29,9 @@ pub(crate) const SETUP_SCOPE_HELPER_NAMES: &[&str] = &[
     USE_TEMPLATE_REF,
 ];
 
-/// Shared type-helper text used both by the per-file embedded preamble and by
-/// the hoisted ambient helpers file. Declared as a macro so the exact same
-/// bytes can be spliced into both constants at compile time.
+/// Shared type-helper text for the per-file embedded preamble and the hoisted
+/// ambient helpers file; a macro so identical bytes splice into both. Emitted
+/// verbatim, so a line here is a generated line — related aliases share one.
 macro_rules! vue_type_aliases_text {
     () => {
         r#"type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
@@ -50,7 +50,7 @@ type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D> = T extends unknown ? Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__LooseRequired<T>[K], undefined> } : never;
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
-type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
+type __VizeIsAny<T> = 0 extends (1 & T) ? true : false; type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false; type __VizeWidenTemplateRef<T> = __VizeIsUnion<T> extends true ? T : T extends string ? keyof T extends keyof string ? string : T : T extends number ? keyof T extends keyof number ? number : T : T extends boolean ? keyof T extends keyof boolean ? boolean : T : T;
 type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
 type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
 type __VizeFallthroughAttrs = { class?: unknown; style?: unknown };
