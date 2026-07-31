@@ -1183,7 +1183,6 @@ const configs: AliasConfig[] = [{ key: "a", label: "A" }];
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noEmit": true,
-    "baseUrl": ".",
     "paths": { "@/*": ["src/*"] }
   },
   "include": ["src/**/*"]
@@ -1483,7 +1482,6 @@ const same: Registry["home"] = entry;
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noEmit": true,
-    "baseUrl": ".",
     "paths": {
       "#registry": ["./registry"]
     }
@@ -3106,6 +3104,7 @@ fn check_declaration_emit_uses_tsconfig_options() {
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noEmit": true,
+    "declaration": true,
     "declarationDir": "types-from-tsconfig",
     "declarationMap": true
   },
@@ -3211,7 +3210,6 @@ fn check_json_handles_monorepo_tsconfig_extends_paths_and_excludes() {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": ".",
     "paths": {
       "@shared/*": ["packages/shared/src/*"]
     },

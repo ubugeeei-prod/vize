@@ -57,7 +57,7 @@ fn check_allows_export_assignment_inside_ambient_module_declaration() {
     "strict": true,
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "noEmit": true
   },
   "include": ["src/**/*.d.ts"]

@@ -76,7 +76,6 @@ fn check_from_package_cwd_uses_package_local_tsconfig_inputs() {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": ".",
     "paths": {
       "~/*": ["*"]
     },

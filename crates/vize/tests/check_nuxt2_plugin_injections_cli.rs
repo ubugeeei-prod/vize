@@ -20,7 +20,6 @@ fn check_nuxt2_use_context_sees_plugin_injections() {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": ".",
     "noEmit": true
   },
   "include": ["pages/**/*.vue", "plugins/**/*.ts", "types/**/*.d.ts"]

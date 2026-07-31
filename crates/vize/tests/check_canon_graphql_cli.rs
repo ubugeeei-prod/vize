@@ -137,7 +137,6 @@ fn check_explicit_vue_keeps_generated_graphql_schema_out_of_canon() {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": ".",
     "paths": {
       "~/*": ["*"]
     },
@@ -243,7 +242,6 @@ fn check_barrel_reexport_preserves_generated_graphql_identity() {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": ".",
     "paths": {
       "~/*": ["*"],
       "@/*": ["*"]

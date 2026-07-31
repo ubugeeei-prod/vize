@@ -1,7 +1,5 @@
-use super::{
-    CorsaError, CorsaExecutor, FallbackCause, classify_fallback_cause, collect_declaration_outputs,
-    collect_virtual_file_uris,
-};
+use super::fallback::{FallbackCause, classify_fallback_cause};
+use super::{CorsaError, CorsaExecutor, collect_declaration_outputs, collect_virtual_file_uris};
 use crate::file_uri::path_to_file_uri;
 use std::{
     fs,
@@ -267,11 +265,11 @@ fn classifies_check_failures() {
 
 #[test]
 fn fallback_notice_is_observable_once_and_silenceable() {
-    use super::{FallbackCause, FallbackStep, fallback_stderr_notice};
+    use super::fallback::{FallbackCause, FallbackStep, fallback_stderr_notice};
 
     // Re-arm the once-per-run guard and ensure the notice is not suppressed,
     // regardless of earlier degradations in this process.
-    super::FALLBACK_NOTICE_EMITTED.store(false, std::sync::atomic::Ordering::Relaxed);
+    super::fallback::FALLBACK_NOTICE_EMITTED.store(false, std::sync::atomic::Ordering::Relaxed);
     // SAFETY: single-threaded test; the var is only read by the helper.
     unsafe { std::env::remove_var("VIZE_SILENCE_CORSA_FALLBACK") };
 
@@ -294,7 +292,7 @@ fn fallback_notice_is_observable_once_and_silenceable() {
     );
 
     // Opt-out suppresses the stderr notice without claiming the guard.
-    super::FALLBACK_NOTICE_EMITTED.store(false, std::sync::atomic::Ordering::Relaxed);
+    super::fallback::FALLBACK_NOTICE_EMITTED.store(false, std::sync::atomic::Ordering::Relaxed);
     // SAFETY: single-threaded test; restored immediately after the call.
     unsafe { std::env::set_var("VIZE_SILENCE_CORSA_FALLBACK", "1") };
     let suppressed = fallback_stderr_notice(FallbackStep::CliToSession, FallbackCause::Check);
@@ -305,7 +303,7 @@ fn fallback_notice_is_observable_once_and_silenceable() {
         "silenced fallback must not emit a notice"
     );
     assert!(
-        !super::FALLBACK_NOTICE_EMITTED.load(std::sync::atomic::Ordering::Relaxed),
+        !super::fallback::FALLBACK_NOTICE_EMITTED.load(std::sync::atomic::Ordering::Relaxed),
         "silenced fallback must not claim the once-per-run guard"
     );
 }

@@ -20,7 +20,6 @@ fn check_nuxt_sfc_virtual_ts_prefers_explicit_tsconfig_paths_over_fallback_modul
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": ".",
     "noEmit": true,
     "paths": {
       "#imports": ["types/vize/imports.ts"],
@@ -178,7 +177,6 @@ fn check_nuxt2_options_api_component_event_payloads_resolve_through_aliases() {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": ".",
     "noEmit": true,
     "noUnusedLocals": true,
     "paths": {
