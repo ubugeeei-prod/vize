@@ -4,6 +4,7 @@ mod declaration_emit;
 mod emit_only;
 mod inherited_boolean;
 mod inline_callback_props;
+mod inline_callback_union_props;
 
 #[test]
 fn batch_type_checker_exposes_generic_props_inherited_from_pick() {

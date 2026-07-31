@@ -23,5 +23,6 @@ mod inline_callback_classifier;
 mod vif_guard;
 
 pub(crate) use closures::generate_scope_closures;
+pub(crate) use component_prop_checker::is_inline_callback_prop;
 pub(crate) use context::ScopeGenerationOptions;
 pub(crate) use vif_guard::remove_enclosing_vif_guard_prefix;

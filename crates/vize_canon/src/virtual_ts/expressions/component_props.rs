@@ -90,6 +90,31 @@ pub(crate) fn generate_component_prop_checks(
     indent: &str,
 ) {
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
+    let has_inline_callback = usage
+        .props
+        .iter()
+        .any(crate::virtual_ts::scope::is_inline_callback_prop);
+    let grouped_guard = has_inline_callback && usage.vif_guard.is_some();
+    if grouped_guard {
+        append!(
+            *ts,
+            "{indent}if ({}) {{\n",
+            usage.vif_guard.as_deref().unwrap()
+        );
+    }
+    let callback_indent = if grouped_guard {
+        cstr!("{indent}  ")
+    } else {
+        String::from(indent)
+    };
+    let resolved_props = super::callback_prop_resolution::generate_callback_props_resolution(
+        ts,
+        usage,
+        idx,
+        template_prop_names,
+        source_context,
+        callback_indent.as_str(),
+    );
     let mut name_occurrences: FxHashMap<String, u32> = FxHashMap::default();
     for prop in &usage.props {
         if !is_checkable_prop(prop) {
@@ -118,7 +143,7 @@ pub(crate) fn generate_component_prop_checks(
                 indent.into()
             };
 
-            if let Some(ref guard) = usage.vif_guard {
+            if !grouped_guard && let Some(ref guard) = usage.vif_guard {
                 append!(*ts, "{indent}if ({guard}) {{\n");
             }
 
@@ -139,10 +164,22 @@ pub(crate) fn generate_component_prop_checks(
             let check_name_start = ts.len();
             ts.push_str(check_name.as_str());
             let check_name_end = ts.len();
-            append!(
-                *ts,
-                ": __{component_type_name}_{idx}_prop_{safe_prop_name} = ",
-            );
+            if crate::virtual_ts::scope::is_inline_callback_prop(prop)
+                && let Some(resolution) = resolved_props.as_ref()
+            {
+                let camel_prop_name = super::super::helpers::to_camel_case(prop.name.as_str());
+                let resolved_props = resolution.resolved_props.as_str();
+                let selected_props = resolution.selected_props.as_str();
+                append!(
+                    *ts,
+                    ": __VizeResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+                );
+            } else {
+                append!(
+                    *ts,
+                    ": __{component_type_name}_{idx}_prop_{safe_prop_name} = ",
+                );
+            }
             let value_gen_range = append_prop_value(ts, generated_value.as_str());
             ts.push_str(";\n");
             let gen_stmt_end = ts.len();
@@ -172,10 +209,13 @@ pub(crate) fn generate_component_prop_checks(
                 sub_spans,
             });
 
-            if usage.vif_guard.is_some() {
+            if !grouped_guard && usage.vif_guard.is_some() {
                 append!(*ts, "{indent}}}\n");
             }
         }
+    }
+    if grouped_guard {
+        append!(*ts, "{indent}}}\n");
     }
 
     super::generic_props_call::generate_generic_props_call(

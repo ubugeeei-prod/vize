@@ -31,6 +31,11 @@ use vize_croquis::{
 /// call reports nothing and the well-tested per-prop extraction above is the
 /// sole check. Each property value is mapped back to its source attribute so a
 /// `TS2322` from a wrongly-typed prop points at the offending binding.
+///
+/// Direct inline callbacks are the exception: their authored expression is
+/// checked separately against the resolver's instantiated prop type. This call
+/// receives `any` for that one entry so it keeps whole-object/required-prop
+/// validation without also reporting a coarse property-key error.
 pub(super) fn generate_generic_props_call(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
@@ -108,9 +113,15 @@ pub(super) fn generate_generic_props_call(
         } else {
             generated_prop_value(prop, template_prop_names)
         };
-        let Some(generated_value) = generated_value else {
+        let Some(mut generated_value) = generated_value else {
             continue;
         };
+        let inline_callback = crate::virtual_ts::scope::is_inline_callback_prop(prop);
+        if inline_callback {
+            // The authored callback is emitted by `callback_prop_resolution`
+            // for inference and by the mapped per-prop check for diagnostics.
+            generated_value = String::from("undefined as any");
+        }
 
         let (prop_src_start, prop_src_end) =
             if merge_class_bindings && prop.name.as_str() == "class" {
@@ -153,9 +164,19 @@ pub(super) fn generate_generic_props_call(
         // error inside the value (TypeScript anchors a nested object-literal
         // mismatch at the offending key) landed one byte to the right of where
         // vue-tsc puts it (#3446). Mapping the key and the value separately
-        // makes the value range verbatim, so offsets inside it are exact.
+        // makes the value range verbatim, so offsets inside it are exact. An
+        // inline callback has a synthetic `any` value here, so only its key is
+        // mapped; the separately emitted authored callback owns its value span.
         let sub_spans = match merge_class_bindings && prop.name.as_str() == "class" {
             true => Vec::new(),
+            false if inline_callback => {
+                prop_name_source_range(source_context, prop).map_or_else(Vec::new, |src_range| {
+                    vec![VizeSubSpan {
+                        gen_range: entry_gen_start..key_gen_end,
+                        src_range,
+                    }]
+                })
+            }
             false => entry_sub_spans(
                 source_context,
                 prop,

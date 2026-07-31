@@ -1,10 +1,10 @@
 //! Inline callback props on a generic child (#3446).
 //!
-//! A generic child's props come from its `__vizeCheck<T>(props)` call, so the
-//! per-prop alias resolves to `unknown` and an inline arrow annotated with it
-//! has no contextual type at all. Under `strict` that produced a `TS7006` on a
-//! parameter vue-tsc infers from the child's generic — a new error on correct
-//! code — while the real check still ran in the checker call.
+//! A generic child's static per-prop alias resolves to `unknown`; the generic
+//! type is instantiated only by its whole-props call. Inline arrows therefore
+//! need the child's resolver result for both contextual typing and the same
+//! leaf diagnostic anchor as vue-tsc. The callable fallback remains for
+//! components that do not expose that resolver.
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 use vize_carton::String;
@@ -21,11 +21,6 @@ use vize_carton::String;
 /// the `id` key of the offending object literal, which vize used to anchor one
 /// byte to the right.
 ///
-/// The line 6 assignability error itself is still anchored differently: vize
-/// reports the whole signature at the `pick` attribute name (column 32) where
-/// vue-tsc reports the leaf inside the arrow body (column 48). That is the one
-/// part of #3446 this does not close, and it needs the generic child's prop
-/// type to be resolved per prop rather than only inside the checker call.
 #[test]
 fn inline_callback_prop_on_a_generic_child_is_contextually_typed() {
     if resolve_test_tsgo_binary().is_none() {
@@ -70,10 +65,7 @@ import Child from './Child.vue'
             (
                 String::from("src/Parent.vue"),
                 Some(2322),
-                String::from(
-                    "6:32:error Type '(item: { id: number; }) => number' is not assignable to type '(item: { id: number; }) => string'.\n\
-                     Type 'number' is not assignable to type 'string'."
-                ),
+                String::from("6:48:error Type 'number' is not assignable to type 'string'."),
             ),
             (
                 String::from("src/Parent.vue"),
@@ -235,5 +227,83 @@ const jobs = [{ id: 1, timestamp: 2 }]
         snapshot,
         Vec::new(),
         "nested callbacks must keep the array prop type"
+    );
+}
+
+/// vue-tsc 3.3.4 with TypeScript 6.0.3 reports the three callback-body errors
+/// below verbatim. This covers the two scopes where the resolved prop type must
+/// remain local and a generic inferred only through its callback constraint.
+#[test]
+fn resolved_callback_props_match_vue_tsc_in_guarded_and_loop_scopes() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "generic-inline-callback-prop-scopes",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts" generic="T extends { id: number }">
+defineProps<{ items: T[]; pick: (item: T) => string }>()
+</script>
+
+<template><span /></template>
+"#,
+            ),
+            (
+                "src/CallbackOnly.vue",
+                r#"<script setup lang="ts" generic="T extends string = string">
+defineProps<{ transform: (item: T) => number }>()
+</script>
+
+<template><span /></template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import Child from './Child.vue'
+import CallbackOnly from './CallbackOnly.vue'
+const visible = true
+const groups = [[{ id: 1 }]]
+</script>
+
+<template>
+  <Child v-if="visible" :items="[{ id: 1 }]" :pick="(item) => item.id" />
+  <Child v-for="group in groups" :key="group[0].id" :items="group" :pick="(item) => item.id" />
+  <CallbackOnly :transform="(item) => item.toUpperCase()" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+    let Some(snapshot) = snapshot else {
+        return;
+    };
+
+    assert_eq!(
+        snapshot,
+        // The snapshot helper sorts the rendered `line:column` strings, so
+        // double-digit line numbers precede line 9 here.
+        vec![
+            (
+                String::from("src/Parent.vue"),
+                Some(2322),
+                String::from("10:85:error Type 'number' is not assignable to type 'string'."),
+            ),
+            (
+                String::from("src/Parent.vue"),
+                Some(2322),
+                String::from("11:39:error Type 'string' is not assignable to type 'number'."),
+            ),
+            (
+                String::from("src/Parent.vue"),
+                Some(2322),
+                String::from("9:63:error Type 'number' is not assignable to type 'string'."),
+            ),
+        ]
     );
 }

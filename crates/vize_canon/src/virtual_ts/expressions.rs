@@ -3,6 +3,9 @@
 //! Handles generating TypeScript code for template expressions (with optional
 //! v-if narrowing) and component prop value type assertions.
 
+mod callback_prop_resolution;
+#[cfg(test)]
+mod callback_prop_resolution_tests;
 mod component_props;
 #[cfg(test)]
 mod component_props_tests;

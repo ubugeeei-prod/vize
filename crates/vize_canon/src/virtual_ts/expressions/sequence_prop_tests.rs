@@ -20,7 +20,8 @@ fn sequence_prop_values_are_grouped_without_mapping_synthetic_parentheses() {
     assert!(
         output
             .code
-            .contains("__Child_0_prop_transform = (void 0, (value) => value);"),
+            .contains("__vize_prop_check_0_transform: __VizeResolvedProp<")
+            && output.code.contains(" = (void 0, (value) => value);"),
         "per-prop initializer must group the sequence expression:\n{}",
         output.code
     );
@@ -42,8 +43,8 @@ fn sequence_prop_values_are_grouped_without_mapping_synthetic_parentheses() {
         .collect();
     assert_eq!(
         value_spans.len(),
-        2,
-        "both prop-check boundaries must map the authored expression"
+        1,
+        "the resolved per-prop check must own the authored expression mapping"
     );
     for span in value_spans {
         assert_eq!(

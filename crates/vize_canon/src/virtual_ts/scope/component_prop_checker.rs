@@ -10,7 +10,7 @@ use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier_fragment};
 /// The name filters mirror [`append_per_prop_aliases`] exactly, because the two
 /// must agree: emitting the helper for a prop the alias loop then skips leaves
 /// it unreferenced, which is `TS6196` on a clean SFC.
-pub(super) fn is_inline_callback_prop(prop: &PassedProp) -> bool {
+pub(crate) fn is_inline_callback_prop(prop: &PassedProp) -> bool {
     if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
         return false;
     }
@@ -240,8 +240,8 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
         );
     }
     // Emitted only when a usage actually binds an inline callback, because
-    // nothing else references it and an unreferenced alias is `TS6196:
-    // '__VizeCallableProp' is declared but never used`. That reaches
+    // nothing else references these aliases and an unreferenced one is
+    // `TS6196`. That reaches
     // check-server clients as an unmapped hint on an otherwise clean SFC, the
     // same way the native element aliases did before #3443. The ambient
     // `declare function` trick those use is not available here: these helpers
@@ -252,11 +252,13 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
     // resolves to `unknown`. An inline callback prop annotated `unknown` has
     // no contextual type, so `strict` reports TS7006 on parameters that are
     // in fact contextually typed by the checker call below — a new error on
-    // correct code (#3446). Falling back to a permissive callable gives
-    // those parameters a contextual `any` and reports nothing itself. `any`
-    // is excluded so a genuinely `any` prop stays assignable from a
-    // non-function value, and a resolved prop type is returned untouched so
-    // a real mismatch on a non-generic child still surfaces.
+    // correct code (#3446). `__VizeCallableProp` remains the safe fallback for
+    // components without Vize's resolver. A generic Vize child is invoked once
+    // through `__VizePropsResolver`; `__VizeResolvedProp` then selects the
+    // instantiated callback type so return errors surface inside the authored
+    // body, at the same leaf byte as vue-tsc. `any` is excluded from the
+    // fallback so a genuinely `any` prop stays assignable from a non-function
+    // value, and a resolved non-generic prop type is returned untouched.
     if usages
         .iter()
         .any(|(_, usage)| usage.props.iter().any(is_inline_callback_prop))
@@ -264,15 +266,31 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
         ts.push_str(
             "  type __VizeCallableProp<T> = __VizeIsAny<T> extends true ? T : unknown extends T ? (...args: any[]) => any : T;\n",
         );
+        ts.push_str(
+            "  type __VizePropsResolver<C> = C extends { __vizeResolveProps?: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => {}) : (props: any) => {};\n",
+        );
+        ts.push_str(
+            "  type __VizePropsSelector<R> = <A extends Partial<R> & Record<string, unknown>>(props: A) => A;\n",
+        );
+        ts.push_str("  type __VizeMissingProp = { readonly __vizeMissingProp: unique symbol };\n");
+        ts.push_str(
+            "  type __VizeResolvedPropEntry<R, K extends PropertyKey> = R extends unknown ? K extends keyof R ? { value: R[K] } : __VizeMissingProp : never;\n",
+        );
+        ts.push_str(
+            "  type __VizeSelectedProps<R, A> = R extends unknown ? A extends Partial<R> ? R : never : never;\n",
+        );
+        ts.push_str(
+            "  type __VizeResolvedProp<R, A, K extends PropertyKey, F, __S = __VizeSelectedProps<R, A>, __E = __VizeResolvedPropEntry<__S, K>, __A = __VizeResolvedPropEntry<R, K>, __P = Extract<__E, { value: unknown }>> = [__S] extends [never] ? F : [__P] extends [never] ? [Extract<__A, { value: unknown }>] extends [never] ? F : never : __P extends { value: infer V } ? V : never;\n",
+        );
     }
 }
 
 /// The type a per-prop check is annotated with.
 ///
-/// An inline callback prop gets the `__VizeCallableProp` fallback so a generic
-/// child — whose per-prop type resolves to `unknown`, its props coming from the
-/// `__vizeCheck<T>(props)` call instead — still contextually types the
-/// callback's parameters (#3446). Every other prop keeps the resolved type.
+/// An inline callback prop gets the `__VizeCallableProp` fallback for a child
+/// without `__vizeResolveProps`. Vize generic children replace it at the value
+/// check with their instantiated resolver result. Every other prop keeps the
+/// statically extracted type.
 pub(super) fn prop_alias_type(
     prop: &PassedProp,
     component_type_name: &str,
