@@ -65,11 +65,13 @@ pub(super) fn prop_value_source_range(
     Some(source_start..source_start + value.len())
 }
 
-/// Returns the authored range of the attribute name itself — `msg` inside
-/// `:msg="expr"`, `v-bind:msg="expr"`, or `msg="text"`.
+/// The authored token a prop-type diagnostic anchors at — `msg` inside
+/// `:msg="expr"`, `v-bind:msg="expr"` or `msg="text"`, `title` inside
+/// `v-model:title="expr"`, and the directive itself for an argument-less
+/// `v-model="expr"`.
 ///
-/// vue-tsc anchors prop-type diagnostics at the attribute name, so the
-/// synthetic check identifier maps here for byte-identical positions.
+/// vue-tsc anchors prop-type diagnostics at that token, so the synthetic check
+/// identifier maps here for byte-identical positions.
 pub(super) fn prop_name_source_range(
     source_context: ComponentPropSource<'_>,
     prop: &PassedProp,
@@ -79,18 +81,58 @@ pub(super) fn prop_name_source_range(
     let raw_prop = source.get(prop_start..prop.end as usize)?;
     let name_region = raw_prop.split('=').next().unwrap_or(raw_prop);
     let name = prop.name.as_str();
-    // The authored name sits right after the binding prefix; matching there
-    // (instead of searching) keeps names like `bind` from anchoring inside
-    // `v-bind:` and modifiers like `.sync` from stealing the match.
-    let prefix_len = if let Some(rest) = name_region.strip_prefix("v-bind:") {
-        rest.starts_with(name).then_some("v-bind:".len())?
-    } else if let Some(rest) = name_region.strip_prefix(':') {
-        rest.starts_with(name).then_some(1)?
-    } else if name_region.starts_with(name) {
-        0
-    } else {
-        name_region.find(name)?
-    };
+    let (prefix_len, token_len) = anchor_token(name_region, name)?;
     let source_start = source_context.offset as usize + prop_start + prefix_len;
-    Some(source_start..source_start + name.len())
+    Some(source_start..source_start + token_len)
+}
+
+/// Byte offset of the anchor token inside `name_region` (the attribute text up
+/// to `=`) and its length.
+///
+/// The authored name sits right after the binding prefix; matching there
+/// (instead of searching) keeps names like `bind` from anchoring inside
+/// `v-bind:` and modifiers like `.sync` from stealing the match.
+fn anchor_token(name_region: &str, name: &str) -> Option<(usize, usize)> {
+    // An argument-less `v-model` binds `modelValue`, a name that appears
+    // nowhere in the source, so there is no argument token to anchor to.
+    // vue-tsc anchors at the directive itself; before #3462 the missing match
+    // fell all the way back to the bound expression. `v-model:title` keeps
+    // anchoring at `title`, which already agreed with vue-tsc byte for byte.
+    const V_MODEL: &str = "v-model";
+    if name_region == V_MODEL || name_region.starts_with("v-model.") {
+        return Some((0, V_MODEL.len()));
+    }
+    for prefix in ["v-bind:", "v-model:"] {
+        if let Some(rest) = name_region.strip_prefix(prefix) {
+            return rest.starts_with(name).then_some((prefix.len(), name.len()));
+        }
+    }
+    if let Some(rest) = name_region.strip_prefix(':') {
+        return rest.starts_with(name).then_some((1, name.len()));
+    }
+    if name_region.starts_with(name) {
+        return Some((0, name.len()));
+    }
+    Some((name_region.find(name)?, name.len()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::anchor_token;
+
+    #[test]
+    fn prop_anchor_tokens_match_the_authored_binding() {
+        assert_eq!(anchor_token("msg", "msg"), Some((0, 3)));
+        assert_eq!(anchor_token(":msg", "msg"), Some((1, 3)));
+        assert_eq!(anchor_token("v-bind:msg", "msg"), Some((7, 3)));
+        // An argument-less `v-model` anchors at the directive, with or without
+        // modifiers; a named one anchors at its argument.
+        assert_eq!(anchor_token("v-model", "modelValue"), Some((0, 7)));
+        assert_eq!(anchor_token("v-model.lazy", "modelValue"), Some((0, 7)));
+        assert_eq!(anchor_token("v-model:title", "title"), Some((8, 5)));
+        assert_eq!(anchor_token("v-model:title.trim", "title"), Some((8, 5)));
+        // `bind` must not anchor inside the `v-bind:` prefix.
+        assert_eq!(anchor_token("v-bind:bind", "bind"), Some((7, 4)));
+        assert_eq!(anchor_token(":bind", "bind"), Some((1, 4)));
+    }
 }

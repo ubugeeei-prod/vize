@@ -14,20 +14,17 @@ use crate::virtual_ts::expressions::{
     ExpressionListEmitContext, collect_native_prop_bindings, generate_expressions,
     generate_expressions_in_enclosing_guard,
 };
-use crate::virtual_ts::helpers::{get_dom_event_type, to_safe_identifier_fragment};
+use crate::virtual_ts::helpers::to_safe_identifier_fragment;
 use crate::virtual_ts::types::VizeMapping;
 
 use super::children::generate_child_scopes;
-use super::component_events::generate_component_event_types;
 use super::component_prop_expressions::collect_component_prop_expression_ranges;
 use super::component_props::generate_component_props;
-use super::context::{
-    ComponentPropsContext, EventHandlerExprContext, ScopeGenContext, ScopeGenerationOptions,
-};
+use super::context::{ComponentPropsContext, ScopeGenContext, ScopeGenerationOptions};
 use super::emit::{
     append_v_for_comment, emit_slot_function_open, emit_v_for_loop_open, slot_props_type,
 };
-use super::event_handler::generate_event_handler_expressions;
+use super::event_scope::generate_event_handler_scope;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
 use super::vif_guard::{callback_vif_guard, common_vif_guard_prefix_outside_v_for_scope};
 
@@ -177,6 +174,7 @@ pub(crate) fn generate_scope_closures(
             children_map: &children_map,
             template_prop_names,
             native_props: &native_props,
+            template_source: options.template_ast.map(|root| root.source.as_str()),
             template_offset,
             check_options,
             legacy_vue2: options.legacy_vue2,
@@ -377,85 +375,7 @@ pub(super) fn generate_scope_node(
             ts.push_str("};\n");
         }
         ScopeData::EventHandler(data) if ctx.check_options.check_emits => {
-            append!(*ts, "\n{indent}// @{} handler\n", data.event_name);
-
-            if data.target_component.is_some() {
-                let event_types = generate_component_event_types(
-                    ts,
-                    ctx.summary,
-                    data,
-                    scope,
-                    ctx.template_prop_names,
-                    ctx.legacy_vue2,
-                    indent,
-                )
-                .expect("component event handler should have a target component");
-                let event_type = event_types.event_type;
-                let listener_type = event_types.listener_type;
-                let listener_type_expr = event_types.listener_type_expr;
-                // Type the listener against the FULL emit tuple so multi-arg emits
-                // keep every parameter (#1512); unresolved sigs stay variadic.
-                append!(
-                    *ts,
-                    "{indent}type {listener_type} = {listener_type_expr};\n",
-                );
-                // Receive listener args via a rest parameter typed by
-                // `Parameters<listener>` to avoid TS2556; `$event` is element 0.
-                append!(
-                    *ts,
-                    "{indent}((...__vize_args: Parameters<{listener_type}>) => {{\n",
-                );
-                append!(
-                    *ts,
-                    "{inner_indent}const $event = __vize_args[0] as {event_type}; void $event;\n",
-                );
-
-                profile!(
-                    "canon.virtual_ts.event_handler_expressions",
-                    generate_event_handler_expressions(
-                        ts,
-                        mappings,
-                        scope_id,
-                        &EventHandlerExprContext {
-                            expressions_by_scope: ctx.expressions_by_scope,
-                            data,
-                            event_type: event_type.as_str(),
-                            event_listener_type: Some(listener_type.as_str()),
-                            template_prop_names: ctx.template_prop_names,
-                            template_offset: ctx.template_offset,
-                            indent: &inner_indent,
-                        },
-                    )
-                );
-
-                append!(
-                    *ts,
-                    "{indent}}})(...({{}} as Parameters<{listener_type}>));\n",
-                );
-            } else {
-                let event_type = get_dom_event_type(data.event_name.as_str());
-                append!(*ts, "{indent}(($event: {event_type}) => {{\n");
-
-                profile!(
-                    "canon.virtual_ts.event_handler_expressions",
-                    generate_event_handler_expressions(
-                        ts,
-                        mappings,
-                        scope_id,
-                        &EventHandlerExprContext {
-                            expressions_by_scope: ctx.expressions_by_scope,
-                            data,
-                            event_type,
-                            event_listener_type: None,
-                            template_prop_names: ctx.template_prop_names,
-                            template_offset: ctx.template_offset,
-                            indent: &inner_indent,
-                        },
-                    )
-                );
-
-                append!(*ts, "{indent}}})({{}} as {event_type});\n");
-            }
+            generate_event_handler_scope(ts, mappings, ctx, scope, data, indent, &inner_indent);
         }
         _ => {
             if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)

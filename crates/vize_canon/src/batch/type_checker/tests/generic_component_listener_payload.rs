@@ -1,4 +1,5 @@
 use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
+use vize_carton::String;
 
 mod callback_prop_shorthand;
 mod dynamic_member_component_events;
@@ -113,20 +114,29 @@ function wrong(payload: FormSubmitEvent<{ username: number; password: string }>)
         return;
     };
 
-    assert!(
-        snapshot
-            .iter()
-            .all(|(file, _, message)| !(file == "src/App.vue" && message.contains("login"))),
-        "compatible generic component listener should not report diagnostics, got: {snapshot:#?}"
-    );
-    assert!(
-        snapshot.iter().any(|(file, code, message)| {
-            file == "src/App.vue" && *code == Some(2345) && message.contains("username: number")
-        }),
-        "incompatible generic component listener should still report TS2345, got: {snapshot:#?}"
-    );
-
     let _ = std::fs::remove_dir_all(&project_root);
+
+    // The compatible listener reports nothing; the incompatible one is a
+    // `TS2322` at the `submit` of `@submit`, matching how vue-tsc assigns the
+    // handler to the child's `onSubmit` prop (#3462). The payload type still
+    // comes from the generic instantiated by `:initial-state`, which is what
+    // this case exists to pin.
+    assert_eq!(
+        snapshot,
+        vec![(
+            String::from("src/App.vue"),
+            Some(2322),
+            String::from(
+                "22:6:error Type '(payload: FormSubmitEvent<{ username: number; password: string; }>) => void' \
+                 is not assignable to type '(payload: FormSubmitEvent<{ username: string; password: string; }>) => unknown'.\n\
+                 Types of parameters 'payload' and 'args' are incompatible.\n\
+                 Type 'FormSubmitEvent<{ username: string; password: string; }>' is not assignable to type 'FormSubmitEvent<{ username: number; password: string; }>'.\n\
+                 Type '{ username: string; password: string; }' is not assignable to type '{ username: number; password: string; }'.\n\
+                 Types of property 'username' are incompatible.\n\
+                 Type 'string' is not assignable to type 'number'."
+            ),
+        )]
+    );
 }
 
 #[test]

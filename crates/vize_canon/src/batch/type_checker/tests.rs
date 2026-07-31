@@ -10,6 +10,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use vize_carton::{String, cstr};
 mod camel_case_component_props;
+mod directive_anchors;
 mod emit_object_recursion;
 mod generic_component_listener_payload;
 mod generic_props;

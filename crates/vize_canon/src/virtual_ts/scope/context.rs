@@ -18,6 +18,7 @@ pub(crate) struct ScopeGenContext<'a> {
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(crate) template_prop_names: &'a FxHashSet<String>,
     pub(crate) native_props: &'a NativePropBindings,
+    pub(crate) template_source: Option<&'a str>,
     pub(crate) template_offset: u32,
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) legacy_vue2: bool,
@@ -52,6 +53,10 @@ pub(super) struct EventHandlerExprContext<'a> {
     /// Native DOM events leave this `None` and fall back to the single `$event`
     /// parameter typed by `event_type`.
     pub(super) event_listener_type: Option<&'a str>,
+    /// Authored range of the `@event` / `v-on:event` attribute name, where
+    /// vue-tsc anchors a wrongly-shaped handler (#3462). `None` when the
+    /// directive text cannot be read back from the template.
+    pub(super) event_name_src_range: Option<std::ops::Range<usize>>,
     pub(super) template_prop_names: &'a FxHashSet<String>,
     pub(super) template_offset: u32,
     pub(super) indent: &'a str,

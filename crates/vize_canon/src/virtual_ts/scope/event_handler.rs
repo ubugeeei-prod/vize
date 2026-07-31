@@ -1,12 +1,14 @@
-//! Event-handler expression generation and the lightweight JS scanning helpers
-//! used to classify handler bodies (callable references vs. inline callbacks).
+//! Event-handler expression generation. The lightweight JS scanning that
+//! classifies a handler body (callable reference vs. inline callback) lives in
+//! [`super::handler_shape`].
 
 use vize_carton::{String, append, cstr};
 
 use crate::virtual_ts::expressions::rewrite_reserved_template_prop;
-use crate::virtual_ts::types::VizeMapping;
+use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
 use super::context::EventHandlerExprContext;
+use super::handler_shape::{inline_callback_event_argument, is_callable_handler_reference};
 
 /// Generate event handler expressions inside a closure.
 pub(super) fn generate_event_handler_expressions(
@@ -44,19 +46,30 @@ pub(super) fn generate_event_handler_expressions(
             // argument spread. `__vize_args` is `Parameters<listener>` (a tuple),
             // so the spread always targets the listener's own parameter list,
             // verifying each parameter while avoiding TS2556.
+            //
+            // The listener type is an *annotation* on the const rather than the
+            // parameter of an immediately-applied identity function: vue-tsc
+            // assigns the handler to the child's `onEvent` prop and reports
+            // `TS2322` at the `@event` attribute name, while a call reports
+            // `TS2345` at the argument. TypeScript anchors a variable
+            // declaration's assignability error at the declared name, so the
+            // synthetic identifier is what maps back to the attribute (#3462).
+            let mut listener_spans = None;
             let gen_range = if let Some(listener_type) = ctx.event_listener_type
                 && (is_implicit_reference || inline_callback_arg.is_some())
             {
                 let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
-                append!(
-                    *ts,
-                    "{indent}const {handler_name} = ((__vize_cb: {listener_type} | null | undefined) => __vize_cb)((",
-                    indent = handler_indent,
-                );
+                let stmt_start = ts.len();
+                append!(*ts, "{indent}const ", indent = handler_indent);
+                let name_start = ts.len();
+                ts.push_str(handler_name.as_str());
+                let name_end = ts.len();
+                append!(*ts, ": {listener_type} | null | undefined = (");
                 let mapped_start = ts.len();
                 ts.push_str(content);
                 let mapped_end = ts.len();
-                ts.push_str("));\n");
+                ts.push_str(");\n");
+                listener_spans = Some((stmt_start..ts.len(), name_start..name_end));
                 append!(
                     *ts,
                     "{indent}if ({handler_name}) {handler_name}(...__vize_args);  // handler expression\n",
@@ -107,10 +120,33 @@ pub(super) fn generate_event_handler_expressions(
                 ts.push_str(";  // handler expression\n");
                 mapped_start..mapped_end
             };
+            // The declared identifier receives the handler-shape error, which
+            // vue-tsc anchors at the attribute name; the initializer keeps the
+            // authored expression so errors inside an inline callback still land
+            // on the authored bytes. The two sub-spans replace the mapping's own
+            // range entirely, so the mapping has to widen to the whole statement
+            // for the identifier to be inside it — the diagnostic path looks the
+            // mapping up by `gen_range` before narrowing to a sub-span.
+            let (gen_range, sub_spans) = match (listener_spans, ctx.event_name_src_range.clone()) {
+                (Some((stmt_gen_range, name_gen_range)), Some(name_src_range)) => (
+                    stmt_gen_range,
+                    vec![
+                        VizeSubSpan {
+                            gen_range: name_gen_range,
+                            src_range: name_src_range,
+                        },
+                        VizeSubSpan {
+                            gen_range,
+                            src_range: src_start..src_end,
+                        },
+                    ],
+                ),
+                _ => (gen_range, Vec::new()),
+            };
             mappings.push(VizeMapping {
                 gen_range,
                 src_range: src_start..src_end,
-                sub_spans: Vec::new(),
+                sub_spans,
             });
             append!(
                 *ts,
@@ -124,227 +160,28 @@ pub(super) fn generate_event_handler_expressions(
     }
 }
 
-fn inline_callback_event_argument(content: &str) -> Option<&'static str> {
-    let trimmed = content.trim_start();
-    if trimmed.is_empty() {
-        return None;
-    }
-
-    if let Some(arrow_idx) = trimmed.find("=>") {
-        let before_arrow = strip_async_prefix(trimmed[..arrow_idx].trim_end()).trim();
-        if before_arrow.is_empty() {
-            return None;
-        }
-
-        if let Some(is_empty) = parenthesized_params_are_empty(before_arrow) {
-            return Some(if is_empty { "" } else { "$event" });
-        }
-
-        return is_identifier_segment(before_arrow).then_some("$event");
-    }
-
-    let rest = trimmed.strip_prefix("function")?;
-    let paren_start = trimmed.len() - rest.len() + rest.find('(')?;
-    let paren_end = matching_paren_index(trimmed, paren_start)?;
-    let inner = &trimmed[paren_start + 1..paren_end];
-    Some(if inner.trim().is_empty() {
-        ""
-    } else {
-        "$event"
-    })
-}
-
-fn strip_async_prefix(input: &str) -> &str {
-    let Some(rest) = input.strip_prefix("async") else {
-        return input;
-    };
-    if rest.chars().next().is_some_and(char::is_whitespace) {
-        rest.trim_start()
-    } else {
-        input
-    }
-}
-
-fn parenthesized_params_are_empty(input: &str) -> Option<bool> {
-    if !input.starts_with('(') {
-        return None;
-    }
-    let close = matching_paren_index(input, 0)?;
-    if !input[close + 1..].trim().is_empty() {
-        return None;
-    }
-    Some(input[1..close].trim().is_empty())
-}
-
-fn matching_paren_index(input: &str, open_index: usize) -> Option<usize> {
-    let bytes = input.as_bytes();
-    if bytes.get(open_index) != Some(&b'(') {
-        return None;
-    }
-
-    let mut depth = 0u32;
-    for (idx, byte) in bytes.iter().enumerate().skip(open_index) {
-        match byte {
-            b'(' => depth += 1,
-            b')' => {
-                depth = depth.checked_sub(1)?;
-                if depth == 0 {
-                    return Some(idx);
-                }
-            }
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn is_callable_handler_reference(content: &str) -> bool {
-    let trimmed = content.trim();
-    if trimmed.is_empty() || trimmed == "undefined" {
-        return false;
-    }
-
-    let Some(mut idx) = parse_identifier_segment(trimmed, 0) else {
-        return false;
-    };
-
-    loop {
-        idx = skip_ascii_whitespace(trimmed, idx);
-        if idx == trimmed.len() {
-            return true;
-        }
-
-        let rest = &trimmed[idx..];
-        if rest.starts_with("?.[") {
-            idx += 2;
-            let Some(next_idx) = parse_bracket_member(trimmed, idx) else {
-                return false;
-            };
-            idx = next_idx;
-        } else if rest.starts_with("?.") {
-            let Some(next_idx) = parse_identifier_segment(trimmed, idx + 2) else {
-                return false;
-            };
-            idx = next_idx;
-        } else if rest.starts_with('.') {
-            let Some(next_idx) = parse_identifier_segment(trimmed, idx + 1) else {
-                return false;
-            };
-            idx = next_idx;
-        } else if rest.starts_with('[') {
-            let Some(next_idx) = parse_bracket_member(trimmed, idx) else {
-                return false;
-            };
-            idx = next_idx;
-        } else {
-            return false;
-        }
-    }
-}
-
-fn is_identifier_segment(segment: &str) -> bool {
-    let mut chars = segment.chars();
-    let Some(first) = chars.next() else {
-        return false;
-    };
-
-    if !(first == '_' || first == '$' || first.is_alphabetic()) {
-        return false;
-    }
-
-    chars.all(|ch| ch == '_' || ch == '$' || ch.is_alphanumeric())
-}
-
-fn parse_identifier_segment(input: &str, start: usize) -> Option<usize> {
-    let mut chars = input.get(start..)?.char_indices();
-    let (_, first) = chars.next()?;
-    if !is_identifier_start(first) {
-        return None;
-    }
-
-    let mut end = start + first.len_utf8();
-    for (offset, ch) in chars {
-        if !is_identifier_continue(ch) {
-            break;
-        }
-        end = start + offset + ch.len_utf8();
-    }
-    Some(end)
-}
-
-fn is_identifier_start(ch: char) -> bool {
-    ch == '_' || ch == '$' || ch.is_alphabetic()
-}
-
-fn is_identifier_continue(ch: char) -> bool {
-    ch == '_' || ch == '$' || ch.is_alphanumeric()
-}
-
-fn skip_ascii_whitespace(input: &str, mut idx: usize) -> usize {
-    while input
-        .as_bytes()
-        .get(idx)
-        .is_some_and(|byte| byte.is_ascii_whitespace())
-    {
-        idx += 1;
-    }
-    idx
-}
-
-fn parse_bracket_member(input: &str, open_index: usize) -> Option<usize> {
-    if input.as_bytes().get(open_index) != Some(&b'[') {
-        return None;
-    }
-
-    let mut depth = 0u32;
-    let mut quote = None;
-    let mut escaped = false;
-    for (idx, ch) in input
-        .char_indices()
-        .skip_while(|(idx, _)| *idx < open_index)
-    {
-        if let Some(quote_ch) = quote {
-            if escaped {
-                escaped = false;
-            } else if ch == '\\' {
-                escaped = true;
-            } else if ch == quote_ch {
-                quote = None;
-            }
-            continue;
-        }
-
-        match ch {
-            '\'' | '"' | '`' => quote = Some(ch),
-            '[' => depth += 1,
-            ']' => {
-                depth = depth.checked_sub(1)?;
-                if depth == 0 {
-                    return Some(idx + ch.len_utf8());
-                }
-            }
-            _ => {}
-        }
-    }
-
-    None
-}
-
-#[cfg(test)]
-mod tests {
-    use super::is_callable_handler_reference;
-
-    #[test]
-    fn undefined_is_not_a_callable_handler_reference() {
-        assert!(!is_callable_handler_reference("undefined"));
-        assert!(!is_callable_handler_reference("  undefined  "));
-    }
-
-    #[test]
-    fn actual_handler_references_stay_callable() {
-        assert!(is_callable_handler_reference("handler"));
-        assert!(is_callable_handler_reference("handlers[key]"));
-        assert!(is_callable_handler_reference("form?.submit"));
-    }
+/// The authored range of the event name inside an `@event` / `v-on:event`
+/// attribute, given the directive's template-relative `span`.
+///
+/// vue-tsc anchors a wrongly-shaped handler at that name, not at the `@` and
+/// not at the bound expression. Both spellings are validated against the
+/// source: the directive text must start with the prefix and the event name
+/// must follow it, so a span that is not the directive (or a template that
+/// cannot be read back) yields `None` and the mapping falls back to the
+/// expression.
+pub(super) fn event_name_source_range(
+    template_source: Option<&str>,
+    template_offset: u32,
+    span: std::ops::Range<u32>,
+    event_name: &str,
+) -> Option<std::ops::Range<usize>> {
+    let directive = template_source?.get(span.start as usize..span.end as usize)?;
+    let prefix_len = ["@", "v-on:"].into_iter().find_map(|prefix| {
+        directive
+            .strip_prefix(prefix)
+            .filter(|rest| rest.starts_with(event_name))
+            .map(|_| prefix.len())
+    })?;
+    let start = template_offset as usize + span.start as usize + prefix_len;
+    Some(start..start + event_name.len())
 }

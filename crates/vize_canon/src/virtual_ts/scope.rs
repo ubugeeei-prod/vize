@@ -14,7 +14,9 @@ mod component_props;
 mod context;
 mod emit;
 mod event_handler;
+mod event_scope;
 mod globals;
+mod handler_shape;
 mod vif_guard;
 
 pub(crate) use closures::generate_scope_closures;
