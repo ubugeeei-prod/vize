@@ -290,3 +290,35 @@ defineProps<{ msg: string; rows: string[] }>();
 "#;
     assert_eq!(findings(&lint_sfc(sfc)), none());
 }
+
+#[test]
+fn ignores_a_non_ascii_prop_named_by_a_sibling_options_api_block() {
+    // Identifiers are not ASCII-only, so a byte-wise token scan drops this
+    // reference entirely and reports the prop as unused.
+    let sfc = r#"<script>
+export default { methods: { show() { return this.ラベル; } } };
+</script>
+
+<script setup>
+defineProps({ ラベル: String });
+</script>
+
+<template>
+  <div>hi</div>
+</template>
+"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn ignores_a_non_ascii_prop_read_in_an_interpolation() {
+    let sfc = r#"<script setup>
+defineProps({ étiquette: String });
+</script>
+
+<template>
+  <div>{{ étiquette }}</div>
+</template>
+"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}

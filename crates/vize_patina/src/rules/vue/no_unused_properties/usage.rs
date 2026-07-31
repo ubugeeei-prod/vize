@@ -126,27 +126,31 @@ fn expression_source<'a>(exp: &'a ExpressionNode<'a>) -> &'a str {
 
 /// Push every identifier-shaped token of `source` onto `names`.
 pub(super) fn push_identifier_tokens(source: &str, names: &mut FxHashSet<CompactString>) {
-    let bytes = source.as_bytes();
-    let mut index = 0;
-    while index < bytes.len() {
-        if !is_identifier_start(bytes[index]) {
-            index += 1;
+    let mut chars = source.char_indices().peekable();
+    while let Some((offset, ch)) = chars.next() {
+        if !is_identifier_start(ch) {
             continue;
         }
-        let start = index;
-        while index < bytes.len() && is_identifier_byte(bytes[index]) {
-            index += 1;
+        let mut end = offset + ch.len_utf8();
+        while let Some(&(next_offset, next_ch)) = chars.peek() {
+            if !is_identifier_char(next_ch) {
+                break;
+            }
+            end = next_offset + next_ch.len_utf8();
+            chars.next();
         }
-        names.insert(CompactString::new(&source[start..index]));
+        names.insert(CompactString::new(&source[offset..end]));
     }
 }
 
+/// Identifiers may be non-ASCII (`ラベル`, `día`), so scan by character rather
+/// than by byte; otherwise such references read as absent.
 #[inline]
-fn is_identifier_start(byte: u8) -> bool {
-    byte.is_ascii_alphabetic() || byte == b'_' || byte == b'$'
+fn is_identifier_start(ch: char) -> bool {
+    ch.is_alphabetic() || ch == '_' || ch == '$'
 }
 
 #[inline]
-fn is_identifier_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
+fn is_identifier_char(ch: char) -> bool {
+    ch.is_alphanumeric() || ch == '_' || ch == '$'
 }

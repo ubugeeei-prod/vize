@@ -128,6 +128,30 @@ fn test_eslint_disable_next_line_suppresses_template_rule() {
 }
 
 #[test]
+fn test_template_apostrophe_does_not_hide_a_same_line_eslint_directive() {
+    // An apostrophe in prose is not a string delimiter, so the directive that
+    // follows it on the same line must still be read.
+    let linter = Linter::new();
+    let result = linter.lint_sfc(
+        r#"<template>
+  <p>Don't forget: <!-- eslint-disable-next-line vue/require-v-for-key --></p>
+  <ul><li v-for="item in items">{{ item }}</li></ul>
+</template>"#,
+        "test.vue",
+    );
+
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/require-v-for-key")
+            .count(),
+        0,
+        "an unmatched apostrophe must not suppress the directive that follows it"
+    );
+}
+
+#[test]
 fn test_eslint_disable_line_suppresses_template_rule() {
     let linter = Linter::new();
     let result = linter.lint_template(
