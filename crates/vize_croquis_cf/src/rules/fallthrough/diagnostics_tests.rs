@@ -38,6 +38,7 @@ fn diagnostics_include_parent_usage_related_locations() {
             events: smallvec![],
             slots: smallvec![],
             has_spread_attrs: false,
+            spread_props: smallvec![],
             scope_id: ScopeId::ROOT,
             vif_guard: None,
         });
@@ -102,6 +103,7 @@ fn spread_attrs_report_multi_root_with_parent_usage_location() {
             events: smallvec![],
             slots: smallvec![],
             has_spread_attrs: true,
+            spread_props: smallvec![],
             scope_id: ScopeId::ROOT,
             vif_guard: None,
         });
@@ -156,6 +158,7 @@ fn spread_attrs_are_safe_when_multi_root_component_binds_attrs() {
         events: smallvec![],
         slots: smallvec![],
         has_spread_attrs: true,
+        spread_props: smallvec![],
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     });
@@ -199,6 +202,7 @@ fn declared_emit_listener_does_not_create_fallthrough_diagnostics() {
         }],
         slots: smallvec![],
         has_spread_attrs: false,
+        spread_props: smallvec![],
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     });

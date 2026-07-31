@@ -344,6 +344,7 @@ fn component_usage_with_on_prefixed_prop(component: &str) -> ComponentUsage {
         events: smallvec![event_listener("click")],
         slots: smallvec![],
         has_spread_attrs: false,
+        spread_props: smallvec![],
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     }
@@ -358,6 +359,7 @@ fn component_usage_with_spread_and_extra_prop(component: &str) -> ComponentUsage
         events: smallvec![],
         slots: smallvec![],
         has_spread_attrs: true,
+        spread_props: smallvec![],
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     }
@@ -383,6 +385,7 @@ fn component_usage_with_extra_prop_at(
         events: smallvec![],
         slots: smallvec![],
         has_spread_attrs: false,
+        spread_props: smallvec![],
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     }
@@ -408,6 +411,7 @@ fn component_usage_with_count_string_at(
         events: smallvec![],
         slots: smallvec![],
         has_spread_attrs: false,
+        spread_props: smallvec![],
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     }
@@ -427,6 +431,7 @@ fn component_usage_with_prop(
         events: smallvec![],
         slots: smallvec![],
         has_spread_attrs: false,
+        spread_props: smallvec![],
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     }

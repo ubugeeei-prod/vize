@@ -126,6 +126,7 @@ fn summarizes_complexity_from_registry_and_result() {
             has_scope: true,
         }],
         has_spread_attrs: false,
+        spread_props: smallvec![],
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     });
@@ -271,6 +272,7 @@ fn summarizes_component_tree_template_nesting() {
             has_scope: true,
         }],
         has_spread_attrs: false,
+        spread_props: smallvec![],
         scope_id: parent_loop,
         vif_guard: Some(CompactString::new("ready")),
     });

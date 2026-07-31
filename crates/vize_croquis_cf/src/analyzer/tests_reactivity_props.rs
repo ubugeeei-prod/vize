@@ -43,6 +43,7 @@ fn component_usage(component: &str, props: &[(&str, &str)]) -> ComponentUsage {
         events: SmallVec::new(),
         slots: SmallVec::new(),
         has_spread_attrs: false,
+        spread_props: SmallVec::new(),
         scope_id: vize_croquis::ScopeId::ROOT,
         vif_guard: None,
     }

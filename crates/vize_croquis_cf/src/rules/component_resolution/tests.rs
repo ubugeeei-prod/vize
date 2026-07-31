@@ -57,6 +57,7 @@ fn unregistered_component_uses_template_usage_offset() {
         events: smallvec![],
         slots: smallvec![],
         has_spread_attrs: false,
+        spread_props: smallvec![],
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     });

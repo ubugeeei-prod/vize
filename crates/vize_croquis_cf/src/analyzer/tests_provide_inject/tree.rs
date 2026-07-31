@@ -253,6 +253,7 @@ fn component_usage_with_span(
         events: vize_carton::SmallVec::new(),
         slots: vize_carton::SmallVec::new(),
         has_spread_attrs: false,
+        spread_props: vize_carton::SmallVec::new(),
         scope_id: vize_croquis::ScopeId::ROOT,
         vif_guard: None,
     }

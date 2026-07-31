@@ -131,6 +131,7 @@ mod tests {
             events: smallvec![],
             slots: smallvec![],
             has_spread_attrs: false,
+            spread_props: smallvec![],
             scope_id: ScopeId::ROOT,
             vif_guard: None,
         };

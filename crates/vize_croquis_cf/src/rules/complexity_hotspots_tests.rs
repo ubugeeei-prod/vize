@@ -45,6 +45,7 @@ fn ranks_hotspots_with_dimension_inputs_and_json_shape() {
             has_scope: true,
         }],
         has_spread_attrs: false,
+        spread_props: smallvec![],
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     });
@@ -198,6 +199,7 @@ fn analyzer_result_stores_complexity_hotspots() {
         events: smallvec![],
         slots: smallvec![],
         has_spread_attrs: false,
+        spread_props: smallvec![],
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     });

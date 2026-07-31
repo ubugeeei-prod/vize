@@ -33,6 +33,7 @@ fn usage_with_prop(name: &str, prop: &str) -> ComponentUsage {
         events: smallvec![],
         slots: smallvec![],
         has_spread_attrs: false,
+        spread_props: smallvec![],
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     }
@@ -88,6 +89,7 @@ fn usage_facts_keep_parent_source_ranges_and_attr_classification() {
             events: smallvec![event_listener_at("click", 60, 76)],
             slots: smallvec![],
             has_spread_attrs: true,
+            spread_props: smallvec![],
             scope_id: ScopeId::ROOT,
             vif_guard: None,
         });
@@ -165,6 +167,7 @@ fn usage_facts_feed_listener_attrs_into_component_aggregates() {
             events: smallvec![event_listener_at("close", 12, 28)],
             slots: smallvec![],
             has_spread_attrs: false,
+            spread_props: smallvec![],
             scope_id: ScopeId::ROOT,
             vif_guard: None,
         });

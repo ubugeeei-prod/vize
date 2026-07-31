@@ -52,6 +52,7 @@ fn fallthrough_component_facts_are_populated_from_analyzer() {
         }],
         slots: smallvec![],
         has_spread_attrs: false,
+        spread_props: smallvec![],
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     });

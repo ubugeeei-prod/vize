@@ -42,6 +42,7 @@ fn usage(
         events: events.into_iter().collect(),
         slots: smallvec![],
         has_spread_attrs,
+        spread_props: smallvec![],
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     }
