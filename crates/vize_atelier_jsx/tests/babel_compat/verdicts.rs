@@ -56,7 +56,7 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("elements/fragment", Same),
     (
         "elements/nested_fragment_child",
-        Diff("nested fragment resolved by name"),
+        Diff("nested fragment resolved by name, now reported"),
     ),
     // -- props -----------------------------------------------------------
     ("props/static_attr", Same),
@@ -120,10 +120,7 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("directives/v_dashed_custom", Same),
     // -- slots -----------------------------------------------------------
     ("slots/object_children", Same),
-    (
-        "slots/render_prop_child",
-        Diff("non-JSX render-prop body dropped"),
-    ),
+    ("slots/render_prop_child", Same),
     ("slots/scoped_param", Same),
     // #3418 lowers the object-literal form; an opaque slots value is diagnosed
     // rather than forwarded, which needs the slots spread tracked by #3467.
@@ -147,7 +144,10 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("children/text_interp_mix", Same),
     ("children/comment_only", Same),
     ("children/empty_expr", Same),
-    ("children/spread_child", Diff("spread child stringified")),
+    (
+        "children/spread_child",
+        Diff("spread child stringified, now reported"),
+    ),
     ("children/logical_and", Same),
     ("children/ternary", Same),
     ("children/map_list", Same),

@@ -2,7 +2,7 @@
 
 mod common;
 
-use common::{as_element, as_text, lower_one, root_element};
+use common::{as_element, as_text, lower_all, lower_one, root_element};
 use vize_carton::Bump;
 use vize_relief::ElementType;
 
@@ -25,14 +25,28 @@ fn fragment_with_text_and_elements() {
 }
 
 #[test]
-fn nested_fragment_becomes_fragment_component() {
+fn nested_fragment_becomes_fragment_component_and_is_reported() {
     let bump = Bump::new();
-    let root = lower_one(&bump, "const a = <div><><p/></></div>;");
-    let div = root_element(&root);
+    let out = lower_all(&bump, "const a = <div><><p/></></div>;");
+    let div = root_element(&out.roots[0].root);
     let fragment = as_element(&div.children[0]);
     assert_eq!(fragment.tag.as_str(), "Fragment");
     assert_eq!(fragment.tag_type, ElementType::Component);
     assert_eq!(as_element(&fragment.children[0]).tag.as_str(), "p");
+    // The shape above is what the lowering produces, and it is wrong: the DOM
+    // backend turns a component tag into `resolveComponent("Fragment")`, which
+    // resolves to nothing. Until the IR can carry the `Fragment` symbol the
+    // shape stays, but it no longer degrades silently (#3421).
+    assert_eq!(
+        out.diagnostics
+            .iter()
+            .map(|diagnostic| (diagnostic.is_error(), diagnostic.message.as_str()))
+            .collect::<std::vec::Vec<_>>(),
+        vec![(
+            true,
+            "a JSX fragment nested inside an element is not supported; it lowers to an unresolvable `Fragment` component"
+        )]
+    );
 }
 
 #[test]

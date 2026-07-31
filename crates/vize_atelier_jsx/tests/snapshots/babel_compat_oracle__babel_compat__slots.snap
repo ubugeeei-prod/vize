@@ -33,7 +33,7 @@ export function render(_ctx, _cache) {
 
 ## slots/render_prop_child
 ### verdict
-divergent: non-JSX render-prop body dropped
+equivalent
 ### source (jsx)
 const A = () => <B>{() => 'foo'}</B>;
 ### babel options
@@ -44,12 +44,13 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
   default: () => 'foo'
 });
 ### vize (vdom, default config)
-import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
   
   return (_openBlock(), _createBlock(_component_B, null, {
     default: _withCtx(() => [
+      _createTextVNode("foo")
     ]),
     _: 1 /* STABLE */
   }))

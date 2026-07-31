@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   70 |
-| divergent  |   25 |
+| equivalent |   71 |
+| divergent  |   24 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -118,7 +118,7 @@ deliberate answer, recorded here so it is not relitigated.
 | `elements/member_tag`            | `createVNode(a.b.c, …)`                                          | `resolveComponent("a.b.c")` — a name string              | emit the member expression                   | ❌      |
 | `elements/namespaced_tag`        | rejects: `getTag: JSXNamespacedName is not supported`            | silently emits tag `a:b`                                 | reject with a diagnostic                     | ❌      |
 | `elements/fragment`              | `createVNode(Fragment, null, […])`                               | `createElementBlock(Fragment, …, STABLE_FRAGMENT)`       | no change                                    | ✅      |
-| `elements/nested_fragment_child` | nested `Fragment` vnode                                          | `resolveComponent("Fragment")` — unresolvable at runtime | use the `Fragment` symbol                    | ❌      |
+| `elements/nested_fragment_child` | nested `Fragment` vnode                                          | `resolveComponent("Fragment")`, now reported as an error | use the `Fragment` symbol                    | ❌      |
 
 ## Props and attributes
 
@@ -194,7 +194,7 @@ it classifies as an intrinsic element but the DOM backend still resolves with
 | Case                                 | Babel                                 | Vize today                                  | Compat mode                           | Verdict |
 | ------------------------------------ | ------------------------------------- | ------------------------------------------- | ------------------------------------- | ------- |
 | `slots/object_children`              | object child becomes the slots object | `withCtx` slots + `_: 1`                    | no change                             | ✅      |
-| `slots/render_prop_child`            | `{default: () => 'foo'}`              | empty default slot — the value is dropped   | keep the non-JSX body                 | ❌      |
+| `slots/render_prop_child`            | `{default: () => 'foo'}`              | `default: () => [createTextVNode("foo")]`   | no change                             | ✅      |
 | `slots/scoped_param`                 | `default: s => …`                     | `default: withCtx((s) => […])`              | no change                             | ✅      |
 | `slots/v_slots_with_children`        | `{default: () => […], ...slots}`      | diagnosed: opaque slots value (#3418)       | forward the object; needs #3467       | ❌      |
 | `slots/v_slots_only`                 | slots object passed as children       | diagnosed: opaque slots value (#3418)       | forward the object; needs #3467       | ❌      |
@@ -228,7 +228,7 @@ here so the choice is not implicit (#3418, `src/lower/v_slots.rs`):
 | `children/text_interp_mix` | three children                | one concatenated `TEXT` child     | no change                      | ✅      |
 | `children/comment_only`    | children `null`               | no children                       | no change                      | ✅      |
 | `children/empty_expr`      | children `null`               | no children                       | no change                      | ✅      |
-| `children/spread_child`    | `[...items]`                  | `toDisplayString(items)`          | spread into the children array | ❌      |
+| `children/spread_child`    | `[...items]`                  | `toDisplayString(items)`, reported | spread into the children array | ❌      |
 | `children/logical_and`     | `[c && vnode]`                | `v-if` with a comment placeholder | no change                      | ✅      |
 | `children/ternary`         | `[c ? a : b]`                 | two-branch `v-if` with keys       | no change                      | ✅      |
 | `children/map_list`        | raw `list.map(…)` array child | `renderList` + `KEYED_FRAGMENT`   | no change                      | ✅      |

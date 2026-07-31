@@ -162,7 +162,7 @@ export function render(_ctx, _cache) {
 
 ## elements/nested_fragment_child
 ### verdict
-divergent: nested fragment resolved by name
+divergent: nested fragment resolved by name, now reported
 ### source (jsx)
 const A = () => <div><><i/></></div>;
 ### babel options
@@ -171,6 +171,7 @@ const A = () => <div><><i/></></div>;
 import { Fragment as _Fragment, createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", null, [_createVNode(_Fragment, null, [_createVNode("i", null, null)])]);
 ### vize (vdom, default config)
+<Error> a JSX fragment nested inside an element is not supported; it lowers to an unresolvable `Fragment` component
 import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_Fragment = _resolveComponent("Fragment")

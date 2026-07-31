@@ -2,9 +2,12 @@
 
 mod common;
 
-use common::{as_element, find_directive, is_static, lower_all, lower_one, root_element};
+use common::{
+    as_element, as_text, find_directive, is_static, lower_all, lower_one, root_element,
+    simple_content,
+};
 use vize_carton::Bump;
-use vize_relief::ElementType;
+use vize_relief::{ElementType, TemplateChildNode};
 
 #[test]
 fn multiple_top_level_roots_are_each_lowered() {
@@ -91,4 +94,30 @@ fn jsx_in_ternary_finds_both_branches() {
     let bump = Bump::new();
     let out = lower_all(&bump, "const a = ok ? <yes/> : <no/>;");
     assert_eq!(out.roots.len(), 2);
+}
+
+#[test]
+fn render_prop_child_with_a_plain_body_keeps_its_value() {
+    let bump = Bump::new();
+    // `<B>{() => 'foo'}</B>` used to produce an empty default slot: the slot
+    // body was only lowered for JSX and control-flow shapes, and anything else
+    // was dropped (#3421).
+    let root = lower_one(&bump, "const a = <B>{() => 'foo'}</B>;");
+    let component = root_element(&root);
+    let template = as_element(&component.children[0]);
+    assert_eq!(template.tag.as_str(), "template");
+    assert_eq!(template.children.len(), 1);
+    assert_eq!(as_text(&template.children[0]).content.as_str(), "foo");
+}
+
+#[test]
+fn render_prop_child_with_an_expression_body_keeps_its_value() {
+    let bump = Bump::new();
+    let root = lower_one(&bump, "const a = <B>{() => label}</B>;");
+    let component = root_element(&root);
+    let template = as_element(&component.children[0]);
+    let TemplateChildNode::Interpolation(interpolation) = &template.children[0] else {
+        panic!("expected an interpolation slot body");
+    };
+    assert_eq!(simple_content(&interpolation.content), "label");
 }

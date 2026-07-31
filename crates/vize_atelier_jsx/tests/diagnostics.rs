@@ -73,3 +73,63 @@ fn line_and_column_are_one_indexed() {
     assert_eq!(loc.start.line, 2);
     assert_eq!(loc.start.column, 1);
 }
+
+/// The shapes below all used to lower to something meaningless with no signal
+/// at all: the component rendered wrong and nothing said so (#3421).
+fn diagnostic_texts<'d>(
+    out: &'d vize_atelier_jsx::LowerOutput<'_>,
+) -> std::vec::Vec<(bool, &'d str)> {
+    out.diagnostics
+        .iter()
+        .map(|diagnostic| (diagnostic.is_error(), diagnostic.message.as_str()))
+        .collect()
+}
+
+#[test]
+fn nested_fragment_child_is_reported() {
+    let bump = Bump::new();
+    let src = "const a = <div><><i/></></div>;";
+    let out = lower_all(&bump, src);
+
+    assert_eq!(
+        diagnostic_texts(&out),
+        vec![(
+            true,
+            "a JSX fragment nested inside an element is not supported; it lowers to an unresolvable `Fragment` component"
+        )]
+    );
+    // The span covers exactly the nested fragment.
+    let diagnostic = &out.diagnostics[0];
+    assert_eq!(
+        &src[diagnostic.start as usize..diagnostic.end as usize],
+        "<><i/></>"
+    );
+}
+
+#[test]
+fn a_fragment_used_as_the_whole_root_is_not_reported() {
+    let bump = Bump::new();
+    let out = lower_all(&bump, "const a = <><i/><b/></>;");
+
+    assert_eq!(diagnostic_texts(&out), vec![]);
+}
+
+#[test]
+fn spread_child_is_reported() {
+    let bump = Bump::new();
+    let src = "const a = <div>{...items}</div>;";
+    let out = lower_all(&bump, src);
+
+    assert_eq!(
+        diagnostic_texts(&out),
+        vec![(
+            true,
+            "spread children (`{...items}`) are not supported; the value would be stringified instead of spread"
+        )]
+    );
+    let diagnostic = &out.diagnostics[0];
+    assert_eq!(
+        &src[diagnostic.start as usize..diagnostic.end as usize],
+        "{...items}"
+    );
+}

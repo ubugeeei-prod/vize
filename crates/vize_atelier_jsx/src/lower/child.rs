@@ -7,6 +7,18 @@ use vize_relief::{InterpolationNode, TemplateChildNode, TextNode};
 
 use super::Lowerer;
 
+/// `<div><><i/></></div>`. A nested fragment is lowered as an element tagged
+/// `Fragment`, and the DOM backend turns a component tag into
+/// `resolveComponent("Fragment")`, which resolves to nothing at runtime.
+/// A fragment used as the whole render root is fine — its children become the
+/// root children — so only the nested case reports.
+const NESTED_FRAGMENT_UNSUPPORTED: &str = "a JSX fragment nested inside an element is not supported; it lowers to an unresolvable `Fragment` component";
+
+/// `<div>{...items}</div>`. `@vue/babel-plugin-jsx` spreads the value into the
+/// children array; the lowering has no spread child, so the array used to be
+/// stringified into a single text node through `toDisplayString`.
+const SPREAD_CHILD_UNSUPPORTED: &str = "spread children (`{...items}`) are not supported; the value would be stringified instead of spread";
+
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Lower a list of JSX children, dropping whitespace-only text.
     pub(crate) fn lower_children(
@@ -37,10 +49,13 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                     self.bump(),
                 )))
             }
-            JSXChild::Fragment(fragment) => Some(TemplateChildNode::Element(Box::new_in(
-                self.lower_fragment_node(fragment),
-                self.bump(),
-            ))),
+            JSXChild::Fragment(fragment) => {
+                self.reject(fragment.span, NESTED_FRAGMENT_UNSUPPORTED);
+                Some(TemplateChildNode::Element(Box::new_in(
+                    self.lower_fragment_node(fragment),
+                    self.bump(),
+                )))
+            }
             JSXChild::ExpressionContainer(container) => self.lower_child_container(container),
             JSXChild::Spread(spread) => Some(self.lower_spread_child(spread)),
         }
@@ -73,13 +88,15 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         }
     }
 
-    /// `{...children}` keeps the spread argument as an interpolation expression.
+    /// `{...children}` keeps the spread argument as an interpolation expression,
+    /// which is not what a spread means; report before doing so.
     fn lower_spread_child(&mut self, spread: &JSXSpreadChild<'_>) -> TemplateChildNode<'a> {
+        self.reject(spread.span, SPREAD_CHILD_UNSUPPORTED);
         let content = self.dyn_expr(spread.expression.span());
         self.interpolation(content, spread.span)
     }
 
-    fn interpolation(
+    pub(crate) fn interpolation(
         &self,
         content: vize_relief::ExpressionNode<'a>,
         span: oxc_span::Span,

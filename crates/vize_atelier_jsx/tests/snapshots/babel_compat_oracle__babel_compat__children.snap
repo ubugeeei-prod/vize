@@ -68,7 +68,7 @@ export function render(_ctx, _cache) {
 
 ## children/spread_child
 ### verdict
-divergent: spread child stringified
+divergent: spread child stringified, now reported
 ### source (jsx)
 const A = () => <div>{...items}</div>;
 ### babel options
@@ -77,6 +77,7 @@ const A = () => <div>{...items}</div>;
 import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", null, [...items]);
 ### vize (vdom, default config)
+<Error> spread children (`{...items}`) are not supported; the value would be stringified instead of spread
 import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(items), 1 /* TEXT */))

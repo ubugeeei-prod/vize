@@ -19,7 +19,7 @@ use oxc_ast::ast::{
 use oxc_span::{GetSpan, Span};
 use vize_carton::{Box, Vec};
 use vize_relief::ElementType;
-use vize_relief::{DirectiveNode, ElementNode, PropNode, TemplateChildNode};
+use vize_relief::{DirectiveNode, ElementNode, PropNode, TemplateChildNode, TextNode};
 
 use super::Lowerer;
 use crate::diagnostics::JsxDiagnostic;
@@ -185,8 +185,11 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// JSX element/fragment becomes the slot content directly; a control-flow
     /// expression (`(rows) => rows.map(...)`, a conditional, or `&&`) reuses the
     /// shared control-flow lowering so a list/conditional rendered inside a slot
-    /// works the same as one rendered as an ordinary child. Anything else
-    /// produces an empty body.
+    /// works the same as one rendered as an ordinary child.
+    ///
+    /// Anything else is rendered as the slot's content, exactly as the same
+    /// expression would be as an ordinary child. This used to produce an empty
+    /// body instead, so `<B>{() => 'foo'}</B>` silently rendered nothing.
     fn extract_fn_slot_body(&mut self, slot_fn: &SlotFn<'_>) -> Vec<'a, TemplateChildNode<'a>> {
         let mut out = Vec::new_in(self.bump());
         let Some(expr) = slot_fn.return_expr else {
@@ -210,10 +213,26 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             other => {
                 if let Some(child) = self.lower_control_flow_expr(other, other.span()) {
                     out.push(child);
+                } else {
+                    out.push(self.slot_body_value(other));
                 }
             }
         }
         out
+    }
+
+    /// Render a plain-expression slot body the way the same expression renders
+    /// as an ordinary child: a string literal becomes text, anything else an
+    /// interpolation.
+    fn slot_body_value(&mut self, expr: &Expression<'_>) -> TemplateChildNode<'a> {
+        if let Expression::StringLiteral(string) = expr {
+            return TemplateChildNode::Text(Box::new_in(
+                TextNode::new(string.value.as_str(), self.mapper().location(string.span)),
+                self.bump(),
+            ));
+        }
+        let content = self.dyn_expr(expr.span());
+        self.interpolation(content, expr.span())
     }
 }
 
