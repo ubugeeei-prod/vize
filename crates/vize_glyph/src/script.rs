@@ -6,8 +6,7 @@
 use crate::error::FormatError;
 use crate::options::FormatOptions;
 use oxc_allocator::Allocator as OxcAllocator;
-use oxc_formatter::{Formatter as OxcFormatter, get_parse_options};
-use oxc_parser::Parser;
+use oxc_formatter::{format_program, parse_for_format};
 use oxc_span::SourceType;
 use vize_carton::{Allocator, String, ToCompactString};
 
@@ -52,14 +51,15 @@ pub fn format_script_content_with_source_type(
     // Use OXC's allocator for parsing (required by oxc_parser)
     let oxc_allocator = OxcAllocator::default();
 
-    // Parse the source with formatter-compatible options
-    let parsed = Parser::new(&oxc_allocator, source, source_type)
-        .with_options(get_parse_options())
-        .parse();
+    // Parse the source with formatter-compatible options. `parse_for_format` is
+    // the parse the formatter requires (`preserve_parens: false`, hashed
+    // identifiers, JSX enabled for JavaScript source types); `format_program`
+    // may panic on an AST parsed any other way.
+    let parsed = parse_for_format(&oxc_allocator, source, source_type);
 
-    if !parsed.errors.is_empty() {
+    if !parsed.diagnostics.is_empty() {
         let error_messages: Vec<String> = parsed
-            .errors
+            .diagnostics
             .iter()
             .map(|e| e.to_compact_string())
             .collect();
@@ -70,9 +70,12 @@ pub fn format_script_content_with_source_type(
 
     // Convert options and format
     let oxc_options = options.to_oxc_format_options();
-    let formatted = OxcFormatter::new(&oxc_allocator, oxc_options).build(&parsed.program);
+    let formatted = format_program(&oxc_allocator, &parsed.program, oxc_options, None);
+    let printed = formatted
+        .print()
+        .map_err(|error| FormatError::ScriptFormatError(error.to_compact_string()))?;
 
-    Ok(formatted.into())
+    Ok(printed.into_code().into())
 }
 
 pub(crate) fn format_script_content_stable(
@@ -164,16 +167,17 @@ pub fn format_js_expression(expr: &str, options: &FormatOptions) -> Option<Strin
         wrapped.push_str("void (");
         wrapped.push_str(trimmed);
         wrapped.push(')');
-        let parsed = Parser::new(oxc_allocator, wrapped.as_str(), source_type)
-            .with_options(get_parse_options())
-            .parse();
+        let parsed = parse_for_format(oxc_allocator, wrapped.as_str(), source_type);
 
-        if !parsed.errors.is_empty() {
+        if !parsed.diagnostics.is_empty() {
             return None;
         }
 
         let oxc_options = options.to_oxc_format_options();
-        let formatted = OxcFormatter::new(oxc_allocator, oxc_options).build(&parsed.program);
+        let formatted = format_program(oxc_allocator, &parsed.program, oxc_options, None)
+            .print()
+            .ok()?
+            .into_code();
 
         // Extract the expression back from the formatted output.
         // preserve_parens is false, so the formatter may remove the wrapping parens.

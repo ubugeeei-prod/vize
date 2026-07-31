@@ -27,7 +27,7 @@ pub(super) fn extract_prop_types_from_ast(
     let source = wrap_type_alias_source(type_args);
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, &source, SourceType::ts()).parse();
-    if parsed.panicked || !parsed.errors.is_empty() {
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
         return None;
     }
 
@@ -131,7 +131,7 @@ fn collect_props_from_ts_type(
             let resolved_source = wrap_type_alias_source(&resolved);
             let allocator = Allocator::default();
             let parsed = Parser::new(&allocator, &resolved_source, SourceType::ts()).parse();
-            if parsed.panicked || !parsed.errors.is_empty() {
+            if parsed.panicked || !parsed.diagnostics.is_empty() {
                 finish_resolved_type_reference(name, seen);
                 return false;
             }
@@ -426,7 +426,7 @@ fn ts_type_to_js_type_from_ast_inner(
                 let allocator = Allocator::default();
                 let parsed = Parser::new(&allocator, &alias_source, SourceType::ts()).parse();
                 if !parsed.panicked
-                    && parsed.errors.is_empty()
+                    && parsed.diagnostics.is_empty()
                     && let Some(Statement::TSTypeAliasDeclaration(alias_decl)) =
                         parsed.program.body.first()
                 {
@@ -648,7 +648,7 @@ fn literal_values_from_type_text(
     let source = wrap_type_alias_source(type_text);
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, &source, SourceType::ts()).parse();
-    if parsed.panicked || !parsed.errors.is_empty() {
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
         return None;
     }
     let Some(Statement::TSTypeAliasDeclaration(alias)) = parsed.program.body.first() else {

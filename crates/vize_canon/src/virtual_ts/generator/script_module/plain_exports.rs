@@ -109,12 +109,12 @@ pub(crate) fn emit_setup_invocation_and_exports(
 fn collect_named_value_exports(script: &str) -> Vec<PlainScriptExport> {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, script, SourceType::ts().with_module(true)).parse();
-    let parsed = if parsed.panicked || !parsed.errors.is_empty() {
+    let parsed = if parsed.panicked || !parsed.diagnostics.is_empty() {
         Parser::new(&allocator, script, SourceType::tsx().with_module(true)).parse()
     } else {
         parsed
     };
-    if parsed.panicked || !parsed.errors.is_empty() {
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
         return Vec::new();
     }
 

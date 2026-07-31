@@ -105,7 +105,7 @@ fn collect_type_reference_names(props_source: &str) -> Option<FxHashSet<CompactS
     let source = cstr!("type __VizeProps = {props_source};");
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source.as_str(), SourceType::ts()).parse();
-    if parsed.panicked || !parsed.errors.is_empty() {
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
         return None;
     }
 

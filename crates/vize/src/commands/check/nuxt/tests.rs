@@ -70,9 +70,9 @@ fn fallback_stub_bundle_is_valid_typescript() {
     let ret = Parser::new(&allocator, &source, source_type).parse();
 
     assert!(
-        ret.errors.is_empty(),
+        ret.diagnostics.is_empty(),
         "fallback stubs should parse as TypeScript declarations: {:#?}\n{}",
-        ret.errors,
+        ret.diagnostics,
         source
     );
 }

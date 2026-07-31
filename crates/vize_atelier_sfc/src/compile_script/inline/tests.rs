@@ -327,7 +327,7 @@ const model = defineModel<string>()
 
         assert!(
             output.contains(
-                r#"emits: /* @__PURE__ */ _mergeModels(["change", "submit"], ["update:modelValue"])"#
+                r#"emits: /*@__PURE__*/ _mergeModels(["change", "submit"], ["update:modelValue"])"#
             ),
             "named defineEmits type should merge with model emits:\n{output}"
         );

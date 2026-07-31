@@ -244,7 +244,7 @@ fn infer_default_value_runtime_type(
         SourceType::default().with_typescript(true),
     )
     .parse();
-    if !parse_result.errors.is_empty() {
+    if !parse_result.diagnostics.is_empty() {
         return None;
     }
 

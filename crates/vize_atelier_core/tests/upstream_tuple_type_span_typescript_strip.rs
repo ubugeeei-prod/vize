@@ -1,17 +1,20 @@
-//! The upstream tuple-type span assertion (#3307) is reachable from a public
-//! Vize API, not only from the `js_ts_expression` fuzz target.
+//! The upstream tuple-type span assertion (#3307) *was* reachable from a public
+//! Vize API, not only from the `js_ts_expression` fuzz target. This file pins
+//! that it no longer is.
 //!
 //! `prefix_identifiers_in_expression` parses without the `typescript` source
-//! option, so `<[` is never speculated as type arguments and the class cannot be
-//! reached there. `strip_typescript_from_expression` parses `SourceType::ts()`
-//! once `needs_typescript_stripping` sees a generic call, so a template
-//! expression such as `{{ f<[a?, , b]>(x) }}` aborts any build with debug
-//! assertions on (dev / test / the `ci` profile). Release builds are unaffected:
-//! the assertion is `debug_assert`-only and the label just gets a garbage span.
+//! option, so `<[` is never speculated as type arguments and the class could
+//! never be reached there. `strip_typescript_from_expression` parses
+//! `SourceType::ts()` once `needs_typescript_stripping` sees a generic call, so
+//! a template expression such as `{{ f<[a?, , b]>(x) }}` used to abort any build
+//! with debug assertions on (dev / test / the `ci` profile). Release builds were
+//! unaffected: the assertion is `debug_assert`-only and the label just got a
+//! garbage span.
 //!
-//! Both rows below are asserted so the exposure cannot be quietly widened, and
-//! so the panic rows fail loudly once the pinned OXC revision reaches 0.141.0.
-//! See `upstream_tuple_type_span_assertion.rs` for the full boundary matrix.
+//! Since the pin bump to oxc `crates_v0.142.0` (#3405) both generic-call rows
+//! return `Unchanged` instead of panicking. Every row is still asserted so the
+//! exposure cannot be quietly reintroduced by a future pin. See
+//! `upstream_tuple_type_span_assertion.rs` for the full boundary matrix.
 
 use std::panic::{self, AssertUnwindSafe};
 
@@ -54,10 +57,6 @@ fn classify(transform: fn(&str) -> vize_carton::String, source: &str) -> Transfo
     }
 }
 
-fn span_assertion() -> TransformOutcome {
-    TransformOutcome::UpstreamSpanAssertion("assertion failed: self.start <= self.end".to_string())
-}
-
 const SOURCES: [&str; 8] = [
     "<[r?, \u{7}]",
     "f<[a?, \u{7}]>(x)",
@@ -80,19 +79,22 @@ fn identifier_prefixing_never_reaches_the_upstream_span_assertion() {
 }
 
 #[test]
-fn typescript_stripping_reaches_the_upstream_span_assertion_on_generic_calls() {
+fn typescript_stripping_no_longer_reaches_the_upstream_span_assertion() {
     let actual: Vec<(&str, TransformOutcome)> = SOURCES
         .iter()
         .map(|source| (*source, classify(strip_typescript_from_expression, source)))
         .collect();
 
+    // Every row is `Unchanged`: the two generic calls no longer panic, and a
+    // failed parse leaves the expression untouched, so the public transform is
+    // a no-op over the whole class.
     assert_eq!(
         actual,
         vec![
             ("<[r?, \u{7}]", TransformOutcome::Unchanged),
-            ("f<[a?, \u{7}]>(x)", span_assertion()),
+            ("f<[a?, \u{7}]>(x)", TransformOutcome::Unchanged),
             ("<[r?, , x]", TransformOutcome::Unchanged),
-            ("f<[a?, , b]>(x)", span_assertion()),
+            ("f<[a?, , b]>(x)", TransformOutcome::Unchanged),
             ("<[r?, ; ]", TransformOutcome::Unchanged),
             ("<[r?, @ ]", TransformOutcome::Unchanged),
             ("<[m?,\n\n", TransformOutcome::Unchanged),

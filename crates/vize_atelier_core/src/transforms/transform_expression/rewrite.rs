@@ -141,7 +141,7 @@ fn parses_as_typescript(content: &str) -> bool {
     let program_allocator = OxcAllocator::default();
     Parser::new(&program_allocator, content, source_type)
         .parse()
-        .errors
+        .diagnostics
         .is_empty()
 }
 
@@ -272,7 +272,7 @@ pub(crate) fn rewrite_expression(
             let parser2 = Parser::new(&oxc_allocator2, &js_content, source_type);
             let parse_result2 = parser2.parse();
 
-            if parse_result2.errors.is_empty() {
+            if parse_result2.diagnostics.is_empty() {
                 // Successfully parsed as program - walk the AST and collect identifiers
                 let mut collector = IdentifierCollector::new(ctx, &js_content);
                 collector.visit_program(&parse_result2.program);

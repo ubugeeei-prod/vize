@@ -39,7 +39,7 @@ pub fn dedupe_imports(imports: &[String], is_ts: bool) -> Vec<String> {
         let parser = Parser::new(&allocator, trimmed, SourceType::ts());
         let parse_result = parser.parse();
 
-        if !parse_result.errors.is_empty() {
+        if !parse_result.diagnostics.is_empty() {
             if seen_specifiers.insert(trimmed.to_compact_string()) {
                 let mut s = trimmed.to_compact_string();
                 s.push('\n');

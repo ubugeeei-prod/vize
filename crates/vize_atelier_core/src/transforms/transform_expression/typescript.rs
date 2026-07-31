@@ -231,19 +231,22 @@ pub fn strip_typescript_from_expression(content: &str) -> String {
     let parser = Parser::new(&allocator, &wrapped, source_type);
     let parse_result = parser.parse();
 
-    if !parse_result.errors.is_empty() {
+    if !parse_result.diagnostics.is_empty() {
         // If parsing fails, return original content
         return String::new(content);
     }
 
     let mut program = parse_result.program;
 
-    // Run semantic analysis
+    // Run semantic analysis. `with_enum_eval(true)`: OXC 0.142's TypeScript enum
+    // transform panics unless the `Scoping` it is handed carries evaluated enum
+    // member values.
     let semantic_ret = SemanticBuilder::new()
         .with_excess_capacity(2.0)
+        .with_enum_eval(true)
         .build(&program);
 
-    if !semantic_ret.errors.is_empty() {
+    if !semantic_ret.diagnostics.is_empty() {
         return String::new(content);
     }
 
@@ -254,7 +257,7 @@ pub fn strip_typescript_from_expression(content: &str) -> String {
     let ret = Transformer::new(&allocator, std::path::Path::new(""), &transform_options)
         .build_with_scoping(scoping, &mut program);
 
-    if !ret.errors.is_empty() {
+    if !ret.diagnostics.is_empty() {
         return String::new(content);
     }
 

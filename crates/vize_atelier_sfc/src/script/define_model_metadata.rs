@@ -25,7 +25,7 @@ pub(crate) fn define_model_metadata(source: &str, call: &MacroCall) -> DefineMod
     };
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
-    if parsed.panicked || !parsed.errors.is_empty() {
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
         return default_metadata();
     }
     let Some(Statement::ExpressionStatement(statement)) = parsed.program.body.first() else {

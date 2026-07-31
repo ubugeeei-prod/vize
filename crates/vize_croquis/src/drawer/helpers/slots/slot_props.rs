@@ -55,7 +55,7 @@ fn parse_slot_pattern(pattern_str: &str) -> SmallVec<[CompactString; 4]> {
         "croquis.helpers.slot_props.oxc_parse",
         Parser::new(&allocator, pattern_str, source_type).parse()
     );
-    if !ret.errors.is_empty() {
+    if !ret.diagnostics.is_empty() {
         return SmallVec::new();
     }
 

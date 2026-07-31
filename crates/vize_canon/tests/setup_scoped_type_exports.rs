@@ -87,9 +87,9 @@ fn setup_value_dependent_exports_are_captured_and_reexported() {
         oxc_parser::Parser::new(&allocator, virtual_ts.as_str(), oxc_span::SourceType::ts())
             .parse();
     assert!(
-        !parsed.panicked && parsed.errors.is_empty(),
+        !parsed.panicked && parsed.diagnostics.is_empty(),
         "captured type exports must produce parseable TypeScript: {:#?}\n{virtual_ts}",
-        parsed.errors
+        parsed.diagnostics
     );
 }
 
@@ -153,9 +153,9 @@ fn exported_setup_scoped_props_have_one_public_declaration() {
         oxc_parser::Parser::new(&allocator, virtual_ts.as_str(), oxc_span::SourceType::ts())
             .parse();
     assert!(
-        parsed.errors.is_empty(),
+        parsed.diagnostics.is_empty(),
         "a public setup-scoped Props interface must remain parseable: {:#?}\n{virtual_ts}",
-        parsed.errors
+        parsed.diagnostics
     );
 }
 
@@ -193,9 +193,9 @@ fn private_setup_scoped_props_still_export_a_public_declaration() {
         oxc_parser::Parser::new(&allocator, virtual_ts.as_str(), oxc_span::SourceType::ts())
             .parse();
     assert!(
-        parsed.errors.is_empty(),
+        parsed.diagnostics.is_empty(),
         "a private setup-scoped Props must remain parseable: {:#?}\n{virtual_ts}",
-        parsed.errors
+        parsed.diagnostics
     );
 }
 

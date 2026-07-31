@@ -5,9 +5,9 @@ expression: result.code.as_str()
 import { defineComponent as _defineComponent } from "vue";
 import { mergeDefaults as _mergeDefaults } from "vue";
 // Reactive Props Destructure (Vue 3.5+)
-const __sfc__ = /* @__PURE__ */ _defineComponent({
+const __sfc__ = /*@__PURE__*/ _defineComponent({
   __name: "Test",
-  props: /* @__PURE__ */ _mergeDefaults({ color: {} }, { color: "primary" }),
+  props: /*@__PURE__*/ _mergeDefaults({ color: {} }, { color: "primary" }),
   setup(__props, { expose: __expose, emit: __emit }) {
     __expose();
     const __returned__ = {};

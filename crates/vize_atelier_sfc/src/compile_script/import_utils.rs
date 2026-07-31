@@ -18,7 +18,7 @@ pub fn import_block_has_local_from(imports: &str, module_source: &str, local_nam
     let parser = Parser::new(&allocator, imports, source_type);
     let result = parser.parse();
 
-    if !result.errors.is_empty() {
+    if !result.diagnostics.is_empty() {
         return false;
     }
 
@@ -52,7 +52,7 @@ pub fn process_import_for_types(import: &str) -> Option<vize_carton::String> {
     let parser = Parser::new(&allocator, import, source_type);
     let result = parser.parse();
 
-    if result.errors.is_empty() {
+    if result.diagnostics.is_empty() {
         for stmt in &result.program.body {
             if let Statement::ImportDeclaration(decl) = stmt {
                 // Skip type-only imports: import type { ... } from '...'
@@ -163,7 +163,7 @@ pub fn extract_import_identifiers(import: &str) -> Vec<vize_carton::String> {
     let parser = Parser::new(&allocator, import, source_type);
     let result = parser.parse();
 
-    if result.errors.is_empty() {
+    if result.diagnostics.is_empty() {
         for stmt in &result.program.body {
             if let Statement::ImportDeclaration(decl) = stmt {
                 // Skip type-only imports

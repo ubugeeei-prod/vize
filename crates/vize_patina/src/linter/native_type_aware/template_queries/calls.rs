@@ -268,7 +268,7 @@ fn collect_statement_template_call_ranges(
         "patina.type_aware.template_calls.parse_statement",
         OxcParser::new(allocator, wrapped.as_str(), source_type).parse()
     );
-    if parsed.panicked || !parsed.errors.is_empty() {
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
         return TemplateCallRanges::default();
     }
 

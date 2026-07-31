@@ -59,7 +59,7 @@ pub(super) fn collect_named_value_export_starts(script: &str) -> FxHashSet<u32> 
     }
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, script, SourceType::ts().with_module(true)).parse();
-    let parsed = if parsed.panicked || !parsed.errors.is_empty() {
+    let parsed = if parsed.panicked || !parsed.diagnostics.is_empty() {
         Parser::new(&allocator, script, SourceType::tsx().with_module(true)).parse()
     } else {
         parsed

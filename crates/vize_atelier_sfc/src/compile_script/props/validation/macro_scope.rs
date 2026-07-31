@@ -177,7 +177,14 @@ pub(crate) fn validate_macro_scope_references_in_program(
     if !has_possible_local_macro_reference(ctx, &spans) {
         return Ok(());
     }
-    let semantic = SemanticBuilder::new().build(program).semantic;
+    // `Semantic::reference_span` reads `Semantic::nodes`, and OXC 0.142 made the
+    // node store opt-in (empty by default so the compiler pipeline does not pay
+    // for random access it never uses). Without this the lookup below indexes an
+    // empty `IndexVec` and panics.
+    let semantic = SemanticBuilder::new()
+        .with_build_nodes(true)
+        .build(program)
+        .semantic;
     let scoping = semantic.scoping();
     let root_bindings = scoping.get_bindings(scoping.root_scope_id());
     let mut invalid = None;

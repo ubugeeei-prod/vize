@@ -37,7 +37,7 @@ pub(super) fn extract_normal_script_content(
         Parser::new(&allocator, content, source_type).parse()
     );
 
-    if !ret.errors.is_empty() {
+    if !ret.diagnostics.is_empty() {
         // If parsing fails, return original content minus any obvious export default
         return content
             .lines()
@@ -118,15 +118,18 @@ pub(super) fn extract_normal_script_content(
             "atelier.normal_script.extract.ts_parse",
             Parser::new(&allocator2, &extracted, SourceType::ts()).parse()
         );
-        if ret2.errors.is_empty() {
+        if ret2.diagnostics.is_empty() {
             let mut program2 = ret2.program;
 
             // Run semantic analysis
+            // `with_enum_eval(true)`: OXC 0.142's TypeScript enum transform
+            // panics unless the `Scoping` it is handed carries evaluated enum
+            // member values.
             let semantic_ret = profile!(
                 "atelier.normal_script.extract.ts_semantic",
-                SemanticBuilder::new().build(&program2)
+                SemanticBuilder::new().with_enum_eval(true).build(&program2)
             );
-            if semantic_ret.errors.is_empty() {
+            if semantic_ret.diagnostics.is_empty() {
                 let scoping = semantic_ret.semantic.into_scoping();
 
                 // Transform TypeScript to JavaScript
@@ -144,7 +147,7 @@ pub(super) fn extract_normal_script_content(
                         .build_with_scoping(scoping, &mut program2)
                 );
 
-                if transform_ret.errors.is_empty() {
+                if transform_ret.diagnostics.is_empty() {
                     // Generate JavaScript code
                     return profile!(
                         "atelier.normal_script.extract.ts_codegen",

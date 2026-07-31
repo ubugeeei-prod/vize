@@ -5,7 +5,7 @@ expression: result.code.as_str()
 import { defineComponent as _defineComponent } from "vue";
 import { computed } from "vue";
 // Reactive Props Destructure (Vue 3.5+)
-const __sfc__ = /* @__PURE__ */ _defineComponent({
+const __sfc__ = /*@__PURE__*/ _defineComponent({
   __name: "Test",
   props: { count: Number },
   setup(__props, { expose: __expose, emit: __emit }) {

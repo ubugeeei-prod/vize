@@ -143,7 +143,7 @@ impl NoReservedComponentNames {
 
         let allocator = OxcAllocator::default();
         let parsed = Parser::new(&allocator, source, script_source_type()).parse();
-        if parsed.panicked || !parsed.errors.is_empty() {
+        if parsed.panicked || !parsed.diagnostics.is_empty() {
             return;
         }
 
@@ -169,7 +169,7 @@ impl NoReservedComponentNames {
 
         let allocator = OxcAllocator::default();
         let parsed = Parser::new(&allocator, source, script_source_type()).parse();
-        if parsed.panicked || !parsed.errors.is_empty() {
+        if parsed.panicked || !parsed.diagnostics.is_empty() {
             return;
         }
 

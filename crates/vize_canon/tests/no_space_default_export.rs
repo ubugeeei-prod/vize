@@ -66,9 +66,9 @@ fn generated_typescript_for_no_space_default_exports_is_parseable() {
                 .parse();
 
         assert!(
-            !parsed.panicked && parsed.errors.is_empty(),
+            !parsed.panicked && parsed.diagnostics.is_empty(),
             "generated TypeScript must parse after rewriting a no-space default export: {:#?}\n{virtual_ts}",
-            parsed.errors
+            parsed.diagnostics
         );
     }
 }

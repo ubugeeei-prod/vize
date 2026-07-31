@@ -24,7 +24,7 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
         Parser::new(&allocator, input, source_type).parse()
     );
 
-    if !ret.errors.is_empty() {
+    if !ret.diagnostics.is_empty() {
         // If parsing fails, return original code
         return (input.to_compact_string(), false);
     }

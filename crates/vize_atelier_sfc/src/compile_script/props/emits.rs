@@ -13,7 +13,7 @@ pub fn extract_emit_names_from_type(type_args: &str) -> Vec<String> {
     let source = wrap_type_alias_source(type_args);
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, &source, SourceType::ts()).parse();
-    if parsed.panicked || !parsed.errors.is_empty() {
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
         return Vec::new();
     }
 

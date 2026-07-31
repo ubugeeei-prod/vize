@@ -4,7 +4,7 @@ expression: result.code.as_str()
 ---
 import { defineComponent as _defineComponent } from "vue";
 import { computed } from "vue";
-const __sfc__ = /* @__PURE__ */ _defineComponent({
+const __sfc__ = /*@__PURE__*/ _defineComponent({
   __name: "Test",
   props: { name: { type: String } },
   setup(__props, { expose: __expose, emit: __emit }) {

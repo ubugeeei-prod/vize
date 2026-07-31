@@ -74,7 +74,7 @@ pub(crate) fn collect_runtime_identifier_references(code: &str) -> FxHashSet<Str
     let parser = Parser::new(&allocator, &runtime_code, SourceType::default());
     let parse_result = parser.parse();
 
-    if !parse_result.errors.is_empty() {
+    if !parse_result.diagnostics.is_empty() {
         return FxHashSet::default();
     }
 
@@ -115,7 +115,7 @@ pub fn contains_top_level_await(code: &str, is_ts: bool) -> bool {
     let parser = Parser::new(&allocator, &wrapped, source_type);
     let parse_result = parser.parse();
 
-    if !parse_result.errors.is_empty() {
+    if !parse_result.diagnostics.is_empty() {
         return false;
     }
 

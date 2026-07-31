@@ -255,7 +255,7 @@ fn run_builtin_script_rule(
         let Some(parsed) = parsed else {
             return;
         };
-        if parsed.panicked || !parsed.errors.is_empty() {
+        if parsed.panicked || !parsed.diagnostics.is_empty() {
             return;
         }
         profile!(

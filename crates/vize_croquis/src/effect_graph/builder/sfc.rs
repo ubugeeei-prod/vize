@@ -44,7 +44,7 @@ pub fn build_effect_graph_from_sfc_scripts(
         let allocator = Allocator::default();
         let source_type = SourceType::from_path(block.virtual_path()).unwrap_or_default();
         let parsed = Parser::new(&allocator, block.source, source_type).parse();
-        if !parsed.panicked && parsed.errors.is_empty() {
+        if !parsed.panicked && parsed.diagnostics.is_empty() {
             script_context = context_for_program(&parsed.program, None, "script");
             collect_program_effect_edges(&parsed.program, &script_context, &mut graph);
         }
@@ -54,7 +54,7 @@ pub fn build_effect_graph_from_sfc_scripts(
         let allocator = Allocator::default();
         let source_type = SourceType::from_path(block.virtual_path()).unwrap_or_default();
         let parsed = Parser::new(&allocator, block.source, source_type).parse();
-        if !parsed.panicked && parsed.errors.is_empty() {
+        if !parsed.panicked && parsed.diagnostics.is_empty() {
             let inherited = script.map(|_| &script_context);
             let setup_context = context_for_program(&parsed.program, inherited, "setup");
             collect_program_effect_edges(&parsed.program, &setup_context, &mut graph);

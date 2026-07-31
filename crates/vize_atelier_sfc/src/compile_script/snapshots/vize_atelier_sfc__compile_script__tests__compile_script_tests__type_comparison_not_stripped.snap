@@ -3,7 +3,7 @@ source: crates/vize_atelier_sfc/src/compile_script/tests.rs
 expression: result.code.as_str()
 ---
 import { defineComponent as _defineComponent } from "vue";
-const __sfc__ = /* @__PURE__ */ _defineComponent({
+const __sfc__ = /*@__PURE__*/ _defineComponent({
   __name: "Test",
   props: ["type"],
   setup(__props, { expose: __expose, emit: __emit }) {

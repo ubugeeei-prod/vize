@@ -16,7 +16,7 @@ pub(super) fn matches_at(source: &str, path: &Path, offset: u32) -> bool {
     let allocator = oxc_allocator::Allocator::default();
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::ts());
     let parsed = Parser::new(&allocator, source, source_type).parse();
-    if !parsed.errors.is_empty() {
+    if !parsed.diagnostics.is_empty() {
         return false;
     }
 

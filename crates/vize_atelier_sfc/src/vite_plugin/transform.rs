@@ -67,7 +67,7 @@ pub fn rewrite_import_meta_glob_base(code: &str, importer: &str, root: &str) -> 
 
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, code, SourceType::tsx().with_module(true)).parse();
-    if !parsed.errors.is_empty() {
+    if !parsed.diagnostics.is_empty() {
         return String::from(code);
     }
 
@@ -189,10 +189,11 @@ fn is_import_meta_glob_call(call: &CallExpression<'_>) -> bool {
 }
 
 fn is_import_meta_expression(expression: &Expression<'_>) -> bool {
-    let Expression::MetaProperty(meta) = expression else {
-        return false;
-    };
-    meta.meta.name.as_str() == "import" && meta.property.name.as_str() == "meta"
+    // OXC 0.142 split the single `MetaProperty` variant into `ImportMeta` and
+    // `NewTarget`, so `import.meta` is now its own variant with no `meta` /
+    // `property` identifiers to compare — matching the variant is the whole
+    // check, and `new.target` can no longer reach this branch.
+    matches!(expression, Expression::ImportMeta(_))
 }
 
 fn normalize_import_meta_glob_pattern(pattern: &str, importer: &str, root: &str) -> Option<String> {

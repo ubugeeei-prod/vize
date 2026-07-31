@@ -227,7 +227,7 @@ fn script_setup_component_import_references(
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("component.ts").unwrap_or_else(|_| SourceType::ts());
     let parsed = Parser::new(&allocator, source, source_type).parse();
-    if parsed.panicked || !parsed.errors.is_empty() {
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
         return FxHashSet::default();
     }
 

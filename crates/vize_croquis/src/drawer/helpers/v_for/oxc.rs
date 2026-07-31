@@ -52,7 +52,7 @@ pub(super) fn parse_v_for_scope_aliases(
         "croquis.helpers.v_for.scope_alias_parse",
         Parser::new(&allocator, &pattern_str, source_type).parse()
     );
-    if !ret.errors.is_empty() {
+    if !ret.diagnostics.is_empty() {
         return None;
     }
 
@@ -125,7 +125,7 @@ fn parse_v_for_pattern(
         "croquis.helpers.v_for.oxc_parse",
         Parser::new(&allocator, pattern_str, source_type).parse()
     );
-    if !ret.errors.is_empty() {
+    if !ret.diagnostics.is_empty() {
         return (SmallVec::new(), source);
     }
 

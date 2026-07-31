@@ -87,7 +87,7 @@ pub fn parse_module<'a>(
     let ret = Parser::new(allocator, source, lang.source_type()).parse();
     let source_len = source.len();
     let diagnostics = ret
-        .errors
+        .diagnostics
         .iter()
         .map(|error| oxc_error_to_diagnostic(error, source_len))
         .collect();
@@ -106,15 +106,19 @@ fn oxc_error_to_diagnostic(
     error: &oxc_diagnostics::OxcDiagnostic,
     source_len: usize,
 ) -> JsxDiagnostic {
+    // `OxcDiagnostic::labels` is an `oxc_diagnostics::Labels` since OXC 0.142
+    // (it was `Option<Vec<LabeledSpan>>`); it derefs to a slice, and "no labels"
+    // is now the empty slice rather than `None`. `LabeledSpan::offset` / `len`
+    // also went `usize` -> `u32` in the same bump.
     let (start, end) = error
         .labels
-        .as_ref()
-        .and_then(|labels| labels.iter().find(|label| label.primary()))
-        .or_else(|| error.labels.as_ref().and_then(|labels| labels.first()))
+        .iter()
+        .find(|label| label.primary())
+        .or_else(|| error.labels.first())
         .map(|label| {
-            let start = label.offset().min(source_len);
+            let start = (label.offset() as usize).min(source_len);
             let end = start
-                .saturating_add(label.len().max(1))
+                .saturating_add(label.len().max(1) as usize)
                 .min(source_len)
                 .max(start + 1);
             (start as u32, end as u32)

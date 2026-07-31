@@ -17,9 +17,9 @@ fn assert_ts_parses(source: &str) {
     let allocator = oxc_allocator::Allocator::default();
     let parsed = oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::ts()).parse();
     assert!(
-        parsed.errors.is_empty(),
+        parsed.diagnostics.is_empty(),
         "virtual TS should parse without errors: {:?}",
-        parsed.errors
+        parsed.diagnostics
     );
 }
 

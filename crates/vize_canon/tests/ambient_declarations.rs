@@ -69,9 +69,9 @@ fn ambient_declarations_are_emitted_once_at_module_scope() {
         oxc_parser::Parser::new(&allocator, virtual_ts.as_str(), oxc_span::SourceType::ts())
             .parse();
     assert!(
-        !parsed.panicked && parsed.errors.is_empty(),
+        !parsed.panicked && parsed.diagnostics.is_empty(),
         "hoisted ambient declarations must produce parseable TypeScript: {:#?}\n{virtual_ts}",
-        parsed.errors
+        parsed.diagnostics
     );
 }
 

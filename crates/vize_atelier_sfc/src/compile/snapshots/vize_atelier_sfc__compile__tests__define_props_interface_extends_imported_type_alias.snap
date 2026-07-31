@@ -1,13 +1,12 @@
 ---
 source: crates/vize_atelier_sfc/src/compile/tests.rs
-assertion_line: 1414
 expression: result.code.as_str()
 ---
 import { useModel as _useModel, mergeModels as _mergeModels } from "vue";
 import { vModelSelect as _vModelSelect, withDirectives as _withDirectives, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue";
 export default {
   __name: "ImportedSelectField",
-  props: /* @__PURE__ */ _mergeModels({
+  props: /*@__PURE__*/ _mergeModels({
     disabled: {
       type: Boolean,
       required: false

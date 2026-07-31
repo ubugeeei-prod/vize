@@ -449,7 +449,7 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
             let allocator2 = OxcAllocator::default();
             let parser2 = Parser::new(&allocator2, content, source_type);
             let parse_result2 = parser2.parse();
-            if parse_result2.errors.is_empty() {
+            if parse_result2.diagnostics.is_empty() {
                 let mut rewrites: Vec<(usize, usize, String)> = Vec::new();
                 let mut local_vars: FxHashSet<String> = FxHashSet::default();
                 let mut assignment_targets: FxHashSet<usize> = FxHashSet::default();

@@ -57,7 +57,7 @@ fn resolve_with_oxc(ctx: &GenerateContext<'_>, expr: &str) -> Option<String> {
     let allocator = OxcAllocator::default();
     let parser = Parser::new(&allocator, expr, source_type);
     let parsed = parser.parse();
-    if parsed.errors.is_empty() {
+    if parsed.diagnostics.is_empty() {
         let mut collector = ExpressionRewriteCollector::new(ctx);
         collector.push_scope();
         collector.visit_program(&parsed.program);

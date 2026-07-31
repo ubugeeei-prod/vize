@@ -32,7 +32,7 @@ pub fn rewrite_template_asset_references(code: &str, assets: &[TemplateAssetUrl]
 
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, code, SourceType::tsx().with_module(true)).parse();
-    if !parsed.errors.is_empty() {
+    if !parsed.diagnostics.is_empty() {
         return String::from(code);
     }
 

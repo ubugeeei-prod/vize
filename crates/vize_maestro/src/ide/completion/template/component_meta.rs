@@ -369,7 +369,7 @@ fn extract_slot_prop_names(ts_type: &str) -> Option<Vec<String>> {
     let source = slot_props_type_source(ts_type);
     let allocator = oxc_allocator::Allocator::default();
     let parsed = oxc_parser::Parser::new(&allocator, &source, oxc_span::SourceType::ts()).parse();
-    if parsed.panicked || !parsed.errors.is_empty() {
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
         return None;
     }
 

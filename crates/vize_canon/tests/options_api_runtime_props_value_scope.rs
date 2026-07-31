@@ -56,9 +56,9 @@ fn options_api_runtime_props_with_comments_generate_parseable_typescript() {
             .parse();
 
     assert!(
-        !parsed.panicked && parsed.errors.is_empty(),
+        !parsed.panicked && parsed.diagnostics.is_empty(),
         "runtime props defaults and comments must not corrupt generated TypeScript: {:#?}\n{virtual_ts}",
-        parsed.errors
+        parsed.diagnostics
     );
 }
 

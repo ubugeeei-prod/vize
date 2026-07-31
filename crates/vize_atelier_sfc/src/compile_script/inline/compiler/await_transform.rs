@@ -41,7 +41,7 @@ fn transform_await_source(source: &str, is_ts: bool) -> String {
     let allocator = Allocator::default();
     let source_type = SourceType::default().with_typescript(is_ts);
     let parse_result = Parser::new(&allocator, &wrapped, source_type).parse();
-    if !parse_result.errors.is_empty() {
+    if !parse_result.diagnostics.is_empty() {
         return source.to_compact_string();
     }
 

@@ -60,18 +60,22 @@ vize_maestro = { path = "crates/vize_maestro" }
 vize_curator = { path = "crates/vize_curator" }
 
 # OXC dependencies (pinned to a specific upstream revision for reproducibility)
-oxc_parser = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
-oxc_ast = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
-oxc_ast_visit = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
-oxc_span = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
-oxc_allocator = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
-oxc_syntax = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
-oxc_diagnostics = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
-oxc_semantic = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
-oxc_transformer = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
-oxc_codegen = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
-# oxc_formatter is not yet on crates.io, so vize_glyph is excluded from crates.io publish
-oxc_formatter = { version = "=0.46.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
+oxc_parser = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
+oxc_ast = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
+oxc_ast_visit = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
+oxc_span = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
+oxc_allocator = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
+oxc_syntax = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
+oxc_diagnostics = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
+oxc_semantic = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
+oxc_transformer = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
+oxc_codegen = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
+# oxc_formatter is not yet on crates.io, so vize_glyph is excluded from crates.io publish.
+# `oxc_formatter_core` carries the language-agnostic option types (`IndentStyle`,
+# `IndentWidth`, `LineEnding`, `LineWidth`) that `oxc_formatter` takes but does not
+# re-export; it is `publish = false` upstream for the same reason.
+oxc_formatter = { version = "=0.60.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
+oxc_formatter_core = { version = "=0.60.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
 
 # Serialization and schema formats
 serde = { version = "=1.0.228", features = ["derive"] }
@@ -114,14 +118,14 @@ bumpalo = { version = "=3.20.2", features = ["collections", "boxed"] }
 # Utilities
 thiserror = "=2.0.18"
 rustc-hash = "=2.1.2"
-bitflags = { version = "=2.11.1", features = ["serde"] }
+bitflags = { version = "=2.13.1", features = ["serde"] }
 once_cell = "=1.21.4"
 compact_str = { version = "=0.9.0", features = ["serde"] }
 phf = { version = "=0.13.1", features = ["macros"] }
 memoffset = "=0.9.1"
-memchr = "=2.8.0"
+memchr = "=2.8.3"
 regex = "=1.12.3"
-smallvec = { version = "=1.15.1", features = ["union"] }
+smallvec = { version = "=1.15.2", features = ["union"] }
 dashmap = "=6.1.0"
 xxhash-rust = { version = "=0.8.15", features = ["xxh3"] }
 sha2 = "=0.11.0"

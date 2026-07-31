@@ -146,7 +146,7 @@ fn collect_import_types(type_annotation: &str) -> Option<Vec<ImportTypeSource>> 
     let wrapped = cstr!("{TYPE_ANNOTATION_PREFIX}{type_annotation};");
     let allocator = Allocator::default();
     let ret = Parser::new(&allocator, wrapped.as_str(), SourceType::d_ts()).parse();
-    if ret.panicked || !ret.errors.is_empty() {
+    if ret.panicked || !ret.diagnostics.is_empty() {
         return None;
     }
 

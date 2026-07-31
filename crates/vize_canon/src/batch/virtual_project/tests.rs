@@ -28,18 +28,18 @@ fn assert_ts_parses(source: &str) {
     let allocator = oxc_allocator::Allocator::default();
     let parsed = oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::ts()).parse();
     assert!(
-        parsed.errors.is_empty(),
+        parsed.diagnostics.is_empty(),
         "virtual TS should parse without errors: {:?}",
-        parsed.errors
+        parsed.diagnostics
     );
 }
 fn assert_tsx_parses(source: &str) {
     let allocator = oxc_allocator::Allocator::default();
     let parsed = oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::tsx()).parse();
     assert!(
-        parsed.errors.is_empty(),
+        parsed.diagnostics.is_empty(),
         "virtual TSX should parse without errors: {:?}",
-        parsed.errors
+        parsed.diagnostics
     );
 }
 

@@ -44,9 +44,9 @@ fn generated_typescript_with_reserved_enum_members_is_parseable() {
             .parse();
 
     assert!(
-        !parsed.panicked && parsed.errors.is_empty(),
+        !parsed.panicked && parsed.diagnostics.is_empty(),
         "reserved enum members must generate valid TypeScript: {:#?}\n{virtual_ts}",
-        parsed.errors
+        parsed.diagnostics
     );
 }
 

@@ -98,9 +98,9 @@ fn generated_typescript_with_template_literals_is_parseable() {
                 .parse();
 
         assert!(
-            !parsed.panicked && parsed.errors.is_empty(),
+            !parsed.panicked && parsed.diagnostics.is_empty(),
             "generated TypeScript must parse without literal declarations: {:#?}\n{virtual_ts}",
-            parsed.errors
+            parsed.diagnostics
         );
     }
 }

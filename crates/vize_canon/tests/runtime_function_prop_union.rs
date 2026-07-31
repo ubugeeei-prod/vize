@@ -45,9 +45,9 @@ fn runtime_function_union_members_generate_parseable_typescript() {
         oxc_parser::Parser::new(&allocator, virtual_ts.as_str(), oxc_span::SourceType::ts())
             .parse();
     assert!(
-        !parsed.panicked && parsed.errors.is_empty(),
+        !parsed.panicked && parsed.diagnostics.is_empty(),
         "runtime function unions must produce parseable TypeScript: {:#?}\n{virtual_ts}",
-        parsed.errors
+        parsed.diagnostics
     );
 }
 

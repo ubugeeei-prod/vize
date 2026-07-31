@@ -30,9 +30,9 @@ fn assert_parses_as_module(code: &str) {
     .parse();
 
     assert!(
-        parsed.errors.is_empty(),
+        parsed.diagnostics.is_empty(),
         "generated code should parse, got: {:?}\n\n{}",
-        parsed.errors,
+        parsed.diagnostics,
         code
     );
 }

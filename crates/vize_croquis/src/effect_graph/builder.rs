@@ -30,7 +30,7 @@ fn build_effect_graph_from_source(source: &str, path: &str) -> EffectGraph {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path(path).unwrap_or_default();
     let ret = Parser::new(&allocator, source, source_type).parse();
-    if ret.panicked || !ret.errors.is_empty() {
+    if ret.panicked || !ret.diagnostics.is_empty() {
         return EffectGraph::default();
     }
     build_effect_graph_from_program(&ret.program)

@@ -111,7 +111,7 @@ fn is_object_literal(expr: &str) -> bool {
     let ret = Parser::new(&allocator, &wrapped, source_type).parse();
 
     // A syntactically broken value is not a valid object literal.
-    if !ret.errors.is_empty() {
+    if !ret.diagnostics.is_empty() {
         return false;
     }
 

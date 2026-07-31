@@ -65,9 +65,9 @@ fn generated_sections(name: &str, vue_content: &str) -> (String, String) {
     let allocator = oxc_allocator::Allocator::default();
     let parsed = oxc_parser::Parser::new(&allocator, &content, oxc_span::SourceType::ts()).parse();
     assert!(
-        parsed.errors.is_empty(),
+        parsed.diagnostics.is_empty(),
         "virtual TS should parse without errors: {:?}",
-        parsed.errors
+        parsed.diagnostics
     );
 
     (

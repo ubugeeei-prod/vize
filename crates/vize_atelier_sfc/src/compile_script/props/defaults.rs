@@ -30,7 +30,7 @@ pub fn extract_with_defaults_defaults(with_defaults_args: &str) -> FxHashMap<Str
         SourceType::default().with_typescript(true),
     )
     .parse();
-    if !parse_result.errors.is_empty() {
+    if !parse_result.diagnostics.is_empty() {
         return defaults;
     }
 

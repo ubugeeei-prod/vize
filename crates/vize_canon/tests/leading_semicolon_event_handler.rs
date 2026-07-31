@@ -46,9 +46,9 @@ fn generated_typescript_with_v_on_asi_prefixes_is_parseable() {
             .parse();
 
     assert!(
-        !parsed.panicked && parsed.errors.is_empty(),
+        !parsed.panicked && parsed.diagnostics.is_empty(),
         "Vue event handlers with an ASI prefix must generate valid TypeScript: {:#?}\n{virtual_ts}",
-        parsed.errors
+        parsed.diagnostics
     );
 }
 

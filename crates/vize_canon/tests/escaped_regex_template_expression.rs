@@ -38,9 +38,9 @@ fn generated_typescript_with_escaped_regex_is_parseable() {
             .parse();
 
     assert!(
-        !parsed.panicked && parsed.errors.is_empty(),
+        !parsed.panicked && parsed.diagnostics.is_empty(),
         "generated TypeScript must parse after preserving escaped regex slashes: {:#?}\n{virtual_ts}",
-        parsed.errors
+        parsed.diagnostics
     );
 }
 

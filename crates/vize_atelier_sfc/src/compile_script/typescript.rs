@@ -17,7 +17,7 @@ pub fn transform_typescript_to_js(code: &str) -> String {
     let parser = Parser::new(&allocator, code, source_type);
     let parse_result = profile!("atelier.script.ts.parse", parser.parse());
 
-    if !parse_result.errors.is_empty() {
+    if !parse_result.diagnostics.is_empty() {
         // If parsing fails, return original code
         return code.to_compact_string();
     }
@@ -25,14 +25,17 @@ pub fn transform_typescript_to_js(code: &str) -> String {
     let mut program = parse_result.program;
 
     // Run semantic analysis to get symbols and scopes
+    // `with_enum_eval(true)`: OXC 0.142's TypeScript enum transform panics unless
+    // the `Scoping` it is handed carries evaluated enum member values.
     let semantic_ret = profile!(
         "atelier.script.ts.semantic",
         SemanticBuilder::new()
             .with_excess_capacity(2.0)
+            .with_enum_eval(true)
             .build(&program)
     );
 
-    if !semantic_ret.errors.is_empty() {
+    if !semantic_ret.diagnostics.is_empty() {
         // If semantic analysis fails, return original code
         return code.to_compact_string();
     }
@@ -54,7 +57,7 @@ pub fn transform_typescript_to_js(code: &str) -> String {
             .build_with_scoping(scoping, &mut program)
     );
 
-    if !ret.errors.is_empty() {
+    if !ret.diagnostics.is_empty() {
         // If transformation fails, return original code
         return code.to_compact_string();
     }
@@ -78,7 +81,7 @@ pub fn is_plain_javascript(code: &str) -> bool {
     let allocator = Allocator::default();
     let parser = Parser::new(&allocator, code, SourceType::mjs());
     profile!("atelier.script.js.probe", parser.parse())
-        .errors
+        .diagnostics
         .is_empty()
 }
 
@@ -98,13 +101,15 @@ pub fn is_plain_javascript(code: &str) -> bool {
 fn strip_typescript_for_emitter(code: &str) -> Option<String> {
     let allocator = Allocator::default();
     let parse_result = Parser::new(&allocator, code, SourceType::ts()).parse();
-    if !parse_result.errors.is_empty() {
+    if !parse_result.diagnostics.is_empty() {
         return None;
     }
 
     let mut program = parse_result.program;
+    // See `transform_typescript_to_js` for why `with_enum_eval` is required.
     let scoping = SemanticBuilder::new()
         .with_excess_capacity(2.0)
+        .with_enum_eval(true)
         .build(&program)
         .semantic
         .into_scoping();
@@ -118,7 +123,7 @@ fn strip_typescript_for_emitter(code: &str) -> Option<String> {
     };
     let ret = Transformer::new(&allocator, std::path::Path::new(""), &transform_options)
         .build_with_scoping(scoping, &mut program);
-    if !ret.errors.is_empty() {
+    if !ret.diagnostics.is_empty() {
         return None;
     }
 

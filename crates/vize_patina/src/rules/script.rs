@@ -137,7 +137,7 @@ pub trait ScriptRule: Send + Sync {
     fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
         let allocator = Allocator::default();
         let parsed = Parser::new(&allocator, source, script_source_type()).parse();
-        if parsed.panicked || !parsed.errors.is_empty() {
+        if parsed.panicked || !parsed.diagnostics.is_empty() {
             return;
         }
         self.check_program(&parsed.program, source, offset, result);
@@ -293,7 +293,7 @@ impl ScriptLinter {
         // AST rules only run when parsing succeeded (matching the previous
         // per-rule `parsed.panicked || !errors.is_empty()` early-return).
         let program = parsed.as_ref().and_then(|parsed| {
-            if parsed.panicked || !parsed.errors.is_empty() {
+            if parsed.panicked || !parsed.diagnostics.is_empty() {
                 None
             } else {
                 Some(&parsed.program)

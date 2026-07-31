@@ -23,7 +23,7 @@ pub(crate) fn collect_script_parse_diagnostics(
     );
 
     let mut diagnostics: Vec<ScriptParseDiagnostic> = parsed
-        .errors
+        .diagnostics
         .iter()
         .map(|error| {
             let (local_start, local_end) = diagnostic_span(error, source.len());
@@ -72,17 +72,23 @@ fn script_source_type(lang: Option<&str>) -> SourceType {
 
 fn diagnostic_span(error: &oxc_diagnostics::OxcDiagnostic, source_len: usize) -> (u32, u32) {
     let fallback_end = source_len.max(1);
-    let Some(label) = error.labels.as_ref().and_then(|labels| {
-        labels
-            .iter()
-            .find(|label| label.primary())
-            .or_else(|| labels.first())
-    }) else {
+    // `OxcDiagnostic::labels` is an `oxc_diagnostics::Labels` since OXC 0.142
+    // (it was `Option<Vec<LabeledSpan>>`); it derefs to a slice, and "no labels"
+    // is now the empty slice rather than `None`. `LabeledSpan::offset` / `len`
+    // also went `usize` -> `u32` in the same bump.
+    let Some(label) = error
+        .labels
+        .iter()
+        .find(|label| label.primary())
+        .or_else(|| error.labels.first())
+    else {
         return (0, fallback_end as u32);
     };
 
-    let start = label.offset().min(source_len);
-    let end = start.saturating_add(label.len().max(1)).min(fallback_end);
+    let start = (label.offset() as usize).min(source_len);
+    let end = start
+        .saturating_add(label.len().max(1) as usize)
+        .min(fallback_end);
     (start as u32, end.max(start + 1) as u32)
 }
 

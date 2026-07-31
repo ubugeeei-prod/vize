@@ -228,14 +228,19 @@ impl FormatOptions {
         }
     }
 
-    /// Convert to `oxc_formatter::FormatOptions`
-    pub fn to_oxc_format_options(&self) -> oxc_formatter::FormatOptions {
+    /// Convert to `oxc_formatter::JsFormatOptions`
+    pub fn to_oxc_format_options(&self) -> oxc_formatter::JsFormatOptions {
+        // OXC 0.142 renamed `FormatOptions` to `JsFormatOptions` and moved the
+        // language-agnostic width/indent/line-ending types into
+        // `oxc_formatter_core`, which `oxc_formatter` takes but does not
+        // re-export.
         use oxc_formatter::{
-            ArrowParentheses, BracketSameLine, BracketSpacing, IndentStyle, IndentWidth,
-            LineEnding, LineWidth, QuoteStyle, Semicolons, TrailingCommas,
+            ArrowParentheses, BracketSameLine, BracketSpacing, QuoteStyle, Semicolons,
+            TrailingCommas,
         };
+        use oxc_formatter_core::{IndentStyle, IndentWidth, LineEnding, LineWidth};
 
-        oxc_formatter::FormatOptions {
+        oxc_formatter::JsFormatOptions {
             indent_style: if self.use_tabs {
                 IndentStyle::Tab
             } else {

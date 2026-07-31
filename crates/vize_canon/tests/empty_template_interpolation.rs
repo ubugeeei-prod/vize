@@ -36,9 +36,9 @@ fn generated_typescript_with_empty_interpolation_is_parseable() {
             .parse();
 
     assert!(
-        !parsed.panicked && parsed.errors.is_empty(),
+        !parsed.panicked && parsed.diagnostics.is_empty(),
         "blank Vue interpolations must not corrupt generated TypeScript: {:#?}\n{virtual_ts}",
-        parsed.errors
+        parsed.diagnostics
     );
 }
 
