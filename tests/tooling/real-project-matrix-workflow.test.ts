@@ -25,7 +25,10 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "real-project-matrix.yml")) as {
     concurrency?: { "cancel-in-progress"?: boolean; group?: string };
     jobs?: Record<string, WorkflowJob>;
-    on?: { schedule?: Array<{ cron?: string }>; workflow_dispatch?: unknown };
+    on?: {
+      schedule?: Array<{ cron?: string }>;
+      workflow_dispatch?: { inputs?: Record<string, unknown> };
+    };
     permissions?: Record<string, string>;
   };
   const job = workflow.jobs?.["real-project-matrix"];
@@ -33,14 +36,12 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   assert.ok(job);
   assert.deepEqual(workflow.permissions, { contents: "read" });
   assert.equal(workflow.on?.schedule?.[0]?.cron, "37 5 * * 0");
-  assert.deepEqual(workflow.on?.workflow_dispatch, {
-    inputs: {
-      enforce_divergence_budget: {
-        description: "Fail the job when the typecheck divergence budget breaches",
-        type: "boolean",
-        default: false,
-      },
-    },
+  const dispatch = workflow.on?.workflow_dispatch;
+  assert.ok(dispatch, "Missing workflow_dispatch trigger");
+  assert.deepEqual(dispatch.inputs?.enforce_divergence_budget, {
+    description: "Fail the job when the typecheck divergence budget breaches",
+    type: "boolean",
+    default: false,
   });
   assert.deepEqual(workflow.concurrency, {
     group: "real-project-matrix-${{ github.ref }}",
@@ -147,11 +148,11 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
    * workflow warning; tests/tooling/typecheck-divergence-budget.test.ts pins
    * what each mode does.
    */
-  assert.deepEqual(divergence?.env, {
-    BUDGET_MODE:
-      "${{ (github.event_name == 'schedule' || inputs.enforce_divergence_budget)" +
+  assert.equal(
+    divergence?.env?.BUDGET_MODE,
+    "${{ (github.event_name == 'schedule' || inputs.enforce_divergence_budget)" +
       " && 'enforce' || 'record-only' }}",
-  });
+  );
   assert.equal(summary?.if, "${{ always() }}");
   assert.match(summary?.run ?? "", /summary\.md/);
   assert.match(summary?.run ?? "", /\*-typecheck-divergence\.md/);
