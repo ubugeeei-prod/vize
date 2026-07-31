@@ -193,6 +193,48 @@ defineProps<{ msg: string }>();
 }
 
 #[test]
+fn division_after_typescript_non_null_assertion_does_not_hide_a_real_directive() {
+    let sfc = r#"<script setup lang="ts">
+declare const value: number
+const half = value!
+  / 2 // eslint-disable-next-line vue/no-unused-properties
+defineProps<{ msg: string }>();
+</script>
+<template><div>{{ half }}</div></template>
+"#;
+    assert_eq!(owned(&lint_sfc(sfc)), Vec::new());
+}
+
+#[test]
+fn line_initial_logical_not_starts_an_expression() {
+    let sfc = r#"<script setup lang="ts">
+declare const input: string
+const previous = input
+!/[/*] @vize:expected */.test(input)
+defineProps<{ msg: string }>();
+</script>
+<template><div>{{ previous }}</div></template>
+"#;
+    assert_msg_reported(sfc);
+}
+
+#[test]
+fn inequality_operators_keep_regex_literals_out_of_comment_directives() {
+    for operator in ["!=", "!=="] {
+        let sfc = format!(
+            r#"<script setup lang="ts">
+declare const input: string
+const differs = input {operator} /[/*] @vize:expected */.source
+defineProps<{{ msg: string }}>();
+</script>
+<template><div>{{{{ differs }}}}</div></template>
+"#
+        );
+        assert_msg_reported(&sfc);
+    }
+}
+
+#[test]
 fn jsx_after_return_keeps_raw_text_out_of_comment_directives() {
     let sfc = r#"<script setup lang="tsx">
 function render() {

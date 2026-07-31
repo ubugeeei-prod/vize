@@ -58,6 +58,7 @@ impl DirectiveLexer {
     pub(super) fn scan_line(&mut self, line: &str) -> CommentMarkers {
         let bytes = line.as_bytes();
         let mut markers = CommentMarkers::default();
+        let mut has_code_token = false;
         let mut index = 0;
         while index < bytes.len() {
             let context = self.stack.last().copied().unwrap_or(ScriptContext::Code);
@@ -70,6 +71,7 @@ impl DirectiveLexer {
 
             let current = bytes[index];
             let next = bytes.get(index + 1).copied();
+            let had_code_token = has_code_token;
             match context {
                 ScriptContext::Code | ScriptContext::Interpolation(_) => match (current, next) {
                     (b'/', Some(b'/')) => {
@@ -130,9 +132,20 @@ impl DirectiveLexer {
                         self.after_dot = false;
                         index += 1;
                     }
+                    (b'!', Some(b'=')) => {
+                        self.can_start_expression = true;
+                        self.after_dot = false;
+                    }
+                    (b'!', _) => {
+                        // At an expression boundary `!` is logical-not. After
+                        // an operand on this line it is TypeScript's postfix
+                        // non-null assertion and must keep the operand complete.
+                        self.can_start_expression = self.can_start_expression || !had_code_token;
+                        self.after_dot = false;
+                    }
                     (
-                        b'(' | b'[' | b'/' | b'=' | b':' | b',' | b'!' | b'?' | b';' | b'+' | b'-'
-                        | b'*' | b'%' | b'&' | b'|' | b'^' | b'~' | b'<' | b'>',
+                        b'(' | b'[' | b'/' | b'=' | b':' | b',' | b'?' | b';' | b'+' | b'-' | b'*'
+                        | b'%' | b'&' | b'|' | b'^' | b'~' | b'<' | b'>',
                         _,
                     ) => {
                         self.can_start_expression = true;
@@ -229,6 +242,17 @@ impl DirectiveLexer {
                     }
                 }
                 ScriptContext::LineComment => {}
+            }
+            let in_comment = matches!(
+                context,
+                ScriptContext::BlockComment | ScriptContext::LineComment
+            );
+            let starts_comment = matches!(
+                context,
+                ScriptContext::Code | ScriptContext::Interpolation(_)
+            ) && matches!((current, next), (b'/', Some(b'/' | b'*')));
+            if !in_comment && !current.is_ascii_whitespace() && !starts_comment {
+                has_code_token = true;
             }
             index += 1;
         }
