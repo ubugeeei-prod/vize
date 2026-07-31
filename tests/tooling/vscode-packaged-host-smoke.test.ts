@@ -8,8 +8,10 @@ import {
   createPackagedHostInstallArgs,
   createPackagedHostLaunchArgs,
   resolveInstalledExtensionPath,
+  runPackagedExtensionHost,
   runVSCodeCommandWithTimeout,
 } from "../../editors/vscode/test/packaged-host-contract.mjs";
+import { testAndBenchmarkTasks } from "../../tools/vite-plus/tasks/test-benchmark.ts";
 import { root } from "./support/github-workflows.ts";
 
 test("packaged VS Code host smoke installs the VSIX before launching its tests", () => {
@@ -91,39 +93,111 @@ test("packaged host aborts a stuck VS Code command", async () => {
 });
 
 test("real host task packages and statically validates the same VSIX that it runs", () => {
-  const tasks = read("tools/vite-plus/tasks/test-benchmark.ts");
-  const taskBody = tasks.match(
-    /"test:vscode-extension:host-real": noCacheTask\(([\s\S]*?)\n  \),\n  "test:zed-extension/,
-  )?.[1];
-  assert.ok(taskBody, "missing test:vscode-extension:host-real task");
+  const { command } = taskShape(testAndBenchmarkTasks["test:vscode-extension:host-real"]);
 
-  const packageAt = taskBody.indexOf("packageVscodeExtension");
-  const staticAssertAt = taskBody.indexOf(
+  const packageAt = command.indexOf("vsce package --no-dependencies --out dist/vize.vsix");
+  const staticAssertAt = command.indexOf(
     "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
   );
-  const hostAt = taskBody.indexOf("node test/run-extension-host-real.mjs");
+  const hostAt = command.indexOf("node test/run-extension-host-real.mjs");
   assert.ok(packageAt >= 0, "real host smoke must build the production VSIX");
   assert.ok(staticAssertAt > packageAt, "the packaged VSIX must retain its static allowlist check");
   assert.ok(hostAt > staticAssertAt, "the validated VSIX must run in the real host");
 });
 
-test("real host runner cannot fall back to loading the source extension", () => {
-  const runner = read("editors/vscode/test/run-extension-host-real.mjs");
-  assert.match(runner, /import \{ runVSCodeCommand \} from "@vscode\/test-electron"/);
-  assert.doesNotMatch(runner, /\brunTests\b/);
-  assert.match(runner, /resolveInstalledExtensionPath\(extensionsPath, "ubugeeei\.vize"\)/);
-  assert.match(runner, /runVSCodeCommandWithTimeout\(runVSCodeCommand, installArgs/);
-  assert.match(runner, /runVSCodeCommandWithTimeout\(runVSCodeCommand, launchArgs/);
+test("real host runner installs the VSIX and launches the host from the installed copy", async () => {
+  const profilePath = fs.mkdtempSync(path.join(os.tmpdir(), "vize-packaged-host-"));
+  const extensionsPath = path.join(profilePath, "extensions");
+  const userDataPath = path.join(profilePath, "user-data");
+  const sourceExtensionPath = path.join(root, "editors", "vscode");
+  const vsixPath = path.join(profilePath, "vize.vsix");
+  fs.mkdirSync(extensionsPath);
+  fs.writeFileSync(vsixPath, "");
 
-  const suite = read("editors/vscode/test/suite/extension-host-real.cjs");
-  assert.match(suite, /VIZE_TEST_PACKAGED_EXTENSIONS_DIR/);
-  assert.match(suite, /VIZE_TEST_SOURCE_EXTENSION_PATH/);
-  assert.match(suite, /fs\.realpathSync\(extension\.extensionPath\)/);
-  assert.match(suite, /assertPackagedExtension\(extension\);/);
+  try {
+    const invocations: { args: string[]; environment: unknown }[] = [];
+    const runCommand = async (args: string[], options: { spawn: { env: unknown } }) => {
+      invocations.push({ args, environment: options.spawn.env });
+      if (args.includes("--install-extension")) {
+        writeManifest(path.join(extensionsPath, "ubugeeei.vize-0.311.0"), "ubugeeei", "vize");
+      }
+      return { stderr: "", stdout: "" };
+    };
+
+    const installedExtensionPath = await runPackagedExtensionHost(runCommand, {
+      extensionId: "ubugeeei.vize",
+      extensionsPath,
+      extensionTestsPath: path.join(sourceExtensionPath, "test/suite/extension-host-real.cjs"),
+      hostEnvironment: {
+        VIZE_TEST_PACKAGED_EXTENSIONS_DIR: extensionsPath,
+        VIZE_TEST_SOURCE_EXTENSION_PATH: sourceExtensionPath,
+      },
+      hostTimeoutMs: 300_000,
+      installEnvironment: {},
+      installTimeoutMs: 120_000,
+      onOutput: () => {},
+      userDataPath,
+      vsixPath,
+      workspacePath: path.join(profilePath, "workspace"),
+    });
+
+    assert.equal(invocations.length, 2);
+    assert.equal(invocations[0].args[0], "--install-extension");
+    assert.equal(invocations[0].args[1], vsixPath);
+
+    const launchArgs = invocations[1].args;
+    assert.equal(
+      installedExtensionPath,
+      fs.realpathSync(path.join(extensionsPath, "ubugeeei.vize-0.311.0")),
+    );
+    assert.ok(launchArgs.includes(`--extensionDevelopmentPath=${installedExtensionPath}`));
+    assert.equal(launchArgs.includes(`--extensionDevelopmentPath=${sourceExtensionPath}`), false);
+    assert.deepEqual(invocations[1].environment, {
+      VIZE_TEST_PACKAGED_EXTENSIONS_DIR: extensionsPath,
+      VIZE_TEST_SOURCE_EXTENSION_PATH: sourceExtensionPath,
+    });
+  } finally {
+    fs.rmSync(profilePath, { force: true, recursive: true });
+  }
 });
 
-function read(...segments: string[]): string {
-  return fs.readFileSync(path.join(root, ...segments), "utf8");
+test("real host runner refuses to launch without a packaged VSIX", async () => {
+  const profilePath = fs.mkdtempSync(path.join(os.tmpdir(), "vize-packaged-host-missing-"));
+  const extensionsPath = path.join(profilePath, "extensions");
+  fs.mkdirSync(extensionsPath);
+
+  try {
+    let launched = false;
+    await assert.rejects(
+      runPackagedExtensionHost(
+        async () => {
+          launched = true;
+          return { stderr: "", stdout: "" };
+        },
+        {
+          extensionId: "ubugeeei.vize",
+          extensionsPath,
+          extensionTestsPath: path.join(profilePath, "extension-host-real.cjs"),
+          hostEnvironment: {},
+          hostTimeoutMs: 1000,
+          installEnvironment: {},
+          installTimeoutMs: 1000,
+          onOutput: () => {},
+          userDataPath: path.join(profilePath, "user-data"),
+          vsixPath: path.join(profilePath, "vize.vsix"),
+          workspacePath: path.join(profilePath, "workspace"),
+        },
+      ),
+      /missing packaged VS Code extension/,
+    );
+    assert.equal(launched, false);
+  } finally {
+    fs.rmSync(profilePath, { force: true, recursive: true });
+  }
+});
+
+function taskShape(value: unknown): { command: string } {
+  return value as { command: string };
 }
 
 function writeManifest(directory: string, publisher: string, name: string): void {

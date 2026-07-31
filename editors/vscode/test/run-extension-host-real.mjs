@@ -6,12 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runVSCodeCommand } from "@vscode/test-electron";
 
-import {
-  createPackagedHostInstallArgs,
-  createPackagedHostLaunchArgs,
-  resolveInstalledExtensionPath,
-  runVSCodeCommandWithTimeout,
-} from "./packaged-host-contract.mjs";
+import { runPackagedExtensionHost } from "./packaged-host-contract.mjs";
 
 const sourceExtensionPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = path.resolve(sourceExtensionPath, "..", "..");
@@ -53,34 +48,24 @@ const extensionsPath = path.join(profilePath, "extensions");
 const userDataPath = path.join(profilePath, "user-data");
 
 try {
-  if (!fs.existsSync(vsixPath)) {
-    throw new Error(`missing packaged VS Code extension: ${vsixPath}`);
-  }
-
-  const installArgs = createPackagedHostInstallArgs({ extensionsPath, userDataPath, vsixPath });
-  const installation = await runVSCodeCommandWithTimeout(runVSCodeCommand, installArgs, {
-    environment: process.env,
-    timeoutMs: 120_000,
-  });
-  writeCommandOutput(installation);
-  const installedExtensionPath = resolveInstalledExtensionPath(extensionsPath, "ubugeeei.vize");
-  const launchArgs = createPackagedHostLaunchArgs({
+  await runPackagedExtensionHost(runVSCodeCommand, {
+    extensionId: "ubugeeei.vize",
     extensionsPath,
     extensionTestsPath,
-    installedExtensionPath,
-    userDataPath,
-    workspacePath,
-  });
-  const host = await runVSCodeCommandWithTimeout(runVSCodeCommand, launchArgs, {
-    environment: {
+    hostEnvironment: {
       ...process.env,
       VIZE_TEST_PACKAGED_EXTENSIONS_DIR: extensionsPath,
       VIZE_TEST_SERVER_PATH: serverPath,
       VIZE_TEST_SOURCE_EXTENSION_PATH: sourceExtensionPath,
     },
-    timeoutMs: 300_000,
+    hostTimeoutMs: 300_000,
+    installEnvironment: process.env,
+    installTimeoutMs: 120_000,
+    onOutput: writeCommandOutput,
+    userDataPath,
+    vsixPath,
+    workspacePath,
   });
-  writeCommandOutput(host);
 } finally {
   fs.rmSync(profilePath, { force: true, recursive: true });
 }

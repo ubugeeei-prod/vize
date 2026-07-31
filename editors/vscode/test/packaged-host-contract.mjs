@@ -36,6 +36,59 @@ export function createPackagedHostLaunchArgs({
   ];
 }
 
+/**
+ * Runs the packaged extension host protocol: install the VSIX into the
+ * isolated profile, resolve the extracted copy, then execute the test suite
+ * against that copy. Keeping the sequence here (instead of inline in the
+ * runner) lets tests drive it with a recording `runCommand` and observe that
+ * the host is always launched from the installed extension.
+ */
+export async function runPackagedExtensionHost(
+  runCommand,
+  {
+    extensionId,
+    extensionsPath,
+    extensionTestsPath,
+    hostEnvironment,
+    hostTimeoutMs,
+    installEnvironment,
+    installTimeoutMs,
+    onOutput,
+    userDataPath,
+    vsixPath,
+    workspacePath,
+  },
+) {
+  if (!fs.existsSync(vsixPath)) {
+    throw new Error(`missing packaged VS Code extension: ${vsixPath}`);
+  }
+
+  const installArgs = createPackagedHostInstallArgs({ extensionsPath, userDataPath, vsixPath });
+  onOutput(
+    await runVSCodeCommandWithTimeout(runCommand, installArgs, {
+      environment: installEnvironment,
+      timeoutMs: installTimeoutMs,
+    }),
+  );
+
+  const installedExtensionPath = resolveInstalledExtensionPath(extensionsPath, extensionId);
+  const launchArgs = createPackagedHostLaunchArgs({
+    extensionsPath,
+    extensionTestsPath,
+    installedExtensionPath,
+    userDataPath,
+    workspacePath,
+  });
+  onOutput(
+    await runVSCodeCommandWithTimeout(runCommand, launchArgs, {
+      environment: hostEnvironment,
+      timeoutMs: hostTimeoutMs,
+    }),
+  );
+
+  return installedExtensionPath;
+}
+
 export function resolveInstalledExtensionPath(extensionsPath, extensionId) {
   const matches = fs
     .readdirSync(extensionsPath, { withFileTypes: true })
