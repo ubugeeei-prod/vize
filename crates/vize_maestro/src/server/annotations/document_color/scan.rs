@@ -2,15 +2,29 @@
 //!
 //! # Coverage
 //!
-//! `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`, and the `rgb()` / `rgba()`
-//! functional notation in both the legacy comma form (`rgb(255, 0, 0)`) and the
-//! modern space form (`rgb(255 0 0 / 50%)`).
+//! CSS named colours, `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`, and the `rgb()` /
+//! `rgba()` functional notation in both the legacy comma form
+//! (`rgb(255, 0, 0)`) and the modern space form (`rgb(255 0 0 / 50%)`).
 //!
-//! Named colours (`red`) and `hsl()` are **not** recognised: see #3502. A
-//! missing swatch is invisible; a wrong one is not, so nothing is guessed.
+//! `hsl()` is **not** recognised yet: see #3502. A missing swatch is invisible;
+//! a wrong one is not, so nothing is guessed.
 //!
 //! CSS comments are skipped, because a swatch rendered inside `/* ... */` would
 //! offer to rewrite text the stylesheet never reads.
+
+mod lex;
+
+use self::lex::{
+    decode_identifier, identifier_end, is_declaration_name, is_identifier_boundary,
+    is_identifier_byte, pair_at, skip_comment, skip_string, skipped_function_end,
+};
+use super::named;
+
+#[cfg(test)]
+std::thread_local! {
+    static SCAN_STEPS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+    static RGB_PROBES: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
 
 /// A colour literal: `(start, end, red, green, blue, alpha)` with the channels
 /// already normalised to 0.0..=1.0, which is what LSP's `Color` carries.
@@ -23,28 +37,138 @@ pub(crate) struct ColorLiteral {
     pub(crate) alpha: f32,
 }
 
-pub(crate) fn colors_in(content: &str, region: (usize, usize)) -> Vec<ColorLiteral> {
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum CssMode {
+    Stylesheet,
+    DeclarationList,
+    Preprocessor,
+    IndentedSass,
+}
+
+impl CssMode {
+    fn accepts_root_declarations(self) -> bool {
+        self != Self::Stylesheet
+    }
+
+    fn accepts_variable_names(self) -> bool {
+        matches!(self, Self::Preprocessor | Self::IndentedSass)
+    }
+
+    fn has_line_comments(self) -> bool {
+        matches!(self, Self::Preprocessor | Self::IndentedSass)
+    }
+}
+
+pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) -> Vec<ColorLiteral> {
     let (region_start, region_end) = region;
     let bytes = content.as_bytes();
     let mut found = Vec::new();
     let mut cursor = region_start;
+    let mut block_depth = 0usize;
+    let mut parenthesis_depth = 0usize;
+    let mut in_value = false;
+    let mut statement_start = region_start;
+    let mut tentative_value = None;
 
     while cursor < region_end {
-        if content[cursor..region_end].starts_with("/*") {
-            cursor = content[cursor..region_end]
-                .find("*/")
-                .map_or(region_end, |relative| cursor + relative + 2);
+        #[cfg(test)]
+        SCAN_STEPS.set(SCAN_STEPS.get() + 1);
+        if pair_at(bytes, cursor, b"/*") {
+            cursor = skip_comment(bytes, cursor, region_end);
+            continue;
+        }
+        if mode.has_line_comments() && pair_at(bytes, cursor, b"//") {
+            cursor = bytes[cursor..region_end]
+                .iter()
+                .position(|byte| matches!(byte, b'\r' | b'\n'))
+                .map_or(region_end, |offset| cursor + offset);
+            continue;
+        }
+        if matches!(bytes[cursor], b'\'' | b'"') {
+            cursor = skip_string(bytes, cursor, region_end);
+            continue;
+        }
+        if mode == CssMode::IndentedSass
+            && parenthesis_depth == 0
+            && matches!(bytes[cursor], b'\r' | b'\n')
+        {
+            tentative_value = None;
+            in_value = false;
+            cursor += 1;
+            statement_start = cursor;
             continue;
         }
 
-        // `rgb(` only starts a colour at a token boundary: the `r` in
-        // `border-radius` is not the start of a function call.
+        match bytes[cursor] {
+            b'{' => {
+                if let Some(checkpoint) = tentative_value.take() {
+                    found.truncate(checkpoint);
+                }
+                block_depth += 1;
+                parenthesis_depth = 0;
+                in_value = false;
+                cursor += 1;
+                statement_start = cursor;
+                continue;
+            }
+            b'}' => {
+                tentative_value = None;
+                block_depth = block_depth.saturating_sub(1);
+                parenthesis_depth = 0;
+                in_value = false;
+                cursor += 1;
+                statement_start = cursor;
+                continue;
+            }
+            b':' if parenthesis_depth == 0
+                && (mode.accepts_root_declarations() || block_depth > 0)
+                && is_declaration_name(
+                    bytes,
+                    statement_start,
+                    cursor,
+                    mode.accepts_variable_names(),
+                ) =>
+            {
+                if mode != CssMode::DeclarationList {
+                    tentative_value.get_or_insert(found.len());
+                }
+                in_value = true;
+                cursor += 1;
+                continue;
+            }
+            b';' if parenthesis_depth == 0 => {
+                tentative_value = None;
+                in_value = false;
+                cursor += 1;
+                statement_start = cursor;
+                continue;
+            }
+            b'(' => parenthesis_depth += 1,
+            b')' => parenthesis_depth = parenthesis_depth.saturating_sub(1),
+            _ => {}
+        }
+
+        if !in_value {
+            cursor += 1;
+            continue;
+        }
+        if (bytes[cursor].is_ascii_alphabetic() || bytes[cursor] == b'\\')
+            && is_identifier_boundary(bytes, cursor, region_start)
+            && let Some(end) = skipped_function_end(content, cursor, region_end)
+        {
+            cursor = end;
+            continue;
+        }
+
+        let mut identifier_token_end = None;
         let literal = if bytes[cursor] == b'#' {
             hex_literal(content, cursor, region_end)
-        } else if (bytes[cursor] | 0x20) == b'r'
-            && !is_ident_byte(bytes.get(cursor.wrapping_sub(1)))
+        } else if (bytes[cursor].is_ascii_alphabetic() || bytes[cursor] == b'\\')
+            && is_identifier_boundary(bytes, cursor, region_start)
         {
-            rgb_literal(content, cursor, region_end)
+            let end = identifier_end(bytes, cursor, region_end);
+            identifier_token_end = Some(end);
+            identifier_color_literal(content, cursor, end, region_end)
         } else {
             None
         };
@@ -54,16 +178,36 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize)) -> Vec<ColorLiter
                 cursor = literal.end;
                 found.push(literal);
             }
-            None => cursor += 1,
+            None => cursor = identifier_token_end.unwrap_or(cursor + 1),
         }
     }
 
     found
 }
 
-#[inline]
-fn is_ident_byte(byte: Option<&u8>) -> bool {
-    byte.is_some_and(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
+/// Parse one complete identifier before deciding whether it is a function or a
+/// keyword. In particular, a named `red` never searches the rest of the file
+/// for a later `(` while probing for `rgb()`.
+fn identifier_color_literal(
+    content: &str,
+    start: usize,
+    end: usize,
+    limit: usize,
+) -> Option<ColorLiteral> {
+    if content.as_bytes().get(end) == Some(&b'(') {
+        return rgb_literal(content, start, end, limit);
+    }
+    let mut decoded = [0u8; 32];
+    let decoded_len = decode_identifier(content.as_bytes(), start, end, &mut decoded)?;
+    let [red, green, blue, alpha] = named::rgba_bytes(&decoded[..decoded_len])?;
+    Some(ColorLiteral {
+        start,
+        end,
+        red: red as f32 / 255.0,
+        green: green as f32 / 255.0,
+        blue: blue as f32 / 255.0,
+        alpha: alpha as f32 / 255.0,
+    })
 }
 
 /// `#` followed by exactly 3, 4, 6 or 8 hex digits and nothing that could
@@ -75,7 +219,7 @@ fn hex_literal(content: &str, start: usize, limit: usize) -> Option<ColorLiteral
         end += 1;
     }
     let digits = &content[start + 1..end];
-    if !matches!(digits.len(), 3 | 4 | 6 | 8) || is_ident_byte(bytes.get(end)) {
+    if !matches!(digits.len(), 3 | 4 | 6 | 8) || is_identifier_byte(bytes.get(end)) {
         return None;
     }
 
@@ -121,17 +265,23 @@ fn hex_value(byte: u8) -> Option<u32> {
 
 /// `rgb(...)` / `rgba(...)`, comma- or space-separated, with an optional alpha
 /// after `,` or `/`. Components may be numbers or percentages.
-fn rgb_literal(content: &str, start: usize, limit: usize) -> Option<ColorLiteral> {
-    let head = &content[start..limit];
-    let open = head.find('(')?;
-    let name = &head[..open];
+fn rgb_literal(
+    content: &str,
+    start: usize,
+    identifier_end: usize,
+    limit: usize,
+) -> Option<ColorLiteral> {
+    #[cfg(test)]
+    RGB_PROBES.set(RGB_PROBES.get() + 1);
+    let name = &content[start..identifier_end];
     if !name.eq_ignore_ascii_case("rgb") && !name.eq_ignore_ascii_case("rgba") {
         return None;
     }
-    let close = head[open..].find(')')? + open;
-    let end = start + close + 1;
+    let arguments_start = identifier_end + 1;
+    let close = content[arguments_start..limit].find(')')? + arguments_start;
+    let end = close + 1;
 
-    let mut components = head[open + 1..close]
+    let mut components = content[arguments_start..close]
         .split(|ch: char| ch == ',' || ch == '/' || ch.is_ascii_whitespace())
         .filter(|part| !part.is_empty());
 
@@ -154,6 +304,23 @@ fn rgb_literal(content: &str, start: usize, limit: usize) -> Option<ColorLiteral
         blue,
         alpha,
     })
+}
+
+#[cfg(test)]
+pub(super) fn colors_in_with_metrics(
+    content: &str,
+    region: (usize, usize),
+    declaration_list: bool,
+) -> (Vec<ColorLiteral>, usize, usize) {
+    SCAN_STEPS.set(0);
+    RGB_PROBES.set(0);
+    let mode = if declaration_list {
+        CssMode::DeclarationList
+    } else {
+        CssMode::Stylesheet
+    };
+    let colors = colors_in(content, region, mode);
+    (colors, SCAN_STEPS.get(), RGB_PROBES.get())
 }
 
 /// One component, normalised to 0.0..=1.0. `full` is the value that maps to 1.0

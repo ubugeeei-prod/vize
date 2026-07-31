@@ -1,4 +1,4 @@
-use tower_lsp::lsp_types::Color;
+use tower_lsp::lsp_types::{Color, ColorInformation, Position, Range};
 
 use super::DocumentColorService;
 
@@ -86,6 +86,170 @@ fn functional_notation_is_recognised_in_both_syntaxes() {
             (1, 76, 97, 255, 0, 0, 50),
         ]
     );
+}
+
+#[test]
+fn named_colours_report_the_complete_exact_output() {
+    let source = "<style>\n.a { color: red; background: ReBeCcApUrPlE; border-color: transparent; outline: gray; caret-color: grey; --h: hsl(0 100% 50%); --ha: hsla(0, 100%, 50%, .5) }\n</style>\n";
+    assert_eq!(
+        colors(source),
+        vec![
+            (1, 12, 15, 255, 0, 0, 100),
+            (1, 29, 42, 102, 51, 153, 100),
+            (1, 58, 69, 0, 0, 0, 0),
+            (1, 80, 84, 128, 128, 128, 100),
+            (1, 99, 103, 128, 128, 128, 100),
+        ]
+    );
+}
+
+#[test]
+fn preprocessor_variables_keep_named_and_existing_colour_forms() {
+    let source = "<style lang=\"scss\">\n$named: red;\n$hex: #0f0;\n$rgb: rgb(0, 0, 255);\n// red #f00 rgb(255, 0, 0)\n</style>\n<style lang=\"less\">\n@named: blue;\n@hex: #fff;\n@rgb: rgb(255, 0, 0);\n// red #f00 rgb(255, 0, 0)\n</style>\n";
+    assert_eq!(
+        colors(source),
+        vec![
+            (1, 8, 11, 255, 0, 0, 100),
+            (2, 6, 10, 0, 255, 0, 100),
+            (3, 6, 20, 0, 0, 255, 100),
+            (7, 8, 12, 0, 0, 255, 100),
+            (8, 6, 10, 255, 255, 255, 100),
+            (9, 6, 20, 255, 0, 0, 100),
+        ]
+    );
+}
+
+#[test]
+fn indented_sass_keeps_named_and_existing_colour_forms() {
+    let source = "<style lang=\"sass\">\n.a\n  color: red\n  background: #0f0\n  border-color: rgb(0, 0, 255)\n  // red #f00 rgb(255, 0, 0)\n</style>\n";
+    assert_eq!(
+        colors(source),
+        vec![
+            (2, 9, 12, 255, 0, 0, 100),
+            (3, 14, 18, 0, 255, 0, 100),
+            (4, 16, 30, 0, 0, 255, 100),
+        ]
+    );
+}
+
+#[test]
+fn css_escape_whitespace_follows_css_input_preprocessing() {
+    let source = "<style>\r\n.a { color: r\\65\r\nd; outline: r\\65\u{000b}d }\r\n</style>\r\n";
+    assert_eq!(
+        DocumentColorService::colors(source, "/App.vue"),
+        vec![ColorInformation {
+            range: Range {
+                start: Position {
+                    line: 1,
+                    character: 12,
+                },
+                end: Position {
+                    line: 2,
+                    character: 1,
+                },
+            },
+            color: Color {
+                red: 1.0,
+                green: 0.0,
+                blue: 0.0,
+                alpha: 1.0,
+            },
+        }]
+    );
+}
+
+#[test]
+fn named_colours_require_identifier_boundaries_and_skip_comments() {
+    let source = r#"<style>
+/* red BLUE transparent */
+.reddish { --redish: 1; border-red: 2; color: redish; --a: éred; --b: redé; --c: \ red; --d: red\ish; --e: x\20 red }
+</style>
+"#;
+    assert_eq!(colors(source), Vec::new());
+}
+
+#[test]
+fn named_colours_are_limited_to_css_value_tokens() {
+    let source = "<style>\n.red, #red { content: \"red /*\"; background-image: url(red); width: tan(red); color: blue }\n</style>\n";
+    assert_eq!(colors(source), vec![(1, 84, 88, 0, 0, 255, 100)]);
+}
+
+#[test]
+fn nested_pseudo_selectors_are_not_colour_values() {
+    let source = "<style>\n.outer {\n  :deep(.red) { color: blue }\n  :is(.red) { color: blue }\n  :global(.red) { color: blue }\n  a:is(.red) { color: blue }\n  &:global(.red) { color: blue }\n}\n</style>\n";
+    assert_eq!(
+        colors(source),
+        vec![
+            (2, 23, 27, 0, 0, 255, 100),
+            (3, 21, 25, 0, 0, 255, 100),
+            (4, 25, 29, 0, 0, 255, 100),
+            (5, 22, 26, 0, 0, 255, 100),
+            (6, 26, 30, 0, 0, 255, 100),
+        ]
+    );
+}
+
+#[test]
+fn escaped_urls_and_preprocessor_or_hash_tokens_are_not_colours() {
+    let source = r#"<style>
+.a { background: u\72l(red), \75rl(blue), u\000072 l(tan); --scss: $red; --less: @blue; --hash: #red; color: green }
+</style>
+"#;
+    assert_eq!(colors(source), vec![(1, 109, 114, 0, 128, 0, 100)]);
+}
+
+#[test]
+fn comment_trivia_before_a_declaration_colon_keeps_value_context() {
+    let source = "<style>\n.a { color/* red */: blue }\n</style>\n";
+    assert_eq!(colors(source), vec![(1, 21, 25, 0, 0, 255, 100)]);
+}
+
+#[test]
+fn escaped_named_colours_use_the_complete_authored_identifier_range() {
+    let source = r#"<style>
+.a { color: r\65 d; background: \72 ed }
+.b { --a: \ red; --b: x\ red; color: blue }
+</style>
+"#;
+    assert_eq!(
+        colors(source),
+        vec![
+            (1, 12, 18, 255, 0, 0, 100),
+            (1, 32, 38, 255, 0, 0, 100),
+            (2, 37, 41, 0, 0, 255, 100),
+        ]
+    );
+}
+
+#[test]
+fn named_colour_scanning_has_linear_work_at_1k_through_8k() {
+    let mut previous_steps = 0;
+    for count in [1_000, 2_000, 4_000, 8_000] {
+        let mut source = String::from("--colours: ");
+        source.reserve(count * 4);
+        for _ in 0..count {
+            source.push_str("red ");
+        }
+        let source_len = source.len();
+        let (found, steps, rgb_probes) =
+            super::scan::colors_in_with_metrics(&source, (0, source_len), true);
+        assert_eq!(found.len(), count);
+        assert_eq!(
+            rgb_probes, 0,
+            "named tokens must never probe the rgb parser"
+        );
+        assert!(
+            steps <= source_len,
+            "scanner revisited input at {count} tokens"
+        );
+        if previous_steps > 0 {
+            assert!(
+                steps <= previous_steps * 2 + 16,
+                "scanner work grew faster than input at {count} tokens"
+            );
+        }
+        previous_steps = steps;
+    }
 }
 
 #[test]

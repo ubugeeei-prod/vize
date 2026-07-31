@@ -15,6 +15,7 @@
 //! Ranges are authored `.vue` coordinates, never virtual TypeScript.
 #![allow(clippy::disallowed_macros, clippy::disallowed_types)]
 
+mod named;
 mod scan;
 
 use tower_lsp::lsp_types::{Color, ColorInformation, ColorPresentation, Position, Range};
@@ -28,7 +29,7 @@ impl DocumentColorService {
     pub(super) fn colors(content: &str, filename: &str) -> Vec<ColorInformation> {
         let mut colors = Vec::new();
         for region in css_regions(content, filename) {
-            for literal in scan::colors_in(content, region) {
+            for literal in scan::colors_in(content, region.range, region.mode) {
                 colors.push(ColorInformation {
                     range: Range {
                         start: position_at(content, literal.start),
@@ -82,8 +83,14 @@ impl DocumentColorService {
     }
 }
 
+#[derive(Clone, Copy)]
+struct CssRegion {
+    range: (usize, usize),
+    mode: scan::CssMode,
+}
+
 /// Byte regions of the document that hold CSS.
-fn css_regions(content: &str, filename: &str) -> Vec<(usize, usize)> {
+fn css_regions(content: &str, filename: &str) -> Vec<CssRegion> {
     let options = vize_atelier_sfc::SfcParseOptions {
         filename: filename.into(),
         ..Default::default()
@@ -92,20 +99,31 @@ fn css_regions(content: &str, filename: &str) -> Vec<(usize, usize)> {
         return Vec::new();
     };
 
-    let mut regions: Vec<(usize, usize)> = descriptor
+    let mut regions: Vec<CssRegion> = descriptor
         .styles
         .iter()
-        .map(|block| (block.loc.start, block.loc.end))
+        .map(|block| CssRegion {
+            range: (block.loc.start, block.loc.end),
+            mode: match block.lang.as_deref() {
+                Some("sass") => scan::CssMode::IndentedSass,
+                Some("css") | None => scan::CssMode::Stylesheet,
+                Some(_) => scan::CssMode::Preprocessor,
+            },
+        })
         .collect();
 
     if let Some(template) = descriptor.template.as_ref() {
-        regions.extend(static_style_attributes(
-            content,
-            (template.loc.start, template.loc.end),
-        ));
+        regions.extend(
+            static_style_attributes(content, (template.loc.start, template.loc.end))
+                .into_iter()
+                .map(|range| CssRegion {
+                    range,
+                    mode: scan::CssMode::DeclarationList,
+                }),
+        );
     }
 
-    regions.sort_unstable();
+    regions.sort_unstable_by_key(|region| region.range);
     regions
 }
 

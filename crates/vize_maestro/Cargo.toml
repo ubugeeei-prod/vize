@@ -61,4 +61,5 @@ vize_musea.workspace = true
 
 [dev-dependencies]
 insta.workspace = true
+sha2.workspace = true
 tempfile.workspace = true

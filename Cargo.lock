@@ -3829,6 +3829,7 @@ dependencies = [
  "ropey",
  "serde",
  "serde_json",
+ "sha2",
  "tempfile",
  "tower-lsp",
  "tracing",
