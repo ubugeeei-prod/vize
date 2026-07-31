@@ -355,7 +355,7 @@
     {
       "file": "app/components/Package/SkillsModal.vue",
       "diagnostics": [
-        "error:206:75 [TS2367] This comparison appears to be unintentional because the types '\"skills-cli\"' and '\"skills-npm\"' have no overlap."
+        "error:217:18 [TS2367] This comparison appears to be unintentional because the types '\"skills-cli\"' and '\"skills-npm\"' have no overlap."
       ]
     },
     {

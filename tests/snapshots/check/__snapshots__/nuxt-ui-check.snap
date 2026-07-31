@@ -594,7 +594,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-tags' or its corresponding type declarations.",
         "error:73:7 [TS2307] Cannot find module '#imports' or its corresponding type declarations.\nType '\"type\"' is not assignable to type 'keyof Props<T>'.\nType '\"type\"' is not assignable to type 'keyof Props<T>'.\nType '\"type\"' is not assignable to type 'keyof Props<T>'.",
-        "error:167:26 [TS2345] Argument of type '(value: T[]) => void' is not assignable to parameter of type '(payload: AcceptableInputValue[]) => unknown'.\nTypes of parameters 'value' and 'args' are incompatible.\nType 'AcceptableInputValue[]' is not assignable to type 'T[]'.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'."
+        "error:167:6 [TS2322] Type '(value: T[]) => void' is not assignable to type '(payload: AcceptableInputValue[]) => unknown'.\nTypes of parameters 'value' and 'args' are incompatible.\nType 'AcceptableInputValue[]' is not assignable to type 'T[]'.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'."
       ]
     },
     {
@@ -817,7 +817,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/pricing-plan' or its corresponding type declarations.",
         "error:115:50 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:231:155 [TS2345] Argument of type '((event: MouseEvent) => void | Promise<void>)[] | ((event: MouseEvent) => void | Promise<void>) | undefined' is not assignable to parameter of type '((...args: any[]) => unknown) | null | undefined'.\nType '((event: MouseEvent) => void | Promise<void>)[]' is not assignable to type '(...args: any[]) => unknown'.\nType '((event: MouseEvent) => void | Promise<void>)[]' provides no match for the signature '(...args: any[]): unknown'."
+        "error:231:148 [TS2322] Type '((event: MouseEvent) => void | Promise<void>)[] | ((event: MouseEvent) => void | Promise<void>) | undefined' is not assignable to type '((...args: any[]) => unknown) | null | undefined'.\nType '((event: MouseEvent) => void | Promise<void>)[]' is not assignable to type '(...args: any[]) => unknown'.\nType '((event: MouseEvent) => void | Promise<void>)[]' provides no match for the signature '(...args: any[]): unknown'."
       ]
     },
     {

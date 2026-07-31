@@ -735,7 +735,6 @@
     {
       "file": "src/components/MkTabs.vue",
       "diagnostics": [
-        "error:11:11 [TS7006] Parameter 'el' implicitly has an 'any' type.",
         "error:33:14 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
         "error:34:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
         "error:35:14 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
@@ -973,7 +972,6 @@
     {
       "file": "src/components/global/MkPageHeader.tabs.vue",
       "diagnostics": [
-        "error:11:11 [TS7006] Parameter 'el' implicitly has an 'any' type.",
         "error:31:35 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
         "error:31:55 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
         "error:31:75 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
@@ -2391,7 +2389,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 39,
+  "errorCount": 37,
   "warningCount": 0,
   "fileCount": 583
 }
