@@ -1,5 +1,6 @@
 //! Vue-flavored rewriting of raw Corsa/TypeScript diagnostic messages.
 
+use vize_canon::batch::restore_virtual_vue_specifiers;
 use vize_carton::cstr;
 
 /// Rewrite a Corsa diagnostic message with a Vue-flavored hint when the
@@ -8,16 +9,9 @@ use vize_carton::cstr;
 /// The original wording is preserved as the prefix so the user can still see
 /// what TypeScript reported. The added hint points at the most common Vue
 /// cause for that error shape.
-pub(super) fn rewrite_corsa_message(message: &str) -> String {
-    let normalized_message;
-    let message = if message.contains(".vue.ts") {
-        normalized_message = message
-            .replace(".vue.tsx", ".vue")
-            .replace(".vue.ts", ".vue");
-        normalized_message.as_str()
-    } else {
-        message
-    };
+pub(super) fn rewrite_corsa_message(message: &str, authored_source: &str) -> String {
+    let normalized_message = restore_virtual_vue_specifiers(message, authored_source);
+    let message = normalized_message.as_str();
 
     if let Some(prop) = property_does_not_exist_property(message)
         && prop != "value"
@@ -55,7 +49,7 @@ mod hint_tests {
     #[test]
     fn rewrites_property_does_not_exist_with_value_hint() {
         let original = "Property 'toFixed' does not exist on type 'Ref<number>'.";
-        let rewritten = rewrite_corsa_message(original);
+        let rewritten = rewrite_corsa_message(original, "");
         assert!(rewritten.contains(original));
         assert!(
             rewritten.contains(".value"),
@@ -68,14 +62,14 @@ mod hint_tests {
         // We don't want to suggest `.value` on a `.value` access — that's
         // already what the user wrote.
         let original = "Property 'value' does not exist on type 'unknown'.";
-        let rewritten = rewrite_corsa_message(original);
+        let rewritten = rewrite_corsa_message(original, "");
         assert_eq!(rewritten, original);
     }
 
     #[test]
     fn rewrites_ref_assignment_with_unwrap_hint() {
         let original = "Type 'Ref<number>' is not assignable to type 'number'.";
-        let rewritten = rewrite_corsa_message(original);
+        let rewritten = rewrite_corsa_message(original, "");
         assert!(rewritten.contains(original));
         assert!(rewritten.contains("Did you forget `.value`"));
     }
@@ -83,7 +77,7 @@ mod hint_tests {
     #[test]
     fn rewrites_internal_vue_ts_imports_back_to_vue() {
         let original = "Cannot find module '../logo/MfMatesLogo.vue.ts' or its corresponding type declarations.";
-        let rewritten = rewrite_corsa_message(original);
+        let rewritten = rewrite_corsa_message(original, "import '../logo/MfMatesLogo.vue';");
 
         assert_eq!(
             rewritten,
@@ -96,7 +90,7 @@ mod hint_tests {
     fn rewrites_internal_vue_tsx_imports_back_to_vue() {
         let original =
             "Cannot find module './Panel.vue.tsx' or its corresponding type declarations.";
-        let rewritten = rewrite_corsa_message(original);
+        let rewritten = rewrite_corsa_message(original, "import './Panel.vue';");
 
         assert_eq!(
             rewritten,
@@ -108,7 +102,7 @@ mod hint_tests {
     #[test]
     fn rewrites_every_internal_vue_virtual_suffix_in_message() {
         let original = "Cannot find module '../logo/MfMatesLogo.vue.ts'. Related import './Panel.vue.tsx' also failed.";
-        let rewritten = rewrite_corsa_message(original);
+        let rewritten = rewrite_corsa_message(original, "");
 
         assert_eq!(
             rewritten,
@@ -122,7 +116,7 @@ mod hint_tests {
     fn rewrites_internal_vue_suffix_before_adding_value_hint() {
         let original =
             "Property 'toFixed' does not exist on type 'typeof import(\"./Panel.vue.ts\")'.";
-        let rewritten = rewrite_corsa_message(original);
+        let rewritten = rewrite_corsa_message(original, "");
 
         assert!(rewritten.contains("./Panel.vue"));
         assert!(!rewritten.contains(".vue.ts"));
@@ -132,7 +126,7 @@ mod hint_tests {
     #[test]
     fn passes_through_unrelated_messages() {
         let original = "Expected 1 argument, but got 0.";
-        assert_eq!(rewrite_corsa_message(original), original);
+        assert_eq!(rewrite_corsa_message(original, ""), original);
     }
 
     #[test]
@@ -144,6 +138,22 @@ mod hint_tests {
         assert_eq!(
             property_does_not_exist_property("Cannot find name 'foo'."),
             None
+        );
+    }
+
+    #[test]
+    fn preserves_authored_vue_ts_and_restores_collision_marker() {
+        let marker = "/__vize_authored_vue_ts__";
+        let original = format!("Cannot find module './Missing.vue.ts{marker}'.");
+        assert_eq!(
+            rewrite_corsa_message(&original, "import './Missing.vue.ts';"),
+            "Cannot find module './Missing.vue.ts'."
+        );
+
+        let authored = "Cannot find module './Authored.vue.ts'.";
+        assert_eq!(
+            rewrite_corsa_message(authored, "import './Authored.vue.ts';"),
+            authored
         );
     }
 }

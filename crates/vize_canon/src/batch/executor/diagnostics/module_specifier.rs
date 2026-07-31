@@ -15,6 +15,7 @@
 //! mirror spelling themselves.
 
 use super::{DiagnosticMapper, OriginalPosition};
+use crate::batch::restore_virtual_vue_specifiers;
 use vize_carton::{String, cstr};
 
 /// The authored `.vue` spelling behind a generated mirror-module specifier, or
@@ -40,25 +41,10 @@ pub(crate) fn mirror_module_specifier_source(specifier: &str) -> Option<&str> {
 /// specifier — no whitespace and no quote characters — so an unbalanced pairing
 /// can never yield a run of prose that happens to end in `.vue.ts`.
 fn quoted_mirror_specifiers(message: &str) -> Vec<&str> {
-    let mut found: Vec<&str> = Vec::new();
-    for (open, close) in QUOTE_PAIRS {
-        let mut rest = message;
-        while let Some(start) = rest.find(open) {
-            let after_open = &rest[start + open.len_utf8()..];
-            let Some(end) = after_open.find(close) else {
-                break;
-            };
-            let candidate = &after_open[..end];
-            if is_specifier_shaped(candidate)
-                && mirror_module_specifier_source(candidate).is_some()
-                && !found.contains(&candidate)
-            {
-                found.push(candidate);
-            }
-            rest = &after_open[end + close.len_utf8()..];
-        }
-    }
-    found
+    quoted_specifiers(message)
+        .into_iter()
+        .filter(|candidate| mirror_module_specifier_source(candidate).is_some())
+        .collect()
 }
 
 fn is_specifier_shaped(candidate: &str) -> bool {
@@ -83,7 +69,12 @@ impl DiagnosticMapper<'_> {
         original: &OriginalPosition,
         message: String,
     ) -> String {
-        let rewrites: Vec<(String, String)> = quoted_mirror_specifiers(&message)
+        let mut rewritten = if let Some(source) = self.original_source(&original.path) {
+            restore_virtual_vue_specifiers(&message, &source.content)
+        } else {
+            message
+        };
+        let rewrites: Vec<(String, String)> = quoted_mirror_specifiers(&rewritten)
             .into_iter()
             .filter_map(|reported| {
                 let authored = mirror_module_specifier_source(reported)?;
@@ -91,7 +82,6 @@ impl DiagnosticMapper<'_> {
                     .then(|| (String::from(reported), String::from(authored)))
             })
             .collect();
-        let mut rewritten = message;
         for (reported, authored) in rewrites {
             for (open, close) in QUOTE_PAIRS {
                 let quoted = cstr!("{open}{reported}{close}");
@@ -139,6 +129,25 @@ impl DiagnosticMapper<'_> {
             .and_then(string_literal_at);
         literal_at_position == Some(authored) || !content.contains(reported)
     }
+}
+
+fn quoted_specifiers(message: &str) -> Vec<&str> {
+    let mut found = Vec::new();
+    for (open, close) in QUOTE_PAIRS {
+        let mut rest = message;
+        while let Some(start) = rest.find(open) {
+            let after_open = &rest[start + open.len_utf8()..];
+            let Some(end) = after_open.find(close) else {
+                break;
+            };
+            let candidate = &after_open[..end];
+            if is_specifier_shaped(candidate) && !found.contains(&candidate) {
+                found.push(candidate);
+            }
+            rest = &after_open[end + close.len_utf8()..];
+        }
+    }
+    found
 }
 
 /// The contents of the string literal starting at the beginning of `rest`, or

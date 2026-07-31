@@ -76,10 +76,9 @@ import Literal from "./Literal.vue.ts";
 /// src/pages/LocalConsumer.vue(2,10): error TS2614: Module '"../components/Local.vue"' has no exported member 'Bare'. Did you mean to use 'import Bare from "../components/Local.vue"' instead?
 /// ```
 ///
-/// The second consumer pins the other direction: it hand-writes the `.vue.ts`
-/// specifier, so that spelling really is the author's and must survive
-/// verbatim. (vize resolves that import where `vue-tsc` reports `TS2307` for
-/// it; that resolution difference is not what this test covers.)
+/// The second consumer pins the other direction: a hand-written `.vue.ts`
+/// specifier must not resolve through the generated mirror, and its `TS2307`
+/// must keep the exact spelling the author wrote (#3482).
 #[test]
 fn module_member_diagnostics_report_the_authored_specifier() {
     if resolve_test_tsgo_binary().is_none() {
@@ -112,10 +111,29 @@ const label: string = Bare.label;
                 "src/pages/LiteralConsumer.vue",
                 r#"<script setup lang="ts">
 import { Bare } from "../components/Local.vue.ts";
+import { real } from "../components/Authored.vue.ts";
+import "../components/Missing.vue.ts/__vize_authored_vue_ts__";
+import { directory } from "../components/Directory.vue.ts";
 
-const label: string = Bare.label;
+const label: string = Bare.label + real + directory;
 </script>
 "#,
+            ),
+            (
+                "src/components/Authored.vue.ts",
+                r#"export const real: string = "authored";
+"#,
+            ),
+            (
+                "src/components/Directory.vue.ts/index.ts",
+                "export const directory: string = 'directory';\n",
+            ),
+            // With `allowArbitraryExtensions`, the old sibling suffix poison
+            // resolved this declaration instead of reporting TS2307. The
+            // child-path poison cannot traverse the generated mirror file.
+            (
+                "src/components/Local.vue.ts.d.__vize_authored_vue_ts__.ts",
+                "export declare const Bare: { label: number };\n",
             ),
         ],
     );
@@ -131,9 +149,16 @@ const label: string = Bare.label;
         vec![
             (
                 String::from("src/pages/LiteralConsumer.vue"),
-                Some(2614),
+                Some(2307),
                 String::from(
-                    "2:10:error Module '\"../components/Local.vue.ts\"' has no exported member 'Bare'. Did you mean to use 'import Bare from \"../components/Local.vue.ts\"' instead?"
+                    "2:22:error Cannot find module '../components/Local.vue.ts' or its corresponding type declarations."
+                ),
+            ),
+            (
+                String::from("src/pages/LiteralConsumer.vue"),
+                Some(2882),
+                String::from(
+                    "4:8:error Cannot find module or type declarations for side-effect import of '../components/Missing.vue.ts/__vize_authored_vue_ts__'."
                 ),
             ),
             (

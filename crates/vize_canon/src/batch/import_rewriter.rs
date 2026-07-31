@@ -8,6 +8,12 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString, cstr};
 
+use super::AUTHORED_VUE_TS_SENTINEL;
+
+#[path = "import_rewriter_authored_vue_ts.rs"]
+mod authored_vue_ts;
+use authored_vue_ts::unresolved_authored_vue_ts_collides_with_sfc;
+
 #[path = "import_rewriter_collect.rs"]
 mod collect;
 use collect::ModuleSpecifierCollector;
@@ -100,7 +106,7 @@ impl ImportRewriter {
         }
 
         self.rewrite_with(source, source_type, |path| {
-            self.rewrite_module_specifier(path)
+            self.rewrite_module_specifier(path, source_dir)
                 .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
         })
     }
@@ -233,7 +239,10 @@ impl ImportRewriter {
         specifiers
     }
 
-    fn rewrite_module_specifier(&self, path: &str) -> Option<String> {
+    fn rewrite_module_specifier(&self, path: &str, source_dir: Option<&Path>) -> Option<String> {
+        if unresolved_authored_vue_ts_collides_with_sfc(path, source_dir) {
+            return Some(cstr!("{path}{AUTHORED_VUE_TS_SENTINEL}"));
+        }
         if is_rewritable_vue_specifier(path) {
             Some(cstr!("{path}.ts"))
         } else {
@@ -247,6 +256,9 @@ impl ImportRewriter {
         roots: (&std::path::Path, &std::path::Path),
         source_dir: Option<&std::path::Path>,
     ) -> Option<String> {
+        if unresolved_authored_vue_ts_collides_with_sfc(path, source_dir) {
+            return Some(cstr!("{path}{AUTHORED_VUE_TS_SENTINEL}"));
+        }
         if let Some(source_dir) = source_dir
             && let Some(rewritten) = rewrite_relative_dts_specifier(path, source_dir, roots.0)
                 .or_else(|| rewrite_relative_vue_specifier(path, source_dir))

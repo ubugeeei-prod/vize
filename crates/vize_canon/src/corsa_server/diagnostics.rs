@@ -1,4 +1,5 @@
 use super::{CorsaServer, Diagnostic};
+use crate::batch::restore_virtual_vue_specifiers;
 use crate::corsa_bridge::CorsaVueVirtualProject;
 use crate::corsa_client::LspDiagnostic;
 use vize_carton::{String, cstr, line_index::LineIndex};
@@ -35,7 +36,13 @@ impl CorsaServer {
         Ok(corsa_diagnostics
             .into_iter()
             .filter_map(|diagnostic| {
-                map_corsa_diagnostic(project, &virtual_line_index, &source_line_index, diagnostic)
+                map_corsa_diagnostic(
+                    project,
+                    source,
+                    &virtual_line_index,
+                    &source_line_index,
+                    diagnostic,
+                )
             })
             .collect())
     }
@@ -43,6 +50,7 @@ impl CorsaServer {
 
 fn map_corsa_diagnostic(
     project: &CorsaVueVirtualProject,
+    source: &str,
     virtual_line_index: &LineIndex<'_>,
     source_line_index: &LineIndex<'_>,
     diagnostic: LspDiagnostic,
@@ -67,7 +75,7 @@ fn map_corsa_diagnostic(
         _ => cstr!("{code:?}"),
     });
     Some(Diagnostic {
-        message: diagnostic.message,
+        message: restore_virtual_vue_specifiers(&diagnostic.message, source),
         severity,
         line: one_based(line),
         column: one_based(column),
@@ -163,6 +171,7 @@ mod tests {
         let project = project();
         map_corsa_diagnostic(
             &project,
+            SOURCE,
             &LineIndex::new(&project.host.code),
             &LineIndex::new(SOURCE),
             diagnostic,
@@ -188,5 +197,30 @@ mod tests {
         assert_eq!(mapped.line, 1);
         assert_eq!(mapped.column, 1);
         assert_eq!(mapped.code.as_deref(), Some("TS6196"));
+    }
+
+    #[test]
+    fn restores_an_unresolved_authored_vue_ts_specifier() {
+        let marker = crate::batch::AUTHORED_VUE_TS_SENTINEL;
+        let mut raw = diagnostic(1, 0, 1);
+        raw.message = format!(
+            "Cannot find module './Missing.vue.ts{marker}' or its corresponding type declarations."
+        )
+        .into();
+        let source = "import Missing from './Missing.vue.ts';\n";
+        let project = project();
+        let mapped = map_corsa_diagnostic(
+            &project,
+            source,
+            &LineIndex::new(&project.host.code),
+            &LineIndex::new(source),
+            raw,
+        )
+        .expect("mapped diagnostic");
+
+        assert_eq!(
+            mapped.message,
+            "Cannot find module './Missing.vue.ts' or its corresponding type declarations."
+        );
     }
 }

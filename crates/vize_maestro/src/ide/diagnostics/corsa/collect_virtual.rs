@@ -183,7 +183,7 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
                 }),
                 code: diag.code.map(corsa_diagnostic_code),
                 source: Some(sources::TYPE_CHECKER.to_string()),
-                message: rewrite_corsa_message(&diag.message),
+                message: rewrite_corsa_message(&diag.message, content),
                 ..Default::default()
             })
         })

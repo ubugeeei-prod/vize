@@ -10,6 +10,8 @@ mod error;
 mod executor;
 mod import_rewriter;
 #[cfg(test)]
+mod import_rewriter_authored_vue_ts_tests;
+#[cfg(test)]
 mod import_rewriter_dts_tests;
 #[cfg(test)]
 mod import_rewriter_tests;
@@ -23,6 +25,7 @@ mod runtime_deps;
 mod source_map;
 mod type_checker;
 mod virtual_project;
+mod virtual_specifier_message;
 mod virtual_ts;
 
 pub use error::{CorsaError, CorsaNotFoundError, CorsaResult, PackageManager};
@@ -39,7 +42,10 @@ pub use virtual_project::{
     generate_vue_content_mapper_transform, generate_vue_document_virtual_ts,
     generate_vue_document_virtual_ts_with_options,
 };
+pub use virtual_specifier_message::restore_virtual_vue_specifiers;
 pub use virtual_ts::VirtualTsGenerator;
+
+pub(crate) use virtual_specifier_message::AUTHORED_VUE_TS_SENTINEL;
 
 use vize_carton::String;
 
