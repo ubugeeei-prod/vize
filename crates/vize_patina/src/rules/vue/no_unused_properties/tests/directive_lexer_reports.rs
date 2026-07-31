@@ -103,3 +103,43 @@ defineProps<{ msg: string }>();
 "#;
     assert_msg_reported(sfc);
 }
+
+#[test]
+fn division_at_the_start_of_a_line_does_not_hide_a_real_directive() {
+    let sfc = r#"<script setup lang="ts">
+const half = 10
+  / 2
+// eslint-disable-next-line vue/no-unused-properties
+defineProps<{ msg: string }>();
+</script>
+<template><div>hi</div></template>
+"#;
+    assert_eq!(owned(&lint_sfc(sfc)), Vec::new());
+}
+
+#[test]
+fn tsx_generic_arrow_does_not_hide_a_real_directive() {
+    let sfc = r#"<script setup lang="tsx">
+const identity = <T,>(value: T) => value
+// eslint-disable-next-line vue/no-unused-properties
+defineProps<{ msg: string }>();
+</script>
+<template><div>hi</div></template>
+"#;
+    assert_eq!(owned(&lint_sfc(sfc)), Vec::new());
+}
+
+#[test]
+fn jsx_after_return_keeps_raw_text_out_of_comment_directives() {
+    let sfc = r#"<script setup lang="tsx">
+function render() {
+  return <div>
+    // eslint-disable-next-line vue/no-unused-properties
+  </div>
+}
+defineProps<{ msg: string }>();
+</script>
+<template><div>hi</div></template>
+"#;
+    assert_msg_reported(sfc);
+}

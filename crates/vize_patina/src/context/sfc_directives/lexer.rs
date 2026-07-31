@@ -1,5 +1,12 @@
 //! Lightweight comment lexers for SFC script and style block contents.
 
+mod token;
+
+use token::{
+    ends_with_unescaped_backslash, identifier_allows_expression, identifier_end,
+    is_identifier_start, is_jsx_start,
+};
+
 #[derive(Default)]
 pub(super) struct CommentMarkers {
     pub(super) eslint: Option<usize>,
@@ -24,6 +31,8 @@ pub(super) struct DirectiveLexer {
     stack: Vec<ScriptContext>,
     jsx: bool,
     jsx_depth: u32,
+    can_start_expression: bool,
+    after_dot: bool,
 }
 
 impl Default for DirectiveLexer {
@@ -38,6 +47,8 @@ impl DirectiveLexer {
             stack: vec![ScriptContext::Code],
             jsx,
             jsx_depth: 0,
+            can_start_expression: true,
+            after_dot: false,
         }
     }
 
@@ -66,13 +77,16 @@ impl DirectiveLexer {
                         self.stack.push(ScriptContext::BlockComment);
                         index += 1;
                     }
-                    (b'/', _) if can_start_literal(bytes, index) => {
+                    (b'/', _) if self.can_start_expression => {
                         self.stack.push(ScriptContext::Regex(false));
                     }
-                    (b'<', _) if self.jsx && can_start_jsx(bytes, index) => {
+                    (b'<', _)
+                        if self.jsx && self.can_start_expression && is_jsx_start(bytes, index) =>
+                    {
                         self.jsx_depth += 1;
                         self.stack.push(ScriptContext::JsxText);
                         self.stack.push(ScriptContext::JsxTag { closing: false });
+                        self.after_dot = false;
                     }
                     (b'\'', _) => self.stack.push(ScriptContext::SingleQuote),
                     (b'"', _) => self.stack.push(ScriptContext::DoubleQuote),
@@ -81,6 +95,8 @@ impl DirectiveLexer {
                         if let Some(ScriptContext::Interpolation(depth)) = self.stack.last_mut() {
                             *depth += 1;
                         }
+                        self.can_start_expression = true;
+                        self.after_dot = false;
                     }
                     (b'}', _) => {
                         if let Some(ScriptContext::Interpolation(depth)) = self.stack.last_mut() {
@@ -90,6 +106,28 @@ impl DirectiveLexer {
                                 *depth -= 1;
                             }
                         }
+                        self.can_start_expression = false;
+                        self.after_dot = false;
+                    }
+                    (byte, _) if is_identifier_start(byte) => {
+                        let end = identifier_end(bytes, index);
+                        self.can_start_expression =
+                            !self.after_dot && identifier_allows_expression(&bytes[index..end]);
+                        self.after_dot = false;
+                        index = end - 1;
+                    }
+                    (b')' | b']' | b'0'..=b'9', _) => {
+                        self.can_start_expression = false;
+                        self.after_dot = false;
+                    }
+                    (b'.', _) => self.after_dot = true,
+                    (
+                        b'(' | b'[' | b'/' | b'=' | b':' | b',' | b'!' | b'?' | b';' | b'+' | b'-'
+                        | b'*' | b'%' | b'&' | b'|' | b'^' | b'~' | b'<' | b'>',
+                        _,
+                    ) => {
+                        self.can_start_expression = true;
+                        self.after_dot = false;
                     }
                     _ => {}
                 },
@@ -97,6 +135,7 @@ impl DirectiveLexer {
                     (b'\\', Some(_)) => index += 1,
                     (b'\'', _) => {
                         self.stack.pop();
+                        self.can_start_expression = false;
                     }
                     _ => {}
                 },
@@ -104,6 +143,7 @@ impl DirectiveLexer {
                     (b'\\', Some(_)) => index += 1,
                     (b'"', _) => {
                         self.stack.pop();
+                        self.can_start_expression = false;
                     }
                     _ => {}
                 },
@@ -111,9 +151,11 @@ impl DirectiveLexer {
                     (b'\\', Some(_)) => index += 1,
                     (b'`', _) => {
                         self.stack.pop();
+                        self.can_start_expression = false;
                     }
                     (b'$', Some(b'{')) => {
                         self.stack.push(ScriptContext::Interpolation(0));
+                        self.can_start_expression = true;
                         index += 1;
                     }
                     _ => {}
@@ -132,6 +174,7 @@ impl DirectiveLexer {
                     }
                     (b'/', _) if !in_class => {
                         self.stack.pop();
+                        self.can_start_expression = false;
                     }
                     _ => {}
                 },
@@ -144,13 +187,19 @@ impl DirectiveLexer {
                         self.jsx_depth += 1;
                         self.stack.push(ScriptContext::JsxTag { closing: false });
                     }
-                    (b'{', _) => self.stack.push(ScriptContext::Interpolation(0)),
+                    (b'{', _) => {
+                        self.stack.push(ScriptContext::Interpolation(0));
+                        self.can_start_expression = true;
+                    }
                     _ => {}
                 },
                 ScriptContext::JsxTag { closing } => match (current, next) {
                     (b'\'', _) => self.stack.push(ScriptContext::SingleQuote),
                     (b'"', _) => self.stack.push(ScriptContext::DoubleQuote),
-                    (b'{', _) => self.stack.push(ScriptContext::Interpolation(0)),
+                    (b'{', _) => {
+                        self.stack.push(ScriptContext::Interpolation(0));
+                        self.can_start_expression = true;
+                    }
                     (b'/', Some(b'>')) if !closing => {
                         self.stack.pop();
                         self.finish_jsx_element();
@@ -179,11 +228,16 @@ impl DirectiveLexer {
             self.stack.pop();
         }
         if !ends_with_unescaped_backslash(bytes) {
+            let mut popped_string = false;
             while matches!(
                 self.stack.last(),
                 Some(ScriptContext::SingleQuote | ScriptContext::DoubleQuote)
             ) {
                 self.stack.pop();
+                popped_string = true;
+            }
+            if popped_string {
+                self.can_start_expression = false;
             }
         }
         markers
@@ -193,6 +247,7 @@ impl DirectiveLexer {
         self.jsx_depth = self.jsx_depth.saturating_sub(1);
         if self.jsx_depth == 0 && matches!(self.stack.last(), Some(ScriptContext::JsxText)) {
             self.stack.pop();
+            self.can_start_expression = false;
         }
     }
 }
@@ -288,51 +343,4 @@ fn record_markers(bytes: &[u8], index: usize, markers: &mut CommentMarkers) {
     if markers.vize.is_none() && bytes[index..].starts_with(b"@vize:") {
         markers.vize = Some(index);
     }
-}
-
-fn ends_with_unescaped_backslash(bytes: &[u8]) -> bool {
-    bytes
-        .iter()
-        .rev()
-        .take_while(|&&byte| byte == b'\\')
-        .count()
-        % 2
-        == 1
-}
-
-fn can_start_literal(bytes: &[u8], index: usize) -> bool {
-    let previous = bytes[..index]
-        .iter()
-        .rfind(|&&byte| !byte.is_ascii_whitespace())
-        .copied();
-    previous.is_none_or(|byte| {
-        matches!(
-            byte,
-            b'(' | b'['
-                | b'{'
-                | b'='
-                | b':'
-                | b','
-                | b'!'
-                | b'?'
-                | b';'
-                | b'+'
-                | b'-'
-                | b'*'
-                | b'%'
-                | b'&'
-                | b'|'
-                | b'^'
-                | b'~'
-                | b'<'
-                | b'>'
-        )
-    })
-}
-
-fn can_start_jsx(bytes: &[u8], index: usize) -> bool {
-    let Some(next) = bytes.get(index + 1).copied() else {
-        return false;
-    };
-    (next == b'>' || next.is_ascii_alphabetic()) && can_start_literal(bytes, index)
 }
