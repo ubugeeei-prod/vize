@@ -53,14 +53,17 @@ fn authored_specifier(reported: &str) -> Option<&str> {
         .filter(|authored| authored.ends_with(".vue"))
 }
 
-/// Every distinct specifier-shaped run quoted in `message`, in first-seen
-/// order.
+/// Every distinct specifier-shaped run quoted in `message`.
 ///
-/// Single- and double-quoted runs are scanned in independent passes so a
-/// specifier nested inside another quoted run (`Module '"./Panel.vue.ts"' ...`)
-/// is still found. A candidate must look like a specifier — no whitespace and
-/// no quote characters — so an unbalanced pairing can never yield a run of
-/// prose.
+/// Each quote pair is scanned in its own pass so a specifier nested inside
+/// another quoted run (`Module '"./Panel.vue.ts"' ...`) is still found. The
+/// result is therefore grouped by [`QUOTE_PAIRS`] order, not by position in
+/// `message`: a double-quoted specifier precedes a single-quoted one only if
+/// its quote pair comes first. Both callers rewrite every returned specifier
+/// across the whole message, so order carries no meaning beyond determinism.
+///
+/// A candidate must look like a specifier — no whitespace and no quote
+/// characters — so an unbalanced pairing can never yield a run of prose.
 pub(crate) fn quoted_specifiers(message: &str) -> Vec<&str> {
     let mut found = Vec::new();
     for (open, close) in QUOTE_PAIRS {
@@ -90,7 +93,8 @@ fn is_specifier_shaped(candidate: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{
-        AUTHORED_VUE_TS_ALIAS_SENTINEL, AUTHORED_VUE_TS_SENTINEL, restore_virtual_vue_specifiers,
+        AUTHORED_VUE_TS_ALIAS_SENTINEL, AUTHORED_VUE_TS_SENTINEL, quoted_specifiers,
+        restore_virtual_vue_specifiers,
     };
 
     #[test]
@@ -122,5 +126,20 @@ mod tests {
     fn ignores_unquoted_suffixes_and_unrelated_modules() {
         let message = "Generated ./Panel.vue.ts; cannot find './util.ts'.";
         assert_eq!(restore_virtual_vue_specifiers(message, ""), message);
+    }
+
+    #[test]
+    fn scans_mixed_quote_styles_grouped_by_quote_pair() {
+        let message = "Module \"./First.vue.ts\" and './Second.vue.ts' differ.";
+        assert_eq!(
+            quoted_specifiers(message),
+            ["./Second.vue.ts", "./First.vue.ts"],
+            "runs are grouped by QUOTE_PAIRS order, not by position in the message"
+        );
+        assert_eq!(
+            restore_virtual_vue_specifiers(message, "import './First.vue'; import './Second.vue';"),
+            "Module \"./First.vue\" and './Second.vue' differ.",
+            "every returned specifier is rewritten regardless of scan order"
+        );
     }
 }

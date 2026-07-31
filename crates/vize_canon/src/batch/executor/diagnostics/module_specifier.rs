@@ -30,8 +30,7 @@ pub(crate) fn mirror_module_specifier_source(specifier: &str) -> Option<&str> {
         .filter(|source| source.ends_with(".vue"))
 }
 
-/// Every distinct mirror-module specifier quoted in `message`, in first-seen
-/// order.
+/// Every distinct mirror-module specifier quoted in `message`.
 ///
 /// A checker message quotes a module specifier either directly
 /// (`Cannot find module './Panel.vue.ts'`) or doubly, as a module symbol name
