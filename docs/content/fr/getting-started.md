@@ -1,414 +1,91 @@
 ---
-title: Commencer
+title: Bien démarrer
 ---
 
 <!-- Generated translation; source: getting-started.md -->
 
-# Commencer
+# Bien démarrer
 
-> **⚠️ Travaux en cours :** Vize est en développement actif et n’est pas encore prêt pour une utilisation en production. Les API et les limites des paquets peuvent changer sans préavis.
+> **⚠️ En cours de développement :** Vize évolue activement et n’est pas encore prêt pour la
+> production. Les API et les frontières entre paquets peuvent changer sans préavis.
 
-## Qu’est-ce que Vize ?
+Vize (_/viːz/_) est une chaîne d’outils Vue.js native en Rust. Elle réunit la compilation, le lint,
+le formatage, la vérification de types, les diagnostics dans l’éditeur et l’exploration de composants
+dans un même workspace, tout en proposant chaque fonction via des paquets et commandes spécialisés.
 
-Vize (_/viːz/_) est une chaîne d’outils Vue.js écrite en Rust. L’espace de travail contient des blocs de construction
-partagés pour :
+| Besoin                                                                                | Point d’entrée recommandé   |
+| ------------------------------------------------------------------------------------- | --------------------------- |
+| Compiler des SFC Vue avec Vite                                                        | `@vizejs/vite-plugin`       |
+| Compiler des SFC Vue avec Nuxt                                                        | `@vizejs/nuxt`              |
+| Lancer le lint, le formatage et la vérification de types depuis les scripts du projet | `vize`                      |
+| Combiner les diagnostics Vize avec Oxlint                                             | `oxlint-plugin-vize`        |
+| Explorer et tester les composants                                                     | `@vizejs/vite-plugin-musea` |
+| Évaluer les fonctions d’édition                                                       | VS Code, Zed ou `vize lsp`  |
 
-| Superficie               | Caisse principale de rouille                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Point d’entrée orienté utilisateur             |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Compilation              | [`vize_atelier_core`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_core), [`vize_atelier_dom`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_dom), [`vize_atelier_vapor`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_vapor), [`vize_atelier_ssr`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_ssr), [`vize_atelier_sfc`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_sfc) | `@vizejs/vite-plugin`, npm `vize:build` script |
-| Peluches                 | [`vize_patina`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_patina)                                                                                                                                                                                                                                                                                                                                                                                                             | NPM `vize:lint` script, `oxlint-plugin-vize`   |
-| Format                   | [`vize_glyph`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_glyph)                                                                                                                                                                                                                                                                                                                                                                                                               | Script `vize:fmt` NPM                          |
-| Contrôle de type         | [`vize_canon`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_canon)                                                                                                                                                                                                                                                                                                                                                                                                               | NPM `vize:check` script                        |
-| Support des éditeurs     | [`vize_maestro`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_maestro)                                                                                                                                                                                                                                                                                                                                                                                                           | VS Code, Zed, Rust `vize lsp`                  |
-| Outils d’art de la musea | [`vize_musea`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_musea)                                                                                                                                                                                                                                                                                                                                                                                                               | `@vizejs/vite-plugin-musea`                    |
-| Reliures                 | [`vize_vitrine`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_vitrine)                                                                                                                                                                                                                                                                                                                                                                                                           | `@vizejs/native`, `@vizejs/wasm`               |
+## Configurer un projet existant
 
-Ce guide recommande [Vite+](https://viteplus.dev/) (`vp`) pour la gestion de paquets JavaScript et les commandes de projet. Cela maintient la cohérence du flux d’installation et d’exécutif entre les gestionnaires de paquets tout en utilisant l’outil sous-jacent de l’espace de travail.
-
-Si vous n’avez pas encore `vp` , installez-le une fois et ouvrez un nouveau shell :
-
-```bash
-curl -fsSL https://vite.plus | bash
-```
-
-Consultez les [Vite+ docs](https://viteplus.dev/) et les [Installing Dependencies guide](https://viteplus.dev/guide/install) pour en savoir plus.
-
-## Ce que fait Vize
-
-À un niveau général, Vize est divisé en quelques voies réutilisables :
-
-| Voie                  | Paquet ou script                         | Ce que tu obtiens                                                                                           |
-| --------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Compiler              | `@vizejs/vite-plugin`, `vize:build`      | Compilation SFC Vue native Rust, sortie SSR, mode Vapor, gestion CSS à portée portée                        |
-| Analyse statique      | `vize:lint`, `oxlint-plugin-vize`        | Modèle Vue, script, CSS, a11y, SSR, Vapor, Musea, diagnostics cross-file et sensibles aux types             |
-| Contrôle de type      | `vize:check`                             | Génération de Virtual TypeScript, diagnostic de projet, mappage de diagnostic Vue vers la source            |
-| Format                | `vize:fmt`                               | Mise en page SFC Vue avec options de projet et de CLI                                                       |
-| Galerie de composants | `@vizejs/vite-plugin-musea`, `musea-vrt` | Fichiers artistiques, variantes composantes, configuration de prévisualisation, jetons de design, a11y, VRT |
-| Support des éditeurs  | VS Code, Zed, Rust `vize lsp`            | Diagnostics et fonctionnalités d’éditeur en option                                                          |
-
-Voir [Static Analysis](./guide/static-analysis.md) pour le modèle de vérification de lint et de type,
-[Rules](./rules/index.md) pour la sortie de règles concrètes, et
-[Configuration](./guide/configuration.md) pour les options partagées de configuration et de compilateur.
-
-Créer des composants dans JSX/TSX au lieu de `.vue` SFC ? Consultez le guide [JSX & TSX](./guide/jsx.md) —
-`.jsx`/`.tsx` composants Vue se compilent dans la même voie Rust.
-
-## Choisissez votre point d’entrée
-
-### 1. Projets Vite
-
-Utilisez le plugin Vite si vous voulez une compilation native de Vue dans un projet Vite existant.
+Lancez l’initialisation interactive à la racine du projet :
 
 ```bash
-vp install -D @vizejs/vite-plugin
+vpx vize init
 ```
 
-Installez `vize` comme dépendance directe uniquement lorsque vous souhaitez importer des assistants de configuration partagés depuis
-`"vize"` ou ajouter des scripts de paquets Vize comme `vize:lint` et `vize:check`.
+`vpx` est fourni avec [Vite+](https://viteplus.dev/guide/install). Installez d’abord Vite+ si la
+commande n’est pas disponible dans votre shell.
 
-```ts
-// vite.config.ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
+Avant toute écriture, `vize init` détecte Vite, Vite+ ou Nuxt, le gestionnaire de paquets,
+TypeScript, la commande de lint active et la configuration Vize existante. Vous choisissez les
+éléments à configurer :
 
-export default defineConfig({
-  plugins: [vize()],
-});
-```
+- le plugin Vite ou le module Nuxt
+- le plugin Oxlint, dans le fichier réellement lu par la commande de lint active
+- les scripts de projet `vize fmt` et `vize check`
+- les réglages partagés `vize.config.*`
+- une recommandation d’extension VS Code
 
-Ajoutez des options de compilateur dans `vize.config.ts` lorsque vous souhaitez avoir les mêmes réglages pour intégrer
-scripts et le plugin :
-
-```ts
-import { defineConfig } from "vize";
-
-export default defineConfig({
-  compiler: {
-    sourceMap: true,
-    vapor: false,
-    customRenderer: false,
-  },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },
-});
-```
-
-### 2. Projets Nuxt
-
-Utilisez le module Nuxt lorsque vous voulez que Vize tourne dans le pipeline Vite de Nuxt.
+Prévisualisez toutes les modifications de fichiers et de dépendances sans rien écrire :
 
 ```bash
-vp install @vizejs/nuxt
+vpx vize init --dry-run
 ```
 
-Ajoutez le module à `nuxt.config.ts`:
-
-```ts
-export default defineNuxtConfig({
-  modules: ["@vizejs/nuxt"],
-  vize: {
-    compiler: true,
-  },
-});
-```
-
-Faites tourner votre serveur de développement Nuxt comme d’habitude. Les registres du module `@vizejs/vite-plugin` pour la compilation de
-SFC Vue tout en préservant les importations automatiques Nuxt, les composants, les middlewares et les transformations SSR.
-
-Consultez le guide [Nuxt Integration](./integrations/nuxt.md) pour l’installation de Musea et les notes spécifiques à Nuxt.
-
-### 3. scripts de paquet npm + configuration partagée
-
-Utilisez le package `vize` npm lorsque vous voulez des utilitaires de configuration partagés et des commandes natives disponibles via
-scripts de projet.
+Dans la CI ou tout autre environnement non interactif, sélectionnez explicitement les fonctions :
 
 ```bash
-vp install -D vize
+vpx vize init --yes --lint --bundler --fmt --typecheck --editor
 ```
 
-Scripts de paquets recommandés :
+Consultez [Project Setup (en anglais)](../guide/init.md) pour les règles de détection, toutes les
+options, les garanties d’idempotence et les cas où l’initialiseur refuse volontairement de modifier
+un fichier.
 
-```json
-{
-  "scripts": {
-    "vize:build": "vize build src",
-    "vize:fmt": "vize fmt --write src",
-    "vize:lint": "vize lint --preset happy-path src",
-    "vize:check": "vize check src",
-    "vize:ready": "vize ready src"
-  }
-}
-```
+## Choisir une configuration manuelle
 
-```bash
-vp run vize:fmt
-vp run vize:lint
-vp run vize:check
-vp run vize:build
-vp run vize:ready
-```
+Préférez la configuration manuelle pour préserver une configuration existante ou adopter une seule
+partie de Vize à la fois :
 
-La commande `vize check` du package npm utilise le vérificateur NAPI empaqueté et peut émettre des déclarations de composantes Vue
-avec `--declaration --declaration-dir dist/types`. Utilisez la ligne de commande Rust lorsque vous avez besoin de
-`check-server`, LSP, gestion de l’IDE ou de diagnostics de projet via Vue, TS, TSX et `.d.ts` entrées.
+- [Plugin Vite](./guide/vite-plugin.md) — compilation native des SFC Vue dans Vite
+- [Intégration Nuxt](./integrations/nuxt.md) — voie prise en charge dans le pipeline Vite de Nuxt
+- [Scripts de paquet et CLI](./guide/cli.md) — `vize build`, `fmt`, `lint`, `check`, `ready` et la CLI
+  Rust complète
 
-### 4. CLI complet de rouille
+Vite est l’intégration de bundler recommandée. Les paquets unplugin et Rspack restent expérimentaux ;
+leur périmètre actuel est décrit dans [Autres bundlers](./guide/unplugin.md).
 
-La plupart des flux de travail applicatifs devraient utiliser les scripts de paquet npm ci-dessus. Utilisez le binaire Rust lorsque vous
-besoin de la CLI native complète aujourd’hui : LSP, gestion de l’IDE, profilage ou `check-server`. Pour l’alpha v1, les canaux publics
-pris en charge sont les binaires de publication GitHub et le point d’entrée Nix ; le CLI Rust n’est pas encore
-publié via crates.io.
+## Consulter les guides spécialisés
 
-```bash
-nix run github:ubugeeei-prod/vize#vize -- --help
-```
+Cette page sert volontairement de point d’orientation. Pour les détails de configuration et
+d’intégration, les guides spécialisés constituent la source de référence :
 
-```bash
-vize build src/**/*.vue
-vize fmt --check src
-vize lint --profile src
-vize check --profile src
-vize ready src
-vize lsp
-```
+- [Configuration](./guide/configuration.md) — `vize.config.*`, options du compilateur, vérification
+  de types et réglages Musea
+- [Analyse statique](./guide/static-analysis.md) — modèle de lint et de vérification de types
+- [Documentation des règles](./rules/index.md) — diagnostics concrets et exemples
+- [Plugin Oxlint](./guide/oxlint.md) — préréglages, options et fichier de configuration réellement lu
+  par chaque commande
+- [VS Code et autres éditeurs](./integrations/vscode.md) — profil d’édition optionnel et configuration LSP
+- [JSX et TSX](./guide/jsx.md) — composants Vue écrits hors des SFC `.vue`
+- [Musea](./guide/musea.md) — exemples, documentation, jetons, a11y et VRT des composants
 
-## Vérification de type native
-
-`vize check` est alimenté par `vize_canon`, qui s’appuie désormais sur [`corsa-bind`](https://github.com/ubugeeei/corsa-bind) sessions de projet pour des diagnostics natifs TypeScript. Vize génère un TypeScript virtuel pour les SFC Vue, demande à Corsa des diagnostics conscients du projet, puis remappe les résultats sur les fichiers originaux `.vue`, `.ts`, `.tsx`et `.d.ts`.
-
-Cette voie est encore en train de mûrir, donc la vérification des types d’éditeurs reste une option volontaire pour l’instant. La pile d’exécution
-est le paquet `@typescript/native-preview`, Corsa/corsa-bind est la couche API avec laquelle Vize
-communique, et l’exécutable installé par l’aperçu natif TypeScript est encore couramment nommé
-`tsgo`. Utilisez `typeChecker.corsaPath`, ou un script package qui s’exécute
-`vize check --corsa-path /path/to/tsgo`, lorsque vous souhaitez épingler ce runtime.
-`typeChecker.tsgoPath` reste un alias de compatibilité obsolète.
-
-Cibles utiles pour scripts de paquets :
-
-```json
-{
-  "scripts": {
-    "vize:check": "vize check",
-    "vize:check:app": "vize check --tsconfig tsconfig.app.json",
-    "vize:check:virtual-ts": "vize check --show-virtual-ts src/components/App.vue",
-    "vize:check:declarations": "vize check --declaration --declaration-dir dist/types"
-  }
-}
-```
-
-```bash
-vp run vize:check
-vp run vize:check:app
-vp run vize:check:virtual-ts
-vp run vize:check:declarations
-```
-
-## Partagé `vize.config.*`
-
-Les commandes de paquet npm et `@vizejs/vite-plugin` partagent la découverte de configuration :
-
-- `vize.config.pkl`
-- `vize.config.ts`
-- `vize.config.js`
-- `vize.config.mjs`
-- `vize.config.json`
-
-Configuration TypeScript :
-
-```ts
-import { defineConfig } from "vize";
-
-export default defineConfig({
-  compiler: {
-    sourceMap: true,
-    vapor: false,
-    customRenderer: false,
-  },
-  linter: {
-    preset: "opinionated",
-  },
-  typeChecker: {
-    enabled: true,
-    strict: true,
-    corsaPath: "./node_modules/.bin/tsgo",
-  },
-  formatter: {
-    printWidth: 100,
-  },
-  musea: {
-    include: ["src/**/*.art.vue"],
-    basePath: "/__musea__",
-  },
-  lsp: {
-    lint: true,
-    typecheck: false,
-    editor: false,
-    formatting: false,
-  },
-});
-```
-
-Configuration PKL :
-
-```pkl
-amends "node_modules/vize/pkl/vize.pkl"
-
-linter {
-  preset = "opinionated"
-}
-
-typeChecker {
-  enabled = true
-  strict = true
-}
-
-lsp {
-  lint = true
-  typecheck = false
-  editor = false
-  formatting = false
-}
-```
-
-Configuration JSON avec schéma :
-
-```json
-{
-  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
-  "linter": {
-    "preset": "opinionated"
-  }
-}
-```
-
-## Paquets
-
-```bash
-vp install -D @vizejs/vite-plugin
-vp install @vizejs/native
-vp install @vizejs/wasm
-vp install @vizejs/unplugin
-vp install @vizejs/rspack-plugin @rspack/core
-vp install @vizejs/nuxt
-vp install @vizejs/vite-plugin-musea
-vp install @vizejs/musea-mcp-server
-vp install -D oxlint oxlint-plugin-vize
-```
-
-Notes :
-
-- `@vizejs/vite-plugin` 'est l’intégration recommandée du bundler aujourd’hui.
-- `@vizejs/unplugin` et `@vizejs/rspack-plugin` sont encore expérimentaux.
-- `@vizejs/native` et `@vizejs/wasm` exposent directement les fixations Rust.
-- `@vizejs/vite-plugin-musea` fournit la galerie et le flux de travail dev-server pour Musea.
-
-## Galerie des composantes de la Musea
-
-Utilisez Musea lorsque vous souhaitez des exemples de composants natifs Vue, de la documentation, des jetons, des vérifications VRT et a11y :
-
-```bash
-vp install -D @vizejs/vite-plugin @vizejs/vite-plugin-musea vize
-```
-
-```ts
-// vite.config.ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-import { musea } from "@vizejs/vite-plugin-musea";
-
-export default defineConfig({
-  plugins: [
-    vize(),
-    musea({
-      include: ["src/**/*.art.vue"],
-      basePath: "/__musea__",
-      previewCss: ["src/styles/main.css"],
-    }),
-  ],
-});
-```
-
-Faites tourner votre serveur de développement Vite et ouvrez `/__musea__`. Voir [Musea](./guide/musea.md) pour les fichiers d’art, la configuration
-aperçu, les jetons de design, la VRT et les variantes générées.
-
-## Intégration Oxlint
-
-Exécutez les diagnostics Vue de Vize à l’intérieur d’Oxlint :
-
-```bash
-vp install -D oxlint oxlint-plugin-vize
-```
-
-```json
-{
-  "plugins": ["vue"],
-  "jsPlugins": ["oxlint-plugin-vize"],
-  "rules": {
-    "eqeqeq": "error",
-    "vize/vue/require-v-for-key": "error",
-    "vize/vue/no-v-html": "warn"
-  },
-  "settings": {
-    "vize": {
-      "preset": "general-recommended",
-      "helpLevel": "short"
-    }
-  }
-}
-```
-
-Pour une utilisation terminale d’abord, préférez :
-
-```bash
-vp exec oxlint-vize -c .oxlintrc.json -f stylish src
-```
-
-## Support des éditeurs
-
-Pour le montage quotidien de Vue, continuez à utiliser `vuejs/language-tools` pour l’instant.
-fonctionnalités de l’éditeur Vize sont conçues pour l’adhésion incrémentale.
-
-Point de départ de VS Code :
-
-```json
-{
-  "vize.enable": true,
-  "vize.lint.enable": true,
-  "vize.typecheck.enable": false,
-  "vize.editor.enable": false,
-  "vize.formatting.enable": false
-}
-```
-
-Point de départ de Zed :
-
-```json
-{
-  "languages": {
-    "Vue": {
-      "language_servers": ["vize", "..."]
-    }
-  },
-  "lsp": {
-    "vize": {
-      "initialization_options": {
-        "lint": true
-      }
-    }
-  }
-}
-```
-
-## Développement local
-
-Les tâches locales restent locales ; [CI parity](./contributing.md#common-checks) utilise `nix develop .#testbox`.
-
-```bash
-nix develop
-vp install --frozen-lockfile
-vp check
-vp fmt
-vp dev
-vp build
-```
+Tant que l’intégration de Vize aux éditeurs reste expérimentale, continuez à utiliser l’outil
+officiel [`vuejs/language-tools`](https://github.com/vuejs/language-tools) au quotidien.

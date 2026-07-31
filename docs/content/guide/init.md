@@ -231,11 +231,11 @@ This is checked in, applies to everyone on the project, and changes nothing on t
 | Helix   | `tools/helix-vize` |
 | Emacs   | `tools/emacs-vize` |
 
-See [Editor Support](../getting-started.md#editor-support) for per-editor instructions.
+See [VS Code and Other Editors](../integrations/vscode.md) for per-editor instructions.
 
 ## Relationship To `vize setup`
 
-[`vize setup`](../getting-started.md) is the older, all-or-nothing command for a Vite or Vite+
+`vize setup` is the older, all-or-nothing command for a Vite or Vite+
 project. It still works and is unchanged. `init` covers the same ground plus feature selection, Nuxt,
 package-manager detection, a dry run, and a non-interactive mode, over the same planning layer. Prefer
 `vize init` for new projects.
