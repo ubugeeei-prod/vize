@@ -501,25 +501,25 @@ fn parse_cli_diagnostics(
     mapper: &mut DiagnosticMapper<'_>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
+    let mut last_was_kept = false;
     for line in output.lines() {
-        if let Some(diagnostic) = parse_cli_diagnostic_line(line, project, mapper) {
-            diagnostics.push(diagnostic);
-            continue;
-        }
         // Project-level diagnostics carry no file position (`error TS2688:
         // Cannot find type definition file for 'x'.`). They are real,
         // user-actionable problems — tsc and vue-tsc report them and the
         // runtime may skip the semantic pass because of them — so they are
         // attributed to the project's tsconfig instead of being dropped.
-        if let Some(diagnostic) = project_diagnostics::global(line, project) {
+        let diagnostic = parse_cli_diagnostic_line(line, project, mapper)
+            .or_else(|| project_diagnostics::global(line, project));
+        if let Some(diagnostic) = diagnostic {
             diagnostics.push(diagnostic);
+            last_was_kept = true;
             continue;
         }
-        if is_cli_diagnostic_line(line) {
+        if is_cli_diagnostic_line(line) || is_global_diagnostic_line(line) {
+            last_was_kept = false;
             continue;
         }
-
-        let Some(last) = diagnostics.last_mut() else {
+        let Some(last) = diagnostics.last_mut().filter(|_| last_was_kept) else {
             continue;
         };
         let line = line.trim();

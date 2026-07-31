@@ -222,6 +222,50 @@ fn parses_cli_diagnostics_back_to_original_files() {
 }
 
 #[test]
+fn drops_continuations_of_unmapped_diagnostics() {
+    let case_dir = unique_case_dir("diagnostic-continuations");
+    let _ = fs::remove_dir_all(&case_dir);
+    let source = case_dir.join("src").join("main.ts");
+    fs::create_dir_all(source.parent().unwrap()).unwrap();
+    fs::write(&source, "const value: number = 'x';\n").unwrap();
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.register_path(&source).unwrap();
+    project.materialize().unwrap();
+
+    let output = cstr!(
+        "{}(1,7): error TS2322: kept primary\n  kept continuation\nerror TS2666: dropped global\n  dropped global continuation\n{}(1,1): error TS2304: dropped primary\n  dropped continuation",
+        project.virtual_root().join("src").join("main.ts").display(),
+        project
+            .virtual_root()
+            .join("src")
+            .join("unmapped.vue.ts")
+            .display()
+    );
+    let mut diagnostics = Vec::new();
+    let mut mapper = DiagnosticMapper::new(&project);
+    parse_cli_diagnostics(output.as_str(), &project, &mut mapper, &mut diagnostics);
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].message, "kept primary\nkept continuation");
+
+    let mut global_diagnostics = Vec::new();
+    parse_cli_diagnostics(
+        "error TS2688: kept global\n  kept global continuation",
+        &project,
+        &mut mapper,
+        &mut global_diagnostics,
+    );
+    assert_eq!(global_diagnostics.len(), 1);
+    assert_eq!(
+        global_diagnostics[0].message,
+        "kept global\nkept global continuation"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
 fn parses_cli_diagnostics_with_relative_dotdot_paths() {
     let case_dir = unique_case_dir("diagnostics-dotdot");
     let _ = fs::remove_dir_all(&case_dir);
