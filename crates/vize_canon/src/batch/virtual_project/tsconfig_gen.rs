@@ -1,3 +1,4 @@
+mod compiler_options;
 mod native_options;
 mod path_rebase;
 mod vue_alias;
@@ -5,14 +6,11 @@ mod vue_alias;
 use std::path::{Path, PathBuf};
 
 use serde_json::{Map, Value};
-use vize_carton::{FxHashSet, String as CompactString, ToCompactString, cstr, profile};
+use vize_carton::{String as CompactString, ToCompactString, cstr};
 
 use crate::batch::error::CorsaResult;
 use crate::batch::materialize_fs::write_if_changed;
 
-use super::tsconfig_paths::{
-    normalize_path_lexically, parse_jsonc_value, resolve_extended_tsconfig_path,
-};
 use super::{SHARED_HELPERS_FILE, VirtualProject};
 use native_options::normalize_native_removed_options;
 use vue_alias::remap_path_targets;
@@ -269,70 +267,6 @@ impl VirtualProject {
         }
         includes.sort();
         includes
-    }
-    #[allow(clippy::disallowed_types)]
-    pub(super) fn load_compiler_options(
-        &self,
-        tsconfig_path: Option<&Path>,
-    ) -> CorsaResult<Map<std::string::String, Value>> {
-        let Some(tsconfig_path) = tsconfig_path else {
-            return Ok(Map::new());
-        };
-
-        let mut seen = FxHashSet::default();
-        self.load_compiler_options_inner(tsconfig_path, &mut seen)
-    }
-
-    #[allow(clippy::disallowed_types)]
-    fn load_compiler_options_inner(
-        &self,
-        tsconfig_path: &Path,
-        seen: &mut FxHashSet<PathBuf>,
-    ) -> CorsaResult<Map<std::string::String, Value>> {
-        if !tsconfig_path.exists() {
-            return Ok(Map::new());
-        }
-        let normalized = normalize_path_lexically(tsconfig_path);
-        if !seen.insert(normalized.clone()) {
-            return Ok(Map::new());
-        }
-
-        let content = profile!("canon.tsconfig.read", std::fs::read_to_string(&normalized))?;
-        let config = profile!("canon.tsconfig.parse", parse_jsonc_value(&content))?;
-        let mut compiler_options = config
-            .get("compilerOptions")
-            .and_then(Value::as_object)
-            .cloned()
-            .unwrap_or_default();
-        let base_dir = normalized.parent().unwrap_or(self.project_root.as_path());
-        path_rebase::onto_project_root(&mut compiler_options, base_dir, &self.project_root);
-
-        // `extends` may be a single specifier or an array; array entries are
-        // applied in order, with later entries overriding earlier ones, and
-        // the extending file overriding them all.
-        let mut inherited = Map::new();
-        match config.get("extends") {
-            Some(Value::String(extends)) => {
-                if let Some(parent_path) = resolve_extended_tsconfig_path(&normalized, extends) {
-                    inherited = self.load_compiler_options_inner(&parent_path, seen)?;
-                }
-            }
-            Some(Value::Array(entries)) => {
-                for extends in entries.iter().filter_map(Value::as_str) {
-                    if let Some(parent_path) = resolve_extended_tsconfig_path(&normalized, extends)
-                    {
-                        inherited.extend(self.load_compiler_options_inner(&parent_path, seen)?);
-                    }
-                }
-            }
-            _ => {}
-        }
-        if inherited.is_empty() {
-            return Ok(compiler_options);
-        }
-
-        inherited.extend(compiler_options);
-        Ok(inherited)
     }
 
     /// Re-anchor tsconfig `paths` targets into the virtual mirror. Each relative

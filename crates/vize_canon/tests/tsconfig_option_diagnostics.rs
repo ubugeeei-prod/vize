@@ -233,6 +233,42 @@ fn a_non_relative_paths_target_under_base_url_is_not_reported() {
     let _ = std::fs::remove_dir_all(&root);
 }
 
+/// The option probe must not turn an explicitly relative `paths` target into a
+/// non-relative one. `rootDir` makes the probe necessary without adding a
+/// `baseUrl`; before #3544 the probe rewrote `./src/*` to `src/*` and invented
+/// TS5090 even though the authored config is valid.
+#[test]
+fn an_explicit_relative_paths_target_stays_valid_without_base_url() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let root = write_case(
+        "explicit-relative-paths",
+        ",\n    \"rootDir\": \"./src\",\n    \"paths\": { \"@/*\": [\"./src/*\"] }",
+    );
+
+    let Some(diagnostics) = project_diagnostics(&root) else {
+        let _ = std::fs::remove_dir_all(&root);
+        return;
+    };
+    assert_eq!(
+        diagnostics,
+        Vec::new(),
+        "an authored relative path must not produce TS5090: {diagnostics:?}"
+    );
+
+    let probe =
+        std::fs::read_to_string(root.join("node_modules/.vize/canon/tsconfig.options.json"))
+            .expect("rootDir should require an option probe");
+    let probe: serde_json::Value = serde_json::from_str(&probe).unwrap();
+    assert_eq!(
+        probe["compilerOptions"]["paths"]["@/*"],
+        serde_json::json!(["./src/*"])
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
 /// `ignoreDeprecations` is what TypeScript 6 tells the user to set, and it
 /// silences 6's deprecation errors. TypeScript 7 has nothing to silence, so it
 /// reports the removal regardless — leaving a project that did exactly what

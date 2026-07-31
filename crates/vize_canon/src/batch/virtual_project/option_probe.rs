@@ -54,7 +54,7 @@ impl VirtualProject {
         let Some(tsconfig_path) = self.resolved_tsconfig_path() else {
             return Ok(None);
         };
-        let declared = self.load_compiler_options(Some(tsconfig_path.as_path()))?;
+        let declared = self.load_compiler_options_verbatim(Some(tsconfig_path.as_path()))?;
         if declared.is_empty() || !option_probe_is_needed(&declared, &self.generated_options()) {
             return Ok(None);
         }
