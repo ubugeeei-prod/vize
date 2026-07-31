@@ -102,13 +102,16 @@ function baselineUnusableReason(summary) {
  * and reviewable — the run fails with the evidence attached, not instead of it.
  */
 export function assertBudgetPassed(artifact, budgetMode = "enforce") {
+  // Validated before the passed-verdict return, so an unrecognised mode is
+  // rejected on every run rather than only on the runs that breach.
+  const mode = parseBudgetMode(budgetMode);
   const budget = artifact.budget;
   if (budget.verdict === "passed") return;
   const detail =
     budget.verdict === "unusable"
       ? `Typecheck divergence baseline is unusable for ${artifact.project}: ${budget.unusableReason}`
       : `Typecheck divergence budget breached for ${artifact.project}: ${describeBreaches(artifact).join("; ")}`;
-  if (parseBudgetMode(budgetMode) === "enforce") throw new Error(detail);
+  if (mode === "enforce") throw new Error(detail);
   // A GitHub workflow command, so a release run that records an unusable
   // baseline still shows a warning on the run instead of a silent green tick.
   process.stdout.write(`::warning title=Typecheck divergence budget not enforced::${detail}\n`);
