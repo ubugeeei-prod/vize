@@ -2,18 +2,33 @@
 //! calls.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{CallExpression, Expression};
+use oxc_ast::ast::{Argument, CallExpression, Expression};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_parser::Parser;
 use oxc_span::{SourceType, Span};
 
 /// A call the template performs, with a plain identifier callee.
 pub(in crate::rules::script) struct TemplateCall<'a> {
-    /// The callee identifier, e.g. `total`.
+    /// The callee identifier, e.g. `total` or `$emit`.
     pub(in crate::rules::script) callee: &'a str,
+    /// The first argument, when it is a string literal. `None` for a dynamic
+    /// argument (`$emit(name)`) or no arguments at all — a value only the
+    /// runtime knows cannot be checked against a declared set or a casing rule.
+    pub(in crate::rules::script) first_string_argument: Option<TemplateStringArgument<'a>>,
     /// Byte range of the call expression, relative to the template block.
     pub(in crate::rules::script) start: u32,
     /// Exclusive end of [`TemplateCall::start`].
+    pub(in crate::rules::script) end: u32,
+}
+
+/// A string-literal argument, with the range of the literal itself so a rule
+/// can report there rather than at the whole call.
+pub(in crate::rules::script) struct TemplateStringArgument<'a> {
+    pub(in crate::rules::script) value: &'a str,
+    /// Byte range of the literal *including* its quotes, relative to the
+    /// template block — matching how the script halves span a `StringLiteral`.
+    pub(in crate::rules::script) start: u32,
+    /// Exclusive end of [`TemplateStringArgument::start`].
     pub(in crate::rules::script) end: u32,
 }
 
@@ -45,6 +60,13 @@ pub(super) fn for_each_call(source: &str, base: u32, visit: &mut impl FnMut(Temp
     for call in collector.calls {
         visit(TemplateCall {
             callee: call.callee,
+            first_string_argument: call.first_string_argument.map(|(value, span)| {
+                TemplateStringArgument {
+                    value,
+                    start: base + span.start,
+                    end: base + span.end,
+                }
+            }),
             start: base + call.span.start,
             end: base + call.span.end,
         });
@@ -53,6 +75,7 @@ pub(super) fn for_each_call(source: &str, base: u32, visit: &mut impl FnMut(Temp
 
 struct CollectedCall<'a> {
     callee: &'a str,
+    first_string_argument: Option<(&'a str, Span)>,
     span: Span,
 }
 
@@ -68,6 +91,12 @@ impl<'a> Visit<'a> for CallCollector<'a> {
         if let Expression::Identifier(callee) = &it.callee {
             self.calls.push(CollectedCall {
                 callee: callee.name.as_str(),
+                first_string_argument: match it.arguments.first() {
+                    Some(Argument::StringLiteral(literal)) => {
+                        Some((literal.value.as_str(), literal.span))
+                    }
+                    _ => None,
+                },
                 span: it.span,
             });
         }

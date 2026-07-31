@@ -1,6 +1,10 @@
 use crate::rules::script::RequireExplicitEmits;
 use crate::rules::script::ScriptLinter;
 
+// Template-half tests (#3413 A) live in the `template` submodule, helpers and
+// all: this file is already close to the 350-line budget.
+mod template;
+
 fn create_linter() -> ScriptLinter {
     let mut linter = ScriptLinter::new();
     linter.add_rule(Box::new(RequireExplicitEmits));

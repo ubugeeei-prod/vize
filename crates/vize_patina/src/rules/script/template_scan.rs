@@ -45,6 +45,11 @@ use vize_relief::{
 
 pub(super) use calls::TemplateCall;
 
+/// The template-visible emit helper. Available in every template expression and
+/// dispatching this component's own events, unlike a member call such as
+/// `child.$emit('x')`.
+pub(super) const DOLLAR_EMIT: &str = "$emit";
+
 /// Visit every call with a plain identifier callee that the template performs.
 ///
 /// Calls whose callee is shadowed by an enclosing `v-for` alias or slot

@@ -10,9 +10,7 @@
 //!
 //! ## Sound subset
 //!
-//! Upstream also scans the template (`@evt` / `v-on:evt`), which a `script/*`
-//! rule cannot observe. This implementation only decides what is sound from the
-//! script alone:
+//! The rule reports only what it can prove:
 //!
 //! * It reports only when a declaration **exists** and is **fully known**. With
 //!   no declaration, nothing is reported (the emits may be declared elsewhere, or
@@ -23,9 +21,23 @@
 //! * Only string-literal emit names are checked; a dynamic name (`emit(name)`)
 //!   is skipped.
 //!
-//! Emit call sites are the captured `defineEmits` binding (`emit('change')`) and
-//! `this.$emit('change')`. The declaration-resolution logic lives in the
+//! Script call sites are the captured `defineEmits` binding (`emit('change')`)
+//! and `this.$emit('change')`. The declaration-resolution logic lives in the
 //! [`declared`] submodule.
+//!
+//! ## Template call sites
+//!
+//! A template dispatches the same events, through the built-in `$emit` helper
+//! (`@click="$emit('cancel')"`) or through the captured binding, which is
+//! template-visible as a top-level `<script setup>` binding. Both are checked.
+//! Recovering them *creates* findings from template evidence, so they come from
+//! the template AST and an oxc parse of each expression; see
+//! [`crate::rules::script::template_scan`] for the over-match analysis and the
+//! shadowing rules.
+//!
+//! The template half additionally requires the SFC to have a single script
+//! block: the declared set is a property of the whole component, and with both
+//! a `<script>` and a `<script setup>` each invocation sees only half of it.
 //!
 //! ```ts
 //! const emit = defineEmits(['change'])
@@ -42,7 +54,8 @@ use oxc_span::Span;
 use vize_carton::{CompactString, FxHashSet};
 
 use self::declared::{Declared, resolve_declared_emits};
-use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::super::template_scan::{DOLLAR_EMIT, for_each_template_call};
+use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -64,11 +77,29 @@ impl ScriptRule for RequireExplicitEmits {
         true
     }
 
+    #[inline]
+    fn uses_template_ast(&self) -> bool {
+        true
+    }
+
     fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        // Keep the parse-owning `check` path functional: without SFC context
+        // only the script call sites are observable.
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
+    }
+
+    fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
         _source: &str,
         offset: usize,
+        sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
         // Bail unless a declaration exists AND is fully known; a missing or
@@ -88,7 +119,42 @@ impl ScriptRule for RequireExplicitEmits {
             result,
         };
         visitor.visit_program(program);
+
+        check_template(&declared, binding, sfc, result);
     }
+}
+
+/// The template half: `$emit('x')` — or a call of the captured binding — naming
+/// an event the declaration does not contain.
+fn check_template(
+    declared: &FxHashSet<CompactString>,
+    binding: Option<&str>,
+    sfc: SfcScriptContext<'_>,
+    result: &mut ScriptLintResult,
+) {
+    if !sfc.sole_script_block {
+        return;
+    }
+    let Some((root, template_offset)) = sfc.template_ast() else {
+        return;
+    };
+    for_each_template_call(root, |call| {
+        if call.callee != DOLLAR_EMIT && Some(call.callee) != binding {
+            return;
+        }
+        let Some(event) = call.first_string_argument else {
+            return;
+        };
+        if declared.contains(event.value) {
+            return;
+        }
+        report(
+            event.value,
+            template_offset + event.start,
+            template_offset + event.end,
+            result,
+        );
+    });
 }
 
 /// Walks the program reporting every string-literal emit whose name is absent
@@ -114,22 +180,28 @@ impl<'a> Visit<'a> for EmitCallVisitor<'_, '_> {
 
 impl EmitCallVisitor<'_, '_> {
     fn report(&mut self, name: &str, span: Span) {
-        let start = self.offset as u32 + span.start;
-        let end = self.offset as u32 + span.end;
-
-        let mut message = CompactString::with_capacity(name.len() + 48);
-        message.push_str("The emitted event '");
-        message.push_str(name);
-        message.push_str("' is not declared in defineEmits or the emits option.");
-
-        let diagnostic = LintDiagnostic::warn(META.name, message, start, end)
-            .with_label("undeclared emitted event", start, end)
-            .with_help(
-                "Add this event to the defineEmits declaration (or the Options API `emits` \
-                 option) so the component's event surface is explicit.",
-            );
-        self.result.add_diagnostic(diagnostic);
+        report(
+            name,
+            self.offset as u32 + span.start,
+            self.offset as u32 + span.end,
+            self.result,
+        );
     }
+}
+
+fn report(name: &str, start: u32, end: u32, result: &mut ScriptLintResult) {
+    let mut message = CompactString::with_capacity(name.len() + 48);
+    message.push_str("The emitted event '");
+    message.push_str(name);
+    message.push_str("' is not declared in defineEmits or the emits option.");
+
+    let diagnostic = LintDiagnostic::warn(META.name, message, start, end)
+        .with_label("undeclared emitted event", start, end)
+        .with_help(
+            "Add this event to the defineEmits declaration (or the Options API `emits` \
+             option) so the component's event surface is explicit.",
+        );
+    result.add_diagnostic(diagnostic);
 }
 
 /// The string-literal event name of an emit call, if `call` is one we track.

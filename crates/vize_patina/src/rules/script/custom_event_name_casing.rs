@@ -8,12 +8,29 @@
 //! recommended casing and is reported.
 //!
 //! This walks the emit call sites and checks the string-literal event name (the
-//! first argument): a call to the captured `defineEmits` binding
-//! (`const emit = defineEmits(...)` then `emit('my-event')`), or a member call
-//! whose property is `emit`/`$emit` (`ctx.emit('my-event')`,
-//! `this.$emit('my-event')`). Only string-literal event names are checked; a
-//! dynamic name (`emit(eventName)`) carries no literal to inspect and is skipped.
-//! The `update:` prefix used by `v-model` (`'update:modelValue'`) is permitted.
+//! first argument). Only string-literal event names are checked; a dynamic name
+//! (`emit(eventName)`) carries no literal to inspect and is skipped. The
+//! `update:` prefix used by `v-model` (`'update:modelValue'`) is permitted.
+//!
+//! ## Script call sites
+//!
+//! A call to the captured `defineEmits` binding (`const emit = defineEmits(...)`
+//! then `emit('my-event')`), or a member call whose property is `emit`/`$emit`
+//! (`ctx.emit('my-event')`, `this.$emit('my-event')`).
+//!
+//! ## Template call sites
+//!
+//! A template dispatches the same events, through the built-in `$emit` helper
+//! (`@click="$emit('foo-bar')"`) or through the captured binding, which is
+//! template-visible as a top-level `<script setup>` binding. Recovering them
+//! *creates* findings from template evidence, so they come from the template
+//! AST and an oxc parse of each expression; see [`super::template_scan`] for the
+//! over-match analysis and the shadowing rules.
+//!
+//! The template half additionally requires the SFC to have a single script
+//! block. The rule is invoked once per block, and unlike the script half — whose
+//! call sites live in the block being linted — a template `$emit` is visible to
+//! every block, so two blocks would report it twice.
 //!
 //! Mirrors [`vue/custom-event-name-casing`](https://eslint.vuejs.org/rules/custom-event-name-casing.html)
 //! with the Vue 3 default (`camelCase`).
@@ -32,7 +49,8 @@
 //! emit('myEvent')
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::template_scan::{DOLLAR_EMIT, for_each_template_call};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, Expression, Program, Statement, StringLiteral,
@@ -60,11 +78,29 @@ impl ScriptRule for CustomEventNameCasing {
     }
 
     #[inline]
+    fn uses_template_ast(&self) -> bool {
+        true
+    }
+
+    #[inline]
     fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        // Keep the parse-owning `check` path functional: without SFC context
+        // only the script call sites are observable.
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
+    }
+
+    fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
         _source: &str,
         offset: usize,
+        sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
         // The `<script setup>` emit function captured from `defineEmits(...)`, if
@@ -77,7 +113,40 @@ impl ScriptRule for CustomEventNameCasing {
             emit_binding,
         };
         visitor.visit_program(program);
+
+        check_template(emit_binding, sfc, result);
     }
+}
+
+/// The template half: `$emit('foo-bar')`, or a call of the captured binding.
+fn check_template(
+    emit_binding: Option<&str>,
+    sfc: SfcScriptContext<'_>,
+    result: &mut ScriptLintResult,
+) {
+    if !sfc.sole_script_block {
+        return;
+    }
+    let Some((root, template_offset)) = sfc.template_ast() else {
+        return;
+    };
+    for_each_template_call(root, |call| {
+        if call.callee != DOLLAR_EMIT && Some(call.callee) != emit_binding {
+            return;
+        }
+        let Some(event) = call.first_string_argument else {
+            return;
+        };
+        if is_camel_case_event(event.value) {
+            return;
+        }
+        report(
+            event.value,
+            template_offset + event.start,
+            template_offset + event.end,
+            result,
+        );
+    });
 }
 
 struct CustomEventNameCasingVisitor<'a, 'result> {
@@ -118,23 +187,28 @@ impl<'a> CustomEventNameCasingVisitor<'a, '_> {
         if is_camel_case_event(value) {
             return;
         }
-
-        let start = self.offset as u32 + literal.span.start;
-        let end = self.offset as u32 + literal.span.end;
-
-        let mut message = CompactString::with_capacity(value.len() + 40);
-        message.push_str("Custom event name '");
-        message.push_str(value);
-        message.push_str("' is not camelCase.");
-
-        let diagnostic = LintDiagnostic::error(META.name, message, start, end)
-            .with_label("expected camelCase", start, end)
-            .with_help(
-                "Vue 3 recommends camelCase for emitted event names; rename this event \
-                 to camelCase (e.g. `myEvent`).",
-            );
-        self.result.add_diagnostic(diagnostic);
+        report(
+            value,
+            self.offset as u32 + literal.span.start,
+            self.offset as u32 + literal.span.end,
+            self.result,
+        );
     }
+}
+
+fn report(value: &str, start: u32, end: u32, result: &mut ScriptLintResult) {
+    let mut message = CompactString::with_capacity(value.len() + 40);
+    message.push_str("Custom event name '");
+    message.push_str(value);
+    message.push_str("' is not camelCase.");
+
+    let diagnostic = LintDiagnostic::error(META.name, message, start, end)
+        .with_label("expected camelCase", start, end)
+        .with_help(
+            "Vue 3 recommends camelCase for emitted event names; rename this event \
+             to camelCase (e.g. `myEvent`).",
+        );
+    result.add_diagnostic(diagnostic);
 }
 
 /// Whether `value` is an acceptable camelCase event name. Each `:`-separated
@@ -194,151 +268,4 @@ fn is_define_emits_call(expression: &Expression<'_>) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::CustomEventNameCasing;
-    use crate::rules::script::ScriptLinter;
-
-    fn create_linter() -> ScriptLinter {
-        let mut linter = ScriptLinter::new();
-        linter.add_rule(Box::new(CustomEventNameCasing));
-        linter
-    }
-
-    #[test]
-    fn test_valid_camel_case_setup_emit() {
-        let source = r#"
-const emit = defineEmits(['myEvent'])
-emit('myEvent')
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_single_word_event() {
-        let source = r#"
-const emit = defineEmits(['change'])
-emit('change')
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_update_model_value() {
-        // The `update:` prefix used by `v-model` is permitted.
-        let result = create_linter().lint("this.$emit('update:modelValue', value)", 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_invalid_kebab_case_setup_emit() {
-        let source = r#"
-const emit = defineEmits(['my-event'])
-emit('my-event')
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
-    }
-
-    #[test]
-    fn test_invalid_pascal_case_dollar_emit() {
-        let result = create_linter().lint("this.$emit('MyEvent')", 0);
-        assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
-    }
-
-    #[test]
-    fn test_invalid_kebab_case_dollar_emit() {
-        let result = create_linter().lint("this.$emit('my-event')", 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_invalid_context_emit_kebab() {
-        // A setup-context member call (`ctx.emit('...')`) is checked too.
-        let result = create_linter().lint("ctx.emit('my-event')", 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_valid_context_emit_camel() {
-        let result = create_linter().lint("ctx.emit('myEvent')", 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_dynamic_event_name_not_checked() {
-        // A non-string-literal event name carries no literal to inspect.
-        let source = r#"
-const emit = defineEmits(['myEvent'])
-const name = 'my-event'
-emit(name)
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_unassigned_define_emits_call_not_tracked() {
-        // Without a binding the `emit(...)` identifier cannot be resolved, so the
-        // bare `emit` identifier call is not treated as an emit.
-        let source = r#"
-defineEmits(['my-event'])
-emit('my-event')
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_custom_emit_binding_name() {
-        let source = r#"
-const myEmit = defineEmits(['change'])
-myEmit('my-event')
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_options_api_this_emit_in_method() {
-        let source = r#"
-export default {
-  methods: {
-    submit() {
-      this.$emit('my-event')
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_plain_identifier_call_not_emit() {
-        // A call to some other function is not an emit, even with a kebab string.
-        let result = create_linter().lint("notify('my-event')", 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_multiple_invalid_events() {
-        let source = r#"
-const emit = defineEmits(['my-event', 'OtherEvent'])
-emit('my-event')
-emit('OtherEvent')
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 2);
-    }
-
-    #[test]
-    fn test_offset_applied() {
-        let result = create_linter().lint("this.$emit('my-event')", 30);
-        assert_eq!(result.error_count, 1);
-        assert_eq!(result.diagnostics[0].start, 30 + 11);
-    }
-}
+mod tests;
