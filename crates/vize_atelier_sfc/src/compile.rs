@@ -10,6 +10,7 @@ mod helpers;
 mod normal_script;
 pub(crate) mod output_module;
 mod styles;
+mod template_only;
 #[cfg(test)]
 mod tests;
 
@@ -238,99 +239,24 @@ fn compile_sfc_inner(
 
     // Case 1: Template only - just output render function
     if !has_script && !has_script_setup && has_template {
-        let template = descriptor.template.as_ref().unwrap();
-        let template_result = if is_vapor {
-            profile!(
-                "atelier.sfc.template.vapor",
-                compile_template_block_vapor(
-                    template,
-                    &scope_id,
-                    has_scoped,
-                    None,
-                    &options.template,
-                    template_syntax,
-                    &codegen_options,
-                )
-            )
-        } else {
-            // Enable hoisting for template-only SFCs (hoisted consts go at module level)
-            let mut template_opts = options.template.clone();
-            let mut dom_opts = template_opts.compiler_options.take().unwrap_or_default();
-            dom_opts.hoist_static = true;
-            template_opts.compiler_options = Some(dom_opts);
-            // Also pass scope IDs to the client template compiler. Vue's runtime
-            // normally propagates __scopeId, but wrapper components such as NuxtLink
-            // can otherwise lose parent scoped attrs before the final DOM root.
-            profile!(
-                "atelier.sfc.template.compile",
-                compile_template_block(
-                    template,
-                    &template_opts,
-                    TemplateBlockCompileContext {
-                        scope_id: &scope_id,
-                        apply_scope_id: has_scoped,
-                        has_scoped,
-                        is_ts: template_is_ts,
-                        inline: false,
-                        component_name: Some(&component_name),
-                        bindings: None,
-                        croquis: None,
-                    },
-                    template_syntax,
-                    &codegen_options,
-                )
-            )
-        };
-
-        match template_result {
-            Ok(template_output) => {
-                warnings.extend(template_output.warnings);
-                code = template_output.code;
-                if is_vapor {
-                    code.push_str("const _sfc_main = { __vapor: true }\n");
-                    append_component_render_export(
-                        &mut code,
-                        "_sfc_main",
-                        RenderFunctionName::Render,
-                        &compiled_styles.css_modules,
-                    );
-                } else if options.template.ssr {
-                    code.push_str("const _sfc_main = {}\n");
-                    append_component_render_export(
-                        &mut code,
-                        "_sfc_main",
-                        RenderFunctionName::SsrRender,
-                        &compiled_styles.css_modules,
-                    );
-                } else if !compiled_styles.css_modules.is_empty() {
-                    code.push_str("const _sfc_main = {}\n");
-                    append_component_render_export(
-                        &mut code,
-                        "_sfc_main",
-                        RenderFunctionName::Render,
-                        &compiled_styles.css_modules,
-                    );
-                }
-            }
-            // Previously this just collected the error into a local vec
-            // and continued, returning Ok with empty code — so callers
-            // wrote a 0-byte module and exited 0 (#958). Propagate the
-            // template error up so the build/CLI surfaces it.
-            Err(e) => return Err(e),
-        }
-
-        finalize_output_mode(&mut code, &mut warnings, &options, &codegen_options);
-        trim_trailing_newlines(&mut code);
-
-        return Ok(SfcCompileResult {
-            code,
+        return template_only::compile_template_only(
+            template_only::TemplateOnlyInput {
+                descriptor,
+                options: &options,
+                template_syntax,
+                codegen_options: &codegen_options,
+                compiled_styles: &compiled_styles,
+                component_name: &component_name,
+                scope_id: &scope_id,
+                has_scoped,
+                is_vapor,
+                template_is_ts,
+            },
             css,
-            map: None,
             errors,
             warnings,
-            bindings: None,
             macro_artifacts,
-        });
+        );
     }
 
     // Case 2: Script (non-setup) + Template - rewrite default and compile template
