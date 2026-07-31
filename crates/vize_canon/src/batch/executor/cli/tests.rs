@@ -262,6 +262,42 @@ fn drops_continuations_of_unmapped_diagnostics() {
         "kept global\nkept global continuation"
     );
 
+    // An unmapped positioned header must reset continuation state on its own,
+    // without a preceding dropped global header doing it first.
+    let unmapped_after_kept = cstr!(
+        "{}(1,7): error TS2322: kept primary\n  kept continuation\n{}(1,1): error TS2304: dropped primary\n  dropped continuation",
+        project.virtual_root().join("src").join("main.ts").display(),
+        project
+            .virtual_root()
+            .join("src")
+            .join("unmapped.vue.ts")
+            .display()
+    );
+    let mut diagnostics = Vec::new();
+    parse_cli_diagnostics(
+        unmapped_after_kept.as_str(),
+        &project,
+        &mut mapper,
+        &mut diagnostics,
+    );
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].message, "kept primary\nkept continuation");
+
+    // A suppressed file-less global header resets continuation state too.
+    let suppressed_global_after_kept = cstr!(
+        "{}(1,7): error TS2322: kept primary\n  kept continuation\nerror TS2666: dropped global\n  dropped global continuation",
+        project.virtual_root().join("src").join("main.ts").display()
+    );
+    let mut diagnostics = Vec::new();
+    parse_cli_diagnostics(
+        suppressed_global_after_kept.as_str(),
+        &project,
+        &mut mapper,
+        &mut diagnostics,
+    );
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].message, "kept primary\nkept continuation");
+
     let _ = fs::remove_dir_all(&case_dir);
 }
 
