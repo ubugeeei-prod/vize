@@ -63,6 +63,90 @@ import Literal from "./Literal.vue.ts";
     );
 }
 
+/// Every message that embeds a module specifier must quote the authored one.
+///
+/// `TS2614` anchors at the imported member, not at the specifier, so the
+/// positional check that fixed `TS2307` in #3397 cannot see the import at all
+/// and the generated mirror spelling leaked into both the sentence and the
+/// quick-fix suggestion — which named `import Bare from "…/Local.vue.ts"`, a
+/// path the user cannot type (#3438). `vue-tsc` 3.3.4 on the same workspace
+/// reports, at the identical position:
+///
+/// ```text
+/// src/pages/LocalConsumer.vue(2,10): error TS2614: Module '"../components/Local.vue"' has no exported member 'Bare'. Did you mean to use 'import Bare from "../components/Local.vue"' instead?
+/// ```
+///
+/// The second consumer pins the other direction: it hand-writes the `.vue.ts`
+/// specifier, so that spelling really is the author's and must survive
+/// verbatim. (vize resolves that import where `vue-tsc` reports `TS2307` for
+/// it; that resolution difference is not what this test covers.)
+#[test]
+fn module_member_diagnostics_report_the_authored_specifier() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "module-member-authored-specifier",
+        &[
+            (
+                "src/components/Local.vue",
+                r#"<script lang="ts">
+namespace Bare {
+  export const label = "bare";
+}
+
+export default { name: "Local", data: () => ({ label: Bare.label }) };
+</script>
+"#,
+            ),
+            (
+                "src/pages/LocalConsumer.vue",
+                r#"<script setup lang="ts">
+import { Bare } from "../components/Local.vue";
+
+const label: string = Bare.label;
+</script>
+"#,
+            ),
+            (
+                "src/pages/LiteralConsumer.vue",
+                r#"<script setup lang="ts">
+import { Bare } from "../components/Local.vue.ts";
+
+const label: string = Bare.label;
+</script>
+"#,
+            ),
+        ],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+    let Some(snapshot) = snapshot else {
+        return;
+    };
+
+    assert_eq!(
+        snapshot,
+        vec![
+            (
+                String::from("src/pages/LiteralConsumer.vue"),
+                Some(2614),
+                String::from(
+                    "2:10:error Module '\"../components/Local.vue.ts\"' has no exported member 'Bare'. Did you mean to use 'import Bare from \"../components/Local.vue.ts\"' instead?"
+                ),
+            ),
+            (
+                String::from("src/pages/LocalConsumer.vue"),
+                Some(2614),
+                String::from(
+                    "2:10:error Module '\"../components/Local.vue\"' has no exported member 'Bare'. Did you mean to use 'import Bare from \"../components/Local.vue\"' instead?"
+                ),
+            ),
+        ]
+    );
+}
+
 #[test]
 fn node_module_resolution_uses_package_types_hidden_by_exports() {
     if resolve_test_tsgo_binary().is_none() {

@@ -10,6 +10,7 @@ use vize_carton::{FxHashMap, FxHashSet, String};
 mod keyof_indexed_assignment;
 mod line_index;
 mod module_resolution;
+mod module_specifier;
 mod skip_rules;
 
 use line_index::LineIndex;
