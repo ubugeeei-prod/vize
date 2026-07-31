@@ -37,9 +37,10 @@ test("npm/native declares its types in exactly one generated file", () => {
 });
 
 test("npm/native ships exactly the generated declaration and the loader", () => {
-  const manifest = JSON.parse(
-    fs.readFileSync(path.join(nativeDir, "package.json"), "utf8"),
-  ) as { files: string[]; types: string };
+  const manifest = JSON.parse(fs.readFileSync(path.join(nativeDir, "package.json"), "utf8")) as {
+    files: string[];
+    types: string;
+  };
 
   assert.deepEqual(manifest.files, [
     "index.js",
