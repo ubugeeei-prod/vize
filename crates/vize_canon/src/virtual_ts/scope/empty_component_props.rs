@@ -2,14 +2,17 @@
 
 use vize_carton::FxHashSet;
 use vize_carton::String;
+use vize_carton::append;
+use vize_carton::cstr;
 use vize_carton::profile;
 use vize_croquis::croquis::ComponentUsage;
 
+use crate::virtual_ts::expressions::ComponentPropSource;
 use crate::virtual_ts::expressions::generate_component_prop_checks;
 use crate::virtual_ts::types::VizeMapping;
 
 use super::component_prop_checker::has_inference_props;
-use super::context::ComponentPropsContext;
+use super::context::{ComponentPropsContext, VForPropsContext};
 
 pub(super) fn is_empty_props_usage(usage: &ComponentUsage) -> bool {
     !has_inference_props(usage) && usage.spread_props.is_empty()
@@ -37,9 +40,29 @@ pub(super) fn generate_empty_root_checks(
         return;
     }
 
-    ts.push_str("  void [\n");
-    for (idx, usage) in root_usages {
-        ts.push_str("    () => {\n");
+    generate_empty_checks(
+        ts,
+        mappings,
+        &root_usages,
+        ctx.template_prop_names,
+        ctx.source_context(),
+        "  ",
+    );
+}
+
+pub(super) fn generate_empty_checks(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    usages: &[(usize, &ComponentUsage)],
+    template_prop_names: &FxHashSet<String>,
+    source_context: ComponentPropSource<'_>,
+    indent: &str,
+) {
+    let arrow_indent = cstr!("{indent}  ");
+    let body_indent = cstr!("{indent}    ");
+    append!(*ts, "{indent}void [\n");
+    for &(idx, usage) in usages {
+        append!(*ts, "{arrow_indent}() => {{\n");
         profile!(
             "canon.virtual_ts.empty_component_prop_checks",
             generate_component_prop_checks(
@@ -47,12 +70,58 @@ pub(super) fn generate_empty_root_checks(
                 mappings,
                 usage,
                 idx,
-                ctx.template_prop_names,
-                ctx.source_context(),
-                "      "
+                template_prop_names,
+                source_context,
+                body_indent.as_str()
             )
         );
-        ts.push_str("    },\n");
+        append!(*ts, "{arrow_indent}}},\n");
     }
-    ts.push_str("  ];\n");
+    append!(*ts, "{indent}];\n");
+}
+
+/// Emit ordinary checks directly in their closure and isolate only the empty
+/// checks that would otherwise inflate that closure's control-flow graph.
+pub(super) fn generate_scope_checks(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    ctx: &VForPropsContext<'_>,
+    scope_id: u32,
+    indent: &str,
+) {
+    let Some(usages) = ctx.components_by_scope.get(&scope_id) else {
+        return;
+    };
+    for &(idx, usage) in usages {
+        if is_empty_props_usage(usage) {
+            continue;
+        }
+        profile!(
+            "canon.virtual_ts.component_prop_checks",
+            generate_component_prop_checks(
+                ts,
+                mappings,
+                usage,
+                idx,
+                ctx.template_prop_names,
+                ctx.source_context,
+                indent,
+            )
+        );
+    }
+    let empty_usages: Vec<_> = usages
+        .iter()
+        .copied()
+        .filter(|(_, usage)| is_empty_props_usage(usage))
+        .collect();
+    if !empty_usages.is_empty() {
+        generate_empty_checks(
+            ts,
+            mappings,
+            &empty_usages,
+            ctx.template_prop_names,
+            ctx.source_context,
+            indent,
+        );
+    }
 }

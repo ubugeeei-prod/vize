@@ -22,7 +22,9 @@ use super::context::{ComponentPropsContext, VForPropsContext};
 use super::emit::{
     append_v_for_comment, emit_slot_function_open, emit_v_for_loop_open, slot_props_type,
 };
-use super::empty_component_props::{generate_empty_root_checks, is_empty_props_usage};
+use super::empty_component_props::{
+    generate_empty_root_checks, generate_scope_checks, is_empty_props_usage,
+};
 use super::vif_guard::common_vif_guard_prefix_for_guards_outside_v_for;
 
 /// Generate component props type checks (scope-aware).
@@ -263,7 +265,7 @@ fn generate_closure_component_props_recursive(
             }
 
             // Emit component prop checks for this scope
-            emit_scope_component_prop_checks(ts, mappings, ctx, scope_id, &vfor_inner_indent);
+            generate_scope_checks(ts, mappings, ctx, scope_id, &vfor_inner_indent);
 
             // Recursively handle child closure scopes (v-for and v-slot)
             recurse_child_closure_scopes(ts, mappings, ctx, scope_id, &vfor_inner_indent);
@@ -305,7 +307,7 @@ fn generate_closure_component_props_recursive(
                 }
             }
             // Emit component prop checks for this scope
-            emit_scope_component_prop_checks(ts, mappings, ctx, scope_id, &inner_indent);
+            generate_scope_checks(ts, mappings, ctx, scope_id, &inner_indent);
 
             // Recursively handle child closure scopes (v-for and v-slot)
             recurse_child_closure_scopes(ts, mappings, ctx, scope_id, &inner_indent);
@@ -314,33 +316,6 @@ fn generate_closure_component_props_recursive(
             ts.push_str("};\n");
         }
         _ => {}
-    }
-}
-
-/// Emit the prop checks for every component usage bound to a closure scope.
-fn emit_scope_component_prop_checks(
-    ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
-    ctx: &VForPropsContext<'_>,
-    scope_id: u32,
-    indent: &str,
-) {
-    let Some(usages) = ctx.components_by_scope.get(&scope_id) else {
-        return;
-    };
-    for &(idx, usage) in usages {
-        profile!(
-            "canon.virtual_ts.component_prop_checks",
-            generate_component_prop_checks(
-                ts,
-                mappings,
-                usage,
-                idx,
-                ctx.template_prop_names,
-                ctx.source_context,
-                indent,
-            )
-        );
     }
 }
 
