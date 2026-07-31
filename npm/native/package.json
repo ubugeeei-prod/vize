@@ -24,8 +24,7 @@
     "index.js",
     "index.d.ts",
     "native-binding.js",
-    "native-targets.js",
-    "types"
+    "native-targets.js"
   ],
   "main": "index.js",
   "types": "index.d.ts",
