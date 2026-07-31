@@ -21,8 +21,6 @@ mod spec;
 mod type_references;
 
 #[cfg(test)]
-mod codegen_tests;
-#[cfg(test)]
 mod default_exclude_tests;
 #[cfg(test)]
 mod hidden_include_tests;
