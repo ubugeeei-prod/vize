@@ -17,6 +17,7 @@ test("repo text helpers normalize line endings before workflow matching", () => 
 
 test("GitHub workflows opt JavaScript actions into Node 24", () => {
   for (const workflowName of [
+    "build-docs.yml",
     "check.yml",
     "deploy-docs.yml",
     "miri.yml",
@@ -37,6 +38,7 @@ test("GitHub workflows use the current cache action", () => {
     ".github/actions/setup-rust-sticky-cache/action.yml",
     ".github/actions/setup-moonbit/action.yml",
     ".github/workflows/benchmark.yml",
+    ".github/workflows/build-docs.yml",
     ".github/workflows/check.yml",
     ".github/workflows/deploy-docs.yml",
     ".github/workflows/e2e.yml",
@@ -179,9 +181,9 @@ test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", ()
 test("Linux Rust CI installs Wild linker before cargo builds", () => {
   for (const workflowName of [
     "benchmark.yml",
+    "build-docs.yml",
     "check.yml",
     "criterion-bench.yml",
-    "deploy-docs.yml",
     "e2e.yml",
     "native-smoke.yml",
     "release-preflight.yml",
@@ -208,9 +210,9 @@ test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
   assert.match(action, /secondary-target-path/);
 
   for (const workflowName of [
+    "build-docs.yml",
     "check.yml",
     "criterion-bench.yml",
-    "deploy-docs.yml",
     "e2e.yml",
     "fuzz.yml",
     "miri.yml",

@@ -6,7 +6,7 @@ export const requiredReleaseWorkflows = [
   "Miri",
   "App E2E",
   "Real Project Matrix",
-  "Deploy docs",
+  "Docs build",
 ];
 
 export const requiredReleaseWorkflowEvidence = new Map([
@@ -49,9 +49,9 @@ export const requiredReleaseWorkflowEvidence = new Map([
     },
   ],
   [
-    "Deploy docs",
+    "Docs build",
     {
-      path: ".github/workflows/deploy-docs.yml",
+      path: ".github/workflows/build-docs.yml",
       events: ["push", "workflow_dispatch"],
       branches: { push: ["main"] },
     },

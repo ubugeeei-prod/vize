@@ -47,6 +47,7 @@ test("Tool Benchmark ignores only known non-runtime pull request paths", () => {
     "!.github/workflows/check-bench.yml",
     "!.github/workflows/check.yml",
     "!.github/workflows/criterion-bench.yml",
+    "!.github/workflows/build-docs.yml",
     "!.github/workflows/deploy-docs.yml",
     "!.github/workflows/e2e.yml",
     "!.github/workflows/fuzz.yml",

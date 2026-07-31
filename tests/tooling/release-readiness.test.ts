@@ -30,6 +30,7 @@ test("v1 alpha go/no-go checklist covers release gates and rollback", () => {
     "../../.github/workflows/benchmark.yml",
     "../../.github/workflows/fuzz.yml",
     "../../.github/workflows/e2e.yml",
+    "../../.github/workflows/build-docs.yml",
     "../../.github/workflows/deploy-docs.yml",
     "../../.github/workflows/release.yml",
   ]) {

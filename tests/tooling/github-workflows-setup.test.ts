@@ -6,7 +6,7 @@ import { hostedOrBlacksmith, readRepoFile, workflowJobBody } from "./support/git
 test("deploy-docs deploy job installs MoonBit before running command packages", () => {
   const workflow = readRepoFile(".github", "workflows", "deploy-docs.yml");
   const deployJob = workflow.slice(workflow.indexOf("\n  deploy:\n"));
-  const setupIndex = deployJob.indexOf("- uses: ./.github/actions/setup-moonbit");
+  const setupIndex = deployJob.indexOf("uses: ./.github/actions/setup-moonbit");
   const moonRunIndex = deployJob.indexOf(
     "run: moon run --target native tools/moon/cmd/github/create_site_structure --",
   );
@@ -20,7 +20,7 @@ test("deploy-docs deploy job keeps a full checkout so local actions and scripts 
   const workflow = readRepoFile(".github", "workflows", "deploy-docs.yml");
   const deployJob = workflow.slice(workflow.indexOf("\n  deploy:\n"));
 
-  assert.match(deployJob, /- uses: actions\/checkout@[0-9a-f]{40}\s*# v6/);
+  assert.match(deployJob, /uses: actions\/checkout@[0-9a-f]{40}\s*# v6/);
   assert.doesNotMatch(deployJob, /sparse-checkout:/);
 });
 
@@ -47,7 +47,7 @@ test("WASM build jobs install MoonBit before invoking moon run", () => {
         "run: moon run --target native tools/moon/cmd/github/build_vitrine_wasm -- playground/src/wasm",
     },
     {
-      workflowName: "deploy-docs.yml",
+      workflowName: "build-docs.yml",
       jobName: "build-playground",
       moonRun:
         "run: moon run --target native tools/moon/cmd/github/build_vitrine_wasm -- npm/wasm playground/src/wasm",

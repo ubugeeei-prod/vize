@@ -1,0 +1,139 @@
+name: Docs build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+# Release preflight consumes this workflow as immutable evidence for github.sha.
+# A later main push must build independently instead of cancelling an older SHA.
+concurrency:
+  group: docs-build-${{ github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  build-docs:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+      - name: Setup Wild linker
+        uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: docs-napi
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Install JS dependencies
+        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
+
+      - name: Build @vizejs/vite-plugin
+        run: moon run --target native tools/moon/cmd/github/run_many -- vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
+
+      - name: Build docs
+        run: vp run --filter './docs' build
+
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: docs
+          path: docs/dist
+          if-no-files-found: error
+
+  build-playground:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Setup Wild linker
+        uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+
+      - uses: ./.github/actions/setup-moonbit
+
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: docs-wasm
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+
+      - name: Cache WASM build
+        id: cache-wasm
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: |
+            npm/wasm
+            playground/src/wasm
+          key: ${{ runner.os }}-docs-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/wasm/package.json') }}
+
+      - name: Install wasm-bindgen-cli
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: wasm-bindgen-cli@0.2.121
+
+      - name: Build WASM
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
+        run: moon run --target native tools/moon/cmd/github/build_vitrine_wasm -- npm/wasm playground/src/wasm
+
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
+      - name: Install JS dependencies
+        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './playground...' --filter './examples/vite-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
+
+      - name: Build npm packages
+        run: moon run --target native tools/moon/cmd/github/run_many -- vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/builder/vite-musea' build
+
+      - name: Build playground
+        run: vp run --filter './playground' build
+
+      - name: Clean musea example Rust target
+        run: cargo clean --target-dir target/docs-example
+
+      - name: Build musea-examples
+        run: vp run --filter './examples/vite-musea' build
+
+      - name: Upload playground artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playground
+          path: playground/dist
+          if-no-files-found: error
+
+      - name: Upload musea-examples artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: musea-examples
+          path: examples/vite-musea/dist
+          if-no-files-found: error

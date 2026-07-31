@@ -21,7 +21,7 @@ they operate.
   - [Check](../../.github/workflows/check.yml)
   - [Benchmark](../../.github/workflows/benchmark.yml)
   - [App E2E](../../.github/workflows/e2e.yml) for `dev`, `preview`, and `build`
-  - [Deploy Docs](../../.github/workflows/deploy-docs.yml) on the target commit or a matching dry run
+  - [Docs Build](../../.github/workflows/build-docs.yml) evidence on the exact target commit
 - [ ] [Fuzz](../../.github/workflows/fuzz.yml) status, seeded corpus health, and uploaded
       reproducers are reviewed when parser/compiler surfaces changed.
 - [ ] No release-blocking draft PR, open P0/P1 fix request, or failing required workflow remains.
@@ -101,7 +101,8 @@ vp dlx vize@alpha --version
 vp install -D @vizejs/vite-plugin@alpha @vizejs/vite-plugin-musea@alpha
 ```
 
-- [ ] Docs owner verifies the docs site, search index, and release post after deploy.
+- [ ] Docs owner verifies the docs site, search index, and release post after
+      [Deploy Docs](../../.github/workflows/deploy-docs.yml) publishes current `main`.
 - [ ] npm owner verifies native optional dependency resolution on macOS, Linux, and Windows runners.
 - [ ] Release captain posts release communication with:
   - version and channel
