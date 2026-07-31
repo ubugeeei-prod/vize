@@ -15,6 +15,14 @@ function assertExists(...segments: string[]): void {
   assert.ok(fs.existsSync(path.join(root, ...segments)), segments.join("/"));
 }
 
+function shellWords(command: string, label: string): string[] {
+  const logicalCommand = command.trim().replace(/\\\r?\n[ \t]*/g, " ");
+  assert.doesNotMatch(logicalCommand, /\r?\n/, `${label} must be one logical shell command`);
+  return [...logicalCommand.matchAll(/'([^']*)'|"([^"]*)"|(\S+)/g)].map(
+    (match) => match[1] ?? match[2] ?? match[3],
+  );
+}
+
 test("workspace exposes app e2e task aliases with scoped cache inputs", () => {
   const taskInputs = readRepoFile("tools/vite-plus/task-inputs.ts");
   const taskGroups = readRepoFile("tools/vite-plus/tasks/test-benchmark.ts");
@@ -76,18 +84,21 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
     ],
   ] as const) {
     const script = scripts[name] ?? "";
-    assert.match(
-      script,
-      /VIZE_TEST_WORKTREE_ID=\$\{VIZE_TEST_WORKTREE_ID:-ci-readiness\}/,
+    const argv = shellWords(script, name);
+    assert.equal(
+      argv[0],
+      "VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness}",
       `${name} must default the shared readiness worktree`,
     );
-    assert.match(
-      script,
-      /node --test --test-concurrency=1\b/,
+    assert.equal(argv[1], "node", `${name} must invoke the Node.js test runner`);
+    const driverStart = argv.findIndex((token, index) => index > 1 && token.endsWith(".ts"));
+    assert.deepEqual(
+      argv.slice(2, driverStart).toSorted(),
+      ["--test", "--test-concurrency=1"].toSorted(),
       `${name} must run its drivers serially`,
     );
     assert.deepEqual(
-      script.split(/\s+/).filter((token) => token.endsWith(".ts")),
+      argv.slice(driverStart),
       drivers,
       `${name} must run exactly the release-blocking drivers`,
     );

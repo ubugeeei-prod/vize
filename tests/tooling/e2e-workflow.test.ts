@@ -28,6 +28,14 @@ const yamlStepBody = (document: string, selector: { id: string } | { name: strin
   return lines.slice(start, end).join("\n");
 };
 
+const shellWords = (command: string, label: string): string[] => {
+  const logicalCommand = command.trim().replace(/\\\r?\n[ \t]*/g, " ");
+  assert.doesNotMatch(logicalCommand, /\r?\n/, `${label} must be one logical shell command`);
+  return [...logicalCommand.matchAll(/'([^']*)'|"([^"]*)"|(\S+)/g)].map(
+    (match) => match[1] ?? match[2] ?? match[3],
+  );
+};
+
 test("full app e2e workflow remains nightly/on-demand and uploads failure artifacts", () => {
   const workflow = readRepoFile(".github", "workflows", "e2e.yml");
   const appJob = workflowJobBody(workflow, "app-e2e");
@@ -159,10 +167,25 @@ test("local app readiness action keeps setup, diagnostics, and aggregation bound
 
   assert.match(action, /runs:\n\s+using:\s*composite/);
   const hydration = yamlStepBody(action, { name: "Hydrate pinned app fixtures" });
-  assert.match(hydration, /git submodule update --init --recursive --depth 1/);
+  const runMarker = "run: |";
+  const runStart = hydration.indexOf(runMarker);
+  assert.notEqual(runStart, -1, "hydration step run script");
   assert.deepEqual(
-    [...hydration.matchAll(/tests\/_fixtures\/_git\/(\S+)/g)].map((match) => match[1]),
-    ["elk", "misskey", "npmx.dev", "nuxt-ui", "reka-ui"],
+    shellWords(hydration.slice(runStart + runMarker.length), "hydration run script"),
+    [
+      "git",
+      "submodule",
+      "update",
+      "--init",
+      "--recursive",
+      "--depth",
+      "1",
+      "tests/_fixtures/_git/elk",
+      "tests/_fixtures/_git/misskey",
+      "tests/_fixtures/_git/npmx.dev",
+      "tests/_fixtures/_git/nuxt-ui",
+      "tests/_fixtures/_git/reka-ui",
+    ],
     "readiness must hydrate exactly the pinned readiness fixtures",
   );
   const setupRust = yamlStepBody(action, { name: "Setup Rust" });
