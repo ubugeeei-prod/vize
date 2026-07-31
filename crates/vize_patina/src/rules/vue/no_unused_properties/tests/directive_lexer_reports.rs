@@ -235,6 +235,105 @@ defineProps<{{ msg: string }}>();
 }
 
 #[test]
+fn constrained_multiline_tsx_generic_arrow_does_not_hide_a_real_directive() {
+    let sfc = r#"<script setup lang="tsx">
+const identity = <T extends unknown>(
+  value: T,
+) => value
+// eslint-disable-next-line vue/no-unused-properties
+defineProps<{ msg: string }>();
+</script>
+<template><div>{{ identity('ok') }}</div></template>
+"#;
+    assert_eq!(owned(&lint_sfc(sfc)), Vec::new());
+}
+
+fn assert_regex_marker_is_not_a_directive(statement: &str) {
+    let sfc = format!(
+        r#"<script setup lang="ts">
+declare const ok: boolean
+declare const input: string
+{statement}
+defineProps<{{ msg: string }}>();
+</script>
+<template><div>hi</div></template>
+"#
+    );
+    assert_msg_reported(&sfc);
+}
+
+#[test]
+fn regex_after_control_condition_stays_out_of_comment_directives() {
+    assert_regex_marker_is_not_a_directive("if (ok) /[/*] @vize:expected */.test(input)");
+}
+
+#[test]
+fn control_paren_survives_an_intervening_comment() {
+    assert_regex_marker_is_not_a_directive(
+        "if /* keep control state */ (ok) /[/*] @vize:expected */.test(input)",
+    );
+}
+
+#[test]
+fn for_await_control_paren_starts_a_regex_statement() {
+    assert_regex_marker_is_not_a_directive(
+        "for await (const value of input) /[/*] @vize:expected */.test(value)",
+    );
+}
+
+#[test]
+fn regex_after_else_stays_out_of_comment_directives() {
+    assert_regex_marker_is_not_a_directive(
+        "if (ok) input\nelse /[/*] @vize:expected */.test(input)",
+    );
+}
+
+#[test]
+fn regex_after_do_stays_out_of_comment_directives() {
+    assert_regex_marker_is_not_a_directive("do /[/*] @vize:expected */.test(input); while (ok)");
+}
+
+#[test]
+fn division_after_an_expression_paren_does_not_hide_a_real_directive() {
+    let sfc = r#"<script setup lang="ts">
+declare const input: number
+const half = Number(input)
+  / 2 // eslint-disable-next-line vue/no-unused-properties
+defineProps<{ msg: string }>();
+</script>
+<template><div>{{ half }}</div></template>
+"#;
+    assert_eq!(owned(&lint_sfc(sfc)), Vec::new());
+}
+
+#[test]
+fn jsx_after_control_condition_keeps_raw_text_out_of_comment_directives() {
+    let sfc = r#"<script setup lang="tsx">
+declare const ok: boolean
+if (ok) <div>
+  // eslint-disable-next-line vue/no-unused-properties
+</div>
+defineProps<{ msg: string }>();
+</script>
+<template><div>hi</div></template>
+"#;
+    assert_msg_reported(sfc);
+}
+
+#[test]
+fn constrained_jsx_tag_is_not_a_typescript_generic_arrow() {
+    let sfc = r#"<script setup lang="jsx">
+const vnode = <T extends unknown>(
+  // eslint-disable vue/no-unused-properties
+)</T>
+defineProps(['msg']);
+</script>
+<template><div>{{ vnode }}</div></template>
+"#;
+    assert_eq!(owned(&lint_sfc(sfc)), vec![unused(sfc, "msg", "'msg'")]);
+}
+
+#[test]
 fn jsx_after_return_keeps_raw_text_out_of_comment_directives() {
     let sfc = r#"<script setup lang="tsx">
 function render() {

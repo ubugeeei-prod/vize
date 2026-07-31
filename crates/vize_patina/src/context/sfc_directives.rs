@@ -15,7 +15,7 @@ use lexer::{DirectiveLexer, StyleDirectiveLexer};
 
 #[derive(Clone, Copy)]
 enum BlockDomain<'a> {
-    Script { jsx: bool },
+    Script { jsx: bool, tsx: bool },
     Style(Option<&'a str>),
 }
 
@@ -61,12 +61,16 @@ impl SfcDirectiveState {
             .iter()
             .chain(descriptor.script_setup.iter())
             .map(|block| {
-                let jsx = matches!(block.lang.as_deref(), Some("jsx" | "tsx"));
+                let (jsx, tsx) = match block.lang.as_deref() {
+                    Some("tsx") => (true, true),
+                    Some("jsx") => (true, false),
+                    _ => (false, false),
+                };
                 (
                     block.loc.start,
                     block.loc.end,
                     block.content.as_ref(),
-                    BlockDomain::Script { jsx },
+                    BlockDomain::Script { jsx, tsx },
                 )
             })
             .chain(descriptor.styles.iter().map(|block| {
@@ -91,8 +95,8 @@ impl SfcDirectiveState {
                 ..BlockDirectiveState::default()
             };
             match domain {
-                BlockDomain::Script { jsx } => {
-                    let mut lexer = DirectiveLexer::new(jsx);
+                BlockDomain::Script { jsx, tsx } => {
+                    let mut lexer = DirectiveLexer::new(jsx, tsx);
                     block.scan(content, first_line, |line| lexer.scan_line(line));
                 }
                 BlockDomain::Style(lang) => {

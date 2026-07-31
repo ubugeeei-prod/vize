@@ -6,8 +6,8 @@ mod token;
 pub(super) use style::StyleDirectiveLexer;
 
 use token::{
-    ends_with_unescaped_backslash, identifier_allows_expression, identifier_end,
-    is_identifier_start, is_jsx_start,
+    ParenContext, ends_with_unescaped_backslash, identifier_allows_expression, identifier_end,
+    identifier_opens_control_paren, is_identifier_start, is_jsx_start,
 };
 
 #[derive(Default)]
@@ -33,25 +33,31 @@ enum ScriptContext {
 pub(super) struct DirectiveLexer {
     stack: Vec<ScriptContext>,
     jsx: bool,
+    tsx: bool,
     jsx_depth: u32,
     can_start_expression: bool,
     after_dot: bool,
+    parens: Vec<ParenContext>,
+    next_paren_is_control: bool,
 }
 
 impl Default for DirectiveLexer {
     fn default() -> Self {
-        Self::new(false)
+        Self::new(false, false)
     }
 }
 
 impl DirectiveLexer {
-    pub(super) fn new(jsx: bool) -> Self {
+    pub(super) fn new(jsx: bool, tsx: bool) -> Self {
         Self {
             stack: vec![ScriptContext::Code],
             jsx,
+            tsx,
             jsx_depth: 0,
             can_start_expression: true,
             after_dot: false,
+            parens: Vec::new(),
+            next_paren_is_control: false,
         }
     }
 
@@ -72,6 +78,22 @@ impl DirectiveLexer {
             let current = bytes[index];
             let next = bytes.get(index + 1).copied();
             let had_code_token = has_code_token;
+            let starts_comment = matches!(
+                context,
+                ScriptContext::Code | ScriptContext::Interpolation(_)
+            ) && matches!((current, next), (b'/', Some(b'/' | b'*')));
+            if self.next_paren_is_control
+                && matches!(
+                    context,
+                    ScriptContext::Code | ScriptContext::Interpolation(_)
+                )
+                && !current.is_ascii_whitespace()
+                && !is_identifier_start(current)
+                && current != b'('
+                && !starts_comment
+            {
+                self.next_paren_is_control = false;
+            }
             match context {
                 ScriptContext::Code | ScriptContext::Interpolation(_) => match (current, next) {
                     (b'/', Some(b'/')) => {
@@ -86,7 +108,9 @@ impl DirectiveLexer {
                         self.stack.push(ScriptContext::Regex(false));
                     }
                     (b'<', _)
-                        if self.jsx && self.can_start_expression && is_jsx_start(bytes, index) =>
+                        if self.jsx
+                            && self.can_start_expression
+                            && is_jsx_start(bytes, index, self.tsx) =>
                     {
                         self.jsx_depth += 1;
                         self.stack.push(ScriptContext::JsxText);
@@ -116,12 +140,33 @@ impl DirectiveLexer {
                     }
                     (byte, _) if is_identifier_start(byte) => {
                         let end = identifier_end(bytes, index);
+                        let identifier = &bytes[index..end];
+                        let after_dot = self.after_dot;
+                        let keeps_control_paren =
+                            self.next_paren_is_control && identifier == b"await" && !after_dot;
+                        self.next_paren_is_control = keeps_control_paren
+                            || (!after_dot && identifier_opens_control_paren(identifier));
                         self.can_start_expression =
-                            !self.after_dot && identifier_allows_expression(&bytes[index..end]);
+                            !after_dot && identifier_allows_expression(identifier);
                         self.after_dot = false;
                         index = end - 1;
                     }
-                    (b')' | b']' | b'0'..=b'9', _) => {
+                    (b'(', _) => {
+                        let context = if std::mem::take(&mut self.next_paren_is_control) {
+                            ParenContext::Control
+                        } else {
+                            ParenContext::Expression
+                        };
+                        self.parens.push(context);
+                        self.can_start_expression = true;
+                        self.after_dot = false;
+                    }
+                    (b')', _) => {
+                        self.can_start_expression =
+                            matches!(self.parens.pop(), Some(ParenContext::Control));
+                        self.after_dot = false;
+                    }
+                    (b']' | b'0'..=b'9', _) => {
                         self.can_start_expression = false;
                         self.after_dot = false;
                     }
@@ -144,8 +189,8 @@ impl DirectiveLexer {
                         self.after_dot = false;
                     }
                     (
-                        b'(' | b'[' | b'/' | b'=' | b':' | b',' | b'?' | b';' | b'+' | b'-' | b'*'
-                        | b'%' | b'&' | b'|' | b'^' | b'~' | b'<' | b'>',
+                        b'[' | b'/' | b'=' | b':' | b',' | b'?' | b';' | b'+' | b'-' | b'*' | b'%'
+                        | b'&' | b'|' | b'^' | b'~' | b'<' | b'>',
                         _,
                     ) => {
                         self.can_start_expression = true;
@@ -247,10 +292,6 @@ impl DirectiveLexer {
                 context,
                 ScriptContext::BlockComment | ScriptContext::LineComment
             );
-            let starts_comment = matches!(
-                context,
-                ScriptContext::Code | ScriptContext::Interpolation(_)
-            ) && matches!((current, next), (b'/', Some(b'/' | b'*')));
             if !in_comment && !current.is_ascii_whitespace() && !starts_comment {
                 has_code_token = true;
             }
