@@ -574,14 +574,13 @@
       "file": "src/page/vipcard/vipcard.vue",
       "diagnostics": [
         "error:4:24 [TS2304] Cannot find name 'userInfo'.",
-        "error:4:24 [TS2304] Cannot find name 'userInfo'.\nType 'boolean' is not assignable to type 'number'.\nType '{ addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to type 'string'.\nType '{ addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to type 'string'.\nType '{ addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to type 'string'.\nType '{ addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to type 'string'.\nType '{ addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to type 'string'.\nType '{ addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to type 'string'.",
         "error:5:44 [TS2304] Cannot find name 'userInfo'.",
         "error:5:45 [TS2304] Cannot find name 'userInfo'.",
         "error:76:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
       ]
     }
   ],
-  "errorCount": 314,
+  "errorCount": 313,
   "warningCount": 0,
   "fileCount": 55
 }
