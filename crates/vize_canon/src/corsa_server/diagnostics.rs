@@ -1,5 +1,6 @@
 use super::{CorsaServer, Diagnostic};
 use crate::corsa_bridge::CorsaVueVirtualProject;
+use crate::corsa_client::LspDiagnostic;
 use vize_carton::{String, cstr, line_index::LineIndex};
 
 impl CorsaServer {
@@ -33,40 +34,45 @@ impl CorsaServer {
 
         Ok(corsa_diagnostics
             .into_iter()
-            .map(|diagnostic| {
-                let severity: String = match diagnostic.severity {
-                    Some(1) => "error".into(),
-                    Some(2) => "warning".into(),
-                    Some(3) => "info".into(),
-                    Some(4) => "hint".into(),
-                    _ => "error".into(),
-                };
-                let code = diagnostic.code.map(|code| match code {
-                    serde_json::Value::Number(number) => cstr!("TS{number}"),
-                    serde_json::Value::String(code) => code.into(),
-                    _ => cstr!("{code:?}"),
-                });
-                let (line, column) = map_host_position_to_source(
-                    project,
-                    &virtual_line_index,
-                    &source_line_index,
-                    diagnostic.range.start.line,
-                    diagnostic.range.start.character,
-                )
-                .unwrap_or((
-                    diagnostic.range.start.line,
-                    diagnostic.range.start.character,
-                ));
-                Diagnostic {
-                    message: diagnostic.message,
-                    severity,
-                    line: one_based(line),
-                    column: one_based(column),
-                    code,
-                }
+            .filter_map(|diagnostic| {
+                map_corsa_diagnostic(project, &virtual_line_index, &source_line_index, diagnostic)
             })
             .collect())
     }
+}
+
+fn map_corsa_diagnostic(
+    project: &CorsaVueVirtualProject,
+    virtual_line_index: &LineIndex<'_>,
+    source_line_index: &LineIndex<'_>,
+    diagnostic: LspDiagnostic,
+) -> Option<Diagnostic> {
+    let (line, column) = map_host_position_to_source(
+        project,
+        virtual_line_index,
+        source_line_index,
+        diagnostic.range.start.line,
+        diagnostic.range.start.character,
+    )?;
+    let severity: String = match diagnostic.severity {
+        Some(1) => "error".into(),
+        Some(2) => "warning".into(),
+        Some(3) => "info".into(),
+        Some(4) => "hint".into(),
+        _ => "error".into(),
+    };
+    let code = diagnostic.code.map(|code| match code {
+        serde_json::Value::Number(number) => cstr!("TS{number}"),
+        serde_json::Value::String(code) => code.into(),
+        _ => cstr!("{code:?}"),
+    });
+    Some(Diagnostic {
+        message: diagnostic.message,
+        severity,
+        line: one_based(line),
+        column: one_based(column),
+        code,
+    })
 }
 
 fn one_based(position: u32) -> u32 {
@@ -105,11 +111,82 @@ fn map_host_position_to_source(
 
 #[cfg(test)]
 mod tests {
-    use super::one_based;
+    use oxc_span::SourceType;
+    use serde_json::json;
+    use vize_carton::line_index::LineIndex;
+
+    use super::{map_corsa_diagnostic, one_based};
+    use crate::batch::ImportSourceMap;
+    use crate::corsa_bridge::{CorsaVueVirtualDocument, CorsaVueVirtualProject};
+    use crate::corsa_client::{LspDiagnostic, LspPosition, LspRange};
+    use crate::virtual_ts::VizeMapping;
+
+    const SOURCE: &str = "mapped\n";
+    const VIRTUAL_SOURCE: &str = "helper\nmapped\n";
+
+    fn project() -> CorsaVueVirtualProject {
+        CorsaVueVirtualProject {
+            host: CorsaVueVirtualDocument {
+                request_uri: "file:///App.vue.ts".into(),
+                code: VIRTUAL_SOURCE.into(),
+                pre_rewrite_code: VIRTUAL_SOURCE.into(),
+                mappings: vec![VizeMapping {
+                    gen_range: 7..13,
+                    src_range: 0..6,
+                    sub_spans: Vec::new(),
+                }],
+                import_source_map: ImportSourceMap::empty(),
+                source_type: SourceType::ts(),
+                virtual_suffix: ".ts",
+            },
+            documents: Vec::new(),
+        }
+    }
+
+    fn diagnostic(line: u32, character: u32, severity: i32) -> LspDiagnostic {
+        LspDiagnostic {
+            range: LspRange {
+                start: LspPosition { line, character },
+                end: LspPosition {
+                    line,
+                    character: character + 1,
+                },
+            },
+            severity: Some(severity),
+            code: Some(json!(6196)),
+            source: Some("ts".into()),
+            message: "generated diagnostic".into(),
+        }
+    }
+
+    fn map(diagnostic: LspDiagnostic) -> Option<super::Diagnostic> {
+        let project = project();
+        map_corsa_diagnostic(
+            &project,
+            &LineIndex::new(&project.host.code),
+            &LineIndex::new(SOURCE),
+            diagnostic,
+        )
+    }
 
     #[test]
     fn one_based_positions_saturate_at_the_protocol_boundary() {
         assert_eq!(one_based(0), 1);
         assert_eq!(one_based(u32::MAX), u32::MAX);
+    }
+
+    #[test]
+    fn unmapped_generated_diagnostics_are_dropped_for_every_severity() {
+        assert!(map(diagnostic(0, 0, 1)).is_none());
+        assert!(map(diagnostic(0, 0, 4)).is_none());
+    }
+
+    #[test]
+    fn mapped_hint_keeps_its_authored_position() {
+        let mapped = map(diagnostic(1, 0, 4)).expect("mapped diagnostic");
+        assert_eq!(mapped.severity, "hint");
+        assert_eq!(mapped.line, 1);
+        assert_eq!(mapped.column, 1);
+        assert_eq!(mapped.code.as_deref(), Some("TS6196"));
     }
 }
