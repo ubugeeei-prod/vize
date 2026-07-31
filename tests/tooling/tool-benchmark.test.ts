@@ -1,9 +1,14 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { buildFairnessNotes } from "../../bench/benchmark-notes.mjs";
 import { createSurface, renderDocument, renderMarkdown } from "../../bench/compare-tools.mjs";
 import { createNativeBatchSequenceVariants } from "../../bench/native-batch.mjs";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 const compileSurface = createSurface({
   id: "compile",
@@ -140,6 +145,23 @@ test("tool benchmark fairness notes report the measured corpus size", () => {
     notes.some((note) => note.includes("15,000-SFC")),
     false,
   );
+});
+
+test("the Nuxt fairness note states the Vue-compilation share and where the module's own cost is measured", () => {
+  // The Nuxt row is an end-to-end `nuxt build`, and SFC compilation is ~2% of
+  // it, so it cannot be read as a compiler comparison. The note must say so,
+  // and must point at the benchmark that does isolate the Vize Nuxt module.
+  const nuxtNotes = buildFairnessNotes(500).filter((note) => note.startsWith("Nuxt SPA build"));
+
+  assert.deepEqual(nuxtNotes, [
+    "Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed. Vue SFC compilation is roughly 2% of that build (measured on the 500-file corpus in #3426), so this row cannot be moved by making the Vue compiler faster — it is dominated by Nitro, Rollup and Nuxt's own module graph work. `bench/nuxt-bridge-transform.mjs` isolates the part of this surface Vize does own, the Nuxt module's per-module bridge transform.",
+  ]);
+
+  const publishedDoc = fs.readFileSync(
+    path.join(root, "docs/content/architecture/performance-blacksmith.md"),
+    "utf-8",
+  );
+  assert.equal(publishedDoc.includes(`- ${nuxtNotes[0]}`), true);
 });
 
 test("native batch sequence variants require parallel capacity", () => {
