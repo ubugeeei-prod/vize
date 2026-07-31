@@ -21,6 +21,28 @@ pub(crate) const VUE_RUNTIME_DOM_STUB_TYPES: &str = r#"export interface Componen
   $emit: (...args: any[]) => void;
 }
 
+export interface VNodeProps {
+  key?: PropertyKey;
+  ref?: unknown;
+  ref_for?: boolean;
+  ref_key?: string;
+  onVnodeBeforeMount?: unknown;
+  onVnodeMounted?: unknown;
+  onVnodeBeforeUpdate?: unknown;
+  onVnodeUpdated?: unknown;
+  onVnodeBeforeUnmount?: unknown;
+  onVnodeUnmounted?: unknown;
+}
+
+export interface AllowedComponentProps {
+  class?: unknown;
+  style?: unknown;
+}
+
+export interface ComponentCustomProps {}
+
+export type PublicProps = VNodeProps & AllowedComponentProps & ComponentCustomProps;
+
 export type NativeElements = Record<string, Record<string, unknown>>;
 
 export type DefineComponent<

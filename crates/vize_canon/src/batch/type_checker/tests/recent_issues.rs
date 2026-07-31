@@ -1,4 +1,5 @@
 use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
+mod component_prop_regressions;
 mod directive_anchors;
 mod directive_values;
 mod empty_required_props;
@@ -8,7 +9,6 @@ mod sequence_prop_expressions;
 mod spread_props;
 mod spread_scope_bindings;
 mod ts_extension_substitution;
-
 #[test]
 fn issue_2645_infers_generic_sfc_props_in_tsx() {
     if resolve_test_tsgo_binary().is_none() {

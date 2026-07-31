@@ -35,6 +35,47 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
     })
 }
 
+/// Authored names that might be declared component props.
+///
+/// `class` and `style` are always fallthrough attributes in Vize's component
+/// surface. Other names stay in the union: the generated type decides whether
+/// they are actual props or merely arbitrary attributes.
+fn authored_prop_key_union(usage: &ComponentUsage) -> String {
+    let mut seen = FxHashSet::default();
+    let mut keys = String::default();
+    for prop in &usage.props {
+        if prop.name_is_dynamic
+            || matches!(prop.name.as_str(), "key" | "ref" | "class" | "style")
+            || (prop.is_dynamic && prop.value.is_none())
+        {
+            continue;
+        }
+        let name = to_camel_case(prop.name.as_str());
+        if !seen.insert(name.clone()) {
+            continue;
+        }
+        if !keys.is_empty() {
+            keys.push_str(" | ");
+        }
+        keys.push('"');
+        for ch in name.chars() {
+            match ch {
+                '\\' => keys.push_str("\\\\"),
+                '"' => keys.push_str("\\\""),
+                '\n' => keys.push_str("\\n"),
+                '\r' => keys.push_str("\\r"),
+                '\t' => keys.push_str("\\t"),
+                _ => keys.push(ch),
+            }
+        }
+        keys.push('"');
+    }
+    if keys.is_empty() {
+        keys.push_str("never");
+    }
+    keys
+}
+
 /// The target the usage's whole props object literal is checked against.
 ///
 /// `__VizeExactOptionalProps<__X_Props_N>` reports **only** what the per-prop
@@ -75,10 +116,10 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 ///
 /// Consequences, covered by the component-props and project tests:
 ///
-/// * a usage that binds at least one named prop keeps every other property
-///   optional here, so missing-required-prop diagnostics are not duplicated by
-///   this widened path. Empty and spread-only usages select the full child type
-///   below, which is what catches their missing required props (#3444, #3527).
+/// * when the usage binds a declared prop, properties it did not pass are not
+///   reported by this path — every property is optional. If it binds only
+///   fallthrough attributes, `__VizeWholeProps` keeps the full type so required
+///   props are still checked (#3566).
 /// * `class`, `style`, `data-*`, `aria-*` and anything else the child does not
 ///   declare are absorbed by the `Record<string, unknown>` intersection
 ///   `__VizePropChecker` applies, which also suppresses object-literal excess
@@ -90,6 +131,21 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 /// * with `exactOptionalPropertyTypes` off the check is inert, because an
 ///   optional property accepts `undefined` implicitly — which is also what
 ///   `vue-tsc` does.
+///
+/// The extracted `$props` type also contains Vue's `PublicProps` and listener
+/// props synthesized from `emits`. Those are accepted at a component boundary,
+/// but authoring one does not satisfy the component's own props contract. The
+/// helper therefore subtracts both key sets before deciding that an authored
+/// name is declared. Vize-generated components expose exact listener keys via
+/// `__vizeEmitProps`. External Vue components expose them through their typed
+/// `$emit`; the generic-event guard rejects Vue's untyped `(event: string)`
+/// fallback before mapping listener props. Listener suffixes try both the raw
+/// spelling and its uncapitalized form: Vue maps both `XML` and `xML` to
+/// `onXML`, so reversing that key through `Uncapitalize` alone is lossy. Their
+/// static typed `emits` option is retained as a second source for component
+/// constructors that expose it directly. Vue 2 does not export `PublicProps`,
+/// so that import deliberately degrades to `any`, which the tuple-guard
+/// converts to an empty key set.
 ///
 /// Only the **non-generic** branch of `__VizePropChecker` uses this type; a
 /// generic child resolves through its own `__vizeCheck` signature and ignores
@@ -118,7 +174,10 @@ pub(super) fn append_prop_checker_alias(
     // props belong to the per-prop check, and the full type there would
     // duplicate every one of them.
     let target = if has_inference_props(usage) {
-        cstr!("__VizeExactOptionalProps<__{component_type_name}_Props_{idx}>")
+        let keys = authored_prop_key_union(usage);
+        cstr!(
+            "__VizeWholeProps<typeof {component_ref}, __{component_type_name}_Props_{idx}, {keys}>"
+        )
     } else {
         cstr!("__{component_type_name}_Props_{idx}")
     };
@@ -146,9 +205,40 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
     ts.push_str(
         "  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;\n",
     );
-    ts.push_str(
-        "  type __VizeExactOptionalProps<P> = { [K in keyof P]?: Required<Pick<P, K>>[K] | {} | null };\n",
-    );
+    if usages.iter().any(|(_, usage)| has_inference_props(usage)) {
+        ts.push_str(
+            "  type __VizeExactOptionalProps<P> = { [K in keyof P]?: Required<Pick<P, K>>[K] | {} | null };\n",
+        );
+        ts.push_str(
+            "  // @ts-ignore TS2694/TS2307: Vue 2 has no PublicProps; an unresolved alias degrades to any and therefore contributes no keys.\n",
+        );
+        ts.push_str("  type __VizeVuePublicProps = import('vue').PublicProps;\n");
+        ts.push_str(
+            "  type __VizeVuePublicPropKeys = [__VizeIsAny<__VizeVuePublicProps>] extends [true] ? never : keyof __VizeVuePublicProps;\n",
+        );
+        ts.push_str(
+            "  type __VizeUsageCamelize<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeUsageCamelize<T>>}` : S;\n",
+        );
+        ts.push_str(
+            "  type __VizeUsageEventProp<K extends string> = `on${Capitalize<__VizeUsageCamelize<K>>}`;\n",
+        );
+        ts.push_str(
+            "  type __VizeComponentEmitPropKeys<C> = '__vizeEmitProps' extends keyof C ? C extends { __vizeEmitProps?: infer P } ? keyof P : never : C extends { emits?: infer E } ? [__VizeIsAny<E>] extends [true] ? never : __VizeUsageEventProp<E extends readonly (infer N extends string)[] ? N : keyof NonNullable<E> & string> : never;\n",
+        );
+        ts.push_str(
+            "  type __VizeEventNameForProp<K> = K extends `on${infer N}` ? Uncapitalize<N> : never;\n",
+        );
+        ts.push_str("  type __VizeEventSuffixForProp<K> = K extends `on${infer N}` ? N : never;\n");
+        ts.push_str(
+            "  type __VizeInstanceEmitPropKeys<C, P> = C extends { new (...args: any[]): { $emit: infer F } } ? [__VizeIsAny<F>] extends [true] ? never : F extends (event: string, ...args: any[]) => any ? never : { [K in keyof P]: K extends `on${string}` ? F extends (event: __VizeEventSuffixForProp<K>, ...args: any[]) => any ? K : F extends (event: __VizeEventNameForProp<K>, ...args: any[]) => any ? K : never : never }[keyof P] : never;\n",
+        );
+        ts.push_str(
+            "  type __VizeDeclaredPropKeys<C, P> = Exclude<keyof P, __VizeVuePublicPropKeys | __VizeComponentEmitPropKeys<C> | __VizeInstanceEmitPropKeys<C, P>>;\n",
+        );
+        ts.push_str(
+            "  type __VizeWholeProps<C, P, K extends PropertyKey> = P extends unknown ? [Extract<__VizeDeclaredPropKeys<C, P>, K>] extends [never] ? P : __VizeExactOptionalProps<P> : never;\n",
+        );
+    }
     // Emitted only when a usage actually binds an inline callback, because
     // nothing else references it and an unreferenced alias is `TS6196:
     // '__VizeCallableProp' is declared but never used`. That reaches
