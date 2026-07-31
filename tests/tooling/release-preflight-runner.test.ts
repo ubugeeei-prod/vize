@@ -23,7 +23,7 @@ test("release preflight CLI fails closed on unknown or ambiguous modes", () => {
   assert.throws(() => parseReleasePreflightMode(["--verify-only", "--target-only"]), /Usage:/);
 });
 
-test("target-only mode verifies HEAD, current main, and the peeled remote tag", () => {
+test("target-only mode verifies HEAD, main first-parent history, and the peeled remote tag", () => {
   const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-target-"));
   const binDir = path.join(tempDir, "bin");
   const version = workspaceVersionFromCargoToml(
@@ -41,14 +41,15 @@ test("target-only mode verifies HEAD, current main, and the peeled remote tag", 
     [
       "const args = process.argv.slice(2);",
       "const command = args.join(' ');",
-      "if (command === 'rev-parse HEAD') console.log(process.env.TEST_RELEASE_SHA);",
+      "if (command === 'rev-parse HEAD') console.log(process.env.TEST_HEAD_SHA);",
       "else if (command === 'rev-parse refs/remotes/origin/main') console.log(process.env.TEST_MAIN_SHA);",
       "else if (args[0] === 'fetch') process.exit(0);",
       "else if (args[0] === 'ls-files') process.stdout.write(JSON.parse(process.env.TEST_PACKAGE_MANIFESTS).join('\\0') + '\\0');",
       "else if (args[0] === 'ls-remote') {",
       "  console.log(`${process.env.TEST_TAG_OBJECT}\\trefs/tags/${process.env.TEST_TAG}`);",
       "  console.log(`${process.env.TEST_TAG_SHA}\\trefs/tags/${process.env.TEST_TAG}^{}`);",
-      "} else if (args[0] === 'rev-list') console.log(`${process.env.TEST_RELEASE_SHA} ${process.env.TEST_BASE_SHA}`);",
+      "} else if (command === 'rev-list --first-parent refs/remotes/origin/main') console.log(process.env.TEST_MAIN_FIRST_PARENT_HISTORY);",
+      "else if (args[0] === 'rev-list') console.log(`${process.env.TEST_RELEASE_SHA} ${process.env.TEST_BASE_SHA}`);",
       "else if (args[0] === 'merge-base') process.exit(0);",
       "else process.exit(2);",
     ].join("\n"),
@@ -63,8 +64,10 @@ test("target-only mode verifies HEAD, current main, and the peeled remote tag", 
         GITHUB_REF_TYPE: "tag",
         GITHUB_REF_NAME: `v${version}`,
         GITHUB_SHA: sha,
+        TEST_HEAD_SHA: sha,
         TEST_RELEASE_SHA: sha,
         TEST_MAIN_SHA: sha,
+        TEST_MAIN_FIRST_PARENT_HISTORY: [sha, "b".repeat(40)].join("\n"),
         TEST_TAG: `v${version}`,
         TEST_TAG_OBJECT: "c".repeat(40),
         TEST_TAG_SHA: sha,
@@ -77,9 +80,20 @@ test("target-only mode verifies HEAD, current main, and the peeled remote tag", 
   try {
     const success = run();
     assert.equal(success.status, 0, `${success.stderr}\n${success.stdout}`.trim());
-    const mainMismatch = run({ TEST_MAIN_SHA: "d".repeat(40) });
-    assert.equal(mainMismatch.status, 1);
-    assert.match(mainMismatch.stderr, /not the current origin\/main/);
+    const advancedMain = run({ TEST_MAIN_SHA: "d".repeat(40) });
+    assert.equal(advancedMain.status, 0, `${advancedMain.stderr}\n${advancedMain.stdout}`.trim());
+    const headMismatch = run({ TEST_HEAD_SHA: "f".repeat(40) });
+    assert.equal(headMismatch.status, 1);
+    assert.match(headMismatch.stderr, /Checked out HEAD .* does not match release event SHA/);
+    const secondParentOnly = run({
+      TEST_MAIN_SHA: "d".repeat(40),
+      TEST_MAIN_FIRST_PARENT_HISTORY: ["d".repeat(40), "b".repeat(40)].join("\n"),
+    });
+    assert.equal(secondParentOnly.status, 1);
+    assert.match(
+      secondParentOnly.stderr,
+      /not on the first-parent history of current origin\/main/,
+    );
     const tagMismatch = run({ TEST_TAG_SHA: "e".repeat(40) });
     assert.equal(tagMismatch.status, 1);
     assert.match(tagMismatch.stderr, /Remote tag .* points to/);

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
-  assertReleaseCommitIsCurrentMain,
+  assertReleaseCommitIsOnMainFirstParent,
   assertReleaseMetadata,
   findReleaseBlockers,
   remoteTagCommit,
@@ -86,11 +86,15 @@ test("release metadata rejects private manifests in the publish inventory", () =
   );
 });
 
-test("release commit must remain the exact current main tip", () => {
-  assert.doesNotThrow(() => assertReleaseCommitIsCurrentMain(sha, sha));
+test("release commit may remain on main's first-parent history when main advances", () => {
+  assert.doesNotThrow(() => assertReleaseCommitIsOnMainFirstParent(sha, sha, true));
+  assert.doesNotThrow(() => assertReleaseCommitIsOnMainFirstParent(sha, "b".repeat(40), true));
+});
+
+test("release commit rejects ancestry that exists only through a merge's second parent", () => {
   assert.throws(
-    () => assertReleaseCommitIsCurrentMain(sha, "b".repeat(40)),
-    /not the current origin\/main/,
+    () => assertReleaseCommitIsOnMainFirstParent("c".repeat(40), "b".repeat(40), false),
+    /not on the first-parent history of current origin\/main/,
   );
 });
 

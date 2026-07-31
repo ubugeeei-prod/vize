@@ -56,9 +56,11 @@ export function assertReleaseMetadata({ tag, sha, cargoToml, packageManifests })
   return version;
 }
 
-export function assertReleaseCommitIsCurrentMain(sha, mainSha) {
-  if (sha !== mainSha) {
-    throw new Error(`Release commit ${sha} is not the current origin/main ${mainSha}`);
+export function assertReleaseCommitIsOnMainFirstParent(sha, mainSha, isOnFirstParent) {
+  if (!isOnFirstParent) {
+    throw new Error(
+      `Release commit ${sha} is not on the first-parent history of current origin/main ${mainSha}`,
+    );
   }
 }
 

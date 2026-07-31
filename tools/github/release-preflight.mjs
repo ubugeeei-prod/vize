@@ -11,7 +11,7 @@ import {
   releaseGateRunQualifiers,
 } from "./release-preflight-bootstrap.mjs";
 import {
-  assertReleaseCommitIsCurrentMain,
+  assertReleaseCommitIsOnMainFirstParent,
   assertReleaseMetadata,
   findReleaseBlockers,
   remoteTagCommit,
@@ -56,7 +56,14 @@ function verifyGitReleaseTarget(tag, sha) {
   }
   runGit(["fetch", "--quiet", "--no-tags", "origin", "+refs/heads/main:refs/remotes/origin/main"]);
   const mainSha = runGit(["rev-parse", "refs/remotes/origin/main"]).stdout.trim();
-  assertReleaseCommitIsCurrentMain(sha, mainSha);
+  // The local release guard requires an exact main tip before creating the
+  // immutable tag. Once the tag exists, later main commits must not invalidate
+  // long-running exact-SHA gates for that release. Requiring the first-parent
+  // chain rejects commits that only entered main through a merge's side parent.
+  const mainFirstParentHistory = runGit(["rev-list", "--first-parent", "refs/remotes/origin/main"])
+    .stdout.trim()
+    .split(/\r?\n/);
+  assertReleaseCommitIsOnMainFirstParent(sha, mainSha, mainFirstParentHistory.includes(sha));
 
   const remoteTag = runGit([
     "ls-remote",
