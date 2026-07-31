@@ -6,9 +6,9 @@
  * Two rules live here, and they answer two different failures the ledger had:
  *
  * 1. `evaluateBudget` returns three verdicts, not two (#3513, the #3222 parity
- *    ledger). A run whose two sides never met at a single diagnostic has not
- *    measured a ratio at all, so it may never render as `passed` — see
- *    `baselineUnusableReason`.
+ *    ledger). The baseline is unusable when `vue-tsc --listFiles` proves the
+ *    two tools checked different Vue corpora, or when two non-empty diagnostic
+ *    streams have no mapped position in common.
  * 2. `assertBudgetPassed` enforces on the weekly sweep and records everywhere
  *    else — see `parseBudgetMode`.
  */
@@ -31,10 +31,10 @@ export function parseBudgetMode(value) {
   return value;
 }
 
-export function evaluateBudget(performance, summary) {
+export function evaluateBudget(performance, summary, coverage) {
   const falsePositivePassed = summary.falsePositiveRatio <= performance.maxFalsePositiveRatio;
   const falseNegativePassed = summary.falseNegativeRatio <= performance.maxFalseNegativeRatio;
-  const unusableReason = baselineUnusableReason(summary);
+  const unusableReason = coverage.unusableReason ?? diagnosticMappingUnusableReason(summary);
   const verdict =
     unusableReason != null
       ? "unusable"
@@ -53,32 +53,18 @@ export function evaluateBudget(performance, summary) {
 }
 
 /**
- * The ratios only measure something when the two tools actually met: every
- * diagnostic they both reported at the same file, severity, line, column and
- * code lands in `shared`, `messageMismatches` or `documentedDifferences`. When
- * all three are empty the split between "false positive" and "false negative" is
- * an artifact of how the baseline failed, not evidence about vize:
- *
- * - vue-tsc typechecked nothing (a solution-style tsconfig, a config error, an
- *   `include` that never matches `.vue`), so every vize diagnostic is scored as
- *   a false positive by construction; or
- * - both sides reported diagnostics that share no position at all, so the file
- *   or position mapping between them is broken; or
- * - neither side reported anything, which scores 0/0 and reads as a pass while
- *   proving nothing.
- *
- * All three are measurement failures. Reporting them as `breached` would blame
- * vize for a broken instrument, and reporting the last one as `passed` is the
- * silent-success failure this whole gate exists to stop, so they get their own
- * verdict.
+ * Exact file coverage is established separately from diagnostics: a clean
+ * project can legitimately produce 0/0, while a one-sided diagnostic stream is
+ * a real divergence when both tools checked the same files. The remaining
+ * unusable diagnostic shape is two non-empty streams with no mapped position in
+ * common, which signals a file or position mapping defect rather than a useful
+ * 100% FP/FN score.
  */
-function baselineUnusableReason(summary) {
+function diagnosticMappingUnusableReason(summary) {
   const overlap =
     summary.sharedCount + summary.messageMismatchCount + summary.documentedDifferenceCount;
   if (overlap > 0) return null;
-  if (summary.vizeDiagnosticCount === 0 && summary.baselineDiagnosticCount === 0) {
-    return "neither vize nor vue-tsc reported a diagnostic, so nothing was compared";
-  }
+  if (summary.vizeDiagnosticCount === 0 || summary.baselineDiagnosticCount === 0) return null;
   return (
     `vize reported ${summary.vizeDiagnosticCount} and vue-tsc reported ` +
     `${summary.baselineDiagnosticCount} diagnostics with none in common`

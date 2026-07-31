@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import { validateTypecheckerOutput } from "./tool-matrix-typechecker.mjs";
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
+import { evaluateVueProgramCoverage } from "./typecheck-baseline-coverage.mjs";
 import {
   assertBudgetPassed,
   evaluateBudget,
@@ -43,7 +44,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   const summary = readAndValidateSummary(args.reportDir, project);
   const vizeRun = readAndValidateVizeRun(args.reportDir, project, summary);
   const vueTsc = resolveVueTsc(args.vueTscBin);
-  const baselineArgs = ["--noEmit", "--pretty", "false", "-p", project.tsconfig];
+  const baselineArgs = ["--noEmit", "--pretty", "false", "--listFiles", "-p", project.tsconfig];
   const startedAt = Date.now();
   const baseline = spawnSync(vueTsc.path, baselineArgs, {
     cwd: fixtureRoot,
@@ -66,10 +67,15 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     vueTscOutput: `${baseline.stdout ?? ""}\n${baseline.stderr ?? ""}`,
     documentedDifferences: readDocumentedDifferences(),
   });
-  const budget = evaluateBudget(project.typecheckPerformance, divergence.summary);
+  const coverage = evaluateVueProgramCoverage(
+    vizeRun.payload.parsed,
+    baseline.stdout ?? "",
+    fixtureRoot,
+  );
+  const budget = evaluateBudget(project.typecheckPerformance, divergence.summary, coverage);
   const artifact = {
     schema: "vize.fixtureTypecheckDivergenceRun",
-    version: 1,
+    version: 2,
     project: project.id,
     revision: project.revision,
     tsconfig: project.tsconfig,
@@ -80,6 +86,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
       version: vueTsc.version,
       durationMs,
       exitCode: baseline.status,
+      coverage,
       stdoutSha256: sha256(baseline.stdout ?? ""),
       stderrSha256: sha256(baseline.stderr ?? ""),
     },
@@ -222,6 +229,11 @@ function renderMarkdown(artifact) {
     `vue-tsc excluded non-Vue: ${summary.baselineExcludedNonVueCount}`,
     `vue-tsc excluded project-level: ${summary.baselineExcludedProjectCount}`,
     `vue-tsc excluded external: ${summary.baselineExcludedExternalCount}`,
+    `Vize Vue files: ${artifact.baseline.coverage.vizeVueFileCount}`,
+    `vue-tsc Vue files: ${artifact.baseline.coverage.baselineVueFileCount}`,
+    `Shared Vue files: ${artifact.baseline.coverage.sharedVueFileCount}`,
+    `Missing Vue files: ${artifact.baseline.coverage.missingVueFiles.length}`,
+    `Unexpected Vue files: ${artifact.baseline.coverage.unexpectedVueFiles.length}`,
     `Budget verdict: ${describeVerdict(artifact.budget)}`,
     `Budget passed: ${artifact.budget.passed}`,
     `Digest: ${artifact.divergence.sha256}`,

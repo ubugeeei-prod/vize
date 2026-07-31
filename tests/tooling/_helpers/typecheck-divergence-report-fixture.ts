@@ -22,6 +22,8 @@ export type FixtureOptions = {
   vizeDiagnostics?: string[];
   /** Raw stdout the fake `vue-tsc` writes before exiting with status 2. */
   baselineOutput?: string;
+  /** Vue source files emitted by the fake `vue-tsc --listFiles` run. */
+  baselineFiles?: string[];
 };
 
 export function setup(options: FixtureOptions = {}) {
@@ -110,7 +112,11 @@ export function setup(options: FixtureOptions = {}) {
   const invocationPath = path.join(fakeDir, "invocation.json");
   writeVueTsc(
     vueTsc,
-    `process.stdout.write(${JSON.stringify(baselineOutput)}); process.exit(2);`,
+    `process.stdout.write(${JSON.stringify(
+      `${baselineOutput}${(options.baselineFiles ?? ["src/App.vue"])
+        .map((file) => `${path.join(fixtureRoot, file)}\n`)
+        .join("")}`,
+    )}); process.exit(2);`,
     invocationPath,
   );
   return { fixtureRoot, reportDir, fakeDir, registryPath, outputPath, vueTsc, invocationPath };
