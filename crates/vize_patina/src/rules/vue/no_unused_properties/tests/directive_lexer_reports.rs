@@ -118,6 +118,29 @@ defineProps<{ msg: string }>();
 }
 
 #[test]
+fn directive_on_the_script_tag_line_disables_the_next_line() {
+    let sfc = r#"<script setup lang="ts">// eslint-disable-next-line vue/no-unused-properties
+defineProps<{ msg: string }>();
+</script>
+<template><div>hi</div></template>
+"#;
+    assert_eq!(owned(&lint_sfc(sfc)), Vec::new());
+}
+
+#[test]
+fn division_after_a_postfix_increment_does_not_hide_a_real_directive() {
+    let sfc = r#"<script setup lang="ts">
+let index = 1
+const half = index++ / 2
+// eslint-disable-next-line vue/no-unused-properties
+defineProps<{ msg: string }>();
+</script>
+<template><div>{{ half }}</div></template>
+"#;
+    assert_eq!(owned(&lint_sfc(sfc)), Vec::new());
+}
+
+#[test]
 fn tsx_generic_arrow_does_not_hide_a_real_directive() {
     let sfc = r#"<script setup lang="tsx">
 const identity = <T,>(value: T) => value

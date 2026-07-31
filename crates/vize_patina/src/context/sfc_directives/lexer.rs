@@ -57,7 +57,7 @@ impl DirectiveLexer {
         let mut markers = CommentMarkers::default();
         let mut index = 0;
         while index < bytes.len() {
-            let context = *self.stack.last().expect("lexer always has a root context");
+            let context = self.stack.last().copied().unwrap_or(ScriptContext::Code);
             if matches!(
                 context,
                 ScriptContext::BlockComment | ScriptContext::LineComment
@@ -226,6 +226,16 @@ impl DirectiveLexer {
 
         if matches!(self.stack.last(), Some(ScriptContext::LineComment)) {
             self.stack.pop();
+        }
+        let mut popped_regex = false;
+        while matches!(self.stack.last(), Some(ScriptContext::Regex(_))) {
+            self.stack.pop();
+            popped_regex = true;
+        }
+        if popped_regex {
+            // Regex literals never span lines, so an unterminated one means the
+            // opening `/` was a division operator (or the source is mid-edit).
+            self.can_start_expression = true;
         }
         if !ends_with_unescaped_backslash(bytes) {
             let mut popped_string = false;
