@@ -1,6 +1,9 @@
 //! Directive state whose offsets and line numbers address a complete SFC.
 
+mod lexer;
+
 use memchr::memchr_iter;
+use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::directive::{
     DirectiveKind, DirectiveSeverity, parse_level_severity, parse_vize_directive,
 };
@@ -8,35 +11,12 @@ use vize_carton::{CompactString, FxHashMap, FxHashSet, String};
 
 use super::DisabledRange;
 use super::eslint_directive::{EslintDisableKind, parse_eslint_disable_comment};
+use lexer::{DirectiveLexer, StyleDirectiveLexer};
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum LexicalContext {
-    Code,
-    Interpolation(u32),
-    SingleQuote,
-    DoubleQuote,
-    Template,
-    BlockComment,
-    HtmlComment,
-    LineComment,
-}
-
-struct DirectiveLexer {
-    stack: Vec<LexicalContext>,
-}
-
-impl Default for DirectiveLexer {
-    fn default() -> Self {
-        Self {
-            stack: vec![LexicalContext::Code],
-        }
-    }
-}
-
-#[derive(Default)]
-struct CommentMarkers {
-    eslint: Option<usize>,
-    vize: Option<usize>,
+#[derive(Clone, Copy)]
+enum BlockDomain<'a> {
+    Script,
+    Style(Option<&'a str>),
 }
 
 #[derive(Default)]
@@ -50,24 +30,83 @@ pub(super) struct SfcDirectiveState {
 }
 
 impl SfcDirectiveState {
-    pub(super) fn scan_if_present(source: &str) -> Option<Self> {
-        if !source.contains("eslint-") && !source.contains("@vize:") {
+    pub(super) fn scan_if_present(descriptor: &SfcDescriptor<'_>) -> Option<Self> {
+        let has_markers = descriptor
+            .script
+            .iter()
+            .chain(descriptor.script_setup.iter())
+            .map(|block| block.content.as_ref())
+            .chain(descriptor.styles.iter().map(|block| block.content.as_ref()))
+            .any(has_directive_marker);
+        if !has_markers {
             return None;
         }
 
+        let source = descriptor.source.as_ref();
         let mut state = Self {
             line_offsets: std::iter::once(0)
                 .chain(memchr_iter(b'\n', source.as_bytes()).map(|offset| (offset + 1) as u32))
                 .collect(),
             ..Self::default()
         };
-        let mut lexer = DirectiveLexer::default();
-        for (line_number, line) in (1u32..).zip(source.lines()) {
-            let markers = lexer.scan_line(line);
-            state.scan_eslint_directive(line, line_number, markers.eslint);
-            state.scan_vize_directive(line, line_number, markers.vize);
+        let mut blocks = descriptor
+            .script
+            .iter()
+            .chain(descriptor.script_setup.iter())
+            .map(|block| (block.loc.start, block.content.as_ref(), BlockDomain::Script))
+            .chain(descriptor.styles.iter().map(|block| {
+                (
+                    block.loc.start,
+                    block.content.as_ref(),
+                    BlockDomain::Style(block.lang.as_deref()),
+                )
+            }))
+            .collect::<Vec<_>>();
+        blocks.sort_unstable_by_key(|(start, _, _)| *start);
+
+        for (start, content, domain) in blocks {
+            if !has_directive_marker(content) {
+                continue;
+            }
+            let first_line = state.offset_to_line(start as u32);
+            match domain {
+                BlockDomain::Script => {
+                    let mut lexer = DirectiveLexer::default();
+                    state.scan_block(content, first_line, |line| lexer.scan_line(line));
+                }
+                BlockDomain::Style(lang) => {
+                    let allow_line_comments =
+                        matches!(lang, Some("scss" | "sass" | "less" | "stylus"));
+                    let mut lexer = StyleDirectiveLexer::new(allow_line_comments);
+                    state.scan_block(content, first_line, |line| lexer.scan_line(line));
+                }
+            }
         }
         Some(state)
+    }
+
+    fn scan_block<F>(&mut self, source: &str, first_line: u32, mut scan_line: F)
+    where
+        F: FnMut(&str) -> lexer::CommentMarkers,
+    {
+        let mut last_line = first_line;
+        for (line_number, line) in (first_line..).zip(source.lines()) {
+            last_line = line_number;
+            let markers = scan_line(line);
+            self.scan_eslint_directive(line, line_number, markers.eslint);
+            self.scan_vize_directive(line, line_number, markers.vize);
+        }
+        self.finish_block(last_line);
+    }
+
+    fn finish_block(&mut self, last_line: u32) {
+        close_ranges(&mut self.disabled_all, last_line);
+        for ranges in self.disabled_rules.values_mut() {
+            close_ranges(ranges, last_line);
+        }
+        close_ranges(&mut self.ignored_regions, last_line);
+        self.expected_error_lines.retain(|line| *line <= last_line);
+        self.severity_overrides.retain(|line, _| *line <= last_line);
     }
 
     pub(super) fn offset_to_line(&self, offset: u32) -> u32 {
@@ -186,6 +225,10 @@ impl SfcDirectiveState {
     }
 }
 
+fn has_directive_marker(source: &str) -> bool {
+    source.contains("eslint-") || source.contains("@vize:")
+}
+
 fn range_contains(range: &DisabledRange, line: u32) -> bool {
     line >= range.start_line && range.end_line.is_none_or(|end| line <= end)
 }
@@ -205,123 +248,5 @@ fn close_last_range(ranges: &mut [DisabledRange], line: u32) {
         .find(|range| range.end_line.is_none())
     {
         range.end_line = Some(line);
-    }
-}
-
-impl DirectiveLexer {
-    fn scan_line(&mut self, line: &str) -> CommentMarkers {
-        let bytes = line.as_bytes();
-        let mut markers = CommentMarkers::default();
-        let mut index = 0;
-        while index < bytes.len() {
-            let context = *self.stack.last().expect("lexer always has a root context");
-            if matches!(
-                context,
-                LexicalContext::BlockComment
-                    | LexicalContext::HtmlComment
-                    | LexicalContext::LineComment
-            ) {
-                if markers.eslint.is_none() && bytes[index..].starts_with(b"eslint-") {
-                    markers.eslint = Some(index);
-                }
-                if markers.vize.is_none() && bytes[index..].starts_with(b"@vize:") {
-                    markers.vize = Some(index);
-                }
-            }
-
-            let current = bytes[index];
-            let next = bytes.get(index + 1).copied();
-            match context {
-                LexicalContext::Code | LexicalContext::Interpolation(_) => match (current, next) {
-                    (b'/', Some(b'/')) => {
-                        self.stack.push(LexicalContext::LineComment);
-                        index += 1;
-                    }
-                    (b'/', Some(b'*')) => {
-                        self.stack.push(LexicalContext::BlockComment);
-                        index += 1;
-                    }
-                    (b'<', Some(b'!'))
-                        if bytes
-                            .get(index..index + 4)
-                            .is_some_and(|slice| slice == b"<!--") =>
-                    {
-                        self.stack.push(LexicalContext::HtmlComment);
-                        index += 3;
-                    }
-                    (b'\'', _) => self.stack.push(LexicalContext::SingleQuote),
-                    (b'"', _) => self.stack.push(LexicalContext::DoubleQuote),
-                    (b'`', _) => self.stack.push(LexicalContext::Template),
-                    (b'{', _) => {
-                        if let Some(LexicalContext::Interpolation(depth)) = self.stack.last_mut() {
-                            *depth += 1;
-                        }
-                    }
-                    (b'}', _) => {
-                        if let Some(LexicalContext::Interpolation(depth)) = self.stack.last_mut() {
-                            if *depth == 0 {
-                                self.stack.pop();
-                            } else {
-                                *depth -= 1;
-                            }
-                        }
-                    }
-                    _ => {}
-                },
-                LexicalContext::SingleQuote => match (current, next) {
-                    (b'\\', Some(_)) => index += 1,
-                    (b'\'', _) => {
-                        self.stack.pop();
-                    }
-                    _ => {}
-                },
-                LexicalContext::DoubleQuote => match (current, next) {
-                    (b'\\', Some(_)) => index += 1,
-                    (b'"', _) => {
-                        self.stack.pop();
-                    }
-                    _ => {}
-                },
-                LexicalContext::Template => match (current, next) {
-                    (b'\\', Some(_)) => index += 1,
-                    (b'`', _) => {
-                        self.stack.pop();
-                    }
-                    (b'$', Some(b'{')) => {
-                        self.stack.push(LexicalContext::Interpolation(0));
-                        index += 1;
-                    }
-                    _ => {}
-                },
-                LexicalContext::BlockComment => {
-                    if (current, next) == (b'*', Some(b'/')) {
-                        self.stack.pop();
-                        index += 1;
-                    }
-                }
-                LexicalContext::HtmlComment => {
-                    if bytes
-                        .get(index..index + 3)
-                        .is_some_and(|slice| slice == b"-->")
-                    {
-                        self.stack.pop();
-                        index += 2;
-                    }
-                }
-                LexicalContext::LineComment => {}
-            }
-            index += 1;
-        }
-
-        if matches!(self.stack.last(), Some(LexicalContext::LineComment)) {
-            self.stack.pop();
-        }
-        while matches!(
-            self.stack.last(),
-            Some(LexicalContext::SingleQuote | LexicalContext::DoubleQuote)
-        ) {
-            self.stack.pop();
-        }
-        markers
     }
 }

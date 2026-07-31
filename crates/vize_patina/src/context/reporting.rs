@@ -51,7 +51,7 @@ impl<'a> LintContext<'a> {
             self.sfc_directives_scanned = true;
             self.sfc_directives = self
                 .sfc_descriptor
-                .and_then(|descriptor| SfcDirectiveState::scan_if_present(&descriptor.source));
+                .and_then(SfcDirectiveState::scan_if_present);
         }
         self.sfc_directives.as_ref()
     }
