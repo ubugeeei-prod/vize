@@ -130,7 +130,7 @@ pub(super) fn compile_template_only(
     );
     trim_trailing_newlines(&mut code);
 
-    return Ok(SfcCompileResult {
+    Ok(SfcCompileResult {
         code,
         css,
         map: None,
@@ -138,5 +138,5 @@ pub(super) fn compile_template_only(
         warnings,
         bindings: None,
         macro_artifacts,
-    });
+    })
 }
