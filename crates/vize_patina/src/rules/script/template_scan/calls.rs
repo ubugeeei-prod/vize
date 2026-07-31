@@ -52,7 +52,7 @@ pub(super) fn for_each_call(source: &str, base: u32, visit: &mut impl FnMut(Temp
         SourceType::default().with_typescript(true),
     )
     .parse();
-    if parsed.panicked || !parsed.errors.is_empty() {
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
         return;
     }
     let mut collector = CallCollector { calls: Vec::new() };
