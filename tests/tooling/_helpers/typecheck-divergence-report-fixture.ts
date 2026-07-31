@@ -27,7 +27,9 @@ export type FixtureOptions = {
 export function setup(options: FixtureOptions = {}) {
   const vizeDiagnostics = options.vizeDiagnostics ?? [sharedVizeDiagnostic];
   const baselineOutput = options.baselineOutput ?? sharedBaselineOutput;
-  const fixtureRoot = fs.mkdtempSync(path.join(root, "tests", "_fixtures", "typecheck-divergence-"));
+  const fixtureRoot = fs.mkdtempSync(
+    path.join(root, "tests", "_fixtures", "typecheck-divergence-"),
+  );
   const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-divergence-report-"));
   const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-divergence-vue-tsc-"));
   const fixturePath = path.relative(root, fixtureRoot);
