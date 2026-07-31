@@ -8,15 +8,16 @@ use tower_lsp::{
     LanguageServer,
     jsonrpc::Result,
     lsp_types::{
-        CodeActionParams, CodeActionResponse, CodeLens, CodeLensParams, CompletionItem,
-        CompletionParams, CompletionResponse, CreateFilesParams, DeleteFilesParams,
-        DidChangeConfigurationParams, DidChangeTextDocumentParams, DidChangeWatchedFilesParams,
-        DidChangeWorkspaceFoldersParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams,
-        DidSaveTextDocumentParams, DocumentFormattingParams, DocumentHighlight,
-        DocumentHighlightParams, DocumentLink, DocumentLinkParams, DocumentRangeFormattingParams,
-        DocumentSymbolParams, DocumentSymbolResponse, FoldingRange, FoldingRangeParams,
-        GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams, InitializeParams,
-        InitializeResult, InitializedParams, InlayHint, InlayHintParams, LinkedEditingRangeParams,
+        CodeActionParams, CodeActionResponse, CodeLens, CodeLensParams, ColorInformation,
+        ColorPresentation, ColorPresentationParams, CompletionItem, CompletionParams,
+        CompletionResponse, CreateFilesParams, DeleteFilesParams, DidChangeConfigurationParams,
+        DidChangeTextDocumentParams, DidChangeWatchedFilesParams, DidChangeWorkspaceFoldersParams,
+        DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
+        DocumentColorParams, DocumentFormattingParams, DocumentHighlight, DocumentHighlightParams,
+        DocumentLink, DocumentLinkParams, DocumentRangeFormattingParams, DocumentSymbolParams,
+        DocumentSymbolResponse, FoldingRange, FoldingRangeParams, GotoDefinitionParams,
+        GotoDefinitionResponse, Hover, HoverParams, InitializeParams, InitializeResult,
+        InitializedParams, InlayHint, InlayHintParams, LinkedEditingRangeParams,
         LinkedEditingRanges, Location, PrepareRenameResponse, ReferenceParams, RenameFilesParams,
         RenameParams, SelectionRange, SelectionRangeParams, SemanticTokensParams,
         SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult, ServerInfo,
@@ -33,10 +34,9 @@ use tower_lsp::lsp_types::{Position, Range};
 
 use super::{MaestroServer, server_capabilities};
 use crate::ide::{
-    CodeActionService, CodeLensService, CompletionService, DefinitionService,
-    DocumentHighlightService, DocumentLinkService, HoverService, IdeContext, InlayHintService,
-    ReferencesService, RenameService, SemanticTokensService, WorkspaceSymbolsService,
-    position_to_offset,
+    CodeActionService, CompletionService, DefinitionService, DocumentHighlightService,
+    DocumentLinkService, HoverService, IdeContext, ReferencesService, RenameService,
+    SemanticTokensService, WorkspaceSymbolsService, position_to_offset,
 };
 
 #[tower_lsp::async_trait]
@@ -577,19 +577,7 @@ impl LanguageServer for MaestroServer {
         if !self.state.lsp_features().code_lens {
             return Ok(None);
         }
-
-        let uri = &params.text_document.uri;
-
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let lenses = CodeLensService::get_lenses(&content, uri);
-
-        if lenses.is_empty() {
-            Ok(None)
-        } else {
-            Ok(Some(lenses))
-        }
+        Ok(super::annotations::code_lens(&self.state, &params))
     }
 
     async fn symbol(
@@ -650,25 +638,30 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
-        let features = self.state.lsp_features();
-        if !features.inlay_hints {
+        if !self.state.lsp_features().inlay_hints {
             return Ok(None);
         }
+        Ok(super::annotations::inlay_hint(&self.state, &params))
+    }
 
-        let uri = &params.text_document.uri;
-        let range = params.range;
-
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let hints =
-            InlayHintService::get_hints_with_ecosystem(&content, uri, range, features.ecosystem);
-
-        if hints.is_empty() {
-            Ok(None)
-        } else {
-            Ok(Some(hints))
+    /// Colour swatches for the CSS a `.vue` file authors. Rides the
+    /// `document_links` flag: both decorate a literal in the authored text and
+    /// make it interactive — a path you can follow, a colour you can pick.
+    async fn document_color(&self, params: DocumentColorParams) -> Result<Vec<ColorInformation>> {
+        if !self.state.lsp_features().document_links {
+            return Ok(Vec::new());
         }
+        Ok(super::annotations::document_color(&self.state, &params))
+    }
+
+    async fn color_presentation(
+        &self,
+        params: ColorPresentationParams,
+    ) -> Result<Vec<ColorPresentation>> {
+        if !self.state.lsp_features().document_links {
+            return Ok(Vec::new());
+        }
+        Ok(super::annotations::color_presentation(&params))
     }
 
     async fn folding_range(&self, params: FoldingRangeParams) -> Result<Option<Vec<FoldingRange>>> {

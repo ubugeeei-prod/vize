@@ -68,6 +68,7 @@ export type ServerCapabilities = {
     resolveProvider?: boolean;
   };
   codeLensProvider?: { resolveProvider?: boolean };
+  colorProvider?: unknown;
   completionProvider?: {
     triggerCharacters?: string[];
     resolveProvider?: boolean;

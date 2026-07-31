@@ -32,10 +32,13 @@ function handleSelect(key: string, path: string[]) {
             "<script setup lang=\"ts\"></script>\n<template><div /></template>\n",
         ),
     ]);
+    // The listener type annotates the synthetic const, so a rejected handler
+    // would surface as an assignment error (`TS2322`) at the declared name
+    // rather than the call-argument `TS2345` this used to watch for (#3462).
     assert_no_diagnostic(
         project.path(),
         "App.vue",
-        2345,
+        2322,
         "an unresolved component emit must not reject a valid multi-argument handler",
     );
 }
