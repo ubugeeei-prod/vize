@@ -9,7 +9,7 @@ import {
   DEFAULT_VIZE_CONFIG,
   dependencyNames,
   detectJsonIndent,
-  OXLINT_CONFIG_FILES,
+  DISCOVERED_OXLINT_CONFIG_FILES,
   parsePackageJson,
   planGeneratedConfig,
   readRequiredFile,
@@ -68,7 +68,7 @@ export function setupProject(options: SetupOptions): SetupResult {
     preservedFiles,
   );
 
-  const existingOxlintConfig = OXLINT_CONFIG_FILES.find((candidate) =>
+  const existingOxlintConfig = DISCOVERED_OXLINT_CONFIG_FILES.find((candidate) =>
     fs.existsSync(path.join(root, candidate)),
   );
   const viteMigration = planViteMigration(root, existingOxlintConfig === undefined);
@@ -90,7 +90,7 @@ export function setupProject(options: SetupOptions): SetupResult {
   } else if (!viteMigration.hasVitePlusLint && !viteMigration.usesVitePlus) {
     planGeneratedConfig(
       root,
-      OXLINT_CONFIG_FILES,
+      DISCOVERED_OXLINT_CONFIG_FILES,
       "oxlint.config.ts",
       DEFAULT_OXLINT_CONFIG,
       plannedFiles,

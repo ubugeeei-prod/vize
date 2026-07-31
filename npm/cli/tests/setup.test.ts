@@ -189,6 +189,34 @@ export default defineConfig({
   }
 });
 
+test("does not treat Oxlint config filenames that the binary ignores as configured", () => {
+  const ignoredFilenames = [
+    "oxlint.config.mts",
+    "oxlint.config.js",
+    "oxlint.config.mjs",
+    "oxlint.config.cjs",
+    "oxlint.config.cts",
+  ] as const;
+
+  for (const filename of ignoredFilenames) {
+    const root = temporaryProject(`ignored-${path.extname(filename).slice(1)}`);
+    try {
+      const ignoredConfig = `export default { rules: { "no-console": "error" } };\n`;
+      write(root, "package.json", `{"name":"ignored-oxlint-config","private":true}\n`);
+      write(root, filename, ignoredConfig);
+
+      const result = setupProject({ root, install: false });
+
+      assert.ok(result.createdFiles.includes("oxlint.config.ts"), filename);
+      assert.ok(!result.preservedFiles.includes(filename), filename);
+      assert.equal(read(root, filename), ignoredConfig, filename);
+      assert.match(read(root, "oxlint.config.ts"), /from "oxlint-plugin-vize"/u, filename);
+    } finally {
+      fs.rmSync(root, { force: true, recursive: true });
+    }
+  }
+});
+
 test("does not write any setup file when package.json is invalid", () => {
   const root = temporaryProject("invalid-package");
   try {

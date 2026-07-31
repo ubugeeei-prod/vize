@@ -9,10 +9,21 @@ export const VIZE_CONFIG_FILES = [
   "vize.config.json",
 ] as const;
 
-export const OXLINT_CONFIG_FILES = [
+/** Config filenames Oxlint 1.64 auto-discovers. */
+export const DISCOVERED_OXLINT_CONFIG_FILES = [
   ".oxlintrc.json",
   ".oxlintrc.jsonc",
   "oxlint.config.ts",
+] as const;
+
+/**
+ * All plausible Oxlint config filenames, including names the binary ignores.
+ *
+ * Project detection keeps the ignored names so `vize init` can explain why it
+ * will not preserve them. Setup must use `DISCOVERED_OXLINT_CONFIG_FILES`.
+ */
+export const OXLINT_CONFIG_FILES = [
+  ...DISCOVERED_OXLINT_CONFIG_FILES,
   "oxlint.config.mts",
   "oxlint.config.js",
   "oxlint.config.mjs",

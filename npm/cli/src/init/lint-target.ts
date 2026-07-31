@@ -1,22 +1,17 @@
 import type { ProjectDetection } from "./detect.js";
+import { DISCOVERED_OXLINT_CONFIG_FILES } from "../setup/config.js";
 import { canInjectViteLint, hasTopLevelKey } from "./edit-config.js";
 import { VITE_LINT_MERGE_SNIPPET, VITE_LINT_SNIPPET } from "./templates.js";
+
+export { DISCOVERED_OXLINT_CONFIG_FILES } from "../setup/config.js";
 
 /**
  * Oxlint config filenames the `oxlint` binary actually auto-discovers.
  *
  * Verified against oxlint 1.64: `.oxlintrc.json`, `.oxlintrc.jsonc` and
  * `oxlint.config.ts` are read; `oxlint.config.mts`, `.js`, `.mjs`, `.cjs` and
- * `.cts` produce a run byte-identical to having no config at all. The wider list
- * in `setup/config.ts` treats all eight as configuration, which is #3474. `init`
- * uses this narrower list so it never reports an unread file as configured.
+ * `.cts` produce a run byte-identical to having no config at all.
  */
-export const DISCOVERED_OXLINT_CONFIG_FILES = [
-  ".oxlintrc.json",
-  ".oxlintrc.jsonc",
-  "oxlint.config.ts",
-] as const;
-
 /** Filename `init` writes when the `oxlint` binary is the lint entry point. */
 export const INIT_OXLINT_CONFIG_FILE = "oxlint.config.ts";
 
