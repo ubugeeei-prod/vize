@@ -87,7 +87,37 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   writeFileSync(markdownPath, renderMarkdown(artifact));
   process.stdout.write(`Wrote ${relative(repoRoot, jsonPath)}\n`);
   process.stdout.write(`Wrote ${relative(repoRoot, markdownPath)}\n`);
+  assertBudgetPassed(artifact);
   return artifact;
+}
+
+/**
+ * The false-positive/false-negative budget is a gate, not a note (#3460).
+ * `budget.passed` used to be computed, embedded in the artifact, and printed in
+ * the step summary while nothing read it, so a matrix-wide breach reported
+ * `Budget passed: false` and the weekly job still went green.
+ *
+ * This runs after both artifacts are written, so a breach is still uploaded and
+ * reviewable — the run fails with the evidence attached, not instead of it.
+ */
+export function assertBudgetPassed(artifact) {
+  const budget = artifact.budget;
+  if (budget.passed) return;
+  const summary = artifact.divergence.summary;
+  const breaches = [];
+  if (!budget.falsePositivePassed) {
+    breaches.push(
+      `${summary.falsePositiveCount} false positives (ratio ${summary.falsePositiveRatio}) exceed maxFalsePositiveRatio ${budget.maxFalsePositiveRatio}`,
+    );
+  }
+  if (!budget.falseNegativePassed) {
+    breaches.push(
+      `${summary.falseNegativeCount} false negatives (ratio ${summary.falseNegativeRatio}) exceed maxFalseNegativeRatio ${budget.maxFalseNegativeRatio}`,
+    );
+  }
+  throw new Error(
+    `Typecheck divergence budget breached for ${artifact.project}: ${breaches.join("; ")}`,
+  );
 }
 
 function readDocumentedDifferences() {
