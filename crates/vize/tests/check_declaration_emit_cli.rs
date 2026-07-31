@@ -240,6 +240,7 @@ defineProps<PublicProps>()
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,

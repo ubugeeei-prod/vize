@@ -70,7 +70,6 @@ fn check_preserves_named_exports_from_vue_reexported_through_symlinked_absolute_
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noEmit": true,
-    "baseUrl": ".",
     "paths": {
       "#design": [".nuxt/design.ts"]
     }

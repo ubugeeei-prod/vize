@@ -1891,7 +1891,6 @@ export { answer } from '@/helper'
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     },
