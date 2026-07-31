@@ -60,7 +60,14 @@ fn regex_after_try_statement_blocks_is_not_a_directive() {
 
 #[test]
 fn regex_after_standalone_and_class_blocks_is_not_a_directive() {
-    for statement in ["{}", "class Check {}"] {
+    for statement in [
+        "{}",
+        "label: {}",
+        "class Check {}",
+        "class Check extends Foo.Bar {}",
+        "class Check extends mixin(foo < bar) {}",
+        "class Check<T extends { value: string }> {}",
+    ] {
         assert_regex_marker_is_not_a_directive(&format!(
             "{statement}\n/[/*] @vize:expected */.test(input)"
         ));
@@ -100,6 +107,8 @@ fn division_after_function_and_class_expressions_keeps_a_real_directive() {
         "function check(): void {}",
         "() => {}",
         "class {}",
+        "class extends Foo.Bar {}",
+        "class<T extends { value: string }> {}",
     ] {
         let sfc = format!(
             r#"<script setup lang="ts">
@@ -112,4 +121,16 @@ defineProps<{{ msg: string }}>();
         );
         assert_eq!(owned(&lint_sfc(&sfc)), Vec::new(), "{expression}");
     }
+}
+
+#[test]
+fn division_after_default_exported_object_keeps_a_real_directive() {
+    let sfc = r#"<script setup lang="ts">
+export default { value: 1 }
+  / 2 // eslint-disable-next-line vue/no-unused-properties
+defineProps<{ msg: string }>();
+</script>
+<template><div>hi</div></template>
+"#;
+    assert_eq!(owned(&lint_sfc(sfc)), Vec::new());
 }
