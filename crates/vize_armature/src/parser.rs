@@ -11,9 +11,12 @@ mod attribute;
 mod callbacks;
 mod delimiters;
 mod element;
+mod entry;
 #[cfg(test)]
 mod experimental_tests;
 mod whitespace;
+
+pub use entry::*;
 
 #[cfg(test)]
 mod tests;
@@ -36,6 +39,11 @@ pub struct Parser<'a> {
     template_syntax: TemplateSyntaxMode,
     /// Current node stack
     stack: Vec<'a, ParserStackEntry<'a>>,
+    /// Tags of the elements the nesting limit refused to descend into, in source
+    /// order. They are attached to the tree as leaves instead of being pushed
+    /// onto `stack`, so without this their end tags would find nothing to close
+    /// and be reported as `InvalidEndTag` even though the source is correct.
+    flattened_tags: Vec<'a, String>,
     /// Root node
     root: Option<RootNode<'a>>,
     /// Current element being parsed
@@ -167,6 +175,7 @@ impl<'a> Parser<'a> {
             options,
             template_syntax,
             stack: Vec::new_in(allocator),
+            flattened_tags: Vec::new_in(allocator),
             root: None,
             current_element: None,
             current_attr: None,
@@ -327,73 +336,4 @@ impl<'a> Parser<'a> {
             self.emit_stack_entry(entry);
         }
     }
-}
-
-/// Parse a Vue template
-pub fn parse<'a>(allocator: &'a Bump, source: &'a str) -> (RootNode<'a>, Vec<'a, CompilerError>) {
-    Parser::new(allocator, source).parse()
-}
-
-/// Parse a full HTML document (petite-vue / standalone HTML) into the template AST.
-///
-/// Unlike [`parse`], which expects an SFC `<template>` block, this entry point
-/// tolerates a leading `<!DOCTYPE html>` declaration and parses the whole
-/// document (`<html>/<head>/<body>`, `<script>`/`<style>` as raw text) so
-/// downstream lint/scope analysis can run on petite-vue pages whose directives
-/// sit on ordinary DOM elements. Additive: existing template parsing is
-/// unchanged.
-pub fn parse_document<'a>(
-    allocator: &'a Bump,
-    source: &'a str,
-) -> (RootNode<'a>, Vec<'a, CompilerError>) {
-    Parser::new_document(allocator, source).parse()
-}
-
-/// Parse a full HTML document with options. See [`parse_document`].
-pub fn parse_document_with_options<'a>(
-    allocator: &'a Bump,
-    source: &'a str,
-    options: ParserOptions,
-) -> (RootNode<'a>, Vec<'a, CompilerError>) {
-    Parser::document_with_options(allocator, source, options).parse()
-}
-
-/// Parse a Vue template with options
-pub fn parse_with_options<'a>(
-    allocator: &'a Bump,
-    source: &'a str,
-    options: ParserOptions,
-) -> (RootNode<'a>, Vec<'a, CompilerError>) {
-    Parser::with_options(allocator, source, options).parse()
-}
-
-/// Parse a Vue template with options and invalid HTML self-closing compatibility.
-#[deprecated(note = "use parse_with_options_and_template_syntax instead")]
-pub fn parse_with_options_and_invalid_html_self_closing<'a>(
-    allocator: &'a Bump,
-    source: &'a str,
-    options: ParserOptions,
-    allow_invalid_html_self_closing: bool,
-) -> (RootNode<'a>, Vec<'a, CompilerError>) {
-    Parser::with_options_and_template_syntax(
-        allocator,
-        source,
-        options,
-        if allow_invalid_html_self_closing {
-            TemplateSyntaxMode::Quirks
-        } else {
-            TemplateSyntaxMode::Standard
-        },
-    )
-    .parse()
-}
-
-/// Parse a Vue template with options and template syntax compatibility.
-pub fn parse_with_options_and_template_syntax<'a>(
-    allocator: &'a Bump,
-    source: &'a str,
-    options: ParserOptions,
-    template_syntax: TemplateSyntaxMode,
-) -> (RootNode<'a>, Vec<'a, CompilerError>) {
-    Parser::with_options_and_template_syntax(allocator, source, options, template_syntax).parse()
 }

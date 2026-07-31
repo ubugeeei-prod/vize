@@ -9,19 +9,7 @@ use vize_relief::{
 
 use super::super::{CurrentElement, Parser, ParserStackEntry, StackInsertion};
 use super::is_html_tree_element;
-
-/// Maximum element nesting depth retained by the parser.
-///
-/// Elements nested deeper than this are flattened with a recoverable error
-/// instead of being pushed onto the open-element stack. This keeps the depth
-/// of the produced AST bounded so the recursive passes that walk it later
-/// (transform, codegen, semantic analysis) stay within a predictable amount of
-/// stack space regardless of the input. The limit is far beyond any realistic
-/// template while still cheap to enforce.
-const MAX_ELEMENT_NESTING_DEPTH: usize = 256;
-
-/// Message attached to the recoverable error raised when the nesting limit is hit.
-const NESTING_TOO_DEEP_MESSAGE: &str = "Element nesting is too deep.";
+use super::nesting::MAX_ELEMENT_NESTING_DEPTH;
 
 impl<'a> Parser<'a> {
     /// Process open tag name
@@ -194,13 +182,10 @@ impl<'a> Parser<'a> {
             } else if self.stack.len() >= MAX_ELEMENT_NESTING_DEPTH {
                 // Nesting limit reached: keep the element but do not descend any
                 // further, so the resulting tree depth stays bounded. The
-                // element is attached at the current level as a leaf and a
-                // recoverable error is recorded.
-                self.errors.push(CompilerError::with_message(
-                    ErrorCode::ExtendPoint,
-                    NESTING_TOO_DEEP_MESSAGE,
-                    Some(element.loc.clone()),
-                ));
+                // element is attached at the current level as a leaf; see
+                // `nesting` for the diagnostic and for how its end tag is
+                // matched even though it never reaches the stack.
+                self.record_flattened_element(&element);
                 let boxed = Box::new_in(element, self.allocator);
                 self.add_child(TemplateChildNode::Element(boxed));
             } else {
@@ -240,6 +225,12 @@ impl<'a> Parser<'a> {
     pub(in crate::parser) fn on_close_tag_impl(&mut self, start: usize, end: usize) {
         let tag = self.get_source(start, end).to_owned();
 
+        // Flattened elements are inner to everything on the stack, so they get
+        // the first chance to claim this end tag.
+        if self.close_flattened_element(tag.as_str()) {
+            return;
+        }
+
         if self.handle_formatting_end_tag(tag.as_str(), start, end) {
             return;
         }
@@ -275,6 +266,7 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn close_stack_element_at(&mut self, index: usize, report_unclosed: bool) {
+        self.clear_flattened_elements();
         let mut entries = Vec::new_in(self.allocator);
         while self.stack.len() > index {
             if let Some(entry) = self.pop_stack_entry() {

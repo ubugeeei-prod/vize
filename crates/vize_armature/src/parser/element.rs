@@ -7,6 +7,7 @@ mod classify;
 mod comment;
 mod errors;
 mod formatting;
+mod nesting;
 mod scope;
 mod table;
 mod tags;
