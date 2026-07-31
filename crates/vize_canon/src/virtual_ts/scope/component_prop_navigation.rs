@@ -8,15 +8,6 @@ use crate::virtual_ts::types::VizeMapping;
 
 use super::context::ComponentPropsContext;
 
-pub(super) fn has_navigable_props(ctx: &ComponentPropsContext<'_>, usage: &ComponentUsage) -> bool {
-    usage.props.iter().any(|prop| {
-        !prop.name_is_dynamic
-            && prop.name.as_str() != "key"
-            && prop.name.as_str() != "ref"
-            && prop_navigation_source_range(ctx.template_source, prop).is_some()
-    })
-}
-
 pub(super) fn emit_references(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,

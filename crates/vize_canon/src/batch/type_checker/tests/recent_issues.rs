@@ -1,6 +1,7 @@
 use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 mod directive_anchors;
 mod directive_values;
+mod empty_required_props;
 mod exact_optional_props;
 mod native_prop_anchors;
 mod sequence_prop_expressions;

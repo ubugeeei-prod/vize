@@ -29,36 +29,10 @@ pub(super) fn contains_inline_function_prop_value(value: &str) -> bool {
     value.contains("=>") || value.starts_with("function") || value.starts_with("async function")
 }
 
-/// Returns whether any checkable prop carries a value to type-check.
-///
-/// Static attribute values count: `msg="text"` must satisfy the child's
-/// prop type just like `:msg="expr"`.
-pub(super) fn has_value_props(usage: &ComponentUsage) -> bool {
-    usage.props.iter().any(|prop| {
-        !prop.name_is_dynamic
-            && prop.name.as_str() != "key"
-            && prop.name.as_str() != "ref"
-            && prop.value.is_some()
-    })
-}
-
 pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
     usage.props.iter().any(|prop| {
         !prop.name_is_dynamic && prop.name.as_str() != "key" && prop.name.as_str() != "ref"
     })
-}
-
-/// Whether the usage has anything for the whole-props check to look at.
-///
-/// A `v-bind="obj"` spread contributes no `PassedProp`, so a usage that only
-/// spreads has no inference props and used to be skipped entirely — which is
-/// why `<Child v-bind="bag" />` was unchecked (#3444).
-///
-/// Shared with `expressions::component_props`, which gates the call this
-/// module's aliases type. Two copies of the rule could disagree and leave the
-/// generated TypeScript calling a type that was never declared.
-pub(crate) fn has_checkable_props_or_spread(usage: &ComponentUsage) -> bool {
-    has_inference_props(usage) || !usage.spread_props.is_empty()
 }
 
 /// The target the usage's whole props object literal is checked against.
@@ -99,11 +73,12 @@ pub(crate) fn has_checkable_props_or_spread(usage: &ComponentUsage) -> bool {
 /// leaves that `undefined` *in the union*, so no conditional branch is needed to
 /// allow it.
 ///
-/// Consequences, each a case in `component_props_tests.rs`:
+/// Consequences, covered by the component-props and project tests:
 ///
-/// * a prop the template did not pass is not reported — every property is
-///   optional, so the missing-required-prop class stays off. That is also what
-///   keeps this independent of #3444, whose spread needs the full type.
+/// * a usage that binds at least one named prop keeps every other property
+///   optional here, so missing-required-prop diagnostics are not duplicated by
+///   this widened path. Empty and spread-only usages select the full child type
+///   below, which is what catches their missing required props (#3444, #3527).
 /// * `class`, `style`, `data-*`, `aria-*` and anything else the child does not
 ///   declare are absorbed by the `Record<string, unknown>` intersection
 ///   `__VizePropChecker` applies, which also suppresses object-literal excess
@@ -133,11 +108,11 @@ pub(super) fn append_prop_checker_alias(
     component_ref: &str,
     idx: usize,
 ) {
-    // A usage that spreads and binds nothing by name is checked against the
-    // child's props type *unmodified*. Nothing on that element is covered by the
-    // per-prop path, so nothing can be reported twice, and it is the only shape
-    // that catches a wrongly typed value *inside* the spread — #3444's oracle,
-    // where `<Child v-bind="bag" />` with a string `count` is `TS2345`.
+    // A usage that binds nothing by name is checked against the child's props
+    // type *unmodified*. Nothing on that element is covered by the per-prop
+    // path, so nothing can be reported twice. This covers both spread-only
+    // usages (#3444) and an empty `<Child />`, whose `{}` must still fail when
+    // the child has required props (#3527).
     //
     // Any usage that also binds by name keeps the widened target: its named
     // props belong to the per-prop check, and the full type there would

@@ -16,7 +16,6 @@ use crate::virtual_ts::types::VizeMapping;
 
 use super::component_prop_checker::{
     append_per_prop_aliases, append_prop_check_helpers, append_prop_checker_alias,
-    has_checkable_props_or_spread, has_value_props,
 };
 use super::component_prop_navigation;
 use super::context::{ComponentPropsContext, VForPropsContext};
@@ -74,22 +73,11 @@ pub(super) fn generate_component_props(
 
     // Generic children expose `__vizeCheck<T>(props)`; fallback contextual
     // typing is limited to inline function props to avoid duplicate errors.
-    let any_inference_props = checkable_usages
-        .iter()
-        .any(|(_, usage)| has_checkable_props_or_spread(usage));
-    if any_inference_props {
-        append_prop_check_helpers(ts, &checkable_usages);
-    }
+    append_prop_check_helpers(ts, &checkable_usages);
 
     for &(idx, usage) in &checkable_usages {
         let component_ref = to_safe_identifier(usage.name.as_str());
         let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
-
-        let has_value_props = has_value_props(usage);
-        let has_navigable_props = component_prop_navigation::has_navigable_props(ctx, usage);
-        if !has_value_props && !has_navigable_props && usage.spread_props.is_empty() {
-            continue;
-        }
 
         let src_start = (ctx.template_offset + usage.start) as usize;
         let src_end = (ctx.template_offset + usage.end) as usize;
@@ -101,16 +89,14 @@ pub(super) fn generate_component_props(
 
         append_per_prop_aliases(ts, usage, component_type_name.as_str(), idx);
 
-        if has_checkable_props_or_spread(usage) {
-            // Generic functional prop-checker for this component (#775).
-            append_prop_checker_alias(
-                ts,
-                usage,
-                component_type_name.as_str(),
-                component_ref.as_str(),
-                idx,
-            );
-        }
+        // Generic functional prop-checker for this component (#775).
+        append_prop_checker_alias(
+            ts,
+            usage,
+            component_type_name.as_str(),
+            component_ref.as_str(),
+            idx,
+        );
     }
 
     component_prop_navigation::emit_references(ts, mappings, ctx, &checkable_usages);

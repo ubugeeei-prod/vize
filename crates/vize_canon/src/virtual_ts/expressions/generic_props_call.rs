@@ -14,7 +14,6 @@ use super::prop_sources::{
     append_prop_value, generated_prop_value, prop_name_source_range, prop_value_source_range,
 };
 use super::spread_reserved_props::rewrite_reserved_spread_references;
-use crate::virtual_ts::scope::has_checkable_props_or_spread;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
@@ -42,10 +41,6 @@ pub(super) fn generate_generic_props_call(
     indent: &str,
 ) {
     let template_offset = source_context.offset;
-    if !has_checkable_props_or_spread(usage) {
-        return;
-    }
-
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
     let expr_indent = if usage.vif_guard.is_some() {
         cstr!("{indent}  ")
