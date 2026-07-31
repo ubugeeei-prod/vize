@@ -332,16 +332,15 @@ fn unregistered_components(result: &CrossFileResult) -> Vec<&str> {
         .collect()
 }
 
-fn component_usage_with_on_prefixed_prop(component: &str) -> ComponentUsage {
+/// A usage of `component` that binds nothing; every helper below overrides only
+/// the fields its case is about.
+fn component_usage_base(component: &str) -> ComponentUsage {
     ComponentUsage {
         name: CompactString::new(component),
         start: 0,
         end: 0,
-        props: smallvec![
-            passed_prop("title", Some("x"), false),
-            passed_prop("online", Some("true"), false),
-        ],
-        events: smallvec![event_listener("click")],
+        props: smallvec![],
+        events: smallvec![],
         slots: smallvec![],
         has_spread_attrs: false,
         spread_props: smallvec![],
@@ -350,18 +349,22 @@ fn component_usage_with_on_prefixed_prop(component: &str) -> ComponentUsage {
     }
 }
 
+fn component_usage_with_on_prefixed_prop(component: &str) -> ComponentUsage {
+    ComponentUsage {
+        props: smallvec![
+            passed_prop("title", Some("x"), false),
+            passed_prop("online", Some("true"), false),
+        ],
+        events: smallvec![event_listener("click")],
+        ..component_usage_base(component)
+    }
+}
+
 fn component_usage_with_spread_and_extra_prop(component: &str) -> ComponentUsage {
     ComponentUsage {
-        name: CompactString::new(component),
-        start: 0,
-        end: 0,
         props: smallvec![passed_prop("extra", Some("true"), false)],
-        events: smallvec![],
-        slots: smallvec![],
         has_spread_attrs: true,
-        spread_props: smallvec![],
-        scope_id: ScopeId::ROOT,
-        vif_guard: None,
+        ..component_usage_base(component)
     }
 }
 
@@ -372,7 +375,6 @@ fn component_usage_with_extra_prop_at(
     prop_end: u32,
 ) -> ComponentUsage {
     ComponentUsage {
-        name: CompactString::new(component),
         start: usage_start,
         end: prop_end,
         props: smallvec![passed_prop_at(
@@ -382,12 +384,7 @@ fn component_usage_with_extra_prop_at(
             prop_start,
             prop_end
         )],
-        events: smallvec![],
-        slots: smallvec![],
-        has_spread_attrs: false,
-        spread_props: smallvec![],
-        scope_id: ScopeId::ROOT,
-        vif_guard: None,
+        ..component_usage_base(component)
     }
 }
 
@@ -398,7 +395,6 @@ fn component_usage_with_count_string_at(
     prop_end: u32,
 ) -> ComponentUsage {
     ComponentUsage {
-        name: CompactString::new(component),
         start: usage_start,
         end: prop_end,
         props: smallvec![passed_prop_at(
@@ -408,12 +404,7 @@ fn component_usage_with_count_string_at(
             prop_start,
             prop_end,
         )],
-        events: smallvec![],
-        slots: smallvec![],
-        has_spread_attrs: false,
-        spread_props: smallvec![],
-        scope_id: ScopeId::ROOT,
-        vif_guard: None,
+        ..component_usage_base(component)
     }
 }
 
@@ -424,16 +415,8 @@ fn component_usage_with_prop(
     is_dynamic: bool,
 ) -> ComponentUsage {
     ComponentUsage {
-        name: CompactString::new(component),
-        start: 0,
-        end: 0,
         props: smallvec![passed_prop(prop_name, value, is_dynamic)],
-        events: smallvec![],
-        slots: smallvec![],
-        has_spread_attrs: false,
-        spread_props: smallvec![],
-        scope_id: ScopeId::ROOT,
-        vif_guard: None,
+        ..component_usage_base(component)
     }
 }
 

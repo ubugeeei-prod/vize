@@ -276,3 +276,52 @@ export default defineComponent({
         output.code
     );
 }
+
+#[test]
+fn test_options_api_virtual_ts_emits_typed_shape_for_pinia_spread_helpers() {
+    let script = r#"import { defineComponent } from 'vue'
+import { mapState, mapActions } from 'pinia'
+
+function useFakeStore() {
+    return {
+        ready: false,
+        items: [] as Array<{ id: number; label: string }>,
+        setReady(_v: boolean) {},
+    }
+}
+
+export default defineComponent({
+    computed: {
+        ...mapState(useFakeStore, ['items', 'ready']),
+        localComputed() { return 1 },
+    },
+    methods: {
+        ...mapActions(useFakeStore, ['setReady']),
+    },
+})
+"#;
+    let summary = analyze_options_api_script(script);
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert!(
+        output
+            .code
+            .contains("[K in 'items' | 'ready']: ReturnType<typeof useFakeStore>[K]"),
+        "expected precise mapped type for mapState spread keys:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .contains("[K in 'setReady']: ReturnType<typeof useFakeStore>[K]"),
+        "expected precise mapped type for mapActions spread keys:\n{}",
+        output.code
+    );
+}
