@@ -78,6 +78,10 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   const dependencyIndex = steps.indexOf(dependency);
   const run = steps.find((step) => step.name === "Exercise real projects with every core tool");
   const runIndex = steps.indexOf(run!);
+  const syntaxHighlighter = steps.find(
+    (step) => step.name === "Check real-project syntax highlighting",
+  );
+  const syntaxHighlighterIndex = steps.indexOf(syntaxHighlighter!);
   const glyphProperties = steps.find(
     (step) => step.name === "Check glyph formatter corpus properties",
   );
@@ -118,7 +122,16 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(run?.run ?? "", /--vize-bin target\/ci\/vize/);
   assert.match(run?.run ?? "", /--timeout-ms 600000/);
   assert.match(run?.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
-  assert.ok(runIndex < glyphPropertiesIndex && glyphPropertiesIndex < divergenceIndex);
+  assert.ok(
+    runIndex < syntaxHighlighterIndex && syntaxHighlighterIndex < glyphPropertiesIndex,
+    "the hydrated fixture corpus must run through the shipped syntax highlighter",
+  );
+  assert.match(
+    syntaxHighlighter?.run ?? "",
+    /tests\/tooling\/real-project-syntax-highlighting\.test\.ts/,
+  );
+  assert.match(syntaxHighlighter?.run ?? "", /--test-concurrency=1/);
+  assert.ok(glyphPropertiesIndex < divergenceIndex);
   assert.equal(glyphProperties?.env?.VIZE_TEST_BIN, "target/ci/vize");
   assert.match(glyphProperties?.run ?? "", /--test-concurrency=1/);
   for (const property of ["idempotence", "parse-preservation", "lint-agreement"]) {
@@ -166,6 +179,8 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   }
   assert.equal(summary?.if, "${{ always() }}");
   assert.match(summary?.run ?? "", /summary\.md/);
+  assert.match(summary?.run ?? "", /syntax-highlighter-summary\.json/);
+  assert.match(summary?.run ?? "", /failedProjectCount/);
   assert.match(summary?.run ?? "", /\*-typecheck-divergence\.md/);
   assert.match(summary?.run ?? "", /divergence_reports\[@\]/);
   assert.equal(upload?.if, "${{ always() }}");

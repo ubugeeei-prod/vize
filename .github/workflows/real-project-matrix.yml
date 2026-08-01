@@ -112,6 +112,11 @@ jobs:
             --timeout-ms 600000 \
             --output-dir "$FIXTURE_REPORT_DIR"
 
+      - name: Check real-project syntax highlighting
+        run: |
+          node --test --test-concurrency=1 \
+            tests/tooling/real-project-syntax-highlighting.test.ts
+
       - name: Check glyph formatter corpus properties
         env:
           VIZE_TEST_BIN: target/ci/vize
@@ -145,6 +150,13 @@ jobs:
             cat "$FIXTURE_REPORT_DIR/summary.md" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "No fixture tool report was produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          syntax_report="$FIXTURE_REPORT_DIR/syntax-highlighter-summary.json"
+          if [[ -f "$syntax_report" ]]; then
+            jq -r '"Syntax highlighter: \(.summary.projectCount) project(s), \(.summary.fileCount) file(s), \(.summary.lineCount) line(s), \(.summary.failedProjectCount) failed project(s)"' \
+              "$syntax_report" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No syntax-highlighter report was produced." >> "$GITHUB_STEP_SUMMARY"
           fi
           mapfile -t divergence_reports < <(
             find "$FIXTURE_REPORT_DIR" -maxdepth 1 -type f \

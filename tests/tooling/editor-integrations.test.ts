@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import {
-  onigurumaModulePath,
-  onigurumaWasmPath,
-  textmateModulePath,
-} from "./support/textmate-deps.ts";
+  loadVueTextMateGrammar,
+  tokenizeLines,
+  type TextMateToken,
+} from "./support/vue-textmate.ts";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 function readText(relativePath: string): string {
   return fs.readFileSync(path.join(root, relativePath), "utf-8");
@@ -28,90 +28,6 @@ function quoteAwareTagLookahead(begin: string | undefined): void {
   assert.match(begin, /\(\?:\[\^"'<>\]\|"\[\^"\]\*"\|'\[\^'\]\*'\)\*/);
   assert.doesNotMatch(begin, /\[\^>\]\*/);
 }
-
-function createStubGrammar(scopeName: string) {
-  const patterns = [
-    { match: "\\b(as|extends|keyof|typeof|infer|satisfies)\\b", name: "keyword.operator.ts" },
-    { match: "\\b[A-Za-z_$][\\w$]*\\b", name: "identifier.ts" },
-    { match: "[<>{}()\\[\\].,:?=+\\-*/|&!]+", name: "punctuation.ts" },
-    { match: "\"(?:\\\\.|[^\"])*\"|'(?:\\\\.|[^'])*'|`(?:\\\\.|[^`])*`", name: "string.ts" },
-  ];
-  return {
-    scopeName,
-    patterns,
-    repository: {
-      expression: { patterns },
-      "type-inner": { patterns },
-    },
-  };
-}
-
-async function loadVueTextMateGrammar() {
-  const [{ Registry }, { createOnigurumaEngine }] = await Promise.all([
-    import(pathToFileURL(textmateModulePath).href),
-    import(pathToFileURL(onigurumaModulePath).href),
-  ]);
-  const engine = await createOnigurumaEngine(fs.readFileSync(onigurumaWasmPath));
-  const grammars = new Map<string, unknown>([
-    ["source.vue", readJson("editors/vscode/syntaxes/vue.tmLanguage.json")],
-    ["source.vue.script", readJson("editors/vscode/syntaxes/vue-script.tmLanguage.json")],
-    ["source.art-vue", readJson("editors/vscode/syntaxes/art-vue.tmLanguage.json")],
-  ]);
-  const registry = new Registry({
-    onigLib: {
-      createOnigScanner(patterns: Array<string | RegExp>) {
-        return engine.createScanner(patterns);
-      },
-      createOnigString(value: string) {
-        return engine.createString(value);
-      },
-    },
-    loadGrammar(scopeName: string) {
-      return grammars.get(scopeName) ?? createStubGrammar(scopeName);
-    },
-  });
-
-  const grammar = registry.loadGrammar("source.vue");
-  assert.ok(grammar);
-  return { grammar, registry };
-}
-
-function tokenizeLines(
-  grammar: {
-    tokenizeLine(
-      lineText: string,
-      prevState: unknown,
-    ): { ruleStack: unknown; tokens: TextMateToken[] };
-  },
-  lines: string[],
-): TextMateToken[] {
-  let ruleStack: unknown = null;
-  const tokens: TextMateToken[] = [];
-
-  for (const line of lines) {
-    const result = grammar.tokenizeLine(line, ruleStack);
-    for (const token of result.tokens) {
-      tokens.push({
-        endIndex: token.endIndex,
-        line,
-        scopes: token.scopes,
-        startIndex: token.startIndex,
-        text: line.slice(token.startIndex, token.endIndex),
-      });
-    }
-    ruleStack = result.ruleStack;
-  }
-
-  return tokens;
-}
-
-type TextMateToken = {
-  endIndex: number;
-  line: string;
-  scopes: string[];
-  startIndex: number;
-  text: string;
-};
 
 function tokensForText(tokens: TextMateToken[], text: string): TextMateToken[] {
   return tokens.filter((token) => token.text.includes(text));
