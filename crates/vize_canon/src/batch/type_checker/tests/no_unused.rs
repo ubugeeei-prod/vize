@@ -311,7 +311,10 @@ fn snapshot_project_diagnostics_without_template_checks(
     Some(snapshot)
 }
 
-fn write_no_unused_tsconfig(project_root: &std::path::Path) {
+/// Shared with `generic_props::inline_callback_guarded_props`: every synthetic
+/// local the prop checks emit has to be read somewhere, or a clean SFC gains an
+/// unmapped `TS6133`/`TS6196` hint.
+pub(super) fn write_no_unused_tsconfig(project_root: &std::path::Path) {
     std::fs::write(
         project_root.join("tsconfig.json"),
         r#"{

@@ -2,6 +2,17 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 
 use crate::virtual_ts::generate_virtual_ts;
 
+/// Every generated line that re-emits `void 0, (value) => value`, trimmed, in
+/// emission order: the generic child's props resolver, then the per-prop check
+/// that reads its instantiated type. The selector call and the whole-props
+/// checker call both replace an inline callback with `undefined as any`, so
+/// they are deliberately absent — an entry appearing here for either of them
+/// would mean the callback is checked, and reported, twice (#3446).
+const SEQUENCE_VALUE_LINES: [&str; 2] = [
+    r#""transform": (void 0, (value) => value),"#,
+    "const __vize_prop_check_0_transform: __VizeResolvedProp<typeof __vize_resolved_Child_props_0, typeof __vize_selected_Child_props_0, 'transform', __Child_0_prop_transform> = (void 0, (value) => value);",
+];
+
 #[test]
 fn sequence_prop_values_are_grouped_without_mapping_synthetic_parentheses() {
     let script = r#"import Child from "./Child.vue"
@@ -17,21 +28,16 @@ fn sequence_prop_values_are_grouped_without_mapping_synthetic_parentheses() {
     let summary = analyzer.finish();
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
-    assert!(
-        output
-            .code
-            .contains("__vize_prop_check_0_transform: __VizeResolvedProp<")
-            && output.code.contains(" = (void 0, (value) => value);"),
-        "per-prop initializer must group the sequence expression:\n{}",
-        output.code
-    );
-    assert!(
-        output
-            .code
-            .contains(r#""transform": (void 0, (value) => value),"#),
-        "generic props object must group the sequence expression:\n{}",
-        output.code
-    );
+    // Asserted as whole lines rather than as substrings: a sequence has to be
+    // grouped at *every* site that re-emits the authored value, and only an
+    // exhaustive list can show that none was missed.
+    let emitted_value_lines: Vec<&str> = output
+        .code
+        .lines()
+        .map(str::trim)
+        .filter(|line| line.contains(expression))
+        .collect();
+    assert_eq!(emitted_value_lines, SEQUENCE_VALUE_LINES, "{}", output.code);
 
     let value_start = template.find(expression).expect("bound expression present");
     let value_range = value_start..value_start + expression.len();
