@@ -102,10 +102,7 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("directives/v_show_component", Same),
     ("directives/v_html", Same),
     ("directives/v_html_with_children", Same),
-    (
-        "directives/v_text",
-        Diff("v-text wrapped in toDisplayString"),
-    ),
+    ("directives/v_text", Same),
     ("directives/v_custom_arg", Same),
     ("directives/v_custom_array", Same),
     ("directives/v_dashed_custom", Same),

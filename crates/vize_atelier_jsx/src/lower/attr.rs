@@ -263,6 +263,16 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             }
         }
 
+        // Babel lowers `v-text` to a raw `textContent` prop. Keep Vize's
+        // established `_toDisplayString` behavior outside the explicit
+        // compatibility mode.
+        if raw_name == "text"
+            && arg.is_none()
+            && let Some(prop) = self.compat_v_text_prop(attr, loc.clone())
+        {
+            return DirectiveAttributeLowering::Lowered(prop);
+        }
+
         // `v-custom={[value, 'arg', ['a','b']]}` — babel-plugin-jsx's array
         // encoding for a custom directive's value, argument and modifiers.
         // Restricted to custom directives with no JSX-namespace argument: the

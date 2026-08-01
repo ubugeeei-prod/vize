@@ -125,6 +125,25 @@ fn babel_compat_emits_true_for_a_valueless_attribute_only_when_opted_in() {
 }
 
 #[test]
+fn babel_compat_assigns_v_text_raw_only_when_opted_in() {
+    let source = "const A = () => <div v-text={value}/>;";
+    let native = compile_module(source, JsxCompatMode::Native, JsxOutputMode::Vdom);
+    let babel = compile_module(source, JsxCompatMode::Babel, JsxOutputMode::Vdom);
+
+    assert!(
+        native.contains("textContent: _toDisplayString(value)"),
+        "{native}"
+    );
+    assert!(
+        native.contains("toDisplayString as _toDisplayString"),
+        "{native}"
+    );
+    assert!(babel.contains("textContent: value"), "{babel}");
+    assert!(!babel.contains("toDisplayString"), "{babel}");
+    assert_ne!(native, babel);
+}
+
+#[test]
 fn babel_compat_rewrites_xlink_href_across_prop_shapes_only_when_opted_in() {
     let source = concat!(
         "const A = () => <svg>",

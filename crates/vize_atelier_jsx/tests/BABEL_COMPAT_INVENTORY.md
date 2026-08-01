@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   83 |
-| divergent  |   13 |
+| equivalent |   84 |
+| divergent  |   12 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -192,7 +192,7 @@ Recorded so the verdicts are not read as byte equality (#3421,
 | `directives/v_show_component`              | `[[vShow, vis]]` on the component vnode                        | same                                                            | no change               | ✅      |
 | `directives/v_html`                        | `{innerHTML: h}`                                               | same                                                            | no change               | ✅      |
 | `directives/v_html_with_children`          | keeps the children too                                         | same                                                            | no change               | ✅      |
-| `directives/v_text`                        | `{textContent: t}` raw                                         | `textContent: toDisplayString(t)`                               | assign raw              | ❌      |
+| `directives/v_text`                        | `{textContent: t}` raw                                         | `textContent: toDisplayString(t)`                               | raw in compat mode      | ✅      |
 | `directives/v_custom_arg`                  | `[[resolveDirective("custom"), val, "arg"]]`                   | same                                                            | no change               | ✅      |
 | `directives/v_custom_array`                | unpacks `[val, 'arg', ['a','b']]` into value / arg / modifiers | same (#3421)                                                    | no change               | ✅      |
 | `directives/v_dashed_custom`               | `resolveDirective("unknown-thing")`                            | same                                                            | no change               | ✅      |

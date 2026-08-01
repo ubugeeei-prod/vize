@@ -8,6 +8,24 @@ use vize_relief::{DirectiveNode, PropNode, SourceLocation};
 use crate::lower::Lowerer;
 
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+    /// Babel's `v-text` transform passes the authored value directly to the
+    /// DOM `textContent` prop. Native Vize keeps its established template-style
+    /// `_toDisplayString` normalization, so this rewrite is compatibility-only.
+    pub(super) fn compat_v_text_prop(
+        &self,
+        attr: &JSXAttribute<'_>,
+        loc: SourceLocation,
+    ) -> Option<PropNode<'a>> {
+        if !self.uses_babel_compat() {
+            return None;
+        }
+
+        let mut directive = DirectiveNode::new(self.bump(), "bind", loc);
+        directive.arg = Some(self.static_expr("textContent", attr.name.span()));
+        directive.exp = self.directive_value_expr(attr.value.as_ref());
+        Some(PropNode::Directive(Box::new_in(directive, self.bump())))
+    }
+
     /// Apply Babel's `transformOn: true` option to the two exact prop names the
     /// real plugin recognizes. The generated no-argument `v-bind` keeps this
     /// listener object in authored merge order while the helper performs the
