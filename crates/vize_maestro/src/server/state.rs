@@ -18,6 +18,8 @@ mod global_components;
 #[cfg(test)]
 mod config_tests;
 #[cfg(all(test, feature = "native"))]
+mod corsa_overlays_perf_tests;
+#[cfg(all(test, feature = "native"))]
 mod corsa_overlays_tests;
 #[cfg(test)]
 mod tests;

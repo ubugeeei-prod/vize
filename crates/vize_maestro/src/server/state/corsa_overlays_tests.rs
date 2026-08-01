@@ -1,4 +1,7 @@
-//! Correctness and scaling tests for the incremental Corsa overlay cache.
+//! Correctness tests for the incremental Corsa overlay cache.
+//!
+//! The scaling half lives in [`super::corsa_overlays_perf_tests`], which
+//! reuses the fixtures below.
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -7,22 +10,22 @@ use tower_lsp::lsp_types::{Position, Range, TextDocumentContentChangeEvent, Url}
 
 use super::ServerState;
 
-fn uri(name: &str) -> Url {
+pub(super) fn uri(name: &str) -> Url {
     Url::parse(&format!("file:///project/{name}")).expect("uri")
 }
 
-fn path(name: &str) -> PathBuf {
+pub(super) fn path(name: &str) -> PathBuf {
     uri(name).to_file_path().expect("file path")
 }
 
-fn open(state: &ServerState, name: &str, text: &str) {
+pub(super) fn open(state: &ServerState, name: &str, text: &str) {
     state
         .documents
         .open(uri(name), text.to_string(), 1, "vue".to_string());
 }
 
 /// Replace the whole buffer, the way an editor reports a non-incremental edit.
-fn rewrite(state: &ServerState, name: &str, text: &str, version: i32) {
+pub(super) fn rewrite(state: &ServerState, name: &str, text: &str, version: i32) {
     state.documents.apply_changes(
         &uri(name),
         vec![TextDocumentContentChangeEvent {
@@ -36,7 +39,7 @@ fn rewrite(state: &ServerState, name: &str, text: &str, version: i32) {
 
 /// The overlay set as compared by tests: order is an artifact of `DashMap`
 /// iteration, so sort before asserting full equality.
-fn overlays(state: &ServerState) -> Vec<(PathBuf, String)> {
+pub(super) fn overlays(state: &ServerState) -> Vec<(PathBuf, String)> {
     let mut overlays = state
         .corsa_overlays()
         .into_iter()
@@ -219,100 +222,5 @@ fn concurrent_edits_and_snapshots_finish_with_the_latest_text() {
     assert_eq!(
         overlays(&state),
         vec![(path("A.vue"), "version 128".into())]
-    );
-}
-
-/// The point of the cache: a pass costs the documents that changed, not the
-/// documents that are open. Counting materializations rather than timing keeps
-/// the assertion exact and independent of the machine running it.
-#[test]
-fn a_pass_materializes_only_the_documents_that_changed() {
-    let state = ServerState::new();
-    let document = "<template>{{ value }}</template>\n".repeat(512);
-    for index in 0..40 {
-        open(&state, &format!("C{index}.vue"), &document);
-    }
-
-    // Cold pass reads every open document exactly once.
-    let _ = state.corsa_overlays();
-    assert_eq!(state.corsa_overlay_materializations(), 40);
-
-    // A pass with nothing changed reads none of them.
-    let _ = state.corsa_overlays();
-    assert_eq!(state.corsa_overlay_materializations(), 40);
-
-    // Ten keystrokes on one file read one document each, regardless of the 40
-    // that are open.
-    for keystroke in 0..10 {
-        rewrite(
-            &state,
-            "C7.vue",
-            &format!("{document}<!-- {keystroke} -->"),
-            keystroke + 2,
-        );
-        let _ = state.corsa_overlays();
-    }
-    assert_eq!(state.corsa_overlay_materializations(), 50);
-
-    // Opening one more document reads only that one.
-    open(&state, "C40.vue", &document);
-    let _ = state.corsa_overlays();
-    assert_eq!(state.corsa_overlay_materializations(), 51);
-
-    // Closing one reads nothing.
-    state.close_document(&uri("C40.vue"));
-    let _ = state.corsa_overlays();
-    assert_eq!(state.corsa_overlay_materializations(), 51);
-}
-
-/// The wall-clock companion to the deterministic counter test above, and the
-/// source of the numbers in the PR body. Run manually on an idle host: scheduler
-/// contention makes elapsed-time assertions unsuitable as a CI correctness
-/// gate, while `a_pass_materializes_only_the_documents_that_changed` catches
-/// the same full-rebuild regression exactly.
-#[test]
-#[ignore = "wall-clock benchmark; run manually on an idle host"]
-fn a_warm_pass_is_far_cheaper_than_a_cold_one() {
-    const DOCUMENTS: usize = 60;
-    const PASSES: u32 = 64;
-
-    let state = ServerState::new();
-    let document = "<template>{{ value }}</template>\n".repeat(512);
-    for index in 0..DOCUMENTS {
-        open(&state, &format!("D{index}.vue"), &document);
-    }
-
-    // Prime the cache, then interleave warm/cold samples so host load affects
-    // both populations equally. Edits and invalidation are setup, not overlay
-    // snapshot work, and therefore deliberately stay outside the timers.
-    let _ = state.corsa_overlays();
-    let mut warm = std::time::Duration::ZERO;
-    let mut cold = std::time::Duration::ZERO;
-    for keystroke in 0..PASSES {
-        rewrite(
-            &state,
-            "D3.vue",
-            &format!("{document}<!-- {keystroke} -->"),
-            keystroke as i32 + 2,
-        );
-
-        let started = std::time::Instant::now();
-        let _ = state.corsa_overlays();
-        warm += started.elapsed();
-
-        state.invalidate_corsa_overlays();
-        let started = std::time::Instant::now();
-        let _ = state.corsa_overlays();
-        cold += started.elapsed();
-    }
-    let warm = warm / PASSES;
-    let cold = cold / PASSES;
-
-    println!(
-        "corsa overlay pass over {DOCUMENTS} documents: cold {cold:?}, warm (1 edited) {warm:?}"
-    );
-    assert!(
-        warm * 4 < cold,
-        "a warm pass should cost a fraction of a full rebuild, got warm {warm:?} vs cold {cold:?}"
     );
 }
