@@ -142,10 +142,20 @@ const count = ref(0)
     assert.equal("detail" in (byName.get("template") as object), false);
     assert.equal("detail" in (byName.get("style scoped") as object), false);
 
-    // selectionRange end-character is a fixed per-block width.
-    assert.equal(byName.get("template")?.selectionRange.end.character, 10);
-    assert.equal(byName.get("script setup")?.selectionRange.end.character, 14);
-    assert.equal(byName.get("style scoped")?.selectionRange.end.character, 7);
+    // selectionRange covers the tag name inside the opening tag, so it starts
+    // one character past `<` and ends after the name.
+    assert.deepEqual(
+      [...byName].map(([name, symbol]) => [
+        name,
+        symbol.selectionRange.start.character,
+        symbol.selectionRange.end.character,
+      ]),
+      [
+        ["template", 1, 9],
+        ["script setup", 1, 7],
+        ["style scoped", 1, 6],
+      ],
+    );
 
     // script setup opens the file, so its block range starts on line 0.
     assert.equal(byName.get("script setup")?.range.start.line, 0);
