@@ -57,15 +57,20 @@ async function rawRequest(
 
 async function availablePort(): Promise<number> {
   const server = createNetServer();
+  const port = await listen(server);
+  await new Promise<void>((resolve, reject) => {
+    server.close((error) => (error ? reject(error) : resolve()));
+  });
+  return port;
+}
+
+async function listen(server: ReturnType<typeof createNetServer>): Promise<number> {
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
     server.listen({ host: "127.0.0.1", port: 0 }, resolve);
   });
   const address = server.address();
   assert.ok(address && typeof address === "object");
-  await new Promise<void>((resolve, reject) => {
-    server.close((error) => (error ? reject(error) : resolve()));
-  });
   return address.port;
 }
 
@@ -164,6 +169,26 @@ void test("eager lint inspector starts immediately and closes with Nuxt", async 
   assert.equal((tabs[0] as { view: { type: string } }).view.type, "iframe");
   await hooks.get("close")?.();
   assert.equal(controller?.url(), undefined);
+});
+
+void test("eager lint inspector degrades to lazy launch when its port is occupied", async (t) => {
+  const occupied = createNetServer();
+  const port = await listen(occupied);
+  const warning = t.mock.method(console, "warn", () => {});
+  const { nuxt } = createNuxt();
+  const controller = await setupNuxtLintDevtools({ enabled: true, port }, nuxt, () => ({}));
+  assert.ok(controller);
+  t.after(() => controller.close());
+
+  assert.equal(controller.url(), undefined);
+  assert.equal(warning.mock.callCount(), 1);
+  assert.match(String(warning.mock.calls[0]?.arguments[0]), /failed to start.*EADDRINUSE/iu);
+
+  await new Promise<void>((resolve, reject) => {
+    occupied.close((error) => (error ? reject(error) : resolve()));
+  });
+  await controller.start();
+  assert.equal(new URL(controller.url() ?? "").port, String(port));
 });
 
 void test("lint inspector close waits for an in-flight lazy start", async () => {
